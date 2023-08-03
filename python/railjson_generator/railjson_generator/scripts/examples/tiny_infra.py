@@ -71,7 +71,7 @@ speed_section.add_track_range(ne_micro_foo_to_bar, 2_000, 6_000, ApplicableDirec
 
 
 # Add links
-link = builder.add_link(ne_micro_foo_to_bar.end(), ne_micro_bar_a.begin(), ApplicableDirection.BOTH)
+link = builder.add_link(ne_micro_foo_to_bar.end(), ne_micro_bar_a.begin())
 switch = builder.add_point_switch(
     ne_micro_foo_to_bar.begin(), ne_micro_foo_b.end(), ne_micro_foo_a.end(), label="il.switch_foo"
 )

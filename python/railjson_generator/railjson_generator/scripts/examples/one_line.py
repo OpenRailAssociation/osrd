@@ -29,7 +29,7 @@ for i, track in enumerate(tracks):
 for first_track, second_track in zip(tracks[:-1], tracks[1:]):
     first_endpoint = first_track.begin() if first_track.inverted else first_track.end()
     second_endpoint = second_track.end() if second_track.inverted else second_track.begin()
-    builder.add_link(first_endpoint, second_endpoint, ApplicableDirection.BOTH)
+    builder.add_link(first_endpoint, second_endpoint)
 
 # Add detector and signals
 for track in tracks:
