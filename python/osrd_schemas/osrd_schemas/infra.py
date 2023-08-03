@@ -436,17 +436,19 @@ class Panel(TrackLocationTrait):
 
 class NeutralSection(BaseObjectTrait):
     """
-    Neutral zones (or sections) are sections of track where electrical trains cannot pull power from catenaries.
-    Instead, trains have to rely on inertia to cross such sections.
+    Neutral sections are portions of track where trains aren't allowed to pull power from catenaries.
+    They have to rely on inertia to cross such sections.
 
-    If the section is designated as a pantograph drop zone, trains will lower pantographs before entering the section,
-    and will start raising pantographs again once the train has entirely left the section.
+    In practice, neutral sections are delimited by signs. In OSRD, neutral sections are directional
+    to allow accounting for different sign placement depending on the direction.
+
+    For more details see [the documentation](https://osrd.fr/en/docs/explanation/neutral_sections/).
     """
 
     track_ranges: List[DirectionalTrackRange] = Field(
         description="List of locations where the train cannot pull power from catenaries"
     )
-    lower_pantograph: bool = Field(description="precise if the neutralSection is a pantograph drop zone or not")
+    lower_pantograph: bool = Field(description="Whether or not trains need to lower their pantograph in the section")
 
 
 class RailJsonInfra(BaseModel):
