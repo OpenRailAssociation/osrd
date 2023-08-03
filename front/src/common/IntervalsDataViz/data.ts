@@ -332,29 +332,6 @@ export function fixLinearMetadataItems<T>(
 }
 
 /**
- * Remove item at specified index
- *
- * @param linearMetadata The linear metadata we work on, already sorted
- * @param itemChangeIndex The index in the linearMetadata of the changed element
- * @param lineLength The full length of the linearmetadata (should be computed from the LineString or given by the user)
- * @returns An object composed of the new linearMetadata and its new position without the removed element
- */
-export function removeSegment<T>(
-  linearMetadata: Array<LinearMetadataItem<T>>,
-  itemChangeIndex: number,
-  lineLength: number
-): Array<LinearMetadataItem<T>> {
-  // apply the modification on the segment
-  let result = cloneDeep(linearMetadata);
-  // 1 - splice
-  result.splice(itemChangeIndex, 1);
-  // 2 - fix
-  result = fixLinearMetadataItems(result, lineLength);
-  // 3 return
-  return result;
-}
-
-/**
  * Do the impact on the linear metadata when the LineString changed.
  * (recompute all the begin / end).
  * We change only one segment, others stay the same or are just translated.
