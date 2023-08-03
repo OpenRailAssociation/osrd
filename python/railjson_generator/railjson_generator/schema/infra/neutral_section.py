@@ -34,6 +34,16 @@ class PathElement:
 
 @dataclass
 class NeutralSection:
+    """
+    Neutral sections are portions of track where trains aren't allowed to pull power from catenaries.
+    They have to rely on inertia to cross such sections.
+
+    In practice, neutral sections are delimited by signs. In OSRD, neutral sections are directional
+    to allow accounting for different sign placement depending on the direction.
+
+    For more details see [the documentation](https://osrd.fr/en/docs/explanation/neutral_sections/).
+    """
+
     track_ranges: List[PathElement] = field(default_factory=list)
     lower_pantograph: bool = field(default=False)
     label: str = field(default_factory=_neutral_section_id)

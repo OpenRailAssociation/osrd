@@ -147,6 +147,13 @@ class DetectorModel(models.Model):
 
 
 class NeutralSectionModel(models.Model):
+    """
+    Neutral sections are portions of track where trains aren't allowed to pull power from catenaries.
+    They have to rely on inertia to cross such sections.
+
+    For more details see [the documentation](https://osrd.fr/en/docs/explanation/neutral_sections/).
+    """
+
     infra = models.ForeignKey(Infra, on_delete=models.CASCADE)
     obj_id = models.CharField(max_length=255)
     data = models.JSONField(validators=[PydanticValidator(NeutralSection)])
