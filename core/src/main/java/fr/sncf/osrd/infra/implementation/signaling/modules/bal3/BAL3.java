@@ -10,6 +10,10 @@ import fr.sncf.osrd.infra.api.signaling.Signal;
 import fr.sncf.osrd.infra.api.signaling.SignalState;
 import fr.sncf.osrd.infra.api.signaling.SignalingModule;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
+import fr.sncf.osrd.infra.api.tracks.directed.DiTrackEdge;
+import fr.sncf.osrd.infra.api.tracks.directed.DiTrackInfra;
+import fr.sncf.osrd.infra.api.tracks.undirected.Detector;
+import fr.sncf.osrd.infra.api.tracks.undirected.TrackSection;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal;
@@ -61,19 +65,75 @@ public class BAL3 implements SignalingModule {
         }
     }
 
+    private DiTrackEdge getLinkedTrackSection(DiTrackInfra infra, DiTrackEdge curEdge) {
+        var graph = infra.getDiTrackGraph();
+        var nodes = graph.incidentNodes(curEdge);
+        var endNode = nodes.nodeV();
+        var neighbors = graph.outEdges(endNode);
+        // look for a neighboring track section
+        // neighboring edges are either switch branches or track sections
+        DiTrackEdge neighborTrack = null;
+        for (var neighbor : neighbors) {
+            if (neighbor.getEdge() instanceof TrackSection) {
+                neighborTrack = neighbor;
+                break;
+            }
+        }
+        return neighborTrack;
+    }
+
+    private DiDetector getNextDetector(DiTrackInfra infra, DiTrackEdge curEdge) {
+        while (true) {
+            curEdge = getLinkedTrackSection(infra, curEdge);
+            if (curEdge == null)
+                return null;
+            var curTrackSection = (TrackSection) curEdge.getEdge();
+            var detectors = curTrackSection.getDetectors();
+            if (detectors.isEmpty())
+                continue;
+            var detector = detectors.get(curEdge.getDirection() == Direction.FORWARD ? 0 : detectors.size() - 1);
+            return detector.getDiDetector(curEdge.getDirection());
+        }
+    }
+
+    private DiDetector findAssociatedDetector(ReservationInfra infra, RJSSignal signal) {
+        var signalPosition = signal.position;
+        var trackSection = infra.getTrackSection(signal.track);
+        if (signal.direction == EdgeDirection.START_TO_STOP) {
+            // look for a detector in the same track section at the signal
+            for (var detector : trackSection.getDetectors()) {
+                if (detector.getOffset() < signalPosition)
+                    continue;
+                if (detector.getOffset() >= signalPosition)
+                    return detector.getDiDetector(Direction.FORWARD);
+            }
+            // if that fails, look for linked track sections
+            return getNextDetector(infra, infra.getEdge(trackSection, Direction.FORWARD));
+        } else {
+            // look for a detector in the same track section at the signal
+            for (var detector : trackSection.getDetectors().reverse()) {
+                if (detector.getOffset() > signalPosition)
+                    continue;
+                if (detector.getOffset() <= signalPosition)
+                    return detector.getDiDetector(Direction.BACKWARD);
+            }
+            // if that fails, look for linked track sections
+            return getNextDetector(infra, infra.getEdge(trackSection, Direction.BACKWARD));
+        }
+    }
+
     @Override
     public ImmutableMap<RJSSignal, Signal<?>> createSignals(ReservationInfra infra, RJSInfra rjsInfra) {
         var res = ImmutableMap.<RJSSignal, Signal<?>>builder();
         for (var signal : rjsInfra.signals) {
             if (!isBALSignal(signal))
                 continue;
-            DiDetector linkedDetector = null;
-            if (signal.linkedDetector != null) {
-                var undirectedDetector = infra.getDetectorMap().get(signal.linkedDetector);
-                assert undirectedDetector != null;
-                var dir = signal.direction == EdgeDirection.START_TO_STOP ? Direction.FORWARD : Direction.BACKWARD;
-                linkedDetector = undirectedDetector.getDiDetector(dir);
-            }
+            // automatically find the associated detector (all BAL3 signals are supposed to have one)
+            var linkedDetector = findAssociatedDetector(infra, signal);
+            if (linkedDetector == null)
+                diagnosticRecorder.register(new Warning(String.format(
+                        "Can't find associated detector for signal %s", signal.id
+                )));
             var newSignal = new BAL3Signal(signal.id, signal.sightDistance);
             res.put(signal, newSignal);
             detectorToSignal.put(linkedDetector, newSignal);
