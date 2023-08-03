@@ -1988,7 +1988,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/SimulationReport"
 
-  /train_schedule/delete/:
+  /train_schedule/:
     delete:
       tags:
         - train_schedule

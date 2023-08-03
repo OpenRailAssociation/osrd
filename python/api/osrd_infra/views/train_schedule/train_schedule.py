@@ -132,8 +132,7 @@ class TrainScheduleView(
 
         return Response({"ids": [schedule.id for schedule in train_schedules]}, status=201)
 
-    @action(detail=False, methods=["delete"])
-    def delete(self, request):
+    def list_delete(self, request):
         train_ids = request.data["ids"]
         TrainSchedule.objects.filter(id__in=train_ids).delete()
         return Response(status=204)
