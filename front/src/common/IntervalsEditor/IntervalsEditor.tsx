@@ -5,7 +5,6 @@ import {
   LinearMetadataItem,
   fixLinearMetadataItems,
   getZoomedViewBox,
-  removeSegment,
   resizeSegment,
   splitAt,
   transalteViewBox,
@@ -26,10 +25,11 @@ import ZoomButtons from './ZoomButtons';
 import ToolButtons from './IntervalsEditorToolButtons';
 import IntervalsEditorMarginForm from './IntervalsEditorMarginForm';
 import IntervalsEditorSelectForm from './IntervalsEditorSelectForm';
-import { createEmptySegmentAt } from './utils';
+import { createEmptySegmentAt, removeSegment } from './utils';
 
 type IntervalsEditorProps = {
   defaultValue: number | string;
+  emptyValue: unknown;
   setData: (newData: IntervalItem[]) => void;
   showValues?: boolean;
   title?: string;
@@ -64,6 +64,7 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
   const {
     data = [],
     defaultValue,
+    emptyValue,
     intervalType,
     setData,
     showValues = false,
@@ -179,7 +180,7 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
           <LinearMetadataDataviz
             creating={selectedTool === INTERVALS_EDITOR_TOOLS.ADD_TOOL}
             data={resizingData}
-            emptyValue={defaultValue}
+            emptyValue={emptyValue}
             viewBox={viewBox}
             highlighted={[hovered ? hovered.index : -1, selected ?? -1].filter((e) => e > -1)}
             intervalType={intervalType}
@@ -196,7 +197,7 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
               }
             }}
             onClick={(_e, _item, index, point) => {
-              if (mode === null) {
+              if (mode === null && !selectedTool) {
                 const timer = window.setTimeout(() => {
                   if (!clickPrevent) {
                     // case when you click on the already selected item => reset
@@ -215,7 +216,7 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
                 setData(newData);
               }
               if (selectedTool === INTERVALS_EDITOR_TOOLS.DELETE_TOOL) {
-                const newData = removeSegment(data, index, totalLength);
+                const newData = removeSegment(data, index, emptyValue, intervalDefaultUnit);
                 setClickPrevent(false);
                 setData(newData);
                 setSelected(null);
@@ -234,10 +235,7 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
               setMode(!finalized ? 'resizing' : null);
               try {
                 const { result, newIndexMapping } = resizeSegment(data, index, gap, 'end', false);
-                const fixedResults = fixLinearMetadataItems(result?.filter(notEmpty), totalLength, {
-                  fieldName: 'value',
-                  defaultValue,
-                });
+                const fixedResults = fixLinearMetadataItems(result?.filter(notEmpty), totalLength);
 
                 if (finalized) {
                   setData(fixedResults);
