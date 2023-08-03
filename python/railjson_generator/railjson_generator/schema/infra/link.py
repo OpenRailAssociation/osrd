@@ -2,7 +2,6 @@ from dataclasses import dataclass, field
 
 from osrd_schemas import infra
 
-from railjson_generator.schema.infra.direction import ApplicableDirection
 from railjson_generator.schema.infra.endpoint import TrackEndpoint
 
 
@@ -16,7 +15,6 @@ def _link_id():
 class Link:
     begin: TrackEndpoint
     end: TrackEndpoint
-    navigability: ApplicableDirection = field(default=ApplicableDirection.BOTH)
     label: str = field(default_factory=_link_id)
 
     _INDEX = 0
