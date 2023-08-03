@@ -4,7 +4,7 @@ import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 type DebouncedNumberInputSNCFProps = {
   input: number;
   label: string;
-  setInput: (number: number) => void;
+  setInput: (inputValue: number) => void;
   debouncedDelay?: number;
   id?: string;
   max?: number;

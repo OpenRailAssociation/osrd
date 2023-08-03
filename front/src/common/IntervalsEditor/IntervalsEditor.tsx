@@ -60,7 +60,7 @@ type IntervalsEditorProps = {
  *
  * version 0.1
  */
-export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
+export const IntervalsEditor = (props: IntervalsEditorProps) => {
   const {
     data = [],
     defaultValue,
