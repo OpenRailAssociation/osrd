@@ -23,9 +23,13 @@ import fr.sncf.osrd.utils.indexing.*
 import kotlin.collections.*
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.meters
+import mu.KotlinLogging
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
+
+
+private val logger = KotlinLogging.logger {}
 
 
 // TODO: run pathfinding on blocks
@@ -145,6 +149,55 @@ fun run(
     )
 }
 
+enum class SpacingRequirementPhase {
+    HeadRoom,
+    Begin,
+    Main,
+    End,
+    TailRoom;
+
+    /** Checks whether the current state accepts this zone configuration */
+    fun check(occupied: Boolean, hasRequirement: Boolean): Boolean {
+        return when (this) {
+            HeadRoom -> !occupied && !hasRequirement
+            Begin -> occupied && !hasRequirement
+            Main -> occupied && hasRequirement
+            End -> !occupied && hasRequirement
+            TailRoom -> !occupied && !hasRequirement
+        }
+    }
+
+    fun react(occupied: Boolean, hasRequirement: Boolean): SpacingRequirementPhase {
+        // no state change
+        if (check(occupied, hasRequirement))
+            return this
+
+        when (this) {
+            HeadRoom -> {
+                if (occupied)
+                    return Begin.react(true, hasRequirement)
+            }
+            Begin -> {
+                if (hasRequirement)
+                    return Main.react(occupied, true)
+                if (!occupied)
+                    return TailRoom
+            }
+            Main -> {
+                if (!occupied)
+                    return End.react(false, hasRequirement)
+            }
+            End -> {
+                if (!hasRequirement)
+                    return TailRoom
+
+            }
+            TailRoom -> return TailRoom
+        }
+        return this
+    }
+}
+
 private fun spacingRequirements(
     simulator: SignalingSimulator,
     blockPath: StaticIdxList<Block>,
@@ -156,13 +209,14 @@ private fun spacingRequirements(
     zoneOccupationChangeEvents: MutableList<ZoneOccupationChangeEvent>
 ): List<SpacingRequirement> {
     val res = mutableListOf<SpacingRequirement>()
-    val zoneReleases = zoneOccupationChangeEvents.groupBy { it.zone }.mapValues { (_, events) ->
-        assert(events.size <= 2);
-        val exit = events.last()
-        if (exit.isEntry)
-            envelope.totalTime;
-        else
-            exit.time / 1000.0;
+    data class ZoneOccupation(val entry: Double, val exit: Double)
+    val zoneOccupancies = zoneOccupationChangeEvents.groupBy { it.zone }.mapValues { (_, events) ->
+        assert(events.size <= 2)
+        assert(events[0].isEntry)
+        assert(events.size == 1 || !events[1].isEntry)
+        val entryTime = events.first().time / 1000.0
+        val exitTime = if (events.size == 1) envelope.totalTime else events.last().time / 1000.0
+        ZoneOccupation(entryTime, exitTime)
     }
     val zoneMap = arrayListOf<ZoneId>()
     var zoneCount = 0
@@ -188,7 +242,7 @@ private fun spacingRequirements(
         val zoneStates = ArrayList<ZoneStatus>(zoneCount)
         for (i in 0 until zoneCount) zoneStates.add(ZoneStatus.CLEAR)
 
-        var lastConstrainingZone: Int? = null
+        var lastConstrainingZone = -1
         for (i in signalZoneOffset until zoneCount) {
             zoneStates[i] = ZoneStatus.OCCUPIED
             val simulatedSignalStates = simulator.evaluate(
@@ -204,8 +258,11 @@ private fun spacingRequirements(
                 break
             lastConstrainingZone = i
         }
-        if (lastConstrainingZone == null)
+
+        if (lastConstrainingZone == -1) {
+            logger.error { "signal ${rawInfra.getLogicalSignalName(pathSignal.signal)} does not react to zone occupation" }
             continue
+        }
 
         for (zoneIndex in signalZoneOffset .. lastConstrainingZone) {
             val prevRequiredTime = zoneRequirementTimes[zoneIndex]
@@ -224,33 +281,54 @@ private fun spacingRequirements(
                         signals           ┎o         ┎o         ┎o         ┎o         ┎o         ┎o
                           zones   +----------|----------|----------|----------|----------|----------|
                      train path                   =============
+                          phase     headroom    begin      main        end          tailroom
     */
+
+    var phase = SpacingRequirementPhase.HeadRoom
     for (zoneIndex in 0 until zoneCount) {
         val zoneRequirementTime = zoneRequirementTimes[zoneIndex]
         val zone = zoneMap[zoneIndex]
-        val zoneReleaseTime = zoneReleases[zone]
+        val zoneOccupancy = zoneOccupancies[zone]
 
         val explicitRequirement = zoneRequirementTime.isFinite()
-        val occupied = zoneReleaseTime != null
+        val occupied = zoneOccupancy != null
 
-        if (!occupied && !explicitRequirement)
+        phase = phase.react(occupied, explicitRequirement)
+        val correctPhase = phase.check(occupied, explicitRequirement)
+        if (!correctPhase)
+            logger.error { "incorrect phase for zone $zoneIndex" }
+
+        if (phase == SpacingRequirementPhase.HeadRoom || phase == SpacingRequirementPhase.TailRoom)
             continue
 
         var beginTime: Double
         var endTime: Double
 
-        if (occupied && !explicitRequirement) {
-            beginTime = 0.0
-            endTime = zoneReleaseTime!!
-        } else if (occupied/* && explicitRequirement*/) {
-            beginTime = zoneRequirementTime
-            endTime = zoneReleaseTime!!
-        } else /* !occupied && explicitRequirement */ {
-            beginTime = zoneRequirementTime
-            endTime = envelope.totalTime
+        val zoneName = rawInfra.getZoneName(zone)
+
+        when (phase) {
+            SpacingRequirementPhase.Begin -> {
+                beginTime = 0.0
+                endTime = zoneOccupancy!!.exit
+            }
+            SpacingRequirementPhase.Main -> {
+                beginTime = if (zoneRequirementTime.isFinite()) {
+                    zoneRequirementTime
+                } else {
+                    // zones may not be required due to faulty signaling.
+                    // in this case, fall back to the time at which the zone was first occupied
+                    logger.error { "missing main phase zone requirement on zone $zoneName" }
+                    zoneOccupancy!!.entry
+                }
+                endTime = zoneOccupancy!!.exit
+            }
+            else -> /* SpacingRequirementPhase.End */ {
+                assert(zoneRequirementTime.isFinite())
+                beginTime = zoneRequirementTime
+                endTime = envelope.totalTime
+            }
         }
 
-        val zoneName = rawInfra.getZoneName(zone)
         res.add(SpacingRequirement(zoneName, beginTime, endTime))
     }
     return res

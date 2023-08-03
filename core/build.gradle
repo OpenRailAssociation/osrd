@@ -29,6 +29,7 @@ dependencies {
     testImplementation(testFixtures(project(":envelope-sim")))
 
     // kotlin
+    implementation libs.kotlin.logging
     implementation libs.kotlin.stdlib
     implementation libs.kotlinx.coroutines.core
     testImplementation libs.kotlin.test
