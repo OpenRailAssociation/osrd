@@ -200,7 +200,7 @@ private fun getInitPartialBlocks(
     val isBufferStop = rawSignalingInfra.isBufferStop(entryDet.value)
     if (entrySignals == null) {
         if (!isBufferStop)
-            logger.debug { "no signal at non buffer stop" }
+            logger.debug { "no signal at non buffer stop ${rawSignalingInfra.getDetectorName(entryDet.value)}:${entryDet.direction}" }
         initialBlocks.add(
             PartialBlock(
                 true,
@@ -213,7 +213,7 @@ private fun getInitPartialBlocks(
         )
     } else {
         if (isBufferStop)
-            logger.debug { "signal at buffer stop" }
+            logger.debug { "signal at buffer stop ${rawSignalingInfra.getDetectorName(entryDet.value)}:${entryDet.direction}" }
         for (entry in entrySignals.values()) {
             val drivers = loadedSignalInfra.getDrivers(entry.signal)
             if (drivers.size == 0) {
