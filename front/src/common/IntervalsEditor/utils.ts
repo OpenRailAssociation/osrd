@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 import { last } from 'lodash';
 import { LinearMetadataItem } from 'common/IntervalsDataViz/data';
 
@@ -35,6 +34,60 @@ export function createEmptySegmentAt<T>(
           },
           { ...item, begin: distance + 1, end: item.end },
         ];
+      }
+      return [item];
+    })
+    .flat();
+}
+
+/**
+ * Remove item at specified index in the intervals editor and merge it
+ * with empty adjacent segments (if necessary)
+ *
+ * @param linearMetadata The linear metadata we work on, already sorted
+ * @param indexToRemove The index in the linearMetadata of the element to remove
+ * @param emptyValue The value considered as empty
+ * @param defaultUnit The default unit we should set to the removed segment (optional)
+ * @returns An object composed of the new linearMetadata and its new position without the removed element
+ */
+export function removeSegment<T>(
+  linearMetadata: Array<LinearMetadataItem<{ value: number | string } & T>>,
+  indexToRemove: number,
+  emptyValue: unknown,
+  defaultUnit?: string
+): Array<LinearMetadataItem<{ value: number | string } & T>> {
+  // check if the adjacent segments are empty or not
+  let shouldMergeIntoPreviousSegment = false;
+  let shouldMergeIntoTheNextSegment = false;
+  if (indexToRemove > 0 && linearMetadata[indexToRemove - 1].value === emptyValue) {
+    shouldMergeIntoPreviousSegment = true;
+  }
+  if (
+    indexToRemove < linearMetadata.length - 1 &&
+    linearMetadata[indexToRemove + 1].value === emptyValue
+  ) {
+    shouldMergeIntoTheNextSegment = true;
+  }
+
+  return linearMetadata
+    .map((item, index) => {
+      if (index === indexToRemove - 1 && shouldMergeIntoPreviousSegment) {
+        if (shouldMergeIntoTheNextSegment) {
+          // both adjacent segments are empty
+          return [{ ...item, end: linearMetadata[indexToRemove + 1].end }];
+        }
+        // merge the selected segment into the previous segment
+        return [{ ...item, end: linearMetadata[indexToRemove].end }];
+      }
+      if (index === indexToRemove) {
+        if (shouldMergeIntoPreviousSegment || shouldMergeIntoTheNextSegment) return [];
+        // remove the selected segment without merging it into adjacent ones
+        return [{ ...item, value: emptyValue, ...(defaultUnit ? { unit: defaultUnit } : {}) }];
+      }
+      if (index === indexToRemove + 1 && shouldMergeIntoTheNextSegment) {
+        if (shouldMergeIntoPreviousSegment) return [];
+        // merge the selected segment into the next segment
+        return [{ ...item, begin: linearMetadata[indexToRemove].begin }];
       }
       return [item];
     })
