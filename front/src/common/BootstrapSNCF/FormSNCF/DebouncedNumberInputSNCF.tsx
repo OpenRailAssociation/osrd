@@ -5,7 +5,7 @@ import { useDebouncedFunc } from 'utils/helpers';
 type DebouncedNumberInputSNCFProps = {
   input: number;
   label: string;
-  setInput: (number: number) => void;
+  setInput: (inputValue: number) => void;
   debouncedDelay?: number;
   id?: string;
   max?: number;

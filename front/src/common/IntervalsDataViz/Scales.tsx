@@ -3,11 +3,15 @@ import cx from 'classnames';
 
 import { roundNumber, shortNumber } from './utils';
 
-export const ResizingScale: React.FC<{
+export const ResizingScale = ({
+  begin,
+  end,
+  className,
+}: {
   begin: number;
   end: number;
   className?: string;
-}> = ({ begin, end, className }) => {
+}) => {
   const [ticksCount, setTicksCount] = useState<number>(10);
 
   const inf = roundNumber(begin, true);
@@ -49,13 +53,19 @@ export const ResizingScale: React.FC<{
   );
 };
 
-export const SimpleScale: React.FC<{
+export const SimpleScale = ({
+  className,
+  begin,
+  end,
+  min,
+  max,
+}: {
   className?: string;
   begin: number;
   end: number;
   min?: number;
   max?: number;
-}> = ({ className, begin, end, min, max }) => {
+}) => {
   const [inf, setInf] = useState<number>(0);
   const [sup, setSup] = useState<number>(0);
 
