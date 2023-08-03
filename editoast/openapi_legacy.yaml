@@ -1938,29 +1938,6 @@ paths:
       responses:
         204:
           description: No content
-    patch:
-      tags:
-        - train_schedule
-      summary: Update a train_schedule and run a simulation accordingly
-      parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          description: Train schedule ID
-          required: true
-      requestBody:
-        description: Train schedule fields
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                $ref: "#/components/schemas/TrainSchedule"
-        required: true
-      responses:
-        200:
-          description: The train schedule was updated successfully
 
   /train_schedule/{id}/result/:
     get:
@@ -2009,6 +1986,25 @@ paths:
       responses:
         204:
           description: No content
+
+    patch:
+      tags:
+        - train_schedule
+      summary: Update train schedules and run a simulation accordingly
+      requestBody:
+        description: A list of changes. Each changeset contains the corresponding train id
+        content:
+          application/json:
+            schema:
+              type: array
+              minimum: 1
+              items:
+                $ref: "#/components/schemas/TrainSchedulePatch"
+        required: true
+      responses:
+        200:
+          description: The train schedule was updated successfully
+
   /train_schedule/results/:
     get:
       tags:
@@ -2048,10 +2044,18 @@ paths:
         content:
           application/json:
             schema:
-              type: array
-              minItems: 1
-              items:
-                $ref: "#/components/schemas/TrainSchedule"
+              type: object
+              required: [timetable, path, schedules]
+              properties:
+                timetable:
+                  type: integer
+                path:
+                  type: integer
+                schedules:
+                  type: array
+                  minItems: 1
+                  items:
+                    $ref: "#/components/schemas/TrainScheduleBatchItem"
         required: true
       responses:
         201:
@@ -3768,6 +3772,116 @@ components:
               items:
                 $ref: "#/components/schemas/Point3D"
 
+    TrainSchedulePatch:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: integer
+        train_name:
+          type: string
+        rolling_stock_id:
+          type: integer
+        departure_time:
+          type: number
+          format: float
+        path_id:
+          type: integer
+        initial_speed:
+          type: number
+          format: float
+        labels:
+          type: array
+          items:
+            type: string
+        scheduled_points:
+          type: array
+          items:
+            type: object
+            required: [path_offset, time]
+            properties:
+              path_offset:
+                type: number
+                format: float
+                description: Offset in meters from the start of the path at which the train must be.
+              time:
+                type: number
+                format: float
+                description: Time in seconds (elapsed since the train's departure) at which the train must be.
+        allowances:
+          type: array
+          items:
+            $ref: "#/components/schemas/Allowance"
+        speed_limit_tags:
+          description: Train category for speed limits
+          type: string
+        comfort:
+          $ref: "#/components/schemas/Comfort"
+        options:
+          allOf:
+            - $ref: "#/components/schemas/TrainScheduleOptions"
+          nullable: true
+        power_restriction_ranges:
+          description: A list of ranges along the train path where power restrictions apply.
+          type: array
+          items:
+            $ref: "#/components/schemas/PowerRestrictionRange"
+          nullable: true
+    TrainScheduleBatchItem:
+      type: object
+      required: [train_name, departure_time, initial_speed, rolling_stock]
+      properties:
+        train_name:
+          type: string
+        labels:
+          type: array
+          default: []
+          items:
+            type: string
+        departure_time:
+          type: number
+          format: float
+        initial_speed:
+          type: number
+          format: float
+        allowances:
+          default: []
+          type: array
+          items:
+            $ref: "#/components/schemas/Allowance"
+        scheduled_points:
+          default: []
+          type: array
+          items:
+            type: object
+            required: [path_offset, time]
+            properties:
+              path_offset:
+                type: number
+                format: float
+                description: Offset in meters from the start of the path at which the train must be.
+              time:
+                type: number
+                format: float
+                description: Time in seconds (elapsed since the train's departure) at which the train must be.
+        comfort:
+          $ref: "#/components/schemas/Comfort"
+        speed_limit_tags:
+          description: Train category for speed limits
+          type: string
+          nullable: true
+        power_restriction_ranges:
+          description: A list of ranges along the train path where power restrictions apply.
+          type: array
+          items:
+            $ref: "#/components/schemas/PowerRestrictionRange"
+          nullable: true
+        options:
+          allOf:
+            - $ref: "#/components/schemas/TrainScheduleOptions"
+          nullable: true
+        rolling_stock:
+          type: integer
     TrainSchedule:
       type: object
       properties:
@@ -4003,6 +4117,7 @@ components:
         capacity_speed_limit:
           type: number
           format: double
+          default: -1
       required: [allowance_type, default_value, ranges, distribution]
 
     EngineeringAllowance:
@@ -4018,6 +4133,7 @@ components:
             capacity_speed_limit:
               type: number
               format: double
+              default: -1
           required: [allowance_type, distribution]
         - $ref: "#/components/schemas/RangeAllowance"
 

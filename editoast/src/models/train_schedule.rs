@@ -38,7 +38,7 @@ pub struct TrainSchedule {
     #[diesel(deserialize_as = i64)]
     pub id: Option<i64>,
     pub train_name: String,
-    pub labels: JsonValue,
+    pub labels: DieselJson<Vec<String>>,
     pub departure_time: f64,
     pub initial_speed: f64,
     #[derivative(Default(value = "DieselJson(Default::default())"))]
@@ -67,7 +67,7 @@ impl Identifiable for TrainSchedule {
     }
 }
 
-#[derive(Clone, Debug, Deserialize, Queryable, Insertable, AsChangeset, Model)]
+#[derive(Clone, Default, Debug, Deserialize, Queryable, Insertable, AsChangeset, Model)]
 #[model(table = "osrd_infra_trainschedule")]
 #[model(update)]
 #[diesel(belongs_to(Timetable))]
@@ -77,8 +77,8 @@ pub struct TrainScheduleChangeset {
     pub id: Option<i64>,
     #[diesel(deserialize_as = String)]
     pub train_name: Option<String>,
-    #[diesel(deserialize_as = JsonValue)]
-    pub labels: Option<JsonValue>,
+    #[diesel(deserialize_as = DieselJson<Vec<String>>)]
+    pub labels: Option<DieselJson<Vec<String>>>,
     #[diesel(deserialize_as = f64)]
     pub departure_time: Option<f64>,
     #[diesel(deserialize_as = f64)]
@@ -369,8 +369,12 @@ pub struct RangeAllowance {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 
 pub struct EngineeringAllowance {
+    begin_position: f64,
+    end_position: f64,
+    value: AllowanceValue,
     distribution: AllowanceDistribution,
-    capacity_speed_limit: Option<f64>,
+    #[serde(default = "default_capacity_speed_limit")]
+    capacity_speed_limit: f64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -378,7 +382,12 @@ pub struct StandardAllowance {
     default_value: AllowanceValue,
     ranges: Vec<RangeAllowance>,
     distribution: AllowanceDistribution,
-    capacity_speed_limit: Option<f64>,
+    #[serde(default = "default_capacity_speed_limit")]
+    capacity_speed_limit: f64,
+}
+
+fn default_capacity_speed_limit() -> f64 {
+    -1.0
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
