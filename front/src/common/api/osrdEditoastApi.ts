@@ -560,6 +560,10 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/train_schedule/`, method: 'DELETE', body: queryArg.body }),
         invalidatesTags: ['train_schedule'],
       }),
+      patchTrainSchedule: build.mutation<PatchTrainScheduleApiResponse, PatchTrainScheduleApiArg>({
+        query: (queryArg) => ({ url: `/train_schedule/`, method: 'PATCH', body: queryArg.body }),
+        invalidatesTags: ['train_schedule'],
+      }),
       getTrainScheduleResults: build.query<
         GetTrainScheduleResultsApiResponse,
         GetTrainScheduleResultsApiArg
@@ -594,17 +598,6 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({ url: `/train_schedule/${queryArg.id}/` }),
         providesTags: ['train_schedule'],
-      }),
-      patchTrainScheduleById: build.mutation<
-        PatchTrainScheduleByIdApiResponse,
-        PatchTrainScheduleByIdApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/train_schedule/${queryArg.id}/`,
-          method: 'PATCH',
-          body: queryArg.body,
-        }),
-        invalidatesTags: ['train_schedule'],
       }),
       getTrainScheduleByIdResult: build.query<
         GetTrainScheduleByIdResultApiResponse,
@@ -1204,6 +1197,11 @@ export type DeleteTrainScheduleApiArg = {
     ids: number[];
   };
 };
+export type PatchTrainScheduleApiResponse = unknown;
+export type PatchTrainScheduleApiArg = {
+  /** A list of changes. Each changeset contains the corresponding train id */
+  body: TrainSchedulePatch[];
+};
 export type GetTrainScheduleResultsApiResponse =
   /** status 200 The train schedules results */ SimulationReport[];
 export type GetTrainScheduleResultsApiArg = {
@@ -1216,7 +1214,11 @@ export type PostTrainScheduleStandaloneSimulationApiResponse =
   /** status 201 The ids of the train_schedules created */ number[];
 export type PostTrainScheduleStandaloneSimulationApiArg = {
   /** The list of train schedules to simulate */
-  body: TrainSchedule[];
+  body: {
+    path: number;
+    schedules: TrainScheduleBatchItem[];
+    timetable: number;
+  };
 };
 export type DeleteTrainScheduleByIdApiResponse = unknown;
 export type DeleteTrainScheduleByIdApiArg = {
@@ -1228,13 +1230,6 @@ export type GetTrainScheduleByIdApiResponse =
 export type GetTrainScheduleByIdApiArg = {
   /** Train schedule ID */
   id: number;
-};
-export type PatchTrainScheduleByIdApiResponse = unknown;
-export type PatchTrainScheduleByIdApiArg = {
-  /** Train schedule ID */
-  id: number;
-  /** Train schedule fields */
-  body: TrainSchedule[];
 };
 export type GetTrainScheduleByIdResultApiResponse =
   /** status 200 The train schedule result */ SimulationReport;
@@ -2028,6 +2023,24 @@ export type TimetableWithSchedulesDetails = {
   name: string;
   train_schedule_summaries: TrainScheduleSummary[];
 };
+export type TrainSchedulePatch = {
+  allowances?: Allowance[];
+  comfort?: Comfort;
+  departure_time?: number;
+  id: number;
+  initial_speed?: number;
+  labels?: string[];
+  options?: TrainScheduleOptions | null;
+  path_id?: number;
+  power_restriction_ranges?: PowerRestrictionRange[] | null;
+  rolling_stock_id?: number;
+  scheduled_points?: {
+    path_offset: number;
+    time: number;
+  }[];
+  speed_limit_tags?: string;
+  train_name?: string;
+};
 export type SpaceTimePosition = {
   position: number;
   time: number;
@@ -2096,6 +2109,22 @@ export type SimulationReport = {
     position: number;
     speed: number;
   }[];
+};
+export type TrainScheduleBatchItem = {
+  allowances?: Allowance[];
+  comfort?: Comfort;
+  departure_time: number;
+  initial_speed: number;
+  labels?: string[];
+  options?: TrainScheduleOptions | null;
+  power_restriction_ranges?: PowerRestrictionRange[] | null;
+  rolling_stock: number;
+  scheduled_points?: {
+    path_offset: number;
+    time: number;
+  }[];
+  speed_limit_tags?: string | null;
+  train_name: string;
 };
 export type TrainSchedule = {
   allowances?: Allowance[];

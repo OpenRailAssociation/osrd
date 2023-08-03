@@ -5,7 +5,7 @@ use crate::error::{InternalError, Result};
 use crate::models::train_schedule::{Allowance, ScheduledPoint};
 use crate::models::{
     Create, Delete, Infra, LightRollingStockModel, Pathfinding, Retrieve, RollingStockModel,
-    Scenario, SimulationOutput, SimulationOutputChangeset, TrainScheduleChangeset, Update,
+    Scenario, SimulationOutputChangeset, TrainScheduleChangeset, Update,
 };
 use crate::models::{Timetable, TrainSchedule};
 
@@ -14,7 +14,7 @@ use crate::DieselJson;
 
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
-use actix_web::web::{self, scope, Data, Json, Path, Query};
+use actix_web::web::{self, block, scope, Data, Json, Path, Query};
 use actix_web::{delete, get, patch, post, HttpResponse};
 use diesel::Connection;
 use editoast_derive::EditoastError;
@@ -51,9 +51,6 @@ pub enum TrainScheduleError {
     #[error("Path '{path_id}', could not be found")]
     #[editoast_error(status = 400)]
     PathNotFound { path_id: i64 },
-    #[error("Train Schedule must have an id for PATCH")]
-    #[editoast_error(status = 400)]
-    NoPatchId,
     #[error("Train Schedule '{train_schedule_id}' is not simulated")]
     #[editoast_error(status = 500)]
     UnsimulatedTrainSchedule { train_schedule_id: i64 },
@@ -73,8 +70,13 @@ pub enum TrainScheduleError {
 
 pub fn routes() -> impl HttpServiceFactory {
     web::scope("/train_schedule")
-        .service((get_results, standalone_simulation, delete_multiple))
-        .service(scope("/{id}").service((delete, patch, get_result, get)))
+        .service((
+            get_results,
+            standalone_simulation,
+            delete_multiple,
+            patch_multiple,
+        ))
+        .service(scope("/{id}").service((delete, get_result, get)))
 }
 
 /// Return a specific timetable with its associated schedules
@@ -120,82 +122,136 @@ pub async fn delete_multiple(
     Ok(HttpResponse::NoContent().finish())
 }
 
+#[derive(Debug, Default, Clone, Deserialize)]
+struct TrainSchedulePatch {
+    id: i64,
+    pub train_name: Option<String>,
+    pub labels: Option<Vec<String>>,
+    pub departure_time: Option<f64>,
+    pub initial_speed: Option<f64>,
+    pub allowances: Option<Vec<Allowance>>,
+    pub scheduled_points: Option<Vec<ScheduledPoint>>,
+    pub comfort: Option<String>,
+    pub speed_limit_tags: Option<String>,
+    pub power_restriction_ranges: Option<JsonValue>,
+    pub options: Option<JsonValue>,
+    pub path_id: Option<i64>,
+    pub rolling_stock_id: Option<i64>,
+}
+
+impl From<TrainSchedulePatch> for TrainScheduleChangeset {
+    fn from(value: TrainSchedulePatch) -> Self {
+        Self {
+            id: Some(value.id),
+            train_name: value.train_name,
+            labels: value.labels.map(DieselJson),
+            departure_time: value.departure_time,
+            initial_speed: value.initial_speed,
+            allowances: value.allowances.map(DieselJson),
+            scheduled_points: value.scheduled_points.map(DieselJson),
+            comfort: value.comfort,
+            speed_limit_tags: Some(value.speed_limit_tags),
+            power_restriction_ranges: Some(value.power_restriction_ranges),
+            options: Some(value.options),
+            path_id: value.path_id,
+            rolling_stock_id: value.rolling_stock_id,
+            ..Default::default()
+        }
+    }
+}
+
 /// Patch a timetable
 #[patch("")]
-async fn patch(
+async fn patch_multiple(
     db_pool: Data<DbPool>,
-    train_schedules_changesets: Json<Vec<TrainScheduleChangeset>>,
+    train_schedules_changesets: Json<Vec<TrainSchedulePatch>>,
     core: Data<CoreClient>,
 ) -> Result<HttpResponse> {
     let train_schedules_changesets = train_schedules_changesets.into_inner();
     if train_schedules_changesets.is_empty() {
         return Err(TrainScheduleError::NoTrainSchedules.into());
     }
-    let mut conn = db_pool.get()?;
-    conn.transaction::<_, InternalError, _>(|conn| {
-        let mut train_schedules = Vec::new();
-        for changeset in train_schedules_changesets {
-            let id = changeset.id.ok_or(TrainScheduleError::NoPatchId)?;
-            let train_schedule: TrainSchedule = match changeset.update_conn(conn, id)? {
-                Some(ts) => ts,
-                None => {
-                    return Err(TrainScheduleError::NotFound {
-                        train_schedule_id: id,
+    block(move || {
+        let mut conn = db_pool.get()?;
+        conn.transaction::<_, InternalError, _>(|conn| {
+            let mut train_schedules = Vec::new();
+            for train_patch in train_schedules_changesets {
+                let id = train_patch.id;
+                let changeset = TrainScheduleChangeset::from(train_patch);
+                let train_schedule: TrainSchedule = match changeset.update_conn(conn, id)? {
+                    Some(ts) => ts,
+                    None => {
+                        return Err(TrainScheduleError::NotFound {
+                            train_schedule_id: id,
+                        }
+                        .into())
                     }
-                    .into())
                 }
+                .into();
+
+                train_schedules.push(train_schedule);
             }
-            .into();
 
             // Delete the associated simulation output
             {
                 use crate::tables::osrd_infra_simulationoutput::dsl::*;
                 use diesel::prelude::*;
-                match osrd_infra_simulationoutput
-                    .filter(train_schedule_id.eq(train_schedule.id.unwrap()))
-                    .get_result::<SimulationOutput>(conn)
-                {
-                    Ok(simulation_output) => {
-                        SimulationOutput::delete_conn(conn, simulation_output.id)?;
-                    }
-                    Err(diesel::result::Error::NotFound) => {}
-                    Err(err) => return Err(err.into()),
-                }
+                let train_schedule_ids = train_schedules
+                    .iter()
+                    .map(|ts| ts.id.unwrap())
+                    .collect::<Vec<_>>();
+                diesel::delete(
+                    osrd_infra_simulationoutput
+                        .filter(train_schedule_id.eq_any(train_schedule_ids)),
+                )
+                .execute(conn)?;
             }
 
-            train_schedules.push(train_schedule);
-        }
+            // Resimulate the trains
+            let id_timetable = train_schedules[0].timetable_id;
+            if train_schedules
+                .iter()
+                .any(|ts| ts.timetable_id != id_timetable)
+            {
+                return Err(TrainScheduleError::BatchShouldHaveSameTimetable.into());
+            }
 
-        // Resimulate the trains
-        let id_timetable = train_schedules[0].timetable_id;
-        if train_schedules
-            .iter()
-            .any(|ts| ts.timetable_id != id_timetable)
-        {
-            return Err(TrainScheduleError::BatchShouldHaveSameTimetable.into());
-        }
+            let timetable = Timetable::retrieve_conn(conn, id_timetable)?.ok_or(
+                TrainScheduleError::TimetableNotFound {
+                    timetable_id: id_timetable,
+                },
+            )?;
 
-        let timetable = Timetable::retrieve_conn(conn, id_timetable)?.ok_or(
-            TrainScheduleError::TimetableNotFound {
-                timetable_id: id_timetable,
-            },
-        )?;
+            let scenario = scenario_from_timetable(&timetable, db_pool.clone())?;
 
-        let scenario = scenario_from_timetable(&timetable, db_pool.clone())?;
+            // Batch by path
+            let mut path_to_train_schedules: HashMap<_, Vec<_>> = HashMap::new();
+            for train_schedule in train_schedules {
+                let path_id = train_schedule.path_id;
+                let train_schedules = path_to_train_schedules.entry(path_id).or_default();
+                train_schedules.push(train_schedule);
+            }
 
-        let request_payload = executor::block_on(create_backend_request_payload(
-            &train_schedules,
-            &scenario,
-            db_pool.clone(),
-        ))?;
-        let response_payload = executor::block_on(request_payload.fetch(core.as_ref()))?;
-        let simulation_outputs = process_simulation_response(response_payload)?;
+            for train_schedules in path_to_train_schedules.values() {
+                let request_payload = executor::block_on(create_backend_request_payload(
+                    train_schedules,
+                    &scenario,
+                    db_pool.clone(),
+                ))?;
+                let response_payload = executor::block_on(request_payload.fetch(core.as_ref()))?;
+                let simulation_outputs = process_simulation_response(response_payload)?;
 
-        for simulation_output in simulation_outputs {
-            simulation_output.create_conn(conn)?;
-        }
-        Ok(())
-    })?;
+                for (i, mut simulation_output) in simulation_outputs.into_iter().enumerate() {
+                    let train_schedule_id = train_schedules[i].id.unwrap();
+                    simulation_output.train_schedule_id = Some(Some(train_schedule_id));
+                    simulation_output.create_conn(conn)?;
+                }
+            }
+            Ok(())
+        })
+    })
+    .await
+    .unwrap()?;
     Ok(HttpResponse::NoContent().finish())
 }
 
@@ -331,18 +387,25 @@ struct TrainScheduleBatch {
 #[derive(Debug, Deserialize)]
 struct TrainScheduleBatchItem {
     pub train_name: String,
-    pub labels: JsonValue,
+    #[serde(default)]
+    pub labels: Vec<String>,
     pub departure_time: f64,
     pub initial_speed: f64,
+    #[serde(default)]
     pub allowances: Vec<Allowance>,
+    #[serde(default)]
     pub scheduled_points: Vec<ScheduledPoint>,
     pub comfort: Option<String>,
     pub speed_limit_tags: Option<String>,
     pub power_restriction_ranges: Option<JsonValue>,
     pub options: Option<JsonValue>,
-    pub rolling_stock_id: i64,
-    pub infra_version: Option<String>,
-    pub rollingstock_version: Option<i64>,
+    pub rolling_stock: i64,
+    /// Filled  later by the endpoint
+    #[serde(skip)]
+    pub infra_version: String,
+    /// Filled  later by the endpoint
+    #[serde(skip)]
+    pub rollingstock_version: i64,
 }
 
 impl From<TrainScheduleBatch> for Vec<TrainSchedule> {
@@ -354,7 +417,7 @@ impl From<TrainScheduleBatch> for Vec<TrainSchedule> {
                 timetable_id: batch.timetable,
                 path_id: batch.path,
                 train_name: item.train_name,
-                labels: item.labels,
+                labels: DieselJson(item.labels),
                 departure_time: item.departure_time,
                 initial_speed: item.initial_speed,
                 allowances: DieselJson(item.allowances),
@@ -363,9 +426,9 @@ impl From<TrainScheduleBatch> for Vec<TrainSchedule> {
                 speed_limit_tags: item.speed_limit_tags,
                 power_restriction_ranges: item.power_restriction_ranges,
                 options: item.options,
-                rolling_stock_id: item.rolling_stock_id,
-                infra_version: item.infra_version,
-                rollingstock_version: item.rollingstock_version,
+                rolling_stock_id: item.rolling_stock,
+                infra_version: Some(item.infra_version),
+                rollingstock_version: Some(item.rollingstock_version),
             });
         }
         res

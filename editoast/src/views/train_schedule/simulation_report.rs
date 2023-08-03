@@ -25,7 +25,7 @@ use diesel::prelude::*;
 pub struct SimulationReport {
     // TODO: check if there is better way to do that than using Option
     id: Option<i64>,
-    labels: JsonValue,
+    labels: Vec<String>,
     path: i64,
     name: String,
     vmax: JsonValue,
@@ -111,12 +111,12 @@ pub async fn create_simulation_report(
 
     Ok(SimulationReport {
         id: train_schedule.id,
-        labels: train_schedule.labels,
+        labels: train_schedule.labels.0,
         path: train_schedule.path_id,
         name: train_schedule.train_name,
         vmax: simulation_output_cs.mrsp.unwrap(),
-        slopes: (*train_path.slopes).clone(), // diesel_json does not support into inner
-        curves: (*train_path.curves).clone(),
+        slopes: train_path.slopes.0, // diesel_json does not support into inner
+        curves: train_path.curves.0,
         base,
         eco,
         speed_limit_tags: train_schedule.speed_limit_tags,

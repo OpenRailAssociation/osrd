@@ -113,7 +113,7 @@
     },
     "simulation": {
         "id": null,
-        "labels": null,
+        "labels": [],
         "path": 156,
         "name": "",
         "vmax": [

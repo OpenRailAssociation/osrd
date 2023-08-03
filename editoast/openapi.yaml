@@ -326,6 +326,7 @@ components:
             - engineering
             type: string
           capacity_speed_limit:
+            default: -1
             format: double
             type: number
           distribution:
@@ -2015,6 +2016,7 @@ components:
           - standard
           type: string
         capacity_speed_limit:
+          default: -1
           format: double
           type: number
         default_value:
@@ -2274,12 +2276,131 @@ components:
         train_name:
           type: string
       type: object
+    TrainScheduleBatchItem:
+      properties:
+        allowances:
+          default: []
+          items:
+            $ref: '#/components/schemas/Allowance'
+          type: array
+        comfort:
+          $ref: '#/components/schemas/Comfort'
+        departure_time:
+          format: float
+          type: number
+        initial_speed:
+          format: float
+          type: number
+        labels:
+          default: []
+          items:
+            type: string
+          type: array
+        options:
+          allOf:
+          - $ref: '#/components/schemas/TrainScheduleOptions'
+          nullable: true
+        power_restriction_ranges:
+          description: A list of ranges along the train path where power restrictions apply.
+          items:
+            $ref: '#/components/schemas/PowerRestrictionRange'
+          nullable: true
+          type: array
+        rolling_stock:
+          type: integer
+        scheduled_points:
+          default: []
+          items:
+            properties:
+              path_offset:
+                description: Offset in meters from the start of the path at which the train must be.
+                format: float
+                type: number
+              time:
+                description: Time in seconds (elapsed since the train's departure) at which the train must be.
+                format: float
+                type: number
+            required:
+            - path_offset
+            - time
+            type: object
+          type: array
+        speed_limit_tags:
+          description: Train category for speed limits
+          nullable: true
+          type: string
+        train_name:
+          type: string
+      required:
+      - train_name
+      - departure_time
+      - initial_speed
+      - rolling_stock
+      type: object
     TrainScheduleOptions:
       description: Options for the standalone simulation
       properties:
         ignore_electrical_profiles:
           nullable: true
           type: boolean
+      type: object
+    TrainSchedulePatch:
+      properties:
+        allowances:
+          items:
+            $ref: '#/components/schemas/Allowance'
+          type: array
+        comfort:
+          $ref: '#/components/schemas/Comfort'
+        departure_time:
+          format: float
+          type: number
+        id:
+          type: integer
+        initial_speed:
+          format: float
+          type: number
+        labels:
+          items:
+            type: string
+          type: array
+        options:
+          allOf:
+          - $ref: '#/components/schemas/TrainScheduleOptions'
+          nullable: true
+        path_id:
+          type: integer
+        power_restriction_ranges:
+          description: A list of ranges along the train path where power restrictions apply.
+          items:
+            $ref: '#/components/schemas/PowerRestrictionRange'
+          nullable: true
+          type: array
+        rolling_stock_id:
+          type: integer
+        scheduled_points:
+          items:
+            properties:
+              path_offset:
+                description: Offset in meters from the start of the path at which the train must be.
+                format: float
+                type: number
+              time:
+                description: Time in seconds (elapsed since the train's departure) at which the train must be.
+                format: float
+                type: number
+            required:
+            - path_offset
+            - time
+            type: object
+          type: array
+        speed_limit_tags:
+          description: Train category for speed limits
+          type: string
+        train_name:
+          type: string
+      required:
+      - id
       type: object
     TrainScheduleResult:
       properties:
@@ -4562,6 +4683,23 @@ paths:
       summary: Delete multiple train schedule
       tags:
       - train_schedule
+    patch:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                $ref: '#/components/schemas/TrainSchedulePatch'
+              minimum: 1
+              type: array
+        description: A list of changes. Each changeset contains the corresponding train id
+        required: true
+      responses:
+        '200':
+          description: The train schedule was updated successfully
+      summary: Update train schedules and run a simulation accordingly
+      tags:
+      - train_schedule
   /train_schedule/results/:
     get:
       parameters:
@@ -4596,10 +4734,21 @@ paths:
         content:
           application/json:
             schema:
-              items:
-                $ref: '#/components/schemas/TrainSchedule'
-              minItems: 1
-              type: array
+              properties:
+                path:
+                  type: integer
+                schedules:
+                  items:
+                    $ref: '#/components/schemas/TrainScheduleBatchItem'
+                  minItems: 1
+                  type: array
+                timetable:
+                  type: integer
+              required:
+              - timetable
+              - path
+              - schedules
+              type: object
         description: The list of train schedules to simulate
         required: true
       responses:
@@ -4647,29 +4796,6 @@ paths:
                 $ref: '#/components/schemas/TrainSchedule'
           description: The train schedule info
       summary: Retrieve a train schedule
-      tags:
-      - train_schedule
-    patch:
-      parameters:
-      - description: Train schedule ID
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
-      requestBody:
-        content:
-          application/json:
-            schema:
-              items:
-                $ref: '#/components/schemas/TrainSchedule'
-              type: array
-        description: Train schedule fields
-        required: true
-      responses:
-        '200':
-          description: The train schedule was updated successfully
-      summary: Update a train_schedule and run a simulation accordingly
       tags:
       - train_schedule
   /train_schedule/{id}/result/:
