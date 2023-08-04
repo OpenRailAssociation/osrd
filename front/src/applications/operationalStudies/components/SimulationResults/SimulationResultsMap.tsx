@@ -13,7 +13,7 @@ import lineSlice from '@turf/line-slice';
 import { last } from 'lodash';
 
 import { updateTimePositionValues } from 'reducers/osrdsimulation/actions';
-import { getSelectedTrain } from 'reducers/osrdsimulation/selectors';
+import { getPresentSimulation, getSelectedTrain } from 'reducers/osrdsimulation/selectors';
 import {
   AllowancesSettings,
   PositionValues,
@@ -66,7 +66,7 @@ import IGN_BD_ORTHO from 'common/Map/Layers/IGN_BD_ORTHO';
 import IGN_SCAN25 from 'common/Map/Layers/IGN_SCAN25';
 import IGN_CADASTRE from 'common/Map/Layers/IGN_CADASTRE';
 import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { SimulationReport, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import Terrain from 'common/Map/Layers/Terrain';
 import { getTerrain3DExaggeration } from 'reducers/map/selectors';
 
@@ -104,13 +104,15 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
   const { isPlaying, positionValues, timePosition, allowancesSettings } = useSelector(
     (state: RootState) => state.osrdsimulation
   );
-  const simulation = useSelector((state: RootState) => state.osrdsimulation.simulation.present);
+  const simulation = useSelector(getPresentSimulation);
   const selectedTrain = useSelector(getSelectedTrain);
   const terrain3DExaggeration = useSelector(getTerrain3DExaggeration);
   const [geojsonPath, setGeojsonPath] = useState<Feature<LineString>>();
   const [selectedTrainHoverPosition, setTrainHoverPosition] = useState<TrainPosition>();
   const [otherTrainsHoverPosition, setOtherTrainsHoverPosition] = useState<TrainPosition[]>([]);
-  const [simulationSelectedTrain, setSimulationSelectedTrain] = useState<Train>();
+  const [simulationSelectedTrain, setSimulationSelectedTrain] = useState<
+    SimulationReport | Train
+  >();
   const [idHover, setIdHover] = useState<string | undefined>(undefined);
   const { urlLat = '', urlLon = '', urlZoom = '', urlBearing = '', urlPitch = '' } = useParams();
   const [getPath] = osrdEditoastApi.useLazyGetPathfindingByIdQuery();
@@ -149,7 +151,7 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
         const trainTime = trainRegime.head_positions[0][0].time;
         const train2ndTime = last(last(trainRegime.head_positions))?.time as number;
         if (
-          actualTime >= trainTime &&
+          actualTime >= (trainTime as number) &&
           actualTime <= train2ndTime &&
           train.id !== selectedTrain?.id
         ) {
@@ -359,7 +361,10 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
   useEffect(() => {
     displayPath();
     if (selectedTrain) {
-      const foundTrain = simulation.trains.find((train) => train.id === selectedTrain?.id);
+      // TODO: delete this cast when we have chosen the appropriate type for the simulation
+      const foundTrain = (simulation.trains as SimulationReport[]).find(
+        (train) => train.id === selectedTrain?.id
+      );
       setSimulationSelectedTrain(foundTrain);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

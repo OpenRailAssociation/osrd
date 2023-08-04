@@ -4,6 +4,7 @@ import { SIGNAL_BASE_DEFAULT } from 'applications/operationalStudies/components/
 import {
   ElectrificationRange,
   PowerRestrictionRangeItem,
+  SimulationReport,
   TrainScheduleSummary,
 } from 'common/api/osrdEditoastApi';
 
@@ -149,7 +150,7 @@ export interface Train {
 }
 
 export interface SimulationSnapshot {
-  trains: Train[];
+  trains: Train[] | SimulationReport[];
 }
 
 export type SimulationHistory = SimulationSnapshot[];

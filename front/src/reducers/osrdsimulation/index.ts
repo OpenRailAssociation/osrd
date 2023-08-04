@@ -18,7 +18,8 @@ import {
   SimulationTrain,
 } from 'reducers/osrdsimulation/types';
 import { time2sec } from 'utils/timeManipulation';
-import undoableSimulation, { REDO_SIMULATION, UNDO_SIMULATION } from './simulation';
+import { SimulationReport } from 'common/api/osrdEditoastApi';
+import undoableSimulation from './simulation';
 
 import {
   UPDATE_CHART,
@@ -39,6 +40,8 @@ import {
   UPDATE_DEPARTURE_ARRIVAL_TIMES,
   UPDATE_CONSOLIDATED_SIMULATION,
   UPDATE_TIME_POSITION_VALUES,
+  REDO_SIMULATION,
+  UNDO_SIMULATION,
 } from './actions';
 
 // Reducer
@@ -160,8 +163,10 @@ export default function reducer(inputState: OsrdSimulationState | undefined, act
         );
         draft.displaySimulation =
           draft.simulation.present?.trains.length > 0 &&
-          draft.simulation.present.trains.find((train) => train.id === state.selectedTrainId) !==
-            undefined;
+          // TODO: delete this cast when we have chosen the appropriate type for the simulation
+          (draft.simulation.present.trains as SimulationReport[]).find(
+            (train) => train.id === state.selectedTrainId
+          ) !== undefined;
 
         break;
       case UPDATE_SPEEDSPACE_SETTINGS:
