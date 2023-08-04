@@ -7,10 +7,11 @@ import projectIcon from 'assets/pictures/views/projects.svg';
 import studyIcon from 'assets/pictures/views/study.svg';
 import { useTranslation } from 'react-i18next';
 import { MdTrain } from 'react-icons/md';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { updateInfraID, updateTimetableID } from 'reducers/osrdconf';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { TrainScheduleSummary, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { getDocument } from 'common/api/documentApi';
+import { getTimetableID } from 'reducers/osrdconf/selectors';
 import ScenarioExplorerModal from './ScenarioExplorerModal';
 import { ScenarioExplorerProps } from './ScenarioExplorerTypes';
 
@@ -22,6 +23,7 @@ export default function ScenarioExplorer({
   const { t } = useTranslation('common/scenarioExplorer');
   const dispatch = useDispatch();
   const { openModal } = useModal();
+  const timetableID = useSelector(getTimetableID);
   const [imageUrl, setImageUrl] = useState<string>();
 
   const { data: projectDetails } = osrdEditoastApi.useGetProjectsByProjectIdQuery(
@@ -44,6 +46,11 @@ export default function ScenarioExplorer({
       { skip: !globalProjectId && !globalStudyId && !globalScenarioId }
     );
 
+  const { data: timetable } = osrdEditoastApi.useGetTimetableByIdQuery(
+    { id: timetableID as number },
+    { skip: !timetableID }
+  );
+
   const getProjectImage = async (imageId: number) => {
     try {
       const blobImage = await getDocument(imageId);
@@ -51,6 +58,13 @@ export default function ScenarioExplorer({
     } catch (error) {
       console.error(error);
     }
+  };
+
+  const validTrainCount = (trains: TrainScheduleSummary[]): number => {
+    const validTrains = trains.filter(
+      (train) => train.invalid_reasons && train.invalid_reasons.length === 0
+    );
+    return validTrains.length;
   };
 
   useEffect(() => {
@@ -115,10 +129,12 @@ export default function ScenarioExplorer({
               <span className="scenario-explorator-card-head-legend">{t('scenarioLegend')}</span>
               <div className="scenario-explorator-card-head-scenario">
                 {scenarioDetails.name}
-                <span className="scenario-explorator-card-head-scenario-traincount">
-                  {scenarioDetails.trains_count}
-                  <MdTrain />
-                </span>
+                {timetable && (
+                  <span className="scenario-explorator-card-head-scenario-traincount">
+                    {validTrainCount(timetable.train_schedule_summaries)}
+                    <MdTrain />
+                  </span>
+                )}
               </div>
             </div>
             <div className="scenario-explorator-card-head-content-item">
