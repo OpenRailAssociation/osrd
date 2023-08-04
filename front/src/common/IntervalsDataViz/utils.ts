@@ -18,10 +18,10 @@ export function castToNumber(value: unknown): number | null | undefined {
 }
 
 /**
- * Given a number, shorten it in string.
+ * Given a number, round it (or not) and shorten it in string.
  * Example 1234 -> 1.2K
  */
-export function shortNumber(value: unknown): string {
+export function shortNumber(value: unknown, rounded = false): string {
   let num = castToNumber(value);
   if (isNil(num)) return '';
 
@@ -42,6 +42,10 @@ export function shortNumber(value: unknown): string {
 
   const exponent = size % 3 === 0 ? size - 3 : size - (size % 3);
   let shortNumberValue = `${Math.round(10 * (num / 10 ** exponent)) / 10}`;
+
+  if (rounded) {
+    shortNumberValue = Math.ceil(Number(shortNumberValue)).toString();
+  }
 
   // eslint-disable-next-line no-restricted-syntax
   for (const suffix in suffixes) {

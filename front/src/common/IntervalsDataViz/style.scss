@@ -79,8 +79,6 @@ $resize-width: 3px;
         }
       }
 
-
-
       .tools {
         display: flex;
         flex-direction: column;
@@ -168,7 +166,7 @@ $resize-width: 3px;
             }
 
             &.with-data {
-                z-index: 2;
+              z-index: 2;
             }
 
             &.highlighted {
@@ -185,17 +183,16 @@ $resize-width: 3px;
               background-color: $color;
               text-align: center;
               white-space: nowrap;
-              overflow-y:hidden;
+              overflow-y: hidden;
               span {
-                color:#fff;
+                color: #fff;
                 display: block;
                 font-size: 0.6em;
                 // trick to hide the value if the div is too small
                 // https://medium.com/swlh/hiding-an-element-when-there-is-no-enough-space-thanos-snap-technique-8a11e31267c0
-                max-height: max(0px, calc((100% - 12px)*999));
+                max-height: max(0px, calc((100% - 12px) * 999));
                 overflow: hidden;
               }
-
             }
 
             div.resize {
@@ -224,7 +221,7 @@ $resize-width: 3px;
         .scale {
           display: flex;
           justify-content: space-between;
-          span{
+          span {
             font-size: 0.6em;
             overflow: hidden;
             align-self: end;
@@ -235,46 +232,56 @@ $resize-width: 3px;
 
             .axis-values {
               display: flex;
-              justify-content: space-between;
+              // justify-content: flex-end;
               align-items: center;
               width: 100%;
               div {
                 position: relative;
                 top: 0;
-                width: 100%;
-                text-align: center;
+                // width: 100%;
+                text-align: end;
+
+                &:last-child {
+                  flex-grow: 1;
+                }
 
                 span.bottom-axis-value {
                   position: absolute;
                   font-weight: bold;
-                  top: .7em;
-                  left:0%;
-                  transform: translateX(-45%);
-                  width:100%;
+                  top: 0.7em;
+                  left: 0%;
+                  transform: translateX(-95%);
+                  width: 100%;
+                }
+
+                span.ticks-axis-value {
+                  position: absolute;
+                  top: 0.7em;
+                  right: 0%;
+                  transform: translateX(55%);
                 }
 
                 span.top-axis-value {
                   position: absolute;
                   font-weight: bold;
-                  top: .7em;
-                  right:0%;
-                  transform: translateX(45%);
-                  width:100%;
+                  top: 0.7em;
+                  right: 0%;
+                  transform: translateX(5%);
+                  width: 100%;
                 }
 
-                &:before{
-                  content: "";
+                &:not(:last-child):before {
+                  content: '';
                   position: absolute;
-                  top: -.2em;
+                  top: -0.2em;
                   width: 1px;
-                  left: 50%; /* Center the tick horizontally */
+                  left: 100%; /* Center the tick horizontally */
                   transform: translateX(-50%); /* Adjust for exact centering */
                   height: 0.4em;
                   background-color: black;
                 }
               }
             }
-
           }
           &.scale-y {
             flex-direction: column-reverse;
@@ -298,7 +305,7 @@ $resize-width: 3px;
                   position: absolute;
                   font-weight: bold;
                   right: 50%;
-                  bottom:-0.8em;
+                  bottom: -0.8em;
                   transform: translateX(50%);
                 }
 
@@ -306,12 +313,12 @@ $resize-width: 3px;
                   position: absolute;
                   font-weight: bold;
                   right: 50%;
-                  top:-0.8em;
+                  top: -0.8em;
                   transform: translateX(50%);
                 }
 
-                &:before{
-                  content: "";
+                &:before {
+                  content: '';
                   position: absolute;
                   right: 0em;
                   width: 0.3em;
@@ -320,8 +327,6 @@ $resize-width: 3px;
                   height: 0.01em;
                   background-color: black;
                 }
-
-
               }
               p {
                 font-size: 0.6em;
@@ -344,7 +349,8 @@ $resize-width: 3px;
       z-index: 999;
 
       .linear-metadata-tooltip {
-        .header, .footer {
+        .header,
+        .footer {
           display: flex;
           flex-direction: row;
           justify-content: space-between;
@@ -368,7 +374,6 @@ $resize-width: 3px;
       padding: 1em;
 
       .header {
-
         .btn-toolbar {
           width: 100%;
           display: flex;

@@ -12,7 +12,11 @@ export const ResizingScale: React.FC<{
 
   const inf = roundNumber(begin, true);
   const sup = roundNumber(end, false);
-  const step = roundNumber((end - begin) / ticksCount / 2, true);
+  const step = roundNumber((end - begin) / ticksCount, true);
+  const stepMultiplier = 10 ** (step.toString().length - 1);
+  const roundedStep = Math.ceil(step / stepMultiplier) * stepMultiplier;
+  console.log('step : ', step, stepMultiplier, roundedStep);
+  console.log('width : ', Math.round((roundedStep / sup) * 100));
 
   /** redraw the scale when window resized horizontally */
   useEffect(() => {
@@ -38,9 +42,19 @@ export const ResizingScale: React.FC<{
         {Array(ticksCount)
           .fill(0)
           .map((_, i) => (
-            <div key={i}>
+            <div
+              key={i}
+              style={{
+                width: i !== ticksCount - 1 ? `${Math.round((roundedStep / sup) * 100)}%` : '',
+                // flexBasis: i !== ticksCount - 1 ? `${Math.round((roundedStep / sup) * 100)}%` : '',
+              }}
+            >
               {i === 0 && <span className="bottom-axis-value">{shortNumber(inf)}</span>}
-              <span>{shortNumber(((sup - inf) / ticksCount) * i + step + inf)}</span>
+              {i !== ticksCount - 1 && (
+                <span className="ticks-axis-value">
+                  {shortNumber(roundedStep * i + roundedStep + inf, true)}
+                </span>
+              )}
               {i === ticksCount - 1 && <span className="top-axis-value">{shortNumber(sup)}</span>}
             </div>
           ))}
