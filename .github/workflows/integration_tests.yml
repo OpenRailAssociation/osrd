@@ -91,6 +91,13 @@ jobs:
           cd front
           yarn e2e-tests
 
+      - name: Show docker compose logs
+        if: always()
+        run: "docker-compose logs api editoast core"
+        env:
+          DOCKER_BUILDKIT: 1
+          COMPOSE_DOCKER_CLI_BUILD: 1
+
       - uses: actions/upload-artifact@v3
         if: always()
         with:
