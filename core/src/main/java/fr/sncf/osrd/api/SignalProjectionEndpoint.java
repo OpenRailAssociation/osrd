@@ -52,7 +52,7 @@ public class SignalProjectionEndpoint implements Take {
             var request = adapterRequest.fromJson(body);
             if (request == null)
                 return new RsWithStatus(new RsText("missing request body"), 400);
-            System.out.println(request.expectedVersion);
+
             // get infra
             var infra = infraManager.getInfra(request.infra, request.expectedVersion, recorder);
 
