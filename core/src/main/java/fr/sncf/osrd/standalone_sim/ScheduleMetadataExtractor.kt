@@ -109,7 +109,7 @@ fun run(
 
     val signalSightings = pathSignals.map {
         val physicalSignal = loadedSignalInfra.getPhysicalSignal(it.signal)
-        val sightOffset = max(0.0, (it.offset - rawInfra.getSignalSightDistance(physicalSignal)).meters)
+        val sightOffset = max(0.0, (it.pathOffset - rawInfra.getSignalSightDistance(physicalSignal)).meters)
         ResultTrain.SignalSighting(
             rawInfra.getPhysicalSignalName(loadedSignalInfra.getPhysicalSignal(it.signal)),
             envelopeWithStops.interpolateTotalTime(sightOffset),
@@ -233,11 +233,11 @@ private fun spacingRequirements(
 
     for (pathSignal in pathSignals) {
         val physicalSignal = loadedSignalInfra.getPhysicalSignal(pathSignal.signal)
-        val sightOffset = max(0.0, (pathSignal.offset - rawInfra.getSignalSightDistance(physicalSignal)).meters)
+        val sightOffset = max(0.0, (pathSignal.pathOffset - rawInfra.getSignalSightDistance(physicalSignal)).meters)
         val sightTime = envelope.interpolateTotalTime(sightOffset)
 
         val signalZoneOffset =
-            blockPath.take(pathSignal.blockIndexInPath + 1).sumOf { blockInfra.getBlockPath(it).size }
+            blockPath.take(pathSignal.minBlockPathIndex + 1).sumOf { blockInfra.getBlockPath(it).size }
 
         val zoneStates = ArrayList<ZoneStatus>(zoneCount)
         for (i in 0 until zoneCount) zoneStates.add(ZoneStatus.CLEAR)
@@ -421,7 +421,14 @@ private fun zoneOccupationChangeEvents(
     return zoneOccupationChangeEvents
 }
 
-data class PathSignal(val signal: LogicalSignalId, val offset: Distance, val blockIndexInPath: Int)
+data class PathSignal(
+    val signal: LogicalSignalId,
+    val pathOffset: Distance,
+    // when a signal is between blocks, these two values will be different.
+    // for distant signals, minBlockPath index will be one less than maxBlockPathIndex
+    val minBlockPathIndex: Int,
+    val maxBlockPathIndex: Int,
+)
 
 
 // Returns all the signals on the path
@@ -441,10 +448,16 @@ fun pathSignals(
 
         val blockSignals = blockInfra.getBlockSignals(block)
         val blockSignalPositions = blockInfra.getSignalsPositions(block)
-        val numExclusiveSignalInBlock =
-            if (blockIdx == blockPath.size - 1) blockSignals.size else blockSignals.size - 1
-        for ((signal, position) in blockSignals.zip(blockSignalPositions).take(numExclusiveSignalInBlock)) {
-            pathSignals.add(PathSignal(signal, currentOffset + position, blockIdx))
+        for (signalIndex in 0 until blockSignals.size) {
+            // as consecutive blocks share a signal, skip the first signal of each block, except the first
+            // this way, each signal is only iterated on once
+            if (signalIndex == 0 && blockIdx != 0)
+                continue
+            val signal = blockSignals[signalIndex]
+            val position = blockSignalPositions[signalIndex]
+            val dedupedSignal = blockIdx != blockPath.size - 1 && signalIndex == blockSignals.size - 1
+            val maxBlockPathIndex = if (dedupedSignal) blockIdx + 1 else blockIdx
+            pathSignals.add(PathSignal(signal, currentOffset + position, blockIdx, maxBlockPathIndex))
         }
         currentOffset += blockSize
     }
@@ -464,7 +477,7 @@ private fun pathSignalsInEnvelope(
     rawInfra: SimInfraAdapter
 ): List<PathSignal> {
     return pathSignals(startOffset, blockPath, blockInfra, rawInfra).filter { signal ->
-        signal.offset >= 0.meters && signal.offset <= envelope.endPos.meters
+        signal.pathOffset >= 0.meters && signal.pathOffset <= envelope.endPos.meters
     }
 }
 
