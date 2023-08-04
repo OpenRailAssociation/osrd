@@ -13,6 +13,8 @@ import userReducer, { UserState, initialState as userInitialState } from './user
 import mapReducer, { MapState, initialState as mapInitialState } from './map';
 import editorReducer, { EditorActions, initialState as editorInitialState } from './editor';
 import osrdconfReducer, { initialState as osrdconfInitialState } from './osrdconf';
+// Dependency cycle will be removed during the refactoring of store
+// eslint-disable-next-line import/no-cycle
 import osrdsimulationReducer, {
   initialState as osrdSimulationInitialState,
 } from './osrdsimulation';

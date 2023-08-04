@@ -21,7 +21,8 @@ export const UPDATE_TIME_POSITION = 'osrdsimu/UPDATE_TIME_POSITION';
 export const UPDATE_TIME_POSITION_VALUES = 'osrdsimu/UPDATE_TIME_POSITION_VALUES';
 export const UPDATE_CONSOLIDATED_SIMULATION = 'osrdsimu/UPDATE_CONSOLIDATED_SIMULATION';
 export const UPDATE_DEPARTURE_ARRIVAL_TIMES = 'osrdsimu/UPDATE_DEPARTURE_ARRIVAL_TIMES';
-
+export const UNDO_SIMULATION = 'osrdsimu/UNDO_SIMULATION';
+export const REDO_SIMULATION = 'osrdsimu/REDO_SIMULATION';
 // Functions
 
 export function updateChart(chart: Chart) {
@@ -182,3 +183,21 @@ export function updateTimePositionValues(timePosition: OsrdSimulationState['time
     });
   };
 }
+
+export function undoSimulation() {
+  return (dispatch: Dispatch) => {
+    dispatch({
+      type: UNDO_SIMULATION,
+    });
+  };
+}
+
+export function redoSimulation() {
+  return (dispatch: Dispatch) => {
+    dispatch({
+      type: REDO_SIMULATION,
+    });
+  };
+}
+
+
