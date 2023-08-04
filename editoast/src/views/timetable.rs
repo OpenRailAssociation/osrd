@@ -42,6 +42,7 @@ async fn get(
         None => return Err(TimetableError::NotFound { timetable_id }.into()),
     };
     let timetable_with_schedules = timetable.with_detailed_train_schedules(db_pool).await?;
+
     Ok(Json(timetable_with_schedules))
 }
 
@@ -174,36 +175,31 @@ pub mod test {
 
     use crate::{
         assert_status_and_read,
-        fixtures::tests::{train_schedule_with_scenario, TrainScheduleFixtureSet},
+        fixtures::tests::{
+            train_with_simulation_output_fixture_set, TrainScheduleWithSimulationOutputFixtureSet,
+        },
         models::{
             rolling_stock::tests::get_other_rolling_stock, train_schedule::TrainScheduleValidation,
-            TimetableWithSchedulesDetails, TrainSchedule,
+            TimetableWithSchedulesDetails,
         },
-        schema::rolling_stock::RollingStock,
         views::tests::create_test_service,
     };
 
     #[rstest]
-    async fn test_version(#[future] train_schedule_with_scenario: TrainScheduleFixtureSet) {
+    async fn newer_rolling_stock_version(
+        #[future] train_with_simulation_output_fixture_set: TrainScheduleWithSimulationOutputFixtureSet,
+    ) {
         let app = create_test_service().await;
 
-        let train_schedule_with_scenario: TrainScheduleFixtureSet =
-            train_schedule_with_scenario.await;
+        let train_with_simulation_output = train_with_simulation_output_fixture_set.await;
+
+        let rolling_stock_id = train_with_simulation_output
+            .train_schedule
+            .model
+            .rolling_stock_id;
         // patch rolling_stock
-        let rolling_stock_id = train_schedule_with_scenario.rolling_stock.id();
         let mut patch_rolling_stock = get_other_rolling_stock();
         patch_rolling_stock.id = Some(rolling_stock_id);
-
-        let response = call_service(
-            &app,
-            TestRequest::get()
-                .uri(format!("/timetable/{}", train_schedule_with_scenario.timetable.id()).as_str())
-                .to_request(),
-        )
-        .await;
-        let response_body: TimetableWithSchedulesDetails =
-            assert_status_and_read!(response, StatusCode::OK);
-        println!("{:#?}", response_body);
         call_service(
             &app,
             TestRequest::patch()
@@ -212,34 +208,27 @@ pub mod test {
                 .to_request(),
         )
         .await;
+
+        // get the timetable
         let response = call_service(
             &app,
             TestRequest::get()
                 .uri(
                     format!(
-                        "/train_schedule/{}",
-                        train_schedule_with_scenario.train_schedule.id()
+                        "/timetable/{}",
+                        train_with_simulation_output
+                            .train_schedule
+                            .model
+                            .timetable_id
                     )
                     .as_str(),
                 )
                 .to_request(),
         )
         .await;
-        let response_body: TrainSchedule = assert_status_and_read!(response, StatusCode::OK);
-        println!("{:#?}", response_body);
-        // get the timetable
-        let response = call_service(
-            &app,
-            TestRequest::get()
-                .uri(format!("/timetable/{}", train_schedule_with_scenario.timetable.id()).as_str())
-                .to_request(),
-        )
-        .await;
-        let timetable_id = train_schedule_with_scenario.train_schedule.id();
-        println!("{}", timetable_id);
+
         let response_body: TimetableWithSchedulesDetails =
             assert_status_and_read!(response, StatusCode::OK);
-        println!("{:#?}", response_body);
         let invalid_reasons = &response_body
             .train_schedule_summaries
             .first()
