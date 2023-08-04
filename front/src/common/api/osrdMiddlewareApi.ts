@@ -123,15 +123,8 @@ const injectedRtkApi = api.injectEndpoints({
         body: queryArg.writableTrainSchedule,
       }),
     }),
-    deleteTrainScheduleDelete: build.mutation<
-      DeleteTrainScheduleDeleteApiResponse,
-      DeleteTrainScheduleDeleteApiArg
-    >({
-      query: (queryArg) => ({
-        url: `/train_schedule/delete/`,
-        method: 'DELETE',
-        body: queryArg.body,
-      }),
+    deleteTrainSchedule: build.mutation<DeleteTrainScheduleApiResponse, DeleteTrainScheduleApiArg>({
+      query: (queryArg) => ({ url: `/train_schedule/`, method: 'DELETE', body: queryArg.body }),
     }),
     getTrainScheduleByIdResult: build.query<
       GetTrainScheduleByIdResultApiResponse,
@@ -487,8 +480,8 @@ export type PatchTrainScheduleByIdApiArg = {
   /** Train schedule fields */
   writableTrainSchedule: WritableTrainSchedule;
 };
-export type DeleteTrainScheduleDeleteApiResponse = unknown;
-export type DeleteTrainScheduleDeleteApiArg = {
+export type DeleteTrainScheduleApiResponse = unknown;
+export type DeleteTrainScheduleApiArg = {
   body: {
     ids: number[];
   };
