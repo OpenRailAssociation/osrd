@@ -235,7 +235,8 @@ pub struct SpacingRequirement {
     pub end_time: f64,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Derivative)]
+#[derivative(Default)]
 pub struct ResultTrain {
     pub speeds: Vec<ResultSpeed>,
     pub head_positions: Vec<ResultPosition>,
@@ -261,6 +262,7 @@ pub struct ResultTrain {
     Serialize,
     QueryableByName,
 )]
+#[derivative(Default)]
 #[model(table = "osrd_infra_simulationoutput")]
 #[model(delete, retrieve)]
 #[diesel(belongs_to(TrainSchedule))]
@@ -275,11 +277,20 @@ pub struct SimulationOutput {
     pub train_schedule_id: Option<i64>,
 }
 
-#[derive(Clone, Debug, Deserialize, Queryable, Insertable, AsChangeset, Model)]
+impl Identifiable for SimulationOutput {
+    fn get_id(&self) -> i64 {
+        self.id
+    }
+}
+
+#[derive(
+    Clone, Debug, Deserialize, Queryable, Derivative, Insertable, Identifiable, AsChangeset, Model,
+)]
 #[model(table = "osrd_infra_simulationoutput")]
-#[model(create)]
+#[model(create, delete)]
 #[diesel(belongs_to(TrainSchedule))]
 #[diesel(table_name = osrd_infra_simulationoutput)]
+#[derivative(Default(new = "true"))]
 pub struct SimulationOutputChangeset {
     #[diesel(deserialize_as = i64)]
     pub id: Option<i64>,
@@ -307,6 +318,24 @@ impl From<SimulationOutput> for SimulationOutputChangeset {
             electrification_ranges: Some(simulation_output.electrification_ranges),
             power_restriction_ranges: Some(simulation_output.power_restriction_ranges),
             train_schedule_id: Some(simulation_output.train_schedule_id),
+        }
+    }
+}
+
+impl From<SimulationOutputChangeset> for SimulationOutput {
+    fn from(value: SimulationOutputChangeset) -> Self {
+        Self {
+            id: value.id.expect("invalid changeset result"),
+            mrsp: value.mrsp.expect("invalid changeset result"),
+            base_simulation: value.base_simulation.expect("invalid changeset result"),
+            eco_simulation: value.eco_simulation.expect("invalid changeset result"),
+            electrification_ranges: value
+                .electrification_ranges
+                .expect("invalid changeset result"),
+            power_restriction_ranges: value
+                .power_restriction_ranges
+                .expect("invalid changeset result"),
+            train_schedule_id: value.train_schedule_id.expect("invalid changeset result"),
         }
     }
 }

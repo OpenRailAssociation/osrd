@@ -171,18 +171,15 @@ pub async fn get_timetable_train_schedules_with_simulations(
     db_pool: Data<DbPool>,
 ) -> Result<Vec<(TrainSchedule, SimulationOutput)>> {
     let train_schedules = get_timetable_train_schedules(timetable_id, db_pool.clone()).await?;
-
     block::<_, Result<_>>(move || {
         let mut conn = db_pool.get()?;
 
         let simulation_outputs =
             SimulationOutput::belonging_to(&train_schedules).load::<SimulationOutput>(&mut conn)?;
-
         let result = train_schedules
             .into_iter()
             .zip(simulation_outputs.into_iter())
             .collect();
-
         Ok(result)
     })
     .await

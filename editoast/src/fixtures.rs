@@ -5,8 +5,9 @@ pub mod tests {
     use crate::client::PostgresConfig;
     use crate::models::{
         Create, Delete, Document, ElectricalProfileSet, Identifiable, Infra, Pathfinding,
-        PathfindingChangeset, Project, RollingStockLiveryModel, RollingStockModel, Scenario, Study,
-        Timetable, TrainSchedule,
+        PathfindingChangeset, Project, ResultPosition, ResultStops, ResultTrain,
+        RollingStockLiveryModel, RollingStockModel, Scenario, SimulationOutput,
+        SimulationOutputChangeset, Study, Timetable, TrainSchedule,
     };
     use crate::schema::RailJson;
     use crate::views::infra::InfraForm;
@@ -19,6 +20,7 @@ pub mod tests {
     use futures::executor;
     use postgis_diesel::types::LineString;
     use rstest::*;
+    use serde_json::json;
 
     #[derive(Debug)]
     pub struct TestFixture<T: Delete + Identifiable + Send> {
@@ -162,7 +164,7 @@ pub mod tests {
             rolling_stock.id(),
         )
         .await;
-        let train_schedule = TestFixture::new(ts_model, db_pool);
+        let train_schedule: TestFixture<TrainSchedule> = TestFixture::new(ts_model, db_pool);
         TrainScheduleFixtureSet {
             train_schedule,
             project,
@@ -366,6 +368,94 @@ pub mod tests {
             model: pf,
             db_pool,
             infra: Some(small_infra),
+        }
+    }
+
+    pub struct TrainScheduleWithSimulationOutputFixtureSet {
+        pub project: TestFixture<Project>,
+        pub study: TestFixture<Study>,
+        pub scenario: TestFixture<Scenario>,
+        pub timetable: TestFixture<Timetable>,
+        pub infra: TestFixture<Infra>,
+        pub train_schedule: TestFixture<TrainSchedule>,
+        pub simulation_output: TestFixture<SimulationOutput>,
+        pub pathfinding: TestFixture<Pathfinding>,
+        pub rolling_stock: TestFixture<RollingStockModel>,
+    }
+
+    #[fixture]
+    pub async fn train_with_simulation_output_fixture_set(
+        db_pool: Data<DbPool>,
+        #[future] pathfinding: TestFixture<Pathfinding>,
+        #[future] scenario_fixture_set: ScenarioFixtureSet,
+        #[future] fast_rolling_stock: TestFixture<RollingStockModel>,
+    ) -> TrainScheduleWithSimulationOutputFixtureSet {
+        let ScenarioFixtureSet {
+            project,
+            study,
+            scenario,
+            timetable,
+            infra,
+        } = scenario_fixture_set.await;
+        let pathfinding = pathfinding.await;
+        let rolling_stock = fast_rolling_stock.await;
+        let train_schedule = make_train_schedule(
+            db_pool.clone(),
+            pathfinding.id(),
+            timetable.id(),
+            rolling_stock.id(),
+        )
+        .await;
+
+        let result_train: ResultTrain = ResultTrain {
+            stops: vec![
+                ResultStops {
+                    time: 0.0,
+                    duration: 0.0,
+                    position: 0.0,
+                },
+                ResultStops {
+                    time: 110.90135448736316,
+                    duration: 1.0,
+                    position: 2417.6350658673214,
+                },
+            ],
+            head_positions: vec![ResultPosition {
+                time: 0.0,
+                track_section: "TA7".to_string(),
+                offset: 0.0,
+                path_offset: 0.0,
+            }],
+            ..Default::default()
+        };
+
+        let simulation_output = SimulationOutputChangeset {
+            mrsp: Some(json!({})),
+            base_simulation: Some(diesel_json::Json(result_train)),
+            eco_simulation: Some(None),
+            electrification_ranges: Some(json!({})),
+            power_restriction_ranges: Some(json!({})),
+            train_schedule_id: Some(train_schedule.id),
+            ..Default::default()
+        };
+        let simulation_output: SimulationOutput = simulation_output
+            .create(db_pool.clone())
+            .await
+            .unwrap()
+            .into();
+
+        let train_schedule = TestFixture::new(train_schedule, db_pool.clone());
+        let simulation_output = TestFixture::new(simulation_output, db_pool);
+        TrainScheduleWithSimulationOutputFixtureSet {
+            project,
+            study,
+            scenario,
+            timetable,
+            infra,
+            train_schedule,
+            simulation_output,
+            pathfinding,
+            rolling_stock,
         }
     }
 }
