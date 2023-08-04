@@ -124,6 +124,12 @@ class TrainScheduleView(
             train_schedules[0].timetable.infra, train_schedules, response_payload
         )
 
+        # Set infra and rolling stock version to train schedules
+        infra_version = train_schedules[0].timetable.infra.version
+        for train_schedule in train_schedules:
+            train_schedule.infra_version = infra_version
+            train_schedule.rollingstock_version = train_schedule.rolling_stock.version
+
         with transaction.atomic():
             # Save inputs
             TrainSchedule.objects.bulk_create(train_schedules)
