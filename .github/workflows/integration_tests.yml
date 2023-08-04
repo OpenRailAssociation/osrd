@@ -91,6 +91,10 @@ jobs:
           cd front
           yarn e2e-tests
 
+      - name: Print logs
+        run: docker compose logs
+        if: always()
+
       - uses: actions/upload-artifact@v3
         if: always()
         with:
