@@ -97,7 +97,7 @@ const defaultCommonConf = {
   originDate: formatIsoDate(new Date()),
   originTime: '08:00:00',
   originUpperBoundDate: formatIsoDate(new Date()),
-  originUpperBoundTime: undefined,
+  originUpperBoundTime: '10:00:00',
   originLinkedBounds: true,
   destination: undefined,
   destinationDate: formatIsoDate(new Date()),
