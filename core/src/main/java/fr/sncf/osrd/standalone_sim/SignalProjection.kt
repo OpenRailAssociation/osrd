@@ -16,7 +16,6 @@ import fr.sncf.osrd.standalone_sim.result.SignalUpdate
 import fr.sncf.osrd.utils.indexing.MutableStaticIdxArrayList
 import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
-import fr.sncf.osrd.utils.units.Distance
 import java.awt.Color
 
 data class SignalAspectChangeEvent(val newAspect: String, val time: Long)
@@ -160,8 +159,8 @@ private fun signalUpdates(
         val rjsSignal = rawInfra.rjsSignalMap[signalId]!!
         val track = rjsSignal.track
         val trackOffset = rjsSignal.position
-        val positionStart = pathSignal.offset
-        val positionEnd = if (nextSignal.contains(signal)) nextSignal[signal]!!.offset
+        val positionStart = pathSignal.pathOffset
+        val positionEnd = if (nextSignal.contains(signal)) nextSignal[signal]!!.pathOffset
         else null
 
         if (events.isEmpty()) continue
