@@ -27,7 +27,7 @@ class Infra:
     catenaries: List[Catenary] = field(default_factory=list)
     neutral_sections: List[NeutralSection] = field(default_factory=list)
 
-    VERSION = "3.3.1"
+    VERSION = "3.4.0"
 
     def add_route(self, *args, **kwargs):
         self.routes.append(Route(*args, **kwargs))
