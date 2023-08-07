@@ -11,11 +11,20 @@ mod study;
 mod timetable;
 pub mod train_schedule;
 
+use std::ops::{Deref, DerefMut};
+
 use crate::DbPool;
 use crate::{error::Result, views::pagination::PaginatedResponse};
 use actix_web::web::{block, Data};
 use async_trait::async_trait;
-use diesel::PgConnection;
+use diesel::deserialize::FromSql;
+use diesel::pg::{Pg, PgValue};
+use diesel::serialize::ToSql;
+use diesel::{sql_types, PgConnection};
+use serde::de::DeserializeOwned;
+use serde::Serialize;
+use serde_derive::Deserialize;
+use utoipa::PartialSchema;
 
 pub use self::pathfinding::*;
 pub use documents::Document;
@@ -42,6 +51,88 @@ pub trait Identifiable {
 impl<T: diesel::Identifiable<Id = i64> + Clone> Identifiable for T {
     fn get_id(&self) -> i64 {
         self.clone().id()
+    }
+}
+
+/// Wrapper around diesel_json::Json to make it work with utoipa
+#[derive(FromSqlRow, AsExpression, Serialize, Deserialize, Default, Debug, Clone)]
+#[serde(transparent)]
+#[diesel(sql_type = sql_types::Jsonb)]
+pub struct DieselJson<T: Sized>(pub diesel_json::Json<T>);
+
+impl<T: PartialSchema> PartialSchema for DieselJson<T> {
+    fn schema() -> utoipa::openapi::RefOr<utoipa::openapi::schema::Schema> {
+        T::schema()
+    }
+}
+
+impl<T> DieselJson<T> {
+    pub fn new(value: T) -> DieselJson<T> {
+        DieselJson(diesel_json::Json::new(value))
+    }
+
+    pub fn unwrap(self) -> T {
+        self.0 .0
+    }
+}
+
+impl<T> Deref for DieselJson<T> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl<T> DerefMut for DieselJson<T> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+impl<T> AsRef<T> for DieselJson<T> {
+    fn as_ref(&self) -> &T {
+        &self.0
+    }
+}
+
+impl<T> AsMut<T> for DieselJson<T> {
+    fn as_mut(&mut self) -> &mut T {
+        &mut self.0
+    }
+}
+
+impl<T> FromSql<sql_types::Jsonb, Pg> for DieselJson<T>
+where
+    T: std::fmt::Debug + DeserializeOwned,
+{
+    fn from_sql(bytes: PgValue) -> diesel::deserialize::Result<Self> {
+        let json = <diesel_json::Json<T> as FromSql<sql_types::Jsonb, Pg>>::from_sql(bytes)?;
+        Ok(DieselJson(json))
+    }
+}
+
+impl<T> ToSql<sql_types::Jsonb, Pg> for DieselJson<T>
+where
+    T: std::fmt::Debug + Serialize,
+{
+    fn to_sql(&self, out: &mut diesel::serialize::Output<Pg>) -> diesel::serialize::Result {
+        <diesel_json::Json<T> as ToSql<sql_types::Jsonb, Pg>>::to_sql(&self.0, &mut out.reborrow())
+    }
+}
+
+impl<T> PartialEq for DieselJson<T>
+where
+    T: PartialEq,
+{
+    fn eq(&self, other: &Self) -> bool {
+        self.0 == other.0
+    }
+}
+
+impl<T> From<T> for DieselJson<T> {
+    fn from(value: T) -> Self {
+        Self::new(value)
     }
 }
 
