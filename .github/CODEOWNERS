@@ -5,6 +5,7 @@
 /front                                                   @osrd-project/front-maintainers
 /front/src/common/api/osrdEditoastApi.ts
 /front/src/common/api/osrdMiddlewareApi.ts
+/front/src/reducers/osrdconf/infra_schema.json
 
 # --- EDITOAST ---
 /editoast                                                @osrd-project/editoast-maintainers
