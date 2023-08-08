@@ -28,7 +28,9 @@ pub use rolling_stock::{
 };
 pub use scenario::{Scenario, ScenarioWithCountTrains, ScenarioWithDetails};
 pub use study::{Study, StudyWithScenarios};
-pub use timetable::{Timetable, TimetableWithSchedules, TimetableWithSchedulesDetails};
+pub use timetable::{
+    check_train_validity, Timetable, TimetableWithSchedules, TimetableWithSchedulesDetails,
+};
 pub use train_schedule::{
     Allowance, FullResultStops, ResultPosition, ResultSpeed, ResultStops, ResultTrain,
     ScheduledPoint, SignalSighting, SimulationOutput, SimulationOutputChangeset,

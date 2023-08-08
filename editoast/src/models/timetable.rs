@@ -149,6 +149,24 @@ impl Timetable {
     pub async fn get_train_schedules(&self, db_pool: Data<DbPool>) -> Result<Vec<TrainSchedule>> {
         get_timetable_train_schedules(self.id.unwrap(), db_pool).await
     }
+
+    /// Get infra_version from timetable
+    pub async fn infra_version_from_timetable(&self, db_pool: Data<DbPool>) -> String {
+        use crate::tables::osrd_infra_infra::dsl as infra_dsl;
+        use crate::tables::osrd_infra_scenario::dsl as scenario_dsl;
+        let timetable_id = self.id.unwrap();
+        block(move || {
+            let mut conn = db_pool.get().unwrap();
+            scenario_dsl::osrd_infra_scenario
+                .filter(scenario_dsl::timetable_id.eq(timetable_id))
+                .inner_join(infra_dsl::osrd_infra_infra)
+                .select(infra_dsl::version)
+                .first::<String>(&mut conn)
+                .unwrap()
+        })
+        .await
+        .unwrap()
+    }
 }
 
 pub async fn get_timetable_train_schedules(
