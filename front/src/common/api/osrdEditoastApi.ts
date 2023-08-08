@@ -1499,7 +1499,6 @@ export type RollingStockBase = {
   power_restrictions: {
     [key: string]: string;
   };
-  railjson_version: string;
   raise_pantograph_time: number | null;
   rolling_resistance: {
     A: number;
@@ -1526,6 +1525,7 @@ export type LightRollingStock = RollingStockBase & {
   };
   id: number;
   liveries: RollingStockLivery[];
+  railjson_version: string;
 };
 export type GeoJsonObject = {
   coordinates: number[][];
@@ -1740,6 +1740,7 @@ export type RollingStockUpsertPayload = RollingStockBase & {
 export type RollingStock = RollingStockUpsertPayload & {
   id: number;
   liveries: RollingStockLivery[];
+  railjson_version: string;
 };
 export type RollingStockUsage = {
   rolling_stock_id: number;

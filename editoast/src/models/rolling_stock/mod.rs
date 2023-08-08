@@ -152,7 +152,6 @@ impl From<RollingStockModel> for RollingStockCommon {
     fn from(rolling_stock_model: RollingStockModel) -> Self {
         RollingStockCommon {
             name: rolling_stock_model.name.unwrap(),
-            railjson_version: rolling_stock_model.railjson_version.unwrap(),
             effort_curves: rolling_stock_model.effort_curves.unwrap().0,
             base_power_class: rolling_stock_model.base_power_class.unwrap(),
             length: rolling_stock_model.length.unwrap(),
@@ -182,6 +181,7 @@ impl From<RollingStockModel> for RollingStock {
         RollingStock {
             id: rolling_stock_model.id.unwrap(),
             common: rolling_stock_common,
+            railjson_version: rolling_stock_model.railjson_version.unwrap(),
             locked: rolling_stock_model.locked.unwrap(),
             metadata: rolling_stock_model.metadata.unwrap().0,
         }

@@ -8,10 +8,11 @@ use strum_macros::Display;
 
 use crate::models::rolling_stock::rolling_stock_livery::RollingStockLiveryMetadata;
 
+pub const ROLLING_STOCK_RAILJSON_VERSION: &str = "3.2";
+
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct RollingStockCommon {
     pub name: String,
-    pub railjson_version: String,
     pub effort_curves: EffortCurves,
     pub base_power_class: String,
     pub length: f64,
@@ -37,6 +38,7 @@ pub struct RollingStock {
     pub id: i64,
     #[serde(flatten)]
     pub common: RollingStockCommon,
+    pub railjson_version: String,
     pub locked: bool,
     pub metadata: RollingStockMetadata,
 }

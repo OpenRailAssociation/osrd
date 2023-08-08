@@ -2681,6 +2681,9 @@ components:
         - $ref: "#/components/schemas/RollingStockBase"
         - type: object
           properties:
+            railjson_version:
+              type: string
+              example: "3.2"
             id:
               type: number
             liveries:
@@ -2701,7 +2704,7 @@ components:
                         type: boolean
                     required: [is_electric]
               required: [default_mode, modes]
-          required: [id, liveries, effort_curves]
+          required: [railjson_version, id, liveries, effort_curves]
 
     Path:
       properties:
@@ -2844,13 +2847,16 @@ components:
         - $ref: "#/components/schemas/RollingStockUpsertPayload"
         - type: object
           properties:
+            railjson_version:
+              type: string
+              example: "3.2"
             id:
               type: number
             liveries:
               type: array
               items:
                 $ref: "#/components/schemas/RollingStockLivery"
-          required: [id, liveries]
+          required: [railjson_version, id, liveries]
 
     RollingStockUpsertPayload:
       allOf:
@@ -2881,9 +2887,6 @@ components:
 
     RollingStockBase:
       properties:
-        railjson_version:
-          type: string
-          example: "3.0"
         name:
           type: string
         locked:
@@ -3021,7 +3024,6 @@ components:
               unit,
             ]
       required:
-        - railjson_version
         - name
         - length
         - max_speed
