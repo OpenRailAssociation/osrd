@@ -190,7 +190,7 @@ fn make_track_map<I: Iterator<Item = String>>(
     {
         Ok(ts) if ts.len() != expected_count => {
             let got = HashSet::<String>::from_iter(ts.into_iter().map(|ts| ts.obj_id));
-            let expected = HashSet::<String>::from_iter(ids.into_iter());
+            let expected = HashSet::<String>::from_iter(ids);
             let diff = expected.difference(&got).collect::<HashSet<_>>();
             return Err(PathfindingError::TrackSectionsNotFound {
                 track_sections: diff.into_iter().map(|s| s.to_owned()).collect(),
@@ -221,7 +221,7 @@ fn make_op_map<I: Iterator<Item = String>>(
     {
         Ok(ts) if ts.len() != expected_count => {
             let got = HashSet::<String>::from_iter(ts.into_iter().map(|ts| ts.obj_id));
-            let expected = HashSet::<String>::from_iter(ids.into_iter());
+            let expected = HashSet::<String>::from_iter(ids);
             let diff = expected.difference(&got).collect::<HashSet<_>>();
             return Err(PathfindingError::OperationalPointNotFound {
                 operational_points: diff.into_iter().map(|s| s.to_owned()).collect(),

@@ -101,7 +101,7 @@ pub fn check_overlapping(infra_cache: &InfraCache, _: &Graph) -> Vec<InfraError>
                 if speed_section.speed_limit.is_some() {
                     let range_map = range_maps
                         .entry((track_id.clone(), None, direction))
-                        .or_insert(Default::default());
+                        .or_default();
                     for (_, overlap) in range_map.overlapping(&range) {
                         if speed_section.get_id() == overlap {
                             // Avoid reporting overlap with itself

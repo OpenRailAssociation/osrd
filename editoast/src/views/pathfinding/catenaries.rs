@@ -45,7 +45,7 @@ impl Ord for Float {
 
 impl PartialOrd for Float {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        self.0.partial_cmp(&other.0)
+        Some(self.cmp(other))
     }
 }
 
@@ -259,7 +259,7 @@ pub mod tests {
     #[fixture]
     fn simple_mode_map() -> HashMap<String, RangeMap<Float, String>> {
         // The mode map associated to the following catenaries
-        let mut mode_map = vec![
+        let mut mode_map = [
             ("track_1", "25kV"),
             ("track_2", "25kV"),
             ("track_5", "1.5kV"),

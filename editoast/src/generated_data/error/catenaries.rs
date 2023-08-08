@@ -81,9 +81,7 @@ pub fn check_overlapping(infra_cache: &InfraCache, _: &Graph) -> Vec<InfraError>
             let range = (track_range.begin * 100.) as u64..(track_range.end * 100.) as u64;
             let track_id = &track_range.track.0;
 
-            let range_map = range_maps
-                .entry(track_id.clone())
-                .or_insert(Default::default());
+            let range_map = range_maps.entry(track_id.clone()).or_default();
             for (_, overlap) in range_map.overlapping(&range) {
                 if catenary.get_id() == overlap {
                     // Avoid reporting overlap with itself

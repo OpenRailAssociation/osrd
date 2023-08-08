@@ -136,7 +136,7 @@ pub mod test {
         let result = infra.persist(railjson.clone(), pool).await;
 
         // THEN
-        assert!(matches!(result, Ok(_)));
+        assert!(result.is_ok());
         let infra = result.unwrap();
 
         let s_railjson = find_railjson(&mut conn, &infra).unwrap();

@@ -178,7 +178,7 @@ pub async fn get_timetable_train_schedules_with_simulations(
             SimulationOutput::belonging_to(&train_schedules).load::<SimulationOutput>(&mut conn)?;
         let result = train_schedules
             .into_iter()
-            .zip(simulation_outputs.into_iter())
+            .zip(simulation_outputs)
             .collect();
         Ok(result)
     })
