@@ -43,7 +43,7 @@ class Scenario(models.Model):
     study = models.ForeignKey(Study, related_name="scenarios", on_delete=models.CASCADE, null=False)
     name = models.CharField(max_length=128)
     description = models.CharField(max_length=1024, blank=True, default="")
-    infra = models.ForeignKey(Infra, on_delete=models.SET_NULL, null=True)
+    infra = models.ForeignKey(Infra, on_delete=models.CASCADE)
     electrical_profile_set = models.ForeignKey(ElectricalProfileSet, on_delete=models.CASCADE, null=True, blank=True)
     creation_date = models.DateTimeField(
         editable=False,
