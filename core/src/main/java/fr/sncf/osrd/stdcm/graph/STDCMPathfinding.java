@@ -126,7 +126,7 @@ public class STDCMPathfinding {
             double searchTimeRange
     ) {
         var envelope = range.edge().envelope();
-        var timeEnd = STDCMSimulations.interpolateTime(
+        var timeEnd = LegacySTDCMSimulations.interpolateTime(
                 envelope,
                 range.edge().envelopeStartOffset(),
                 range.offset(),

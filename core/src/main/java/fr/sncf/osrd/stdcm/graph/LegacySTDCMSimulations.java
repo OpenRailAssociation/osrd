@@ -1,13 +1,9 @@
 package fr.sncf.osrd.stdcm.graph;
 
-import static fr.sncf.osrd.api.pathfinding.PathfindingUtils.makePath;
-import static fr.sncf.osrd.api.pathfinding.PathfindingUtils.makePathFromBlocks;
 import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.CEILING;
 import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.FLOOR;
 import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.POSITION_EPSILON;
-import static fr.sncf.osrd.envelope_sim_infra.MRSP.computeMRSP;
 
-import fr.sncf.osrd.api.FullInfra;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.OverlayEnvelopeBuilder;
 import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder;
@@ -23,61 +19,73 @@ import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope;
-import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
+import fr.sncf.osrd.envelope_sim_infra.LegacyEnvelopeTrainPath;
+import fr.sncf.osrd.envelope_sim_infra.LegacyMRSP;
+import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
+import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.stdcm.BacktrackingEnvelopeAttr;
 import fr.sncf.osrd.train.RollingStock;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-/** This class contains all the methods used to simulate the train behavior. */
-public class STDCMSimulations {
-    /** Create an EnvelopeSimContext instance from the blocks and extra parameters.
-     * offsetFirstBlock is in millimeters. */
+/** This class contains all the methods used to simulate the train behavior.
+ * */
+public class LegacySTDCMSimulations {
+    /** Create an EnvelopeSimContext instance from the route and extra parameters */
     static EnvelopeSimContext makeSimContext(
-            FullInfra infra,
-            List<Integer> blocks,
-            long offsetFirstBlock,
+            List<SignalingRoute> routes,
+            double offsetFirstRoute,
             RollingStock rollingStock,
             RollingStock.Comfort comfort,
             double timeStep
     ) {
-        var path = makePathFromBlocks(infra, blocks, offsetFirstBlock);
-        var envelopePath = EnvelopeTrainPath.from(path);
+        var tracks = new ArrayList<TrackRangeView>();
+        for (var route : routes) {
+            var routeLength = route.getInfraRoute().getLength();
+            tracks.addAll(route.getInfraRoute().getTrackRanges(offsetFirstRoute, routeLength));
+            offsetFirstRoute = 0;
+        }
+        var envelopePath = LegacyEnvelopeTrainPath.from(tracks);
         return EnvelopeSimContextBuilder.build(rollingStock, envelopePath, timeStep, comfort);
     }
 
-    /**
-     * Returns an envelope matching the given block. The envelope time starts when the train enters the block.
+    /** Returns an envelope matching the given route. The envelope time starts when the train enters the route.
      * stopPosition specifies the position at which the train should stop, may be null (no stop)
-     * start is in millimeters
+     *
      * <p>
-     * Note: there are some approximations made here as we only "see" the tracks on the given blocks.
+     * Note: there are some approximations made here as we only "see" the tracks on the given routes.
      * We are missing slopes and speed limits from earlier in the path.
      * </p>
-     */
-    public static Envelope simulateBlock(
-            FullInfra fullInfra,
-            Integer blockId,
+     * This is public because it helps when writing unit tests. */
+    public static Envelope simulateRoute(
+            SignalingRoute route,
             double initialSpeed,
-            long start,
+            double start,
             RollingStock rollingStock,
             RollingStock.Comfort comfort,
             double timeStep,
             Double stopPosition,
-            String trainTag
+            String tag
     ) {
         if (stopPosition != null && Math.abs(stopPosition) < POSITION_EPSILON)
             return makeSinglePointEnvelope(0);
-        if (start >= fullInfra.blockInfra().getBlockLength(blockId))
+        if (start >= route.getInfraRoute().getLength())
             return makeSinglePointEnvelope(initialSpeed);
-        var context = makeSimContext(fullInfra, List.of(blockId), start, rollingStock, comfort, timeStep);
+        var context = makeSimContext(List.of(route), start, rollingStock, comfort, timeStep);
         double[] stops = new double[]{};
+        double length = context.path.getLength();
         if (stopPosition != null) {
             stops = new double[]{stopPosition};
+            length = Math.min(length, stopPosition);
         }
-        var path = makePath(fullInfra.blockInfra(), fullInfra.rawInfra(), blockId);
-        var mrsp = computeMRSP(path, rollingStock, false, trainTag);
+        var mrsp = LegacyMRSP.from(
+                route.getInfraRoute().getTrackRanges(start, start + length),
+                rollingStock,
+                false,
+                tag
+        );
         try {
             var maxSpeedEnvelope = MaxSpeedEnvelope.from(context, stops, mrsp);
             return MaxEffortEnvelope.from(context, initialSpeed, maxSpeedEnvelope);
@@ -87,9 +95,7 @@ public class STDCMSimulations {
         }
     }
 
-    /**
-     * Make an envelope with a single point of the given speed
-     */
+    /** Make an envelope with a single point of the given speed */
     private static Envelope makeSinglePointEnvelope(double speed) {
         return Envelope.make(new EnvelopePart(
                 Map.of(),
@@ -99,24 +105,20 @@ public class STDCMSimulations {
         ));
     }
 
-    /**
-     * Returns the time at which the offset on the given block is reached
-     */
+    /** Returns the time at which the offset on the given route is reached */
     public static double interpolateTime(
             Envelope envelope,
             double envelopeStartOffset,
-            double blockOffset,
+            double routeOffset,
             double startTime,
             double speedRatio
     ) {
-        var envelopeOffset = Math.max(0, blockOffset - envelopeStartOffset);
+        var envelopeOffset = Math.max(0, routeOffset - envelopeStartOffset);
         assert envelopeOffset <= envelope.getEndPos();
         return startTime + (envelope.interpolateTotalTime(envelopeOffset) / speedRatio);
     }
 
-    /**
-     * Try to apply an allowance on the given envelope to add the given delay
-     */
+    /** Try to apply an allowance on the given envelope to add the given delay */
     static Envelope findEngineeringAllowance(EnvelopeSimContext context, Envelope oldEnvelope, double neededDelay) {
         neededDelay += context.timeStep; // error margin for the dichotomy
         var ranges = List.of(
@@ -132,21 +134,16 @@ public class STDCMSimulations {
         }
     }
 
-
-    /**
-     * returns an envelope for a block that already has an envelope, but with a different end speed
-     */
+    /** Simulates a route that already has an envelope, but with a different end speed */
     static Envelope simulateBackwards(
-            FullInfra infra,
-            Integer blockId,
+            SignalingRoute route,
             double endSpeed,
-            long start,
+            double start,
             Envelope oldEnvelope,
             STDCMGraph graph
     ) {
         var context = makeSimContext(
-                infra,
-                List.of(blockId),
+                List.of(route),
                 start,
                 graph.rollingStock,
                 graph.comfort,

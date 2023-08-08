@@ -116,4 +116,12 @@ class BlockInfraImpl(
     override fun getTrackChunksFromBlock(block: BlockId): DirStaticIdxList<TrackChunk> {
         return blockToTrackChunkMap[block] ?: mutableDirStaticIdxArrayListOf()
     }
+
+    override fun getBlockLength(block: BlockId): Distance {
+        var length = Distance.ZERO
+        for(zone in blockPool[block].path) {
+            length += rawInfra.getZonePathLength(zone)
+        }
+        return length
+    }
 }
