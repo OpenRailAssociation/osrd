@@ -521,7 +521,11 @@ components:
             items:
               $ref: '#/components/schemas/RollingStockLivery'
             type: array
+          railjson_version:
+            example: '3.2'
+            type: string
         required:
+        - railjson_version
         - id
         - liveries
         - effort_curves
@@ -1103,7 +1107,11 @@ components:
             items:
               $ref: '#/components/schemas/RollingStockLivery'
             type: array
+          railjson_version:
+            example: '3.2'
+            type: string
         required:
+        - railjson_version
         - id
         - liveries
         type: object
@@ -1222,9 +1230,6 @@ components:
             C1US: '4'
             C2US: '3'
           type: object
-        railjson_version:
-          example: '3.0'
-          type: string
         raise_pantograph_time:
           description: The time it takes to raise this train's pantograph in seconds. Is null if the train is not electric.
           example: 15.0
@@ -1256,7 +1261,6 @@ components:
           format: float
           type: number
       required:
-      - railjson_version
       - name
       - length
       - max_speed

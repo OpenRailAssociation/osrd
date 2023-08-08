@@ -6,6 +6,7 @@ use crate::models::{
 use crate::schema::rolling_stock::rolling_stock_livery::RollingStockLivery;
 use crate::schema::rolling_stock::{
     RollingStock, RollingStockCommon, RollingStockMetadata, RollingStockWithLiveries,
+    ROLLING_STOCK_RAILJSON_VERSION,
 };
 use crate::DbPool;
 use actix_multipart::form::text::Text;
@@ -83,9 +84,10 @@ pub struct RollingStockForm {
 impl From<RollingStockForm> for RollingStockModel {
     fn from(rolling_stock: RollingStockForm) -> Self {
         RollingStockModel {
-            name: Some(rolling_stock.common.name),
-            railjson_version: Some(rolling_stock.common.railjson_version),
+            railjson_version: Some(ROLLING_STOCK_RAILJSON_VERSION.to_string()),
             locked: rolling_stock.locked,
+            metadata: Some(DieselJson(rolling_stock.metadata)),
+            name: Some(rolling_stock.common.name),
             effort_curves: Some(DieselJson(rolling_stock.common.effort_curves)),
             base_power_class: Some(rolling_stock.common.base_power_class),
             length: Some(rolling_stock.common.length),
@@ -99,7 +101,6 @@ impl From<RollingStockForm> for RollingStockModel {
             mass: Some(rolling_stock.common.mass),
             rolling_resistance: Some(DieselJson(rolling_stock.common.rolling_resistance)),
             loading_gauge: Some(rolling_stock.common.loading_gauge),
-            metadata: Some(DieselJson(rolling_stock.metadata)),
             power_restrictions: Some(rolling_stock.common.power_restrictions),
             energy_sources: Some(DieselJson(rolling_stock.common.energy_sources)),
             electrical_power_startup_time: Some(rolling_stock.common.electrical_power_startup_time),
@@ -117,28 +118,8 @@ impl RollingStockForm {
     ) -> RollingStockModel {
         RollingStockModel {
             id: Some(rolling_stock_id),
-            name: Some(self.common.name),
-            railjson_version: Some(self.common.railjson_version),
-            locked: self.locked,
-            effort_curves: Some(DieselJson(self.common.effort_curves)),
-            base_power_class: Some(self.common.base_power_class),
-            length: Some(self.common.length),
-            max_speed: Some(self.common.max_speed),
-            startup_time: Some(self.common.startup_time),
-            startup_acceleration: Some(self.common.startup_acceleration),
-            comfort_acceleration: Some(self.common.comfort_acceleration),
-            gamma: Some(DieselJson(self.common.gamma)),
-            inertia_coefficient: Some(self.common.inertia_coefficient),
-            features: Some(self.common.features),
-            mass: Some(self.common.mass),
-            rolling_resistance: Some(DieselJson(self.common.rolling_resistance)),
-            loading_gauge: Some(self.common.loading_gauge),
-            metadata: Some(DieselJson(self.metadata)),
-            power_restrictions: Some(self.common.power_restrictions),
-            energy_sources: Some(DieselJson(self.common.energy_sources)),
-            electrical_power_startup_time: Some(self.common.electrical_power_startup_time),
-            raise_pantograph_time: Some(self.common.raise_pantograph_time),
             version: rollingstock_version,
+            ..self.into()
         }
     }
 }

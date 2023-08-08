@@ -118,7 +118,6 @@ export const rollingStockEditorQueryArg = (
   currentRsEffortCurve: RollingStock['effort_curves'],
   isAdding?: boolean
 ): RollingStockUpsertPayload => ({
-  railjson_version: data.railjsonVersion,
   name: data.name,
   length: data.length,
   max_speed: data.maxSpeed / 3.6, // The user enters a value in km/h, which is then interpreted in m/s by the server.
