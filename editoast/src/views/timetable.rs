@@ -107,7 +107,7 @@ async fn get_conflicts(
 
     let mut id_to_name = HashMap::new();
     let mut trains_requirements = Vec::new();
-    for (schedule, simulation) in schedules.into_iter().zip(simulations.into_iter()) {
+    for (schedule, simulation) in schedules.into_iter().zip(simulations) {
         id_to_name.insert(
             schedule.id.expect("TrainSchedule should have an id"),
             schedule.train_name,
