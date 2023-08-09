@@ -87,9 +87,8 @@ impl OpenApiRoot {
             .to_json()
             .expect("the openapi should generate properly");
         OpenApiMerger::new(manual, generated)
-            .replace("paths/health/")
-            .replace("paths/version")
-            .replace("components/schemas/Version")
+            .smart_merge()
+            .add_trailing_slash_to_paths()
             .finish()
     }
 }
