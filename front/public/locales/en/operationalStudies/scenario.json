@@ -35,7 +35,7 @@
     "delete": "Delete",
     "duplicate": "Clone",
     "importTrainSchedule": "Import",
-    "invalidTrains": "The timetable contains invalid trains.",
+    "invalidTrains": "The timetable includes invalid trains.",
     "stopsCount_one": "1 stop",
     "stopsCount_other": "{{ count }} stops",
     "trainAdded": "Train added",
@@ -49,5 +49,5 @@
   "conflictsCount_other": "{{count}} conflicts",
   "conflictsCount_zero": "No conflict",
   "Spacing": "Spacing conflict",
-  "Itinerary": "Itineraries conflict"
+  "Itinerary": "Route conflicts"
 }
