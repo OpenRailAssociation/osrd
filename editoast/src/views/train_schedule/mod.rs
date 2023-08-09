@@ -227,7 +227,7 @@ async fn patch_multiple(
                 },
             )?;
 
-            let scenario = scenario_from_timetable(&timetable, db_pool.clone()).await?;
+            let scenario = timetable.get_scenario(db_pool.clone()).await?;
 
             // Batch by path
             let mut path_to_train_schedules: HashMap<_, Vec<_>> = HashMap::new();
@@ -300,7 +300,7 @@ async fn get_result(
             timetable_id: id_timetable,
         })?;
 
-    let scenario = scenario_from_timetable(&timetable, db_pool.clone()).await?;
+    let scenario = timetable.get_scenario(db_pool.clone()).await?;
 
     let infra = scenario.infra_id.expect("Scenario should have an infra id");
 
@@ -360,7 +360,7 @@ async fn get_results(
 
     let projection = Projection::new(&projection_path_payload);
 
-    let scenario = scenario_from_timetable(&timetable, db_pool.clone()).await?;
+    let scenario = timetable.get_scenario(db_pool.clone()).await?;
 
     let infra = scenario.infra_id.expect("Scenario should have an infra id");
     let mut res = Vec::new();
@@ -464,12 +464,12 @@ async fn standalone_simulation(
             timetable_id: id_timetable,
         })?;
 
-    let scenario = scenario_from_timetable(&timetable, db_pool.clone()).await?;
+    let scenario = timetable.get_scenario(db_pool.clone()).await?;
     let infra_id = scenario.infra_id.unwrap();
     let infra = Infra::retrieve(db_pool.clone(), infra_id).await?.unwrap();
     let request_payload =
         create_backend_request_payload(&train_schedules, &scenario, db_pool.clone()).await?;
-    let response_payload = request_payload.fetch(core.as_ref()).await?;
+    let response_payload = request_payload.fetch(&core).await?;
     let simulation_outputs = process_simulation_response(response_payload)?;
 
     assert_eq!(train_schedules.len(), simulation_outputs.len());
@@ -561,7 +561,7 @@ async fn create_backend_request_payload(
         let stop = TrainStop {
             position: None,
             duration: waypoint.duration,
-            location: waypoint.location.clone(),
+            location: Some(waypoint.location.clone()),
         };
         stops.push(stop);
     }
@@ -580,7 +580,7 @@ async fn create_backend_request_payload(
             allowances: ts.allowances.0.to_owned(),
             stops: stops.clone(),
             tag: ts.speed_limit_tags.clone(),
-            comfort: ts.comfort.clone(),
+            comfort: ts.comfort.parse().unwrap(),
             power_restriction_ranges: ts.power_restriction_ranges.to_owned(),
             options: ts.options.to_owned(),
         })
@@ -655,16 +655,4 @@ pub fn process_simulation_response(
         simulation_outputs.push(simulation_output);
     }
     Ok(simulation_outputs)
-}
-
-async fn scenario_from_timetable(timetable: &Timetable, db_pool: Data<DbPool>) -> Result<Scenario> {
-    use crate::tables::osrd_infra_scenario::dsl::*;
-    osrd_infra_scenario
-        .filter(timetable_id.eq(timetable.id.unwrap()))
-        .get_result(&mut db_pool.get().await?)
-        .await
-        .map_err(|err| match err {
-            diesel::result::Error::NotFound => panic!("Timetables should have a scenario"),
-            err => err.into(),
-        })
 }

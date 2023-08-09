@@ -117,6 +117,23 @@ impl RollingStockModel {
             liveries,
         })
     }
+
+    /// Retrieve a rolling stock by its name
+    pub async fn retrieve_by_name(
+        conn: &mut PgConnection,
+        rs_name: String,
+    ) -> Result<Option<Self>> {
+        use crate::tables::osrd_infra_rollingstock::dsl::*;
+        match osrd_infra_rollingstock
+            .filter(name.eq(rs_name))
+            .get_result::<Self>(conn)
+            .await
+        {
+            Ok(rs) => Ok(Some(rs)),
+            Err(DieselError::NotFound) => Ok(None),
+            Err(e) => Err(e.into()),
+        }
+    }
 }
 
 #[async_trait]

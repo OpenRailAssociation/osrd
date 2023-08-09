@@ -15,12 +15,14 @@ use derivative::Derivative;
 use diesel::prelude::*;
 use diesel::result::Error as DieselError;
 use diesel::ExpressionMethods;
+use diesel_async::AsyncPgConnection as PgConnection;
 use diesel_async::RunQueryDsl;
 use editoast_derive::Model;
 use futures::future::try_join_all;
 use serde::{Deserialize, Serialize};
 
 use super::train_schedule::TrainScheduleValidation;
+use super::Scenario;
 
 #[derive(
     Debug,
@@ -164,6 +166,27 @@ impl Timetable {
             .first::<String>(&mut conn)
             .await
             .expect("could not retrieve the version of the infra of a scenario using its timetable")
+    }
+
+    /// Retrieve the associated scenario
+    pub async fn get_scenario_conn(&self, conn: &mut PgConnection) -> Result<Scenario> {
+        use crate::tables::osrd_infra_scenario::dsl::*;
+        let self_id = self.id.expect("Timetable should have an id");
+        match osrd_infra_scenario
+            .filter(timetable_id.eq(self_id))
+            .get_result(conn)
+            .await
+        {
+            Ok(scenario) => Ok(scenario),
+            Err(diesel::result::Error::NotFound) => panic!("Timetables should have a scenario"),
+            Err(err) => Err(err.into()),
+        }
+    }
+
+    /// Retrieve the associated scenario
+    pub async fn get_scenario(&self, db_pool: Data<DbPool>) -> Result<Scenario> {
+        let mut conn = db_pool.get().await.unwrap();
+        self.get_scenario_conn(&mut conn).await
     }
 }
 

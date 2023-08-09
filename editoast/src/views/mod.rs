@@ -65,8 +65,19 @@ pub fn study_routes() -> impl HttpServiceFactory {
 #[openapi(
     info(description = "My Api description"),
     tags(),
-    paths(health, version),
-    components(schemas(Version), responses())
+    paths(health, version, timetable::post_timetable),
+    components(
+        schemas(
+            Version,
+            // Timetable endpoints
+            timetable::TimetableImportItem,
+            timetable::TimetableImportPathStep,
+            timetable::TimetableImportPathLocation,
+            timetable::TimetableImportPathSchedule,
+            timetable::TimetableImportTrain
+        ),
+        responses()
+    )
 )]
 pub struct OpenApiRoot;
 

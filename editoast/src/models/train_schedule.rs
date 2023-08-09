@@ -51,7 +51,9 @@ pub struct TrainSchedule {
     pub allowances: DieselJson<Vec<Allowance>>,
     #[derivative(Default(value = "DieselJson(Default::default())"))]
     pub scheduled_points: DieselJson<Vec<ScheduledPoint>>,
-    #[diesel(deserialize_as = String)]
+    #[derivative(Default(
+        value = "crate::schema::rolling_stock::RollingStockComfortType::default().to_string()"
+    ))]
     pub comfort: String,
     pub speed_limit_tags: Option<String>,
     pub power_restriction_ranges: Option<JsonValue>,
@@ -423,8 +425,8 @@ pub enum Allowance {
 #[derive(Debug, Clone, Derivative, Serialize, Deserialize, PartialEq)]
 #[derivative(Default)]
 pub struct ScheduledPoint {
-    path_offset: f64,
-    time: f64,
+    pub path_offset: f64,
+    pub time: f64,
 }
 
 pub async fn filter_invalid_trains(

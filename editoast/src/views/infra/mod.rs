@@ -211,7 +211,7 @@ async fn list(
     Ok(Json(infras_with_state))
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Default, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize, Default, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum InfraState {
     #[default]
@@ -463,11 +463,6 @@ async fn unlock(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<HttpResponse>
 }
 
 #[derive(Debug, Default, Deserialize)]
-pub struct LoadPayload {
-    infra: i64,
-}
-
-#[derive(Debug, Default, Deserialize)]
 
 pub struct StatePayload {
     infra: Option<i64>,
@@ -475,12 +470,10 @@ pub struct StatePayload {
 
 /// Builds a Core infra load request, runs it
 async fn call_core_infra_load(
-    payload: Json<LoadPayload>,
+    infra_id: i64,
     db_pool: Data<DbPool>,
     core: Data<CoreClient>,
 ) -> Result<()> {
-    let payload = payload.into_inner();
-    let infra_id = payload.infra;
     let infra = Infra::retrieve(db_pool, infra_id)
         .await?
         .ok_or(InfraApiError::NotFound { infra_id })?;
@@ -498,14 +491,13 @@ async fn load(
     db_pool: Data<DbPool>,
     core: Data<CoreClient>,
 ) -> Result<HttpResponse> {
-    let infra = infra.into_inner();
-    let payload = Json(LoadPayload { infra });
-    call_core_infra_load(payload, db_pool, core).await?;
+    let infra_id = infra.into_inner();
+    call_core_infra_load(infra_id, db_pool, core).await?;
     Ok(HttpResponse::NoContent().finish())
 }
 
 /// Builds a Core cache_status request, runs it
-async fn call_core_infra_state(
+pub async fn call_core_infra_state(
     infra_id: Option<i64>,
     db_pool: Data<DbPool>,
     core: Data<CoreClient>,
