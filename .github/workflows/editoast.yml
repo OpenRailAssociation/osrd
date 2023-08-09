@@ -65,16 +65,16 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --release --manifest-path editoast/Cargo.toml --verbose -- --test-threads 1
+          args: --manifest-path editoast/Cargo.toml --verbose -- --test-threads 1
 
       - name: Check openapi.yaml sync
-        run: diff <(cargo run --release --manifest-path editoast/Cargo.toml -- openapi) editoast/openapi.yaml
+        run: diff <(cargo run --manifest-path editoast/Cargo.toml --profile test -- openapi) editoast/openapi.yaml
 
       - name: Install tarpaulin
         run: cargo install cargo-tarpaulin
 
       - name: Coverage
-        run: cargo tarpaulin --release -r ./editoast --out Xml -- --test-threads 1
+        run: cargo tarpaulin -r ./editoast --out Xml -- --test-threads 1
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
