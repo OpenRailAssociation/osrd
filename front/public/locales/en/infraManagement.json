@@ -24,6 +24,7 @@
   "goToEditionMode": "Edit",
   "goToStandardMode": "Back to the selection",
   "infraChoice": "Infrastructures",
+  "infraDeleted": "The {{name}} infrastructure has been deleted.",
   "infraManagement": "Infrastructures management",
   "infraName": "Infrastructure name",
   "infrasFound_zero": "No infrastructure found",
