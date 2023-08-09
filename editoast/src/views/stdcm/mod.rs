@@ -281,14 +281,14 @@ async fn create_path_from_core_response(
     data: &Json<STDCMRequestPayload>,
 ) -> Result<STDCMPath> {
     let core_path_response = core_output.path.clone();
-    let steps = data.steps.clone();
+    let steps_duration = data.steps.iter().map(|step| step.duration).collect();
     let infra_id = data.infra_id;
 
     let conn = &mut db_pool.get().await?;
     let track_map = core_path_response.fetch_track_map(infra_id, conn).await?;
     let op_map = core_path_response.fetch_op_map(infra_id, conn).await?;
     let pathfinding_from_response =
-        Pathfinding::from_core_response(steps, core_path_response, &track_map, &op_map)?;
+        Pathfinding::from_core_response(steps_duration, core_path_response, &track_map, &op_map)?;
     PathfindingChangeset {
         id: None,
         infra_id: Some(infra_id),

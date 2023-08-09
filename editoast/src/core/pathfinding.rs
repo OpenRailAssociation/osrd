@@ -12,7 +12,7 @@ use super::{AsCoreRequest, Json};
 pub type PathfindingWaypoints = Vec<Vec<Waypoint>>;
 
 /// A Core pathfinding request, see also [PathfindingResponse]
-#[derive(Debug, Serialize)]
+#[derive(Debug, Clone, Serialize)]
 pub struct PathfindingRequest {
     infra: i64,
     expected_version: String,
@@ -71,10 +71,11 @@ impl Waypoint {
         }
     }
 
-    pub fn bidirectional(track_section: String, offset: f64) -> [Self; 2] {
+    pub fn bidirectional<T: AsRef<str>>(track_section: T, offset: f64) -> [Self; 2] {
+        let track = track_section.as_ref().to_string();
         [
-            Self::new(track_section.clone(), offset, Direction::StartToStop),
-            Self::new(track_section, offset, Direction::StopToStart),
+            Self::new(track.clone(), offset, Direction::StartToStop),
+            Self::new(track, offset, Direction::StopToStart),
         ]
     }
 }
@@ -97,5 +98,10 @@ impl PathfindingRequest {
     pub fn with_rolling_stocks(&mut self, rolling_stocks: &mut Vec<RollingStock>) -> &mut Self {
         self.rolling_stocks.append(rolling_stocks);
         self
+    }
+
+    /// Returns the number of waypoints in the request
+    pub fn nb_waypoints(&self) -> usize {
+        self.waypoints.len()
     }
 }

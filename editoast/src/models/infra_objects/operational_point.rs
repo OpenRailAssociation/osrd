@@ -1,8 +1,12 @@
 //! Provides the [OperationalPointModel] model
 
+use crate::error::Result;
 use crate::{schema::OperationalPoint, tables::osrd_infra_operationalpointmodel};
 use derivative::Derivative;
-use diesel::{result::Error as DieselError, ExpressionMethods, QueryDsl};
+use diesel::sql_types::{Array, BigInt};
+use diesel::{result::Error as DieselError, sql_query};
+use diesel::{ExpressionMethods, QueryDsl};
+use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
 use editoast_derive::Model;
 use serde::{Deserialize, Serialize};
 
@@ -17,4 +21,21 @@ pub struct OperationalPointModel {
     #[derivative(Default(value = "diesel_json::Json::new(Default::default())"))]
     pub data: diesel_json::Json<OperationalPoint>,
     pub infra_id: i64,
+}
+
+impl OperationalPointModel {
+    /// Retrieve a list of operational points from the database
+    pub async fn retrieve_from_uic(
+        conn: &mut PgConnection,
+        infra_id: i64,
+        uic: Vec<i64>,
+    ) -> Result<Vec<Self>> {
+        let query = "SELECT * FROM osrd_infra_operationalpointmodel
+                                WHERE infra_id = $1 AND (data->'extensions'->'identifier'->'uic')::integer = ANY($2)".to_string();
+        Ok(sql_query(query)
+            .bind::<BigInt, _>(infra_id)
+            .bind::<Array<BigInt>, _>(uic)
+            .load(conn)
+            .await?)
+    }
 }

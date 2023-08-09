@@ -165,7 +165,7 @@ impl WaypointPayload {
             }
             TrackSectionLocation::Offset(offset) => offset,
         };
-        let [wp, wp2] = Waypoint::bidirectional(track.id.clone().to_string(), offset);
+        let [wp, wp2] = Waypoint::bidirectional(&track.id, offset);
         vec![wp, wp2]
     }
 }
@@ -316,7 +316,7 @@ impl PathfindingResponse {
 impl Pathfinding {
     /// Post-processes the Core pathfinding reponse and build a [Pathfinding] model
     pub fn from_core_response(
-        steps: Vec<StepPayload>,
+        steps_duration: Vec<f64>,
         response: PathfindingResponse,
         track_map: &TrackMap,
         op_map: &OpMap,
@@ -331,11 +331,7 @@ impl Pathfinding {
             curves,
             ..
         } = response;
-        let mut steps_duration = steps
-            .iter()
-            .map(|step| step.duration)
-            .collect::<Vec<_>>()
-            .into_iter();
+        let mut steps_duration = steps_duration.into_iter();
         let path_waypoints = path_waypoints
             .iter()
             .map(|waypoint| {
@@ -410,40 +406,60 @@ async fn call_core_pf_and_save_result(
         .await?
         .ok_or(PathfindingError::InfraNotFound { infra_id })?;
 
-    let pathfinding = {
-        let conn = &mut db_pool.get().await?;
-        let track_map = payload.fetch_track_map(conn).await?;
-        let mut waypoints = payload.parse_waypoints(&track_map)?;
-        let mut rolling_stocks = payload.parse_rolling_stocks(conn).await?;
-        let response = PathfindingRequest::new(infra.id.unwrap(), infra.version.unwrap())
-            .with_waypoints(&mut waypoints)
-            .with_rolling_stocks(&mut rolling_stocks)
-            .fetch(core.as_ref())
-            .await?;
-        let response_track_map = response.fetch_track_map(infra_id, conn).await?;
-        let response_op_map = response.fetch_op_map(infra_id, conn).await?;
-        Pathfinding::from_core_response(
-            payload.steps,
-            response,
-            &response_track_map,
-            &response_op_map,
-        )?
-    };
+    let conn = &mut db_pool.get().await?;
+    let track_map = payload.fetch_track_map(conn).await?;
+    let mut waypoints = payload.parse_waypoints(&track_map)?;
+    let mut rolling_stocks = payload.parse_rolling_stocks(conn).await?;
+    let mut path_request = PathfindingRequest::new(infra.id.unwrap(), infra.version.unwrap());
+    path_request
+        .with_waypoints(&mut waypoints)
+        .with_rolling_stocks(&mut rolling_stocks);
+    let steps_duration = payload.steps.iter().map(|step| step.duration).collect();
+    run_pathfinding(
+        &path_request,
+        core,
+        conn,
+        infra_id,
+        update_id,
+        steps_duration,
+    )
+    .await
+}
+
+/// Run a pathfinding request and store the result in the DB
+/// If `update_id` is provided then update the corresponding path instead of creating a new one
+pub async fn run_pathfinding(
+    path_request: &PathfindingRequest,
+    core: Data<CoreClient>,
+    conn: &mut PgConnection,
+    infra_id: i64,
+    update_id: Option<i64>,
+    steps_duration: Vec<f64>,
+) -> Result<Pathfinding> {
+    assert_eq!(steps_duration.len(), path_request.nb_waypoints());
+    let response = path_request.fetch(core.as_ref()).await?;
+    let response_track_map = response.fetch_track_map(infra_id, conn).await?;
+    let response_op_map = response.fetch_op_map(infra_id, conn).await?;
+    let pathfinding = Pathfinding::from_core_response(
+        steps_duration,
+        response,
+        &response_track_map,
+        &response_op_map,
+    )?;
     let changeset = PathfindingChangeset {
         id: None,
-        infra_id: Some(infra.id.unwrap()),
+        infra_id: Some(infra_id),
         ..pathfinding.into()
     };
     let pathfinding: Pathfinding = if let Some(id) = update_id {
         changeset
-            .update(db_pool, id)
+            .update_conn(conn, id)
             .await?
             .expect("row should exist - checked earlier")
             .into()
     } else {
-        changeset.create(db_pool).await?.into()
+        changeset.create_conn(conn).await?.into()
     };
-
     Ok(pathfinding)
 }
 

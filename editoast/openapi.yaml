@@ -2116,6 +2116,95 @@ components:
       required:
       - name
       - tags
+    TimetableImportItem:
+      properties:
+        path:
+          items:
+            $ref: '#/components/schemas/TimetableImportPathStep'
+          type: array
+        rolling_stock:
+          example: 2TGV2N2
+          type: string
+        trains:
+          items:
+            $ref: '#/components/schemas/TimetableImportTrain'
+          type: array
+      required:
+      - rolling_stock
+      - path
+      - trains
+      type: object
+    TimetableImportPathLocation:
+      discriminator:
+        propertyName: type
+      oneOf:
+      - properties:
+          offset:
+            format: double
+            type: number
+          track_section:
+            type: string
+          type:
+            enum:
+            - track_offset
+            type: string
+        required:
+        - track_section
+        - offset
+        - type
+        type: object
+      - properties:
+          type:
+            enum:
+            - operational_point
+            type: string
+          uic:
+            format: int64
+            type: integer
+        required:
+        - uic
+        - type
+        type: object
+    TimetableImportPathSchedule:
+      properties:
+        arrival_time:
+          format: date-time
+          type: string
+        departure_time:
+          format: date-time
+          type: string
+      required:
+      - arrival_time
+      - departure_time
+      type: object
+    TimetableImportPathStep:
+      properties:
+        location:
+          $ref: '#/components/schemas/TimetableImportPathLocation'
+        schedule:
+          additionalProperties:
+            $ref: '#/components/schemas/TimetableImportPathSchedule'
+          example:
+            '7015':
+              arrival_time: 2023-08-17T09:46:00+02:00
+              departure_time: 2023-08-17T09:56:00+02:00
+          type: object
+      required:
+      - location
+      type: object
+    TimetableImportTrain:
+      properties:
+        departure_time:
+          example: 2023-08-17T08:46:00+02:00
+          format: date-time
+          type: string
+        name:
+          example: '7015'
+          type: string
+      required:
+      - name
+      - departure_time
+      type: object
     TimetableWithSchedulesDetails:
       properties:
         id:
@@ -4631,6 +4720,32 @@ paths:
                 $ref: '#/components/schemas/TimetableWithSchedulesDetails'
           description: The timetable content
       summary: Retrieve a timetable and its train schedules
+      tags:
+      - timetable
+    post:
+      description: Import a timetable
+      parameters:
+      - description: Timetable id
+        in: path
+        name: id
+        required: true
+        schema:
+          format: int64
+          minimum: 0
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                $ref: '#/components/schemas/TimetableImportItem'
+              type: array
+        description: ''
+        required: true
+      responses:
+        '204':
+          description: Timetable was successfully imported
+      summary: Import a timetable
       tags:
       - timetable
   /timetable/{id}/conflicts/:

@@ -3,7 +3,7 @@ use crate::models::{
     Allowance, Pathfinding, PathfindingPayload, ResultTrain, RoutePath, ScheduledPoint,
     SignalSighting, ZoneUpdate,
 };
-use crate::schema::rolling_stock::RollingStock;
+use crate::schema::rolling_stock::{RollingStock, RollingStockComfortType};
 use crate::schema::TrackLocation;
 use geos::geojson::JsonValue;
 use serde_derive::{Deserialize, Serialize};
@@ -40,15 +40,16 @@ pub struct CoreTrainSchedule {
     pub allowances: Vec<Allowance>,
     pub stops: Vec<TrainStop>,
     pub tag: Option<String>,
-    pub comfort: String,
+    pub comfort: RollingStockComfortType,
     pub power_restriction_ranges: Option<JsonValue>,
     pub options: Option<JsonValue>,
 }
 
+/// One must be specified between `position` and `location`.
 #[derive(Debug, Clone, Serialize)]
 pub struct TrainStop {
     pub position: Option<f64>,
-    pub location: TrackLocation,
+    pub location: Option<TrackLocation>,
     pub duration: f64,
 }
 
