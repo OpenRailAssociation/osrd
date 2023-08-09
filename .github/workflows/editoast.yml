@@ -17,6 +17,37 @@ on:
       - prod
 
 jobs:
+  editoast_openapi:
+    name: Check openapi.yaml sync
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          # run the CI on the actual latest commit of the PR, not the attempted merge
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Install lib posgresql & geos
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libpq-dev libgeos-dev
+
+      - name: Setup toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      - name: Load cached target
+        uses: actions/cache@v3
+        id: cached-cargo-dependencies
+        with:
+          path: editoast/target/
+          key: osrd-editoast-openapi-target-${{ hashFiles('editoast/Cargo.lock') }}
+
+      - name: Check openapi.yaml sync
+        run: diff <(cargo run --release --manifest-path editoast/Cargo.toml -- openapi) editoast/openapi.yaml
+
   editoast_tests:
     name: Tests editoast and check coverage
     runs-on: ubuntu-latest
@@ -27,7 +58,9 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Install lib posgresql & geos
-        run: sudo apt-get install -y libpq-dev libgeos-dev
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libpq-dev libgeos-dev
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -59,10 +92,7 @@ jobs:
         id: cached-cargo-dependencies
         with:
           path: editoast/target/
-          key: osrd-editoast-target-${{ hashFiles('editoast/Cargo.lock') }}
-
-      - name: Check openapi.yaml sync
-        run: diff <(cargo run --release --manifest-path editoast/Cargo.toml -- openapi) editoast/openapi.yaml
+          key: osrd-editoast-target-tests-${{ hashFiles('editoast/Cargo.lock') }}
 
       - name: Install tarpaulin
         run: cargo install cargo-tarpaulin
@@ -83,7 +113,7 @@ jobs:
           fail_ci_if_error: true
           verbose: true
 
-  linter:
+  editoast_linter:
     name: Check format and run linter
     runs-on: ubuntu-latest
     steps:
@@ -94,7 +124,9 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Install lib posgresql & geos
-        run: sudo apt-get install -y libpq-dev libgeos-dev
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libpq-dev libgeos-dev
 
       - name: Setup toolchain
         uses: actions-rs/toolchain@v1
@@ -108,7 +140,7 @@ jobs:
         id: cached-cargo-dependencies
         with:
           path: editoast/target/
-          key: osrd-editoast-target-${{ hashFiles('editoast/Cargo.lock') }}
+          key: osrd-editoast-target-linter-${{ hashFiles('editoast/Cargo.lock') }}
 
       - name: Format check
         uses: actions-rs/cargo@v1
@@ -121,6 +153,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           args: --all-features --all-targets --manifest-path=editoast/Cargo.toml -- -D warnings
+          
       - name: Documentation check
         run: cargo doc --manifest-path editoast/Cargo.toml
         env:
