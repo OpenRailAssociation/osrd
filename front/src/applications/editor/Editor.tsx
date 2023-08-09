@@ -58,8 +58,9 @@ const Editor: FC = () => {
         state,
       });
     },
-    [infraID, setToolAndState]
+    [infraID, switchTypes, setToolAndState]
   );
+
   const setToolState = useCallback(
     <S extends CommonToolState>(stateOrReducer: Partial<S> | Reducer<S>) => {
       setToolAndState((s) => ({
