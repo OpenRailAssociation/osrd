@@ -112,6 +112,53 @@ impl OpenApiMerger {
         self
     }
 
+    /// Smart replacement and insertion of the new openapi elements into the old one.
+    /// This functions expect that the new openapi contains components at `components/schemas/` and paths at `paths/`.
+    pub fn smart_merge(mut self) -> Self {
+        // Merge components
+        let components_path = Path::new("components/schemas/");
+        let new_schemas = find_json_at(components_path, &mut self.new)
+            .expect("No components found in the new OpenApi")
+            .0
+            .as_object_mut()
+            .unwrap();
+        let old_schemas = find_json_at(components_path, &mut self.old)
+            .expect("No components found in the old OpenApi")
+            .0
+            .as_object_mut()
+            .unwrap();
+        for (key, schema) in new_schemas.iter_mut() {
+            old_schemas.insert(key.clone(), schema.clone());
+        }
+
+        // Merge endpoint paths
+        let paths_path = Path::new("paths/");
+        let new_paths = find_json_at(paths_path, &mut self.new)
+            .expect("No paths found in the new OpenApi")
+            .0
+            .as_object_mut()
+            .unwrap();
+        for (key, path) in new_paths.iter_mut() {
+            let endpoint_path = Path::new("paths/").join(key.trim_matches('/'));
+            match find_json_at(endpoint_path.as_path(), &mut self.old) {
+                // The endpoint already exists, merge the operations
+                Some((old_path, _)) => {
+                    let old_path = old_path.as_object_mut().unwrap();
+                    for (method, operation) in path.as_object_mut().unwrap().iter_mut() {
+                        old_path.insert(method.clone(), operation.clone());
+                    }
+                }
+                // The endpoint doesn't exist, insert all operations
+                None => {
+                    let old_paths = find_json_at(Path::new("paths/"), &mut self.old).unwrap().0;
+                    let old_paths = old_paths.as_object_mut().unwrap();
+                    old_paths.insert(key.clone(), path.clone());
+                }
+            }
+        }
+        self
+    }
+
     /// Takes the subtree at `new_src_path` in the new openapi alongwith its
     /// key and inserts it into the object of the old openapi at `old_parent_path`
     ///
@@ -215,6 +262,20 @@ impl OpenApiMerger {
                     object.insert(key.to_owned(), Json::Object(Default::default()));
                     json = object.get_mut(&key.to_owned()).unwrap();
                 }
+            }
+        }
+        self
+    }
+
+    /// Adds a trailing slash to all paths in the OpenAPI
+    pub fn add_trailing_slash_to_paths(mut self) -> Self {
+        let paths = self.old.as_object_mut().unwrap().get_mut("paths").unwrap();
+        let paths = paths.as_object_mut().unwrap();
+        for key in paths.keys().cloned().collect::<Vec<_>>() {
+            if !key.ends_with('/') {
+                let new_key = format!("{}/", key);
+                let value = paths.remove(&key).unwrap().clone();
+                paths.insert(new_key, value);
             }
         }
         self
@@ -663,6 +724,103 @@ mod test {
                     },
                     "/documents/{key}/bye": {
                         "delete": "delete",
+                    }
+                }
+            })
+        );
+    }
+
+    #[rstest]
+    async fn test_smart_merge() {
+        let hard_old = json!({
+            "paths": {
+                "/documents/": {
+                    "post": "old_post"
+                },
+                "/documents/{key}/": {
+                    "delete": "delete",
+                    "get": "get"
+                },
+                "/electrical_profile_set/": {
+                    "get": "get",
+                    "post": "post"
+                }
+            },
+            "components": {
+                "schemas": {
+                    "A": "OLD_A",
+                    "B": "B"
+                }
+            }
+        });
+        let hard_new = json!({
+            "paths": {
+                "/documents": {
+                    "post": "post",
+                    "patch": "patch"
+                },
+                "/documents/{key}/new": {
+                    "get": "get",
+                },
+                "/documents/{key}/bye": {
+                    "delete": "delete",
+                },
+                "/electrical_profile_set": {
+                    "get": "get",
+                    "post": "post",
+                    "put": "put"
+                },
+                "/electrical_profile_set/{id}": {
+                    "get": "get",
+                    "delete": "delete",
+                    "head": "head"
+                }
+            },
+            "components": {
+                "schemas": {
+                    "A": "A",
+                    "C": "C"
+                }
+            }
+        });
+        let merged = OpenApiMerger::new(hard_old.to_string(), hard_new.to_string())
+            .smart_merge()
+            .add_trailing_slash_to_paths()
+            .finish();
+        assert_eq!(
+            merged,
+            json!({
+                "paths": {
+                    "/documents/": {
+                        "post": "post",
+                        "patch": "patch"
+                    },
+                    "/documents/{key}/": {
+                        "delete": "delete",
+                        "get": "get"
+                    },
+                    "/electrical_profile_set/": {
+                        "get": "get",
+                        "post": "post",
+                        "put": "put"
+                    },
+                    "/electrical_profile_set/{id}/": {
+                        "get": "get",
+                        "delete": "delete",
+                        "head": "head"
+                    },
+                    "/documents/{key}/new/": {
+                        "get": "get",
+                    },
+                    "/documents/{key}/bye/": {
+                        "delete": "delete",
+                    }
+                },
+                "components": {
+                    "schemas": {
+                        "A": "A",
+                        "B": "B",
+                        "C": "C"
                     }
                 }
             })

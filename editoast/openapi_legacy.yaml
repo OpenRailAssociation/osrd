@@ -21,28 +21,6 @@ tags:
     description: Train Schedule
 
 paths:
-  /health/:
-    get:
-      responses:
-        200:
-          description: Check if Editoast is running correctly
-
-  /version/:
-    get:
-      responses:
-        200:
-          description: Return the service version
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  git_describe:
-                    type: string
-                    nullable: true
-                required:
-                  - git_describe
-
   /search/:
     post:
       summary: Generic search endpoint
