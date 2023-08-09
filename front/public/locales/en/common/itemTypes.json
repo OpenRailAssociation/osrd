@@ -1,4 +1,4 @@
 {
-    "trains_one": "{{count}} train",
+    "trains_one": "{{count}} train(s)",
     "trains_other": "{{ count }} trains"
 }
