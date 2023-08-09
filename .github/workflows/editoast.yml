@@ -18,7 +18,7 @@ on:
 
 jobs:
   editoast_tests:
-    name: Tests editoast
+    name: Tests editoast and check coverage
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -61,19 +61,13 @@ jobs:
           path: editoast/target/
           key: osrd-editoast-target-${{ hashFiles('editoast/Cargo.lock') }}
 
-      - name: Run tests
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --release --manifest-path editoast/Cargo.toml --verbose -- --test-threads 1
-
       - name: Check openapi.yaml sync
         run: diff <(cargo run --release --manifest-path editoast/Cargo.toml -- openapi) editoast/openapi.yaml
 
       - name: Install tarpaulin
         run: cargo install cargo-tarpaulin
 
-      - name: Coverage
+      - name: Test and coverage
         run: cargo tarpaulin --release -r ./editoast --out Xml -- --test-threads 1
 
       - name: Upload coverage to Codecov
