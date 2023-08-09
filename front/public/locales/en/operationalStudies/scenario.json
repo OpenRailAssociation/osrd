@@ -35,12 +35,15 @@
     "delete": "Delete",
     "duplicate": "Clone",
     "importTrainSchedule": "Import",
-    "invalidTrains": "The timetable includes invalid trains.",
+    "invalidTrains": "The timetable contains invalid trains.",
     "stopsCount_one": "1 stop",
     "stopsCount_other": "{{ count }} stops",
     "trainAdded": "Train added",
     "trainDeleted": "{{ name }} train has been deleted.",
-    "update": "Edit"
+    "update": "Edit",
+    "trainsSelectionDeletedCount_one": "The train has been deleted.",
+    "trainsSelectionDeletedCount_other": "The {{count}} trains have been deleted."
+
   },
   "trainCount_one": "1 train",
   "trainCount_other": "{{ count }} trains",
@@ -49,5 +52,5 @@
   "conflictsCount_other": "{{count}} conflicts",
   "conflictsCount_zero": "No conflict",
   "Spacing": "Spacing conflict",
-  "Itinerary": "Route conflicts"
+  "Itinerary": "Itineraries conflict"
 }
