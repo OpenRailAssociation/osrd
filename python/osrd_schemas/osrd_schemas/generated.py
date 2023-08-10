@@ -1,6 +1,6 @@
 from typing import Annotated, Literal, Tuple, Union
 
-from pydantic import BaseModel, Field, constr
+from pydantic import BaseModel, Field
 
 from .infra import Identifier
 
@@ -13,16 +13,16 @@ class ObjectReference(BaseModel):
 # TRAITS
 class InfraErrorTrait(BaseModel):
     is_warning: Literal[False] = Field(default=False)
-    obj_id: constr(max_length=255) = Field(description="Identifier of the object that caused the error")
-    obj_type: constr(max_length=32) = Field(description="Type of the object that caused the error")
-    field: constr(max_length=255) = Field(description="Field of the object that caused the error")
+    obj_id: str = Field(description="Identifier of the object that caused the error", max_length=255)
+    obj_type: str = Field(description="Type of the object that caused the error", max_length=32)
+    field: str = Field(description="Field of the object that caused the error", max_length=255)
 
 
 class InfraWarningTrait(BaseModel):
     is_warning: Literal[True] = Field(default=True)
-    obj_id: constr(max_length=255) = Field(description="Identifier of the object that caused the warning")
-    obj_type: constr(max_length=32) = Field(description="Type of the object that caused the warning")
-    field: constr(max_length=255) = Field(description="Field of the object that caused the warning")
+    obj_id: str = Field(description="Identifier of the object that caused the warning", max_length=255)
+    obj_type: str = Field(description="Type of the object that caused the warning", max_length=32)
+    field: str = Field(description="Field of the object that caused the warning", max_length=255)
 
 
 # Errors

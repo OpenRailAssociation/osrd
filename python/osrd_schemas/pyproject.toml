@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "osrd_schemas"
-version = "0.5.1"
+version = "0.6.0"
 description = ""
 authors = ["OSRD <contact@osrd.fr>"]
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.12"
-pydantic = "1.10.10"
-geojson-pydantic = "0.6.3"
+pydantic = "2.1.1"
+geojson-pydantic = "1.0.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23"
