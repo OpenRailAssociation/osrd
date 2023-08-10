@@ -30,7 +30,7 @@ jobs:
       - name: Install dependencies
         run: |
           cd tests
-          poetry install --only dev
+          poetry install
       - name: Flake8
         run: |
           cd tests
