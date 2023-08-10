@@ -402,11 +402,11 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
       </div>
 
       {/* Display the X axis */}
-      {options.resizingScale ? (
+      {options.resizingScale && wrapper.current ? (
         <ResizingScale
           begin={head(data4viz)?.begin || 0}
           end={last(data4viz)?.end || 0}
-          className="scale-x"
+          wrapper={wrapper.current}
         />
       ) : (
         <SimpleScale

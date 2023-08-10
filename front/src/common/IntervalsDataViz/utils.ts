@@ -27,7 +27,7 @@ export function shortNumber(value: unknown): string {
   if (isNil(num)) return '';
 
   if (Math.abs(num) < 1000) {
-    return `${num}`;
+    return `${Math.round(num)}`;
   }
 
   const sign = num < 0 ? '-' : '';
@@ -62,6 +62,14 @@ export function roundNumber(value: number, upper = false): number {
   const round = Math.round(value);
   if (upper) return round < value ? round + 1 : round;
   return round > value ? round - 1 : round;
+}
+
+/**
+ * Given a value, test if it is a round km value
+ * Ex: 1km true, 1.3km false
+ */
+export function isRoundKm(value: number) {
+  return value % 1000 === 0;
 }
 
 /**
