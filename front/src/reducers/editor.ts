@@ -167,7 +167,7 @@ export const initialState: EditorState = {
   // Definition of entities (json schema)
   editorSchema: [],
   // ID of selected layers on which we are working
-  editorLayers: new Set(without(LAYERS, 'errors')),
+  editorLayers: new Set(['track_sections']),
 };
 
 //
