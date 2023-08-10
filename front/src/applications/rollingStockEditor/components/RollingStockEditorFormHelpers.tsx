@@ -151,7 +151,7 @@ const RollingStockEditorParameterFormColumn = ({
               handleType={(type) => {
                 setRollingStockValues({
                   ...rollingStockValues,
-                  [property.title]: type.value,
+                  [property.title]: Number(type.value) || 0,
                 } as SetStateAction<RollingStockParametersValues>);
                 setOptionValue(type.type as string);
               }}
