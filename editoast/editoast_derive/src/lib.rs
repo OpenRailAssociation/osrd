@@ -38,7 +38,7 @@ pub fn infra_model(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 ///
 /// ### Example
 ///
-/// ```
+/// ```ignore
 /// #[derive(Debug, EditoastError)]
 /// #[editoast_error(base_id = "myview", default_status = 404)]
 /// enum MyError {
@@ -101,7 +101,7 @@ pub fn model(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 ///
 /// ## Usage
 ///
-/// ```
+/// ```ignore
 /// #[derive(Search)]
 /// #[search(
 ///     table = "osrd_search_track",
@@ -149,7 +149,7 @@ pub fn search(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 /// given a seach object name, returns the `SearchConfig` of the search object
 /// matching.
 ///
-/// ```
+/// ```ignore
 /// #[derive(Search)]
 /// struct Foo;
 ///
