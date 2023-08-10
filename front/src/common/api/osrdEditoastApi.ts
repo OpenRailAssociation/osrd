@@ -570,7 +570,7 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({
           url: `/train_schedule/results/`,
-          params: { path_id: queryArg.pathId, train_ids: queryArg.trainIds },
+          params: { path_id: queryArg.pathId, timetable_id: queryArg.timetableId },
         }),
         providesTags: ['train_schedule'],
       }),
@@ -1225,8 +1225,8 @@ export type GetTrainScheduleResultsApiResponse =
 export type GetTrainScheduleResultsApiArg = {
   /** Path id used to project the train path */
   pathId: number;
-  /** List of train schedule ids to return the results of */
-  trainIds: string;
+  /** Timetable id */
+  timetableId: string;
 };
 export type PostTrainScheduleStandaloneSimulationApiResponse =
   /** status 201 The ids of the train_schedules created */ number[];
@@ -1987,7 +1987,6 @@ export type Allowance =
   | ({
       allowance_type: 'standard';
     } & StandardAllowance);
-export type InvalidTrainValues = 'NewerRollingStock' | 'NewerInfra';
 export type TrainScheduleOptions = {
   ignore_electrical_profiles?: boolean | null;
 };
@@ -1996,28 +1995,35 @@ export type PowerRestrictionRange = {
   end_position: number;
   power_restriction_code: string;
 };
-export type TrainScheduleSummary = {
-  allowances?: Allowance[];
-  arrival_time: number;
-  comfort?: Comfort;
+export type TrainSchedule = {
+  allowances: Allowance[];
+  comfort: Comfort;
   departure_time: number;
   id: number;
-  initial_speed?: number;
-  invalid_reasons?: InvalidTrainValues[];
+  initial_speed: number;
   labels: string[];
-  mechanical_energy_consumed: {
-    base?: number;
-    eco?: number;
-  };
-  options?: TrainScheduleOptions | null;
-  path_id?: number;
-  path_length?: number;
-  power_restriction_ranges?: PowerRestrictionRange[] | null;
-  rolling_stock_id?: number;
-  speed_limit_tags?: string;
-  stops_count?: number;
-  timetable_id?: number;
+  options: TrainScheduleOptions | null;
+  path_id: number;
+  power_restriction_ranges: PowerRestrictionRange[] | null;
+  rolling_stock_id: number;
+  scheduled_points: {
+    path_offset: number;
+    time: number;
+  }[];
+  speed_limit_tags: string | null;
+  timetable_id: number;
   train_name: string;
+};
+export type InvalidTrainValues = 'NewerRollingStock' | 'NewerInfra';
+export type TrainScheduleSummary = TrainSchedule & {
+  arrival_time: number;
+  invalid_reasons: InvalidTrainValues[];
+  mechanical_energy_consumed: {
+    base: number;
+    eco: number | null;
+  };
+  path_length: number;
+  stops_count: number;
 };
 export type TimetableWithSchedulesDetails = {
   id: number;
@@ -2071,7 +2077,7 @@ export type SimulationReportByTrain = {
   })[];
   stops: {
     duration: number;
-    id: number;
+    id: string | null;
     line_code: number;
     line_name: string;
     name: string;
@@ -2126,24 +2132,6 @@ export type TrainScheduleBatchItem = {
   }[];
   speed_limit_tags?: string | null;
   train_name: string;
-};
-export type TrainSchedule = {
-  allowances?: Allowance[];
-  comfort?: Comfort;
-  departure_time?: number;
-  initial_speed?: number;
-  labels?: string[];
-  options?: TrainScheduleOptions | null;
-  path?: number;
-  power_restriction_ranges?: PowerRestrictionRange[] | null;
-  rolling_stock?: number;
-  scheduled_points?: {
-    path_offset: number;
-    time: number;
-  }[];
-  speed_limit_tags?: string;
-  timetable?: number;
-  train_name?: string;
 };
 export type Version = {
   git_describe: string | null;
