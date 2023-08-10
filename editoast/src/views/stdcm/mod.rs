@@ -2,21 +2,23 @@ use crate::core::stdcm::{
     STDCMCoreRequest, STDCMCoreResponse, STDCMCoreRouteOccupancy, STDCMCoreStep,
 };
 use crate::core::{AsCoreRequest, CoreClient};
+use crate::diesel::BelongingToDsl;
+use crate::diesel::RunQueryDsl;
 use crate::error::Result;
-use editoast_derive::EditoastError;
-use serde::{Deserialize, Serialize};
-use thiserror::Error;
-
-use crate::models::Create;
+use crate::models::train_schedule::filter_invalid_trains;
+use crate::models::{Create, SimulationOutput};
 use crate::models::{
-    simulation_output::OutputSimulationTrainSchedule, CurveGraph, Infra, PathWaypoint, Pathfinding,
-    PathfindingChangeset, PathfindingPayload, Retrieve, SlopeGraph, TrainSchedule,
+    CurveGraph, Infra, PathWaypoint, Pathfinding, PathfindingChangeset, PathfindingPayload,
+    Retrieve, SlopeGraph, TrainSchedule,
 };
 use crate::views::rolling_stocks::retrieve_existing_rolling_stock;
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
 use actix_web::web::{self, block, Data, Json};
 use actix_web::{post, HttpResponse, Responder};
+use editoast_derive::EditoastError;
+use serde::{Deserialize, Serialize};
+use thiserror::Error;
 
 use super::pathfinding::{
     fetch_pathfinding_payload_track_map, parse_pathfinding_payload_waypoints, StepPayload,
@@ -172,13 +174,14 @@ async fn call_core_stdcm(
         .ok_or(StdcmError::InfraNotFound {
             infra_id: data.infra_id,
         })?;
+    let infra_version = infra.clone().version.unwrap();
     let rolling_stock = retrieve_existing_rolling_stock(&db_pool, data.rolling_stock_id).await?;
-
     let steps = parse_stdcm_steps(db_pool.clone(), data, &infra).await?;
-    let route_occupancies = make_route_occupancies(db_pool, data.timetable_id).await?;
+    let route_occupancies =
+        make_route_occupancies(infra_version.clone(), db_pool, data.timetable_id).await?;
     STDCMCoreRequest {
         infra: infra.id.unwrap().to_string(),
-        expected_version: infra.version.unwrap(),
+        expected_version: infra_version,
         rolling_stock,
         comfort: data.comfort.clone(),
         steps,
@@ -232,29 +235,49 @@ async fn parse_stdcm_steps(
 /// Create route occupancies, adjusted by simulation departure time.
 /// uses base_simulation by default, or eco_simulation if given
 async fn make_route_occupancies(
+    infra_version: String,
     db_pool: Data<DbPool>,
     timetable_id: i64,
 ) -> Result<Vec<STDCMCoreRouteOccupancy>> {
-    let simulations =
-        OutputSimulationTrainSchedule::from_timetable_id(timetable_id, db_pool).await?;
+    let schedules = filter_invalid_trains(db_pool.clone(), timetable_id, infra_version).await?;
+    let (simulations, schedules): (Vec<SimulationOutput>, Vec<TrainSchedule>) =
+        block::<_, Result<_>>(move || {
+            let mut conn = db_pool.get()?;
+            Ok((
+                SimulationOutput::belonging_to(&schedules).load::<SimulationOutput>(&mut conn)?,
+                schedules,
+            ))
+        })
+        .await
+        .unwrap()
+        .unwrap();
     Ok(simulations
         .iter()
-        .flat_map(|simulation| {
-            let sim = simulation
-                .simulation_output
-                .eco_simulation
-                .as_ref()
-                .unwrap_or(&simulation.simulation_output.base_simulation);
-            sim.route_occupancies
+        .filter_map(|simulation| {
+            if let Some(schedule) = schedules
                 .iter()
-                .map(|(route_id, occupancy)| STDCMCoreRouteOccupancy {
-                    id: route_id.to_string(),
-                    start_occupancy_time: occupancy.time_head_occupy
-                        + simulation.schedule_departure_time.unwrap(),
-                    end_occupancy_time: occupancy.time_tail_free
-                        + simulation.schedule_departure_time.unwrap(),
-                })
+                .find(|s| s.id == simulation.train_schedule_id)
+            {
+                let sim = simulation
+                    .eco_simulation
+                    .as_ref()
+                    .unwrap_or(&simulation.base_simulation);
+                Some(
+                    sim.route_occupancies
+                        .iter()
+                        .map(|(route_id, occupancy)| STDCMCoreRouteOccupancy {
+                            id: route_id.to_string(),
+                            start_occupancy_time: occupancy.time_head_occupy
+                                + schedule.departure_time,
+                            end_occupancy_time: occupancy.time_tail_free + schedule.departure_time,
+                        })
+                        .collect::<Vec<_>>(),
+                )
+            } else {
+                None
+            }
         })
+        .flatten()
         .collect())
 }
 

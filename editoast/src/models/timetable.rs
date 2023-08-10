@@ -162,7 +162,9 @@ impl Timetable {
                 .inner_join(infra_dsl::osrd_infra_infra)
                 .select(infra_dsl::version)
                 .first::<String>(&mut conn)
-                .unwrap()
+                .expect(
+                    "could not retrieve the version of the infra of a scenario using its timetable",
+                )
         })
         .await
         .unwrap()

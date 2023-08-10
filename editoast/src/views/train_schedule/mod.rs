@@ -2,10 +2,10 @@ use std::collections::{HashMap, HashSet};
 
 use crate::core::{AsCoreRequest, CoreClient};
 use crate::error::{InternalError, Result};
-use crate::models::train_schedule::{Allowance, ScheduledPoint};
+use crate::models::train_schedule::{filter_invalid_trains, Allowance, ScheduledPoint};
 use crate::models::{
-    check_train_validity, Create, Delete, Infra, LightRollingStockModel, Pathfinding, Retrieve,
-    RollingStockModel, Scenario, SimulationOutputChangeset, TrainScheduleChangeset, Update,
+    Create, Delete, Infra, LightRollingStockModel, Pathfinding, Retrieve, RollingStockModel,
+    Scenario, SimulationOutputChangeset, TrainScheduleChangeset, Update,
 };
 use crate::models::{Timetable, TrainSchedule};
 
@@ -338,29 +338,9 @@ async fn get_results(
     let infra_version = timetable
         .infra_version_from_timetable(db_pool.clone())
         .await;
-    let pool = db_pool.clone();
-    let mut schedules = timetable.get_train_schedules(pool.clone()).await?;
-    let schedules = block::<_, Result<_>>(move || {
-        let mut conn = db_pool.clone().get()?;
-        schedules.retain(|schedule| {
-            let rolling_stock =
-                LightRollingStockModel::retrieve_conn(&mut conn, schedule.rolling_stock_id)
-                    .unwrap();
-            let current_rolling_stock_version = rolling_stock.unwrap().version;
-            check_train_validity(
-                &infra_version,
-                schedule.rollingstock_version.unwrap(),
-                &schedule.infra_version.clone().unwrap(),
-                current_rolling_stock_version,
-            )
-            .is_empty()
-        });
-        Ok(schedules)
-    })
-    .await
-    .unwrap()
-    .unwrap();
-    if schedules.clone().is_empty() {
+    let schedules =
+        filter_invalid_trains(db_pool.clone(), timetable.id.unwrap(), infra_version).await?;
+    if schedules.is_empty() {
         return Err(TrainScheduleError::NoTrainIds.into());
     }
 
@@ -369,7 +349,7 @@ async fn get_results(
         None => schedules[0].path_id,
     };
 
-    let projection_path = Pathfinding::retrieve(pool.clone(), path_id)
+    let projection_path = Pathfinding::retrieve(db_pool.clone(), path_id)
         .await?
         .ok_or(TrainScheduleError::PathNotFound { path_id })?;
 
@@ -377,12 +357,12 @@ async fn get_results(
 
     let projection = Projection::new(&projection_path_payload);
 
-    let scenario = scenario_from_timetable(&timetable, pool.clone())?;
+    let scenario = scenario_from_timetable(&timetable, db_pool.clone())?;
 
     let infra = scenario.infra_id.expect("Scenario should have an infra id");
     let mut res = Vec::new();
     for schedule in schedules {
-        let simulation_output = fetch_simulation_output(&schedule, pool.clone()).await?;
+        let simulation_output = fetch_simulation_output(&schedule, db_pool.clone()).await?;
         let simulation_output_content = SimulationOutputChangeset::from(simulation_output);
         let sim_report = simulation_report::create_simulation_report(
             infra,
@@ -390,7 +370,7 @@ async fn get_results(
             &projection,
             &projection_path_payload,
             simulation_output_content,
-            pool.clone(),
+            db_pool.clone(),
             core.as_ref(),
         )
         .await?;
