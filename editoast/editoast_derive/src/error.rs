@@ -26,8 +26,8 @@ struct ParsedVariant {
     fields: Fields,
 }
 
-pub fn expand_editoast_error(input: &mut DeriveInput) -> Result<TokenStream> {
-    let options = ErrorOptions::from_derive_input(&input)?;
+pub fn expand_editoast_error(input: &DeriveInput) -> Result<TokenStream> {
+    let options = ErrorOptions::from_derive_input(input)?;
 
     let name = &input.ident;
     let base_id = options.base_id;
@@ -36,7 +36,7 @@ pub fn expand_editoast_error(input: &mut DeriveInput) -> Result<TokenStream> {
         syn::Data::Enum(data) => data,
         _ => return Err(Error::custom("EditoastError: Only enums are supported.")),
     };
-    let variants = parse_variants(&enum_data)?;
+    let variants = parse_variants(enum_data)?;
 
     let get_statuses = expand_get_statuses(
         &variants,
@@ -84,7 +84,7 @@ fn parse_variants(enum_data: &DataEnum) -> Result<Vec<ParsedVariant>> {
     Ok(variants)
 }
 
-fn expand_get_statuses(variants: &Vec<ParsedVariant>, default_status: u16) -> Result<TokenStream> {
+fn expand_get_statuses(variants: &[ParsedVariant], default_status: u16) -> Result<TokenStream> {
     let match_variants = variants.iter().map(|variant| {
         let ident = &variant.ident;
         quote! {#ident {..}}
@@ -102,7 +102,7 @@ fn expand_get_statuses(variants: &Vec<ParsedVariant>, default_status: u16) -> Re
     })
 }
 
-fn expand_get_types(variants: &Vec<ParsedVariant>, base_id: String) -> TokenStream {
+fn expand_get_types(variants: &[ParsedVariant], base_id: String) -> TokenStream {
     let match_variants = variants.iter().map(|variant| {
         let ident = &variant.ident;
         quote! {#ident {..}}
@@ -119,7 +119,7 @@ fn expand_get_types(variants: &Vec<ParsedVariant>, base_id: String) -> TokenStre
     }
 }
 
-fn expand_contexts(variants: &Vec<ParsedVariant>) -> TokenStream {
+fn expand_contexts(variants: &[ParsedVariant]) -> TokenStream {
     let context = variants.iter().map(|variant| {
         let ident = &variant.ident;
         let no_context = variant.params.no_context.unwrap_or(false);

@@ -40,8 +40,8 @@ impl Config {
     }
 }
 
-pub fn model(input: &mut DeriveInput) -> Result<TokenStream> {
-    let options = ModelOptions::from_derive_input(&input).expect("Model: bad options");
+pub fn model(input: &DeriveInput) -> Result<TokenStream> {
+    let options = ModelOptions::from_derive_input(input).expect("Model: bad options");
     let model_name = &input.ident;
     let config = Config::new(model_name.clone(), &options);
 
