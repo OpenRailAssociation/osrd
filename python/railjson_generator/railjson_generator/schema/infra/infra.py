@@ -52,7 +52,7 @@ class Infra:
 
     def save(self, path):
         with open(path, "w") as f:
-            print(self.to_rjs().json(indent=2), file=f)
+            print(self.to_rjs().model_dump_json(indent=2, exclude_unset=True), file=f)
 
     def make_rjs_signals(self):
         for track in self.track_sections:
@@ -82,15 +82,17 @@ class Infra:
                 id=op.label,
                 parts=parts_per_op[op.label],
                 name=op.label,
+                extensions={
+                    "sncf": infra.OperationalPointSncfExtension(
+                        ci=0,
+                        ch="aa",
+                        ch_short_label="aa",
+                        ch_long_label="0",
+                        trigram=op.trigram,
+                    ),
+                    "identifier": infra.OperationalPointIdentifierExtension(uic=0, name=op.label),
+                },
             )
-            new_op.extensions["sncf"] = infra.OperationalPointSncfExtension(
-                ci=0,
-                ch="aa",
-                ch_short_label="aa",
-                ch_long_label="0",
-                trigram=op.trigram,
-            )
-            new_op.extensions["identifier"] = infra.OperationalPointIdentifierExtension(uic=0, name=op.label)
             ops.append(new_op)
         return ops
 

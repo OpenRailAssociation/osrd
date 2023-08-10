@@ -676,7 +676,7 @@ ep_boundaries = {
     "4": [(0, 2), (2, 4), (4, 6), (6, 8), (8, 10)],
     "5": [(0, 1), (1, 3), (3, 7), (7, 9), (9, 10)],
 }
-EP_VALUES = [25000, 22500, 20000]
+EP_VALUES = ["25000", "22500", "20000"]
 
 for power_class, boundaries in ep_boundaries.items():
     for i, (start, end) in enumerate(boundaries):

@@ -71,7 +71,7 @@ class TrainSchedule:
             "initial_speed": self.initial_speed,
             "rolling_stock": self.rolling_stock,
             "stops": [s.format() for s in stops],
-            "allowances": [a.dict() for a in self.allowances],
+            "allowances": [a.model_dump() for a in self.allowances],
         }
 
 
