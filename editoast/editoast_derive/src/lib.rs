@@ -51,8 +51,8 @@ pub fn infra_model(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 /// ```
 #[proc_macro_derive(EditoastError, attributes(editoast_error))]
 pub fn error(input: TokenStream) -> TokenStream {
-    let mut input = parse_macro_input!(input as DeriveInput);
-    error::expand_editoast_error(&mut input)
+    let input = parse_macro_input!(input as DeriveInput);
+    error::expand_editoast_error(&input)
         .unwrap_or_else(darling::Error::write_errors)
         .into()
 }
@@ -88,8 +88,8 @@ pub fn error(input: TokenStream) -> TokenStream {
 ///   - Insertable (for **create**)
 #[proc_macro_derive(Model, attributes(model))]
 pub fn model(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    let mut input = parse_macro_input!(input as DeriveInput);
-    model::model(&mut input)
+    let input = parse_macro_input!(input as DeriveInput);
+    model::model(&input)
         .unwrap_or_else(darling::Error::write_errors)
         .into()
 }
