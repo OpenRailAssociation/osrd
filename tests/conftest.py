@@ -83,7 +83,9 @@ def small_scenario(small_infra: Infra, foo_project_id: int, foo_study_id: int) -
 def _create_fast_rolling_stocks(test_rolling_stocks: List[TestRollingStock] = None):
     if test_rolling_stocks is None:
         payload = json.loads(FAST_ROLLING_STOCK_JSON_PATH.read_text())
-        return [requests.post(f"{EDITOAST_URL}rolling_stock/", json=payload).json()["id"]]
+        response = requests.post(f"{EDITOAST_URL}rolling_stock/", json=payload).json()
+        assert "id" in response, f"Failed to create rolling stock: {response}"
+        return [response["id"]]
     ids = []
     for rs in test_rolling_stocks:
         payload = json.loads(rs.base_path.read_text())
