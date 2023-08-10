@@ -1,8 +1,8 @@
 /* Filters */
 .rollingstock-search {
-  display: block;
-  position: relative;
-  height: 100%;
+  display: flex;
+  flex-direction: column;
+  height: 80vh;
 }
 .rollingstock-search-filters {
   display: block;
@@ -13,10 +13,8 @@
 
 /* Results */
 .rollingstock-search-list {
-  display: block;
-  position: relative;
   overflow: auto;
-  height: 70vh;
+  flex-grow: 1;
   .loader {
     margin-top: 1rem;
     transform: none;

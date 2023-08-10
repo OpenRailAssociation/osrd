@@ -97,7 +97,7 @@ function RollingStockModal({ ref2scroll }: RollingStockModal) {
   }
 
   return (
-    <ModalBodySNCF>
+    <ModalBodySNCF style={{ paddingBottom: 0 }}>
       <div className="rollingstock-search p-2">
         <div className="rollingstock-search-filters">
           <button type="button" className="close" aria-label="Close" onClick={closeModal}>
