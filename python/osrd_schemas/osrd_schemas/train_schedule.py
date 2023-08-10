@@ -1,15 +1,15 @@
 from enum import Enum
-from typing import List, Literal, Union
+from typing import Annotated, List, Literal, Union
 
-from pydantic import BaseModel, Field, constr
+from pydantic import BaseModel, Field, RootModel, StringConstraints
 
 # Labels
 
 
-class TrainScheduleLabels(BaseModel):
+class TrainScheduleLabels(RootModel):
     """This class defines train schedule labels."""
 
-    __root__: List[constr(max_length=128)]
+    root: List[Annotated[str, StringConstraints(max_length=128)]]
 
 
 # MRSP
@@ -26,10 +26,10 @@ class MRSPPoint(BaseModel):
     speed: float = Field(description="Speed at the point considered in meters per second", ge=0)
 
 
-class MRSP(BaseModel):
+class MRSP(RootModel):
     """This class is used to compute the MRSP."""
 
-    __root__: List[MRSPPoint] = Field(description="List of each point used to calculate the MRSP envelope")
+    root: List[MRSPPoint] = Field(description="List of each point used to calculate the MRSP envelope")
 
 
 # Allowances
@@ -58,10 +58,10 @@ class AllowancePercentValue(BaseModel):
     percentage: float = Field(description="%", gt=0)
 
 
-class AllowanceValue(BaseModel):
+class AllowanceValue(RootModel):
     """This class allows to choose the different present types of values used to apply an allowance."""
 
-    __root__: Union[AllowanceTimeValue, AllowancePercentValue, AllowanceTimePerDistanceValue] = Field(
+    root: Union[AllowanceTimeValue, AllowancePercentValue, AllowanceTimePerDistanceValue] = Field(
         discriminator="value_type"
     )
 
@@ -117,16 +117,16 @@ class StandardAllowance(BaseModel):
     )
 
 
-class Allowance(BaseModel):
+class Allowance(RootModel):
     """This class allows to choose the two different types of allowance."""
 
-    __root__: Union[EngineeringAllowance, StandardAllowance] = Field(discriminator="allowance_type")
+    root: Union[EngineeringAllowance, StandardAllowance] = Field(discriminator="allowance_type")
 
 
-class Allowances(BaseModel):
+class Allowances(RootModel):
     """This class defines all the final allowances contained on the considered path."""
 
-    __root__: List[Allowance] = Field(description="List of all well-defined allowances of the path")
+    root: List[Allowance] = Field(description="List of all well-defined allowances of the path")
 
 
 # Scheduled points
@@ -141,10 +141,10 @@ class ScheduledPoint(BaseModel):
     )
 
 
-class ScheduledPoints(BaseModel):
+class ScheduledPoints(RootModel):
     """A list of schedule point"""
 
-    __root__: List[ScheduledPoint] = Field(description="List of schedule point")
+    root: List[ScheduledPoint] = Field(description="List of schedule point")
 
 
 # Power restrictions
@@ -163,10 +163,10 @@ class PowerRestrictionRange(BaseModel):
     power_restriction_code: str = Field(description="The code of the power restriction to apply")
 
 
-class PowerRestrictionRanges(BaseModel):
+class PowerRestrictionRanges(RootModel):
     """A list of power restriction ranges."""
 
-    __root__: List[PowerRestrictionRange]
+    root: List[PowerRestrictionRange]
 
 
 class TrainScheduleOptions(BaseModel):

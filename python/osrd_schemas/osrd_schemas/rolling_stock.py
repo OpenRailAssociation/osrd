@@ -1,15 +1,15 @@
 from enum import Enum
-from typing import List, Literal, Mapping, Optional, Union, get_args
+from typing import Annotated, List, Literal, Mapping, Optional, Union, get_args
 
 from pydantic import (
     BaseModel,
     Extra,
     Field,
+    NonNegativeFloat,
     PositiveFloat,
-    confloat,
-    conlist,
-    constr,
-    root_validator,
+    RootModel,
+    StringConstraints,
+    model_validator,
 )
 
 from .infra import LoadingGaugeType
@@ -30,27 +30,27 @@ class ComfortType(str, Enum):
 
 class RollingResistance(BaseModel, extra=Extra.forbid):
     type: Literal["davis"]
-    A: confloat(ge=0)
-    B: confloat(ge=0)
-    C: confloat(ge=0)
+    A: NonNegativeFloat
+    B: NonNegativeFloat
+    C: NonNegativeFloat
 
 
 class EffortCurve(BaseModel, extra=Extra.forbid):
-    speeds: conlist(confloat(ge=0), min_items=2) = Field(
-        description="Curves mapping speed (in m/s) to maximum traction (in newtons)"
+    speeds: List[NonNegativeFloat] = Field(
+        min_length=2, description="Curves mapping speed (in m/s) to maximum traction (in newtons)"
     )
-    max_efforts: conlist(confloat(ge=0), min_items=2)
+    max_efforts: List[NonNegativeFloat] = Field(min_length=2)
 
-    @root_validator(skip_on_failure=True)
-    def check_size(cls, v):
-        assert len(v["speeds"]) == len(v["max_efforts"]), "speeds and max_efforts must be the same length"
-        return v
+    @model_validator(mode="after")
+    def check_size(self):
+        assert len(self.speeds) == len(self.speeds), "speeds and max_efforts must be the same length"
+        return self
 
 
 class EffortCurveConditions(BaseModel, extra=Extra.forbid):
-    comfort: Optional[ComfortType]
-    electrical_profile_level: Optional[str]
-    power_restriction_code: Optional[str]
+    comfort: Optional[ComfortType] = None
+    electrical_profile_level: Optional[str] = None
+    power_restriction_code: Optional[str] = None
 
 
 class ConditionalEffortCurve(BaseModel, extra=Extra.forbid):
@@ -79,12 +79,12 @@ class EffortCurves(BaseModel, extra=Extra.forbid):
     modes: Mapping[str, ModeEffortCurves] = Field(description="Map profiles such as '25kV' to comfort effort curves")
     default_mode: str = Field(description="The default profile to use")
 
-    @root_validator(skip_on_failure=True)
-    def check_default_profile(cls, v):
+    @model_validator(mode="after")
+    def check_default_mode(self):
         assert (
-            v["default_mode"] in v["modes"]
-        ), f"Invalid default mode '{v['default_mode']}' expected one of [{', '.join(v['modes'].keys())}]"
-        return v
+            self.default_mode in self.modes
+        ), f"Invalid default mode '{self.default_mode}' expected one of [{', '.join(self.modes.keys())}]"
+        return self
 
 
 class GammaType(str, Enum):
@@ -98,28 +98,28 @@ class Gamma(BaseModel, extra=Extra.forbid):
 
 
 class RollingStockLivery(BaseModel):
-    name: constr(max_length=255)
+    name: str = Field(max_length=255)
 
 
-class PowerRestrictions(BaseModel):
-    __root__: Mapping[str, str]
+class PowerRestrictions(RootModel):
+    root: Mapping[str, str]
 
 
 class RefillLaw(BaseModel, extra=Extra.forbid):
     """The EnergyStorage refilling behavior"""
 
-    tau: confloat(ge=0) = Field(description="Time constant of the refill behavior (in seconds)")
-    soc_ref: confloat(ge=0, le=1) = Field(description="Reference (target) value of state of charge")
+    tau: float = Field(ge=0, description="Time constant of the refill behavior (in seconds)")
+    soc_ref: float = Field(ge=0, le=1, description="Reference (target) value of state of charge")
 
 
 class EnergyStorage(BaseModel, extra=Extra.forbid):
     """If the EnergySource is capable of storing some energy"""
 
-    capacity: confloat(ge=0) = Field(description="How much energy the source can store (in Joules)")
-    soc: confloat(ge=0, le=1) = Field(description="The state of charge, SoC·capacity = actual stock of energy")
-    soc_min: confloat(ge=0, le=1) = Field(description="The minimum SoC, where the available energy is zero")
-    soc_max: confloat(ge=0, le=1) = Field(description="The maximum SoC, where the available energy is capacity")
-    refill_law: Optional[RefillLaw]
+    capacity: float = Field(ge=0, description="How much energy the source can store (in Joules)")
+    soc: float = Field(ge=0, le=1, description="The state of charge, SoC·capacity = actual stock of energy")
+    soc_min: float = Field(ge=0, le=1, description="The minimum SoC, where the available energy is zero")
+    soc_max: float = Field(ge=0, le=1, description="The maximum SoC, where the available energy is capacity")
+    refill_law: Optional[RefillLaw] = None
 
 
 class SpeedDependantPower(BaseModel, extra=Extra.forbid):
@@ -129,13 +129,13 @@ class SpeedDependantPower(BaseModel, extra=Extra.forbid):
     - the power outputted by Hydrogen fuel cells increases with speed
     """
 
-    speeds: conlist(confloat(ge=0), min_items=1) = Field(description="speed values")
-    powers: conlist(confloat(ge=0), min_items=1) = Field(description="power values")
+    speeds: List[NonNegativeFloat] = Field(min_length=1, description="speed values")
+    powers: List[NonNegativeFloat] = Field(min_length=1, description="power values")
 
-    @root_validator(skip_on_failure=True)
-    def check_size(cls, v):
-        assert len(v["speeds"]) == len(v["powers"]), "speeds and powers must have the same length"
-        return v
+    @model_validator(mode="after")
+    def check_size(self):
+        assert len(self.speeds) == len(self.powers), "speeds and powers must have the same length"
+        return self
 
 
 class Catenary(BaseModel, extra=Extra.forbid):
@@ -144,7 +144,7 @@ class Catenary(BaseModel, extra=Extra.forbid):
     energy_source_type: Literal["Catenary"] = Field(default="Catenary")
     max_input_power: SpeedDependantPower
     max_output_power: SpeedDependantPower
-    efficiency: confloat(ge=0, le=1) = Field(description="Efficiency of the catenary / pantograph transmission")
+    efficiency: float = Field(ge=0, le=1, description="Efficiency of catenary and pantograph transmission")
 
 
 class PowerPack(BaseModel, extra=Extra.forbid):
@@ -154,7 +154,7 @@ class PowerPack(BaseModel, extra=Extra.forbid):
     max_input_power: SpeedDependantPower
     max_output_power: SpeedDependantPower
     energy_storage: EnergyStorage
-    efficiency: confloat(ge=0, le=1) = Field(description="Efficiency of the power pack")
+    efficiency: float = Field(ge=0, le=1, description="Efficiency of the power pack")
 
 
 class Battery(BaseModel, extra=Extra.forbid):
@@ -164,19 +164,19 @@ class Battery(BaseModel, extra=Extra.forbid):
     max_input_power: SpeedDependantPower
     max_output_power: SpeedDependantPower
     energy_storage: EnergyStorage
-    efficiency: confloat(ge=0, le=1) = Field(description="Efficiency of the battery")
+    efficiency: float = Field(ge=0, le=1, description="Battery efficiency")
 
 
-class EnergySource(BaseModel, extra=Extra.forbid):
+class EnergySource(RootModel, extra=Extra.forbid):
     """Energy sources used when simulating qualesi trains"""
 
-    __root__: Union[Catenary, PowerPack, Battery] = Field(discriminator="energy_source_type")
+    root: Union[Catenary, PowerPack, Battery] = Field(discriminator="energy_source_type")
 
 
-class EnergySourcesList(BaseModel):
+class EnergySourcesList(RootModel):
     """List of energy sources used when simulating qualesi trains"""
 
-    __root__: List[EnergySource]
+    root: List[EnergySource]
 
 
 class RollingStock(BaseModel, extra=Extra.forbid):
@@ -196,36 +196,42 @@ class RollingStock(BaseModel, extra=Extra.forbid):
 
     railjson_version: RAILJSON_ROLLING_STOCK_VERSION_TYPE = Field(default=RAILJSON_ROLLING_STOCK_VERSION)
     version: int = Field(default=0, description="Rolling stock version")
-    name: constr(max_length=255)
+    name: str = Field(max_length=255)
     locked: bool = Field(default=False, description="Whether the rolling stock can be edited/deleted or not")
     effort_curves: EffortCurves = Field(description="Curves mapping speed (in m/s) to maximum traction (in newtons)")
     base_power_class: Optional[str] = Field(
-        description="The power usage class of the train (optional because it is specific to SNCF)"
+        description="The power usage class of the train (optional because it is specific to SNCF)", default=None
     )
     power_restrictions: Optional[PowerRestrictions] = Field(
-        description="Mapping from train's power restriction codes to power classes"
+        description="Mapping from train's power restriction codes to power classes", default=None
     )
     length: PositiveFloat = Field(description="The length of the train, in m")
     max_speed: PositiveFloat = Field(description="Maximum speed in m/s")
-    startup_time: confloat(ge=0) = Field(description="The time the train takes before it can start accelerating in s")
-    startup_acceleration: confloat(ge=0) = Field(description="The maximum acceleration during startup in m/s^2")
+    startup_time: float = Field(ge=0, description="The time the train takes before it can start accelerating in s")
+    startup_acceleration: float = Field(ge=0, description="The maximum acceleration during startup in m/s^2")
     comfort_acceleration: PositiveFloat = Field(description="The maximum operational acceleration in m/s^2")
     gamma: Gamma = Field(description="The max or const braking coefficient in m/s^2")
     inertia_coefficient: float = Field(gt=0)
-    features: List[constr(max_length=255)] = Field(description="A list of features the train exhibits")
+    features: List[Annotated[str, StringConstraints(max_length=255)]] = Field(
+        description="A list of features the train exhibits"
+    )
     mass: PositiveFloat = Field(description="The mass of the train, in kg")
     rolling_resistance: RollingResistance = Field(description="The formula to use to compute rolling resistance")
     loading_gauge: LoadingGaugeType
     metadata: Mapping[str, str] = Field(description="Properties used in the frontend to display the rolling stock")
     energy_sources: List[EnergySource] = Field(default_factory=list)
-    electrical_power_startup_time: Optional[confloat(ge=0)] = Field(
+    electrical_power_startup_time: Optional[float] = Field(
         description="The time the train takes before actually using electrical power (in s). "
-        + "Is null if the train is not electric."
+        + "Is null if the train is not electric.",
+        default=None,
+        ge=0,
     )
-    raise_pantograph_time: Optional[confloat(ge=0)] = Field(
-        description="The time it takes to raise this train's pantograph in s. Is null if the train is not electric."
+    raise_pantograph_time: Optional[float] = Field(
+        description="The time it takes to raise this train's pantograph in s. Is null if the train is not electric.",
+        default=None,
+        ge=0,
     )
 
 
 if __name__ == "__main__":
-    print(RollingStock.schema_json())
+    print(RollingStock.model_json_schema())

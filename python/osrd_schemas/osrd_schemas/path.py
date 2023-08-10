@@ -1,7 +1,7 @@
 from typing import List, Optional
 
 from geojson_pydantic import Point
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, RootModel
 
 from .infra import DirectionalTrackRange, Identifier
 
@@ -34,8 +34,8 @@ class PathWaypoint(GeometryPointTrait):
     """This class is used to characterize each waypoint of the path.
     Each waypoint is defined with its coordinates, its name, its corresponding track, its duration and its position."""
 
-    id: Optional[str] = Field(description="Id of the operational point")
-    name: Optional[str] = Field(description="Name of the operational point")
+    id: Optional[str] = Field(description="Id of the operational point", default=None)
+    name: Optional[str] = Field(description="Name of the operational point", default=None)
     path_offset: float = Field(description="Offset from the start of the path")
     location: TrackLocation = Field(description="The location of the waypoint on the track")
     suggestion: bool
@@ -56,10 +56,10 @@ class SlopePoint(BaseModel):
     gradient: float = Field(description="Corresponding gradient measured in meters per kilometers")
 
 
-class Slopes(BaseModel):
+class Slopes(RootModel):
     """This class simply gathers all the information concerning the slope of the path in a list."""
 
-    __root__: List[SlopePoint] = Field(description="List of all slopes of the path")
+    root: List[SlopePoint] = Field(description="List of all slopes of the path")
 
 
 class CurvePoint(BaseModel):
@@ -69,10 +69,10 @@ class CurvePoint(BaseModel):
     radius: float = Field(description="Corresponding radius of curvature measured in meters", ge=0)
 
 
-class Curves(BaseModel):
+class Curves(RootModel):
     """This class simply gathers all the information concerning the curve of the path in a list."""
 
-    __root__: List[CurvePoint] = Field(description="List of all curves of the path")
+    root: List[CurvePoint] = Field(description="List of all curves of the path")
 
 
 if __name__ == "__main__":

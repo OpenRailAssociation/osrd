@@ -1,5 +1,5 @@
 {
-    "definitions": {
+    "$defs": {
         "ApplicableDirections": {
             "description": "This is used to know the direction of application of certain objects",
             "enum": [
@@ -11,12 +11,12 @@
             "type": "string"
         },
         "ApplicableDirectionsTrackRange": {
-            "description": "An applicable directions track range is a track range with associated directions.",
+            "description": "\n    An applicable directions track range is a track range with associated directions.\n    ",
             "properties": {
                 "applicable_directions": {
                     "allOf": [
                         {
-                            "$ref": "#/definitions/ApplicableDirections"
+                            "$ref": "#/$defs/ApplicableDirections"
                         }
                     ],
                     "description": "Direction where the corresponding object is applied"
@@ -51,7 +51,7 @@
             "type": "object"
         },
         "BufferStop": {
-            "description": "This class defines the buffer stop object.\nA buffer stop is a device placed at the end of a dead-end road\nto stop any drifting trains from continuing off the road.\nA buffer stop is characterized by its id and its corresponding track.",
+            "description": "This class defines the buffer stop object.\n    A buffer stop is a device placed at the end of a dead-end road\n    to stop any drifting trains from continuing off the road.\n    A buffer stop is characterized by its id and its corresponding track.\n    ",
             "properties": {
                 "id": {
                     "description": "Unique identifier of the object",
@@ -92,11 +92,8 @@
                     "type": "string"
                 },
                 "type": {
-                    "enum": [
-                        "BufferStop"
-                    ],
-                    "title": "Type",
-                    "type": "string"
+                    "const": "BufferStop",
+                    "title": "Type"
                 }
             },
             "required": [
@@ -107,7 +104,7 @@
             "type": "object"
         },
         "Catenary": {
-            "description": "A catenary corresponds to a set of cables designed to power electric trains by capturing the current through the use\nof a pantograph. Catenary is identified by its identifier.",
+            "description": "\n    A catenary corresponds to a set of cables designed to power electric trains by capturing the current through the use\n    of a pantograph. Catenary is identified by its identifier.\n    ",
             "properties": {
                 "id": {
                     "description": "Unique identifier of the object",
@@ -119,7 +116,7 @@
                 "track_ranges": {
                     "description": "List of locations where the voltage is applied",
                     "items": {
-                        "$ref": "#/definitions/ApplicableDirectionsTrackRange"
+                        "$ref": "#/$defs/ApplicableDirectionsTrackRange"
                     },
                     "title": "Track Ranges",
                     "type": "array"
@@ -140,7 +137,7 @@
             "type": "object"
         },
         "Curve": {
-            "description": "This class is used to define the curve object.\nA curve correspond at radius of curvature in the part of corresponding track section.",
+            "description": "This class is used to define the curve object.\n    A curve correspond at radius of curvature in the part of corresponding track section.",
             "properties": {
                 "begin": {
                     "description": "Offset in meters corresponding at the beginning of the corresponding radius in a track section ",
@@ -169,15 +166,15 @@
             "type": "object"
         },
         "Detector": {
-            "description": "This class defines detector object.\nA detector is characterized by its id and its corresponding track.\nA detector is used to locate a train\nin order to consider the section as occupied when there is a train.",
+            "description": "This class defines detector object.\n    A detector is characterized by its id and its corresponding track.\n    A detector is used to locate a train\n    in order to consider the section as occupied when there is a train.\n    ",
             "properties": {
                 "applicable_directions": {
                     "allOf": [
                         {
-                            "$ref": "#/definitions/ApplicableDirections"
+                            "$ref": "#/$defs/ApplicableDirections"
                         }
                     ],
-                    "description": "Direction of the application of the dectector"
+                    "description": "Direction of the application of the detector"
                 },
                 "id": {
                     "description": "Unique identifier of the object",
@@ -219,11 +216,8 @@
                     "type": "string"
                 },
                 "type": {
-                    "enum": [
-                        "Detector"
-                    ],
-                    "title": "Type",
-                    "type": "string"
+                    "const": "Detector",
+                    "title": "Type"
                 }
             },
             "required": [
@@ -243,7 +237,7 @@
             "type": "string"
         },
         "DirectionalTrackRange": {
-            "description": "A directional track range is a track range with an associated direction.",
+            "description": "\n    A directional track range is a track range with an associated direction.\n    ",
             "properties": {
                 "begin": {
                     "description": "Begin offset in meters of the corresponding track section",
@@ -254,7 +248,7 @@
                 "direction": {
                     "allOf": [
                         {
-                            "$ref": "#/definitions/Direction"
+                            "$ref": "#/$defs/Direction"
                         }
                     ],
                     "description": "Description of the direction"
@@ -283,7 +277,6 @@
             "type": "object"
         },
         "Endpoint": {
-            "description": "An enumeration.",
             "enum": [
                 "BEGIN",
                 "END"
@@ -297,7 +290,9 @@
                 "bbox": {
                     "anyOf": [
                         {
-                            "items": [
+                            "maxItems": 4,
+                            "minItems": 4,
+                            "prefixItems": [
                                 {
                                     "type": "number"
                                 },
@@ -311,12 +306,12 @@
                                     "type": "number"
                                 }
                             ],
-                            "maxItems": 4,
-                            "minItems": 4,
                             "type": "array"
                         },
                         {
-                            "items": [
+                            "maxItems": 6,
+                            "minItems": 6,
+                            "prefixItems": [
                                 {
                                     "type": "number"
                                 },
@@ -336,18 +331,22 @@
                                     "type": "number"
                                 }
                             ],
-                            "maxItems": 6,
-                            "minItems": 6,
                             "type": "array"
+                        },
+                        {
+                            "type": "null"
                         }
                     ],
+                    "default": null,
                     "title": "Bbox"
                 },
                 "coordinates": {
                     "items": {
                         "anyOf": [
                             {
-                                "items": [
+                                "maxItems": 2,
+                                "minItems": 2,
+                                "prefixItems": [
                                     {
                                         "type": "number"
                                     },
@@ -355,12 +354,12 @@
                                         "type": "number"
                                     }
                                 ],
-                                "maxItems": 2,
-                                "minItems": 2,
                                 "type": "array"
                             },
                             {
-                                "items": [
+                                "maxItems": 3,
+                                "minItems": 3,
+                                "prefixItems": [
                                     {
                                         "type": "number"
                                     },
@@ -371,8 +370,6 @@
                                         "type": "number"
                                     }
                                 ],
-                                "maxItems": 3,
-                                "minItems": 3,
                                 "type": "array"
                             }
                         ]
@@ -382,11 +379,8 @@
                     "type": "array"
                 },
                 "type": {
-                    "enum": [
-                        "LineString"
-                    ],
-                    "title": "Type",
-                    "type": "string"
+                    "const": "LineString",
+                    "title": "Type"
                 }
             },
             "required": [
@@ -397,7 +391,7 @@
             "type": "object"
         },
         "LoadingGaugeLimit": {
-            "description": "This class is used to define loading gauge limit.\nIt represents a restriction on the trains according to their categories of loading gauge\nand the type of the corresponding rolling stock.",
+            "description": "This class is used to define loading gauge limit.\n    It represents a restriction on the trains according to their categories of loading gauge\n    and the type of the corresponding rolling stock.\n    ",
             "properties": {
                 "begin": {
                     "description": "Offset in meters corresponding at the beginning of the corresponding loading gauge limit",
@@ -408,7 +402,7 @@
                 "category": {
                     "allOf": [
                         {
-                            "$ref": "#/definitions/LoadingGaugeType"
+                            "$ref": "#/$defs/LoadingGaugeType"
                         }
                     ],
                     "description": "Category of loading gauge for the corresponding rolling stock"
@@ -479,7 +473,7 @@
             "type": "object"
         },
         "NeutralSection": {
-            "description": "Neutral sections are portions of track where trains aren't allowed to pull power from catenaries.\nThey have to rely on inertia to cross such sections.\n\nIn practice, neutral sections are delimited by signs. In OSRD, neutral sections are directional\nto allow accounting for different sign placement depending on the direction.\n\nFor more details see [the documentation](https://osrd.fr/en/docs/explanation/neutral_sections/).",
+            "description": "\n    Neutral sections are portions of track where trains aren't allowed to pull power from catenaries.\n    They have to rely on inertia to cross such sections.\n\n    In practice, neutral sections are delimited by signs. In OSRD, neutral sections are directional\n    to allow accounting for different sign placement depending on the direction.\n\n    For more details see [the documentation](https://osrd.fr/en/docs/explanation/neutral_sections/).\n    ",
             "properties": {
                 "id": {
                     "description": "Unique identifier of the object",
@@ -496,7 +490,7 @@
                 "track_ranges": {
                     "description": "List of locations where the train cannot pull power from catenaries",
                     "items": {
-                        "$ref": "#/definitions/DirectionalTrackRange"
+                        "$ref": "#/$defs/DirectionalTrackRange"
                     },
                     "title": "Track Ranges",
                     "type": "array"
@@ -511,10 +505,15 @@
             "type": "object"
         },
         "OperationalPoint": {
-            "description": "This class describes the operational points of the corresponding infra.",
+            "description": "\n    This class describes the operational points of the corresponding infra.\n    ",
             "properties": {
                 "extensions": {
-                    "$ref": "#/definitions/OperationalPointExtensions"
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/OperationalPointExtensions"
+                        }
+                    ],
+                    "default": null
                 },
                 "id": {
                     "description": "Unique identifier of the object",
@@ -525,7 +524,7 @@
                 },
                 "parts": {
                     "items": {
-                        "$ref": "#/definitions/OperationalPointPart"
+                        "$ref": "#/$defs/OperationalPointPart"
                     },
                     "title": "Parts",
                     "type": "array"
@@ -541,10 +540,20 @@
         "OperationalPointExtensions": {
             "properties": {
                 "identifier": {
-                    "$ref": "#/definitions/OperationalPointIdentifierExtension"
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/OperationalPointIdentifierExtension"
+                        }
+                    ],
+                    "default": null
                 },
                 "sncf": {
-                    "$ref": "#/definitions/OperationalPointSncfExtension"
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/OperationalPointSncfExtension"
+                        }
+                    ],
+                    "default": null
                 }
             },
             "title": "OperationalPointExtensions",
@@ -572,7 +581,7 @@
             "type": "object"
         },
         "OperationalPointPart": {
-            "description": "Operational point part is a single point on the infrastructure. It's linked to an operational point.",
+            "description": "\n    Operational point part is a single point on the infrastructure. It's linked to an operational point.\n    ",
             "properties": {
                 "position": {
                     "description": "Offset of the point in meters to the beginning of the track section",
@@ -640,7 +649,7 @@
             "type": "object"
         },
         "Panel": {
-            "description": "This class is used to define panels.\nThis is a physical, ponctual, cosmetic object.",
+            "description": "This class is used to define panels.\n    This is a physical, punctual, cosmetic object.\n    ",
             "properties": {
                 "angle_geo": {
                     "default": 0,
@@ -663,7 +672,7 @@
                 "side": {
                     "allOf": [
                         {
-                            "$ref": "#/definitions/Side"
+                            "$ref": "#/$defs/Side"
                         }
                     ],
                     "default": "CENTER",
@@ -683,10 +692,18 @@
                     "type": "string"
                 },
                 "value": {
+                    "anyOf": [
+                        {
+                            "minLength": 1,
+                            "type": "string"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
                     "description": "If the panel is an announcement, precise the value(s)",
-                    "minLength": 1,
-                    "title": "Value",
-                    "type": "string"
+                    "title": "Value"
                 }
             },
             "required": [
@@ -698,22 +715,22 @@
             "type": "object"
         },
         "Route": {
-            "description": "This class is used to describe routes on the infrastructure.",
+            "description": "\n    This class is used to describe routes on the infrastructure.\n    ",
             "properties": {
                 "entry_point": {
                     "discriminator": {
                         "mapping": {
-                            "BufferStop": "#/definitions/BufferStopReference",
-                            "Detector": "#/definitions/DetectorReference"
+                            "BufferStop": "#/$defs/BufferStopReference",
+                            "Detector": "#/$defs/DetectorReference"
                         },
                         "propertyName": "type"
                     },
                     "oneOf": [
                         {
-                            "$ref": "#/definitions/DetectorReference"
+                            "$ref": "#/$defs/DetectorReference"
                         },
                         {
-                            "$ref": "#/definitions/BufferStopReference"
+                            "$ref": "#/$defs/BufferStopReference"
                         }
                     ],
                     "title": "Entry Point"
@@ -721,7 +738,7 @@
                 "entry_point_direction": {
                     "allOf": [
                         {
-                            "$ref": "#/definitions/Direction"
+                            "$ref": "#/$defs/Direction"
                         }
                     ],
                     "description": "Direction of the route at the entry point"
@@ -729,17 +746,17 @@
                 "exit_point": {
                     "discriminator": {
                         "mapping": {
-                            "BufferStop": "#/definitions/BufferStopReference",
-                            "Detector": "#/definitions/DetectorReference"
+                            "BufferStop": "#/$defs/BufferStopReference",
+                            "Detector": "#/$defs/DetectorReference"
                         },
                         "propertyName": "type"
                     },
                     "oneOf": [
                         {
-                            "$ref": "#/definitions/DetectorReference"
+                            "$ref": "#/$defs/DetectorReference"
                         },
                         {
-                            "$ref": "#/definitions/BufferStopReference"
+                            "$ref": "#/$defs/BufferStopReference"
                         }
                     ],
                     "title": "Exit Point"
@@ -794,18 +811,23 @@
             "type": "string"
         },
         "Signal": {
-            "description": "This class is used to describe the signal.\nA signal is characterized by its id and its corresponding track.\nBy default, the signal is located at the center of the track.",
+            "description": "This class is used to describe the signal.\n    A signal is characterized by its id and its corresponding track.\n    By default, the signal is located at the center of the track.\n    ",
             "properties": {
                 "direction": {
                     "allOf": [
                         {
-                            "$ref": "#/definitions/Direction"
+                            "$ref": "#/$defs/Direction"
                         }
                     ],
                     "description": "Direction of use of the signal"
                 },
                 "extensions": {
-                    "$ref": "#/definitions/SignalExtensions"
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/SignalExtensions"
+                        }
+                    ],
+                    "default": null
                 },
                 "id": {
                     "description": "Unique identifier of the object",
@@ -815,19 +837,35 @@
                     "type": "string"
                 },
                 "linked_detector": {
+                    "anyOf": [
+                        {
+                            "maxLength": 255,
+                            "minLength": 1,
+                            "type": "string"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
                     "description": "Identifier of the detector linked to the signal",
-                    "maxLength": 255,
-                    "minLength": 1,
-                    "title": "Linked Detector",
-                    "type": "string"
+                    "title": "Linked Detector"
                 },
                 "logical_signals": {
+                    "anyOf": [
+                        {
+                            "items": {
+                                "$ref": "#/$defs/LogicalSignal"
+                            },
+                            "type": "array"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
                     "description": "Logical signals bundled into this physical signal",
-                    "items": {
-                        "$ref": "#/definitions/LogicalSignal"
-                    },
-                    "title": "Logical Signals",
-                    "type": "array"
+                    "title": "Logical Signals"
                 },
                 "position": {
                     "description": "Offset of the point in meters to the beginning of the track section",
@@ -862,7 +900,12 @@
         "SignalExtensions": {
             "properties": {
                 "sncf": {
-                    "$ref": "#/definitions/SignalSncfExtension"
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/SignalSncfExtension"
+                        }
+                    ],
+                    "default": null
                 }
             },
             "title": "SignalExtensions",
@@ -912,7 +955,7 @@
                 "side": {
                     "allOf": [
                         {
-                            "$ref": "#/definitions/Side"
+                            "$ref": "#/$defs/Side"
                         }
                     ],
                     "default": "CENTER",
@@ -948,7 +991,7 @@
             "type": "object"
         },
         "Slope": {
-            "description": "This class is used to define the slope object.\nA slope correspond at the gradient in the part of corresponding track section.\nThe gradient can be positive (case of ramp) or negative (slope case)",
+            "description": "\n    This class is used to define the slope object.\n    A slope correspond at the gradient in the part of corresponding track section.\n    The gradient can be positive (case of ramp) or negative (slope case)\n    ",
             "properties": {
                 "begin": {
                     "description": "Offset in meters corresponding at the beginning of the corresponding gradient in a track section",
@@ -977,10 +1020,15 @@
             "type": "object"
         },
         "SpeedSection": {
-            "description": "Speed sections are recognized by their identifiers and are in meters per second.",
+            "description": "\n    Speed sections are recognized by their identifiers and are in meters per second.\n    ",
             "properties": {
                 "extensions": {
-                    "$ref": "#/definitions/SpeedSectionExtensions"
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/SpeedSectionExtensions"
+                        }
+                    ],
+                    "default": null
                 },
                 "id": {
                     "description": "Unique identifier of the object",
@@ -990,10 +1038,18 @@
                     "type": "string"
                 },
                 "speed_limit": {
+                    "anyOf": [
+                        {
+                            "exclusiveMinimum": 0,
+                            "type": "number"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
                     "description": "Speed limit (m/s) applied by default to trains that aren't in any specified category",
-                    "exclusiveMinimum": 0,
-                    "title": "Speed Limit",
-                    "type": "number"
+                    "title": "Speed Limit"
                 },
                 "speed_limit_by_tag": {
                     "additionalProperties": {
@@ -1006,7 +1062,7 @@
                 "track_ranges": {
                     "description": "List of locations where speed section is applied",
                     "items": {
-                        "$ref": "#/definitions/ApplicableDirectionsTrackRange"
+                        "$ref": "#/$defs/ApplicableDirectionsTrackRange"
                     },
                     "title": "Track Ranges",
                     "type": "array"
@@ -1023,7 +1079,12 @@
         "SpeedSectionExtensions": {
             "properties": {
                 "lpv_sncf": {
-                    "$ref": "#/definitions/SpeedSectionLpvSncfExtension"
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/SpeedSectionLpvSncfExtension"
+                        }
+                    ],
+                    "default": null
                 }
             },
             "title": "SpeedSectionExtensions",
@@ -1034,15 +1095,15 @@
                 "announcement": {
                     "description": "Precise the value(s) of the speed",
                     "items": {
-                        "$ref": "#/definitions/Panel"
+                        "$ref": "#/$defs/Panel"
                     },
                     "title": "Announcement",
                     "type": "array"
                 },
                 "r": {
-                    "description": "End of the lpv speedsection",
+                    "description": "End of the lpv speed section",
                     "items": {
-                        "$ref": "#/definitions/Panel"
+                        "$ref": "#/$defs/Panel"
                     },
                     "title": "R",
                     "type": "array"
@@ -1050,11 +1111,10 @@
                 "z": {
                     "allOf": [
                         {
-                            "$ref": "#/definitions/Panel"
+                            "$ref": "#/$defs/Panel"
                         }
                     ],
-                    "description": "Beginning of the lpv speedsection",
-                    "title": "Z"
+                    "description": "Beginning of the lpv speed section"
                 }
             },
             "required": [
@@ -1066,10 +1126,15 @@
             "type": "object"
         },
         "Switch": {
-            "description": "Switches are devices used for track changes.",
+            "description": "\n    Switches are devices used for track changes.\n    ",
             "properties": {
                 "extensions": {
-                    "$ref": "#/definitions/SwitchExtensions"
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/SwitchExtensions"
+                        }
+                    ],
+                    "default": null
                 },
                 "group_change_delay": {
                     "description": "Time it takes to change which group of the switch is activated",
@@ -1086,9 +1151,9 @@
                 },
                 "ports": {
                     "additionalProperties": {
-                        "$ref": "#/definitions/TrackEndpoint"
+                        "$ref": "#/$defs/TrackEndpoint"
                     },
-                    "description": "Location of differents ports according to track sections",
+                    "description": "Location of different ports according to track sections",
                     "title": "Ports",
                     "type": "object"
                 },
@@ -1112,14 +1177,19 @@
         "SwitchExtensions": {
             "properties": {
                 "sncf": {
-                    "$ref": "#/definitions/SwitchSncfExtension"
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/SwitchSncfExtension"
+                        }
+                    ],
+                    "default": null
                 }
             },
             "title": "SwitchExtensions",
             "type": "object"
         },
         "SwitchPortConnection": {
-            "description": "This class allows to know the connection between each port in switch type.\nThe connection is always bidirectional.",
+            "description": "\n    This class allows to know the connection between each port in switch type.\n    The connection is always bidirectional.\n    ",
             "properties": {
                 "dst": {
                     "description": "Port name that is destination of the connection",
@@ -1159,12 +1229,12 @@
             "type": "object"
         },
         "SwitchType": {
-            "description": "Switch types are used to define what kind of switch is used in the infrastructure.\nA switch type is defined by a list of ports and groups which are the possible configurations of the switch.",
+            "description": "\n    Switch types are used to define what kind of switch is used in the infrastructure.\n    A switch type is defined by a list of ports and groups which are the possible configurations of the switch.\n    ",
             "properties": {
                 "groups": {
                     "additionalProperties": {
                         "items": {
-                            "$ref": "#/definitions/SwitchPortConnection"
+                            "$ref": "#/$defs/SwitchPortConnection"
                         },
                         "type": "array"
                     },
@@ -1180,7 +1250,7 @@
                     "type": "string"
                 },
                 "ports": {
-                    "description": "List of ports. A port correspond at the ends of the switches",
+                    "description": "List of ports. Ports map to the ends of switches",
                     "items": {
                         "maxLength": 255,
                         "minLength": 1,
@@ -1200,12 +1270,12 @@
             "type": "object"
         },
         "TrackEndpoint": {
-            "description": "This class is used to define the endpoint (begin or end) of the considered track on the infrastructure.",
+            "description": "\n    This class is used to define the endpoint (begin or end) of the considered track on the infrastructure.\n    ",
             "properties": {
                 "endpoint": {
                     "allOf": [
                         {
-                            "$ref": "#/definitions/Endpoint"
+                            "$ref": "#/$defs/Endpoint"
                         }
                     ],
                     "description": "Relative position of the considered end point"
@@ -1226,27 +1296,31 @@
             "type": "object"
         },
         "TrackSection": {
-            "description": "A track section is a piece of track and is the tracking system used in OSRD to locate a point.\nA track section is identified by his unique id and its coordinates (geographic or schematic).",
+            "description": "\n    A track section is a piece of track and is the tracking system used in OSRD to locate a point.\n    A track section is identified by his unique id and its coordinates (geographic or schematic).\n    ",
             "properties": {
                 "curves": {
                     "description": "List of curves of corresponding track section",
                     "items": {
-                        "$ref": "#/definitions/Curve"
+                        "$ref": "#/$defs/Curve"
                     },
                     "title": "Curves",
                     "type": "array"
                 },
                 "extensions": {
-                    "$ref": "#/definitions/TrackSectionExtensions"
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/TrackSectionExtensions"
+                        }
+                    ],
+                    "default": null
                 },
                 "geo": {
                     "allOf": [
                         {
-                            "$ref": "#/definitions/LineString"
+                            "$ref": "#/$defs/LineString"
                         }
                     ],
-                    "description": "Geographic coordinates of the corresponding object",
-                    "title": "Geo"
+                    "description": "Geographic coordinates of the corresponding object"
                 },
                 "id": {
                     "description": "Unique identifier of the object",
@@ -1264,7 +1338,7 @@
                 "loading_gauge_limits": {
                     "description": "List of loading gauge limits of corresponding track section",
                     "items": {
-                        "$ref": "#/definitions/LoadingGaugeLimit"
+                        "$ref": "#/$defs/LoadingGaugeLimit"
                     },
                     "title": "Loading Gauge Limits",
                     "type": "array"
@@ -1272,16 +1346,15 @@
                 "sch": {
                     "allOf": [
                         {
-                            "$ref": "#/definitions/LineString"
+                            "$ref": "#/$defs/LineString"
                         }
                     ],
-                    "description": "Schematic coordinates of the corresponding object",
-                    "title": "Sch"
+                    "description": "Schematic coordinates of the corresponding object"
                 },
                 "slopes": {
                     "description": "List of slopes of corresponding track section",
                     "items": {
-                        "$ref": "#/definitions/Slope"
+                        "$ref": "#/$defs/Slope"
                     },
                     "title": "Slopes",
                     "type": "array"
@@ -1301,23 +1374,27 @@
         "TrackSectionExtensions": {
             "properties": {
                 "sncf": {
-                    "$ref": "#/definitions/TrackSectionSncfExtension"
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/TrackSectionSncfExtension"
+                        }
+                    ],
+                    "default": null
                 }
             },
             "title": "TrackSectionExtensions",
             "type": "object"
         },
         "TrackSectionLink": {
-            "description": "Track section links is used to connect and link two track sections.\nA track section link is characterized by its identifier.",
+            "description": "\n    Track section links is used to connect and link two track sections.\n    A track section link is characterized by its identifier.\n    ",
             "properties": {
                 "dst": {
                     "allOf": [
                         {
-                            "$ref": "#/definitions/TrackEndpoint"
+                            "$ref": "#/$defs/TrackEndpoint"
                         }
                     ],
-                    "description": "Finish track section, relative position in track section is defined by its end point",
-                    "title": "Dst"
+                    "description": "Finish track section, relative position in track section is defined by its end point"
                 },
                 "id": {
                     "description": "Unique identifier of the object",
@@ -1329,11 +1406,10 @@
                 "src": {
                     "allOf": [
                         {
-                            "$ref": "#/definitions/TrackEndpoint"
+                            "$ref": "#/$defs/TrackEndpoint"
                         }
                     ],
-                    "description": "Starting track section, relative position in track section is defined by its end point",
-                    "title": "Src"
+                    "description": "Starting track section, relative position in track section is defined by its end point"
                 }
             },
             "required": [
@@ -1385,7 +1461,7 @@
         "buffer_stops": {
             "description": "Buffer stops of the infra",
             "items": {
-                "$ref": "#/definitions/BufferStop"
+                "$ref": "#/$defs/BufferStop"
             },
             "title": "Buffer Stops",
             "type": "array"
@@ -1393,7 +1469,7 @@
         "catenaries": {
             "description": "Catenaries of the infra",
             "items": {
-                "$ref": "#/definitions/Catenary"
+                "$ref": "#/$defs/Catenary"
             },
             "title": "Catenaries",
             "type": "array"
@@ -1401,7 +1477,7 @@
         "detectors": {
             "description": "Detectors of the infra",
             "items": {
-                "$ref": "#/definitions/Detector"
+                "$ref": "#/$defs/Detector"
             },
             "title": "Detectors",
             "type": "array"
@@ -1409,7 +1485,7 @@
         "neutral_sections": {
             "description": "Neutral sections of the infra",
             "items": {
-                "$ref": "#/definitions/NeutralSection"
+                "$ref": "#/$defs/NeutralSection"
             },
             "title": "Neutral Sections",
             "type": "array"
@@ -1417,7 +1493,7 @@
         "operational_points": {
             "description": "List of operational points of the corresponding infra",
             "items": {
-                "$ref": "#/definitions/OperationalPoint"
+                "$ref": "#/$defs/OperationalPoint"
             },
             "title": "Operational Points",
             "type": "array"
@@ -1425,7 +1501,7 @@
         "routes": {
             "description": "Routes of the infra",
             "items": {
-                "$ref": "#/definitions/Route"
+                "$ref": "#/$defs/Route"
             },
             "title": "Routes",
             "type": "array"
@@ -1433,7 +1509,7 @@
         "signals": {
             "description": "Signals of the infra",
             "items": {
-                "$ref": "#/definitions/Signal"
+                "$ref": "#/$defs/Signal"
             },
             "title": "Signals",
             "type": "array"
@@ -1441,7 +1517,7 @@
         "speed_sections": {
             "description": "Speed sections of the infra",
             "items": {
-                "$ref": "#/definitions/SpeedSection"
+                "$ref": "#/$defs/SpeedSection"
             },
             "title": "Speed Sections",
             "type": "array"
@@ -1449,7 +1525,7 @@
         "switch_types": {
             "description": "Switch types of the infra",
             "items": {
-                "$ref": "#/definitions/SwitchType"
+                "$ref": "#/$defs/SwitchType"
             },
             "title": "Switch Types",
             "type": "array"
@@ -1457,7 +1533,7 @@
         "switches": {
             "description": "Switches of the infra",
             "items": {
-                "$ref": "#/definitions/Switch"
+                "$ref": "#/$defs/Switch"
             },
             "title": "Switches",
             "type": "array"
@@ -1465,7 +1541,7 @@
         "track_section_links": {
             "description": "Track section links of the infra",
             "items": {
-                "$ref": "#/definitions/TrackSectionLink"
+                "$ref": "#/$defs/TrackSectionLink"
             },
             "title": "Track Section Links",
             "type": "array"
@@ -1473,19 +1549,16 @@
         "track_sections": {
             "description": "Track sections of the infra",
             "items": {
-                "$ref": "#/definitions/TrackSection"
+                "$ref": "#/$defs/TrackSection"
             },
             "title": "Track Sections",
             "type": "array"
         },
         "version": {
+            "const": "3.4.0",
             "default": "3.4.0",
             "description": "Version of the schema",
-            "enum": [
-                "3.4.0"
-            ],
-            "title": "Version",
-            "type": "string"
+            "title": "Version"
         }
     },
     "required": [

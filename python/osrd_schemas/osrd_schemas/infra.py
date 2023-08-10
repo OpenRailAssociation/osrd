@@ -2,16 +2,8 @@ from enum import Enum
 from typing import Annotated, List, Literal, Mapping, NewType, Optional, Union, get_args
 
 from geojson_pydantic import LineString
-from pydantic import (
-    BaseConfig,
-    BaseModel,
-    Field,
-    conlist,
-    constr,
-    create_model,
-    root_validator,
-)
-from pydantic.fields import ModelField
+from pydantic import BaseModel, Field, StringConstraints, create_model, model_validator
+from pydantic.fields import FieldInfo
 
 ALL_OBJECT_TYPES = []
 
@@ -21,8 +13,8 @@ RAILJSON_INFRA_VERSION = get_args(RAILJSON_INFRA_VERSION_TYPE)[0]
 # Traits
 # Used as an input model in the definition of the following classes.
 
-Identifier = NewType("Identifier", constr(min_length=1, max_length=255))
-NonBlankStr = NewType("NonBlankStr", constr(min_length=1))
+Identifier = NewType("Identifier", Annotated[str, StringConstraints(min_length=1, max_length=255)])
+NonBlankStr = NewType("NonBlankStr", Annotated[str, StringConstraints(min_length=1)])
 
 
 class DetectorReference(BaseModel):
@@ -127,10 +119,10 @@ class TrackRange(BaseModel):
     begin: float = Field(description="Begin offset in meters of the corresponding track section", ge=0)
     end: float = Field(description="End offset in meters of the corresponding track section", ge=0)
 
-    @root_validator(skip_on_failure=True)
-    def check_range(cls, v):
-        assert v.get("begin") <= v.get("end"), "expected: begin <= end"
-        return v
+    @model_validator(mode="after")
+    def check_range(self):
+        assert self.begin <= self.end, "expected: begin <= end"
+        return self
 
     def length(self) -> float:
         return abs(self.begin - self.end)
@@ -179,10 +171,10 @@ class ApplicableDirectionsTrackRange(TrackRange):
         description="Direction where the corresponding object is applied"
     )
 
-    @root_validator(skip_on_failure=True)
-    def check_range(cls, v):
-        assert v.get("begin") < v.get("end"), "expected: begin < end"
-        return v
+    @model_validator(mode="after")
+    def check_range(self):
+        assert self.begin < self.end, "expected: begin < end"
+        return self
 
 
 class OperationalPointPart(TrackLocationTrait):
@@ -240,9 +232,7 @@ class SwitchType(BaseObjectTrait):
     A switch type is defined by a list of ports and groups which are the possible configurations of the switch.
     """
 
-    ports: conlist(Identifier, min_items=1) = Field(
-        description="List of ports. A port correspond at the ends of the switches"
-    )
+    ports: List[Identifier] = Field(min_length=1, description="List of ports. Ports map to the ends of switches")
     groups: Mapping[Identifier, List[SwitchPortConnection]] = Field(
         description="Connection between and according ports"
     )
@@ -258,7 +248,7 @@ class Switch(BaseObjectTrait):
         description="Time it takes to change which group of the switch is activated", ge=0
     )
     ports: Mapping[Identifier, TrackEndpoint] = Field(
-        description="Location of differents ports according to track sections"
+        description="Location of different ports according to track sections"
     )
 
 
@@ -282,7 +272,9 @@ class SpeedSection(BaseObjectTrait):
     """
 
     speed_limit: Optional[float] = Field(
-        description="Speed limit (m/s) applied by default to trains that aren't in any specified category", gt=0
+        description="Speed limit (m/s) applied by default to trains that aren't in any specified category",
+        gt=0,
+        default=None,
     )
     speed_limit_by_tag: Mapping[NonBlankStr, float] = Field(
         description="Speed limit (m/s) applied to trains with a given tag"
@@ -317,10 +309,10 @@ class Curve(BaseModel):
         description="Offset in meters corresponding at the end of the corresponding radius in a track section", ge=0
     )
 
-    @root_validator(skip_on_failure=True)
-    def check_range(cls, v):
-        assert v.get("begin") < v.get("end"), "expected: begin < end"
-        return v
+    @model_validator(mode="after")
+    def check_range(self):
+        assert self.begin < self.end, "expected: begin < end"
+        return self
 
 
 class Slope(BaseModel):
@@ -339,10 +331,10 @@ class Slope(BaseModel):
         description="Offset in meters corresponding at the end of the corresponding gradient in a track section", ge=0
     )
 
-    @root_validator(skip_on_failure=True)
-    def check_range(cls, v):
-        assert v.get("begin") < v.get("end"), "expected: begin < end"
-        return v
+    @model_validator(mode="after")
+    def check_range(self):
+        assert self.begin < self.end, "expected: begin < end"
+        return self
 
 
 class LoadingGaugeLimit(BaseModel):
@@ -392,9 +384,11 @@ class Signal(BaseObjectTrait, TrackLocationTrait):
 
     direction: Direction = Field(description="Direction of use of the signal")
     sight_distance: float = Field(description="Visibility distance of the signal in meters", gt=0)
-    linked_detector: Optional[Identifier] = Field(description="Identifier of the detector linked to the signal")
+    linked_detector: Optional[Identifier] = Field(
+        description="Identifier of the detector linked to the signal", default=None
+    )
     logical_signals: Optional[List[LogicalSignal]] = Field(
-        description="Logical signals bundled into this physical signal"
+        description="Logical signals bundled into this physical signal", default=None
     )
 
 
@@ -416,7 +410,7 @@ class Detector(BaseObjectTrait, TrackLocationTrait):
     in order to consider the section as occupied when there is a train.
     """
 
-    applicable_directions: ApplicableDirections = Field(description="Direction of the application of the dectector")
+    applicable_directions: ApplicableDirections = Field(description="Direction of the application of the detector")
 
     def ref(self):
         return DetectorReference(type="Detector", id=self.id)
@@ -424,14 +418,16 @@ class Detector(BaseObjectTrait, TrackLocationTrait):
 
 class Panel(TrackLocationTrait):
     """This class is used to define panels.
-    This is a physical, ponctual, cosmetic object.
+    This is a physical, punctual, cosmetic object.
     """
 
     angle_geo: float = Field(0, description="Geographic angle in degrees")
     angle_sch: float = Field(0, description="Schematic angle in degrees")
     side: Side = Field(Side.CENTER, description="Side of the panel on the track")
     type: NonBlankStr = Field(description="Precise the type of the panel")
-    value: Optional[NonBlankStr] = Field(description="If the panel is an announcement, precise the value(s)")
+    value: Optional[NonBlankStr] = Field(
+        description="If the panel is an announcement, precise the value(s)", default=None
+    )
 
 
 class NeutralSection(BaseObjectTrait):
@@ -476,10 +472,12 @@ for t in BaseObjectTrait.__subclasses__():
 
 # Extensions
 
+EXTENDED_CLASSES = []
 
-def register_extension(object, name):
+
+def register_extension(object: BaseModel, name):
     """
-    This decorator is used to esily add an extension to an existing object.
+    This decorator is used to easily add an extension to an existing object.
     Example:
 
     ```
@@ -492,28 +490,22 @@ def register_extension(object, name):
     This dictionary can contain the field `my_extension` of type `TrackSectionMyExtension`.
     """
 
-    if "extensions" not in object.__fields__:
+    if "extensions" not in object.model_fields:
         extensions_type = create_model(object.__name__ + "Extensions")
-        object.__fields__["extensions"] = ModelField(
-            name="extensions",
-            type_=extensions_type,
-            class_validators={},
-            model_config=BaseConfig,
-            required=False,
-            default_factory=dict,
+        object.model_fields["extensions"] = FieldInfo(
+            annotation=extensions_type,
+            default=None,
         )
+        EXTENDED_CLASSES.append(object)
 
     def register_extension(extension):
-        extensions_field = object.__fields__["extensions"]
-        if name in extensions_field.type_.__fields__:
+        extensions_field = object.model_fields["extensions"]
+        if name in extensions_field.annotation.model_fields:
             raise RuntimeError(f"Extension '{name}' already registered for {object.__name__}")
 
-        extensions_field.type_.__fields__[name] = ModelField(
-            name=name,
-            type_=extension,
-            class_validators={},
-            model_config=BaseConfig,
-            required=False,
+        extensions_field.annotation.model_fields[name] = FieldInfo(
+            annotation=extension,
+            default=None,
         )
         return extension
 
@@ -531,10 +523,10 @@ class TrackSectionSncfExtension(BaseModel):
 @register_extension(object=OperationalPoint, name="sncf")
 class OperationalPointSncfExtension(BaseModel):
     ci: int = Field(description="THOR immutable code of the operational point")
-    ch: constr(min_length=1, max_length=2) = Field(description="THOR site code of the operational point")
+    ch: str = Field(description="THOR site code of the operational point", min_length=1, max_length=2)
     ch_short_label: NonBlankStr = Field(description="THOR site code short label of the operational point")
     ch_long_label: NonBlankStr = Field(description="THOR site code long label of the operational point")
-    trigram: constr(min_length=1, max_length=3) = Field(description="Unique SNCF trigram of the operational point")
+    trigram: str = Field(description="Unique SNCF trigram of the operational point", min_length=1, max_length=3)
 
 
 @register_extension(object=OperationalPoint, name="identifier")
@@ -567,12 +559,21 @@ class SignalSncfExtension(BaseModel):
 @register_extension(object=SpeedSection, name="lpv_sncf")
 class SpeedSectionLpvSncfExtension(BaseModel):
     announcement: List[Panel] = Field(description="Precise the value(s) of the speed")
-    z: Panel = Field(description="Beginning of the lpv speedsection")
-    r: List[Panel] = Field(description="End of the lpv speedsection")
+    z: Panel = Field(description="Beginning of the lpv speed section")
+    r: List[Panel] = Field(description="End of the lpv speed section")
+
+
+# Rebuild all classes to integrate extensions in schema
+for t in EXTENDED_CLASSES:
+    extensions_type = t.model_fields["extensions"].annotation
+    extensions_type.__pydantic_parent_namespace__ = t.__pydantic_parent_namespace__
+    extensions_type.model_rebuild(force=True)
+    t.model_rebuild(force=True)
+RailJsonInfra.model_rebuild(force=True)
 
 
 if __name__ == "__main__":
     from json import dumps
 
     # sort keys in order to diff correctly in the CI
-    print(dumps(RailJsonInfra.schema(), indent=4, sort_keys=True))
+    print(dumps(RailJsonInfra.model_json_schema(), indent=4, sort_keys=True))
