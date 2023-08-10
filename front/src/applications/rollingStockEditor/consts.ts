@@ -145,7 +145,7 @@ export const RollingStockSchemaProperties: SchemaProperty[] = [
     type: 'number',
     min: 0,
     max: 100000000,
-    units: ['kg', 't'],
+    units: ['t', 'kg'],
     side: 'left',
   },
   {

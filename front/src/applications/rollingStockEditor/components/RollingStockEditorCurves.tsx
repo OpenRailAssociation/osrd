@@ -38,10 +38,10 @@ export default function RollingStockEditorCurves(props: {
         }
       | undefined
     )[][] =
-      speedsList !== undefined && effortsList !== undefined
+      speedsList && effortsList
         ? effortsList.map((effort, index) => [
-            { value: (speedsList[index] * 3.6).toString() },
-            { value: (effort / 10).toString() },
+            { value: Math.round(speedsList[index] * 3.6).toString() },
+            { value: Math.round(effort / 10).toString() },
           ])
         : [];
 
