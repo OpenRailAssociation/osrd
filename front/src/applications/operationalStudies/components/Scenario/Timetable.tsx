@@ -220,7 +220,9 @@ export default function Timetable({
     ) {
       setSelectedTrainIds([]);
     } else {
-      const trainIds = trainsList?.map((train) => train.id) || [];
+      const trainIds =
+        trainsList?.filter((train: ScheduledTrain) => !train.isFiltered).map((train) => train.id) ||
+        [];
       setSelectedTrainIds(trainIds);
     }
   };
