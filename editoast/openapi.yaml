@@ -1937,7 +1937,8 @@ components:
                 type: number
               id:
                 description: Can be null if it's not an operational point
-                type: number
+                nullable: true
+                type: string
               line_code:
                 type: number
               line_name:
@@ -2235,6 +2236,8 @@ components:
         departure_time:
           format: float
           type: number
+        id:
+          type: number
         initial_speed:
           format: float
           type: number
@@ -2246,7 +2249,7 @@ components:
           allOf:
           - $ref: '#/components/schemas/TrainScheduleOptions'
           nullable: true
-        path:
+        path_id:
           type: integer
         power_restriction_ranges:
           description: A list of ranges along the train path where power restrictions apply.
@@ -2254,7 +2257,7 @@ components:
             $ref: '#/components/schemas/PowerRestrictionRange'
           nullable: true
           type: array
-        rolling_stock:
+        rolling_stock_id:
           type: integer
         scheduled_points:
           items:
@@ -2274,11 +2277,27 @@ components:
           type: array
         speed_limit_tags:
           description: Train category for speed limits
+          nullable: true
           type: string
-        timetable:
+        timetable_id:
           type: integer
         train_name:
           type: string
+      required:
+      - id
+      - train_name
+      - timetable_id
+      - rolling_stock_id
+      - departure_time
+      - path_id
+      - initial_speed
+      - labels
+      - scheduled_points
+      - allowances
+      - speed_limit_tags
+      - comfort
+      - options
+      - power_restriction_ranges
       type: object
     TrainScheduleBatchItem:
       properties:
@@ -2636,72 +2655,37 @@ components:
           minItems: 1
           type: array
     TrainScheduleSummary:
-      properties:
-        allowances:
-          items:
-            $ref: '#/components/schemas/Allowance'
-          type: array
-        arrival_time:
-          type: number
-        comfort:
-          $ref: '#/components/schemas/Comfort'
-        departure_time:
-          format: float
-          type: number
-        id:
-          type: integer
-        initial_speed:
-          format: float
-          type: number
-        invalid_reasons:
-          items:
-            $ref: '#/components/schemas/InvalidTrainValues'
-          type: array
-        labels:
-          items:
-            type: string
-          type: array
-        mechanical_energy_consumed:
-          properties:
-            base:
-              type: number
-            eco:
-              type: number
-          type: object
-        options:
-          allOf:
-          - $ref: '#/components/schemas/TrainScheduleOptions'
-          nullable: true
-        path_id:
-          type: integer
-        path_length:
-          type: integer
-        power_restriction_ranges:
-          description: A list of ranges along the train path where power restrictions apply.
-          items:
-            $ref: '#/components/schemas/PowerRestrictionRange'
-          nullable: true
-          type: array
-        rolling_stock_id:
-          type: integer
-        speed_limit_tags:
-          description: Train category for speed limits
-          type: string
-        stops_count:
-          type: integer
-        timetable_id:
-          type: integer
-        train_name:
-          type: string
-      required:
-      - id
-      - train_name
-      - departure_time
-      - path
-      - labels
-      - arrival_time
-      - mechanical_energy_consumed
-      type: object
+      allOf:
+      - $ref: '#/components/schemas/TrainSchedule'
+      - properties:
+          arrival_time:
+            type: number
+          invalid_reasons:
+            items:
+              $ref: '#/components/schemas/InvalidTrainValues'
+            type: array
+          mechanical_energy_consumed:
+            properties:
+              base:
+                type: number
+              eco:
+                nullable: true
+                type: number
+            required:
+            - base
+            - eco
+            type: object
+          path_length:
+            type: integer
+          stops_count:
+            type: integer
+        required:
+        - arrival_time
+        - mechanical_energy_consumed
+        - stops_count
+        - path_length
+        - invalid_reasons
+        type: object
     UpdateOperation:
       properties:
         obj_id:
@@ -4713,12 +4697,11 @@ paths:
         required: true
         schema:
           type: integer
-      - description: List of train schedule ids to return the results of
+      - description: Timetable id
         in: query
-        name: train_ids
+        name: timetable_id
         required: true
         schema:
-          pattern: ^\d+(,\d+)*$
           type: string
       responses:
         '200':
@@ -4729,7 +4712,7 @@ paths:
                   $ref: '#/components/schemas/SimulationReport'
                 type: array
           description: The train schedules results
-      summary: Retrieve the simulation result of multiple train schedules
+      summary: Retrieve the simulation result of multiple train schedules of the timetable
       tags:
       - train_schedule
   /train_schedule/standalone_simulation/:
