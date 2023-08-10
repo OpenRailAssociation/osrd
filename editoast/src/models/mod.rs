@@ -6,7 +6,6 @@ pub mod pathfinding;
 mod projects;
 pub mod rolling_stock;
 mod scenario;
-pub mod simulation_output;
 mod study;
 mod timetable;
 pub mod train_schedule;
@@ -29,7 +28,8 @@ pub use rolling_stock::{
 pub use scenario::{Scenario, ScenarioWithCountTrains, ScenarioWithDetails};
 pub use study::{Study, StudyWithScenarios};
 pub use timetable::{
-    check_train_validity, Timetable, TimetableWithSchedules, TimetableWithSchedulesDetails,
+    check_train_validity, get_timetable_train_schedules, Timetable, TimetableWithSchedules,
+    TimetableWithSchedulesDetails,
 };
 pub use train_schedule::{
     Allowance, FullResultStops, ResultPosition, ResultSpeed, ResultStops, ResultTrain,
