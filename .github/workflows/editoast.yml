@@ -98,7 +98,7 @@ jobs:
         run: cargo install cargo-tarpaulin
 
       - name: Test and coverage
-        run: cargo tarpaulin -r ./editoast --out Xml -- --test-threads 1
+        run: cargo tarpaulin -r ./editoast -p editoast -p editoast_derive --out Xml -- --test-threads 1
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3

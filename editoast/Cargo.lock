@@ -1159,6 +1159,7 @@ name = "editoast_derive"
 version = "0.1.0"
 dependencies = [
  "darling 0.20.3",
+ "pretty_assertions",
  "proc-macro2",
  "quote",
  "syn 2.0.28",
