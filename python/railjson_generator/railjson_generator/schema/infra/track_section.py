@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from typing import List, Optional, Tuple
 
 from osrd_schemas import infra
-from pydantic.error_wrappers import ValidationError
+from pydantic import ValidationError
 
 from railjson_generator.schema.infra.direction import Direction
 from railjson_generator.schema.infra.endpoint import Endpoint, TrackEndpoint

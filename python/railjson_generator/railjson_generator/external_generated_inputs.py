@@ -33,7 +33,7 @@ class ExternalGeneratedInputs:
 
     def save(self, path):
         with open(path, "w") as f:
-            f.write(self.to_rjs().json(indent=2))
+            f.write(self.to_rjs().model_dump_json(indent=2))
 
     def to_rjs(self):
         return external_generated_inputs.ElectricalProfileSet(
