@@ -14,10 +14,13 @@ use crate::error::Result;
 use async_trait::async_trait;
 use editoast_derive::EditoastError;
 pub use http_client::{HttpClient, HttpClientBuilder};
+use log::info;
 use reqwest::Url;
 use serde::{de::DeserializeOwned, Serialize};
 use serde_derive::Deserialize;
 use thiserror::Error;
+
+const MAX_RETRIES: u8 = 5;
 
 #[derive(Debug, Clone)]
 pub enum CoreClient {
@@ -50,11 +53,27 @@ impl CoreClient {
     ) -> Result<R::Response> {
         match self {
             CoreClient::Direct(client) => {
-                let mut request = client.request(method, path);
-                if let Some(body) = body {
-                    request = request.json(body);
-                }
-                let response = request.send().await.map_err(Into::<CoreError>::into)?;
+                let mut i_try = 0;
+                let response = loop {
+                    let mut request = client.request(method.clone(), path);
+                    if let Some(body) = body {
+                        request = request.json(body);
+                    }
+                    match request.send().await.map_err(Into::<CoreError>::into) {
+                        // This error occurs quite often in the CI.
+                        // It's linked to this issue https://github.com/hyperium/hyper/issues/2136.
+                        // This is why we retry the request here
+                        Err(CoreError::ConnectionClosedBeforeMessageCompleted)
+                            if i_try < MAX_RETRIES =>
+                        {
+                            i_try += 1;
+                            info!("Core request '{}: {}': Connection closed before message completed. Retry [{}/{}]", method, path, i_try, MAX_RETRIES);
+                            continue;
+                        }
+                        response => break response?,
+                    }
+                };
+
                 let url = response.url().to_string();
                 let status = response.status();
                 let bytes =
@@ -65,33 +84,31 @@ impl CoreClient {
                             msg: err.to_string(),
                         })?;
                 if status.is_success() {
-                    R::from_bytes(bytes.as_ref())
-                } else {
-                    // We try to deserialize the response as the standard Core error format
-                    // If that fails we try to return a generic error containing the raw error
-                    let core_error =
-                        <Json<CoreErrorPayload> as CoreResponse>::from_bytes(bytes.as_ref())
-                            .map_err(|err| {
-                                if let Ok(utf8_raw_error) =
-                                    String::from_utf8(bytes.as_ref().to_vec())
-                                {
-                                    CoreError::GenericCoreError {
-                                        status: status.as_str().to_owned(),
-                                        url: url.clone(),
-                                        raw_error: utf8_raw_error,
-                                    }
-                                    .into()
-                                } else {
-                                    err
-                                }
-                            })?;
-                    Err(CoreError::Forward {
-                        status: status.as_u16(),
-                        core_error,
-                        url,
-                    }
-                    .into())
+                    return R::from_bytes(bytes.as_ref());
                 }
+                // We try to deserialize the response as the standard Core error format
+                // If that fails we try to return a generic error containing the raw error
+                let core_error = <Json<CoreErrorPayload> as CoreResponse>::from_bytes(
+                    bytes.as_ref(),
+                )
+                .map_err(|err| {
+                    if let Ok(utf8_raw_error) = String::from_utf8(bytes.as_ref().to_vec()) {
+                        CoreError::GenericCoreError {
+                            status: status.as_str().to_owned(),
+                            url: url.clone(),
+                            raw_error: utf8_raw_error,
+                        }
+                        .into()
+                    } else {
+                        err
+                    }
+                })?;
+                Err(CoreError::Forward {
+                    status: status.as_u16(),
+                    core_error,
+                    url,
+                }
+                .into())
             }
             #[cfg(test)]
             CoreClient::Mocked(client) => client
@@ -264,6 +281,9 @@ enum CoreError {
         url: String,
         raw_error: String,
     },
+    #[error("Core connection closed before message completed. Should retry.")]
+    #[editoast_error(status = 500)]
+    ConnectionClosedBeforeMessageCompleted,
     #[cfg(test)]
     #[error("The mocked response had no body configured - check out StubResponseBuilder::body if this is unexpected")]
     NoResponseContent,
@@ -271,6 +291,15 @@ enum CoreError {
 
 impl From<reqwest::Error> for CoreError {
     fn from(value: reqwest::Error) -> Self {
+        // Since we should retry the request it's useful to have its own kind of error.
+        if value
+            .to_string()
+            .contains("connection closed before message completed")
+        {
+            return Self::ConnectionClosedBeforeMessageCompleted;
+        }
+
+        // Convert the reqwest error
         Self::GenericCoreError {
             status: value
                 .status()
