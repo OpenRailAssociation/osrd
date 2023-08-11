@@ -16,7 +16,6 @@ import {
   SPEED_SPACE_SETTINGS_KEYS,
   OsrdSimulationState,
   SimulationTrain,
-  Train,
 } from 'reducers/osrdsimulation/types';
 import { time2sec } from 'utils/timeManipulation';
 import undoableSimulation, { REDO_SIMULATION, UNDO_SIMULATION } from './simulation';
@@ -149,16 +148,14 @@ export default function reducer(inputState: OsrdSimulationState | undefined, act
         // get only the present, thanks
         draft.simulation = undoableSimulation(state.simulation, action);
         draft.departureArrivalTimes = makeTrainListWithAllTrainsOffset(
-          // TODO: fix this hotfix
-          // cast but not sure it's a good thing
-          draft.simulation.present.trains as Train[],
+          draft.simulation.present.trains,
           0
         );
 
         draft.consolidatedSimulation = createTrain(
           noop,
           KEY_VALUES_FOR_CONSOLIDATED_SIMULATION,
-          draft.simulation.present.trains as Train[],
+          draft.simulation.present.trains,
           noop
         );
         draft.displaySimulation =

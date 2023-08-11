@@ -7,7 +7,6 @@ import { deleteRequest, get, post } from 'common/requests';
 import { setFailure } from 'reducers/main';
 
 import trainNameWithNum from 'applications/operationalStudies/components/ManageTrainSchedule/helpers/trainNameHelper';
-import { trainscheduleURI } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
 
 export const UPDATE_SIMULATION = 'osrdsimu/UPDATE_SIMULATION';
 export const UNDO_SIMULATION = 'osrdsimu/UNDO_SIMULATION';
@@ -33,7 +32,7 @@ export async function progressiveDuplicateTrain(
   trainDelta,
   dispatch
 ) {
-  const trainDetail = await get(`${trainscheduleURI}${selectedTrain.id}/`);
+  const trainDetail = await get(`/editoast/train_schedule/${selectedTrain.id}/`);
   const params = {
     timetable: trainDetail.timetable,
     path: trainDetail.path,
@@ -57,9 +56,9 @@ export async function progressiveDuplicateTrain(
     });
     actualTrainCount += trainStep;
   }
-  await post(`${trainscheduleURI}standalone_simulation/`, params);
+  await post(`/editoast/train_schedule/standalone_simulation/`, params);
   try {
-    const simulationLocal = await get(`${trainscheduleURI}results/`, {
+    const simulationLocal = await get(`/editoast/train_schedule/results/`, {
       params: {
         timetable_id: timetableID,
         path_id: selectedProjection.path,
@@ -102,7 +101,7 @@ function apiSyncOnDiff(present, nextPresent, dispatch = noop) {
     if (!nextTrain) {
       // Call delete API (await)
       try {
-        deleteRequest(`${trainscheduleURI}${id}/`);
+        deleteRequest(`/editoast/train_schedule/${id}/`);
       } catch (e) {
         dispatch(
           setFailure({

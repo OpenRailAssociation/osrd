@@ -1,6 +1,5 @@
 import { get, patch } from 'common/requests';
 import { noop } from 'lodash';
-import { trainscheduleURI } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
 import { updateReloadTimetable } from 'reducers/osrdsimulation/actions';
 
 /**
@@ -26,9 +25,10 @@ export function getTrainDetailsForAPI(simulationTrain) {
  */
 export async function changeTrain(details, id, dispatch = noop) {
   try {
-    const trainDetail = await get(`${trainscheduleURI}${id}/`);
+    const trainDetail = await get(`/editoast/train_schedule/${id}/`);
     try {
-      const params = {
+      // TODO: add the other information of the trainSchedule (allowances...)
+      const trainSchedule = {
         id,
         departure_time: details.departure_time || trainDetail.departure_time,
         initial_speed: details.initial_speed || trainDetail.initial_speed,
@@ -39,7 +39,7 @@ export async function changeTrain(details, id, dispatch = noop) {
         train_name: details.train_name || trainDetail.train_name,
       };
       dispatch(updateReloadTimetable(true));
-      await patch(`${trainscheduleURI}${id}/`, params);
+      await patch(`/editoast/train_schedule/`, [trainSchedule]);
       dispatch(updateReloadTimetable(false));
     } catch (e) {
       dispatch(updateReloadTimetable(false));

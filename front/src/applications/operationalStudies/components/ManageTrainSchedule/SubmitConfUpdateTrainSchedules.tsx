@@ -11,7 +11,6 @@ import { getTrainScheduleIDsToModify } from 'reducers/osrdconf/selectors';
 import { updateReloadTimetable } from 'reducers/osrdsimulation/actions';
 import { useTranslation } from 'react-i18next';
 import { FaPen } from 'react-icons/fa';
-import { osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
 
 type Props = {
   setIsWorking: (isWorking: boolean) => void;
@@ -28,7 +27,7 @@ export default function SubmitConfUpdateTrainSchedules({
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const trainScheduleIDsToModify: undefined | number[] = useSelector(getTrainScheduleIDsToModify);
   const [getTimetableWithTrainSchedulesDetails] = osrdEditoastApi.useLazyGetTimetableByIdQuery();
-  const [patchTrainSchedules] = osrdMiddlewareApi.usePatchTrainScheduleByIdMutation();
+  const [patchTrainSchedules] = osrdEditoastApi.endpoints.patchTrainSchedule.useMutation();
 
   async function submitConfUpdateTrainSchedules() {
     const { osrdconf } = store.getState();
@@ -41,12 +40,13 @@ export default function SubmitConfUpdateTrainSchedules({
         await Promise.all(
           trainScheduleIDsToModify.map(async (trainScheduleID) => {
             await patchTrainSchedules({
-              id: trainScheduleID,
-              writableTrainSchedule: {
-                ...simulationConf,
-                timetable: osrdconf.simulationConf.timetableID,
-                path: osrdconf.simulationConf.pathfindingID,
-              },
+              body: [
+                {
+                  id: trainScheduleID,
+                  ...simulationConf,
+                  path_id: osrdconf.simulationConf.pathfindingID,
+                },
+              ],
             }).unwrap();
           })
         );

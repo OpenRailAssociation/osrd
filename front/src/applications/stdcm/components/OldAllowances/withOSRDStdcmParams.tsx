@@ -60,12 +60,6 @@ function withOSRDStdcmParams<T>(Component: ComponentType<T>) {
 
     const [trainDetail] = useState({ allowances: [] });
 
-    // @TODO implement this behaviour or refacto
-    // Alowance mutation in REST strat
-    const mutateSingleAllowances = () => {
-      /* empty */
-    };
-
     const changeType = (type: StandardAllowance, typeKey: string) => {
       if (typeKey === 'gridMarginBefore') {
         dispatch(updateGridMarginBefore(type.value || 0));
@@ -100,8 +94,6 @@ function withOSRDStdcmParams<T>(Component: ComponentType<T>) {
       <Component
         {...(hocProps as T)}
         t={t}
-        dispatch={dispatch}
-        mutateSingleAllowances={mutateSingleAllowances}
         trainDetail={trainDetail}
         getAllowanceTypes={getAllowanceTypes}
         distributionsTypes={distributionsTypes}
