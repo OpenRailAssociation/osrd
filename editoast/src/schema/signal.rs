@@ -135,14 +135,20 @@ mod test {
     use super::SignalExtensions;
     use crate::models::infra::tests::test_infra_transaction;
     use actix_web::test as actix_test;
+    use diesel_async::scoped_futures::ScopedFutureExt;
     use serde_json::from_str;
 
     #[actix_test]
     async fn test_persist() {
         test_infra_transaction(|conn, infra| {
-            let data = (0..10).map(|_| Signal::default()).collect::<Vec<Signal>>();
+            async move {
+                let data = (0..10).map(|_| Signal::default()).collect::<Vec<Signal>>();
 
-            assert!(Signal::persist_batch(&data, infra.id.unwrap(), conn).is_ok());
+                assert!(Signal::persist_batch(&data, infra.id.unwrap(), conn)
+                    .await
+                    .is_ok());
+            }
+            .scope_boxed()
         })
         .await;
     }

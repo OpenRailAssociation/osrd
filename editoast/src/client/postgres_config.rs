@@ -21,7 +21,7 @@ pub struct PostgresConfig {
     pub psql_port: u16,
     #[derivative(Default(value = "32"))]
     #[arg(long, env, default_value_t = 32)]
-    pub pool_size: u32,
+    pub pool_size: usize,
 }
 
 impl PostgresConfig {

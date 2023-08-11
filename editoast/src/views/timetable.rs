@@ -11,7 +11,7 @@ use crate::views::train_schedule::TrainScheduleError;
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
 use actix_web::get;
-use actix_web::web::{self, block, Data, Json, Path};
+use actix_web::web::{self, Data, Json, Path};
 use editoast_derive::EditoastError;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -69,41 +69,38 @@ async fn get_conflicts(
 ) -> Result<Json<Vec<Conflict>>> {
     let timetable_id = timetable_id.into_inner();
 
-    let db_pool2 = db_pool.clone();
-    let (schedules, simulations): (Vec<TrainSchedule>, Vec<SimulationOutput>) =
-        block::<_, Result<_>>(move || {
-            let mut conn = db_pool2.get()?;
-            use crate::tables::osrd_infra_trainschedule;
-            use diesel::prelude::*;
+    let (schedules, simulations): (Vec<TrainSchedule>, Vec<SimulationOutput>) = {
+        let mut conn = db_pool.get().await?;
+        use crate::tables::osrd_infra_trainschedule;
+        use diesel::{BelongingToDsl, ExpressionMethods, GroupedBy, QueryDsl};
+        use diesel_async::RunQueryDsl;
 
-            let train_schedules = osrd_infra_trainschedule::table
-                .filter(osrd_infra_trainschedule::timetable_id.eq(timetable_id))
-                .load::<TrainSchedule>(&mut conn)?;
+        let train_schedules = osrd_infra_trainschedule::table
+            .filter(osrd_infra_trainschedule::timetable_id.eq(timetable_id))
+            .load::<TrainSchedule>(&mut conn)
+            .await?;
 
-            let simulation_outputs = SimulationOutput::belonging_to(&train_schedules)
-                .load::<SimulationOutput>(&mut conn)?;
-
-            simulation_outputs
-                .grouped_by(&train_schedules)
-                .into_iter()
-                .zip(train_schedules)
-                .map(|(mut sim_output, train_schedule)| {
-                    if sim_output.is_empty() {
-                        return Err(TrainScheduleError::UnsimulatedTrainSchedule {
-                            train_schedule_id: train_schedule
-                                .id
-                                .expect("TrainSchedule should have an id"),
-                        }
-                        .into());
+        SimulationOutput::belonging_to(&train_schedules)
+            .load::<SimulationOutput>(&mut conn)
+            .await?
+            .grouped_by(&train_schedules)
+            .into_iter()
+            .zip(train_schedules)
+            .map(|(mut sim_output, train_schedule)| {
+                if sim_output.is_empty() {
+                    return Err(TrainScheduleError::UnsimulatedTrainSchedule {
+                        train_schedule_id: train_schedule
+                            .id
+                            .expect("TrainSchedule should have an id"),
                     }
-                    assert!(sim_output.len() == 1);
-                    Ok((train_schedule, sim_output.remove(0)))
-                })
-                .collect::<Result<Vec<(TrainSchedule, SimulationOutput)>>>()
-                .map(|v| v.into_iter().unzip())
-        })
-        .await
-        .unwrap()?; // FIXME: maybe this should be converted to an editoast error?
+                    .into());
+                }
+                assert!(sim_output.len() == 1);
+                Ok((train_schedule, sim_output.remove(0)))
+            })
+            .collect::<Result<Vec<(TrainSchedule, SimulationOutput)>>>()
+            .map(|v| v.into_iter().unzip())
+    }?;
 
     let mut id_to_name = HashMap::new();
     let mut trains_requirements = Vec::new();

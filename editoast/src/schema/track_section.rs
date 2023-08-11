@@ -197,17 +197,23 @@ mod test {
     use crate::map::BoundingBox;
     use crate::models::infra::tests::test_infra_transaction;
     use actix_web::test as actix_test;
+    use diesel_async::scoped_futures::ScopedFutureExt;
     use geos::geojson;
     use serde_json::from_str;
 
     #[actix_test]
     async fn test_persist() {
         test_infra_transaction(|conn, infra| {
-            let data = (0..10)
-                .map(|_| TrackSection::default())
-                .collect::<Vec<TrackSection>>();
+            async move {
+                let data = (0..10)
+                    .map(|_| TrackSection::default())
+                    .collect::<Vec<TrackSection>>();
 
-            assert!(TrackSection::persist_batch(&data, infra.id.unwrap(), conn).is_ok());
+                assert!(TrackSection::persist_batch(&data, infra.id.unwrap(), conn)
+                    .await
+                    .is_ok());
+            }
+            .scope_boxed()
         })
         .await;
     }

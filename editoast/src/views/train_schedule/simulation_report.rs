@@ -10,16 +10,16 @@ use crate::models::{
 };
 use crate::schema::utils::Identifier;
 use crate::{error, DbPool};
-use actix_web::web::{block, Data};
+use actix_web::web::Data;
 use diesel::sql_types::{Array as SqlArray, BigInt, Text};
-use diesel::{sql_query, RunQueryDsl};
+use diesel::{sql_query, ExpressionMethods, QueryDsl};
+use diesel_async::RunQueryDsl;
 use futures::future::OptionFuture;
 use geos::geojson::JsonValue;
 use serde_derive::{Deserialize, Serialize};
 
 use crate::views::train_schedule::projection::Projection;
 use crate::views::train_schedule::TrainScheduleError::UnsimulatedTrainSchedule;
-use diesel::prelude::*;
 
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct SimulationReport {
@@ -131,22 +131,19 @@ pub async fn fetch_simulation_output(
 ) -> error::Result<SimulationOutput> {
     use crate::tables::osrd_infra_simulationoutput::dsl::*;
     let ts_id = train_schedule.id.unwrap();
-    block(move || {
-        let mut conn = db_pool.get()?;
-        match osrd_infra_simulationoutput
-            .filter(train_schedule_id.eq(ts_id))
-            .get_result(&mut conn)
-        {
-            Ok(scenario) => Ok(scenario),
-            Err(diesel::result::Error::NotFound) => Err(UnsimulatedTrainSchedule {
+
+    let mut conn = db_pool.get().await?;
+    osrd_infra_simulationoutput
+        .filter(train_schedule_id.eq(ts_id))
+        .get_result(&mut conn)
+        .await
+        .map_err(|err| match err {
+            diesel::result::Error::NotFound => UnsimulatedTrainSchedule {
                 train_schedule_id: ts_id,
             }
-            .into()),
-            Err(err) => Err(err.into()),
-        }
-    })
-    .await
-    .unwrap()
+            .into(),
+            err => err.into(),
+        })
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -213,62 +210,59 @@ async fn add_stops_additional_information(
     path_waypoints: Vec<PathWaypoint>,
     db_pool: Data<DbPool>,
 ) -> error::Result<Vec<FullResultStops>> {
-    block(move || {
-        let mut conn = db_pool.get()?;
-        let track_ids: Vec<String> = path_waypoints
+    let mut conn = db_pool.get().await?;
+    let track_ids: Vec<String> = path_waypoints
+        .iter()
+        .map(|pw| pw.location.track_section.0.clone())
+        .collect();
+    let track_sections: Vec<TrackSectionModel> = sql_query(
+        "SELECT * FROM osrd_infra_tracksectionmodel WHERE infra_id = $1 AND obj_id = ANY($2);",
+    )
+    .bind::<BigInt, _>(infra_id)
+    .bind::<SqlArray<Text>, _>(&track_ids)
+    .load(&mut conn)
+    .await?;
+    let track_sections_map: HashMap<String, TrackSectionModel> = HashMap::from_iter(
+        track_sections
             .iter()
-            .map(|pw| pw.location.track_section.0.clone())
-            .collect();
-        let track_sections: Vec<TrackSectionModel> = sql_query(
-            "SELECT * FROM osrd_infra_tracksectionmodel WHERE infra_id = $1 AND obj_id = ANY($2);",
-        )
-        .bind::<BigInt, _>(infra_id)
-        .bind::<SqlArray<Text>, _>(&track_ids)
-        .load(&mut conn)?;
-        let track_sections_map: HashMap<String, TrackSectionModel> = HashMap::from_iter(
-            track_sections
-                .iter()
-                .map(|ts| (ts.obj_id.clone(), ts.clone())),
-        );
-        let stops = stops
-            .iter()
-            .zip(path_waypoints.iter())
-            .map(|(s, pw)| {
-                match &track_sections_map
-                    .get(&pw.location.track_section.0)
-                    .unwrap()
-                    .data
-                    .extensions
-                    .sncf
-                {
-                    Some(ext) => FullResultStops {
-                        result_stops: ResultStops {
-                            time: s.time,
-                            position: s.position,
-                            duration: s.duration,
-                        },
-                        id: pw.id.clone(),
-                        name: pw.name.clone(),
-                        line_code: Some(ext.line_code),
-                        track_number: Some(ext.track_number),
-                        line_name: Some(ext.line_name.to_string()),
-                        track_name: Some(ext.track_name.to_string()),
+            .map(|ts| (ts.obj_id.clone(), ts.clone())),
+    );
+    let stops = stops
+        .iter()
+        .zip(path_waypoints.iter())
+        .map(|(s, pw)| {
+            match &track_sections_map
+                .get(&pw.location.track_section.0)
+                .unwrap()
+                .data
+                .extensions
+                .sncf
+            {
+                Some(ext) => FullResultStops {
+                    result_stops: ResultStops {
+                        time: s.time,
+                        position: s.position,
+                        duration: s.duration,
                     },
-                    None => FullResultStops {
-                        result_stops: ResultStops {
-                            time: s.time,
-                            position: s.position,
-                            duration: s.duration,
-                        },
-                        ..Default::default()
+                    id: pw.id.clone(),
+                    name: pw.name.clone(),
+                    line_code: Some(ext.line_code),
+                    track_number: Some(ext.track_number),
+                    line_name: Some(ext.line_name.to_string()),
+                    track_name: Some(ext.track_name.to_string()),
+                },
+                None => FullResultStops {
+                    result_stops: ResultStops {
+                        time: s.time,
+                        position: s.position,
+                        duration: s.duration,
                     },
-                }
-            })
-            .collect();
-        Ok(stops)
-    })
-    .await
-    .unwrap()
+                    ..Default::default()
+                },
+            }
+        })
+        .collect();
+    Ok(stops)
 }
 
 fn project_speeds(mut speeds: Vec<ResultSpeed>, departure_time: f64) -> Vec<ResultSpeed> {

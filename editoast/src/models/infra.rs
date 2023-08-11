@@ -10,13 +10,15 @@ use crate::tables::osrd_infra_infra;
 use crate::tables::osrd_infra_infra::dsl;
 use crate::views::pagination::{Paginate, PaginatedResponse};
 use crate::{generated_data, DbPool};
-use actix_web::web::{block, Data};
+use actix_web::web::Data;
+use async_trait::async_trait;
 use chrono::{NaiveDateTime, Utc};
 use derivative::Derivative;
 use diesel::result::Error as DieselError;
 use diesel::sql_types::{BigInt, Bool, Nullable, Text};
-use diesel::{sql_query, PgConnection, QueryDsl, RunQueryDsl};
-use diesel::{Connection, ExpressionMethods};
+use diesel::{sql_query, ExpressionMethods, QueryDsl};
+use diesel_async::scoped_futures::ScopedFutureExt;
+use diesel_async::{AsyncConnection, AsyncPgConnection as PgConnection, RunQueryDsl};
 use editoast_derive::Model;
 use log::debug;
 use serde::{Deserialize, Serialize};
@@ -65,28 +67,31 @@ pub struct Infra {
 }
 
 impl Infra {
-    pub fn retrieve_for_update(conn: &mut PgConnection, infra_id: i64) -> Result<Infra> {
+    pub async fn retrieve_for_update(conn: &mut PgConnection, infra_id: i64) -> Result<Infra> {
         let infra = dsl::osrd_infra_infra
             .for_update()
             .find(infra_id)
-            .first(conn)?;
+            .first(conn)
+            .await?;
         Ok(infra)
     }
 
-    pub fn list_for_update(conn: &mut PgConnection) -> Vec<Infra> {
+    pub async fn list_for_update(conn: &mut PgConnection) -> Vec<Infra> {
         dsl::osrd_infra_infra
             .for_update()
             .load::<Self>(conn)
+            .await
             .expect("List infra query failed")
     }
 
-    pub fn all(conn: &mut PgConnection) -> Vec<Infra> {
+    pub async fn all(conn: &mut PgConnection) -> Vec<Infra> {
         dsl::osrd_infra_infra
             .load::<Self>(conn)
+            .await
             .expect("List infra query failed")
     }
 
-    pub fn bump_version(&self, conn: &mut PgConnection) -> Result<Self> {
+    pub async fn bump_version(&self, conn: &mut PgConnection) -> Result<Self> {
         let new_version = self
             .version
             .as_ref()
@@ -98,56 +103,58 @@ impl Infra {
         let new_version = new_version.to_string();
         let mut infra = self.clone();
         infra.version = Some(new_version);
-        let infra = infra.update_conn(conn, infra_id)?.unwrap();
+        let infra = infra.update_conn(conn, infra_id).await?.unwrap();
         Ok(infra)
     }
 
     pub async fn persist(self, railjson: RailJson, db_pool: Data<DbPool>) -> Result<Infra> {
-        block::<_, Result<_>>(move || {
-            if railjson.version != RAILJSON_VERSION {
-                return Err(RailjsonError::WrongVersion(railjson.version).into());
-            }
-            let mut conn = db_pool.get()?;
+        if railjson.version != RAILJSON_VERSION {
+            return Err(RailjsonError::WrongVersion(railjson.version).into());
+        }
+        let mut conn = db_pool.get().await?;
 
-            conn.transaction(|conn| {
-                let infra = self.create_conn(conn)?;
+        conn.transaction(|conn| {
+            async move {
+                let infra = self.create_conn(conn).await?;
                 let infra_id = infra.id.unwrap();
                 debug!("🛤️  Importing track sections");
-                TrackSection::persist_batch(&railjson.track_sections, infra_id, conn)?;
+                TrackSection::persist_batch(&railjson.track_sections, infra_id, conn).await?;
                 debug!("🛤️  Importing track section links");
-                TrackSectionLink::persist_batch(&railjson.track_section_links, infra_id, conn)?;
+                TrackSectionLink::persist_batch(&railjson.track_section_links, infra_id, conn)
+                    .await?;
                 debug!("🛤️  Importing buffer stops");
-                BufferStop::persist_batch(&railjson.buffer_stops, infra_id, conn)?;
+                BufferStop::persist_batch(&railjson.buffer_stops, infra_id, conn).await?;
                 debug!("🛤️  Importing catenaries");
-                Catenary::persist_batch(&railjson.catenaries, infra_id, conn)?;
+                Catenary::persist_batch(&railjson.catenaries, infra_id, conn).await?;
                 debug!("🛤️  Importing detectors");
-                Detector::persist_batch(&railjson.detectors, infra_id, conn)?;
+                Detector::persist_batch(&railjson.detectors, infra_id, conn).await?;
                 debug!("🛤️  Importing operational points");
-                OperationalPoint::persist_batch(&railjson.operational_points, infra_id, conn)?;
+                OperationalPoint::persist_batch(&railjson.operational_points, infra_id, conn)
+                    .await?;
                 debug!("🛤️  Importing routes");
-                Route::persist_batch(&railjson.routes, infra_id, conn)?;
+                Route::persist_batch(&railjson.routes, infra_id, conn).await?;
                 debug!("🛤️  Importing signals");
-                Signal::persist_batch(&railjson.signals, infra_id, conn)?;
+                Signal::persist_batch(&railjson.signals, infra_id, conn).await?;
                 debug!("🛤️  Importing switches");
-                Switch::persist_batch(&railjson.switches, infra_id, conn)?;
+                Switch::persist_batch(&railjson.switches, infra_id, conn).await?;
                 debug!("🛤️  Importing speed sections");
-                SpeedSection::persist_batch(&railjson.speed_sections, infra_id, conn)?;
+                SpeedSection::persist_batch(&railjson.speed_sections, infra_id, conn).await?;
                 debug!("🛤️  Importing switch types");
-                SwitchType::persist_batch(&railjson.switch_types, infra_id, conn)?;
+                SwitchType::persist_batch(&railjson.switch_types, infra_id, conn).await?;
                 debug!("🛤️  Importing neutral sections");
-                NeutralSection::persist_batch(&railjson.neutral_sections, infra_id, conn)?;
+                NeutralSection::persist_batch(&railjson.neutral_sections, infra_id, conn).await?;
                 Ok(infra)
-            })
+            }
+            .scope_boxed()
         })
         .await
-        .unwrap()
     }
 
     pub async fn clone(infra_id: i64, db_pool: Data<DbPool>, new_name: String) -> Result<Infra> {
         let infra_to_clone = Infra::retrieve(db_pool.clone(), infra_id).await?.unwrap();
-        block::<_, Result<_>>(move || {
-        let mut conn = db_pool.get()?;
-        match sql_query(
+
+        let mut conn = db_pool.get().await?;
+        sql_query(
             "INSERT INTO osrd_infra_infra (name, railjson_version, owner, version, generated_version, locked, created, modified
             )
             SELECT $1, $2, '00000000-0000-0000-0000-000000000000', $3, $4, $5, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP FROM osrd_infra_infra
@@ -160,20 +167,14 @@ impl Infra {
         .bind::<Nullable<Text>,_>(infra_to_clone.generated_version.unwrap())
         .bind::<Bool,_>(infra_to_clone.locked.unwrap())
         .bind::<BigInt,_>(infra_id)
-        .get_result::<Infra>(&mut conn)
-        {
-            Ok(infra) => Ok(infra),
-            Err(err) => Err(err.into()),
-        }})
-        .await
-        .unwrap()
+        .get_result::<Infra>(&mut conn).await.map_err(|err| err.into())
     }
 
     /// Refreshes generated data if not up to date and returns whether they were refreshed.
     /// `force` argument allows us to refresh it in any cases.
     /// This function will update `generated_version` accordingly.
     /// If refreshed you need to call `invalidate_after_refresh` to invalidate layer cache
-    pub fn refresh(
+    pub async fn refresh(
         &self,
         conn: &mut PgConnection,
         force: bool,
@@ -187,30 +188,31 @@ impl Infra {
             return Ok(false);
         }
 
-        generated_data::refresh_all(conn, self.id.unwrap(), infra_cache)?;
+        generated_data::refresh_all(conn, self.id.unwrap(), infra_cache).await?;
 
         // Update generated infra version
         let mut infra = self.clone();
         infra.generated_version = Some(self.version.clone());
-        infra.update_conn(conn, self.id.unwrap())?;
+        infra.update_conn(conn, self.id.unwrap()).await?;
 
         Ok(true)
     }
 
     /// Clear generated data of the infra
     /// This function will update `generated_version` acordingly.
-    pub fn clear(&self, conn: &mut PgConnection) -> Result<bool> {
-        generated_data::clear_all(conn, self.clone().id.unwrap())?;
+    pub async fn clear(&self, conn: &mut PgConnection) -> Result<bool> {
+        generated_data::clear_all(conn, self.clone().id.unwrap()).await?;
         let mut infra = self.clone();
         infra.generated_version = Some(None);
-        infra.update_conn(conn, self.id.unwrap())?;
+        infra.update_conn(conn, self.id.unwrap()).await?;
         Ok(true)
     }
 }
 
+#[async_trait]
 impl List<NoParams> for Infra {
-    fn list_conn(
-        conn: &mut diesel::PgConnection,
+    async fn list_conn(
+        conn: &mut PgConnection,
         page: i64,
         page_size: i64,
         _: NoParams,
@@ -219,6 +221,7 @@ impl List<NoParams> for Infra {
             .distinct()
             .paginate(page, page_size)
             .load_and_count(conn)
+            .await
     }
 }
 
@@ -237,7 +240,8 @@ pub mod tests {
     use actix_web::test as actix_test;
     use chrono::Utc;
     use diesel::result::Error;
-    use diesel::{Connection, PgConnection};
+    use diesel_async::scoped_futures::{ScopedBoxFuture, ScopedFutureExt};
+    use diesel_async::{AsyncConnection, AsyncPgConnection as PgConnection};
     use uuid::Uuid;
 
     pub fn build_test_infra() -> Infra {
@@ -253,25 +257,38 @@ pub mod tests {
         }
     }
 
-    pub async fn test_infra_transaction(fn_test: fn(&mut PgConnection, Infra)) {
+    pub async fn test_infra_transaction<'a, F>(fn_test: F)
+    where
+        F: for<'r> FnOnce(&'r mut PgConnection, Infra) -> ScopedBoxFuture<'a, 'r, ()> + Send + 'a,
+    {
         let infra = build_test_infra();
-        let mut conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
-        conn.test_transaction::<_, Error, _>(|conn| {
-            let infra = infra.create_conn(conn).unwrap();
-            fn_test(conn, infra);
-            Ok(())
-        })
+        let mut conn = PgConnection::establish(&PostgresConfig::default().url())
+            .await
+            .unwrap();
+        let _ = conn
+            .test_transaction::<_, Error, _>(|conn| {
+                async move {
+                    let infra = infra.create_conn(conn).await.unwrap();
+                    fn_test(conn, infra);
+                    Ok(())
+                }
+                .scope_boxed()
+            })
+            .await;
     }
 
     #[actix_test]
     async fn create_infra() {
         test_infra_transaction(|_, infra| {
-            assert_eq!("test", infra.name.unwrap());
-            assert_eq!(Uuid::nil(), infra.owner.unwrap());
-            assert_eq!(RAILJSON_VERSION, infra.railjson_version.unwrap());
-            assert_eq!(INFRA_VERSION, infra.version.unwrap());
-            assert_eq!(INFRA_VERSION, infra.generated_version.unwrap().unwrap());
-            assert!(!infra.locked.unwrap());
+            async move {
+                assert_eq!("test", infra.name.unwrap());
+                assert_eq!(Uuid::nil(), infra.owner.unwrap());
+                assert_eq!(RAILJSON_VERSION, infra.railjson_version.unwrap());
+                assert_eq!(INFRA_VERSION, infra.version.unwrap());
+                assert_eq!(INFRA_VERSION, infra.generated_version.unwrap().unwrap());
+                assert!(!infra.locked.unwrap());
+            }
+            .scope_boxed()
         })
         .await;
     }

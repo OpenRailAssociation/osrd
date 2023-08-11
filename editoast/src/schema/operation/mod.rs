@@ -4,7 +4,7 @@ mod update;
 
 use super::ObjectRef;
 use crate::error::Result;
-use diesel::PgConnection;
+use diesel_async::AsyncPgConnection as PgConnection;
 use editoast_derive::EditoastError;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -36,18 +36,18 @@ pub enum OperationResult {
 }
 
 impl Operation {
-    pub fn apply(&self, infra_id: i64, conn: &mut PgConnection) -> Result<OperationResult> {
+    pub async fn apply(&self, infra_id: i64, conn: &mut PgConnection) -> Result<OperationResult> {
         match self {
             Operation::Delete(deletion) => {
-                deletion.apply(infra_id, conn)?;
+                deletion.apply(infra_id, conn).await?;
                 Ok(OperationResult::Delete(deletion.clone().into()))
             }
             Operation::Create(railjson_object) => {
-                create::apply_create_operation(railjson_object, infra_id, conn)?;
+                create::apply_create_operation(railjson_object, infra_id, conn).await?;
                 Ok(OperationResult::Create(*railjson_object.clone()))
             }
             Operation::Update(update) => {
-                let obj_railjson = update.apply(infra_id, conn)?;
+                let obj_railjson = update.apply(infra_id, conn).await?;
                 Ok(OperationResult::Update(obj_railjson))
             }
         }

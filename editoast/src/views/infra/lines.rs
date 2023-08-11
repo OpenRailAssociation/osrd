@@ -6,7 +6,7 @@ use crate::models::{Infra, Retrieve};
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
 use actix_web::get;
-use actix_web::web::{block, scope, Data, Json, Path};
+use actix_web::web::{scope, Data, Json, Path};
 use chashmap::CHashMap;
 use editoast_derive::EditoastError;
 use thiserror::Error;
@@ -32,28 +32,25 @@ async fn get_line_bbox(
     let (infra_id, line_code) = path.into_inner();
     let line_code: i32 = line_code.try_into().unwrap();
     let infra = Infra::retrieve(db_pool.clone(), infra_id).await?.unwrap();
-    let zone = block::<_, Result<_>>(move || {
-        let conn = &mut db_pool.get()?;
-        let infra_cache = InfraCache::get_or_load(conn, &infra_caches, &infra)?;
-        let mut zone = Zone::default();
-        let mut tracksections = infra_cache
-            .track_sections()
-            .values()
-            .map(ObjectCache::unwrap_track_section)
-            .filter(|track| track.line_code.map_or(false, |code| code == line_code))
-            .peekable();
-        if tracksections.peek().is_none() {
-            return Err(LinesErrors::LineNotFound { line_code }.into());
-        }
-        tracksections.for_each(|track| {
-            zone.union(&Zone {
-                geo: track.bbox_geo.clone(),
-                sch: track.bbox_sch.clone(),
-            });
+
+    let conn = &mut db_pool.get().await?;
+    let infra_cache = InfraCache::get_or_load(conn, &infra_caches, &infra).await?;
+    let mut zone = Zone::default();
+    let mut tracksections = infra_cache
+        .track_sections()
+        .values()
+        .map(ObjectCache::unwrap_track_section)
+        .filter(|track| track.line_code.map_or(false, |code| code == line_code))
+        .peekable();
+    if tracksections.peek().is_none() {
+        return Err(LinesErrors::LineNotFound { line_code }.into());
+    }
+    tracksections.for_each(|track| {
+        zone.union(&Zone {
+            geo: track.bbox_geo.clone(),
+            sch: track.bbox_sch.clone(),
         });
-        Ok(zone)
-    })
-    .await
-    .unwrap()?;
+    });
+
     Ok(Json(zone))
 }

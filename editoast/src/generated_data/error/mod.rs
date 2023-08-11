@@ -12,8 +12,10 @@ pub mod track_sections;
 
 use std::collections::HashMap;
 
+use async_trait::async_trait;
+use diesel::sql_query;
 use diesel::sql_types::{Array, BigInt, Json};
-use diesel::{sql_query, PgConnection, RunQueryDsl};
+use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
 use serde_json::to_value;
 
 use super::GeneratedData;
@@ -162,7 +164,11 @@ fn get_insert_errors_query(obj_type: ObjectType) -> &'static str {
 }
 
 /// Insert a heterogeneous list of infra errors in DB with a minimum number of queries
-fn insert_errors(conn: &mut PgConnection, infra_id: i64, errors: Vec<InfraError>) -> Result<()> {
+async fn insert_errors(
+    conn: &mut PgConnection,
+    infra_id: i64,
+    errors: Vec<InfraError>,
+) -> Result<()> {
     let mut errors_by_type: HashMap<_, Vec<_>> = Default::default();
     for error in errors {
         errors_by_type
@@ -174,7 +180,8 @@ fn insert_errors(conn: &mut PgConnection, infra_id: i64, errors: Vec<InfraError>
         let count = sql_query(get_insert_errors_query(obj_type))
             .bind::<BigInt, _>(infra_id)
             .bind::<Array<Json>, _>(&errors)
-            .execute(conn)?;
+            .execute(conn)
+            .await?;
         debug_assert_eq!(count, errors.len());
     }
     Ok(())
@@ -182,12 +189,17 @@ fn insert_errors(conn: &mut PgConnection, infra_id: i64, errors: Vec<InfraError>
 
 pub struct ErrorLayer;
 
+#[async_trait]
 impl GeneratedData for ErrorLayer {
     fn table_name() -> &'static str {
         "osrd_infra_errorlayer"
     }
 
-    fn generate(conn: &mut PgConnection, infra_id: i64, infra_cache: &InfraCache) -> Result<()> {
+    async fn generate(
+        conn: &mut PgConnection,
+        infra_id: i64,
+        infra_cache: &InfraCache,
+    ) -> Result<()> {
         // Create a graph for topological errors
         let graph = Graph::load(infra_cache);
 
@@ -279,19 +291,19 @@ impl GeneratedData for ErrorLayer {
         // TODO: generer les erreurs pour les neutralSections
 
         // Insert errors in DB
-        insert_errors(conn, infra_id, infra_errors)?;
+        insert_errors(conn, infra_id, infra_errors).await?;
 
         Ok(())
     }
 
-    fn update(
+    async fn update(
         conn: &mut PgConnection,
         infra: i64,
         _operations: &[crate::schema::operation::OperationResult],
         infra_cache: &InfraCache,
     ) -> Result<()> {
         // Clear the whole layer and regenerate it
-        Self::refresh(conn, infra, infra_cache)
+        Self::refresh(conn, infra, infra_cache).await
     }
 }
 

@@ -8,8 +8,9 @@ use derivative::Derivative;
 use diesel::{
     sql_query,
     sql_types::{BigInt, Text},
-    PgConnection, QueryableByName, RunQueryDsl,
+    QueryableByName,
 };
+use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
 use editoast_derive::EditoastError;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use thiserror::Error;
@@ -55,7 +56,7 @@ impl<T: DeserializeOwned> From<ObjectQueryable> for MyParsedObject<T> {
     }
 }
 
-pub fn find_objects<T: DeserializeOwned + OSRDTyped>(
+pub async fn find_objects<T: DeserializeOwned + OSRDTyped>(
     conn: &mut PgConnection,
     infrastructre_id: i64,
 ) -> Vec<T> {
@@ -65,6 +66,7 @@ pub fn find_objects<T: DeserializeOwned + OSRDTyped>(
     ))
     .bind::<BigInt, _>(infrastructre_id)
     .load::<ObjectQueryable>(conn)
+    .await
     .expect("Error loading objects")
     .into_iter()
     .map(|obj| MyParsedObject::<T>::from(obj).0)
@@ -84,19 +86,17 @@ pub mod test {
     use crate::schema::OSRDIdentified;
     use crate::schema::{RailJson, RailjsonError};
     use actix_web::test as actix_test;
-
     use actix_web::web::Data;
-    use diesel::r2d2::ConnectionManager;
-    use diesel::Connection;
-    use diesel::PgConnection;
-    use r2d2::Pool;
+    use diesel_async::pooled_connection::deadpool::Pool;
+    use diesel_async::pooled_connection::AsyncDieselConnectionManager as ConnectionManager;
+    use diesel_async::AsyncPgConnection as PgConnection;
     use std::collections::HashMap;
 
     #[actix_test]
     async fn persists_railjson_ko_version() {
         let infra = build_test_infra();
         let manager = ConnectionManager::<PgConnection>::new(PostgresConfig::default().url());
-        let pool = Data::new(Pool::builder().max_size(1).build(manager).unwrap());
+        let pool = Data::new(Pool::builder(manager).max_size(1).build().unwrap());
         let infra = infra.create(pool.clone()).await.unwrap();
         let railjson_with_invalid_version = RailJson {
             version: "0".to_string(),
@@ -109,10 +109,10 @@ pub mod test {
     }
 
     #[actix_test]
-    async fn persist_raijson_ok() {
+    async fn persist_railjson_ok() {
         let manager = ConnectionManager::<PgConnection>::new(PostgresConfig::default().url());
-        let pool = Data::new(Pool::builder().max_size(1).build(manager).unwrap());
-        let mut conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
+        let pool = Data::new(Pool::builder(manager).build().unwrap());
+        let mut conn = pool.get().await.unwrap();
 
         // GIVEN
         let railjson = RailJson {
@@ -139,7 +139,7 @@ pub mod test {
         assert!(result.is_ok());
         let infra = result.unwrap();
 
-        let s_railjson = find_railjson(&mut conn, &infra).unwrap();
+        let s_railjson = find_railjson(&mut conn, &infra).await.unwrap();
 
         assert_eq!(infra.railjson_version.unwrap(), railjson.version);
         assert!(check_objects_eq(
@@ -196,21 +196,21 @@ pub mod test {
         true
     }
 
-    fn find_railjson(conn: &mut PgConnection, infra: &Infra) -> Result<RailJson> {
+    async fn find_railjson(conn: &mut PgConnection, infra: &Infra) -> Result<RailJson> {
         let railjson = RailJson {
             version: infra.clone().railjson_version.unwrap(),
-            operational_points: find_objects(conn, infra.id.unwrap()),
-            routes: find_objects(conn, infra.id.unwrap()),
-            switch_types: find_objects(conn, infra.id.unwrap()),
-            switches: find_objects(conn, infra.id.unwrap()),
-            track_section_links: find_objects(conn, infra.id.unwrap()),
-            track_sections: find_objects(conn, infra.id.unwrap()),
-            speed_sections: find_objects(conn, infra.id.unwrap()),
-            neutral_sections: find_objects(conn, infra.id.unwrap()),
-            catenaries: find_objects(conn, infra.id.unwrap()),
-            signals: find_objects(conn, infra.id.unwrap()),
-            buffer_stops: find_objects(conn, infra.id.unwrap()),
-            detectors: find_objects(conn, infra.id.unwrap()),
+            operational_points: find_objects(conn, infra.id.unwrap()).await,
+            routes: find_objects(conn, infra.id.unwrap()).await,
+            switch_types: find_objects(conn, infra.id.unwrap()).await,
+            switches: find_objects(conn, infra.id.unwrap()).await,
+            track_section_links: find_objects(conn, infra.id.unwrap()).await,
+            track_sections: find_objects(conn, infra.id.unwrap()).await,
+            speed_sections: find_objects(conn, infra.id.unwrap()).await,
+            neutral_sections: find_objects(conn, infra.id.unwrap()).await,
+            catenaries: find_objects(conn, infra.id.unwrap()).await,
+            signals: find_objects(conn, infra.id.unwrap()).await,
+            buffer_stops: find_objects(conn, infra.id.unwrap()).await,
+            detectors: find_objects(conn, infra.id.unwrap()).await,
         };
 
         Ok(railjson)

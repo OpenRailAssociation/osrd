@@ -6,7 +6,7 @@ use crate::views::infra::InfraApiError;
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
 use actix_web::get;
-use actix_web::web::{block, Data, Json, Path};
+use actix_web::web::{Data, Json, Path};
 use chashmap::CHashMap;
 use editoast_derive::EditoastError;
 use std::collections::HashMap;
@@ -46,38 +46,34 @@ async fn attached(
 ) -> Result<Json<HashMap<ObjectType, Vec<String>>>> {
     let (infra, track_id) = infra.into_inner();
 
-    block::<_, Result<_>>(move || {
-        let mut conn = db_pool.get()?;
-        let infra = match Infra::retrieve_for_update(&mut conn, infra) {
-            Ok(infra) => infra,
-            Err(_) => return Err(InfraApiError::NotFound { infra_id: infra }.into()),
-        };
-        let infra_cache = InfraCache::get_or_load(&mut conn, &infra_caches, &infra)?;
-        // Check track existence
-        if !infra_cache.track_sections().contains_key(&track_id) {
-            return Err(AttachedError::TrackNotFound {
-                track_id: track_id.clone(),
-            }
-            .into());
+    let mut conn = db_pool.get().await?;
+    let infra = match Infra::retrieve_for_update(&mut conn, infra).await {
+        Ok(infra) => infra,
+        Err(_) => return Err(InfraApiError::NotFound { infra_id: infra }.into()),
+    };
+    let infra_cache = InfraCache::get_or_load(&mut conn, &infra_caches, &infra).await?;
+    // Check track existence
+    if !infra_cache.track_sections().contains_key(&track_id) {
+        return Err(AttachedError::TrackNotFound {
+            track_id: track_id.clone(),
         }
-        // Get attached objects
-        let res: HashMap<_, Vec<_>> = ATTACHED_OBJECTS_TYPES
-            .iter()
-            .map(|obj_type| {
-                (
-                    *obj_type,
-                    infra_cache
-                        .get_track_refs_type(&track_id, *obj_type)
-                        .into_iter()
-                        .map(|obj_ref| obj_ref.obj_id.clone())
-                        .collect(),
-                )
-            })
-            .collect();
-        Ok(Json(res))
-    })
-    .await
-    .unwrap()
+        .into());
+    }
+    // Get attached objects
+    let res: HashMap<_, Vec<_>> = ATTACHED_OBJECTS_TYPES
+        .iter()
+        .map(|obj_type| {
+            (
+                *obj_type,
+                infra_cache
+                    .get_track_refs_type(&track_id, *obj_type)
+                    .into_iter()
+                    .map(|obj_ref| obj_ref.obj_id.clone())
+                    .collect(),
+            )
+        })
+        .collect();
+    Ok(Json(res))
 }
 
 #[cfg(test)]

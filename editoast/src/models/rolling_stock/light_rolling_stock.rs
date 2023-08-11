@@ -7,12 +7,10 @@ use crate::schema::rolling_stock::{EnergySource, Gamma, RollingResistance, Rolli
 use crate::tables::osrd_infra_rollingstock;
 use crate::views::pagination::{Paginate, PaginatedResponse};
 use crate::DbPool;
-use actix_web::web::{block, Data};
+use actix_web::web::Data;
 use diesel::result::Error as DieselError;
-use diesel::sql_query;
-use diesel::ExpressionMethods;
-use diesel::SelectableHelper;
-use diesel::{QueryDsl, RunQueryDsl};
+use diesel::{sql_query, ExpressionMethods, QueryDsl, SelectableHelper};
+use diesel_async::RunQueryDsl;
 use diesel_json::Json as DieselJson;
 use editoast_derive::Model;
 use serde::Serialize;
@@ -53,20 +51,17 @@ impl LightRollingStockModel {
         self,
         db_pool: Data<DbPool>,
     ) -> Result<LightRollingStockWithLiveries> {
-        block::<_, Result<_>>(move || {
-            use crate::tables::osrd_infra_rollingstocklivery::dsl as livery_dsl;
-            let mut conn = db_pool.get()?;
-            let liveries = livery_dsl::osrd_infra_rollingstocklivery
-                .filter(livery_dsl::rolling_stock_id.eq(self.id))
-                .select(RollingStockLiveryMetadata::as_select())
-                .load(&mut conn)?;
-            Ok(LightRollingStockWithLiveries {
-                rolling_stock: self.into(),
-                liveries: liveries.into_iter().map(DieselJson).collect(),
-            })
+        use crate::tables::osrd_infra_rollingstocklivery::dsl as livery_dsl;
+        let mut conn = db_pool.get().await?;
+        let liveries = livery_dsl::osrd_infra_rollingstocklivery
+            .filter(livery_dsl::rolling_stock_id.eq(self.id))
+            .select(RollingStockLiveryMetadata::as_select())
+            .load(&mut conn)
+            .await?;
+        Ok(LightRollingStockWithLiveries {
+            rolling_stock: self.into(),
+            liveries: liveries.into_iter().map(DieselJson).collect(),
         })
-        .await
-        .unwrap()
     }
 
     /// List the rolling stocks with their simplified effort curves
@@ -75,7 +70,7 @@ impl LightRollingStockModel {
         page: i64,
         per_page: i64,
     ) -> Result<PaginatedResponse<LightRollingStockWithLiveries>> {
-        let mut conn = db_pool.get()?;
+        let mut conn = db_pool.get().await?;
         sql_query(
             "WITH liveries_by_rs AS (SELECT rolling_stock_id, jsonb_build_object('id', livery.id, 'name', livery.name, 'compound_image_id', livery.compound_image_id) AS liveries
             FROM osrd_infra_rollingstocklivery livery)
@@ -87,7 +82,7 @@ impl LightRollingStockModel {
             GROUP BY rolling_stock.id"
         )
         .paginate(page, per_page)
-        .load_and_count(&mut conn)
+        .load_and_count(&mut conn).await
     }
 }
 
@@ -123,33 +118,31 @@ impl From<LightRollingStockModel> for LightRollingStock {
 pub mod tests {
     use crate::fixtures::tests::{db_pool, fast_rolling_stock, TestFixture};
     use crate::models::{Retrieve, RollingStockModel};
+    use crate::DbPool;
     use actix_web::web::Data;
-    use diesel::r2d2::{ConnectionManager, Pool};
     use rstest::*;
 
     use super::LightRollingStockModel;
 
     #[rstest]
     async fn get_light_rolling_stock(
-        db_pool: Data<Pool<ConnectionManager<diesel::PgConnection>>>,
+        db_pool: Data<DbPool>,
         #[future] fast_rolling_stock: TestFixture<RollingStockModel>,
     ) {
         let rolling_stock = fast_rolling_stock.await;
         let rolling_stock_id = rolling_stock.id();
-        assert!(
-            LightRollingStockModel::retrieve(db_pool.clone(), rolling_stock_id)
-                .await
-                .is_ok()
-        );
+        assert!(LightRollingStockModel::retrieve(db_pool, rolling_stock_id)
+            .await
+            .is_ok());
     }
 
     #[rstest]
     async fn list_light_rolling_stock(
-        db_pool: Data<Pool<ConnectionManager<diesel::PgConnection>>>,
+        db_pool: Data<DbPool>,
         #[future] fast_rolling_stock: TestFixture<RollingStockModel>,
     ) {
         let rolling_stock = fast_rolling_stock.await;
-        let rolling_stocks = LightRollingStockModel::list(db_pool.clone(), 1, 1000)
+        let rolling_stocks = LightRollingStockModel::list(db_pool, 1, 1000)
             .await
             .unwrap();
         assert!(rolling_stocks.count >= 1);

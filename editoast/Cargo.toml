@@ -19,12 +19,12 @@ chrono = { version = "0.4", features = ["serde"] }
 derivative = "2.2.0"
 uuid = { version = "1", features = ["v4"] }
 diesel = { version = "2.1", features = [
-    "r2d2",
     "postgres",
     "serde_json",
     "chrono",
     "uuid",
 ] }
+diesel-async = { version = "0.3.1", features = ["postgres", "deadpool"] }
 diesel_json = "0.2.1"
 image = "0.24"
 json-patch = "1.0"
@@ -35,7 +35,6 @@ actix-http = "3.3.1"
 actix-cors = "0.6.4"
 env_logger = "0.10.0"
 log = "0.4"
-r2d2 = "~0.8.2"
 redis = { version = "0.23", features = [
     "tokio-comp",
     "connection-manager",

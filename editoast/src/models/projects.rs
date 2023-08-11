@@ -3,13 +3,14 @@ use crate::models::{Delete, Document, Identifiable, Retrieve};
 use crate::tables::osrd_infra_project;
 use crate::views::pagination::{Paginate, PaginatedResponse};
 use crate::DbPool;
-use actix_web::web::{block, Data};
+use actix_web::web::Data;
+use async_trait::async_trait;
 use chrono::{NaiveDateTime, Utc};
 use derivative::Derivative;
 use diesel::result::Error as DieselError;
 use diesel::sql_types::BigInt;
-use diesel::{delete, sql_query, update, QueryDsl, RunQueryDsl};
-use diesel::{ExpressionMethods, PgConnection};
+use diesel::{delete, sql_query, update, ExpressionMethods, QueryDsl};
+use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
 use editoast_derive::Model;
 use serde::{Deserialize, Serialize};
 
@@ -107,20 +108,17 @@ impl Project {
     }
 
     pub async fn with_studies(self, db_pool: Data<DbPool>) -> Result<ProjectWithStudies> {
-        block::<_, Result<_>>(move || {
-            use crate::tables::osrd_infra_study::dsl as study_dsl;
-            let mut conn = db_pool.get()?;
-            let studies_count = study_dsl::osrd_infra_study
-                .filter(study_dsl::project_id.eq(self.id.unwrap()))
-                .count()
-                .get_result(&mut conn)?;
-            Ok(ProjectWithStudies {
-                project: self,
-                studies_count,
-            })
+        use crate::tables::osrd_infra_study::dsl as study_dsl;
+        let mut conn = db_pool.get().await?;
+        let studies_count = study_dsl::osrd_infra_study
+            .filter(study_dsl::project_id.eq(self.id.unwrap()))
+            .count()
+            .get_result(&mut conn)
+            .await?;
+        Ok(ProjectWithStudies {
+            project: self,
+            studies_count,
         })
-        .await
-        .unwrap()
     }
 
     /// Update a project. If the image is changed, the old image is deleted.
@@ -139,20 +137,16 @@ impl Project {
         };
 
         let db_pool_ref = db_pool.clone();
-        let project = block::<_, Result<_>>(move || {
-            use crate::tables::osrd_infra_project::dsl::*;
-            let mut conn = db_pool_ref.get()?;
-            match update(osrd_infra_project.find(project_id))
-                .set(&self)
-                .get_result::<Project>(&mut conn)
-            {
-                Ok(project) => Ok(project),
-                Err(DieselError::NotFound) => panic!("Project should exist"),
-                Err(e) => Err(e.into()),
-            }
-        })
-        .await
-        .unwrap()?;
+        use crate::tables::osrd_infra_project::dsl::*;
+        let mut conn = db_pool_ref.get().await?;
+        let project = update(osrd_infra_project.find(project_id))
+            .set(&self)
+            .get_result::<Project>(&mut conn)
+            .await
+            .map_err(|err| match err {
+                DieselError::NotFound => panic!("Project should exist"),
+                e => e,
+            })?;
 
         if let Some(image) = image_to_delete {
             // We don't check the result. We don't want to throw an error if the image is used in another project.
@@ -163,12 +157,14 @@ impl Project {
     }
 }
 
+#[async_trait]
 impl Delete for Project {
-    fn delete_conn(conn: &mut diesel::PgConnection, project_id: i64) -> Result<bool> {
+    async fn delete_conn(conn: &mut PgConnection, project_id: i64) -> Result<bool> {
         use crate::tables::osrd_infra_project::dsl::*;
         // Delete project
         let project = match delete(osrd_infra_project.filter(id.eq(project_id)))
             .get_result::<Project>(conn)
+            .await
         {
             Ok(project) => project,
             Err(DieselError::NotFound) => return Ok(false),
@@ -177,17 +173,18 @@ impl Delete for Project {
         // Delete image if any
         if let Some(image) = project.image.unwrap() {
             // We don't check the result. We don't want to throw an error if the image is used in another project.
-            let _ = Document::delete_conn(conn, image);
+            let _ = Document::delete_conn(conn, image).await;
         };
         Ok(true)
     }
 }
 
+#[async_trait]
 impl Update for Project {
     /// Update a project. If the image is changed, the old image is deleted.
     /// If the image is not found, return `None`.
-    fn update_conn(self, conn: &mut diesel::PgConnection, project_id: i64) -> Result<Option<Self>> {
-        let project = match Project::retrieve_conn(conn, project_id)? {
+    async fn update_conn(self, conn: &mut PgConnection, project_id: i64) -> Result<Option<Self>> {
+        let project = match Project::retrieve_conn(conn, project_id).await? {
             Some(project) => project,
             None => return Ok(None),
         };
@@ -200,19 +197,21 @@ impl Update for Project {
         use crate::tables::osrd_infra_project::dsl::osrd_infra_project;
         let project = update(osrd_infra_project.find(project_id))
             .set(&self)
-            .get_result::<Project>(conn)?;
+            .get_result::<Project>(conn)
+            .await?;
 
         if let Some(image) = image_to_delete {
             // We don't check the result. We don't want to throw an error if the image is used in another project.
-            let _ = Document::delete_conn(conn, image);
+            let _ = Document::delete_conn(conn, image).await;
         }
 
         Ok(Some(project))
     }
 }
 
+#[async_trait]
 impl List<Ordering> for ProjectWithStudies {
-    fn list_conn(
+    async fn list_conn(
         conn: &mut PgConnection,
         page: i64,
         page_size: i64,
@@ -226,6 +225,7 @@ impl List<Ordering> for ProjectWithStudies {
         ))
         .paginate(page, page_size)
         .load_and_count(conn)
+        .await
     }
 }
 
@@ -296,7 +296,7 @@ pub mod test {
         let mut project = project_fixture.model.clone();
         project.name = Some("update_name".into());
         project.budget = Some(1000);
-        let project_updated = project.update(db_pool.clone()).await.unwrap().unwrap();
+        let project_updated = project.update(db_pool).await.unwrap().unwrap();
         assert_eq!(project_updated.name.unwrap(), String::from("update_name"));
     }
 }

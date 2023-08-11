@@ -1,14 +1,15 @@
-use crate::diesel::{QueryDsl, RunQueryDsl};
+use crate::diesel::QueryDsl;
 use crate::error::Result;
 use crate::models::electrical_profile::{ElectricalProfileSet, LightElectricalProfileSet};
 use crate::models::{Create, Retrieve};
 use crate::schema::electrical_profiles::ElectricalProfileSetData;
 use crate::DbPool;
+use crate::DieselJson;
+
 use actix_web::dev::HttpServiceFactory;
-use actix_web::web::{self, block, Data, Json, Path, Query};
+use actix_web::web::{self, Data, Json, Path, Query};
 use actix_web::{get, post};
-use diesel::PgConnection;
-use diesel_json::Json as DieselJson;
+use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
 use editoast_derive::EditoastError;
 use serde::Deserialize;
 use std::collections::HashMap;
@@ -27,12 +28,8 @@ pub fn routes() -> impl HttpServiceFactory {
 /// Return a list of electrical profile sets
 #[get("")]
 async fn list(db_pool: Data<DbPool>) -> Result<Json<Vec<LightElectricalProfileSet>>> {
-    block::<_, Result<_>>(move || {
-        let mut conn = db_pool.get()?;
-        Ok(Json(ElectricalProfileSet::list_light(&mut conn)?))
-    })
-    .await
-    .unwrap()
+    let mut conn = db_pool.get().await?;
+    Ok(Json(ElectricalProfileSet::list_light(&mut conn).await?))
 }
 
 /// Return a specific set of electrical profiles
@@ -86,11 +83,13 @@ async fn get_level_order(
 }
 
 impl ElectricalProfileSet {
-    fn list_light(conn: &mut PgConnection) -> Result<Vec<LightElectricalProfileSet>> {
+    async fn list_light(conn: &mut PgConnection) -> Result<Vec<LightElectricalProfileSet>> {
         use crate::tables::osrd_infra_electricalprofileset::dsl::*;
-        Ok(osrd_infra_electricalprofileset
+        let result = osrd_infra_electricalprofileset
             .select((id, name))
-            .load(conn)?)
+            .load(conn)
+            .await?;
+        Ok(result)
     }
 }
 
@@ -111,17 +110,17 @@ mod tests {
     use crate::models::Retrieve;
     use crate::schema::electrical_profiles::ElectricalProfile;
     use crate::views::tests::create_test_service;
+    use crate::DbPool;
     use actix_http::StatusCode;
     use actix_web::http::header::ContentType;
     use actix_web::test as actix_test;
     use actix_web::test::TestRequest;
     use actix_web::test::{call_service, read_body_json};
     use actix_web::web::Data;
-    use diesel::prelude::*;
-    use diesel::r2d2::ConnectionManager;
     use diesel::result::Error;
+    use diesel_async::scoped_futures::{ScopedBoxFuture, ScopedFutureExt};
+    use diesel_async::{AsyncConnection, AsyncPgConnection as PgConnection, RunQueryDsl};
     use diesel_json::Json as DieselJson;
-    use r2d2::Pool;
     use rstest::rstest;
 
     use crate::tables::osrd_infra_electricalprofileset::dsl;
@@ -129,59 +128,80 @@ mod tests {
     use crate::schema::electrical_profiles::ElectricalProfileSetData;
     use crate::schema::TrackRange;
 
-    fn test_ep_set_transaction(fn_test: fn(&mut PgConnection)) {
-        let mut conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
-        conn.test_transaction::<_, Error, _>(|conn| {
-            diesel::delete(dsl::osrd_infra_electricalprofileset).execute(conn)?;
-            let ep_set_data = ElectricalProfileSetData {
-                levels: vec![ElectricalProfile {
-                    value: "A".to_string(),
-                    power_class: "1".to_string(),
-                    track_ranges: vec![TrackRange::default()],
-                }],
-                level_order: Default::default(),
-            };
-            let ep_set = ElectricalProfileSet {
-                id: Some(1),
-                name: Some("test".to_string()),
-                data: Some(DieselJson::new(ep_set_data.clone())),
-            };
-            let ep_set_2 = ElectricalProfileSet {
-                id: Some(2),
-                name: Some("test_2".to_string()),
-                data: Some(DieselJson::new(ep_set_data)),
-            };
+    async fn test_ep_set_transaction<'a, F>(fn_test: F)
+    where
+        F: for<'r> FnOnce(&'r mut PgConnection) -> ScopedBoxFuture<'a, 'r, ()> + Send + 'a,
+    {
+        let mut conn = PgConnection::establish(&PostgresConfig::default().url())
+            .await
+            .unwrap();
+        let _ = conn
+            .test_transaction::<_, Error, _>(|conn| {
+                async move {
+                    diesel::delete(dsl::osrd_infra_electricalprofileset)
+                        .execute(conn)
+                        .await?;
+                    let ep_set_data = ElectricalProfileSetData {
+                        levels: vec![ElectricalProfile {
+                            value: "A".to_string(),
+                            power_class: "1".to_string(),
+                            track_ranges: vec![TrackRange::default()],
+                        }],
+                        level_order: Default::default(),
+                    };
+                    let ep_set = ElectricalProfileSet {
+                        id: Some(1),
+                        name: Some("test".to_string()),
+                        data: Some(DieselJson::new(ep_set_data.clone())),
+                    };
+                    let ep_set_2 = ElectricalProfileSet {
+                        id: Some(2),
+                        name: Some("test_2".to_string()),
+                        data: Some(DieselJson::new(ep_set_data)),
+                    };
 
-            diesel::insert_into(dsl::osrd_infra_electricalprofileset)
-                .values(&[ep_set, ep_set_2])
-                .execute(conn)
-                .unwrap();
+                    diesel::insert_into(dsl::osrd_infra_electricalprofileset)
+                        .values(&[ep_set, ep_set_2])
+                        .execute(conn)
+                        .await
+                        .unwrap();
 
-            fn_test(conn);
-            Ok(())
-        });
+                    fn_test(conn).await;
+                    Ok(())
+                }
+                .scope_boxed()
+            })
+            .await;
     }
 
-    #[test]
-    fn test_query_list() {
+    #[rstest]
+    async fn test_query_list() {
         test_ep_set_transaction(|conn| {
-            let list = ElectricalProfileSet::list_light(conn).unwrap();
-            assert_eq!(list.len(), 2);
-            let (ep_set_1, ep_set_2) = (&list[0], &list[1]);
-            assert_eq!(ep_set_1.id.unwrap(), 1);
-            assert_eq!(ep_set_1.name.as_ref().unwrap(), "test");
-            assert_eq!(ep_set_2.id.unwrap(), 2);
-            assert_eq!(ep_set_2.name.as_ref().unwrap(), "test_2");
-        });
+            async {
+                let list = ElectricalProfileSet::list_light(conn).await.unwrap();
+                assert_eq!(list.len(), 2);
+                let (ep_set_1, ep_set_2) = (&list[0], &list[1]);
+                assert_eq!(ep_set_1.id.unwrap(), 1);
+                assert_eq!(ep_set_1.name.as_ref().unwrap(), "test");
+                assert_eq!(ep_set_2.id.unwrap(), 2);
+                assert_eq!(ep_set_2.name.as_ref().unwrap(), "test_2");
+            }
+            .scope_boxed()
+        })
+        .await;
     }
 
-    #[test]
-    fn test_query_retrieve() {
+    #[rstest]
+    async fn test_query_retrieve() {
         test_ep_set_transaction(|conn| {
-            let ep_set = ElectricalProfileSet::retrieve_conn(conn, 1).unwrap();
-            let ep_set_data = ep_set.unwrap().data.unwrap();
-            assert_eq!(ep_set_data.0.levels.first().unwrap().value, "A");
-        });
+            async {
+                let ep_set = ElectricalProfileSet::retrieve_conn(conn, 1).await.unwrap();
+                let ep_set_data = ep_set.unwrap().data.unwrap();
+                assert_eq!(ep_set_data.0.levels[0].value, "A");
+            }
+            .scope_boxed()
+        })
+        .await;
     }
 
     #[actix_test]
@@ -206,9 +226,7 @@ mod tests {
     }
 
     #[rstest]
-    async fn test_post_electrical_profile(
-        db_pool: Data<Pool<ConnectionManager<diesel::PgConnection>>>,
-    ) {
+    async fn test_post_electrical_profile(db_pool: Data<DbPool>) {
         let app = create_test_service().await;
         let ep_set = ElectricalProfileSetData {
             levels: vec![ElectricalProfile {

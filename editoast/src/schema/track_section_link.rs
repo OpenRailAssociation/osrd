@@ -51,15 +51,23 @@ mod test {
     use super::TrackSectionLink;
     use crate::models::infra::tests::test_infra_transaction;
     use actix_web::test as actix_test;
+    use diesel_async::scoped_futures::ScopedFutureExt;
 
     #[actix_test]
     async fn test_persist() {
         test_infra_transaction(|conn, infra| {
-            let data = (0..10)
-                .map(|_| TrackSectionLink::default())
-                .collect::<Vec<TrackSectionLink>>();
+            async move {
+                let data = (0..10)
+                    .map(|_| TrackSectionLink::default())
+                    .collect::<Vec<TrackSectionLink>>();
 
-            assert!(TrackSectionLink::persist_batch(&data, infra.id.unwrap(), conn).is_ok());
+                assert!(
+                    TrackSectionLink::persist_batch(&data, infra.id.unwrap(), conn)
+                        .await
+                        .is_ok()
+                );
+            }
+            .scope_boxed()
         })
         .await;
     }

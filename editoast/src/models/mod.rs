@@ -12,9 +12,9 @@ pub mod train_schedule;
 
 use crate::DbPool;
 use crate::{error::Result, views::pagination::PaginatedResponse};
-use actix_web::web::{block, Data};
+use actix_web::web::Data;
 use async_trait::async_trait;
-use diesel::PgConnection;
+use diesel_async::AsyncPgConnection as PgConnection;
 
 pub use self::pathfinding::*;
 pub use documents::Document;
@@ -55,7 +55,7 @@ impl<T: diesel::Identifiable<Id = i64> + Clone> Identifiable for T {
 pub trait Create: Sized + 'static {
     /// Same as [create](Self::create) but takes a single postgres connection.
     /// Useful when you are in a transaction.
-    fn create_conn(self, conn: &mut PgConnection) -> Result<Self>;
+    async fn create_conn(self, conn: &mut PgConnection) -> Result<Self>;
 
     /// Create a new Object in the database.
     /// Returns the created object with its default values filled (like the id).
@@ -68,12 +68,8 @@ pub trait Create: Sized + 'static {
     /// let obj_id = created_obj.id.unwrap();
     /// ```
     async fn create(self, db_pool: Data<DbPool>) -> Result<Self> {
-        block::<_, crate::error::Result<Self>>(move || {
-            let mut conn = db_pool.get()?;
-            Self::create_conn(self, &mut conn)
-        })
-        .await
-        .unwrap()
+        let mut conn = db_pool.get().await?;
+        Self::create_conn(self, &mut conn).await
     }
 }
 
@@ -85,7 +81,7 @@ pub trait Create: Sized + 'static {
 pub trait Delete {
     /// Same as [delete](Self::delete) but takes a single postgres connection.
     /// Useful when you are in a transaction.
-    fn delete_conn(conn: &mut PgConnection, id: i64) -> Result<bool>;
+    async fn delete_conn(conn: &mut PgConnection, id: i64) -> Result<bool>;
 
     /// Delete an object given its ID (primary key).
     /// Return `false` if not found.
@@ -96,12 +92,8 @@ pub trait Delete {
     /// assert!(Model::delete(db_pool, 42).await?);
     /// ```
     async fn delete(db_pool: Data<DbPool>, id: i64) -> Result<bool> {
-        block::<_, crate::error::Result<_>>(move || {
-            let mut conn = db_pool.get()?;
-            Self::delete_conn(&mut conn, id)
-        })
-        .await
-        .unwrap()
+        let mut conn = db_pool.get().await?;
+        Self::delete_conn(&mut conn, id).await
     }
 }
 
@@ -113,7 +105,7 @@ pub trait Delete {
 pub trait Retrieve: Sized + 'static {
     /// Same as [retrieve](Self::retrieve) but takes a single postgres connection.
     /// Useful when you are in a transaction.
-    fn retrieve_conn(conn: &mut PgConnection, id: i64) -> Result<Option<Self>>;
+    async fn retrieve_conn(conn: &mut PgConnection, id: i64) -> Result<Option<Self>>;
 
     /// Retrieve an object given its ID (primary key).
     /// Return 'None' if not found.
@@ -126,12 +118,8 @@ pub trait Retrieve: Sized + 'static {
     /// }
     /// ```
     async fn retrieve(db_pool: Data<DbPool>, id: i64) -> Result<Option<Self>> {
-        block::<_, crate::error::Result<_>>(move || {
-            let mut conn = db_pool.get()?;
-            Self::retrieve_conn(&mut conn, id)
-        })
-        .await
-        .unwrap()
+        let mut conn = db_pool.get().await?;
+        Self::retrieve_conn(&mut conn, id).await
     }
 }
 
@@ -143,7 +131,7 @@ pub trait Retrieve: Sized + 'static {
 pub trait Update: Sized + 'static {
     /// Same as [update](Self::update) but takes a single postgres connection.
     /// Useful when you are in a transaction.
-    fn update_conn(self, conn: &mut PgConnection, id: i64) -> Result<Option<Self>>;
+    async fn update_conn(self, conn: &mut PgConnection, id: i64) -> Result<Option<Self>>;
 
     /// Update an object given its ID (primary key).
     /// Return 'None' if not found.
@@ -155,12 +143,8 @@ pub trait Update: Sized + 'static {
     /// let new_obj = patch_model.update(db_pool).await?.expect("Object not found");
     /// ```
     async fn update(self, db_pool: Data<DbPool>, id: i64) -> Result<Option<Self>> {
-        block::<_, crate::error::Result<_>>(move || {
-            let mut conn = db_pool.get()?;
-            self.update_conn(&mut conn, id)
-        })
-        .await
-        .unwrap()
+        let mut conn = db_pool.get().await?;
+        self.update_conn(&mut conn, id).await
     }
 }
 
@@ -175,7 +159,7 @@ pub struct NoParams;
 pub trait List<T: Send + 'static>: Sized + 'static {
     /// Same as [list](Self::list) but takes a single postgres connection.
     /// Useful when you are in a transaction.
-    fn list_conn(
+    async fn list_conn(
         conn: &mut PgConnection,
         page: i64,
         page_size: i64,
@@ -196,11 +180,7 @@ pub trait List<T: Send + 'static>: Sized + 'static {
         page_size: i64,
         params: T,
     ) -> Result<PaginatedResponse<Self>> {
-        block::<_, crate::error::Result<_>>(move || {
-            let mut conn = db_pool.get()?;
-            Self::list_conn(&mut conn, page, page_size, params)
-        })
-        .await
-        .unwrap()
+        let mut conn = db_pool.get().await?;
+        Self::list_conn(&mut conn, page, page_size, params).await
     }
 }

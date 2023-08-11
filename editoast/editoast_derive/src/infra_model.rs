@@ -16,13 +16,13 @@ pub fn infra_model(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 
     let expanded = quote! {
         impl #name {
-            pub fn persist_batch(
+            pub async fn persist_batch(
                 values: &[Self],
                 infrastructure_id: i64,
-                conn: &mut diesel::PgConnection,
+                conn: &mut diesel_async::AsyncPgConnection,
             ) -> crate::error::Result<()> {
                 use #table::dsl::*;
-                use crate::diesel::RunQueryDsl;
+                use diesel_async::RunQueryDsl;
                 use diesel::ExpressionMethods;
 
                 let datas = values
@@ -43,7 +43,7 @@ pub fn infra_model(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
                 for data_chunk in datas.chunks(DIESEL_MAX_VALUES) {
                     diesel::insert_into(#table::table)
                         .values(data_chunk)
-                        .execute(conn)?;
+                        .execute(conn).await?;
                 }
 
                 Ok(())

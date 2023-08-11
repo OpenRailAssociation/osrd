@@ -22,9 +22,10 @@ use crate::error::Result;
 use crate::map::redis_utils::RedisClient;
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
-use actix_web::web::{block, Data, Json};
+use actix_web::web::{Data, Json};
 use actix_web::{get, services};
-use diesel::{sql_query, RunQueryDsl};
+use diesel::sql_query;
+use diesel_async::RunQueryDsl;
 use redis::cmd;
 use serde_derive::Serialize;
 use utoipa::{OpenApi, ToSchema};
@@ -100,13 +101,8 @@ impl OpenApiRoot {
 )]
 #[get("/health")]
 async fn health(db_pool: Data<DbPool>, redis_client: Data<RedisClient>) -> Result<&'static str> {
-    block::<_, Result<_>>(move || {
-        let mut conn = db_pool.get()?;
-        sql_query("SELECT 1").execute(&mut conn)?;
-        Ok(())
-    })
-    .await
-    .unwrap()?;
+    let mut conn = db_pool.get().await?;
+    sql_query("SELECT 1").execute(&mut conn).await?;
 
     let mut conn = redis_client.get_connection().await?;
     cmd("PING").query_async::<_, ()>(&mut conn).await.unwrap();
@@ -151,10 +147,11 @@ mod tests {
     use actix_web::web::{Data, JsonConfig};
     use actix_web::{App, Error};
     use chashmap::CHashMap;
-    use diesel::r2d2::{ConnectionManager, Pool};
-    use diesel::PgConnection;
+    use diesel_async::pooled_connection::deadpool::Pool;
+    use diesel_async::pooled_connection::AsyncDieselConnectionManager as ConnectionManager;
+    use diesel_async::AsyncPgConnection as PgConnection;
 
-    /// Asserts the status code of a simulated response and deserailizes its body,
+    /// Asserts the status code of a simulated response and deserializes its body,
     /// with a nice failure message should the something fail
     #[macro_export]
     macro_rules! assert_status_and_read {
@@ -195,9 +192,8 @@ mod tests {
     ) -> impl Service<Request, Response = ServiceResponse<BoxBody>, Error = Error> {
         let pg_config = PostgresConfig::default();
         let manager = ConnectionManager::<PgConnection>::new(pg_config.url());
-        let pool = Pool::builder()
-            .max_size(1)
-            .build(manager)
+        let pool = Pool::builder(manager)
+            .build()
             .expect("Failed to create pool.");
         let redis = RedisClient::new(RedisConfig::default());
 

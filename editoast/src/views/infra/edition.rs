@@ -2,9 +2,9 @@ use crate::error::Result;
 use crate::map::redis_utils::RedisClient;
 use crate::views::infra::InfraApiError;
 use actix_web::post;
-use actix_web::web::{block, Data, Json, Path};
+use actix_web::web::{Data, Json, Path};
 use chashmap::CHashMap;
-use diesel::PgConnection;
+use diesel_async::AsyncPgConnection as PgConnection;
 use thiserror::Error;
 
 use crate::client::MapLayersConfig;
@@ -26,24 +26,21 @@ pub async fn edit<'a>(
     map_layers: Data<MapLayers>,
     map_layers_config: Data<MapLayersConfig>,
 ) -> Result<Json<Vec<OperationResult>>> {
-    let infra = infra.into_inner();
-    let (operation_results, invalid_zone) = block::<_, Result<_>>(move || {
-        let mut conn = db_pool.get()?;
-        let infra = match Infra::retrieve_for_update(&mut conn, infra) {
-            Ok(infra) => infra,
-            Err(_) => return Err(InfraApiError::NotFound { infra_id: infra }.into()),
-        };
-        let mut infra_cache =
-            InfraCache::get_or_load_mut(&mut conn, &infra_caches, &infra).unwrap();
-        apply_edit(&mut conn, &infra, &operations, &mut infra_cache)
-    })
-    .await
-    .unwrap()?;
+    let infra_id = infra.into_inner();
+
+    let mut conn = db_pool.get().await?;
+    let infra = Infra::retrieve_for_update(&mut conn, infra_id)
+        .await
+        .map_err(|_| InfraApiError::NotFound { infra_id })?;
+    let mut infra_cache = InfraCache::get_or_load_mut(&mut conn, &infra_caches, &infra).await?;
+    let (operation_results, invalid_zone) =
+        apply_edit(&mut conn, &infra, &operations, &mut infra_cache).await?;
+
     let mut conn = redis_client.get_connection().await?;
     map::invalidate_zone(
         &mut conn,
         &map_layers.layers.keys().cloned().collect(),
-        infra,
+        infra_id,
         &invalid_zone,
         &map_layers_config,
     )
@@ -52,12 +49,13 @@ pub async fn edit<'a>(
     Ok(Json(operation_results))
 }
 
-fn apply_edit(
+async fn apply_edit(
     conn: &mut PgConnection,
     infra: &Infra,
     operations: &[Operation],
     infra_cache: &mut InfraCache,
 ) -> Result<(Vec<OperationResult>, Zone)> {
+    let infra_id = infra.id.unwrap();
     // Check if the infra is locked
     if infra.locked.unwrap() {
         return Err(EditionError::InfraIsLocked(infra.id.unwrap()).into());
@@ -66,19 +64,14 @@ fn apply_edit(
     // Apply modifications
     let mut operation_results = vec![];
     for operation in operations.iter() {
-        operation_results.push(operation.apply(infra.id.unwrap(), conn)?);
+        operation_results.push(operation.apply(infra.id.unwrap(), conn).await?);
     }
 
     // Bump version
-    let infra = match infra.bump_version(conn) {
-        Ok(infra) => infra,
-        Err(_) => {
-            return Err(InfraApiError::NotFound {
-                infra_id: infra.id.unwrap(),
-            }
-            .into())
-        }
-    };
+    let infra = infra
+        .bump_version(conn)
+        .await
+        .map_err(|_| InfraApiError::NotFound { infra_id })?;
 
     // Compute cache invalidation zone
     let invalid_zone = Zone::compute(infra_cache, &operation_results);
@@ -86,21 +79,17 @@ fn apply_edit(
     // Apply operations to infra cache
     infra_cache.apply_operations(&operation_results);
     // Refresh layers if needed
-    generated_data::update_all(conn, infra.id.unwrap(), &operation_results, infra_cache)
+    generated_data::update_all(conn, infra_id, &operation_results, infra_cache)
+        .await
         .expect("Update generated data failed");
 
     // Bump infra generated version to the infra version
     let mut infra_bump = infra.clone();
     infra_bump.generated_version = Some(Some(infra.version.unwrap()));
-    match infra_bump.update_conn(conn, infra.id.unwrap()) {
-        Ok(infra) => infra.unwrap(),
-        Err(_) => {
-            return Err(InfraApiError::NotFound {
-                infra_id: infra.id.unwrap(),
-            }
-            .into())
-        }
-    };
+    infra_bump
+        .update_conn(conn, infra_id)
+        .await
+        .map_err(|_| InfraApiError::NotFound { infra_id })?;
 
     Ok((operation_results, invalid_zone))
 }

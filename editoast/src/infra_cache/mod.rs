@@ -7,8 +7,8 @@ use crate::schema::operation::{OperationResult, RailjsonObject};
 use crate::schema::*;
 use chashmap::{CHashMap, ReadGuard, WriteGuard};
 use diesel::sql_types::{BigInt, Double, Integer, Nullable, Text};
-use diesel::PgConnection;
-use diesel::{sql_query, QueryableByName, RunQueryDsl};
+use diesel::{sql_query, QueryableByName};
+use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
 use enum_map::EnumMap;
 use geos::geojson::Geometry;
 use std::collections::{HashMap, HashSet};
@@ -348,7 +348,7 @@ impl InfraCache {
     }
 
     /// Given an infra id load infra cache from database
-    pub fn load(conn: &mut PgConnection, infra: &Infra) -> Result<InfraCache> {
+    pub async fn load(conn: &mut PgConnection, infra: &Infra) -> Result<InfraCache> {
         let infra_id = infra.id.unwrap();
         let mut infra_cache = Self::default();
 
@@ -358,14 +358,15 @@ impl InfraCache {
                 obj_id,
                 (data->'extensions'->'sncf'->>'line_code')::integer as line_code,
                 (data->>'length')::float as length,
-                data->>'curves' as curves, 
-                data->>'slopes' as slopes, 
+                data->>'curves' as curves,
+                data->>'slopes' as slopes,
                 data->>'geo' as geo,
                 data->>'sch' as sch
             FROM osrd_infra_tracksectionmodel WHERE infra_id = $1",
         )
         .bind::<BigInt, _>(infra_id)
-        .load::<TrackQueryable>(conn)?
+        .load::<TrackQueryable>(conn)
+        .await?
         .into_iter()
         .for_each(|track| infra_cache.add::<TrackSectionCache>(track.into()));
 
@@ -373,17 +374,19 @@ impl InfraCache {
         sql_query(
             "SELECT obj_id, data->>'track' AS track, (data->>'position')::float AS position FROM osrd_infra_signalmodel WHERE infra_id = $1")
         .bind::<BigInt, _>(infra_id)
-        .load::<SignalCache>(conn)?.into_iter().for_each(|signal|
+        .load::<SignalCache>(conn).await?.into_iter().for_each(|signal|
             infra_cache.add(signal)
         );
 
         // Load speed sections tracks references
         find_objects(conn, infra_id)
+            .await
             .into_iter()
             .for_each(|speed| infra_cache.add::<SpeedSection>(speed));
 
         // Load routes tracks references
         find_objects(conn, infra_id)
+            .await
             .into_iter()
             .for_each(|route| infra_cache.add::<Route>(route));
 
@@ -391,12 +394,13 @@ impl InfraCache {
         sql_query(
             "SELECT obj_id, data->>'parts' AS parts FROM osrd_infra_operationalpointmodel WHERE infra_id = $1")
         .bind::<BigInt, _>(infra_id)
-        .load::<OperationalPointQueryable>(conn)?.into_iter().for_each(|op|
+        .load::<OperationalPointQueryable>(conn).await?.into_iter().for_each(|op|
             infra_cache.add::<OperationalPointCache>(op.into())
         );
 
         // Load track section links tracks references
         find_objects(conn, infra_id)
+            .await
             .into_iter()
             .for_each(|link| infra_cache.add::<TrackSectionLink>(link));
 
@@ -404,12 +408,13 @@ impl InfraCache {
         sql_query(
             "SELECT obj_id, data->>'switch_type' AS switch_type, data->>'ports' AS ports FROM osrd_infra_switchmodel WHERE infra_id = $1")
         .bind::<BigInt, _>(infra_id)
-        .load::<SwitchQueryable>(conn)?.into_iter().for_each(|switch| {
+        .load::<SwitchQueryable>(conn).await?.into_iter().for_each(|switch| {
             infra_cache.add::<SwitchCache>(switch.into());
         });
 
         // Load switch types references
         find_objects(conn, infra_id)
+            .await
             .into_iter()
             .for_each(|switch_type| infra_cache.add::<SwitchType>(switch_type));
 
@@ -417,7 +422,7 @@ impl InfraCache {
         sql_query(
             "SELECT obj_id, data->>'track' AS track, (data->>'position')::float AS position FROM osrd_infra_detectormodel WHERE infra_id = $1")
         .bind::<BigInt, _>(infra_id)
-        .load::<DetectorCache>(conn)?.into_iter().for_each(|detector|
+        .load::<DetectorCache>(conn).await?.into_iter().for_each(|detector|
             infra_cache.add(detector)
         );
 
@@ -425,12 +430,13 @@ impl InfraCache {
         sql_query(
             "SELECT obj_id, data->>'track' AS track, (data->>'position')::float AS position FROM osrd_infra_bufferstopmodel WHERE infra_id = $1")
         .bind::<BigInt, _>(infra_id)
-        .load::<BufferStopCache>(conn)?.into_iter().for_each(|buffer_stop|
+        .load::<BufferStopCache>(conn).await?.into_iter().for_each(|buffer_stop|
             infra_cache.add(buffer_stop)
         );
 
         // Load catenary tracks references
         find_objects(conn, infra_id)
+            .await
             .into_iter()
             .for_each(|catenary| infra_cache.add::<Catenary>(catenary));
 
@@ -439,7 +445,7 @@ impl InfraCache {
 
     /// This function tries to get the infra from the cache, if it fails, it loads it from the database
     /// If the infra is not found in the database, it returns `None`
-    pub fn get_or_load<'a>(
+    pub async fn get_or_load<'a>(
         conn: &mut PgConnection,
         infra_caches: &'a CHashMap<i64, InfraCache>,
         infra: &Infra,
@@ -449,13 +455,13 @@ impl InfraCache {
             return Ok(infra_cache);
         }
         // Cache miss
-        infra_caches.insert_new(infra.id.unwrap(), InfraCache::load(conn, infra)?);
+        infra_caches.insert_new(infra.id.unwrap(), InfraCache::load(conn, infra).await?);
         Ok(infra_caches.get(&infra.id.unwrap()).unwrap())
     }
 
     /// This function tries to get the infra from the cache, if it fails, it loads it from the database
     /// If the infra is not found in the database, it returns `None`
-    pub fn get_or_load_mut<'a>(
+    pub async fn get_or_load_mut<'a>(
         conn: &mut PgConnection,
         infra_caches: &'a CHashMap<i64, InfraCache>,
         infra: &Infra,
@@ -465,7 +471,7 @@ impl InfraCache {
             return Ok(infra_cache);
         }
         // Cache miss
-        infra_caches.insert_new(infra.id.unwrap(), InfraCache::load(conn, infra)?);
+        infra_caches.insert_new(infra.id.unwrap(), InfraCache::load(conn, infra).await?);
         Ok(infra_caches.get_mut(&infra.id.unwrap()).unwrap())
     }
 
@@ -563,6 +569,7 @@ pub mod tests {
     };
     use actix_web::test as actix_test;
     use chashmap::CHashMap;
+    use diesel_async::scoped_futures::ScopedFutureExt;
 
     use super::{
         BufferStopCache, DetectorCache, OperationalPointCache, SignalCache, TrackSectionCache,
@@ -571,10 +578,13 @@ pub mod tests {
     #[actix_test]
     async fn load_track_section() {
         test_infra_transaction(|conn, infra| {
-            let track = create_track(conn, infra.id.unwrap(), Default::default());
-            let infra_cache = InfraCache::load(conn, &infra).unwrap();
-            assert_eq!(infra_cache.track_sections().len(), 1);
-            assert!(infra_cache.track_sections().contains_key(track.get_id()));
+            async move {
+                let track = create_track(conn, infra.id.unwrap(), Default::default()).await;
+                let infra_cache = InfraCache::load(conn, &infra).await.unwrap();
+                assert_eq!(infra_cache.track_sections().len(), 1);
+                assert!(infra_cache.track_sections().contains_key(track.get_id()));
+            }
+            .scope_boxed()
         })
         .await;
     }
@@ -582,11 +592,16 @@ pub mod tests {
     #[actix_test]
     async fn load_signal() {
         test_infra_transaction(|conn, infra| {
-            let signal = create_signal(conn, infra.id.unwrap(), Default::default());
-            let infra_cache = InfraCache::load(conn, &infra).unwrap();
-            assert!(infra_cache.signals().contains_key(signal.get_id()));
-            let refs = infra_cache.track_sections_refs;
-            assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
+            {
+                async move {
+                    let signal = create_signal(conn, infra.id.unwrap(), Default::default()).await;
+                    let infra_cache = InfraCache::load(conn, &infra).await.unwrap();
+                    assert!(infra_cache.signals().contains_key(signal.get_id()));
+                    let refs = infra_cache.track_sections_refs;
+                    assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
+                }
+            }
+            .scope_boxed()
         })
         .await;
     }
@@ -594,18 +609,22 @@ pub mod tests {
     #[actix_test]
     async fn load_speed_section() {
         test_infra_transaction(|conn, infra| {
-            let speed = create_speed(
-                conn,
-                infra.id.unwrap(),
-                SpeedSection {
-                    track_ranges: vec![Default::default()],
-                    ..Default::default()
-                },
-            );
-            let infra_cache = InfraCache::load(conn, &infra).unwrap();
-            assert!(infra_cache.speed_sections().contains_key(speed.get_id()));
-            let refs = infra_cache.track_sections_refs;
-            assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
+            async move {
+                let speed = create_speed(
+                    conn,
+                    infra.id.unwrap(),
+                    SpeedSection {
+                        track_ranges: vec![Default::default()],
+                        ..Default::default()
+                    },
+                )
+                .await;
+                let infra_cache = InfraCache::load(conn, &infra).await.unwrap();
+                assert!(infra_cache.speed_sections().contains_key(speed.get_id()));
+                let refs = infra_cache.track_sections_refs;
+                assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
+            }
+            .scope_boxed()
         })
         .await;
     }
@@ -613,9 +632,12 @@ pub mod tests {
     #[actix_test]
     async fn load_route() {
         test_infra_transaction(|conn, infra| {
-            let route = create_route(conn, infra.id.unwrap(), Default::default());
-            let infra_cache = InfraCache::load(conn, &infra).unwrap();
-            assert!(infra_cache.routes().contains_key(route.get_id()));
+            async move {
+                let route = create_route(conn, infra.id.unwrap(), Default::default()).await;
+                let infra_cache = InfraCache::load(conn, &infra).await.unwrap();
+                assert!(infra_cache.routes().contains_key(route.get_id()));
+            }
+            .scope_boxed()
         })
         .await;
     }
@@ -623,20 +645,24 @@ pub mod tests {
     #[actix_test]
     async fn load_operational_point() {
         test_infra_transaction(|conn, infra| {
-            let op = create_op(
-                conn,
-                infra.id.unwrap(),
-                OperationalPoint {
-                    parts: vec![Default::default()],
-                    ..Default::default()
-                },
-            );
+            async move {
+                let op = create_op(
+                    conn,
+                    infra.id.unwrap(),
+                    OperationalPoint {
+                        parts: vec![Default::default()],
+                        ..Default::default()
+                    },
+                )
+                .await;
 
-            let infra_cache = InfraCache::load(conn, &infra).unwrap();
+                let infra_cache = InfraCache::load(conn, &infra).await.unwrap();
 
-            assert!(infra_cache.operational_points().contains_key(op.get_id()));
-            let refs = infra_cache.track_sections_refs;
-            assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
+                assert!(infra_cache.operational_points().contains_key(op.get_id()));
+                let refs = infra_cache.track_sections_refs;
+                assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
+            }
+            .scope_boxed()
         })
         .await;
     }
@@ -644,11 +670,14 @@ pub mod tests {
     #[actix_test]
     async fn load_track_section_link() {
         test_infra_transaction(|conn, infra| {
-            let link = create_link(conn, infra.id.unwrap(), Default::default());
-            let infra_cache = InfraCache::load(conn, &infra).unwrap();
-            assert!(infra_cache
-                .track_section_links()
-                .contains_key(link.get_id()));
+            async move {
+                let link = create_link(conn, infra.id.unwrap(), Default::default()).await;
+                let infra_cache = InfraCache::load(conn, &infra).await.unwrap();
+                assert!(infra_cache
+                    .track_section_links()
+                    .contains_key(link.get_id()));
+            }
+            .scope_boxed()
         })
         .await;
     }
@@ -656,16 +685,20 @@ pub mod tests {
     #[actix_test]
     async fn load_switch() {
         test_infra_transaction(|conn, infra| {
-            let switch = create_switch(
-                conn,
-                infra.id.unwrap(),
-                Switch {
-                    ports: HashMap::from([("port".into(), Default::default())]),
-                    ..Default::default()
-                },
-            );
-            let infra_cache = InfraCache::load(conn, &infra).unwrap();
-            assert!(infra_cache.switches().contains_key(switch.get_id()));
+            async move {
+                let switch = create_switch(
+                    conn,
+                    infra.id.unwrap(),
+                    Switch {
+                        ports: HashMap::from([("port".into(), Default::default())]),
+                        ..Default::default()
+                    },
+                )
+                .await;
+                let infra_cache = InfraCache::load(conn, &infra).await.unwrap();
+                assert!(infra_cache.switches().contains_key(switch.get_id()));
+            }
+            .scope_boxed()
         })
         .await;
     }
@@ -673,9 +706,12 @@ pub mod tests {
     #[actix_test]
     async fn load_switch_type() {
         test_infra_transaction(|conn, infra| {
-            let s_type = create_switch_type(conn, infra.id.unwrap(), Default::default());
-            let infra_cache = InfraCache::load(conn, &infra).unwrap();
-            assert!(infra_cache.switch_types().contains_key(s_type.get_id()));
+            async move {
+                let s_type = create_switch_type(conn, infra.id.unwrap(), Default::default()).await;
+                let infra_cache = InfraCache::load(conn, &infra).await.unwrap();
+                assert!(infra_cache.switch_types().contains_key(s_type.get_id()));
+            }
+            .scope_boxed()
         })
         .await;
     }
@@ -683,13 +719,16 @@ pub mod tests {
     #[actix_test]
     async fn load_detector() {
         test_infra_transaction(|conn, infra| {
-            let detector = create_detector(conn, infra.id.unwrap(), Default::default());
+            async move {
+                let detector = create_detector(conn, infra.id.unwrap(), Default::default()).await;
 
-            let infra_cache = InfraCache::load(conn, &infra).unwrap();
+                let infra_cache = InfraCache::load(conn, &infra).await.unwrap();
 
-            assert!(infra_cache.detectors().contains_key(detector.get_id()));
-            let refs = infra_cache.track_sections_refs;
-            assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
+                assert!(infra_cache.detectors().contains_key(detector.get_id()));
+                let refs = infra_cache.track_sections_refs;
+                assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
+            }
+            .scope_boxed()
         })
         .await;
     }
@@ -697,13 +736,16 @@ pub mod tests {
     #[actix_test]
     async fn load_buffer_stop() {
         test_infra_transaction(|conn, infra| {
-            let bs = create_buffer_stop(conn, infra.id.unwrap(), Default::default());
+            async move {
+                let bs = create_buffer_stop(conn, infra.id.unwrap(), Default::default()).await;
 
-            let infra_cache = InfraCache::load(conn, &infra).unwrap();
+                let infra_cache = InfraCache::load(conn, &infra).await.unwrap();
 
-            assert!(infra_cache.buffer_stops().contains_key(bs.get_id()));
-            let refs = infra_cache.track_sections_refs;
-            assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
+                assert!(infra_cache.buffer_stops().contains_key(bs.get_id()));
+                let refs = infra_cache.track_sections_refs;
+                assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
+            }
+            .scope_boxed()
         })
         .await;
     }
@@ -711,20 +753,24 @@ pub mod tests {
     #[actix_test]
     async fn load_catenary() {
         test_infra_transaction(|conn, infra| {
-            let catenary = create_catenary(
-                conn,
-                infra.id.unwrap(),
-                Catenary {
-                    track_ranges: vec![Default::default()],
-                    ..Default::default()
-                },
-            );
+            async move {
+                let catenary = create_catenary(
+                    conn,
+                    infra.id.unwrap(),
+                    Catenary {
+                        track_ranges: vec![Default::default()],
+                        ..Default::default()
+                    },
+                )
+                .await;
 
-            let infra_cache = InfraCache::load(conn, &infra).unwrap();
+                let infra_cache = InfraCache::load(conn, &infra).await.unwrap();
 
-            assert!(infra_cache.catenaries().contains_key(catenary.get_id()));
-            let refs = infra_cache.track_sections_refs;
-            assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
+                assert!(infra_cache.catenaries().contains_key(catenary.get_id()));
+                let refs = infra_cache.track_sections_refs;
+                assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
+            }
+            .scope_boxed()
         })
         .await;
     }
@@ -984,11 +1030,18 @@ pub mod tests {
     #[actix_test]
     async fn load_infra_cache() {
         test_infra_transaction(|conn, infra| {
-            let infra_caches = CHashMap::new();
-            InfraCache::get_or_load(conn, &infra_caches, &infra).unwrap();
-            assert_eq!(infra_caches.len(), 1);
-            InfraCache::get_or_load(conn, &infra_caches, &infra).unwrap();
-            assert_eq!(infra_caches.len(), 1);
+            async move {
+                let infra_caches = CHashMap::new();
+                InfraCache::get_or_load(conn, &infra_caches, &infra)
+                    .await
+                    .unwrap();
+                assert_eq!(infra_caches.len(), 1);
+                InfraCache::get_or_load(conn, &infra_caches, &infra)
+                    .await
+                    .unwrap();
+                assert_eq!(infra_caches.len(), 1);
+            }
+            .scope_boxed()
         })
         .await;
     }
@@ -996,11 +1049,18 @@ pub mod tests {
     #[actix_test]
     async fn load_infra_cache_mut() {
         test_infra_transaction(|conn, infra| {
-            let infra_caches = CHashMap::new();
-            InfraCache::get_or_load_mut(conn, &infra_caches, &infra).unwrap();
-            assert_eq!(infra_caches.len(), 1);
-            InfraCache::get_or_load_mut(conn, &infra_caches, &infra).unwrap();
-            assert_eq!(infra_caches.len(), 1);
+            async move {
+                let infra_caches = CHashMap::new();
+                InfraCache::get_or_load_mut(conn, &infra_caches, &infra)
+                    .await
+                    .unwrap();
+                assert_eq!(infra_caches.len(), 1);
+                InfraCache::get_or_load_mut(conn, &infra_caches, &infra)
+                    .await
+                    .unwrap();
+                assert_eq!(infra_caches.len(), 1);
+            }
+            .scope_boxed()
         })
         .await;
     }

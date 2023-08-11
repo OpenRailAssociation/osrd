@@ -5,14 +5,15 @@ use crate::tables::osrd_infra_scenario;
 use crate::views::pagination::Paginate;
 use crate::views::pagination::PaginatedResponse;
 use crate::DbPool;
-use actix_web::web::{block, Data};
+use actix_web::web::Data;
+use async_trait::async_trait;
 use chrono::{NaiveDateTime, Utc};
 use derivative::Derivative;
 use diesel::result::Error as DieselError;
 use diesel::sql_query;
 use diesel::sql_types::{Array, BigInt, Nullable, Text};
-use diesel::{delete, QueryDsl};
-use diesel::{ExpressionMethods, RunQueryDsl};
+use diesel::{delete, ExpressionMethods, QueryDsl};
+use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
 use editoast_derive::Model;
 use serde::{Deserialize, Serialize};
 
@@ -94,50 +95,50 @@ pub struct ScenarioWithCountTrains {
 
 impl Scenario {
     pub async fn with_details(self, db_pool: Data<DbPool>) -> Result<ScenarioWithDetails> {
-        block::<_, Result<_>>(move || {
-            use crate::tables::osrd_infra_electricalprofileset::dsl as elec_dsl;
-            use crate::tables::osrd_infra_infra::dsl as infra_dsl;
-            use crate::tables::osrd_infra_trainschedule::dsl::*;
-            let mut conn = db_pool.get()?;
-            let infra_name = infra_dsl::osrd_infra_infra
-                .filter(infra_dsl::id.eq(self.infra_id.unwrap()))
-                .select(infra_dsl::name)
-                .first::<String>(&mut conn)?;
+        use crate::tables::osrd_infra_electricalprofileset::dsl as elec_dsl;
+        use crate::tables::osrd_infra_infra::dsl as infra_dsl;
+        use crate::tables::osrd_infra_trainschedule::dsl::*;
+        let mut conn = db_pool.get().await?;
+        let infra_name = infra_dsl::osrd_infra_infra
+            .filter(infra_dsl::id.eq(self.infra_id.unwrap()))
+            .select(infra_dsl::name)
+            .first::<String>(&mut conn)
+            .await?;
 
-            let electrical_profile_set_name = match self.electrical_profile_set_id.unwrap() {
-                Some(electrical_profile_set) => Some(
-                    elec_dsl::osrd_infra_electricalprofileset
-                        .filter(elec_dsl::id.eq(electrical_profile_set))
-                        .select(elec_dsl::name)
-                        .first::<String>(&mut conn)?,
-                ),
-                None => None,
-            };
+        let electrical_profile_set_name = match self.electrical_profile_set_id.unwrap() {
+            Some(electrical_profile_set) => Some(
+                elec_dsl::osrd_infra_electricalprofileset
+                    .filter(elec_dsl::id.eq(electrical_profile_set))
+                    .select(elec_dsl::name)
+                    .first::<String>(&mut conn)
+                    .await?,
+            ),
+            None => None,
+        };
 
-            let train_schedules = osrd_infra_trainschedule
-                .filter(timetable_id.eq(self.timetable_id.unwrap()))
-                .select((id, train_name, departure_time, path_id))
-                .load::<LightTrainSchedule>(&mut conn)?;
+        let train_schedules = osrd_infra_trainschedule
+            .filter(timetable_id.eq(self.timetable_id.unwrap()))
+            .select((id, train_name, departure_time, path_id))
+            .load::<LightTrainSchedule>(&mut conn)
+            .await?;
 
-            let trains_count = train_schedules.len() as i64;
+        let trains_count = train_schedules.len() as i64;
 
-            Ok(ScenarioWithDetails {
-                scenario: self,
-                infra_name,
-                electrical_profile_set_name,
-                train_schedules,
-                trains_count,
-            })
+        Ok(ScenarioWithDetails {
+            scenario: self,
+            infra_name,
+            electrical_profile_set_name,
+            train_schedules,
+            trains_count,
         })
-        .await
-        .unwrap()
     }
 }
 
 /// Delete a scenario.
 /// When we delete a scenario, the associated timetable is deleted too.
+#[async_trait]
 impl Delete for Scenario {
-    fn delete_conn(conn: &mut diesel::PgConnection, scenario_id: i64) -> Result<bool> {
+    async fn delete_conn(conn: &mut PgConnection, scenario_id: i64) -> Result<bool> {
         use crate::tables::osrd_infra_scenario::dsl as scenario_dsl;
         use crate::tables::osrd_infra_timetable::dsl as timetable_dsl;
 
@@ -146,6 +147,7 @@ impl Delete for Scenario {
             scenario_dsl::osrd_infra_scenario.filter(scenario_dsl::id.eq(scenario_id)),
         )
         .get_result::<Scenario>(conn)
+        .await
         {
             Ok(scenario) => scenario,
             Err(DieselError::NotFound) => return Ok(false),
@@ -157,16 +159,18 @@ impl Delete for Scenario {
             timetable_dsl::osrd_infra_timetable
                 .filter(timetable_dsl::id.eq(scenario.timetable_id.unwrap())),
         )
-        .execute(conn)?;
+        .execute(conn)
+        .await?;
         Ok(true)
     }
 }
 
+#[async_trait]
 impl List<(i64, Ordering)> for ScenarioWithCountTrains {
     /// List all scenarios with the number of trains.
     /// This functions takes a study_id to filter scenarios.
-    fn list_conn(
-        conn: &mut diesel::PgConnection,
+    async fn list_conn(
+        conn: &mut PgConnection,
         page: i64,
         page_size: i64,
         params: (i64, Ordering),
@@ -178,7 +182,7 @@ impl List<(i64, Ordering)> for ScenarioWithCountTrains {
             GROUP BY t.id ORDER BY {ordering}"))
             .bind::<BigInt, _>(study_id)
             .paginate(page, page_size)
-            .load_and_count(conn)
+            .load_and_count(conn).await
     }
 }
 

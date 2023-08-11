@@ -4,7 +4,8 @@ use crate::models::{Identifiable, Update};
 use crate::tables::osrd_infra_study;
 use crate::views::pagination::{Paginate, PaginatedResponse};
 use crate::DbPool;
-use actix_web::web::{block, Data};
+use actix_web::web::Data;
+use async_trait::async_trait;
 use chrono::NaiveDate;
 use chrono::{NaiveDateTime, Utc};
 use derivative::Derivative;
@@ -14,7 +15,7 @@ use diesel::sql_types::BigInt;
 use diesel::Associations;
 use diesel::ExpressionMethods;
 use diesel::QueryDsl;
-use diesel::RunQueryDsl;
+use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
 use editoast_derive::Model;
 use serde::{Deserialize, Serialize};
 
@@ -104,26 +105,25 @@ impl Study {
 
     /// This function adds the list of scenarios ID that are linked to the study
     pub async fn with_scenarios(self, db_pool: Data<DbPool>) -> Result<StudyWithScenarios> {
-        block::<_, Result<_>>(move || {
-            use crate::tables::osrd_infra_scenario::dsl as scenario_dsl;
-            let mut conn = db_pool.get()?;
-            let scenarios_count = scenario_dsl::osrd_infra_scenario
-                .filter(scenario_dsl::study_id.eq(self.id.unwrap()))
-                .count()
-                .get_result(&mut conn)?;
-            Ok(StudyWithScenarios {
+        use crate::tables::osrd_infra_scenario::dsl as scenario_dsl;
+        let mut conn = db_pool.get().await?;
+        scenario_dsl::osrd_infra_scenario
+            .filter(scenario_dsl::study_id.eq(self.id.unwrap()))
+            .count()
+            .get_result(&mut conn)
+            .await
+            .map(|scenarios_count| StudyWithScenarios {
                 study: self,
                 scenarios_count,
             })
-        })
-        .await
-        .unwrap()
+            .map_err(|err| err.into())
     }
 }
 
+#[async_trait]
 impl List<(i64, Ordering)> for StudyWithScenarios {
-    fn list_conn(
-        conn: &mut diesel::PgConnection,
+    async fn list_conn(
+        conn: &mut PgConnection,
         page: i64,
         page_size: i64,
         params: (i64, Ordering),
@@ -135,7 +135,7 @@ impl List<(i64, Ordering)> for StudyWithScenarios {
             GROUP BY t.id ORDER BY {ordering} "))
             .bind::<BigInt, _>(project_id)
             .paginate(page, page_size)
-            .load_and_count(conn)
+            .load_and_count(conn).await
     }
 }
 

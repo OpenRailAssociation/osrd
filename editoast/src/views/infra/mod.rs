@@ -27,18 +27,18 @@ use crate::schema::{ObjectType, SwitchType};
 use crate::views::pagination::{PaginatedResponse, PaginationQueryParam};
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
-use actix_web::web::{block, scope, Data, Json, Path, Query};
+use actix_web::web::{scope, Data, Json, Path, Query};
 use actix_web::{delete, get, post, put, Either, HttpResponse, Responder};
 use chashmap::CHashMap;
 use chrono::Utc;
 use diesel::sql_types::{BigInt, Text};
-use diesel::{sql_query, QueryableByName, RunQueryDsl};
+use diesel::{sql_query, QueryableByName};
+use diesel_async::RunQueryDsl;
 use editoast_derive::EditoastError;
-use futures::future::join_all;
+use futures::future::try_join_all;
 use futures::Future;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value as JsonValue};
-use std::result::Result as StdResult;
 use strum::IntoEnumIterator;
 use thiserror::Error;
 use uuid::Uuid;
@@ -132,41 +132,39 @@ async fn refresh(
     infra_caches: Data<CHashMap<i64, InfraCache>>,
     map_layers: Data<MapLayers>,
 ) -> Result<Json<JsonValue>> {
-    let refreshed_infra = block::<_, Result<_>>(move || {
-        let mut conn = db_pool.get()?;
-        // Use a transaction to give scope to infra list lock
-        let mut infras_list = vec![];
-        let infras = &query_params.infras.0;
+    let mut conn = db_pool.get().await?;
+    // Use a transaction to give scope to infra list lock
+    let mut infras_list = vec![];
+    let infras = &query_params.infras.0;
 
-        if infras.is_empty() {
-            // Retrieve all available infra
-            for infra in Infra::list_for_update(&mut conn) {
-                infras_list.push(infra);
-            }
-        } else {
-            // Retrieve given infras
-            for id in infras.iter() {
-                let infra = match Infra::retrieve_for_update(&mut conn, *id) {
-                    Ok(infra) => infra,
-                    Err(_) => return Err(InfraApiError::NotFound { infra_id: *id }.into()),
-                };
-                infras_list.push(infra);
-            }
+    if infras.is_empty() {
+        // Retrieve all available infra
+        for infra in Infra::list_for_update(&mut conn).await {
+            infras_list.push(infra);
         }
-
-        // Refresh each infras
-        let mut refreshed_infra = vec![];
-
-        for infra in infras_list {
-            let infra_cache = InfraCache::get_or_load(&mut conn, &infra_caches, &infra)?;
-            if infra.refresh(&mut conn, query_params.force, &infra_cache)? {
-                refreshed_infra.push(infra.id.unwrap());
-            }
+    } else {
+        // Retrieve given infras
+        for id in infras.iter() {
+            let infra = Infra::retrieve_for_update(&mut conn, *id)
+                .await
+                .map_err(|_| InfraApiError::NotFound { infra_id: *id })?;
+            infras_list.push(infra);
         }
-        Ok(refreshed_infra)
-    })
-    .await
-    .unwrap()?;
+    }
+
+    // Refresh each infras
+    let mut refreshed_infra = vec![];
+
+    for infra in infras_list {
+        let infra_cache = InfraCache::get_or_load(&mut conn, &infra_caches, &infra).await?;
+        if infra
+            .refresh(&mut conn, query_params.force, &infra_cache)
+            .await?
+        {
+            refreshed_infra.push(infra.id.unwrap());
+        }
+    }
+
     let mut conn = redis_client.get_connection().await?;
     for infra_id in refreshed_infra.iter() {
         map::invalidate_all(
@@ -273,26 +271,25 @@ async fn clone(
     db_pool: Data<DbPool>,
     new_name: Query<InfraForm>,
 ) -> Result<Json<i64>> {
-    let db_pool_ref = db_pool.clone();
     let mut futures = Vec::<Pin<Box<dyn Future<Output = _>>>>::new();
 
     let infra = infra.into_inner();
     let name = new_name.name.clone();
-    let cloned_infra = Infra::clone(infra, db_pool_ref.clone(), name).await?;
-
+    let cloned_infra = Infra::clone(infra, db_pool.clone(), name).await?;
+    // When creating a connection for each objet, it will a panic with 'Cannot access shared transaction state' in the database pool
+    // Just one connection fixes it, but partially* defeats the purpose of joining all the requests at the end
+    // * AsyncPgConnection supports pipeling within one connection, but it won’t run parallel
+    let mut conn = db_pool.get().await?;
     for object in ObjectType::iter() {
         let model_table = object.get_table();
-        let db_pool_ref = db_pool.clone();
-        let model = block::<_, Result<_>>(move || {
-            let mut conn = db_pool_ref.get()?;
-            sql_query(format!(
+        let model = sql_query(format!(
                 "INSERT INTO {model_table}(id, obj_id,data,infra_id) SELECT nextval('{model_table}_id_seq'), obj_id,data,$1 FROM {model_table} WHERE infra_id=$2"
             ))
             .bind::<BigInt, _>(cloned_infra.id.unwrap())
             .bind::<BigInt, _>(infra)
-            .execute(&mut conn).map_err(|err| err.into())
-        });
-        futures.push(Box::pin(model));
+            .execute(&mut conn);
+        futures.push(model);
+
         if let Some(layer_table) = object.get_geometry_layer_table() {
             let layer_table = layer_table.to_string();
             let sql = if layer_table != ObjectType::Signal.get_geometry_layer_table().unwrap() {
@@ -304,21 +301,16 @@ async fn clone(
                 )
             };
             let db_pool_ref = db_pool.clone();
-            let layer = block::<_, Result<_>>(move || {
-                let mut conn = db_pool_ref.get()?;
-                sql_query(sql)
-                    .bind::<BigInt, _>(cloned_infra.id.unwrap())
-                    .bind::<BigInt, _>(infra)
-                    .execute(&mut conn)
-                    .map_err(|err| err.into())
-            });
-            futures.push(Box::pin(layer));
+            let mut conn = db_pool_ref.get().await?;
+            let layer = sql_query(sql)
+                .bind::<BigInt, _>(cloned_infra.id.unwrap())
+                .bind::<BigInt, _>(infra)
+                .execute(&mut conn);
+            futures.push(layer);
         }
     }
-    let res = join_all(futures).await;
-    let res: Vec<_> = res.into_iter().collect::<StdResult<_, _>>().unwrap();
-    res.into_iter().collect::<Result<Vec<usize>>>()?;
 
+    let _res = try_join_all(futures).await?;
     Ok(Json(cloned_infra.id.unwrap()))
 }
 
@@ -378,24 +370,20 @@ async fn get_switch_types(
     infra_caches: Data<CHashMap<i64, InfraCache>>,
 ) -> Result<Json<Vec<SwitchType>>> {
     let infra_id = infra.into_inner();
-    let infra = match Infra::retrieve(db_pool.clone(), infra_id).await? {
-        Some(infra) => infra,
-        None => return Err(InfraApiError::NotFound { infra_id }.into()),
-    };
-    block(move || {
-        let mut conn = db_pool.get()?;
-        let infra = InfraCache::get_or_load(&mut conn, &infra_caches, &infra)?;
-        Ok(Json(
-            infra
-                .switch_types()
-                .values()
-                .map(ObjectCache::unwrap_switch_type)
-                .cloned()
-                .collect(),
-        ))
-    })
-    .await
-    .unwrap()
+    let infra = Infra::retrieve(db_pool.clone(), infra_id)
+        .await?
+        .ok_or(InfraApiError::NotFound { infra_id })?;
+
+    let mut conn = db_pool.get().await?;
+    let infra = InfraCache::get_or_load(&mut conn, &infra_caches, &infra).await?;
+    Ok(Json(
+        infra
+            .switch_types()
+            .values()
+            .map(ObjectCache::unwrap_switch_type)
+            .cloned()
+            .collect(),
+    ))
 }
 
 /// Returns the set of speed limit tags for a given infra
@@ -405,19 +393,16 @@ async fn get_speed_limit_tags(
     db_pool: Data<DbPool>,
 ) -> Result<Json<Vec<String>>> {
     let infra = infra.into_inner();
-    let speed_limits_tags: Vec<SpeedLimitTags> = block::<_, Result<_>>(move || {
-        let mut conn = db_pool.get()?;
-        Ok(sql_query(
-            "SELECT DISTINCT jsonb_object_keys(data->'speed_limit_by_tag') AS tag
+    let mut conn = db_pool.get().await?;
+    let speed_limits_tags: Vec<SpeedLimitTags> = sql_query(
+        "SELECT DISTINCT jsonb_object_keys(data->'speed_limit_by_tag') AS tag
         FROM osrd_infra_speedsectionmodel
         WHERE infra_id = $1
         ORDER BY tag",
-        )
-        .bind::<BigInt, _>(infra)
-        .load(&mut conn)?)
-    })
-    .await
-    .unwrap()?;
+    )
+    .bind::<BigInt, _>(infra)
+    .load(&mut conn)
+    .await?;
     Ok(Json(
         speed_limits_tags.into_iter().map(|el| (el.tag)).collect(),
     ))
@@ -439,20 +424,16 @@ async fn get_voltages(
 ) -> Result<Json<Vec<String>>> {
     let infra = infra.into_inner();
     let include_rolling_stock_modes = param.into_inner().include_rolling_stock_modes;
-    let voltages: Vec<Voltage> = block::<_, Result<_>>(move || {
-        let mut conn = db_pool.get()?;
-        let query = if !include_rolling_stock_modes {
-            include_str!("sql/get_voltages_without_rolling_stocks_modes.sql")
-        } else {
-            include_str!("sql/get_voltages_with_rolling_stocks_modes.sql")
-        };
-        match sql_query(query).bind::<BigInt, _>(infra).load(&mut conn) {
-            Ok(voltages) => Ok(voltages),
-            Err(err) => Err(err.into()),
-        }
-    })
-    .await
-    .unwrap()?;
+    let mut conn = db_pool.get().await?;
+    let query = if !include_rolling_stock_modes {
+        include_str!("sql/get_voltages_without_rolling_stocks_modes.sql")
+    } else {
+        include_str!("sql/get_voltages_with_rolling_stocks_modes.sql")
+    };
+    let voltages: Vec<Voltage> = sql_query(query)
+        .bind::<BigInt, _>(infra)
+        .load(&mut conn)
+        .await?;
     Ok(Json(voltages.into_iter().map(|el| (el.voltage)).collect()))
 }
 
@@ -460,18 +441,12 @@ async fn get_voltages(
 #[post("/lock")]
 async fn lock(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<HttpResponse> {
     let infra_id = infra.into_inner();
-    block::<_, Result<()>>(move || {
-        let mut conn = db_pool.get()?;
-        let mut infra = match Infra::retrieve_for_update(&mut conn, infra_id) {
-            Ok(infra) => infra,
-            Err(_) => return Err(InfraApiError::NotFound { infra_id }.into()),
-        };
-        infra.locked = Some(true);
-        infra.update_conn(&mut conn, infra_id)?;
-        Ok(())
-    })
-    .await
-    .unwrap()?;
+    let mut conn = db_pool.get().await?;
+    let mut infra = Infra::retrieve_for_update(&mut conn, infra_id)
+        .await
+        .map_err(|_| InfraApiError::NotFound { infra_id })?;
+    infra.locked = Some(true);
+    infra.update_conn(&mut conn, infra_id).await?;
     Ok(HttpResponse::NoContent().finish())
 }
 
@@ -479,18 +454,12 @@ async fn lock(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<HttpResponse> {
 #[post("/unlock")]
 async fn unlock(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<HttpResponse> {
     let infra_id = infra.into_inner();
-    block::<_, Result<_>>(move || {
-        let mut conn = db_pool.get()?;
-        let mut infra = match Infra::retrieve_for_update(&mut conn, infra_id) {
-            Ok(infra) => infra,
-            Err(_) => return Err(InfraApiError::NotFound { infra_id }.into()),
-        };
-        infra.locked = Some(false);
-        infra.update_conn(&mut conn, infra_id)?;
-        Ok(())
-    })
-    .await
-    .unwrap()?;
+    let mut conn = db_pool.get().await?;
+    let mut infra = Infra::retrieve_for_update(&mut conn, infra_id)
+        .await
+        .map_err(|_| InfraApiError::NotFound { infra_id })?;
+    infra.locked = Some(false);
+    infra.update_conn(&mut conn, infra_id).await?;
     Ok(HttpResponse::NoContent().finish())
 }
 
@@ -513,7 +482,7 @@ async fn call_core_infra_load(
 ) -> Result<()> {
     let payload = payload.into_inner();
     let infra_id = payload.infra;
-    let infra = Infra::retrieve(db_pool.clone(), infra_id)
+    let infra = Infra::retrieve(db_pool, infra_id)
         .await?
         .ok_or(InfraApiError::NotFound { infra_id })?;
     let infra_request = InfraLoadRequest {
@@ -604,7 +573,6 @@ pub mod tests {
             .to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
-
         let cloned_infra_id: i64 = read_body_json(response).await;
         let cloned_infra = Infra::retrieve(db_pool.clone(), cloned_infra_id)
             .await
