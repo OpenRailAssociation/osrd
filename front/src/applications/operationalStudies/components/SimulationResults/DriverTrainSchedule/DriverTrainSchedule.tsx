@@ -1,19 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { Train } from 'reducers/osrdsimulation/types';
-import { osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import DriverTrainScheduleHeader from './DriverTrainScheduleHeader';
 import DriverTrainScheduleStopList from './DriverTrainScheduleStopList';
 import { BaseOrEco, BaseOrEcoType } from './DriverTrainScheduleTypes';
 
 export default function DriverTrainSchedule({ train }: { train: Train }) {
-  const { data: trainSchedule } = osrdMiddlewareApi.useGetTrainScheduleByIdQuery({ id: train.id });
-  const { data: rollingStock } = osrdEditoastApi.useGetRollingStockByIdQuery(
+  const { data: trainSchedule } = osrdEditoastApi.endpoints.getTrainScheduleById.useQuery({
+    id: train.id,
+  });
+
+  const { data: rollingStock } = osrdEditoastApi.endpoints.getRollingStockById.useQuery(
     {
-      id: trainSchedule?.rolling_stock as number,
+      id: trainSchedule?.rolling_stock_id as number,
     },
-    { skip: !trainSchedule || !trainSchedule.rolling_stock }
+    { skip: !trainSchedule || !trainSchedule.rolling_stock_id }
   );
+
   const [baseOrEco, setBaseOrEco] = useState<BaseOrEcoType>(BaseOrEco.base);
 
   useEffect(() => {

@@ -1,44 +1,21 @@
 import React, { useEffect, useMemo, useState, useCallback, SetStateAction } from 'react';
 import debounce from 'lodash/debounce';
-import { FaTrash } from 'react-icons/fa';
-import { get, patch } from 'common/requests';
-import { setFailure, setSuccess } from 'reducers/main';
-import { updateMustRedraw, updateSimulation } from 'reducers/osrdsimulation/actions';
 import InputGroupSNCF, { InputGroupSNCFValue } from 'common/BootstrapSNCF/InputGroupSNCF';
 import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
-import { trainscheduleURI } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import {
-  Allowance,
-  RangeAllowance,
-  StandardAllowance,
-  TrainSchedule,
-} from 'common/api/osrdMiddlewareApi';
-import { SimulationSnapshot, Train } from 'reducers/osrdsimulation/types';
-import { Dispatch } from 'redux';
-import { AxiosError } from 'axios';
+import { StandardAllowance, TrainSchedule } from 'common/api/osrdMiddlewareApi';
 import { TYPES_UNITS, ALLOWANCE_UNITS_KEYS, AllowanceType } from './allowancesConsts';
 
 interface StandardAllowanceDefaultProps {
   distributionsTypes?: { id: string; label: string }[];
-  getAllowances?: () => void;
-  setIsUpdating?: (isUpdating: boolean) => void;
   trainDetail?: TrainSchedule;
-  selectedTrain?: Train;
-  mutateSingleAllowance?: () => void;
   changeType?: (type: unknown, typekey: string) => void;
   options?: {
     immediateMutation?: boolean;
     setDistribution?: boolean;
   };
   title?: string;
-  selectedProjection?: {
-    id: unknown;
-    path: unknown;
-  };
-  simulation?: SimulationSnapshot;
   t?: (key: string) => string;
-  dispatch?: Dispatch;
   typeKey?: string;
   getBaseValue?: (typeKey: string) => {
     type: 'percentage' | 'time' | 'time_per_distance';
@@ -51,15 +28,8 @@ interface StandardAllowanceDefaultProps {
 const StandardAllowanceDefault = (props: StandardAllowanceDefaultProps) => {
   const {
     distributionsTypes,
-    getAllowances,
-    setIsUpdating,
     trainDetail,
-    mutateSingleAllowance,
-    selectedTrain,
-    selectedProjection,
-    simulation,
     t,
-    dispatch,
     options,
     title,
     changeType,
@@ -124,113 +94,6 @@ const StandardAllowanceDefault = (props: StandardAllowanceDefaultProps) => {
 
   const handleDistribution = (e: { target: { value: string } }) => {
     setDistribution(JSON.parse(e.target.value));
-  };
-
-  // To be moved to HOC, use mutateSigleAllowance
-  const updateTrain = async () => {
-    if (simulation && selectedTrain) {
-      const updatedSelectedTrain = await get(`${trainscheduleURI}${selectedTrain.id}/result/`, {
-        params: {
-          id: selectedTrain.id,
-          path: selectedProjection?.path,
-        },
-      });
-      const newSimulationTrains = simulation.trains.map((train) =>
-        train.id === selectedTrain.id ? updatedSelectedTrain : train
-      );
-      if (getAllowances) getAllowances();
-      if (dispatch) {
-        dispatch(updateSimulation({ ...simulation, trains: newSimulationTrains }));
-        dispatch(updateMustRedraw(true));
-      }
-    }
-  };
-
-  // In fact it is Create/Update  // To be moved to HOC, use mutateSigleAllowance
-  const addStandard = async () => {
-    const marecoConf = {
-      allowance_type: 'standard',
-      distribution: distribution?.id,
-      default_value: {
-        value_type: value?.type,
-        [TYPES_UNITS[value?.type]]: value?.value,
-      },
-    };
-    const newAllowances = [];
-    let ranges: RangeAllowance[] = [];
-    trainDetail?.allowances?.forEach((allowance) => {
-      if (allowance.allowance_type === 'standard' && allowance.ranges) {
-        ranges = allowance.ranges; // Preserve existing Ranges
-      } else {
-        newAllowances.push(allowance);
-      }
-    });
-    newAllowances.push({ ...marecoConf, ranges });
-
-    try {
-      if (setIsUpdating) setIsUpdating(true);
-      await patch(`${trainscheduleURI}${trainDetail?.id}/`, {
-        ...trainDetail,
-        allowances: newAllowances,
-      });
-      if (dispatch)
-        dispatch(
-          setSuccess({
-            title: t ? t('allowanceModified.standardAllowanceAdd') : '',
-            text: '',
-          })
-        );
-      updateTrain();
-    } catch (e: unknown) {
-      const err = e as AxiosError;
-      if (dispatch)
-        dispatch(
-          setFailure({
-            name: err.name,
-            message: err.message,
-          })
-        );
-    }
-    if (setIsUpdating) setIsUpdating(false);
-  };
-
-  // To be moved to HOC
-  const delStandard = async () => {
-    const newAllowances: Allowance[] = [];
-    trainDetail?.allowances?.forEach((allowance) => {
-      if (allowance.allowance_type !== 'standard') {
-        newAllowances.push(allowance);
-      }
-    });
-    try {
-      if (setIsUpdating) setIsUpdating(true);
-      await patch(`${trainscheduleURI}${trainDetail?.id}/`, {
-        ...trainDetail,
-        allowances: newAllowances,
-      });
-      setValue({
-        type: 'time',
-        value: 0,
-      });
-      if (dispatch)
-        dispatch(
-          setSuccess({
-            title: t ? t('allowanceModified.standardAllowanceDel') : '',
-            text: '',
-          })
-        );
-      updateTrain();
-    } catch (e: unknown) {
-      const err = e as AxiosError;
-      if (dispatch)
-        dispatch(
-          setFailure({
-            name: err.name,
-            message: err.message,
-          })
-        );
-    }
-    if (setIsUpdating) setIsUpdating(false);
   };
 
   useEffect(() => {
@@ -342,34 +205,6 @@ const StandardAllowanceDefault = (props: StandardAllowanceDefaultProps) => {
           )}
         </div>
       </div>
-      {!options?.immediateMutation && (
-        <div className="col-md-3">
-          <button
-            type="button"
-            onClick={mutateSingleAllowance || addStandard}
-            className={`btn btn-success btn-sm mr-1 ${
-              (value?.value as unknown as number) === 0 ||
-              (value?.value as unknown as string) === ''
-                ? 'disabled'
-                : null
-            }`}
-          >
-            {t ? t('apply') : ''}
-          </button>
-          <button
-            type="button"
-            onClick={() => delStandard()}
-            className={`btn btn-danger btn-sm ${
-              (value?.value as unknown as number) === 0 ||
-              (value?.value as unknown as string) === ''
-                ? 'disabled'
-                : null
-            }`}
-          >
-            <FaTrash />
-          </button>
-        </div>
-      )}
     </div>
   );
 };

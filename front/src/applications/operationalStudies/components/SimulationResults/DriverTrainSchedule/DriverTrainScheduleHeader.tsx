@@ -34,7 +34,8 @@ export default function DriverTrainScheduleHeader({
   setBaseOrEco,
 }: Props) {
   const { t } = useTranslation(['operationalStudies/drivertrainschedule']);
-  return train[baseOrEco] ? (
+  const trainRegime = train[baseOrEco];
+  return trainRegime ? (
     <>
       <div className="d-flex align-items-center">
         <h1 className="text-blue mt-2">{train.name}</h1>
@@ -55,13 +56,13 @@ export default function DriverTrainScheduleHeader({
           <div className="row no-gutters align-items-center ">
             <div className="col-xl-4 col-5">{t('origin')}</div>
             <div className="font-weight-bold text-primary col-xl-8 col-7">
-              {train[baseOrEco].stops[0].name || t('unknownStop')}
+              {trainRegime.stops[0].name || t('unknownStop')}
             </div>
           </div>
           <div className="row no-gutters align-items-center">
             <div className="col-xl-4 col-5">{t('destination')}</div>
             <div className="font-weight-bold text-primary col-xl-8 col-7">
-              {train[baseOrEco].stops.at(-1)?.name || t('unknownStop')}
+              {trainRegime.stops.at(-1)?.name || t('unknownStop')}
             </div>
           </div>
         </div>
@@ -90,7 +91,7 @@ export default function DriverTrainScheduleHeader({
                 baseOrEco === BaseOrEco.base ? 'text-primary' : 'text-green'
               )}
             >
-              {jouleToKwh(train[baseOrEco].mechanical_energy_consumed, true)} kWh
+              {jouleToKwh(trainRegime.mechanical_energy_consumed, true)} kWh
             </div>
           </div>
         </div>

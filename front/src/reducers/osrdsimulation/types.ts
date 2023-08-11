@@ -140,8 +140,8 @@ export interface Train {
   slopes: GradientPosition[];
   curves: RadiusPosition[];
   base: Regime;
-  eco: Regime;
-  margins: Regime;
+  eco?: Regime;
+  margins?: Regime;
   stopsCount?: number;
   isStdcm?: boolean;
   mechanicalEnergyConsumed?: MechanicalEnergyConsumedBaseEco;
@@ -197,6 +197,23 @@ export type SpeedSpaceSettingKey =
   | SPEED_SPACE_SETTINGS_KEYS.ELECTRICAL_PROFILES
   | SPEED_SPACE_SETTINGS_KEYS.POWER_RESTRICTION;
 
+export type TrainsWithArrivalAndDepartureTimes = {
+  id: number;
+  labels: string[];
+  train_name: string;
+  path_id: number;
+  path_length: number | undefined;
+  mechanical_energy_consumed: {
+    base: number;
+    eco?: number;
+  };
+  departure_time: number;
+  arrival_time: number;
+  stops_count: number;
+  duration: number;
+  speed_limit_tags: string | undefined;
+};
+
 export interface OsrdSimulationState {
   redirectToGraph?: boolean;
   chart?: Chart;
@@ -213,8 +230,8 @@ export interface OsrdSimulationState {
   mustRedraw: boolean;
   positionValues: PositionValues;
   selectedProjection?: {
-    id: unknown;
-    path: unknown;
+    id: number;
+    path: number;
   };
   selectedTrainId?: number;
   speedSpaceSettings: {
@@ -223,7 +240,7 @@ export interface OsrdSimulationState {
   signalBase: typeof SIGNAL_BASE_DEFAULT;
   timePosition: TimeString;
   consolidatedSimulation: SimulationTrain[];
-  departureArrivalTimes: Array<ScheduledTrain>;
+  departureArrivalTimes: TrainsWithArrivalAndDepartureTimes[];
   simulation: {
     past: SimulationHistory;
     present: SimulationSnapshot;

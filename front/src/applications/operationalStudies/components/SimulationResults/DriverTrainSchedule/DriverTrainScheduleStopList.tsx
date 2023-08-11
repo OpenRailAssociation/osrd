@@ -12,11 +12,11 @@ type Props = {
 
 export default function DriverTrainScheduleStopList({ train, baseOrEco }: Props) {
   const { t } = useTranslation(['operationalStudies/drivertrainschedule']);
-  return train[baseOrEco] ? (
+  const trainRegime = train[baseOrEco];
+  return trainRegime ? (
     <>
       <div className="small text-right text-muted mt-1">
-        {t('numberoflines')} :
-        <span className="font-weight-bold"> {train[baseOrEco].stops.length}</span>
+        {t('numberoflines')} :<span className="font-weight-bold"> {trainRegime.stops.length}</span>
       </div>
       <div className="simulation-drivertrainschedule ml-auto mr-auto">
         <table className="table-drivertrainschedule table-hover">
@@ -47,7 +47,7 @@ export default function DriverTrainScheduleStopList({ train, baseOrEco }: Props)
             </tr>
           </thead>
           <tbody>
-            {train[baseOrEco].stops.map((stop, idx) => (
+            {trainRegime.stops.map((stop, idx) => (
               <DriverTrainScheduleStop stop={stop} idx={idx} train={train} />
             ))}
           </tbody>

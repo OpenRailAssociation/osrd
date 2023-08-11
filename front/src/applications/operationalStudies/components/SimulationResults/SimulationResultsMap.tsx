@@ -144,17 +144,18 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
     // First find trains where actual time from position is between start & stop
     const concernedTrains: InterpoledTrain[] = [];
     simulation.trains.forEach((train, idx: number) => {
-      const key = getRegimeKey(train.id);
-      if (train[key].head_positions[0]) {
-        const trainTime = train[key].head_positions[0][0].time;
-        const train2ndTime = last(last(train[key].head_positions))?.time as number;
+      const baseOrEco = getRegimeKey(train.id);
+      const trainRegime = train[baseOrEco];
+      if (trainRegime && trainRegime.head_positions[0]) {
+        const trainTime = trainRegime.head_positions[0][0].time;
+        const train2ndTime = last(last(trainRegime.head_positions))?.time as number;
         if (
           actualTime >= trainTime &&
           actualTime <= train2ndTime &&
           train.id !== selectedTrain?.id
         ) {
           const interpolation = interpolateOnTime(
-            train[key],
+            train[baseOrEco],
             ['time', 'position'],
             ['head_positions', 'tail_positions', 'speeds'],
             actualTime
@@ -286,24 +287,28 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
       const line = lineString(geojsonPath.geometry.coordinates);
       const cursorPoint = point(e.lngLat.toArray());
       const key = getRegimeKey(selectedTrain.id);
-      const startCoordinates = getDirection(selectedTrain[key].head_positions)
-        ? [geojsonPath.geometry.coordinates[0][0], geojsonPath.geometry.coordinates[0][1]]
-        : [
-            geojsonPath.geometry.coordinates[geojsonPath.geometry.coordinates.length - 1][0],
-            geojsonPath.geometry.coordinates[geojsonPath.geometry.coordinates.length - 1][1],
-          ];
-      const start = point(startCoordinates);
-      const sliced = lineSlice(start, cursorPoint, line);
-      const positionLocal = lineLength(sliced, { units: 'kilometers' }) * 1000;
-      const keyValues = ['position', 'speed'] as const;
-      const timePositionLocal = interpolateOnPosition<
-        (typeof keyValues)[number],
-        PositionSpeedTime
-      >({ speed: selectedTrain[key].speeds }, ['position', 'speed'] as const, positionLocal);
-      if (timePositionLocal instanceof Date) {
-        dispatch(updateTimePositionValues(datetime2Isostring(timePositionLocal)));
-      } else {
-        throw new Error('Map onFeatureHover, try to update TimePositionValue with incorrect imput');
+      const train = selectedTrain[key];
+      if (train) {
+        const lastCoordinates =
+          geojsonPath.geometry.coordinates[geojsonPath.geometry.coordinates.length - 1];
+        const startCoordinates = getDirection(train.head_positions)
+          ? [geojsonPath.geometry.coordinates[0][0], geojsonPath.geometry.coordinates[0][1]]
+          : [lastCoordinates[0], lastCoordinates[1]];
+        const start = point(startCoordinates);
+        const sliced = lineSlice(start, cursorPoint, line);
+        const positionLocal = lineLength(sliced, { units: 'kilometers' }) * 1000;
+        const keyValues = ['position', 'speed'] as const;
+        const timePositionLocal = interpolateOnPosition<
+          (typeof keyValues)[number],
+          PositionSpeedTime
+        >({ speed: train.speeds }, ['position', 'speed'] as const, positionLocal);
+        if (timePositionLocal instanceof Date) {
+          dispatch(updateTimePositionValues(datetime2Isostring(timePositionLocal)));
+        } else {
+          throw new Error(
+            'Map onFeatureHover, try to update TimePositionValue with incorrect imput'
+          );
+        }
       }
     }
     if (e?.features?.[0] && e.features[0].properties) {
