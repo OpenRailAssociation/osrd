@@ -23,7 +23,7 @@ use log::{debug, error};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-pub const RAILJSON_VERSION: &str = "3.4.1";
+pub const RAILJSON_VERSION: &str = "3.4.2";
 pub const INFRA_VERSION: &str = "0";
 
 #[derive(
