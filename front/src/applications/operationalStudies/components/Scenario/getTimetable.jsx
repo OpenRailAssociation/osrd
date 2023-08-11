@@ -5,7 +5,6 @@ import {
   updateSelectedTrainId,
   updateSimulation,
 } from 'reducers/osrdsimulation/actions';
-import { trainscheduleURI } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
 import { get } from 'common/requests';
 import { setFailure } from 'reducers/main';
 import { store } from 'Store';
@@ -34,7 +33,7 @@ export default async function getTimetable(timetable) {
       } else if (selectedProjection) {
         selectedProjectionPath = selectedProjection.path;
       }
-      const simulationLocal = await get(`${trainscheduleURI}results/`, {
+      const simulationLocal = await get(`/editoast/train_schedule/results/`, {
         params: {
           timetable_id: timetable.id,
           path_id: selectedProjectionPath,

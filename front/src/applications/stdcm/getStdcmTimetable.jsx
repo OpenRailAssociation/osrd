@@ -6,10 +6,7 @@ import {
   updateSelectedTrainId,
   updateSimulation,
 } from 'reducers/osrdsimulation/actions';
-import {
-  timetableURI,
-  trainscheduleURI,
-} from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
+
 /**
  * Recover the time table for all the trains
  */
@@ -27,19 +24,19 @@ export default async function getStdcmTimetable(
     if (!simulation.trains || !simulation.trains[selectedTrain]) {
       dispatch(updateSelectedTrainId(undefined));
     }
-    const timetable = await get(`${timetableURI}${timetableID}/`);
+    const timetable = await get(`/editoast/timetable/${timetableID}/`);
     /*
     if (timetable.train_schedules.length > 0) {
       setIsEmpty(false);
     }
     */
-    const trainSchedulesIDs = timetable.train_schedules.map((train) => train.id);
-    const tempSelectedProjection = await get(`${trainscheduleURI}${trainSchedulesIDs[0]}/`);
+    const trainScheduleId = timetable.train_schedules[0].id;
+    const tempSelectedProjection = await get(`/editoast/train_schedule/${trainScheduleId}/`);
     if (!selectedProjection) {
       dispatch(updateSelectedProjection(tempSelectedProjection));
     }
     try {
-      const simulationLocal = await get(`${trainscheduleURI}results/`, {
+      const simulationLocal = await get(`/editoast/train_schedule/results/`, {
         params: {
           timetable_id: timetableID,
           path_id: tempProjectedPathId || tempSelectedProjection.path,

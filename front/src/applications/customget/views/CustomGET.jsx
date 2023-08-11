@@ -20,8 +20,6 @@ import DeprecatedSpaceTimeChart from 'applications/customget/views/DeprecatedSpa
 
 export const KEY_VALUES_FOR_CONSOLIDATED_SIMULATION = ['time', 'position'];
 
-export const trainscheduleURI = '/train_schedule/';
-
 function CustomGET() {
   const { t } = useTranslation(['translation', 'simulation']);
 
