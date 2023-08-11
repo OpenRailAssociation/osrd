@@ -1,12 +1,12 @@
 import produce from 'immer';
 import { Feature } from 'geojson';
-import { without, omit, clone } from 'lodash';
+import { omit, clone } from 'lodash';
 
 import { JSONSchema7, JSONSchema7Definition } from 'json-schema';
 import { osrdEditoastApi } from '../common/api/osrdEditoastApi';
 import { ThunkAction, EditorSchema, EditorEntity } from '../types';
 import { setLoading, setSuccess, setFailure } from './main';
-import { EditorState, LAYERS, LayerType } from '../applications/editor/tools/types';
+import { EditorState, LayerType } from '../applications/editor/tools/types';
 import {
   entityToCreateOperation,
   entityToUpdateOperation,
