@@ -12,18 +12,18 @@ use crate::diesel::ExpressionMethods;
 use crate::error::Result;
 use crate::infra_cache::InfraCache;
 use crate::schema::ObjectType;
-use crate::tables::infra_layer_lpv_panel::dsl;
+use crate::tables::infra_layer_psl_sign::dsl;
 
-pub struct LPVPanelLayer;
+pub struct PSLSignLayer;
 
 #[async_trait]
-impl GeneratedData for LPVPanelLayer {
+impl GeneratedData for PSLSignLayer {
     fn table_name() -> &'static str {
-        "infra_layer_lpv_panel"
+        "infra_layer_psl_sign"
     }
 
     async fn generate(conn: &mut PgConnection, infra: i64, _cache: &InfraCache) -> Result<()> {
-        sql_query(include_str!("sql/generate_lpv_panel_layer.sql"))
+        sql_query(include_str!("sql/generate_psl_sign_layer.sql"))
             .bind::<BigInt, _>(infra)
             .execute(conn)
             .await?;
@@ -47,7 +47,7 @@ impl GeneratedData for LPVPanelLayer {
                 .iter()
                 .chain(involved_objects.updated.iter());
             delete(
-                dsl::infra_layer_lpv_panel
+                dsl::infra_layer_psl_sign
                     .filter(dsl::infra_id.eq(infra))
                     .filter(dsl::obj_id.eq_any(objs)),
             )
@@ -57,7 +57,7 @@ impl GeneratedData for LPVPanelLayer {
 
         // Insert involved elements
         if !involved_objects.updated.is_empty() {
-            sql_query(include_str!("sql/insert_lpv_panel_layer.sql"))
+            sql_query(include_str!("sql/insert_psl_sign_layer.sql"))
                 .bind::<BigInt, _>(infra)
                 .bind::<Array<Text>, _>(involved_objects.updated.into_iter().collect::<Vec<_>>())
                 .execute(conn)

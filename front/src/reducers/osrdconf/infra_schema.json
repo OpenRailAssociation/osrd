@@ -1182,7 +1182,7 @@
                 "lpv_sncf": {
                     "allOf": [
                         {
-                            "$ref": "#/$defs/SpeedSectionLpvSncfExtension"
+                            "$ref": "#/$defs/SpeedSectionPslSncfExtension"
                         }
                     ],
                     "default": null
@@ -1191,7 +1191,7 @@
             "title": "SpeedSectionExtensions",
             "type": "object"
         },
-        "SpeedSectionLpvSncfExtension": {
+        "SpeedSectionPslSncfExtension": {
             "properties": {
                 "announcement": {
                     "description": "Precise the value(s) of the speed",
@@ -1223,7 +1223,7 @@
                 "z",
                 "r"
             ],
-            "title": "SpeedSectionLpvSncfExtension",
+            "title": "SpeedSectionPslSncfExtension",
             "type": "object"
         },
         "Switch": {
@@ -1746,8 +1746,8 @@
             "type": "array"
         },
         "version": {
-            "const": "3.4.1",
-            "default": "3.4.1",
+            "const": "3.4.2",
+            "default": "3.4.2",
             "description": "Version of the schema",
             "title": "Version"
         }
