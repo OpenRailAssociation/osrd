@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.contrib.gis.db import models
 from osrd_schemas.generated import InfraError
-from osrd_schemas.infra import Panel
+from osrd_schemas.infra import Sign
 
 from osrd_infra.utils import PydanticValidator
 
@@ -128,9 +128,9 @@ class NeutralSectionLayer(models.Model):
         unique_together = (("infra", "obj_id"),)
 
 
-class LPVPanelLayer(models.Model):
+class PSLSignLayer(models.Model):
     infra = models.ForeignKey("Infra", on_delete=models.CASCADE)
     obj_id = models.CharField(max_length=255)
     geographic = models.PointField(srid=settings.MAPBOX_SRID)
     schematic = models.PointField(srid=settings.MAPBOX_SRID)
-    data = models.JSONField(validators=[PydanticValidator(Panel)])
+    data = models.JSONField(validators=[PydanticValidator(Sign)])

@@ -88,8 +88,8 @@ pub fn check_overlapping(infra_cache: &InfraCache, _: &Graph) -> Vec<InfraError>
     // Iterate over all the speed sections insure we don't report duplicated errors
     for speed_section in infra_cache.speed_sections().values() {
         let speed_section = speed_section.unwrap_speed_section();
-        // Ignore LPV (they can overlap)
-        if speed_section.extensions.lpv_sncf.is_some() {
+        // Ignore PSL (they can overlap)
+        if speed_section.extensions.psl_sncf.is_some() {
             continue;
         }
         for track_range in speed_section.track_ranges.iter() {

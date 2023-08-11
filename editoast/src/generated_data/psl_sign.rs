@@ -12,18 +12,18 @@ use crate::diesel::ExpressionMethods;
 use crate::error::Result;
 use crate::infra_cache::InfraCache;
 use crate::schema::ObjectType;
-use crate::tables::osrd_infra_lpvpanellayer::dsl;
+use crate::tables::osrd_infra_pslsignlayer::dsl;
 
-pub struct LPVPanelLayer;
+pub struct PSLSignLayer;
 
 #[async_trait]
-impl GeneratedData for LPVPanelLayer {
+impl GeneratedData for PSLSignLayer {
     fn table_name() -> &'static str {
-        "osrd_infra_lpvpanellayer"
+        "osrd_infra_pslsignlayer"
     }
 
     async fn generate(conn: &mut PgConnection, infra: i64, _cache: &InfraCache) -> Result<()> {
-        sql_query(include_str!("sql/generate_lpv_panel_layer.sql"))
+        sql_query(include_str!("sql/generate_psl_sign_layer.sql"))
             .bind::<BigInt, _>(infra)
             .execute(conn)
             .await?;
@@ -41,13 +41,13 @@ impl GeneratedData for LPVPanelLayer {
 
         // Delete elements
         if !involved_objects.is_empty() {
-            // We must delete both updated and deleted lpv panels because we can only insert them and not update
+            // We must delete both updated and deleted psl signs because we can only insert them and not update
             let objs = involved_objects
                 .deleted
                 .iter()
                 .chain(involved_objects.updated.iter());
             delete(
-                dsl::osrd_infra_lpvpanellayer
+                dsl::osrd_infra_pslsignlayer
                     .filter(dsl::infra_id.eq(infra))
                     .filter(dsl::obj_id.eq_any(objs)),
             )
@@ -57,7 +57,7 @@ impl GeneratedData for LPVPanelLayer {
 
         // Insert involved elements
         if !involved_objects.updated.is_empty() {
-            sql_query(include_str!("sql/insert_lpv_panel_layer.sql"))
+            sql_query(include_str!("sql/insert_psl_sign_layer.sql"))
                 .bind::<BigInt, _>(infra)
                 .bind::<Array<Text>, _>(involved_objects.updated.into_iter().collect::<Vec<_>>())
                 .execute(conn)

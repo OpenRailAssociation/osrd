@@ -88,7 +88,7 @@ table! {
 }
 
 table! {
-    osrd_infra_lpvpanellayer {
+    osrd_infra_pslsignlayer {
         id -> BigInt,
         obj_id -> Text,
         infra_id -> BigInt,

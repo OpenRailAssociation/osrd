@@ -216,7 +216,7 @@ mod tests {
         FROM matches
         INNER JOIN osrd_infra_speedsectionlayer layer on matches.id = layer.id
         inner join osrd_infra_speedsectionmodel speed_section on speed_section.obj_id = layer.obj_id and speed_section.infra_id = layer.infra_id
-        WHERE geo_json is not NULL AND (not (speed_section.data @? '$.extensions.lpv_sncf.z'))
+        WHERE geo_json is not NULL AND (not (speed_section.data @? '$.extensions.psl_sncf.z'))
         "
         ];
         for (i, layer_name) in ["track_sections", "speed_sections"].iter().enumerate() {
@@ -236,7 +236,7 @@ mod tests {
           data: json!({
             "id": "a",
             "extensions": {
-              "lpv_sncf": null
+              "psl_sncf": null
             },
             "speed_limit": null,
             "track_ranges": [
@@ -254,7 +254,7 @@ mod tests {
             data: json!({
               "id": "b",
               "extensions": {
-                "lpv_sncf": null
+                "psl_sncf": null
               },
               "speed_limit": null,
               "track_ranges": [

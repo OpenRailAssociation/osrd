@@ -46,7 +46,7 @@ layers:
         joins:
           - inner join osrd_infra_speedsectionmodel speed_section on speed_section.obj_id = layer.obj_id and speed_section.infra_id = layer.infra_id
         where:
-          - not (speed_section.data @? '$.extensions.lpv_sncf.z')
+          - not (speed_section.data @? '$.extensions.psl_sncf.z')
       sch:
         on_field: schematic
         cache_duration: 3600
@@ -54,9 +54,9 @@ layers:
         joins:
           - inner join osrd_infra_speedsectionmodel speed_section on speed_section.obj_id = layer.obj_id and speed_section.infra_id = layer.infra_id
         where:
-          - not (speed_section.data @? '$.extensions.lpv_sncf.z')
+          - not (speed_section.data @? '$.extensions.psl_sncf.z')
 
-  lpv:
+  psl:
     table_name: osrd_infra_speedsectionlayer
     id_field: id
     views:
@@ -67,7 +67,7 @@ layers:
         joins:
           - inner join osrd_infra_speedsectionmodel speed_section on speed_section.obj_id = layer.obj_id and speed_section.infra_id = layer.infra_id
         where:
-          - speed_section.data @? '$.extensions.lpv_sncf.z'
+          - speed_section.data @? '$.extensions.psl_sncf.z'
       sch:
         on_field: schematic
         cache_duration: 3600
@@ -75,7 +75,7 @@ layers:
         joins:
           - inner join osrd_infra_speedsectionmodel speed_section on speed_section.obj_id = layer.obj_id and speed_section.infra_id = layer.infra_id
         where:
-          - speed_section.data @? '$.extensions.lpv_sncf.z'
+          - speed_section.data @? '$.extensions.psl_sncf.z'
 
   track_section_links:
     table_name: osrd_infra_tracksectionlinklayer
@@ -179,8 +179,8 @@ layers:
         joins:
           - inner join osrd_infra_catenarymodel catenary on catenary.obj_id = layer.obj_id and catenary.infra_id = layer.infra_id
 
-  lpv_panels:
-    table_name: osrd_infra_lpvpanellayer
+  psl_signs:
+    table_name: osrd_infra_pslsignlayer
     id_field: id
     views:
       geo:

@@ -529,7 +529,7 @@ class Migration(migrations.Migration):
                 ("schematic", django.contrib.gis.db.models.fields.PointField(srid=3857)),
                 (
                     "data",
-                    models.JSONField(validators=[osrd_infra.utils.PydanticValidator(osrd_schemas.infra.Panel)]),
+                    models.JSONField(validators=[osrd_infra.utils.PydanticValidator(osrd_schemas.infra.Sign)]),
                 ),
             ],
         ),

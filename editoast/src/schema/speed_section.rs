@@ -5,7 +5,7 @@ use super::utils::Identifier;
 use super::utils::NonBlankString;
 use super::OSRDTyped;
 use super::ObjectType;
-use super::Panel;
+use super::Sign;
 
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
@@ -33,15 +33,15 @@ pub struct SpeedSection {
 #[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct SpeedSectionExtensions {
-    pub lpv_sncf: Option<SpeedSectionLpvSncfExtension>,
+    pub psl_sncf: Option<SpeedSectionPslSncfExtension>,
 }
 
 #[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
-pub struct SpeedSectionLpvSncfExtension {
-    announcement: Vec<Panel>,
-    z: Panel,
-    r: Vec<Panel>,
+pub struct SpeedSectionPslSncfExtension {
+    announcement: Vec<Sign>,
+    z: Sign,
+    r: Vec<Sign>,
 }
 
 impl OSRDTyped for SpeedSection {
@@ -59,10 +59,10 @@ impl OSRDIdentified for SpeedSection {
 impl Cache for SpeedSection {
     fn get_track_referenced_id(&self) -> Vec<&String> {
         let mut res: Vec<_> = self.track_ranges.iter().map(|tr| &*tr.track).collect();
-        if let Some(lpv) = &self.extensions.lpv_sncf {
-            res.extend(lpv.announcement.iter().map(|panel| &*panel.track));
-            res.extend(lpv.r.iter().map(|panel| &*panel.track));
-            res.push(&*lpv.z.track);
+        if let Some(psl) = &self.extensions.psl_sncf {
+            res.extend(psl.announcement.iter().map(|sign| &*sign.track));
+            res.extend(psl.r.iter().map(|sign| &*sign.track));
+            res.push(&*psl.z.track);
         }
         res
     }
