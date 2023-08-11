@@ -8,7 +8,7 @@ from pydantic.fields import FieldInfo
 
 ALL_OBJECT_TYPES = []
 
-RAILJSON_INFRA_VERSION_TYPE = Literal["3.4.1"]
+RAILJSON_INFRA_VERSION_TYPE = Literal["3.4.2"]
 RAILJSON_INFRA_VERSION = get_args(RAILJSON_INFRA_VERSION_TYPE)[0]
 
 # Traits
@@ -423,17 +423,17 @@ class Detector(BaseObjectTrait, TrackLocationTrait):
         return DetectorReference(type="Detector", id=self.id)
 
 
-class Panel(TrackLocationTrait):
-    """This class is used to define panels.
+class Sign(TrackLocationTrait):
+    """This class is used to define signs.
     This is a physical, punctual, cosmetic object.
     """
 
     angle_geo: float = Field(0, description="Geographic angle in degrees")
     angle_sch: float = Field(0, description="Schematic angle in degrees")
-    side: Side = Field(Side.CENTER, description="Side of the panel on the track")
-    type: NonBlankStr = Field(description="Precise the type of the panel")
+    side: Side = Field(Side.CENTER, description="Side of the sign on the track")
+    type: NonBlankStr = Field(description="Precise the type of the sign")
     value: Optional[NonBlankStr] = Field(
-        description="If the panel is an announcement, precise the value(s)", default=None
+        description="If the sign is an announcement, precise the value(s)", default=None
     )
 
 
@@ -574,11 +574,11 @@ class SignalSncfExtension(BaseModel):
     value: str
 
 
-@register_extension(object=SpeedSection, name="lpv_sncf")
-class SpeedSectionLpvSncfExtension(BaseModel):
-    announcement: List[Panel] = Field(description="Precise the value(s) of the speed")
-    z: Panel = Field(description="Beginning of the lpv speed section")
-    r: List[Panel] = Field(description="End of the lpv speed section")
+@register_extension(object=SpeedSection, name="psl_sncf")
+class SpeedSectionPslSncfExtension(BaseModel):
+    announcement: List[Sign] = Field(description="Precise the value(s) of the speed")
+    z: Sign = Field(description="Beginning of the psl speed section")
+    r: List[Sign] = Field(description="End of the psl speed section")
 
 
 # Rebuild all classes to integrate extensions in schema

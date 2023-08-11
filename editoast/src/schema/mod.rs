@@ -331,7 +331,7 @@ pub enum Side {
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
 #[derivative(Default)]
 #[serde(deny_unknown_fields)]
-pub struct Panel {
+pub struct Sign {
     #[derivative(Default(value = r#""InvalidRef".into()"#))]
     pub track: Identifier,
     pub position: f64,
@@ -339,7 +339,7 @@ pub struct Panel {
     pub angle_sch: f64,
     pub side: Side,
     #[serde(rename = "type")]
-    pub panel_type: NonBlankString,
+    pub sign_type: NonBlankString,
     pub value: Option<NonBlankString>,
 }
 

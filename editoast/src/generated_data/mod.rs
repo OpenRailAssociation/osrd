@@ -4,9 +4,9 @@ mod buffer_stop;
 mod catenary;
 mod detector;
 mod error;
-mod lpv_panel;
 mod neutral_section;
 mod operational_point;
+mod psl_sign;
 mod signal;
 mod speed_section;
 mod switch;
@@ -18,9 +18,9 @@ use buffer_stop::BufferStopLayer;
 use catenary::CatenaryLayer;
 use detector::DetectorLayer;
 use error::ErrorLayer;
-use lpv_panel::LPVPanelLayer;
 use neutral_section::NeutralSectionLayer;
 use operational_point::OperationalPointLayer;
+use psl_sign::PSLSignLayer;
 use signal::SignalLayer;
 use speed_section::SpeedSectionLayer;
 use switch::SwitchLayer;
@@ -100,7 +100,7 @@ pub async fn refresh_all(
         DetectorLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
         OperationalPointLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
         TrackSectionLinkLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
-        LPVPanelLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
+        PSLSignLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
         NeutralSectionLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
     )?;
     log::debug!("⚙️ Infra {infra}: object layers is generated");
@@ -121,7 +121,7 @@ pub async fn clear_all(conn: &mut PgConnection, infra: i64) -> Result<()> {
     DetectorLayer::clear(conn, infra).await?;
     OperationalPointLayer::clear(conn, infra).await?;
     TrackSectionLinkLayer::clear(conn, infra).await?;
-    LPVPanelLayer::clear(conn, infra).await?;
+    PSLSignLayer::clear(conn, infra).await?;
     ErrorLayer::clear(conn, infra).await?;
     NeutralSectionLayer::clear(conn, infra).await?;
     Ok(())
@@ -143,7 +143,7 @@ pub async fn update_all(
     DetectorLayer::update(conn, infra, operations, infra_cache).await?;
     OperationalPointLayer::update(conn, infra, operations, infra_cache).await?;
     TrackSectionLinkLayer::update(conn, infra, operations, infra_cache).await?;
-    LPVPanelLayer::update(conn, infra, operations, infra_cache).await?;
+    PSLSignLayer::update(conn, infra, operations, infra_cache).await?;
     ErrorLayer::update(conn, infra, operations, infra_cache).await?;
     NeutralSectionLayer::update(conn, infra, operations, infra_cache).await?;
     Ok(())
