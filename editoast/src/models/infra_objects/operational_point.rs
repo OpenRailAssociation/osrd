@@ -2,7 +2,7 @@
 
 use crate::{schema::OperationalPoint, tables::osrd_infra_operationalpointmodel};
 use derivative::Derivative;
-use diesel::{prelude::*, result::Error as DieselError, ExpressionMethods, QueryDsl};
+use diesel::{result::Error as DieselError, ExpressionMethods, QueryDsl};
 use editoast_derive::Model;
 use serde::{Deserialize, Serialize};
 

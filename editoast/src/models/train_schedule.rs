@@ -7,13 +7,13 @@ use crate::{
     tables::osrd_infra_simulationoutput,
 };
 use crate::{DbPool, DieselJson};
-use actix_web::web::{block, Data};
+use actix_web::web::Data;
 use derivative::Derivative;
 use diesel::result::Error as DieselError;
-use diesel::RunQueryDsl;
+use diesel::{ExpressionMethods, QueryDsl};
+use diesel_async::RunQueryDsl;
 use serde_json::Value as JsonValue;
 
-use diesel::prelude::*;
 use editoast_derive::Model;
 use serde::{Deserialize, Serialize};
 
@@ -415,24 +415,25 @@ pub async fn filter_invalid_trains(
     timetable_id: i64,
     infra_version: String,
 ) -> Result<Vec<TrainSchedule>> {
-    let mut schedules = get_timetable_train_schedules(timetable_id, db_pool.clone()).await?;
-    block::<_, Result<_>>(move || {
-        let mut conn = db_pool.clone().get()?;
-        schedules.retain(|schedule| {
-            let rolling_stock =
-                LightRollingStockModel::retrieve_conn(&mut conn, schedule.rolling_stock_id)
-                    .unwrap();
-            let current_rolling_stock_version = rolling_stock.unwrap().version;
-            check_train_validity(
-                &infra_version,
-                schedule.rollingstock_version.unwrap(),
-                &schedule.infra_version.clone().unwrap(),
-                current_rolling_stock_version,
-            )
-            .is_empty()
-        });
-        Ok(schedules)
-    })
-    .await
-    .unwrap()
+    let schedules = get_timetable_train_schedules(timetable_id, db_pool.clone()).await?;
+    let mut result = Vec::new();
+    for schedule in schedules.into_iter() {
+        let mut conn = db_pool.get().await?;
+        let rolling_stock =
+            LightRollingStockModel::retrieve_conn(&mut conn, schedule.rolling_stock_id)
+                .await
+                .unwrap();
+        let current_rolling_stock_version = rolling_stock.unwrap().version;
+        let valid = check_train_validity(
+            &infra_version,
+            schedule.rollingstock_version.unwrap(),
+            &schedule.infra_version.clone().unwrap(),
+            current_rolling_stock_version,
+        )
+        .is_empty();
+        if valid {
+            result.push(schedule)
+        }
+    }
+    Ok(result)
 }

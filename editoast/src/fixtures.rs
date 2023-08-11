@@ -15,18 +15,23 @@ pub mod tests {
 
     use actix_web::web::Data;
     use chrono::Utc;
-    use diesel::r2d2::{ConnectionManager, Pool};
-    use diesel::PgConnection;
+    use diesel_async::pooled_connection::AsyncDieselConnectionManager;
     use futures::executor;
     use postgis_diesel::types::LineString;
     use rstest::*;
     use serde_json::json;
+    use std::fmt;
 
-    #[derive(Debug)]
     pub struct TestFixture<T: Delete + Identifiable + Send> {
         pub model: T,
         pub db_pool: Data<DbPool>,
         pub infra: Option<Infra>,
+    }
+
+    impl<T: fmt::Debug + Delete + Identifiable + Send> fmt::Debug for TestFixture<T> {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            write!(f, "Fixture {:?} {:?}", self.model, self.infra)
+        }
     }
 
     impl<T: Delete + Identifiable + Send> TestFixture<T> {
@@ -64,8 +69,10 @@ pub mod tests {
 
     #[fixture]
     pub fn db_pool() -> Data<DbPool> {
-        let manager = ConnectionManager::<PgConnection>::new(PostgresConfig::default().url());
-        Data::new(Pool::builder().max_size(1).build(manager).unwrap())
+        let url = PostgresConfig::default().url();
+        let config = AsyncDieselConnectionManager::<diesel_async::AsyncPgConnection>::new(url);
+        let pool = DbPool::builder(config).build().unwrap();
+        Data::new(pool)
     }
 
     #[fixture]
@@ -125,7 +132,7 @@ pub mod tests {
             ..serde_json::from_str::<TrainSchedule>(include_str!("./tests/train_schedule.json"))
                 .expect("Unable to parse")
         };
-        train_schedule.create(db_pool.clone()).await.unwrap()
+        train_schedule.create(db_pool).await.unwrap()
     }
 
     #[derive(Debug)]
@@ -153,7 +160,7 @@ pub mod tests {
         let pathfinding = pathfinding(db_pool()).await;
         let rolling_stock = fast_rolling_stock(db_pool()).await;
         let ts_model = make_train_schedule(
-            db_pool().clone(),
+            db_pool(),
             pathfinding.id(),
             timetable.id(),
             rolling_stock.id(),
@@ -194,7 +201,7 @@ pub mod tests {
             creation_date: Some(Utc::now().naive_utc()),
             ..Scenario::default()
         };
-        let scenario = TestFixture::create(scenario_model, db_pool().clone()).await;
+        let scenario = TestFixture::create(scenario_model, db_pool()).await;
         ScenarioFixtureSet {
             project,
             study,
@@ -376,7 +383,7 @@ pub mod tests {
 
     #[fixture]
     pub async fn train_with_simulation_output_fixture_set(
-        db_pool: Data<DbPool>,
+        #[future] db_pool: Data<DbPool>,
         #[future] pathfinding: TestFixture<Pathfinding>,
         #[future] fast_rolling_stock: TestFixture<RollingStockModel>,
     ) -> TrainScheduleWithSimulationOutputFixtureSet {
@@ -387,10 +394,10 @@ pub mod tests {
             timetable,
             infra,
         } = scenario_fixture_set().await;
-        let pathfinding = pathfinding.await;
-        let rolling_stock = fast_rolling_stock.await;
+        let rolling_stock = fast_rolling_stock(db_pool()).await;
+        let pathfinding = pathfinding(db_pool()).await;
         let train_schedule = make_train_schedule(
-            db_pool.clone(),
+            db_pool().clone(),
             pathfinding.id(),
             timetable.id(),
             rolling_stock.id(),
@@ -429,13 +436,13 @@ pub mod tests {
             ..Default::default()
         };
         let simulation_output: SimulationOutput = simulation_output
-            .create(db_pool.clone())
+            .create(db_pool().clone())
             .await
             .unwrap()
             .into();
 
-        let train_schedule = TestFixture::new(train_schedule, db_pool.clone());
-        let simulation_output = TestFixture::new(simulation_output, db_pool);
+        let train_schedule = TestFixture::new(train_schedule, db_pool().clone());
+        let simulation_output = TestFixture::new(simulation_output, db_pool());
         TrainScheduleWithSimulationOutputFixtureSet {
             project,
             study,

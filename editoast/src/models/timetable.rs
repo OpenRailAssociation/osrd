@@ -10,12 +10,14 @@ use crate::models::{
 };
 use crate::tables::osrd_infra_timetable;
 use crate::DbPool;
-use actix_web::web::{block, Data};
+use actix_web::web::Data;
 use derivative::Derivative;
 use diesel::prelude::*;
 use diesel::result::Error as DieselError;
 use diesel::ExpressionMethods;
+use diesel_async::RunQueryDsl;
 use editoast_derive::Model;
+use futures::future::try_join_all;
 use serde::{Deserialize, Serialize};
 
 use super::train_schedule::TrainScheduleValidation;
@@ -64,85 +66,84 @@ impl crate::models::Identifiable for Timetable {
 
 impl Timetable {
     /// Retrieves timetable with a specific id, its associated train schedules details and
-    /// some informations about the simulation result
+    /// some information about the simulation result
     pub async fn with_detailed_train_schedules(
         self,
         db_pool: Data<DbPool>,
     ) -> Result<TimetableWithSchedulesDetails> {
         use crate::tables::osrd_infra_infra::dsl as infra_dsl;
         use crate::tables::osrd_infra_scenario::dsl as scenario_dsl;
-        let pool = db_pool.clone();
-        let infra_version = block(move || {
-            let mut conn = pool.get().unwrap();
-            scenario_dsl::osrd_infra_scenario
-                .filter(scenario_dsl::timetable_id.eq(self.id.unwrap()))
-                .inner_join(infra_dsl::osrd_infra_infra)
-                .select(infra_dsl::version)
-                .first::<String>(&mut conn)
-                .unwrap()
-        })
-        .await
-        .unwrap();
-        let train_schedule_summaries =
+        let mut conn = db_pool.get().await?;
+        let infra_version = scenario_dsl::osrd_infra_scenario
+            .filter(scenario_dsl::timetable_id.eq(self.id.unwrap()))
+            .inner_join(infra_dsl::osrd_infra_infra)
+            .select(infra_dsl::version)
+            .first::<String>(&mut conn)
+            .await
+            .unwrap();
+
+        let train_schedules_with_simulations =
             get_timetable_train_schedules_with_simulations(self.id.unwrap(), db_pool.clone())
                 .await?;
-        block::<_, Result<_>>(move || {
-            let mut conn = db_pool.get()?;
-            let train_schedule_summaries = train_schedule_summaries
-                .iter()
-                .map(|(train_schedule, simulation_output)| {
-                    let result_train = &simulation_output.base_simulation.0;
-                    let result_train_eco = &simulation_output.eco_simulation;
-                    let arrival_time = result_train
-                        .head_positions
-                        .last()
-                        .expect("Train should have at least one position")
-                        .time
-                        + train_schedule.departure_time;
-                    let eco = result_train_eco
-                        .as_ref()
-                        .map(|eco| eco.0.mechanical_energy_consumed);
-                    let mechanical_energy_consumed = MechanicalEnergyConsumedBaseEco {
-                        base: result_train.mechanical_energy_consumed,
-                        eco,
-                    };
-                    let path_length = result_train.stops.last().unwrap().position;
-                    let stops_count = result_train
-                        .stops
-                        .iter()
-                        .filter(|stop| stop.duration > 0.)
-                        .count() as i64;
-
-                    let rolling_stock = LightRollingStockModel::retrieve_conn(
-                        &mut conn,
-                        train_schedule.rolling_stock_id,
-                    )
-                    .unwrap();
-                    let rolling_stock_version = rolling_stock.unwrap().version;
-                    let invalid_reasons = check_train_validity(
-                        &train_schedule.infra_version.clone().unwrap(),
-                        train_schedule.rollingstock_version.unwrap(),
-                        &infra_version,
-                        rolling_stock_version,
-                    );
-
-                    TrainScheduleSummary {
-                        train_schedule: train_schedule.clone(),
-                        arrival_time,
-                        mechanical_energy_consumed,
-                        stops_count,
-                        path_length,
-                        invalid_reasons,
-                    }
-                })
-                .collect::<Vec<_>>();
-            Ok(TimetableWithSchedulesDetails {
-                timetable: self,
-                train_schedule_summaries,
+        let train_schedule_summaries = train_schedules_with_simulations
+            .iter()
+            .map(|(train_schedule, simulation_output)| {
+                (train_schedule, simulation_output, db_pool.get())
             })
+            .map(|(train_schedule, simulation_output, future_conn)| async {
+                let mut conn = future_conn.await?;
+                let rolling_stock = LightRollingStockModel::retrieve_conn(
+                    &mut conn,
+                    train_schedule.rolling_stock_id,
+                );
+
+                let result_train = &simulation_output.base_simulation.0;
+                let result_train_eco = &simulation_output.eco_simulation;
+                let arrival_time = result_train
+                    .head_positions
+                    .last()
+                    .expect("Train should have at least one position")
+                    .time
+                    + train_schedule.departure_time;
+                let eco = result_train_eco
+                    .as_ref()
+                    .map(|eco| eco.0.mechanical_energy_consumed);
+                let mechanical_energy_consumed = MechanicalEnergyConsumedBaseEco {
+                    base: result_train.mechanical_energy_consumed,
+                    eco,
+                };
+                let path_length = result_train.stops.last().unwrap().position;
+                let stops_count = result_train
+                    .stops
+                    .iter()
+                    .filter(|stop| stop.duration > 0.)
+                    .count() as i64;
+
+                let rolling_stock_version = rolling_stock.await?.unwrap().version;
+                let invalid_reasons = check_train_validity(
+                    &train_schedule.infra_version.clone().unwrap(),
+                    train_schedule.rollingstock_version.unwrap(),
+                    &infra_version,
+                    rolling_stock_version,
+                );
+
+                let result: Result<_> = Ok(TrainScheduleSummary {
+                    train_schedule: train_schedule.clone(),
+                    arrival_time,
+                    mechanical_energy_consumed,
+                    stops_count,
+                    path_length,
+                    invalid_reasons,
+                });
+
+                result
+            })
+            .collect::<Vec<_>>();
+        let train_schedule_summaries = try_join_all(train_schedule_summaries).await?;
+        Ok(TimetableWithSchedulesDetails {
+            timetable: self,
+            train_schedule_summaries,
         })
-        .await
-        .unwrap()
     }
 
     /// Retrieves the associated train schedules
@@ -155,19 +156,14 @@ impl Timetable {
         use crate::tables::osrd_infra_infra::dsl as infra_dsl;
         use crate::tables::osrd_infra_scenario::dsl as scenario_dsl;
         let timetable_id = self.id.unwrap();
-        block(move || {
-            let mut conn = db_pool.get().unwrap();
-            scenario_dsl::osrd_infra_scenario
-                .filter(scenario_dsl::timetable_id.eq(timetable_id))
-                .inner_join(infra_dsl::osrd_infra_infra)
-                .select(infra_dsl::version)
-                .first::<String>(&mut conn)
-                .expect(
-                    "could not retrieve the version of the infra of a scenario using its timetable",
-                )
-        })
-        .await
-        .unwrap()
+        let mut conn = db_pool.get().await.unwrap();
+        scenario_dsl::osrd_infra_scenario
+            .filter(scenario_dsl::timetable_id.eq(timetable_id))
+            .inner_join(infra_dsl::osrd_infra_infra)
+            .select(infra_dsl::version)
+            .first::<String>(&mut conn)
+            .await
+            .expect("could not retrieve the version of the infra of a scenario using its timetable")
     }
 }
 
@@ -176,14 +172,11 @@ pub async fn get_timetable_train_schedules(
     db_pool: Data<DbPool>,
 ) -> Result<Vec<TrainSchedule>> {
     use crate::tables::osrd_infra_trainschedule;
-    block::<_, Result<_>>(move || {
-        let mut conn = db_pool.get()?;
-        Ok(osrd_infra_trainschedule::table
-            .filter(osrd_infra_trainschedule::timetable_id.eq(timetable_id))
-            .load(&mut conn)?)
-    })
-    .await
-    .unwrap()
+    let mut conn = db_pool.get().await?;
+    Ok(osrd_infra_trainschedule::table
+        .filter(osrd_infra_trainschedule::timetable_id.eq(timetable_id))
+        .load(&mut conn)
+        .await?)
 }
 
 pub async fn get_timetable_train_schedules_with_simulations(
@@ -191,19 +184,16 @@ pub async fn get_timetable_train_schedules_with_simulations(
     db_pool: Data<DbPool>,
 ) -> Result<Vec<(TrainSchedule, SimulationOutput)>> {
     let train_schedules = get_timetable_train_schedules(timetable_id, db_pool.clone()).await?;
-    block::<_, Result<_>>(move || {
-        let mut conn = db_pool.get()?;
 
-        let simulation_outputs =
-            SimulationOutput::belonging_to(&train_schedules).load::<SimulationOutput>(&mut conn)?;
-        let result = train_schedules
-            .into_iter()
-            .zip(simulation_outputs)
-            .collect();
-        Ok(result)
-    })
-    .await
-    .unwrap()
+    let mut conn = db_pool.get().await?;
+    let simulation_outputs = SimulationOutput::belonging_to(&train_schedules)
+        .load::<SimulationOutput>(&mut conn)
+        .await?;
+    let result = train_schedules
+        .into_iter()
+        .zip(simulation_outputs)
+        .collect();
+    Ok(result)
 }
 
 /// Return a list of reasons the train is invalid.

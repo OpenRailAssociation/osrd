@@ -6,10 +6,11 @@ use crate::map::redis_utils::RedisClient;
 use crate::map::{get, get_cache_tile_key, get_view_cache_prefix, set, Layer, MapLayers, Tile};
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
-use actix_web::web::{block, scope, Data, Json, Path, Query};
+use actix_web::web::{scope, Data, Json, Path, Query};
 use actix_web::{get, HttpResponse};
+use diesel::sql_query;
 use diesel::sql_types::Integer;
-use diesel::{sql_query, RunQueryDsl};
+use diesel_async::RunQueryDsl;
 use editoast_derive::EditoastError;
 use mvt_utils::{create_and_fill_mvt_tile, get_geo_json_sql_query, GeoJsonAndData};
 use serde::Deserialize;
@@ -130,21 +131,14 @@ async fn cache_and_get_mvt_tile(
     }
 
     let geo_json_query = get_geo_json_sql_query(&layer.table_name, view);
-    let records = block::<_, Result<_>>(move || {
-        let mut conn = db_pool.get()?;
-        match sql_query(geo_json_query)
-            .bind::<Integer, _>(z as i32)
-            .bind::<Integer, _>(x as i32)
-            .bind::<Integer, _>(y as i32)
-            .bind::<Integer, _>(infra as i32)
-            .get_results::<GeoJsonAndData>(&mut conn)
-        {
-            Ok(results) => Ok(results),
-            Err(err) => Err(err.into()),
-        }
-    })
-    .await
-    .unwrap()?;
+    let mut conn = db_pool.get().await?;
+    let records = sql_query(geo_json_query)
+        .bind::<Integer, _>(z as i32)
+        .bind::<Integer, _>(x as i32)
+        .bind::<Integer, _>(y as i32)
+        .bind::<Integer, _>(infra as i32)
+        .get_results::<GeoJsonAndData>(&mut conn)
+        .await?;
 
     let mvt_bytes: Vec<u8> = create_and_fill_mvt_tile(layer_slug, records)
         .to_bytes()

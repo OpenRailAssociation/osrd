@@ -24,7 +24,7 @@ use crate::views::infra::InfraForm;
 use crate::views::OpenApiRoot;
 use actix_cors::Cors;
 use actix_web::middleware::{Condition, Logger, NormalizePath};
-use actix_web::web::{block, scope, Data, JsonConfig, PayloadConfig};
+use actix_web::web::{scope, Data, JsonConfig, PayloadConfig};
 use actix_web::{App, HttpServer};
 use chashmap::CHashMap;
 use clap::Parser;
@@ -33,8 +33,9 @@ use client::{
     PostgresConfig, RedisConfig, RunserverArgs,
 };
 use colored::*;
-use diesel::r2d2::{self, ConnectionManager, Pool};
-use diesel::{Connection, PgConnection};
+use diesel_async::pooled_connection::deadpool::Pool;
+use diesel_async::pooled_connection::AsyncDieselConnectionManager as ConnectionManager;
+use diesel_async::{AsyncConnection, AsyncPgConnection as PgConnection};
 use diesel_json::Json as DieselJson;
 use infra_cache::InfraCache;
 use log::{error, info, warn};
@@ -49,7 +50,7 @@ use std::io::BufReader;
 use std::process::exit;
 use views::infra::InfraApiError;
 
-type DbPool = r2d2::Pool<ConnectionManager<PgConnection>>;
+type DbPool = Pool<PgConnection>;
 
 #[actix_web::main]
 async fn main() {
@@ -120,10 +121,11 @@ async fn runserver(
     info!("Building server...");
     // Config databases
     let manager = ConnectionManager::<PgConnection>::new(pg_config.url());
-    let pool = Pool::builder()
+    let pool = Pool::builder(manager)
         .max_size(pg_config.pool_size)
-        .build(manager)
+        .build()
         .expect("Failed to create pool.");
+
     let redis = RedisClient::new(redis_config);
 
     // Custom Json extractor configuration
@@ -204,18 +206,18 @@ async fn generate(
     pg_config: PostgresConfig,
     redis_config: RedisConfig,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let mut conn = PgConnection::establish(&pg_config.url()).expect("Error while connecting DB");
+    let mut conn = PgConnection::establish(&pg_config.url()).await?;
     let manager = ConnectionManager::<PgConnection>::new(pg_config.url());
     let pool = Data::new(
-        Pool::builder()
+        Pool::builder(manager)
             .max_size(pg_config.pool_size)
-            .build(manager)
+            .build()
             .expect("Failed to create pool."),
     );
     let mut infras = vec![];
     if args.infra_ids.is_empty() {
         // Retrieve all available infra
-        for infra in Infra::all(&mut conn) {
+        for infra in Infra::all(&mut conn).await {
             infras.push(infra);
         }
     } else {
@@ -241,8 +243,8 @@ async fn generate(
             infra.name.clone().unwrap().bold(),
             infra.id.unwrap()
         );
-        let infra_cache = InfraCache::load(&mut conn, &infra)?;
-        if infra.refresh(&mut conn, args.force, &infra_cache)? {
+        let infra_cache = InfraCache::load(&mut conn, &infra).await?;
+        if infra.refresh(&mut conn, args.force, &infra_cache).await? {
             build_redis_pool_and_invalidate_all_cache(redis_config.clone(), infra.id.unwrap())
                 .await;
             info!(
@@ -267,7 +269,7 @@ async fn import_railjson(
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     let railjson_file = File::open(args.railjson_path)?;
     let manager = ConnectionManager::<PgConnection>::new(pg_config.url());
-    let pool = Data::new(Pool::builder().max_size(1).build(manager).unwrap());
+    let pool = Data::new(Pool::builder(manager).build().unwrap());
 
     let infra: Infra = InfraForm {
         name: args.infra_name,
@@ -277,37 +279,30 @@ async fn import_railjson(
 
     info!("🍞 Importing infra {}", infra.name.clone().unwrap().bold());
     let infra = infra.persist(railjson, pool.clone()).await?;
-    block::<_, Result<(), Box<dyn Error + Send + Sync>>>(move || {
-        let mut conn = pool.get()?;
-        let infra = match infra.bump_version(&mut conn) {
-            Ok(infra) => infra,
-            Err(_) => {
-                return Err(InfraApiError::NotFound {
-                    infra_id: infra.id.unwrap(),
-                }
-                .into())
-            }
-        };
+    let infra_id = infra.id.unwrap();
 
+    let mut conn = pool.get().await?;
+    let infra = infra
+        .bump_version(&mut conn)
+        .await
+        .map_err(|_| InfraApiError::NotFound { infra_id })?;
+
+    info!(
+        "✅ Infra {}[{}] saved!",
+        infra.name.clone().unwrap().bold(),
+        infra.id.unwrap()
+    );
+    // Generate only if the was set
+    if args.generate {
+        let infra_cache = InfraCache::load(&mut conn, &infra).await?;
+        infra.refresh(&mut conn, true, &infra_cache).await?;
         info!(
-            "✅ Infra {}[{}] saved!",
-            infra.name.clone().unwrap().bold(),
+            "✅ Infra {}[{}] generated data refreshed!",
+            infra.name.unwrap().bold(),
             infra.id.unwrap()
         );
-        // Generate only if the was set
-        if args.generate {
-            let infra_cache = InfraCache::load(&mut conn, &infra)?;
-            infra.refresh(&mut conn, true, &infra_cache)?;
-            info!(
-                "✅ Infra {}[{}] generated data refreshed!",
-                infra.name.unwrap().bold(),
-                infra.id.unwrap()
-            );
-        };
-        Ok(())
-    })
-    .await
-    .unwrap()
+    };
+    Ok(())
 }
 
 async fn add_electrical_profile_set(
@@ -315,7 +310,7 @@ async fn add_electrical_profile_set(
     pg_config: PostgresConfig,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     let manager = ConnectionManager::<PgConnection>::new(pg_config.url());
-    let pool = Data::new(Pool::builder().max_size(1).build(manager).unwrap());
+    let pool = Data::new(Pool::builder(manager).max_size(1).build().unwrap());
     let electrical_profile_set_file = File::open(args.electrical_profile_set_path)?;
 
     let electrical_profile_set_data: ElectricalProfileSetData =
@@ -339,18 +334,20 @@ async fn clear(
     pg_config: PostgresConfig,
     redis_config: RedisConfig,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let mut conn = PgConnection::establish(&pg_config.url()).expect("Error while connecting DB");
+    let mut conn = PgConnection::establish(&pg_config.url())
+        .await
+        .expect("Error while connecting DB");
     let manager = ConnectionManager::<PgConnection>::new(pg_config.url());
     let pool = Data::new(
-        Pool::builder()
+        Pool::builder(manager)
             .max_size(pg_config.pool_size)
-            .build(manager)
+            .build()
             .expect("Failed to create pool."),
     );
     let mut infras = vec![];
     if args.infra_ids.is_empty() {
         // Retrieve all available infra
-        for infra in Infra::all(&mut conn) {
+        for infra in Infra::all(&mut conn).await {
             infras.push(infra);
         }
     } else {
@@ -376,7 +373,7 @@ async fn clear(
             infra.id.unwrap()
         );
         build_redis_pool_and_invalidate_all_cache(redis_config.clone(), infra.id.unwrap()).await;
-        infra.clear(&mut conn)?;
+        infra.clear(&mut conn).await?;
         info!(
             "✅ Infra {}[{}] cleared!",
             infra.name.unwrap().bold(),
@@ -399,8 +396,11 @@ mod tests {
     use crate::import_railjson;
     use crate::schema::RailJson;
     use actix_web::test as actix_test;
+    use diesel::sql_query;
     use diesel::sql_types::Text;
-    use diesel::{sql_query, Connection, PgConnection, RunQueryDsl};
+    use diesel_async::{
+        AsyncConnection as Connection, AsyncPgConnection as PgConnection, RunQueryDsl,
+    };
     use rand::distributions::Alphanumeric;
     use rand::{thread_rng, Rng};
     use std::io::Write;
@@ -449,11 +449,13 @@ mod tests {
         assert!(result.is_ok());
 
         // CLEANUP
-        let mut conn =
-            PgConnection::establish(&pg_config.url()).expect("Error while connecting DB");
+        let mut conn = PgConnection::establish(&pg_config.url())
+            .await
+            .expect("Error while connecting DB");
         sql_query("DELETE FROM osrd_infra_infra WHERE name = $1")
             .bind::<Text, _>(infra_name)
             .execute(&mut conn)
+            .await
             .unwrap();
     }
 

@@ -3,7 +3,6 @@ use crate::core::stdcm::{
 };
 use crate::core::{AsCoreRequest, CoreClient};
 use crate::diesel::BelongingToDsl;
-use crate::diesel::RunQueryDsl;
 use crate::error::Result;
 use crate::models::train_schedule::filter_invalid_trains;
 use crate::models::{Create, SimulationOutput};
@@ -14,8 +13,9 @@ use crate::models::{
 use crate::views::rolling_stocks::retrieve_existing_rolling_stock;
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
-use actix_web::web::{self, block, Data, Json};
+use actix_web::web::{self, Data, Json};
 use actix_web::{post, HttpResponse, Responder};
+use diesel_async::RunQueryDsl;
 use editoast_derive::EditoastError;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -213,23 +213,20 @@ async fn parse_stdcm_steps(
 ) -> Result<Vec<STDCMCoreStep>> {
     let steps = data.steps.clone();
     let infra_id = infra.id.unwrap();
-    block(move || {
-        let conn = &mut db_pool.get()?;
-        let track_map = fetch_pathfinding_payload_track_map(conn, infra_id, &steps)?;
-        let waypoints = parse_pathfinding_payload_waypoints(&steps, &track_map);
-        Ok(waypoints
-            .unwrap()
-            .iter()
-            .zip(steps.iter())
-            .map(|(wp, StepPayload { duration, .. })| STDCMCoreStep {
-                stop_duration: *duration,
-                stop: *duration > 0.,
-                waypoints: wp.to_vec(),
-            })
-            .collect())
-    })
-    .await
-    .unwrap()
+
+    let conn = &mut db_pool.get().await?;
+    let track_map = fetch_pathfinding_payload_track_map(conn, infra_id, &steps).await?;
+    let waypoints = parse_pathfinding_payload_waypoints(&steps, &track_map);
+    Ok(waypoints
+        .unwrap()
+        .iter()
+        .zip(steps.iter())
+        .map(|(wp, StepPayload { duration, .. })| STDCMCoreStep {
+            stop_duration: *duration,
+            stop: *duration > 0.,
+            waypoints: wp.to_vec(),
+        })
+        .collect())
 }
 
 /// Create route occupancies, adjusted by simulation departure time.
@@ -240,17 +237,13 @@ async fn make_route_occupancies(
     timetable_id: i64,
 ) -> Result<Vec<STDCMCoreRouteOccupancy>> {
     let schedules = filter_invalid_trains(db_pool.clone(), timetable_id, infra_version).await?;
-    let (simulations, schedules): (Vec<SimulationOutput>, Vec<TrainSchedule>) =
-        block::<_, Result<_>>(move || {
-            let mut conn = db_pool.get()?;
-            Ok((
-                SimulationOutput::belonging_to(&schedules).load::<SimulationOutput>(&mut conn)?,
-                schedules,
-            ))
-        })
-        .await
-        .unwrap()
-        .unwrap();
+    let mut conn = db_pool.get().await?;
+    let (simulations, schedules): (Vec<SimulationOutput>, Vec<TrainSchedule>) = (
+        SimulationOutput::belonging_to(&schedules)
+            .load::<SimulationOutput>(&mut conn)
+            .await?,
+        schedules,
+    );
     Ok(simulations
         .iter()
         .filter_map(|simulation| {
@@ -290,22 +283,20 @@ async fn create_path_from_core_response(
     let core_path_response = core_output.path.clone();
     let steps = data.steps.clone();
     let infra_id = data.infra_id;
-    let pathfinding_cs = block(move || {
-        let conn = &mut db_pool.get()?;
-        let track_map = core_path_response.fetch_track_map(infra_id, conn)?;
-        let op_map = core_path_response.fetch_op_map(infra_id, conn)?;
-        let pathfinding_from_response =
-            Pathfinding::from_core_response(steps, core_path_response, &track_map, &op_map)?;
-        PathfindingChangeset {
-            id: None,
-            infra_id: Some(infra_id),
-            ..pathfinding_from_response.into()
-        }
-        .create_conn(conn)
-    })
+
+    let conn = &mut db_pool.get().await?;
+    let track_map = core_path_response.fetch_track_map(infra_id, conn).await?;
+    let op_map = core_path_response.fetch_op_map(infra_id, conn).await?;
+    let pathfinding_from_response =
+        Pathfinding::from_core_response(steps, core_path_response, &track_map, &op_map)?;
+    PathfindingChangeset {
+        id: None,
+        infra_id: Some(infra_id),
+        ..pathfinding_from_response.into()
+    }
+    .create_conn(conn)
     .await
-    .unwrap()?;
-    Ok(pathfinding_cs.into())
+    .map(|pathfinding_cs| pathfinding_cs.into())
 }
 
 /// processes the stdcm simulation and create a simulation report

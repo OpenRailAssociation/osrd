@@ -14,9 +14,11 @@ use crate::DieselJson;
 
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
-use actix_web::web::{self, block, scope, Data, Json, Path, Query};
+use actix_web::web::{self, scope, Data, Json, Path, Query};
 use actix_web::{delete, get, patch, post, HttpResponse};
-use diesel::Connection;
+use diesel::{ExpressionMethods, QueryDsl};
+use diesel_async::scoped_futures::ScopedFutureExt;
+use diesel_async::{AsyncConnection, RunQueryDsl};
 use editoast_derive::EditoastError;
 use itertools::izip;
 use serde_derive::Deserialize;
@@ -30,7 +32,6 @@ use simulation_report::SimulationReport;
 use thiserror::Error;
 
 use crate::models::electrical_profile::ElectricalProfileSet;
-use futures::executor;
 
 pub mod projection;
 pub mod simulation_report;
@@ -115,11 +116,11 @@ pub async fn delete_multiple(
     request: Json<BatchDeletionRequest>,
 ) -> Result<HttpResponse> {
     use crate::tables::osrd_infra_trainschedule::dsl::*;
-    use diesel::prelude::*;
 
     let train_schedule_ids = request.into_inner().ids;
     diesel::delete(osrd_infra_trainschedule.filter(id.eq_any(train_schedule_ids)))
-        .execute(&mut db_pool.get()?)?;
+        .execute(&mut db_pool.get().await?)
+        .await?;
 
     Ok(HttpResponse::NoContent().finish())
 }
@@ -173,14 +174,15 @@ async fn patch_multiple(
     if train_schedules_changesets.is_empty() {
         return Err(TrainScheduleError::NoTrainSchedules.into());
     }
-    block(move || {
-        let mut conn = db_pool.get()?;
-        conn.transaction::<_, InternalError, _>(|conn| {
+
+    let mut conn = db_pool.get().await?;
+    conn.transaction::<_, InternalError, _>(|conn| {
+        async {
             let mut train_schedules = Vec::new();
             for train_patch in train_schedules_changesets {
                 let id = train_patch.id;
                 let changeset = TrainScheduleChangeset::from(train_patch);
-                let train_schedule: TrainSchedule = match changeset.update_conn(conn, id)? {
+                let train_schedule: TrainSchedule = match changeset.update_conn(conn, id).await? {
                     Some(ts) => ts,
                     None => {
                         return Err(TrainScheduleError::NotFound {
@@ -197,7 +199,6 @@ async fn patch_multiple(
             // Delete the associated simulation output
             {
                 use crate::tables::osrd_infra_simulationoutput::dsl::*;
-                use diesel::prelude::*;
                 let train_schedule_ids = train_schedules
                     .iter()
                     .map(|ts| ts.id.unwrap())
@@ -206,7 +207,8 @@ async fn patch_multiple(
                     osrd_infra_simulationoutput
                         .filter(train_schedule_id.eq_any(train_schedule_ids)),
                 )
-                .execute(conn)?;
+                .execute(conn)
+                .await?;
             }
 
             // Resimulate the trains
@@ -218,13 +220,13 @@ async fn patch_multiple(
                 return Err(TrainScheduleError::BatchShouldHaveSameTimetable.into());
             }
 
-            let timetable = Timetable::retrieve_conn(conn, id_timetable)?.ok_or(
+            let timetable = Timetable::retrieve_conn(conn, id_timetable).await?.ok_or(
                 TrainScheduleError::TimetableNotFound {
                     timetable_id: id_timetable,
                 },
             )?;
 
-            let scenario = scenario_from_timetable(&timetable, db_pool.clone())?;
+            let scenario = scenario_from_timetable(&timetable, db_pool.clone()).await?;
 
             // Batch by path
             let mut path_to_train_schedules: HashMap<_, Vec<_>> = HashMap::new();
@@ -235,25 +237,23 @@ async fn patch_multiple(
             }
 
             for train_schedules in path_to_train_schedules.values() {
-                let request_payload = executor::block_on(create_backend_request_payload(
-                    train_schedules,
-                    &scenario,
-                    db_pool.clone(),
-                ))?;
-                let response_payload = executor::block_on(request_payload.fetch(core.as_ref()))?;
+                let request_payload =
+                    create_backend_request_payload(train_schedules, &scenario, db_pool.clone())
+                        .await?;
+                let response_payload = request_payload.fetch(core.as_ref()).await?;
                 let simulation_outputs = process_simulation_response(response_payload)?;
 
                 for (i, mut simulation_output) in simulation_outputs.into_iter().enumerate() {
                     let train_schedule_id = train_schedules[i].id.unwrap();
                     simulation_output.train_schedule_id = Some(Some(train_schedule_id));
-                    simulation_output.create_conn(conn)?;
+                    simulation_output.create_conn(conn).await?;
                 }
             }
             Ok(())
-        })
+        }
+        .scope_boxed()
     })
-    .await
-    .unwrap()?;
+    .await?;
     Ok(HttpResponse::NoContent().finish())
 }
 
@@ -299,7 +299,7 @@ async fn get_result(
             timetable_id: id_timetable,
         })?;
 
-    let scenario = scenario_from_timetable(&timetable, db_pool.clone())?;
+    let scenario = scenario_from_timetable(&timetable, db_pool.clone()).await?;
 
     let infra = scenario.infra_id.expect("Scenario should have an infra id");
 
@@ -359,7 +359,7 @@ async fn get_results(
 
     let projection = Projection::new(&projection_path_payload);
 
-    let scenario = scenario_from_timetable(&timetable, db_pool.clone())?;
+    let scenario = scenario_from_timetable(&timetable, db_pool.clone()).await?;
 
     let infra = scenario.infra_id.expect("Scenario should have an infra id");
     let mut res = Vec::new();
@@ -462,7 +462,7 @@ async fn standalone_simulation(
             timetable_id: id_timetable,
         })?;
 
-    let scenario = scenario_from_timetable(&timetable, db_pool.clone())?;
+    let scenario = scenario_from_timetable(&timetable, db_pool.clone()).await?;
     let infra_id = scenario.infra_id.unwrap();
     let infra = Infra::retrieve(db_pool.clone(), infra_id).await?.unwrap();
     let request_payload =
@@ -472,31 +472,41 @@ async fn standalone_simulation(
 
     assert_eq!(train_schedules.len(), simulation_outputs.len());
 
-    let mut res_ids = Vec::new();
-    let mut conn = db_pool.get()?;
+    let mut conn = db_pool.get().await?;
     // Start a transaction
-    conn.transaction::<_, InternalError, _>(|conn| {
-        // Save inputs
-        for mut train_schedule in train_schedules {
-            train_schedule.infra_version = infra.version.clone();
-            train_schedule.rollingstock_version = Some(
-                LightRollingStockModel::retrieve_conn(conn, train_schedule.rolling_stock_id)?
-                    .unwrap()
-                    .version,
-            );
-            let id = train_schedule
-                .create_conn(conn)?
-                .id
-                .expect("Train schedule should have an id");
-            res_ids.push(id);
-        }
-        // Save outputs
-        for (i, mut simulation_output) in simulation_outputs.into_iter().enumerate() {
-            simulation_output.train_schedule_id = Some(Some(res_ids[i]));
-            simulation_output.create_conn(conn)?;
-        }
-        Ok(())
-    })?;
+    let res_ids = conn
+        .transaction::<_, InternalError, _>(|conn| {
+            async {
+                let mut res_ids = Vec::new();
+                // Save inputs
+                for mut train_schedule in train_schedules {
+                    train_schedule.infra_version = infra.version.clone();
+                    train_schedule.rollingstock_version = Some(
+                        LightRollingStockModel::retrieve_conn(
+                            conn,
+                            train_schedule.rolling_stock_id,
+                        )
+                        .await?
+                        .unwrap()
+                        .version,
+                    );
+                    let id = train_schedule
+                        .create_conn(conn)
+                        .await?
+                        .id
+                        .expect("Train schedule should have an id");
+                    res_ids.push(id);
+                }
+                // Save outputs
+                for (i, mut simulation_output) in simulation_outputs.into_iter().enumerate() {
+                    simulation_output.train_schedule_id = Some(Some(res_ids[i]));
+                    simulation_output.create_conn(conn).await?;
+                }
+                Ok(res_ids)
+            }
+            .scope_boxed()
+        })
+        .await?;
     Ok(Json(res_ids))
 }
 
@@ -644,15 +654,14 @@ pub fn process_simulation_response(
     Ok(simulation_outputs)
 }
 
-fn scenario_from_timetable(timetable: &Timetable, db_pool: Data<DbPool>) -> Result<Scenario> {
+async fn scenario_from_timetable(timetable: &Timetable, db_pool: Data<DbPool>) -> Result<Scenario> {
     use crate::tables::osrd_infra_scenario::dsl::*;
-    use diesel::prelude::*;
-    match osrd_infra_scenario
+    osrd_infra_scenario
         .filter(timetable_id.eq(timetable.id.unwrap()))
-        .get_result(&mut db_pool.get()?)
-    {
-        Ok(scenario) => Ok(scenario),
-        Err(diesel::result::Error::NotFound) => panic!("Timetables should have a scenario"),
-        Err(err) => Err(err.into()),
-    }
+        .get_result(&mut db_pool.get().await?)
+        .await
+        .map_err(|err| match err {
+            diesel::result::Error::NotFound => panic!("Timetables should have a scenario"),
+            err => err.into(),
+        })
 }

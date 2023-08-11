@@ -2,6 +2,7 @@ pub mod light_rolling_stock;
 pub mod rolling_stock_image;
 pub mod rolling_stock_livery;
 
+use async_trait::async_trait;
 pub use light_rolling_stock::LightRollingStockModel;
 pub use rolling_stock_image::RollingStockSeparatedImageModel;
 pub use rolling_stock_livery::RollingStockLiveryModel;
@@ -16,10 +17,11 @@ use crate::schema::rolling_stock::{
 use crate::tables::osrd_infra_rollingstock;
 use crate::views::rolling_stocks::RollingStockError;
 use crate::DbPool;
-use actix_web::web::{block, Data};
+use actix_web::web::Data;
 use derivative::Derivative;
 use diesel::result::Error as DieselError;
-use diesel::{update, ExpressionMethods, QueryDsl, RunQueryDsl, SelectableHelper};
+use diesel::{update, ExpressionMethods, QueryDsl, SelectableHelper};
+use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
 use diesel_json::Json as DieselJson;
 use editoast_derive::Model;
 use serde::{Deserialize, Serialize};
@@ -103,27 +105,25 @@ impl Identifiable for RollingStockModel {
 
 impl RollingStockModel {
     pub async fn with_liveries(self, db_pool: Data<DbPool>) -> Result<RollingStockWithLiveries> {
-        block::<_, Result<_>>(move || {
-            use crate::tables::osrd_infra_rollingstocklivery::dsl as livery_dsl;
-            let mut conn = db_pool.get()?;
-            let liveries = livery_dsl::osrd_infra_rollingstocklivery
-                .filter(livery_dsl::rolling_stock_id.eq(self.id.unwrap()))
-                .select(RollingStockLiveryMetadata::as_select())
-                .load(&mut conn)?;
-            Ok(RollingStockWithLiveries {
-                rolling_stock: self.into(),
-                liveries,
-            })
+        use crate::tables::osrd_infra_rollingstocklivery::dsl as livery_dsl;
+        let mut conn = db_pool.get().await?;
+        let liveries = livery_dsl::osrd_infra_rollingstocklivery
+            .filter(livery_dsl::rolling_stock_id.eq(self.id.unwrap()))
+            .select(RollingStockLiveryMetadata::as_select())
+            .load(&mut conn)
+            .await?;
+        Ok(RollingStockWithLiveries {
+            rolling_stock: self.into(),
+            liveries,
         })
-        .await
-        .unwrap()
     }
 }
 
+#[async_trait]
 impl Update for RollingStockModel {
-    fn update_conn(
+    async fn update_conn(
         self,
-        conn: &mut diesel::PgConnection,
+        conn: &mut PgConnection,
         rolling_stock_id: i64,
     ) -> Result<Option<Self>> {
         use crate::tables::osrd_infra_rollingstock::dsl::*;
@@ -131,6 +131,7 @@ impl Update for RollingStockModel {
         match update(osrd_infra_rollingstock.find(rolling_stock_id))
             .set(&self)
             .get_result::<RollingStockModel>(conn)
+            .await
         {
             Ok(rolling_stock) => Ok(Some(rolling_stock)),
             Err(DieselError::NotFound) => {
@@ -194,12 +195,12 @@ pub mod tests {
     use crate::fixtures::tests::{db_pool, fast_rolling_stock, other_rolling_stock, TestFixture};
     use crate::models::{Retrieve, Update};
     use crate::views::rolling_stocks::RollingStockError;
+    use crate::DbPool;
     use rstest::*;
     use serde_json::to_value;
 
     use super::RollingStockModel;
     use actix_web::web::Data;
-    use diesel::r2d2::{ConnectionManager, Pool};
 
     pub fn get_fast_rolling_stock() -> RollingStockModel {
         serde_json::from_str(include_str!("../../tests/example_rolling_stock_1.json"))
@@ -219,7 +220,7 @@ pub mod tests {
 
     #[rstest]
     async fn create_delete_rolling_stock(
-        db_pool: Data<Pool<ConnectionManager<diesel::PgConnection>>>,
+        db_pool: Data<DbPool>,
         #[future] fast_rolling_stock: TestFixture<RollingStockModel>,
     ) {
         let rolling_stock_id: i64;
@@ -239,7 +240,7 @@ pub mod tests {
 
     #[rstest]
     async fn update_rolling_stock(
-        db_pool: Data<Pool<ConnectionManager<diesel::PgConnection>>>,
+        db_pool: Data<DbPool>,
         #[future] fast_rolling_stock: TestFixture<RollingStockModel>,
     ) {
         let rolling_stock = fast_rolling_stock.await;
@@ -249,7 +250,7 @@ pub mod tests {
         updated_rolling_stock.id = Some(rolling_stock_id);
 
         let updated_rolling_stock = updated_rolling_stock
-            .update(db_pool.clone(), rolling_stock_id)
+            .update(db_pool, rolling_stock_id)
             .await
             .unwrap()
             .unwrap();
@@ -258,7 +259,7 @@ pub mod tests {
 
     #[rstest]
     async fn update_rolling_stock_failure_name_already_used(
-        db_pool: Data<Pool<ConnectionManager<diesel::PgConnection>>>,
+        db_pool: Data<DbPool>,
         #[future] fast_rolling_stock: TestFixture<RollingStockModel>,
         #[future] other_rolling_stock: TestFixture<RollingStockModel>,
     ) {

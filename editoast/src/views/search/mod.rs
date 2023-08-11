@@ -208,12 +208,13 @@ use crate::error::Result;
 use crate::views::pagination::PaginationQueryParam;
 use crate::views::search::objects::SearchConfigFinder;
 use crate::DbPool;
-use actix_web::web::{block, Data, Json, Query};
+use actix_web::web::{Data, Json, Query};
 use actix_web::{post, HttpResponse, Responder};
 use diesel::pg::Pg;
 use diesel::query_builder::BoxedSqlQuery;
 use diesel::sql_types::{Jsonb, Text};
-use diesel::{sql_query, QueryableByName, RunQueryDsl};
+use diesel::{sql_query, QueryableByName};
+use diesel_async::RunQueryDsl;
 use editoast_derive::EditoastError;
 use serde::{Deserialize, Serialize};
 use serde_json::value::Value as JsonValue;
@@ -366,13 +367,8 @@ pub async fn search(
         return Ok(HttpResponse::Ok().body(query));
     }
 
-    let objects: Vec<SearchDBResult> = block::<_, Result<_>>(move || {
-        let mut conn = db_pool.get()?;
-        Ok(sql.load(&mut conn)?)
-    })
-    .await
-    .unwrap()?;
-
+    let mut conn = db_pool.get().await?;
+    let objects: Vec<SearchDBResult> = sql.load(&mut conn).await?;
     let results: Vec<_> = objects.into_iter().map(|r| r.result).collect();
     Ok(HttpResponse::Ok().json(results))
 }

@@ -1,13 +1,12 @@
 use crate::schema::electrical_profiles::ElectricalProfileSetData;
 use crate::tables::osrd_infra_electricalprofileset;
 
+use crate::diesel::ExpressionMethods;
+use crate::diesel::QueryDsl;
 use crate::models::Identifiable;
 use crate::DieselJson;
 use derivative::Derivative;
-
 use diesel::result::Error as DieselError;
-
-use diesel::prelude::*;
 use editoast_derive::Model;
 use serde::{Deserialize, Serialize};
 

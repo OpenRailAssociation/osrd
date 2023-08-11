@@ -4,8 +4,9 @@ use crate::schema::{
     OperationalPoint, Route, Signal, SpeedSection, Switch, SwitchType, TrackSection,
     TrackSectionLink,
 };
+use diesel::sql_query;
 use diesel::sql_types::{BigInt, Json, Text};
-use diesel::{sql_query, PgConnection, RunQueryDsl};
+use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
@@ -28,11 +29,11 @@ pub enum RailjsonObject {
     Catenary { railjson: Catenary },
 }
 
-pub fn apply_create_operation(
+pub async fn apply_create_operation(
     railjson_object: &RailjsonObject,
     infra_id: i64,
     conn: &mut PgConnection,
-) -> Result<()> {
+) -> Result<usize> {
     if railjson_object.get_id().is_empty() {
         return Err(OperationError::EmptyId.into());
     }
@@ -44,8 +45,8 @@ pub fn apply_create_operation(
     .bind::<Text, _>(railjson_object.get_id())
     .bind::<Json, _>(railjson_object.get_data())
     .execute(conn)
-    .unwrap();
-    Ok(())
+    .await
+    .map_err(|err| err.into())
 }
 
 impl OSRDIdentified for RailjsonObject {
@@ -176,7 +177,8 @@ impl From<OperationalPoint> for RailjsonObject {
 #[cfg(test)]
 pub mod tests {
     use actix_web::test as actix_test;
-    use diesel::PgConnection;
+    use diesel_async::scoped_futures::ScopedFutureExt;
+    use diesel_async::AsyncPgConnection as PgConnection;
 
     use crate::models::infra::tests::test_infra_transaction;
     use crate::schema::operation::create::{apply_create_operation, RailjsonObject};
@@ -185,59 +187,67 @@ pub mod tests {
         SwitchType, TrackSection, TrackSectionLink,
     };
 
-    pub fn create_track(
+    pub async fn create_track(
         conn: &mut PgConnection,
         infra_id: i64,
         track: TrackSection,
     ) -> RailjsonObject {
         let obj = RailjsonObject::TrackSection { railjson: track };
-        assert!(apply_create_operation(&obj, infra_id, conn).is_ok());
+        assert!(apply_create_operation(&obj, infra_id, conn).await.is_ok());
         obj
     }
 
-    pub fn create_signal(conn: &mut PgConnection, infra_id: i64, signal: Signal) -> RailjsonObject {
+    pub async fn create_signal(
+        conn: &mut PgConnection,
+        infra_id: i64,
+        signal: Signal,
+    ) -> RailjsonObject {
         let obj = RailjsonObject::Signal { railjson: signal };
-        assert!(apply_create_operation(&obj, infra_id, conn).is_ok());
+        assert!(apply_create_operation(&obj, infra_id, conn).await.is_ok());
         obj
     }
 
-    pub fn create_speed(
+    pub async fn create_speed(
         conn: &mut PgConnection,
         infra_id: i64,
         speed: SpeedSection,
     ) -> RailjsonObject {
         let obj = RailjsonObject::SpeedSection { railjson: speed };
-        assert!(apply_create_operation(&obj, infra_id, conn).is_ok());
+        assert!(apply_create_operation(&obj, infra_id, conn).await.is_ok());
         obj
     }
 
-    pub fn create_link(
+    pub async fn create_link(
         conn: &mut PgConnection,
         infra_id: i64,
         link: TrackSectionLink,
     ) -> RailjsonObject {
         let obj = RailjsonObject::TrackSectionLink { railjson: link };
-        assert!(apply_create_operation(&obj, infra_id, conn).is_ok());
+        assert!(apply_create_operation(&obj, infra_id, conn).await.is_ok());
         obj
     }
 
-    pub fn create_switch(conn: &mut PgConnection, infra_id: i64, switch: Switch) -> RailjsonObject {
+    pub async fn create_switch(
+        conn: &mut PgConnection,
+        infra_id: i64,
+        switch: Switch,
+    ) -> RailjsonObject {
         let obj = RailjsonObject::Switch { railjson: switch };
-        assert!(apply_create_operation(&obj, infra_id, conn).is_ok());
+        assert!(apply_create_operation(&obj, infra_id, conn).await.is_ok());
         obj
     }
 
-    pub fn create_detector(
+    pub async fn create_detector(
         conn: &mut PgConnection,
         infra_id: i64,
         detector: Detector,
     ) -> RailjsonObject {
         let obj = RailjsonObject::Detector { railjson: detector };
-        assert!(apply_create_operation(&obj, infra_id, conn).is_ok());
+        assert!(apply_create_operation(&obj, infra_id, conn).await.is_ok());
         obj
     }
 
-    pub fn create_buffer_stop(
+    pub async fn create_buffer_stop(
         conn: &mut PgConnection,
         infra_id: i64,
         buffer_stop: BufferStop,
@@ -245,50 +255,57 @@ pub mod tests {
         let obj = RailjsonObject::BufferStop {
             railjson: buffer_stop,
         };
-        assert!(apply_create_operation(&obj, infra_id, conn).is_ok());
+        assert!(apply_create_operation(&obj, infra_id, conn).await.is_ok());
         obj
     }
 
-    pub fn create_route(conn: &mut PgConnection, infra_id: i64, route: Route) -> RailjsonObject {
+    pub async fn create_route(
+        conn: &mut PgConnection,
+        infra_id: i64,
+        route: Route,
+    ) -> RailjsonObject {
         let obj = RailjsonObject::Route { railjson: route };
-        assert!(apply_create_operation(&obj, infra_id, conn).is_ok());
+        assert!(apply_create_operation(&obj, infra_id, conn).await.is_ok());
         obj
     }
 
-    pub fn create_op(
+    pub async fn create_op(
         conn: &mut PgConnection,
         infra_id: i64,
         op: OperationalPoint,
     ) -> RailjsonObject {
         let obj = RailjsonObject::OperationalPoint { railjson: op };
-        assert!(apply_create_operation(&obj, infra_id, conn).is_ok());
+        assert!(apply_create_operation(&obj, infra_id, conn).await.is_ok());
         obj
     }
 
-    pub fn create_switch_type(
+    pub async fn create_switch_type(
         conn: &mut PgConnection,
         infra_id: i64,
         st: SwitchType,
     ) -> RailjsonObject {
         let obj = RailjsonObject::SwitchType { railjson: st };
-        assert!(apply_create_operation(&obj, infra_id, conn).is_ok());
+        assert!(apply_create_operation(&obj, infra_id, conn).await.is_ok());
         obj
     }
 
-    pub fn create_catenary(
+    pub async fn create_catenary(
         conn: &mut PgConnection,
         infra_id: i64,
         catenary: Catenary,
     ) -> RailjsonObject {
         let obj = RailjsonObject::Catenary { railjson: catenary };
-        assert!(apply_create_operation(&obj, infra_id, conn).is_ok());
+        assert!(apply_create_operation(&obj, infra_id, conn).await.is_ok());
         obj
     }
 
     #[actix_test]
     async fn create_track_test() {
         test_infra_transaction(|conn, infra| {
-            create_track(conn, infra.id.unwrap(), Default::default());
+            async move {
+                create_track(conn, infra.id.unwrap(), Default::default()).await;
+            }
+            .scope_boxed()
         })
         .await;
     }
@@ -296,7 +313,10 @@ pub mod tests {
     #[actix_test]
     async fn create_signal_test() {
         test_infra_transaction(|conn, infra| {
-            create_signal(conn, infra.id.unwrap(), Default::default());
+            async move {
+                create_signal(conn, infra.id.unwrap(), Default::default()).await;
+            }
+            .scope_boxed()
         })
         .await;
     }
@@ -304,7 +324,10 @@ pub mod tests {
     #[actix_test]
     async fn create_speed_test() {
         test_infra_transaction(|conn, infra| {
-            create_speed(conn, infra.id.unwrap(), Default::default());
+            async move {
+                create_speed(conn, infra.id.unwrap(), Default::default()).await;
+            }
+            .scope_boxed()
         })
         .await;
     }
@@ -312,7 +335,10 @@ pub mod tests {
     #[actix_test]
     async fn create_link_test() {
         test_infra_transaction(|conn, infra| {
-            create_link(conn, infra.id.unwrap(), Default::default());
+            async move {
+                create_link(conn, infra.id.unwrap(), Default::default()).await;
+            }
+            .scope_boxed()
         })
         .await;
     }
@@ -320,7 +346,10 @@ pub mod tests {
     #[actix_test]
     async fn create_switch_test() {
         test_infra_transaction(|conn, infra| {
-            create_switch(conn, infra.id.unwrap(), Default::default());
+            async move {
+                create_switch(conn, infra.id.unwrap(), Default::default()).await;
+            }
+            .scope_boxed()
         })
         .await;
     }
@@ -328,7 +357,10 @@ pub mod tests {
     #[actix_test]
     async fn create_detector_test() {
         test_infra_transaction(|conn, infra| {
-            create_detector(conn, infra.id.unwrap(), Default::default());
+            async move {
+                create_detector(conn, infra.id.unwrap(), Default::default()).await;
+            }
+            .scope_boxed()
         })
         .await;
     }
@@ -336,7 +368,10 @@ pub mod tests {
     #[actix_test]
     async fn create_buffer_stop_test() {
         test_infra_transaction(|conn, infra| {
-            create_buffer_stop(conn, infra.id.unwrap(), Default::default());
+            async move {
+                create_buffer_stop(conn, infra.id.unwrap(), Default::default()).await;
+            }
+            .scope_boxed()
         })
         .await;
     }
@@ -344,7 +379,10 @@ pub mod tests {
     #[actix_test]
     async fn create_route_test() {
         test_infra_transaction(|conn, infra| {
-            create_route(conn, infra.id.unwrap(), Default::default());
+            async move {
+                create_route(conn, infra.id.unwrap(), Default::default()).await;
+            }
+            .scope_boxed()
         })
         .await;
     }
@@ -352,7 +390,10 @@ pub mod tests {
     #[actix_test]
     async fn create_op_test() {
         test_infra_transaction(|conn, infra| {
-            create_op(conn, infra.id.unwrap(), Default::default());
+            async move {
+                create_op(conn, infra.id.unwrap(), Default::default()).await;
+            }
+            .scope_boxed()
         })
         .await;
     }
@@ -360,7 +401,10 @@ pub mod tests {
     #[actix_test]
     async fn create_switch_type_test() {
         test_infra_transaction(|conn, infra| {
-            create_switch_type(conn, infra.id.unwrap(), Default::default());
+            async move {
+                create_switch_type(conn, infra.id.unwrap(), Default::default()).await;
+            }
+            .scope_boxed()
         })
         .await;
     }
@@ -368,7 +412,10 @@ pub mod tests {
     #[actix_test]
     async fn create_catenary_test() {
         test_infra_transaction(|conn, infra| {
-            create_catenary(conn, infra.id.unwrap(), Default::default());
+            async move {
+                create_catenary(conn, infra.id.unwrap(), Default::default()).await;
+            }
+            .scope_boxed()
         })
         .await;
     }

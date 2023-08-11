@@ -2,9 +2,10 @@ use std::collections::HashMap;
 
 use actix_web::dev::HttpServiceFactory;
 use actix_web::post;
-use actix_web::web::{block, Data, Json, Path};
+use actix_web::web::{Data, Json, Path};
 use diesel::sql_types::{Array, BigInt, Jsonb, Nullable, Text};
-use diesel::{sql_query, QueryableByName, RunQueryDsl};
+use diesel::{sql_query, QueryableByName};
+use diesel_async::RunQueryDsl;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use thiserror::Error;
@@ -70,7 +71,7 @@ async fn get_objects(
         )
     } else {
         format!("
-            SELECT 
+            SELECT
                 object_table.obj_id as obj_id,
                 object_table.data as railjson,
                 ST_AsGeoJSON(ST_Transform(geographic, 4326))::jsonb as geographic,
@@ -86,15 +87,12 @@ async fn get_objects(
 
     // Execute query
     let obj_ids_dup = obj_ids.clone();
-    let objects: Vec<ObjectQueryable> = block::<_, Result<_>>(move || {
-        let mut conn = db_pool.get()?;
-        Ok(sql_query(query)
-            .bind::<BigInt, _>(infra)
-            .bind::<Array<Text>, _>(obj_ids_dup)
-            .load(&mut conn)?)
-    })
-    .await
-    .unwrap()?;
+    let mut conn = db_pool.get().await?;
+    let objects: Vec<ObjectQueryable> = sql_query(query)
+        .bind::<BigInt, _>(infra)
+        .bind::<Array<Text>, _>(obj_ids_dup)
+        .load(&mut conn)
+        .await?;
 
     // Build a cache to reorder the result
     let mut objects: HashMap<_, _> = objects

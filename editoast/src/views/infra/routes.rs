@@ -7,10 +7,11 @@ use crate::views::params::List;
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
 use actix_web::get;
-use actix_web::web::{block, scope, Data, Json, Path, Query};
+use actix_web::web::{scope, Data, Json, Path, Query};
 use chashmap::CHashMap;
+use diesel::sql_query;
 use diesel::sql_types::{BigInt, Bool, Text};
-use diesel::{sql_query, RunQueryDsl};
+use diesel_async::RunQueryDsl;
 use serde_json::{json, Value as JsonValue};
 
 use serde::{Deserialize, Serialize};
@@ -42,16 +43,14 @@ async fn get_routes_from_waypoint(
     db_pool: Data<DbPool>,
 ) -> Result<Json<JsonValue>> {
     let (infra, waypoint_type, waypoint) = path.into_inner();
-    let routes: Vec<RouteFromWaypointResult> = block::<_, Result<_>>(move || {
-        let mut conn = db_pool.get()?;
-        Ok(sql_query(include_str!("sql/get_routes_from_waypoint.sql"))
+    let mut conn = db_pool.get().await?;
+    let routes: Vec<RouteFromWaypointResult> =
+        sql_query(include_str!("sql/get_routes_from_waypoint.sql"))
             .bind::<BigInt, _>(infra)
             .bind::<Text, _>(waypoint)
             .bind::<Text, _>(waypoint_type.to_string())
-            .load(&mut conn)?)
-    })
-    .await
-    .unwrap()?;
+            .load(&mut conn)
+            .await?;
 
     // Split routes depending if they are entry or exit points
     let mut starting_routes = vec![];
@@ -94,31 +93,29 @@ async fn get_routes_track_ranges<'a>(
         Some(infra) => infra,
         None => return Err(InfraApiError::NotFound { infra_id }.into()),
     };
-    let result = block::<_, Result<_>>(move || {
-        let mut conn = db_pool.get()?;
-        let infra_cache = InfraCache::get_or_load(&mut conn, &infra_caches, &infra)?;
-        let graph = Graph::load(&infra_cache);
-        let routes_cache = infra_cache.routes();
-        Ok(params
-            .routes
-            .0
-            .iter()
-            .map(|route| {
-                if let Some(route) = routes_cache.get(route) {
-                    let route = route.unwrap_route();
-                    let route_path = route.compute_track_ranges(&infra_cache, &graph);
-                    if let Some(route_path) = route_path {
-                        RouteTrackRangesResult::Computed(route_path.track_ranges)
-                    } else {
-                        RouteTrackRangesResult::CantComputePath
-                    }
+    let mut conn = db_pool.get().await?;
+
+    let infra_cache = InfraCache::get_or_load(&mut conn, &infra_caches, &infra).await?;
+    let graph = Graph::load(&infra_cache);
+    let routes_cache = infra_cache.routes();
+    let result = params
+        .routes
+        .0
+        .iter()
+        .map(|route| {
+            if let Some(route) = routes_cache.get(route) {
+                let route = route.unwrap_route();
+                let route_path = route.compute_track_ranges(&infra_cache, &graph);
+                if let Some(route_path) = route_path {
+                    RouteTrackRangesResult::Computed(route_path.track_ranges)
                 } else {
-                    RouteTrackRangesResult::NotFound
+                    RouteTrackRangesResult::CantComputePath
                 }
-            })
-            .collect::<Vec<_>>())
-    })
-    .await
-    .unwrap()?;
+            } else {
+                RouteTrackRangesResult::NotFound
+            }
+        })
+        .collect::<Vec<_>>();
+
     Ok(Json(result))
 }

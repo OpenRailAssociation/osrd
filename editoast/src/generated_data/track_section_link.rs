@@ -1,8 +1,10 @@
 use crate::error::Result;
+use async_trait::async_trait;
 use diesel::delete;
 use diesel::query_dsl::methods::FilterDsl;
+use diesel::sql_query;
 use diesel::sql_types::{Array, BigInt, Text};
-use diesel::{sql_query, PgConnection, RunQueryDsl};
+use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
 use std::iter::Iterator;
 
 use super::utils::InvolvedObjects;
@@ -14,19 +16,21 @@ use crate::tables::osrd_infra_tracksectionlinklayer::dsl;
 
 pub struct TrackSectionLinkLayer;
 
+#[async_trait]
 impl GeneratedData for TrackSectionLinkLayer {
     fn table_name() -> &'static str {
         "osrd_infra_tracksectionlinklayer"
     }
 
-    fn generate(conn: &mut PgConnection, infra: i64, _infra_cache: &InfraCache) -> Result<()> {
+    async fn generate(conn: &mut PgConnection, infra: i64, _cache: &InfraCache) -> Result<()> {
         sql_query(include_str!("sql/generate_track_section_link_layer.sql"))
             .bind::<BigInt, _>(infra)
-            .execute(conn)?;
+            .execute(conn)
+            .await?;
         Ok(())
     }
 
-    fn update(
+    async fn update(
         conn: &mut PgConnection,
         infra: i64,
         operations: &[crate::schema::operation::OperationResult],
@@ -42,7 +46,8 @@ impl GeneratedData for TrackSectionLinkLayer {
                     .filter(dsl::infra_id.eq(infra))
                     .filter(dsl::obj_id.eq_any(involved_objects.deleted)),
             )
-            .execute(conn)?;
+            .execute(conn)
+            .await?;
         }
 
         // Update elements
@@ -52,7 +57,8 @@ impl GeneratedData for TrackSectionLinkLayer {
             ))
             .bind::<BigInt, _>(infra)
             .bind::<Array<Text>, _>(involved_objects.updated.into_iter().collect::<Vec<_>>())
-            .execute(conn)?;
+            .execute(conn)
+            .await?;
         }
         Ok(())
     }

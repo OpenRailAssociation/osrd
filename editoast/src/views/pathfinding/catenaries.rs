@@ -7,7 +7,7 @@ use crate::DbPool;
 use actix_web::{
     dev::HttpServiceFactory,
     get, services,
-    web::{block, Data, Json, Path},
+    web::{Data, Json, Path},
 };
 use chashmap::CHashMap;
 use rangemap::RangeMap;
@@ -211,13 +211,10 @@ async fn catenaries_on_path(
 
     let track_section_ids = pathfinding.track_section_ids();
 
-    let (catenary_mode_map, warnings) = block::<_, Result<_>>(move || {
-        let mut conn = db_pool.get()?;
-        let infra_cache = InfraCache::get_or_load(&mut conn, &infra_caches, &infra)?;
-        Ok(map_catenary_modes(&infra_cache, track_section_ids))
-    })
-    .await
-    .unwrap()?;
+    let mut conn = db_pool.get().await?;
+
+    let infra_cache = InfraCache::get_or_load(&mut conn, &infra_caches, &infra).await?;
+    let (catenary_mode_map, warnings) = map_catenary_modes(&infra_cache, track_section_ids);
 
     let res = make_path_range_map(&catenary_mode_map, &pathfinding);
     Ok(Json(CatenariesOnPathResponse {
@@ -241,8 +238,6 @@ pub mod tests {
     };
     use actix_http::StatusCode;
     use actix_web::test::{call_service, read_body_json, TestRequest};
-    use diesel::r2d2::ConnectionManager;
-    use r2d2::Pool;
     use rstest::*;
     use serde_json::from_value;
 
@@ -276,7 +271,7 @@ pub mod tests {
 
     #[fixture]
     async fn infra_with_catenaries(
-        db_pool: Data<Pool<ConnectionManager<diesel::PgConnection>>>,
+        db_pool: Data<DbPool>,
         #[future] empty_infra: TestFixture<Infra>,
     ) -> TestFixture<Infra> {
         let infra = empty_infra.await;
@@ -357,13 +352,14 @@ pub mod tests {
 
     #[rstest]
     async fn test_map_catenary_modes(
-        db_pool: Data<Pool<ConnectionManager<diesel::PgConnection>>>,
+        db_pool: Data<DbPool>,
         #[future] infra_with_catenaries: TestFixture<Infra>,
         simple_mode_map: HashMap<String, RangeMap<Float, String>>,
     ) {
-        let mut conn = db_pool.get().unwrap();
+        let mut conn = db_pool.get().await.unwrap();
         let infra_with_catenaries = infra_with_catenaries.await;
         let infra_cache = InfraCache::load(&mut conn, &infra_with_catenaries.model)
+            .await
             .expect("Could not load infra_cache");
         let track_sections: HashSet<_> =
             vec!["track_1", "track_2", "track_3", "track_4", "track_5"]
@@ -378,12 +374,13 @@ pub mod tests {
 
     #[rstest]
     async fn test_map_catenary_modes_with_warnings(
-        db_pool: Data<Pool<ConnectionManager<diesel::PgConnection>>>,
+        db_pool: Data<DbPool>,
         #[future] infra_with_catenaries: TestFixture<Infra>,
     ) {
-        let mut conn = db_pool.get().unwrap();
+        let mut conn = db_pool.get().await.unwrap();
         let infra_with_catenaries = infra_with_catenaries.await;
         let mut infra_cache = InfraCache::load(&mut conn, &infra_with_catenaries.model)
+            .await
             .expect("Could not load infra_cache");
         infra_cache.add(CatenarySchema {
             track_ranges: vec![ApplicableDirectionsTrackRange {
@@ -511,7 +508,7 @@ pub mod tests {
 
     #[rstest]
     async fn test_view_catenaries_on_path(
-        db_pool: Data<Pool<ConnectionManager<diesel::PgConnection>>>,
+        db_pool: Data<DbPool>,
         #[future] infra_with_catenaries: TestFixture<Infra>,
     ) {
         let infra_with_catenaries = infra_with_catenaries.await;

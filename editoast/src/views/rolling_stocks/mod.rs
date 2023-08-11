@@ -11,13 +11,13 @@ use crate::schema::rolling_stock::{
 use crate::DbPool;
 use actix_multipart::form::text::Text;
 use actix_web::dev::HttpServiceFactory;
-use actix_web::web::{block, scope, Data, Json, Path, Query};
+use actix_web::web::{scope, Data, Json, Path, Query};
 use actix_web::{delete, get, patch, post, HttpResponse};
 use diesel::{
     sql_query,
     sql_types::{BigInt, Text as SqlText},
-    RunQueryDsl,
 };
+use diesel_async::RunQueryDsl;
 use diesel_json::Json as DieselJson;
 use editoast_derive::EditoastError;
 use image::io::Reader as ImageReader;
@@ -291,19 +291,16 @@ async fn get_rolling_stock_usage(
     db_pool: Data<DbPool>,
     rolling_stock_id: i64,
 ) -> Result<Vec<TrainScheduleScenarioStudyProject>> {
-    match RollingStockModel::retrieve(db_pool.clone(), rolling_stock_id).await {
-        Ok(Some(_)) => block(move || {
-            let mut conn = db_pool.get()?;
-            let trains = sql_query(include_str!("sql/get_train_schedules_with_scenario.sql"))
-                .bind::<BigInt, _>(rolling_stock_id)
-                .load(&mut conn)?;
-            Ok(trains)
-        })
+    let mut conn = db_pool.get().await?;
+    let _stock = RollingStockModel::retrieve(db_pool.clone(), rolling_stock_id)
+        .await?
+        .ok_or(RollingStockError::NotFound { rolling_stock_id })?;
+
+    sql_query(include_str!("sql/get_train_schedules_with_scenario.sql"))
+        .bind::<BigInt, _>(rolling_stock_id)
+        .load(&mut conn)
         .await
-        .unwrap(),
-        Ok(None) => Err(RollingStockError::NotFound { rolling_stock_id }.into()),
-        Err(err) => Err(err),
-    }
+        .map_err(|e| e.into())
 }
 
 #[post("/livery")]
@@ -462,13 +459,11 @@ pub mod tests {
     };
     use crate::models::{Delete, RollingStockModel};
     use crate::views::tests::create_test_service;
-    use crate::{assert_editoast_error_type, assert_status_and_read};
+    use crate::{assert_editoast_error_type, assert_status_and_read, DbPool};
     use actix_http::{Request, StatusCode};
     use actix_web::http::header::ContentType;
     use actix_web::test::{call_service, TestRequest};
     use actix_web::web::Data;
-    use diesel::r2d2::ConnectionManager;
-    use r2d2::Pool;
     use rstest::rstest;
     use serde_json::json;
 
@@ -527,9 +522,7 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn update_and_delete_locked_rolling_stock_fails(
-        db_pool: Data<Pool<ConnectionManager<diesel::PgConnection>>>,
-    ) {
+    async fn update_and_delete_locked_rolling_stock_fails(db_pool: Data<DbPool>) {
         let app = create_test_service().await;
         let rolling_stock: RollingStockModel = get_fast_rolling_stock();
         let post_response = call_service(
@@ -626,7 +619,7 @@ pub mod tests {
     #[rstest]
     async fn update_unlocked_rolling_stock(
         #[future] fast_rolling_stock: TestFixture<RollingStockModel>,
-        db_pool: Data<Pool<ConnectionManager<diesel::PgConnection>>>,
+        db_pool: Data<DbPool>,
     ) {
         let app = create_test_service().await;
         let fast_rolling_stock = fast_rolling_stock.await;
@@ -688,9 +681,7 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn update_locked_successfully(
-        db_pool: Data<Pool<ConnectionManager<diesel::PgConnection>>>,
-    ) {
+    async fn update_locked_successfully(db_pool: Data<DbPool>) {
         let app = create_test_service().await;
         let rolling_stock = get_fast_rolling_stock();
         let post_response = call_service(

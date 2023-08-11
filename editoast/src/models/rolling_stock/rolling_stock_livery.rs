@@ -1,12 +1,14 @@
-use crate::diesel::{delete, QueryDsl, RunQueryDsl};
+use crate::diesel::{delete, QueryDsl};
 use crate::error::Result;
 use crate::models::{Delete, Document, Identifiable};
 use crate::schema::rolling_stock::rolling_stock_livery::RollingStockLivery;
 use crate::tables::osrd_infra_rollingstocklivery;
+use async_trait::async_trait;
 use derivative::Derivative;
 use diesel::expression_methods::ExpressionMethods;
 use diesel::result::Error as DieselError;
 use diesel::sql_types::{BigInt, Text};
+use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
 use serde::{Deserialize, Serialize};
 
 use editoast_derive::Model;
@@ -15,7 +17,7 @@ use editoast_derive::Model;
 ///
 /// A rolling stock can have several liveries, which are deleted on cascade if the rolling stock is removed.
 /// It can have several liveries, and each livery can have one or several separated
-/// images and one compound image (created by aggregating the seperated images together).
+/// images and one compound image (created by aggregating the separated images together).
 ///
 /// A livery has a compound_image_id field which refers to a document. The separated images of the livery also have
 /// a image_id field which refers to a document.
@@ -45,13 +47,15 @@ impl Identifiable for RollingStockLiveryModel {
     }
 }
 
+#[async_trait]
 impl Delete for RollingStockLiveryModel {
-    fn delete_conn(conn: &mut diesel::PgConnection, livery_id: i64) -> Result<bool> {
+    async fn delete_conn(conn: &mut PgConnection, livery_id: i64) -> Result<bool> {
         use crate::tables::osrd_infra_rollingstocklivery::dsl::*;
         // Delete livery
         let livery: RollingStockLivery =
             match delete(osrd_infra_rollingstocklivery.filter(id.eq(livery_id)))
                 .get_result::<RollingStockLiveryModel>(conn)
+                .await
             {
                 Ok(livery) => livery.into(),
                 Err(DieselError::NotFound) => return Ok(false),
@@ -59,7 +63,7 @@ impl Delete for RollingStockLiveryModel {
             };
         // Delete compound_image if any
         if let Some(image_id) = livery.compound_image_id {
-            let _ = Document::delete_conn(conn, image_id);
+            let _ = Document::delete_conn(conn, image_id).await;
         };
         Ok(true)
     }
@@ -96,12 +100,11 @@ pub mod tests {
     use crate::fixtures::tests::{db_pool, rolling_stock_livery, TestFixture};
     use crate::models::{Delete, Document, Retrieve};
     use actix_web::web::Data;
-    use diesel::r2d2::{ConnectionManager, Pool};
     use rstest::*;
 
     #[rstest]
     async fn create_get_delete_rolling_stock_livery(
-        db_pool: Data<Pool<ConnectionManager<diesel::PgConnection>>>,
+        db_pool: Data<crate::DbPool>,
         #[future] rolling_stock_livery: TestFixture<RollingStockLiveryModel>,
     ) {
         let rolling_stock_livery = rolling_stock_livery.await;

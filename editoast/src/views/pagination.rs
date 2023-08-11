@@ -1,13 +1,11 @@
 use crate::error::Result;
 use diesel::pg::Pg;
 use diesel::query_builder::*;
-use diesel::query_dsl::LoadQuery;
 use diesel::sql_types::BigInt;
 use diesel::sql_types::Untyped;
-use diesel::PgConnection;
-use diesel::QueryResult;
-use diesel::QueryableByName;
-use diesel::RunQueryDsl;
+use diesel::{QueryResult, QueryableByName};
+use diesel_async::methods::LoadQuery;
+use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
 use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
@@ -78,7 +76,10 @@ pub struct InternalPaginatedResult<T: QueryableByName<Pg>> {
 }
 
 impl<T> Paginated<T> {
-    pub fn load_and_count<'a, R>(self, conn: &mut PgConnection) -> Result<PaginatedResponse<R>>
+    pub async fn load_and_count<'a, R>(
+        self,
+        conn: &mut PgConnection,
+    ) -> Result<PaginatedResponse<R>>
     where
         Self: LoadQuery<'a, PgConnection, InternalPaginatedResult<R>>,
         R: QueryableByName<Pg> + Send + 'static,
@@ -92,7 +93,7 @@ impl<T> Paginated<T> {
             return Err(PaginationError::InvalidPageSize { page_size }.into());
         }
 
-        let results = self.load::<InternalPaginatedResult<R>>(conn)?;
+        let results = self.load::<InternalPaginatedResult<R>>(conn).await?;
 
         // Check when no results
         if results.is_empty() {
@@ -143,5 +144,3 @@ where
 impl<T: Query> Query for Paginated<T> {
     type SqlType = Untyped;
 }
-
-impl<T> RunQueryDsl<PgConnection> for Paginated<T> {}

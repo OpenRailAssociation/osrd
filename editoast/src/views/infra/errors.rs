@@ -4,7 +4,7 @@ use crate::views::pagination::{Paginate, PaginatedResponse, PaginationQueryParam
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
 use actix_web::get;
-use actix_web::web::{block, Data, Json as WebJson, Path, Query};
+use actix_web::web::{Data, Json as WebJson, Path, Query};
 use diesel::sql_query;
 use diesel::sql_types::{BigInt, Json, Nullable, Text};
 use editoast_derive::EditoastError;
@@ -105,18 +105,14 @@ async fn get_paginated_infra_errors(
     }
     let error_type = params.error_type.clone().unwrap_or_default();
     let object_id = params.object_id.clone().unwrap_or_default();
-    let infra_errors = block::<_, Result<_>>(move || {
-        let mut conn = db_pool.get()?;
-        sql_query(query)
-            .bind::<BigInt, _>(infra)
-            .bind::<Text, _>(error_type)
-            .bind::<Text, _>(object_id)
-            .paginate(page, per_page)
-            .load_and_count::<InfraError>(&mut conn)
-    })
-    .await
-    .unwrap()?;
-    Ok(infra_errors)
+    let mut conn = db_pool.get().await?;
+    sql_query(query)
+        .bind::<BigInt, _>(infra)
+        .bind::<Text, _>(error_type)
+        .bind::<Text, _>(object_id)
+        .paginate(page, per_page)
+        .load_and_count::<InfraError>(&mut conn)
+        .await
 }
 
 #[cfg(test)]

@@ -5,12 +5,13 @@ use actix_web::{
     delete,
     dev::HttpServiceFactory,
     get, post, put,
-    web::{self, block, Data, Json, Path},
+    web::{self, Data, Json, Path},
     HttpResponse, Responder,
 };
 use chrono::NaiveDateTime;
 use derivative::Derivative;
-use diesel::PgConnection;
+use diesel::{ExpressionMethods, QueryDsl};
+use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
 use editoast_derive::EditoastError;
 use geos::geojson::{self, Geometry};
 use geos::Geom;
@@ -173,12 +174,11 @@ pub type TrackMap = HashMap<String, TrackSection>;
 type OpMap = HashMap<String, OperationalPoint>;
 
 /// Computes a hash map (obj_id => TrackSection) for each obj_id in an iterator
-fn make_track_map<I: Iterator<Item = String>>(
-    conn: &mut diesel::PgConnection,
+async fn make_track_map<I: Iterator<Item = String>>(
+    conn: &mut PgConnection,
     infra_id: i64,
     it: I,
 ) -> Result<TrackMap> {
-    use diesel::prelude::*;
     use tables::osrd_infra_tracksectionmodel::dsl;
     // TODO: implement a BatchRetrieve trait for tracksections for a better error handling + check all tracksections are there
     let ids = it.collect::<HashSet<_>>().into_iter().collect::<Vec<_>>();
@@ -187,6 +187,7 @@ fn make_track_map<I: Iterator<Item = String>>(
         .filter(dsl::infra_id.eq(infra_id))
         .filter(dsl::obj_id.eq_any(&ids))
         .get_results::<TrackSectionModel>(conn)
+        .await
     {
         Ok(ts) if ts.len() != expected_count => {
             let got = HashSet::<String>::from_iter(ts.into_iter().map(|ts| ts.obj_id));
@@ -204,12 +205,11 @@ fn make_track_map<I: Iterator<Item = String>>(
     ))
 }
 
-fn make_op_map<I: Iterator<Item = String>>(
-    conn: &mut diesel::PgConnection,
+async fn make_op_map<I: Iterator<Item = String>>(
+    conn: &mut PgConnection,
     infra: i64,
     it: I,
 ) -> Result<OpMap> {
-    use diesel::prelude::*;
     use tables::osrd_infra_operationalpointmodel::dsl;
     // TODO: implement a BatchRetrieve trait for tracksections for a better error handling + check all tracksections are there
     let ids = it.collect::<HashSet<_>>().into_iter().collect::<Vec<_>>();
@@ -218,6 +218,7 @@ fn make_op_map<I: Iterator<Item = String>>(
         .filter(dsl::infra_id.eq(infra))
         .filter(dsl::obj_id.eq_any(&ids))
         .get_results::<OperationalPointModel>(conn)
+        .await
     {
         Ok(ts) if ts.len() != expected_count => {
             let got = HashSet::<String>::from_iter(ts.into_iter().map(|ts| ts.obj_id));
@@ -237,8 +238,8 @@ fn make_op_map<I: Iterator<Item = String>>(
 
 impl PathfindingRequestPayload {
     /// Queries all track sections of the payload and builds a track hash map
-    fn fetch_track_map(&self, conn: &mut diesel::PgConnection) -> Result<TrackMap> {
-        fetch_pathfinding_payload_track_map(conn, self.infra, &self.steps)
+    async fn fetch_track_map(&self, conn: &mut PgConnection) -> Result<TrackMap> {
+        fetch_pathfinding_payload_track_map(conn, self.infra, &self.steps).await
     }
 
     /// Parses all payload waypoints into Core pathfinding request waypoints
@@ -247,10 +248,11 @@ impl PathfindingRequestPayload {
     }
 
     /// Fetches all payload's rolling stocks
-    fn parse_rolling_stocks(&self, conn: &mut PgConnection) -> Result<Vec<RollingStock>> {
+    async fn parse_rolling_stocks(&self, conn: &mut PgConnection) -> Result<Vec<RollingStock>> {
         let mut rolling_stocks = vec![];
         for id in &self.rolling_stocks {
-            let rs: RollingStock = RollingStockModel::retrieve_conn(conn, *id)?
+            let rs: RollingStock = RollingStockModel::retrieve_conn(conn, *id)
+                .await?
                 .ok_or(PathfindingError::RollingStockNotFound {
                     rolling_stock_id: *id,
                 })?
@@ -261,8 +263,8 @@ impl PathfindingRequestPayload {
     }
 }
 
-pub fn fetch_pathfinding_payload_track_map(
-    conn: &mut diesel::PgConnection,
+pub async fn fetch_pathfinding_payload_track_map(
+    conn: &mut PgConnection,
     infra: i64,
     steps: &[StepPayload],
 ) -> Result<TrackMap> {
@@ -274,6 +276,7 @@ pub fn fetch_pathfinding_payload_track_map(
             .flat_map(|step| step.waypoints.iter())
             .map(|waypoint| waypoint.track_section.clone()),
     )
+    .await
 }
 
 pub fn parse_pathfinding_payload_waypoints(
@@ -289,7 +292,7 @@ pub fn parse_pathfinding_payload_waypoints(
 }
 
 impl PathfindingResponse {
-    pub fn fetch_track_map(&self, infra: i64, conn: &mut PgConnection) -> Result<TrackMap> {
+    pub async fn fetch_track_map(&self, infra: i64, conn: &mut PgConnection) -> Result<TrackMap> {
         make_track_map(
             conn,
             infra,
@@ -297,14 +300,16 @@ impl PathfindingResponse {
                 .iter()
                 .map(|wp| wp.location.track_section.0.clone()),
         )
+        .await
     }
 
-    pub fn fetch_op_map(&self, infra: i64, conn: &mut diesel::PgConnection) -> Result<OpMap> {
+    pub async fn fetch_op_map(&self, infra: i64, conn: &mut PgConnection) -> Result<OpMap> {
         make_op_map(
             conn,
             infra,
             self.path_waypoints.iter().filter_map(|wp| wp.id.clone()),
         )
+        .await
     }
 }
 
@@ -404,49 +409,41 @@ async fn call_core_pf_and_save_result(
     let infra = Infra::retrieve(db_pool.clone(), infra_id)
         .await?
         .ok_or(PathfindingError::InfraNotFound { infra_id })?;
-    let pathfinding = block::<_, Result<_>>(move || {
-        // HACK: async closures are unstable, so we need to do this in order to .await
-        // inside the block
-        Ok(async move {
-            let pathfinding = {
-                let conn = &mut db_pool.get()?;
-                let track_map = payload.fetch_track_map(conn)?;
-                let mut waypoints = payload.parse_waypoints(&track_map)?;
-                let mut rolling_stocks = payload.parse_rolling_stocks(conn)?;
-                let response = PathfindingRequest::new(infra.id.unwrap(), infra.version.unwrap())
-                    .with_waypoints(&mut waypoints)
-                    .with_rolling_stocks(&mut rolling_stocks)
-                    .fetch(core.as_ref())
-                    .await?;
-                let response_track_map = response.fetch_track_map(infra_id, conn)?;
-                let response_op_map = response.fetch_op_map(infra_id, conn)?;
-                Pathfinding::from_core_response(
-                    payload.steps,
-                    response,
-                    &response_track_map,
-                    &response_op_map,
-                )?
-            };
-            let changeset = PathfindingChangeset {
-                id: None,
-                infra_id: Some(infra.id.unwrap()),
-                ..pathfinding.into()
-            };
-            let pathfinding: Pathfinding = if let Some(id) = update_id {
-                changeset
-                    .update(db_pool, id)
-                    .await?
-                    .expect("row should exist - checked earlier")
-                    .into()
-            } else {
-                changeset.create(db_pool).await?.into()
-            };
-            Ok(pathfinding) as Result<Pathfinding>
-        })
-    })
-    .await
-    .unwrap()?
-    .await?;
+
+    let pathfinding = {
+        let conn = &mut db_pool.get().await?;
+        let track_map = payload.fetch_track_map(conn).await?;
+        let mut waypoints = payload.parse_waypoints(&track_map)?;
+        let mut rolling_stocks = payload.parse_rolling_stocks(conn).await?;
+        let response = PathfindingRequest::new(infra.id.unwrap(), infra.version.unwrap())
+            .with_waypoints(&mut waypoints)
+            .with_rolling_stocks(&mut rolling_stocks)
+            .fetch(core.as_ref())
+            .await?;
+        let response_track_map = response.fetch_track_map(infra_id, conn).await?;
+        let response_op_map = response.fetch_op_map(infra_id, conn).await?;
+        Pathfinding::from_core_response(
+            payload.steps,
+            response,
+            &response_track_map,
+            &response_op_map,
+        )?
+    };
+    let changeset = PathfindingChangeset {
+        id: None,
+        infra_id: Some(infra.id.unwrap()),
+        ..pathfinding.into()
+    };
+    let pathfinding: Pathfinding = if let Some(id) = update_id {
+        changeset
+            .update(db_pool, id)
+            .await?
+            .expect("row should exist - checked earlier")
+            .into()
+    } else {
+        changeset.create(db_pool).await?.into()
+    };
+
     Ok(pathfinding)
 }
 

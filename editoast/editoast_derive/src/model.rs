@@ -84,23 +84,17 @@ fn create_functions(config: &Config) -> TokenStream {
     quote! {
         #[async_trait::async_trait]
         impl crate::models::Create for #model_name {
-            fn create_conn(self, conn: &mut diesel::PgConnection) -> crate::error::Result<Self> {
+            async fn create_conn(self, conn: &mut diesel_async::AsyncPgConnection) -> crate::error::Result<Self> {
                 use #table::table;
-                use diesel::RunQueryDsl;
+                use diesel_async::RunQueryDsl;
 
-                Ok(diesel::insert_into(table).values(&self).get_result(conn)?)
+                Ok(diesel::insert_into(table).values(&self).get_result(conn).await?)
             }
 
             #[doc = #documentation]
             async fn create(self, db_pool: actix_web::web::Data<crate::DbPool>) -> crate::error::Result<Self> {
-                use actix_web::web::block;
-
-                block::<_, crate::error::Result<_>>(move || {
-                    let mut conn = db_pool.get()?;
-                    self.create_conn(&mut conn)
-                })
-                .await
-                .unwrap()
+                let mut conn = db_pool.get().await?;
+                self.create_conn(&mut conn).await
             }
         }
     }
@@ -132,14 +126,14 @@ fn retrieve_functions(config: &Config) -> TokenStream {
     quote! {
         #[async_trait::async_trait]
         impl crate::models::Retrieve for #model_name {
-            fn retrieve_conn(conn: &mut diesel::PgConnection, obj_id: i64) -> crate::error::Result<Option<Self>> {
+            async fn retrieve_conn(conn: &mut diesel_async::AsyncPgConnection, obj_id: i64) -> crate::error::Result<Option<Self>> {
                 use #table::table;
                 use #table::dsl;
-                use diesel::RunQueryDsl;
+                use diesel_async::RunQueryDsl;
 
                 match table
                     .filter(dsl::id.eq(obj_id))
-                    .get_result(conn)
+                    .get_result(conn).await
                 {
                     Ok(doc) => Ok(Some(doc)),
                     Err(DieselError::NotFound) => Ok(None),
@@ -149,14 +143,8 @@ fn retrieve_functions(config: &Config) -> TokenStream {
 
             #[doc = #retrieve_documentation]
             async fn retrieve(db_pool: actix_web::web::Data<crate::DbPool>, id: i64) -> crate::error::Result<Option<Self>> {
-                use actix_web::web::block;
-
-                block::<_, crate::error::Result<_>>(move || {
-                    let mut conn = db_pool.get()?;
-                    Self::retrieve_conn(&mut conn, id)
-                })
-                .await
-                .unwrap()
+                let mut conn = db_pool.get().await?;
+                Self::retrieve_conn(&mut conn, id).await
             }
         }
     }
@@ -186,12 +174,12 @@ fn delete_functions(config: &Config) -> TokenStream {
     quote! {
         #[async_trait::async_trait]
         impl crate::models::Delete for #model_name {
-            fn delete_conn(conn: &mut diesel::PgConnection, obj_id: i64) -> crate::error::Result<bool> {
+            async fn delete_conn(conn: &mut diesel_async::AsyncPgConnection, obj_id: i64) -> crate::error::Result<bool> {
                 use #table::table;
                 use #table::dsl;
-                use diesel::RunQueryDsl;
+                use diesel_async::RunQueryDsl;
 
-                match diesel::delete(table.filter(dsl::id.eq(obj_id))).execute(conn)
+                match diesel::delete(table.filter(dsl::id.eq(obj_id))).execute(conn).await
                 {
                     Ok(1) => Ok(true),
                     Ok(_) => Ok(false),
@@ -201,14 +189,8 @@ fn delete_functions(config: &Config) -> TokenStream {
 
             #[doc = #documentation]
             async fn delete(db_pool: actix_web::web::Data<crate::DbPool>, id: i64) -> crate::error::Result<bool> {
-                use actix_web::web::block;
-
-                block::<_, crate::error::Result<_>>(move || {
-                    let mut conn = db_pool.get()?;
-                    Self::delete_conn(&mut conn, id)
-                })
-                .await
-                .unwrap()
+                let mut conn = db_pool.get().await?;
+                Self::delete_conn(&mut conn, id).await
             }
         }
     }
@@ -239,10 +221,10 @@ fn update_functions(config: &Config) -> TokenStream {
     quote! {
         #[async_trait::async_trait]
         impl crate::models::Update for #model_name {
-            fn update_conn(self, conn: &mut diesel::PgConnection, obj_id: i64) -> crate::error::Result<Option<Self>> {
+            async fn update_conn(self, conn: &mut diesel_async::AsyncPgConnection, obj_id: i64) -> crate::error::Result<Option<Self>> {
                 use #table::table;
 
-                match diesel::update(table.find(obj_id)).set(&self).get_result(conn)
+                match diesel::update(table.find(obj_id)).set(&self).get_result(conn).await
                 {
                     Ok(obj) => Ok(Some(obj)),
                     Err(DieselError::NotFound) => Ok(None),
@@ -252,14 +234,8 @@ fn update_functions(config: &Config) -> TokenStream {
 
             #[doc = #documentation]
             async fn update(self, db_pool: actix_web::web::Data<crate::DbPool>, id: i64) -> crate::error::Result<Option<Self>> {
-                use actix_web::web::block;
-
-                block::<_, crate::error::Result<_>>(move || {
-                    let mut conn = db_pool.get()?;
-                    self.update_conn(&mut conn, id)
-                })
-                .await
-                .unwrap()
+                let mut conn = db_pool.get().await?;
+                self.update_conn(&mut conn, id).await
             }
         }
     }

@@ -7,15 +7,15 @@ use crate::views::infra::{InfraApiError, InfraForm};
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
 use actix_web::http::header::ContentType;
-use actix_web::web::{block, Data, Json, Path, Query};
+use actix_web::web::{Data, Json, Path, Query};
 use actix_web::{get, post, services, HttpResponse, Responder};
 use chashmap::CHashMap;
-use diesel::sql_types::BigInt;
-use diesel::sql_types::Text;
-use diesel::{sql_query, RunQueryDsl};
+use diesel::sql_query;
+use diesel::sql_types::{BigInt, Text};
+use diesel_async::RunQueryDsl;
 use editoast_derive::EditoastError;
 use enum_map::EnumMap;
-use futures::future::join_all;
+use futures::future::try_join_all;
 use serde::{Deserialize, Serialize};
 use strum::IntoEnumIterator;
 use thiserror::Error;
@@ -42,30 +42,31 @@ enum ListErrorsRailjson {
 #[get("/{infra}/railjson")]
 async fn get_railjson(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<impl Responder> {
     let infra = infra.into_inner();
-
     let infra_meta = Infra::retrieve(db_pool.clone(), infra).await?.unwrap();
 
     let futures: Vec<_> = ObjectType::iter()
-        .map(|object_type| {
+        .map(|object_type| (object_type, db_pool.get()))
+        .map(|(object_type, conn_future)| async move {
+            let mut conn = conn_future.await?;
             let table = object_type.get_table();
             let query =
                 format!("SELECT (x.data)::text AS railjson FROM {table} x WHERE x.infra_id = $1");
-            let db_pool_clone = db_pool.clone();
-            block::<_, Result<_>>(move || {
-                let mut conn = db_pool_clone.get()?;
-                Ok((
-                    object_type,
-                    sql_query(query)
-                        .bind::<BigInt, _>(infra)
-                        .load::<RailJsonData>(&mut conn)?,
-                ))
-            })
+
+            let result: Result<_> = Ok((
+                object_type,
+                sql_query(query)
+                    .bind::<BigInt, _>(infra)
+                    .load::<RailJsonData>(&mut conn)
+                    .await?,
+            ));
+            result
         })
         .collect();
 
-    let res = join_all(futures).await;
-    let res: Result<Vec<_>> = res.into_iter().map(|e| e.unwrap()).collect();
-    let res: EnumMap<_, _> = res?
+    // TODO: we could map the objects in the async loop above, so we can start processing some objects
+    // even if we didn’t get everything back yet
+    let res: EnumMap<_, _> = try_join_all(futures)
+        .await?
         .into_iter()
         .map(|(obj_type, objects)| {
             let obj_list = objects
@@ -145,28 +146,21 @@ async fn post_railjson(
     .into();
     let railjson = railjson.into_inner();
     let infra = infra.persist(railjson, db_pool.clone()).await?;
-    block(move || {
-        let mut conn = db_pool.get()?;
-        let infra = match infra.bump_version(&mut conn) {
-            Ok(infra) => infra,
-            Err(_) => {
-                return Err(InfraApiError::NotFound {
-                    infra_id: infra.id.unwrap(),
-                }
-                .into())
-            }
-        };
-        if params.generate_data {
-            let infra_cache = InfraCache::get_or_load(&mut conn, &infra_caches, &infra)?;
-            infra.refresh(&mut conn, true, &infra_cache)?;
-        }
+    let infra_id = infra.id.unwrap();
 
-        Ok(Json(PostRailjsonResponse {
-            infra: infra.id.unwrap(),
-        }))
-    })
-    .await
-    .unwrap()
+    let mut conn = db_pool.get().await?;
+    let infra = infra
+        .bump_version(&mut conn)
+        .await
+        .map_err(|_| InfraApiError::NotFound { infra_id })?;
+    if params.generate_data {
+        let infra_cache = InfraCache::get_or_load(&mut conn, &infra_caches, &infra).await?;
+        infra.refresh(&mut conn, true, &infra_cache).await?;
+    }
+
+    Ok(Json(PostRailjsonResponse {
+        infra: infra.id.unwrap(),
+    }))
 }
 
 #[cfg(test)]
