@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { get, post } from 'common/requests';
+import { post } from 'common/requests';
 // osrd Redux reducers
 import {
   updateConsolidatedSimulation,
@@ -10,10 +10,7 @@ import {
 } from 'reducers/osrdsimulation/actions';
 import { useDispatch, useSelector } from 'react-redux';
 
-import {
-  KEY_VALUES_FOR_CONSOLIDATED_SIMULATION,
-  trainscheduleURI,
-} from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
+import { KEY_VALUES_FOR_CONSOLIDATED_SIMULATION } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
 import { getConf } from 'reducers/osrdconf/selectors';
 // Generic components
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
@@ -29,11 +26,19 @@ import { STDCM_REQUEST_STATUS } from 'applications/operationalStudies/consts';
 import { updateItinerary } from 'reducers/osrdconf';
 import { useTranslation } from 'react-i18next';
 import { Spinner } from 'common/Loader';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 
 export default function StdcmRequestModal(props) {
-  const { t } = useTranslation(['translation', 'operationalStudies/manageTrainSchedule']);
+  const { t } = useTranslation([
+    'translation',
+    'operationalStudies/manageTrainSchedule',
+    'translation',
+  ]);
   const osrdconf = useSelector(getConf);
   const dispatch = useDispatch();
+
+  const [getTrainScheduleResults] =
+    osrdEditoastApi.endpoints.getTrainScheduleResults.useLazyQuery();
 
   // Theses are prop-drilled from OSRDSTDCM Component, which is conductor.
   // Remains fit with one-level limit
@@ -43,6 +48,7 @@ export default function StdcmRequestModal(props) {
   const controller = new AbortController();
 
   const stdcmURL = `/stdcm/`;
+  const timetableId = osrdconf.timetableID;
 
   // Returns a promise that will be a fetch or an axios (through react-query)
   const stdcmRequest = async () => {
@@ -52,7 +58,7 @@ export default function StdcmRequestModal(props) {
   };
 
   useEffect(() => {
-    if (currentStdcmRequestStatus === STDCM_REQUEST_STATUS.pending) {
+    if (currentStdcmRequestStatus === STDCM_REQUEST_STATUS.pending && timetableId) {
       stdcmRequest()
         .then((result) => {
           setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.success);
@@ -72,32 +78,40 @@ export default function StdcmRequestModal(props) {
             })
           );
 
-          get(`${trainscheduleURI}results/`, {
-            params: {
-              timetable_id: osrdconf.timetableID,
-              path_id: result.path.id,
-            },
-          }).then((simulationLocal) => {
-            const trains = [...simulationLocal, fakedNewTrain];
-            const consolidatedSimulation = createTrain(
-              dispatch,
-              KEY_VALUES_FOR_CONSOLIDATED_SIMULATION,
-              trains,
-              t
-            );
-            dispatch(updateConsolidatedSimulation(consolidatedSimulation));
-            dispatch(updateSimulation({ trains }));
-            dispatch(updateSelectedTrainId(fakedNewTrain.id));
+          getTrainScheduleResults({
+            timetableId,
+            pathId: result.path.id,
+          })
+            .unwrap()
+            .then((timetableTrains) => {
+              const trains = [...timetableTrains, fakedNewTrain];
+              const consolidatedSimulation = createTrain(
+                dispatch,
+                KEY_VALUES_FOR_CONSOLIDATED_SIMULATION,
+                trains,
+                t
+              );
+              dispatch(updateConsolidatedSimulation(consolidatedSimulation));
+              dispatch(updateSimulation({ trains }));
+              dispatch(updateSelectedTrainId(fakedNewTrain.id));
 
-            dispatch(
-              updateSelectedProjection({
-                id: fakedNewTrain.id,
-                path: result.path,
-              })
-            );
+              dispatch(
+                updateSelectedProjection({
+                  id: fakedNewTrain.id,
+                  path: result.path,
+                })
+              );
 
-            dispatch(updateMustRedraw(true));
-          });
+              dispatch(updateMustRedraw(true));
+            })
+            .catch(() => {
+              dispatch(
+                setFailure({
+                  name: t('operationalStudies/manageTrainSchedule:errorMessages.stdcmError'),
+                  message: t('translation:common.error'),
+                })
+              );
+            });
         })
         .catch((e) => {
           // Update simu in redux with data;
