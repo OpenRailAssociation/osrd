@@ -140,8 +140,8 @@ export interface Train {
   slopes: GradientPosition[];
   curves: RadiusPosition[];
   base: Regime;
-  eco: Regime;
-  margins: Regime;
+  eco?: Regime;
+  margins?: Regime;
   stopsCount?: number;
   isStdcm?: boolean;
   mechanicalEnergyConsumed?: MechanicalEnergyConsumedBaseEco;
@@ -213,8 +213,8 @@ export interface OsrdSimulationState {
   mustRedraw: boolean;
   positionValues: PositionValues;
   selectedProjection?: {
-    id: unknown;
-    path: unknown;
+    id: number;
+    path: number;
   };
   selectedTrainId?: number;
   speedSpaceSettings: {
