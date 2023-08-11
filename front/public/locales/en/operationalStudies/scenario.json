@@ -8,7 +8,8 @@
     "unableToCreateScenarioMessage": "Unable to create a scenario",
     "unableToLoadInfra": "Loading error, retry in progress ({{reloadCount}})",
     "unableToUpdateScenarioMessage": "Unable to update a scenario",
-    "unableToDeleteScenarioMessage": "Unable to delete a scenario"
+    "unableToDeleteScenarioMessage": "Unable to delete a scenario",
+    "unableToDuplicateATrain": "Unable to duplicate the train"
   },
   "filterPlaceholder": "Filter, tags",
   "infraLoadingState": "{{step}}/8",

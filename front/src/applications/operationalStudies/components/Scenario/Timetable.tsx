@@ -7,21 +7,18 @@ import cx from 'classnames';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useDebounce } from 'utils/helpers';
-import { trainscheduleURI } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
 import {
   updateMustRedraw,
   updateReloadTimetable,
   updateSelectedProjection,
   updateSelectedTrainId,
 } from 'reducers/osrdsimulation/actions';
-import { deleteRequest, get, post } from 'common/requests';
 import { setFailure, setSuccess } from 'reducers/main';
 import trainNameWithNum from 'applications/operationalStudies/components/ManageTrainSchedule/helpers/trainNameHelper';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import { getTimetableID, getTrainScheduleIDsToModify } from 'reducers/osrdconf/selectors';
 import { OsrdSimulationState, ScheduledTrain } from 'reducers/osrdsimulation/types';
 import { RootState } from 'reducers';
-import { Path } from 'types';
 import { updateTrainScheduleIDsToModify } from 'reducers/osrdconf';
 import { valueToInterval } from 'utils/numbers';
 import { GetTimetableByIdApiResponse, Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
@@ -69,6 +66,10 @@ export default function Timetable({
 
   const debouncedTerm = useDebounce(filter, 500) as string;
 
+  const [postTrainSchedule] =
+    osrdEditoastApi.endpoints.postTrainScheduleStandaloneSimulation.useMutation();
+  const [getTrainScheduleById] = osrdEditoastApi.endpoints.getTrainScheduleById.useLazyQuery();
+  const [deleteTrainScheduleById] = osrdEditoastApi.endpoints.deleteTrainScheduleById.useMutation();
   const [deleteTrainSchedules] = osrdEditoastApi.endpoints.deleteTrainSchedule.useMutation();
 
   const [getTimetableWithTrainSchedulesDetails] = osrdEditoastApi.useLazyGetTimetableByIdQuery();
@@ -87,27 +88,31 @@ export default function Timetable({
     getTimetable(currentTimetable);
     dispatch(updateReloadTimetable(false));
   };
-  const deleteTrain = async (train: ScheduledTrain) => {
-    try {
-      await deleteRequest(`${trainscheduleURI}${train.id}/`);
-      refreshTimeTable();
-      dispatch(
-        setSuccess({
-          title: t('timetable.trainDeleted', { name: train.train_name }),
-          text: '',
-        })
-      );
-    } catch (e) {
-      console.error(e);
-      if (e instanceof Error) {
+
+  const deleteSingleTrain = async (train: ScheduledTrain) => {
+    deleteTrainScheduleById({ id: train.id })
+      .unwrap()
+      .then(() => {
+        refreshTimeTable();
+        setMultiselectOn(false);
         dispatch(
-          setFailure({
-            name: e.name,
-            message: e.message,
+          setSuccess({
+            title: t('timetable.trainDeleted', { name: train.train_name }),
+            text: '',
           })
         );
-      }
-    }
+      })
+      .catch((e: unknown) => {
+        console.error(e);
+        if (e instanceof Error) {
+          dispatch(
+            setFailure({
+              name: e.name,
+              message: e.message,
+            })
+          );
+        }
+      });
   };
 
   const duplicateTrain = async (train: ScheduledTrain) => {
@@ -115,46 +120,60 @@ export default function Timetable({
     const trainName = `${train.train_name} (${t('timetable.copy')})`;
     const trainDelta = 5;
     const trainCount = 1;
-    const trainStep = 5;
+    const actualTrainCount = 1;
 
-    const trainDetail = await get(`${trainscheduleURI}${train.id}/`);
-
-    const params: { timetable: number; path: Path; schedules: ScheduledTrain[] } = {
-      timetable: trainDetail.timetable,
-      path: trainDetail.path,
-      schedules: [],
-    };
-    let actualTrainCount = 1;
-    for (let nb = 1; nb <= trainCount; nb += 1) {
-      const newTrainDelta = 60 * trainDelta * nb;
-      const newOriginTime = train.departure_time + newTrainDelta;
-      const newTrainName = trainNameWithNum(trainName, actualTrainCount, trainCount);
-      params.schedules.push({
-        ...trainDetail,
-        departure_time: newOriginTime,
-        train_name: newTrainName,
+    const trainDetail = await getTrainScheduleById({ id: train.id })
+      .unwrap()
+      .catch((e: unknown) => {
+        if (e instanceof Error) {
+          dispatch(
+            setFailure({
+              name: e.name,
+              message: e.message,
+            })
+          );
+        }
       });
-      actualTrainCount += trainStep;
-    }
-    try {
-      await post(`${trainscheduleURI}standalone_simulation/`, params);
-      refreshTimeTable();
-      dispatch(
-        setSuccess({
-          title: t('timetable.trainAdded'),
-          text: `${trainName}`,
+
+    if (trainDetail) {
+      const newTrain = {
+        ...trainDetail,
+        rolling_stock: trainDetail.rolling_stock_id,
+        timetable: trainDetail.timetable_id,
+        departure_time: train.departure_time + 60 * trainDelta,
+        train_name: trainNameWithNum(trainName, actualTrainCount, trainCount),
+      };
+      await postTrainSchedule({
+        body: {
+          timetable: trainDetail.timetable_id,
+          path: trainDetail.path_id,
+          schedules: [newTrain],
+        },
+      })
+        .unwrap()
+        .then(() => {
+          refreshTimeTable();
+          dispatch(
+            setSuccess({
+              title: t('timetable.trainAdded'),
+              text: `${trainName}`,
+            })
+          );
         })
-      );
-    } catch (e) {
-      console.error(e);
-      if (e instanceof Error) {
-        dispatch(
-          setFailure({
-            name: e.name,
-            message: e.message,
-          })
-        );
-      }
+        .catch((e: unknown) => {
+          console.error(e);
+          const error =
+            e instanceof Error
+              ? {
+                  name: e.name,
+                  message: e.message,
+                }
+              : {
+                  name: t('errorMessages.error'),
+                  message: t('errorMessages.unableToDuplicateATrain'),
+                };
+          dispatch(setFailure(error));
+        });
     }
   };
 
@@ -437,7 +456,7 @@ export default function Timetable({
                     )}
                     idx={idx}
                     changeSelectedTrainId={changeSelectedTrainId}
-                    deleteTrain={deleteTrain}
+                    deleteTrain={deleteSingleTrain}
                     duplicateTrain={duplicateTrain}
                     selectPathProjection={selectPathProjection}
                     setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}

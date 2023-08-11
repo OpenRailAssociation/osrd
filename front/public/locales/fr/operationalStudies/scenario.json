@@ -8,7 +8,8 @@
     "unableToCreateScenarioMessage": "Impossible de créer un scénario",
     "unableToLoadInfra": "Erreur de chargement, nouvelle tentative en cours ({{reloadCount}})",
     "unableToUpdateScenarioMessage": "Impossible de mettre à jour le scénario",
-    "unableToDeleteScenarioMessage": "Impossible de supprimer le scénario"
+    "unableToDeleteScenarioMessage": "Impossible de supprimer le scénario",
+    "unableToDuplicateATrain": "Impossible de dupliquer le train"
   },
   "filterPlaceholder": "Filtre, étiquettes",
   "infraLoadingState": "{{step}}/8",
