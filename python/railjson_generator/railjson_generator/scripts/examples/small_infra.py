@@ -608,7 +608,7 @@ lower_pantograph_section_3.add_track_range(ta6, 8500, 8600, Direction.START_TO_S
 # ================================
 
 # Build infra
-infra = builder.build()
+infra = builder.build(progressive_release=False)
 
 # Save railjson
 infra.save(OUTPUT_DIR / "infra.json")
