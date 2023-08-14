@@ -1,8 +1,10 @@
 use actix_web::{error::JsonPayloadError, http::StatusCode, HttpResponse, ResponseError};
+use colored::Colorize;
 use diesel::result::Error as DieselError;
 use redis::RedisError;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
+use std::backtrace::Backtrace;
 use std::collections::HashMap;
 use std::result::Result as StdResult;
 use std::{
@@ -77,6 +79,12 @@ impl ResponseError for InternalError {
     }
 
     fn error_response(&self) -> HttpResponse {
+        log::error!(
+            "[{}] {}: {}",
+            self.error_type.bold(),
+            self.message,
+            Backtrace::capture() // won't log unless RUST_BACKTRACE=1
+        );
         HttpResponse::build(self.status).json(self)
     }
 }

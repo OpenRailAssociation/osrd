@@ -12,6 +12,7 @@ use std::marker::PhantomData;
 
 use crate::error::Result;
 use async_trait::async_trait;
+use colored::{ColoredString, Colorize};
 use editoast_derive::EditoastError;
 pub use http_client::{HttpClient, HttpClientBuilder};
 use log::info;
@@ -21,6 +22,19 @@ use serde_derive::Deserialize;
 use thiserror::Error;
 
 const MAX_RETRIES: u8 = 5;
+
+fn colored_method(method: &reqwest::Method) -> ColoredString {
+    let m = method.as_str();
+    match *method {
+        reqwest::Method::GET => m.green(),
+        reqwest::Method::POST => m.yellow(),
+        reqwest::Method::PUT => m.blue(),
+        reqwest::Method::PATCH => m.magenta(),
+        reqwest::Method::DELETE => m.red(),
+        _ => m.normal(),
+    }
+    .bold()
+}
 
 #[derive(Debug, Clone)]
 pub enum CoreClient {
@@ -51,6 +65,9 @@ impl CoreClient {
         path: &str,
         body: Option<&B>,
     ) -> Result<R::Response> {
+        let method_s = colored_method(&method);
+        log::info!(target: "editoast::coreclient", "{method_s} {path}");
+        log::debug!(target: "editoast::coreclient", "Request content: {body}", body = body.and_then(|b| serde_json::to_string_pretty(b).ok()).unwrap_or_default());
         match self {
             CoreClient::Direct(client) => {
                 let mut i_try = 0;
@@ -84,8 +101,11 @@ impl CoreClient {
                             msg: err.to_string(),
                         })?;
                 if status.is_success() {
+                    log::info!(target: "editoast::coreclient", "{method_s} {path} {status}", status = status.to_string().bold().green());
                     return R::from_bytes(bytes.as_ref());
                 }
+
+                log::error!(target: "editoast::coreclient", "{method_s} {path} {status}", status = status.to_string().bold().red());
                 // We try to deserialize the response as the standard Core error format
                 // If that fails we try to return a generic error containing the raw error
                 let core_error = <Json<CoreErrorPayload> as CoreResponse>::from_bytes(
