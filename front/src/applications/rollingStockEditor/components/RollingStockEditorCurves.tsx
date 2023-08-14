@@ -118,7 +118,7 @@ export default function RollingStockEditorCurves(props: {
   };
 
   return (
-    <div className="d-flex rollingstock-editor-curves pt-3">
+    <div className="d-flex rollingstock-editor-curves p-3">
       <div className="rollingstock-editor-spreadsheet pl-1">
         <Spreadsheet
           data={curves}

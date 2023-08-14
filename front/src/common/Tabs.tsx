@@ -6,7 +6,7 @@ type TabComponentProps = {
   content: React.ReactNode;
 };
 
-type TabProps = {
+export type TabProps = {
   label: string;
   title?: React.ReactNode;
   withWarning?: boolean;

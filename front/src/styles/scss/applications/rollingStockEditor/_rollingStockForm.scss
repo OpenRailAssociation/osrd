@@ -76,6 +76,16 @@
       }
     }
     &-container {
+      .tab-content {
+        background-color: var(--white);
+        border-radius: 0.5rem;
+      }
+      .tab-pane {
+        padding-top: 1rem;
+      }
+      .tabs {
+        margin-bottom: 1rem;
+      }
       overflow-y: auto;
       width: 100%;
       @media screen and (min-width: 767px) {
@@ -142,6 +152,9 @@
     .invalid-feedback {
       display: block;
       font-size: 0.7rem;
+    }
+    label {
+      white-space: normal;
     }
   }
 
