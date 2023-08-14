@@ -1,13 +1,12 @@
 use crate::diesel::{QueryDsl, RunQueryDsl};
 use crate::error::Result;
 use crate::models::electrical_profile::{ElectricalProfileSet, LightElectricalProfileSet};
-use crate::models::Create;
+use crate::models::{Create, Retrieve};
 use crate::schema::electrical_profiles::ElectricalProfileSetData;
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
 use actix_web::web::{self, block, Data, Json, Path, Query};
 use actix_web::{get, post};
-use diesel::result::Error as DieselError;
 use diesel::PgConnection;
 use diesel_json::Json as DieselJson;
 use editoast_derive::EditoastError;
@@ -42,14 +41,13 @@ async fn get(
     db_pool: Data<DbPool>,
     electrical_profile_set: Path<i64>,
 ) -> Result<Json<ElectricalProfileSetData>> {
-    let electrical_profile_set = electrical_profile_set.into_inner();
-    block(move || {
-        let mut conn = db_pool.get()?;
-        let ep_set = ElectricalProfileSet::retrieve(&mut conn, electrical_profile_set)?;
-        Ok(Json(ep_set.data.unwrap().0))
-    })
-    .await
-    .unwrap()
+    let electrical_profile_set_id = electrical_profile_set.into_inner();
+    let ep_set = ElectricalProfileSet::retrieve(db_pool, electrical_profile_set_id)
+        .await?
+        .ok_or(ElectricalProfilesError::NotFound {
+            electrical_profile_set_id,
+        })?;
+    Ok(Json(ep_set.data.unwrap().0))
 }
 
 #[derive(Deserialize)]
@@ -78,29 +76,16 @@ async fn get_level_order(
     db_pool: Data<DbPool>,
     electrical_profile_set: Path<i64>,
 ) -> Result<Json<HashMap<String, Vec<String>>>> {
-    let electrical_profile_set = electrical_profile_set.into_inner();
-    block(move || {
-        let mut conn = db_pool.get()?;
-        let ep_set = ElectricalProfileSet::retrieve(&mut conn, electrical_profile_set)?;
-        Ok(Json(ep_set.data.unwrap().0.level_order))
-    })
-    .await
-    .unwrap()
+    let electrical_profile_set_id = electrical_profile_set.into_inner();
+    let ep_set = ElectricalProfileSet::retrieve(db_pool, electrical_profile_set_id)
+        .await?
+        .ok_or(ElectricalProfilesError::NotFound {
+            electrical_profile_set_id,
+        })?;
+    Ok(Json(ep_set.data.unwrap().0.level_order))
 }
 
 impl ElectricalProfileSet {
-    pub fn retrieve(conn: &mut PgConnection, ep_set_id: i64) -> Result<ElectricalProfileSet> {
-        use crate::tables::osrd_infra_electricalprofileset::dsl::*;
-        match osrd_infra_electricalprofileset.find(ep_set_id).first(conn) {
-            Ok(ep_set) => Ok(ep_set),
-            Err(DieselError::NotFound) => Err(ElectricalProfilesError::NotFound {
-                electical_profile_set_id: ep_set_id,
-            }
-            .into()),
-            Err(err) => Err(err.into()),
-        }
-    }
-
     fn list_light(conn: &mut PgConnection) -> Result<Vec<LightElectricalProfileSet>> {
         use crate::tables::osrd_infra_electricalprofileset::dsl::*;
         Ok(osrd_infra_electricalprofileset
@@ -113,17 +98,20 @@ impl ElectricalProfileSet {
 #[editoast_error(base_id = "electrical_profiles")]
 pub enum ElectricalProfilesError {
     /// Couldn't find the electrical profile set with the given id
-    #[error("Electrical Profile Set '{electical_profile_set_id}', could not be found")]
+    #[error("Electrical Profile Set '{electrical_profile_set_id}', could not be found")]
     #[editoast_error(status = 404)]
-    NotFound { electical_profile_set_id: i64 },
+    NotFound { electrical_profile_set_id: i64 },
 }
 
 #[cfg(test)]
 mod tests {
     use super::ElectricalProfileSet;
     use crate::client::PostgresConfig;
+    use crate::error::EditoastError;
     use crate::fixtures::tests::{db_pool, TestFixture};
+    use crate::models::Retrieve;
     use crate::schema::electrical_profiles::ElectricalProfile;
+    use crate::views::electrical_profiles::ElectricalProfilesError;
     use crate::views::tests::create_test_service;
     use actix_http::StatusCode;
     use actix_web::http::header::ContentType;
@@ -192,18 +180,20 @@ mod tests {
     #[test]
     fn test_query_retrieve() {
         test_ep_set_transaction(|conn| {
-            let ep_set_data = ElectricalProfileSet::retrieve(conn, 1).unwrap();
-            assert_eq!(
-                ep_set_data.data.unwrap().0.levels.first().unwrap().value,
-                "A"
-            );
+            let ep_set = ElectricalProfileSet::retrieve_conn(conn, 1).unwrap();
+            let ep_set_data = ep_set.unwrap().data.unwrap();
+            assert_eq!(ep_set_data.0.levels.first().unwrap().value, "A");
         });
     }
 
     #[test]
     fn test_query_retrieve_not_found() {
         test_ep_set_transaction(|conn| {
-            let ep_set = ElectricalProfileSet::retrieve(conn, 3);
+            let ep_set = ElectricalProfileSet::retrieve_conn(conn, 3).unwrap().ok_or(
+                ElectricalProfilesError::NotFound {
+                    electrical_profile_set_id: 3,
+                },
+            );
             assert_eq!(ep_set.unwrap_err().get_status(), StatusCode::NOT_FOUND);
         });
     }
