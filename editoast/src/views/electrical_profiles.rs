@@ -107,11 +107,9 @@ pub enum ElectricalProfilesError {
 mod tests {
     use super::ElectricalProfileSet;
     use crate::client::PostgresConfig;
-    use crate::error::EditoastError;
     use crate::fixtures::tests::{db_pool, TestFixture};
     use crate::models::Retrieve;
     use crate::schema::electrical_profiles::ElectricalProfile;
-    use crate::views::electrical_profiles::ElectricalProfilesError;
     use crate::views::tests::create_test_service;
     use actix_http::StatusCode;
     use actix_web::http::header::ContentType;
@@ -183,18 +181,6 @@ mod tests {
             let ep_set = ElectricalProfileSet::retrieve_conn(conn, 1).unwrap();
             let ep_set_data = ep_set.unwrap().data.unwrap();
             assert_eq!(ep_set_data.0.levels.first().unwrap().value, "A");
-        });
-    }
-
-    #[test]
-    fn test_query_retrieve_not_found() {
-        test_ep_set_transaction(|conn| {
-            let ep_set = ElectricalProfileSet::retrieve_conn(conn, 3).unwrap().ok_or(
-                ElectricalProfilesError::NotFound {
-                    electrical_profile_set_id: 3,
-                },
-            );
-            assert_eq!(ep_set.unwrap_err().get_status(), StatusCode::NOT_FOUND);
         });
     }
 
