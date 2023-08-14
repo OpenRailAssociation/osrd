@@ -80,6 +80,10 @@
   "startupAcceleration": "Accélération au démarrage",
   "startupTime": "Durée de démarrage",
   "subseries": "Sous-série",
+  "tabs": {
+    "rollingStockCurves": "Courbes effort-vitesse",
+    "rollingStockDetails": "Caractéristiques générales"
+  },
   "thermal": "Thermique",
   "title": "Générateur de composition matériel train",
   "tractionMode": "Mode de traction",

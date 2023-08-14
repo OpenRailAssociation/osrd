@@ -4,6 +4,7 @@ import { RollingStock, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { useDispatch } from 'react-redux';
 import { setFailure, setSuccess } from 'reducers/main';
+import Tabs, { TabProps } from 'common/Tabs';
 import RollingStockEditorFormModal from './RollingStockEditorFormModal';
 import {
   RollingStockEditorParameter,
@@ -32,7 +33,11 @@ const RollingStockEditorForm = ({
   isAdding,
 }: RollingStockParametersProps) => {
   const dispatch = useDispatch();
-  const { t } = useTranslation(['rollingstock', 'translation']);
+  const { t } = useTranslation([
+    'rollingstock',
+    'translation',
+    'operationalStudies/manageTrainSchedule',
+  ]);
   const { openModal } = useModal();
   const [postRollingstock] = osrdEditoastApi.usePostRollingStockMutation();
   const [patchRollingStock] = osrdEditoastApi.usePatchRollingStockByIdMutation();
@@ -176,36 +181,56 @@ const RollingStockEditorForm = ({
     }
   }, [rollingStockData]);
 
+  const tabRollingStockDetails: TabProps = {
+    title: t('tabs.rollingStockDetails'),
+    withWarning: false,
+    label: t('tabs.rollingStockDetails'),
+    content: (
+      <>
+        <RollingStockEditorMetadataForm
+          rollingStockValues={rollingStockValues}
+          setRollingStockValues={setRollingStockValues}
+        />
+
+        <RollingStockEditorParameterForm
+          optionValue={optionValue}
+          rollingStockValues={rollingStockValues}
+          setOptionValue={setOptionValue}
+          setRollingStockValues={setRollingStockValues}
+        />
+      </>
+    ),
+  };
+
+  const tabRollingStockCurves: TabProps = {
+    title: t('tabs.rollingStockCurves'),
+    withWarning: false, // à changer après ajout des sélecteurs
+    label: t('tabs.rollingStockCurves'),
+    content: (
+      <>
+        {rollingStockData && !isCurrentEffortCurveDefault && (
+          <RollingStockEditorCurves
+            data={rollingStockData}
+            currentRsEffortCurve={currentRsEffortCurve}
+            setCurrentRsEffortCurve={setCurrentRsEffortCurve}
+          />
+        )}
+        {!rollingStockData && (
+          <RollingStockEditorCurves
+            currentRsEffortCurve={currentRsEffortCurve}
+            setCurrentRsEffortCurve={setCurrentRsEffortCurve}
+          />
+        )}
+      </>
+    ),
+  };
+
   return (
     <form
-      className="d-flex flex-column form-control rollingstock-editor-form bg-white"
+      className="d-flex flex-column form-control rollingstock-editor-form p-0"
       onSubmit={(e) => submit(e, rollingStockValues)}
     >
-      <RollingStockEditorMetadataForm
-        rollingStockValues={rollingStockValues}
-        setRollingStockValues={setRollingStockValues}
-      />
-
-      <RollingStockEditorParameterForm
-        optionValue={optionValue}
-        rollingStockValues={rollingStockValues}
-        setOptionValue={setOptionValue}
-        setRollingStockValues={setRollingStockValues}
-      />
-
-      {rollingStockData && !isCurrentEffortCurveDefault && (
-        <RollingStockEditorCurves
-          data={rollingStockData}
-          currentRsEffortCurve={currentRsEffortCurve}
-          setCurrentRsEffortCurve={setCurrentRsEffortCurve}
-        />
-      )}
-      {!rollingStockData && (
-        <RollingStockEditorCurves
-          currentRsEffortCurve={currentRsEffortCurve}
-          setCurrentRsEffortCurve={setCurrentRsEffortCurve}
-        />
-      )}
+      <Tabs pills fullWidth tabs={[tabRollingStockDetails, tabRollingStockCurves]} />
       <div className="d-flex justify-content-between align-items-center">
         <div className="ml-auto my-2 pr-3 rollingstock-editor-submit">
           <button

@@ -54,15 +54,15 @@ export const RollingStockEditorMetadataForm = ({
   rollingStockValues,
   setRollingStockValues,
 }: RollingStockMetadataFormProps) => (
-  <div className="d-lg-flex justify-content-center mb-4 px-1">
-    <div className="col-lg-4 mr-4 rollingstock-editor-input-container">
+  <div className="d-lg-flex justify-content-center mb-2 px-1">
+    <div className="col-lg-4 rollingstock-editor-input-container">
       <RollingStockEditorMetadataFormColumn
         formSide="left"
         rollingStockValues={rollingStockValues}
         setRollingStockValues={setRollingStockValues}
       />
     </div>
-    <div className="col-lg-4 mr-4 rollingstock-editor-input-container">
+    <div className="col-lg-4 rollingstock-editor-input-container">
       <RollingStockEditorMetadataFormColumn
         formSide="middle"
         rollingStockValues={rollingStockValues}
@@ -136,7 +136,7 @@ const RollingStockEditorParameterFormColumn = ({
           <div
             className={`${
               property.title === 'mass' && 'd-flex align-items-center'
-            } form-control-container mb-4`}
+            } form-control-container mb-2`}
           >
             <InputGroupSNCF
               id={property.title}
@@ -228,8 +228,8 @@ export const RollingStockEditorParameterForm = ({
 }: RollingStockEditorParameterFormProps) => {
   const { t } = useTranslation(['rollingstock', 'translation']);
   return (
-    <div className="d-lg-flex justify-content-center px-1">
-      <div className="col-lg-4 mr-4 rollingstock-editor-input-container">
+    <div className="d-lg-flex justify-content-center px-1 pb-3">
+      <div className="col-lg-4 rollingstock-editor-input-container">
         <RollingStockEditorParameterFormColumn
           optionValue={optionValue}
           formSide="left"
@@ -238,7 +238,7 @@ export const RollingStockEditorParameterForm = ({
           setRollingStockValues={setRollingStockValues}
         />
       </div>
-      <div className="col-lg-4 mr-4 rollingstock-editor-input-container">
+      <div className="col-lg-4 rollingstock-editor-input-container">
         <RollingStockEditorParameterFormColumn
           optionValue={optionValue}
           formSide="middle"

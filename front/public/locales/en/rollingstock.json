@@ -79,6 +79,10 @@
   "startupAcceleration": "Startup acceleration (m/s²)",
   "startupTime": "Startup duration (s)",
   "subseries": "Subseries",
+  "tabs": {
+    "rollingStockCurves": "Speed-effort curves",
+    "rollingStockDetails": "General specifications"
+  },
   "thermal": "Combustion engine",
   "title": "Rollingstock composition generator",
   "tractionMode": "Traction mode",
