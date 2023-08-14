@@ -1,6 +1,7 @@
 use crate::diesel::{QueryDsl, RunQueryDsl};
 use crate::error::Result;
 use crate::models::electrical_profile::{ElectricalProfileSet, LightElectricalProfileSet};
+use crate::models::Create;
 use crate::schema::electrical_profiles::ElectricalProfileSetData;
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
@@ -98,18 +99,6 @@ impl ElectricalProfileSet {
             .into()),
             Err(err) => Err(err.into()),
         }
-    }
-
-    pub async fn create(self, db_pool: Data<DbPool>) -> Result<ElectricalProfileSet> {
-        block(move || {
-            use crate::tables::osrd_infra_electricalprofileset::dsl::*;
-            let mut conn = db_pool.get()?;
-            Ok(diesel::insert_into(osrd_infra_electricalprofileset)
-                .values(self)
-                .get_result(&mut conn)?)
-        })
-        .await
-        .unwrap()
     }
 
     fn list_light(conn: &mut PgConnection) -> Result<Vec<LightElectricalProfileSet>> {

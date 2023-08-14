@@ -17,7 +17,7 @@ mod views;
 use crate::core::CoreClient;
 use crate::error::InternalError;
 use crate::map::redis_utils::RedisClient;
-use crate::models::Infra;
+use crate::models::{Create, Infra};
 use crate::schema::electrical_profiles::ElectricalProfileSetData;
 use crate::schema::RailJson;
 use crate::views::infra::InfraForm;
