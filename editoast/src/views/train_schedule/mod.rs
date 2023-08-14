@@ -36,6 +36,8 @@ pub mod projection;
 pub mod simulation_report;
 use self::projection::Projection;
 
+use super::electrical_profiles::ElectricalProfilesError;
+
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "train_schedule")]
 pub enum TrainScheduleError {
@@ -530,10 +532,13 @@ async fn create_backend_request_payload(
         })?;
 
     let electrical_profile_set = match scenario.electrical_profile_set_id {
-        Some(Some(id)) => {
-            let mut conn = db_pool.get()?;
-            let eps = ElectricalProfileSet::retrieve(&mut conn, id)?;
-            eps.name
+        Some(Some(electrical_profile_set_id)) => {
+            ElectricalProfileSet::retrieve(db_pool, electrical_profile_set_id)
+                .await?
+                .ok_or(ElectricalProfilesError::NotFound {
+                    electrical_profile_set_id,
+                })?
+                .name
         }
         _ => None,
     };
