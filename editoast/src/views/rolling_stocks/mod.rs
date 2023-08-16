@@ -455,8 +455,7 @@ pub mod tests {
         UsageResponse,
     };
     use crate::fixtures::tests::{
-        db_pool, fast_rolling_stock, other_rolling_stock, train_schedule_with_scenario,
-        TestFixture, TrainScheduleFixtureSet,
+        db_pool, fast_rolling_stock, other_rolling_stock, train_schedule_with_scenario, TestFixture,
     };
     use crate::models::rolling_stock::tests::{
         get_fast_rolling_stock, get_invalid_effort_curves, get_other_rolling_stock,
@@ -768,11 +767,9 @@ pub mod tests {
     /// Initial conditions: one `TrainSchedule` using the given `rolling_stock_id`.
     /// It should return the `TrainSchedule`, `project`/`study`/`scenario` ids/names
     #[rstest]
-    async fn check_usage_one_train_schedule(
-        #[future] train_schedule_with_scenario: TrainScheduleFixtureSet,
-    ) {
+    async fn check_usage_one_train_schedule() {
         let app = create_test_service().await;
-        let train_schedule_with_scenario = train_schedule_with_scenario.await;
+        let train_schedule_with_scenario = train_schedule_with_scenario().await;
         let rolling_stock_id = train_schedule_with_scenario.rolling_stock.id();
         let response = call_service(
             &app,
@@ -818,11 +815,9 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn delete_used_rolling_stock_should_fail(
-        #[future] train_schedule_with_scenario: TrainScheduleFixtureSet,
-    ) {
+    async fn delete_used_rolling_stock_should_fail() {
         let app = create_test_service().await;
-        let train_schedule_with_scenario = train_schedule_with_scenario.await;
+        let train_schedule_with_scenario = train_schedule_with_scenario().await;
         let rolling_stock_id = train_schedule_with_scenario.rolling_stock.id();
         let response = call_service(&app, rolling_stock_delete_request(rolling_stock_id)).await;
 
@@ -867,11 +862,9 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn forcefully_delete_used_rolling_stock(
-        #[future] train_schedule_with_scenario: TrainScheduleFixtureSet,
-    ) {
+    async fn forcefully_delete_used_rolling_stock() {
         let app = create_test_service().await;
-        let train_schedule_with_scenario = train_schedule_with_scenario.await;
+        let train_schedule_with_scenario = train_schedule_with_scenario().await;
         let rolling_stock_id = train_schedule_with_scenario.rolling_stock.id();
         let response = call_service(
             &app,

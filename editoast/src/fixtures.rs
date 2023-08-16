@@ -141,30 +141,25 @@ pub mod tests {
     }
 
     #[fixture]
-    pub async fn train_schedule_with_scenario(
-        db_pool: Data<DbPool>,
-        #[future] pathfinding: TestFixture<Pathfinding>,
-        #[future] fast_rolling_stock: TestFixture<RollingStockModel>,
-        #[future] scenario_fixture_set: ScenarioFixtureSet,
-    ) -> TrainScheduleFixtureSet {
+    pub async fn train_schedule_with_scenario() -> TrainScheduleFixtureSet {
         let ScenarioFixtureSet {
             project,
             study,
             scenario,
             timetable,
             infra,
-        } = scenario_fixture_set.await;
+        } = scenario_fixture_set().await;
 
-        let pathfinding = pathfinding.await;
-        let rolling_stock = fast_rolling_stock.await;
+        let pathfinding = pathfinding(db_pool()).await;
+        let rolling_stock = fast_rolling_stock(db_pool()).await;
         let ts_model = make_train_schedule(
-            db_pool.clone(),
+            db_pool().clone(),
             pathfinding.id(),
             timetable.id(),
             rolling_stock.id(),
         )
         .await;
-        let train_schedule: TestFixture<TrainSchedule> = TestFixture::new(ts_model, db_pool);
+        let train_schedule: TestFixture<TrainSchedule> = TestFixture::new(ts_model, db_pool());
         TrainScheduleFixtureSet {
             train_schedule,
             project,
@@ -383,7 +378,6 @@ pub mod tests {
     pub async fn train_with_simulation_output_fixture_set(
         db_pool: Data<DbPool>,
         #[future] pathfinding: TestFixture<Pathfinding>,
-        #[future] scenario_fixture_set: ScenarioFixtureSet,
         #[future] fast_rolling_stock: TestFixture<RollingStockModel>,
     ) -> TrainScheduleWithSimulationOutputFixtureSet {
         let ScenarioFixtureSet {
@@ -392,7 +386,7 @@ pub mod tests {
             scenario,
             timetable,
             infra,
-        } = scenario_fixture_set.await;
+        } = scenario_fixture_set().await;
         let pathfinding = pathfinding.await;
         let rolling_stock = fast_rolling_stock.await;
         let train_schedule = make_train_schedule(

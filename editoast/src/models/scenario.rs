@@ -194,11 +194,8 @@ pub mod test {
     use rstest::rstest;
 
     #[rstest]
-    async fn create_delete_scenario(
-        #[future] scenario_fixture_set: ScenarioFixtureSet,
-        db_pool: Data<DbPool>,
-    ) {
-        let ScenarioFixtureSet { scenario, .. } = scenario_fixture_set.await;
+    async fn create_delete_scenario(db_pool: Data<DbPool>) {
+        let ScenarioFixtureSet { scenario, .. } = scenario_fixture_set().await;
 
         // Delete the scenario
         Scenario::delete(db_pool.clone(), scenario.id())
@@ -212,8 +209,8 @@ pub mod test {
     }
 
     #[rstest]
-    async fn get_study(#[future] scenario_fixture_set: ScenarioFixtureSet, db_pool: Data<DbPool>) {
-        let ScenarioFixtureSet { study, .. } = scenario_fixture_set.await;
+    async fn get_study(db_pool: Data<DbPool>) {
+        let ScenarioFixtureSet { study, .. } = scenario_fixture_set().await;
 
         // Get a scenario
         assert!(Scenario::retrieve(db_pool.clone(), study.id())
@@ -230,16 +227,13 @@ pub mod test {
     }
 
     #[rstest]
-    async fn sort_scenario(
-        #[future] scenario_fixture_set: ScenarioFixtureSet,
-        db_pool: Data<DbPool>,
-    ) {
+    async fn sort_scenario(db_pool: Data<DbPool>) {
         let ScenarioFixtureSet {
             scenario,
             study,
             timetable,
             ..
-        } = scenario_fixture_set.await;
+        } = scenario_fixture_set().await;
 
         // Create second timetable
         let timetable_2 = TestFixture::create(
