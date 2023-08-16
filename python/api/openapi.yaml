@@ -2162,6 +2162,13 @@ components:
           allOf:
             - $ref: "#/components/schemas/TrainScheduleOptions"
           nullable: true
+        power_restriction_ranges:
+          description: A list of ranges along the train path where power restrictions apply.
+          type: array
+          items:
+            $ref: "#/components/schemas/PowerRestrictionRange"
+          nullable: true
+
     TrainScheduleOptions:
       description: Options for the standalone simulation
       type: object

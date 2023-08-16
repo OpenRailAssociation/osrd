@@ -121,6 +121,10 @@ components:
         mode:
           example: '25000'
           type: string
+      required:
+      - begin
+      - end
+      - mode
       type: object
     Comfort:
       default: STANDARD
@@ -3898,8 +3902,15 @@ paths:
                           enum:
                           - CatenaryOverlap
                           type: string
+                      required:
+                      - type
+                      - catenary_id
+                      - overlapping_ranges
                       type: object
                     type: array
+                required:
+                - catenary_ranges
+                - warnings
                 type: object
           description: A list of ranges associated to catenary modes. When a catenary overlapping another is found, a warning is added to the list.
       summary: Retrieve the modes of catenaries along a path
