@@ -340,8 +340,7 @@ export function trainWithDepartureAndArrivalTimes(train: Train, dragOffset = 0) 
   };
 
   return {
-    id: train.id,
-    labels: train.labels,
+    ...train,
     train_name: train.name,
     path_id: train.path,
     path_length: last(train.base.stops)?.position,

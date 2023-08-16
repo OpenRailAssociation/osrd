@@ -223,7 +223,7 @@ export interface OsrdSimulationState {
   signalBase: typeof SIGNAL_BASE_DEFAULT;
   timePosition: TimeString;
   consolidatedSimulation: SimulationTrain[];
-  departureArrivalTimes: Array<ScheduledTrain>;
+  departureArrivalTimes: Train[];
   simulation: {
     past: SimulationHistory;
     present: SimulationSnapshot;
