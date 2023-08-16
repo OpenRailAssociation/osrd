@@ -49,6 +49,15 @@ pub fn infra_model(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 
                 futures::future::try_join_all(futures).await.map(|_| Ok(()))?
             }
+
+            pub async fn persist_batch_pool(
+                values: &[Self],
+                infrastructure_id: i64,
+                db_pool: actix_web::web::Data<crate::DbPool>,
+            ) -> crate::error::Result<()> {
+                let mut conn = db_pool.get().await?;
+                Self::persist_batch(values, infrastructure_id, &mut conn).await
+            }
         }
     };
 
