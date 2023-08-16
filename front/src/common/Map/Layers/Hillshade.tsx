@@ -7,11 +7,10 @@ import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 interface HillshadeProps {
   mapStyle: string;
   layerOrder?: number;
+  display?: boolean;
 }
 
-function Hillshade(props: HillshadeProps) {
-  const { mapStyle, layerOrder } = props;
-
+function Hillshade({ mapStyle, layerOrder, display = true }: HillshadeProps) {
   const hillshadeParams: LayerProps = {
     id: 'osm/hillshade',
     source: 'hillshade',
@@ -23,10 +22,12 @@ function Hillshade(props: HillshadeProps) {
     <Source
       id="hillshade"
       type="raster-dem"
-      url="https://osm.osrd.fr/data/hillshade.json"
-      source-layer="transportation"
+      encoding="terrarium"
+      tiles={['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png']}
+      tileSize={256}
+      maxzoom={12}
     >
-      <OrderedLayer {...hillshadeParams} layerOrder={layerOrder} />
+      {display && <OrderedLayer {...hillshadeParams} layerOrder={layerOrder} />}
     </Source>
   );
 }

@@ -23,6 +23,7 @@ export const UPDATE_FEATURE_INFO_HOVER = 'map/UPDATE_FEATURE_INFO_HOVER';
 export const UPDATE_FEATURE_INFO_CLICK = 'map/UPDATE_FEATURE_INFO_CLICK';
 export const UPDATE_LAYERS_SETTINGS = 'osrdconf/UPDATE_LAYERS_SETTINGS';
 export const UPDATE_SIGNALS_SETTINGS = 'osrdconf/UPDATE_SIGNALS_SETTINGS';
+export const UPDATE_TERRAIN_3D_EXAGGERATION = 'osrdconf/UPDATE_TERRAIN_3D_EXAGGERATION';
 
 const transformRequest: MapProps['transformRequest'] = (url, resourceType) =>
   helperTransformRequest(url as string, resourceType as string, MAP_URL as string);
@@ -48,6 +49,7 @@ export interface MapState {
   showIGNCadastre: boolean;
   showOSM: boolean;
   showOSMtracksections: boolean;
+  terrain3DExagerration: number;
   viewport: Viewport;
   featureInfoHoverID: unknown;
   featureInfoClickID: unknown;
@@ -87,6 +89,7 @@ export const initialState: MapState = {
   showIGNCadastre: false,
   showOSM: true,
   showOSMtracksections: false,
+  terrain3DExagerration: 1,
   viewport: {
     latitude: 48.32,
     longitude: 2.44,
@@ -176,6 +179,9 @@ export default function reducer(inputState: MapState | undefined, action: AnyAct
         break;
       case UPDATE_SIGNALS_SETTINGS:
         draft.signalsSettings = action.signalsSettings;
+        break;
+      case UPDATE_TERRAIN_3D_EXAGGERATION:
+        draft.terrain3DExagerration = action.terrain3DExagerration;
         break;
     }
   });
@@ -276,6 +282,17 @@ export function updateShowOSMtracksections(showOSMtracksections: MapState['showO
     dispatch({
       type: UPDATE_SHOW_OSM_TRACKSECTIONS,
       showOSMtracksections,
+    });
+  };
+}
+
+export function updateTerrain3DExaggeration(
+  terrain3DExagerration: MapState['terrain3DExagerration']
+) {
+  return (dispatch: Dispatch) => {
+    dispatch({
+      type: UPDATE_TERRAIN_3D_EXAGGERATION,
+      terrain3DExagerration,
     });
   };
 }

@@ -46,12 +46,15 @@ import IGN_SCAN25 from 'common/Map/Layers/IGN_SCAN25';
 import IGN_CADASTRE from 'common/Map/Layers/IGN_CADASTRE';
 import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
 import LineSearchLayer from 'common/Map/Layers/LineSearchLayer';
+import Terrain from 'common/Map/Layers/Terrain';
+import { getTerrain3DExaggeration } from 'reducers/map/selectors';
 import { MapLayerMouseEvent } from '../../../../types';
 import { getMapMouseEventNearestFeature } from '../../../../utils/mapboxHelper';
 
 function Map() {
   const { viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM, layersSettings } =
     useSelector((state: RootState) => state.map);
+  const terrain3DExagerration = useSelector(getTerrain3DExaggeration);
   const [idHover, setIdHover] = useState<string | undefined>(undefined);
   const [lngLatHover, setLngLatHover] = useState<Position>();
   const [trackSectionGeoJSON, setTrackSectionGeoJSON] = useState<LineString>();
@@ -194,6 +197,8 @@ function Map() {
         }}
         interactiveLayerIds={defineInteractiveLayers()}
         touchZoomRotate
+        maxPitch={85}
+        terrain={{ source: 'terrain', exaggeration: terrain3DExagerration }}
       >
         <VirtualLayers />
         <AttributionControl position="bottom-right" customAttribution={CUSTOM_ATTRIBUTION} />
@@ -203,6 +208,7 @@ function Map() {
           colors={colors[mapStyle]}
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]}
         />
+        <Terrain />
 
         <IGN_BD_ORTHO layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]} />
         <IGN_SCAN25 layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]} />
