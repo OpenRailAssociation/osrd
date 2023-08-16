@@ -1,4 +1,4 @@
-use super::{Create, List, NoParams, Update};
+use super::{Create, Delete, List, NoParams, Update};
 use crate::error::Result;
 use crate::infra_cache::InfraCache;
 use crate::models::{Identifiable, Retrieve};
@@ -17,10 +17,9 @@ use derivative::Derivative;
 use diesel::result::Error as DieselError;
 use diesel::sql_types::{BigInt, Bool, Nullable, Text};
 use diesel::{sql_query, ExpressionMethods, QueryDsl};
-use diesel_async::scoped_futures::ScopedFutureExt;
-use diesel_async::{AsyncConnection, AsyncPgConnection as PgConnection, RunQueryDsl};
+use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
 use editoast_derive::Model;
-use log::debug;
+use log::{debug, error};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -112,42 +111,48 @@ impl Infra {
             return Err(RailjsonError::WrongVersion(railjson.version).into());
         }
         let mut conn = db_pool.get().await?;
+        let infra = self.create_conn(&mut conn).await?;
+        let infra_id = infra.id.unwrap();
 
-        conn.transaction(|conn| {
-            async move {
-                let infra = self.create_conn(conn).await?;
-                let infra_id = infra.id.unwrap();
-                debug!("🛤️  Importing track sections");
-                TrackSection::persist_batch(&railjson.track_sections, infra_id, conn).await?;
-                debug!("🛤️  Importing track section links");
-                TrackSectionLink::persist_batch(&railjson.track_section_links, infra_id, conn)
-                    .await?;
-                debug!("🛤️  Importing buffer stops");
-                BufferStop::persist_batch(&railjson.buffer_stops, infra_id, conn).await?;
-                debug!("🛤️  Importing catenaries");
-                Catenary::persist_batch(&railjson.catenaries, infra_id, conn).await?;
-                debug!("🛤️  Importing detectors");
-                Detector::persist_batch(&railjson.detectors, infra_id, conn).await?;
-                debug!("🛤️  Importing operational points");
-                OperationalPoint::persist_batch(&railjson.operational_points, infra_id, conn)
-                    .await?;
-                debug!("🛤️  Importing routes");
-                Route::persist_batch(&railjson.routes, infra_id, conn).await?;
-                debug!("🛤️  Importing signals");
-                Signal::persist_batch(&railjson.signals, infra_id, conn).await?;
-                debug!("🛤️  Importing switches");
-                Switch::persist_batch(&railjson.switches, infra_id, conn).await?;
-                debug!("🛤️  Importing speed sections");
-                SpeedSection::persist_batch(&railjson.speed_sections, infra_id, conn).await?;
-                debug!("🛤️  Importing switch types");
-                SwitchType::persist_batch(&railjson.switch_types, infra_id, conn).await?;
-                debug!("🛤️  Importing neutral sections");
-                NeutralSection::persist_batch(&railjson.neutral_sections, infra_id, conn).await?;
+        debug!("🛤  Begin importing all railjson objects");
+        let res = futures::try_join!(
+            TrackSection::persist_batch_pool(&railjson.track_sections, infra_id, db_pool.clone()),
+            TrackSectionLink::persist_batch_pool(
+                &railjson.track_section_links,
+                infra_id,
+                db_pool.clone()
+            ),
+            BufferStop::persist_batch_pool(&railjson.buffer_stops, infra_id, db_pool.clone()),
+            Catenary::persist_batch_pool(&railjson.catenaries, infra_id, db_pool.clone()),
+            Detector::persist_batch_pool(&railjson.detectors, infra_id, db_pool.clone()),
+            OperationalPoint::persist_batch_pool(
+                &railjson.operational_points,
+                infra_id,
+                db_pool.clone()
+            ),
+            Route::persist_batch_pool(&railjson.routes, infra_id, db_pool.clone()),
+            Signal::persist_batch_pool(&railjson.signals, infra_id, db_pool.clone()),
+            Switch::persist_batch_pool(&railjson.switches, infra_id, db_pool.clone()),
+            SpeedSection::persist_batch_pool(&railjson.speed_sections, infra_id, db_pool.clone()),
+            SwitchType::persist_batch_pool(&railjson.switch_types, infra_id, db_pool.clone()),
+            NeutralSection::persist_batch_pool(
+                &railjson.neutral_sections,
+                infra_id,
+                db_pool.clone()
+            ),
+        );
+
+        match res {
+            Err(err) => {
+                error!("Could not import infrastructure {infra_id}. Rolling back");
+                Infra::delete_conn(&mut conn, infra_id).await?;
+                Err(err)
+            }
+            Ok(_) => {
+                debug!("🛤  Import finished successfully");
                 Ok(infra)
             }
-            .scope_boxed()
-        })
-        .await
+        }
     }
 
     pub async fn clone(infra_id: i64, db_pool: Data<DbPool>, new_name: String) -> Result<Infra> {
