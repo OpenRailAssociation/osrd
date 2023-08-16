@@ -39,7 +39,9 @@ pub fn infra_model(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
                 // Work around a diesel limitation
                 // See https://github.com/diesel-rs/diesel/issues/2414
                 // Divided by 3 here because we are inserting three values
-                const DIESEL_MAX_VALUES : usize = (2_usize.pow(16) - 1)/3;
+                // When using AsyncPgConnection, we must divide again
+                // Maybe it is related to connection pipelining
+                const DIESEL_MAX_VALUES : usize = (2_usize.pow(16) - 1)/3/2;
                 for data_chunk in datas.chunks(DIESEL_MAX_VALUES) {
                     diesel::insert_into(#table::table)
                         .values(data_chunk)
