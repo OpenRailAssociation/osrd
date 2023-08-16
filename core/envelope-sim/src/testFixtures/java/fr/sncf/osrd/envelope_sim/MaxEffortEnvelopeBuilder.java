@@ -11,10 +11,10 @@ public class MaxEffortEnvelopeBuilder {
     /** Builds max effort envelope with the specified stops, on a flat MRSP */
     public static Envelope makeSimpleMaxEffortEnvelope(
             EnvelopeSimContext context,
-            double speed,
+            double maxSpeed,
             double[] stops
     ) {
-        var flatMRSP = makeSimpleMRSP(context, speed);
+        var flatMRSP = makeSimpleMRSP(context, maxSpeed);
         var maxSpeedEnvelope = MaxSpeedEnvelope.from(context, stops, flatMRSP);
         return MaxEffortEnvelope.from(context, 0, maxSpeedEnvelope);
     }
