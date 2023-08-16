@@ -731,10 +731,6 @@
         "!=",
         "class",
         "city"
-      ],
-      [
-        "!has",
-        "name:en"
       ]
     ],
     "layout": {
