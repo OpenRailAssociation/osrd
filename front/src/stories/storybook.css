@@ -3557,22 +3557,6 @@ thead {
   color: var(--purple);
 }
 
-.flexValuesEdition {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  align-items: baseline;
-}
-.flexValuesEdition > div {
-  padding-left: 1.2em;
-  display: flex;
-  flex-direction: row;
-}
-.flexValuesEdition .flexValuesEditionSelect {
-  max-width: 8em;
-  min-width: 8em;
-}
-
 .stdcm-map-noSimulation {
   height: 85vh;
 }
@@ -3582,6 +3566,34 @@ thead {
 
 .stdcm-allowance-icon {
   max-width: fit-content;
+}
+
+/* INTERVALS EDITOR */
+.intervals-editor-form {
+  display: flex;
+  width: 100%;
+}
+
+.intervals-editor-select-form {
+  width: 20em;
+  padding-right: 1em;
+}
+
+.intervals-editor-form-column{
+  width: 20em;
+  padding-right: 1em;
+}
+
+.intervals-editor-form-input {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.debounced-number-input {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
 }
 
 /*# sourceMappingURL=storybook.css.map */

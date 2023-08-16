@@ -1,27 +1,30 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { LinearMetadataItem } from 'common/IntervalsDataViz/types';
+import { IntervalItem } from './types';
 
-interface IntervalsEditorTooltip<T> {
-  item: LinearMetadataItem<T>;
-  point?: number;
+interface IntervalsEditorTooltip {
+  item: IntervalItem;
+  point: number;
 }
 
-export const IntervalsEditorTooltip = <T extends Record<string, unknown>>({
-  item,
-  point,
-}: IntervalsEditorTooltip<T>) => {
-  const { t } = useTranslation();
+export const IntervalsEditorTooltip = ({ item, point }: IntervalsEditorTooltip) => {
+  const { t } = useTranslation('common/common');
   return (
     <div className="linear-metadata-tooltip">
       <div className="header">{point && <span>{Math.round(point)}</span>}</div>
       <div className="content">
-        {Object.entries(item).map((value, index) => (
-          <div key={index}>
-            <span className="mr-3">{t(value[0])}</span>
-            {`${value[1] || '-'}`}
-          </div>
-        ))}
+        <div>
+          <span className="mr-3">{t('begin')}</span>
+          {Math.round(item.begin)}
+        </div>
+        <div>
+          <span className="mr-3">{t('end')}</span>
+          {Math.round(item.end)}
+        </div>
+        <div>
+          <span className="mr-3">{t('value')}</span>
+          {item.value}
+        </div>
       </div>
     </div>
   );

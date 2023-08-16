@@ -24,36 +24,36 @@ const IntervalsEditorMarginForm = ({
   setData,
   units = [],
 }: IntervalsEditorMarginFormProps) => (
-  <div>
-    <InputSNCF
-      type="number"
-      id="item-valueField"
-      label={fieldLabel}
-      onChange={(e) => {
-        const result = cloneDeep(data);
-        if (result && result[selectedIntervalIndex]) {
-          result[selectedIntervalIndex].value = parseFloat(e.target.value);
-          setData(result as IntervalItem[]);
-        }
-      }}
-      value={(interval.value as number) || 0}
-      noMargin
-      sm
-      isFlex
-    />
-    {units.length > 1 && (
-      <div className="flexValuesEditionSelect">
-        <SelectSNCF
-          options={units}
-          onChange={(newUnit) => {
-            const result = cloneDeep(data);
-            result[selectedIntervalIndex].unit = newUnit;
+  <div className="intervals-editor-form-column">
+    <div className="intervals-editor-form-input">
+      <InputSNCF
+        type="number"
+        id="item-valueField"
+        label={fieldLabel}
+        onChange={(e) => {
+          const result = cloneDeep(data);
+          if (result && result[selectedIntervalIndex]) {
+            result[selectedIntervalIndex].value = parseFloat(e.target.value);
             setData(result as IntervalItem[]);
-          }}
-          sm
-          selectedValue={(interval.unit as string) || defaultUnit || units[0]}
-        />
-      </div>
+          }
+        }}
+        value={(interval.value as number) || 0}
+        noMargin
+        sm
+      />
+    </div>
+
+    {units.length > 1 && (
+      <SelectSNCF
+        options={units}
+        onChange={(newUnit) => {
+          const result = cloneDeep(data);
+          result[selectedIntervalIndex].unit = newUnit;
+          setData(result as IntervalItem[]);
+        }}
+        sm
+        selectedValue={(interval.unit as string) || defaultUnit || units[0]}
+      />
     )}
   </div>
 );

@@ -36,21 +36,22 @@ const DebouncedNumberInputSNCF = ({
   useDebouncedFunc(value, debouncedDelay, checkChangedInput);
 
   return (
-    <InputSNCF
-      type="number"
-      id={id}
-      label={label}
-      onChange={(e) => {
-        setValue(e.target.value !== '' ? parseFloat(e.target.value) : null);
-      }}
-      max={max}
-      min={min}
-      value={value !== null ? value : ''}
-      isInvalid={value !== null && (value < min || max < value)}
-      isFlex
-      noMargin
-      sm
-    />
+    <div className="debounced-number-input">
+      <InputSNCF
+        type="number"
+        id={id}
+        isInvalid={value !== null && (value < min || max < value)}
+        label={label}
+        max={max}
+        min={min}
+        noMargin
+        onChange={(e) => {
+          setValue(e.target.value !== '' ? parseFloat(e.target.value) : null);
+        }}
+        value={value !== null ? value : ''}
+        sm
+      />
+    </div>
   );
 };
 

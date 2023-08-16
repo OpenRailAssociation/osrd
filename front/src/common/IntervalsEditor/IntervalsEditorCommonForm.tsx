@@ -25,17 +25,19 @@ const IntervalsEditorCommonForm = ({
 }: IntervalsEditorFormProps) => {
   const { t } = useTranslation('common/common');
 
-  const [begin, setBegin] = useState<number>(interval.begin);
-  const [end, setEnd] = useState(interval.end);
+  const [begin, setBegin] = useState<number>(Math.round(interval.begin));
+  const [end, setEnd] = useState(Math.round(interval.end));
 
   useEffect(() => {
-    setBegin(interval.begin);
-    setEnd(interval.end);
+    setBegin(Math.round(interval.begin));
+    setEnd(Math.round(interval.end));
   }, [interval]);
 
   const resizeSegmentByInput = (newPosition: number, context: 'begin' | 'end') => {
     const gap = newPosition - interval[context];
-    if (gap !== 0) {
+    // use absolute value to manage cases where the position is not rounded
+    // ex: begin = 1200.68 and newPosition = 1200 (because input is rounded)
+    if (Math.abs(gap) > 1) {
       const { result, newIndexMapping } = resizeSegment(
         data,
         selectedIntervalIndex,
@@ -66,7 +68,7 @@ const IntervalsEditorCommonForm = ({
   useEffect(() => resizeSegmentByInput(end, 'end'), [end]);
 
   return (
-    <div>
+    <div className="intervals-editor-form-column">
       <DebouncedNumberInputSNCF
         id="item-begin-input"
         input={begin}
@@ -80,7 +82,7 @@ const IntervalsEditorCommonForm = ({
         label={t('end')}
         setInput={setEnd}
         min={interval.begin}
-        max={totalLength}
+        max={Math.round(totalLength)}
       />
     </div>
   );

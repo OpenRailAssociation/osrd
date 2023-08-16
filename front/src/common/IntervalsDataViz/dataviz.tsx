@@ -249,7 +249,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
           operationalPoints4viz
         );
         return closestPoint
-          ? Math.round(closestPoint.position - resizing.startPosition)
+          ? closestPoint.position - resizing.startPosition
           : Math.round(((positionX - resizing.startAt) / wrapperWidth) * fullLength);
       };
 
@@ -302,7 +302,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
               borderLeft: '2px dashed #a0a0a0',
             }}
           >
-            <p>{operationalPoint.name}</p>
+            {operationalPoint.name && <p>{operationalPoint.name}</p>}
           </div>
         ))}
       </div>
