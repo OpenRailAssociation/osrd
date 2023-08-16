@@ -1882,6 +1882,8 @@ paths:
                           type: array
                           items:
                             $ref: "#/components/schemas/TrackRange"
+                      required: [type, catenary_id, overlapping_ranges]
+                required: [catenary_ranges, warnings]
 
   /train_schedule/{id}/:
     get:
@@ -3174,6 +3176,7 @@ components:
         mode:
           type: string
           example: "25000"
+      required: [begin, end, mode]
 
     SearchQuery:
       type: array

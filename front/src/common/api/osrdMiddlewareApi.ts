@@ -955,6 +955,7 @@ export type WritableTrainSchedule = {
   speed_limit_tags?: string;
   comfort?: Comfort;
   options?: TrainScheduleOptions | null;
+  power_restriction_ranges?: PowerRestrictionRange[] | null;
 };
 export type TrainSchedule = {
   id?: number;

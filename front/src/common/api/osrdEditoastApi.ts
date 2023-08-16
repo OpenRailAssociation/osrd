@@ -922,11 +922,11 @@ export type PutPathfindingByIdApiArg = {
 };
 export type GetPathfindingByPathIdCatenariesApiResponse =
   /** status 200 A list of ranges associated to catenary modes. When a catenary overlapping another is found, a warning is added to the list. */ {
-    catenary_ranges?: CatenaryRange[];
-    warnings?: {
-      catenary_id?: string;
-      overlapping_ranges?: TrackRange[];
-      type?: 'CatenaryOverlap';
+    catenary_ranges: CatenaryRange[];
+    warnings: {
+      catenary_id: string;
+      overlapping_ranges: TrackRange[];
+      type: 'CatenaryOverlap';
     }[];
   };
 export type GetPathfindingByPathIdCatenariesApiArg = {
@@ -1598,9 +1598,9 @@ export type PathQuery = {
   }[];
 };
 export type CatenaryRange = {
-  begin?: number;
-  end?: number;
-  mode?: string;
+  begin: number;
+  end: number;
+  mode: string;
 };
 export type ProjectResult = {
   budget?: number;
