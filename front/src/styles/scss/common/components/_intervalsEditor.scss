@@ -1,16 +1,14 @@
-.flexValuesEdition {
-  display:flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  align-items: baseline;
-  //justify-content: space-evenly;
-  > div {
-    padding-left: 1.2em;
-    display:flex;
-    flex-direction: row;
+.intervals-editor-form {
+  display: flex;
+  width: 100%;
+
+  .intervals-editor-select-form {
+    width: 20em;
+    padding-right: 1em;
   }
-  .flexValuesEditionSelect {
-    max-width: 8em;
-    min-width: 8em
+
+  .intervals-editor-form-column {
+    width: 20em;
+    padding-right: 1em;
   }
 }

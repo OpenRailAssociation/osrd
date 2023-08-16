@@ -30,8 +30,8 @@ import { createEmptySegmentAt, removeSegment } from './utils';
 
 type IntervalsEditorProps = {
   defaultValue: number | string;
-  emptyValue: unknown;
-  operationalPoints: OperationalPoint[];
+  emptyValue?: unknown;
+  operationalPoints?: OperationalPoint[];
   setData: (newData: IntervalItem[]) => void;
   showValues?: boolean;
   title?: string;
@@ -62,22 +62,22 @@ type IntervalsEditorProps = {
  *
  * version 0.1
  */
-export const IntervalsEditor = (props: IntervalsEditorProps) => {
+const IntervalsEditor = (props: IntervalsEditorProps) => {
   const {
     data = [],
     defaultValue,
-    emptyValue,
+    emptyValue = undefined,
     intervalType,
-    operationalPoints,
+    operationalPoints = [],
     setData,
-    showValues = false,
+    showValues = true,
     title,
     totalLength,
     toolsConfig = {
-      cutTool: false,
-      deleteTool: false,
+      cutTool: true,
+      deleteTool: true,
       translateTool: false,
-      addTool: false,
+      addTool: true,
     },
   } = props;
 
@@ -123,54 +123,53 @@ export const IntervalsEditor = (props: IntervalsEditorProps) => {
     return undefined;
   }, [intervalType]);
 
-  let formContent;
-  if (selected !== null && data[selected]) {
-    switch (intervalType) {
-      case INTERVAL_TYPES.NUMBER_WITH_UNIT: {
-        const { fieldLabel, units } = props;
-        formContent = (
-          <IntervalsEditorMarginForm
-            data={data}
-            fieldLabel={fieldLabel}
-            interval={data[selected]}
-            selectedIntervalIndex={selected}
-            setData={setData}
-            units={units}
-          />
-        );
-        break;
-      }
-      case INTERVAL_TYPES.SELECT: {
-        const { selectOptions } = props;
-        formContent = (
-          <IntervalsEditorSelectForm
-            data={data}
-            interval={data[selected]}
-            selectedIntervalIndex={selected}
-            setData={setData}
-            selectOptions={selectOptions}
-          />
-        );
-        break;
-      }
-      case INTERVAL_TYPES.NUMBER: {
-        const { fieldLabel } = props;
-        formContent = (
-          <IntervalsEditorMarginForm
-            data={data}
-            fieldLabel={fieldLabel}
-            interval={data[selected]}
-            selectedIntervalIndex={selected}
-            setData={setData}
-          />
-        );
-        break;
-      }
-      default: {
-        /* empty */
+  const formContent = useMemo(() => {
+    if (selected !== null && data[selected]) {
+      switch (intervalType) {
+        case INTERVAL_TYPES.NUMBER_WITH_UNIT: {
+          const { fieldLabel, units } = props;
+          return (
+            <IntervalsEditorMarginForm
+              data={data}
+              fieldLabel={fieldLabel}
+              interval={data[selected]}
+              selectedIntervalIndex={selected}
+              setData={setData}
+              units={units}
+            />
+          );
+        }
+        case INTERVAL_TYPES.SELECT: {
+          const { selectOptions } = props;
+          return (
+            <IntervalsEditorSelectForm
+              data={data}
+              interval={data[selected]}
+              selectedIntervalIndex={selected}
+              setData={setData}
+              selectOptions={selectOptions}
+            />
+          );
+        }
+        case INTERVAL_TYPES.NUMBER: {
+          const { fieldLabel } = props;
+          return (
+            <IntervalsEditorMarginForm
+              data={data}
+              fieldLabel={fieldLabel}
+              interval={data[selected]}
+              selectedIntervalIndex={selected}
+              setData={setData}
+            />
+          );
+        }
+        default: {
+          return null;
+        }
       }
     }
-  }
+    return null;
+  }, [intervalType, selected]);
 
   return (
     <div className="linear-metadata">
@@ -291,18 +290,16 @@ export const IntervalsEditor = (props: IntervalsEditorProps) => {
 
         {/* Basic interval form */}
         {!isNil(selected) && data[selected] && (
-          <div className="flexValuesEdition">
-            <div className="flexValues">
-              <IntervalsEditorCommonForm
-                data={data}
-                interval={data[selected]}
-                selectedIntervalIndex={selected}
-                setData={setData}
-                setSelectedIntervalIndex={setSelected}
-                totalLength={totalLength}
-              />
-              {formContent}
-            </div>
+          <div className="intervals-editor-form">
+            <IntervalsEditorCommonForm
+              data={data}
+              interval={data[selected]}
+              selectedIntervalIndex={selected}
+              setData={setData}
+              setSelectedIntervalIndex={setSelected}
+              totalLength={totalLength}
+            />
+            {formContent}
           </div>
         )}
       </div>

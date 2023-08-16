@@ -19,7 +19,7 @@ const IntervalsEditorSelectForm = ({
   setData,
   selectOptions,
 }: IntervalsEditorSelectFormProps) => (
-  <div className="flexValuesEditionSelect">
+  <div className="intervals-editor-select-form">
     <SelectSNCF
       options={selectOptions}
       onChange={(newValue) => {

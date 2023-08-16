@@ -4,7 +4,7 @@ import 'stories/storybook.css';
 import { fixLinearMetadataItems } from 'common/IntervalsDataViz/data';
 import { LinearMetadataItem, OperationalPoint } from 'common/IntervalsDataViz/types';
 import { notEmpty } from 'common/IntervalsDataViz/utils';
-import { IntervalsEditor } from 'common/IntervalsEditor/IntervalsEditor';
+import IntervalsEditor from 'common/IntervalsEditor/IntervalsEditor';
 import {
   INTERVAL_TYPES,
   IntervalItem,
