@@ -300,9 +300,9 @@ mod test {
     }
 
     #[rstest]
-    async fn scenario_delete(#[future] scenario_fixture_set: ScenarioFixtureSet) {
+    async fn scenario_delete() {
         let app = create_test_service().await;
-        let scenario_fixture_set = scenario_fixture_set.await;
+        let scenario_fixture_set = scenario_fixture_set().await;
 
         let response = call_service(&app, delete_scenario_request(&scenario_fixture_set)).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
@@ -312,9 +312,9 @@ mod test {
     }
 
     #[rstest]
-    async fn scenario_list(#[future] scenario_fixture_set: ScenarioFixtureSet) {
+    async fn scenario_list() {
         let app = create_test_service().await;
-        let scenario_fixture_set = scenario_fixture_set.await;
+        let scenario_fixture_set = scenario_fixture_set().await;
 
         let url = easy_scenario_url(&scenario_fixture_set, false);
         let req = TestRequest::get().uri(url.as_str()).to_request();
@@ -324,9 +324,9 @@ mod test {
     }
 
     #[rstest]
-    async fn scenario_get(#[future] scenario_fixture_set: ScenarioFixtureSet) {
+    async fn scenario_get() {
         let app = create_test_service().await;
-        let scenario_fixture_set = scenario_fixture_set.await;
+        let scenario_fixture_set = scenario_fixture_set().await;
 
         let url = easy_scenario_url(&scenario_fixture_set, true);
         let response = call_service(&app, TestRequest::get().uri(url.as_str()).to_request()).await;
@@ -341,9 +341,9 @@ mod test {
     }
 
     #[rstest]
-    async fn scenario_patch(#[future] scenario_fixture_set: ScenarioFixtureSet) {
+    async fn scenario_patch() {
         let app = create_test_service().await;
-        let scenario_fixture_set = scenario_fixture_set.await;
+        let scenario_fixture_set = scenario_fixture_set().await;
 
         let url = easy_scenario_url(&scenario_fixture_set, true);
         let new_name = scenario_fixture_set.scenario.model.name.clone().unwrap() + "_patched";

@@ -87,7 +87,7 @@ impl Timetable {
             get_timetable_train_schedules_with_simulations(self.id.unwrap(), db_pool.clone())
                 .await?;
         block::<_, Result<_>>(move || {
-            let mut conn = db_pool.clone().get()?;
+            let mut conn = db_pool.get()?;
             let train_schedule_summaries = train_schedule_summaries
                 .iter()
                 .map(|(train_schedule, simulation_output)| {
