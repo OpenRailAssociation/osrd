@@ -1380,7 +1380,7 @@
         ],
         [
           "has",
-          "name:en"
+          "name"
         ]
       ],
       "layout": {
@@ -1395,7 +1395,7 @@
         ],
         "icon-size": 1,
         "text-anchor": "top",
-        "text-field": "{name:en}\n{name:nonlatin}",
+        "text-field": "{name}",
         "text-max-width": 8
       },
       "paint": {
@@ -1419,7 +1419,7 @@
         ],
         [
           "!has",
-          "name:en"
+          "name"
         ]
       ],
       "layout": {
@@ -1467,12 +1467,12 @@
         ],
         [
           "has",
-          "name:en"
+          "name"
         ]
       ],
       "layout": {
         "symbol-placement": "line",
-        "text-field": "{name:en} {name:nonlatin}",
+        "text-field": "{name}",
         "text-font": [
           "Open Sans Regular"
         ],
@@ -1520,7 +1520,7 @@
         ],
         [
           "!has",
-          "name:en"
+          "name"
         ]
       ],
       "layout": {
@@ -1581,11 +1581,11 @@
         ],
         [
           "has",
-          "name:en"
+          "name"
         ]
       ],
       "layout": {
-        "text-field": "{name:en}\n{name:nonlatin}",
+        "text-field": "{name}",
         "text-font": [
           "Open Sans Regular"
         ],
@@ -1632,7 +1632,7 @@
         ],
         [
           "!has",
-          "name:en"
+          "name"
         ]
       ],
       "layout": {
