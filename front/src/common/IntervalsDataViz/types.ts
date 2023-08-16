@@ -98,7 +98,7 @@ export interface IntervalItemBaseProps<T> {
 }
 
 export interface OperationalPoint {
-  id: string;
+  id?: string;
   position: number;
   name?: string;
 }

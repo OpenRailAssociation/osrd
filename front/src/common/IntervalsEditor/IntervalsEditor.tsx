@@ -169,7 +169,7 @@ const IntervalsEditor = (props: IntervalsEditorProps) => {
       }
     }
     return null;
-  }, [intervalType, selected]);
+  }, [data, intervalType, selected]);
 
   return (
     <div className="linear-metadata">
@@ -218,6 +218,8 @@ const IntervalsEditor = (props: IntervalsEditorProps) => {
                 setClickPrevent(true);
                 const newData = splitAt(data, point);
                 setData(newData);
+                setSelected(null);
+                setSelectedTool(null);
               }
               if (selectedTool === INTERVALS_EDITOR_TOOLS.DELETE_TOOL) {
                 const newData = removeSegment(data, index, emptyValue, intervalDefaultUnit);
@@ -272,6 +274,7 @@ const IntervalsEditor = (props: IntervalsEditorProps) => {
             onCreate={(point) => {
               const newData = createEmptySegmentAt(data, point, defaultValue, intervalDefaultUnit);
               setData(newData);
+              setSelectedTool(null);
             }}
           />
           <ToolButtons

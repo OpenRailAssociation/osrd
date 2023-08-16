@@ -291,9 +291,9 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
         style={{ height: '30px' }}
       >
         {/* Display the operational points */}
-        {operationalPoints4viz.map((operationalPoint) => (
+        {operationalPoints4viz.map((operationalPoint, index) => (
           <div
-            key={`op-${operationalPoint.id}`}
+            key={`op-${operationalPoint.id || index}`}
             className="operational-point"
             style={{
               position: 'absolute',

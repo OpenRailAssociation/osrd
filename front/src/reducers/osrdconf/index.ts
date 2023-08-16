@@ -11,11 +11,11 @@ import {
   OsrdMultiConfState,
   OsrdStdcmConfState,
   PointOnMap,
+  PowerRestrictionRange,
 } from 'applications/operationalStudies/consts';
 import { formatIsoDate } from 'utils/date';
 import { ValueOf } from 'utils/types';
 import { sec2time, time2sec } from 'utils/timeManipulation';
-import { PowerRestrictionRange } from 'common/api/osrdMiddlewareApi';
 import { Allowance, CatenaryRange, Path, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { SwitchType, ThunkAction } from '../../types';
 
@@ -66,7 +66,7 @@ export const UPDATE_FEATURE_INFO_CLICK_OSRD = 'osrdconf/UPDATE_FEATURE_INFO_CLIC
 export const UPDATE_GRID_MARGIN_BEFORE = 'osrdconf/UPDATE_GRID_MARGIN_BEFORE';
 export const UPDATE_GRID_MARGIN_AFTER = 'osrdconf/UPDATE_GRID_MARGIN_AFTER';
 export const UPDATE_STANDARD_STDCM_ALLOWANCE = 'osrdconf/UPDATE_STANDARD_STDCM_ALLOWANCE';
-export const UPDATE_POWER_RESTRICTION = 'osrdconf/UPDATE_POWER_RESTRICTION';
+export const UPDATE_POWER_RESTRICTION_RANGES = 'osrdconf/UPDATE_POWER_RESTRICTION_RANGES';
 export const UPDATE_TRAIN_SCHEDULE_IDS_TO_MODIFY = 'osrdconf/UPDATE_TRAIN_SCHEDULE_IDS_TO_MODIFY';
 export const UPDATE_MAXIMUM_RUN_TIME = 'osrdconf/UPDATE_MAXIMUM_RUN_TIME';
 
@@ -88,7 +88,7 @@ const defaultCommonConf = {
   timetableID: undefined,
   rollingStockID: undefined,
   rollingStockComfort: 'STANDARD' as const,
-  powerRestriction: undefined,
+  powerRestrictionRanges: [],
   speedLimitByTag: undefined,
   origin: undefined,
   initialSpeed: 0,
@@ -185,6 +185,8 @@ export default function reducer(inputState: OsrdMultiConfState | undefined, acti
         break;
       case UPDATE_PATHFINDING_ID:
         draft[section].pathfindingID = action.pathfindingID;
+        // reset power restriction ranges
+        draft[section].powerRestrictionRanges = [];
         break;
       case UPDATE_PATH_WITH_CATENARIES:
         draft[section].pathWithCatenaries = action.pathWithCatenaries;
@@ -312,7 +314,7 @@ export default function reducer(inputState: OsrdMultiConfState | undefined, acti
       case UPDATE_STANDARD_STDCM_ALLOWANCE:
         draft.stdcmConf.standardStdcmAllowance = action.standardStdcmAllowance;
         break;
-      case UPDATE_POWER_RESTRICTION:
+      case UPDATE_POWER_RESTRICTION_RANGES:
         draft[section].powerRestrictionRanges = action.powerRestrictionRanges;
         break;
       case UPDATE_TRAIN_SCHEDULE_IDS_TO_MODIFY:
@@ -453,6 +455,7 @@ export function updateInfraID(infraID: number | undefined): ThunkAction<ActionUp
     }
   };
 }
+/** Update pathFindingId and reset the powerRestrictionRanges */
 export function updatePathfindingID(pathfindingID?: number) {
   return (dispatch: Dispatch) => {
     dispatch({
@@ -697,10 +700,10 @@ export function deleteItinerary() {
     });
   };
 }
-export function updatePowerRestriction(powerRestrictionRanges?: PowerRestrictionRange[]) {
+export function updatePowerRestrictionRanges(powerRestrictionRanges: PowerRestrictionRange[]) {
   return (dispatch: Dispatch) => {
     dispatch({
-      type: UPDATE_POWER_RESTRICTION,
+      type: UPDATE_POWER_RESTRICTION_RANGES,
       powerRestrictionRanges,
     });
   };

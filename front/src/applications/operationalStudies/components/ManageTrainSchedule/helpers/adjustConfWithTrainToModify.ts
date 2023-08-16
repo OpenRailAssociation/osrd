@@ -13,6 +13,7 @@ import {
   updateDestination,
   replaceVias,
   updateSuggeredVias,
+  updatePowerRestrictionRanges,
 } from 'reducers/osrdconf';
 import { sec2time } from 'utils/timeManipulation';
 import { Dispatch } from 'redux';
@@ -72,5 +73,18 @@ export default function adjustConfWithTrainToModify(
     } else {
       dispatch(replaceVias([]));
     }
+  }
+
+  if (trainSchedule.power_restriction_ranges) {
+    // TODO: refacto this when using the new train_schedule endpoints
+    dispatch(
+      updatePowerRestrictionRanges(
+        trainSchedule.power_restriction_ranges.map((powerRestrictionRange) => ({
+          begin: powerRestrictionRange.begin_position as number,
+          end: powerRestrictionRange.end_position as number,
+          value: powerRestrictionRange.power_restriction_code as string,
+        }))
+      )
+    );
   }
 }
