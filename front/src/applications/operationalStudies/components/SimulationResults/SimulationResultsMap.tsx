@@ -67,6 +67,8 @@ import IGN_SCAN25 from 'common/Map/Layers/IGN_SCAN25';
 import IGN_CADASTRE from 'common/Map/Layers/IGN_CADASTRE';
 import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import Terrain from 'common/Map/Layers/Terrain';
+import { getTerrain3DExaggeration } from 'reducers/map/selectors';
 import { MapLayerMouseEvent } from '../../../../types';
 
 function getPosition(
@@ -105,6 +107,7 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
   );
   const simulation = useSelector((state: RootState) => state.osrdsimulation.simulation.present);
   const selectedTrain = useSelector(getSelectedTrain);
+  const terrain3DExagerration = useSelector(getTerrain3DExaggeration);
   const [geojsonPath, setGeojsonPath] = useState<Feature<LineString>>();
   const [selectedTrainHoverPosition, setTrainHoverPosition] = useState<TrainPosition>();
   const [otherTrainsHoverPosition, setOtherTrainsHoverPosition] = useState<TrainPosition[]>([]);
@@ -391,6 +394,8 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
         }}
         interactiveLayerIds={interactiveLayerIds}
         touchZoomRotate
+        maxPitch={85}
+        terrain={{ source: 'terrain', exaggeration: terrain3DExagerration }}
         onLoad={handleLoadFinished}
       >
         <VirtualLayers />
@@ -401,6 +406,7 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
           colors={colors[mapStyle]}
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]}
         />
+        <Terrain />
 
         <IGN_BD_ORTHO layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]} />
         <IGN_SCAN25 layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]} />
@@ -412,6 +418,7 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
             <Hillshade
               mapStyle={mapStyle}
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]}
+              display={terrain3DExagerration > 0}
             />
           </>
         )}

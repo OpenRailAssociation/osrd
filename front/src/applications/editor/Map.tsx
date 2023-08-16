@@ -16,6 +16,7 @@ import IGN_CADASTRE from 'common/Map/Layers/IGN_CADASTRE';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import TracksOSM from 'common/Map/Layers/TracksOSM';
 import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
+import Terrain from 'common/Map/Layers/Terrain';
 import Background from '../../common/Map/Layers/Background';
 import OSM from '../../common/Map/Layers/OSM';
 import Hillshade from '../../common/Map/Layers/Hillshade';
@@ -28,7 +29,7 @@ import EditorContext from './context';
 import { EditorState, LAYER_TO_EDITOAST_DICT, LAYERS_SET, LayerType } from './tools/types';
 import { getEntity } from './data/api';
 import { getInfraID, getSwitchTypes } from '../../reducers/osrdconf/selectors';
-import { getShowOSM } from '../../reducers/map/selectors';
+import { getShowOSM, getTerrain3DExaggeration } from '../../reducers/map/selectors';
 import { CommonToolState } from './tools/commonToolState';
 import { EditorContextType, ExtendedEditorContextType, Tool } from './tools/editorContextTypes';
 
@@ -69,6 +70,7 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
   const switchTypes = useSelector(getSwitchTypes);
   const editorState = useSelector((state: { editor: EditorState }) => state.editor);
   const showOSM = useSelector(getShowOSM);
+  const terrain3DExagerration = useSelector(getTerrain3DExaggeration);
   const extendedContext = useMemo<ExtendedEditorContextType<CommonToolState>>(
     () => ({
       ...context,
@@ -190,6 +192,8 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
           }}
           attributionControl={false}
           touchZoomRotate
+          maxPitch={85}
+          terrain={{ source: 'terrain', exaggeration: terrain3DExagerration }}
           doubleClickZoom={false}
           interactive
           cursor={cursor}
@@ -242,6 +246,7 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
             colors={colors[mapStyle]}
             layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]}
           />
+          <Terrain />
           <TracksOSM
             colors={colors[mapStyle]}
             layerOrder={LAYER_GROUPS_ORDER[LAYERS.TRACKS_OSM.GROUP]}
@@ -257,6 +262,7 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
               <Hillshade
                 mapStyle={mapStyle}
                 layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]}
+                display={terrain3DExagerration > 0}
               />
             </>
           )}

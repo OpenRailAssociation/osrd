@@ -8,9 +8,11 @@ import { updateViewport, Viewport } from 'reducers/map';
 import { RootState } from 'reducers';
 
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
+import { getTerrain3DExaggeration } from 'reducers/map/selectors';
 
 /* Main data & layers */
 import Background from 'common/Map/Layers/Background';
+import Terrain from 'common/Map/Layers/Terrain';
 import VirtualLayers from 'applications/operationalStudies/components/SimulationResults/SimulationResultsMap/VirtualLayers';
 import BufferStops from 'common/Map/Layers/BufferStops';
 /* Settings & Buttons */
@@ -46,6 +48,7 @@ import 'common/Map/Map.scss';
 function Map() {
   const { viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM, layersSettings } =
     useSelector((state: RootState) => state.map);
+  const terrain3DExagerration = useSelector(getTerrain3DExaggeration);
   const mapRef = useRef<MapRef | null>(null);
   const [idHover, setIdHover] = useState<string | undefined>(undefined);
   const { urlLat, urlLon, urlZoom, urlBearing, urlPitch } = useParams();
@@ -126,6 +129,8 @@ function Map() {
         onMouseOver={onFeatureHover}
         interactiveLayerIds={defineInteractiveLayers()}
         touchZoomRotate
+        maxPitch={85}
+        terrain={{ source: 'terrain', exaggeration: terrain3DExagerration }}
       >
         <VirtualLayers />
         <AttributionControl customAttribution={CUSTOM_ATTRIBUTION} />
@@ -135,6 +140,7 @@ function Map() {
           colors={colors[mapStyle]}
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]}
         />
+        <Terrain />
 
         <IGN_BD_ORTHO layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]} />
         <IGN_SCAN25 layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]} />
@@ -146,6 +152,7 @@ function Map() {
             <Hillshade
               mapStyle={mapStyle}
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]}
+              display={terrain3DExagerration > 0}
             />
           </>
         )}
