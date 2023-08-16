@@ -2,7 +2,6 @@ import i18n from 'i18n';
 import { SwitchType } from 'types';
 import { ValueOf } from 'utils/types';
 import { Position, Feature } from 'geojson';
-import { PowerRestrictionRange as PowerRestritionSchedule } from 'common/api/osrdMiddlewareApi';
 import {
   Allowance,
   AllowanceValue,
@@ -15,6 +14,7 @@ import {
   Path,
   PowerRestrictionRangeItem,
 } from 'common/api/osrdEditoastApi';
+import { LinearMetadataItem } from 'common/IntervalsDataViz/types';
 
 export const BLOCKTYPES = [
   {
@@ -161,6 +161,8 @@ const STUDY_TYPES = {
 export type StudyType = keyof typeof STUDY_TYPES;
 export const studyTypes = Object.keys(STUDY_TYPES) as StudyType[];
 
+export type PowerRestrictionRange = LinearMetadataItem<{ value: string }>;
+
 export interface OsrdConfState {
   rollingStockComfort: Comfort;
   name: string;
@@ -181,7 +183,8 @@ export interface OsrdConfState {
   timetableID?: number;
   rollingStockID?: number;
   speedLimitByTag?: string;
-  powerRestrictionRanges?: PowerRestritionSchedule[] | null;
+  // TODO: update the call to the api, to rename the fields begin & end -> begin_position & end_position
+  powerRestrictionRanges: PowerRestrictionRange[];
   origin?: PointOnMap;
   initialSpeed?: number;
   departureTime: string;

@@ -6,7 +6,7 @@ import TrainSettings from 'applications/operationalStudies/components/ManageTrai
 import Itinerary from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary';
 import Map from 'applications/operationalStudies/components/ManageTrainSchedule/Map';
 import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector/SpeedLimitByTagSelector';
-import PowerRestrictionSelector from 'applications/operationalStudies/components/ManageTrainSchedule/PowerRestrictionSelector';
+import PowerRestrictionsSelector from 'applications/operationalStudies/components/ManageTrainSchedule/PowerRestrictionsSelector';
 import adjustConfWithTrainToModify from 'applications/operationalStudies/components/ManageTrainSchedule/helpers/adjustConfWithTrainToModify';
 import ElectricalProfiles from 'applications/operationalStudies/components/ManageTrainSchedule/ElectricalProfiles';
 import Allowances from 'applications/operationalStudies/components/ManageTrainSchedule/Allowances/Allowances';
@@ -130,12 +130,14 @@ export default function ManageTrainSchedule() {
     ),
     label: t('tabs.simulationSettings'),
     content: (
-      <div className="row no-gutters">
-        <div className="col-lg-6 pr-lg-2">
-          <ElectricalProfiles />
-          <SpeedLimitByTagSelector />
-          <PowerRestrictionSelector />
+      <div>
+        <div className="row no-gutters">
+          <div className="col-lg-6 pr-lg-2">
+            <ElectricalProfiles />
+            <SpeedLimitByTagSelector />
+          </div>
         </div>
+        {rollingStockID && <PowerRestrictionsSelector rollingStockId={rollingStockID} />}
       </div>
     ),
   };

@@ -1,10 +1,24 @@
-import { setFailure } from 'reducers/main';
-import { OsrdConfState } from 'applications/operationalStudies/consts';
-import { time2sec } from 'utils/timeManipulation';
+import { isEmpty } from 'lodash';
 import { Dispatch } from 'redux';
+import { OsrdConfState, PowerRestrictionRange } from 'applications/operationalStudies/consts';
+import { NO_POWER_RESTRICTION } from 'applications/operationalStudies/components/ManageTrainSchedule/PowerRestrictionsSelector';
+import { setFailure } from 'reducers/main';
+import { time2sec } from 'utils/timeManipulation';
 import { kmh2ms } from 'utils/physics';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const formatPowerRestrictionRanges = (powerRestrictionRanges: PowerRestrictionRange[]) => {
+  if (isEmpty(powerRestrictionRanges) || powerRestrictionRanges[0].value === NO_POWER_RESTRICTION) {
+    return null;
+  }
+  return powerRestrictionRanges
+    .filter((powerRestrictionRange) => powerRestrictionRange.value !== NO_POWER_RESTRICTION)
+    .map((powerRestrictionRange) => ({
+      begin_position: powerRestrictionRange.begin,
+      end_position: powerRestrictionRange.end,
+      power_restriction_code: powerRestrictionRange.value,
+    }));
+};
+
 export default function formatConf(
   dispatch: Dispatch,
   t: (arg0: string) => string,
@@ -108,7 +122,7 @@ export default function formatConf(
       rolling_stock: osrdconf.rollingStockID,
       comfort: osrdconf.rollingStockComfort,
       speed_limit_tags: osrdconf.speedLimitByTag,
-      power_restriction_ranges: osrdconf.powerRestrictionRanges,
+      power_restriction_ranges: formatPowerRestrictionRanges(osrdconf.powerRestrictionRanges),
       options: {
         ignore_electrical_profiles: !osrdconf.usingElectricalProfiles,
       },

@@ -5,10 +5,10 @@ import { useTranslation } from 'react-i18next';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import OptionsSNCF, { Option } from 'common/BootstrapSNCF/OptionsSNCF';
 import {
+  updatePowerRestrictionRanges,
   updateRollingStockComfort,
   updateRollingStockID,
   updateShouldRunPathfinding,
-  updatePowerRestriction,
 } from 'reducers/osrdconf';
 import { getRollingStockComfort } from 'reducers/osrdconf/selectors';
 import { comfort2pictogram } from './RollingStockHelpers';
@@ -36,7 +36,7 @@ const RollingStockCardButtons = ({
     dispatch(updateRollingStockComfort(comfort));
     dispatch(updateShouldRunPathfinding(true));
     dispatch(updateRollingStockID(id));
-    dispatch(updatePowerRestriction(undefined));
+    dispatch(updatePowerRestrictionRanges([]));
     closeModal();
   };
 
