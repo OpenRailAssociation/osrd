@@ -539,7 +539,7 @@ const injectedRtkApi = api
         }),
       }),
       postStdcm: build.mutation<PostStdcmApiResponse, PostStdcmApiArg>({
-        query: (queryArg) => ({ url: `/stdcm/`, method: 'POST', body: queryArg.stdcmRequest }),
+        query: (queryArg) => ({ url: `/stdcm/`, method: 'POST', body: queryArg.body }),
         invalidatesTags: ['stdcm'],
       }),
       getTimetableById: build.query<GetTimetableByIdApiResponse, GetTimetableByIdApiArg>({
@@ -1171,7 +1171,25 @@ export type PostStdcmApiResponse =
       error?: string;
     };
 export type PostStdcmApiArg = {
-  stdcmRequest: StdcmRequest;
+  body: {
+    comfort: Comfort;
+    end_time?: number;
+    infra_id: number;
+    margin_after?: number;
+    margin_before?: number;
+    maximum_departure_delay?: number;
+    maximum_run_time?: number;
+    rolling_stock_id: number;
+    rolling_stocks: number[];
+    speed_limit_tags?: string;
+    standard_allowance: AllowanceValue;
+    start_time?: number;
+    steps: {
+      duration: number;
+      waypoints: Waypoint;
+    }[];
+    timetable_id: number;
+  };
 };
 export type GetTimetableByIdApiResponse =
   /** status 200 The timetable content */ TimetableWithSchedulesDetails;
@@ -1945,24 +1963,6 @@ export type Waypoint = {
   geo_coordinate?: number[];
   track_section?: string;
 }[];
-export type StdcmRequest = {
-  comfort?: Comfort;
-  end_time?: number;
-  infra_id?: number;
-  margin_after?: number;
-  margin_before?: number;
-  maximum_departure_delay?: number;
-  maximum_run_time?: number;
-  rolling_stock_id?: number;
-  speed_limit_tags?: string;
-  standard_allowance?: AllowanceValue;
-  start_time?: number;
-  steps?: {
-    duration?: number;
-    waypoints?: Waypoint;
-  }[];
-  timetable_id?: number;
-};
 export type RangeAllowance = {
   begin_position: number;
   end_position: number;
