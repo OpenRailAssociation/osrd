@@ -1395,61 +1395,6 @@ components:
       required:
       - type
       type: object
-    STDCMRequest:
-      properties:
-        comfort:
-          $ref: '#/components/schemas/Comfort'
-        end_time:
-          format: double
-          type: number
-        infra_id:
-          type: integer
-        margin_after:
-          description: |
-            Margin of y seconds after the train passage, which means that the path used by the train should
-            be free and available at least y seconds after its passage.
-          format: double
-          type: number
-        margin_before:
-          description: |
-            Margin of x seconds before the train passage, which means that the path used by the train should
-            be free and available at least x seconds before its passage.
-          format: double
-          type: number
-        maximum_departure_delay:
-          description: By how long we can shift the departure time (s). Defaults to 2h if unspecified.
-          format: double
-          type: number
-        maximum_run_time:
-          description: |
-            Specifies how long the total run time can be in seconds.
-            Defaults to 43200s if unspecified, meaning that the result can't exceed 12h.
-          format: double
-          type: number
-        rolling_stock_id:
-          type: integer
-        speed_limit_tags:
-          description: Train category for speed limits
-          type: string
-        standard_allowance:
-          $ref: '#/components/schemas/AllowanceValue'
-        start_time:
-          format: double
-          type: number
-        steps:
-          items:
-            properties:
-              duration:
-                format: float
-                type: number
-              waypoints:
-                $ref: '#/components/schemas/Waypoint'
-            type: object
-          minItems: 2
-          type: array
-        timetable_id:
-          description: timetable ID
-          type: integer
     ScenarioListResult:
       properties:
         creation_date:
@@ -4581,7 +4526,76 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/STDCMRequest'
+              properties:
+                comfort:
+                  $ref: '#/components/schemas/Comfort'
+                end_time:
+                  format: double
+                  type: number
+                infra_id:
+                  type: integer
+                margin_after:
+                  description: |
+                    Margin of y seconds after the train passage, which means that the path used by the train should
+                    be free and available at least y seconds after its passage.
+                  format: double
+                  type: number
+                margin_before:
+                  description: |
+                    Margin of x seconds before the train passage, which means that the path used by the train should
+                    be free and available at least x seconds before its passage.
+                  format: double
+                  type: number
+                maximum_departure_delay:
+                  description: By how long we can shift the departure time (s). Defaults to 2h if unspecified.
+                  format: double
+                  type: number
+                maximum_run_time:
+                  description: |
+                    Specifies how long the total run time can be in seconds.
+                    Defaults to 43200s if unspecified, meaning that the result can't exceed 12h.
+                  format: double
+                  type: number
+                rolling_stock_id:
+                  type: integer
+                rolling_stocks:
+                  items:
+                    type: integer
+                  type: array
+                speed_limit_tags:
+                  description: Train category for speed limits
+                  type: string
+                standard_allowance:
+                  $ref: '#/components/schemas/AllowanceValue'
+                start_time:
+                  format: double
+                  type: number
+                steps:
+                  items:
+                    properties:
+                      duration:
+                        format: float
+                        type: number
+                      waypoints:
+                        $ref: '#/components/schemas/Waypoint'
+                    required:
+                    - duration
+                    - waypoints
+                    type: object
+                  minItems: 2
+                  type: array
+                timetable_id:
+                  description: timetable ID
+                  type: integer
+              required:
+              - infra_id
+              - timetable_id
+              - steps
+              - rolling_stocks
+              - rolling_stock_id
+              - comfort
+              - standard_allowance
+              type: object
       responses:
         '200':
           content:
