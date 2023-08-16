@@ -98,7 +98,7 @@ jobs:
         run: cargo install cargo-tarpaulin
 
       - name: Test and coverage
-        run: cargo tarpaulin --release -r ./editoast --out Xml -- --test-threads 1
+        run: cargo tarpaulin -r ./editoast --out Xml -- --test-threads 1
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
@@ -153,7 +153,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           args: --all-features --all-targets --manifest-path=editoast/Cargo.toml -- -D warnings
-          
+
       - name: Documentation check
         run: cargo doc --manifest-path editoast/Cargo.toml
         env:

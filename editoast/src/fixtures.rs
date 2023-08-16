@@ -186,15 +186,11 @@ pub mod tests {
     }
 
     #[fixture]
-    pub async fn scenario_fixture_set(
-        db_pool: Data<DbPool>,
-        #[future] empty_infra: TestFixture<Infra>,
-        #[future] timetable: TestFixture<Timetable>,
-        #[future] study_fixture_set: StudyFixtureSet,
-    ) -> ScenarioFixtureSet {
-        let StudyFixtureSet { project, study } = study_fixture_set.await;
-        let empty_infra = empty_infra.await;
-        let timetable = timetable.await;
+    pub async fn scenario_fixture_set() -> ScenarioFixtureSet {
+        let project = project(db_pool());
+        let StudyFixtureSet { project, study } = study_fixture_set(db_pool(), project).await;
+        let empty_infra = empty_infra(db_pool()).await;
+        let timetable = timetable(db_pool()).await;
         let scenario_model = Scenario {
             name: Some(String::from("scenario_γ")),
             infra_id: Some(empty_infra.id()),
@@ -203,7 +199,7 @@ pub mod tests {
             creation_date: Some(Utc::now().naive_utc()),
             ..Scenario::default()
         };
-        let scenario = TestFixture::create(scenario_model, db_pool.clone()).await;
+        let scenario = TestFixture::create(scenario_model, db_pool().clone()).await;
         ScenarioFixtureSet {
             project,
             study,
