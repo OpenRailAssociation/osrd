@@ -25,8 +25,14 @@ pub fn infra_model(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
                 use diesel_async::RunQueryDsl;
                 use diesel::ExpressionMethods;
 
-                let datas = values
-                    .iter()
+                // Work around a diesel limitation
+                // See https://github.com/diesel-rs/diesel/issues/2414
+                // Divided by 3 here because we are inserting three values
+                // When using AsyncPgConnection, we must divide again
+                // Maybe it is related to connection pipelining
+                const DIESEL_MAX_VALUES : usize = (2_usize.pow(16) - 1)/3/2;
+                let futures = values.chunks(DIESEL_MAX_VALUES).map(|chunk| {
+                    let values = chunk.iter()
                     .map(|value| {
                         (
                             obj_id.eq(value.get_id().clone()),
@@ -36,19 +42,12 @@ pub fn infra_model(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
                     })
                     .collect::<Vec<_>>();
 
-                // Work around a diesel limitation
-                // See https://github.com/diesel-rs/diesel/issues/2414
-                // Divided by 3 here because we are inserting three values
-                // When using AsyncPgConnection, we must divide again
-                // Maybe it is related to connection pipelining
-                const DIESEL_MAX_VALUES : usize = (2_usize.pow(16) - 1)/3/2;
-                for data_chunk in datas.chunks(DIESEL_MAX_VALUES) {
                     diesel::insert_into(#table::table)
-                        .values(data_chunk)
-                        .execute(conn).await?;
-                }
+                        .values(values)
+                        .execute(conn)
+                });
 
-                Ok(())
+                futures::future::try_join_all(futures).await.map(|_| Ok(()))?
             }
         }
     };
