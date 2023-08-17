@@ -27,17 +27,17 @@ const InfraSelectorModalBodyEdition = ({
 
   const validateFile = async (fileToValidate: File) => {
     if (fileToValidate.type !== 'application/json') {
-      setErrorMessage(t('customget:notJSONFormat'));
+      setErrorMessage(t('jsonUpload.notJSONFormat'));
       return false;
     }
     if (fileToValidate.size === 0) {
-      setErrorMessage(t('customget:emptyFile'));
+      setErrorMessage(t('jsonUpload.emptyFile'));
       return false;
     }
     try {
       JSON.parse(await fileToValidate.text());
     } catch (e) {
-      setErrorMessage(t('customget:badJSON'));
+      setErrorMessage(t('jsonUpload.badJSON'));
       return false;
     }
     return true;

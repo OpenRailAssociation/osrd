@@ -359,5 +359,10 @@
         "show-more-ranges_other": "See {{count}} additional track sections"
       }
     }
+  },
+  "jsonUpload": {
+    "badJSON": "The JSON file is malformed",
+    "emptyFile": "The file is empty",
+    "notJSONFormat": "The file is not in JSON format "
   }
 }

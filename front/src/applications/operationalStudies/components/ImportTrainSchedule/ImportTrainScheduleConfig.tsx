@@ -9,7 +9,6 @@ import MemoStationSelector from 'applications/operationalStudies/components/Impo
 import { setFailure } from 'reducers/main';
 import StationCard from 'common/StationCard';
 import { formatIsoDate } from 'utils/date';
-import UploadFileModal from 'applications/customget/components/uploadFileModal';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import {
   ImportedTrainSchedule,
@@ -24,6 +23,7 @@ import {
   TrackLocation,
 } from 'common/api/osrdEditoastApi';
 import { getGraouTrainSchedules } from 'common/api/graouApi';
+import UploadFileModal from 'common/uploadFileModal';
 
 interface ImportTrainScheduleConfigProps {
   infraId: number;

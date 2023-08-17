@@ -111,7 +111,6 @@ organized in folders.
 **The components propose the main JS/TS file and eventually another folder with same name containing
 some minors subcomponents linked to.**
 
-- [customget/](#isolated-space-time-chart-for-research-needs-customget)
   - components/
   - views/
 - [editor/](#infrastructure-editor-editor)
@@ -199,11 +198,6 @@ realistic timetable from [french GTFS data by SNCF](https://data.sncf.com).
 This is an implementation reference for all map concerns. It aims to display all layers and propose
 a ready-to-use map component reference. When adding a new common layer inside an application map
 component, please add it first to this application.
-
-### Isolated space-time chart for research needs `customGET/`
-
-_EXPERIMENTATION_ This application, which is not intended to remain as is, is a space-time graph fed
-by external data, to be used for thesis work on optimization.
 
 ## Common components `/src/common`
 
