@@ -1,5 +1,6 @@
 package fr.sncf.osrd.standalone_sim.result;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.RangeMap;
 import com.squareup.moshi.Json;
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory;
@@ -8,6 +9,7 @@ import fr.sncf.osrd.envelope_sim.electrification.Electrified;
 import fr.sncf.osrd.envelope_sim.electrification.Neutral;
 import fr.sncf.osrd.envelope_sim.electrification.NonElectrified;
 import fr.sncf.osrd.train.RollingStock;
+import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -54,6 +56,18 @@ public class ElectrificationRange {
             public int hashCode() {
                 return Objects.hash(mode, modeHandled, profile, profileHandled);
             }
+
+            @Override
+            @ExcludeFromGeneratedCodeCoverage
+            public String toString() {
+                return MoreObjects.toStringHelper(this)
+                        .add("mode", mode)
+                        .add("modeHandled", modeHandled)
+                        .add("profile", profile)
+                        .add("profileHandled", profileHandled)
+                        .toString();
+            }
+
         }
 
         public static class NeutralUsage extends ElectrificationUsage {
@@ -70,6 +84,14 @@ public class ElectrificationRange {
 
             public int hashCode() {
                 return Objects.hash(isLowerPantograph);
+            }
+
+            @Override
+            @ExcludeFromGeneratedCodeCoverage
+            public String toString() {
+                return MoreObjects.toStringHelper(this)
+                        .add("isLowerPantograph", isLowerPantograph)
+                        .toString();
             }
         }
 

@@ -691,7 +691,7 @@ public class StandaloneSimulationTest extends ApiTest {
 
 
     @Test
-    public void testElectrificationRangesThermal() throws IOException {
+    public void testElectrificationRangesThermalNonElectrified() throws IOException {
         final var rjsTrainPath = tinyInfraTrainPath();
 
         // build the simulation request
@@ -714,5 +714,39 @@ public class StandaloneSimulationTest extends ApiTest {
 
         assertEquals(1, electrificationRanges.size());
         assertEquals(new NonElectrifiedUsage(), electrificationRanges.get(0).electrificationUsage);
+    }
+
+    @Test
+    public void testElectrificationRangesThermalElectrified() throws IOException {
+        final var rjsTrainPath = smallInfraTrainPath();
+
+        // build the simulation request
+        var trainSchedules = new ArrayList<RJSStandaloneTrainSchedule>();
+        trainSchedules.add(new RJSStandaloneTrainSchedule("Test.", "fast_rolling_stock", 0,
+                new RJSAllowance[0],
+                new RJSTrainStop[]{RJSTrainStop.lastStop(0.1)}, null));
+        var query = new StandaloneSimulationRequest(
+                "small_infra/infra.json",
+                "1",
+                2,
+                getExampleRollingStocks(),
+                trainSchedules,
+                rjsTrainPath
+        );
+
+        // parse back the simulation result
+        var simResult = runStandaloneSimulation(query);
+        var electrificationRanges = simResult.electrificationRanges.get(0);
+
+        ElectrificationUsage[] expected = {
+                new ElectrifiedUsage("1500", false, null, true),
+                new NeutralUsage(true),
+                new ElectrifiedUsage("1500", false, null, true),
+                new ElectrifiedUsage("25000", false, null, true),
+                new NeutralUsage(false),
+                new ElectrifiedUsage("25000", false, null, true),
+        };
+
+        assertArrayEquals(expected, electrificationRanges.stream().map(r -> r.electrificationUsage).toArray());
     }
 }
