@@ -1,9 +1,11 @@
-import Loader from 'common/Loader';
+import { isEmpty } from 'lodash';
 import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
+
+import { Comfort, RollingStock, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import Loader from 'common/Loader';
 import { setFailure } from 'reducers/main';
-import { RollingStock, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import RollingStock2Img from './RollingStock2Img';
 import RollingStockCurves from './RollingStockCurves';
 
@@ -11,12 +13,12 @@ type RollingStockCardDetailProps = {
   id: number;
   hideCurves?: boolean;
   form?: string;
-  curvesComfortList?: string[];
-  setCurvesComfortList: (curvesComfortList: string[]) => void;
+  curvesComfortList: Comfort[];
+  setCurvesComfortList: (curvesComfortList: Comfort[]) => void;
 };
 
 export const listCurvesComfort = (curvesData: RollingStock['effort_curves']) => {
-  const comfortList = ['STANDARD'];
+  const comfortList: Comfort[] = ['STANDARD'];
   Object.keys(curvesData.modes).forEach((mode) => {
     curvesData.modes[mode].curves.forEach((curve) => {
       if (curve.cond?.comfort) {
@@ -60,7 +62,7 @@ export default function RollingStockCardDetail({
     }
   }, [error]);
 
-  return rollingStock && curvesComfortList ? (
+  return rollingStock && !isEmpty(curvesComfortList) ? (
     <div className={`${form ? 'px-4' : 'rollingstock-body'}`}>
       <div className={`row pt-2  ${form}`}>
         <div className="col-sm-6">

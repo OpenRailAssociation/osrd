@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { PointTooltipProps, ResponsiveLine } from '@nivo/line';
 import { useTranslation } from 'react-i18next';
-import { RollingStock } from 'common/api/osrdEditoastApi';
+import { Comfort, RollingStock } from 'common/api/osrdEditoastApi';
 import { COLORS } from './consts/consts';
 import { comfort2pictogram } from './RollingStockHelpers';
 
@@ -9,14 +9,14 @@ type EffortCurvesModes = RollingStock['effort_curves']['modes'];
 type TransformedCurves = {
   [index: string]: {
     mode: string;
-    comfort: string;
+    comfort: Comfort;
     speeds: number[];
     max_efforts: number[];
   };
 };
 type ParsedCurves = {
   color: string;
-  comfort: string;
+  comfort: Comfort;
   data: {
     x: number;
     y: number;
@@ -53,7 +53,7 @@ const parseData = (
 };
 
 function LegendComfortSwitches(props: {
-  curvesComfortList: string[];
+  curvesComfortList: Comfort[];
   comfortsStates: { [key: string]: boolean };
   setComfortsStates: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>>;
 }) {
@@ -136,13 +136,15 @@ function initialComfortsState(curvesComfortList: string[]) {
   return comfortsState;
 }
 
-export default function RollingStockCurve(props: {
+export default function RollingStockCurve({
+  data,
+  curvesComfortList,
+  isOnEditionMode,
+}: {
   data: EffortCurvesModes;
-  curvesComfortList: string[];
+  curvesComfortList: Comfort[];
   isOnEditionMode?: boolean;
 }) {
-  const { data, curvesComfortList, isOnEditionMode } = props;
-
   const { t, ready } = useTranslation(['rollingstock']);
   const mode2name = (mode: string) => (mode !== 'thermal' ? `${mode}V` : t('thermal'));
 
@@ -163,7 +165,7 @@ export default function RollingStockCurve(props: {
           transformedCurves[optionalCurveName] = {
             ...(curve.curve as TransformedCurves['index']),
             mode: name,
-            comfort: curve.cond.comfort as string,
+            comfort: curve.cond.comfort,
           };
         }
       });
