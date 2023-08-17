@@ -192,16 +192,23 @@ public class RollingStock implements PhysicsRollingStock {
     }
 
     /**
+     * Returns whether the train should coast while crossing this neutral section or use its (thermal) traction
+     */
+    private boolean shouldCoast(Neutral n, Comfort comfort) {
+        var overlappedCurve = findTractiveEffortCurve(comfort, n.overlappedElectrification);
+        return modes.get(overlappedCurve.cond.mode).isElectric;
+    }
+
+    /**
      * Returns the tractive effort curve that matches best, along with the electrification conditions that matched
      */
     protected CurveAndCondition findTractiveEffortCurve(Comfort comfort, Electrification electrification) {
         if (electrification instanceof Neutral n) {
-            var overlappedCurve = findTractiveEffortCurve(comfort, n.overlappedElectrification);
-            var isOverlappedCurveThermal = !modes.get(overlappedCurve.cond.mode).isElectric;
-            if (isOverlappedCurveThermal) {
-                return overlappedCurve;
+            if (shouldCoast(n, comfort)) {
+                return new CurveAndCondition(COASTING_CURVE, new InfraConditions(null, null, null));
+            } else {
+                return findTractiveEffortCurve(comfort, n.overlappedElectrification);
             }
-            return new CurveAndCondition(COASTING_CURVE, new InfraConditions(null, null, null));
         }
         if (electrification instanceof NonElectrified) {
             return new CurveAndCondition(modes.get(defaultMode).defaultCurve,
@@ -271,6 +278,9 @@ public class RollingStock implements PhysicsRollingStock {
 
         for (var elecCondEntry : electrificationMap.asMapOfRanges().entrySet()) {
             if (elecCondEntry.getValue() instanceof Neutral n) {
+                if (!shouldCoast(n, comfort)) {
+                    continue;
+                }
                 // estimate the distance during which the train will be coasting, due to having respected the
                 // neutral section
                 var deadSectionRange = computeDeadSectionRange(elecCondEntry.getKey(), n, maxSpeedEnvelope);
