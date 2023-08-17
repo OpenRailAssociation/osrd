@@ -1,33 +1,58 @@
-import React, { useEffect, useRef, useState } from 'react';
-import PropTypes from 'prop-types';
+import cx from 'classnames';
+import React, { useMemo, useRef, useState } from 'react';
+import { LazyLoadComponent } from 'react-lazy-load-image-component';
+
 import { BsLightningFill } from 'react-icons/bs';
 import { MdLocalGasStation } from 'react-icons/md';
 import { IoIosSpeedometer } from 'react-icons/io';
 import { FaWeightHanging } from 'react-icons/fa';
 import { AiOutlineColumnWidth } from 'react-icons/ai';
-import { LazyLoadComponent } from 'react-lazy-load-image-component';
+
+import { Comfort, LightRollingStock } from 'common/api/osrdEditoastApi';
 import RollingStockCardDetail from './RollingStockCardDetail';
 import RollingStock2Img from './RollingStock2Img';
 import { RollingStockInfo } from './RollingStockHelpers';
 import RollingStockCardButtons from './RollingStockCardButtons';
 
-function RollingStockCard(props) {
-  const {
-    rollingStock,
-    ref2scroll,
-    setOpenedRollingStockCardId,
-    isOpen,
-    noCardSelected,
-    isOnEditMode,
-  } = props;
-  const [tractionModes, setTractionModes] = useState({
-    electric: false,
-    thermal: false,
-    voltages: [],
-  });
-  const [curvesComfortList, setCurvesComfortList] = useState();
+interface RollingStockCardProps {
+  isOpen: boolean;
+  isOnEditMode?: boolean;
+  noCardSelected: boolean;
+  ref2scroll?: React.MutableRefObject<HTMLDivElement | null>;
+  rollingStock: LightRollingStock;
+  setOpenedRollingStockCardId: (openCardId: number | undefined) => void;
+}
 
-  const ref2scrollWhenOpened = useRef();
+const RollingStockCard = ({
+  isOpen,
+  isOnEditMode = false,
+  noCardSelected,
+  rollingStock,
+  ref2scroll = undefined,
+  setOpenedRollingStockCardId,
+}: RollingStockCardProps) => {
+  const [curvesComfortList, setCurvesComfortList] = useState<Comfort[]>([]);
+
+  const ref2scrollWhenOpened: React.RefObject<HTMLInputElement> = useRef<HTMLInputElement>(null);
+
+  const tractionModes = useMemo(() => {
+    const localModes = {
+      electric: false,
+      thermal: false,
+      voltages: [],
+    };
+    const localVoltages: string[] = [];
+    Object.keys(rollingStock.effort_curves.modes).forEach((modeName) => {
+      if (rollingStock.effort_curves.modes[modeName].is_electric) {
+        localModes.electric = true;
+        localVoltages.push(modeName);
+      } else {
+        localModes.thermal = true;
+      }
+    });
+    return { ...localModes, voltages: localVoltages };
+  }, []);
+
   function displayCardDetail() {
     if (!isOpen) {
       setOpenedRollingStockCardId(rollingStock.id);
@@ -35,29 +60,13 @@ function RollingStockCard(props) {
     }
   }
 
-  useEffect(() => {
-    if (typeof rollingStock.effort_curves.modes === 'object') {
-      const localVoltages = {};
-      const localModes = {};
-      Object.keys(rollingStock.effort_curves.modes).forEach((modeName) => {
-        if (rollingStock.effort_curves.modes[modeName].is_electric) {
-          localModes.electric = true;
-          localVoltages[modeName] = true;
-        } else {
-          localModes.thermal = true;
-        }
-      });
-      setTractionModes({ ...localModes, voltages: Object.keys(localVoltages) });
-    }
-    // Has to be run only once
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   return (
     <div
-      className={`rollingstock-container mb-3 ${isOpen ? 'active' : 'inactive'} ${
-        noCardSelected ? 'solid' : ''
-      }`}
+      className={cx(
+        'rollingstock-container mb-3',
+        isOpen ? 'active' : 'inactive',
+        noCardSelected && 'solid'
+      )}
       role="button"
       onClick={displayCardDetail}
       tabIndex={0}
@@ -88,9 +97,10 @@ function RollingStockCard(props) {
       ) : (
         <LazyLoadComponent>
           <div
-            className={`rollingstock-body-container-img ${
+            className={cx(
+              'rollingstock-body-container-img',
               isOpen ? 'opened-rollingstock-body' : 'closed-rollingstock-body'
-            }`}
+            )}
           >
             <div className="rollingstock-body-img">
               <RollingStock2Img rollingStock={rollingStock} />
@@ -146,7 +156,6 @@ function RollingStockCard(props) {
         </div>
         {isOpen && curvesComfortList && !isOnEditMode ? (
           <RollingStockCardButtons
-            isOnEditMode
             id={rollingStock.id}
             curvesComfortList={curvesComfortList}
             setOpenedRollingStockCardId={setOpenedRollingStockCardId}
@@ -155,21 +164,6 @@ function RollingStockCard(props) {
       </div>
     </div>
   );
-}
-
-RollingStockCard.defaultProps = {
-  ref2scroll: undefined,
-  isOnEditMode: false,
 };
 
-RollingStockCard.propTypes = {
-  rollingStock: PropTypes.object.isRequired,
-  isOpen: PropTypes.bool.isRequired,
-  setOpenedRollingStockCardId: PropTypes.func.isRequired,
-  ref2scroll: PropTypes.object,
-  noCardSelected: PropTypes.bool.isRequired,
-  isOnEditMode: PropTypes.bool,
-};
-
-const MemoizedRollingStockCard = React.memo(RollingStockCard);
-export default MemoizedRollingStockCard;
+export default React.memo(RollingStockCard);

@@ -1,49 +1,61 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { IoIosSnow } from 'react-icons/io';
 import { ImFire } from 'react-icons/im';
+import { Comfort, LightRollingStock } from 'common/api/osrdEditoastApi';
 
-export function checkUnit({ unit, detail }) {
+const RollingStockUnit = ({ unit, detail }: { unit: string; detail: string }) => {
   if (unit && unit !== 'US') {
     return <span className={`rollingstock-info-unit ${unit}`}>{unit}</span>;
   }
-  if (detail?.search(/UM3/i) !== -1) {
+  if (detail.search(/UM3/i) !== -1) {
     return <span className="rollingstock-info-unit UM3">UM3</span>;
   }
-  if (detail?.search(/UM|MUX/i) !== -1) {
+  if (detail.search(/UM|MUX/i) !== -1) {
     return <span className="rollingstock-info-unit UM2">UM2</span>;
   }
   return null;
+};
+
+interface RollingStockInfoProps {
+  rollingStock: LightRollingStock;
+  showSeries?: boolean;
+  showMiddle?: boolean;
+  showEnd?: boolean;
 }
 
-export function RollingStockInfo({ rollingStock, showSeries, showMiddle, showEnd }) {
+export const RollingStockInfo = ({
+  rollingStock,
+  showSeries = true,
+  showMiddle = true,
+  showEnd = true,
+}: RollingStockInfoProps) => {
   const { metadata } = rollingStock;
   return (
     <div className="rollingstock-info">
       {showSeries ? (
         <span className="rollingstock-info-begin">
           <span className="rollingstock-info-series">
-            {metadata.series ? metadata.series : metadata?.reference}
+            {metadata.series ? metadata.series : metadata.reference}
           </span>
-          {checkUnit(metadata)}
+          <RollingStockUnit unit={metadata.unit} detail={metadata.detail} />
           <span className="rollingstock-info-subseries">
             {metadata.series && metadata.series !== metadata.subseries
-              ? metadata?.subseries
-              : metadata?.detail}
+              ? metadata.subseries
+              : metadata.detail}
           </span>
         </span>
       ) : null}
       {showMiddle && metadata.series ? (
         <span className="rollingstock-info-middle">
-          {`${metadata?.family} / ${metadata?.type} / ${metadata?.grouping}`}
+          {`${metadata.family} / ${metadata.type} / ${metadata.grouping}`}
         </span>
       ) : null}
       {showEnd ? <span className="rollingstock-info-end">{rollingStock.name}</span> : null}
     </div>
   );
-}
+};
 
-export function comfort2pictogram(comfort) {
+export function comfort2pictogram(comfort: Comfort | undefined) {
   switch (comfort) {
     case 'AC':
       return (
@@ -63,16 +75,3 @@ export function comfort2pictogram(comfort) {
       return null;
   }
 }
-
-RollingStockInfo.defaultProps = {
-  showSeries: true,
-  showMiddle: true,
-  showEnd: true,
-};
-
-RollingStockInfo.propTypes = {
-  rollingStock: PropTypes.object.isRequired,
-  showSeries: PropTypes.bool,
-  showMiddle: PropTypes.bool,
-  showEnd: PropTypes.bool,
-};

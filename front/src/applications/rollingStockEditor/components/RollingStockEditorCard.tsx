@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { RollingStock } from 'common/api/osrdEditoastApi';
+import { Comfort, RollingStock } from 'common/api/osrdEditoastApi';
 import RollingStockCardDetail, {
   listCurvesComfort,
 } from 'common/RollingStockSelector/RollingStockCardDetail';
@@ -18,7 +18,7 @@ export default function RollingStockEditorCard({
   isEditing,
   rollingStock,
 }: RollingStockEditorCardProps) {
-  const [curvesComfortList, setCurvesComfortList] = useState<string[]>([]);
+  const [curvesComfortList, setCurvesComfortList] = useState<Comfort[]>([]);
 
   return (
     <div className={`rollingstock-editor-form ${!isEditing ? 'borders' : ''} w-100`}>
