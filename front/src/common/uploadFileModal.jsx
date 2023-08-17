@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 
 function UploadFileModal(props) {
-  const { t } = useTranslation(['customget', 'translation']);
+  const { t } = useTranslation(['translation']);
   const [selectedFile, setSelectedFile] = useState();
   const [isValid, setIsValid] = useState('');
   const { closeModal } = useContext(ModalContext);
@@ -15,15 +15,15 @@ function UploadFileModal(props) {
 
   const validateFile = async (fileToValidate) => {
     if (fileToValidate.type !== 'application/json') {
-      return t('customget:notJSONFormat');
+      return t('jsonUpload.notJSONFormat');
     }
     if (fileToValidate.size === 0) {
-      return t('customget:emptyFile');
+      return t('jsonUpload.emptyFile');
     }
     try {
       JSON.parse(await fileToValidate.text());
     } catch (e) {
-      return t('customget:badJSON');
+      return t('jsonUpload.badJSON');
     }
     return true;
   };
@@ -56,7 +56,7 @@ function UploadFileModal(props) {
                 className="btn btn-block btn-sm btn-secondary"
                 onClick={closeModal}
               >
-                {t('translation:common:cancel')}
+                {t('common.cancel')}
               </button>
             </div>
             <div className="col-6">
@@ -65,7 +65,7 @@ function UploadFileModal(props) {
                 className={`btn btn-block btn-sm btn-primary ${isValid !== true ? 'disabled' : ''}`}
                 onClick={() => handleSubmit(selectedFile)}
               >
-                {t('translation:common:download')}
+                {t('common.download')}
               </button>
             </div>
           </div>

@@ -73,7 +73,6 @@ export class PlaywrightHomePage {
       this.getTranslations('editor'),
       this.getTranslations('rollingStockEditor'),
       this.getTranslations('stdcm'),
-      this.getTranslations('customget'),
     ]);
   }
 

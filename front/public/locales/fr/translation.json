@@ -359,5 +359,11 @@
         "show-more-ranges_other": "Voir {{count}} sections de lignes de plus"
       }
     }
+  },
+  "jsonUpload": {
+    "badJSON": "Le fichier JSON est malformé",
+    "emptyFile": "Le fichier est vide",
+    "notJSONFormat": "Le fichier n'est pas au format JSON"
   }
+
 }

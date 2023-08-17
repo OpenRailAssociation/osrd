@@ -6,7 +6,6 @@ import 'i18n';
 import { attemptLoginOnLaunch } from 'reducers/user';
 import { updateLastInterfaceVersion } from 'reducers/main';
 
-import HomeCustomGET from 'applications/customget/Home';
 import HomeEditor from 'applications/editor/Home';
 import HomeMap from 'applications/referenceMap/Home';
 import HomeOperationalStudies from 'applications/operationalStudies/Home';
@@ -66,7 +65,6 @@ export default function App() {
               <Route path="/editor/*" element={<HomeEditor />} />
               <Route path="/rolling-stock-editor/*" element={<HomeRollingStockEditor />} />
               <Route path="/stdcm/*" element={<HomeStdcm />} />
-              <Route path="/customget/*" element={<HomeCustomGET />} />
               <Route path="/*" element={<Home />} />
             </Routes>
           </ModalProvider>
