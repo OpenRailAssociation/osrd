@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 from osrd_schemas import infra
 
-from .direction import ApplicableDirection
+from .direction import ApplicableDirection, Direction
 
 if TYPE_CHECKING:
     from .track_section import TrackSection
@@ -53,6 +53,19 @@ class TrackRange(RangeElement):
 
     def to_rjs(self):
         return infra.TrackRange(track=self.track.id, begin=self.begin, end=self.end)
+
+
+@dataclass
+class DirectionalTrackRange(TrackRange):
+    direction: Direction
+
+    def to_rjs(self):
+        return infra.DirectionalTrackRange(
+            track=self.track.id,
+            direction=infra.Direction[self.direction.name],
+            begin=self.begin,
+            end=self.end,
+        )
 
 
 @dataclass

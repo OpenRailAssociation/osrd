@@ -27,7 +27,7 @@ class Infra:
     catenaries: List[Catenary] = field(default_factory=list)
     neutral_sections: List[NeutralSection] = field(default_factory=list)
 
-    VERSION = "3.4.0"
+    VERSION = "3.4.1"
 
     def add_route(self, *args, **kwargs):
         self.routes.append(Route(*args, **kwargs))
@@ -52,7 +52,7 @@ class Infra:
 
     def save(self, path):
         with open(path, "w") as f:
-            print(self.to_rjs().model_dump_json(indent=2, exclude_unset=True), file=f)
+            print(self.to_rjs().model_dump_json(indent=4, exclude_unset=True), file=f)
 
     def make_rjs_signals(self):
         for track in self.track_sections:
