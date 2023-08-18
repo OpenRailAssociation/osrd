@@ -10,6 +10,7 @@
     "errorNoFrom": "You must fill in an origin.",
     "errorNoTo": "You must fill in a destination.",
     "errorSameFromTo": "Origin and destination must be different",
+    "errorImport": "Data conversion failed",
     "unableToRetrievePathfinding": "Impossible to create a path",
     "unableToRetrieveTrainSchedule": "Impossible to compute running time"
   },

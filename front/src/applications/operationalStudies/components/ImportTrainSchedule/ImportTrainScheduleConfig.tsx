@@ -91,16 +91,9 @@ export default function ImportTrainScheduleConfig({
         return true;
       }
       const hasInvalidteps = trainSchedule.steps.some((step) =>
-        [
-          'arrivalTime',
-          'departureTime',
-          'uic',
-          'yard',
-          'name',
-          'trigram',
-          'latitude',
-          'longitude',
-        ].some((key) => !(key in step))
+        ['arrivalTime', 'departureTime', 'uic', 'name', 'trigram', 'latitude', 'longitude'].some(
+          (key) => !(key in step)
+        )
       );
       return hasInvalidteps;
     });
@@ -108,11 +101,11 @@ export default function ImportTrainScheduleConfig({
       dispatch(
         setFailure({
           name: t('errorMessages.error'),
-          message: 'Impossible de convertir les données en TrainSchedule',
+          message: t('errorMessage.errorImport'),
         })
       );
       console.error(
-        'Invalid data format: can not convert response into TrainSchedules. Expected format : { trainNumber: string; rollingStock: string; departureTime: string; arrivalTime: string; departure: string; steps: ({uic: number; yard: string; name: string; trigram: string; latitude: number; longitude: number; arrivalTime: string; departureTime: string; })[]; transilienName?: string; }'
+        'Invalid data format: can not convert response into TrainSchedules. Expected format : { trainNumber: string; rollingStock: string; departureTime: string; arrivalTime: string; departure: string; steps: ({uic: number; yard?: string; name: string; trigram: string; latitude: number; longitude: number; arrivalTime: string; departureTime: string; })[]; transilienName?: string; }'
       );
       return null;
     }
