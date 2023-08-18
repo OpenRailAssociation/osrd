@@ -4,6 +4,7 @@ from typing import List
 from osrd_schemas import infra
 
 from railjson_generator.schema.infra.direction import Direction
+from railjson_generator.schema.infra.range_elements import DirectionalTrackRange
 from railjson_generator.schema.infra.track_section import TrackSection
 
 
@@ -11,25 +12,6 @@ def _neutral_section_id():
     res = f"neutral_section.{NeutralSection._INDEX}"
     NeutralSection._INDEX += 1
     return res
-
-
-@dataclass
-class PathElement:
-    track_section: TrackSection
-    direction: Direction
-    begin: float
-    end: float
-
-    def length(self):
-        return abs(self.begin - self.end)
-
-    def to_rjs(self):
-        return infra.DirectionalTrackRange(
-            track=self.track_section.id,
-            begin=min(self.begin, self.end),
-            end=max(self.begin, self.end),
-            direction=infra.Direction[self.direction.name],
-        )
 
 
 @dataclass
@@ -44,18 +26,29 @@ class NeutralSection:
     For more details see [the documentation](https://osrd.fr/en/docs/explanation/neutral_sections/).
     """
 
-    track_ranges: List[PathElement] = field(default_factory=list)
+    announcement_track_ranges: List[DirectionalTrackRange] = field(default_factory=list)
+    track_ranges: List[DirectionalTrackRange] = field(default_factory=list)
     lower_pantograph: bool = field(default=False)
     label: str = field(default_factory=_neutral_section_id)
 
     _INDEX = 0
 
-    def add_track_range(self, track, begin, end, direction):
+    def add_track_range(self, track: TrackSection, begin: float, end: float, direction: Direction):
         self.track_ranges.append(
-            PathElement(
+            DirectionalTrackRange(
                 begin=begin,
                 end=end,
-                track_section=track,
+                track=track,
+                direction=direction,
+            )
+        )
+
+    def add_announcement_track_range(self, track: TrackSection, begin: float, end: float, direction: Direction):
+        self.announcement_track_ranges.append(
+            DirectionalTrackRange(
+                begin=begin,
+                end=end,
+                track=track,
                 direction=direction,
             )
         )
@@ -63,6 +56,7 @@ class NeutralSection:
     def to_rjs(self):
         return infra.NeutralSection(
             id=self.label,
+            announcement_track_ranges=[track.to_rjs() for track in self.announcement_track_ranges],
             track_ranges=[track.to_rjs() for track in self.track_ranges],
             lower_pantograph=self.lower_pantograph,
         )

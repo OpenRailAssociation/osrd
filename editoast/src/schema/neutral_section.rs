@@ -18,6 +18,7 @@ use serde::{Deserialize, Serialize};
 #[derivative(Default)]
 pub struct NeutralSection {
     pub id: Identifier,
+    pub announcement_track_ranges: Vec<DirectionalTrackRange>,
     pub track_ranges: Vec<DirectionalTrackRange>,
     pub lower_pantograph: bool, // Whether the trains need to lower their pantograph to cross this section
 }

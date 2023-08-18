@@ -584,7 +584,6 @@ public class StandaloneSimulationTest extends ApiTest {
         ElectrificationUsage[] expected = {
                 new ElectrifiedUsage("1500", true, "O", false),
                 new NeutralUsage(true),
-                new ElectrifiedUsage("1500", true, "O", false),
                 new ElectrifiedUsage("25000", true, "25000", true),
                 new ElectrifiedUsage("25000", true, "22500", true),
                 new ElectrifiedUsage("25000", true, "20000", true),
@@ -626,12 +625,12 @@ public class StandaloneSimulationTest extends ApiTest {
         var electrificationRanges1 = simResult.electrificationRanges.get(0);
 
         assertNotNull(electrificationRanges1);
-        assertEquals(10, electrificationRanges1.size());
+        assertEquals(9, electrificationRanges1.size());
 
         var electrificationRanges2 = simResult.electrificationRanges.get(1);
 
         assertNotNull(electrificationRanges2);
-        assertEquals(6, electrificationRanges2.size());
+        assertEquals(5, electrificationRanges2.size());
     }
 
     record PowerRestrictionUsage(String code, boolean handled) {
@@ -667,8 +666,8 @@ public class StandaloneSimulationTest extends ApiTest {
 
         ElectrificationUsage[] expected = {
                 new ElectrifiedUsage("1500", true, "O", false),
-                new NeutralUsage(true),
                 new ElectrifiedUsage("1500", true, null, true),
+                new NeutralUsage(true),
                 new ElectrifiedUsage("25000", true, "25000", true),
                 new ElectrifiedUsage("25000", true, "20000", true),
                 new ElectrifiedUsage("25000", true, "22500", true),
@@ -741,7 +740,6 @@ public class StandaloneSimulationTest extends ApiTest {
         ElectrificationUsage[] expected = {
                 new ElectrifiedUsage("1500", false, null, true),
                 new NeutralUsage(true),
-                new ElectrifiedUsage("1500", false, null, true),
                 new ElectrifiedUsage("25000", false, null, true),
                 new NeutralUsage(false),
                 new ElectrifiedUsage("25000", false, null, true),

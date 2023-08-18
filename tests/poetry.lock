@@ -278,7 +278,7 @@ files = [
 
 [[package]]
 name = "osrd-schemas"
-version = "0.6.0"
+version = "0.6.1"
 description = ""
 optional = false
 python-versions = ">=3.9,<3.12"
@@ -538,7 +538,7 @@ testing = ["argcomplete", "attrs (>=19.2.0)", "hypothesis (>=3.56)", "mock", "no
 
 [[package]]
 name = "railjson-generator"
-version = "0.2.1"
+version = "0.2.2"
 description = ""
 optional = false
 python-versions = ">=3.9,<3.12"

@@ -1,4 +1,5 @@
 from enum import Enum
+from itertools import product
 from typing import Annotated, List, Literal, Mapping, NewType, Optional, Union, get_args
 
 from geojson_pydantic import LineString
@@ -7,7 +8,7 @@ from pydantic.fields import FieldInfo
 
 ALL_OBJECT_TYPES = []
 
-RAILJSON_INFRA_VERSION_TYPE = Literal["3.4.0"]
+RAILJSON_INFRA_VERSION_TYPE = Literal["3.4.1"]
 RAILJSON_INFRA_VERSION = get_args(RAILJSON_INFRA_VERSION_TYPE)[0]
 
 # Traits
@@ -126,6 +127,12 @@ class TrackRange(BaseModel):
 
     def length(self) -> float:
         return abs(self.begin - self.end)
+
+    def overlaps(self, other: "TrackRange") -> bool:
+        """
+        Returns true if the two track ranges overlap.
+        """
+        return self.track == other.track and self.begin < other.end and other.begin < self.end
 
 
 class DirectionalTrackRange(TrackRange):
@@ -441,10 +448,21 @@ class NeutralSection(BaseObjectTrait):
     For more details see [the documentation](https://osrd.fr/en/docs/explanation/neutral_sections/).
     """
 
+    announcement_track_ranges: List[DirectionalTrackRange] = Field(
+        description="List of locations where the upcoming neutral section is announced but not yet crossed",
+        default_factory=list,
+    )
     track_ranges: List[DirectionalTrackRange] = Field(
-        description="List of locations where the train cannot pull power from catenaries"
+        description="List of locations where the train cannot pull power from catenaries",
+        min_items=1,
     )
     lower_pantograph: bool = Field(description="Whether or not trains need to lower their pantograph in the section")
+
+    @model_validator(mode="after")
+    def check_no_overlap(self):
+        for tr, atr in product(self.track_ranges, self.announcement_track_ranges):
+            assert not tr.overlaps(atr), "track_ranges and announcement_track_ranges should not overlap"
+        return self
 
 
 class RailJsonInfra(BaseModel):

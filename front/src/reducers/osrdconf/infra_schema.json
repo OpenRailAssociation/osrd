@@ -475,6 +475,14 @@
         "NeutralSection": {
             "description": "\n    Neutral sections are portions of track where trains aren't allowed to pull power from catenaries.\n    They have to rely on inertia to cross such sections.\n\n    In practice, neutral sections are delimited by signs. In OSRD, neutral sections are directional\n    to allow accounting for different sign placement depending on the direction.\n\n    For more details see [the documentation](https://osrd.fr/en/docs/explanation/neutral_sections/).\n    ",
             "properties": {
+                "announcement_track_ranges": {
+                    "description": "List of locations where the upcoming neutral section is announced but not yet crossed",
+                    "items": {
+                        "$ref": "#/$defs/DirectionalTrackRange"
+                    },
+                    "title": "Announcement Track Ranges",
+                    "type": "array"
+                },
                 "id": {
                     "description": "Unique identifier of the object",
                     "maxLength": 255,
@@ -492,6 +500,7 @@
                     "items": {
                         "$ref": "#/$defs/DirectionalTrackRange"
                     },
+                    "minItems": 1,
                     "title": "Track Ranges",
                     "type": "array"
                 }
@@ -1555,8 +1564,8 @@
             "type": "array"
         },
         "version": {
-            "const": "3.4.0",
-            "default": "3.4.0",
+            "const": "3.4.1",
+            "default": "3.4.1",
             "description": "Version of the schema",
             "title": "Version"
         }
