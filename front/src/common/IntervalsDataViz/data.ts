@@ -1,15 +1,5 @@
 import { Feature, Point, LineString, Position } from 'geojson';
-import {
-  last,
-  differenceWith,
-  cloneDeep,
-  isEqual,
-  isArray,
-  isNil,
-  isObject,
-  isEmpty,
-  sortBy,
-} from 'lodash';
+import { last, differenceWith, cloneDeep, isEqual, isArray, isNil, isEmpty, sortBy } from 'lodash';
 import { JSONSchema7, JSONSchema7Definition } from 'json-schema';
 import { utils } from '@rjsf/core';
 import lineSplit from '@turf/line-split';
@@ -660,41 +650,6 @@ export function getClosestOperationalPoint(
   );
   const closestPoint = sortedOperationalPoints[0];
   return Math.abs(position - closestPoint.positionInPx) <= 10 ? closestPoint : null;
-}
-
-/**
- * Given a JSON schema, return the props name that are a linear metadata.
- * A Linear metadata is an array type with a ref
- * The ref should contains a begin & end
- */
-export function getLinearMetadataProperties(schema: JSONSchema7): Array<string> {
-  return Object.keys(schema?.properties || {})
-    .map((prop) => {
-      const propSchema = (schema?.properties || {})[prop] as JSONSchema7;
-      /* eslint-disable dot-notation */
-      if (
-        LINEAR_METADATA_FIELDS.includes(prop) &&
-        propSchema.type === 'array' &&
-        isObject(propSchema.items) &&
-        (propSchema.items as JSONSchema7)['$ref']
-      ) {
-        const refName = ((propSchema.items as JSONSchema7)['$ref'] || '').replace(
-          '#/definitions/',
-          ''
-        );
-        const refSchema = (schema.definitions || {})[refName] as JSONSchema7;
-        /* eslint-enable dot-notation */
-        if (
-          refSchema &&
-          refSchema.properties &&
-          refSchema.properties.begin &&
-          refSchema.properties.end
-        )
-          return prop;
-      }
-      return null;
-    })
-    .filter((n) => n !== null) as Array<string>;
 }
 
 /**
