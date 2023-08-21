@@ -1,0 +1,37 @@
+.selector-SNCF {
+  width: 11rem;
+  &-title {
+    text-align: center;
+    width: 90%;
+  }
+  &-itemslist {
+    cursor: pointer;
+    background-color: var(--coolgray1);
+    border-radius: 0.3rem;
+    height: 9.5rem;
+    width: 90%;
+  }
+  &-item {
+    color: var(--coolgray11);
+    background-color: var(--white);
+    border-radius: 0.3rem;
+    padding: 0.25rem;
+    &.selected {
+      &.selector-blue {
+        outline: 0.1rem solid var(--blue);
+      }
+      &.selector-pink {
+        outline: 0.1rem solid #fd2f7e; // TODO: Apply the color to the curves + different opacity on hover
+      }
+    }
+  }
+  &-arrow {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    right: -1.2rem;
+    height: 100%;
+    font-size: 4rem;
+    color: var(--coolgray1);
+  }
+}

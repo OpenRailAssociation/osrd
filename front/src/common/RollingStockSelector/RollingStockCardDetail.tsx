@@ -141,7 +141,6 @@ export default function RollingStockCardDetail({
           <table className="rollingstock-details-table ml-2">
             <tbody>
               <tr>
-                <td className="text-primary">a</td>
                 <td>
                   {Math.floor(
                     rollingStock.rolling_resistance?.A
@@ -153,7 +152,6 @@ export default function RollingStockCardDetail({
                 <td className="text-primary">{t('rollingResistanceA')}</td>
               </tr>
               <tr>
-                <td className="text-primary">b</td>
                 <td>
                   {Math.floor(
                     rollingStock.rolling_resistance?.B
@@ -165,7 +163,6 @@ export default function RollingStockCardDetail({
                 <td className="text-primary">{t('rollingResistanceB')}</td>
               </tr>
               <tr>
-                <td className="text-primary">c</td>
                 <td>
                   {Math.floor(
                     rollingStock.rolling_resistance?.C
