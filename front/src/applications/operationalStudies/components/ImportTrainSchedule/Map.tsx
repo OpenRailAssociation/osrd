@@ -1,10 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
-import PropTypes from 'prop-types';
 import maplibregl from 'maplibre-gl';
-import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl';
+import ReactMapGL, {
+  AttributionControl,
+  MapLayerMouseEvent,
+  ScaleControl,
+  ViewState,
+} from 'react-map-gl';
 import { point as turfPoint } from '@turf/helpers';
 import { useSelector } from 'react-redux';
-import turfNearestPointOnLine from '@turf/nearest-point-on-line';
+import turfNearestPointOnLine, { NearestPointOnLine } from '@turf/nearest-point-on-line';
 
 /* Main data & layers */
 import Background from 'common/Map/Layers/Background';
@@ -20,21 +24,37 @@ import 'common/Map/Map.scss';
 import OperationalPoints from 'common/Map/Layers/OperationalPoints';
 import Platforms from 'common/Map/Layers/Platforms';
 import { getMapMouseEventNearestFeature } from 'utils/mapboxHelper';
+import { LineString } from 'geojson';
+import { getMapStyle } from 'reducers/map/selectors';
 import { CUSTOM_ATTRIBUTION } from '../../../../common/Map/const';
 
-export default function Map(props) {
-  const { viewport, setViewport, setClickedFeature } = props;
-  const mapStyle = useSelector((state) => state.map.mapStyle);
-  const [lngLatHover, setLngLatHover] = useState();
-  const [trackSectionGeoJSON, setTrackSectionGeoJSON] = useState();
-  const [snappedPoint, setSnappedPoint] = useState();
+interface MapProps {
+  viewport: ViewState;
+  setViewport: (viewPort: ViewState) => void;
+  setClickedFeatureId: (clickedFeatureId: string) => void;
+}
+
+const viewportExtraSettings = {
+  altitude: 1.5,
+  maxZoom: 24,
+  minZoom: 0,
+  maxPitch: 60,
+  minPitch: 0,
+  transitionDuration: 100,
+};
+
+const Map = ({ viewport, setViewport, setClickedFeatureId }: MapProps) => {
+  const mapStyle = useSelector(getMapStyle);
+  const [lngLatHover, setLngLatHover] = useState<number[] | undefined>();
+  const [trackSectionGeoJSON, setTrackSectionGeoJSON] = useState<LineString | undefined>();
+  const [snappedPoint, setSnappedPoint] = useState<NearestPointOnLine | undefined>();
   const mapRef = useRef(null);
   const scaleControlStyle = {
     left: 20,
     bottom: 20,
   };
 
-  const onFeatureClick = (e) => {
+  const onFeatureClick = (e: MapLayerMouseEvent) => {
     const result = getMapMouseEventNearestFeature(e);
     if (
       result &&
@@ -42,11 +62,11 @@ export default function Map(props) {
       result.feature.properties.id &&
       result.feature.geometry.type === 'LineString'
     ) {
-      setClickedFeature(result.feature);
+      setClickedFeatureId(result.feature.properties.id);
     }
   };
 
-  const onMoveGetFeature = (e) => {
+  const onMoveGetFeature = (e: MapLayerMouseEvent) => {
     const result = getMapMouseEventNearestFeature(e);
     if (
       result &&
@@ -75,10 +95,9 @@ export default function Map(props) {
   return (
     <ReactMapGL
       ref={mapRef}
+      {...viewportExtraSettings}
       {...viewport}
       style={{ cursor: 'pointer' }}
-      width="100%"
-      height="100%"
       mapLib={maplibregl}
       mapStyle={osmBlankStyle}
       onMove={(e) => setViewport(e.viewState)}
@@ -89,7 +108,7 @@ export default function Map(props) {
       touchZoomRotate
     >
       <VirtualLayers />
-      <AttributionControl className="attribution-control" customAttribution={CUSTOM_ATTRIBUTION} />
+      <AttributionControl position="bottom-right" customAttribution={CUSTOM_ATTRIBUTION} />
       <ScaleControl maxWidth={100} unit="metric" style={scaleControlStyle} />
 
       <Background
@@ -114,10 +133,6 @@ export default function Map(props) {
       {snappedPoint !== undefined ? <SnappedMarker geojson={snappedPoint} /> : null}
     </ReactMapGL>
   );
-}
-
-Map.propTypes = {
-  viewport: PropTypes.object.isRequired,
-  setViewport: PropTypes.func.isRequired,
-  setClickedFeature: PropTypes.func.isRequired,
 };
+
+export default Map;

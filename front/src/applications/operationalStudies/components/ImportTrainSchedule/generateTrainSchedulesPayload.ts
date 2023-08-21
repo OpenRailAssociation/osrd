@@ -1,12 +1,13 @@
+import { Step, TrainScheduleWithPath } from 'applications/operationalStudies/types';
+import { PathStep } from 'common/api/osrdEditoastApi';
 import { time2sec } from 'utils/timeManipulation';
 
 // Hope for indexes are the same !
 // Synchronisation is done with indexes between pathfinding not suggered positions, and required steps from importation
-//
-function mixPathPositionsAndTimes(requiredSteps, pathFindingSteps) {
+function mixPathPositionsAndTimes(requiredSteps: Step[], pathFindingSteps: PathStep[]) {
   const startTime = new Date(requiredSteps[0].departureTime);
   const pathFindingStepsFiltered = pathFindingSteps.filter((step) => !step.suggestion);
-  const scheduledPoints = [];
+  const scheduledPoints: { path_offset: number; time: number }[] = [];
   requiredSteps.forEach((step, idx) => {
     if (idx !== 0) {
       const arrivalTime = new Date(step.arrivalTime);
@@ -19,9 +20,23 @@ function mixPathPositionsAndTimes(requiredSteps, pathFindingSteps) {
   return scheduledPoints;
 }
 
-export default function generateTrainSchedulesPayload(trainsWithPathRef, infraID, timetableID) {
-  const trainSchedulesByPathID = {};
-  trainsWithPathRef.forEach((train) => {
+interface Schedule {
+  train_name: string;
+  rolling_stock: number;
+  departure_time: number;
+  initial_speed: number;
+  scheduled_points: { path_offset: number; time: number }[];
+}
+
+export default function generateTrainSchedulesPayload(
+  trainsWithPath: TrainScheduleWithPath[],
+  timetableID: number
+) {
+  const trainSchedulesByPathID: Record<
+    string,
+    { timetable: number; path: number; schedules: Schedule[] }
+  > = {};
+  trainsWithPath.forEach((train) => {
     if (!trainSchedulesByPathID[train.pathId]) {
       trainSchedulesByPathID[train.pathId] = {
         timetable: timetableID,

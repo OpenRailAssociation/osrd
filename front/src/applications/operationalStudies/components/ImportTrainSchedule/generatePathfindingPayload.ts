@@ -1,19 +1,28 @@
 import { compact, isEmpty } from 'lodash';
 import rollingstockOpenData2OSRD from 'applications/operationalStudies/components/ImportTrainSchedule/rollingstock_opendata2osrd.json';
 import { isFirstOrLastElement } from 'utils/array';
+import { Step, TrainScheduleWithPathRef } from 'applications/operationalStudies/types';
+import { LightRollingStock } from 'common/api/osrdEditoastApi';
+import { Point } from './types';
 
 const getTrainAndRollingStockFromPath = (
-  path,
-  trainsWithPathRef,
-  rollingStocks,
-  defaultRollingStockId
+  trainNumber: string,
+  trainsWithPathRef: TrainScheduleWithPathRef[],
+  rollingStocks: LightRollingStock[],
+  defaultRollingStockId: number
 ) => {
-  const trainFromPathRef = trainsWithPathRef.find(
-    (train) => train.trainNumber === path.trainNumber
-  );
+  const trainFromPathRef = trainsWithPathRef.find((train) => train.trainNumber === trainNumber);
+
+  if (!trainFromPathRef) {
+    throw new Error('Train not found in trainsWithPathRef (getTrainAndRollingStockFromPath');
+  }
 
   const rollingStock = rollingStocks.find(
-    (rollingstock) => rollingstock.name === rollingstockOpenData2OSRD[trainFromPathRef.rollingStock]
+    (rollingstock) =>
+      rollingstock.name ===
+      rollingstockOpenData2OSRD[
+        trainFromPathRef.rollingStock as keyof typeof rollingstockOpenData2OSRD
+      ]
   );
 
   return {
@@ -26,7 +35,7 @@ const getTrainAndRollingStockFromPath = (
  * Create Pathfinding payload with custom points.
  * Transform the steps into waypoints using the custom points. If a step has no custom point, then it is ignored.
  */
-const generateWaypointFromCustomPoints = (step, customPoints) => {
+const generateWaypointFromCustomPoints = (step: Step, customPoints: Record<string, Point>) => {
   const { trackSectionId } = customPoints[step.uic];
   const longitude = Number(step.longitude);
   const latitude = Number(step.latitude);
@@ -45,7 +54,7 @@ const generateWaypointFromCustomPoints = (step, customPoints) => {
  * Create Autocomplete Pathfinding payload from path.
  * Transform the steps into waypoints from the first trackSection of each step. If a step has no trackSection, then it is ignored.
  */
-const generateAutocompleteWaypoints = (step) => {
+const generateAutocompleteWaypoints = (step: Step) => {
   if (isEmpty(step.tracks)) {
     return [];
   }
@@ -56,18 +65,18 @@ const generateAutocompleteWaypoints = (step) => {
 };
 
 const generatePathfindingPayload = (
-  trainsWithPathRef,
-  rollingStockDB,
-  path,
-  defaultRollingStockId,
-  infraId,
+  trainsWithPathRef: TrainScheduleWithPathRef[],
+  rollingStocks: LightRollingStock[],
+  trainNumber: string,
+  defaultRollingStockId: number,
+  infraId: number,
   autocomplete = true,
-  pointsDictionnary = {}
+  pointsDictionnary: Record<string, Point> = {}
 ) => {
   const { train, rollingStockId } = getTrainAndRollingStockFromPath(
-    path,
+    trainNumber,
     trainsWithPathRef,
-    rollingStockDB,
+    rollingStocks,
     defaultRollingStockId
   );
 
@@ -83,7 +92,7 @@ const generatePathfindingPayload = (
       }
       const isFirstOrLastStep = isFirstOrLastElement(train.steps, step);
       return {
-        duration: isFirstOrLastStep ? 0 : step.duration,
+        duration: isFirstOrLastStep || !step.duration ? 0 : step.duration,
         waypoints,
       };
     })

@@ -4,14 +4,6 @@ export const initialViewport = {
   zoom: 10.257506947953921,
   bearing: 0,
   pitch: 0,
-  width: 420,
-  height: 320,
-  altitude: 1.5,
-  maxZoom: 24,
-  minZoom: 0,
-  maxPitch: 60,
-  minPitch: 0,
-  transitionDuration: 100,
 };
 
 export const initialStatus = {

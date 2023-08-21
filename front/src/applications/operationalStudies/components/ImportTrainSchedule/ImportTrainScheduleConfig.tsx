@@ -5,14 +5,13 @@ import { useTranslation } from 'react-i18next';
 
 import { RollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import MemoStationSelector from 'applications/operationalStudies/components/ImportTrainSchedule/ImportTrainScheduleStationSelector';
+import StationSelector from 'applications/operationalStudies/components/ImportTrainSchedule/ImportTrainScheduleStationSelector';
 import { setFailure } from 'reducers/main';
-import StationCard from 'common/StationCard';
+import StationCard, { ImportStation } from 'common/StationCard';
 import { formatIsoDate } from 'utils/date';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import {
   ImportedTrainSchedule,
-  Step,
   TrainSchedule,
   TrainScheduleImportConfig,
 } from 'applications/operationalStudies/types';
@@ -20,7 +19,6 @@ import {
   SearchOperationalPointResult,
   PostSearchApiArg,
   osrdEditoastApi,
-  TrackLocation,
 } from 'common/api/osrdEditoastApi';
 import { getGraouTrainSchedules } from 'common/api/graouApi';
 import UploadFileModal from 'common/uploadFileModal';
@@ -40,9 +38,9 @@ export default function ImportTrainScheduleConfig({
 }: ImportTrainScheduleConfigProps) {
   const { t } = useTranslation(['operationalStudies/importTrainSchedule']);
   const [postSearch] = osrdEditoastApi.usePostSearchMutation();
-  const [from, setFrom] = useState();
+  const [from, setFrom] = useState<ImportStation | undefined>();
   const [fromSearchString, setFromSearchString] = useState('');
-  const [to, setTo] = useState();
+  const [to, setTo] = useState<ImportStation | undefined>();
   const [toSearchString, setToSearchString] = useState('');
   const [date, setDate] = useState(formatIsoDate(new Date()));
   const [startTime, setStartTime] = useState('00:00');
@@ -50,7 +48,15 @@ export default function ImportTrainScheduleConfig({
   const dispatch = useDispatch();
   const { openModal, closeModal } = useContext(ModalContext);
 
-  async function importTrackSections(opIds: number[]): Promise<Record<number, TrackLocation[]>> {
+  async function importTrackSections(opIds: number[]): Promise<
+    Record<
+      number,
+      {
+        position: number;
+        track: string;
+      }[]
+    >
+  > {
     const uniqueOpIds = Array.from(new Set(opIds));
     const constraint = uniqueOpIds.reduce((res, uic) => [...res, ['=', ['uic'], Number(uic)]], [
       'or',
@@ -131,12 +137,12 @@ export default function ImportTrainScheduleConfig({
           ...step,
           duration,
           tracks: trackSectionsByOp[Number(step.uic)] || [],
-        } as Step;
+        };
       });
       return {
         ...trainSchedule,
         steps: stepsWithDuration,
-      } as TrainSchedule;
+      };
     });
 
     setTrainsList(trainsSchedules);
@@ -219,7 +225,7 @@ export default function ImportTrainScheduleConfig({
                   <StationCard station={from} fixedHeight />
                 </div>
               ) : (
-                <MemoStationSelector
+                <StationSelector
                   id="fromSearch"
                   onSelect={setFrom}
                   term={fromSearchString}
@@ -243,7 +249,7 @@ export default function ImportTrainScheduleConfig({
                   <StationCard station={to} fixedHeight />
                 </div>
               ) : (
-                <MemoStationSelector
+                <StationSelector
                   id="toSearch"
                   onSelect={setTo}
                   term={toSearchString}
