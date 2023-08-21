@@ -46,7 +46,7 @@ export function getSwitchTypeJSONSchema(
           ...iter,
           [`${FLAT_SWITCH_PORTS_PREFIX}${port}`]: {
             title: `Port ${port}`,
-            $ref: '#/definitions/TrackEndpoint',
+            $ref: '#/$defs/TrackEndpoint',
           },
         }),
         {}
