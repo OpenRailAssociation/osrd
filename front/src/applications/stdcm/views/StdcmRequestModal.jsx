@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
-import { get, post } from 'common/requests';
+import { get } from 'common/requests';
+import { cloneDeep } from 'lodash';
 // osrd Redux reducers
 import {
   updateConsolidatedSimulation,
@@ -29,12 +30,13 @@ import { STDCM_REQUEST_STATUS } from 'applications/operationalStudies/consts';
 import { updateItinerary } from 'reducers/osrdconf';
 import { useTranslation } from 'react-i18next';
 import { Spinner } from 'common/Loader';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 
 export default function StdcmRequestModal(props) {
   const { t } = useTranslation(['translation', 'operationalStudies/manageTrainSchedule']);
   const osrdconf = useSelector(getConf);
   const dispatch = useDispatch();
-
+  const [postStdcm] = osrdEditoastApi.usePostStdcmMutation();
   // Theses are prop-drilled from OSRDSTDCM Component, which is conductor.
   // Remains fit with one-level limit
   const { setCurrentStdcmRequestStatus, currentStdcmRequestStatus } = props;
@@ -42,13 +44,10 @@ export default function StdcmRequestModal(props) {
   // https://developer.mozilla.org/en-US/docs/Web/API/AbortController
   const controller = new AbortController();
 
-  const stdcmURL = `/stdcm/`;
-
   // Returns a promise that will be a fetch or an axios (through react-query)
   const stdcmRequest = async () => {
     const params = formatStdcmConf(dispatch, setFailure, t, osrdconf);
-
-    return post(stdcmURL, params, {});
+    return postStdcm(params).unwrap();
   };
 
   useEffect(() => {
@@ -58,9 +57,11 @@ export default function StdcmRequestModal(props) {
           setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.success);
           dispatch(updateItinerary(result.path));
 
-          const fakedNewTrain = result.simulation;
-          fakedNewTrain.id = 1500;
-          fakedNewTrain.isStdcm = true;
+          const fakedNewTrain = {
+            ...cloneDeep(result.simulation),
+            id: 1500,
+            isStdcm: true,
+          };
 
           fakedNewTrain.base.stops = fakedNewTrain.base.head_positions[0].map(
             (headPosition, index) => ({
