@@ -5,6 +5,7 @@ import { Position, Feature } from 'geojson';
 import { PowerRestrictionRange as PowerRestritionSchedule } from 'common/api/osrdMiddlewareApi';
 import {
   Allowance,
+  AllowanceValue,
   CatenaryRange,
   Comfort,
   ElectrificationRange,
@@ -110,7 +111,7 @@ export const STDCM_REQUEST_STATUS = Object.freeze({
 });
 
 export interface StandardAllowance {
-  type: string;
+  type: AllowanceValue['value_type'];
   value: number;
 }
 

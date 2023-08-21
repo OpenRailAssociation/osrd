@@ -177,7 +177,7 @@ interface PathfindingProps {
   zoomToFeature: (lngLat: Position, id?: undefined, source?: undefined) => void;
 }
 
-export function getOpenApiSteps({
+export function getPathfindingQuery({
   infraID,
   rollingStockID,
   origin,
@@ -377,7 +377,7 @@ function Pathfinding({ mustUpdate = true, zoomToFeature }: PathfindingProps) {
 
   const generatePathfindingParams = (): PathQuery | null => {
     dispatch(updateItinerary(undefined));
-    return getOpenApiSteps({ infraID, rollingStockID, origin, destination, vias });
+    return getPathfindingQuery({ infraID, rollingStockID, origin, destination, vias });
   };
 
   const startPathFinding = (zoom = true) => {

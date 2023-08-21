@@ -1,24 +1,22 @@
 import { Dispatch } from 'redux';
 import { TFunction } from 'i18next';
+import { PathQuery, PostStdcmApiArg } from 'common/api/osrdEditoastApi';
 
-import {
-  ALLOWANCE_UNIT_TYPES,
-  TYPES_UNITS,
-} from 'applications/stdcm/components/OldAllowances/allowancesConsts';
+import { createAllowanceValue } from 'applications/stdcm/components/OldAllowances/allowancesConsts';
 import { STDCM_MODES, OsrdStdcmConfState } from 'applications/operationalStudies/consts';
 import { time2sec } from 'utils/timeManipulation';
 import { makeEnumBooleans } from 'utils/constants';
 
 import { ActionFailure } from 'reducers/main';
 import { ThunkAction } from 'types';
-import { getOpenApiSteps } from 'common/Pathfinding/Pathfinding';
+import { getPathfindingQuery } from 'common/Pathfinding/Pathfinding';
 
 export default function formatStdcmConf(
   dispatch: Dispatch,
   setFailure: (e: Error) => ThunkAction<ActionFailure>,
   t: TFunction,
   osrdconf: OsrdStdcmConfState
-) {
+): PostStdcmApiArg | undefined {
   const { isByOrigin, isByDestination } = makeEnumBooleans(STDCM_MODES, osrdconf.stdcmMode);
 
   let error = false;
@@ -31,7 +29,7 @@ export default function formatStdcmConf(
       })
     );
   }
-  if (!osrdconf.originTime && isByOrigin) {
+  if (!(osrdconf.originTime && osrdconf.originUpperBoundTime) && isByOrigin) {
     error = true;
     dispatch(
       setFailure({
@@ -86,44 +84,39 @@ export default function formatStdcmConf(
     );
   }
 
-  // Demander: on indique si c'est par origin ou destination en mettant null sur l'autre ?
-  // Demander: format de date
-  // Demander: pourquoi tableaux
-
-  const originDate = osrdconf.originTime ? time2sec(osrdconf.originTime) : null;
-  const destinationDate = osrdconf.destinationTime ? time2sec(osrdconf.destinationTime) : null;
-  const maximumDepartureDelay =
-    osrdconf.originTime && osrdconf.originUpperBoundTime
-      ? time2sec(osrdconf.originUpperBoundTime) - time2sec(osrdconf.originTime)
-      : null;
-
   if (!error) {
-    // TODO: refactor: have a clearer way to set dynamics units
-    const standardAllowanceType: string =
-      (osrdconf.standardStdcmAllowance?.type as string) || ALLOWANCE_UNIT_TYPES.PERCENTAGE;
-    const standardAllowanceValue: number = osrdconf.standardStdcmAllowance?.value || 0;
-    const standardAllowance: { [index: string]: string | number } = {};
-    const typeUnitTanslationIndex: { [index: string]: string } = TYPES_UNITS;
-    const correspondantTypesForApi: string = typeUnitTanslationIndex[standardAllowanceType];
-    standardAllowance[correspondantTypesForApi] = standardAllowanceValue;
-    standardAllowance.value_type = standardAllowanceType;
+    const originDate = time2sec(osrdconf.originTime as string);
+    const destinationDate = time2sec(osrdconf.destinationTime as string);
+    const maximumDepartureDelay =
+      time2sec(osrdconf.originUpperBoundTime as string) - time2sec(osrdconf.originTime as string);
 
+    const standardAllowance = createAllowanceValue(
+      osrdconf.standardStdcmAllowance?.type,
+      osrdconf.standardStdcmAllowance?.value
+    );
+
+    // we already checked that everything is defined
+    const pathfindingQuery = getPathfindingQuery(osrdconf) as PathQuery;
     const osrdConfStdcm = {
-      ...getOpenApiSteps(osrdconf),
-      rolling_stock: osrdconf.rollingStockID,
-      comfort: osrdconf.rollingStockComfort,
-      timetable: osrdconf.timetableID,
-      start_time: originDate, // Build a date
-      end_time: destinationDate, // Build a date
-      maximum_departure_delay: maximumDepartureDelay,
-      speed_limit_tags: osrdconf.speedLimitByTag,
-      margin_before: osrdconf.gridMarginBefore,
-      margin_after: osrdconf.gridMarginAfter,
-      standard_allowance: standardAllowance,
-      maximum_run_time: osrdconf.maximumRunTime,
+      body: {
+        steps: pathfindingQuery.steps,
+        rolling_stocks: pathfindingQuery.rolling_stocks,
+        infra_id: pathfindingQuery.infra,
+        rolling_stock_id: osrdconf.rollingStockID as number,
+        comfort: osrdconf.rollingStockComfort,
+        timetable_id: osrdconf.timetableID as number,
+        start_time: originDate || undefined,
+        end_time: destinationDate || undefined,
+        maximum_departure_delay: maximumDepartureDelay,
+        speed_limit_tags: osrdconf.speedLimitByTag,
+        margin_before: osrdconf.gridMarginBefore,
+        margin_after: osrdconf.gridMarginAfter,
+        standard_allowance: standardAllowance,
+        maximum_run_time: osrdconf.maximumRunTime,
+      },
     };
 
     return osrdConfStdcm;
   }
-  return false;
+  return undefined;
 }

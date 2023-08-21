@@ -1,4 +1,4 @@
-import { AllowanceValue } from 'common/api/osrdMiddlewareApi';
+import { AllowanceValue } from 'common/api/osrdEditoastApi';
 
 export const ALLOWANCE_UNITS_KEYS = {
   time: 's',
@@ -12,12 +12,6 @@ export const TYPES_UNITS = {
   time_per_distance: 'minutes',
 } as const;
 
-export const ALLOWANCE_UNIT_TYPES = {
-  TIME: 'time',
-  PERCENTAGE: 'percentage',
-  TIME_PER_DISTANCE: 'time_per_distance',
-};
-
 export type AllowanceUnitsKeys = keyof typeof ALLOWANCE_UNITS_KEYS;
 export type AllowanceUnitskeysValues = (typeof ALLOWANCE_UNITS_KEYS)[AllowanceUnitsKeys];
 
@@ -25,4 +19,35 @@ export interface AllowanceType {
   id: AllowanceValue['value_type'];
   label: string;
   unit: AllowanceUnitskeysValues;
+}
+
+export function createAllowanceValue(
+  type: AllowanceValue['value_type'] | undefined,
+  value: number | undefined
+): AllowanceValue {
+  if (!type || !value) {
+    return {
+      value_type: 'percentage',
+      percentage: 0,
+    };
+  }
+  switch (type) {
+    case 'time_per_distance':
+      return {
+        value_type: 'time_per_distance',
+        minutes: value,
+      };
+    case 'time':
+      return {
+        value_type: 'time',
+        seconds: value,
+      };
+    case 'percentage':
+      return {
+        value_type: 'percentage',
+        percentage: value,
+      };
+    default:
+      throw new Error(`Unsupported value_type: ${type}`);
+  }
 }
