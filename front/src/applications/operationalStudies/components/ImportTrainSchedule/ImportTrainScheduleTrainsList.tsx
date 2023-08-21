@@ -9,7 +9,7 @@ import { keyBy } from 'lodash';
 import rollingstockOpenData2OSRD from 'applications/operationalStudies/components/ImportTrainSchedule/rollingstock_opendata2osrd.json';
 import nextId from 'react-id-generator';
 import { TrainSchedule } from 'applications/operationalStudies/types';
-import { LightRollingStock, RollingStock } from 'common/api/osrdEditoastApi';
+import { LightRollingStock } from 'common/api/osrdEditoastApi';
 import { TFunction } from 'i18next';
 
 function LoadingIfSearching({ isLoading, t }: { isLoading: boolean; t: TFunction }) {
@@ -22,7 +22,7 @@ function LoadingIfSearching({ isLoading, t }: { isLoading: boolean; t: TFunction
 
 type ImportTrainScheduleTrainsListProps = {
   trainsList: TrainSchedule[];
-  rollingStockDB: RollingStock[] | LightRollingStock[];
+  rollingStockDB: LightRollingStock[];
   isLoading: boolean;
 };
 

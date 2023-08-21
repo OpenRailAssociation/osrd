@@ -1,6 +1,6 @@
 import React from 'react';
 
-type StationTypes = {
+export interface ImportStation {
   trigram?: string;
   name?: string;
   yardname?: string;
@@ -11,10 +11,10 @@ type StationTypes = {
   linename?: string;
   pk?: string;
   linecode?: string;
-};
+}
 
 type Props = {
-  station: StationTypes;
+  station: ImportStation;
   onClick?: () => void;
   fixedHeight?: boolean;
 };

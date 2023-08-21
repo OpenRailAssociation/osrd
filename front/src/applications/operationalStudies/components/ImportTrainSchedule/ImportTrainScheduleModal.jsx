@@ -43,10 +43,11 @@ export default function ImportTrainScheduleModal(props) {
   const [getTimetableWithTrainSchedulesDetails] = osrdEditoastApi.useLazyGetTimetableByIdQuery();
 
   const [trainsWithPathRef, setTrainsWithPathRef] = useState([]);
+  const [trainsWithPath, setTrainsWithPath] = useState([]);
 
   // Places, points, OPs to add track section id
   const [pointsDictionnary, setPointsDictionnary] = useState();
-  const [clickedFeature, setClickedFeature] = useState();
+  const [clickedFeatureId, setClickedFeatureId] = useState();
   const [uicNumberToComplete, setUicNumberToComplete] = useState();
 
   // Path to compute
@@ -81,7 +82,6 @@ export default function ImportTrainScheduleModal(props) {
 
   function getTrackSectionID(lat, lng) {
     setViewport({
-      ...viewport,
       latitude: Number(lat),
       longitude: Number(lng),
       pitch: 0,
@@ -130,7 +130,7 @@ export default function ImportTrainScheduleModal(props) {
     if (newTrainsWithPathRef.length > 0) {
       setImportStatus(t('operationalStudies/importTrainSchedule:status.pathComplete'));
     } else setImportStatus(t('operationalStudies/importTrainSchedule:status.pathsFailed'));
-    setTrainsWithPathRef(newTrainsWithPathRef);
+    setTrainsWithPath(newTrainsWithPathRef);
     setStatus({ ...status, uicComplete: true, pathFindingDone: true });
   }
 
@@ -153,7 +153,7 @@ export default function ImportTrainScheduleModal(props) {
       const { payload, rollingStockId } = generatePathfindingPayload(
         trainsWithPathRef,
         rollingStockDB,
-        path,
+        path.trainNumber,
         rollingStockID,
         infraID,
         autocomplete,
@@ -231,7 +231,7 @@ export default function ImportTrainScheduleModal(props) {
   }
 
   async function generateTrainSchedules() {
-    const payload = generateTrainSchedulesPayload(trainsWithPathRef, infraID, timetableID);
+    const payload = generateTrainSchedulesPayload(trainsWithPath, timetableID);
     setImportStatus(t('operationalStudies/importTrainSchedule:status.calculatingTrainSchedule'));
     const messages = [];
     const promisesList = [];
@@ -252,20 +252,20 @@ export default function ImportTrainScheduleModal(props) {
   }
 
   useEffect(() => {
-    if (clickedFeature) {
+    if (clickedFeatureId) {
       const actualUic = Object.keys(pointsDictionnary)[uicNumberToComplete];
       setPointsDictionnary({
         ...pointsDictionnary,
         [actualUic]: {
           ...pointsDictionnary[actualUic],
-          trackSectionId: clickedFeature.properties.id,
+          trackSectionId: clickedFeatureId,
         },
       });
+      setClickedFeatureId(undefined);
 
       completePaths();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [clickedFeature]);
+  }, [clickedFeatureId]);
 
   useEffect(() => {
     if (rollingStockDB && trains && trains.length > 0) {
@@ -346,7 +346,7 @@ export default function ImportTrainScheduleModal(props) {
               <Map
                 viewport={viewport}
                 setViewport={setViewport}
-                setClickedFeature={setClickedFeature}
+                setClickedFeatureId={setClickedFeatureId}
               />
             </div>
           )}
