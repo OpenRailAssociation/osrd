@@ -383,9 +383,7 @@ pub mod tests {
 
     #[fixture]
     pub async fn train_with_simulation_output_fixture_set(
-        #[future] db_pool: Data<DbPool>,
-        #[future] pathfinding: TestFixture<Pathfinding>,
-        #[future] fast_rolling_stock: TestFixture<RollingStockModel>,
+        db_pool: Data<DbPool>,
     ) -> TrainScheduleWithSimulationOutputFixtureSet {
         let ScenarioFixtureSet {
             project,
@@ -394,10 +392,10 @@ pub mod tests {
             timetable,
             infra,
         } = scenario_fixture_set().await;
-        let rolling_stock = fast_rolling_stock(db_pool()).await;
-        let pathfinding = pathfinding(db_pool()).await;
+        let rolling_stock = fast_rolling_stock(db_pool.clone()).await;
+        let pathfinding = pathfinding(db_pool.clone()).await;
         let train_schedule = make_train_schedule(
-            db_pool().clone(),
+            db_pool.clone(),
             pathfinding.id(),
             timetable.id(),
             rolling_stock.id(),
@@ -436,13 +434,13 @@ pub mod tests {
             ..Default::default()
         };
         let simulation_output: SimulationOutput = simulation_output
-            .create(db_pool().clone())
+            .create(db_pool.clone())
             .await
             .unwrap()
             .into();
 
-        let train_schedule = TestFixture::new(train_schedule, db_pool().clone());
-        let simulation_output = TestFixture::new(simulation_output, db_pool());
+        let train_schedule = TestFixture::new(train_schedule, db_pool.clone());
+        let simulation_output = TestFixture::new(simulation_output, db_pool);
         TrainScheduleWithSimulationOutputFixtureSet {
             project,
             study,
