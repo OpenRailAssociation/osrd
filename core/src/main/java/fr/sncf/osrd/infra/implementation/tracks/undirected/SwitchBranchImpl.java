@@ -93,6 +93,11 @@ public class SwitchBranchImpl implements SwitchBranch {
     }
 
     @Override
+    public RangeMap<Double, NeutralSection> getNeutralSectionAnnouncements(Direction direction) {
+        return ImmutableRangeMap.of();
+    }
+
+    @Override
     @ExcludeFromGeneratedCodeCoverage
     public String toString() {
         return MoreObjects.toStringHelper(this)

@@ -54,4 +54,7 @@ public sealed interface TrackEdge permits SwitchBranch, TrackSection {
 
     /** Returns the ranges covered by neutral sections */
     RangeMap<Double, NeutralSection> getNeutralSections(Direction direction);
+
+    /** Returns the ranges covered by neutral section announcements */
+    RangeMap<Double, NeutralSection> getNeutralSectionAnnouncements(Direction direction);
 }

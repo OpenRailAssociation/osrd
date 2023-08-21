@@ -26,6 +26,7 @@ public class TrackSectionImpl implements TrackSection {
     RangeMap<Double, String> catenaryVoltages = TreeRangeMap.create();
 
     EnumMap<Direction, RangeMap<Double, NeutralSection>> neutralSections;
+    EnumMap<Direction, RangeMap<Double, NeutralSection>> neutralSectionAnnouncements;
     EnumMap<Direction, RangeMap<Double, Double>> curves;
     EnumMap<Direction, RangeMap<Double, Double>> slopes;
     ImmutableList<Detector> detectors = ImmutableList.of();
@@ -60,8 +61,10 @@ public class TrackSectionImpl implements TrackSection {
         this.loadingGaugeConstraints = loadingGaugeConstraints;
         this.catenaryVoltages.put(Range.closed(0., length), "");
         neutralSections = new EnumMap<>(Direction.class);
+        neutralSectionAnnouncements = new EnumMap<>(Direction.class);
         for (var dir : Direction.values()) {
             neutralSections.put(dir, TreeRangeMap.create());
+            neutralSectionAnnouncements.put(dir, TreeRangeMap.create());
         }
     }
 
@@ -159,6 +162,11 @@ public class TrackSectionImpl implements TrackSection {
     @Override
     public RangeMap<Double, NeutralSection> getNeutralSections(Direction direction) {
         return neutralSections.get(direction);
+    }
+
+    @Override
+    public RangeMap<Double, NeutralSection> getNeutralSectionAnnouncements(Direction direction) {
+        return neutralSectionAnnouncements.get(direction);
     }
 
     @Override

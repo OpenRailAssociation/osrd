@@ -13,6 +13,8 @@ import java.util.List;
  */
 @SuppressFBWarnings({ "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD" })
 public class RJSNeutralSection {
+    @Json(name = "announcement_track_ranges")
+    public List<RJSDirectionalTrackRange> announcementTrackRanges;
     @Json(name = "track_ranges")
     public List<RJSDirectionalTrackRange> trackRanges;
 

@@ -666,7 +666,6 @@ public class StandaloneSimulationTest extends ApiTest {
 
         ElectrificationUsage[] expected = {
                 new ElectrifiedUsage("1500", true, "O", false),
-                new ElectrifiedUsage("1500", true, null, true),
                 new NeutralUsage(true),
                 new ElectrifiedUsage("25000", true, "25000", true),
                 new ElectrifiedUsage("25000", true, "20000", true),
