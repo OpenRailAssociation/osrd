@@ -56,7 +56,7 @@ private fun CollectionItemType.generateArraySortedSet(context: GeneratorContext,
                     }
                 }
 
-                private val capacity: Int = buffer.size
+                private val capacity: Int get() = buffer.size
 
                 private fun ensureBufferSpace(expectedAdditions: Int) {
                     val requiredCapacity = usedElements + expectedAdditions
