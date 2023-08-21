@@ -20,6 +20,10 @@ import osrdsimulationReducer, {
 import { OsrdSimulationState } from './osrdsimulation/types';
 
 import { EditorState } from '../applications/editor/tools/types';
+import rollingstockeditorReducer, {
+  RsEditorCurvesState,
+  initialState as rsEditorCurvesInitialState,
+} from './rollingstockEditor';
 
 const compressor = createCompressor({
   whitelist: ['rollingstock'],
@@ -77,6 +81,7 @@ export interface RootState {
   osrdsimulation: OsrdSimulationState;
   [osrdMiddlewareApi.reducerPath]: ReturnType<typeof osrdMiddlewareApi.reducer>;
   [osrdEditoastApi.reducerPath]: ReturnType<typeof osrdEditoastApi.reducer>;
+  rsEditorCurvesParams: RsEditorCurvesState;
 }
 
 export const rootInitialState: RootState = {
@@ -88,6 +93,7 @@ export const rootInitialState: RootState = {
   osrdsimulation: osrdSimulationInitialState,
   [osrdMiddlewareApi.reducerPath]: {} as ReturnType<typeof osrdMiddlewareApi.reducer>,
   [osrdEditoastApi.reducerPath]: {} as ReturnType<typeof osrdEditoastApi.reducer>,
+  rsEditorCurvesParams: rsEditorCurvesInitialState,
 };
 
 export type AnyReducerState =
@@ -96,7 +102,8 @@ export type AnyReducerState =
   | EditorState
   | MainState
   | OsrdConfState
-  | OsrdSimulationState;
+  | OsrdSimulationState
+  | RsEditorCurvesState;
 
 export const rootReducer: ReducersMapObject<RootState> = {
   user: userReducer,
@@ -110,6 +117,7 @@ export const rootReducer: ReducersMapObject<RootState> = {
   osrdsimulation: osrdsimulationReducer,
   [osrdMiddlewareApi.reducerPath]: osrdMiddlewareApi.reducer,
   [osrdEditoastApi.reducerPath]: osrdEditoastApi.reducer,
+  rsEditorCurvesParams: rollingstockeditorReducer,
 };
 
 export default persistCombineReducers<RootState, AllActions>(persistConfig, rootReducer);

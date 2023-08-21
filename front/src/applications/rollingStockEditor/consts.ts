@@ -1,5 +1,8 @@
 import { ConditionalEffortCurve, EffortCurve } from 'common/api/osrdEditoastApi';
 
+export const THERMAL_TRACTION_IDENTIFIER = 'thermal';
+export const STANDARD_COMFORT_LEVEL = 'STANDARD';
+
 type EffortCurves = {
   modes: {
     [key: string]: {
@@ -8,6 +11,25 @@ type EffortCurves = {
       isElectric: boolean;
     };
   };
+};
+
+export type Curve = {
+  max_efforts: number[];
+  speeds: number[];
+};
+
+export type SelectedCurve = {
+  [key: string]: {
+    curves: ConditionalEffortCurve[];
+    default_curve: EffortCurve;
+    is_electric: boolean;
+  };
+};
+
+export type RollingStockSelectorParams = {
+  comfortlevels: string[];
+  tractionModes: string[];
+  electricalProfiles: string[];
 };
 
 export type RollingStockParametersValues = {

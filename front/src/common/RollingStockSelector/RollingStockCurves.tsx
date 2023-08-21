@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { PointTooltipProps, ResponsiveLine } from '@nivo/line';
 import { useTranslation } from 'react-i18next';
 import { Comfort, RollingStock } from 'common/api/osrdEditoastApi';
@@ -148,18 +148,18 @@ export default function RollingStockCurve({
   const { t, ready } = useTranslation(['rollingstock']);
   const mode2name = (mode: string) => (mode !== 'thermal' ? `${mode}V` : t('thermal'));
 
-  const transformCurves = (rollingStockCurves: EffortCurvesModes) => {
+  const transformedData = useMemo(() => {
     const transformedCurves: TransformedCurves = {};
-    Object.keys(rollingStockCurves).forEach((mode) => {
+    Object.keys(data).forEach((mode) => {
       // Standard curves (required)
       const name = mode2name(mode);
       transformedCurves[`${name} STANDARD`] = {
-        ...(rollingStockCurves[mode].default_curve as TransformedCurves['index']),
+        ...(data[mode].default_curve as TransformedCurves['index']),
         mode: name,
         comfort: 'STANDARD',
       };
       // AC & HEATING curves (optional)
-      rollingStockCurves[mode].curves.forEach((curve) => {
+      data[mode].curves.forEach((curve) => {
         if (curve.cond?.comfort) {
           const optionalCurveName = `${name} ${curve.cond.comfort}`;
           transformedCurves[optionalCurveName] = {
@@ -171,11 +171,10 @@ export default function RollingStockCurve({
       });
     });
     return transformedCurves;
-  };
+  }, [data]);
 
   const [curves, setCurves] = useState<ParsedCurves[]>([]);
   const [curvesToDisplay, setCurvesToDisplay] = useState(curves);
-  const transformedData = transformCurves(data);
   const [comfortsStates, setComfortsStates] = useState(initialComfortsState(curvesComfortList));
   const [curvesState, setCurvesState] = useState(initialCurvesState(transformedData));
 
@@ -213,15 +212,7 @@ export default function RollingStockCurve({
           .filter((curve) => comfortsStates[curve.comfort])
       );
     }
-
-    if (isOnEditionMode && curves[0] !== undefined) {
-      setCurves(
-        [Object.keys(transformedData)[0]]
-          .map((name, index) => parseData(name, curveColor(index), transformedData[name]))
-          .filter((curve) => comfortsStates[curve.comfort])
-      );
-    }
-  }, [data, comfortsStates]);
+  }, [transformedData, comfortsStates]);
 
   useEffect(() => {
     if (curves && curvesState) {
@@ -236,7 +227,7 @@ export default function RollingStockCurve({
       setComfortsStates(initialComfortsState(curvesComfortList));
     }
     setCurvesState(initialCurvesState(transformedData));
-  }, [data, ready]);
+  }, [transformedData, ready]);
 
   return curves[0] !== undefined && curvesState && curvesToDisplay && comfortsStates ? (
     <div className="curves-container pt-1 pb-3">
