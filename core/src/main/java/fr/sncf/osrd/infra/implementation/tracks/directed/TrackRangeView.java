@@ -244,6 +244,11 @@ public class TrackRangeView {
         return convertMap(track.getEdge().getNeutralSections(track.getDirection()));
     }
 
+    /** Returns the ranges marked as neutral section announcement on the track */
+    public RangeMap<Double, NeutralSection> getNeutralSectionAnnouncements() {
+        return convertMap(track.getEdge().getNeutralSectionAnnouncements(track.getDirection()));
+    }
+
     /** Returns true if the element is inside the range */
     private boolean isInRange(ElementView<?> element) {
         return element.offset >= 0 && element.offset <= getLength();

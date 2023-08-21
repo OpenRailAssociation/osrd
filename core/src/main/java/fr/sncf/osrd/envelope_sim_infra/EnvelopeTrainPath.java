@@ -34,23 +34,29 @@ public class EnvelopeTrainPath {
         var gradeValues = new DoubleArrayList();
         var catenaries = TreeRangeMap.<Double, String>create();
         var neutralSections = TreeRangeMap.<Double, NeutralSection>create();
+        var neutralSectionAnnouncements = TreeRangeMap.<Double, NeutralSection>create();
         double length = 0;
 
         for (var range : trackSectionPath) {
             if (range.getLength() > 0) {
+                var fullRange = Range.closed(0., range.getLength());
                 // Add grades
-                var grades = range.getGradients().subRangeMap(Range.closed(0., range.getLength())).asMapOfRanges();
+                var grades = range.getGradients().subRangeMap(fullRange).asMapOfRanges();
                 for (var entry : grades.entrySet()) {
                     gradePositions.add(length + entry.getKey().upperEndpoint());
                     gradeValues.add(entry.getValue());
                 }
                 // Add catenaries
-                var catenariesInRange = range.getCatenaryVoltages().subRangeMap(Range.closed(0., range.getLength()));
+                var catenariesInRange = range.getCatenaryVoltages().subRangeMap(fullRange);
                 transferRangeMap(catenariesInRange, catenaries, length);
 
                 // Add neutral sections
-                var neutralInRange = range.getNeutralSections().subRangeMap(Range.closed(0., range.getLength()));
+                var neutralInRange = range.getNeutralSections().subRangeMap(fullRange);
                 transferRangeMap(neutralInRange, neutralSections, length);
+
+                // Add neutral section announcements
+                var announcementsInRange = range.getNeutralSectionAnnouncements().subRangeMap(fullRange);
+                transferRangeMap(announcementsInRange, neutralSectionAnnouncements, length);
 
                 // Update length
                 length += range.getLength();
@@ -61,13 +67,15 @@ public class EnvelopeTrainPath {
             gradeValues.add(0);
         }
 
-        var electrificationMap = buildElectrificationMap(mergeRanges(catenaries), mergeRanges(neutralSections), length);
+        var electrificationMap = buildElectrificationMap(mergeRanges(catenaries), mergeRanges(neutralSections),
+                mergeRanges(neutralSectionAnnouncements), length);
 
         var electrificationMapByPowerClass = new HashMap<String, ImmutableRangeMap<Double, Electrification>>();
         if (electricalProfileMapping != null) {
             var profileMap = electricalProfileMapping.getProfilesOnPath(trackSectionPath);
             electrificationMapByPowerClass = buildElectrificationMapByPowerClass(electrificationMap, profileMap);
         }
+
         return new EnvelopeSimPath(length, gradePositions.toArray(), gradeValues.toArray(), electrificationMap,
                 electrificationMapByPowerClass);
     }
@@ -94,13 +102,18 @@ public class EnvelopeTrainPath {
     private static ImmutableRangeMap<Double, Electrification> buildElectrificationMap(
             RangeMap<Double, String> catenaryModes,
             RangeMap<Double, NeutralSection> neutralSections,
+            RangeMap<Double, NeutralSection> neutralSectionAnnouncements,
             double length) {
         TreeRangeMap<Double, Electrification> res = TreeRangeMap.create();
         res.put(Range.closed(0.0, length), new NonElectrified());
         res = updateRangeMap(res, catenaryModes,
                 (e, catenaryMode) -> catenaryMode.equals("") ? new NonElectrified() : new Electrified(catenaryMode));
+        res = updateRangeMap(res, neutralSectionAnnouncements,
+                (electrification, neutralSection) ->
+                        new Neutral(neutralSection.lowerPantograph(), electrification, true));
         res = updateRangeMap(res, neutralSections,
-                (electrification, neutralSection) -> new Neutral(neutralSection.lowerPantograph(), electrification));
+                (electrification, neutralSection) ->
+                        new Neutral(neutralSection.lowerPantograph(), electrification, false));
         return ImmutableRangeMap.copyOf(res);
     }
 

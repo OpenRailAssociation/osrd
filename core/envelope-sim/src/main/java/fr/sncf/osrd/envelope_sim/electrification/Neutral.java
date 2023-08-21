@@ -9,23 +9,28 @@ public non-sealed class Neutral implements Electrification {
     /** Whether the pantograph should be lowered */
     public boolean lowerPantograph;
 
+    /** Whether this section is an announcement */
+    public boolean isAnnouncement;
+
     /** The electrification that would have been used if it wasn't for this NeutralSection */
     public Electrification overlappedElectrification;
 
-    public Neutral(boolean lowerPantograph, Electrification overlappedElectrification) {
+    public Neutral(boolean lowerPantograph, Electrification overlappedElectrification, boolean isAnnouncement) {
         this.lowerPantograph = lowerPantograph;
         assert overlappedElectrification != null && !(overlappedElectrification instanceof Neutral);
         this.overlappedElectrification = overlappedElectrification;
+        this.isAnnouncement = isAnnouncement;
     }
 
     @Override
     public Electrification withElectricalProfile(String profile) {
-        return new Neutral(lowerPantograph, overlappedElectrification.withElectricalProfile(profile));
+        return new Neutral(lowerPantograph, overlappedElectrification.withElectricalProfile(profile), isAnnouncement);
     }
 
     @Override
     public Electrification withPowerRestriction(String powerRestriction) {
-        return new Neutral(lowerPantograph, overlappedElectrification.withPowerRestriction(powerRestriction));
+        return new Neutral(lowerPantograph, overlappedElectrification.withPowerRestriction(powerRestriction),
+                isAnnouncement);
     }
 
     @Override
@@ -33,11 +38,12 @@ public non-sealed class Neutral implements Electrification {
         if (!(o instanceof Neutral other))
             return false;
         return lowerPantograph == other.lowerPantograph
+                && isAnnouncement == other.isAnnouncement
                 && overlappedElectrification.equals(other.overlappedElectrification);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(lowerPantograph, overlappedElectrification);
+        return Objects.hash(lowerPantograph, overlappedElectrification, isAnnouncement);
     }
 }

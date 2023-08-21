@@ -1,16 +1,33 @@
 package fr.sncf.osrd.infra.implementation.tracks.undirected;
 
-import static fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType.*;
+import static fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType.FR3_3;
+import static fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType.FR3_3_GB_G2;
+import static fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType.G1;
+import static fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType.G2;
+import static fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType.GA;
+import static fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType.GB;
+import static fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType.GB1;
+import static fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType.GC;
 
-import com.google.common.collect.*;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableRangeMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Range;
+import com.google.common.collect.RangeMap;
+import com.google.common.collect.Sets;
+import com.google.common.collect.TreeRangeMap;
 import com.google.common.graph.ImmutableNetwork;
 import com.google.common.graph.NetworkBuilder;
 import com.google.common.primitives.Doubles;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.geom.LineString;
 import fr.sncf.osrd.infra.api.Direction;
-import fr.sncf.osrd.infra.api.tracks.undirected.NeutralSection;
 import fr.sncf.osrd.infra.api.tracks.undirected.Detector;
+import fr.sncf.osrd.infra.api.tracks.undirected.NeutralSection;
 import fr.sncf.osrd.infra.api.tracks.undirected.OperationalPoint;
 import fr.sncf.osrd.infra.api.tracks.undirected.SpeedLimits;
 import fr.sncf.osrd.infra.api.tracks.undirected.Switch;
@@ -27,16 +44,24 @@ import fr.sncf.osrd.railjson.schema.infra.RJSSwitchType;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSRouteWaypoint;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSCatenary;
-import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSNeutralSection;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSLoadingGaugeLimit;
+import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSNeutralSection;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSection;
-import fr.sncf.osrd.reporting.warnings.Warning;
-import fr.sncf.osrd.sim_infra.api.LoadingGaugeConstraint;
+import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
 import fr.sncf.osrd.reporting.exceptions.ErrorType;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorder;
-import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
-import java.util.*;
+import fr.sncf.osrd.reporting.warnings.Warning;
+import fr.sncf.osrd.sim_infra.api.LoadingGaugeConstraint;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 @SuppressFBWarnings({"NP_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD"})
 public class UndirectedInfraBuilder {
@@ -182,13 +207,22 @@ public class UndirectedInfraBuilder {
         if (neutralSections == null)
             return;
         for (var neutralSection : neutralSections) {
-            for (var trackRange : neutralSection.trackRanges) {
-                var track = trackSectionsByID.get(trackRange.trackSectionID);
-                assert track != null;
-                var dir = Direction.fromEdgeDir(trackRange.direction);
-                var range = Range.open(trackRange.begin, trackRange.end);
-                track.getNeutralSections(dir).put(range, new NeutralSection(neutralSection.lowerPantograph));
-            }
+            loadNeutralRanges(false, neutralSection, trackSectionsByID);
+            loadNeutralRanges(true, neutralSection, trackSectionsByID);
+        }
+    }
+
+    private void loadNeutralRanges(boolean announcement, RJSNeutralSection neutralSection,
+                                   HashMap<String, TrackSectionImpl> trackSectionsByID) {
+        var trackRanges = announcement ? neutralSection.announcementTrackRanges : neutralSection.trackRanges;
+        for (var trackRange : trackRanges) {
+            var track = trackSectionsByID.get(trackRange.trackSectionID);
+            assert track != null;
+            var dir = Direction.fromEdgeDir(trackRange.direction);
+            var range = Range.open(trackRange.begin, trackRange.end);
+            var destMap =
+                    announcement ? track.getNeutralSectionAnnouncements(dir) : track.getNeutralSections(dir);
+            destMap.put(range, new NeutralSection(neutralSection.lowerPantograph));
         }
     }
 

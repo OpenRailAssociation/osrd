@@ -112,7 +112,11 @@ public class ElectrificationRange {
                         Objects.equals(usedCond.electricalProfile(), e.profile));
             }
             if (seenCond instanceof Neutral n) {
-                return new NeutralUsage(n.lowerPantograph);
+                if (n.isAnnouncement) {
+                    return null;
+                } else {
+                    return new NeutralUsage(n.lowerPantograph);
+                }
             }
             throw new RuntimeException("Unknown electrification type");
         }
@@ -132,7 +136,11 @@ public class ElectrificationRange {
      * Returns true if the two ranges share the same values
      */
     public boolean shouldBeMergedWith(ElectrificationRange other) {
-        return this.electrificationUsage.equals(other.electrificationUsage) && this.stop <= other.start;
+        var valueMerge = this.electrificationUsage != null // if null, don't merge
+                && (this.electrificationUsage.equals(other.electrificationUsage)
+                    || other.electrificationUsage == null); // if not null and other is equal or null, merge
+        var rangeMerge = (this.stop <= other.start);
+        return valueMerge && rangeMerge;
     }
 
     /**
