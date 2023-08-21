@@ -90,7 +90,6 @@ export const TrackSectionEndpointSelector: FC<FieldProps> = ({
           portId,
           hoveredPoint: null,
           onSelect: (hoveredPoint: PortEndPointCandidate) => {
-            setState({ ...state, portEditionState: { type: 'idle' } });
             onChange({
               endpoint: hoveredPoint.endPoint,
               track: hoveredPoint.trackSectionId,
@@ -171,7 +170,6 @@ export const TrackSectionEndpointSelector: FC<FieldProps> = ({
 export const CustomSchemaField: FC<FieldProps> = (props) => {
   const { name = '' } = props;
   if (name.indexOf(FLAT_SWITCH_PORTS_PREFIX) !== 0) return <SchemaField {...props} />;
-
   return <TrackSectionEndpointSelector {...props} />;
 };
 
@@ -273,6 +271,7 @@ export const SwitchEditionLeftPanel: FC = () => {
           const flatSwitch = entity as FlatSwitchEntity;
           setState({
             ...state,
+            portEditionState: { type: 'idle' },
             entity: {
               ...flatSwitchToSwitch(switchType, flatSwitch),
               geometry: flatSwitch.geometry,
@@ -394,6 +393,7 @@ export const SwitchEditionLayers: FC = () => {
       },
     });
   }, [trackStatus, mousePosition, t]);
+
   const [geometryState, setGeometryState] = useState<
     { type: 'loading'; entity?: undefined } | { type: 'ready'; entity?: SwitchEntity }
   >({ type: 'ready' });
