@@ -16,7 +16,7 @@ java {
 
 dependencies {
     // PLEASE ADD AND UPDATE DEPENDENCIES USING libs.versions.toml
-    implementation project(':kt-fast-collections')
+    implementation project(':kt-fast-collections-annotations')
     ksp project(':kt-fast-collections-generator')
     api project(':osrd-reporting')
 

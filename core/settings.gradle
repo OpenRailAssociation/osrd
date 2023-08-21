@@ -1,7 +1,6 @@
 rootProject.name = 'osrd'
 include 'kt-fast-collections-annotations'
 include 'kt-fast-collections-generator'
-include 'kt-fast-collections'
 include 'kt-osrd-utils'
 include 'kt-osrd-sncf-signaling'
 include 'kt-osrd-signaling'
