@@ -5,9 +5,9 @@ import { useTranslation } from 'react-i18next';
 
 import RollingStockSelector from 'common/RollingStockSelector/WithRollingStockSelector';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import MemoStationSelector from 'applications/operationalStudies/components/ImportTrainSchedule/ImportTrainScheduleStationSelector';
+import StationSelector from 'applications/operationalStudies/components/ImportTrainSchedule/ImportTrainScheduleStationSelector';
 import { setFailure } from 'reducers/main';
-import StationCard from 'common/StationCard';
+import StationCard, { ImportStation } from 'common/StationCard';
 import { formatIsoDate } from 'utils/date';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import {
@@ -40,9 +40,9 @@ export default function ImportTrainScheduleConfig({
 }: ImportTrainScheduleConfigProps) {
   const { t } = useTranslation(['operationalStudies/importTrainSchedule']);
   const [postSearch] = osrdEditoastApi.usePostSearchMutation();
-  const [from, setFrom] = useState();
+  const [from, setFrom] = useState<ImportStation | undefined>();
   const [fromSearchString, setFromSearchString] = useState('');
-  const [to, setTo] = useState();
+  const [to, setTo] = useState<ImportStation | undefined>();
   const [toSearchString, setToSearchString] = useState('');
   const [date, setDate] = useState(formatIsoDate(new Date()));
   const [startTime, setStartTime] = useState('00:00');
@@ -219,7 +219,7 @@ export default function ImportTrainScheduleConfig({
                   <StationCard station={from} fixedHeight />
                 </div>
               ) : (
-                <MemoStationSelector
+                <StationSelector
                   id="fromSearch"
                   onSelect={setFrom}
                   term={fromSearchString}
@@ -243,7 +243,7 @@ export default function ImportTrainScheduleConfig({
                   <StationCard station={to} fixedHeight />
                 </div>
               ) : (
-                <MemoStationSelector
+                <StationSelector
                   id="toSearch"
                   onSelect={setTo}
                   term={toSearchString}

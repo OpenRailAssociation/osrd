@@ -1,43 +1,44 @@
-import { get } from 'axios';
-import React, { useEffect, useState, memo } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import nextId from 'react-id-generator';
-import PropTypes from 'prop-types';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useDebounce } from 'utils/helpers';
 import Loader from 'common/Loader';
-import StationCard from 'common/StationCard';
-import { GRAOU_URL } from 'common/api/graouApi';
+import StationCard, { ImportStation } from 'common/StationCard';
+import { searchGraouStations } from 'common/api/graouApi';
 
-function ImportTrainScheduleStationSelector(props) {
-  const { id, onSelect, term, setTerm } = props;
+interface ImportTrainScheduleStationSelectorProps {
+  id: string;
+  term?: string;
+  onSelect: (stationName: ImportStation | undefined) => void;
+  setTerm: (searchString: string) => void;
+}
+
+const ImportTrainScheduleStationSelector = ({
+  id,
+  onSelect,
+  term = '',
+  setTerm,
+}: ImportTrainScheduleStationSelectorProps) => {
   const { t } = useTranslation(['operationalStudies/importTrainSchedule']);
-  const [stationsList, setStationsList] = useState();
+  const [stationsList, setStationsList] = useState<ImportStation[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const debouncedTerm = useDebounce(term, 500);
 
-  async function getStation() {
+  async function searchStations() {
     setIsSearching(true);
-    try {
-      const params = {
-        q: 'stations',
-        term,
-      };
-      const result = await get(`${GRAOU_URL}/api/stations.php`, { params });
-      setStationsList(result.data);
-      setIsSearching(false);
-    } catch (error) {
-      setIsSearching(false);
-    }
+    const stations = await searchGraouStations(term);
+    if (stations) setStationsList(stations);
+    setIsSearching(false);
   }
+
   useEffect(() => {
     if (debouncedTerm) {
-      getStation();
+      searchStations();
     } else {
-      setStationsList(undefined);
+      setStationsList([]);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedTerm]);
 
   return (
@@ -55,7 +56,7 @@ function ImportTrainScheduleStationSelector(props) {
         focus
         selectAllOnFocus
       />
-      {stationsList && stationsList.length > 0 && (
+      {stationsList.length > 0 && (
         <div className="results-stations">
           {stationsList.map((station) => (
             <div role="button" tabIndex={0} onClick={() => onSelect(station)} key={nextId()}>
@@ -67,18 +68,6 @@ function ImportTrainScheduleStationSelector(props) {
       {isSearching && <Loader position="center" />}
     </>
   );
-}
-
-ImportTrainScheduleStationSelector.defaultProps = {
-  term: '',
 };
 
-ImportTrainScheduleStationSelector.propTypes = {
-  onSelect: PropTypes.func.isRequired,
-  term: PropTypes.string,
-  setTerm: PropTypes.func.isRequired,
-  id: PropTypes.string.isRequired,
-};
-
-const MemoStationSelector = memo(ImportTrainScheduleStationSelector);
-export default MemoStationSelector;
+export default React.memo(ImportTrainScheduleStationSelector);
