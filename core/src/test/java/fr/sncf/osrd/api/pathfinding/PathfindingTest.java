@@ -58,8 +58,7 @@ import java.util.stream.Stream;
 
 public class PathfindingTest extends ApiTest {
 
-    // TODO: replace this with actual signaling type once it is implemented
-    private static final String SIGNALING_TYPE = "TODO: signaling type";
+    private static final String SIGNALING_TYPE = "BAL3";
 
     private static PathfindingWaypoint[] makeBidirectionalEndPoint(PathfindingWaypoint point) {
         var waypointInverted = new PathfindingWaypoint(

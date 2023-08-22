@@ -254,7 +254,7 @@ public class PathfindingResultConverter {
         return new RJSRoutePath(
                 infra.getRouteName(route),
                 makeRJSTrackRanges(infra, route, startOffset, endOffset),
-                "TODO: signaling type"
+                "BAL3"
         );
     }
 
