@@ -1039,8 +1039,8 @@ components:
       required: [mode, mode_handled, profile_handled]
     Neutral:
       properties:
-        is_lower_pantograph:
+        lower_pantograph:
           type: boolean
-      required: [is_lower_pantograph]
+      required: [lower_pantograph]
     NonElectrified:
       type: object

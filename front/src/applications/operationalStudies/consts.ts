@@ -373,8 +373,8 @@ export const createProfileSegment = (
     }
   } else if (electrification.object_type === 'Neutral') {
     segment.text = 'Neutral';
-    segment.color = electrification.is_lower_pantograph ? '#ff0000' : '#000000';
-    segment.textColor = electrification.is_lower_pantograph ? '#ff0000' : '#000000';
+    segment.color = '#000000';
+    segment.textColor = '#000000';
   } else {
     segment.text = 'NonElectrified';
     segment.color = '#000000';
