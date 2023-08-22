@@ -29,7 +29,7 @@ use actix_web::{App, HttpServer};
 use chashmap::CHashMap;
 use clap::Parser;
 use client::{
-    ClearArgs, Client, Commands, GenerateArgs, ImportProfileSetArgs, ImportRailjsonArgs,
+    ClearArgs, Client, Color, Commands, GenerateArgs, ImportProfileSetArgs, ImportRailjsonArgs,
     PostgresConfig, RedisConfig, RunserverArgs,
 };
 use colored::*;
@@ -70,6 +70,12 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
     let client = Client::parse();
     let pg_config = client.postgres_config;
     let redis_config = client.redis_config;
+
+    match client.color {
+        Color::Never => colored::control::set_override(false),
+        Color::Always => colored::control::set_override(true),
+        Color::Auto => colored::control::set_override(atty::is(atty::Stream::Stderr)),
+    }
 
     match client.command {
         Commands::Runserver(args) => runserver(args, pg_config, redis_config).await,
