@@ -7,7 +7,6 @@ import static fr.sncf.osrd.utils.KtToJavaConverter.toIntList;
 import static fr.sncf.osrd.utils.indexing.DirStaticIdxKt.toDirection;
 import static fr.sncf.osrd.utils.indexing.DirStaticIdxKt.toValue;
 import static fr.sncf.osrd.utils.units.Distance.toMeters;
-import static fr.sncf.osrd.utils.units.Distance.fromMeters;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
@@ -106,18 +105,18 @@ public class PathfindingResultConverter {
         // Builds a mapping between blocks and all user defined waypoints on the block
         var userDefinedWaypointsPerBlock = HashMultimap.<Integer, Long>create();
         for (var waypoint : rawPath.waypoints())
-            userDefinedWaypointsPerBlock.put(waypoint.edge(), Math.round(toMeters((long) waypoint.offset())));
+            userDefinedWaypointsPerBlock.put(waypoint.edge(), (long) waypoint.offset());
 
         var res = new ArrayList<PathWaypointResult>();
 
         long lengthPrevBlocks = 0;
-        long startFirstRange = Math.round(toMeters((long) rawPath.ranges().get(0).start()));
+        long startFirstRange = Math.round(rawPath.ranges().get(0).start());
         for (var blockRange : rawPath.ranges()) {
             for (var waypoint : userDefinedWaypointsPerBlock.get(blockRange.edge())) {
                 var pathOffset = lengthPrevBlocks + waypoint - startFirstRange;
                 res.add(makePendingWaypoint(infra, path, false, pathOffset, null));
             }
-            lengthPrevBlocks += toMeters(blockInfra.getBlockLength(blockRange.edge()));
+            lengthPrevBlocks += blockInfra.getBlockLength(blockRange.edge());
         }
         return res;
     }
@@ -132,7 +131,7 @@ public class PathfindingResultConverter {
         for (var opWithOffset : path.getOperationalPointParts()) {
             var opId = opWithOffset.getValue();
             var opName = infra.getOperationalPointPartName(opId);
-            res.add(makePendingWaypoint(infra, path, true, (long) toMeters(opWithOffset.getOffset()), opName));
+            res.add(makePendingWaypoint(infra, path, true, opWithOffset.getOffset(), opName));
         }
         return res;
     }
@@ -145,13 +144,13 @@ public class PathfindingResultConverter {
             long pathOffset,
             String opName
     ) {
-        var rawLocation = path.getTrackLocationAtOffset(fromMeters(pathOffset));
+        var rawLocation = path.getTrackLocationAtOffset(pathOffset);
         var trackName = infra.getTrackSectionName(rawLocation.getTrackId());
         var location = new PathWaypointResult.PathWaypointLocation(
                 trackName,
                 toMeters(rawLocation.getOffset())
         );
-        return new PathWaypointResult(location, pathOffset, suggestion, opName);
+        return new PathWaypointResult(location, toMeters(pathOffset), suggestion, opName);
     }
 
     /** Sorts the waypoints on the path. When waypoints overlap, the user-defined one is kept. */
