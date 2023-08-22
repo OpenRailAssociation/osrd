@@ -26,6 +26,10 @@ export type TrainSchedule = {
   transilienName?: string;
 };
 
+export interface TrainScheduleWithPathRef extends TrainSchedule {
+  pathRef: string;
+}
+
 export type ImportedTrainSchedule = {
   trainNumber: string;
   rollingStock: string;
