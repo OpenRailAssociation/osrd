@@ -181,7 +181,7 @@ impl Infra {
     /// If refreshed you need to call `invalidate_after_refresh` to invalidate layer cache
     pub async fn refresh(
         &self,
-        conn: &mut PgConnection,
+        db_pool: Data<crate::DbPool>,
         force: bool,
         infra_cache: &InfraCache,
     ) -> Result<bool> {
@@ -193,12 +193,13 @@ impl Infra {
             return Ok(false);
         }
 
-        generated_data::refresh_all(conn, self.id.unwrap(), infra_cache).await?;
+        generated_data::refresh_all(db_pool.clone(), self.id.unwrap(), infra_cache).await?;
 
         // Update generated infra version
         let mut infra = self.clone();
         infra.generated_version = Some(self.version.clone());
-        infra.update_conn(conn, self.id.unwrap()).await?;
+        let mut conn = db_pool.get().await?;
+        infra.update_conn(&mut conn, self.id.unwrap()).await?;
 
         Ok(true)
     }
@@ -242,6 +243,7 @@ pub mod tests {
     use crate::client::PostgresConfig;
     use crate::models::infra::INFRA_VERSION;
     use crate::models::{Create, RAILJSON_VERSION};
+    use crate::{Data, DbPool};
     use actix_web::test as actix_test;
     use chrono::Utc;
     use diesel::result::Error;
@@ -280,6 +282,21 @@ pub mod tests {
                 .scope_boxed()
             })
             .await;
+    }
+
+    pub async fn test_infra_and_delete<'a, F>(fn_test: F)
+    where
+        F: for<'r> FnOnce(Data<DbPool>, Infra) -> ScopedBoxFuture<'a, 'a, ()> + Send + 'a,
+    {
+        use crate::models::Delete;
+        use diesel_async::pooled_connection::AsyncDieselConnectionManager as ConnectionManager;
+        let manager = ConnectionManager::<PgConnection>::new(PostgresConfig::default().url());
+        let db_pool = crate::Data::new(crate::Pool::builder(manager).build().unwrap());
+        let infra = build_test_infra();
+        let created = infra.create(db_pool.clone()).await.unwrap();
+        let id = created.id.unwrap();
+        fn_test(db_pool.clone(), created).await;
+        let _ = Infra::delete(db_pool, id).await;
     }
 
     #[actix_test]
