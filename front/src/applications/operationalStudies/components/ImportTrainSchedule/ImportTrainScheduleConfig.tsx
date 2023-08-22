@@ -90,12 +90,12 @@ export default function ImportTrainScheduleConfig({
       ) {
         return true;
       }
-      const hasInvalidteps = trainSchedule.steps.some((step) =>
+      const hasInvalidSteps = trainSchedule.steps.some((step) =>
         ['arrivalTime', 'departureTime', 'uic', 'name', 'trigram', 'latitude', 'longitude'].some(
           (key) => !(key in step)
         )
       );
-      return hasInvalidteps;
+      return hasInvalidSteps;
     });
     if (isInvalidTrainSchedules) {
       dispatch(
