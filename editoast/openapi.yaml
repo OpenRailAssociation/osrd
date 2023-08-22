@@ -602,14 +602,14 @@ components:
       type: object
     Neutral:
       properties:
-        is_lower_pantograph:
+        lower_pantograph:
           type: boolean
         object_type:
           enum:
           - Neutral
           type: string
       required:
-      - is_lower_pantograph
+      - lower_pantograph
       - object_type
     NonElectrified:
       properties:

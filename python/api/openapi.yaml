@@ -1549,10 +1549,10 @@ components:
     Neutral:
       description: This part of the path is neutral, it might be electrified, in any case the train is not allowed to use electrical current
       properties:
-        is_lower_pantograph:
+        lower_pantograph:
           description: The train has to lower its pantograph on top of not using electrical current
           type: boolean
-      required: [is_lower_pantograph]
+      required: [lower_pantograph]
     NonElectrified:
       description: This part of the path is not electrified
       type: object

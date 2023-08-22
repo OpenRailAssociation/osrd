@@ -4483,12 +4483,12 @@ components:
       required: [mode, mode_handled, object_type, profile_handled]
     Neutral:
       properties:
-        is_lower_pantograph:
+        lower_pantograph:
           type: boolean
         object_type:
           type: string
           enum: ["Neutral"]
-      required: [is_lower_pantograph, object_type]
+      required: [lower_pantograph, object_type]
     NonElectrified:
       properties:
         object_type:

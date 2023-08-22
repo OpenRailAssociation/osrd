@@ -71,26 +71,27 @@ public class ElectrificationRange {
         }
 
         public static class NeutralUsage extends ElectrificationUsage {
-            public final boolean isLowerPantograph;
+            @Json(name = "lower_pantograph")
+            public final boolean lowerPantograph;
 
             public NeutralUsage(boolean isLowerPantograph) {
-                this.isLowerPantograph = isLowerPantograph;
+                this.lowerPantograph = isLowerPantograph;
             }
 
             public boolean equals(Object other) {
                 if (!(other instanceof NeutralUsage o)) return false;
-                return this.isLowerPantograph == o.isLowerPantograph;
+                return this.lowerPantograph == o.lowerPantograph;
             }
 
             public int hashCode() {
-                return Objects.hash(isLowerPantograph);
+                return Objects.hash(lowerPantograph);
             }
 
             @Override
             @ExcludeFromGeneratedCodeCoverage
             public String toString() {
                 return MoreObjects.toStringHelper(this)
-                        .add("isLowerPantograph", isLowerPantograph)
+                        .add("isLowerPantograph", lowerPantograph)
                         .toString();
             }
         }

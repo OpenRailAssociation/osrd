@@ -1886,7 +1886,7 @@ export type Electrified = {
   profile_handled: boolean;
 };
 export type Neutral = {
-  is_lower_pantograph: boolean;
+  lower_pantograph: boolean;
   object_type: 'Neutral';
 };
 export type NonElectrified = {
