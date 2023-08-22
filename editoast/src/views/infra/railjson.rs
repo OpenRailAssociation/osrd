@@ -155,7 +155,7 @@ async fn post_railjson(
         .map_err(|_| InfraApiError::NotFound { infra_id })?;
     if params.generate_data {
         let infra_cache = InfraCache::get_or_load(&mut conn, &infra_caches, &infra).await?;
-        infra.refresh(&mut conn, true, &infra_cache).await?;
+        infra.refresh(db_pool, true, &infra_cache).await?;
     }
 
     Ok(Json(PostRailjsonResponse {

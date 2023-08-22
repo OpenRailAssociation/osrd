@@ -273,7 +273,10 @@ async fn generate(
             infra.id.unwrap()
         );
         let infra_cache = InfraCache::load(&mut conn, &infra).await?;
-        if infra.refresh(&mut conn, args.force, &infra_cache).await? {
+        if infra
+            .refresh(pool.clone(), args.force, &infra_cache)
+            .await?
+        {
             build_redis_pool_and_invalidate_all_cache(redis_config.clone(), infra.id.unwrap())
                 .await;
             info!(
@@ -324,7 +327,7 @@ async fn import_railjson(
     // Generate only if the was set
     if args.generate {
         let infra_cache = InfraCache::load(&mut conn, &infra).await?;
-        infra.refresh(&mut conn, true, &infra_cache).await?;
+        infra.refresh(pool, true, &infra_cache).await?;
         info!(
             "✅ Infra {}[{}] generated data refreshed!",
             infra.name.unwrap().bold(),

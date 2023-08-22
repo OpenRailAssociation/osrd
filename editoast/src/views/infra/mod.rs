@@ -158,7 +158,7 @@ async fn refresh(
     for infra in infras_list {
         let infra_cache = InfraCache::get_or_load(&mut conn, &infra_caches, &infra).await?;
         if infra
-            .refresh(&mut conn, query_params.force, &infra_cache)
+            .refresh(db_pool.clone(), query_params.force, &infra_cache)
             .await?
         {
             refreshed_infra.push(infra.id.unwrap());

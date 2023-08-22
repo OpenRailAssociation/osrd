@@ -56,6 +56,16 @@ pub trait GeneratedData {
         Self::generate(conn, infra, infra_cache).await
     }
 
+    async fn refresh_pool(
+        pool: crate::Data<crate::DbPool>,
+        infra: i64,
+        infra_cache: &InfraCache,
+    ) -> Result<()> {
+        let mut conn = pool.get().await?;
+        Self::clear(&mut conn, infra).await?;
+        Self::generate(&mut conn, infra, infra_cache).await
+    }
+
     /// Search and update all objects that needs to be refreshed given a list of operation.
     async fn update(
         conn: &mut PgConnection,
@@ -67,22 +77,32 @@ pub trait GeneratedData {
 
 /// Refresh all the generated data of a given infra
 pub async fn refresh_all(
-    conn: &mut PgConnection,
+    db_pool: crate::Data<crate::DbPool>,
     infra: i64,
     infra_cache: &InfraCache,
 ) -> Result<()> {
-    TrackSectionLayer::refresh(conn, infra, infra_cache).await?;
-    SpeedSectionLayer::refresh(conn, infra, infra_cache).await?;
-    SignalLayer::refresh(conn, infra, infra_cache).await?;
-    SwitchLayer::refresh(conn, infra, infra_cache).await?;
-    BufferStopLayer::refresh(conn, infra, infra_cache).await?;
-    CatenaryLayer::refresh(conn, infra, infra_cache).await?;
-    DetectorLayer::refresh(conn, infra, infra_cache).await?;
-    OperationalPointLayer::refresh(conn, infra, infra_cache).await?;
-    TrackSectionLinkLayer::refresh(conn, infra, infra_cache).await?;
-    LPVPanelLayer::refresh(conn, infra, infra_cache).await?;
-    ErrorLayer::refresh(conn, infra, infra_cache).await?;
-    NeutralSectionLayer::refresh(conn, infra, infra_cache).await?;
+    // The other layers depend on track section layer.
+    // We must wait until its completion before running the other requests in parallel
+    TrackSectionLayer::refresh_pool(db_pool.clone(), infra, infra_cache).await?;
+    log::debug!("⚙️ Infra {infra}: track section layer is generated");
+    let mut conn = db_pool.get().await?;
+    // The analyze step significantly improves the performance when importing and generating together
+    // It doesn’t seem to make a different when the generation step is ran separately
+    // It isn’t clear why without analyze the Postgres server seems to run at 100% without halting
+    sql_query("analyze").execute(&mut conn).await?;
+    log::debug!("⚙️ Infra {infra}: database analyzed");
+    futures::try_join!(
+        SpeedSectionLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
+        SignalLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
+        SwitchLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
+        BufferStopLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
+        CatenaryLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
+        DetectorLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
+        LPVPanelLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
+        NeutralSectionLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
+    )?;
+    // The error layer depends on the other layers and must be executed at the end.
+    ErrorLayer::refresh_pool(db_pool.clone(), infra, infra_cache).await?;
     Ok(())
 }
 
@@ -128,7 +148,7 @@ pub async fn update_all(
 #[cfg(test)]
 pub mod tests {
     use crate::generated_data::{clear_all, refresh_all, update_all};
-    use crate::models::infra::tests::test_infra_transaction;
+    use crate::models::infra::tests::{test_infra_and_delete, test_infra_transaction};
     use crate::models::Infra;
     use actix_web::test as actix_test;
     use diesel_async::scoped_futures::ScopedFutureExt;
@@ -136,9 +156,9 @@ pub mod tests {
 
     #[actix_test]
     async fn refresh_all_test() {
-        test_infra_transaction(|conn: &mut PgConnection, infra: Infra| {
+        test_infra_and_delete(|pool, infra: Infra| {
             async move {
-                assert!(refresh_all(conn, infra.id.unwrap(), &Default::default())
+                assert!(refresh_all(pool, infra.id.unwrap(), &Default::default())
                     .await
                     .is_ok());
             }
