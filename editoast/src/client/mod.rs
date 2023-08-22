@@ -1,7 +1,7 @@
 mod postgres_config;
 mod redis_config;
 
-use clap::{Args, Parser, Subcommand};
+use clap::{Args, Parser, Subcommand, ValueEnum};
 use derivative::Derivative;
 pub use postgres_config::PostgresConfig;
 pub use redis_config::RedisConfig;
@@ -14,8 +14,19 @@ pub struct Client {
     pub postgres_config: PostgresConfig,
     #[command(flatten)]
     pub redis_config: RedisConfig,
+    #[arg(long, env, value_enum, default_value_t = Color::Auto)]
+    pub color: Color,
     #[command(subcommand)]
     pub command: Commands,
+}
+
+#[derive(ValueEnum, Debug, Derivative, Clone)]
+#[derivative(Default)]
+pub enum Color {
+    Never,
+    Always,
+    #[derivative(Default)]
+    Auto,
 }
 
 #[derive(Subcommand, Debug)]
