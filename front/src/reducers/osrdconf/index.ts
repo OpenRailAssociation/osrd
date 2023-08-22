@@ -16,7 +16,7 @@ import {
 import { formatIsoDate } from 'utils/date';
 import { ValueOf } from 'utils/types';
 import { sec2time, time2sec } from 'utils/timeManipulation';
-import { Allowance, CatenaryRange, Path, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { Allowance, Path, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { SwitchType, ThunkAction } from '../../types';
 
 /* eslint-disable default-case */
@@ -37,7 +37,6 @@ export const UPDATE_SCENARIO_ID = 'osrdconf/UPDATE_SCENARIO_ID';
 export const UPDATE_INFRA_ID = 'osrdconf/UPDATE_INFRA_ID';
 export const UPDATE_SWITCH_TYPES = 'osrdconf/UPDATE_SWITCH_TYPES';
 export const UPDATE_PATHFINDING_ID = 'osrdconf/UPDATE_PATHFINDING_ID';
-export const UPDATE_PATH_WITH_CATENARIES = 'osrdconf/UPDATE_PATH_WITH_CATENARIES';
 export const UPDATE_SHOULD_RUN_PATHFINDING = 'osrdconf/UPDATE_SHOULD_RUN_PATHFINDING';
 export const UPDATE_TIMETABLE_ID = 'osrdconf/UPDATE_TIMETABLE_ID';
 export const UPDATE_ROLLINGSTOCK_ID = 'osrdconf/UPDATE_ROLLINGSTOCK_ID';
@@ -187,9 +186,6 @@ export default function reducer(inputState: OsrdMultiConfState | undefined, acti
         draft[section].pathfindingID = action.pathfindingID;
         // reset power restriction ranges
         draft[section].powerRestrictionRanges = [];
-        break;
-      case UPDATE_PATH_WITH_CATENARIES:
-        draft[section].pathWithCatenaries = action.pathWithCatenaries;
         break;
       case UPDATE_SHOULD_RUN_PATHFINDING:
         draft[section].shouldRunPathfinding = action.shouldRunPathfinding;
@@ -461,14 +457,6 @@ export function updatePathfindingID(pathfindingID?: number) {
     dispatch({
       type: UPDATE_PATHFINDING_ID,
       pathfindingID,
-    });
-  };
-}
-export function updatePathWithCatenaries(pathWithCatenaries?: CatenaryRange[]) {
-  return (dispatch: Dispatch) => {
-    dispatch({
-      type: UPDATE_PATH_WITH_CATENARIES,
-      pathWithCatenaries,
     });
   };
 }
