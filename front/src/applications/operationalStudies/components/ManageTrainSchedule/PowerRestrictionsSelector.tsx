@@ -5,19 +5,20 @@ import { useTranslation } from 'react-i18next';
 
 import icon from 'assets/pictures/components/power_restrictions.svg';
 import { PowerRestrictionRange } from 'applications/operationalStudies/consts';
-import { osrdEditoastApi, RollingStock } from 'common/api/osrdEditoastApi';
+import { CatenaryRange, RollingStock } from 'common/api/osrdEditoastApi';
 import { INTERVAL_TYPES, IntervalItem } from 'common/IntervalsEditor/types';
 import IntervalsEditor from 'common/IntervalsEditor/IntervalsEditor';
 import { updatePowerRestrictionRanges } from 'reducers/osrdconf';
 import { setWarning } from 'reducers/main';
-import { getPowerRestrictionRanges, getPathfindingID } from 'reducers/osrdconf/selectors';
+import { getPowerRestrictionRanges } from 'reducers/osrdconf/selectors';
 
 export const NO_POWER_RESTRICTION = 'NO_POWER_RESTRICTION';
 /** Arbitrairy default segment length (1km) */
 const DEFAULT_SEGMENT_LENGTH = 1000;
 
 interface PowerRestrictionsSelectorProps {
-  rollingStockId: number;
+  rollingStock: RollingStock;
+  pathCatenaryRanges: CatenaryRange[];
 }
 
 /**
@@ -45,38 +46,29 @@ const getRollingStockPowerRestrictionsByMode = (
   );
 };
 
-const PowerRestrictionsSelector = ({ rollingStockId }: PowerRestrictionsSelectorProps) => {
+const PowerRestrictionsSelector = ({
+  rollingStock,
+  pathCatenaryRanges,
+}: PowerRestrictionsSelectorProps) => {
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const dispatch = useDispatch();
-  const pathFindingID = useSelector(getPathfindingID);
   const powerRestrictionRanges = useSelector(getPowerRestrictionRanges);
 
-  const { data: pathWithCatenaries } =
-    osrdEditoastApi.endpoints.getPathfindingByPathIdCatenaries.useQuery(
-      { pathId: pathFindingID as number },
-      { skip: !pathFindingID }
-    );
-
-  const { data: rollingStock } = osrdEditoastApi.endpoints.getRollingStockById.useQuery({
-    id: rollingStockId,
-  });
-
   const pathLength = useMemo(() => {
-    const lastPathSegment = last(pathWithCatenaries?.catenary_ranges);
+    const lastPathSegment = last(pathCatenaryRanges);
     return lastPathSegment ? lastPathSegment.end : DEFAULT_SEGMENT_LENGTH;
-  }, [pathWithCatenaries]);
+  }, [pathCatenaryRanges]);
 
   /** Compute the list of points where the electrification changes on path */
   const electrificationChangePoints = useMemo(() => {
-    if (!pathWithCatenaries) return [];
     const specialPoints = [
-      ...pathWithCatenaries.catenary_ranges.map((catenaryRange) => ({
+      ...pathCatenaryRanges.map((catenaryRange) => ({
         position: catenaryRange.end,
       })),
     ];
     specialPoints.pop();
     return specialPoints;
-  }, [pathWithCatenaries]);
+  }, [pathCatenaryRanges]);
 
   /** Set up the powerRestrictionRanges with the electrificationChangePoints */
   useEffect(() => {
@@ -85,14 +77,12 @@ const PowerRestrictionsSelector = ({ rollingStockId }: PowerRestrictionsSelector
       (powerRestrictionRanges.length === 1 &&
         powerRestrictionRanges[0].value === NO_POWER_RESTRICTION)
     ) {
-      if (pathWithCatenaries && !isEmpty(pathWithCatenaries.catenary_ranges)) {
-        const initialPowerRestrictionRanges = pathWithCatenaries.catenary_ranges.map(
-          (pathSegment) => ({
-            begin: pathSegment.begin,
-            end: pathSegment.end,
-            value: NO_POWER_RESTRICTION,
-          })
-        );
+      if (!isEmpty(pathCatenaryRanges)) {
+        const initialPowerRestrictionRanges = pathCatenaryRanges.map((pathSegment) => ({
+          begin: pathSegment.begin,
+          end: pathSegment.end,
+          value: NO_POWER_RESTRICTION,
+        }));
         dispatch(updatePowerRestrictionRanges(initialPowerRestrictionRanges));
       } else {
         dispatch(
@@ -106,15 +96,15 @@ const PowerRestrictionsSelector = ({ rollingStockId }: PowerRestrictionsSelector
         );
       }
     }
-  }, [pathWithCatenaries]);
+  }, [pathCatenaryRanges]);
 
   /** List of options of the rollingStock's power restrictions + option noPowerRestriction */
   const powerRestrictionOptions = useMemo(
     () =>
-      rollingStock && !isEmpty(rollingStock.power_restrictions)
+      !isEmpty(rollingStock.power_restrictions)
         ? [NO_POWER_RESTRICTION, ...Object.keys(rollingStock.power_restrictions)]
         : [],
-    [rollingStock?.power_restrictions]
+    [rollingStock]
   );
 
   const editPowerRestrictionRanges = (newPowerRestrictionRanges: IntervalItem[]) => {
@@ -123,9 +113,7 @@ const PowerRestrictionsSelector = ({ rollingStockId }: PowerRestrictionsSelector
 
   /** Check the compatibility between the powerRestrictionRanges and the catenaries */
   useEffect(() => {
-    const pathCatenaryRanges = pathWithCatenaries?.catenary_ranges || [];
-
-    if (rollingStock && !isEmpty(pathCatenaryRanges) && !isEmpty(powerRestrictionRanges)) {
+    if (!isEmpty(pathCatenaryRanges) && !isEmpty(powerRestrictionRanges)) {
       const powerRestrictionsByMode = getRollingStockPowerRestrictionsByMode(rollingStock);
 
       powerRestrictionRanges.forEach((powerRestrictionRange) => {
@@ -177,9 +165,10 @@ const PowerRestrictionsSelector = ({ rollingStockId }: PowerRestrictionsSelector
 
   return powerRestrictionOptions.length > 0 ? (
     <div className="osrd-config-item mb-2">
-      <div className="osrd-config-item-container">
+      <div className="osrd-config-item-container text-muted">
         <img width="32px" className="mr-2" src={icon} alt="PowerRestrictionIcon" />
-        <span className="text-muted">{t('powerRestriction')}</span>
+        <span>{t('powerRestriction')}</span>
+        <p className="mb-1 mt-1">{t('powerRestrictionExplanationText')}</p>
         <IntervalsEditor
           intervalType={INTERVAL_TYPES.SELECT}
           selectOptions={powerRestrictionOptions}

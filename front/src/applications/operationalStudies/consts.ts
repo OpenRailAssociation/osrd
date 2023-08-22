@@ -5,7 +5,6 @@ import { Position, Feature } from 'geojson';
 import {
   Allowance,
   AllowanceValue,
-  CatenaryRange,
   Comfort,
   ElectrificationRange,
   Electrified,
@@ -178,7 +177,6 @@ export interface OsrdConfState {
   infraID?: number;
   switchTypes?: SwitchType[];
   pathfindingID?: number;
-  pathWithCatenaries?: CatenaryRange[];
   shouldRunPathfinding: boolean;
   timetableID?: number;
   rollingStockID?: number;

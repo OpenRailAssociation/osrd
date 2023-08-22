@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import { isEmpty } from 'lodash';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -16,9 +17,9 @@ import {
   getShouldRunPathfinding,
   getTrainScheduleIDsToModify,
 } from 'reducers/osrdconf/selectors';
-import { updatePathWithCatenaries, updateShouldRunPathfinding } from 'reducers/osrdconf';
+import { updateShouldRunPathfinding } from 'reducers/osrdconf';
 import RollingStockSelector from 'common/RollingStockSelector/WithRollingStockSelector';
-import { osrdEditoastApi, CatenaryRange } from 'common/api/osrdEditoastApi';
+import { CatenaryRange, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import Tabs from 'common/Tabs';
 import rollingStockPic from 'assets/pictures/components/train.svg';
 import pahtFindingPic from 'assets/pictures/components/pathfinding.svg';
@@ -45,24 +46,26 @@ export default function ManageTrainSchedule() {
       skip: !pathFindingID,
     }
   );
-  const { data: rollingStock } = osrdEditoastApi.useGetRollingStockByIdQuery(
-    { id: rollingStockID as number },
+
+  const { data: rollingStock } = osrdEditoastApi.endpoints.getRollingStockById.useQuery(
+    {
+      id: rollingStockID as number,
+    },
     {
       skip: !rollingStockID,
     }
   );
 
-  const { pathWithCatenaries } = osrdEditoastApi.useGetPathfindingByPathIdCatenariesQuery(
-    { pathId: pathFindingID as number },
-    {
-      skip: !pathFindingID,
-      refetchOnMountOrArgChange: true,
-      selectFromResult: (response) => ({
-        ...response,
-        pathWithCatenaries: response.data?.catenary_ranges,
-      }),
-    }
-  );
+  const { data: pathWithCatenaries = { catenary_ranges: [] as CatenaryRange[] } } =
+    osrdEditoastApi.endpoints.getPathfindingByPathIdCatenaries.useQuery(
+      { pathId: pathFindingID as number },
+      { skip: !pathFindingID }
+    );
+
+  const rollingStockHasPowerRestictions = useMemo(() => {
+    if (!rollingStock) return false;
+    return !isEmpty(rollingStock.power_restrictions);
+  }, [rollingStock]);
 
   const tabRollingStock = {
     title: rollingStock ? (
@@ -137,7 +140,12 @@ export default function ManageTrainSchedule() {
             <SpeedLimitByTagSelector />
           </div>
         </div>
-        {rollingStockID && <PowerRestrictionsSelector rollingStockId={rollingStockID} />}
+        {rollingStock && rollingStockHasPowerRestictions && (
+          <PowerRestrictionsSelector
+            rollingStock={rollingStock}
+            pathCatenaryRanges={pathWithCatenaries.catenary_ranges}
+          />
+        )}
       </div>
     ),
   };
@@ -156,10 +164,6 @@ export default function ManageTrainSchedule() {
           }
         });
   }, [trainScheduleIDsToModify]);
-
-  useEffect(() => {
-    dispatch(updatePathWithCatenaries(pathWithCatenaries as CatenaryRange[]));
-  }, [pathWithCatenaries]);
 
   useEffect(() => {
     setMustUpdatePathfinding(false);

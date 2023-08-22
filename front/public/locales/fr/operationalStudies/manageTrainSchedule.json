@@ -72,6 +72,7 @@
   "pathfindingStatus": "Statut recherche d’itinéraire",
   "pleaseWait": "Veuillez patientez…",
   "powerRestriction": "Code de restriction de puissance",
+  "powerRestrictionExplanationText": "Si aucune restriction de puissance n'est renseignée sur un intervalle, le calcul de marche sera réalisé en utilisant la puissance nominale.",
   "restartPathfinding": "Relancer la recherche",
   "rollingstock": "Matériel",
   "simulation": "Simulation",
