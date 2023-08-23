@@ -47,7 +47,7 @@ export default function ImportTrainScheduleModal(props) {
 
   // Places, points, OPs to add track section id
   const [pointsDictionnary, setPointsDictionnary] = useState();
-  const [clickedFeature, setClickedFeature] = useState();
+  const [clickedFeatureId, setClickedFeatureId] = useState();
   const [uicNumberToComplete, setUicNumberToComplete] = useState();
 
   // Path to compute
@@ -82,7 +82,6 @@ export default function ImportTrainScheduleModal(props) {
 
   function getTrackSectionID(lat, lng) {
     setViewport({
-      ...viewport,
       latitude: Number(lat),
       longitude: Number(lng),
       pitch: 0,
@@ -253,20 +252,20 @@ export default function ImportTrainScheduleModal(props) {
   }
 
   useEffect(() => {
-    if (clickedFeature) {
+    if (clickedFeatureId) {
       const actualUic = Object.keys(pointsDictionnary)[uicNumberToComplete];
       setPointsDictionnary({
         ...pointsDictionnary,
         [actualUic]: {
           ...pointsDictionnary[actualUic],
-          trackSectionId: clickedFeature.properties.id,
+          trackSectionId: clickedFeatureId,
         },
       });
+      setClickedFeatureId(undefined);
 
       completePaths();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [clickedFeature]);
+  }, [clickedFeatureId]);
 
   useEffect(() => {
     if (rollingStockDB && trains && trains.length > 0) {
@@ -347,7 +346,7 @@ export default function ImportTrainScheduleModal(props) {
               <Map
                 viewport={viewport}
                 setViewport={setViewport}
-                setClickedFeature={setClickedFeature}
+                setClickedFeatureId={setClickedFeatureId}
               />
             </div>
           )}
