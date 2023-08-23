@@ -62,6 +62,7 @@ class PlaywrightRollingstockModalPage {
   }
 
   getRollingStockInfoComfort() {
+    this.page.waitForSelector('.rollingstock-info-comfort');
     return this.getRollingstockMiniCard.locator('.rollingstock-info-comfort');
   }
 }
