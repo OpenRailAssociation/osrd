@@ -4,8 +4,8 @@ import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import logo from 'assets/pictures/views/studies.svg';
 import { useTranslation } from 'react-i18next';
 import nextId from 'react-id-generator';
-import StudyCard from 'applications/operationalStudies/components/Project/StudyCard';
-import StudyCardEmpty from 'applications/operationalStudies/components/Project/StudyCardEmpty';
+import StudyCard from 'modules/study/components/StudyCard';
+import StudyCardEmpty from 'modules/study/components/StudyCardEmpty';
 import Loader from 'common/Loader';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import { BiTargetLock } from 'react-icons/bi';
@@ -26,7 +26,7 @@ import {
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
 import { getDocument } from 'common/api/documentApi';
-import AddOrEditProjectModal from '../components/Project/AddOrEditProjectModal';
+import AddOrEditProjectModal from '../../../modules/project/components/AddOrEditProjectModal';
 import BreadCrumbs from '../components/BreadCrumbs';
 
 type SortOptions =

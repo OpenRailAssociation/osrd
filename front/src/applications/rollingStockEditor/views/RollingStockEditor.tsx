@@ -1,16 +1,18 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-import RollingStockCard from 'common/RollingStockSelector/RollingStockCard';
+import {
+  RollingStockCard,
+  SearchRollingStock,
+} from 'modules/rollingStock/components/RollingStockSelector';
 import { useSelector } from 'react-redux';
 import { getRollingStockID } from 'reducers/osrdconf/selectors';
 import Loader from 'common/Loader';
 import { useTranslation } from 'react-i18next';
 import { LightRollingStock, osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import SearchRollingStock from 'common/RollingStockSelector/SearchRollingStock';
 import { isEmpty } from 'lodash';
-import RollingStockEditorButtons from '../components/RollingStockEditorButtons';
-import RollingStockEditorCard from '../components/RollingStockEditorCard';
-import RollingStockEditorForm from '../components/RollingStockEditorForm';
+import RollingStockEditorButtons from 'modules/rollingStock/components/rollingStockEditor/RollingStockEditorButtons';
+import RollingStockEditorCard from 'modules/rollingStock/components/rollingStockEditor/RollingStockEditorCard';
+import RollingStockEditorForm from 'modules/rollingStock/components/rollingStockEditor/RollingStockEditorForm';
 
 type RollingStockEditorProps = {
   rollingStocks: LightRollingStock[];

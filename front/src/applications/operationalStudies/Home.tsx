@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import FilterTextField from 'applications/operationalStudies/components/FilterTextField';
-import ProjectSelectionToolbar from 'applications/operationalStudies/components/Home/ProjectSelectionToolbar';
-import ProjectCard from 'applications/operationalStudies/components/Home/ProjectCard';
-import ProjectCardEmpty from 'applications/operationalStudies/components/Home/ProjectCardEmpty';
+import ProjectSelectionToolbar from 'modules/project/components/ProjectSelectionToolbar';
+import ProjectCard from 'modules/project/components/ProjectCard';
+import ProjectCardEmpty from 'modules/project/components/ProjectCardEmpty';
 import osrdLogo from 'assets/pictures/osrd.png';
 import logo from 'assets/pictures/views/projects.svg';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';

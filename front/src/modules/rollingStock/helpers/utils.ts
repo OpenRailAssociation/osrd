@@ -1,5 +1,5 @@
 import { EffortCurve, RollingStock, RollingStockUpsertPayload } from 'common/api/osrdEditoastApi';
-import { RollingStockParametersValues } from './consts';
+import { RollingStockParametersValues } from 'modules/rollingStock/consts';
 
 const newRollingStockValues = {
   railjsonVersion: '',

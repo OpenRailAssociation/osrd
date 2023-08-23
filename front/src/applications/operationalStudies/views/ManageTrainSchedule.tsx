@@ -18,14 +18,17 @@ import {
   getTrainScheduleIDsToModify,
 } from 'reducers/osrdconf/selectors';
 import { updateShouldRunPathfinding } from 'reducers/osrdconf';
-import RollingStockSelector from 'common/RollingStockSelector/WithRollingStockSelector';
-import { CatenaryRange, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import {
+  RollingStock2Img,
+  RollingStockSelector,
+} from 'modules/rollingStock/components/RollingStockSelector';
+import { osrdEditoastApi, CatenaryRange } from 'common/api/osrdEditoastApi';
 import Tabs from 'common/Tabs';
 import rollingStockPic from 'assets/pictures/components/train.svg';
 import pahtFindingPic from 'assets/pictures/components/pathfinding.svg';
 import allowancesPic from 'assets/pictures/components/allowances.svg';
 import simulationSettings from 'assets/pictures/components/simulationSettings.svg';
-import MemoRollingStock2Img from 'common/RollingStockSelector/RollingStock2Img';
+import MemoRollingStock2Img from 'modules/rollingStock/components/RollingStockSelector/RollingStock2Img';
 import { osrdMiddlewareApi, TrainSchedule } from 'common/api/osrdMiddlewareApi';
 
 export default function ManageTrainSchedule() {
@@ -83,7 +86,14 @@ export default function ManageTrainSchedule() {
     ),
     withWarning: rollingStockID === undefined,
     label: t('tabs.rollingStock'),
-    content: <RollingStockSelector />,
+    content: rollingStock ? (
+      <RollingStockSelector
+        rollingStockSelected={rollingStock}
+        image={<RollingStock2Img rollingStock={rollingStock} />}
+      />
+    ) : (
+      <RollingStockSelector />
+    ),
   };
 
   const tabPathFinding = {

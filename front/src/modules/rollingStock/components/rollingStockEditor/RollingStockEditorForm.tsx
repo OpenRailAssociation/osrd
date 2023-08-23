@@ -5,17 +5,17 @@ import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { useDispatch } from 'react-redux';
 import { setFailure, setSuccess } from 'reducers/main';
 import Tabs, { TabProps } from 'common/Tabs';
-import RollingStockEditorFormModal from './RollingStockEditorFormModal';
+import RollingStockEditorFormModal from 'modules/rollingStock/components/rollingStockEditor/RollingStockEditorFormModal';
+import getRollingStockEditorDefaultValues, {
+  getDefaultRollingStockMode,
+  rollingStockEditorQueryArg,
+} from 'modules/rollingStock/helpers/utils';
 import {
   RollingStockEditorParameter,
   RollingStockParametersValues,
   RollingStockSchemaProperties,
-} from '../consts';
+} from 'modules/rollingStock/consts';
 import RollingStockEditorCurves from './RollingStockEditorCurves';
-import getRollingStockEditorDefaultValues, {
-  getDefaultRollingStockMode,
-  rollingStockEditorQueryArg,
-} from '../utils';
 import {
   RollingStockEditorMetadataForm,
   RollingStockEditorParameterForm,

@@ -7,7 +7,7 @@ import { Comfort, RollingStock, osrdEditoastApi } from 'common/api/osrdEditoastA
 import Loader from 'common/Loader';
 import { setFailure } from 'reducers/main';
 import RollingStock2Img from './RollingStock2Img';
-import RollingStockCurves from './RollingStockCurves';
+import RollingStockCurves from './RollingStockCurve';
 
 type RollingStockCardDetailProps = {
   id: number;

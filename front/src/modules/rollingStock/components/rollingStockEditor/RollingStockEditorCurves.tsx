@@ -1,6 +1,8 @@
-import RollingStock2Img from 'common/RollingStockSelector/RollingStock2Img';
-import { listCurvesComfort } from 'common/RollingStockSelector/RollingStockCardDetail';
-import RollingStockCurve from 'common/RollingStockSelector/RollingStockCurves';
+import {
+  RollingStock2Img,
+  RollingStockCurve,
+} from 'modules/rollingStock/components/RollingStockSelector';
+import { listCurvesComfort } from 'modules/rollingStock/components/RollingStockSelector/RollingStockCardDetail';
 import { Comfort, RollingStock } from 'common/api/osrdEditoastApi';
 import { isEmpty } from 'lodash';
 import React, { Dispatch, SetStateAction, useEffect, useState, useCallback } from 'react';
@@ -25,7 +27,7 @@ import {
   RollingStockSelectorParams,
   THERMAL_TRACTION_IDENTIFIER,
   STANDARD_COMFORT_LEVEL,
-} from 'applications/rollingStockEditor/consts';
+} from 'modules/rollingStock/consts';
 
 export default function RollingStockEditorCurves({
   data,

@@ -8,7 +8,7 @@ import {
   RollingStockEditorParameter,
   RollingStockParametersValues,
   RollingStockSchemaProperties,
-} from 'applications/rollingStockEditor/consts';
+} from 'modules/rollingStock/consts';
 
 type RollingStockMetadataFormProps = {
   rollingStockValues: RollingStockParametersValues;

@@ -28,10 +28,10 @@ import { isEmpty } from 'lodash';
 import { BsFillExclamationTriangleFill } from 'react-icons/bs';
 import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import ConflictsList, { Conflict } from 'modules/conflict/components/ConflictsList';
 import getTimetable from './getTimetable';
 import TimetableTrainCard from './TimetableTrainCard';
 import findTrainsDurationsIntervals from '../ManageTrainSchedule/helpers/trainsDurationsIntervals';
-import ConflictsList, { Conflict } from './ConflictsList';
 
 type Props = {
   setDisplayTrainScheduleManagement: (mode: string) => void;

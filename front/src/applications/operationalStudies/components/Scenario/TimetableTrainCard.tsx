@@ -13,7 +13,7 @@ import cx from 'classnames';
 import { InvalidTrainValues, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 
 import { ScheduledTrain } from 'reducers/osrdsimulation/types';
-import RollingStock2Img from 'common/RollingStockSelector/RollingStock2Img';
+import { RollingStock2Img } from 'modules/rollingStock/components/RollingStockSelector';
 import { updateTrainScheduleIDsToModify } from 'reducers/osrdconf';
 import { useDispatch } from 'react-redux';
 import { jouleToKwh, mToKmOneDecimal } from 'utils/physics';
