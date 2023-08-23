@@ -29,7 +29,7 @@ import { BsFillExclamationTriangleFill } from 'react-icons/bs';
 import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import ConflictsList, { Conflict } from 'modules/conflict/components/ConflictsList';
-import getTimetable from './getTimetable';
+import getSimulationResults from './getSimulationResults';
 import TimetableTrainCard from './TimetableTrainCard';
 import findTrainsDurationsIntervals from '../ManageTrainSchedule/helpers/trainsDurationsIntervals';
 
@@ -85,7 +85,7 @@ export default function Timetable({
     const currentTimetable = await getTimetableWithTrainSchedulesDetails({
       id: timetableID as number,
     }).unwrap();
-    getTimetable(currentTimetable);
+    getSimulationResults(currentTimetable);
     dispatch(updateReloadTimetable(false));
   };
 
@@ -300,8 +300,7 @@ export default function Timetable({
             findTrainsDurationsIntervals(timetableWithTrainSchedules.train_schedule_summaries)
           );
           if (!isEmpty(timetableWithTrainSchedules.train_schedule_summaries)) {
-            // TODO: rename getTimetable by getSimulationResults
-            getTimetable(timetableWithTrainSchedules);
+            getSimulationResults(timetableWithTrainSchedules);
           }
         });
     }

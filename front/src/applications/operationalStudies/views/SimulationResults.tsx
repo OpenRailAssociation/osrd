@@ -18,7 +18,7 @@ import SpeedSpaceChart from 'applications/operationalStudies/components/Simulati
 import TimeButtons from 'applications/operationalStudies/components/SimulationResults/TimeButtons';
 import TimeLine from 'applications/operationalStudies/components/SimulationResults/TimeLine/TimeLine';
 import TrainDetails from 'applications/operationalStudies/components/SimulationResults/TrainDetails';
-import getTimetable from 'applications/operationalStudies/components/Scenario/getTimetable';
+import getTimetable from 'applications/operationalStudies/components/Scenario/getSimulationResults';
 
 import { RootState } from 'reducers';
 import { updateViewport, Viewport } from 'reducers/map';

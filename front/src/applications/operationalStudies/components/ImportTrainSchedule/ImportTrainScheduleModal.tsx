@@ -8,7 +8,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { getRollingStockID } from 'reducers/osrdconf/selectors';
 import generatePathfindingPayload from 'applications/operationalStudies/components/ImportTrainSchedule/generatePathfindingPayload';
 import generateTrainSchedulesPayload from 'applications/operationalStudies/components/ImportTrainSchedule/generateTrainSchedulesPayload';
-import getTimetable from 'applications/operationalStudies/components/Scenario/getTimetable';
+import getSimulationResults from 'applications/operationalStudies/components/Scenario/getSimulationResults';
 import {
   initialViewport,
   initialStatus,
@@ -233,7 +233,7 @@ const ImportTrainScheduleModal = ({
         id: timetableId,
       }).unwrap();
       await Promise.resolve(dispatch(updateReloadTimetable(false)));
-      getTimetable(timetable);
+      getSimulationResults(timetable);
     } catch (error) {
       console.error(error);
     }
