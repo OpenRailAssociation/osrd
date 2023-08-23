@@ -28,8 +28,8 @@ import {
 } from 'common/api/osrdEditoastApi';
 import { postDocument } from 'common/api/documentApi';
 import { RootState } from 'reducers';
-import { PROJECTS_URI } from '../operationalStudiesConsts';
-import PictureUploader from './PictureUploader';
+import { PROJECTS_URI } from 'applications/operationalStudies/components/operationalStudiesConsts';
+import PictureUploader from 'applications/operationalStudies/components/Project/PictureUploader';
 
 export type Props = {
   editionMode?: boolean;

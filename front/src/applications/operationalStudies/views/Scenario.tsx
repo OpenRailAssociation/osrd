@@ -16,7 +16,7 @@ import { GiElectric } from 'react-icons/gi';
 import { setSuccess } from 'reducers/main';
 import { useNavigate } from 'react-router-dom';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import AddAndEditScenarioModal from '../components/Scenario/AddOrEditScenarioModal';
+import AddAndEditScenarioModal from 'modules/scenario/components/AddOrEditScenarioModal';
 import ImportTrainSchedule from './ImportTrainSchedule';
 import ManageTrainSchedule from './ManageTrainSchedule';
 import SimulationResults from './SimulationResults';

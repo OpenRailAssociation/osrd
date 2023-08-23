@@ -3,7 +3,7 @@ import React, { useState, useContext } from 'react';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
-import RollingStockSelector from 'common/RollingStockSelector/WithRollingStockSelector';
+import { RollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import MemoStationSelector from 'applications/operationalStudies/components/ImportTrainSchedule/ImportTrainScheduleStationSelector';
 import { setFailure } from 'reducers/main';

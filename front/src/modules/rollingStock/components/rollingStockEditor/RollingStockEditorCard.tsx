@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { Comfort, RollingStock } from 'common/api/osrdEditoastApi';
 import RollingStockCardDetail, {
   listCurvesComfort,
-} from 'common/RollingStockSelector/RollingStockCardDetail';
-import { RollingStockInfo } from 'common/RollingStockSelector/RollingStockHelpers';
-import RollingStockCurve from 'common/RollingStockSelector/RollingStockCurves';
-import RollingStock2Img from 'common/RollingStockSelector/RollingStock2Img';
+} from 'modules/rollingStock/components/RollingStockSelector/RollingStockCardDetail';
+import { RollingStockInfo } from 'modules/rollingStock/components/RollingStockSelector/RollingStockHelpers';
+import {
+  RollingStockCurve,
+  RollingStock2Img,
+} from 'modules/rollingStock/components/RollingStockSelector';
 
 type RollingStockEditorCardProps = {
   id: number;

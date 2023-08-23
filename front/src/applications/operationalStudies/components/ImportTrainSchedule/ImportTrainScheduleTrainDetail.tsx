@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import nextId from 'react-id-generator';
 import { seconds2hhmmss } from 'applications/operationalStudies/components/ImportTrainSchedule/ImportTrainScheduleHelpers';
-import RollingStock2Img from 'common/RollingStockSelector/RollingStock2Img';
+import { RollingStock2Img } from 'modules/rollingStock/components/RollingStockSelector';
 import { LazyLoadComponent } from 'react-lazy-load-image-component';
 import { TrainSchedule } from 'applications/operationalStudies/types';
 import { LightRollingStock, RollingStock } from 'common/api/osrdEditoastApi';

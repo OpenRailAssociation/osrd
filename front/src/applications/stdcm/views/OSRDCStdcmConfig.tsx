@@ -17,7 +17,7 @@ import {
   getTimetableID,
 } from 'reducers/osrdconf/selectors';
 import { getSelectedTrain } from 'reducers/osrdsimulation/selectors';
-import RollingStockSelector from 'common/RollingStockSelector/WithRollingStockSelector';
+import { RollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import STDCMAllowances from '../components/STDCMAllowances';
 import OSRDStdcmResults from './OSRDStdcmResults';

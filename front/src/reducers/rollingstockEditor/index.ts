@@ -1,4 +1,4 @@
-import { STANDARD_COMFORT_LEVEL } from 'applications/rollingStockEditor/consts';
+import { STANDARD_COMFORT_LEVEL } from 'modules/rollingStock/consts';
 import { Comfort } from 'common/api/osrdEditoastApi';
 import produce from 'immer';
 import { AnyAction, Dispatch } from 'redux';

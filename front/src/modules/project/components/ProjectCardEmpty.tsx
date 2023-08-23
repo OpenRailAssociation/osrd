@@ -1,5 +1,5 @@
 import React from 'react';
-import AddOrEditProjectModal from 'applications/operationalStudies/components/Project/AddOrEditProjectModal';
+import AddOrEditProjectModal from 'modules/project/components/AddOrEditProjectModal';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { useTranslation } from 'react-i18next';
 import { FaPlus } from 'react-icons/fa';

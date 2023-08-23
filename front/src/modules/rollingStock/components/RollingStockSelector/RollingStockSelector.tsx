@@ -1,10 +1,10 @@
 import React, { useRef } from 'react';
-import RollingStockModal from 'common/RollingStockSelector/RollingStockModal';
+import RollingStockModal from 'modules/rollingStock/components/RollingStockSelector/RollingStockModal';
 import icon from 'assets/pictures/components/train.svg';
 import {
   comfort2pictogram,
   RollingStockInfo,
-} from 'common/RollingStockSelector/RollingStockHelpers';
+} from 'modules/rollingStock/components/RollingStockSelector/RollingStockHelpers';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { Comfort, RollingStock } from 'common/api/osrdEditoastApi';
 
@@ -30,7 +30,6 @@ const RollingStockSelector = ({
   const { openModal } = useModal();
 
   const ref2scroll = useRef<HTMLDivElement>(null);
-
   return (
     <div className="osrd-config-item mb-2">
       <div

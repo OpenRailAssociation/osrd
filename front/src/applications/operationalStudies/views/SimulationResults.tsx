@@ -28,7 +28,7 @@ import { getTimetableID } from 'reducers/osrdconf/selectors';
 import cx from 'classnames';
 import { Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { getSelectedTrain } from 'reducers/osrdsimulation/selectors';
-import ScenarioLoader from '../components/Scenario/ScenarioLoader';
+import ScenarioLoader from 'modules/scenario/components/ScenarioLoader';
 
 const MAP_MIN_HEIGHT = 450;
 

@@ -6,7 +6,7 @@ import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { setSuccess, setFailure } from 'reducers/main';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
-import RollingStockEditorFormModal from './RollingStockEditorFormModal';
+import RollingStockEditorFormModal from 'modules/rollingStock/components/rollingStockEditor/RollingStockEditorFormModal';
 
 type RollingStockEditorButtonsProps = {
   rollingStock: RollingStock;
