@@ -9,12 +9,14 @@ import { get } from 'common/requests';
 import { setFailure } from 'reducers/main';
 import { store } from 'Store';
 import i18n from 'i18next';
+import { TimetableWithSchedulesDetails } from 'common/api/osrdEditoastApi';
+import { Train } from 'reducers/osrdsimulation/types';
 
 /**
  * Recover the time table for all the trains
  */
 
-export default async function getTimetable(timetable) {
+export default async function getSimulationResults(timetable: TimetableWithSchedulesDetails) {
   const { selectedProjection, allowancesSettings } = store.getState().osrdsimulation;
   try {
     store.dispatch(updateIsUpdating(true));
@@ -39,12 +41,12 @@ export default async function getTimetable(timetable) {
           path_id: selectedProjectionPath,
         },
       });
-      simulationLocal.sort((a, b) => a.base.stops[0].time > b.base.stops[0].time);
+      simulationLocal.sort((a: Train, b: Train) => a.base.stops[0].time > b.base.stops[0].time);
       store.dispatch(updateSimulation({ trains: simulationLocal }));
 
       // Create margins settings for each train if not set
       const newAllowancesSettings = { ...allowancesSettings };
-      simulationLocal.forEach((train) => {
+      simulationLocal.forEach((train: Train) => {
         if (!newAllowancesSettings[train.id]) {
           newAllowancesSettings[train.id] = {
             base: true,
@@ -62,11 +64,11 @@ export default async function getTimetable(timetable) {
       store.dispatch(updateSelectedTrainId(undefined));
       store.dispatch(updateSelectedProjection(undefined));
     }
-  } catch (e) {
+  } catch (e: unknown) {
     store.dispatch(
       setFailure({
         name: i18n.t('simulation:errorMessages.unableToRetrieveTrainSchedule'),
-        message: `${e.message} `,
+        message: `${(e as Error).message}`,
       })
     );
     store.dispatch(updateIsUpdating(false));

@@ -5,7 +5,7 @@ import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { setFailure, setSuccess } from 'reducers/main';
 import { time2sec, sec2time } from 'utils/timeManipulation';
-import getTimetable from 'applications/operationalStudies/components/Scenario/getTimetable';
+import getSimulationResults from 'applications/operationalStudies/components/Scenario/getSimulationResults';
 import formatConf from 'applications/operationalStudies/components/ManageTrainSchedule/helpers/formatConf';
 import trainNameWithNum from 'applications/operationalStudies/components/ManageTrainSchedule/helpers/trainNameHelper';
 import { Infra, TrainScheduleBatchItem, osrdEditoastApi } from 'common/api/osrdEditoastApi';
@@ -96,7 +96,7 @@ export default function SubmitConfAddTrainSchedule({ infraState, setIsWorking }:
           id: osrdconf.simulationConf.timetableID as number,
         }).unwrap();
         dispatch(updateReloadTimetable(false));
-        getTimetable(timetable);
+        getSimulationResults(timetable);
       } catch (e: unknown) {
         setIsWorking(false);
         if (e instanceof Error) {
