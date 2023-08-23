@@ -154,7 +154,7 @@ export default function ImportTrainScheduleModal(props) {
       const { payload, rollingStockId } = generatePathfindingPayload(
         trainsWithPathRef,
         rollingStockDB,
-        path,
+        path.trainNumber,
         rollingStockID,
         infraID,
         autocomplete,

@@ -1,4 +1,4 @@
-import { Path, TrackLocation } from 'common/api/osrdEditoastApi';
+import { Path } from 'common/api/osrdEditoastApi';
 
 export interface Destination {
   uic: number;
@@ -13,7 +13,10 @@ export interface Step extends Destination {
   arrivalTime: string;
   departureTime: string;
   duration?: number;
-  tracks: TrackLocation[];
+  tracks: {
+    position: number;
+    track: string;
+  }[];
 }
 
 export type TrainSchedule = {

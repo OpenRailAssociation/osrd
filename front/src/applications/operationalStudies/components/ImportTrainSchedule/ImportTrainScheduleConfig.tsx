@@ -12,7 +12,6 @@ import { formatIsoDate } from 'utils/date';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import {
   ImportedTrainSchedule,
-  Step,
   TrainSchedule,
   TrainScheduleImportConfig,
 } from 'applications/operationalStudies/types';
@@ -20,7 +19,6 @@ import {
   SearchOperationalPointResult,
   PostSearchApiArg,
   osrdEditoastApi,
-  TrackLocation,
 } from 'common/api/osrdEditoastApi';
 import { getGraouTrainSchedules } from 'common/api/graouApi';
 import UploadFileModal from 'common/uploadFileModal';
@@ -50,7 +48,15 @@ export default function ImportTrainScheduleConfig({
   const dispatch = useDispatch();
   const { openModal, closeModal } = useContext(ModalContext);
 
-  async function importTrackSections(opIds: number[]): Promise<Record<number, TrackLocation[]>> {
+  async function importTrackSections(opIds: number[]): Promise<
+    Record<
+      number,
+      {
+        position: number;
+        track: string;
+      }[]
+    >
+  > {
     const uniqueOpIds = Array.from(new Set(opIds));
     const constraint = uniqueOpIds.reduce((res, uic) => [...res, ['=', ['uic'], Number(uic)]], [
       'or',
@@ -131,12 +137,12 @@ export default function ImportTrainScheduleConfig({
           ...step,
           duration,
           tracks: trackSectionsByOp[Number(step.uic)] || [],
-        } as Step;
+        };
       });
       return {
         ...trainSchedule,
         steps: stepsWithDuration,
-      } as TrainSchedule;
+      };
     });
 
     setTrainsList(trainsSchedules);
