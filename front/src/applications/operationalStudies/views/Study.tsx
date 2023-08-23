@@ -335,7 +335,7 @@ export default function Study() {
                 </div>
                 <div className="study-details-financials-amount">
                   <span className="study-details-financials-amount-text">{t('budget')}</span>
-                  {study.budget && budgetFormat(study.budget)}
+                  {study.budget !== 0 ? budgetFormat(study.budget) : ''}
                 </div>
               </div>
 

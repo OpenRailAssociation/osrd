@@ -2058,7 +2058,16 @@ paths:
           application/json:
             schema:
               type: object
-              required: [infra_id, timetable_id, steps, rolling_stocks, rolling_stock_id, comfort, standard_allowance]
+              required:
+                [
+                  infra_id,
+                  timetable_id,
+                  steps,
+                  rolling_stocks,
+                  rolling_stock_id,
+                  comfort,
+                  standard_allowance,
+                ]
               properties:
                 infra_id:
                   type: integer
