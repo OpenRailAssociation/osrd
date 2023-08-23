@@ -43,6 +43,7 @@ export default function ImportTrainScheduleModal(props) {
   const [getTimetableWithTrainSchedulesDetails] = osrdEditoastApi.useLazyGetTimetableByIdQuery();
 
   const [trainsWithPathRef, setTrainsWithPathRef] = useState([]);
+  const [trainsWithPath, setTrainsWithPath] = useState([]);
 
   // Places, points, OPs to add track section id
   const [pointsDictionnary, setPointsDictionnary] = useState();
@@ -130,7 +131,7 @@ export default function ImportTrainScheduleModal(props) {
     if (newTrainsWithPathRef.length > 0) {
       setImportStatus(t('operationalStudies/importTrainSchedule:status.pathComplete'));
     } else setImportStatus(t('operationalStudies/importTrainSchedule:status.pathsFailed'));
-    setTrainsWithPathRef(newTrainsWithPathRef);
+    setTrainsWithPath(newTrainsWithPathRef);
     setStatus({ ...status, uicComplete: true, pathFindingDone: true });
   }
 
@@ -231,7 +232,7 @@ export default function ImportTrainScheduleModal(props) {
   }
 
   async function generateTrainSchedules() {
-    const payload = generateTrainSchedulesPayload(trainsWithPathRef, infraID, timetableID);
+    const payload = generateTrainSchedulesPayload(trainsWithPath, timetableID);
     setImportStatus(t('operationalStudies/importTrainSchedule:status.calculatingTrainSchedule'));
     const messages = [];
     const promisesList = [];
