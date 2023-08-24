@@ -5,12 +5,16 @@ WORKDIR /app
 
 ENV PATH /app/node_modules/.bin:$PATH
 
-# build dependencies
+# Build dependencies
 COPY package.json yarn.lock /app/
 RUN yarn
 
-# build the app
 COPY . /app
+
+# Generate the licenses file
+RUN yarn generate-licenses
+
+# Build the app
 RUN yarn build
 
 # Copy & serve app
