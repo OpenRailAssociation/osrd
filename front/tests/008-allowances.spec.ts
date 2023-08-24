@@ -9,6 +9,7 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
     test.setTimeout(90000);
     await createCompleteScenario(
       page,
+      '_@Test integration scenario',
       'Train Schedule 1',
       '1',
       '15',
