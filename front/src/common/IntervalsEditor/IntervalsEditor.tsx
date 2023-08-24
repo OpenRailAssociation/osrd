@@ -30,14 +30,23 @@ import IntervalsEditorSelectForm from './IntervalsEditorSelectForm';
 import { createEmptySegmentAt, removeSegment } from './utils';
 
 type IntervalsEditorProps = {
+  /** Additionnal read-only data that will be displayed along the path, below the intervals editor */
   additionalData?: AdditionalDataItem[];
+  /** Default value used when a new range is created */
   defaultValue: number | string;
+  /** If a range value is equal to the empty value, then it is displayed with red crossed lines */
   emptyValue?: unknown;
+  /** Remarkable points on path */
   operationalPoints?: OperationalPoint[];
+  /** Function to update the data in the parent component */
   setData: (newData: IntervalItem[]) => void;
+  /** Indicates whether the value should be displayed in the range or not */
   showValues?: boolean;
+  /** Title of the intervals editor */
   title?: string;
+  /** Indicates which tool should be available or not */
   toolsConfig?: IntervalsEditorToolsConfig;
+  /** Total length of the path */
   totalLength: number;
 } & (
   | {
