@@ -9,12 +9,12 @@ const getTrainAndRollingStockFromPath = (
   trainNumber: string,
   trainsWithPathRef: TrainScheduleWithPathRef[],
   rollingStocks: LightRollingStock[],
-  defaultRollingStockId: number
+  defaultRollingStockId: number | undefined
 ) => {
   const trainFromPathRef = trainsWithPathRef.find((train) => train.trainNumber === trainNumber);
 
   if (!trainFromPathRef) {
-    throw new Error('Train not found in trainsWithPathRef (getTrainAndRollingStockFromPath');
+    throw new Error('Train not found in trainsWithPathRef (getTrainAndRollingStockFromPath)');
   }
 
   const rollingStock = rollingStocks.find(
@@ -25,9 +25,14 @@ const getTrainAndRollingStockFromPath = (
       ]
   );
 
+  const rollingStockId = rollingStock ? rollingStock.id : defaultRollingStockId;
+  if (!rollingStockId) {
+    throw new Error('No default rollingStockId provided');
+  }
+
   return {
     train: trainFromPathRef,
-    rollingStockId: rollingStock ? rollingStock.id : defaultRollingStockId,
+    rollingStockId,
   };
 };
 
@@ -68,7 +73,7 @@ const generatePathfindingPayload = (
   trainsWithPathRef: TrainScheduleWithPathRef[],
   rollingStocks: LightRollingStock[],
   trainNumber: string,
-  defaultRollingStockId: number,
+  defaultRollingStockId: number | undefined,
   infraId: number,
   autocomplete = true,
   pointsDictionnary: Record<string, Point> = {}
