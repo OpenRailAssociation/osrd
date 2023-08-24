@@ -379,7 +379,9 @@ public class PathfindingResultConverter {
         while (true) {
             var route = findRoute(infra, pathChunks, chunkStartIndex, chunkStartIndex != 0);
             res.add(route);
-            chunkStartIndex += infra.getChunksOnRoute(route).getSize();
+            var chunkSetOnRoute = new HashSet<>(toIntList(infra.getChunksOnRoute(route)));
+            while (chunkStartIndex < pathChunks.size() && chunkSetOnRoute.contains(pathChunks.get(chunkStartIndex)))
+                chunkStartIndex++; // Increase the index in the chunk path, for as long as it it covered by the route
             if (chunkStartIndex >= pathChunks.size())
                 return res;
         }
