@@ -548,7 +548,8 @@ async fn create_backend_request_payload(
                 .ok_or(ElectricalProfilesError::NotFound {
                     electrical_profile_set_id,
                 })?
-                .name
+                .id
+                .map(|id| id.to_string())
         }
         _ => None,
     };
