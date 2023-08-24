@@ -9,6 +9,7 @@ import { StudyPage } from '../pages/study-page-model';
 
 export default async function createCompleteScenario(
   page: Page,
+  scenarioName: string,
   trainScheduleName: string,
   trainCount: string,
   delta: string,
@@ -30,7 +31,7 @@ export default async function createCompleteScenario(
   await studyPage.openStudyByTestId('_@Test integration study');
 
   await scenarioPage.openScenarioCreationModal();
-  await scenarioPage.setScenarioName('_@Test integration scenario');
+  await scenarioPage.setScenarioName(scenarioName);
   await scenarioPage.setScenarioInfraByName(VARIABLES.infraName);
   const createButton = playwrightHomePage.page.getByText('Créer le scénario');
   await createButton.click();

@@ -10,7 +10,7 @@ import { StudyPage } from './pages/study-page-model';
 
 test.describe('Testing if all mandatory elements simulation configuration are loaded in operationnal studies app', () => {
   test('Testing pathfinding with rollingstock an composition code', async ({ page }) => {
-    test.setTimeout(90000);
+    test.setTimeout(90000); // 1min30
     const playwrightHomePage = new PlaywrightHomePage(page);
     const scenarioPage = new PlaywrightScenarioPage(page);
     const projectPage = new ProjectPage(page);

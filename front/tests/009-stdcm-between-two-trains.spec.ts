@@ -24,18 +24,27 @@ const destinationSearch = PATH_VARIABLES.stdcm
   ? PATH_VARIABLES.stdcm.destinationSearchMacon || PATH_VARIABLES.stdcm.destinationSearch
   : PATH_VARIABLES.destinationSearch;
 
+const scenarioName = process.env.CI
+  ? '_@Test integration scenario'
+  : '_@Test integration stdcm scenario';
+
 test.describe('Testing if stdcm between two trains works well', () => {
   test.beforeEach(async ({ page }) => {
-    test.setTimeout(90000);
-    await createCompleteScenario(
-      page,
-      'Test STDCM',
-      '2',
-      '60',
-      PATH_VARIABLES.originSearchDijon || PATH_VARIABLES.originSearch,
-      PATH_VARIABLES.destinationSearchMacon || PATH_VARIABLES.destinationSearch,
-      pathfindingDistance
-    );
+    test.setTimeout(180000); // 3min
+    // if test in local, create our own scenario with France infra
+    // else, use the default scenario
+    if (!process.env.CI) {
+      await createCompleteScenario(
+        page,
+        scenarioName,
+        'Test STDCM',
+        '2',
+        '60',
+        PATH_VARIABLES.originSearchDijon || PATH_VARIABLES.originSearch,
+        PATH_VARIABLES.destinationSearchMacon || PATH_VARIABLES.destinationSearch,
+        pathfindingDistance
+      );
+    }
   });
 
   // ***************** Test STDCM *****************
@@ -52,7 +61,7 @@ test.describe('Testing if stdcm between two trains works well', () => {
     await playwrightSTDCMPage.getScenarioExploratorModalOpen();
     await playwrightSTDCMPage.clickItemScenarioExploratorByName('_@Test integration project');
     await playwrightSTDCMPage.clickItemScenarioExploratorByName('_@Test integration study');
-    await playwrightSTDCMPage.clickItemScenarioExploratorByName('_@Test integration scenario');
+    await playwrightSTDCMPage.clickItemScenarioExploratorByName(scenarioName);
 
     // ***************** Select Rolling Stock *****************
     const playwrightRollingstockModalPage = new PlaywrightRollingstockModalPage(
