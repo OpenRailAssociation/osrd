@@ -12,7 +12,7 @@ import colors from 'common/Map/Consts/colors';
 import GeoJSONs, { SourcesDefinitionsIndex } from 'common/Map/Layers/GeoJSONs';
 import { getEntities, getEntity } from 'applications/editor/data/api';
 import { mapValues } from 'lodash';
-import { Layer, Popup, Source } from 'react-map-gl';
+import { Layer, Popup, Source } from 'react-map-gl/maplibre';
 import { getTrackRangeFeatures, isOnModeMove } from '../utils';
 import { RangeEditionState, TrackState } from '../types';
 import { ExtendedEditorContextType } from '../../editorContextTypes';

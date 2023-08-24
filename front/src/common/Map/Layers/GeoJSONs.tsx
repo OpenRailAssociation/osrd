@@ -3,12 +3,13 @@ import React, { FC, useEffect, useMemo, useState } from 'react';
 import chroma from 'chroma-js';
 import { Feature, FeatureCollection } from 'geojson';
 import { isPlainObject, keyBy, mapValues } from 'lodash';
-import { Layer, Source } from 'react-map-gl';
+import { Layer, LayerProps, Source } from 'react-map-gl/maplibre';
 import { getInfraID } from 'reducers/osrdconf/selectors';
-import { SymbolPaint } from 'mapbox-gl';
 
-import { AnyLayer, Theme } from '../../../types';
-import { RootState } from '../../../reducers';
+import { Theme } from 'types';
+import { RootState } from 'reducers';
+import { LayerType } from 'applications/editor/tools/types';
+import { MapState } from 'reducers/map';
 import { geoMainLayer, geoServiceLayer } from './geographiclayers';
 import {
   getPointLayerProps,
@@ -25,16 +26,14 @@ import {
   getLineTextErrorsLayerProps,
   getPointTextErrorsLayerProps,
 } from './Errors';
-import { LayerType } from '../../../applications/editor/tools/types';
 import { ALL_SIGNAL_LAYERS, SYMBOLS_TO_LAYERS } from '../Consts/SignalsNames';
-import { MAP_TRACK_SOURCE, MAP_URL } from '../const';
+import { MAP_URL } from '../const';
 import {
   getSpeedSectionsFilter,
   getSpeedSectionsLineLayerProps,
   getSpeedSectionsPointLayerProps,
   getSpeedSectionsTextLayerProps,
 } from './SpeedLimits';
-import { MapState } from '../../../reducers/map';
 import {
   getLPVFilter,
   getLPVSpeedLineBGLayerProps,
@@ -68,9 +67,9 @@ function transformTheme(theme: Theme, reducer: (color: string) => string): Theme
 /**
  * Helper to add filters to existing LayerProps.filter values:
  */
-function adaptFilter(layer: AnyLayer, blackList: string[], whiteList: string[]): AnyLayer {
+function adaptFilter(layer: LayerProps, blackList: string[], whiteList: string[]) {
   const res = { ...layer };
-  const conditions: AnyLayer['filter'][] = layer.filter ? [layer.filter] : [];
+  const conditions: LayerProps['filter'][] = layer.filter ? [layer.filter] : [];
 
   if (whiteList.length) conditions.push(['in', 'id', ...whiteList]);
   if (blackList.length) conditions.push(['!in', 'id', ...blackList]);
@@ -88,22 +87,18 @@ function adaptFilter(layer: AnyLayer, blackList: string[], whiteList: string[]):
 /**
  * Helpers to get all layers required to render entities of a given type:
  */
-function getTrackSectionLayers(context: LayerContext, prefix: string): AnyLayer[] {
+function getTrackSectionLayers(context: LayerContext, prefix: string) {
   return [
     {
       ...geoMainLayer(context.colors, context.showIGNBDORTHO),
-      'source-layer': MAP_TRACK_SOURCE,
       id: `${prefix}geo/track-main`,
     },
     {
       ...geoServiceLayer(context.colors),
-      'source-layer': MAP_TRACK_SOURCE,
       id: `${prefix}geo/track-service`,
     },
     {
       ...trackNameLayer(context.colors),
-      'source-layer': MAP_TRACK_SOURCE,
-      filter: ['==', 'type_voie', 'VP'],
       layout: {
         ...trackNameLayer(context.colors).layout,
         'text-field': '{extensions_sncf_track_name}',
@@ -113,8 +108,6 @@ function getTrackSectionLayers(context: LayerContext, prefix: string): AnyLayer[
     },
     {
       ...trackNameLayer(context.colors),
-      'source-layer': MAP_TRACK_SOURCE,
-      filter: ['!=', 'type_voie', 'VP'],
       layout: {
         ...trackNameLayer(context.colors).layout,
         'text-field': '{extensions_sncf_track_name}',
@@ -124,7 +117,6 @@ function getTrackSectionLayers(context: LayerContext, prefix: string): AnyLayer[
     },
     {
       ...lineNumberLayer(context.colors),
-      'source-layer': MAP_TRACK_SOURCE,
       layout: {
         ...lineNumberLayer(context.colors).layout,
         'text-field': '{extensions_sncf_line_code}',
@@ -133,13 +125,12 @@ function getTrackSectionLayers(context: LayerContext, prefix: string): AnyLayer[
     },
     {
       ...lineNameLayer(context.colors),
-      'source-layer': MAP_TRACK_SOURCE,
       id: `${prefix}geo/line-names`,
     },
   ];
 }
 
-function getSignalLayers(context: LayerContext, prefix: string): AnyLayer[] {
+function getSignalLayers(context: LayerContext, prefix: string) {
   return [
     { ...getSignalMatLayerProps(context), id: `${prefix}geo/signal-mat` },
     { ...getPointLayerProps(context), id: `${prefix}geo/signal-point` },
@@ -158,7 +149,7 @@ function getSignalLayers(context: LayerContext, prefix: string): AnyLayer[] {
     })
   );
 }
-function getBufferStopsLayers(context: LayerContext, prefix: string): AnyLayer[] {
+function getBufferStopsLayers(context: LayerContext, prefix: string): LayerProps[] {
   return [
     {
       ...getBufferStopsLayerProps(context),
@@ -168,7 +159,7 @@ function getBufferStopsLayers(context: LayerContext, prefix: string): AnyLayer[]
   ];
 }
 
-function getCatenariesLayers(context: LayerContext, prefix: string): AnyLayer[] {
+function getCatenariesLayers(context: LayerContext, prefix: string): LayerProps[] {
   return [
     {
       ...getCatenariesProps(context),
@@ -181,7 +172,7 @@ function getCatenariesLayers(context: LayerContext, prefix: string): AnyLayer[] 
   ];
 }
 
-function getDetectorsLayers(context: LayerContext, prefix: string): AnyLayer[] {
+function getDetectorsLayers(context: LayerContext, prefix: string): LayerProps[] {
   return [
     {
       ...getDetectorsLayerProps(context),
@@ -196,7 +187,7 @@ function getDetectorsLayers(context: LayerContext, prefix: string): AnyLayer[] {
   ];
 }
 
-function getLPVPanelsLayers(context: LayerContext, prefix: string): AnyLayer[] {
+function getLPVPanelsLayers(context: LayerContext, prefix: string): LayerProps[] {
   return [
     {
       ...getLPVPanelsLayerProps(context),
@@ -211,7 +202,7 @@ function getLPVPanelsLayers(context: LayerContext, prefix: string): AnyLayer[] {
   ];
 }
 
-function getLPVLayers(context: LayerContext, prefix: string): AnyLayer[] {
+function getLPVLayers(context: LayerContext, prefix: string) {
   const filter = getLPVFilter(context.layersSettings);
   return [
     {
@@ -232,7 +223,7 @@ function getLPVLayers(context: LayerContext, prefix: string): AnyLayer[] {
   ];
 }
 
-function getSwitchesLayers(context: LayerContext, prefix: string): AnyLayer[] {
+function getSwitchesLayers(context: LayerContext, prefix: string): LayerProps[] {
   return [
     {
       ...getSwitchesLayerProps(context),
@@ -247,7 +238,7 @@ function getSwitchesLayers(context: LayerContext, prefix: string): AnyLayer[] {
   ];
 }
 
-function getSpeedSectionLayers(context: LayerContext, prefix: string): AnyLayer[] {
+function getSpeedSectionLayers(context: LayerContext, prefix: string) {
   const filter = getSpeedSectionsFilter(context.layersSettings);
   return [
     {
@@ -268,7 +259,7 @@ function getSpeedSectionLayers(context: LayerContext, prefix: string): AnyLayer[
   ];
 }
 
-function getErrorsLayers(context: LayerContext, prefix: string): AnyLayer[] {
+function getErrorsLayers(context: LayerContext, prefix: string): LayerProps[] {
   return [
     {
       ...getLineErrorsLayerProps(context),
@@ -293,7 +284,7 @@ function getErrorsLayers(context: LayerContext, prefix: string): AnyLayer[] {
 
 const SOURCES_DEFINITION: {
   entityType: LayerType;
-  getLayers: (context: LayerContext, prefix: string) => AnyLayer[];
+  getLayers: (context: LayerContext, prefix: string) => LayerProps[];
 }[] = [
   { entityType: 'track_sections', getLayers: getTrackSectionLayers },
   { entityType: 'signals', getLayers: getSignalLayers },
@@ -310,12 +301,12 @@ const SOURCES_DEFINITION: {
 export const SourcesDefinitionsIndex = mapValues(
   keyBy(SOURCES_DEFINITION, 'entityType'),
   (def) => def.getLayers
-) as Record<LayerType, (context: LayerContext, prefix: string) => AnyLayer[]>;
+) as Record<LayerType, (context: LayerContext, prefix: string) => LayerProps[]>;
 
 export const EditorSource: FC<{
   id?: string;
   data: Feature | FeatureCollection;
-  layers: AnyLayer[];
+  layers: LayerProps[];
 }> = ({ id, data, layers }) => (
   <Source type="geojson" id={id} data={data}>
     {layers.map((layer) => (
@@ -387,7 +378,7 @@ const GeoJSONs: FC<{
     [hiddenColors, layerContext]
   );
 
-  const sources: { id: string; url: string; layers: AnyLayer[] }[] = useMemo(
+  const sources: { id: string; url: string; layers: LayerProps[] }[] = useMemo(
     () =>
       SOURCES_DEFINITION.flatMap((source) =>
         !layers || layers.has(source.entityType)

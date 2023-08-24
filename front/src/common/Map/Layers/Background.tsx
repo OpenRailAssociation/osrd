@@ -1,5 +1,5 @@
 import React from 'react';
-import { Source, LayerProps } from 'react-map-gl';
+import { Source, LayerProps } from 'react-map-gl/maplibre';
 
 import { Theme } from 'types';
 

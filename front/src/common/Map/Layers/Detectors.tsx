@@ -1,6 +1,6 @@
 import React, { FC } from 'react';
 import { useSelector } from 'react-redux';
-import { Source, CircleLayer, SymbolLayer } from 'react-map-gl';
+import { Source, LayerProps } from 'react-map-gl/maplibre';
 
 import { RootState } from 'reducers';
 import { Theme } from 'types';
@@ -12,8 +12,8 @@ import { getInfraID } from 'reducers/osrdconf/selectors';
 export function getDetectorsLayerProps(params: {
   colors: Theme;
   sourceTable?: string;
-}): Omit<CircleLayer, 'id'> {
-  const res: Omit<CircleLayer, 'id'> = {
+}): LayerProps {
+  const res: LayerProps = {
     type: 'circle',
     paint: {
       'circle-stroke-color': params.colors.detectors.circle,
@@ -29,8 +29,8 @@ export function getDetectorsLayerProps(params: {
 export function getDetectorsNameLayerProps(params: {
   colors: Theme;
   sourceTable?: string;
-}): Omit<SymbolLayer, 'id'> {
-  const res: Omit<SymbolLayer, 'id'> = {
+}): LayerProps {
+  const res: LayerProps = {
     type: 'symbol',
     layout: {
       'text-field': ['slice', ['get', 'id'], 9],

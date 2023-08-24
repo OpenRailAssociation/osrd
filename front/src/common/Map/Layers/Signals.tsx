@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { Source, MapRef } from 'react-map-gl';
+import { Source, MapRef } from 'react-map-gl/maplibre';
 import { get, isNil } from 'lodash';
 
 import { RootState } from 'reducers';
@@ -60,7 +60,7 @@ function Signals(props: PlatformProps) {
   /* EveryTime the viewPort change or the timePosition or the simulation change,
   visible signals are used to fill a list of special aspects (red, yellow).
    Default is green. Special Default are to be managed by beck office
-   note: mapBox featureState is unfortunatly useless here for know so we setState
+   note: Maplibre featureState is unfortunatly useless here for know so we setState
   */
   useEffect(() => {
     const selectedTrainConsolidatedSimulation = consolidatedSimulation.find(

@@ -3,7 +3,7 @@ import { ThunkAction as ReduxThunkAction } from 'redux-thunk';
 // Next line because: https://github.com/reduxjs/redux-thunk/issues/333#issuecomment-1107532912
 import type {} from 'redux-thunk/extend-redux';
 
-export * from './mapbox-gl';
+export * from './maplibre-gl';
 export * from './railjson';
 export * from './geospatial';
 export * from './editor';

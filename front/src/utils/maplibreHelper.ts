@@ -6,7 +6,7 @@ import bbox from '@turf/bbox';
 import lineIntersect from '@turf/line-intersect';
 import lineSlice from '@turf/line-slice';
 import WebMercatorViewport from 'viewport-mercator-project';
-import { ViewState } from 'react-map-gl';
+import { ViewState } from 'react-map-gl/maplibre';
 import { BBox, Coord, featureCollection } from '@turf/helpers';
 import {
   Feature,
@@ -22,7 +22,7 @@ import nearestPointOnLine from '@turf/nearest-point-on-line';
 import nearestPoint, { NearestPoint } from '@turf/nearest-point';
 import fnDistance from '@turf/distance';
 import fnExplode from '@turf/explode';
-import { Zone, MapLayerMouseEvent, MapboxGeoJSONFeature } from '../types';
+import { Zone, MapLayerMouseEvent, MapGeoJSONFeature } from '../types';
 import { getAngle } from '../applications/editor/data/utils';
 
 /**
@@ -310,7 +310,7 @@ export function getNearestPoint(
 export function getMapMouseEventNearestFeature(
   e: MapLayerMouseEvent,
   opts?: { layersId?: string[]; tolerance?: number; excludeOsm?: boolean }
-): { feature: MapboxGeoJSONFeature; nearest: number[]; distance: number } | null {
+): { feature: MapGeoJSONFeature; nearest: number[]; distance: number } | null {
   const layers = opts?.layersId;
   const tolerance = opts?.tolerance || 15;
   const excludeOsm = opts?.excludeOsm || true;

@@ -1,6 +1,6 @@
 /* eslint-disable default-case */
 import { AnyAction, Dispatch } from 'redux';
-import { MapProps, ViewState } from 'react-map-gl';
+import { MapProps, ViewState } from 'react-map-gl/maplibre';
 import produce from 'immer';
 import { transformRequest as helperTransformRequest, gpsRound } from 'utils/helpers';
 import history from 'main/history';

@@ -1,21 +1,16 @@
 import { cloneDeep, isEmpty, isEqual } from 'lodash';
-import {
-  BiAnchor,
-  BiArrowFromLeft,
-  BiArrowToRight,
-  BiTrash,
-  CgAdd,
-  MdShowChart,
-  RiDragMoveLine,
-  TiDeleteOutline,
-} from 'react-icons/all';
+import { BiAnchor, BiArrowFromLeft, BiArrowToRight, BiTrash } from 'react-icons/bi';
+import { CgAdd } from 'react-icons/cg';
+import { MdShowChart } from 'react-icons/md';
+import { RiDragMoveLine } from 'react-icons/ri';
+import { TiDeleteOutline } from 'react-icons/ti';
 import { Feature, LineString } from 'geojson';
 import nearestPointOnLine, { NearestPointOnLine } from '@turf/nearest-point-on-line';
 import getNearestPoint from '@turf/nearest-point';
 import { featureCollection } from '@turf/helpers';
 
 import { entityDoUpdate } from 'common/IntervalsDataViz/data';
-import { getMapMouseEventNearestFeature } from '../../../../utils/mapboxHelper';
+import { getMapMouseEventNearestFeature } from '../../../../utils/maplibreHelper';
 import {
   POINTS_LAYER_ID,
   TRACK_LAYER_ID,

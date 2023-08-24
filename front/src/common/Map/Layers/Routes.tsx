@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { CircleLayer, LineLayer, Source, SymbolLayer } from 'react-map-gl';
+import { LayerProps, Source } from 'react-map-gl/maplibre';
 
 import { RootState } from 'reducers';
 import { Theme } from 'types';
@@ -17,8 +17,8 @@ interface RoutesProps {
 export function getRoutesLineLayerProps(params: {
   colors: Theme;
   sourceTable?: string;
-}): Omit<LineLayer, 'id'> {
-  const res: Omit<LineLayer, 'id'> = {
+}): LayerProps {
+  const res: LayerProps = {
     type: 'line',
     minzoom: 6,
     maxzoom: 24,
@@ -43,8 +43,8 @@ export function getRoutesLineLayerProps(params: {
 export function getRoutesPointLayerProps(params: {
   colors: Theme;
   sourceTable?: string;
-}): Omit<CircleLayer, 'id'> {
-  const res: Omit<CircleLayer, 'id'> = {
+}): LayerProps {
+  const res: LayerProps = {
     type: 'circle',
     paint: {
       'circle-stroke-color': 'rgba(255, 182, 18, 0.5)',
@@ -60,8 +60,8 @@ export function getRoutesPointLayerProps(params: {
 export function getRoutesTextLayerProps(params: {
   colors: Theme;
   sourceTable?: string;
-}): Omit<SymbolLayer, 'id'> {
-  const res: Omit<SymbolLayer, 'id'> = {
+}): LayerProps {
+  const res: LayerProps = {
     type: 'symbol',
     minzoom: 9,
     maxzoom: 24,
@@ -98,26 +98,10 @@ export default function Routes(props: RoutesProps) {
   const textProps = getRoutesTextLayerProps({ colors, sourceTable: 'routes' });
 
   return layersSettings.routes ? (
-    <Source
-      id={`osrd_routes_${geomType}`}
-      type="vector"
-      url={`${MAP_URL}/layer/routes/mvt/${geomType}/?infra=${infraID}`}
-    >
-      <OrderedLayer
-        {...lineProps}
-        id={`chartis/osrd_routes_line/${geomType}`}
-        layerOrder={layerOrder}
-      />
-      <OrderedLayer
-        {...pointProps}
-        id={`chartis/osrd_routes_point/${geomType}`}
-        layerOrder={layerOrder}
-      />
-      <OrderedLayer
-        {...textProps}
-        id={`chartis/osrd_routes_text/${geomType}`}
-        layerOrder={layerOrder}
-      />
+    <Source type="vector" url={`${MAP_URL}/layer/routes/mvt/${geomType}/?infra=${infraID}`}>
+      <OrderedLayer {...lineProps} layerOrder={layerOrder} />
+      <OrderedLayer {...pointProps} layerOrder={layerOrder} />
+      <OrderedLayer {...textProps} layerOrder={layerOrder} />
     </Source>
   ) : null;
 }

@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import maplibregl from 'maplibre-gl';
-import ReactMapGL, { AttributionControl, ScaleControl, MapRef } from 'react-map-gl';
+import ReactMapGL, { AttributionControl, ScaleControl, MapRef } from 'react-map-gl/maplibre';
 import { point as turfPoint } from '@turf/helpers';
 import { useDispatch, useSelector } from 'react-redux';
 import turfNearestPointOnLine, { NearestPointOnLine } from '@turf/nearest-point-on-line';
@@ -49,7 +48,7 @@ import LineSearchLayer from 'common/Map/Layers/LineSearchLayer';
 import Terrain from 'common/Map/Layers/Terrain';
 import { getTerrain3DExaggeration } from 'reducers/map/selectors';
 import { MapLayerMouseEvent } from '../../../../types';
-import { getMapMouseEventNearestFeature } from '../../../../utils/mapboxHelper';
+import { getMapMouseEventNearestFeature } from '../../../../utils/maplibreHelper';
 
 function Map() {
   const { viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM, layersSettings } =
@@ -181,7 +180,6 @@ function Map() {
       <ReactMapGL
         ref={mapRef}
         {...viewport}
-        mapLib={maplibregl}
         style={{ width: '100%', height: '100%' }}
         cursor="pointer"
         mapStyle={osmBlankStyle}
@@ -224,7 +222,6 @@ function Map() {
           </>
         )}
 
-        {/* Have to  duplicate objects with sourceLayer to avoid cache problems in mapbox */}
         {mapTrackSources === 'geographic' ? (
           <>
             <Platforms

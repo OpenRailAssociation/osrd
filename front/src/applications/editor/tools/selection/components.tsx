@@ -1,5 +1,5 @@
 import React, { FC, useContext } from 'react';
-import { Layer, Popup, Source } from 'react-map-gl';
+import { Layer, Popup, Source } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
 import { groupBy, map } from 'lodash';
 import { IoMdRemoveCircleOutline } from 'react-icons/io';
@@ -14,7 +14,7 @@ import colors from '../../../../common/Map/Consts/colors';
 import EntitySumUp from '../../components/EntitySumUp';
 
 import './styles.scss';
-import { zoneToFeature } from '../../../../utils/mapboxHelper';
+import { zoneToFeature } from '../../../../utils/maplibreHelper';
 import { getMap } from '../../../../reducers/map/selectors';
 import { EditorContextType, ExtendedEditorContextType } from '../editorContextTypes';
 

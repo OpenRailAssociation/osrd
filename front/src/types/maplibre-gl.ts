@@ -8,18 +8,11 @@ import {
   LineLayer,
   RasterLayer,
   SymbolLayer,
-  SkyLayer,
-} from 'mapbox-gl';
+} from 'react-map-gl/maplibre';
 
 export type {
-  MapboxGeoJSONFeature,
   MapLayerMouseEvent,
-  AnyPaint,
-  CirclePaint,
-  LinePaint,
-  SymbolPaint,
-  SymbolLayout,
-  Map as MapboxType,
+  MapGeoJSONFeature,
   BackgroundLayer,
   CircleLayer,
   FillExtrusionLayer,
@@ -29,9 +22,7 @@ export type {
   LineLayer,
   RasterLayer,
   SymbolLayer,
-  SkyLayer,
-  LngLat,
-} from 'mapbox-gl';
+} from 'react-map-gl/maplibre';
 
 export type AnyLayer =
   | BackgroundLayer
@@ -42,5 +33,4 @@ export type AnyLayer =
   | HillshadeLayer
   | LineLayer
   | RasterLayer
-  | SymbolLayer
-  | SkyLayer;
+  | SymbolLayer;

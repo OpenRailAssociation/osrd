@@ -1,13 +1,14 @@
 import { ComponentType } from 'react';
 import { cloneDeep, isEqual, omit } from 'lodash';
 import { Feature, LineString, Point } from 'geojson';
-import { BiReset, AiOutlinePlus } from 'react-icons/all';
+import { BiReset } from 'react-icons/bi';
+import { AiOutlinePlus } from 'react-icons/ai';
 import { IconType } from 'react-icons';
 import nearestPointOnLine from '@turf/nearest-point-on-line';
-import mapboxgl from 'mapbox-gl';
+import maplibregl from 'maplibre-gl';
 
 import { LAYER_TO_EDITOAST_DICT, LayerType } from '../types';
-import { getNearestPoint } from '../../../../utils/mapboxHelper';
+import { getNearestPoint } from '../../../../utils/maplibreHelper';
 import { getPointEditionLeftPanel, POINT_LAYER_ID, PointEditionMessages } from './components';
 import { PointEditionState } from './types';
 import { NULL_GEOMETRY, BufferStopEntity, DetectorEntity, SignalEntity } from '../../../../types';
@@ -20,7 +21,7 @@ interface PointEditionToolParams<T extends EditorPoint> {
   layer: LayerType;
   icon: IconType;
   getNewEntity: (point?: [number, number]) => T;
-  layersComponent: ComponentType<{ map: mapboxgl.Map }>;
+  layersComponent: ComponentType<{ map: maplibregl.Map }>;
   requiresAngle?: boolean;
 }
 

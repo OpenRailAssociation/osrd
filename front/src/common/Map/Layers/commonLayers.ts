@@ -1,24 +1,14 @@
-import { SymbolLayer, LineLayer, CircleLayer } from 'react-map-gl';
-import { Theme } from '../../../types';
+import { LayerProps } from 'react-map-gl/maplibre';
+import { Theme } from 'types';
 
-export function trackNameLayer(colors: Theme): Omit<SymbolLayer, 'id'> {
+export function trackNameLayer(colors: Theme): LayerProps {
   return {
     type: 'symbol',
     layout: {
       'text-font': ['Roboto Condensed'],
       'symbol-placement': 'line',
       'text-size': 12,
-      // [jacomyal]
-      // According to TS types, 'text-allow-overlap' should be a boolean or
-      // nothing. But I don't dare yet to switch it.
-      // eslint-disable-next-line
-      // @ts-ignore
-      'text-allow-overlap': {
-        stops: [
-          [13.5, false],
-          [14, true],
-        ],
-      },
+      'text-allow-overlap': ['step', ['zoom'], 13.5, false, 14, true],
     },
     paint: {
       'text-color': colors.trackname.text,
@@ -29,7 +19,7 @@ export function trackNameLayer(colors: Theme): Omit<SymbolLayer, 'id'> {
   };
 }
 
-export function lineNameLayer(colors: Theme): Omit<SymbolLayer, 'id'> {
+export function lineNameLayer(colors: Theme): LayerProps {
   return {
     type: 'symbol',
     layout: {
@@ -48,7 +38,7 @@ export function lineNameLayer(colors: Theme): Omit<SymbolLayer, 'id'> {
   };
 }
 
-export function lineNumberLayer(colors: Theme): Omit<SymbolLayer, 'id'> {
+export function lineNumberLayer(colors: Theme): LayerProps {
   return {
     type: 'symbol',
     minzoom: 11,
@@ -67,7 +57,7 @@ export function lineNumberLayer(colors: Theme): Omit<SymbolLayer, 'id'> {
   };
 }
 
-export function hoverLayer(): Omit<LineLayer, 'id'> {
+export function hoverLayer(): LayerProps {
   return {
     type: 'line',
     paint: {
@@ -77,7 +67,7 @@ export function hoverLayer(): Omit<LineLayer, 'id'> {
   };
 }
 
-export function hoverCircleLayer(): Omit<CircleLayer, 'id'> {
+export function hoverCircleLayer(): LayerProps {
   return {
     type: 'circle',
     paint: {
@@ -87,7 +77,7 @@ export function hoverCircleLayer(): Omit<CircleLayer, 'id'> {
   };
 }
 
-export function selectedLayer(): LineLayer {
+export function selectedLayer(): LayerProps {
   return {
     id: 'selectedLayer',
     type: 'line',
@@ -98,7 +88,7 @@ export function selectedLayer(): LineLayer {
   };
 }
 
-export function selectedCircleLayer(): CircleLayer {
+export function selectedCircleLayer(): LayerProps {
   return {
     id: 'selectedLayer',
     type: 'circle',

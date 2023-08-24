@@ -1,8 +1,7 @@
 import { isNil } from 'lodash';
 import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
-import ReactMapGL, { AttributionControl, ScaleControl, MapRef } from 'react-map-gl';
-import maplibregl from 'maplibre-gl';
+import ReactMapGL, { AttributionControl, ScaleControl, MapRef } from 'react-map-gl/maplibre';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateViewport, Viewport } from 'reducers/map';
 import { RootState } from 'reducers';
@@ -113,7 +112,6 @@ function Map() {
       <ReactMapGL
         {...viewport}
         ref={mapRef}
-        mapLib={maplibregl}
         cursor="normal"
         style={{ width: '100%', height: '100%' }}
         mapStyle={osmBlankStyle}
@@ -126,7 +124,7 @@ function Map() {
             height: e.target.getContainer().offsetHeight,
           });
         }}
-        onMouseOver={onFeatureHover}
+        onMouseMove={onFeatureHover}
         interactiveLayerIds={defineInteractiveLayers()}
         touchZoomRotate
         maxPitch={85}
@@ -157,7 +155,6 @@ function Map() {
           </>
         )}
 
-        {/* Have to duplicate objects with sourceLayer to avoid cache problems in mapbox */}
         {mapTrackSources === 'geographic' ? (
           <>
             <Platforms
