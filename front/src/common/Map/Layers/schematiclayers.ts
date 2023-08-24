@@ -1,4 +1,4 @@
-import { LayerProps } from 'react-map-gl/maplibre';
+import { LayerProps } from 'react-map-gl';
 
 import { Theme } from 'types';
 

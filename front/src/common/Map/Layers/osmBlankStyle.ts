@@ -1,4 +1,4 @@
-import { MapProps } from 'react-map-gl/maplibre';
+import { MapProps } from 'react-map-gl';
 
 const osmBlankStyle: MapProps['mapStyle'] = {
   version: 8,

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Marker } from 'react-map-gl/maplibre';
+import { Marker } from 'react-map-gl';
 
 import { Theme } from 'types';
 import { MapSearchMarker } from 'reducers/map';

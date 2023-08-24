@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Source, Layer } from 'react-map-gl/maplibre';
+import { Source, Layer } from 'react-map-gl';
 
 export default function MapTrainMarker(props) {
   const { text, codenbengin, lon, lat, angle } = props;

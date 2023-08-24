@@ -135,7 +135,7 @@
       .popup {
         text-align: center;
 
-        .maplibre-popup-content > *:first-child {
+        .mapboxgl-popup-content > *:first-child {
           font-weight: bold;
         }
       }
@@ -164,3 +164,4 @@
 .z-index-tooltip {
   z-index: 1070 !important;
 }
+

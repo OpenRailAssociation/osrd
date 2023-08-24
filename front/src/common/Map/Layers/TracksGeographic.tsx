@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { Source } from 'react-map-gl/maplibre';
+import { Source } from 'react-map-gl';
 
 import { RootState } from 'reducers';
 import { Theme } from 'types';
@@ -31,6 +31,7 @@ function TracksGeographic(props: TracksGeographicProps) {
     >
       <OrderedLayer
         {...geoMainLayer(colors, showIGNBDORTHO || showIGNSCAN25)}
+        id="chartis/tracks-geo/main"
         source-layer={MAP_TRACK_SOURCES.geographic}
         layerOrder={layerOrder}
       />
@@ -43,6 +44,9 @@ function TracksGeographic(props: TracksGeographicProps) {
             'text-size': 11,
           },
         }}
+        id="chartis/tracks-geo/name"
+        source-layer={MAP_TRACK_SOURCES.geographic}
+        filter={['==', 'type_voie', 'VP']}
         layerOrder={layerOrder}
       />
       <OrderedLayer
@@ -54,6 +58,9 @@ function TracksGeographic(props: TracksGeographicProps) {
             'text-size': 10,
           },
         }}
+        id="chartis/tracks-geo/name"
+        source-layer={MAP_TRACK_SOURCES.geographic}
+        filter={['!=', 'type_voie', 'VP']}
         layerOrder={layerOrder}
       />
       <OrderedLayer
@@ -64,6 +71,8 @@ function TracksGeographic(props: TracksGeographicProps) {
             'text-field': '{extensions_sncf_line_code}',
           },
         }}
+        id="chartis/tracks-geo/number"
+        source-layer={MAP_TRACK_SOURCES.geographic}
         layerOrder={layerOrder}
       />
       <OrderedLayer
@@ -74,6 +83,7 @@ function TracksGeographic(props: TracksGeographicProps) {
             'text-field': '{extensions_sncf_line_name}',
           },
         }}
+        source-layer={MAP_TRACK_SOURCES.geographic}
         layerOrder={layerOrder}
       />
     </Source>

@@ -1,6 +1,6 @@
 import React, { FC } from 'react';
 import { useSelector } from 'react-redux';
-import { Source, LayerProps } from 'react-map-gl/maplibre';
+import { Source, SymbolLayer } from 'react-map-gl';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import { RootState } from 'reducers';
 import { Theme } from 'types';
@@ -8,8 +8,10 @@ import { MAP_URL } from 'common/Map/const';
 
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 
-export function getBufferStopsLayerProps(params: { sourceTable?: string }): LayerProps {
-  const res: LayerProps = {
+export function getBufferStopsLayerProps(params: {
+  sourceTable?: string;
+}): Omit<SymbolLayer, 'id'> {
+  const res: Omit<SymbolLayer, 'id'> = {
     type: 'symbol',
     minzoom: 12,
     layout: {

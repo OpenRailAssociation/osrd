@@ -1,7 +1,8 @@
 import React from 'react';
 import { isNil } from 'lodash';
 import { useSelector } from 'react-redux';
-import { LayerProps, Source } from 'react-map-gl/maplibre';
+import { Layer, LineLayer } from 'mapbox-gl';
+import { Source, SymbolLayer } from 'react-map-gl';
 
 import { RootState } from 'reducers';
 import { MAP_URL } from 'common/Map/const';
@@ -9,7 +10,6 @@ import { Theme } from 'types';
 
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import { getInfraID } from 'reducers/osrdconf/selectors';
-import { ExpressionSpecification, FilterSpecification } from 'maplibre-gl';
 import { MapState } from '../../../reducers/map';
 
 interface SpeedLimitsProps {
@@ -26,20 +26,18 @@ export function getSpeedSectionsNameString(rawSpeed: number) {
   return Math.round(rawSpeed * 3.6);
 }
 
-export function getSpeedSectionsName(
-  layersSettings: MapState['layersSettings']
-): ExpressionSpecification {
+export function getSpeedSectionsName(layersSettings: MapState['layersSettings']) {
   const tag = getSpeedSectionsTag(layersSettings);
 
   return [
     'round',
-    ['*', 3.6, ['case', ['!=', ['get', tag], 'null'], ['get', tag], ['get', 'speed_limit']]],
+    ['*', 3.6, ['case', ['!=', ['get', tag], null], ['get', tag], ['get', 'speed_limit']]],
   ];
 }
 
 export function getSpeedSectionsFilter(
   layersSettings: MapState['layersSettings']
-): FilterSpecification {
+): Layer['filter'] {
   return layersSettings.speedlimittag === 'undefined'
     ? ['all', ['has', 'speed_limit']]
     : ['all', ['has', getSpeedSectionsTag(layersSettings)]];
@@ -52,8 +50,8 @@ export function getSpeedSectionsLineLayerProps({
   colors?: Theme;
   sourceTable?: string;
   layersSettings: MapState['layersSettings'];
-}): LayerProps {
-  const res: LayerProps = {
+}): Omit<LineLayer, 'id'> {
+  const res: Omit<LineLayer, 'id'> = {
     type: 'line',
     minzoom: 6,
     maxzoom: 24,
@@ -105,8 +103,8 @@ export function getSpeedSectionsPointLayerProps({
   colors: Theme;
   sourceTable?: string;
   layersSettings: MapState['layersSettings'];
-}): LayerProps {
-  const res: LayerProps = {
+}): Omit<SymbolLayer, 'id'> {
+  const res: Omit<SymbolLayer, 'id'> = {
     type: 'symbol',
     minzoom: 9,
     maxzoom: 24,
@@ -143,8 +141,8 @@ export function getSpeedSectionsTextLayerProps({
   colors: Theme;
   sourceTable?: string;
   layersSettings: MapState['layersSettings'];
-}): LayerProps {
-  const res: LayerProps = {
+}): Omit<SymbolLayer, 'id'> {
+  const res: Omit<SymbolLayer, 'id'> = {
     type: 'symbol',
     minzoom: 9,
     maxzoom: 24,
@@ -209,9 +207,21 @@ export default function SpeedLimits(props: SpeedLimitsProps) {
         type="vector"
         url={`${MAP_URL}/layer/speed_sections/mvt/${geomType}/?infra=${infraID}`}
       >
-        <OrderedLayer {...lineProps} layerOrder={layerOrder} />
-        <OrderedLayer {...pointProps} layerOrder={layerOrder} />
-        <OrderedLayer {...textProps} layerOrder={layerOrder} />
+        <OrderedLayer
+          {...lineProps}
+          id={`chartis/osrd_speed_limit_colors/${geomType}`}
+          layerOrder={layerOrder}
+        />
+        <OrderedLayer
+          {...pointProps}
+          id={`chartis/osrd_speed_limit_points/${geomType}`}
+          layerOrder={layerOrder}
+        />
+        <OrderedLayer
+          {...textProps}
+          id={`chartis/osrd_speed_limit_value/${geomType}`}
+          layerOrder={layerOrder}
+        />
       </Source>
     );
   }

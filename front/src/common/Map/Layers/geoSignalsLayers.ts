@@ -6,9 +6,7 @@ import {
 } from 'common/Map/Consts/SignalsNames';
 
 import { SIGNALS_PANELS } from 'common/Map/const';
-import { LegacyFilterSpecification, SymbolLayerSpecification } from 'maplibre-gl';
-import { LayerProps } from 'react-map-gl/dist/esm/exports-maplibre';
-import { SourceLayer, Theme } from 'types';
+import { CircleLayer, SourceLayer, SymbolLayer, SymbolLayout, Theme } from '../../../types';
 
 const signalTextOffsetX = 5;
 const signalTextOffsetY = -1;
@@ -59,8 +57,8 @@ export function getPointLayerProps({
   signalsList,
   sourceTable,
   colors,
-}: SignalContext): LayerProps {
-  const props: LayerProps = {
+}: SignalContext): Omit<CircleLayer, 'id'> {
+  const props: Omit<CircleLayer, 'id'> = {
     type: 'circle',
     minzoom: 9,
     filter: ['in', 'extensions_sncf_installation_type', ...signalsList],
@@ -78,7 +76,7 @@ export function getPointLayerProps({
 export function signalsToSprites(
   { prefix }: SignalContext,
   type: string
-): NonNullable<SymbolLayerSpecification['layout']>['icon-image'] {
+): SymbolLayout['icon-image'] {
   switch (type) {
     case 'ARRET VOY':
       return ['concat', prefix, 'ARRET VOY ', ['get', 'extensions_sncf_label']];
@@ -96,8 +94,11 @@ export function signalsToSprites(
   }
 }
 
-export function getSignalMatLayerProps({ signalsList, sourceTable }: SignalContext): LayerProps {
-  const props: LayerProps = {
+export function getSignalMatLayerProps({
+  signalsList,
+  sourceTable,
+}: SignalContext): Omit<SymbolLayer, 'id'> {
+  const props: Omit<SymbolLayer, 'id'> = {
     type: 'symbol',
     minzoom: 12,
     filter: ['in', 'extensions_sncf_installation_type', ...signalsList],
@@ -133,13 +134,13 @@ export function getSignalMatLayerProps({ signalsList, sourceTable }: SignalConte
 export function getSignalEmptyLayerProps(
   context: SignalContext,
   type: string,
-  iconOffset: NonNullable<SymbolLayerSpecification['layout']>['icon-offset'],
+  iconOffset: SymbolLayout['icon-offset'],
   libelle = 'extensions_sncf_value'
-): LayerProps {
+): Omit<SymbolLayer, 'id'> {
   const { sourceTable, colors } = context;
   const excludeText = ['SIGNAUX A GAUCHE', 'SIGNAUX A DROITE'];
 
-  const props: LayerProps = {
+  const props: Omit<SymbolLayer, 'id'> = {
     type: 'symbol',
     minzoom: 13,
     filter: ['==', 'extensions_sncf_installation_type', type],
@@ -196,9 +197,9 @@ export function getSignalEmptyLayerProps(
 export function getSignalPNLayerProps(
   { sourceTable }: SignalContext,
   _type: string,
-  iconOffset: NonNullable<SymbolLayerSpecification['layout']>['icon-offset']
-): LayerProps {
-  const props: LayerProps = {
+  iconOffset: SymbolLayout['icon-offset']
+): Omit<SymbolLayer, 'id'> {
+  const props: Omit<SymbolLayer, 'id'> = {
     type: 'symbol',
     minzoom: 13,
     filter: ['==', 'extensions_sncf_installation_type', 'PN'],
@@ -240,14 +241,14 @@ export function getSignalPNLayerProps(
 export function getSignalALayerProps(
   context: SignalContext,
   _type: string,
-  iconOffset: NonNullable<SymbolLayerSpecification['layout']>['icon-offset'],
+  iconOffset: SymbolLayout['icon-offset'],
   changeSignalContext: ChangeSignalContext
-): LayerProps {
+): Omit<SymbolLayer, 'id'> {
   const { sourceTable, colors } = context;
   const { yellowSignalIds = [] } = changeSignalContext;
   const typeFilter = _type.split(' ')[0];
-  const filterA = ['in', 'id'].concat(yellowSignalIds) as LegacyFilterSpecification;
-  const props: LayerProps = {
+  const filterA = ['in', 'id'].concat(yellowSignalIds);
+  const props: Omit<SymbolLayer, 'id'> = {
     type: 'symbol',
     minzoom: 12,
     filter: ['all', ['==', 'extensions_sncf_installation_type', typeFilter], filterA],
@@ -292,12 +293,13 @@ export function getSignalALayerProps(
 export function getSignalVLLayerProps(
   context: SignalContext,
   _type: string,
-  iconOffset: NonNullable<SymbolLayerSpecification['layout']>['icon-offset'],
+  iconOffset: SymbolLayout['icon-offset'],
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _changeSignalContext: ChangeSignalContext
-): LayerProps {
+): Omit<SymbolLayer, 'id'> {
   const { sourceTable, colors } = context;
   const typeFilter = _type.split(' ')[0];
-  const props: LayerProps = {
+  const props: Omit<SymbolLayer, 'id'> = {
     type: 'symbol',
     minzoom: 12,
     filter: ['==', 'extensions_sncf_installation_type', typeFilter],
@@ -342,15 +344,15 @@ export function getSignalVLLayerProps(
 export function getSignalStopLayerProps(
   context: SignalContext,
   _type: string,
-  iconOffset: NonNullable<SymbolLayerSpecification['layout']>['icon-offset'],
+  iconOffset: SymbolLayout['icon-offset'],
   changeSignalContext: ChangeSignalContext
-): LayerProps {
+): Omit<SymbolLayer, 'id'> {
   const { sourceTable, colors } = context;
   const { redSignalIds = [] } = changeSignalContext;
   const typeFilter = _type.split(' ')[0];
-  const filterA = ['in', 'id'].concat(redSignalIds) as LegacyFilterSpecification;
+  const filterA = ['in', 'id'].concat(redSignalIds);
 
-  const props: LayerProps = {
+  const props: Omit<SymbolLayer, 'id'> = {
     type: 'symbol',
     minzoom: 12,
     filter: ['all', ['==', 'extensions_sncf_installation_type', typeFilter], filterA],
@@ -396,7 +398,7 @@ export function getSignalLayerProps(
   context: SignalContext,
   type: string,
   changeSignalContext: ChangeSignalContext = defaultChangeSignalsIds
-): LayerProps {
+): Omit<SymbolLayer, 'id'> {
   const { sourceTable, sourceLayer, prefix, colors } = context;
   const angleName = sourceLayer === 'sch' ? 'angle_sch' : 'angle_geo';
   let size = 0.4;
@@ -424,7 +426,7 @@ export function getSignalLayerProps(
 
   const minZoom = 14;
 
-  const textOffset: NonNullable<SymbolLayerSpecification['layout']>['text-offset'] = [
+  const textOffset: SymbolLayout['text-offset'] = [
     'case',
     ['==', ['get', 'extensions_sncf_side'], 'RIGHT'],
     ['literal', [textOffsetX, textOffsetY]],
@@ -433,7 +435,7 @@ export function getSignalLayerProps(
     ['literal', [2, 0]],
   ];
 
-  const iconOffset: NonNullable<SymbolLayerSpecification['layout']>['icon-offset'] = [
+  const iconOffset: SymbolLayout['icon-offset'] = [
     'case',
     ['==', ['get', 'extensions_sncf_side'], 'RIGHT'],
     ['literal', [iconOffsetX, offsetY]],
@@ -468,7 +470,7 @@ export function getSignalLayerProps(
       break;
   }
 
-  const props: LayerProps = {
+  const props: Omit<SymbolLayer, 'id'> = {
     minzoom: 12,
     type: 'symbol',
     filter: ['==', 'extensions_sncf_installation_type', type],

@@ -1,12 +1,9 @@
 import React from 'react';
-import { BiLoader, BiSelection } from 'react-icons/bi';
-import { BsCursor, BsTrash } from 'react-icons/bs';
-import { FaDrawPolygon } from 'react-icons/fa';
-import { FiEdit } from 'react-icons/fi';
+import { BiLoader, BiSelection, BsCursor, BsTrash, FaDrawPolygon, FiEdit } from 'react-icons/all';
+import { PointLike } from 'mapbox-gl';
 import { isEqual, max, min } from 'lodash';
 
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF/ConfirmModal';
-import { PointLike } from 'maplibre-gl';
 import { LAYER_TO_EDITOAST_DICT, LayerType } from '../types';
 import { save } from '../../../../reducers/editor';
 import { SelectionState } from './types';
@@ -21,7 +18,7 @@ import {
   TrackSectionEntity,
 } from '../../../../types';
 import { getMixedEntities } from '../../data/api';
-import { selectInZone } from '../../../../utils/maplibreHelper';
+import { selectInZone } from '../../../../utils/mapboxHelper';
 import TOOL_TYPES from '../toolTypes';
 import { DEFAULT_COMMON_TOOL_STATE } from '../commonToolState';
 import { Tool } from '../editorContextTypes';

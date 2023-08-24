@@ -665,6 +665,9 @@
     {
       "id": "aeroway-area",
       "type": "fill",
+      "metadata": {
+        "mapbox:group": "1444849345966.4436"
+      },
       "source": "openmaptiles",
       "source-layer": "aeroway",
       "minzoom": 4,
@@ -682,6 +685,9 @@
     {
       "id": "aeroway-taxiway",
       "type": "line",
+      "metadata": {
+        "mapbox:group": "1444849345966.4436"
+      },
       "source": "openmaptiles",
       "source-layer": "aeroway",
       "minzoom": 12,
@@ -724,6 +730,9 @@
     {
       "id": "aeroway-runway",
       "type": "line",
+      "metadata": {
+        "mapbox:group": "1444849345966.4436"
+      },
       "source": "openmaptiles",
       "source-layer": "aeroway",
       "minzoom": 4,

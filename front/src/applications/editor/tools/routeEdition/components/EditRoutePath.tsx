@@ -2,7 +2,7 @@ import React, { FC, useCallback, useContext, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import chroma from 'chroma-js';
-import { Layer, LineLayer, Popup, Source } from 'react-map-gl/maplibre';
+import { Layer, LineLayer, Popup, Source } from 'react-map-gl';
 import { featureCollection } from '@turf/helpers';
 import cx from 'classnames';
 import { omit } from 'lodash';

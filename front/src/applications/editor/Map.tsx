@@ -1,8 +1,9 @@
 import React, { FC, PropsWithChildren, useContext, useMemo, useRef, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import ReactMapGL, { AttributionControl, MapRef, ScaleControl } from 'react-map-gl/maplibre';
+import ReactMapGL, { AttributionControl, MapRef, ScaleControl } from 'react-map-gl';
 import { withTranslation } from 'react-i18next';
 import { TFunction } from 'i18next';
+import maplibregl from 'maplibre-gl';
 import { isEmpty, isEqual } from 'lodash';
 
 import VirtualLayers from 'applications/operationalStudies/components/SimulationResults/SimulationResultsMap/VirtualLayers';
@@ -23,7 +24,7 @@ import Platforms from '../../common/Map/Layers/Platforms';
 import osmBlankStyle from '../../common/Map/Layers/osmBlankStyle';
 import IGN_BD_ORTHO from '../../common/Map/Layers/IGN_BD_ORTHO';
 import { Viewport } from '../../reducers/map';
-import { getMapMouseEventNearestFeature } from '../../utils/maplibreHelper';
+import { getMapMouseEventNearestFeature } from '../../utils/mapboxHelper';
 import EditorContext from './context';
 import { EditorState, LAYER_TO_EDITOAST_DICT, LAYERS_SET, LayerType } from './tools/types';
 import { getEntity } from './data/api';
@@ -108,6 +109,7 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
         <ReactMapGL
           {...viewport}
           ref={mapRef}
+          mapLib={maplibregl}
           style={{ width: '100%', height: '100%' }}
           mapStyle={osmBlankStyle}
           onMove={(e) => setViewport(e.viewState)}

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { Source, LayerProps } from 'react-map-gl/maplibre';
+import { Source, LayerProps } from 'react-map-gl';
 
 import { RootState } from 'reducers';
 import { Theme } from 'types';
@@ -42,7 +42,12 @@ function TracksOSM(props: TracksOSMProps) {
     },
     paint: {
       'line-color': colors.tracksosm.major,
-      'line-width': ['interpolate', ['linear'], ['zoom'], 15, 1, 17, 3],
+      'line-width': {
+        stops: [
+          [15, 1],
+          [17, 3],
+        ],
+      },
     },
   };
 

@@ -6,7 +6,7 @@ import Select from 'react-select';
 import { first, last, keyBy } from 'lodash';
 import { FaTimesCircle, FaMapMarkedAlt } from 'react-icons/fa';
 import SchemaField from '@rjsf/core/lib/components/fields/SchemaField';
-import { Layer, Popup, Source } from 'react-map-gl/maplibre';
+import { Layer, Popup, Source } from 'react-map-gl';
 import { featureCollection, point } from '@turf/helpers';
 import nearestPoint from '@turf/nearest-point';
 import { Position } from 'geojson';

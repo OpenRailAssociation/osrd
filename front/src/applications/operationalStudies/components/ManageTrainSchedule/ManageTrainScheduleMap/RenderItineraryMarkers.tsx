@@ -1,6 +1,6 @@
 import React, { FC, useMemo } from 'react';
 import { useSelector } from 'react-redux';
-import { Marker } from 'react-map-gl/maplibre';
+import { Marker } from 'react-map-gl';
 import nextId from 'react-id-generator';
 import originSVG from 'assets/pictures/origin.svg';
 import destinationSVG from 'assets/pictures/destination.svg';

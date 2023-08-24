@@ -1,11 +1,12 @@
-import { LayerProps } from 'react-map-gl/maplibre';
+import { CircleLayer, LineLayer, SymbolLayer } from 'react-map-gl';
+
 import { Theme } from 'types';
 
 export function getLineErrorsLayerProps(params: {
   colors: Theme;
   sourceTable?: string;
-}): LayerProps {
-  const res: LayerProps = {
+}): Omit<LineLayer, 'id'> {
+  const res: Omit<LineLayer, 'id'> = {
     type: 'line',
     filter: ['==', 'obj_type', 'TrackSection'],
     paint: {
@@ -27,8 +28,8 @@ export function getLineErrorsLayerProps(params: {
 export function getLineTextErrorsLayerProps(params: {
   colors: Theme;
   sourceTable?: string;
-}): LayerProps {
-  const res: LayerProps = {
+}): Omit<SymbolLayer, 'id'> {
+  const res: Omit<SymbolLayer, 'id'> = {
     type: 'symbol',
     layout: {
       'symbol-placement': 'line',
@@ -54,8 +55,8 @@ export function getLineTextErrorsLayerProps(params: {
 export function getPointErrorsLayerProps(params: {
   colors: Theme;
   sourceTable?: string;
-}): LayerProps {
-  const res: LayerProps = {
+}): Omit<CircleLayer, 'id'> {
+  const res: Omit<CircleLayer, 'id'> = {
     type: 'circle',
     filter: ['!=', 'obj_type', 'TrackSection'],
     paint: {
@@ -76,8 +77,8 @@ export function getPointErrorsLayerProps(params: {
 export function getPointTextErrorsLayerProps(params: {
   colors: Theme;
   sourceTable?: string;
-}): LayerProps {
-  const res: LayerProps = {
+}): Omit<SymbolLayer, 'id'> {
+  const res: Omit<SymbolLayer, 'id'> = {
     type: 'symbol',
     layout: {
       'symbol-placement': 'point',

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Source, LayerProps } from 'react-map-gl/maplibre';
+import { Source, LayerProps } from 'react-map-gl';
 
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import { OSM_URL } from 'common/Map/const';

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Source } from 'react-map-gl/maplibre';
+import { Source } from 'react-map-gl';
 
 export default function Terrain() {
   return (

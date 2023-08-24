@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { LayerProps, Source } from 'react-map-gl/maplibre';
+import { CircleLayer, LineLayer, Source, SymbolLayer } from 'react-map-gl';
 
 import { RootState } from 'reducers';
 import { Theme } from 'types';
@@ -17,8 +17,8 @@ interface RoutesProps {
 export function getRoutesLineLayerProps(params: {
   colors: Theme;
   sourceTable?: string;
-}): LayerProps {
-  const res: LayerProps = {
+}): Omit<LineLayer, 'id'> {
+  const res: Omit<LineLayer, 'id'> = {
     type: 'line',
     minzoom: 6,
     maxzoom: 24,
@@ -43,8 +43,8 @@ export function getRoutesLineLayerProps(params: {
 export function getRoutesPointLayerProps(params: {
   colors: Theme;
   sourceTable?: string;
-}): LayerProps {
-  const res: LayerProps = {
+}): Omit<CircleLayer, 'id'> {
+  const res: Omit<CircleLayer, 'id'> = {
     type: 'circle',
     paint: {
       'circle-stroke-color': 'rgba(255, 182, 18, 0.5)',
@@ -60,8 +60,8 @@ export function getRoutesPointLayerProps(params: {
 export function getRoutesTextLayerProps(params: {
   colors: Theme;
   sourceTable?: string;
-}): LayerProps {
-  const res: LayerProps = {
+}): Omit<SymbolLayer, 'id'> {
+  const res: Omit<SymbolLayer, 'id'> = {
     type: 'symbol',
     minzoom: 9,
     maxzoom: 24,
@@ -98,10 +98,26 @@ export default function Routes(props: RoutesProps) {
   const textProps = getRoutesTextLayerProps({ colors, sourceTable: 'routes' });
 
   return layersSettings.routes ? (
-    <Source type="vector" url={`${MAP_URL}/layer/routes/mvt/${geomType}/?infra=${infraID}`}>
-      <OrderedLayer {...lineProps} layerOrder={layerOrder} />
-      <OrderedLayer {...pointProps} layerOrder={layerOrder} />
-      <OrderedLayer {...textProps} layerOrder={layerOrder} />
+    <Source
+      id={`osrd_routes_${geomType}`}
+      type="vector"
+      url={`${MAP_URL}/layer/routes/mvt/${geomType}/?infra=${infraID}`}
+    >
+      <OrderedLayer
+        {...lineProps}
+        id={`chartis/osrd_routes_line/${geomType}`}
+        layerOrder={layerOrder}
+      />
+      <OrderedLayer
+        {...pointProps}
+        id={`chartis/osrd_routes_point/${geomType}`}
+        layerOrder={layerOrder}
+      />
+      <OrderedLayer
+        {...textProps}
+        id={`chartis/osrd_routes_text/${geomType}`}
+        layerOrder={layerOrder}
+      />
     </Source>
   ) : null;
 }

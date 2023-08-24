@@ -1,7 +1,6 @@
-import { LayerProps } from 'react-map-gl/maplibre';
-import { Theme } from 'types';
+import { Theme, AnyLayer } from '../../../types';
 
-export function geoMainLayer(theme: Theme, bigger = false): LayerProps {
+export function geoMainLayer(theme: Theme, bigger = false): AnyLayer {
   return {
     id: 'geoMainLayer',
     type: 'line',
@@ -12,7 +11,7 @@ export function geoMainLayer(theme: Theme, bigger = false): LayerProps {
   };
 }
 
-export function geoServiceLayer(theme: Theme): LayerProps {
+export function geoServiceLayer(theme: Theme): AnyLayer {
   return {
     id: 'geoServiceLayer',
     type: 'line',
