@@ -52,5 +52,5 @@ export default function generateTrainSchedulesPayload(
       scheduled_points: mixPathPositionsAndTimes(train.steps, train.pathFinding.steps),
     });
   });
-  return trainSchedulesByPathID;
+  return Object.values(trainSchedulesByPathID);
 }

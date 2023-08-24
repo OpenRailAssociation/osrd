@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import Map from 'applications/operationalStudies/components/ImportTrainSchedule/Map';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
-import { getRollingStockID, getInfraID, getTimetableID } from 'reducers/osrdconf/selectors';
+import { getRollingStockID } from 'reducers/osrdconf/selectors';
 import generatePathfindingPayload from 'applications/operationalStudies/components/ImportTrainSchedule/generatePathfindingPayload';
 import generateTrainSchedulesPayload from 'applications/operationalStudies/components/ImportTrainSchedule/generateTrainSchedulesPayload';
 import getTimetable from 'applications/operationalStudies/components/Scenario/getTimetable';
@@ -13,12 +12,22 @@ import {
   initialStatus,
 } from 'applications/operationalStudies/components/ImportTrainSchedule//consts';
 import { refactorUniquePaths } from 'applications/operationalStudies/components/ImportTrainSchedule/ImportTrainScheduleHelpers';
-import { osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import {
+  LightRollingStock,
+  Path,
+  TrainScheduleBatchItem,
+  osrdEditoastApi,
+} from 'common/api/osrdEditoastApi';
 import { updateReloadTimetable } from 'reducers/osrdsimulation/actions';
 import { compact } from 'lodash';
 import Spacer from 'common/Spacer';
+import {
+  TrainSchedule,
+  TrainScheduleWithPath,
+  TrainScheduleWithPathRef,
+} from 'applications/operationalStudies/types';
 import ImportTrainScheduleModalFooter from './ImportTrainScheduleModalFooter';
+import { Point } from './types';
 
 /* METHOD
  *
@@ -30,63 +39,63 @@ import ImportTrainScheduleModalFooter from './ImportTrainScheduleModalFooter';
  *
  */
 
-export default function ImportTrainScheduleModal(props) {
-  const { rollingStockDB, trains } = props;
-  const { t } = useTranslation('translation', 'operationalStudies/importTrainSchedule');
+interface ImportTrainScheduleModalProps {
+  infraId: number;
+  rollingStocks: LightRollingStock[];
+  timetableId: number;
+  trains: TrainSchedule[];
+}
+
+const ImportTrainScheduleModal = ({
+  infraId,
+  rollingStocks,
+  timetableId,
+  trains,
+}: ImportTrainScheduleModalProps) => {
+  const { t } = useTranslation(['operationalStudies/importTrainSchedule']);
   const dispatch = useDispatch();
-  const infraID = useSelector(getInfraID);
   const rollingStockID = useSelector(getRollingStockID);
-  const timetableID = useSelector(getTimetableID);
 
-  const [postPathFinding] = osrdEditoastApi.usePostPathfindingMutation();
-  const [postTrainSchedule] = osrdMiddlewareApi.usePostTrainScheduleStandaloneSimulationMutation();
-  const [getTimetableWithTrainSchedulesDetails] = osrdEditoastApi.useLazyGetTimetableByIdQuery();
+  const [postPathFinding] = osrdEditoastApi.endpoints.postPathfinding.useMutation();
+  const [postTrainSchedule] =
+    osrdEditoastApi.endpoints.postTrainScheduleStandaloneSimulation.useMutation();
+  const [getTimetableWithTrainSchedulesDetails] =
+    osrdEditoastApi.endpoints.getTimetableById.useLazyQuery();
 
-  const [trainsWithPathRef, setTrainsWithPathRef] = useState([]);
-  const [trainsWithPath, setTrainsWithPath] = useState([]);
+  const [trainsWithPathRef, setTrainsWithPathRef] = useState<TrainScheduleWithPathRef[]>([]);
+  const [trainsWithPath, setTrainsWithPath] = useState<TrainScheduleWithPath[]>([]);
 
   // Places, points, OPs to add track section id
-  const [pointsDictionnary, setPointsDictionnary] = useState();
-  const [clickedFeatureId, setClickedFeatureId] = useState();
-  const [uicNumberToComplete, setUicNumberToComplete] = useState();
+  const [pointsDictionnary, setPointsDictionnary] = useState<Record<string, Point>>({});
+  const [clickedFeatureId, setClickedFeatureId] = useState<string>();
+  const [uicNumberToComplete, setUicNumberToComplete] = useState<number>();
 
   // Path to compute
-  const [pathsDictionnary, setPathsDictionnary] = useState();
+  const [pathsDictionnary, setPathsDictionnary] = useState<
+    { trainNumber: string; pathString: string }[]
+  >([]);
 
-  const [importStatus, setImportStatus] = useState(
-    t('operationalStudies/importTrainSchedule:status.ready')
-  );
+  const [importStatus, setImportStatus] = useState(<span>{t('status.ready')}</span>);
 
   const [viewport, setViewport] = useState(initialViewport);
   const [status, setStatus] = useState(initialStatus);
 
   function testMissingInfos() {
-    const messages = [];
-    if (!infraID) messages.push(t('operationalStudies/importTrainSchedule:status.missingInfra'));
-    if (!rollingStockID)
-      messages.push(t('operationalStudies/importTrainSchedule:status.missingRollingStock'));
-    if (!timetableID)
-      messages.push(t('operationalStudies/importTrainSchedule:status.missingTimetable'));
-    if (messages.length > 0) {
+    if (!rollingStockID) {
       setImportStatus(
         <span className="text-danger">
-          {[t('operationalStudies/importTrainSchedule:status.noImportationPossible'), '']
-            .concat(messages)
-            .join('\n')}
+          {[t('status.noImportationPossible'), t('status.missingRollingStock')].join('\n')}
         </span>
       );
     } else {
-      setImportStatus(t('operationalStudies/importTrainSchedule:status.ready'));
+      setImportStatus(t('status.ready'));
     }
   }
 
-  function getTrackSectionID(lat, lng) {
+  function getTrackSectionID(lat: number, lng: number) {
     setViewport({
-      latitude: Number(lat),
-      longitude: Number(lng),
-      pitch: 0,
-      bearing: 0,
-      zoom: 18,
+      latitude: lat,
+      longitude: lng,
     });
   }
 
@@ -104,19 +113,17 @@ export default function ImportTrainScheduleModal(props) {
       uicNumberToComplete === undefined || init ? 0 : uicNumberToComplete + 1;
     if (uicNumberToCompleteLocal < uic2complete.length) {
       setUicNumberToComplete(uicNumberToCompleteLocal);
-      getTrackSectionID(
-        pointsDictionnary[uic2complete[uicNumberToCompleteLocal]].latitude,
-        pointsDictionnary[uic2complete[uicNumberToCompleteLocal]].longitude
-      );
+      const pointToComplete = pointsDictionnary[uic2complete[uicNumberToCompleteLocal]];
+      getTrackSectionID(pointToComplete.latitude, pointToComplete.longitude);
       setImportStatus(
-        t('operationalStudies/importTrainSchedule:status.complete', {
+        t('status.complete', {
           uicNumber: uicNumberToCompleteLocal,
           uicTotalCount: uic2complete.length,
-          uicName: pointsDictionnary[uic2complete[uicNumberToCompleteLocal]].name,
+          uicName: pointToComplete.name,
         })
       );
     } else {
-      setImportStatus(t('operationalStudies/importTrainSchedule:status.uicComplete'));
+      setImportStatus(t('status.uicComplete'));
       setUicNumberToComplete(undefined);
       setStatus({ ...status, uicComplete: true });
     }
@@ -126,11 +133,11 @@ export default function ImportTrainScheduleModal(props) {
   // 2 GENERATE PATHS (autocomplete to automatically look for OPs)
   //
 
-  function endGeneratePaths(newTrainsWithPathRef) {
-    if (newTrainsWithPathRef.length > 0) {
-      setImportStatus(t('operationalStudies/importTrainSchedule:status.pathComplete'));
-    } else setImportStatus(t('operationalStudies/importTrainSchedule:status.pathsFailed'));
-    setTrainsWithPath(newTrainsWithPathRef);
+  function endGeneratePaths(newTrainsWithPath: TrainScheduleWithPath[]) {
+    if (newTrainsWithPath.length > 0) {
+      setImportStatus(t('status.pathComplete'));
+    } else setImportStatus(t('status.pathsFailed'));
+    setTrainsWithPath(newTrainsWithPath);
     setStatus({ ...status, uicComplete: true, pathFindingDone: true });
   }
 
@@ -141,8 +148,8 @@ export default function ImportTrainScheduleModal(props) {
    * If a pathfinding is not successful, the corresponding trainSchedules will not be imported.
    */
   async function generatePaths(autocomplete = false) {
-    const pathErrors = [];
-    const pathFindings = {};
+    const pathErrors: string[] = [];
+    const pathFindings: Record<string, { rollingStockId: number; pathFinding: Path }> = {};
     const pathFindingsCount = pathsDictionnary.length;
     let pathFindingsDoneCount = 0;
 
@@ -152,29 +159,30 @@ export default function ImportTrainScheduleModal(props) {
       const pathRef = path.trainNumber;
       const { payload, rollingStockId } = generatePathfindingPayload(
         trainsWithPathRef,
-        rollingStockDB,
+        rollingStocks,
         path.trainNumber,
         rollingStockID,
-        infraID,
+        infraId,
         autocomplete,
         pointsDictionnary
       );
       setImportStatus(
-        t('operationalStudies/importTrainSchedule:status.searchingPath', {
+        t('status.searchingPath', {
           pathFindingsDoneCount,
           pathFindingsCount,
           pathRef,
         })
       );
 
-      const request = await postPathFinding({ pathQuery: payload });
-      if (request.data) {
-        const pathFinding = request.data;
-        pathFindings[pathRef] = { rollingStockId, pathFinding };
-      } else {
-        console.warn(`pathfinding error for path ${pathRef}`);
-        pathErrors.push(pathRef);
-      }
+      await postPathFinding({ pathQuery: payload })
+        .unwrap()
+        .then((pathFinding) => {
+          pathFindings[pathRef] = { rollingStockId, pathFinding };
+        })
+        .catch(() => {
+          console.warn(`pathfinding error for path ${pathRef}`);
+          pathErrors.push(pathRef);
+        });
     }
 
     let trainsDropped = 0;
@@ -192,7 +200,7 @@ export default function ImportTrainScheduleModal(props) {
         };
       })
     );
-    if (pathErrors > 0) {
+    if (pathErrors.length > 0) {
       console.warn(`${pathErrors.length} chemins non trouvés, ${trainsDropped} trains abandonnés`);
     }
 
@@ -207,52 +215,62 @@ export default function ImportTrainScheduleModal(props) {
   // 3 CALCULATE TRAINS SCHEDULES
   //
 
-  async function launchTrainSchedules(params) {
+  async function launchTrainSchedules(payload: {
+    path: number;
+    schedules: TrainScheduleBatchItem[];
+    timetable: number;
+  }) {
     try {
-      await postTrainSchedule({ standaloneSimulationParameters: params }).unwrap();
+      await postTrainSchedule({ body: payload }).unwrap();
     } catch (error) {
-      return `${t(
-        'operationalStudies/importTrainSchedule:errorMessages.unableToRetrieveTrainSchedule'
-      )} (${params.path})`;
+      return false;
     }
 
     try {
       const timetable = await getTimetableWithTrainSchedulesDetails({
-        id: timetableID,
+        id: timetableId,
       }).unwrap();
       await Promise.resolve(dispatch(updateReloadTimetable(false)));
       getTimetable(timetable);
     } catch (error) {
       console.error(error);
     }
-    return `${t(
-      'operationalStudies/importTrainSchedule:status.calculatingTrainScheduleComplete'
-    )} (${params.path})`;
+    return true;
   }
 
   async function generateTrainSchedules() {
-    const payload = generateTrainSchedulesPayload(trainsWithPath, timetableID);
-    setImportStatus(t('operationalStudies/importTrainSchedule:status.calculatingTrainSchedule'));
+    const payloads = generateTrainSchedulesPayload(trainsWithPath, timetableId);
+    setImportStatus(t('status.calculatingTrainSchedule'));
     const messages = [];
-    const promisesList = [];
+    const errorMessages = [];
+    let idx = 0;
     // eslint-disable-next-line no-restricted-syntax
-    for (const [idx, params] of Object.values(payload).entries()) {
-      // eslint-disable-next-line no-await-in-loop
-      const message = await launchTrainSchedules(params);
-      promisesList.push(message);
-      messages.push(`${message} ${idx + 1}/${Object.values(payload).length}`);
-      setImportStatus(messages.join('\n'));
+    for await (const payload of payloads) {
+      const success = await launchTrainSchedules(payload);
+      const message = `${t(
+        !success
+          ? 'status.calculatingTrainScheduleComplete'
+          : 'errorMessages.unableToCreateTrainSchedule',
+        {
+          pathId: payload.path,
+          trainIndex: idx,
+          trainsCount: payloads.length,
+        }
+      )}`;
+      messages.push(message);
+      messages.push(message);
+      if (!success) {
+        errorMessages.push(message);
+      }
+      setImportStatus(<>{messages.join('\n')}</>);
+      idx += 1;
     }
-    Promise.all(promisesList).then(() => {
-      setStatus({ ...status, trainSchedulesDone: true });
-      setImportStatus(
-        t('operationalStudies/importTrainSchedule:status.calculatingTrainScheduleCompleteAll')
-      );
-    });
+    setStatus({ ...status, trainSchedulesDone: true });
+    setImportStatus(t('status.calculatingTrainScheduleCompleteAll'));
   }
 
   useEffect(() => {
-    if (clickedFeatureId) {
+    if (clickedFeatureId && uicNumberToComplete) {
       const actualUic = Object.keys(pointsDictionnary)[uicNumberToComplete];
       setPointsDictionnary({
         ...pointsDictionnary,
@@ -268,21 +286,20 @@ export default function ImportTrainScheduleModal(props) {
   }, [clickedFeatureId]);
 
   useEffect(() => {
-    if (rollingStockDB && trains && trains.length > 0) {
+    if (rollingStocks && trains && trains.length > 0) {
       refactorUniquePaths(trains, setTrainsWithPathRef, setPathsDictionnary, setPointsDictionnary);
     }
-  }, [trains, rollingStockDB]);
+  }, [trains, rollingStocks]);
 
   useEffect(() => {
     testMissingInfos();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [infraID, rollingStockID, timetableID]);
+  }, [infraId, rollingStockID, timetableId]);
 
   return (
     <>
-      {pathsDictionnary && trainsWithPathRef ? (
+      {pathsDictionnary && trainsWithPathRef && (
         <ModalBodySNCF>
-          {!infraID || !timetableID || !rollingStockID ? null : (
+          {!infraId || !timetableId || !rollingStockID ? null : (
             <>
               <button
                 className={`btn btn-sm btn-block d-flex justify-content-between ${
@@ -291,9 +308,7 @@ export default function ImportTrainScheduleModal(props) {
                 type="button"
                 onClick={() => completePaths(true)}
               >
-                <span>
-                  1 — {t('operationalStudies/importTrainSchedule:completeTrackSectionID')}
-                </span>
+                <span>1 — {t('completeTrackSectionID')}</span>
                 <span>{Object.keys(pointsDictionnary).length}</span>
               </button>
               <button
@@ -302,14 +317,12 @@ export default function ImportTrainScheduleModal(props) {
                 }`}
                 disabled={!status.uicComplete}
                 type="button"
-                onClick={generatePaths}
+                onClick={() => generatePaths()}
               >
-                <span>2 — {t('operationalStudies/importTrainSchedule:generatePaths')}</span>
+                <span>2 — {t('generatePaths')}</span>
                 <span>{pathsDictionnary.length}</span>
               </button>
-              <div className="my-1 text-center">
-                {t('operationalStudies/importTrainSchedule:or')}
-              </div>
+              <div className="my-1 text-center">{t('or')}</div>
               <button
                 className={`btn btn-sm btn-block d-flex justify-content-between text-wrap text-left ${
                   status.uicComplete || status.pathFindingDone
@@ -319,7 +332,7 @@ export default function ImportTrainScheduleModal(props) {
                 type="button"
                 onClick={generateAutocompletePaths}
               >
-                <span>1/2 — {t('operationalStudies/importTrainSchedule:generatePathsAuto')}</span>
+                <span>1/2 — {t('generatePathsAuto')}</span>
                 <span>{pathsDictionnary.length}</span>
               </button>
               <Spacer height={50} />
@@ -329,9 +342,7 @@ export default function ImportTrainScheduleModal(props) {
                 type="button"
                 onClick={generateTrainSchedules}
               >
-                <span>
-                  3 — {t('operationalStudies/importTrainSchedule:generateTrainSchedules')}
-                </span>
+                <span>3 — {t('generateTrainSchedules')}</span>
                 <span>{trains.length}</span>
               </button>
 
@@ -351,19 +362,10 @@ export default function ImportTrainScheduleModal(props) {
             </div>
           )}
         </ModalBodySNCF>
-      ) : (
-        ''
       )}
       <ImportTrainScheduleModalFooter status={status} />
     </>
   );
-}
-
-ImportTrainScheduleModal.defaultProps = {
-  rollingStockDB: [],
 };
 
-ImportTrainScheduleModal.propTypes = {
-  trains: PropTypes.array.isRequired,
-  rollingStockDB: PropTypes.array,
-};
+export default ImportTrainScheduleModal;

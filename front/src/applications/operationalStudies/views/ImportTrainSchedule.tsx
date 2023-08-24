@@ -8,7 +8,13 @@ import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { setFailure } from 'reducers/main';
 
-export default function ImportTrainSchedule({ infraId }: { infraId: number }) {
+export default function ImportTrainSchedule({
+  infraId,
+  timetableId,
+}: {
+  infraId: number;
+  timetableId: number;
+}) {
   const dispatch = useDispatch();
   const { t } = useTranslation(['rollingstock']);
   const [trainsList, setTrainsList] = useState<TrainSchedule[]>([]);
@@ -38,9 +44,11 @@ export default function ImportTrainSchedule({ infraId }: { infraId: number }) {
         infraId={infraId}
       />
       <ImportTrainScheduleTrainsList
-        trainsList={trainsList}
-        rollingStockDB={rollingStocks}
+        infraId={infraId}
         isLoading={isLoading}
+        rollingStocks={rollingStocks}
+        timetableId={timetableId}
+        trainsList={trainsList}
       />
     </main>
   ) : (

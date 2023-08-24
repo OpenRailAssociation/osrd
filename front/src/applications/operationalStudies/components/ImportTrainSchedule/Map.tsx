@@ -1,11 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import maplibregl from 'maplibre-gl';
-import ReactMapGL, {
-  AttributionControl,
-  MapLayerMouseEvent,
-  ScaleControl,
-  ViewState,
-} from 'react-map-gl';
+import ReactMapGL, { AttributionControl, MapLayerMouseEvent, ScaleControl } from 'react-map-gl';
 import { point as turfPoint } from '@turf/helpers';
 import { useSelector } from 'react-redux';
 import turfNearestPointOnLine, { NearestPointOnLine } from '@turf/nearest-point-on-line';
@@ -29,18 +24,21 @@ import { getMapStyle } from 'reducers/map/selectors';
 import { CUSTOM_ATTRIBUTION } from '../../../../common/Map/const';
 
 interface MapProps {
-  viewport: ViewState;
-  setViewport: (viewPort: ViewState) => void;
+  viewport: { latitude: number; longitude: number };
+  setViewport: (viewPort: { latitude: number; longitude: number }) => void;
   setClickedFeatureId: (clickedFeatureId: string) => void;
 }
 
 const viewportExtraSettings = {
   altitude: 1.5,
+  bearing: 0,
   maxZoom: 24,
   minZoom: 0,
+  pitch: 0,
   maxPitch: 60,
   minPitch: 0,
   transitionDuration: 100,
+  zoom: 18,
 };
 
 const Map = ({ viewport, setViewport, setClickedFeatureId }: MapProps) => {
