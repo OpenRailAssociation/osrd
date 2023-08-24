@@ -161,7 +161,9 @@ impl Type for Boolean {
 
     fn into_arg(value: TypedAst) -> Result<Self::ArgType> {
         Self::typecheck(&value)?;
-        let TypedAst::Boolean(b) = value else { unreachable!(); };
+        let TypedAst::Boolean(b) = value else {
+            unreachable!();
+        };
         Ok(b)
     }
 
@@ -180,7 +182,9 @@ impl Type for Integer {
 
     fn into_arg(value: TypedAst) -> Result<Self::ArgType> {
         Self::typecheck(&value)?;
-        let TypedAst::Integer(n) = value else { unreachable!(); };
+        let TypedAst::Integer(n) = value else {
+            unreachable!();
+        };
         Ok(n)
     }
 
@@ -199,7 +203,9 @@ impl Type for Float {
 
     fn into_arg(value: TypedAst) -> Result<Self::ArgType> {
         Self::typecheck(&value)?;
-        let TypedAst::Float(n) = value else { unreachable!(); };
+        let TypedAst::Float(n) = value else {
+            unreachable!();
+        };
         Ok(n)
     }
 
@@ -218,7 +224,9 @@ impl Type for String {
 
     fn into_arg(value: TypedAst) -> Result<Self::ArgType> {
         Self::typecheck(&value)?;
-        let TypedAst::String(s) = value else { unreachable!(); };
+        let TypedAst::String(s) = value else {
+            unreachable!();
+        };
         Ok(s)
     }
 
@@ -237,7 +245,9 @@ impl<T: Type> Type for Sql<T> {
 
     fn into_arg(value: TypedAst) -> Result<Self::ArgType> {
         Self::typecheck(&value)?;
-        let TypedAst::Sql(sql, _) = value else { unreachable!(); };
+        let TypedAst::Sql(sql, _) = value else {
+            unreachable!();
+        };
         Ok(*sql)
     }
 
@@ -321,7 +331,9 @@ impl<T: Type> Type for Array<T> {
 
     fn into_arg(value: TypedAst) -> Result<Self::ArgType> {
         Self::typecheck(&value)?;
-        let TypedAst::Sequence(items, _) = value else { unreachable!() };
+        let TypedAst::Sequence(items, _) = value else {
+            unreachable!()
+        };
         items.into_iter().map(T::into_arg).collect()
     }
 

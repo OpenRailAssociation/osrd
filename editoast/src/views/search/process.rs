@@ -32,7 +32,9 @@ impl QueryContext {
                     .map(|arg| self.typecheck_search_query(arg))
                     .collect::<Result<Vec<_>>>()?;
                 let function = self.find_function(function_name, &arglist_types)?;
-                let TypeSpec::Function { result , .. } = &function.signature else { unreachable!() };
+                let TypeSpec::Function { result, .. } = &function.signature else {
+                    unreachable!()
+                };
                 result.as_ref().clone()
             }
         };
