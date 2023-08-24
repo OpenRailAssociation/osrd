@@ -37,7 +37,7 @@ export default function ImportTrainScheduleConfig({
   setIsLoading,
 }: ImportTrainScheduleConfigProps) {
   const { t } = useTranslation(['operationalStudies/importTrainSchedule']);
-  const [postSearch] = osrdEditoastApi.usePostSearchMutation();
+  const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
   const [from, setFrom] = useState<ImportStation | undefined>();
   const [fromSearchString, setFromSearchString] = useState('');
   const [to, setTo] = useState<ImportStation | undefined>();

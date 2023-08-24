@@ -11,7 +11,7 @@ import { searchGraouStations } from 'common/api/graouApi';
 interface ImportTrainScheduleStationSelectorProps {
   id: string;
   term?: string;
-  onSelect: (stationName: ImportStation | undefined) => void;
+  onSelect: (stationName?: ImportStation) => void;
   setTerm: (searchString: string) => void;
 }
 

@@ -9,7 +9,13 @@ import { MODES, MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStud
 import { updateInfraID, updateMode, updateTimetableID } from 'reducers/osrdconf';
 import TimetableManageTrainSchedule from 'applications/operationalStudies/components/Scenario/TimetableManageTrainSchedule';
 import BreadCrumbs from 'applications/operationalStudies/components/BreadCrumbs';
-import { getInfraID, getProjectID, getScenarioID, getStudyID } from 'reducers/osrdconf/selectors';
+import {
+  getInfraID,
+  getProjectID,
+  getScenarioID,
+  getStudyID,
+  getTimetableID,
+} from 'reducers/osrdconf/selectors';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { FaEye, FaEyeSlash, FaPencilAlt } from 'react-icons/fa';
 import { GiElectric } from 'react-icons/gi';
@@ -39,6 +45,7 @@ export default function Scenario() {
   const studyId = useSelector(getStudyID);
   const scenarioId = useSelector(getScenarioID);
   const infraId = useSelector(getInfraID);
+  const timetableId = useSelector(getTimetableID);
 
   const [getProject, { data: project }] =
     osrdEditoastApi.endpoints.getProjectsByProjectId.useLazyQuery({});
@@ -122,7 +129,7 @@ export default function Scenario() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return scenario && infraId ? (
+  return scenario && infraId && timetableId ? (
     <>
       <NavBarSNCF
         appName={
@@ -238,7 +245,7 @@ export default function Scenario() {
               )}
               {displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.import && (
                 <div className="scenario-managetrainschedule">
-                  <ImportTrainSchedule infraId={infraId} />
+                  <ImportTrainSchedule infraId={infraId} timetableId={timetableId} />
                 </div>
               )}
               <div className="scenario-results">

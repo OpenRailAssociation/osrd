@@ -22,21 +22,25 @@ function LoadingIfSearching({ isLoading, t }: { isLoading: boolean; t: TFunction
 
 type ImportTrainScheduleTrainsListProps = {
   trainsList: TrainSchedule[];
-  rollingStockDB: LightRollingStock[];
+  rollingStocks: LightRollingStock[];
+  infraId: number;
   isLoading: boolean;
+  timetableId: number;
 };
 
 export default function ImportTrainScheduleTrainsList({
   trainsList,
-  rollingStockDB,
+  rollingStocks,
+  infraId,
   isLoading,
+  timetableId,
 }: ImportTrainScheduleTrainsListProps) {
   const { t } = useTranslation(['operationalStudies/importTrainSchedule']);
   const { openModal } = useModal();
 
   const rollingStockDict = useMemo(
-    () => keyBy(rollingStockDB, (rollingStock) => rollingStock.name),
-    [rollingStockDB]
+    () => keyBy(rollingStocks, (rollingStock) => rollingStock.name),
+    [rollingStocks]
   );
 
   return trainsList.length > 0 ? (
@@ -51,7 +55,12 @@ export default function ImportTrainScheduleTrainsList({
             type="button"
             onClick={() =>
               openModal(
-                <ImportTrainScheduleModal rollingStockDB={rollingStockDB} trains={trainsList} />
+                <ImportTrainScheduleModal
+                  infraId={infraId}
+                  rollingStocks={rollingStocks}
+                  trains={trainsList}
+                  timetableId={timetableId}
+                />
               )
             }
           >
