@@ -3,7 +3,6 @@ import { useSelector, useDispatch } from 'react-redux';
 import ReactMapGL, { AttributionControl, MapRef, ScaleControl } from 'react-map-gl';
 import { withTranslation } from 'react-i18next';
 import { TFunction } from 'i18next';
-import maplibregl from 'maplibre-gl';
 import { isEmpty, isEqual } from 'lodash';
 
 import VirtualLayers from 'applications/operationalStudies/components/SimulationResults/SimulationResultsMap/VirtualLayers';
@@ -109,7 +108,6 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
         <ReactMapGL
           {...viewport}
           ref={mapRef}
-          mapLib={maplibregl}
           style={{ width: '100%', height: '100%' }}
           mapStyle={osmBlankStyle}
           onMove={(e) => setViewport(e.viewState)}

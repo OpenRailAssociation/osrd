@@ -1,7 +1,6 @@
 import React, { FC, useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
-import maplibregl from 'maplibre-gl';
 import WebMercatorViewport from 'viewport-mercator-project';
 import ReactMapGL, { AttributionControl, ScaleControl, MapRef } from 'react-map-gl';
 import { Feature, LineString } from 'geojson';
@@ -377,7 +376,6 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
       <MapButtons resetPitchBearing={resetPitchBearing} />
       <ReactMapGL
         {...viewport}
-        mapLib={maplibregl}
         cursor="pointer"
         ref={mapRef}
         style={{ width: '100%', height: '100%' }}

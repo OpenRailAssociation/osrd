@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import maplibregl from 'maplibre-gl';
 import ReactMapGL, { AttributionControl, ScaleControl, MapRef } from 'react-map-gl';
 import { point as turfPoint } from '@turf/helpers';
 import { useDispatch, useSelector } from 'react-redux';
@@ -181,7 +180,6 @@ function Map() {
       <ReactMapGL
         ref={mapRef}
         {...viewport}
-        mapLib={maplibregl}
         style={{ width: '100%', height: '100%' }}
         cursor="pointer"
         mapStyle={osmBlankStyle}
