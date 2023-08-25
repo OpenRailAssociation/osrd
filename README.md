@@ -38,6 +38,7 @@ To compile and run the application with an example infrastructure:
 docker-compose up -d --build
 
 # generate and load an example infrastructure
+poetry --directory=python/railjson_generator install
 poetry --directory=python/railjson_generator shell
 ./scripts/generate-infra.sh small_infra
 
