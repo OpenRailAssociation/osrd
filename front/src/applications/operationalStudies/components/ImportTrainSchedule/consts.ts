@@ -7,4 +7,5 @@ export const initialStatus = {
   uicComplete: false,
   pathFindingDone: false,
   trainSchedulesDone: false,
+  success: false,
 };

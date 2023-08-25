@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import cx from 'classnames';
+
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import Map from 'applications/operationalStudies/components/ImportTrainSchedule/Map';
 import { useTranslation } from 'react-i18next';
@@ -136,7 +138,7 @@ const ImportTrainScheduleModal = ({
   function endGeneratePaths(newTrainsWithPath: TrainScheduleWithPath[]) {
     if (newTrainsWithPath.length > 0) {
       setImportStatus(t('status.pathComplete'));
-    } else setImportStatus(t('status.pathsFailed'));
+    } else setImportStatus(<span className="text-danger">{t('status.pathsFailed')}</span>);
     setTrainsWithPath(newTrainsWithPath);
     setStatus({ ...status, uicComplete: true, pathFindingDone: true });
   }
@@ -240,9 +242,10 @@ const ImportTrainScheduleModal = ({
 
   async function generateTrainSchedules() {
     const payloads = generateTrainSchedulesPayload(trainsWithPath, timetableId);
+    const trainsCount = payloads.length;
     setImportStatus(t('status.calculatingTrainSchedule'));
     const messages = [];
-    const errorMessages = [];
+    let successfulTrainsCount = 0;
     let idx = 0;
     // eslint-disable-next-line no-restricted-syntax
     for await (const payload of payloads) {
@@ -258,19 +261,33 @@ const ImportTrainScheduleModal = ({
         }
       )}`;
       messages.push(message);
-      messages.push(message);
-      if (!success) {
-        errorMessages.push(message);
+      if (success) {
+        successfulTrainsCount += 1;
       }
       setImportStatus(<>{messages.join('\n')}</>);
       idx += 1;
     }
-    setStatus({ ...status, trainSchedulesDone: true });
-    setImportStatus(t('status.calculatingTrainScheduleCompleteAll'));
+    if (successfulTrainsCount > 0) {
+      setStatus({ ...status, trainSchedulesDone: true, success: true });
+      setImportStatus(
+        t('status.calculatingTrainScheduleCompleteAll', {
+          count: successfulTrainsCount,
+          successfulTrainsCount,
+          trainsCount,
+        })
+      );
+    } else {
+      setStatus({ ...status, trainSchedulesDone: true });
+      setImportStatus(
+        <span className="text-danger">
+          {t('status.calculatingTrainScheduleCompleteAllFailure')}
+        </span>
+      );
+    }
   }
 
   useEffect(() => {
-    if (clickedFeatureId && uicNumberToComplete) {
+    if (clickedFeatureId && uicNumberToComplete !== undefined) {
       const actualUic = Object.keys(pointsDictionnary)[uicNumberToComplete];
       setPointsDictionnary({
         ...pointsDictionnary,
@@ -324,11 +341,12 @@ const ImportTrainScheduleModal = ({
               </button>
               <div className="my-1 text-center">{t('or')}</div>
               <button
-                className={`btn btn-sm btn-block d-flex justify-content-between text-wrap text-left ${
-                  status.uicComplete || status.pathFindingDone
-                    ? 'btn-outline-success'
-                    : 'btn-primary'
-                }`}
+                className={cx(
+                  'btn btn-sm btn-block d-flex justify-content-between text-wrap text-left',
+                  !status.pathFindingDone && 'btn-primary',
+                  status.pathFindingDone && trainsWithPath.length && 'btn-outline-success',
+                  status.pathFindingDone && !trainsWithPath.length && 'btn-outline-danger'
+                )}
                 type="button"
                 onClick={generateAutocompletePaths}
               >
@@ -337,8 +355,13 @@ const ImportTrainScheduleModal = ({
               </button>
               <Spacer height={50} />
               <button
-                className="btn btn-primary btn-sm btn-block d-flex justify-content-between"
-                disabled={!status.pathFindingDone || trainsWithPathRef.length === 0}
+                className={cx(
+                  'btn btn-sm btn-block d-flex justify-content-between',
+                  !status.trainSchedulesDone && 'btn-primary',
+                  status.trainSchedulesDone && !status.success && 'btn-outline-danger',
+                  status.trainSchedulesDone && status.success && 'btn-outline-success'
+                )}
+                disabled={!status.pathFindingDone || trainsWithPath.length === 0}
                 type="button"
                 onClick={generateTrainSchedules}
               >

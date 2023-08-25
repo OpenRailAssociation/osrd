@@ -28,7 +28,9 @@
   "status": {
     "calculatingTrainSchedule": "Calculating train schedules...",
     "calculatingTrainScheduleComplete": "Calculating train schedules is over (path {{pathId}}) {{trainIndex}}/{{trainsCount}}",
-    "calculatingTrainScheduleCompleteAll": "All train schedules have been calculated.",
+    "calculatingTrainScheduleCompleteAll_one": "All train schedules have been calculated : {{successfulTrainsCount}}/{{trainsCount}} train created.",
+    "calculatingTrainScheduleCompleteAll_other": "All train schedules have been calculated : {{successfulTrainsCount}}/{{trainsCount}} trains created.",
+    "calculatingTrainScheduleCompleteAllFailure": "All train schedule creations failed.",
     "complete": "locate",
     "missingRollingStock": "You must choose a default rolling stock",
     "noImportationPossible": "Import is currently not available:",

@@ -11,6 +11,7 @@ const ImportTrainScheduleModalFooter = ({
     uicComplete: boolean;
     pathFindingDone: boolean;
     trainSchedulesDone: boolean;
+    success: boolean;
   };
 }) => {
   const { t } = useTranslation(['translation', 'operationalStudies/importTrainSchedule']);

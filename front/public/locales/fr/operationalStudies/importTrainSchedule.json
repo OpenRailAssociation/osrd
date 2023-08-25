@@ -28,7 +28,9 @@
   "status": {
     "calculatingTrainSchedule": "Calculs de marches en cours…",
     "calculatingTrainScheduleComplete": "Calcul de marche terminé (path {{pathId}}) {{trainIndex}}/{{trainsCount}}",
-    "calculatingTrainScheduleCompleteAll": "Tous les calculs de marches sont terminés.",
+    "calculatingTrainScheduleCompleteAll_one": "Tous les calculs de marches sont terminés: {{successfulTrainsCount}}/{{trainsCount}} train créé.",
+    "calculatingTrainScheduleCompleteAll_other": "Tous les calculs de marches sont terminés: {{successfulTrainsCount}}/{{trainsCount}} trains créés.",
+    "calculatingTrainScheduleCompleteAllFailure": "Tous les calculs de marche ont échoué.",
     "complete": "{{uicNumber}}/{{uicTotalCount}} positionnez {{uicName}}",
     "missingRollingStock": "Vous devez choisir un matériel roulant par défaut",
     "noImportationPossible": "L'importation n'est pas possible pour l'instant :",
