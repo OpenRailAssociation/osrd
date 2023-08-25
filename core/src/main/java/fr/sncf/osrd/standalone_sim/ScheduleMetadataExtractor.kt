@@ -254,7 +254,7 @@ private fun routingRequirements(
         curOffset += blockLength
     }
 
-    fun findRouteSetDeadline(routeIndex: Int): Double {
+    fun findRouteSetDeadline(routeIndex: Int): Double? {
         if (routeIndex == 0)
             // TODO: this isn't quite true when the path starts with a stop
             return 0.0
@@ -286,6 +286,7 @@ private fun routingRequirements(
         // find the first non-open signal on the path
         // iterate backwards on blocks from blockIndex to 0, and on signals
         val limitingSignalSpec = findLimitingSignal(blockInfra, simulatedSignalStates, blockPath, routeStartBlockIndex)
+            ?: return null
         val limitingBlock = blockPath[limitingSignalSpec.blockIndex]
         val signal = blockInfra.getBlockSignals(limitingBlock)[limitingSignalSpec.signalIndex]
         val signalOffset = blockInfra.getSignalsPositions(limitingBlock)[limitingSignalSpec.signalIndex]
@@ -306,7 +307,7 @@ private fun routingRequirements(
     for (routeIndex in 0 until routePath.size) {
         // start out by figuring out when the route needs to be set
         // when the route is set, signaling can allow the train to proceed
-        val routeSetDeadline = findRouteSetDeadline(routeIndex)
+        val routeSetDeadline = findRouteSetDeadline(routeIndex)?: continue
 
         // find the release time of the last zone of each release group
         val route = routePath[routeIndex]
@@ -367,7 +368,7 @@ private fun findLimitingSignal(
     simulatedSignalStates: IdxMap<LogicalSignalId, SigState>,
     blockPath: StaticIdxList<Block>,
     routeStartBlockIndex: Int
-): LimitingSignal {
+): LimitingSignal? {
     var lastSignalBlockIndex = -1
     var lastSignalIndex = -1
     for (curBlockIndex in (0 until routeStartBlockIndex).reversed()) {
@@ -384,7 +385,9 @@ private fun findLimitingSignal(
             lastSignalIndex = curSignalIndex
         }
     }
-    assert(lastSignalBlockIndex != -1 && lastSignalIndex != -1)
+    // Limiting signal not found
+    if (lastSignalBlockIndex == -1 || lastSignalIndex == -1)
+        return null
     return LimitingSignal(lastSignalBlockIndex, lastSignalIndex)
 }
 
