@@ -20,7 +20,7 @@ RUN --mount=type=cache,target=/usr/local/cargo/registry \
     --mount=type=cache,target=/app/target \
     cargo install --locked --path .
 
-FROM debian:bullseye-slim as runner
+FROM debian:bookworm-slim as runner
 
 RUN apt update -yqq && \
     apt install -yqq --no-install-recommends libpq-dev curl ca-certificates libgeos-dev libjemalloc2 && \
