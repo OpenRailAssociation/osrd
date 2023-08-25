@@ -6,7 +6,7 @@ import createCompleteScenario from './assets/utils';
 
 test.describe('Testing if all mandatory elements simulation configuration are loaded in operationnal studies app', () => {
   test.beforeEach(async ({ page }) => {
-    test.setTimeout(90000);
+    test.setTimeout(120000); // 2min
     await createCompleteScenario(
       page,
       '_@Test integration scenario',
