@@ -78,20 +78,9 @@ public class PathfindingResultConverter {
         }
         long startOffset = Math.round(blockRanges.get(0).start());
         var lastRange = blockRanges.get(blockRanges.size() - 1);
-        var lastBlockLength = getBlockLength(infra, blockInfra, lastRange.edge());
+        var lastBlockLength = blockInfra.getBlockLength(lastRange.edge());
         var endOffset = totalBlockPathLength - lastBlockLength + Math.round(lastRange.end());
         return buildPathFrom(infra, chunks, startOffset, endOffset);
-    }
-
-    /** Get the length of a single block. Returns a Long, which should be interpreted as a `Distance` */
-    static long getBlockLength(RawSignalingInfra infra, BlockInfra blockInfra, int block) {
-        long totalBlockLength = 0;
-        var zonePaths = blockInfra.getBlockPath(block);
-        for (var zonePath : toIntList(zonePaths)) {
-            var zoneLength = infra.getZonePathLength(zonePath);
-            totalBlockLength += zoneLength;
-        }
-        return totalBlockLength;
     }
 
     /** Make the list of waypoints on the path, in order. Both user-defined waypoints and operational points. */
@@ -127,7 +116,7 @@ public class PathfindingResultConverter {
                 var pathOffset = lengthPrevBlocks + waypoint - startFirstRange;
                 res.add(makePendingWaypoint(infra, path, false, pathOffset, null));
             }
-            lengthPrevBlocks += getBlockLength(infra, blockInfra, blockRange.edge());
+            lengthPrevBlocks += blockInfra.getBlockLength(blockRange.edge());
         }
         return res;
     }

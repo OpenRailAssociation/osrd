@@ -32,7 +32,7 @@ public class PathfindingUtils {
                                           List<Integer> blockIds,
                                           long offsetFirstBlock) {
         var chunks = new MutableDirStaticIdxArrayList<TrackChunk>();
-        var totalLength = 0;
+        long totalLength = 0;
         for (var blockId : blockIds) {
             for (var zoneId : toIntList(infra.blockInfra().getBlockPath(blockId))) {
                 chunks.addAll(infra.rawInfra().getZonePathChunks(zoneId));
