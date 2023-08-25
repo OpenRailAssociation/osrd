@@ -224,8 +224,8 @@ public class PathfindingResultConverter {
     private static List<RJSRoutePath> convertRoutesToRJS(
             RawSignalingInfra infra,
             List<Integer> routes,
-            double startOffset,
-            double endOffset
+            long startOffset,
+            long endOffset
     ) {
         if (routes.size() == 0)
             return List.of();
@@ -243,11 +243,11 @@ public class PathfindingResultConverter {
     private static RJSRoutePath convertRouteToRJS(
             RawSignalingInfra infra,
             int route,
-            Double startOffset,
-            Double endOffset
+            Long startOffset,
+            Long endOffset
     ) {
         if (startOffset == null)
-            startOffset = 0.;
+            startOffset = 0L;
         if (endOffset == null)
             endOffset = getRouteLength(infra, route);
         return new RJSRoutePath(
@@ -261,11 +261,11 @@ public class PathfindingResultConverter {
     private static List<RJSDirectionalTrackRange> makeRJSTrackRanges(
             RawSignalingInfra infra,
             int route,
-            double routeStartOffset,
-            double routeEndOffset
+            long routeStartOffset,
+            long routeEndOffset
     ) {
         var res = new ArrayList<RJSDirectionalTrackRange>();
-        var chunkStartPathOffset = 0.;
+        long chunkStartPathOffset = 0;
         for (var dirChunkId: toIntList(infra.getChunksOnRoute(route))) {
             var chunkLength = infra.getTrackChunkLength(toValue(dirChunkId));
             var trackId = infra.getTrackFromChunk(toValue(dirChunkId));
@@ -284,11 +284,11 @@ public class PathfindingResultConverter {
                 var direction = toDirection(dirChunkId) == Direction.INCREASING ? START_TO_STOP : STOP_TO_START;
                 var trackLength = infra.getTrackSectionLength(trackId);
                 var rangeStartOnTrack = toMeters(direction == START_TO_STOP
-                        ? (long) dirRangeStartOnTrack
-                        : (long) (trackLength - dirRangeEndOnTrack));
+                        ? dirRangeStartOnTrack
+                        : trackLength - dirRangeEndOnTrack);
                 var rangeEndOnTrack = toMeters(direction == START_TO_STOP
-                        ? (long) dirRangeEndOnTrack
-                        : (long) (trackLength - dirRangeStartOnTrack));
+                        ? dirRangeEndOnTrack
+                        : trackLength - dirRangeStartOnTrack);
                 res.add(new RJSDirectionalTrackRange(trackName, rangeStartOnTrack, rangeEndOnTrack, direction));
             }
             chunkStartPathOffset += chunkLength;
@@ -312,14 +312,14 @@ public class PathfindingResultConverter {
     }
 
     /** Returns the route length */
-    private static double getRouteLength(RawSignalingInfra infra, int route) {
+    private static long getRouteLength(RawSignalingInfra infra, int route) {
         return toIntList(infra.getRoutePath(route)).stream()
-                .mapToDouble(infra::getZonePathLength)
+                .mapToLong(infra::getZonePathLength)
                 .sum();
     }
 
     /** Returns the offset of the range start on the given route */
-    private static double findStartOffset(
+    private static long findStartOffset(
             BlockInfra blockInfra,
             RawSignalingInfra rawInfra,
             int firstChunk,
@@ -327,11 +327,11 @@ public class PathfindingResultConverter {
             Pathfinding.EdgeRange<Integer> range
     ) {
         return getRouteChunkOffset(rawInfra, routeStaticIdx, firstChunk) 
-                - getBlockChunkOffset(blockInfra, rawInfra, firstChunk, range) + range.start();
+                - getBlockChunkOffset(blockInfra, rawInfra, firstChunk, range) + (long) range.start();
     }
 
     /** Returns the offset of the range end on the given route */
-    private static double findEndOffset(
+    private static long findEndOffset(
             BlockInfra blockInfra,
             RawSignalingInfra rawInfra,
             int lastChunk,
@@ -339,12 +339,12 @@ public class PathfindingResultConverter {
             Pathfinding.EdgeRange<Integer> range
     ) {
         return getRouteChunkOffset(rawInfra, routeStaticIdx, lastChunk)
-                - getBlockChunkOffset(blockInfra, rawInfra, lastChunk, range) + range.end();
+                - getBlockChunkOffset(blockInfra, rawInfra, lastChunk, range) + (long) range.end();
     }
 
-    private static double getBlockChunkOffset(BlockInfra blockInfra, RawSignalingInfra rawInfra, int chunk, 
+    private static long getBlockChunkOffset(BlockInfra blockInfra, RawSignalingInfra rawInfra, int chunk,
                                               Pathfinding.EdgeRange<Integer> range) {
-        var offset = 0.;
+        long offset = 0;
         for (var dirChunkId : toIntList(blockInfra.getTrackChunksFromBlock(range.edge()))) {
             if (dirChunkId == chunk) {
                 break;
@@ -354,8 +354,8 @@ public class PathfindingResultConverter {
         return offset;
     }
 
-    private static double getRouteChunkOffset(RawSignalingInfra rawInfra, int routeStaticIdx, int chunk) {
-        var offset = 0.;
+    private static long getRouteChunkOffset(RawSignalingInfra rawInfra, int routeStaticIdx, int chunk) {
+        long offset = 0;
         for (var dirChunkId : toIntList(rawInfra.getChunksOnRoute(routeStaticIdx))) {
             if (dirChunkId == chunk)
                 break;
