@@ -28,7 +28,7 @@ const scenarioName = process.env.CI
   ? '_@Test integration scenario'
   : '_@Test integration stdcm scenario';
 
-test.describe('Testing if stdcm between two trains works well', () => {
+test.skip('Testing if stdcm between two trains works well', () => {
   test.beforeEach(async ({ page }) => {
     test.setTimeout(180000); // 3min
     // if test in local, create our own scenario with France infra

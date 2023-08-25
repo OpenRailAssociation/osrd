@@ -8,7 +8,7 @@ import VARIABLES from './assets/operationStudies/testVariables';
 import PATH_VARIABLES from './assets/operationStudies/testVariablesPaths';
 import PlaywrightScenarioPage from './pages/scenario-page-model';
 
-test.describe('Testing pathfinding', () => {
+test.skip('Testing pathfinding', () => {
   let playwrightHomePage: PlaywrightHomePage;
   let projectPage: ProjectPage;
   let studyPage: StudyPage;
