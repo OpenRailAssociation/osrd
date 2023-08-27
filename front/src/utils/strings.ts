@@ -34,3 +34,11 @@ export function snakeToCamel(str: string) {
 }
 
 export const emptyStringRegex = /^\s+$/;
+
+export function getTranslationKey(translationList: string, item: string): string {
+  return `${translationList ? `${translationList}.` : ''}${item}`;
+}
+
+export function geti18nKeyForNull(str: string | null): string {
+  return str || `N/C`;
+}

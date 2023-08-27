@@ -207,7 +207,7 @@ const RollingStockEditorForm = ({
 
   const tabRollingStockCurves: TabProps = {
     title: t('tabs.rollingStockCurves'),
-    withWarning: false, // à changer après ajout des sélecteurs
+    withWarning: false,
     label: t('tabs.rollingStockCurves'),
     content: (
       <>

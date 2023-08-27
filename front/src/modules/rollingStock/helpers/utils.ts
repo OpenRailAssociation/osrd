@@ -61,7 +61,7 @@ const getRollingStockEditorDefaultValues = (
   selectedMode: string,
   rollingStockData?: RollingStock
 ): RollingStockParametersValues => {
-  const completeSelectedMode = getDefaultRollingStockMode(selectedMode).modes[`${selectedMode}`];
+  const completeSelectedMode = getDefaultRollingStockMode(selectedMode).modes[selectedMode];
   const formattedSelectedMode = {
     curves: completeSelectedMode.curves,
     isElectric: completeSelectedMode.is_electric,
@@ -97,7 +97,7 @@ const getRollingStockEditorDefaultValues = (
         defaultMode: rollingStockData.effort_curves.default_mode || selectedMode,
         effortCurves: {
           modes: {
-            [`${selectedMode}`]: formattedSelectedMode,
+            [selectedMode]: formattedSelectedMode,
           },
         },
       }
@@ -106,7 +106,7 @@ const getRollingStockEditorDefaultValues = (
         defaultMode: selectedMode,
         effortCurves: {
           modes: {
-            [`${selectedMode}`]: formattedSelectedMode,
+            [selectedMode]: formattedSelectedMode,
           },
         },
       };
@@ -157,12 +157,13 @@ export const rollingStockEditorQueryArg = (
   effort_curves: {
     default_mode: selectedMode,
     modes: {
-      [`${selectedMode}`]: {
-        curves: currentRsEffortCurve.modes[`${selectedMode}`].curves,
-        is_electric: currentRsEffortCurve.modes[`${selectedMode}`].is_electric,
+      ...currentRsEffortCurve.modes,
+      [selectedMode]: {
+        curves: currentRsEffortCurve.modes[selectedMode].curves,
+        is_electric: currentRsEffortCurve.modes[selectedMode].is_electric,
         default_curve: isAdding
-          ? (currentRsEffortCurve.modes[`${selectedMode}`].curves[0].curve as EffortCurve)
-          : currentRsEffortCurve.modes[`${selectedMode}`].default_curve,
+          ? (currentRsEffortCurve.modes[selectedMode].curves[0].curve as EffortCurve)
+          : currentRsEffortCurve.modes[selectedMode].default_curve,
       },
     },
   },

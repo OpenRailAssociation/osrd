@@ -13,6 +13,12 @@ import RollingStockEditorButtons from 'modules/rollingStock/components/rollingSt
 import RollingStockEditorCard from 'modules/rollingStock/components/rollingStockEditor/RollingStockEditorCard';
 import RollingStockEditorForm from 'modules/rollingStock/components/rollingStockEditor/RollingStockEditorForm';
 import { setFailure } from 'reducers/main';
+import { STANDARD_COMFORT_LEVEL } from 'modules/rollingStock/consts';
+import {
+  updateComfortLvl,
+  updateTractionMode,
+  updateElectricalProfile,
+} from 'reducers/rollingstockEditor';
 
 type RollingStockEditorProps = {
   rollingStocks: LightRollingStock[];
@@ -20,13 +26,12 @@ type RollingStockEditorProps = {
 
 export default function RollingStockEditor({ rollingStocks }: RollingStockEditorProps) {
   const { t } = useTranslation('rollingstock');
-  const dispatch = useDispatch();
   const ref2scroll: React.RefObject<HTMLInputElement> = useRef<HTMLInputElement>(null);
   const [filteredRollingStockList, setFilteredRollingStockList] = useState(rollingStocks);
   const [isLoading, setIsLoading] = useState(false);
-
   const [isEditing, setIsEditing] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
+  const dispatch = useDispatch();
 
   const [openedRollingStockCardId, setOpenedRollingStockCardId] = useState<number>();
 
@@ -38,6 +43,12 @@ export default function RollingStockEditor({ rollingStocks }: RollingStockEditor
       skip: !openedRollingStockCardId,
     }
   );
+
+  const resetRollingstockCurvesParams = () => {
+    dispatch(updateComfortLvl(STANDARD_COMFORT_LEVEL));
+    dispatch(updateTractionMode(''));
+    dispatch(updateElectricalProfile(null));
+  };
 
   useEffect(() => setFilteredRollingStockList(rollingStocks), []);
 
@@ -54,6 +65,7 @@ export default function RollingStockEditor({ rollingStocks }: RollingStockEditor
                 onClick={() => {
                   setIsEditing(false);
                   setIsAdding(false);
+                  resetRollingstockCurvesParams();
                 }}
               >
                 <RollingStockCard

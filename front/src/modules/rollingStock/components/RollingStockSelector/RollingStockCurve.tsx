@@ -2,6 +2,10 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { PointTooltipProps, ResponsiveLine } from '@nivo/line';
 import { useTranslation } from 'react-i18next';
 import { Comfort, RollingStock } from 'common/api/osrdEditoastApi';
+import { useSelector } from 'react-redux';
+import { getElectricalProfile } from 'reducers/rollingstockEditor/selectors';
+import { STANDARD_COMFORT_LEVEL, THERMAL_TRACTION_IDENTIFIER } from 'modules/rollingStock/consts';
+import { geti18nKeyForNull } from 'utils/strings';
 import { COLORS } from './consts/consts';
 import { comfort2pictogram } from './RollingStockHelpers';
 
@@ -12,6 +16,8 @@ type TransformedCurves = {
     comfort: Comfort;
     speeds: number[];
     max_efforts: number[];
+    electricalProfile: string | null;
+    powerRestriction: string | null;
   };
 };
 type ParsedCurves = {
@@ -23,6 +29,8 @@ type ParsedCurves = {
   }[];
   id: string;
   mode: string;
+  electrical_profile_level?: string | null;
+  power_restriction?: string | null;
 };
 
 // Format RollingStock Curves to NIVO format
@@ -49,6 +57,8 @@ const parseData = (
     mode: curve.mode,
     comfort: curve.comfort,
     data: curveFormattedSorted,
+    electrical_profile_level: geti18nKeyForNull(curve.electricalProfile),
+    power_restriction: geti18nKeyForNull(curve.powerRestriction),
   };
 };
 
@@ -89,8 +99,10 @@ function Legend(props: {
   curves: ParsedCurves[];
   curvesState: { [key: string]: boolean };
   setCurvesState: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>>;
+  isOnEditionMode?: boolean;
+  showPowerRestriction?: boolean;
 }) {
-  const { curves, curvesState, setCurvesState } = props;
+  const { curves, curvesState, setCurvesState, isOnEditionMode, showPowerRestriction } = props;
   const changeCurveState = (id: string) => {
     setCurvesState({ ...curvesState, [id]: !curvesState[id] });
   };
@@ -106,17 +118,38 @@ function Legend(props: {
           tabIndex={0}
           onClick={() => changeCurveState(curve.id)}
         >
-          {curve.mode}
-          {curve.comfort !== 'STANDARD' ? comfort2pictogram(curve.comfort) : null}
+          {isOnEditionMode && showPowerRestriction && curve.power_restriction}
+          {isOnEditionMode && !showPowerRestriction && curve.electrical_profile_level}
+          {!isOnEditionMode && !showPowerRestriction && curve.mode}
+          {curve.comfort !== STANDARD_COMFORT_LEVEL && !isOnEditionMode
+            ? comfort2pictogram(curve.comfort)
+            : null}
         </span>
       ))}
     </span>
   );
 }
 
-// Choose cyclic color for curves
-function curveColor(index: number) {
-  const indexShort = index % Object.keys(COLORS).length;
+const hoveredOpacityCode = 'BF'; // 75% opacity
+const lowOpacityCode = '59'; // 35% opacity
+const colorsListLength = Object.keys(COLORS).length;
+
+/** Choose cyclic color for curves depending on curve number */
+function curveColor(
+  index: number,
+  electricalProfile: string | null,
+  hoveredElectricalProfile?: string | null,
+  selectedElectricalProfile?: string | null
+) {
+  const indexShort = index % colorsListLength;
+  if (hoveredElectricalProfile) {
+    const isSelected = electricalProfile === selectedElectricalProfile;
+    const isHovered = electricalProfile === hoveredElectricalProfile;
+
+    return `${Object.keys(COLORS)[indexShort]}${
+      isHovered && !isSelected ? hoveredOpacityCode : ''
+    }${!isHovered && !isSelected ? lowOpacityCode : ''}`;
+  }
   return Object.keys(COLORS)[indexShort];
 }
 
@@ -140,32 +173,40 @@ export default function RollingStockCurve({
   data,
   curvesComfortList,
   isOnEditionMode,
+  showPowerRestriction,
+  hoveredElectricalProfile,
 }: {
   data: EffortCurvesModes;
   curvesComfortList: Comfort[];
   isOnEditionMode?: boolean;
+  showPowerRestriction?: boolean;
+  hoveredElectricalProfile?: string | null;
 }) {
   const { t, ready } = useTranslation(['rollingstock']);
-  const mode2name = (mode: string) => (mode !== 'thermal' ? `${mode}V` : t('thermal'));
+  const mode2name = (mode: string) =>
+    mode !== THERMAL_TRACTION_IDENTIFIER ? `${mode}V` : t(THERMAL_TRACTION_IDENTIFIER);
+  const selectedElectricalProfile = useSelector(getElectricalProfile);
 
   const transformedData = useMemo(() => {
     const transformedCurves: TransformedCurves = {};
     Object.keys(data).forEach((mode) => {
-      // Standard curves (required)
       const name = mode2name(mode);
-      transformedCurves[`${name} STANDARD`] = {
-        ...(data[mode].default_curve as TransformedCurves['index']),
-        mode: name,
-        comfort: 'STANDARD',
-      };
-      // AC & HEATING curves (optional)
       data[mode].curves.forEach((curve) => {
-        if (curve.cond?.comfort) {
-          const optionalCurveName = `${name} ${curve.cond.comfort}`;
-          transformedCurves[optionalCurveName] = {
-            ...(curve.curve as TransformedCurves['index']),
+        if (curve.cond?.comfort && curve.cond?.electrical_profile_level !== undefined) {
+          const electricalProfil = isOnEditionMode
+            ? ` ${geti18nKeyForNull(curve.cond.electrical_profile_level)}`
+            : '';
+          const powerRestriction =
+            showPowerRestriction && curve.cond.power_restriction_code
+              ? ` ${geti18nKeyForNull(curve.cond.power_restriction_code)}`
+              : '';
+          const curveName = `${name} ${curve.cond.comfort}${electricalProfil}${powerRestriction}`;
+          transformedCurves[curveName] = {
+            ...(curve.curve as { speeds: number[]; max_efforts: number[] }),
             mode: name,
             comfort: curve.cond.comfort,
+            electricalProfile: curve.cond.electrical_profile_level,
+            powerRestriction: curve.cond.power_restriction_code as string,
           };
         }
       });
@@ -178,41 +219,60 @@ export default function RollingStockCurve({
   const [comfortsStates, setComfortsStates] = useState(initialComfortsState(curvesComfortList));
   const [curvesState, setCurvesState] = useState(initialCurvesState(transformedData));
 
-  const formatTooltip = (tooltip: PointTooltipProps) => (
-    <div className="curves-chart-tooltip" style={{ borderColor: tooltip.point.color }}>
-      {transformedData[tooltip.point.serieId] && (
-        <div
-          className="curves-chart-tooltip-head"
-          style={{
-            backgroundColor: tooltip.point.color,
-            color: COLORS[tooltip.point.color as keyof typeof COLORS],
-            borderColor: tooltip.point.color,
-          }}
-        >
-          {transformedData[tooltip.point.serieId].mode}
-          <span className="ml-1" />
-          {transformedData[tooltip.point.serieId].comfort !== 'STANDARD' && (
-            <span className="curves-chart-tooltip-comfort">
-              {comfort2pictogram(transformedData[tooltip.point.serieId].comfort)}
-            </span>
-          )}
+  const formatTooltip = (tooltip: PointTooltipProps) => {
+    const editionModeTooltipLabel =
+      isOnEditionMode && showPowerRestriction
+        ? geti18nKeyForNull(transformedData[tooltip.point.serieId].powerRestriction)
+        : geti18nKeyForNull(transformedData[tooltip.point.serieId].electricalProfile);
+    return (
+      <div className="curves-chart-tooltip" style={{ borderColor: tooltip.point.color }}>
+        {transformedData[tooltip.point.serieId] && (
+          <div
+            className="curves-chart-tooltip-head"
+            style={{
+              backgroundColor: tooltip.point.color,
+              color: COLORS[tooltip.point.color as keyof typeof COLORS],
+              borderColor: tooltip.point.color,
+            }}
+          >
+            {isOnEditionMode
+              ? editionModeTooltipLabel
+              : transformedData[tooltip.point.serieId].mode}
+            <span className="ml-1" />
+            {transformedData[tooltip.point.serieId].comfort !== STANDARD_COMFORT_LEVEL && (
+              <span className="curves-chart-tooltip-comfort">
+                {comfort2pictogram(transformedData[tooltip.point.serieId].comfort)}
+              </span>
+            )}
+          </div>
+        )}
+        <div className="curves-chart-tooltip-body">
+          {`${tooltip.point.data.y}kN ${Math.floor(tooltip.point.data.x as number)}km/h`}
         </div>
-      )}
-      <div className="curves-chart-tooltip-body">
-        {`${tooltip.point.data.y}kN ${Math.floor(tooltip.point.data.x as number)}km/h`}
       </div>
-    </div>
-  );
+    );
+  };
 
   useEffect(() => {
     if (transformedData && comfortsStates) {
       setCurves(
         Object.keys(transformedData)
-          .map((name, index) => parseData(name, curveColor(index), transformedData[name]))
+          .map((name, index) =>
+            parseData(
+              name,
+              curveColor(
+                index,
+                transformedData[name].electricalProfile,
+                hoveredElectricalProfile,
+                selectedElectricalProfile
+              ),
+              transformedData[name]
+            )
+          )
           .filter((curve) => comfortsStates[curve.comfort])
       );
     }
-  }, [transformedData, comfortsStates]);
+  }, [transformedData, comfortsStates, hoveredElectricalProfile, selectedElectricalProfile]);
 
   useEffect(() => {
     if (curves && curvesState) {
@@ -237,7 +297,13 @@ export default function RollingStockCurve({
           comfortsStates={comfortsStates}
           setComfortsStates={setComfortsStates}
         />
-        <Legend curves={curves} curvesState={curvesState} setCurvesState={setCurvesState} />
+        <Legend
+          curves={curves}
+          curvesState={curvesState}
+          setCurvesState={setCurvesState}
+          isOnEditionMode={isOnEditionMode}
+          showPowerRestriction={showPowerRestriction}
+        />
       </div>
       <ResponsiveLine
         data={curvesToDisplay}

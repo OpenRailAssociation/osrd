@@ -18,7 +18,7 @@ export type Curve = {
   speeds: number[];
 };
 
-export type SelectedCurve = {
+export type SelectedCurves = {
   [key: string]: {
     curves: ConditionalEffortCurve[];
     default_curve: EffortCurve;
@@ -29,7 +29,8 @@ export type SelectedCurve = {
 export type RollingStockSelectorParams = {
   comfortlevels: string[];
   tractionModes: string[];
-  electricalProfiles: string[];
+  electricalProfiles: (string | null)[];
+  powerRestrictions: (string | null)[];
 };
 
 export type RollingStockParametersValues = {

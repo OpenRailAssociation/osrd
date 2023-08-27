@@ -2,57 +2,68 @@ import { isNull } from 'lodash';
 import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdArrowRight } from 'react-icons/md';
+import { getTranslationKey } from 'utils/strings';
+import cx from 'classnames';
 
-export default function SelectorSNCF(props: {
+const DEFAULT_SELECTORS_CLASSNAME = 'selector-SNCF';
+
+export default function SelectorSNCF<T>(props: {
   mainClass?: string;
   borderClass: string;
   title: string;
-  itemsList: string[];
-  selectedItem?: string | null;
-  setSelectedItem?: (arg: string) => void;
-  updateItemInStore?: (value: string) => void;
+  itemsList: T[];
+  selectedItem?: T;
+  hoveredItem?: T;
+  onItemSelected?: (value: T) => void;
+  onItemHovered?: (value: T) => void;
   translationFile: string;
   translationList?: string;
 }) {
   const {
-    mainClass,
+    mainClass = DEFAULT_SELECTORS_CLASSNAME,
     borderClass,
     title,
     itemsList,
     selectedItem,
-    setSelectedItem,
-    updateItemInStore,
+    hoveredItem,
+    onItemSelected,
+    onItemHovered,
     translationFile,
-    translationList,
+    translationList = '',
   } = props;
   const { t } = useTranslation(translationFile);
+
   return (
-    <div className={`${mainClass || 'selector-SNCF'}`}>
-      <div className={`${mainClass || 'selector-SNCF'}-title ${borderClass}`}>
+    <div className={`${mainClass} mb-2`}>
+      <div className={`${mainClass}-title ${borderClass} ml-2 mb-1`}>
         <h2 className="mb-0 text-blue">{t(title)}</h2>
       </div>
       <div className="d-flex align-items-center position-relative">
-        <div
-          className={`${mainClass || 'selector-SNCF'}-itemslist overflow-auto ${borderClass} p-2`}
-        >
+        <div className={cx(`${mainClass}-itemslist`, borderClass, 'overflow-auto', 'p-2')}>
           {useMemo(
             () =>
-              itemsList.map((item: string, index: number) => (
+              itemsList.map((item, index: number) => (
                 <div
-                  className={`${mainClass || 'selector-SNCF'}-item ${
-                    item === selectedItem ? 'selected' : ''
-                  } ${borderClass} mb-1`}
+                  className={cx(`${mainClass}-item`, 'mb-1', borderClass, {
+                    selected: item === selectedItem,
+                    hovered: item === hoveredItem,
+                  })}
                   role="button"
                   tabIndex={0}
                   onClick={() => {
-                    if (setSelectedItem) setSelectedItem(item);
-                    if (updateItemInStore) updateItemInStore(item);
+                    if (onItemSelected) onItemSelected(item);
+                  }}
+                  onMouseOver={() => {
+                    if (onItemHovered) onItemHovered(item);
+                  }}
+                  onFocus={() => {
+                    if (onItemHovered) onItemHovered(item);
                   }}
                   key={`selector-${title}-${index}`}
                 >
                   <div>
                     {!isNull(item)
-                      ? t(`${translationList !== undefined ? `${translationList}.` : ''}${item}`)
+                      ? t(getTranslationKey(translationList, String(item)))
                       : t('unspecified')}
                   </div>
                 </div>
@@ -60,7 +71,7 @@ export default function SelectorSNCF(props: {
             [itemsList, selectedItem]
           )}
         </div>
-        <div className={`${mainClass || 'selector-SNCF'}-arrow`}>
+        <div className={`${mainClass}-arrow`}>
           <MdArrowRight />
         </div>
       </div>
