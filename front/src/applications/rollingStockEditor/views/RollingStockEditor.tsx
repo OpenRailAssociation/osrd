@@ -12,13 +12,14 @@ import { isEmpty } from 'lodash';
 import RollingStockEditorButtons from 'modules/rollingStock/components/rollingStockEditor/RollingStockEditorButtons';
 import RollingStockEditorCard from 'modules/rollingStock/components/rollingStockEditor/RollingStockEditorCard';
 import RollingStockEditorForm from 'modules/rollingStock/components/rollingStockEditor/RollingStockEditorForm';
-import { setFailure } from 'reducers/main';
 import { STANDARD_COMFORT_LEVEL } from 'modules/rollingStock/consts';
 import {
   updateComfortLvl,
   updateTractionMode,
   updateElectricalProfile,
 } from 'reducers/rollingstockEditor';
+import RollingStockEditorFormModal from 'modules/rollingStock/components/rollingStockEditor/RollingStockEditorFormModal';
+import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 
 type RollingStockEditorProps = {
   rollingStocks: LightRollingStock[];
@@ -33,6 +34,7 @@ export default function RollingStockEditor({ rollingStocks }: RollingStockEditor
   const [isAdding, setIsAdding] = useState(false);
   const [isDuplicating, setIsDuplicating] = useState(false);
   const dispatch = useDispatch();
+  const { openModal } = useModal();
 
   const [openedRollingStockCardId, setOpenedRollingStockCardId] = useState<number>();
 
@@ -146,11 +148,16 @@ export default function RollingStockEditor({ rollingStocks }: RollingStockEditor
             role="button"
             tabIndex={0}
             onClick={() => {
-              dispatch(
-                setFailure({
-                  name: t('messages.failure'),
-                  message: t('listDisabled'),
-                })
+              openModal(
+                <RollingStockEditorFormModal
+                  mainText={t('leaveEditionMode')}
+                  request={() => {
+                    setIsAdding(false);
+                    setIsEditing(false);
+                    resetRollingstockCurvesParams();
+                  }}
+                  buttonText={t('translation:common.confirm')}
+                />
               );
             }}
           >

@@ -1,9 +1,11 @@
 {
   "addNewRollingStock": "New rolling stock",
+  "addNewTractionMode": "Add a new traction mode",
   "cancelAction": "Would you like to cancel this action?",
   "cancelUpdateRollingStock": "Do you really want to cancel your changes?",
   "chooseRollingStock": "Select a rolling stock to display informations",
   "comfort": "Comfort",
+  "comfortLevels": "Comfort levels",
   "comfortAcceleration": "Comfort acceleration",
   "comfortTypes": {
     "AC": "Air conditioning",
@@ -18,11 +20,17 @@
     "all": "All curves",
     "default": "Default curve"
   },
+  "delete": {
+    "comfortLevels": "Are you sure you want to delete this comfort level ? All the curves associated to it will be lost.",
+    "electricalProfiles": "Are you sure you want to delete this electrical profile ? All the curves associated to it will be lost.",
+    "powerRestrictions": "Are you sure you want to delete the curve associated to this power restriction ?",
+    "tractionModes": "Are you sure you want to delete this traction mode ? All the curves associated to it will be lost."
+  },
   "deleteRollingStock": "Would you like to delete this rolling stock?",
   "detail": "Detail",
   "effort": "Effort (daN)",
   "electric": "Electric",
-  "electricalProfile": "Electrical Profile",
+  "electricalProfiles": "Electrical Profiles",
   "electricOnly": "Electric only",
   "equipement": "Equipment",
   "errorMessages": {
@@ -66,7 +74,7 @@
   "notLocked": "Not locked",
   "number": "Number",
   "powerClass": "Power class",
-  "powerRestriction": "Power restriction",
+  "powerRestrictions": "Power restrictions",
   "profilMode": "Profile",
   "project": "Project {{projectName}}:",
   "reference": "Reference",
@@ -92,7 +100,7 @@
   },
   "thermal": "Combustion engine",
   "title": "Rollingstock composition generator",
-  "tractionMode": "Traction mode",
+  "tractionModes": "Traction modes",
   "type": "Type",
   "unit": "Unit",
   "unspecified": "Unspecified",

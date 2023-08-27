@@ -31,7 +31,7 @@ const RollingStockEditorMetadataFormColumn = ({
           property.title ===
             RollingStockEditorMetadata[property.title as RollingStockEditorMetadata] &&
           property.side === formSide
-      ).map((property) => (
+      ).map((property, index) => (
         <InputSNCF
           id={property.title}
           name={property.title}
@@ -43,7 +43,7 @@ const RollingStockEditorMetadataFormColumn = ({
           }
           sm
           isFlex
-          key={property.title}
+          key={index}
         />
       ))}
     </>
@@ -88,6 +88,7 @@ type RollingStockEditorParameterFormProps = {
   ) => void;
 };
 
+// TODO: make the conditional return clearer
 const RollingStockEditorParameterFormColumn = ({
   formSide,
   optionValue,
@@ -103,16 +104,18 @@ const RollingStockEditorParameterFormColumn = ({
           property.title ===
             RollingStockEditorParameter[property.title as RollingStockEditorParameter] &&
           property.side === formSide
-      ).map((property) => {
+      ).map((property, index) => {
         if (property.enum) {
           return (
-            <div className="d-flex align-items-center justify-content-between rollingstock-editor-select">
+            <div
+              className="d-flex align-items-center justify-content-between rollingstock-editor-select"
+              key={index}
+            >
               <SelectSNCF
                 sm
-                key={property.title}
                 id={property.title}
                 name={property.title}
-                label={t(`${property.title}`).toString()}
+                label={t(property.title).toString()}
                 // with an enum, type is a string
                 value={rollingStockValues[property.title] as string}
                 options={property.enum}
@@ -131,6 +134,7 @@ const RollingStockEditorParameterFormColumn = ({
             className={`${
               property.title === 'mass' && 'd-flex align-items-center'
             } form-control-container mb-4`}
+            key={index}
           >
             <InputGroupSNCF
               id={property.title}
@@ -206,7 +210,7 @@ const RollingStockEditorParameterFormColumn = ({
             }
             sm
             isFlex
-            key={property.title}
+            key={index}
           />
         );
       })}{' '}

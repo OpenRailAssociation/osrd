@@ -1,7 +1,9 @@
-import { ConditionalEffortCurve, EffortCurve } from 'common/api/osrdEditoastApi';
+import { Comfort, ConditionalEffortCurve, EffortCurve } from 'common/api/osrdEditoastApi';
 
 export const THERMAL_TRACTION_IDENTIFIER = 'thermal';
-export const STANDARD_COMFORT_LEVEL = 'STANDARD';
+export const STANDARD_COMFORT_LEVEL: Comfort = 'STANDARD';
+
+export const DEFAULT_SELECTORS_CLASSNAME = 'selector-SNCF';
 
 type EffortCurves = {
   modes: {
@@ -27,10 +29,29 @@ export type SelectedCurves = {
 };
 
 export type RollingStockSelectorParams = {
-  comfortlevels: string[];
-  tractionModes: string[];
+  comfortLevels: Comfort[];
   electricalProfiles: (string | null)[];
   powerRestrictions: (string | null)[];
+  tractionModes: string[];
+};
+
+export interface RollingStockSelectorParam {
+  comfortLevels: Comfort;
+  electricalProfiles: string | null;
+  powerRestrictions: string | null;
+  tractionModes: string;
+}
+
+export type EffortCurveCondKeys = {
+  comfortLevels: string;
+  electricalProfiles: string;
+  powerRestrictions: string;
+};
+
+export const effortCurveCondKeys: EffortCurveCondKeys = {
+  comfortLevels: 'comfort',
+  electricalProfiles: 'electrical_profile_level',
+  powerRestrictions: 'power_restriction_code',
 };
 
 export type RollingStockParametersValues = {
@@ -243,3 +264,25 @@ export const RollingStockSchemaProperties: SchemaProperty[] = [
     side: 'right',
   },
 ];
+
+const ComfortLevels = {
+  STANDARD: 'STANDARD',
+  AC: 'AC',
+  HEATING: 'HEATING',
+};
+
+export const comfortOptions = Object.keys(ComfortLevels) as Comfort[];
+
+export type ElectricalProfileByMode = {
+  '1500': (string | null)[];
+  '25000': (string | null)[];
+  other: null[];
+  thermal: null[];
+};
+
+export const electricalProfilesByMode: ElectricalProfileByMode = {
+  '1500': ['O', 'A', 'A1', 'B', 'C', 'D', 'E', 'F', 'G', null],
+  '25000': ['25000', '22500', '20000', null],
+  other: [null],
+  thermal: [null],
+};

@@ -16,6 +16,7 @@ interface SelectProps<T> {
   addButtonTitle?: string;
   bgWhite?: boolean;
   dataTestId?: string;
+  isOpened?: boolean;
 }
 
 function SelectImproved<T extends string | SelectOptionObject>({
@@ -30,8 +31,9 @@ function SelectImproved<T extends string | SelectOptionObject>({
   addButtonTitle = 'Add',
   bgWhite,
   dataTestId,
+  isOpened = false,
 }: SelectProps<T>) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(isOpened);
   const [selectedItem, setSelectedItem] = useState<T | undefined>(value);
   const [filteredOptions, setFilteredOptions] = useState<Array<T>>(options);
   const [filterText, setFilterText] = useState('');
@@ -72,11 +74,14 @@ function SelectImproved<T extends string | SelectOptionObject>({
             type="button"
             className="btn btn-primary btn-block btn-sm"
             onClick={() => {
-              const item =
-                options.length > 0 && isObject(options[0]) ? { value: currentValue } : currentValue;
+              const item = (
+                options.length > 0 && isObject(options[0])
+                  ? { id: currentValue, label: currentValue }
+                  : currentValue
+              ) as T;
               // We force the type, because we detect the type of the value with the options.
               // if options are empty, we possibly have a problem (default is string)
-              selectItem(item as T);
+              selectItem(item);
             }}
           >
             {addButtonTitle}

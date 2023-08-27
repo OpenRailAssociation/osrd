@@ -501,6 +501,7 @@ paths:
     get:
       tags:
         - infra
+        - rolling_stock
       summary: List all voltages of all infras
       responses:
         200:
@@ -1469,29 +1470,29 @@ paths:
     post:
       description: Import a timetable
       parameters:
-      - description: Timetable id
-        in: path
-        name: id
-        required: true
-        schema:
-          format: int64
-          minimum: 0
-          type: integer
+        - description: Timetable id
+          in: path
+          name: id
+          required: true
+          schema:
+            format: int64
+            minimum: 0
+            type: integer
       requestBody:
         content:
           application/json:
             schema:
               items:
-                $ref: '#/components/schemas/TimetableImportItem'
+                $ref: "#/components/schemas/TimetableImportItem"
               type: array
-        description: ''
+        description: ""
         required: true
       responses:
-        '204':
+        "204":
           description: Timetable was successfully imported
       summary: Import a timetable
       tags:
-      - timetable
+        - timetable
 
   /timetable/{id}/conflicts/:
     get:
@@ -4572,19 +4573,19 @@ components:
       properties:
         path:
           items:
-            $ref: '#/components/schemas/TimetableImportPathStep'
+            $ref: "#/components/schemas/TimetableImportPathStep"
           type: array
         rolling_stock:
           example: 2TGV2N2
           type: string
         trains:
           items:
-            $ref: '#/components/schemas/TimetableImportTrain'
+            $ref: "#/components/schemas/TimetableImportTrain"
           type: array
       required:
-      - rolling_stock
-      - path
-      - trains
+        - rolling_stock
+        - path
+        - trains
       type: object
 
     TimetableImportPathSchedule:
@@ -4596,32 +4597,32 @@ components:
           format: date-time
           type: string
       required:
-      - arrival_time
-      - departure_time
+        - arrival_time
+        - departure_time
       type: object
 
     TimetableImportPathStep:
       properties:
         location:
-          $ref: '#/components/schemas/TimetableImportPathLocation'
+          $ref: "#/components/schemas/TimetableImportPathLocation"
         schedule:
           additionalProperties:
-            $ref: '#/components/schemas/TimetableImportPathSchedule'
+            $ref: "#/components/schemas/TimetableImportPathSchedule"
           example:
-            '7015':
+            "7015":
               arrival_time: 2023-08-17T09:46:00+02:00
               departure_time: 2023-08-17T09:56:00+02:00
           type: object
       required:
-      - location
+        - location
       type: object
 
     TimetableImportPathLocation:
       discriminator:
         propertyName: type
       oneOf:
-      - $ref: "#/components/schemas/TrackOffsetLocation"
-      - $ref: "#/components/schemas/OperationalPointLocation"
+        - $ref: "#/components/schemas/TrackOffsetLocation"
+        - $ref: "#/components/schemas/OperationalPointLocation"
 
     TimetableImportTrain:
       properties:
@@ -4630,11 +4631,11 @@ components:
           format: date-time
           type: string
         name:
-          example: '7015'
+          example: "7015"
           type: string
       required:
-      - name
-      - departure_time
+        - name
+        - departure_time
       type: object
 
     TrackOffsetLocation:
@@ -4646,24 +4647,24 @@ components:
           type: string
         type:
           enum:
-          - track_offset
+            - track_offset
           type: string
       required:
-      - track_section
-      - offset
-      - type
+        - track_section
+        - offset
+        - type
       type: object
 
     OperationalPointLocation:
       properties:
         type:
           enum:
-          - operational_point
+            - operational_point
           type: string
         uic:
           format: int64
           type: integer
       required:
-      - uic
-      - type
+        - uic
+        - type
       type: object
