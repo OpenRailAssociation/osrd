@@ -1,10 +1,11 @@
 {
   "addNewRollingStock": "Nouveau matériel roulant",
+  "addNewTractionMode": "Ajouter un nouveau mode de traction",
   "cancelAction": "Souhaitez-vous annuler cette action ?",
   "cancelUpdateRollingStock": "Annuler la mise à jour du matériel roulant?",
   "chooseRollingStock": "Sélectionnez un matériel roulant pour en afficher les informations.",
   "comfort": "Confort",
-  "comfortLevel": "Niveau de confort",
+  "comfortLevels": "Niveaux de confort",
   "comfortAcceleration": "Accélération « confort »",
   "comfortTypes": {
     "AC": "Climatisation",
@@ -19,11 +20,17 @@
     "all": "Toutes les courbes",
     "default": "Courbe par défaut"
   },
+  "delete": {
+    "comfortLevels": "Êtes-vous sûr de vouloir supprimer ce niveau de confort ? Toutes les courbes associées seront perdues.",
+    "electricalProfiles": "Êtes-vous sûr de vouloir supprimer ce profil électrique ? Toutes les courbes associées seront perdues.",
+    "powerRestrictions": "Êtes-vous sûr de vouloir supprimer la courbe correspondant à ce code de restriction ?",
+    "tractionModes": "Êtes-vous sûr de vouloir supprimer ce mode de traction ? Toutes les courbes associées seront perdues."
+  },
   "deleteRollingStock": "Voulez-vous supprimer ce matériel roulant ?",
   "detail": "Détail",
   "effort": "Effort (daN)",
   "electric": "Électrique",
-  "electricalProfile": "Profil électrique",
+  "electricalProfiles": "Profils électriques",
   "electricOnly": "Uniquement éléctrique",
   "equipement": "Équipement",
   "errorMessages": {
@@ -42,6 +49,7 @@
   "legend": "Légende",
   "length": "Longueur",
   "listDisabled": "Veuillez quitter l'éditeur pour modifier la séléction",
+  "leaveEditionMode": "Vous êtes sur le point de quitter le mode édition. Toute modification non sauvegardée sera perdue.",
   "loadingGauge": "Gabarit",
   "locked": "Verrouillé",
   "mass": "Masse",
@@ -67,7 +75,7 @@
   "notLocked": "Non verrouillé",
   "number": "Numéro",
   "powerClass": "Classe puissance",
-  "powerRestriction": "Restriction de puissance",
+  "powerRestrictions": "Restrictions de puissance",
   "profilMode": "Profil",
   "project": "Projet {{projectName}} :",
   "reference": "Référence",
@@ -93,7 +101,7 @@
   },
   "thermal": "Thermique",
   "title": "Générateur de composition matériel train",
-  "tractionMode": "Mode de traction",
+  "tractionModes": "Modes de traction",
   "type": "Type",
   "unit": "Unité",
   "unspecified": "Non spécifié",

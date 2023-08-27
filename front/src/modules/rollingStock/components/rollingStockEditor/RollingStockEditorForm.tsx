@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { RollingStock, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { setFailure, setSuccess } from 'reducers/main';
 import Tabs, { TabProps } from 'common/Tabs';
 import RollingStockEditorFormModal from 'modules/rollingStock/components/rollingStockEditor/RollingStockEditorFormModal';
@@ -15,11 +15,12 @@ import {
   RollingStockParametersValues,
   RollingStockSchemaProperties,
 } from 'modules/rollingStock/consts';
-import RollingStockEditorCurves from './RollingStockEditorCurves';
+import { getTractionMode } from 'reducers/rollingstockEditor/selectors';
 import {
   RollingStockEditorMetadataForm,
   RollingStockEditorParameterForm,
 } from './RollingStockEditorFormHelpers';
+import RollingStockEditorCurves from './RollingStockEditorCurves';
 
 type RollingStockParametersProps = {
   rollingStockData?: RollingStock;
@@ -48,27 +49,30 @@ const RollingStockEditorForm = ({
   const [isValid, setIsValid] = useState(true);
   const [optionValue, setOptionValue] = useState('');
 
-  const selectedMode = rollingStockData
-    ? Object.keys(rollingStockData.effort_curves.modes)[0]
-    : 'thermal';
+  const selectedTractionMode = useSelector(getTractionMode);
 
   const defaultRollingStockMode = useMemo(
-    () => getDefaultRollingStockMode(selectedMode),
-    [selectedMode]
+    () => getDefaultRollingStockMode(selectedTractionMode),
+    [selectedTractionMode]
   );
 
   const [currentRsEffortCurve, setCurrentRsEffortCurve] =
     useState<RollingStock['effort_curves']>(defaultRollingStockMode);
 
   const defaultValues: RollingStockParametersValues = useMemo(
-    () => getRollingStockEditorDefaultValues(selectedMode, rollingStockData),
-    [rollingStockData, selectedMode, defaultRollingStockMode]
+    () => getRollingStockEditorDefaultValues(selectedTractionMode, rollingStockData),
+    [rollingStockData, selectedTractionMode, defaultRollingStockMode]
   );
 
   const [rollingStockValues, setRollingStockValues] = useState(defaultValues);
 
   const addNewRollingstock = (data: RollingStockParametersValues) => () => {
-    const queryArg = rollingStockEditorQueryArg(data, selectedMode, currentRsEffortCurve, isAdding);
+    const queryArg = rollingStockEditorQueryArg(
+      data,
+      selectedTractionMode,
+      currentRsEffortCurve,
+      isAdding
+    );
     postRollingstock({
       locked: false,
       rollingStockUpsertPayload: queryArg,
@@ -104,7 +108,7 @@ const RollingStockEditorForm = ({
   };
 
   const updateRollingStock = (data: RollingStockParametersValues) => () => {
-    const queryArg = rollingStockEditorQueryArg(data, selectedMode, currentRsEffortCurve);
+    const queryArg = rollingStockEditorQueryArg(data, selectedTractionMode, currentRsEffortCurve);
     if (rollingStockData) {
       patchRollingStock({
         id: rollingStockData?.id as number,

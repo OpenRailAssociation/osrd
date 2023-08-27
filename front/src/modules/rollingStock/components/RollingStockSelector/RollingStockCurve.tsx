@@ -3,7 +3,7 @@ import { PointTooltipProps, ResponsiveLine } from '@nivo/line';
 import { useTranslation } from 'react-i18next';
 import { Comfort, RollingStock } from 'common/api/osrdEditoastApi';
 import { useSelector } from 'react-redux';
-import { getElectricalProfile } from 'reducers/rollingstockEditor/selectors';
+import { getElectricalProfile, getPowerRestriction } from 'reducers/rollingstockEditor/selectors';
 import { STANDARD_COMFORT_LEVEL, THERMAL_TRACTION_IDENTIFIER } from 'modules/rollingStock/consts';
 import { geti18nKeyForNull } from 'utils/strings';
 import { COLORS } from './consts/consts';
@@ -130,21 +130,21 @@ function Legend(props: {
   );
 }
 
-const hoveredOpacityCode = 'BF'; // 75% opacity
-const lowOpacityCode = '59'; // 35% opacity
+const hoveredOpacityCode = 'B3'; // 70% opacity
+const lowOpacityCode = '40'; // 25% opacity
 const colorsListLength = Object.keys(COLORS).length;
 
 /** Choose cyclic color for curves depending on curve number */
 function curveColor(
   index: number,
-  electricalProfile: string | null,
-  hoveredElectricalProfile?: string | null,
-  selectedElectricalProfile?: string | null
+  electricalReferenceForOpacity: string | null,
+  hoveredElectricalParam?: string | null,
+  selectedElectricalParam?: string | null
 ) {
   const indexShort = index % colorsListLength;
-  if (hoveredElectricalProfile) {
-    const isSelected = electricalProfile === selectedElectricalProfile;
-    const isHovered = electricalProfile === hoveredElectricalProfile;
+  if (hoveredElectricalParam) {
+    const isHovered = electricalReferenceForOpacity === hoveredElectricalParam;
+    const isSelected = electricalReferenceForOpacity === selectedElectricalParam;
 
     return `${Object.keys(COLORS)[indexShort]}${
       isHovered && !isSelected ? hoveredOpacityCode : ''
@@ -174,18 +174,20 @@ export default function RollingStockCurve({
   curvesComfortList,
   isOnEditionMode,
   showPowerRestriction,
-  hoveredElectricalProfile,
+  hoveredElectricalParam,
 }: {
   data: EffortCurvesModes;
   curvesComfortList: Comfort[];
   isOnEditionMode?: boolean;
   showPowerRestriction?: boolean;
-  hoveredElectricalProfile?: string | null;
+  hoveredElectricalParam?: string | null;
 }) {
   const { t, ready } = useTranslation(['rollingstock']);
   const mode2name = (mode: string) =>
     mode !== THERMAL_TRACTION_IDENTIFIER ? `${mode}V` : t(THERMAL_TRACTION_IDENTIFIER);
-  const selectedElectricalProfile = useSelector(getElectricalProfile);
+  const selectedElectricalParam = useSelector(
+    showPowerRestriction ? getPowerRestriction : getElectricalProfile
+  );
 
   const transformedData = useMemo(() => {
     const transformedCurves: TransformedCurves = {};
@@ -222,8 +224,8 @@ export default function RollingStockCurve({
   const formatTooltip = (tooltip: PointTooltipProps) => {
     const editionModeTooltipLabel =
       isOnEditionMode && showPowerRestriction
-        ? geti18nKeyForNull(transformedData[tooltip.point.serieId].powerRestriction)
-        : geti18nKeyForNull(transformedData[tooltip.point.serieId].electricalProfile);
+        ? geti18nKeyForNull(transformedData[tooltip.point.serieId]?.powerRestriction)
+        : geti18nKeyForNull(transformedData[tooltip.point.serieId]?.electricalProfile);
     return (
       <div className="curves-chart-tooltip" style={{ borderColor: tooltip.point.color }}>
         {transformedData[tooltip.point.serieId] && (
@@ -257,22 +259,25 @@ export default function RollingStockCurve({
     if (transformedData && comfortsStates) {
       setCurves(
         Object.keys(transformedData)
-          .map((name, index) =>
-            parseData(
+          .map((name, index) => {
+            const electricalReferenceForOpacity = showPowerRestriction
+              ? transformedData[name].powerRestriction
+              : transformedData[name].electricalProfile;
+            return parseData(
               name,
               curveColor(
                 index,
-                transformedData[name].electricalProfile,
-                hoveredElectricalProfile,
-                selectedElectricalProfile
+                electricalReferenceForOpacity,
+                hoveredElectricalParam,
+                selectedElectricalParam
               ),
               transformedData[name]
-            )
-          )
+            );
+          })
           .filter((curve) => comfortsStates[curve.comfort])
       );
     }
-  }, [transformedData, comfortsStates, hoveredElectricalProfile, selectedElectricalProfile]);
+  }, [transformedData, comfortsStates, hoveredElectricalParam, selectedElectricalParam]);
 
   useEffect(() => {
     if (curves && curvesState) {

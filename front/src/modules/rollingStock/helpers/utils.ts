@@ -1,5 +1,11 @@
-import { EffortCurve, RollingStock, RollingStockUpsertPayload } from 'common/api/osrdEditoastApi';
-import { RollingStockParametersValues } from 'modules/rollingStock/consts';
+import {
+  Comfort,
+  EffortCurve,
+  RollingStock,
+  RollingStockUpsertPayload,
+} from 'common/api/osrdEditoastApi';
+import { isNull } from 'lodash';
+import { RollingStockParametersValues, STANDARD_COMFORT_LEVEL } from 'modules/rollingStock/consts';
 
 const newRollingStockValues = {
   railjsonVersion: '',
@@ -168,5 +174,25 @@ export const rollingStockEditorQueryArg = (
     },
   },
 });
+
+export const createEmptyCurve = (
+  comfort: Comfort,
+  electricalProfile: string | null,
+  powerRestriction: string | null
+) => ({
+  cond: {
+    comfort: comfort || STANDARD_COMFORT_LEVEL,
+    electrical_profile_level: electricalProfile || null,
+    power_restriction_code: powerRestriction || null,
+  },
+  curve: { speeds: [0], max_efforts: [0] },
+});
+
+export const orderSelectorList = (list: (string | null)[]) => {
+  const index = list.includes('O') ? 2 : 1;
+  return isNull(list[0]) || list[0] === 'O'
+    ? list.slice(0, index).concat(list.slice(index).sort())
+    : list.sort();
+};
 
 export default getRollingStockEditorDefaultValues;

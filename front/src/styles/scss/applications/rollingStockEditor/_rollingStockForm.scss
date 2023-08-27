@@ -220,7 +220,7 @@
 
 .rollingstock-editor-spreadsheet {
   width: 40%;
-  height: 22.75rem;
+  height: 20.75rem;
   overflow: auto;
   tr:not(:first-child) .Spreadsheet__header,
   tr:first-child .Spreadsheet__header:first-child {
@@ -241,9 +241,9 @@
   .rollingstock-body {
     width: 60%;
     border: none;
-    height: 22.75rem;
+    height: 20.75rem;
     .curves-container {
-      height: 22.75rem;
+      height: 20.75rem;
     }
   }
 }
@@ -271,41 +271,91 @@
     width: 90%;
   }
   &-itemslist {
+    z-index: 1;
     cursor: pointer;
     background-color: var(--coolgray1);
-    border-radius: 0.3rem;
-    height: 11.65rem;
+    border-radius: 0.3rem 0.3rem 0 0;
+    height: 10.5rem;
     width: 90%;
+  }
+  &-trash-icon {
+    visibility: hidden;
   }
   &-item {
     color: var(--coolgray11);
     background-color: var(--white);
     border-radius: 0.3rem;
-    padding: 0.25rem;
+    justify-content: space-between;
     &.selected {
       &.selector-blue {
         outline: 0.13rem solid var(--blue);
       }
       &.selector-pink {
-        outline: 0.13rem solid #fd2f7e; // TODO: Apply the color to the curves + different opacity on hover
+        outline: 0.13rem solid #fd2f7e;
       }
     }
     &.hovered {
       outline: 0.13rem solid #fd2f7e80;
+      &.selector-blue {
+        outline: 0.13rem solid #30338380;
+      }
+      .selector-SNCF-trash-icon {
+        color: var(--red);
+        visibility: visible;
+        width: 2.5rem;
+        border-radius: 0 0.3rem 0.3rem 0;
+        text-align: center;
+        padding-top: 0.1rem;
+        &:hover {
+          color: var(--white);
+          background-color: var(--red);
+        }
+      }
     }
   }
   &-arrow {
     position: absolute;
     display: flex;
     align-items: center;
-    right: -1rem;
+    right: -2.7rem;
     height: 100%;
-    font-size: 4rem;
+    font-size: 7rem;
     color: var(--coolgray1);
   }
+}
+
+.selector-container {
+  margin-right: 1rem;
   &:last-child {
     .selector-SNCF-arrow {
       visibility: hidden;
     }
+  }
+  &:first-child {
+    margin-right: 2rem;
+    .selector-SNCF-arrow {
+      visibility: hidden;
+    }
+  }
+  &:nth-child(4) {
+    .selector-SNCF-itemslist {
+      height: 12.75rem;
+      border-radius: 0.3rem;
+    }
+  }
+}
+
+.rollingstock-selector-buttons {
+  border: none;
+  cursor: pointer;
+  background-color: #82be00;
+  border-radius: 0 0 0.3rem 0.3rem;
+  width: 90%;
+  text-align: center;
+  font-size: x-large;
+  &.disabled {
+    background-color: var(--coolgray1);
+    color: var(--coolgray3);
+    pointer-events: none;
   }
 }
