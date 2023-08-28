@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { updateLayersSettings } from 'reducers/map';
+import { MapState, updateLayersSettings } from 'reducers/map';
 import { IoMdSpeedometer } from 'react-icons/io';
 import SwitchSNCF, { SWITCH_TYPES } from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
 import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
@@ -12,12 +12,12 @@ import { getInfraID } from 'reducers/osrdconf/selectors';
 import { getMap } from 'reducers/map/selectors';
 import { IconType } from 'react-icons';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { FormatSwitch as SimpleFormatSwitch, Icon2SVG } from './MapSettingsLayers';
 import { ApiError } from 'common/api/emptyApi';
 import { SerializedError } from '@reduxjs/toolkit';
+import { FormatSwitch as SimpleFormatSwitch, Icon2SVG } from './MapSettingsLayers';
 
 type FormatSwitchProps = {
-  name: string;
+  name: keyof MapState['layersSettings'];
   icon: IconType;
   color?: string;
   disabled?: boolean;
@@ -43,7 +43,7 @@ const FormatSwitch = ({ name, icon: IconComponent, color = '', disabled }: Forma
     { key: string; value: string }[] | undefined
   >(undefined);
 
-  const setLayerSettings = (setting: keyof typeof layersSettings) => {
+  const setLayerSettings = (setting: keyof MapState['layersSettings']) => {
     dispatch(
       updateLayersSettings({
         ...layersSettings,
@@ -63,7 +63,7 @@ const FormatSwitch = ({ name, icon: IconComponent, color = '', disabled }: Forma
 
   const changeTagsListToObject = (tagsListArray: string[]) => {
     const tagsListObject = [{ key: t('noSpeedLimitByTag'), value: t('noSpeedLimitByTag') }].concat(
-      tagsListArray.slice().map((tag) => ({ key: tag, value: tag }))
+      tagsListArray.map((tag) => ({ key: tag, value: tag }))
     );
     setSpeedLimitsTags(tagsListObject);
   };
@@ -94,8 +94,8 @@ const FormatSwitch = ({ name, icon: IconComponent, color = '', disabled }: Forma
             id={`${name}-switch`}
             type={SWITCH_TYPES.switch}
             name={`${name}-switch`}
-            onChange={() => setLayerSettings(name as keyof typeof layersSettings)}
-            checked={!!layersSettings[name as keyof typeof layersSettings]}
+            onChange={() => setLayerSettings(name)}
+            checked={!!layersSettings[name]}
             disabled={disabled}
           />
           <span className={`px-1 d-flex align-items-center ${color}`}>
