@@ -29,6 +29,7 @@ import fr.sncf.osrd.utils.indexing.MutableDirStaticIdxArrayList;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
@@ -381,7 +382,7 @@ public class PathfindingResultConverter {
             res.add(route);
             var chunkSetOnRoute = new HashSet<>(toIntList(infra.getChunksOnRoute(route)));
             while (chunkStartIndex < pathChunks.size() && chunkSetOnRoute.contains(pathChunks.get(chunkStartIndex)))
-                chunkStartIndex++; // Increase the index in the chunk path, for as long as it it covered by the route
+                chunkStartIndex++; // Increase the index in the chunk path, for as long as it is covered by the route
             if (chunkStartIndex >= pathChunks.size())
                 return res;
         }

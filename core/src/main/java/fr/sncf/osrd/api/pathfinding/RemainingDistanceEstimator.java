@@ -1,15 +1,10 @@
 package fr.sncf.osrd.api.pathfinding;
 
-import static fr.sncf.osrd.utils.KtToJavaConverter.toIntList;
-import static fr.sncf.osrd.utils.indexing.DirStaticIdxKt.toDirection;
-import static fr.sncf.osrd.utils.indexing.DirStaticIdxKt.toValue;
+import static fr.sncf.osrd.api.pathfinding.PathfindingUtils.makePath;
 
 import fr.sncf.osrd.geom.Point;
-import fr.sncf.osrd.reporting.exceptions.ErrorType;
-import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.sim_infra.api.BlockInfra;
 import fr.sncf.osrd.sim_infra.api.RawSignalingInfra;
-import fr.sncf.osrd.utils.Direction;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import fr.sncf.osrd.utils.graph.functional_interfaces.AStarHeuristic;
 import java.util.ArrayList;
@@ -47,22 +42,17 @@ public class RemainingDistanceEstimator implements AStarHeuristic<Integer> {
         this.remainingDistance = remainingDistance;
     }
 
-    /** Converts a block and offset from its start into a geo point */
-    private static Point blockOffsetToPoint(BlockInfra blockInfra, RawSignalingInfra rawInfra, int blockIdx,
-                                            long pointOffset) {
-        for (var chunk : toIntList(blockInfra.getTrackChunksFromBlock(blockIdx))) {
-            var chunkLength = rawInfra.getTrackChunkLength(toValue(chunk));
-            if (pointOffset <= chunkLength) {
-                var offset = toDirection(chunk).equals(Direction.INCREASING)
-                        ? pointOffset
-                        : chunkLength - pointOffset;
-                var normalizedOffset = (double) offset / chunkLength;
-                var geo = rawInfra.getTrackChunkGeom(toValue(chunk));
-                return geo.interpolateNormalized(normalizedOffset);
-            }
-            pointOffset -= chunkLength;
-        }
-        throw new OSRDError(ErrorType.InvalidRouteNoOffset);
+    /** Converts a route and offset from its start into a geo point */
+    private static Point blockOffsetToPoint(
+            BlockInfra blockInfra,
+            RawSignalingInfra rawInfra,
+            int blockIdx,
+            long pointOffset
+    ) {
+        var path = makePath(blockInfra, rawInfra, blockIdx);
+        var lineString = path.getGeo();
+        var normalizedOffset = ((double) pointOffset) / ((double) path.getLength());
+        return lineString.interpolateNormalized(normalizedOffset);
     }
 
     /** Compute the minimum geo distance between two steps.
