@@ -19,6 +19,7 @@ import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
 import fr.sncf.osrd.sim_infra.utils.recoverBlocks
 import fr.sncf.osrd.sim_infra.utils.toList
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.RoutingZoneRequirement
+import fr.sncf.osrd.standalone_sim.result.ResultTrain.SignalSighting
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.StandaloneTrainSchedule
 import fr.sncf.osrd.utils.CurveSimplification
@@ -111,15 +112,20 @@ fun run(
         ResultTrain.ZoneUpdate(rawInfra.getZoneName(it.zone), it.time / 1000.0, it.offset.meters, it.isEntry)
     }
 
-    val signalSightings = pathSignals.map {
-        val physicalSignal = loadedSignalInfra.getPhysicalSignal(it.signal)
-        val sightOffset = max(0.0, (it.pathOffset - rawInfra.getSignalSightDistance(physicalSignal)).meters)
-        ResultTrain.SignalSighting(
-            rawInfra.getPhysicalSignalName(loadedSignalInfra.getPhysicalSignal(it.signal)),
+    val signalSightings = mutableListOf<SignalSighting>()
+    for ((i, pathSignal) in pathSignals.withIndex()) {
+        val physicalSignal = loadedSignalInfra.getPhysicalSignal(pathSignal.signal)
+        var sightOffset = max(0.0, (pathSignal.pathOffset - rawInfra.getSignalSightDistance(physicalSignal)).meters)
+        if (i > 0) {
+            val previousSignalOffset = pathSignals[i - 1].pathOffset.meters
+            sightOffset = max(sightOffset, previousSignalOffset);
+        }
+        signalSightings.add(SignalSighting(
+            rawInfra.getPhysicalSignalName(loadedSignalInfra.getPhysicalSignal(pathSignal.signal)),
             envelopeWithStops.interpolateTotalTime(sightOffset),
             sightOffset,
             "VL" // TODO: find out the real state
-        )
+        ))
     }
 
     // Compute route occupancies
@@ -401,7 +407,6 @@ fun EnvelopeTimeInterpolate.clampInterpolate(position: Distance): Double {
     // find when the train meets the critical location
     return interpolateTotalTime(criticalPos)
 }
-
 
 private fun spacingRequirements(
     simulator: SignalingSimulator,
