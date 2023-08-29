@@ -1,7 +1,8 @@
 import { ComponentType } from 'react';
 import { cloneDeep, isEqual, omit } from 'lodash';
 import { Feature, LineString, Point } from 'geojson';
-import { BiReset, AiOutlinePlus } from 'react-icons/all';
+import { BiReset } from 'react-icons/bi';
+import { AiOutlinePlus } from 'react-icons/ai';
 import { IconType } from 'react-icons';
 import nearestPointOnLine from '@turf/nearest-point-on-line';
 import mapboxgl from 'mapbox-gl';
