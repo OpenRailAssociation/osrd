@@ -322,22 +322,30 @@ export default function Study() {
                 <div className="col-xl-3 col-lg-4 col-md-5">{getFileSection()}</div>
               </div>
 
-              <div className="study-details-financials">
-                <div className="study-details-financials-infos">
-                  <div className="study-details-financials-infos-item">
-                    <h3>{t('geremiCode')}</h3>
-                    <div className="code">{study.service_code}</div>
+              {study.service_code || study.business_code || study.budget ? (
+                <div className="study-details-financials">
+                  <div className="study-details-financials-infos">
+                    {study.service_code && (
+                      <div className="study-details-financials-infos-item">
+                        <h3>{t('geremiCode')}</h3>
+                        <div className="code">{study.service_code}</div>
+                      </div>
+                    )}
+                    {study.business_code && (
+                      <div className="study-details-financials-infos-item">
+                        <h3>{t('affairCode')}</h3>
+                        <div className="code">{study.business_code}</div>
+                      </div>
+                    )}
                   </div>
-                  <div className="study-details-financials-infos-item">
-                    <h3>{t('affairCode')}</h3>
-                    <div className="code">{study.business_code}</div>
-                  </div>
+                  {study.budget !== 0 ? (
+                    <div className="study-details-financials-amount">
+                      <span className="study-details-financials-amount-text">{t('budget')}</span>
+                      {budgetFormat(study.budget)}
+                    </div>
+                  ) : null}
                 </div>
-                <div className="study-details-financials-amount">
-                  <span className="study-details-financials-amount-text">{t('budget')}</span>
-                  {study.budget !== 0 ? budgetFormat(study.budget) : ''}
-                </div>
-              </div>
+              ) : null}
 
               <div className="study-details-footer">
                 <div className="study-details-tags">

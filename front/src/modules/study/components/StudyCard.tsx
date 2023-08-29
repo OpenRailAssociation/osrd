@@ -60,12 +60,12 @@ export default function StudyCard({ setFilterChips, study }: Props) {
             </div>
           )}
         </div>
-        {study.budget && study.budget > 0 && (
+        {study.budget && study.budget > 0 ? (
           <div className="studies-list-card-financials-amount">
             <span className="studies-list-card-financials-amount-text">{t('budget')}</span>
             {budgetFormat(study.budget)}
           </div>
-        )}
+        ) : null}
       </div>
 
       <div className="studies-list-card-tags">

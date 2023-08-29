@@ -312,7 +312,7 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
                   {t('studyServiceCode')}
                 </div>
               }
-              value={currentStudy?.service_code}
+              value={currentStudy?.service_code || ''}
               onChange={(e) => setCurrentStudy({ ...currentStudy, service_code: e.target.value })}
             />
           </div>
@@ -329,7 +329,7 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
                   {t('studyBusinessCode')}
                 </div>
               }
-              value={currentStudy?.business_code}
+              value={currentStudy?.business_code || ''}
               onChange={(e) => setCurrentStudy({ ...currentStudy, business_code: e.target.value })}
             />
           </div>
@@ -347,7 +347,7 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
                   {t('studyBudget')}
                 </div>
               }
-              value={currentStudy?.budget}
+              value={currentStudy?.budget || 0}
               onChange={(e) => setCurrentStudy({ ...currentStudy, budget: +e.target.value })}
             />
           </div>
