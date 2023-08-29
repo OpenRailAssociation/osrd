@@ -205,7 +205,7 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
                     <span className="font-weight-bold">{t('projectName')}</span>
                   </div>
                 }
-                value={currentProject?.name}
+                value={currentProject?.name || ''}
                 onChange={(e) => setCurrentProject({ ...currentProject, name: e.target.value })}
                 isInvalid={displayErrors && !currentProject?.name}
                 errorMsg={
@@ -224,7 +224,7 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
                     {t('projectDescription')}
                   </div>
                 }
-                value={currentProject?.description}
+                value={currentProject?.description || ''}
                 onChange={(e) =>
                   setCurrentProject({ ...currentProject, description: e.target.value })
                 }
@@ -246,7 +246,7 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
                     {t('projectObjectives')}
                   </div>
                 }
-                value={currentProject?.objectives}
+                value={currentProject?.objectives || ''}
                 onChange={(e) =>
                   setCurrentProject({ ...currentProject, objectives: e.target.value })
                 }
@@ -281,7 +281,7 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
                   {t('projectFunders')}
                 </div>
               }
-              value={currentProject?.funders}
+              value={currentProject?.funders || ''}
               onChange={(e) =>
                 setCurrentProject({
                   ...currentProject,
@@ -305,10 +305,8 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
                   {t('projectBudget')}
                 </div>
               }
-              value={currentProject?.budget}
-              onChange={(e) =>
-                setCurrentProject({ ...currentProject, budget: parseInt(e.target.value, 10) })
-              }
+              value={currentProject?.budget || 0}
+              onChange={(e) => setCurrentProject({ ...currentProject, budget: +e.target.value })}
             />
           </div>
         </div>

@@ -15,16 +15,15 @@ import remarkGfm from 'remark-gfm';
 import { budgetFormat } from 'utils/numbers';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { getProjectID } from 'reducers/osrdconf/selectors';
-import { useSelector, useDispatch } from 'react-redux';
-import { setSuccess } from 'reducers/main';
+import { useDispatch, useSelector } from 'react-redux';
 import FilterTextField from 'applications/operationalStudies/components/FilterTextField';
 import {
   PostSearchApiArg,
-  ProjectResult,
   SearchStudyResult,
   StudyResult,
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
+import { setFailure } from 'reducers/main';
 import { getDocument } from 'common/api/documentApi';
 import AddOrEditProjectModal from '../../../modules/project/components/AddOrEditProjectModal';
 import BreadCrumbs from '../components/BreadCrumbs';
@@ -62,7 +61,6 @@ function displayStudiesList(
 export default function Project() {
   const { t } = useTranslation('operationalStudies/project');
   const { openModal } = useModal();
-  const [project, setProject] = useState<ProjectResult>();
   const [studiesList, setStudiesList] = useState<StudyResult[]>([]);
   const [filter, setFilter] = useState('');
   const [filterChips, setFilterChips] = useState('');
@@ -71,7 +69,6 @@ export default function Project() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const projectId = useSelector(getProjectID);
-  const [getCurrentProject] = osrdEditoastApi.useLazyGetProjectsByProjectIdQuery();
   const [postSearch] = osrdEditoastApi.usePostSearchMutation();
   const [getStudies] = osrdEditoastApi.useLazyGetProjectsByProjectIdStudiesQuery();
 
@@ -86,28 +83,17 @@ export default function Project() {
     },
   ];
 
-  const getProject = async (withNotification = false) => {
-    try {
-      const { data } = await getCurrentProject({ projectId: projectId as number });
-      setProject(data);
-      if (data?.image) {
-        try {
-          const image = await getDocument(data.image);
-          setImageUrl(URL.createObjectURL(image));
-        } catch (error: unknown) {
-          console.error(error);
-        }
-      }
-      if (withNotification) {
-        dispatch(
-          setSuccess({
-            title: t('projectUpdated'),
-            text: t('projectUpdatedDetails', { name: project?.name }),
-          })
-        );
-      }
-    } catch (error) {
-      console.error(error);
+  const { data: project, isError: isProjectError } = osrdEditoastApi.useGetProjectsByProjectIdQuery(
+    { projectId: projectId as number },
+    {
+      skip: !projectId,
+    }
+  );
+
+  const updateImage = async () => {
+    if (project?.image) {
+      const image = await getDocument(project.image);
+      setImageUrl(URL.createObjectURL(image));
     }
   };
 
@@ -170,10 +156,23 @@ export default function Project() {
   useEffect(() => {
     if (!projectId) {
       navigate('/operational-studies');
-    } else {
-      getProject();
     }
   }, []);
+
+  useEffect(() => {
+    updateImage();
+  }, [project?.image]);
+
+  useEffect(() => {
+    if (isProjectError) {
+      dispatch(
+        setFailure({
+          name: t('errorHappened'),
+          message: t('errorHappened'),
+        })
+      );
+    }
+  }, [isProjectError]);
 
   useEffect(() => {
     if (projectId) getStudiesList();
@@ -201,14 +200,7 @@ export default function Project() {
                           className="project-details-title-modify-button"
                           type="button"
                           onClick={() =>
-                            openModal(
-                              <AddOrEditProjectModal
-                                editionMode
-                                project={project}
-                                getProject={getProject}
-                              />,
-                              'xl'
-                            )
+                            openModal(<AddOrEditProjectModal editionMode project={project} />, 'xl')
                           }
                         >
                           <span className="project-details-title-modify-button-text">
@@ -243,18 +235,22 @@ export default function Project() {
                   </div>
                 </div>
               </div>
-              <div className="project-details-financials">
-                <div className="project-details-financials-infos">
-                  <h3>{t('fundedBy')}</h3>
-                  <div>{project.funders}</div>
+              {project.funders || project.budget ? (
+                <div className="project-details-financials">
+                  <div className="project-details-financials-infos">
+                    <h3>{t('fundedBy')}</h3>
+                    <div>{project.funders}</div>
+                  </div>
+                  <div className="project-details-financials-amount">
+                    <span className="project-details-financials-amount-text">
+                      {t('totalBudget')}
+                    </span>
+                    {project.budget !== undefined && project.budget !== 0
+                      ? budgetFormat(project.budget)
+                      : ''}
+                  </div>
                 </div>
-                <div className="project-details-financials-amount">
-                  <span className="project-details-financials-amount-text">{t('totalBudget')}</span>
-                  {project.budget !== undefined && project.budget !== 0
-                    ? budgetFormat(project.budget)
-                    : ''}
-                </div>
-              </div>
+              ) : null}
               <div className="project-details-tags">
                 {project.tags?.map((tag) => (
                   <div className="project-details-tags-tag" key={nextId()}>
