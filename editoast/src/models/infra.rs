@@ -276,7 +276,7 @@ pub mod tests {
             .test_transaction::<_, Error, _>(|conn| {
                 async move {
                     let infra = infra.create_conn(conn).await.unwrap();
-                    fn_test(conn, infra);
+                    fn_test(conn, infra).await;
                     Ok(())
                 }
                 .scope_boxed()
