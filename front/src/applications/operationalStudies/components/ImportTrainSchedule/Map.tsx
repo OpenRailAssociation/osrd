@@ -1,6 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
-import maplibregl from 'maplibre-gl';
-import ReactMapGL, { AttributionControl, MapLayerMouseEvent, ScaleControl } from 'react-map-gl';
+import ReactMapGL, {
+  AttributionControl,
+  ScaleControl,
+  MapLayerMouseEvent,
+} from 'react-map-gl/maplibre';
 import { point as turfPoint } from '@turf/helpers';
 import { useSelector } from 'react-redux';
 import turfNearestPointOnLine, { NearestPointOnLine } from '@turf/nearest-point-on-line';
@@ -18,10 +21,10 @@ import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import 'common/Map/Map.scss';
 import OperationalPoints from 'common/Map/Layers/OperationalPoints';
 import Platforms from 'common/Map/Layers/Platforms';
-import { getMapMouseEventNearestFeature } from 'utils/mapboxHelper';
-import { LineString } from 'geojson';
+import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
+import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
 import { getMapStyle } from 'reducers/map/selectors';
-import { CUSTOM_ATTRIBUTION } from '../../../../common/Map/const';
+import { LineString } from 'geojson';
 
 interface MapProps {
   viewport: { latitude: number; longitude: number };
@@ -96,7 +99,8 @@ const Map = ({ viewport, setViewport, setClickedFeatureId }: MapProps) => {
       {...viewportExtraSettings}
       {...viewport}
       style={{ cursor: 'pointer' }}
-      mapLib={maplibregl}
+      width="100%"
+      height="100%"
       mapStyle={osmBlankStyle}
       onMove={(e) => setViewport(e.viewState)}
       onMouseMove={(e) => onMoveGetFeature(e)}

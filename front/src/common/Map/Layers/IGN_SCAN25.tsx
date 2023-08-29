@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { Source, LayerProps } from 'react-map-gl';
+import { Source, LayerProps } from 'react-map-gl/maplibre';
 
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import { RootState } from 'reducers';

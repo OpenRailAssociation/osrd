@@ -1,10 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import maplibregl from 'maplibre-gl';
-import ReactMapGL, { AttributionControl, ScaleControl, MapRef } from 'react-map-gl';
-import { point as turfPoint } from '@turf/helpers';
+import { MapLayerMouseEvent } from 'maplibre-gl';
+import ReactMapGL, { AttributionControl, ScaleControl, MapRef } from 'react-map-gl/maplibre';
 import { useDispatch, useSelector } from 'react-redux';
-import turfNearestPointOnLine, { NearestPointOnLine } from '@turf/nearest-point-on-line';
-import { Position, LineString } from 'geojson';
+import { NearestPointOnLine } from '@turf/nearest-point-on-line';
 import { useParams } from 'react-router-dom';
 import { RootState } from 'reducers';
 import { updateFeatureInfoClickOSRD } from 'reducers/osrdconf';
@@ -48,16 +46,13 @@ import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
 import LineSearchLayer from 'common/Map/Layers/LineSearchLayer';
 import Terrain from 'common/Map/Layers/Terrain';
 import { getTerrain3DExaggeration } from 'reducers/map/selectors';
-import { MapLayerMouseEvent } from '../../../../types';
-import { getMapMouseEventNearestFeature } from '../../../../utils/mapboxHelper';
+import { getMapMouseEventNearestFeature } from '../../../../utils/mapHelper';
 
 function Map() {
   const { viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM, layersSettings } =
     useSelector((state: RootState) => state.map);
   const terrain3DExagerration = useSelector(getTerrain3DExaggeration);
   const [idHover, setIdHover] = useState<string | undefined>(undefined);
-  const [lngLatHover, setLngLatHover] = useState<Position>();
-  const [trackSectionGeoJSON, setTrackSectionGeoJSON] = useState<LineString>();
   const [snappedPoint, setSnappedPoint] = useState<NearestPointOnLine>();
   const { urlLat = '', urlLon = '', urlZoom = '', urlBearing = '', urlPitch = '' } = useParams();
   const dispatch = useDispatch();
@@ -121,9 +116,17 @@ function Map() {
       result.feature.properties.id &&
       result.feature.geometry.type === 'LineString'
     ) {
-      setTrackSectionGeoJSON(result.feature.geometry);
       setIdHover(result.feature.properties.id);
-      setLngLatHover(result.nearest);
+      setSnappedPoint({
+        type: 'Feature',
+        geometry: {
+          type: 'Point',
+          coordinates: result.nearest,
+        },
+        properties: {
+          distance: result.distance,
+        },
+      });
     } else {
       setIdHover(undefined);
       setSnappedPoint(undefined);
@@ -151,17 +154,6 @@ function Map() {
   };
 
   useEffect(() => {
-    if (trackSectionGeoJSON !== undefined && lngLatHover !== undefined) {
-      const point = turfPoint(lngLatHover);
-      try {
-        setSnappedPoint(turfNearestPointOnLine(trackSectionGeoJSON, point));
-      } catch (error) {
-        console.warn(`Ìmpossible to snapPoint - error ${error}`);
-      }
-    }
-  }, [trackSectionGeoJSON, lngLatHover]);
-
-  useEffect(() => {
     if (urlLat) {
       updateViewportChange({
         ...viewport,
@@ -181,7 +173,6 @@ function Map() {
       <ReactMapGL
         ref={mapRef}
         {...viewport}
-        mapLib={maplibregl}
         style={{ width: '100%', height: '100%' }}
         cursor="pointer"
         mapStyle={osmBlankStyle}
@@ -224,7 +215,7 @@ function Map() {
           </>
         )}
 
-        {/* Have to  duplicate objects with sourceLayer to avoid cache problems in mapbox */}
+        {/* Have to  duplicate objects with sourceLayer to avoid cache problems */}
         {mapTrackSources === 'geographic' ? (
           <>
             <Platforms

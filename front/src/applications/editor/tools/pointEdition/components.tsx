@@ -1,7 +1,7 @@
-import mapboxgl from 'mapbox-gl';
+import { Map } from 'maplibre-gl';
 import React, { ComponentType, FC, useContext, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Popup } from 'react-map-gl';
+import { Popup } from 'react-map-gl/maplibre';
 import { useTranslation } from 'react-i18next';
 import { featureCollection } from '@turf/helpers';
 import { isEqual } from 'lodash';
@@ -296,7 +296,7 @@ export const getPointEditionLeftPanel =
 
 export const BasePointEditionLayers: FC<{
   // eslint-disable-next-line react/no-unused-prop-types
-  map: mapboxgl.Map;
+  map: Map;
   mergeEntityWithNearestPoint?: (
     entity: EditorEntity,
     nearestPoint: NonNullable<PointEditionState<EditorEntity>['nearestPoint']>
@@ -390,7 +390,7 @@ export const BasePointEditionLayers: FC<{
   );
 };
 
-export const SignalEditionLayers: FC<{ map: mapboxgl.Map }> = ({ map }) => (
+export const SignalEditionLayers: FC<{ map: Map }> = ({ map }) => (
   <BasePointEditionLayers
     map={map}
     interactiveLayerIDRegex={/signal-point$/}

@@ -1,4 +1,4 @@
-import mapboxgl from 'mapbox-gl';
+import { MapLayerMouseEvent } from 'maplibre-gl';
 import { Feature, LineString, Point } from 'geojson';
 import length from '@turf/length';
 import lineSlice from '@turf/line-slice';
@@ -20,7 +20,7 @@ export function approximateDistanceWithEditoastData(track: TrackSectionEntity, p
 }
 
 /** return the trackRanges near the mouse thanks to the hover event */
-export function getHoveredTrackRanges(hoverEvent: mapboxgl.MapLayerMouseEvent) {
+export function getHoveredTrackRanges(hoverEvent: MapLayerMouseEvent) {
   const { point, target: map } = hoverEvent;
   const TOLERANCE = 20;
 

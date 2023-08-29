@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { Layer } from 'react-map-gl';
+import { Layer } from 'react-map-gl/maplibre';
 import { selectedLayer, selectedCircleLayer } from 'common/Map/Layers/commonLayers';
 
 class Selected extends Component {

@@ -2,7 +2,7 @@ import React, { FC, useCallback, useContext, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import chroma from 'chroma-js';
-import { Layer, LineLayer, Popup, Source } from 'react-map-gl';
+import { Layer, LineLayer, Popup, Source } from 'react-map-gl/maplibre';
 import { featureCollection } from '@turf/helpers';
 import cx from 'classnames';
 import { omit } from 'lodash';
@@ -13,7 +13,7 @@ import { FiSearch } from 'react-icons/fi';
 import { EditRoutePathState, OptionsStateType, RouteEditionState } from '../types';
 import EditorContext from '../../../context';
 import { getCompatibleRoutes, getEntity } from '../../../data/api';
-import { EditorEntity, RouteEntity, WayPointEntity } from '../../../../../types';
+import { EditorEntity, OmitLayer, RouteEntity, WayPointEntity } from '../../../../../types';
 import { LoaderFill } from '../../../../../common/Loader';
 import { getRoutesLineLayerProps } from '../../../../../common/Map/Layers/Routes';
 import colors from '../../../../../common/Map/Consts/colors';
@@ -257,7 +257,7 @@ export const EditRoutePathEditionLayers: FC<{ state: EditRoutePathState }> = ({
         'line-dasharray': [2, 1],
         'line-offset': ['get', 'offset'],
       },
-    } as Omit<LineLayer, 'id'>;
+    } as OmitLayer<LineLayer>;
   }, [mapStyle]);
   const hoveredWayPoint = useMemo(
     () =>

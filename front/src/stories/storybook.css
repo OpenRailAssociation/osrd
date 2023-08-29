@@ -1757,7 +1757,7 @@ body {
   padding: 0.2rem 0.8rem 0.2rem;
   font-size: 0.8rem;
 }
-.osrd-config-item-container-map .mapboxgl-popup {
+.osrd-config-item-container-map .maplibregl-popup {
   z-index: 1;
 }
 .osrd-config-item-container-map .map-settings-btn {

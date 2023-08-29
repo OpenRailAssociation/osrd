@@ -1,9 +1,10 @@
 import { IoMdAddCircleOutline } from 'react-icons/io';
 import { cloneDeep, isEqual } from 'lodash';
 import { BiReset } from 'react-icons/bi';
-
+import { Map } from 'maplibre-gl';
 import { IconType } from 'react-icons';
 import { ComponentType } from 'react';
+
 import { LAYER_TO_EDITOAST_DICT, LAYERS_SET, LayerType } from '../types';
 import {
   HoveredExtremityState,
@@ -27,7 +28,7 @@ import {
   SpeedSectionLpvEntity,
   TrackSectionEntity,
 } from '../../../../types';
-import { getNearestPoint } from '../../../../utils/mapboxHelper';
+import { getNearestPoint } from '../../../../utils/mapHelper';
 import { approximateDistanceWithEditoastData } from '../utils';
 import { PartialOrReducer, Tool } from '../editorContextTypes';
 import { DEFAULT_COMMON_TOOL_STATE } from '../commonToolState';
@@ -38,7 +39,7 @@ interface RangeEditionToolParams<T extends EditorRange> {
   icon: IconType;
   getNewEntity: () => T;
   messagesComponent: ComponentType;
-  layersComponent: ComponentType<{ map: mapboxgl.Map }>;
+  layersComponent: ComponentType<{ map: Map }>;
   leftPanelComponent: ComponentType;
 }
 
@@ -251,7 +252,7 @@ function getRangeEditionTool<T extends EditorRange>({
       }
 
       // Handle hovering EditorEntity elements:
-      else if (LAYERS_SET.has(feature.sourceLayer)) {
+      else if (feature.sourceLayer && LAYERS_SET.has(feature.sourceLayer)) {
         const newHoveredItem = {
           id: feature.properties?.id as string,
           type: LAYER_TO_EDITOAST_DICT[feature.sourceLayer as LayerType],

@@ -4,8 +4,9 @@ import along from '@turf/along';
 import length from '@turf/length';
 import { Feature, feature, lineString, LineString, point } from '@turf/helpers';
 import lineSliceAlong from '@turf/line-slice-along';
+import { MapLayerMouseEvent } from 'maplibre-gl';
 
-import { getNearestPoint } from 'utils/mapboxHelper';
+import { getNearestPoint } from 'utils/mapHelper';
 import { NEW_ENTITY_ID } from '../../data/utils';
 import {
   CatenaryEntity,
@@ -59,7 +60,7 @@ export function getNewCatenary(): CatenaryEntity {
  * - compute the distance between the beginning of the track and the nearest point (with approximation because of Editoast data)
  */
 export function getLpvPanelNewPosition(
-  e: mapboxgl.MapLayerMouseEvent,
+  e: MapLayerMouseEvent,
   trackSectionsCache: Record<string, TrackState>
 ) {
   const hoveredTrackRanges = getHoveredTrackRanges(e);

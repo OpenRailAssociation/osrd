@@ -1,7 +1,7 @@
 import React, { FC, useContext, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Feature, LineString } from 'geojson';
-import { Layer, Popup, Source } from 'react-map-gl';
+import { Layer, Popup, Source } from 'react-map-gl/maplibre';
 import { featureCollection, lineString } from '@turf/helpers';
 import { useTranslation } from 'react-i18next';
 import { cloneDeep, first, isEqual, last } from 'lodash';

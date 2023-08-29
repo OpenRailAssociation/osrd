@@ -1,9 +1,9 @@
 import React, { FC } from 'react';
 import { useSelector } from 'react-redux';
-import { Source, SymbolLayer, CircleLayer } from 'react-map-gl';
+import { Source, SymbolLayer, CircleLayer } from 'react-map-gl/maplibre';
 import { MAP_URL } from 'common/Map/const';
 import { RootState } from 'reducers';
-import { Theme } from 'types';
+import { Theme, OmitLayer } from 'types';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
@@ -11,8 +11,8 @@ import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 export function getSwitchesLayerProps(params: {
   colors: Theme;
   sourceTable?: string;
-}): Omit<CircleLayer, 'id'> {
-  const res: Omit<CircleLayer, 'id'> = {
+}): OmitLayer<CircleLayer> {
+  const res: OmitLayer<CircleLayer> = {
     type: 'circle',
     paint: {
       'circle-stroke-color': params.colors.switches.circle,
@@ -29,8 +29,8 @@ export function getSwitchesLayerProps(params: {
 export function getSwitchesNameLayerProps(params: {
   colors: Theme;
   sourceTable?: string;
-}): Omit<SymbolLayer, 'id'> {
-  const res: Omit<SymbolLayer, 'id'> = {
+}): OmitLayer<SymbolLayer> {
+  const res: OmitLayer<SymbolLayer> = {
     type: 'symbol',
     layout: {
       'text-field': '{label}',

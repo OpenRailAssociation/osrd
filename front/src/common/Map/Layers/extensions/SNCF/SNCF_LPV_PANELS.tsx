@@ -1,9 +1,9 @@
-import { MAP_URL } from 'common/Map/const';
 import React from 'react';
-import { LayerProps, Source } from 'react-map-gl';
+import { MAP_URL } from 'common/Map/const';
+import { LayerProps, Source, SymbolLayer } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
 import { getInfraID } from 'reducers/osrdconf/selectors';
-import { SourceLayer, SymbolLayer } from 'types';
+import { SourceLayer, OmitLayer } from 'types';
 import { isNil } from 'lodash';
 import { getMap } from 'reducers/map/selectors';
 import OrderedLayer from '../../OrderedLayer';
@@ -18,9 +18,9 @@ export function getLPVPanelsLayerProps({
   sourceTable,
   prefix,
   sourceLayer,
-}: Pick<LayerContext, 'sourceTable' | 'prefix' | 'sourceLayer'>): SymbolLayer {
+}: Pick<LayerContext, 'sourceTable' | 'prefix' | 'sourceLayer'>): Omit<SymbolLayer, 'source'> {
   const angleName = sourceLayer === 'sch' ? 'angle_sch' : 'angle_geo';
-  const res: SymbolLayer = {
+  const res: Omit<SymbolLayer, 'source'> = {
     id: 'panelParams',
     type: 'symbol',
     minzoom: 11,
@@ -68,10 +68,10 @@ export function getLPVPanelsLayerProps({
 export function getLPVPanelsMastLayerProps({
   sourceTable,
   sourceLayer,
-}: Pick<LayerContext, 'sourceTable' | 'sourceLayer'>): Omit<SymbolLayer, 'id'> {
+}: Pick<LayerContext, 'sourceTable' | 'sourceLayer'>): OmitLayer<SymbolLayer> {
   const angleName = sourceLayer === 'sch' ? 'angle_sch' : 'angle_geo';
 
-  const res: Omit<SymbolLayer, 'id'> = {
+  const res: OmitLayer<SymbolLayer> = {
     type: 'symbol',
     minzoom: 13,
     paint: {},

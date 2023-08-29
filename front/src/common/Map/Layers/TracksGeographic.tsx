@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { Source } from 'react-map-gl';
+import { Source } from 'react-map-gl/maplibre';
 
 import { RootState } from 'reducers';
 import { Theme } from 'types';

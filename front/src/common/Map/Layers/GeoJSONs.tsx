@@ -3,11 +3,11 @@ import React, { FC, useEffect, useMemo, useState } from 'react';
 import chroma from 'chroma-js';
 import { Feature, FeatureCollection } from 'geojson';
 import { isPlainObject, keyBy, mapValues } from 'lodash';
-import { Layer, Source } from 'react-map-gl';
+import { AnyLayer, Layer, Source, LayerProps } from 'react-map-gl/maplibre';
+import { FilterSpecification } from 'maplibre-gl';
 import { getInfraID } from 'reducers/osrdconf/selectors';
-import { SymbolPaint } from 'mapbox-gl';
 
-import { AnyLayer, Theme } from '../../../types';
+import { Theme } from '../../../types';
 import { RootState } from '../../../reducers';
 import { geoMainLayer, geoServiceLayer } from './geographiclayers';
 import {
@@ -68,9 +68,11 @@ function transformTheme(theme: Theme, reducer: (color: string) => string): Theme
 /**
  * Helper to add filters to existing LayerProps.filter values:
  */
-function adaptFilter(layer: AnyLayer, blackList: string[], whiteList: string[]): AnyLayer {
+function adaptFilter(layer: LayerProps, blackList: string[], whiteList: string[]): LayerProps {
+  if (layer.type === 'background') return layer;
+
   const res = { ...layer };
-  const conditions: AnyLayer['filter'][] = layer.filter ? [layer.filter] : [];
+  const conditions: FilterSpecification[] = layer.filter ? [layer.filter] : [];
 
   if (whiteList.length) conditions.push(['in', 'id', ...whiteList]);
   if (blackList.length) conditions.push(['!in', 'id', ...blackList]);
@@ -81,28 +83,27 @@ function adaptFilter(layer: AnyLayer, blackList: string[], whiteList: string[]):
     case 1:
       return { ...res, filter: conditions[0] };
     default:
-      return { ...res, filter: ['all', ...conditions] };
+      // for 'all' predicate, 'conditions' must be a 'LegacyFilterSpecification' type
+      // that why we use the 'as'
+      return { ...res, filter: ['all', ...conditions] as FilterSpecification };
   }
 }
 
 /**
  * Helpers to get all layers required to render entities of a given type:
  */
-function getTrackSectionLayers(context: LayerContext, prefix: string): AnyLayer[] {
+function getTrackSectionLayers(context: LayerContext, prefix: string): LayerProps[] {
   return [
     {
       ...geoMainLayer(context.colors, context.showIGNBDORTHO),
-      'source-layer': MAP_TRACK_SOURCE,
       id: `${prefix}geo/track-main`,
     },
     {
       ...geoServiceLayer(context.colors),
-      'source-layer': MAP_TRACK_SOURCE,
       id: `${prefix}geo/track-service`,
     },
     {
       ...trackNameLayer(context.colors),
-      'source-layer': MAP_TRACK_SOURCE,
       filter: ['==', 'type_voie', 'VP'],
       layout: {
         ...trackNameLayer(context.colors).layout,
@@ -113,7 +114,6 @@ function getTrackSectionLayers(context: LayerContext, prefix: string): AnyLayer[
     },
     {
       ...trackNameLayer(context.colors),
-      'source-layer': MAP_TRACK_SOURCE,
       filter: ['!=', 'type_voie', 'VP'],
       layout: {
         ...trackNameLayer(context.colors).layout,
@@ -124,7 +124,6 @@ function getTrackSectionLayers(context: LayerContext, prefix: string): AnyLayer[
     },
     {
       ...lineNumberLayer(context.colors),
-      'source-layer': MAP_TRACK_SOURCE,
       layout: {
         ...lineNumberLayer(context.colors).layout,
         'text-field': '{extensions_sncf_line_code}',
@@ -133,21 +132,21 @@ function getTrackSectionLayers(context: LayerContext, prefix: string): AnyLayer[
     },
     {
       ...lineNameLayer(context.colors),
-      'source-layer': MAP_TRACK_SOURCE,
       id: `${prefix}geo/line-names`,
     },
   ];
 }
 
-function getSignalLayers(context: LayerContext, prefix: string): AnyLayer[] {
+function getSignalLayers(context: LayerContext, prefix: string): LayerProps[] {
   return [
     { ...getSignalMatLayerProps(context), id: `${prefix}geo/signal-mat` },
     { ...getPointLayerProps(context), id: `${prefix}geo/signal-point` },
   ].concat(
     context.symbolsList.map((symbol) => {
       const props = getSignalLayerProps(context, symbol);
-      const paint = props.paint as SymbolPaint;
-      const opacity = typeof paint['icon-opacity'] === 'number' ? paint['icon-opacity'] : 1;
+      const { paint } = props;
+      const opacity =
+        paint && typeof paint['icon-opacity'] === 'number' ? paint['icon-opacity'] : 1;
 
       return {
         ...props,
@@ -158,7 +157,7 @@ function getSignalLayers(context: LayerContext, prefix: string): AnyLayer[] {
     })
   );
 }
-function getBufferStopsLayers(context: LayerContext, prefix: string): AnyLayer[] {
+function getBufferStopsLayers(context: LayerContext, prefix: string): LayerProps[] {
   return [
     {
       ...getBufferStopsLayerProps(context),
@@ -168,7 +167,7 @@ function getBufferStopsLayers(context: LayerContext, prefix: string): AnyLayer[]
   ];
 }
 
-function getCatenariesLayers(context: LayerContext, prefix: string): AnyLayer[] {
+function getCatenariesLayers(context: LayerContext, prefix: string): LayerProps[] {
   return [
     {
       ...getCatenariesProps(context),
@@ -181,7 +180,7 @@ function getCatenariesLayers(context: LayerContext, prefix: string): AnyLayer[] 
   ];
 }
 
-function getDetectorsLayers(context: LayerContext, prefix: string): AnyLayer[] {
+function getDetectorsLayers(context: LayerContext, prefix: string): LayerProps[] {
   return [
     {
       ...getDetectorsLayerProps(context),
@@ -196,7 +195,7 @@ function getDetectorsLayers(context: LayerContext, prefix: string): AnyLayer[] {
   ];
 }
 
-function getLPVPanelsLayers(context: LayerContext, prefix: string): AnyLayer[] {
+function getLPVPanelsLayers(context: LayerContext, prefix: string): LayerProps[] {
   return [
     {
       ...getLPVPanelsLayerProps(context),
@@ -211,7 +210,7 @@ function getLPVPanelsLayers(context: LayerContext, prefix: string): AnyLayer[] {
   ];
 }
 
-function getLPVLayers(context: LayerContext, prefix: string): AnyLayer[] {
+function getLPVLayers(context: LayerContext, prefix: string): LayerProps[] {
   const filter = getLPVFilter(context.layersSettings);
   return [
     {
@@ -232,7 +231,7 @@ function getLPVLayers(context: LayerContext, prefix: string): AnyLayer[] {
   ];
 }
 
-function getSwitchesLayers(context: LayerContext, prefix: string): AnyLayer[] {
+function getSwitchesLayers(context: LayerContext, prefix: string): LayerProps[] {
   return [
     {
       ...getSwitchesLayerProps(context),
@@ -247,7 +246,7 @@ function getSwitchesLayers(context: LayerContext, prefix: string): AnyLayer[] {
   ];
 }
 
-function getSpeedSectionLayers(context: LayerContext, prefix: string): AnyLayer[] {
+function getSpeedSectionLayers(context: LayerContext, prefix: string): LayerProps[] {
   const filter = getSpeedSectionsFilter(context.layersSettings);
   return [
     {
@@ -268,7 +267,7 @@ function getSpeedSectionLayers(context: LayerContext, prefix: string): AnyLayer[
   ];
 }
 
-function getErrorsLayers(context: LayerContext, prefix: string): AnyLayer[] {
+function getErrorsLayers(context: LayerContext, prefix: string): LayerProps[] {
   return [
     {
       ...getLineErrorsLayerProps(context),
@@ -293,7 +292,7 @@ function getErrorsLayers(context: LayerContext, prefix: string): AnyLayer[] {
 
 const SOURCES_DEFINITION: {
   entityType: LayerType;
-  getLayers: (context: LayerContext, prefix: string) => AnyLayer[];
+  getLayers: (context: LayerContext, prefix: string) => LayerProps[];
 }[] = [
   { entityType: 'track_sections', getLayers: getTrackSectionLayers },
   { entityType: 'signals', getLayers: getSignalLayers },
@@ -387,7 +386,7 @@ const GeoJSONs: FC<{
     [hiddenColors, layerContext]
   );
 
-  const sources: { id: string; url: string; layers: AnyLayer[] }[] = useMemo(
+  const sources = useMemo(
     () =>
       SOURCES_DEFINITION.flatMap((source) =>
         !layers || layers.has(source.entityType)
@@ -420,7 +419,7 @@ const GeoJSONs: FC<{
       {sources.map((source) => (
         <Source key={source.id} promoteId="id" type="vector" url={source.url}>
           {source.layers.map((layer) => (
-            <Layer key={layer.id} {...layer} beforeId={beforeId} />
+            <Layer source-layer={MAP_TRACK_SOURCE} key={layer.id} {...layer} beforeId={beforeId} />
           ))}
         </Source>
       ))}
