@@ -1,11 +1,11 @@
 import { isNil } from 'lodash';
 import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
-import ReactMapGL, { AttributionControl, ScaleControl, MapRef } from 'react-map-gl';
-import maplibregl from 'maplibre-gl';
+import ReactMapGL, { AttributionControl, ScaleControl, MapRef } from 'react-map-gl/maplibre';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateViewport, Viewport } from 'reducers/map';
 import { RootState } from 'reducers';
+import { MapLayerMouseEvent } from 'maplibre-gl';
 
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import { getTerrain3DExaggeration } from 'reducers/map/selectors';
@@ -41,7 +41,6 @@ import colors from 'common/Map/Consts/colors';
 import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
 import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
 import LineSearchLayer from 'common/Map/Layers/LineSearchLayer';
-import { MapLayerMouseEvent } from '../../types';
 
 import 'common/Map/Map.scss';
 
@@ -113,7 +112,6 @@ function Map() {
       <ReactMapGL
         {...viewport}
         ref={mapRef}
-        mapLib={maplibregl}
         cursor="normal"
         style={{ width: '100%', height: '100%' }}
         mapStyle={osmBlankStyle}
@@ -157,7 +155,7 @@ function Map() {
           </>
         )}
 
-        {/* Have to duplicate objects with sourceLayer to avoid cache problems in mapbox */}
+        {/* Have to duplicate objects with sourceLayer to avoid cache problems */}
         {mapTrackSources === 'geographic' ? (
           <>
             <Platforms

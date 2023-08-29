@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
-import { Popup } from 'react-map-gl';
+import { Popup } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
 
 import { getFeatureInfoClick } from 'reducers/osrdconf/selectors';

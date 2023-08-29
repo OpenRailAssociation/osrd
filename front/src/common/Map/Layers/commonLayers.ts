@@ -1,7 +1,7 @@
-import { SymbolLayer, LineLayer, CircleLayer } from 'react-map-gl';
-import { Theme } from '../../../types';
+import { SymbolLayer, LineLayer, CircleLayer } from 'react-map-gl/maplibre';
+import { Theme, OmitLayer } from '../../../types';
 
-export function trackNameLayer(colors: Theme): Omit<SymbolLayer, 'id'> {
+export function trackNameLayer(colors: Theme): OmitLayer<SymbolLayer> {
   return {
     type: 'symbol',
     layout: {
@@ -29,7 +29,7 @@ export function trackNameLayer(colors: Theme): Omit<SymbolLayer, 'id'> {
   };
 }
 
-export function lineNameLayer(colors: Theme): Omit<SymbolLayer, 'id'> {
+export function lineNameLayer(colors: Theme): OmitLayer<SymbolLayer> {
   return {
     type: 'symbol',
     layout: {
@@ -48,7 +48,7 @@ export function lineNameLayer(colors: Theme): Omit<SymbolLayer, 'id'> {
   };
 }
 
-export function lineNumberLayer(colors: Theme): Omit<SymbolLayer, 'id'> {
+export function lineNumberLayer(colors: Theme): OmitLayer<SymbolLayer> {
   return {
     type: 'symbol',
     minzoom: 11,
@@ -67,7 +67,7 @@ export function lineNumberLayer(colors: Theme): Omit<SymbolLayer, 'id'> {
   };
 }
 
-export function hoverLayer(): Omit<LineLayer, 'id'> {
+export function hoverLayer(): OmitLayer<LineLayer> {
   return {
     type: 'line',
     paint: {
@@ -77,7 +77,7 @@ export function hoverLayer(): Omit<LineLayer, 'id'> {
   };
 }
 
-export function hoverCircleLayer(): Omit<CircleLayer, 'id'> {
+export function hoverCircleLayer(): OmitLayer<CircleLayer> {
   return {
     type: 'circle',
     paint: {
@@ -87,7 +87,7 @@ export function hoverCircleLayer(): Omit<CircleLayer, 'id'> {
   };
 }
 
-export function selectedLayer(): LineLayer {
+export function selectedLayer(): Omit<LineLayer, 'source'> {
   return {
     id: 'selectedLayer',
     type: 'line',
@@ -98,7 +98,7 @@ export function selectedLayer(): LineLayer {
   };
 }
 
-export function selectedCircleLayer(): CircleLayer {
+export function selectedCircleLayer(): Omit<CircleLayer, 'source'> {
   return {
     id: 'selectedLayer',
     type: 'circle',

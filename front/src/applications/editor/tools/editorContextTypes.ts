@@ -2,10 +2,10 @@ import { Dispatch } from 'redux';
 import { TFunction } from 'i18next';
 import { ComponentType } from 'react';
 import { IconType } from 'react-icons/lib/esm/iconBase';
-import { ViewState } from 'react-map-gl';
+import { ViewState } from 'react-map-gl/maplibre';
+import { Map, MapLayerMouseEvent } from 'maplibre-gl';
 import { ModalContextType } from '../../../common/BootstrapSNCF/ModalSNCF/ModalProvider';
-
-import { EditorEntity, SwitchType, MapLayerMouseEvent } from '../../../types';
+import { EditorEntity, SwitchType } from '../../../types';
 import { EditorState, LayerType } from './types';
 import { switchProps } from './switchProps';
 
@@ -84,7 +84,7 @@ export interface Tool<S> {
   requiredLayers?: Set<LayerType>;
   isDisabled?: (context: ReadOnlyEditorContextType<S>) => boolean;
 
-  // Interactions with Mapbox:
+  // Interactions with MapLibre:
   onMount?: (context: ExtendedEditorContextType<S>) => void;
   onUnmount?: (context: ExtendedEditorContextType<S>) => void;
   onClickMap?: (e: MapLayerMouseEvent, context: ExtendedEditorContextType<S>) => void;
@@ -103,7 +103,7 @@ export interface Tool<S> {
 
   // Display:
   getInteractiveLayers?: (context: ReadOnlyEditorContextType<S>) => string[];
-  layersComponent?: ComponentType<{ map: mapboxgl.Map }>;
+  layersComponent?: ComponentType<{ map: Map }>;
   leftPanelComponent?: ComponentType;
   messagesComponent?: ComponentType;
 }

@@ -22,3 +22,4 @@ export interface PolygonZone {
 }
 export type Zone = RectangleZone | PolygonZone;
 export type SourceLayer = 'sch' | 'geo';
+export type OmitLayer<T> = Omit<T, 'id' | 'source'>;

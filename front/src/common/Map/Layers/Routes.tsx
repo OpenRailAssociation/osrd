@@ -1,9 +1,9 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { CircleLayer, LineLayer, Source, SymbolLayer } from 'react-map-gl';
+import { CircleLayer, LineLayer, Source, SymbolLayer } from 'react-map-gl/maplibre';
 
 import { RootState } from 'reducers';
-import { Theme } from 'types';
+import { Theme, OmitLayer } from 'types';
 import { MAP_URL } from 'common/Map/const';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
@@ -17,8 +17,8 @@ interface RoutesProps {
 export function getRoutesLineLayerProps(params: {
   colors: Theme;
   sourceTable?: string;
-}): Omit<LineLayer, 'id'> {
-  const res: Omit<LineLayer, 'id'> = {
+}): OmitLayer<LineLayer> {
+  const res: OmitLayer<LineLayer> = {
     type: 'line',
     minzoom: 6,
     maxzoom: 24,
@@ -43,8 +43,8 @@ export function getRoutesLineLayerProps(params: {
 export function getRoutesPointLayerProps(params: {
   colors: Theme;
   sourceTable?: string;
-}): Omit<CircleLayer, 'id'> {
-  const res: Omit<CircleLayer, 'id'> = {
+}): OmitLayer<CircleLayer> {
+  const res: OmitLayer<CircleLayer> = {
     type: 'circle',
     paint: {
       'circle-stroke-color': 'rgba(255, 182, 18, 0.5)',
@@ -60,8 +60,8 @@ export function getRoutesPointLayerProps(params: {
 export function getRoutesTextLayerProps(params: {
   colors: Theme;
   sourceTable?: string;
-}): Omit<SymbolLayer, 'id'> {
-  const res: Omit<SymbolLayer, 'id'> = {
+}): OmitLayer<SymbolLayer> {
+  const res: OmitLayer<SymbolLayer> = {
     type: 'symbol',
     minzoom: 9,
     maxzoom: 24,

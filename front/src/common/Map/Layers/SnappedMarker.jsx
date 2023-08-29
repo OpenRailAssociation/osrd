@@ -1,12 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Marker } from 'react-map-gl';
+import { Marker } from 'react-map-gl/maplibre';
 
 function SearchMarker(props) {
   const { geojson } = props;
   return (
     <Marker
-      className="map-search-marker"
       longitude={geojson.geometry.coordinates[0]}
       latitude={geojson.geometry.coordinates[1]}
       captureClick={false}

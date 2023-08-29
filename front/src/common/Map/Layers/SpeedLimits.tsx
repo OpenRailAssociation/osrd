@@ -1,13 +1,12 @@
 import React from 'react';
 import { isNil } from 'lodash';
 import { useSelector } from 'react-redux';
-import { Layer, LineLayer } from 'mapbox-gl';
-import { Source, SymbolLayer } from 'react-map-gl';
+import { Source, SymbolLayer, LineLayer } from 'react-map-gl/maplibre';
+import { ExpressionSpecification, FilterSpecification } from 'maplibre-gl';
 
 import { RootState } from 'reducers';
 import { MAP_URL } from 'common/Map/const';
-import { Theme } from 'types';
-
+import { Theme, OmitLayer } from 'types';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import { MapState } from '../../../reducers/map';
@@ -26,18 +25,20 @@ export function getSpeedSectionsNameString(rawSpeed: number) {
   return Math.round(rawSpeed * 3.6);
 }
 
-export function getSpeedSectionsName(layersSettings: MapState['layersSettings']) {
+export function getSpeedSectionsName(
+  layersSettings: MapState['layersSettings']
+): ExpressionSpecification {
   const tag = getSpeedSectionsTag(layersSettings);
 
   return [
     'round',
-    ['*', 3.6, ['case', ['!=', ['get', tag], null], ['get', tag], ['get', 'speed_limit']]],
+    ['*', 3.6, ['case', ['!=', ['get', tag], 'null'], ['get', tag], ['get', 'speed_limit']]],
   ];
 }
 
 export function getSpeedSectionsFilter(
   layersSettings: MapState['layersSettings']
-): Layer['filter'] {
+): FilterSpecification {
   return layersSettings.speedlimittag === 'undefined'
     ? ['all', ['has', 'speed_limit']]
     : ['all', ['has', getSpeedSectionsTag(layersSettings)]];
@@ -50,8 +51,8 @@ export function getSpeedSectionsLineLayerProps({
   colors?: Theme;
   sourceTable?: string;
   layersSettings: MapState['layersSettings'];
-}): Omit<LineLayer, 'id'> {
-  const res: Omit<LineLayer, 'id'> = {
+}): OmitLayer<LineLayer> {
+  const res: OmitLayer<LineLayer> = {
     type: 'line',
     minzoom: 6,
     maxzoom: 24,
@@ -103,8 +104,8 @@ export function getSpeedSectionsPointLayerProps({
   colors: Theme;
   sourceTable?: string;
   layersSettings: MapState['layersSettings'];
-}): Omit<SymbolLayer, 'id'> {
-  const res: Omit<SymbolLayer, 'id'> = {
+}): OmitLayer<SymbolLayer> {
+  const res: OmitLayer<SymbolLayer> = {
     type: 'symbol',
     minzoom: 9,
     maxzoom: 24,
@@ -141,8 +142,8 @@ export function getSpeedSectionsTextLayerProps({
   colors: Theme;
   sourceTable?: string;
   layersSettings: MapState['layersSettings'];
-}): Omit<SymbolLayer, 'id'> {
-  const res: Omit<SymbolLayer, 'id'> = {
+}): OmitLayer<SymbolLayer> {
+  const res: OmitLayer<SymbolLayer> = {
     type: 'symbol',
     minzoom: 9,
     maxzoom: 24,

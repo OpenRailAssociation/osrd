@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { Source, LayerProps } from 'react-map-gl';
+import { Source, LayerProps } from 'react-map-gl/maplibre';
 
 import { RootState } from 'reducers';
 import { MAP_URL } from 'common/Map/const';

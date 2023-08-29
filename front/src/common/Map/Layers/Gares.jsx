@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Source, Layer } from 'react-map-gl';
+import { Source, Layer } from 'react-map-gl/maplibre';
 
 export default class Gares extends React.Component {
   static propTypes = {

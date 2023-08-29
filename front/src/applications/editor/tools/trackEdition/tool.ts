@@ -10,7 +10,7 @@ import getNearestPoint from '@turf/nearest-point';
 import { featureCollection } from '@turf/helpers';
 
 import { entityDoUpdate } from 'common/IntervalsDataViz/data';
-import { getMapMouseEventNearestFeature } from '../../../../utils/mapboxHelper';
+import { getMapMouseEventNearestFeature } from '../../../../utils/mapHelper';
 import {
   POINTS_LAYER_ID,
   TRACK_LAYER_ID,

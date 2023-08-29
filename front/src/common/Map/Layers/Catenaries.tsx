@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { Source, LayerProps } from 'react-map-gl';
+import { Source, LayerProps } from 'react-map-gl/maplibre';
 
 import { RootState } from 'reducers';
 import { Theme } from 'types';
@@ -84,12 +84,7 @@ export function getCatenariesTextParams({
       'symbol-placement': 'line-center',
       'text-field': '{voltage}V',
       'text-offset': [0, -1],
-      'text-size': {
-        stops: [
-          [10, 9],
-          [14, 10],
-        ],
-      },
+      'text-size': ['interpolate', ['linear'], ['zoom'], 10, 9, 14, 10],
       'text-allow-overlap': false,
       'text-ignore-placement': false,
       'text-pitch-alignment': 'auto',

@@ -8,7 +8,7 @@ export const FormLineStringLength: React.FC<WidgetProps> = (props) => {
   const { t } = useTranslation();
   const { id, value, required, readonly, onChange, formContext } = props;
 
-  const [length, setLength] = useState<number | string>(value);
+  const [length, setLength] = useState<number>(value);
   const [min, setMin] = useState<number>(-Infinity);
   const [max, setMax] = useState<number>(Infinity);
   const [geoLength, setGeoLength] = useState<number>(0);
@@ -44,7 +44,7 @@ export const FormLineStringLength: React.FC<WidgetProps> = (props) => {
           type="number"
           value={!isNil(length) ? length : ''}
           onChange={(e) => {
-            setLength(e.target.value);
+            setLength(e.target.valueAsNumber);
             onChange(!isEmpty(e.target.value) ? toNumber(e.target.value) : null);
           }}
         />

@@ -1,9 +1,9 @@
 import React, { FC, useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
-import maplibregl from 'maplibre-gl';
+import { MapLayerMouseEvent } from 'maplibre-gl';
 import WebMercatorViewport from 'viewport-mercator-project';
-import ReactMapGL, { AttributionControl, ScaleControl, MapRef } from 'react-map-gl';
+import ReactMapGL, { AttributionControl, ScaleControl, MapRef } from 'react-map-gl/maplibre';
 import { Feature, LineString } from 'geojson';
 import { lineString, point, BBox } from '@turf/helpers';
 import along from '@turf/along';
@@ -69,7 +69,6 @@ import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import Terrain from 'common/Map/Layers/Terrain';
 import { getTerrain3DExaggeration } from 'reducers/map/selectors';
-import { MapLayerMouseEvent } from '../../../../types';
 
 function getPosition(
   positionValues: PositionValues,
@@ -382,7 +381,6 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
       <MapButtons resetPitchBearing={resetPitchBearing} />
       <ReactMapGL
         {...viewport}
-        mapLib={maplibregl}
         cursor="pointer"
         ref={mapRef}
         style={{ width: '100%', height: '100%' }}
@@ -428,7 +426,7 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
           </>
         )}
 
-        {/* Have to  duplicate objects with sourceLayer to avoid cache problems in mapbox */}
+        {/* Have to  duplicate objects with sourceLayer to avoid cache problems */}
         {mapTrackSources === 'geographic' ? (
           <>
             <Platforms

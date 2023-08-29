@@ -1,22 +1,20 @@
 /* eslint-disable react/jsx-pascal-case */
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { Source } from 'react-map-gl';
-
 import { RootState } from 'reducers';
-import { MAP_URL } from 'common/Map/const';
-import { SourceLayer, LineLayer, SymbolLayer, Theme } from 'types';
-
-import OrderedLayer from 'common/Map/Layers/OrderedLayer';
-import { getInfraID } from 'reducers/osrdconf/selectors';
-
-import { MapState } from 'reducers/map';
+import { LineLayer, SymbolLayer, Source } from 'react-map-gl/maplibre';
 import { isNil } from 'lodash';
-import { Layer } from 'mapbox-gl';
 import { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
+import { FilterSpecification } from 'maplibre-gl';
+
+import { MAP_URL } from 'common/Map/const';
+import OrderedLayer from 'common/Map/Layers/OrderedLayer';
+import { getInfraID } from 'reducers/osrdconf/selectors';
+import { MapState } from 'reducers/map';
 import SNCF_LPV_Panels from './SNCF_LPV_PANELS';
 import { getSpeedSectionsTag, getSpeedSectionsName } from '../../SpeedLimits';
+import { Theme, SourceLayer, OmitLayer } from '../../../../../types';
 
 interface SNCF_LPVProps {
   geomType: SourceLayer;
@@ -24,7 +22,7 @@ interface SNCF_LPVProps {
   layerOrder?: number;
 }
 
-export function getLPVFilter(layersSettings: MapState['layersSettings']): Layer['filter'] {
+export function getLPVFilter(layersSettings: MapState['layersSettings']): FilterSpecification {
   return ['any', ['has', 'speed_limit'], ['has', getSpeedSectionsTag(layersSettings)]];
 }
 
@@ -38,8 +36,8 @@ export function getLPVSpeedValueLayerProps({
   sourceTable?: string;
   layersSettings: MapState['layersSettings'];
   t?: TFunction;
-}): Omit<SymbolLayer, 'id'> {
-  const res: Omit<SymbolLayer, 'id'> = {
+}): OmitLayer<SymbolLayer> {
+  const res: OmitLayer<SymbolLayer> = {
     type: 'symbol',
     minzoom: 9,
     maxzoom: 24,
@@ -79,8 +77,8 @@ export function getLPVSpeedLineBGLayerProps({
   colors?: Theme;
   sourceTable?: string;
   layersSettings?: MapState['layersSettings'];
-}): Omit<LineLayer, 'id'> {
-  const res: Omit<LineLayer, 'id'> = {
+}): OmitLayer<LineLayer> {
+  const res: OmitLayer<LineLayer> = {
     type: 'line',
     minzoom: 6,
     maxzoom: 24,
@@ -109,8 +107,8 @@ export function getLPVSpeedLineLayerProps({
   colors?: Theme;
   sourceTable?: string;
   layersSettings: MapState['layersSettings'];
-}): Omit<LineLayer, 'id'> {
-  const res: Omit<LineLayer, 'id'> = {
+}): OmitLayer<LineLayer> {
+  const res: OmitLayer<LineLayer> = {
     type: 'line',
     minzoom: 6,
     maxzoom: 24,

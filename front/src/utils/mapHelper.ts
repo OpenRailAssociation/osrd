@@ -6,7 +6,7 @@ import bbox from '@turf/bbox';
 import lineIntersect from '@turf/line-intersect';
 import lineSlice from '@turf/line-slice';
 import WebMercatorViewport from 'viewport-mercator-project';
-import { ViewState } from 'react-map-gl';
+import { ViewState } from 'react-map-gl/maplibre';
 import { BBox, Coord, featureCollection } from '@turf/helpers';
 import {
   Feature,
@@ -22,8 +22,9 @@ import nearestPointOnLine from '@turf/nearest-point-on-line';
 import nearestPoint, { NearestPoint } from '@turf/nearest-point';
 import fnDistance from '@turf/distance';
 import fnExplode from '@turf/explode';
-import { Zone, MapLayerMouseEvent, MapboxGeoJSONFeature } from '../types';
+import { MapLayerMouseEvent, MapGeoJSONFeature } from 'maplibre-gl';
 import { getAngle } from '../applications/editor/data/utils';
+import { Zone } from '../types';
 
 /**
  * This helpers transforms a given Zone object to the related Feature object (mainly to use with
@@ -310,7 +311,7 @@ export function getNearestPoint(
 export function getMapMouseEventNearestFeature(
   e: MapLayerMouseEvent,
   opts?: { layersId?: string[]; tolerance?: number; excludeOsm?: boolean }
-): { feature: MapboxGeoJSONFeature; nearest: number[]; distance: number } | null {
+): { feature: MapGeoJSONFeature; nearest: number[]; distance: number } | null {
   const layers = opts?.layersId;
   const tolerance = opts?.tolerance || 15;
   const excludeOsm = opts?.excludeOsm || true;
@@ -330,14 +331,6 @@ export function getMapMouseEventNearestFeature(
   const result = head(
     sortBy(
       features.map((feature) => {
-        // Those features lack a proper "geometry", and have a "_geometry"
-        // instead. This fixes it:
-        feature = {
-          ...feature,
-          // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/no-explicit-any
-          geometry: feature.geometry || (feature as any)._geometry,
-        };
-
         let distance = Infinity;
         let nearestFeaturePoint: Feature<Point> | null = null;
         switch (feature.geometry.type) {

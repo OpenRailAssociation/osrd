@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Source, LayerProps } from 'react-map-gl';
+import { Source, LayerProps } from 'react-map-gl/maplibre';
 
 import mapStyleJson from 'assets/mapstyles/OSMStyle.json';
 import mapStyleDarkJson from 'assets/mapstyles/OSMDarkStyle.json';
