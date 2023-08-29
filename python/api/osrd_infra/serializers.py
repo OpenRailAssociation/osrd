@@ -146,6 +146,7 @@ class PathInputSerializer(Serializer):
         child=serializers.PrimaryKeyRelatedField(queryset=RollingStock.objects.all()),
         required=False,
     )
+    routes_or_blocks = serializers.CharField(max_length=255)
 
 
 class PathOPInputSerializer(Serializer):

@@ -63,11 +63,18 @@ def compute_path_payload(infra, back_payload, step_durations, track_map) -> Path
 
 
 def request_pathfinding(payload):
-    response = requests.post(
-        f"{settings.OSRD_BACKEND_URL}/pathfinding/routes",
-        headers={"Authorization": "Bearer " + settings.OSRD_BACKEND_TOKEN},
-        json=payload,
-    )
+    if payload["routes_or_blocks"] == "routes":
+        response = requests.post(
+            f"{settings.OSRD_BACKEND_URL}/pathfinding/routes",
+            headers={"Authorization": "Bearer " + settings.OSRD_BACKEND_TOKEN},
+            json=payload,
+        )
+    elif payload["routes_or_blocks"] == "blocks":
+        response = requests.post(
+            f"{settings.OSRD_BACKEND_URL}/pathfinding/blocks",
+            headers={"Authorization": "Bearer " + settings.OSRD_BACKEND_TOKEN},
+            json=payload,
+        )
     if not response:
         raise make_exception_from_error(response, InvalidPathfindingInput, InternalPathfindingError)
     return response.json()
@@ -187,6 +194,7 @@ def compute_path(path, request_data, owner):
             "expected_version": infra.version,
             "waypoints": waypoints,
             "rolling_stocks": [rs.to_schema().dict() for rs in rolling_stocks],
+            "routes_or_blocks": request_data["routes_or_blocks"]
         }
     )
     postprocess_path(path, payload, infra, owner, step_durations)
