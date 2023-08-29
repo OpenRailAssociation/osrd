@@ -1,6 +1,6 @@
 import React from 'react';
 import { Dispatch } from 'redux';
-import { IconType } from 'react-icons/lib/esm/iconBase';
+import { IconType } from 'react-icons';
 import { BiTargetLock } from 'react-icons/bi';
 import { BsFillExclamationOctagonFill } from 'react-icons/bs';
 import { FiLayers, FiZoomIn, FiZoomOut } from 'react-icons/fi';

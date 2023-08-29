@@ -1,5 +1,8 @@
 import React from 'react';
-import { BiLoader, BiSelection, BsCursor, BsTrash, FaDrawPolygon, FiEdit } from 'react-icons/all';
+import { BiLoader, BiSelection } from 'react-icons/bi';
+import { BsCursor, BsTrash } from 'react-icons/bs';
+import { FaDrawPolygon } from 'react-icons/fa';
+import { FiEdit } from 'react-icons/fi';
 import { PointLike } from 'mapbox-gl';
 import { isEqual, max, min } from 'lodash';
 

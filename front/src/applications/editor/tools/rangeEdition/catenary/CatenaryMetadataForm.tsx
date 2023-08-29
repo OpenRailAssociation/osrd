@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import EditorContext from 'applications/editor/context';
 import { CatenaryEntity } from 'types';
-import { GiElectric } from 'react-icons/all';
+import { GiElectric } from 'react-icons/gi';
 import { cloneDeep } from 'lodash';
 import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import { ExtendedEditorContextType } from '../../editorContextTypes';
