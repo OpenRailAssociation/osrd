@@ -15,7 +15,7 @@ services:
       - "psql_data:/var/lib/postgresql/data"
       - "./init_db.sql:/docker-entrypoint-initdb.d/init.sql"
     healthcheck:
-      test: ["CMD", "sh", "-c", '[ "$$(cat /proc/1/cmdline)" = postgres ] && pg_isready']
+      test: ["CMD", "pg_isready"]
       start_period: 4s
       interval: 5s
 
