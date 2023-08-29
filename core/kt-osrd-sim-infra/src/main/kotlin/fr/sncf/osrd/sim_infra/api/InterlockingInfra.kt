@@ -72,11 +72,15 @@ interface RoutingInfra : ReservationInfra {
     fun getRoutePath(route: RouteId): StaticIdxList<ZonePath>
     @JvmName("getRouteName")
     fun getRouteName(route: RouteId): String?
+    @JvmName("getRouteFromName")
+    fun getRouteFromName(name: String): RouteId
 
     /** Returns a list of indices of zones in the train path at which the reservations shall be released. */
     fun getRouteReleaseZones(route: RouteId): IntArray
     @JvmName("getChunksOnRoute")
     fun getChunksOnRoute(route: RouteId): DirStaticIdxList<TrackChunk>
+    @JvmName("getRouteTracks")
+    fun getRouteTracks(route: RouteId): DirStaticIdxList<TrackSection>
     @JvmName("getRoutesOnTrackChunk")
     fun getRoutesOnTrackChunk(trackChunk: DirTrackChunkId): StaticIdxList<Route>
 }

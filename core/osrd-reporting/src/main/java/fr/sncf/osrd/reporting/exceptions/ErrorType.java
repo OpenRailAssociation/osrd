@@ -273,6 +273,16 @@ public enum ErrorType {
             "unknown allowance value type",
             ErrorCause.USER
     ),
+    UnknownRoute(
+            "unknown_route",
+            "unknown route",
+            ErrorCause.USER
+    ),
+    DuplicateRoute(
+            "duplicate_route",
+            "Two routes have the same name",
+            ErrorCause.USER
+    ),
     MissingAttributeError(
             "missing_attribute",
             "referencing missing attribute",

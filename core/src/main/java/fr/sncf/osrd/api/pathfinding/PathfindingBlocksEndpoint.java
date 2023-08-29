@@ -2,10 +2,14 @@ package fr.sncf.osrd.api.pathfinding;
 
 import static fr.sncf.osrd.api.pathfinding.RemainingDistanceEstimator.minDistanceBetweenSteps;
 import static fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection.START_TO_STOP;
+import static fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection.STOP_TO_START;
 import static fr.sncf.osrd.sim_infra.api.TrackInfraKt.getTrackSectionFromNameOrThrow;
+import static fr.sncf.osrd.sim_infra.api.TrackNetworkInfraKt.getTrackEndpoint;
 import static fr.sncf.osrd.utils.KtToJavaConverter.toIntList;
 import static fr.sncf.osrd.utils.KtToJavaConverter.toIntSet;
 import static fr.sncf.osrd.utils.indexing.DirStaticIdxKt.toValue;
+import static fr.sncf.osrd.utils.units.Distance.fromMeters;
+import static fr.sncf.osrd.utils.units.Distance.toMeters;
 
 import fr.sncf.osrd.api.ExceptionHandler;
 import fr.sncf.osrd.api.FullInfra;
@@ -18,6 +22,7 @@ import fr.sncf.osrd.api.pathfinding.response.PathfindingResult;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.railjson.parser.RJSRollingStockParser;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
+import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSDirectionalTrackRange;
 import fr.sncf.osrd.reporting.exceptions.ErrorType;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
@@ -27,7 +32,6 @@ import fr.sncf.osrd.utils.graph.GraphAdapter;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import fr.sncf.osrd.utils.graph.functional_interfaces.AStarHeuristic;
 import fr.sncf.osrd.utils.graph.functional_interfaces.EdgeToRanges;
-import fr.sncf.osrd.utils.units.Distance;
 import org.takes.Request;
 import org.takes.Response;
 import org.takes.Take;
@@ -37,10 +41,13 @@ import org.takes.rs.RsText;
 import org.takes.rs.RsWithBody;
 import org.takes.rs.RsWithStatus;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 public class PathfindingBlocksEndpoint implements Take {
@@ -84,6 +91,8 @@ public class PathfindingBlocksEndpoint implements Take {
 
             PathfindingResult res = PathfindingResultConverter.convert(infra.blockInfra(), infra.rawInfra(),
                     path, recorder);
+
+            validatePathfindingResult(res, reqWaypoints, infra.rawInfra());
 
             return new RsJson(new RsWithBody(PathfindingResult.adapterResult.toJson(res)));
         } catch (Throwable ex) {
@@ -215,7 +224,7 @@ public class PathfindingBlocksEndpoint implements Take {
 
     private static Integer getTrackSectionChunkOnWaypoint(int trackSectionId, double waypointOffset,
                                                           RawSignalingInfra rawInfra) {
-        var waypointOffsetMilli = Distance.fromMeters(waypointOffset);
+        var waypointOffsetMilli = fromMeters(waypointOffset);
         var trackSectionChunks = toIntList(rawInfra.getTrackSectionChunks(trackSectionId));
         return trackSectionChunks.stream()
                 .filter(chunk -> {
@@ -231,7 +240,7 @@ public class PathfindingBlocksEndpoint implements Take {
 
     private static double getBlockOffset(int blockId, int trackChunkId, int trackSectionId, double waypointOffsetMeters,
                                          EdgeDirection direction, FullInfra infra) {
-        var waypointOffset = Distance.fromMeters(waypointOffsetMeters);
+        var waypointOffset = fromMeters(waypointOffsetMeters);
         var trackSectionLength = infra.rawInfra().getTrackSectionLength(trackSectionId);
         var trackChunkOffset = infra.rawInfra().getTrackChunkOffset(trackChunkId);
         var trackChunkLength = infra.rawInfra().getTrackChunkLength(trackChunkId);
@@ -252,5 +261,85 @@ public class PathfindingBlocksEndpoint implements Take {
         }
         throw new AssertionError(
                 String.format("getBlockOffset: Track chunk %s not in block %s", trackChunkId, blockId));
+    }
+
+    private void validatePathfindingResult(PathfindingResult res, PathfindingWaypoint[][] reqWaypoints,
+                                           RawSignalingInfra rawInfra) {
+        var routeTracks = res.routePaths.stream()
+                .flatMap(rjsRoutePath ->
+                        toIntList(rawInfra.getRouteTracks(rawInfra.getRouteFromName(rjsRoutePath.route))).stream())
+                .distinct()
+                .toList();
+        assertPathRoutesAreAdjacent(routeTracks, rawInfra);
+
+        var tracksOnPath = res.routePaths.stream()
+                .flatMap(route -> route.trackSections.stream())
+                .toList();
+        assertPathTracksAreComplete(tracksOnPath, rawInfra);
+        assertRequiredWaypointsOnPathTracks(reqWaypoints, tracksOnPath);
+    }
+
+    private void assertPathRoutesAreAdjacent(List<Integer> routeTracks, RawSignalingInfra rawInfra) {
+        for (int i = 0; i < routeTracks.size() - 1; i++) {
+            var nextTrackSections = toIntList(rawInfra.getNextTrackSections(getTrackEndpoint(routeTracks.get(i))));
+            assert nextTrackSections.contains(routeTracks.get(i + 1))
+                    : "The path goes over consecutive tracks that are not adjacent";
+        }
+    }
+
+    private void assertPathTracksAreComplete(List<RJSDirectionalTrackRange> tracksOnPath, RawSignalingInfra rawInfra) {
+        int i = 0;
+        while (i < tracksOnPath.size()) {
+            var track = tracksOnPath.get(i);
+            var trackName = track.trackSectionID;
+            var fullTrack = new ArrayList<>(tracksOnPath.stream()
+                    .filter(trackOnPath -> Objects.equals(trackOnPath.trackSectionID, track.trackSectionID))
+                    .toList());
+            var fullTrackLength =
+                    toMeters(rawInfra.getTrackSectionLength(getTrackSectionFromNameOrThrow(trackName, rawInfra)));
+
+            var beginEndpoint = fullTrack.get(0).begin;
+            var endEndpoint = fullTrack.get(fullTrack.size() - 1).end;
+            var trackBegin = 0.;
+            var trackEnd = fullTrackLength;
+            if (track.direction.equals(STOP_TO_START)) {
+                beginEndpoint = fullTrack.get(0).end;
+                endEndpoint = fullTrack.get(fullTrack.size() - 1).begin;
+                trackBegin = fullTrackLength;
+                trackEnd = 0.;
+                Collections.reverse(fullTrack);
+            }
+
+            // The first track starts at the first waypoint offset, hence it does not need to start at a track endpoint
+            assert i == 0 || beginEndpoint == trackBegin
+                    : String.format("The path goes through the track %s without starting at its endpoint", trackName);
+
+            i += fullTrack.size();
+            // The last track ends at the last waypoint offset, hence it does not need to end at a track endpoint
+            assert i == tracksOnPath.size() || Math.abs(endEndpoint - trackEnd) < 1e-3
+                    : String.format("The path goes through the track %s without ending at its endpoint", trackName);
+
+            // The track should be whole
+            for (int j = 0; j < fullTrack.size() - 1; j++) {
+                assert Math.abs(fullTrack.get(j).end - fullTrack.get(j + 1).begin) < 1e-3
+                        : String.format("The path goes through a partially incomplete track %s", trackName);
+            }
+        }
+    }
+
+    private void assertRequiredWaypointsOnPathTracks(PathfindingWaypoint[][] reqWaypoints,
+                                                     List<RJSDirectionalTrackRange> tracksOnPath) {
+        // Checks that at least one waypoint of each step is on the path
+        assert Arrays.stream(reqWaypoints).allMatch(step -> Arrays.stream(step)
+                .anyMatch(waypoint -> tracksOnPath.stream()
+                        .anyMatch(trackOnPath -> isWaypointOnTrack(waypoint, trackOnPath))))
+                : "The path does not contain one of the wanted steps";
+    }
+
+    private boolean isWaypointOnTrack(PathfindingWaypoint waypoint, RJSDirectionalTrackRange track) {
+        return Objects.equals(track.trackSectionID, waypoint.trackSection)
+                && Objects.equals(track.direction, waypoint.direction)
+                && (track.begin <= waypoint.offset || Math.abs(track.begin - waypoint.offset) < 1e-3)
+                && (track.end >= waypoint.offset || Math.abs(track.end - waypoint.offset) < 1e-3);
     }
 }

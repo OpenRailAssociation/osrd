@@ -27,12 +27,14 @@ typealias TrackNodePortId = StaticIdx<TrackNodePort>
 sealed interface TrackNodeConfig
 typealias TrackNodeConfigId = StaticIdx<TrackNodeConfig>
 
-
+@Suppress("INAPPLICABLE_JVM_NAME")
 interface TrackNetworkInfra {
-    fun getNextTrackSection(current: DirTrackSectionId, config: TrackNodeConfigId): OptDirTrackSectionId
+    fun getNextTrackSection(current: EndpointTrackSectionId, config: TrackNodeConfigId): OptDirTrackSectionId
+    @JvmName("getNextTrackSections")
+    fun getNextTrackSections(trackEndpoint: EndpointTrackSectionId): DirStaticIdxList<TrackSection>
 
-    fun getNextTrackNode(trackSection: DirTrackSectionId): OptStaticIdx<TrackNode>
-    fun getNextTrackNodePort(trackSection: DirTrackSectionId): OptStaticIdx<TrackNodePort>
+    fun getNextTrackNode(trackEndpoint: EndpointTrackSectionId): OptStaticIdx<TrackNode>
+    fun getNextTrackNodePort(trackEndpoint: EndpointTrackSectionId): OptStaticIdx<TrackNodePort>
     /** Returns the track section which is plugged into a given node port */
     fun getPortTrackSection(trackNode: TrackNodeId, port: TrackNodePortId): EndpointTrackSectionId
 
@@ -67,3 +69,8 @@ typealias EndpointTrackSectionId = EndpointStaticIdx<TrackSection>
 typealias OptEndpointTrackSectionId = OptEndpointStaticIdx<TrackSection>
 val TrackSectionId.start get() = EndpointTrackSectionId(this, Endpoint.START)
 val TrackSectionId.end get() = EndpointTrackSectionId(this, Endpoint.END)
+
+@JvmName("getTrackEndpoint")
+fun getTrackEndpoint(trackSection: DirTrackSectionId): EndpointTrackSectionId {
+    return EndpointTrackSectionId(trackSection.value, trackSection.direction.toEndpoint);
+}

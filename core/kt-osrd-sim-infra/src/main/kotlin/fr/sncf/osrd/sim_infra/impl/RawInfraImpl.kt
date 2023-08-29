@@ -1,6 +1,8 @@
 package fr.sncf.osrd.sim_infra.impl
 
 import fr.sncf.osrd.geom.LineString
+import fr.sncf.osrd.reporting.exceptions.ErrorType
+import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.*
 import fr.sncf.osrd.utils.indexing.*
@@ -121,7 +123,7 @@ class RawInfraImpl(
     val trackNodePool: StaticPool<TrackNode, TrackNodeDescriptor>,
     val trackSectionPool: StaticPool<TrackSection, TrackSectionDescriptor>,
     val trackChunkPool: StaticPool<TrackChunk, TrackChunkDescriptor>,
-    val nextNode: IdxMap<DirTrackSectionId, TrackNodeId>,
+    val nextNode: IdxMap<EndpointTrackSectionId, TrackNodeId>,
     val zonePool: StaticPool<Zone, ZoneDescriptor>,
     val detectorPool: StaticPool<Detector, String?>,
     val nextZones: IdxMap<DirDetectorId, ZoneId>,
@@ -132,6 +134,7 @@ class RawInfraImpl(
     val zonePathMap: Map<ZonePathSpec, ZonePathId>,
     val operationalPointPartPool: StaticPool<OperationalPointPart, OperationalPointPartDescriptor>,
     val trackSectionNameMap: Map<String, TrackSectionId>,
+    val routeNameMap: Map<String, RouteId>,
 ) : RawInfra {
     override val trackNodes: StaticIdxSpace<TrackNode>
         get() = trackNodePool.space()
@@ -313,7 +316,7 @@ class RawInfraImpl(
     }
 
     override fun getNextTrackSection(
-        current: DirTrackSectionId,
+        current: EndpointTrackSectionId,
         config: TrackNodeConfigId
     ): OptDirTrackSectionId {
         val currentPort = getNextTrackNodePort(current)
@@ -331,16 +334,29 @@ class RawInfraImpl(
         )
     }
 
-    override fun getNextTrackNode(trackSection: DirTrackSectionId): OptStaticIdx<TrackNode> {
-        val res = nextNode[trackSection] ?: return OptStaticIdx()
+    override fun getNextTrackSections(trackEndpoint: EndpointTrackSectionId): DirStaticIdxList<TrackSection> {
+        val nextTrackSections = mutableDirStaticIdxArrayListOf<TrackSection>()
+        val node = getNextTrackNode(trackEndpoint)
+        if (!node.isNone) {
+            val configs = getTrackNodeConfigs(node.asIndex())
+            for (config in configs) {
+                val nextTrackSection = getNextTrackSection(trackEndpoint, config)
+                if (!nextTrackSection.isNone)
+                    nextTrackSections.add(nextTrackSection.asIndex())
+            }
+        }
+        return nextTrackSections
+    }
+
+    override fun getNextTrackNode(trackEndpoint: EndpointTrackSectionId): OptStaticIdx<TrackNode> {
+        val res = nextNode[trackEndpoint] ?: return OptStaticIdx()
         return OptStaticIdx(res.index)
     }
 
-    override fun getNextTrackNodePort(trackSection: DirTrackSectionId): OptStaticIdx<TrackNodePort> {
-        val node = getNextTrackNode(trackSection)
+    override fun getNextTrackNodePort(trackEndpoint: EndpointTrackSectionId): OptStaticIdx<TrackNodePort> {
+        val node = getNextTrackNode(trackEndpoint)
         if (node.isNone)
             return OptStaticIdx()
-        val trackEndpoint = EndpointTrackSectionId(trackSection.value, trackSection.direction.toEndpoint)
         val nodeDescriptor = trackNodePool[node.asIndex()]
         for (i in 0u until nodeDescriptor.ports.size) {
             val id = StaticIdx<TrackNodePort>(i)
@@ -459,11 +475,26 @@ class RawInfraImpl(
         return routeDescriptors[route].name
     }
 
+    override fun getRouteFromName(name: String): RouteId {
+        return routeNameMap[name] ?: throw OSRDError(ErrorType.UnknownRoute)
+    }
+
     override fun getRouteReleaseZones(route: RouteId): IntArray {
         return routeDescriptors[route].releaseZones
     }
 
     override fun getChunksOnRoute(route: RouteId): DirStaticIdxList<TrackChunk> {
         return routeDescriptors[route].chunks
+    }
+
+    override fun getRouteTracks(route: RouteId): DirStaticIdxList<TrackSection> {
+        val routeTracks = mutableDirStaticIdxArrayListOf<TrackSection>()
+        for (routeChunk in getChunksOnRoute(route)) {
+            val currentTrack = DirStaticIdx(trackChunkPool[routeChunk.value].track, routeChunk.direction)
+            if (currentTrack != routeTracks.lastOrNull()) {
+                routeTracks.add(DirStaticIdx(trackChunkPool[routeChunk.value].track, routeChunk.direction))
+            }
+        }
+        return routeTracks
     }
 }
