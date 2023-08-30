@@ -5,6 +5,7 @@ use crate::core::{AsCoreRequest, CoreClient};
 use crate::diesel::BelongingToDsl;
 use crate::error::Result;
 use crate::models::train_schedule::filter_invalid_trains;
+pub use crate::models::train_schedule::AllowanceValue;
 use crate::models::{Create, SimulationOutput};
 use crate::models::{
     CurveGraph, Infra, PathWaypoint, Pathfinding, PathfindingChangeset, PathfindingPayload,
@@ -57,28 +58,6 @@ pub struct STDCMRequestPayload {
     pub standard_allowance: AllowanceValue,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-#[serde(tag = "value_type", rename_all = "lowercase")]
-pub enum AllowanceValue {
-    TimePerDistance(AllowanceTimePerDistanceValue),
-    Time(AllowanceTimeValue),
-    Percentage(AllowancePercentValue),
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct AllowanceTimePerDistanceValue {
-    minutes: f64,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct AllowanceTimeValue {
-    seconds: f64,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct AllowancePercentValue {
-    percentage: f64,
-}
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct STDCMResponse {
     pub path: STDCMPath,
