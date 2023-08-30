@@ -23,7 +23,7 @@ function Hillshade({ mapStyle, layerOrder, display = true }: HillshadeProps) {
       id="hillshade"
       type="raster-dem"
       encoding="terrarium"
-      tiles={['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png']}
+      url="https://osm.osrd.fr/data/terrain.json"
       tileSize={256}
       maxzoom={12}
     >

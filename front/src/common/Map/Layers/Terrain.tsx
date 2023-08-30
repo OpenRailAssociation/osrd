@@ -7,7 +7,7 @@ export default function Terrain() {
       id="terrain"
       type="raster-dem"
       encoding="terrarium"
-      tiles={['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png']}
+      url="https://osm.osrd.fr/data/terrain.json"
       tileSize={256}
       maxzoom={12}
     />
