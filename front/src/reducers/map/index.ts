@@ -40,7 +40,6 @@ export interface MapSearchMarker {
   lonlat: Position;
 }
 export interface MapState {
-  ref: unknown;
   url: typeof MAP_URL;
   mapStyle: 'normal' | 'dark' | 'blueprint';
   mapTrackSources: 'geographic' | 'schematic';
@@ -80,7 +79,6 @@ export interface MapState {
 }
 
 export const initialState: MapState = {
-  ref: undefined,
   url: MAP_URL,
   mapStyle: 'normal',
   mapTrackSources: 'geographic',
