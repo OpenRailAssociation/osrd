@@ -11,6 +11,7 @@ type RollingStockEditorFormModalProps = {
   mainText: string;
   errorObject?: RollingStockUsage['usage'][];
   buttonText?: string;
+  deleteAction?: boolean;
 };
 
 const RollingStockEditorFormModal = ({
@@ -19,6 +20,7 @@ const RollingStockEditorFormModal = ({
   mainText,
   errorObject,
   buttonText,
+  deleteAction,
 }: RollingStockEditorFormModalProps) => {
   const { closeModal } = useModal();
   const { t } = useTranslation(['translation', 'rollingstock']);
@@ -52,14 +54,14 @@ const RollingStockEditorFormModal = ({
       ) : (
         displayErrorObject(errorObject)
       )}
-      <div className="d-flex justify-content-around w-100">
+      <div className="d-flex justify-content-end w-100">
         <button type="button" className="btn btn-sm btn-primary-gray" onClick={() => closeModal()}>
-          {t('common.back')}
+          {t('common.no')}
         </button>
         {!errorObject && (
           <button
             type="button"
-            className="btn btn-sm btn-primary ml-3"
+            className={`btn btn-sm ${deleteAction ? 'bg-red text-white' : 'btn-primary'} ml-3`}
             onClick={() => {
               if (request) request();
               if (!request && setAddOrEditState) {

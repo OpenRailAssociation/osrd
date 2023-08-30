@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { LightRollingStock, RollingStock } from 'common/api/osrdEditoastApi';
 import { getDocument } from 'common/api/documentApi';
-import placeholderRollingStock from 'assets/pictures/placeholder_rolling_stock.svg';
+import placeholderRollingStockThermal from 'assets/pictures/placeholder_rollingstock_thermal.gif';
+import placeholderRollingStockElectric from 'assets/pictures/placeholder_rollingstock_elec.gif';
 
 const RollingStock2Img: React.FC<{ rollingStock: RollingStock | LightRollingStock }> = ({
   rollingStock,
@@ -17,8 +18,13 @@ const RollingStock2Img: React.FC<{ rollingStock: RollingStock | LightRollingStoc
     if (!rollingStock || !Array.isArray(liveries)) return;
 
     const defaultLivery = liveries.find((livery) => livery.name === 'default');
+    const mode = Object.keys(rollingStock.effort_curves.modes)[0];
     if (!defaultLivery?.compound_image_id) {
-      setImageUrl(placeholderRollingStock);
+      setImageUrl(
+        rollingStock.effort_curves.modes[mode].is_electric
+          ? placeholderRollingStockElectric
+          : placeholderRollingStockThermal
+      );
       return;
     }
 

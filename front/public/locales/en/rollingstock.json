@@ -1,6 +1,7 @@
 {
   "addNewRollingStock": "New rolling stock",
   "cancelAction": "Would you like to cancel this action?",
+  "cancelUpdateRollingStock": "Do you really want to cancel your changes?",
   "chooseRollingStock": "Select a rolling stock to display informations",
   "comfort": "Comfort",
   "comfortAcceleration": "Comfort acceleration",
@@ -11,11 +12,13 @@
   },
   "compatibleVoltages": "Compatible voltages",
   "confirmAction": "Would you like to confirm this action?",
+  "confirmUpdateRollingStock": "Please confirm your changes",
   "copy": "copy",
   "curves": {
     "all": "All curves",
     "default": "Default curve"
   },
+  "deleteRollingStock": "Would you like to delete this rolling stock?",
   "detail": "Detail",
   "effort": "Effort (daN)",
   "electric": "Electric",
@@ -37,7 +40,9 @@
   "inertiaCoefficient": "Factor of inertia",
   "legend": "Legend",
   "length": "Length",
+  "listDisabled": "Please quit edit mode to access the list",
   "loadingGauge": "Gauge",
+  "locked": "Locked",
   "mass": "Mass",
   "maxSpeed": "Maximum speed",
   "messages": {
@@ -58,6 +63,7 @@
   "noDisplayFound": "No display",
   "noResultFound": "No results",
   "noRollingStock": "No selected rollingstock",
+  "notLocked": "Not locked",
   "number": "Number",
   "powerClass": "Power class",
   "powerRestriction": "Power restriction",

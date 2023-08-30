@@ -105,8 +105,6 @@ function RollingStockModal({ ref2scroll }: RollingStockModal) {
           </button>
           <SearchRollingStock
             rollingStocks={rollingStocks}
-            rollingStockID={rollingStockID}
-            setOpenedRollingStockCardId={setOpenRollingStockCardId}
             setFilteredRollingStockList={setFilteredRollingStockList}
             filteredRollingStockList={filteredRollingStockList}
             isSuccess={isSuccess}

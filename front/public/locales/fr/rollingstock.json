@@ -1,6 +1,7 @@
 {
   "addNewRollingStock": "Nouveau matériel roulant",
   "cancelAction": "Souhaitez-vous annuler cette action ?",
+  "cancelUpdateRollingStock": "Annuler la mise à jour du matériel roulant?",
   "chooseRollingStock": "Sélectionnez un matériel roulant pour en afficher les informations.",
   "comfort": "Confort",
   "comfortLevel": "Niveau de confort",
@@ -12,11 +13,13 @@
   },
   "compatibleVoltages": "Voltages Compatibles",
   "confirmAction": "Souhaitez-vous confirmer cette action ?",
+  "confirmUpdateRollingStock": "Confirmer la mise à jour du matériel roulant?",
   "copy": "copie",
   "curves": {
     "all": "Toutes les courbes",
     "default": "Courbe par défaut"
   },
+  "deleteRollingStock": "Voulez-vous supprimer ce matériel roulant ?",
   "detail": "Détail",
   "effort": "Effort (daN)",
   "electric": "Électrique",
@@ -38,7 +41,9 @@
   "inertiaCoefficient": "Coefficient d'inertie",
   "legend": "Légende",
   "length": "Longueur",
+  "listDisabled": "Veuillez quitter l'éditeur pour modifier la séléction",
   "loadingGauge": "Gabarit",
+  "locked": "Verrouillé",
   "mass": "Masse",
   "maxSpeed": "Vitesse maximale",
   "messages": {
@@ -59,6 +64,7 @@
   "noDisplayFound": "Aucune représentation disponible",
   "noResultFound": "Aucun résultat",
   "noRollingStock": "Pas de matériel sélectionné",
+  "notLocked": "Non verrouillé",
   "number": "Numéro",
   "powerClass": "Classe puissance",
   "powerRestriction": "Restriction de puissance",

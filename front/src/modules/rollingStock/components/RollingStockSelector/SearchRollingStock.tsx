@@ -3,13 +3,21 @@ import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { LightRollingStock } from 'common/api/osrdEditoastApi';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { BiLockAlt, BiLockOpenAlt } from 'react-icons/bi';
 import { BsLightningFill } from 'react-icons/bs';
 import { MdLocalGasStation } from 'react-icons/md';
 
+// text: a string to search in the rolling stock name, detail, reference, series, type, grouping
+// elec: true if the rolling stock has an electric mode
+// thermal: true if the rolling stock has a thermal mode
+// locked: true if the rolling stock is native in the database, can't be updated/deleted
+// notLocked: true if the rolling stock is created by the user, can be updated/deleted
 interface Filters {
   text: string;
   elec: boolean;
   thermal: boolean;
+  locked: boolean;
+  notLocked: boolean;
 }
 
 export function rollingStockPassesEnergeticModeFilters(
@@ -30,13 +38,13 @@ export function rollingStockPassesEnergeticModeFilters(
 function rollingStockPassesSearchedStringFilter(
   name: string,
   metadata: LightRollingStock['metadata'],
-  filterList: Filters
+  filters: Filters
 ) {
-  if (!filterList.text) {
+  if (!filters.text) {
     return true;
   }
   function includesSearchedString(str: string) {
-    return str && str.toLowerCase().includes(filterList.text);
+    return str && str.toLowerCase().includes(filters.text);
   }
   return [
     name,
@@ -48,25 +56,44 @@ function rollingStockPassesSearchedStringFilter(
   ].some(includesSearchedString);
 }
 
-function filterRollingStocks(rollingStockList: LightRollingStock[], filterList: Filters) {
-  return rollingStockList?.filter(({ name, metadata, effort_curves: effortCurves }) => {
+function rollingStockPassesLockedFilter(locked: boolean, filters: Filters) {
+  if (filters.locked && !locked) {
+    return false;
+  }
+  return true;
+}
+
+function rollingStockPassesNotlockedFilter(locked: boolean, filters: Filters) {
+  if (filters.notLocked && locked) {
+    return false;
+  }
+  return true;
+}
+
+function filterRollingStocks(rollingStockList: LightRollingStock[], filters: Filters) {
+  return rollingStockList?.filter(({ name, metadata, effort_curves: effortCurves, locked }) => {
     const passSearchedStringFilter = rollingStockPassesSearchedStringFilter(
       name,
       metadata,
-      filterList
+      filters
     );
     const passEnergeticModesFilter = rollingStockPassesEnergeticModeFilters(
       effortCurves?.modes,
-      filterList
+      filters
     );
-    return passSearchedStringFilter && passEnergeticModesFilter;
+    const passLockedFilter = rollingStockPassesLockedFilter(locked as boolean, filters);
+    const passNotlockedFilter = rollingStockPassesNotlockedFilter(locked as boolean, filters);
+    return (
+      passSearchedStringFilter &&
+      passEnergeticModesFilter &&
+      passLockedFilter &&
+      passNotlockedFilter
+    );
   });
 }
 
 type SearchRollingStockProps = {
   rollingStocks: LightRollingStock[];
-  rollingStockID?: number;
-  setOpenedRollingStockCardId: (rollingStockID: number | undefined) => void;
   setFilteredRollingStockList: (rollingStocks: LightRollingStock[]) => void;
   filteredRollingStockList: LightRollingStock[];
   setIsLoading?: (isLoading: boolean) => void;
@@ -75,8 +102,6 @@ type SearchRollingStockProps = {
 
 const SearchRollingStock = ({
   rollingStocks,
-  rollingStockID,
-  setOpenedRollingStockCardId,
   setFilteredRollingStockList,
   filteredRollingStockList,
   setIsLoading,
@@ -84,27 +109,34 @@ const SearchRollingStock = ({
 }: SearchRollingStockProps) => {
   const { t } = useTranslation('rollingStockEditor');
 
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<Filters>({
     text: '',
     elec: false,
     thermal: false,
+    locked: false,
+    notLocked: false,
   });
 
   const searchMateriel = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFilters({ ...filters, text: e.target.value.toLowerCase() });
     if (setIsLoading) setIsLoading(true);
   };
+  // TODO: investigate if the main condition does not have bad side effects
   const toggleFilter = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFilters({ ...filters, [e.target.name]: !filters[e.target.name as 'elec' | 'thermal'] });
+    if (e.target.name === 'notLocked' && filters.locked) {
+      setFilters({ ...filters, notLocked: true, locked: false });
+    } else if (e.target.name === 'locked' && filters.notLocked) {
+      setFilters({ ...filters, locked: true, notLocked: false });
+    } else {
+      setFilters({
+        ...filters,
+        [e.target.name]: !filters[e.target.name as 'elec' | 'thermal' | 'locked' | 'notLocked'],
+      });
+    }
     if (setIsLoading) setIsLoading(true);
   };
 
   const updateSearch = () => {
-    if (filters.text !== '' || filters.elec !== false || filters.thermal !== false) {
-      setOpenedRollingStockCardId(undefined);
-    } else {
-      setOpenedRollingStockCardId(rollingStockID);
-    }
     const newFilteredRollingStock = filterRollingStocks(rollingStocks, filters);
     setTimeout(() => {
       setFilteredRollingStockList(newFilteredRollingStock);
@@ -126,7 +158,7 @@ const SearchRollingStock = ({
       updateSearch();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters]);
+  }, [filters, rollingStocks]);
 
   return (
     <div className="row no-gutters">
@@ -139,10 +171,11 @@ const SearchRollingStock = ({
           noMargin
           unit={<i className="icons-search" />}
           sm
+          whiteBG
         />
       </div>
       <div className="col-md-5 ml-2 mb-3 d-flex align-items-center flex-wrap">
-        <div className="mr-4">
+        <div className="mr-3">
           <CheckboxRadioSNCF
             onChange={toggleFilter}
             name="elec"
@@ -159,7 +192,7 @@ const SearchRollingStock = ({
             checked={filters.elec}
           />
         </div>
-        <div>
+        <div className="mr-3">
           <CheckboxRadioSNCF
             onChange={toggleFilter}
             name="thermal"
@@ -174,6 +207,40 @@ const SearchRollingStock = ({
             }
             type="checkbox"
             checked={filters.thermal}
+          />
+        </div>
+        <div className="mr-3">
+          <CheckboxRadioSNCF
+            onChange={toggleFilter}
+            name="locked"
+            id="locked"
+            label={
+              <span className="text-nowrap">
+                <span className="text-black mr-1">
+                  <BiLockAlt />
+                </span>
+                {t('rollingstock:locked')}
+              </span>
+            }
+            type="checkbox"
+            checked={filters.locked}
+          />
+        </div>
+        <div>
+          <CheckboxRadioSNCF
+            onChange={toggleFilter}
+            name="notLocked"
+            id="notLocked"
+            label={
+              <span className="text-nowrap">
+                <span className="text-black mr-1">
+                  <BiLockOpenAlt />
+                </span>
+                {t('rollingstock:notLocked')}
+              </span>
+            }
+            type="checkbox"
+            checked={filters.notLocked}
           />
         </div>
       </div>

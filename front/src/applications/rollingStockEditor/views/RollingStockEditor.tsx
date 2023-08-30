@@ -4,8 +4,7 @@ import {
   RollingStockCard,
   SearchRollingStock,
 } from 'modules/rollingStock/components/RollingStockSelector';
-import { useSelector } from 'react-redux';
-import { getRollingStockID } from 'reducers/osrdconf/selectors';
+import { useDispatch } from 'react-redux';
 import Loader from 'common/Loader';
 import { useTranslation } from 'react-i18next';
 import { LightRollingStock, osrdEditoastApi } from 'common/api/osrdEditoastApi';
@@ -13,6 +12,7 @@ import { isEmpty } from 'lodash';
 import RollingStockEditorButtons from 'modules/rollingStock/components/rollingStockEditor/RollingStockEditorButtons';
 import RollingStockEditorCard from 'modules/rollingStock/components/rollingStockEditor/RollingStockEditorCard';
 import RollingStockEditorForm from 'modules/rollingStock/components/rollingStockEditor/RollingStockEditorForm';
+import { setFailure } from 'reducers/main';
 
 type RollingStockEditorProps = {
   rollingStocks: LightRollingStock[];
@@ -20,8 +20,8 @@ type RollingStockEditorProps = {
 
 export default function RollingStockEditor({ rollingStocks }: RollingStockEditorProps) {
   const { t } = useTranslation('rollingstock');
+  const dispatch = useDispatch();
   const ref2scroll: React.RefObject<HTMLInputElement> = useRef<HTMLInputElement>(null);
-  const rollingStockID = useSelector(getRollingStockID);
   const [filteredRollingStockList, setFilteredRollingStockList] = useState(rollingStocks);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -39,7 +39,7 @@ export default function RollingStockEditor({ rollingStocks }: RollingStockEditor
     }
   );
 
-  useEffect(() => setFilteredRollingStockList(rollingStocks), [rollingStocks]);
+  useEffect(() => setFilteredRollingStockList(rollingStocks), []);
 
   const listOfRollingStocks = (
     <div className="rollingstock-editor-list pr-1">
@@ -50,7 +50,7 @@ export default function RollingStockEditor({ rollingStocks }: RollingStockEditor
               <div
                 role="button"
                 tabIndex={-1}
-                className="d-flex align-self-start rollingstock-elements w-100"
+                className="d-flex align-self-start rollingstock-elements w-100 rollingstock-editor-list-cards"
                 onClick={() => {
                   setIsEditing(false);
                   setIsAdding(false);
@@ -62,7 +62,7 @@ export default function RollingStockEditor({ rollingStocks }: RollingStockEditor
                   noCardSelected={openedRollingStockCardId === undefined}
                   isOpen={data.id === openedRollingStockCardId}
                   setOpenedRollingStockCardId={setOpenedRollingStockCardId}
-                  ref2scroll={rollingStockID === data.id ? ref2scroll : undefined}
+                  ref2scroll={openedRollingStockCardId === data.id ? ref2scroll : undefined}
                 />
               </div>
               {data.id === openedRollingStockCardId && selectedRollingStock && (
@@ -110,9 +110,39 @@ export default function RollingStockEditor({ rollingStocks }: RollingStockEditor
     return listOfRollingStocks;
   }
 
+  // depending on the current key of ref2scroll, scroll to the selected rolling stock card when it is opened with scrollIntoView()
+  // scrollBy() is used to ensure that the card will be found even if the list is too long
+  useEffect(() => {
+    if (openedRollingStockCardId !== undefined) {
+      setTimeout(() => {
+        ref2scroll.current?.scrollIntoView({
+          behavior: 'smooth',
+        });
+        window.scrollBy(0, -500);
+      }, 1000);
+    }
+  }, [ref2scroll.current]);
+
   return (
     <div className="d-flex rollingstock-editor">
       <div className="d-flex ml-4 flex-column rollingstock-editor-left-container">
+        {(isEditing || isAdding) && (
+          <div
+            className="rollingstock-editor-disablelist"
+            role="button"
+            tabIndex={0}
+            onClick={() => {
+              dispatch(
+                setFailure({
+                  name: t('messages.failure'),
+                  message: t('listDisabled'),
+                })
+              );
+            }}
+          >
+            <span>{t('listDisabled')}</span>
+          </div>
+        )}
         <div className="d-flex justify-content-center w-100">
           <button
             type="button"
@@ -127,13 +157,15 @@ export default function RollingStockEditor({ rollingStocks }: RollingStockEditor
         </div>
         {isAdding && (
           <div className="d-flex flex-column pl-0 rollingstock-editor-form-container mb-3">
-            <RollingStockEditorForm isAdding={isAdding} setAddOrEditState={setIsAdding} />
+            <RollingStockEditorForm
+              isAdding={isAdding}
+              setAddOrEditState={setIsAdding}
+              setOpenedRollingStockCardId={setOpenedRollingStockCardId}
+            />
           </div>
         )}
         <SearchRollingStock
           rollingStocks={rollingStocks}
-          rollingStockID={openedRollingStockCardId}
-          setOpenedRollingStockCardId={setOpenedRollingStockCardId}
           setFilteredRollingStockList={setFilteredRollingStockList}
           filteredRollingStockList={filteredRollingStockList}
           setIsLoading={setIsLoading}

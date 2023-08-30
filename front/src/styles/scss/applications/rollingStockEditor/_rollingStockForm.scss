@@ -7,6 +7,16 @@
     .rollingstock-body-container-img {
       min-height: 2.4rem;
     }
+    &-cards {
+      .active {
+        .rollingstock-header,
+        .rollingstock-footer {
+          cursor: default;
+          border-top-right-radius: 0;
+          border-bottom-right-radius: 0;
+        }
+      }
+    }
   }
   &-form {
     overflow-y: scroll;
@@ -48,6 +58,7 @@
         }
       }
     }
+
     .rollingstock-body {
       height: 18rem;
     }
@@ -56,6 +67,10 @@
       .rs-form-buttons {
         margin-top: 1rem;
       }
+    }
+
+    .rollingstock-header {
+      cursor: default;
     }
 
     width: 100%;
@@ -155,6 +170,7 @@
     }
     label {
       white-space: normal;
+      min-width: 50%;
     }
   }
 
@@ -165,18 +181,31 @@
     }
   }
 
-  &-submit {
-    @media screen and (min-width: 767px) {
-      position: fixed;
-      bottom: 1rem;
-      right: 1rem;
-      z-index: 100;
-    }
-  }
-
   @media screen and (min-width: 1024px) {
     .loading-gauge-label {
       margin: 0.5rem;
+    }
+  }
+
+  &-disablelist {
+    @media screen and (min-width: 767px) {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 50%;
+      z-index: 100;
+      opacity: 0;
+
+      &:hover {
+        opacity: 0.3;
+        transition: opacity 0.2s;
+        background-color: white;
+      }
+    }
+
+    @media screen and (min-width: 1024px) {
+      width: 38%;
     }
   }
 }
@@ -211,9 +240,6 @@
     height: 16rem;
     .curves-container {
       height: 15rem;
-      div:nth-child(2) {
-        height: 100%;
-      }
     }
   }
 }

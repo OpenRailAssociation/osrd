@@ -20,6 +20,7 @@
     "itinerary": "Itinéraire",
     "loading": "Chargement…",
     "next": "Suivant",
+    "no": "Non",
     "open": "Ouvrir",
     "previous": "Précedent",
     "reset-north": "Réinitialiser la caméra",
@@ -28,6 +29,7 @@
     "settings": "Paramètres",
     "sort": "Tri",
     "train(s)": "train(s)",
+    "yes": "Oui",
     "zoom-in": "Zoomer",
     "zoom-out": "Dézoomer",
     "zoom-reset": "Réinitialiser le zoom"
@@ -365,5 +367,4 @@
     "emptyFile": "Le fichier est vide",
     "notJSONFormat": "Le fichier n'est pas au format JSON"
   }
-
 }
