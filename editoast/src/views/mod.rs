@@ -18,6 +18,8 @@ pub mod train_schedule;
 
 use self::openapi::OpenApiMerger;
 use crate::client::get_app_version;
+use crate::core::version::CoreVersionRequest;
+use crate::core::{AsCoreRequest, CoreClient};
 use crate::error::Result;
 use crate::map::redis_utils::RedisClient;
 use crate::DbPool;
@@ -27,13 +29,12 @@ use actix_web::{get, services};
 use diesel::sql_query;
 use diesel_async::RunQueryDsl;
 use redis::cmd;
-use serde_derive::Serialize;
+use serde_derive::{Deserialize, Serialize};
 use utoipa::{OpenApi, ToSchema};
 
 pub fn routes() -> impl HttpServiceFactory {
     services![
         health,
-        version,
         search::search,
         infra::routes(),
         layers::routes(),
@@ -45,6 +46,10 @@ pub fn routes() -> impl HttpServiceFactory {
         train_schedule::routes(),
         stdcm::routes()
     ]
+}
+
+pub fn version_routes() -> impl HttpServiceFactory {
+    services![version, core_version]
 }
 
 pub fn study_routes() -> impl HttpServiceFactory {
@@ -109,8 +114,8 @@ async fn health(db_pool: Data<DbPool>, redis_client: Data<RedisClient>) -> Resul
     Ok("ok")
 }
 
-#[derive(ToSchema, Serialize)]
-struct Version {
+#[derive(ToSchema, Serialize, Deserialize)]
+pub struct Version {
     #[schema(required)] // Options are by default not required, but this one is
     git_describe: Option<String>,
 }
@@ -127,6 +132,15 @@ async fn version() -> Json<Version> {
     })
 }
 
+#[get("/version/core")]
+async fn core_version(core: Data<CoreClient>) -> Json<Version> {
+    let mut response = CoreVersionRequest {}.fetch(&core).await.unwrap();
+    if response.git_describe.is_some() {
+        response.git_describe = None;
+    }
+    Json(response)
+}
+
 #[cfg(test)]
 mod tests {
     use std::collections::HashMap;
@@ -137,7 +151,7 @@ mod tests {
     use crate::map::redis_utils::RedisClient;
     use crate::map::MapLayers;
 
-    use super::{routes, study_routes, OpenApiRoot};
+    use super::{routes, study_routes, version_routes, OpenApiRoot};
     use actix_http::body::BoxBody;
     use actix_http::Request;
     use actix_web::dev::{Service, ServiceResponse};
@@ -212,7 +226,7 @@ mod tests {
             .app_data(Data::new(MapLayers::parse()))
             .app_data(Data::new(MapLayersConfig::default()))
             .app_data(Data::new(core))
-            .service((routes(), study_routes()));
+            .service((routes(), study_routes(), version_routes()));
         init_service(app).await
     }
 

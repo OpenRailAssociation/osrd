@@ -7,6 +7,7 @@ pub mod mocking;
 pub mod pathfinding;
 pub mod simulation;
 pub mod stdcm;
+pub mod version;
 
 use std::marker::PhantomData;
 
