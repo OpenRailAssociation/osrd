@@ -2,6 +2,7 @@ import React from 'react';
 import { IoIosSnow } from 'react-icons/io';
 import { ImFire } from 'react-icons/im';
 import { Comfort, LightRollingStock } from 'common/api/osrdEditoastApi';
+import { BiLockAlt } from 'react-icons/bi';
 
 const RollingStockUnit = ({ unit, detail }: { unit: string; detail: string }) => {
   if (unit && unit !== 'US') {
@@ -31,26 +32,33 @@ export const RollingStockInfo = ({
 }: RollingStockInfoProps) => {
   const { metadata } = rollingStock;
   return (
-    <div className="rollingstock-info">
-      {showSeries ? (
-        <span className="rollingstock-info-begin">
-          <span className="rollingstock-info-series">
-            {metadata.series ? metadata.series : metadata.reference}
-          </span>
-          <RollingStockUnit unit={metadata.unit} detail={metadata.detail} />
-          <span className="rollingstock-info-subseries">
-            {metadata.series && metadata.series !== metadata.subseries
-              ? metadata.subseries
-              : metadata.detail}
-          </span>
+    <div className="d-flex">
+      {rollingStock.locked && (
+        <span className="pr-1">
+          <BiLockAlt />
         </span>
-      ) : null}
-      {showMiddle && metadata.series ? (
-        <span className="rollingstock-info-middle">
-          {`${metadata.family} / ${metadata.type} / ${metadata.grouping}`}
-        </span>
-      ) : null}
-      {showEnd ? <span className="rollingstock-info-end">{rollingStock.name}</span> : null}
+      )}
+      <div className="rollingstock-info w-100">
+        {showSeries ? (
+          <span className="rollingstock-info-begin">
+            <span className="rollingstock-info-series">
+              {metadata.series ? metadata.series : metadata.reference}
+            </span>
+            <RollingStockUnit unit={metadata.unit} detail={metadata.detail} />
+            <span className="rollingstock-info-subseries">
+              {metadata.series && metadata.series !== metadata.subseries
+                ? metadata.subseries
+                : metadata.detail}
+            </span>
+          </span>
+        ) : null}
+        {showMiddle && metadata.series ? (
+          <span className="rollingstock-info-middle">
+            {`${metadata.family} / ${metadata.type} / ${metadata.grouping}`}
+          </span>
+        ) : null}
+        {showEnd ? <span className="rollingstock-info-end">{rollingStock.name}</span> : null}
+      </div>
     </div>
   );
 };

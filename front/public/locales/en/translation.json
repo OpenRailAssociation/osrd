@@ -20,6 +20,7 @@
     "itinerary": "Route",
     "loading": "Loading...",
     "next": "Next",
+    "no": "No",
     "open": "Open",
     "previous": "Previous",
     "reset-north": "Reset camera",
@@ -28,6 +29,7 @@
     "settings": "Settings",
     "sort": "Sort",
     "train(s)": "train(s)",
+    "yes": "Yes",
     "zoom-in": "Zoom in",
     "zoom-out": "Zoom out",
     "zoom-reset": "Reset zoom"

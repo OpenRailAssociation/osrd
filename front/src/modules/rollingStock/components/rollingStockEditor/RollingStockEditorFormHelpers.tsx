@@ -136,7 +136,7 @@ const RollingStockEditorParameterFormColumn = ({
           <div
             className={`${
               property.title === 'mass' && 'd-flex align-items-center'
-            } form-control-container mb-2`}
+            } form-control-container mb-4`}
           >
             <InputGroupSNCF
               id={property.title}

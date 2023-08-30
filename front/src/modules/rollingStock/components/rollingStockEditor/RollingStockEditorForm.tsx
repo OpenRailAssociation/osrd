@@ -24,12 +24,14 @@ import {
 type RollingStockParametersProps = {
   rollingStockData?: RollingStock;
   setAddOrEditState: React.Dispatch<React.SetStateAction<boolean>>;
+  setOpenedRollingStockCardId?: React.Dispatch<React.SetStateAction<number | undefined>>;
   isAdding?: boolean;
 };
 
 const RollingStockEditorForm = ({
   rollingStockData,
   setAddOrEditState,
+  setOpenedRollingStockCardId,
   isAdding,
 }: RollingStockParametersProps) => {
   const dispatch = useDispatch();
@@ -72,7 +74,8 @@ const RollingStockEditorForm = ({
       rollingStockUpsertPayload: queryArg,
     })
       .unwrap()
-      .then(() => {
+      .then((res) => {
+        if (setOpenedRollingStockCardId) setOpenedRollingStockCardId(res.id);
         dispatch(
           setSuccess({
             title: t('messages.success'),
@@ -112,7 +115,7 @@ const RollingStockEditorForm = ({
           dispatch(
             setSuccess({
               title: t('messages.success'),
-              text: t('messages.rollingStockAdded'),
+              text: t('messages.rollingStockUpdated'),
             })
           );
           setAddOrEditState(false);
@@ -143,8 +146,8 @@ const RollingStockEditorForm = ({
       <RollingStockEditorFormModal
         setAddOrEditState={setAddOrEditState}
         request={isAdding ? addNewRollingstock(data) : updateRollingStock(data)}
-        mainText={t('confirmAction')}
-        buttonText={t('translation:common.confirm')}
+        mainText={t('confirmUpdateRollingStock')}
+        buttonText={t('translation:common.yes')}
       />
     );
   };
@@ -153,8 +156,8 @@ const RollingStockEditorForm = ({
     openModal(
       <RollingStockEditorFormModal
         setAddOrEditState={setAddOrEditState}
-        mainText={t('cancelAction')}
-        buttonText={t('translation:common.cancel')}
+        mainText={t('cancelUpdateRollingStock')}
+        buttonText={t('translation:common.yes')}
       />
     );
   };
@@ -232,7 +235,7 @@ const RollingStockEditorForm = ({
     >
       <Tabs pills fullWidth tabs={[tabRollingStockDetails, tabRollingStockCurves]} />
       <div className="d-flex justify-content-between align-items-center">
-        <div className="ml-auto my-2 pr-3 rollingstock-editor-submit">
+        <div className="ml-auto my-3 pr-3">
           <button
             type="button"
             className="btn btn-secondary mr-2 py-1 px-2"

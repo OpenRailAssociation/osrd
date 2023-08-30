@@ -61,7 +61,8 @@ function RollingStockEditorButtons({
   };
 
   const duplicateRollingStock = () => {
-    const duplicatedRollingstock = { ...rollingStock, name: `${rollingStock.name} - ${t('copy')}` };
+    const date = new Date().getTime().toString().slice(-3);
+    const duplicatedRollingstock = { ...rollingStock, name: `${rollingStock.name}-${date}` };
     postRollingstock({
       locked: false,
       rollingStockUpsertPayload: duplicatedRollingstock,
@@ -100,18 +101,9 @@ function RollingStockEditorButtons({
     openModal(
       <RollingStockEditorFormModal
         request={deleteRollingStock}
-        mainText={t('confirmAction')}
-        buttonText={t('translation:common.confirm')}
-      />
-    );
-  };
-
-  const confirmDuplicate = () => {
-    openModal(
-      <RollingStockEditorFormModal
-        request={duplicateRollingStock}
-        mainText={t('confirmAction')}
-        buttonText={t('translation:common.confirm')}
+        mainText={t('deleteRollingStock')}
+        buttonText={t('translation:common.yes')}
+        deleteAction
       />
     );
   };
@@ -135,7 +127,7 @@ function RollingStockEditorButtons({
         type="button"
         className="btn btn-primary px-1 py-0"
         tabIndex={0}
-        onClick={() => confirmDuplicate()}
+        onClick={() => duplicateRollingStock()}
       >
         <BiDuplicate />
       </button>
