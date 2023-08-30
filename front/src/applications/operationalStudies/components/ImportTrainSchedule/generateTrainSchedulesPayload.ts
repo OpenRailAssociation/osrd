@@ -1,5 +1,5 @@
 import { Step, TrainScheduleWithPath } from 'applications/operationalStudies/types';
-import { PathStep } from 'common/api/osrdEditoastApi';
+import { PathStep, TrainScheduleBatchItem } from 'common/api/osrdEditoastApi';
 import { time2sec } from 'utils/timeManipulation';
 
 // Hope for indexes are the same !
@@ -20,21 +20,13 @@ function mixPathPositionsAndTimes(requiredSteps: Step[], pathFindingSteps: PathS
   return scheduledPoints;
 }
 
-interface Schedule {
-  train_name: string;
-  rolling_stock: number;
-  departure_time: number;
-  initial_speed: number;
-  scheduled_points: { path_offset: number; time: number }[];
-}
-
 export default function generateTrainSchedulesPayload(
   trainsWithPath: TrainScheduleWithPath[],
   timetableID: number
 ) {
   const trainSchedulesByPathID: Record<
     string,
-    { timetable: number; path: number; schedules: Schedule[] }
+    { timetable: number; path: number; schedules: TrainScheduleBatchItem[] }
   > = {};
   trainsWithPath.forEach((train) => {
     if (!trainSchedulesByPathID[train.pathId]) {
@@ -46,7 +38,7 @@ export default function generateTrainSchedulesPayload(
     }
     trainSchedulesByPathID[train.pathId].schedules.push({
       train_name: train.trainNumber,
-      rolling_stock: train.rollingStockId,
+      rolling_stock_id: train.rollingStockId,
       departure_time: time2sec(train.departureTime.slice(-8)),
       initial_speed: 0,
       scheduled_points: mixPathPositionsAndTimes(train.steps, train.pathFinding.steps),

@@ -406,7 +406,7 @@ struct TrainScheduleBatchItem {
     pub speed_limit_tags: Option<String>,
     pub power_restriction_ranges: Option<JsonValue>,
     pub options: Option<JsonValue>,
-    pub rolling_stock: i64,
+    pub rolling_stock_id: i64,
     /// Filled  later by the endpoint
     #[serde(skip)]
     pub infra_version: String,
@@ -433,7 +433,7 @@ impl From<TrainScheduleBatch> for Vec<TrainSchedule> {
                 speed_limit_tags: item.speed_limit_tags,
                 power_restriction_ranges: item.power_restriction_ranges,
                 options: item.options,
-                rolling_stock_id: item.rolling_stock,
+                rolling_stock_id: item.rolling_stock_id,
                 infra_version: Some(item.infra_version),
                 rollingstock_version: Some(item.rollingstock_version),
             });

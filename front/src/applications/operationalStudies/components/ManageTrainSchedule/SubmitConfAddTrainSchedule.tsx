@@ -8,14 +8,7 @@ import { time2sec, sec2time } from 'utils/timeManipulation';
 import getTimetable from 'applications/operationalStudies/components/Scenario/getTimetable';
 import formatConf from 'applications/operationalStudies/components/ManageTrainSchedule/helpers/formatConf';
 import trainNameWithNum from 'applications/operationalStudies/components/ManageTrainSchedule/helpers/trainNameHelper';
-import { TrainScheduleOptions } from 'common/api/osrdMiddlewareApi';
-import {
-  Allowance,
-  Comfort,
-  Infra,
-  PowerRestrictionRange,
-  osrdEditoastApi,
-} from 'common/api/osrdEditoastApi';
+import { Infra, TrainScheduleBatchItem, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { updateReloadTimetable } from 'reducers/osrdsimulation/actions';
 
 type Props = {
@@ -34,25 +27,13 @@ type error400 = {
   };
 };
 
-type ScheduleType = {
-  train_name: string;
-  rolling_stock: number;
-  departure_time: number;
-  initial_speed: number;
-  labels?: string[];
-  allowances?: Allowance[];
-  speed_limit_tags?: string;
-  comfort?: Comfort;
-  power_restriction_ranges?: PowerRestrictionRange[] | null;
-  options?: TrainScheduleOptions | null;
-};
-
 export default function SubmitConfAddTrainSchedule({ infraState, setIsWorking }: Props) {
   const [postTrainSchedule] =
     osrdEditoastApi.endpoints.postTrainScheduleStandaloneSimulation.useMutation();
   const dispatch = useDispatch();
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
-  const [getTimetableWithTrainSchedulesDetails] = osrdEditoastApi.useLazyGetTimetableByIdQuery();
+  const [getTimetableWithTrainSchedulesDetails] =
+    osrdEditoastApi.endpoints.getTimetableById.useLazyQuery();
 
   async function submitConfAddTrainSchedules() {
     const { osrdconf } = store.getState();
@@ -72,7 +53,7 @@ export default function SubmitConfAddTrainSchedule({ infraState, setIsWorking }:
     ) {
       setIsWorking(true);
       const departureTime = time2sec(osrdconf.simulationConf.departureTime);
-      const schedules: ScheduleType[] = [];
+      const schedules: TrainScheduleBatchItem[] = [];
       let actualTrainCount = 1;
       for (let nb = 1; nb <= osrdconf.simulationConf.trainCount; nb += 1) {
         const newDepartureTimeString = sec2time(
