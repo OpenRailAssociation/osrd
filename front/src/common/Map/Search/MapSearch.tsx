@@ -55,15 +55,30 @@ const MapSearch = ({ closeMapSearchPopUp }: MapSearchProps) => {
         tabs={[
           {
             label: t('map-search:station'),
-            content: <MapSearchStation updateExtViewport={updateViewportChange} />,
+            content: (
+              <MapSearchStation
+                updateExtViewport={updateViewportChange}
+                closeMapSearchPopUp={closeMapSearchPopUp}
+              />
+            ),
           },
           {
             label: t('map-search:line'),
-            content: <MapSearchLine updateExtViewport={updateViewportChange} />,
+            content: (
+              <MapSearchLine
+                updateExtViewport={updateViewportChange}
+                closeMapSearchPopUp={closeMapSearchPopUp}
+              />
+            ),
           },
           {
             label: t('map-search:signal'),
-            content: <MapSearchSignal updateExtViewport={updateViewportChange} />,
+            content: (
+              <MapSearchSignal
+                updateExtViewport={updateViewportChange}
+                closeMapSearchPopUp={closeMapSearchPopUp}
+              />
+            ),
           },
           /* For future implementation
           {
