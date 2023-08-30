@@ -1,6 +1,6 @@
 import React, { useRef, useState, useContext, useEffect } from 'react';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-
+import { MapRef } from 'react-map-gl/maplibre';
 // Buttons
 import ButtonMapSearch from 'common/Map/Buttons/ButtonMapSearch';
 import ButtonMapSettings from 'common/Map/Buttons/ButtonMapSettings';
@@ -19,7 +19,8 @@ import { getFeatureInfoClick } from 'reducers/osrdconf/selectors';
 import useOutsideClick from 'utils/hooks/useOutsideClick';
 import ButtonMapInfras from './ButtonMapInfras';
 
-type Props = {
+type MapButtonsProps = {
+  map?: MapRef;
   resetPitchBearing: () => void;
   withFullscreenButton?: boolean;
   withInfraButton?: boolean;
@@ -27,10 +28,11 @@ type Props = {
 
 const MAP_POPOVERS = { SEARCH: 'SEARCH', SETTINGS: 'SETTINGS', KEY: 'KEY' };
 export default function MapButtons({
+  map,
   resetPitchBearing,
   withFullscreenButton,
   withInfraButton,
-}: Props) {
+}: MapButtonsProps) {
   const featureInfoClick = useSelector(getFeatureInfoClick);
   const dispatch = useDispatch();
   const { isOpen } = useContext(ModalContext);
@@ -74,7 +76,7 @@ export default function MapButtons({
         {withInfraButton && <ButtonMapInfras />}
       </div>
       {openedPopover === MAP_POPOVERS.SEARCH && (
-        <MapSearch closeMapSearchPopUp={() => setOpenedPopover(undefined)} />
+        <MapSearch map={map} closeMapSearchPopUp={() => setOpenedPopover(undefined)} />
       )}
       {openedPopover === MAP_POPOVERS.SETTINGS && (
         <MapSettings closeMapSettingsPopUp={() => setOpenedPopover(undefined)} />

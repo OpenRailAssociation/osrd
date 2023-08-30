@@ -169,7 +169,7 @@ function Map() {
 
   return (
     <>
-      <MapButtons resetPitchBearing={resetPitchBearing} />
+      <MapButtons map={mapRef.current ?? undefined} resetPitchBearing={resetPitchBearing} />
       <ReactMapGL
         ref={mapRef}
         {...viewport}

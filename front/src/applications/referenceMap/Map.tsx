@@ -108,7 +108,12 @@ function Map() {
 
   return (
     <main className={`mastcontainer mastcontainer-map${fullscreen ? ' fullscreen' : ''}`}>
-      <MapButtons resetPitchBearing={resetPitchBearing} withInfraButton withFullscreenButton />
+      <MapButtons
+        map={mapRef.current ?? undefined}
+        resetPitchBearing={resetPitchBearing}
+        withInfraButton
+        withFullscreenButton
+      />
       <ReactMapGL
         {...viewport}
         ref={mapRef}

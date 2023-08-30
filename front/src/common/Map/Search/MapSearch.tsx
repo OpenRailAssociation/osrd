@@ -1,5 +1,6 @@
-import React, { useCallback } from 'react';
+import React, { FC, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { MapRef } from 'react-map-gl/maplibre';
 import {
   updateViewport,
   updateLineSearchCode,
@@ -15,14 +16,28 @@ import HearderPopUp from '../HeaderPopUp';
 import MapSearchSignal from './MapSearchSignal';
 
 type MapSearchProps = {
+  map?: MapRef;
   closeMapSearchPopUp: () => void;
 };
 
-const MapSearch = ({ closeMapSearchPopUp }: MapSearchProps) => {
+const MapSearch: FC<MapSearchProps> = ({ map, closeMapSearchPopUp }) => {
   const dispatch = useDispatch();
+
   const updateViewportChange = useCallback(
-    (value: Partial<Viewport>) => dispatch(updateViewport(value, undefined)),
-    [dispatch]
+    (value: Partial<Viewport>) => {
+      if (map) {
+        map.flyTo({
+          center: {
+            lng: value.longitude || map.getCenter().lng,
+            lat: value.latitude || map.getCenter().lat,
+          },
+          zoom: value.zoom || map.getZoom(),
+          essential: true,
+        });
+      }
+      dispatch(updateViewport(value));
+    },
+    [dispatch, map]
   );
   const { lineSearchCode, mapSearchMarker } = useSelector(getMap);
 

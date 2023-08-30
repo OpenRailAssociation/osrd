@@ -378,7 +378,7 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
 
   return (
     <>
-      <MapButtons resetPitchBearing={resetPitchBearing} />
+      <MapButtons map={mapRef.current ?? undefined} resetPitchBearing={resetPitchBearing} />
       <ReactMapGL
         {...viewport}
         cursor="pointer"

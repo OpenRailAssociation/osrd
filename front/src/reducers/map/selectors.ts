@@ -4,7 +4,6 @@ import { MapState } from '.';
 
 export const getMap = (state: RootState) => state.map;
 
-export const getRef = makeSubSelector<MapState, 'ref'>(getMap, 'ref');
 export const getUrl = makeSubSelector<MapState, 'url'>(getMap, 'url');
 export const getMapStyle = makeSubSelector<MapState, 'mapStyle'>(getMap, 'mapStyle');
 export const getMapTrackSources = makeSubSelector<MapState, 'mapTrackSources'>(
