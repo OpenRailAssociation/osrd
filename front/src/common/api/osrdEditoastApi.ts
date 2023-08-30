@@ -2125,7 +2125,7 @@ export type TrainScheduleBatchItem = {
   labels?: string[];
   options?: TrainScheduleOptions | null;
   power_restriction_ranges?: PowerRestrictionRange[] | null;
-  rolling_stock: number;
+  rolling_stock_id: number;
   scheduled_points?: {
     path_offset: number;
     time: number;

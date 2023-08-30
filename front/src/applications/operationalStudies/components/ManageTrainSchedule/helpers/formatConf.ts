@@ -119,7 +119,7 @@ export default function formatConf(
       departure_time: time2sec(osrdconf.departureTime),
       allowances: osrdconf.allowances,
       initial_speed: osrdconf.initialSpeed ? kmh2ms(osrdconf.initialSpeed) : 0,
-      rolling_stock: osrdconf.rollingStockID as number,
+      rolling_stock_id: osrdconf.rollingStockID as number,
       comfort: osrdconf.rollingStockComfort,
       speed_limit_tags: osrdconf.speedLimitByTag,
       power_restriction_ranges: formatPowerRestrictionRanges(osrdconf.powerRestrictionRanges),

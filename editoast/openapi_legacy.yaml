@@ -3880,7 +3880,7 @@ components:
           nullable: true
     TrainScheduleBatchItem:
       type: object
-      required: [train_name, departure_time, initial_speed, rolling_stock]
+      required: [train_name, departure_time, initial_speed, rolling_stock_id]
       properties:
         train_name:
           type: string
@@ -3931,7 +3931,7 @@ components:
           allOf:
             - $ref: "#/components/schemas/TrainScheduleOptions"
           nullable: true
-        rolling_stock:
+        rolling_stock_id:
           type: integer
     TrainSchedule:
       type: object

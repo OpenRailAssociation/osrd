@@ -2278,7 +2278,7 @@ components:
             $ref: '#/components/schemas/PowerRestrictionRange'
           nullable: true
           type: array
-        rolling_stock:
+        rolling_stock_id:
           type: integer
         scheduled_points:
           default: []
@@ -2307,7 +2307,7 @@ components:
       - train_name
       - departure_time
       - initial_speed
-      - rolling_stock
+      - rolling_stock_id
       type: object
     TrainScheduleOptions:
       description: Options for the standalone simulation

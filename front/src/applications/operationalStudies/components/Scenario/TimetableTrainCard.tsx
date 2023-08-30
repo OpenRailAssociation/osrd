@@ -8,7 +8,6 @@ import invalidRollingStock from 'assets/pictures/components/missing_train.svg';
 import { durationInSeconds, sec2time } from 'utils/timeManipulation';
 import nextId from 'react-id-generator';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
-import { osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
 import cx from 'classnames';
 import { InvalidTrainValues, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 
@@ -58,7 +57,7 @@ function TimetableTrainCard({
   setDisplayTrainScheduleManagement,
   toggleTrainSelection,
 }: Props) {
-  const [getTrainSchedule] = osrdMiddlewareApi.endpoints.getTrainScheduleById.useLazyQuery({});
+  const [getTrainSchedule] = osrdEditoastApi.endpoints.getTrainScheduleById.useLazyQuery({});
   const [getRollingStock, { data: rollingStock }] =
     osrdEditoastApi.endpoints.getLightRollingStockById.useLazyQuery({});
   const { t } = useTranslation(['operationalStudies/scenario']);
@@ -74,10 +73,11 @@ function TimetableTrainCard({
       getTrainSchedule({ id: train.id })
         .unwrap()
         .then((trainSchedule) => {
-          if (trainSchedule.rolling_stock) getRollingStock({ id: trainSchedule.rolling_stock });
+          if (trainSchedule.rolling_stock_id)
+            getRollingStock({ id: trainSchedule.rolling_stock_id });
         });
     }
-  }, [train.id]);
+  }, [train.rolling_stock_id]);
 
   return (
     <div className="scenario-timetable-train-with-right-bar">
