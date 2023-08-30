@@ -17,9 +17,10 @@ import { onResultSearchClick } from '../utils';
 
 type MapSearchStationProps = {
   updateExtViewport: (viewport: Partial<Viewport>) => void;
+  closeMapSearchPopUp: () => void;
 };
 
-const MapSearchStation = ({ updateExtViewport }: MapSearchStationProps) => {
+const MapSearchStation = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchStationProps) => {
   const map = useSelector(getMap);
   const [searchState, setSearch] = useState<string>('');
   const [searchResults, setSearchResults] = useState<SearchOperationalPointResult[] | undefined>(
@@ -102,15 +103,13 @@ const MapSearchStation = ({ updateExtViewport }: MapSearchStationProps) => {
     } else {
       resetSearchResult();
     }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearchTerm]);
 
   useEffect(() => {
     setSearchResults([...trigramResults, ...nameResults]);
   }, [trigramResults, nameResults]);
 
-  const onResultClick = (result: SearchOperationalPointResult) =>
+  const onResultClick = (result: SearchOperationalPointResult) => {
     onResultSearchClick({
       result,
       map,
@@ -119,6 +118,8 @@ const MapSearchStation = ({ updateExtViewport }: MapSearchStationProps) => {
       title: result.name,
       setSearch,
     });
+    closeMapSearchPopUp();
+  };
 
   const clearSearchResult = () => {
     setSearch('');

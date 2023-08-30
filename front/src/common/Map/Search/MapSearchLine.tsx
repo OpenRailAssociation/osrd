@@ -16,9 +16,13 @@ import LineCard from './LineCard';
 
 type MapSearchLineProps = {
   updateExtViewport: (viewport: Partial<Viewport>) => void;
+  closeMapSearchPopUp: () => void;
 };
 
-const MapSearchLine: React.FC<MapSearchLineProps> = ({ updateExtViewport }) => {
+const MapSearchLine: React.FC<MapSearchLineProps> = ({
+  updateExtViewport,
+  closeMapSearchPopUp,
+}) => {
   const infraID = useSelector(getInfraID);
   const map = useSelector(getMap);
   const { t } = useTranslation(['map-search']);
@@ -93,6 +97,7 @@ const MapSearchLine: React.FC<MapSearchLineProps> = ({ updateExtViewport }) => {
     setDataTrackZone({ id: infraID as number, lineCode: searchResultItem.line_code });
 
     dispatch(updateLineSearchCode(searchResultItem.line_code));
+    closeMapSearchPopUp();
   };
 
   useEffect(() => {

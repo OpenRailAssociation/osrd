@@ -17,6 +17,7 @@ import { onResultSearchClick } from '../utils';
 
 type MapSearchSignalProps = {
   updateExtViewport: (viewport: Partial<Viewport>) => void;
+  closeMapSearchPopUp: () => void;
 };
 
 export type SortType = {
@@ -26,7 +27,7 @@ export type SortType = {
 
 const SIGNAL_ASPECTS = signalAspects;
 
-const MapSearchSignal = ({ updateExtViewport }: MapSearchSignalProps) => {
+const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSignalProps) => {
   const map = useSelector(getMap);
   const infraID = useSelector(getInfraID);
 
@@ -99,7 +100,7 @@ const MapSearchSignal = ({ updateExtViewport }: MapSearchSignalProps) => {
     }
   }, [debouncedSearchTerm, debouncedSearchLine, aspects]);
 
-  const onResultClick = (result: SearchSignalResult) =>
+  const onResultClick = (result: SearchSignalResult) => {
     onResultSearchClick({
       result,
       map,
@@ -107,6 +108,9 @@ const MapSearchSignal = ({ updateExtViewport }: MapSearchSignalProps) => {
       dispatch,
       title: result.label,
     });
+
+    closeMapSearchPopUp();
+  };
 
   useEffect(() => {
     const sortedResults = sortBy(searchResults, sortFilter.name);
