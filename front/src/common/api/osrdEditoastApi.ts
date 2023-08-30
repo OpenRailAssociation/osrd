@@ -612,6 +612,9 @@ const injectedRtkApi = api
       getVersion: build.query<GetVersionApiResponse, GetVersionApiArg>({
         query: () => ({ url: `/version/` }),
       }),
+      getVersionCore: build.query<GetVersionCoreApiResponse, GetVersionCoreApiArg>({
+        query: () => ({ url: `/version/core/` }),
+      }),
     }),
     overrideExisting: false,
   });
@@ -1259,6 +1262,10 @@ export type GetTrainScheduleByIdResultApiArg = {
 };
 export type GetVersionApiResponse = /** status 200 Return the service version */ Version;
 export type GetVersionApiArg = void;
+export type GetVersionCoreApiResponse = /** status 200 Return the core service version */ {
+  git_describe: string | null;
+};
+export type GetVersionCoreApiArg = void;
 export type TrackRange = {
   begin?: number;
   end?: number;

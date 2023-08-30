@@ -4844,6 +4844,21 @@ paths:
               schema:
                 $ref: '#/components/schemas/Version'
           description: Return the service version
+  /version/core/:
+    get:
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  git_describe:
+                    nullable: true
+                    type: string
+                required:
+                - git_describe
+                type: object
+          description: Return the core service version
 tags:
 - description: Infra
   name: infra

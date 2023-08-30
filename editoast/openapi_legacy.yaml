@@ -2148,6 +2148,22 @@ paths:
         400:
           description: The request body is invalid
 
+  /version/core/:
+    get:
+      responses:
+        200:
+          description: Return the core service version
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  git_describe:
+                    type: string
+                    nullable: true
+                required:
+                  - git_describe
+
 components:
   schemas:
     Battery:
