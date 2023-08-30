@@ -9,6 +9,7 @@ use crate::models::{
 };
 use crate::models::{Timetable, TrainSchedule};
 
+use crate::schema::rolling_stock::RollingStockComfortType;
 use crate::views::train_schedule::simulation_report::fetch_simulation_output;
 use crate::DieselJson;
 
@@ -134,7 +135,7 @@ struct TrainSchedulePatch {
     pub initial_speed: Option<f64>,
     pub allowances: Option<Vec<Allowance>>,
     pub scheduled_points: Option<Vec<ScheduledPoint>>,
-    pub comfort: Option<String>,
+    pub comfort: Option<RollingStockComfortType>,
     pub speed_limit_tags: Option<String>,
     pub power_restriction_ranges: Option<JsonValue>,
     pub options: Option<JsonValue>,
@@ -152,7 +153,7 @@ impl From<TrainSchedulePatch> for TrainScheduleChangeset {
             initial_speed: value.initial_speed,
             allowances: value.allowances.map(DieselJson),
             scheduled_points: value.scheduled_points.map(DieselJson),
-            comfort: value.comfort,
+            comfort: value.comfort.map(|c| c.to_string()),
             speed_limit_tags: Some(value.speed_limit_tags),
             power_restriction_ranges: Some(value.power_restriction_ranges),
             options: Some(value.options),
@@ -400,7 +401,8 @@ struct TrainScheduleBatchItem {
     pub allowances: Vec<Allowance>,
     #[serde(default)]
     pub scheduled_points: Vec<ScheduledPoint>,
-    pub comfort: Option<String>,
+    #[serde(default)]
+    pub comfort: RollingStockComfortType,
     pub speed_limit_tags: Option<String>,
     pub power_restriction_ranges: Option<JsonValue>,
     pub options: Option<JsonValue>,
@@ -427,7 +429,7 @@ impl From<TrainScheduleBatch> for Vec<TrainSchedule> {
                 initial_speed: item.initial_speed,
                 allowances: DieselJson(item.allowances),
                 scheduled_points: DieselJson(item.scheduled_points),
-                comfort: item.comfort.unwrap_or_default(),
+                comfort: item.comfort.to_string(),
                 speed_limit_tags: item.speed_limit_tags,
                 power_restriction_ranges: item.power_restriction_ranges,
                 options: item.options,

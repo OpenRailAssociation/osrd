@@ -85,10 +85,11 @@ pub struct RollingStockMetadata {
 }
 
 // Effort curves schema
-#[derive(Display, Clone, Debug, PartialEq, Deserialize, Serialize)]
+#[derive(Display, Clone, Default, Debug, PartialEq, Deserialize, Serialize)]
 #[strum(serialize_all = "UPPERCASE")]
 #[serde(rename_all = "UPPERCASE")]
 pub enum RollingStockComfortType {
+    #[default]
     Standard,
     AC,
     Heating,
