@@ -68,10 +68,13 @@ public class ResultTrain {
         @Json(name = "end_time")
         public double endTime;
 
-        public SpacingRequirement(String zone, double beginTime, double endTime) {
+        public Map<String, String> switches;
+
+        public SpacingRequirement(String zone, double beginTime, double endTime, Map<String, String> switches) {
             this.zone = zone;
             this.beginTime = beginTime;
             this.endTime = endTime;
+            this.switches = switches;
             assert !Double.isNaN(beginTime);
             assert !Double.isNaN(endTime);
         }

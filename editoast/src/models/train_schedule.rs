@@ -239,6 +239,7 @@ pub struct SpacingRequirement {
     pub zone: String,
     pub begin_time: f64,
     pub end_time: f64,
+    pub switches: HashMap<String, String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

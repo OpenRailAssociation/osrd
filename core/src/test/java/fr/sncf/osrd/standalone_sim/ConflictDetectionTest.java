@@ -36,7 +36,8 @@ public class ConflictDetectionTest {
             spacingRequirements.add(new ResultTrain.SpacingRequirement(
                     req.zone,
                     offset + req.beginTime,
-                    offset + req.endTime
+                    offset + req.endTime,
+                    req.switches
             ));
         var routingRequirements = new ArrayList<ResultTrain.RoutingRequirement>();
         for (var req : train.routingRequirements) {

@@ -102,7 +102,7 @@ fun run(
         stops.add(ResultStops(stopTime, stop.position, stop.duration))
     }
 
-    // Compute signal updates
+    // Compute zone updates
     val startOffset = trainPathBlockOffset(trainPath)
     val pathSignals = pathSignalsInEnvelope(startOffset, blockPath, blockInfra, envelopeWithStops, rawInfra)
     val zoneOccupationChangeEvents =
@@ -348,11 +348,7 @@ private fun routingZoneRequirement(rawInfra: RawInfra, zonePath: ZonePathId, end
     val zoneName = rawInfra.getZoneName(rawInfra.getNextZone(rawInfra.getZonePathEntry(zonePath))!!)
     val zoneEntry = rawInfra.getZonePathEntry(zonePath)
     val zoneExit = rawInfra.getZonePathExit(zonePath)
-    val resSwitches = mutableMapOf<String, String>()
-    val switches = rawInfra.getZonePathMovableElements(zonePath)
-    val switchConfigs = rawInfra.getZonePathMovableElementsConfigs(zonePath)
-    for ((switch, config) in switches zip switchConfigs)
-        resSwitches[rawInfra.getTrackNodeName(switch)] = rawInfra.getTrackNodeConfigName(switch, config)
+    val resSwitches = switchConfigsFromZonePath(rawInfra, zonePath)
     return RoutingZoneRequirement(
         zoneName,
         "${zoneEntry.direction.name}:${rawInfra.getDetectorName(zoneEntry.value)}",
@@ -360,6 +356,18 @@ private fun routingZoneRequirement(rawInfra: RawInfra, zonePath: ZonePathId, end
         resSwitches,
         endTime,
     )
+}
+
+private fun switchConfigsFromZonePath(
+    rawInfra: RawInfra,
+    zonePath: ZonePathId
+): MutableMap<String, String> {
+    val resSwitches = mutableMapOf<String, String>()
+    val switches = rawInfra.getZonePathMovableElements(zonePath)
+    val switchConfigs = rawInfra.getZonePathMovableElementsConfigs(zonePath)
+    for ((switch, config) in switches zip switchConfigs)
+        resSwitches[rawInfra.getTrackNodeName(switch)] = rawInfra.getTrackNodeConfigName(switch, config)
+    return resSwitches
 }
 
 data class LimitingSignal(val blockIndex: Int, val signalIndex: Int)
@@ -429,15 +437,16 @@ private fun spacingRequirements(
         ZoneOccupation(entryTime, exitTime)
     }
     val zoneMap = arrayListOf<ZoneId>()
+    val zonePathMap = arrayListOf<ZonePathId>()
     var zoneCount = 0
     for (block in blockPath) {
         for (zonePath in blockInfra.getBlockPath(block)) {
             val zone = rawInfra.getNextZone(rawInfra.getZonePathEntry(zonePath))!!
             zoneMap.add(zone)
+            zonePathMap.add(zonePath)
             zoneCount++
         }
     }
-
 
     val zoneRequirementTimes = DoubleArray(zoneCount) { Double.POSITIVE_INFINITY }
 
@@ -539,7 +548,8 @@ private fun spacingRequirements(
             }
         }
 
-        res.add(SpacingRequirement(zoneName, beginTime, endTime))
+        val switchConfigs = switchConfigsFromZonePath(rawInfra, zonePathMap[zoneIndex])
+        res.add(SpacingRequirement(zoneName, beginTime, endTime, switchConfigs))
     }
     return res
 }

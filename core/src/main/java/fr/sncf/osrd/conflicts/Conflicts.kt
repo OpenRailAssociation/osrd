@@ -20,6 +20,7 @@ fun detectSpacingConflicts(trainRequirements: List<SpacingTrainRequirement>): Li
         val trainId: Long,
         override val beginTime: Double,
         override val endTime: Double,
+        val switches: Map<String, String>,
     ): ResourceRequirement
 
     // organize requirements by zone
@@ -27,7 +28,7 @@ fun detectSpacingConflicts(trainRequirements: List<SpacingTrainRequirement>): Li
     for (req in trainRequirements) {
         for (spacingReq in req.spacingRequirements) {
             val zoneReq = ZoneRequirement(
-                req.trainId, spacingReq.beginTime, spacingReq.endTime
+                req.trainId, spacingReq.beginTime, spacingReq.endTime, spacingReq.switches
             )
             zoneRequirements.getOrPut(spacingReq.zone!!) { mutableListOf() }.add(zoneReq)
         }
@@ -36,10 +37,11 @@ fun detectSpacingConflicts(trainRequirements: List<SpacingTrainRequirement>): Li
     // look for requirement times overlaps.
     // as spacing requirements are exclusive, any overlap is a conflict
     for ((_, requirements) in zoneRequirements.entries) {
-        for (conflictGroup in detectRequirementConflicts(requirements) { _, _ -> true }) {
+        for (conflictGroup in detectRequirementConflicts(requirements) { a, b -> a.switches == b.switches }) {
             val trains = conflictGroup.map { it.trainId }
             val beginTime = conflictGroup.minBy { it.beginTime }.beginTime
             val endTime = conflictGroup.maxBy { it.endTime }.endTime
+
             res.add(Conflict(trains, beginTime, endTime, ConflictType.SPACING))
         }
     }
