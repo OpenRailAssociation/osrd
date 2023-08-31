@@ -402,16 +402,16 @@ export const SignalEditionLayers: FC<{ map: Map }> = ({ map }) => (
   />
 );
 
-export const PointEditionMessages: FC = () => {
+export const PointEditionMessages = () => {
   const { t, state } = useContext(EditorContext) as EditorContextType<
     PointEditionState<EditorEntity>
   >;
 
   if (!state.entity.geometry || isEqual(state.entity.geometry, NULL_GEOMETRY)) {
     return state.nearestPoint
-      ? t(`Editor.tools.point-edition.help.stop-dragging-on-line`)
-      : t(`Editor.tools.point-edition.help.stop-dragging-no-line`);
+      ? t(`Editor.tools.point-edition.help.stop-dragging-on-line`).toString()
+      : t(`Editor.tools.point-edition.help.stop-dragging-no-line`).toString();
   }
 
-  return t(`Editor.tools.point-edition.help.start-dragging`);
+  return t(`Editor.tools.point-edition.help.start-dragging`).toString();
 };

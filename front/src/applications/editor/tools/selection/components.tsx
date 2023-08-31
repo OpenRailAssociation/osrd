@@ -18,10 +18,10 @@ import { zoneToFeature } from '../../../../utils/mapHelper';
 import { getMap } from '../../../../reducers/map/selectors';
 import { EditorContextType, ExtendedEditorContextType } from '../editorContextTypes';
 
-export const SelectionMessages: FC = () => {
+export const SelectionMessages = () => {
   const { t, state } = useContext(EditorContext) as EditorContextType<SelectionState>;
 
-  return t(`Editor.tools.select-items.help.${state.selectionState.type}-selection`);
+  return t(`Editor.tools.select-items.help.${state.selectionState.type}-selection`).toString();
 };
 
 const SelectionZone: FC<{ newZone?: Zone }> = ({ newZone }) =>

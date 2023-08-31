@@ -98,9 +98,7 @@ const Map = ({ viewport, setViewport, setClickedFeatureId }: MapProps) => {
       ref={mapRef}
       {...viewportExtraSettings}
       {...viewport}
-      style={{ cursor: 'pointer' }}
-      width="100%"
-      height="100%"
+      style={{ cursor: 'pointer', width: '100%', height: '100%' }}
       mapStyle={osmBlankStyle}
       onMove={(e) => setViewport(e.viewState)}
       onMouseMove={(e) => onMoveGetFeature(e)}
