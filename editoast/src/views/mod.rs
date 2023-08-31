@@ -134,10 +134,8 @@ async fn version() -> Json<Version> {
 
 #[get("/version/core")]
 async fn core_version(core: Data<CoreClient>) -> Json<Version> {
-    let mut response = CoreVersionRequest {}.fetch(&core).await.unwrap();
-    if response.git_describe.is_some() {
-        response.git_describe = None;
-    }
+    let response = CoreVersionRequest {}.fetch(&core).await;
+    let response = response.unwrap_or(Version { git_describe: None });
     Json(response)
 }
 
@@ -146,6 +144,7 @@ mod tests {
     use std::collections::HashMap;
 
     use crate::client::{MapLayersConfig, PostgresConfig, RedisConfig};
+    use crate::core::mocking::MockingClient;
     use crate::core::CoreClient;
     use crate::infra_cache::InfraCache;
     use crate::map::redis_utils::RedisClient;
@@ -153,7 +152,7 @@ mod tests {
 
     use super::{routes, study_routes, version_routes, OpenApiRoot};
     use actix_http::body::BoxBody;
-    use actix_http::Request;
+    use actix_http::{Request, StatusCode};
     use actix_web::dev::{Service, ServiceResponse};
     use actix_web::middleware::NormalizePath;
     use actix_web::test as actix_test;
@@ -251,6 +250,21 @@ mod tests {
         let request = TestRequest::get().uri("/version").to_request();
         let response: HashMap<String, Option<String>> =
             call_and_read_body_json(&service, request).await;
+        assert!(response.contains_key("git_describe"));
+    }
+
+    #[actix_test]
+    async fn core_version() {
+        let mut core = MockingClient::new();
+        core.stub("/version")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .body(r#"{"git_describe": ""}"#)
+            .finish();
+        let app = create_test_service_with_core_client(core).await;
+        let request = TestRequest::get().uri("/version/core").to_request();
+        let response: HashMap<String, Option<String>> =
+            call_and_read_body_json(&app, request).await;
         assert!(response.contains_key("git_describe"));
     }
 
