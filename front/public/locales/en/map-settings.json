@@ -29,7 +29,7 @@
   "switches": "Switch",
   "tags": "Compositions",
   "tivs": "Speed limits",
-  "terrain3DExaggeration": "3D terrain scale",
+  "terrain3DExaggeration": "3D relief scale",
   "tracksources": {
     "geographic": "Geographic",
     "schematic": "Schematic"
