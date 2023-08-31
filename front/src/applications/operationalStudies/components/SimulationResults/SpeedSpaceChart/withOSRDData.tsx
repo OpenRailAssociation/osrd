@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { ComponentType, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import {
@@ -9,6 +9,8 @@ import {
 
 import { getIsPlaying, getSelectedTrain } from 'reducers/osrdsimulation/selectors';
 
+import { RootState } from 'reducers';
+import { SpeedSpaceSettingKey } from 'reducers/osrdsimulation/types';
 import prepareData from './prepareData';
 import SpeedSpaceChart from './SpeedSpaceChart';
 
@@ -17,26 +19,29 @@ import SpeedSpaceChart from './SpeedSpaceChart';
  * @param {RFC} Component
  * @returns RFC with OSRD Data. SignalSwitch
  */
-const withOSRDData = (Component) =>
-  function WrapperComponent(props) {
-    const positionValues = useSelector((state) => state.osrdsimulation.positionValues);
+const withOSRDData =
+  <T extends object>(Component: ComponentType<T>) =>
+  (hocProps: T) => {
+    const positionValues = useSelector((state: RootState) => state.osrdsimulation.positionValues);
     const selectedTrain = useSelector(getSelectedTrain);
-    const speedSpaceSettings = useSelector((state) => state.osrdsimulation.speedSpaceSettings);
-    const timePosition = useSelector((state) => state.osrdsimulation.timePosition);
+    const speedSpaceSettings = useSelector(
+      (state: RootState) => state.osrdsimulation.speedSpaceSettings
+    );
+    const timePosition = useSelector((state: RootState) => state.osrdsimulation.timePosition);
 
     const isPlaying = useSelector(getIsPlaying);
 
     const dispatch = useDispatch();
 
-    const dispatchUpdateMustRedraw = (newMustRedraw) => {
+    const dispatchUpdateMustRedraw = (newMustRedraw: boolean) => {
       dispatch(updateMustRedraw(newMustRedraw));
     };
 
-    const dispatchUpdateTimePositionValues = (newTimePositionValues) => {
+    const dispatchUpdateTimePositionValues = (newTimePositionValues: string) => {
       dispatch(updateTimePositionValues(newTimePositionValues));
     };
 
-    const toggleSetting = (settingName) => {
+    const toggleSetting = (settingName: SpeedSpaceSettingKey) => {
       dispatch(
         updateSpeedSpaceSettings({
           ...speedSpaceSettings,
@@ -54,7 +59,7 @@ const withOSRDData = (Component) =>
 
     return trainSimulation ? (
       <Component
-        {...props}
+        {...hocProps}
         trainSimulation={trainSimulation}
         dispatchUpdateMustRedraw={dispatchUpdateMustRedraw}
         dispatchUpdateTimePositionValues={dispatchUpdateTimePositionValues}

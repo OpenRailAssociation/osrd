@@ -225,6 +225,7 @@ export default function SpeedSpaceChart(props) {
         </button>
         <div>
           <SpeedSpaceSettings
+            electrificationRanges={trainSimulation.electrificationRanges}
             showSettings={showSettings}
             onSetSettings={onLocalSetSettings}
             speedSpaceSettings={speedSpaceSettings}
