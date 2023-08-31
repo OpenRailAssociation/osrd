@@ -8,11 +8,13 @@ from requests import Response
 sys.path.append(str(FilePath(__file__).parents[1] / "fuzzer"))
 from fuzzer import make_valid_path, make_payload_path, post_with_timeout,make_graph, INFRA_ID, URL, EDITOAST_URL
 
+#used for coloring the terminal output
 RESET = "\033[0m"
 RED = "\033[31m"
 GREEN = "\033[32m"
 YELLOW = "\033[33m"
 
+#how many tests to run
 N_ITERATIONS = 100
 
 def compare_pathfindings(iterations: int):
@@ -33,12 +35,12 @@ def compare_pathfindings(iterations: int):
         'curves_problem': [],
         'geos_problem': [],
         'steps_problem': [],
-        'same_length_diff_steps': [],
         'length_problem': [],
         'routes_shorter': [],
         'blocks_shorter': [],
     }
 
+    #used to deliver the stats in a more verbal way
     stats_print= {
         'ok': 'Tests passed',
         'not_ok': 'Different responses',
@@ -50,7 +52,6 @@ def compare_pathfindings(iterations: int):
         'curves_problem': 'Different curves',
         'geos_problem': 'Different Geos',
         'steps_problem': 'Different Steps',
-        'same_length_diff_steps': 'Paths have the same length but different steps',
         'routes_shorter': 'Path found by routes was shorter',
         'blocks_shorter': 'path found by blocks was shorter',
     }
@@ -80,9 +81,9 @@ def compare_pathfindings(iterations: int):
             print('')
     
     if len(stats['ok']) != N_ITERATIONS:
-        print(RED + f"{len(stats['not_ok'])} errors :'( @Eckter @Erashin @Anisometropie" + RESET)
+        print(RED + f"{len(stats['not_ok'])} errors :'( @Eckter @Erashin @Anisometropie looks like mon départ ne vous réussit pas" + RESET)
     else:
-        print(GREEN + "GG, also big thanks to the comparison script for all this helpful help" + RESET)
+        print(GREEN + "0 errors !!! GG, also big thanks to the comparison script for all this helpful help" + RESET)
     print(f"\nIn order to rerun a specific test, run 'compare_specific_log({current_log_id}, #testNumber)'\n")
 
 def compare_pathfinding(infraGraph, stats, iteration, path_to_logs):
@@ -121,75 +122,50 @@ def compare_pathfinding(infraGraph, stats, iteration, path_to_logs):
 
 
 def compare_paths(routes_path, blocks_path, path_payload, stats, iteration):
-    value_names = [
-                'Length',
-                'Slope',
-                'Curve',
-                'Geo',
-                'Step'
-    ]
-    
-    value_getters = [
-        None,
-        lambda x: x['slopes'],
-        lambda x: x['curves'],
-        lambda x: x['geographic']['coordinates'],
-        lambda x: x['steps']
-    ]
-           
-    comparison_functions = [
-        None,
-        compare_slope,
-        compare_curve,
-        compare_geo,
-        compare_step
-    ]
+    class Comparison:
+        def __init__(self, value_name, value_getter, comparison_function, print_function, error_name):
+            self.value_name = value_name
+            self.value_getter = value_getter
+            self.comparison_function = comparison_function
+            self.print_function = print_function
+            self.error_name = error_name
+            self.log = ""
+            self.result = None
 
-    print_functions = [
-        None,
-        print_slope,
-        print_curve,
-        print_geo,
-        print_step
-    ]
+    length = Comparison('Length', None, None, None, 'length_problem')
+    slope = Comparison('Slope', lambda x: x['slopes'], compare_slope, print_slope, 'slopes_problem')
+    curve  = Comparison('Curve', lambda x: x['curves'], compare_curve, print_curve, 'curves_problem')
+    geo = Comparison('Geo', lambda x: x['geographic']['coordinates'], compare_geo, print_geo, 'geos_problem')
+    step = Comparison('Step', lambda x: x['steps'], compare_step, print_step, 'steps_problem')
 
-    error_name = [
-        'length_problem',
-        'slopes_problem',
-        'curves_problem',
-        'geos_problem',
-        'steps_problem',
-    ]
+    comparisons = [length, slope, curve, geo, step]
 
-    results = [] #The bools we get from the compairsons
-    logs = [] #What we want to be printed if there is a problem
-
+    #some dots in the geos are colinear and create errors while representing the same broken line. This treatment prevents it.
     geo_pretreatment(routes_path['geographic']['coordinates'])
     geo_pretreatment(blocks_path['geographic']['coordinates'])
+
     #lengths' comparison is different than others comparisons so it's done aside
-    result, log = compare_lengths(routes_path, blocks_path, stats, iteration)
-    results.append(result)
-    logs.append(log)
+    length.result, length.log = compare_lengths(routes_path, blocks_path, stats, iteration)
 
-    for i in range(1,len(value_names)):
-        result,log = compare_values(value_names[i], value_getters[i](routes_path), value_getters[i](blocks_path),\
-                                     comparison_functions[i], print_functions[i], stats, iteration)
-        results.append(result)
-        logs.append(log)
+    for comparison in comparisons:
+        if comparison != length:
+            comparison.result, comparison.log = compare_values(comparison.value_name, comparison.value_getter(routes_path), comparison.value_getter(blocks_path),\
+                                        comparison.comparison_function, comparison.print_function, stats, iteration)
 
-    if False not in results:
+    if False not in [comparison.result for comparison in comparisons]:
         print(f"{iteration}: "+ GREEN +"OK" + RESET + ", Both Paths are the same")
         return True
     else:
-        for i in range(len(results)):
-            if not results[i]:
-                stats[error_name[i]].append(iteration)
         print(f"{iteration}: "+ RED + "ERROR" + RESET + ", difference in the paths")
-        for i in range(len(value_names)):
-            print(f"{value_names[i]}s: {'OK' if results[i] else 'ERROR'}")
+        for comp in comparisons:
+            if comp.result:
+                print(f"{comp.value_name}s: OK")
+            else:
+                stats[comp.error_name].append(iteration)
+                print(f"{comp.value_name}s: ERROR")
         print_path_payload(path_payload)
-        for log in logs:
-            print(log, end = '')
+        for comp in comparisons:
+            print(comp.log, end = '')
 
 def geo_pretreatment(geos):
     i = 1
@@ -197,9 +173,13 @@ def geo_pretreatment(geos):
         x1, y1 = geos[i-1][0], geos[i-1][1]
         x2, y2 = geos[i][0],   geos[i][1]
         x3, y3 = geos[i+1][0], geos[i+1][1]
-        if compare_with_lease((y3 - y2)*(x2 - x1), (y2 - y1)*(x3 - x2)):#checks if the dots are colinear
+        slope1 = (y3 - y2)*(x2 - x1)
+        slope2 = (y2 - y1)*(x3 - x2)
+        #not sur about the acceptable precision for the difference in the slopes
+        if slope1 - 0.000001 < slope2 and slope1 + 0.000001 > slope2 :#checks if the dots are colinear
             geos.pop(i)
-        i+=1
+        else:
+            i+=1
 
 def compare_lengths(routes_path, blocks_path, stats, iteration):
     logs = ""
@@ -262,15 +242,24 @@ def print_geo(geo):
     return f"({round(geo[0],3)},{round(geo[1],3)})"
 
 def compare_step(routes_step, blocks_step):
-    #only comparing the geos in steps
     routes_coordinates = routes_step['geo']['coordinates']
     blocks_coordinates = blocks_step['geo']['coordinates']
-    return compare_with_lease(routes_coordinates[0], blocks_coordinates[0]) and compare_with_lease(routes_coordinates[1], blocks_coordinates[1])
+    return compare_with_lease(routes_coordinates[0], blocks_coordinates[0]) and \
+            compare_with_lease(routes_coordinates[1], blocks_coordinates[1]) and \
+            compare_with_lease(routes_step['path_offset'], blocks_step['path_offset']) and \
+            compare_with_lease(routes_step['location']['offset'], blocks_step['location']['offset']) and \
+            routes_step['location']['track_section'] == blocks_step['location']['track_section'] and \
+            routes_step['id'] == blocks_step['id'] and \
+            routes_step['name']== blocks_step['name']
 
 def print_step(step):
+    #not sure that printing informations about the id/name of the waypoint is very useful so I prefer not adding noise
+    track_offset = round(step['location']['offset'], 3)
+    track_section = step['location']['track_section']
+    path_offset = round(step['path_offset'],3)
     x = round(step['geo']['coordinates'][0], 3)
     y = round(step['geo']['coordinates'][1], 3)
-    return f"({x},{y})"
+    return f"offset {track_offset} on track section {track_section}. path offset: {path_offset}. geos: ({x},{y})"
 
 def print_path_payload(payload):
     print("--------------  Given Payload  -------------------")
@@ -282,9 +271,10 @@ def print_path_payload(payload):
     print('')
 
 def compare_with_lease(a,b):
-    return a - 0.002 <= b and a + 0.002 >= b
+    #maybe we should use 0.002 instead of 0.001 but I'm not sure about what degree of precision we want
+    return a - 0.001 <= b and a + 0.001 >= b
 
-#Allows to replay a specific log
+#Allows to replay a secific log
 def compare_specific_log(log, iteration):
     current_directory = os.path.dirname(os.path.abspath(__file__))
     path_to_logs = os.path.join(current_directory, 'logs')
@@ -328,5 +318,5 @@ def compare_specific_payload(payload):
             compare_paths(routes_path, blocks_path, path_payload_routes, stats, iteration)
 
 
-#compare_specific_log(9, 53)
-compare_pathfindings(50)
+#compare_specific_log(logfile, iteration)
+compare_pathfindings(N_ITERATIONS)
