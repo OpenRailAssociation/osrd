@@ -136,8 +136,8 @@ const drawElectricalProfile = (
         );
     }
   };
-
-  drawZone.call(addTextZone);
+  console.log('data simulation drawElectric : ', dataSimulation);
+  if (dataSimulation.electrification.mode_handled) drawZone.call(addTextZone);
 
   // create pop-up when hovering rect-profile
   drawZone
