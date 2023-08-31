@@ -30,7 +30,20 @@ use diesel::sql_query;
 use diesel_async::RunQueryDsl;
 use redis::cmd;
 use serde_derive::{Deserialize, Serialize};
-use utoipa::{OpenApi, ToSchema};
+use utoipa::openapi::{Array, Object};
+use utoipa::{
+    openapi::{schema::AnyOf, AllOf, OneOf, RefOr, Schema},
+    OpenApi, ToSchema,
+};
+
+fn routes_v2() -> Routes<impl HttpServiceFactory> {
+    crate::routes! {
+        health,
+        version,
+        core_version,
+    }
+    routes()
+}
 
 // This function is only temporary while our migration to using utoipa is
 // still going
@@ -81,6 +94,40 @@ pub fn study_routes() -> impl HttpServiceFactory {
     components(responses())
 )]
 pub struct OpenApiRoot;
+
+fn remove_discriminator(schema: &mut RefOr<Schema>) {
+    match schema {
+        RefOr::T(Schema::AllOf(AllOf {
+            items,
+            discriminator,
+            ..
+        }))
+        | RefOr::T(Schema::AnyOf(AnyOf {
+            items,
+            discriminator,
+            ..
+        }))
+        | RefOr::T(Schema::OneOf(OneOf {
+            items,
+            discriminator,
+            ..
+        })) => {
+            let _ = discriminator.take();
+            for item in items.iter_mut() {
+                remove_discriminator(item);
+            }
+        }
+        RefOr::T(Schema::Object(Object { properties, .. })) => {
+            for property in properties.values_mut() {
+                remove_discriminator(property);
+            }
+        }
+        RefOr::T(Schema::Array(Array { items, .. })) => {
+            remove_discriminator(items);
+        }
+        _ => (),
+    }
+}
 
 impl OpenApiRoot {
     // RTK doesn't support the discriminator: property everywhere utoipa
