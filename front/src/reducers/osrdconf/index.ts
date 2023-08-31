@@ -492,7 +492,7 @@ export function updateRollingStockComfort(rollingStockComfort: string) {
     });
   };
 }
-export function updateSpeedLimitByTag(speedLimitByTag: string | undefined) {
+export function updateSpeedLimitByTag(speedLimitByTag: string | undefined | null) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_SPEED_LIMIT_BY_TAG,

@@ -3,7 +3,7 @@ import debounce from 'lodash/debounce';
 import InputGroupSNCF, { InputGroupSNCFValue } from 'common/BootstrapSNCF/InputGroupSNCF';
 import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import { StandardAllowance, TrainSchedule } from 'common/api/osrdMiddlewareApi';
+import { StandardAllowance, TrainSchedule } from 'common/api/osrdEditoastApi';
 import { TYPES_UNITS, ALLOWANCE_UNITS_KEYS, AllowanceType } from './allowancesConsts';
 
 interface StandardAllowanceDefaultProps {

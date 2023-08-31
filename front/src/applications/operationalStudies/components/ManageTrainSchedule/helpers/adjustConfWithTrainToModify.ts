@@ -18,11 +18,10 @@ import {
 import { sec2time } from 'utils/timeManipulation';
 import { Dispatch } from 'redux';
 import { store } from 'Store';
-import { Allowance, Path } from 'common/api/osrdEditoastApi';
+import { Allowance, Path, TrainSchedule } from 'common/api/osrdEditoastApi';
 import { ArrayElement } from 'utils/types';
 import { PointOnMap } from 'applications/operationalStudies/consts';
 import { compact } from 'lodash';
-import { TrainSchedule } from 'common/api/osrdMiddlewareApi';
 
 function convertStepToPointOnMap(step?: ArrayElement<Path['steps']>): PointOnMap | undefined {
   return step
@@ -40,7 +39,8 @@ export default function adjustConfWithTrainToModify(
   dispatch: Dispatch
 ) {
   const { osrdconf } = store.getState();
-  if (trainSchedule.rolling_stock) dispatch(updateRollingStockID(trainSchedule.rolling_stock));
+  if (trainSchedule.rolling_stock_id)
+    dispatch(updateRollingStockID(trainSchedule.rolling_stock_id));
   if (
     trainSchedule.options?.ignore_electrical_profiles ===
     osrdconf.simulationConf.usingElectricalProfiles
@@ -58,7 +58,7 @@ export default function adjustConfWithTrainToModify(
   if (trainSchedule.allowances) dispatch(updateAllowances(trainSchedule.allowances as Allowance[]));
 
   if (path.steps && path.steps.length > 1) {
-    dispatch(updatePathfindingID(trainSchedule.path));
+    dispatch(updatePathfindingID(trainSchedule.path_id));
     dispatch(updateItinerary(path));
     dispatch(updateOrigin(convertStepToPointOnMap(path.steps[0])));
     dispatch(updateDestination(convertStepToPointOnMap(path.steps.at(-1))));

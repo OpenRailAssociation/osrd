@@ -29,7 +29,6 @@ import pahtFindingPic from 'assets/pictures/components/pathfinding.svg';
 import allowancesPic from 'assets/pictures/components/allowances.svg';
 import simulationSettings from 'assets/pictures/components/simulationSettings.svg';
 import MemoRollingStock2Img from 'modules/rollingStock/components/RollingStockSelector/RollingStock2Img';
-import { osrdMiddlewareApi, TrainSchedule } from 'common/api/osrdMiddlewareApi';
 
 export default function ManageTrainSchedule() {
   const dispatch = useDispatch();
@@ -39,7 +38,7 @@ export default function ManageTrainSchedule() {
   const rollingStockID = useSelector(getRollingStockID);
   const pathFindingID = useSelector(getPathfindingID);
   const trainScheduleIDsToModify: undefined | number[] = useSelector(getTrainScheduleIDsToModify);
-  const [getTrainScheduleById] = osrdMiddlewareApi.endpoints.getTrainScheduleById.useLazyQuery({});
+  const [getTrainScheduleById] = osrdEditoastApi.endpoints.getTrainScheduleById.useLazyQuery({});
   const [getPathfindingById] = osrdEditoastApi.endpoints.getPathfindingById.useLazyQuery({});
 
   // Details for tabs
@@ -164,9 +163,9 @@ export default function ManageTrainSchedule() {
     if (trainScheduleIDsToModify && trainScheduleIDsToModify.length > 0)
       getTrainScheduleById({ id: trainScheduleIDsToModify[0] })
         .unwrap()
-        .then((trainSchedule: TrainSchedule) => {
-          if (trainSchedule.path) {
-            getPathfindingById({ id: trainSchedule.path })
+        .then((trainSchedule) => {
+          if (trainSchedule.path_id) {
+            getPathfindingById({ id: trainSchedule.path_id })
               .unwrap()
               .then((path) => {
                 adjustConfWithTrainToModify(trainSchedule, path, dispatch);
