@@ -15,9 +15,7 @@ use crate::schema::rolling_stock::{RollingStock, RollingStockComfortType};
 use crate::views::pathfinding::run_pathfinding;
 use crate::views::train_schedule::{process_simulation_response, TrainScheduleError};
 use crate::DbPool;
-use actix_http::StatusCode;
-use actix_web::dev::HttpServiceFactory;
-use actix_web::web::{self, Data, Json, Path};
+use actix_web::web::{Data, Json, Path};
 use actix_web::{get, post, HttpResponse};
 use chrono::{DateTime, Timelike, Utc};
 use editoast_derive::EditoastError;
@@ -25,8 +23,22 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use utoipa::ToSchema;
 
-pub fn routes() -> impl HttpServiceFactory {
-    web::scope("/timetable/{timetable_id}").service((get, get_conflicts, post_timetable))
+crate::routes! {
+    "/timetable/{id}" => {
+        get,
+        get_conflicts,
+        post_timetable,
+    },
+}
+
+crate::schemas! {
+    TimetableImportItem,
+    TimetableImportPathStep,
+    TimetableImportPathSchedule,
+    TimetableImportPathLocation,
+    TimetableImportTrain,
+    Conflict,
+    ConflictType,
 }
 
 #[derive(Debug, Error, EditoastError)]
@@ -41,6 +53,16 @@ enum TimetableError {
 }
 
 /// Return a specific timetable with its associated schedules
+#[utoipa::path(
+    tag = "timetable",
+    params(
+        ("id" = u64, Path, description = "Timetable id"),
+    ),
+    responses(
+        (status = 200, description = "Timetable with schedules", body = TimetableWithSchedulesDetails),
+        (status = 404, description = "Timetable not found"),
+    ),
+)]
 #[get("")]
 async fn get(
     db_pool: Data<DbPool>,
@@ -58,13 +80,13 @@ async fn get(
     Ok(Json(timetable_with_schedules))
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub enum ConflictType {
     Spacing,
     Routing,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 struct Conflict {
     train_ids: Vec<i64>,
     train_names: Vec<String>,
@@ -75,6 +97,15 @@ struct Conflict {
 
 /// Compute spacing conflicts for a given timetable
 /// TODO: This should compute itinary conflicts too
+#[utoipa::path(
+    tag = "timetable",
+    params(
+        ("id" = u64, Path, description = "Timetable id"),
+    ),
+    responses(
+        (status = 200, description = "Spacing conflicts", body = Vec<Conflict>),
+    ),
+)]
 #[get("conflicts")]
 async fn get_conflicts(
     db_pool: Data<DbPool>,
@@ -231,14 +262,14 @@ pub struct TimetableImportTrain {
 
 /// Import a timetable
 #[utoipa::path(
-    post,
-    path = "/timetable/{id}/",
+    tag = "timetable",
+    params(
+        ("id" = u64, Path, description = "Timetable id"),
+    ),
     responses(
         (status = 204, description = "Timetable was successfully imported"),
     ),
-    params(
-        ("id" = u64, Path, description = "Timetable id"),
-))]
+)]
 #[post("")]
 async fn post_timetable(
     db_pool: Data<DbPool>,
@@ -452,7 +483,7 @@ async fn post_timetable(
         }
     }
 
-    Ok(HttpResponse::build(StatusCode::NO_CONTENT).body(""))
+    Ok(HttpResponse::NoContent().finish())
 }
 
 #[cfg(test)]

@@ -152,6 +152,39 @@ components:
         curve:
           $ref: '#/components/schemas/EffortCurve'
       type: object
+    Conflict:
+      properties:
+        conflict_type:
+          $ref: '#/components/schemas/ConflictType'
+        end_time:
+          format: int64
+          minimum: 0
+          type: integer
+        start_time:
+          format: int64
+          minimum: 0
+          type: integer
+        train_ids:
+          items:
+            format: int64
+            type: integer
+          type: array
+        train_names:
+          items:
+            type: string
+          type: array
+      required:
+      - train_ids
+      - train_names
+      - start_time
+      - end_time
+      - conflict_type
+      type: object
+    ConflictType:
+      enum:
+      - Spacing
+      - Routing
+      type: string
     DeleteOperation:
       properties:
         obj_id:
@@ -2148,11 +2181,34 @@ components:
       - trains
       type: object
     TimetableImportPathLocation:
-      discriminator:
-        propertyName: type
       oneOf:
-      - $ref: '#/components/schemas/TrackOffsetLocation'
-      - $ref: '#/components/schemas/OperationalPointLocation'
+      - properties:
+          offset:
+            format: double
+            type: number
+          track_section:
+            type: string
+          type:
+            enum:
+            - track_offset
+            type: string
+        required:
+        - track_section
+        - offset
+        - type
+        type: object
+      - properties:
+          type:
+            enum:
+            - operational_point
+            type: string
+          uic:
+            format: int64
+            type: integer
+        required:
+        - uic
+        - type
+        type: object
     TimetableImportPathSchedule:
       properties:
         arrival_time:
@@ -4502,12 +4558,15 @@ paths:
       - stdcm
   /timetable/{id}/:
     get:
+      description: Return a specific timetable with its associated schedules
       parameters:
-      - description: Timetable ID
+      - description: Timetable id
         in: path
         name: id
         required: true
         schema:
+          format: int64
+          minimum: 0
           type: integer
       responses:
         '200':
@@ -4515,8 +4574,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TimetableWithSchedulesDetails'
-          description: The timetable content
-      summary: Retrieve a timetable and its train schedules
+          description: Timetable with schedules
+        '404':
+          description: Timetable not found
+      summary: Return a specific timetable with its associated schedules
       tags:
       - timetable
     post:
@@ -4547,12 +4608,17 @@ paths:
       - timetable
   /timetable/{id}/conflicts/:
     get:
+      description: |-
+        Compute spacing conflicts for a given timetable
+        TODO: This should compute itinary conflicts too
       parameters:
-      - description: Timetable ID
+      - description: Timetable id
         in: path
         name: id
         required: true
         schema:
+          format: int64
+          minimum: 0
           type: integer
       responses:
         '200':
@@ -4560,31 +4626,10 @@ paths:
             application/json:
               schema:
                 items:
-                  properties:
-                    conflict_type:
-                      type: string
-                    end_time:
-                      type: string
-                    start_time:
-                      type: string
-                    train_ids:
-                      items:
-                        type: number
-                      type: array
-                    train_names:
-                      items:
-                        type: string
-                      type: array
-                  required:
-                  - train_ids
-                  - train_names
-                  - start_time
-                  - end_time
-                  - conflict_type
-                  type: object
+                  $ref: '#/components/schemas/Conflict'
                 type: array
-          description: The timetable conflicts content
-      summary: Retrieve all conflicts for a specific timetable
+          description: Spacing conflicts
+      summary: Compute spacing conflicts for a given timetable
       tags:
       - timetable
   /train_schedule/:
@@ -4763,13 +4808,7 @@ paths:
           content:
             application/json:
               schema:
-                properties:
-                  git_describe:
-                    nullable: true
-                    type: string
-                required:
-                - git_describe
-                type: object
+                $ref: '#/components/schemas/Version'
           description: Return the core service version
 tags:
 - description: Infra
