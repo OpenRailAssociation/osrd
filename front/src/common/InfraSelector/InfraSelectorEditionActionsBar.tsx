@@ -56,7 +56,7 @@ export default function ActionsBar({ infra, isFocused, setIsFocused, inputValue 
       setIsWaiting(true);
       try {
         const railjson = await getRailjson({ id: infra.id });
-        fileDownload(JSON.stringify(railjson), `${infra.name}.id${infra.id}.railjson.json`);
+        fileDownload(JSON.stringify(railjson.data), `${infra.name}.id${infra.id}.railjson.json`);
       } catch (e) {
         if (e instanceof Error) {
           dispatch(
