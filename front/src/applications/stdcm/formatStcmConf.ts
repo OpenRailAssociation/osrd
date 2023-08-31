@@ -2,7 +2,7 @@ import { Dispatch } from 'redux';
 import { TFunction } from 'i18next';
 import { PathQuery, PostStdcmApiArg } from 'common/api/osrdEditoastApi';
 
-import { createAllowanceValue } from 'applications/stdcm/components/OldAllowances/allowancesConsts';
+import { createAllowanceValue } from 'applications/stdcm/components/allowancesConsts';
 import { STDCM_MODES, OsrdStdcmConfState } from 'applications/operationalStudies/consts';
 import { time2sec } from 'utils/timeManipulation';
 import { makeEnumBooleans } from 'utils/constants';

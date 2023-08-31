@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { useTranslation } from 'react-i18next';
 
-import StdcmSingleAllowance from 'applications/stdcm/components/OldAllowances/withOSRDStdcmParams';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import InputGroupSNCF, { InputGroupSNCFValue } from 'common/BootstrapSNCF/InputGroupSNCF';
 
@@ -19,33 +18,7 @@ import {
 } from 'reducers/osrdconf';
 import { StandardAllowance } from 'applications/operationalStudies/consts';
 import { AllowanceValue } from 'common/api/osrdEditoastApi';
-import { ALLOWANCE_UNITS_KEYS } from './OldAllowances/allowancesConsts';
-
-// const STDCMAllowances = () => {
-//   const { t } = useTranslation('allowances');
-
-//   return (
-//     <div className="osrd-config-item mb-2 osrd-config-item-container">
-//       <div className="row">
-//         <div className="col-6">
-//           <div>{t('allowances:gridMarginBeforeAfter')}</div>
-//           <div className="row">
-//             <div className="col-6">
-//               <StdcmSingleAllowance typeKey="gridMarginBefore" isCondensed />
-//             </div>
-//             <div className="col-6">
-//               <StdcmSingleAllowance typeKey="gridMarginAfter" isCondensed />
-//             </div>
-//           </div>
-//         </div>
-//         <div className="col-6">
-//           <div>{t('allowances:standardAllowance')}</div>
-//           <StdcmSingleAllowance typeKey="standardStdcmAllowance" isCondensed />
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
+import { ALLOWANCE_UNITS_KEYS } from './allowancesConsts';
 
 const STDCMAllowances = () => {
   const { t } = useTranslation('allowances');
@@ -79,34 +52,31 @@ const STDCMAllowances = () => {
 
   return (
     <div className="row osrd-config-item mb-2 osrd-config-item-container">
-      <div className="col-6">
-        <label htmlFor="gridMarginBeforeAfter">{t('allowances:gridMarginBeforeAfter')}</label>
-        <div id="gridMarginBeforeAfter" className="row">
-          <div className="col-6">
-            <InputSNCF
-              id="standardAllowanceTypeGridMarginBefore"
-              type="text"
-              value={gridMarginBefore}
-              unit={ALLOWANCE_UNITS_KEYS.time}
-              condensed
-              onChange={(e) => dispatch(updateGridMarginBefore(+e.target.value || 0))}
-              sm
-              noMargin
-            />
-          </div>
-          <div className="col-6">
-            <InputSNCF
-              id="standardAllowanceTypeGridMarginAfter"
-              type="text"
-              value={gridMarginAfter}
-              unit={ALLOWANCE_UNITS_KEYS.time}
-              condensed
-              onChange={(e) => dispatch(updateGridMarginAfter(+e.target.value || 0))}
-              sm
-              noMargin
-            />
-          </div>
-        </div>
+      <div className="col-3">
+        <InputSNCF
+          id="standardAllowanceTypeGridMarginBefore"
+          type="text"
+          value={gridMarginBefore}
+          unit={ALLOWANCE_UNITS_KEYS.time}
+          condensed
+          onChange={(e) => dispatch(updateGridMarginBefore(+e.target.value || 0))}
+          sm
+          noMargin
+          label={t('allowances:gridMarginBeforeAfter')}
+        />
+      </div>
+      <div className="col-3">
+        <InputSNCF
+          id="standardAllowanceTypeGridMarginAfter"
+          type="text"
+          value={gridMarginAfter}
+          unit={ALLOWANCE_UNITS_KEYS.time}
+          condensed
+          onChange={(e) => dispatch(updateGridMarginAfter(+e.target.value || 0))}
+          sm
+          noMargin
+          label=" "
+        />
       </div>
       <div className="col-6">
         <label htmlFor="standardAllowanceTypeSelect">{t('allowances:standardAllowance')}</label>
