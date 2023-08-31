@@ -411,14 +411,14 @@ export const TrackEditionMessages: FC = () => {
 
   switch (state.editionState.type) {
     case 'addPoint':
-      if (!state.anchorLinePoints) return t('Editor.tools.track-edition.help.add-point');
-      return t('Editor.tools.track-edition.help.add-anchor-point');
+      if (!state.anchorLinePoints) return t('Editor.tools.track-edition.help.add-point').toString();
+      return t('Editor.tools.track-edition.help.add-anchor-point').toString();
     case 'movePoint':
       if (!state.editionState.draggedPointIndex)
-        return t('Editor.tools.track-edition.help.move-point');
-      return t('Editor.tools.track-edition.help.move-point-end');
+        return t('Editor.tools.track-edition.help.move-point').toString();
+      return t('Editor.tools.track-edition.help.move-point-end').toString();
     case 'deletePoint':
-      return t('Editor.tools.track-edition.help.delete-point');
+      return t('Editor.tools.track-edition.help.delete-point').toString();
     default:
       return null;
   }
