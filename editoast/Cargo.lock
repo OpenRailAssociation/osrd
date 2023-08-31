@@ -1116,6 +1116,7 @@ dependencies = [
  "openssl",
  "osm4routing",
  "osmpbfreader",
+ "paste",
  "pathfinding",
  "pointy",
  "postgis_diesel",
