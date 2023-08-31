@@ -204,8 +204,7 @@ async fn runserver(
             .service(
                 scope(&args.root_path)
                     .service(views::routes())
-                    .service(views::study_routes())
-                    .service(views::version_routes()),
+                    .service(views::study_routes()),
             )
     });
 

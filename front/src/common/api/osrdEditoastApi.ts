@@ -1203,9 +1203,9 @@ export type PostStdcmApiArg = {
   };
 };
 export type GetTimetableByIdApiResponse =
-  /** status 200 The timetable content */ TimetableWithSchedulesDetails;
+  /** status 200 Timetable with schedules */ TimetableWithSchedulesDetails;
 export type GetTimetableByIdApiArg = {
-  /** Timetable ID */
+  /** Timetable id */
   id: number;
 };
 export type PostTimetableByIdApiResponse = unknown;
@@ -1214,16 +1214,9 @@ export type PostTimetableByIdApiArg = {
   id: number;
   body: TimetableImportItem[];
 };
-export type GetTimetableByIdConflictsApiResponse =
-  /** status 200 The timetable conflicts content */ {
-    conflict_type: string;
-    end_time: string;
-    start_time: string;
-    train_ids: number[];
-    train_names: string[];
-  }[];
+export type GetTimetableByIdConflictsApiResponse = /** status 200 Spacing conflicts */ Conflict[];
 export type GetTimetableByIdConflictsApiArg = {
-  /** Timetable ID */
+  /** Timetable id */
   id: number;
 };
 export type DeleteTrainScheduleApiResponse = unknown;
@@ -1276,9 +1269,7 @@ export type GetTrainScheduleByIdResultApiArg = {
 };
 export type GetVersionApiResponse = /** status 200 Return the service version */ Version;
 export type GetVersionApiArg = void;
-export type GetVersionCoreApiResponse = /** status 200 Return the core service version */ {
-  git_describe: string | null;
-};
+export type GetVersionCoreApiResponse = /** status 200 Return the core service version */ Version;
 export type GetVersionCoreApiArg = void;
 export type TrackRange = {
   begin?: number;
@@ -2045,22 +2036,16 @@ export type TimetableWithSchedulesDetails = {
   name: string;
   train_schedule_summaries: TrainScheduleSummary[];
 };
-export type TrackOffsetLocation = {
-  offset: number;
-  track_section: string;
-  type: 'track_offset';
-};
-export type OperationalPointLocation = {
-  type: 'operational_point';
-  uic: number;
-};
 export type TimetableImportPathLocation =
-  | ({
+  | {
+      offset: number;
+      track_section: string;
       type: 'track_offset';
-    } & TrackOffsetLocation)
-  | ({
+    }
+  | {
       type: 'operational_point';
-    } & OperationalPointLocation);
+      uic: number;
+    };
 export type TimetableImportPathSchedule = {
   arrival_time: string;
   departure_time: string;
@@ -2079,6 +2064,14 @@ export type TimetableImportItem = {
   path: TimetableImportPathStep[];
   rolling_stock: string;
   trains: TimetableImportTrain[];
+};
+export type ConflictType = 'Spacing' | 'Routing';
+export type Conflict = {
+  conflict_type: ConflictType;
+  end_time: number;
+  start_time: number;
+  train_ids: number[];
+  train_names: string[];
 };
 export type TrainSchedulePatch = {
   allowances?: Allowance[];

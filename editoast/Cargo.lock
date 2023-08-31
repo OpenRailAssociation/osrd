@@ -1126,6 +1126,7 @@ dependencies = [
  "mvt",
  "osm4routing",
  "osmpbfreader",
+ "paste",
  "pathfinding",
  "pointy",
  "postgis_diesel",

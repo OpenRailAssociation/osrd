@@ -3,7 +3,7 @@ pub mod electrical_profiles;
 pub mod infra;
 mod layers;
 pub mod light_rolling_stocks;
-mod openapi;
+pub mod openapi;
 pub mod pagination;
 pub mod params;
 pub mod pathfinding;
@@ -16,13 +16,13 @@ pub mod study;
 pub mod timetable;
 pub mod train_schedule;
 
-use self::openapi::OpenApiMerger;
+use self::openapi::{merge_path_items, remove_discriminator, OpenApiMerger, Routes};
 use crate::client::get_app_version;
 use crate::core::version::CoreVersionRequest;
 use crate::core::{AsCoreRequest, CoreClient};
 use crate::error::Result;
 use crate::map::redis_utils::RedisClient;
-use crate::DbPool;
+use crate::{schemas, DbPool};
 use actix_web::dev::HttpServiceFactory;
 use actix_web::web::{Data, Json};
 use actix_web::{get, services};
@@ -32,24 +32,36 @@ use redis::cmd;
 use serde_derive::{Deserialize, Serialize};
 use utoipa::{OpenApi, ToSchema};
 
+// This function is only temporary while our migration to using utoipa is
+// still going
+fn routes_v2() -> Routes<impl HttpServiceFactory> {
+    crate::routes! {
+        health,
+        version,
+        core_version,
+        timetable::routes(),
+    }
+    routes()
+}
+
 pub fn routes() -> impl HttpServiceFactory {
     services![
-        health,
+        routes_v2(),
         search::search,
         infra::routes(),
         layers::routes(),
         electrical_profiles::routes(),
-        timetable::routes(),
         rolling_stocks::routes(),
         light_rolling_stocks::routes(),
         pathfinding::routes(),
         train_schedule::routes(),
-        stdcm::routes()
+        stdcm::routes(),
     ]
 }
 
-pub fn version_routes() -> impl HttpServiceFactory {
-    services![version, core_version]
+schemas! {
+    Version,
+    timetable::schemas(),
 }
 
 pub fn study_routes() -> impl HttpServiceFactory {
@@ -65,25 +77,59 @@ pub fn study_routes() -> impl HttpServiceFactory {
 #[openapi(
     info(description = "My Api description"),
     tags(),
-    paths(health, version, timetable::post_timetable),
-    components(
-        schemas(
-            Version,
-            // Timetable endpoints
-            timetable::TimetableImportItem,
-            timetable::TimetableImportPathStep,
-            timetable::TimetableImportPathSchedule,
-            timetable::TimetableImportTrain
-        ),
-        responses()
-    )
+    paths(),
+    components(responses())
 )]
 pub struct OpenApiRoot;
 
 impl OpenApiRoot {
+    // RTK doesn't support the discriminator: property everywhere utoipa
+    // puts it. So we remove it, even though utoipa is correct.
+    fn remove_discrimators(openapi: &mut utoipa::openapi::OpenApi) {
+        for (_, endpoint) in openapi.paths.paths.iter_mut() {
+            for (_, operation) in endpoint.operations.iter_mut() {
+                if let Some(request_body) = operation.request_body.as_mut() {
+                    for (_, content) in request_body.content.iter_mut() {
+                        remove_discriminator(&mut content.schema);
+                    }
+                }
+            }
+        }
+        if let Some(components) = openapi.components.as_mut() {
+            for component in components.schemas.values_mut() {
+                remove_discriminator(component);
+            }
+        }
+    }
+
     pub fn build_openapi() -> serde_json::Value {
         let manual = include_str!("../../openapi_legacy.yaml").to_owned();
         let mut openapi = OpenApiRoot::openapi();
+
+        let routes = routes_v2();
+        for (path, path_item) in routes.paths.into_flat_path_list() {
+            log::debug!("processing {path}");
+            if openapi.paths.paths.contains_key(&path) {
+                let existing_path_item = openapi.paths.paths.remove(&path).unwrap();
+                let merged = merge_path_items(existing_path_item, path_item);
+                openapi.paths.paths.insert(path, merged);
+            } else {
+                openapi.paths.paths.insert(path, path_item);
+            }
+        }
+
+        if openapi.components.is_none() {
+            openapi.components = Some(Default::default());
+        }
+        openapi
+            .components
+            .as_mut()
+            .unwrap()
+            .schemas
+            .extend(schemas());
+
+        Self::remove_discrimators(&mut openapi);
+
         // Remove the operation_id that defaults to the endpoint function name
         // so that it doesn't override the RTK methods names.
         for (_, endpoint) in openapi.paths.paths.iter_mut() {
@@ -142,6 +188,11 @@ async fn version() -> Json<Version> {
     })
 }
 
+#[utoipa::path(
+    responses(
+        (status = 200, description = "Return the core service version", body = Version),
+    ),
+)]
 #[get("/version/core")]
 async fn core_version(core: Data<CoreClient>) -> Json<Version> {
     let response = CoreVersionRequest {}.fetch(&core).await;
@@ -160,7 +211,7 @@ mod tests {
     use crate::map::redis_utils::RedisClient;
     use crate::map::MapLayers;
 
-    use super::{routes, study_routes, version_routes, OpenApiRoot};
+    use super::{routes, study_routes, OpenApiRoot};
     use actix_http::body::BoxBody;
     use actix_http::{Request, StatusCode};
     use actix_web::dev::{Service, ServiceResponse};
@@ -235,7 +286,7 @@ mod tests {
             .app_data(Data::new(MapLayers::parse()))
             .app_data(Data::new(MapLayersConfig::default()))
             .app_data(Data::new(core))
-            .service((routes(), study_routes(), version_routes()));
+            .service((routes(), study_routes()));
         init_service(app).await
     }
 
