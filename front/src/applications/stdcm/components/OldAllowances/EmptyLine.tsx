@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import classNames from 'classnames';
 
-import { Allowance, RangeAllowance, EngineeringAllowance } from 'common/api/osrdMiddlewareApi';
+import { Allowance, RangeAllowance, EngineeringAllowance } from 'common/api/osrdEditoastApi';
 
 import InputGroupSNCF, { InputGroupSNCFValue } from 'common/BootstrapSNCF/InputGroupSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
