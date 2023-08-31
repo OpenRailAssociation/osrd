@@ -4,20 +4,12 @@ import { PlaywrightSTDCMPage } from './pages/stdcm-page-model';
 
 // Describe the test suite for the STDCM page
 test.describe('STDCM page', () => {
-  // Declare the necessary variables for the test suite
-  let playwrightHomePage: PlaywrightHomePage;
-  let playwrightSTDCMPage: PlaywrightSTDCMPage;
-
   test('should be correctly displays the rolling stock list and select one', async ({ page }) => {
-    // Create an instance of the PlaywrightHomePage class
-    playwrightHomePage = new PlaywrightHomePage(page);
-
-    // Create an instance of the PlaywrightSTDCMPage class
-    playwrightSTDCMPage = new PlaywrightSTDCMPage(page);
+    const playwrightHomePage = new PlaywrightHomePage(page);
+    const playwrightSTDCMPage = new PlaywrightSTDCMPage(page);
 
     // Go to the home page of OSRD
     await playwrightHomePage.goToHomePage();
-
     await playwrightHomePage.goToSTDCMPage();
 
     await playwrightSTDCMPage.getScenarioExploratorModalClose();
@@ -50,42 +42,42 @@ test.describe('STDCM page', () => {
 
     await playwrightSTDCMPage.page.waitForSelector('.rollingstock-container');
 
-    const infoCardText = await playwrightSTDCMPage.getRollingStockListItem
-      .locator('.rollingstock-info')
-      .allTextContents();
-    expect(infoCardText).toContain(
-      'BB 7200GVLOCOMOTIVES / Locomotives électriques / Locomotives électriques courant continu_@Test BB 7200GVLOCOMOTIVES'
-    );
-    expect(infoCardText).toContain(
-      'BB 15000BB15000 USLOCOMOTIVES / Locomotives électriques / Locomotives électriques monophasé_@Test Locomotives électriques'
-    );
-    expect(infoCardText).toContain(
-      'BB 22200V160LOCOMOTIVES / Locomotives électriques / Locomotives électriques bi courant_@Test BB 22200'
-    );
+    if (process.env.TESTS_ROLLINGSTOCKS) {
+      const infoCardText = await playwrightSTDCMPage.getRollingStockListItem
+        .locator('.rollingstock-info')
+        .allTextContents();
+      expect(infoCardText).toContain(
+        'BB 7200GVLOCOMOTIVES / Locomotives électriques / Locomotives électriques courant continu_@Test BB 7200GVLOCOMOTIVES'
+      );
+      expect(infoCardText).toContain(
+        'BB 15000BB15000 USLOCOMOTIVES / Locomotives électriques / Locomotives électriques monophasé_@Test Locomotives électriques'
+      );
+      expect(infoCardText).toContain(
+        'BB 22200V160LOCOMOTIVES / Locomotives électriques / Locomotives électriques bi courant_@Test BB 22200'
+      );
 
-    const footerCardText = await playwrightSTDCMPage.getRollingStockListItem
-      .locator('.rollingstock-footer')
-      .allTextContents();
-    expect(footerCardText).toContain('25000V400m900t288km/h');
+      const footerCardText = await playwrightSTDCMPage.getRollingStockListItem
+        .locator('.rollingstock-footer')
+        .allTextContents();
+      expect(footerCardText).toContain('25000V400m900t288km/h');
 
-    // Check if rollingstock detail is close
-    await expect(rollingstockItem).toHaveClass(/inactive/);
-    await rollingstockItem.click();
+      // Check if rollingstock detail is close
+      await expect(rollingstockItem).toHaveClass(/inactive/);
+      await rollingstockItem.click();
 
-    // Check if rollingstock detail is open
-    await expect(rollingstockItem).toHaveClass(/active/);
+      // Check if rollingstock detail is open
+      await expect(rollingstockItem).toHaveClass(/active/);
 
-    await rollingstockItem.locator('.rollingstock-footer-buttons > button').click();
+      await rollingstockItem.locator('.rollingstock-footer-buttons > button').click();
 
-    // Check that the rollingstock is selected
-    await expect(
-      playwrightSTDCMPage.getRollingStockSelector.locator('.rollingstock-minicard')
-    ).toBeVisible();
+      // Check that the rollingstock is selected
+      await expect(
+        playwrightSTDCMPage.getRollingStockSelector.locator('.rollingstock-minicard')
+      ).toBeVisible();
 
-    await expect(playwrightSTDCMPage.getMissingParam).not.toContainText(
-      rollingStockTranslationRegEx
-    );
-
-    await playwrightHomePage.backToHomePage();
+      await expect(playwrightSTDCMPage.getMissingParam).not.toContainText(
+        rollingStockTranslationRegEx
+      );
+    }
   });
 });

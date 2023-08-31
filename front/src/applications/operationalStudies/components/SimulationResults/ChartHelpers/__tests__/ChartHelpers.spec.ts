@@ -1,4 +1,5 @@
 import { SimulationTrain } from 'reducers/osrdsimulation/types';
+import { describe, expect, it, test } from 'vitest';
 import {
   mergeDatasArea,
   interpolateOnTime,

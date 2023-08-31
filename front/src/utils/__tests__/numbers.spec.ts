@@ -1,5 +1,6 @@
 import { NARROW_NO_BREAK_SPACE, NO_BREAK_SPACE } from 'utils/strings';
 import { budgetFormat } from 'utils/numbers';
+import { describe, expect, it } from 'vitest';
 
 describe('budgetFormat', () => {
   it('should return the complete number as a currency (€)', () => {

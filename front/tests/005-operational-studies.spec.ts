@@ -10,7 +10,6 @@ import { StudyPage } from './pages/study-page-model';
 
 test.describe('Testing if all mandatory elements simulation configuration are loaded in operationnal studies app', () => {
   test('Testing pathfinding with rollingstock an composition code', async ({ page }) => {
-    test.setTimeout(90000); // 1min30
     const playwrightHomePage = new PlaywrightHomePage(page);
     const scenarioPage = new PlaywrightScenarioPage(page);
     const projectPage = new ProjectPage(page);
@@ -90,10 +89,11 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
     // ***************** Test choice Origin/Destination *****************
     const playwrightMap = new PlaywrightMap(playwrightHomePage.page);
     await scenarioPage.openTabByText('Itinéraire');
-    await playwrightMap.page.waitForTimeout(2000);
     const itinerary = scenarioPage.getItineraryModule;
     await expect(itinerary).toBeVisible();
     await expect(scenarioPage.getMapModule).toBeVisible();
+
+    await playwrightMap.turnOffMapBackgroundLayers();
 
     // Search and select origin
     await playwrightMap.selectOrigin(PATH_VARIABLES.originSearch);

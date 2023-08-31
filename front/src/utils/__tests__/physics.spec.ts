@@ -1,4 +1,5 @@
 import { jouleToKwh } from 'utils/physics';
+import { describe, expect, it } from 'vitest';
 
 describe('jouleToKwh', () => {
   it('should return value in kwh', () => {

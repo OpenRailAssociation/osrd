@@ -1,6 +1,6 @@
 {
     "id": 0,
-    "name": "Test e2e étude",
+    "name": "_@Test integration study",
     "description": "Ceci est un test e2e pour la description de l'étude",
     "budget": "1234567890",
     "service_code": "A1234",

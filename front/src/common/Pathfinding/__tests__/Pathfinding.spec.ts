@@ -1,3 +1,4 @@
+import { describe, expect, test } from 'vitest';
 import { reducer, initialState } from '../Pathfinding';
 
 describe('reducer', () => {

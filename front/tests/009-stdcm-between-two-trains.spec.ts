@@ -28,9 +28,8 @@ const scenarioName = process.env.CI
   ? '_@Test integration scenario'
   : '_@Test integration stdcm scenario';
 
-test.skip('Testing if stdcm between two trains works well', () => {
-  test.beforeEach(async ({ page }) => {
-    test.setTimeout(180000); // 3min
+test.describe('Testing if stdcm between two trains works well', () => {
+  test('Creating STDCM Scenario', async ({ page }) => {
     // if test in local, create our own scenario with France infra
     // else, use the default scenario
     if (!process.env.CI) {
@@ -75,6 +74,8 @@ test.skip('Testing if stdcm between two trains works well', () => {
 
     // ***************** Select Origin/Destination *****************
     const playwrightMap = new PlaywrightMap(playwrightHomePage.page);
+
+    await playwrightMap.turnOffMapBackgroundLayers();
 
     await playwrightMap.selectOrigin(originSearch);
 

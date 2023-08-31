@@ -52,19 +52,10 @@ const config: PlaywrightTestConfig = {
       },
     },
 
-    // Temporary removal, map loading takes too long on the CI
-
-    // {
-    //   name: 'firefox',
-    //   use: {
-    //     ...devices['Desktop Firefox'],
-    //   },
-    // },
-
     {
-      name: 'webkit',
+      name: 'firefox',
       use: {
-        ...devices['Desktop Safari'],
+        ...devices['Desktop Firefox'],
       },
     },
   ],

@@ -1,5 +1,6 @@
 import { MODES, OsrdConfState } from 'applications/operationalStudies/consts';
 import { createStoreWithoutMiddleware } from 'Store';
+import { describe, expect, it, test } from 'vitest';
 import {
   initialState,
   updateOriginTime,

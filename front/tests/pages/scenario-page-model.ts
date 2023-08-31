@@ -107,9 +107,7 @@ class PlaywrightScenarioPage {
     this.getDeltaInput = page.locator('#osrdconf-delta');
     this.getAddTrainScheduleBtn = page.getByTestId('add-train-schedules');
     this.getTrainScheduleNameInput = page.locator('#trainSchedule-name');
-    this.getTrainTimetable = page
-      .locator('.scenario-timetable-trains')
-      .locator('.scenario-timetable-train');
+    this.getTrainTimetable = page.locator('.scenario-timetable-trains .scenario-timetable-train');
     this.getReturnSimulationResultBtn = page.getByTestId('return-simulation-result');
     this.getToastSNCF = page.getByTestId('toast-SNCF');
     this.getToastSNCFTitle = this.getToastSNCF.getByTestId('toast-SNCF-title');

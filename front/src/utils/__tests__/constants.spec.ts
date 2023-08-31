@@ -1,4 +1,5 @@
 import { makeEnumBooleans } from 'utils/constants';
+import { describe, expect, it } from 'vitest';
 
 describe('makeEnumBooleans', () => {
   it('should return an empty object', () => {

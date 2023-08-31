@@ -35,7 +35,6 @@ export default async function createCompleteScenario(
   await scenarioPage.setScenarioInfraByName(VARIABLES.infraName);
   const createButton = playwrightHomePage.page.getByText('Créer le scénario');
   await createButton.click();
-  await playwrightMap.page.waitForTimeout(2000);
 
   await scenarioPage.checkInfraLoaded();
   await playwrightHomePage.page.getByTestId('scenarios-add-train-schedule-button').click();
@@ -58,10 +57,11 @@ export default async function createCompleteScenario(
 
   // ***************** Select Origin/Destination *****************
   await scenarioPage.openTabByText('Itinéraire');
-  await playwrightMap.page.waitForTimeout(2000);
   const itinerary = scenarioPage.getItineraryModule;
   await expect(itinerary).toBeVisible();
   await expect(scenarioPage.getMapModule).toBeVisible();
+
+  await playwrightMap.turnOffMapBackgroundLayers();
 
   // Search and select origin
   await playwrightMap.selectOrigin(originSearch);

@@ -30,7 +30,7 @@ export default function DriverTrainScheduleStopList({ train, baseOrEco }: Props)
               <th className="text-center">{t('trackname')}</th>
             </tr>
             <tr className="small text-uppercase">
-              <td />
+              <td aria-label="empty" />
               <th className="font-weight-normal pb-1 text-center">
                 <span className="d-none d-lg-block d-xl-block">{t('speedlimit')}</span>
                 <span className="d-lg-none d-xl-none">{t('speedlimit-short')}</span>
@@ -43,7 +43,7 @@ export default function DriverTrainScheduleStopList({ train, baseOrEco }: Props)
                 <span className="d-none d-lg-block d-xl-block">{t('averagespeed')}</span>
                 <span className="d-lg-none d-xl-none">{t('averagespeed-short')}</span>
               </th>
-              <td colSpan={4} />
+              <td colSpan={4} aria-label="empty" />
             </tr>
           </thead>
           <tbody>

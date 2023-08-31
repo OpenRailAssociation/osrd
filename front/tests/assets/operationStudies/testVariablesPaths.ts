@@ -3,12 +3,12 @@ export default process.env.CI
       originSearch: {
         stationName: 'south west',
         stationItemName: /South_West_station/,
-        positionClick: { x: 415, y: 210 },
+        positionClick: { x: 410, y: 220 },
       },
       destinationSearch: {
         stationName: 'nor',
         stationItemName: /North_East_station/,
-        positionClick: { x: 415, y: 215 },
+        positionClick: { x: 410, y: 230 },
       },
       stdcm: {
         originSearch: {
@@ -37,7 +37,7 @@ export default process.env.CI
       originSearchQuimper: {
         stationName: 'quimper',
         stationItemName: 'QR Quimper SP 87474098',
-        positionClick: { x: 410, y: 215 },
+        positionClick: { x: 405, y: 220 },
       },
       destinationSearch: {
         stationName: 'miramas',

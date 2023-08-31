@@ -16,8 +16,8 @@ export default process.env.CI
     }
   : {
       infraName: 'France',
-      numberOfRollingstock: '443',
-      numberOfRollingstockWithElectrical: '262',
+      numberOfRollingstock: process.env.TESTS_ROLLINGSTOCKS ? '446' : '443',
+      numberOfRollingstockWithElectrical: process.env.TESTS_ROLLINGSTOCKS ? '265' : '262',
       numberOfRollingstockWithSearch: '27',
       searchRollingstock: 'tgv',
       rollingstockTestID: 'rollingstock-1TGV2N2',

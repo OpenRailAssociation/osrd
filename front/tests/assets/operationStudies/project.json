@@ -1,6 +1,6 @@
 {
     "id": 0,
-    "name": "Test e2e projet",
+    "name": "_@Test integration project",
     "objectives": "# Titre 1 \n## Titre 2 \n### Titre 3  \n* Liste item  \n- [ ] Liste item with checkbox",
     "description": "Ceci est un test e2e pour la description du projet",
     "funders": "Financé par les développeurs",

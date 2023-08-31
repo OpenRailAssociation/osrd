@@ -2,3 +2,4 @@
 *.nix
 *.backup
 __pycache__
+tests/pytestdebug.log

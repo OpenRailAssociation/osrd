@@ -42,6 +42,7 @@ It requires:
 - Backend containers to be up: `docker compose build core redis api editoast postgres`
 - Running front
 - [`poetry`](https://python-poetry.org/docs/#installation) to be installed
+- Install ['playwright'](https://playwright.dev) with `npx playwright install`
 
 Locally, to use the same configuration as the CI, you must change the environment variable to
 `CI=true`.

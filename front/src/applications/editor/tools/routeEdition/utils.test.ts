@@ -1,7 +1,8 @@
-import { LineString, Point, Position } from 'geojson';
+import { Point, Position } from 'geojson';
 import length from '@turf/length';
 import { lineString } from '@turf/helpers';
 
+import { describe, expect, it } from 'vitest';
 import { editoastToEditorEntity } from '../../data/utils';
 import { computeRouteGeometry, removeDuplicatePoints } from './utils';
 import { DetectorEntity, TrackSectionEntity } from '../../../../types';
@@ -119,13 +120,13 @@ describe('getRouteGeometry(...) utils', () => {
     expect(
       computeRouteGeometry({ ts1, ts2 }, d1, d2, [{ track: 'ts1', direction: 'START_TO_STOP' }])
         .geometry
-    ).toEqual<LineString>(ts1.geometry);
+    ).toEqual(ts1.geometry);
   });
   it('should work with a single track section (backwards)', () => {
     expect(
       computeRouteGeometry({ ts1, ts2 }, d2, d1, [{ track: 'ts1', direction: 'STOP_TO_START' }])
         .geometry
-    ).toEqual<LineString>({
+    ).toEqual({
       ...ts1.geometry,
       coordinates: ts1.geometry.coordinates.slice(0).reverse(),
     });
@@ -137,7 +138,7 @@ describe('getRouteGeometry(...) utils', () => {
         { track: 'ts1', direction: 'START_TO_STOP' },
         { track: 'ts2', direction: 'START_TO_STOP' },
       ]).geometry
-    ).toEqual<LineString>({
+    ).toEqual({
       ...ts1.geometry,
       coordinates: removeDuplicatePoints(ts1.geometry.coordinates.concat(ts2.geometry.coordinates)),
     });
@@ -148,7 +149,7 @@ describe('getRouteGeometry(...) utils', () => {
         { track: 'ts2', direction: 'STOP_TO_START' },
         { track: 'ts1', direction: 'STOP_TO_START' },
       ]).geometry
-    ).toEqual<LineString>({
+    ).toEqual({
       ...ts1.geometry,
       coordinates: removeDuplicatePoints(ts1.geometry.coordinates.concat(ts2.geometry.coordinates))
         .slice(0)

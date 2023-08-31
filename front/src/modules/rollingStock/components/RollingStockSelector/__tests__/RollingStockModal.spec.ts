@@ -1,5 +1,6 @@
 import type { LightRollingStock } from 'common/api/osrdEditoastApi';
 import { rollingStockPassesEnergeticModeFilters } from 'modules/rollingStock/components/RollingStockSelector/SearchRollingStock';
+import { describe, expect, it } from 'vitest';
 
 type Modes = LightRollingStock['effort_curves']['modes'];
 

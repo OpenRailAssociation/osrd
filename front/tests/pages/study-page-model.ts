@@ -59,7 +59,7 @@ export class StudyPage {
     this.getStudyFinancialsAmount = page.locator('.study-details-financials-amount');
     this.getStudyFinancialsInfos = page.locator('.study-details-financials-infos-item .code');
     this.getStudyTags = page.locator('.study-details-tags');
-    this.getBackToProject = page.getByRole('heading', { name: 'Test e2e projet' });
+    this.getBackToProject = page.getByRole('heading', { name: '_@Test integration project' });
     this.translation = study;
     this.getAddStudyBtn = page.getByRole('button', { name: 'Créer une étude' });
     this.getStudyInputName = page.locator('#studyInputName');

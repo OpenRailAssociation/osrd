@@ -3,8 +3,10 @@ import distance from '@turf/distance';
 import along from '@turf/along';
 import { LineString, FeatureCollection } from 'geojson';
 
-import { getLineStringDistance, update, resizeSegment, splitAt, mergeIn } from './data';
+import { describe, expect, it } from 'vitest';
+import { fail } from 'assert';
 import { LinearMetadataItem } from './types';
+import { getLineStringDistance, update, resizeSegment, splitAt, mergeIn } from './data';
 
 const DEBUG = false;
 

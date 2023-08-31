@@ -1,3 +1,4 @@
+import os
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
@@ -74,6 +75,7 @@ ROLLING_STOCK_1500_JSON_PATH = (
 )
 @pytest.mark.usefixtures("small_scenario", "fast_rolling_stocks")
 def test_e2e():
+    os.environ["TESTS_ROLLINGSTOCKS"] = "true"
     result = subprocess.run(
         ["yarn", "--cwd", "front", "playwright", "test", "--reporter=line"],
         cwd=Path(__file__).parents[2],

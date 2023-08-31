@@ -1,5 +1,5 @@
 import { lineString, point, lengthToDegrees } from '@turf/helpers';
-
+import { describe, expect, it, test } from 'vitest';
 import { makeDisplayedHeadAndTail } from '../TrainHoverPosition';
 import { TrainPosition } from '../types';
 

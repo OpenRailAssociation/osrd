@@ -42,7 +42,7 @@ export default function MapSettingsBackgroundSwitches() {
   return (
     <>
       {formatSwitch(
-        'showosmwitch',
+        'showosmswitch',
         () => dispatch(updateShowOSM(!showOSM)),
         showOSM,
         iconOSM,

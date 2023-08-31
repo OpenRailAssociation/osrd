@@ -1,4 +1,5 @@
 import { conditionalStringConcat } from 'utils/strings';
+import { describe, expect, it } from 'vitest';
 
 describe('conditionalStringConcat', () => {
   it('should return concatenated string', () => {
