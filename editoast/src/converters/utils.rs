@@ -315,11 +315,11 @@ pub fn signals(
                     track,
                     position,
                     sight_distance: 400.,
-                    logical_signals: Some(vec![LogicalSignal {
+                    logical_signals: vec![LogicalSignal {
                         signaling_system: "BAL".to_string(),
                         settings,
                         ..Default::default()
-                    }]),
+                    }],
                     linked_detector: Some(node.id.0.to_string()),
                     extensions: SignalExtensions {
                         sncf: Some(sncf_extensions(&node)),

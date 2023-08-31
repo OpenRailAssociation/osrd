@@ -573,7 +573,7 @@ files = [
 
 [[package]]
 name = "osrd-schemas"
-version = "0.6.1"
+version = "0.7.0"
 description = ""
 optional = false
 python-versions = ">=3.9,<3.12"

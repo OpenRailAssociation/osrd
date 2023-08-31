@@ -50,6 +50,66 @@
             "title": "ApplicableDirectionsTrackRange",
             "type": "object"
         },
+        "BalSystem": {
+            "properties": {
+                "next_signaling_systems": {
+                    "description": "The list of allowed input signaling systems",
+                    "items": {
+                        "$ref": "#/$defs/SignalingSystem"
+                    },
+                    "title": "Next Signaling Systems",
+                    "type": "array"
+                },
+                "settings": {
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/__main____BalSystem__Settings"
+                        }
+                    ],
+                    "description": "BAL signal settings"
+                },
+                "signaling_system": {
+                    "const": "BAL",
+                    "default": "BAL",
+                    "title": "Signaling System"
+                }
+            },
+            "required": [
+                "settings"
+            ],
+            "title": "BalSystem",
+            "type": "object"
+        },
+        "BaprSystem": {
+            "properties": {
+                "next_signaling_systems": {
+                    "description": "The list of allowed input signaling systems",
+                    "items": {
+                        "$ref": "#/$defs/SignalingSystem"
+                    },
+                    "title": "Next Signaling Systems",
+                    "type": "array"
+                },
+                "settings": {
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/__main____BaprSystem__Settings"
+                        }
+                    ],
+                    "description": "BAPR signal settings"
+                },
+                "signaling_system": {
+                    "const": "BAPR",
+                    "default": "BAPR",
+                    "title": "Signaling System"
+                }
+            },
+            "required": [
+                "settings"
+            ],
+            "title": "BaprSystem",
+            "type": "object"
+        },
         "BufferStop": {
             "description": "This class defines the buffer stop object.\n    A buffer stop is a device placed at the end of a dead-end road\n    to stop any drifting trains from continuing off the road.\n    A buffer stop is characterized by its id and its corresponding track.\n    ",
             "properties": {
@@ -283,6 +343,37 @@
             ],
             "title": "Endpoint",
             "type": "string"
+        },
+        "FlagSignalParameter": {
+            "enum": [
+                "true",
+                "false"
+            ],
+            "title": "FlagSignalParameter",
+            "type": "string"
+        },
+        "LimitedLogicalSignal": {
+            "description": "Limited list of logical signals. Used to generate a usable schema for the front editor",
+            "discriminator": {
+                "mapping": {
+                    "BAL": "#/$defs/BalSystem",
+                    "BAPR": "#/$defs/BaprSystem",
+                    "TVM": "#/$defs/TvmSystem"
+                },
+                "propertyName": "signaling_system"
+            },
+            "oneOf": [
+                {
+                    "$ref": "#/$defs/BalSystem"
+                },
+                {
+                    "$ref": "#/$defs/BaprSystem"
+                },
+                {
+                    "$ref": "#/$defs/TvmSystem"
+                }
+            ],
+            "title": "LimitedLogicalSignal"
         },
         "LineString": {
             "description": "LineString Model",
@@ -861,20 +952,12 @@
                     "title": "Linked Detector"
                 },
                 "logical_signals": {
-                    "anyOf": [
-                        {
-                            "items": {
-                                "$ref": "#/$defs/LogicalSignal"
-                            },
-                            "type": "array"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "default": null,
                     "description": "Logical signals bundled into this physical signal",
-                    "title": "Logical Signals"
+                    "items": {
+                        "$ref": "#/$defs/LimitedLogicalSignal"
+                    },
+                    "title": "Logical Signals",
+                    "type": "array"
                 },
                 "position": {
                     "description": "Offset of the point in meters to the beginning of the track section",
@@ -998,6 +1081,15 @@
             ],
             "title": "SignalSncfExtension",
             "type": "object"
+        },
+        "SignalingSystem": {
+            "enum": [
+                "BAL",
+                "BAPR",
+                "TVM"
+            ],
+            "title": "SignalingSystem",
+            "type": "string"
         },
         "Slope": {
             "description": "\n    This class is used to define the slope object.\n    A slope correspond at the gradient in the part of corresponding track section.\n    The gradient can be positive (case of ramp) or negative (slope case)\n    ",
@@ -1462,6 +1554,96 @@
                 "track_name"
             ],
             "title": "TrackSectionSncfExtension",
+            "type": "object"
+        },
+        "TvmSystem": {
+            "properties": {
+                "next_signaling_systems": {
+                    "description": "The list of allowed input signaling systems",
+                    "items": {
+                        "$ref": "#/$defs/SignalingSystem"
+                    },
+                    "title": "Next Signaling Systems",
+                    "type": "array"
+                },
+                "settings": {
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/__main____TvmSystem__Settings"
+                        }
+                    ],
+                    "description": "TVM signal settings"
+                },
+                "signaling_system": {
+                    "const": "TVM",
+                    "default": "TVM",
+                    "title": "Signaling System"
+                }
+            },
+            "required": [
+                "settings"
+            ],
+            "title": "TvmSystem",
+            "type": "object"
+        },
+        "__main____BalSystem__Settings": {
+            "properties": {
+                "Nf": {
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/FlagSignalParameter"
+                        }
+                    ],
+                    "description": "Is the signal non-passable"
+                }
+            },
+            "required": [
+                "Nf"
+            ],
+            "title": "Settings",
+            "type": "object"
+        },
+        "__main____BaprSystem__Settings": {
+            "properties": {
+                "Nf": {
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/FlagSignalParameter"
+                        }
+                    ],
+                    "description": "Is the signal non-passable"
+                },
+                "distant": {
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/FlagSignalParameter"
+                        }
+                    ],
+                    "description": "Is it a distant signal"
+                }
+            },
+            "required": [
+                "Nf",
+                "distant"
+            ],
+            "title": "Settings",
+            "type": "object"
+        },
+        "__main____TvmSystem__Settings": {
+            "properties": {
+                "is_430": {
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/FlagSignalParameter"
+                        }
+                    ],
+                    "description": "Is it TVM-430"
+                }
+            },
+            "required": [
+                "is_430"
+            ],
+            "title": "Settings",
             "type": "object"
         }
     },
