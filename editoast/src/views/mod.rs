@@ -77,6 +77,17 @@ schemas! {
     timetable::schemas(),
 }
 
+schemas! {
+    Version,
+    &crate::core::infra_state::InfraStateResponse,
+    infra::schemas(),
+    pagination::schemas(),
+    timetable::schemas(),
+    crate::map::schemas(),
+    crate::schema::schemas(),
+    crate::models::schemas(),
+}
+
 pub fn study_routes() -> impl HttpServiceFactory {
     services![
         projects::routes(),
