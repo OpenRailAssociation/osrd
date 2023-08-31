@@ -394,8 +394,8 @@ class Signal(BaseObjectTrait, TrackLocationTrait):
     linked_detector: Optional[Identifier] = Field(
         description="Identifier of the detector linked to the signal", default=None
     )
-    logical_signals: Optional[List[LogicalSignal]] = Field(
-        description="Logical signals bundled into this physical signal", default=None
+    logical_signals: List[LogicalSignal] = Field(
+        description="Logical signals bundled into this physical signal", default_factory=list
     )
 
 

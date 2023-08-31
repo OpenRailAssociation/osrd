@@ -72,5 +72,5 @@ jobs:
           run: |
             cd python/osrd_schemas
             poetry install --no-interaction --no-root
-            poetry run python osrd_schemas/infra.py > current_infra_schema.json
+            poetry run python osrd_schemas/infra_editor.py > current_infra_schema.json
             diff current_infra_schema.json ../../front/src/reducers/osrdconf/infra_schema.json

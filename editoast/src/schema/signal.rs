@@ -31,7 +31,8 @@ pub struct Signal {
     #[derivative(Default(value = "400."))]
     pub sight_distance: f64,
     pub linked_detector: Option<String>,
-    pub logical_signals: Option<Vec<LogicalSignal>>,
+    #[serde(default)]
+    pub logical_signals: Vec<LogicalSignal>,
     #[serde(default)]
     pub extensions: SignalExtensions,
 }
