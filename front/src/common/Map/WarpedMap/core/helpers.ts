@@ -1,13 +1,16 @@
 /* eslint-disable prefer-destructuring, no-plusplus */
 import { Feature, FeatureCollection, LineString, Point, Polygon, Position } from 'geojson';
-import { clamp, first, keyBy, last } from 'lodash';
+import _, { clamp, first, last, mapValues } from 'lodash';
 import length from '@turf/length';
-import { featureCollection, point, polygon } from '@turf/helpers';
+import { point } from '@turf/helpers';
 import along from '@turf/along';
 import distance from '@turf/distance';
+import { MapGeoJSONFeature } from 'maplibre-gl';
 
-import vec, { Vec2 } from './vec-lib';
-import { PolygonZone } from '../../../../types';
+import { EditoastType, LAYER_TO_EDITOAST_DICT, LayerType } from 'applications/editor/tools/types';
+import { getMixedEntities } from 'applications/editor/data/api';
+import { flattenEntity } from 'applications/editor/data/utils';
+import vec, { Vec2 } from 'common/Map/WarpedMap/core/vec-lib';
 
 /**
  * Useful types:
@@ -84,98 +87,6 @@ export function extendLine(line: Feature<LineString>, lengthToAdd: number): Feat
 }
 
 /**
- * Grid helpers:
- */
-export function getGridIndex(grid: GridFeature): GridIndex {
-  return keyBy(grid.features, (feature) => feature.properties.triangleId);
-}
-
-export function featureToPointsGrid(grid: GridFeature, steps: number): PointsGrid {
-  const points: PointsGrid = [];
-  const gridIndex = getGridIndex(grid);
-  const stripsPerSide = grid.features.length / steps / 2 / 2;
-
-  for (let i = 0; i < steps; i++) {
-    points[i] = points[i] || {};
-    points[i + 1] = points[i + 1] || {};
-    for (let direction = -1; direction <= 1; direction += 2) {
-      for (let j = 0; j < stripsPerSide; j++) {
-        const inside = gridIndex[`step:${i}/strip:${direction * (j + 1)}/inside`];
-        const outside = gridIndex[`step:${i}/strip:${direction * (j + 1)}/outside`];
-        const [[p00, p10, p01]] = inside.geometry.coordinates;
-        const [[p11]] = outside.geometry.coordinates;
-
-        points[i][direction * j] = p00;
-        points[i][direction * (j + 1)] = p01;
-        points[i + 1][direction * j] = p10;
-        points[i + 1][direction * (j + 1)] = p11;
-      }
-    }
-  }
-
-  return points;
-}
-export function pointsGridToFeature(points: PointsGrid): GridFeature {
-  const grid = featureCollection([]) as GridFeature;
-  const steps = points.length - 1;
-  const stripsPerSide = (Object.keys(points[0]).length - 1) / 2;
-
-  for (let i = 0; i < steps; i++) {
-    for (let direction = -1; direction <= 1; direction += 2) {
-      for (let j = 0; j < stripsPerSide; j++) {
-        const p00 = points[i][direction * j];
-        const p01 = points[i][direction * (j + 1)];
-        const p10 = points[i + 1][direction * j];
-        const p11 = points[i + 1][direction * (j + 1)];
-        grid.features.push(
-          polygon([[p00, p10, p01, p00]], {
-            triangleId: `step:${i}/strip:${direction * (j + 1)}/inside`,
-          }) as Triangle
-        );
-        grid.features.push(
-          polygon([[p11, p10, p01, p11]], {
-            triangleId: `step:${i}/strip:${direction * (j + 1)}/outside`,
-          }) as Triangle
-        );
-      }
-    }
-  }
-
-  return grid;
-}
-
-export function pointsGridToZone(points: PointsGrid): PolygonZone {
-  const firstRow = points[0];
-  const lastRow = points[points.length - 1];
-  const stripsPerSide = (Object.keys(firstRow).length - 1) / 2;
-  const border: Position[] = [];
-
-  // Add first row:
-  for (let i = -stripsPerSide; i <= stripsPerSide; i++) {
-    border.push(points[0][i]);
-  }
-
-  // Add all intermediary rows:
-  for (let i = 1, l = points.length - 1; i < l; i++) {
-    border.push(points[i][stripsPerSide]);
-    border.unshift(points[i][-stripsPerSide]);
-  }
-
-  // Add last row:
-  for (let i = stripsPerSide; i >= -stripsPerSide; i--) {
-    border.push(lastRow[i]);
-  }
-
-  // Close path:
-  border.push(border[0]);
-
-  return {
-    type: 'polygon',
-    points: border,
-  };
-}
-
-/**
  * Triangle helpers:
  */
 export function getBarycentricCoordinates(
@@ -207,4 +118,56 @@ export function getPointInTriangle(
   }: Triangle
 ): Position {
   return [a * x0 + b * x1 + c * x2, a * y0 + b * y1 + c * y2];
+}
+
+/**
+ * Data helpers:
+ */
+const OSRD_BATCH_SIZE = 500;
+export async function getImprovedOSRDData(
+  infra: number | string,
+  data: Partial<Record<LayerType, FeatureCollection>>
+): Promise<Record<string, Feature>> {
+  const queries = _(data)
+    .flatMap((collection: FeatureCollection, layerType: LayerType) => {
+      const editoastType = LAYER_TO_EDITOAST_DICT[layerType];
+      return collection.features.flatMap((feature) =>
+        feature.properties?.fromEditoast || typeof feature.properties?.id !== 'string'
+          ? []
+          : [
+              {
+                id: feature.properties.id,
+                type: editoastType,
+              },
+            ]
+      );
+    })
+    .take(OSRD_BATCH_SIZE)
+    .value() as unknown as { id: string; type: EditoastType }[];
+
+  if (!queries.length) return {};
+
+  return mapValues(await getMixedEntities(infra, queries), (e) =>
+    flattenEntity({
+      ...e,
+      properties: {
+        ...e.properties,
+        fromEditoast: true,
+      },
+    })
+  );
+}
+
+/**
+ * This helper takes a MapboxGeoJSONFeature (ie a data item extracted from a MapLibre instance through the
+ * `querySourceFeatures` method), and returns a proper and clean GeoJSON Feature object.
+ */
+export function simplifyFeature(feature: MapGeoJSONFeature): Feature {
+  return {
+    type: 'Feature',
+    id: feature.id,
+    properties: { ...feature.properties, sourceLayer: feature.sourceLayer },
+    // eslint-disable-next-line no-underscore-dangle
+    geometry: feature.geometry || feature._geometry,
+  };
 }

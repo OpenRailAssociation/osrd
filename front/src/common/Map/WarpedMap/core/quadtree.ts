@@ -3,6 +3,7 @@ import { BBox2d } from '@turf/helpers/dist/js/lib/geojson';
 import { Feature, FeatureCollection, GeoJsonProperties, Geometry, Position } from 'geojson';
 import bbox from '@turf/bbox';
 
+// The following types help describing a full QuadTree:
 export type Leaf<T> = {
   type: 'leaf';
   elements: T[];
@@ -31,6 +32,10 @@ export function getNewQuadChild<T>(box: BBox2d, isLeaf?: boolean): QuadChild<T> 
       };
 }
 
+/**
+ * This function takes a collection of GeoJSON features and a depth, and returns a QuadTree of the given depth, with all
+ * features properly indexed.
+ */
 export function getQuadTree<G extends Geometry | null = Geometry, P = GeoJsonProperties>(
   collection: FeatureCollection<G, P>,
   depth: number
@@ -84,6 +89,10 @@ export function getQuadTree<G extends Geometry | null = Geometry, P = GeoJsonPro
   return root;
 }
 
+/**
+ * This function takes a QuadTree and a point's coordinates, and returns all GeoJSON features indexed in the deepest
+ * quad containing the given point.
+ */
 export function getElements<T>(point: Position, quadTree: Quad<T>): T[] {
   const [x, y] = point;
   const [minX, minY, maxX, maxY] = quadTree.bbox;

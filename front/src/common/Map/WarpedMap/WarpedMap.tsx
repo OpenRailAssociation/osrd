@@ -1,229 +1,138 @@
 /* eslint-disable no-console */
-import React, { FC, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import _, { isEmpty, isNil, mapValues, omitBy } from 'lodash';
-
-import bbox from '@turf/bbox';
-import simplify from '@turf/simplify';
-import { lineString, multiLineString } from '@turf/helpers';
+import React, { FC, useEffect, useMemo, useState } from 'react';
+import { groupBy, map, omit } from 'lodash';
+import { featureCollection } from '@turf/helpers';
 import { BBox2d } from '@turf/helpers/dist/js/lib/geojson';
-import { Feature, FeatureCollection, Geometry, LineString, Position } from 'geojson';
+import { Feature, FeatureCollection, LineString } from 'geojson';
+import ReactMapGL, { Layer, MapRef, Source } from 'react-map-gl/maplibre';
 
-import {
-  extendLine,
-  featureToPointsGrid,
-  getGridIndex,
-  getSamples,
-  pointsGridToZone,
-} from './core/helpers';
-import { getQuadTree } from './core/quadtree';
-import { getGrids, straightenGrid } from './core/grids';
-import { clipAndProjectGeoJSON, projectBetweenGrids } from './core/projection';
-import { RootState } from '../../../reducers';
-import { LoaderFill } from '../../Loader';
-import { osrdEditoastApi } from '../../api/osrdEditoastApi';
-import {
-  EditoastType,
-  LAYER_TO_EDITOAST_DICT,
-  LayerType,
-} from '../../../applications/editor/tools/types';
-import DataLoader from './DataLoader';
-import DataDisplay from './DataDisplay';
-import { getMixedEntities } from '../../../applications/editor/data/api';
-import { flattenEntity } from '../../../applications/editor/data/utils';
-import { getInfraID } from '../../../reducers/osrdconf/selectors';
+import { RootState } from 'reducers';
+import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
+import colors from 'common/Map/Consts/colors';
+import { ALL_SIGNAL_LAYERS } from 'common/Map/Consts/SignalsNames';
+import { LayerType } from 'applications/editor/tools/types';
+import { TrainPosition } from 'applications/operationalStudies/components/SimulationResults/SimulationResultsMap/types';
+import VirtualLayers from 'applications/operationalStudies/components/SimulationResults/SimulationResultsMap/VirtualLayers';
+import { LayerContext } from 'common/Map/Layers/types';
+import { EditorSource, SourcesDefinitionsIndex } from 'common/Map/Layers/GeoJSONs';
+import OrderedLayer, { OrderedLayerProps } from 'common/Map/Layers/OrderedLayer';
+import { genLayerProps } from 'common/Map/Layers/OSM';
+import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
 
-const TIME_LABEL = 'Warping OSRD and OSM data';
-const OSRD_BATCH_SIZE = 500;
-
-type TransformedData = {
-  osm: Record<string, FeatureCollection>;
-  osrd: Partial<Record<LayerType, FeatureCollection>>;
+const OSRD_LAYER_ORDERS: Record<LayerType, number> = {
+  buffer_stops: LAYER_GROUPS_ORDER[LAYERS.BUFFER_STOPS.GROUP],
+  detectors: LAYER_GROUPS_ORDER[LAYERS.DETECTORS.GROUP],
+  signals: LAYER_GROUPS_ORDER[LAYERS.SIGNALS.GROUP],
+  switches: LAYER_GROUPS_ORDER[LAYERS.SWITCHES.GROUP],
+  track_sections: LAYER_GROUPS_ORDER[LAYERS.TRACKS_SCHEMATIC.GROUP],
+  // Unused:
+  catenaries: 0,
+  lpv: 0,
+  lpv_panels: 0,
+  routes: 0,
+  speed_sections: 0,
+  errors: 0,
 };
 
-async function getImprovedOSRDData(
-  infra: number | string,
-  data: Partial<Record<LayerType, FeatureCollection>>
-): Promise<Record<string, Feature>> {
-  const queries = _(data)
-    .flatMap((collection: FeatureCollection, layerType: LayerType) => {
-      const editoastType = LAYER_TO_EDITOAST_DICT[layerType];
-      return collection.features.flatMap((feature) =>
-        feature.properties?.fromEditoast || typeof feature.properties?.id !== 'string'
-          ? []
-          : [
-              {
-                id: feature.properties.id,
-                type: editoastType,
-              },
-            ]
-      );
-    })
-    .take(OSRD_BATCH_SIZE)
-    .value() as unknown as { id: string; type: EditoastType }[];
+/**
+ * This component handles displaying warped data. The data must be warped before being given to this component.
+ * Check `SimulationWarpedMap` to see an example use case.
+ */
+const WarpedMap: FC<{
+  bbox: BBox2d;
+  osrdLayers: Set<LayerType>;
+  // Data to display on the map (must be transformed already):
+  osrdData: Partial<Record<LayerType, FeatureCollection>>;
+  osmData: Record<string, FeatureCollection>;
+  trains?: (TrainPosition & { isSelected?: true })[];
+  itinerary?: Feature<LineString>;
+}> = ({ bbox, osrdLayers, osrdData, osmData }) => {
+  const prefix = 'warped/';
+  const [mapRef, setMapRef] = useState<MapRef | null>(null);
+  const { mapStyle, layersSettings, showIGNBDORTHO } = useSelector((s: RootState) => s.map);
 
-  if (!queries.length) return {};
-
-  return mapValues(await getMixedEntities(infra, queries), (e) =>
-    flattenEntity({
-      ...e,
-      properties: {
-        ...e.properties,
-        fromEditoast: true,
-      },
-    })
+  // Main OSM and OSRD data:
+  const layerContext: LayerContext = useMemo(
+    () => ({
+      colors: colors[mapStyle],
+      signalsList: ALL_SIGNAL_LAYERS,
+      symbolsList: ALL_SIGNAL_LAYERS,
+      sourceLayer: 'geo',
+      prefix: '',
+      isEmphasized: false,
+      showIGNBDORTHO,
+      layersSettings,
+    }),
+    [colors, mapStyle, showIGNBDORTHO, layersSettings]
   );
-}
-
-export const PathWarpedMap: FC<{ path: Feature<LineString> }> = ({ path }) => {
-  const infraID = useSelector(getInfraID);
-  const layers = useMemo(() => new Set<LayerType>(['track_sections']), []);
-  const [transformedData, setTransformedData] = useState<TransformedData | null>(null);
-  const pathBBox = useMemo(() => bbox(path) as BBox2d, [path]);
-
-  // Transformation function:
-  const { regularBBox, transform } = useMemo(() => {
-    // Simplify the input path to get something "straighter", so that we can see
-    // in the final warped map the small curves of the initial path:
-    const simplifiedPath = simplify(path, { tolerance: 0.01 });
-
-    // Cut the simplified path as N equal length segments
-    const sample = getSamples(simplifiedPath, 15);
-    const samplePath = lineString(sample.points.map((point) => point.geometry.coordinates));
-
-    // Extend the sample, so that we can warp things right before and right
-    // after the initial path:
-    const extendedSamples = extendLine(samplePath, sample.step);
-    const steps = extendedSamples.geometry.coordinates.length - 1;
-
-    // Generate our base grids:
-    const { regular, warped } = getGrids(extendedSamples, { stripsPerSide: 3 });
-
-    // Improve the warped grid, to get it less discontinuous:
-    const betterWarped = straightenGrid(warped, steps, { force: 0.8, iterations: 5 });
-
-    // Index the grids:
-    const regularIndex = getGridIndex(regular);
-    const warpedQuadTree = getQuadTree(betterWarped, 4);
-
-    // Return projection function and exact warped grid boundaries:
-    const zone = pointsGridToZone(featureToPointsGrid(betterWarped, steps));
-    const projection = (position: Position) =>
-      projectBetweenGrids(warpedQuadTree, regularIndex, position);
-
-    // Finally we have a proper transformation function that takes any feature
-    // as input, clips it to the grid contour polygon, and projects it the
-    // regular grid:
-    return {
-      regularBBox: bbox(regular) as BBox2d,
-      transform: <T extends Geometry | Feature | FeatureCollection>(f: T): T | null =>
-        clipAndProjectGeoJSON(f, projection, zone),
-    };
-  }, [path]);
-
-  const transformedPath = useMemo(
-    () => transform(multiLineString([path.geometry.coordinates])),
-    [transform, path]
+  const osrdSources = useMemo(
+    () =>
+      Array.from(osrdLayers).map((layer) => ({
+        source: layer,
+        order: OSRD_LAYER_ORDERS[layer],
+        id: `${prefix}geo/${layer}`,
+        layers: SourcesDefinitionsIndex[layer](layerContext, prefix).map(
+          (props) => omit(props, 'source-layer') as typeof props
+        ),
+      })),
+    [osrdLayers]
+  );
+  const osmSources = useMemo(
+    () =>
+      groupBy(
+        (
+          genLayerProps(
+            mapStyle,
+            LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]
+          ) as (OrderedLayerProps & {
+            'source-layer': string;
+          })[]
+        ).filter((layer) => !layer.id?.match(/-en$/)),
+        (layer) => layer['source-layer']
+      ),
+    [mapStyle]
   );
 
-  /**
-   * This effect tries to gradually improve the quality of the OSRD data.
-   * Initially, all OSRD entities are with "simplified" geometries, due to the
-   * fact that they are loaded directly using an unzoomed map.
-   */
+  // This effect handles the map initial position:
   useEffect(() => {
-    if (!transformedData?.osrd) return;
+    if (!mapRef) return;
 
-    getImprovedOSRDData(infraID as number, transformedData.osrd).then((betterFeatures) => {
-      if (!isEmpty(betterFeatures)) {
-        const betterTransformedFeatures = mapValues(betterFeatures, transform);
-        const newTransformedOSRDData = mapValues(
-          transformedData.osrd,
-          (collection: FeatureCollection) => ({
-            ...collection,
-            features: collection.features.map(
-              (feature) => betterTransformedFeatures[feature.properties?.id] || feature
-            ),
-          })
-        );
-        setTransformedData({ ...transformedData, osrd: newTransformedOSRDData });
-      }
-    });
-  }, [transformedData]);
+    const avgLon = (bbox[0] + bbox[2]) / 2;
+    const thinBBox: BBox2d = [avgLon, bbox[1], avgLon, bbox[3]];
+    setTimeout(() => {
+      mapRef.fitBounds(thinBBox, { animate: false });
+      mapRef.resize();
+    }, 0);
+  }, [mapRef, bbox]);
 
   return (
-    <div className="warped-map position-relative d-flex flex-row">
-      <DataLoader
-        bbox={pathBBox}
-        layers={layers}
-        getGeoJSONs={(osrdData, osmData) => {
-          console.time(TIME_LABEL);
-          const transformed = {
-            osm: omitBy(
-              mapValues(osmData, (collection) => transform(collection)),
-              isNil
-            ),
-            osrd: omitBy(
-              mapValues(osrdData, (collection: FeatureCollection) => transform(collection)),
-              isNil
-            ),
-          } as TransformedData;
-          console.timeEnd(TIME_LABEL);
-          setTransformedData(transformed);
-        }}
-      />
-      <div
-        className="bg-white"
-        style={{
-          width: 200,
-          height: '100%',
-          padding: '1rem',
-          borderRadius: 4,
-          marginRight: '0.5rem',
-        }}
-      >
-        <DataDisplay
-          osrdLayers={layers}
-          bbox={regularBBox}
-          osrdData={transformedData?.osrd}
-          osmData={transformedData?.osm}
-          path={transformedPath || undefined}
+    <ReactMapGL ref={setMapRef} mapStyle={osmBlankStyle} style={{ width: '100%', height: '100%' }}>
+      <Layer type="background" paint={{ 'background-color': 'white' }} />
+      <VirtualLayers />
+      {map(osmSources, (layers, sourceLayer) => (
+        <Source
+          key={sourceLayer}
+          id={`osm-${sourceLayer}`}
+          type="geojson"
+          data={osmData[sourceLayer] || featureCollection([])}
+        >
+          {layers.map((layer) => (
+            <OrderedLayer {...(omit(layer, 'source-layer') as OrderedLayerProps)} />
+          ))}
+        </Source>
+      ))}
+      {osrdSources.map((s) => (
+        <EditorSource
+          key={s.id}
+          id={s.id}
+          layers={s.layers}
+          data={osrdData[s.source] || featureCollection([])}
+          layerOrder={s.order}
         />
-      </div>
-    </div>
+      ))}
+    </ReactMapGL>
   );
 };
 
-export const WarpedMap: FC = () => {
-  const [state, setState] = useState<
-    | { type: 'idle' }
-    | { type: 'loading' }
-    | { type: 'ready'; path: Feature<LineString> }
-    | { type: 'error'; message?: string }
-  >({ type: 'idle' });
-  const pathfindingID = useSelector(
-    (s: RootState) => s.osrdsimulation.selectedProjection?.path
-  ) as number;
-  const [getPath] = osrdEditoastApi.useLazyGetPathfindingByIdQuery();
-
-  useEffect(() => {
-    setState({ type: 'loading' });
-    getPath({ id: pathfindingID })
-      .then(({ data, isError, error }) => {
-        if (isError) {
-          setState({ type: 'error', message: error as string });
-        } else {
-          const coordinates = data?.geographic?.coordinates as Position[] | null;
-
-          setState(
-            coordinates
-              ? { type: 'ready', path: lineString(coordinates) }
-              : { type: 'error', message: 'No coordinates' }
-          );
-        }
-      })
-      .catch((error) => setState({ type: 'error', message: error }));
-  }, [pathfindingID]);
-
-  return state.type === 'ready' ? <PathWarpedMap path={state.path} /> : <LoaderFill />;
-};
+export default WarpedMap;

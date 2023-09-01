@@ -2,16 +2,16 @@
 import { Feature, FeatureCollection, Geometry, Position } from 'geojson';
 import { keyBy } from 'lodash';
 
+import { Zone } from 'types';
+import { clip } from 'utils/mapHelper';
 import {
   getBarycentricCoordinates,
   getPointInTriangle,
   GridIndex,
   isInTriangle,
   Triangle,
-} from './helpers';
-import { getElements, Quad } from './quadtree';
-import { Zone } from '../../../../types';
-import { clip } from '../../../../utils/mapboxHelper';
+} from 'common/Map/WarpedMap/core/helpers';
+import { getElements, Quad } from 'common/Map/WarpedMap/core/quadtree';
 
 export type Projection = (position: Position) => Position | null;
 
@@ -59,6 +59,10 @@ export function projectBetweenGrids(
   return null;
 }
 
+/**
+ * This function projects any geometry, following a given projection function (ie. any function that transforms
+ * coordinates into new coordinates).
+ */
 export function projectGeometry<G extends Geometry = Geometry>(
   geometry: G,
   project: Projection
@@ -139,6 +143,10 @@ export function projectGeometry<G extends Geometry = Geometry>(
   }
 }
 
+/**
+ * This function takes a geometry, a feature or a features collection, clips them into a given zone, and projects them
+ * onto a given projection function. If everything is clipped out, then `null` is returned instead.
+ */
 export function clipAndProjectGeoJSON<T extends Geometry | Feature | FeatureCollection>(
   geojson: T,
   projection: Projection,

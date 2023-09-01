@@ -3,34 +3,31 @@ import React, { FC, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { createPortal } from 'react-dom';
 
-import maplibregl, { MapGeoJSONFeature } from 'maplibre-gl';
-import { Feature, FeatureCollection } from 'geojson';
-import ReactMapGL, { Source, MapRef, MapboxGeoJSONFeature } from 'react-map-gl';
+import { FeatureCollection } from 'geojson';
+import ReactMapGL, { MapRef, Source } from 'react-map-gl/maplibre';
 import { BBox2d } from '@turf/helpers/dist/js/lib/geojson';
 import { featureCollection } from '@turf/helpers';
 import { map, sum, uniqBy } from 'lodash';
 
-import { LayerType } from '../../../applications/editor/tools/types';
-import osmBlankStyle from '../Layers/osmBlankStyle';
-import GeoJSONs from '../Layers/GeoJSONs';
-import colors from '../Consts/colors';
-import { getMap } from '../../../reducers/map/selectors';
-import { OSM_URL } from '../const';
-import { genLayers } from '../Layers/OSM';
-
-function simplifyFeature(feature: MapboxGeoJSONFeature): Feature {
-  const f = feature as unknown as MapGeoJSONFeature;
-  return {
-    type: 'Feature',
-    id: f.id,
-    properties: { ...f.properties, sourceLayer: f.sourceLayer },
-    // eslint-disable-next-line no-underscore-dangle
-    geometry: f.geometry || f._geometry,
-  };
-}
+import { LayerType } from 'applications/editor/tools/types';
+import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
+import GeoJSONs from 'common/Map/Layers/GeoJSONs';
+import colors from 'common/Map/Consts/colors';
+import { getMap } from 'reducers/map/selectors';
+import { OSM_URL } from 'common/Map/const';
+import { genLayers } from 'common/Map/Layers/OSM';
+import { simplifyFeature } from 'common/Map/WarpedMap/core/helpers';
 
 const TIME_LABEL = 'Loading OSRD and OSM data around warped path';
 
+/**
+ * This component handles loading entities from MapLibre vector servers, and retrieving them as GeoJSONs from the
+ * MapLibre `querySourceFeatures` method.
+ * It's quite dirty (it has to mount a map in the DOM, but somewhere it won't be visible), but necessary until we get
+ * proper APIs for both OSRD data and OSM data.
+ *
+ * It is designed as a component instead of a hook to simplify mounting/unmounting the temporary invisible map.
+ */
 const DataLoader: FC<{
   bbox: BBox2d;
   getGeoJSONs: (
@@ -125,7 +122,6 @@ const DataLoader: FC<{
         >
           <ReactMapGL
             ref={setMapRef}
-            mapLib={maplibregl}
             mapStyle={osmBlankStyle}
             style={{ width: '100%', height: '100%' }}
           >

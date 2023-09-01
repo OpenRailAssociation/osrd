@@ -1,6 +1,6 @@
 /* eslint-disable prefer-destructuring, no-plusplus */
 import { Feature, LineString, Position } from 'geojson';
-import { clamp, cloneDeep, meanBy } from 'lodash';
+import { clamp, cloneDeep, keyBy, meanBy } from 'lodash';
 import length from '@turf/length';
 import center from '@turf/center';
 import { featureCollection, lineString, polygon } from '@turf/helpers';
@@ -8,13 +8,106 @@ import destination from '@turf/destination';
 import bearing from '@turf/bearing';
 
 import {
-  featureToPointsGrid,
   GridFeature,
+  GridIndex,
   Grids,
   PointsGrid,
-  pointsGridToFeature,
-} from './helpers';
-import vec, { Vec2 } from './vec-lib';
+  Triangle,
+} from 'common/Map/WarpedMap/core/helpers';
+import vec, { Vec2 } from 'common/Map/WarpedMap/core/vec-lib';
+import { PolygonZone } from 'types';
+
+/**
+ * Base helpers to manipulate grids:
+ */
+export function getGridIndex(grid: GridFeature): GridIndex {
+  return keyBy(grid.features, (feature) => feature.properties.triangleId);
+}
+
+export function featureToPointsGrid(grid: GridFeature, steps: number): PointsGrid {
+  const points: PointsGrid = [];
+  const gridIndex = getGridIndex(grid);
+  const stripsPerSide = grid.features.length / steps / 2 / 2;
+
+  for (let i = 0; i < steps; i++) {
+    points[i] = points[i] || {};
+    points[i + 1] = points[i + 1] || {};
+    for (let direction = -1; direction <= 1; direction += 2) {
+      for (let j = 0; j < stripsPerSide; j++) {
+        const inside = gridIndex[`step:${i}/strip:${direction * (j + 1)}/inside`];
+        const outside = gridIndex[`step:${i}/strip:${direction * (j + 1)}/outside`];
+        const [[p00, p10, p01]] = inside.geometry.coordinates;
+        const [[p11]] = outside.geometry.coordinates;
+
+        points[i][direction * j] = p00;
+        points[i][direction * (j + 1)] = p01;
+        points[i + 1][direction * j] = p10;
+        points[i + 1][direction * (j + 1)] = p11;
+      }
+    }
+  }
+
+  return points;
+}
+export function pointsGridToFeature(points: PointsGrid): GridFeature {
+  const grid = featureCollection([]) as GridFeature;
+  const steps = points.length - 1;
+  const stripsPerSide = (Object.keys(points[0]).length - 1) / 2;
+
+  for (let i = 0; i < steps; i++) {
+    for (let direction = -1; direction <= 1; direction += 2) {
+      for (let j = 0; j < stripsPerSide; j++) {
+        const p00 = points[i][direction * j];
+        const p01 = points[i][direction * (j + 1)];
+        const p10 = points[i + 1][direction * j];
+        const p11 = points[i + 1][direction * (j + 1)];
+        grid.features.push(
+          polygon([[p00, p10, p01, p00]], {
+            triangleId: `step:${i}/strip:${direction * (j + 1)}/inside`,
+          }) as Triangle
+        );
+        grid.features.push(
+          polygon([[p11, p10, p01, p11]], {
+            triangleId: `step:${i}/strip:${direction * (j + 1)}/outside`,
+          }) as Triangle
+        );
+      }
+    }
+  }
+
+  return grid;
+}
+
+export function pointsGridToZone(points: PointsGrid): PolygonZone {
+  const firstRow = points[0];
+  const lastRow = points[points.length - 1];
+  const stripsPerSide = (Object.keys(firstRow).length - 1) / 2;
+  const border: Position[] = [];
+
+  // Add first row:
+  for (let i = -stripsPerSide; i <= stripsPerSide; i++) {
+    border.push(points[0][i]);
+  }
+
+  // Add all intermediary rows:
+  for (let i = 1, l = points.length - 1; i < l; i++) {
+    border.push(points[i][stripsPerSide]);
+    border.unshift(points[i][-stripsPerSide]);
+  }
+
+  // Add last row:
+  for (let i = stripsPerSide; i >= -stripsPerSide; i--) {
+    border.push(lastRow[i]);
+  }
+
+  // Close path:
+  border.push(border[0]);
+
+  return {
+    type: 'polygon',
+    points: border,
+  };
+}
 
 /**
  * This function takes a path, and returns two isomorphic grids:
