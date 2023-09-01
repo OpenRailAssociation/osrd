@@ -16,7 +16,6 @@ type RollingStockMode = {
   };
 };
 interface SpeedSpaceSettingsProps {
-  // rollingStockMode: RollingStockMode;
   electrificationRanges: ElectrificationRange[];
   showSettings: boolean;
   speedSpaceSettings: { [key in SPEED_SPACE_SETTINGS_KEYS]: boolean };
@@ -24,7 +23,6 @@ interface SpeedSpaceSettingsProps {
 }
 
 export default function SpeedSpaceSettings({
-  // rollingStockMode,
   electrificationRanges,
   showSettings,
   speedSpaceSettings,
@@ -52,6 +50,18 @@ export default function SpeedSpaceSettings({
     setSettings(newSettings);
     onSetSettings(newSettings);
   };
+
+  /**
+   * Check if the train (in case of bimode rolling stock) runs in thermal mode on the whole path
+   * @param electricRanges all of the different path's ranges.
+   * If the range is electrified and the train us the eletrical mode, mode_handled is true
+   */
+  const runsOnlyThermal = (electricRanges: ElectrificationRange[]) =>
+    !electricRanges.some(
+      (range) =>
+        range.electrificationUsage.object_type === 'Electrified' &&
+        range.electrificationUsage.mode_handled
+    );
 
   useEffect(() => {
     if (selectedTrain) {
@@ -103,7 +113,7 @@ export default function SpeedSpaceSettings({
         getCheckboxRadio(
           SPEED_SPACE_SETTINGS_KEYS.ELECTRICAL_PROFILES,
           settings.electricalProfiles,
-          isOnlyThermal(rollingStock.effort_curves.modes)
+          isOnlyThermal(rollingStock.effort_curves.modes) || runsOnlyThermal(electrificationRanges)
         )}
       {getCheckboxRadio(SPEED_SPACE_SETTINGS_KEYS.POWER_RESTRICTION, settings.powerRestriction)}
     </div>

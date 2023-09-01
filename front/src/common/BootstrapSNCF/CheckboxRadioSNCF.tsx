@@ -37,9 +37,9 @@ const CheckboxRadioSNCF = ({
   id,
   label,
   name,
-  checked = false,
+  checked,
   onChange,
-  type = 'checkbox',
+  type,
   disabled = false,
 }: CheckboxRadioSNCFProps) => (
   <div className={cx('custom-control', `custom-${type}`)}>

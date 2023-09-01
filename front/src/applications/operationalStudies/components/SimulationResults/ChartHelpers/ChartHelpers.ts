@@ -366,7 +366,7 @@ export function makeTrainListWithAllTrainsOffset(trains: Train[], dragOffset = 0
 }
 
 /**
- * Get the width of an element based of it's text content
+ * Get the width of an element based on its text content
  * @param text the text content of the element
  * @param fontSize the font size of the element (pixel)
  * @param selector the name of the DOM selector (id, class...)
