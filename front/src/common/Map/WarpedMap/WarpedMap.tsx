@@ -14,6 +14,8 @@ import { ALL_SIGNAL_LAYERS } from 'common/Map/Consts/SignalsNames';
 import { LayerType } from 'applications/editor/tools/types';
 import { TrainPosition } from 'applications/operationalStudies/components/SimulationResults/SimulationResultsMap/types';
 import VirtualLayers from 'applications/operationalStudies/components/SimulationResults/SimulationResultsMap/VirtualLayers';
+import RenderItinerary from 'applications/operationalStudies/components/SimulationResults/SimulationResultsMap/RenderItinerary';
+import TrainHoverPosition from 'applications/operationalStudies/components/SimulationResults/SimulationResultsMap/TrainHoverPosition';
 import { LayerContext } from 'common/Map/Layers/types';
 import { EditorSource, SourcesDefinitionsIndex } from 'common/Map/Layers/GeoJSONs';
 import OrderedLayer, { OrderedLayerProps } from 'common/Map/Layers/OrderedLayer';
@@ -47,7 +49,7 @@ const WarpedMap: FC<{
   osmData: Record<string, FeatureCollection>;
   trains?: (TrainPosition & { isSelected?: true })[];
   itinerary?: Feature<LineString>;
-}> = ({ bbox, osrdLayers, osrdData, osmData }) => {
+}> = ({ bbox, osrdLayers, osrdData, osmData, trains, itinerary }) => {
   const prefix = 'warped/';
   const [mapRef, setMapRef] = useState<MapRef | null>(null);
   const { mapStyle, layersSettings, showIGNBDORTHO } = useSelector((s: RootState) => s.map);
@@ -131,6 +133,22 @@ const WarpedMap: FC<{
           layerOrder={s.order}
         />
       ))}
+      {itinerary && (
+        <RenderItinerary
+          geojsonPath={itinerary}
+          layerOrder={LAYER_GROUPS_ORDER[LAYERS.ITINERARY.GROUP]}
+        />
+      )}
+      {itinerary &&
+        trains?.map((train) => (
+          <TrainHoverPosition
+            key={train.id}
+            point={train}
+            geojsonPath={itinerary}
+            isSelectedTrain={train.isSelected}
+            layerOrder={LAYER_GROUPS_ORDER[LAYERS.TRAIN.GROUP]}
+          />
+        ))}
     </ReactMapGL>
   );
 };

@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import { useSelector } from 'react-redux';
-import React, { FC, useEffect, useMemo, useState } from 'react';
+import React, { FC, useCallback, useEffect, useMemo, useState } from 'react';
 import { isEmpty, isNil, mapValues, omitBy } from 'lodash';
 
 import bbox from '@turf/bbox';
@@ -18,6 +18,7 @@ import WarpedMap from 'common/Map/WarpedMap/WarpedMap';
 import { TrainPosition } from 'applications/operationalStudies/components/SimulationResults/SimulationResultsMap/types';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import { getImprovedOSRDData } from 'common/Map/WarpedMap/core/helpers';
+import { getSelectedTrain } from 'reducers/osrdsimulation/selectors';
 
 const TIME_LABEL = 'Warping OSRD and OSM data';
 
@@ -31,8 +32,16 @@ interface PathStatePayload {
 interface DataStatePayload {
   osm: Record<string, FeatureCollection>;
   osrd: Partial<Record<LayerType, FeatureCollection>>;
-  itinerary?: Feature<LineString>;
-  trains?: (TrainPosition & { isSelected?: true })[];
+}
+
+function useAsyncMemo<T, D = undefined>(fn: () => Promise<T>, defaultValue: D): T | D {
+  const [v, setV] = useState<T | D>(defaultValue);
+
+  useEffect(() => {
+    fn().then(setV);
+  }, [fn]);
+
+  return v;
 }
 
 /**
@@ -58,6 +67,34 @@ const SimulationWarpedMap: FC = () => {
   ) as number;
   const [getPath] = osrdEditoastApi.useLazyGetPathfindingByIdQuery();
   const layers = useMemo(() => new Set<LayerType>(['track_sections']), []);
+
+  // Itinerary handling:
+  const simulation = useSelector(
+    (rootState: RootState) => rootState.osrdsimulation.simulation.present
+  );
+  const selectedTrain = useSelector(getSelectedTrain);
+  const getItinerary = useCallback(async () => {
+    if (!selectedTrain) return undefined;
+    if (state.type !== 'dataLoaded') return undefined;
+
+    const foundTrain = simulation.trains.find((train) => train.id === selectedTrain.id);
+    if (!foundTrain) return undefined;
+
+    const { data: path } = await getPath({ id: foundTrain.path });
+    if (!path) return undefined;
+
+    return state.transform(lineString(path.geographic.coordinates)) || undefined;
+  }, []);
+  const itinerary: Feature<LineString> | undefined = useAsyncMemo(getItinerary, undefined);
+
+  // Trains handling:
+  const getTrains = useCallback(
+    async () =>
+      // TODO
+      [],
+    []
+  );
+  const trains: (TrainPosition & { isSelected?: true })[] = useAsyncMemo(getTrains, []);
 
   /**
    * This effect handles loading the simulation path, and retrieve the warping function:
@@ -146,8 +183,8 @@ const SimulationWarpedMap: FC = () => {
           bbox={state.regularBBox}
           osrdData={state.osrd}
           osmData={state.osm}
-          trains={state.trains}
-          itinerary={state.itinerary}
+          itinerary={itinerary}
+          trains={trains}
         />
       </div>
     </div>
