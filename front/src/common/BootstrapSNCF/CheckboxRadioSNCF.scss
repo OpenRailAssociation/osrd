@@ -1,6 +1,6 @@
 .custom-control .custom-control-input:disabled ~ .custom-control-label {
   color: #b9b9b9 !important;
-  //   &:after {
-  //     color: #b9b9b9 !important;
-  //   }
+  &:before {
+    border-color: #f2f2f2 !important;
+  }
 }
