@@ -4,21 +4,24 @@ import { useSelector } from 'react-redux';
 import { createPortal } from 'react-dom';
 
 import { FeatureCollection } from 'geojson';
-import ReactMapGL, { MapRef, Source } from 'react-map-gl/maplibre';
+import ReactMapGL, { LayerProps, MapRef, Source } from 'react-map-gl/maplibre';
 import { BBox2d } from '@turf/helpers/dist/js/lib/geojson';
 import { featureCollection } from '@turf/helpers';
 import { map, sum, uniqBy } from 'lodash';
 
+import mapStyleJson from 'assets/mapstyles/OSMStyle.json';
 import { LayerType } from 'applications/editor/tools/types';
 import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
 import GeoJSONs from 'common/Map/Layers/GeoJSONs';
 import colors from 'common/Map/Consts/colors';
 import { getMap } from 'reducers/map/selectors';
 import { OSM_URL } from 'common/Map/const';
-import { genLayers } from 'common/Map/Layers/OSM';
 import { simplifyFeature } from 'common/Map/WarpedMap/core/helpers';
+import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 
 const TIME_LABEL = 'Loading OSRD and OSM data around warped path';
+
+const OSM_LAYERS = new Set(['building', 'water', 'water_name', 'waterway', 'poi']);
 
 /**
  * This component handles loading entities from MapLibre vector servers, and retrieving them as GeoJSONs from the
@@ -39,7 +42,18 @@ const DataLoader: FC<{
   const { mapStyle, layersSettings } = useSelector(getMap);
   const [mapRef, setMapRef] = useState<MapRef | null>(null);
   const [state, setState] = useState<'idle' | 'render' | 'loaded'>('idle');
-  const osmLayers = useMemo(() => genLayers(mapStyle), [mapStyle]);
+  const osmLayers = useMemo(() => {
+    const osmStyle = (mapStyleJson as LayerProps[]).filter(
+      (layer) => layer.id && OSM_LAYERS.has(layer.id)
+    );
+    return osmStyle
+      .map((layer) => ({
+        ...layer,
+        key: layer.id,
+        id: `osm/${layer.id}`,
+      }))
+      .map((layer) => <OrderedLayer {...layer} />);
+  }, []);
 
   useEffect(() => {
     if (!mapRef) return;
@@ -77,16 +91,19 @@ const DataLoader: FC<{
         const osmSource = m.getSource('osm') as unknown as { vectorLayerIds: string[] };
         let incrementalID = 1;
         const osmData: Record<string, FeatureCollection> = osmSource.vectorLayerIds.reduce(
-          (iter, sourceLayer) => ({
-            ...iter,
-            [sourceLayer]: featureCollection(
-              uniqBy(
-                m.querySourceFeatures('osm', { sourceLayer }).map(simplifyFeature),
-                // eslint-disable-next-line no-plusplus
-                (f) => (f.id ? `osm-${f.id}` : `generated-${++incrementalID}`) // only deduplicate features with IDs
-              )
-            ),
-          }),
+          (iter, sourceLayer) =>
+            OSM_LAYERS.has(sourceLayer)
+              ? {
+                  ...iter,
+                  [sourceLayer]: featureCollection(
+                    uniqBy(
+                      m.querySourceFeatures('osm', { sourceLayer }).map(simplifyFeature),
+                      // eslint-disable-next-line no-plusplus
+                      (f) => (f.id ? `osm-${f.id}` : `generated-${++incrementalID}`) // only deduplicate features with IDs
+                    )
+                  ),
+                }
+              : iter,
           {}
         );
         const osmFeaturesCount = sum(map(osmData, (collection) => collection.features.length));
