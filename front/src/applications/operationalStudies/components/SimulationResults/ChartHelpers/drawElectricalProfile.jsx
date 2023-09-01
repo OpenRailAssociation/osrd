@@ -76,7 +76,8 @@ const drawElectricalProfile = (
       const textZone = chart.drawZone.select(`#${groupID}`);
 
       // get the width of the text element and adding a few pixels for readability
-      const svgWidth = getElementWidth(dataSimulation.text, 8, `#${groupID}`) + 10;
+      const labelFontSize = 8; // in px
+      const svgWidth = getElementWidth(dataSimulation.text, labelFontSize, `#${groupID}`) + 10;
 
       // add rect for text zone
       textZone
