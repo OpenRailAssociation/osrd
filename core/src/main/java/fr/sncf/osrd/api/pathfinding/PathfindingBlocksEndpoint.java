@@ -1,5 +1,6 @@
 package fr.sncf.osrd.api.pathfinding;
 
+import static fr.sncf.osrd.api.pathfinding.PathfindingUtils.makePath;
 import static fr.sncf.osrd.api.pathfinding.RemainingDistanceEstimator.minDistanceBetweenSteps;
 import static fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection.START_TO_STOP;
 import static fr.sncf.osrd.sim_infra.api.TrackInfraKt.getTrackSectionFromNameOrThrow;
@@ -210,6 +211,17 @@ public class PathfindingBlocksEndpoint implements Take {
                     waypoint.direction, infra);
             res.add(new Pathfinding.EdgeLocation<>(block, offset));
         });
+
+        // Sanity check: we check if the block locations match the input waypoint
+        for (var x : res) {
+            var path = makePath(infra.blockInfra(), infra.rawInfra(), x.edge());
+            var location = path.getTrackLocationAtOffset((long) x.offset());
+            if (location.getOffset() == 0
+                    || location.getOffset() == infra.rawInfra().getTrackSectionLength(location.getTrackId()))
+                continue; // can be on either side of the track link
+            assert infra.rawInfra().getTrackSectionName(location.getTrackId()).equals(waypoint.trackSection);
+            assert Math.abs(location.getOffset() - Distance.fromMeters(waypoint.offset)) < 1e-3;
+        }
         return res;
     }
 

@@ -40,6 +40,20 @@ data class RouteViewer(
     val id: RouteId,
 )
 
+data class TrackViewer(
+    val chunks: List<ChunkViewer>,
+    val name: String,
+    val length: Distance,
+    val id: TrackSectionId,
+)
+
+data class PathViewer(
+    val chunks: List<DirectedViewer<ChunkViewer>>,
+    val start: Distance,
+    val end: Distance,
+    val length: Distance,
+)
+
 @JvmName("makeChunk")
 fun makeChunk(infra: RawInfra, id: StaticIdx<TrackChunk>): ChunkViewer {
     return ChunkViewer(
@@ -58,6 +72,31 @@ fun makeZonePath(infra: RawInfra, id: StaticIdx<ZonePath>): ZonePathViewer {
         id,
     )
 }
+
+@JvmName("makeTrackSection")
+fun makeTrackSection(infra: RawInfra, id: TrackSectionId): TrackViewer {
+    return TrackViewer(
+        infra.getTrackSectionChunks(id)
+            .map { chunk -> makeChunk(infra, chunk) },
+        infra.getTrackSectionName(id),
+        infra.getTrackSectionLength(id),
+        id,
+    )
+}
+
+
+@JvmName("makePath")
+fun makeTrackSection(infra: RawInfra, path: Path): PathViewer {
+    val impl = path as PathImpl
+    return PathViewer(
+        impl.chunks
+            .map { dirChunk -> DirectedViewer(dirChunk.direction, makeChunk(infra, dirChunk.value)) },
+        impl.beginOffset,
+        impl.endOffset,
+        impl.endOffset - impl.beginOffset
+    )
+}
+
 
 @JvmName("makeBlock")
 fun makeBlock(rawInfra: RawInfra, blockInfra: BlockInfra, id: StaticIdx<Block>): BlockViewer {

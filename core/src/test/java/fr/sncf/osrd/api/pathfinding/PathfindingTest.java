@@ -365,9 +365,9 @@ public class PathfindingTest extends ApiTest {
         );
         assertThat(response.routePaths).isEqualTo(expectedRoutePaths);
         var expectedPathWaypoints = List.of(
-                new PathWaypointResult(new PathWaypointResult.PathWaypointLocation("ne.micro.bar_a", 125.0),
+                new PathWaypointResult(new PathWaypointResult.PathWaypointLocation("ne.micro.bar_a", 100.0),
                         0.0, false, "op.station_bar"),
-                new PathWaypointResult(new PathWaypointResult.PathWaypointLocation("ne.micro.foo_b", 75.0),
+                new PathWaypointResult(new PathWaypointResult.PathWaypointLocation("ne.micro.foo_b", 100.0),
                         10200.0, false, "op.station_foo")
         );
         assertThat(response.pathWaypoints).isEqualTo(expectedPathWaypoints);
@@ -417,10 +417,10 @@ public class PathfindingTest extends ApiTest {
                                 SIGNALING_TYPE)),
                         List.of(
                                 new PathWaypointResult(
-                                        new PathWaypointResult.PathWaypointLocation("ne.micro.bar_a", 115.0),
+                                        new PathWaypointResult.PathWaypointLocation("ne.micro.bar_a", 110.0),
                                         0.0, false, null),
                                 new PathWaypointResult(
-                                        new PathWaypointResult.PathWaypointLocation("ne.micro.bar_a", 125.0),
+                                        new PathWaypointResult.PathWaypointLocation("ne.micro.bar_a", 100.0),
                                         10.0, false, "op.station_bar")
                         )
                 ),
