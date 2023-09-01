@@ -18,7 +18,7 @@ import {
 } from 'reducers/osrdconf';
 import { StandardAllowance } from 'applications/operationalStudies/consts';
 import { AllowanceValue } from 'common/api/osrdEditoastApi';
-import { ALLOWANCE_UNITS_KEYS } from './allowancesConsts';
+import { ALLOWANCE_UNITS_KEYS } from '../../../applications/stdcm/components/allowancesConsts';
 
 const STDCMAllowances = () => {
   const { t } = useTranslation('allowances');
@@ -29,13 +29,11 @@ const STDCMAllowances = () => {
   const standardAllowanceTypes = [
     {
       id: 'percentage',
-      label: t ? t('allowanceTypes.percentage') : '',
-      unit: ALLOWANCE_UNITS_KEYS.percentage,
+      label: ALLOWANCE_UNITS_KEYS.percentage,
     },
     {
       id: 'time_per_distance',
-      label: t ? t('allowanceTypes.time_per_distance') : '',
-      unit: ALLOWANCE_UNITS_KEYS.time_per_distance,
+      label: ALLOWANCE_UNITS_KEYS.time_per_distance,
     },
   ];
 
@@ -86,6 +84,8 @@ const STDCMAllowances = () => {
           handleType={onchangeType}
           value={stdcmStandardAllowance?.value || 0}
           type={stdcmStandardAllowance?.type || ''}
+          orientation="right"
+          typeValue="number"
           condensed
           sm
         />

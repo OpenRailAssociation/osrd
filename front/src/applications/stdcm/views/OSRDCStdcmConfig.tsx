@@ -19,7 +19,7 @@ import {
 import { getSelectedTrain } from 'reducers/osrdsimulation/selectors';
 import { RollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import STDCMAllowances from '../components/STDCMAllowances';
+import STDCMAllowances from '../../../modules/allowances/components/STDCMAllowances';
 import OSRDStdcmResults from './OSRDStdcmResults';
 import RunningTime from '../components/RunningTime';
 
