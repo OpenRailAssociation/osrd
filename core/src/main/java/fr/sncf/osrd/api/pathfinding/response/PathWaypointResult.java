@@ -65,8 +65,6 @@ public class PathWaypointResult {
      * Check if two steps result are at the same location
      */
     public boolean isDuplicate(PathWaypointResult other) {
-        if (!location.trackSection.equals(other.location.trackSection))
-            return false;
         return Math.abs(pathOffset - other.pathOffset) < 0.001;
     }
 
