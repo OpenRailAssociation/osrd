@@ -364,3 +364,20 @@ export function makeTrainList(trains: Train[], trainToOffset: number, dragOffset
 export function makeTrainListWithAllTrainsOffset(trains: Train[], dragOffset = 0) {
   return trains.map((train) => trainWithDepartureAndArrivalTimes(train, dragOffset));
 }
+
+/**
+ * Get the width of an element based of it's text content
+ * @param text the text content of the element
+ * @param fontSize the font size of the element (pixel)
+ * @param selector the name of the DOM selector (id, class...)
+ * @returns the width of the element
+ */
+export function getElementWidth(text: string, fontSize: number, selector: string) {
+  const element = d3.select(selector).insert('text').text(text).attr('font-size', fontSize);
+  const node = element.node();
+  if (!node) {
+    throw new Error();
+  }
+  const result = node.getBBox().width;
+  return result;
+}

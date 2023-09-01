@@ -1,5 +1,6 @@
 import { pointer } from 'd3-selection';
 import i18n from 'i18n';
+import { getElementWidth } from './ChartHelpers';
 
 const drawElectricalProfile = (
   chart,
@@ -74,12 +75,15 @@ const drawElectricalProfile = (
     if ((rotate && height < -24) || (!rotate && width > 60)) {
       const textZone = chart.drawZone.select(`#${groupID}`);
 
+      // get the width of the text element and adding a few pixels for readability
+      const svgWidth = getElementWidth(dataSimulation.text, 8, `#${groupID}`) + 10;
+
       // add rect for text zone
       textZone
         .append('rect')
         .attr('class', `rect electricalProfileTextBlock ${classes}`)
         .attr('fill', '#FFF')
-        .attr('transform', rotate ? 'translate(-20, -10)' : 'translate(-25, -5.5)')
+        .attr('transform', rotate ? 'translate(-20, -10)' : `translate(-${svgWidth / 2}, -5.5)`)
         .attr('rx', 2)
         .attr('ry', 2)
         .attr(
@@ -101,7 +105,7 @@ const drawElectricalProfile = (
           ) -
             height * -1
         )
-        .attr('width', rotate ? 40 : '3.2em')
+        .attr('width', rotate ? 40 : svgWidth)
         .attr('height', rotate ? 20 : '0.6em');
 
       // add text to text zone
@@ -136,8 +140,12 @@ const drawElectricalProfile = (
         );
     }
   };
-  console.log('data simulation drawElectric : ', dataSimulation);
-  if (dataSimulation.electrification.mode_handled) drawZone.call(addTextZone);
+
+  if (
+    dataSimulation.electrification.mode_handled ||
+    dataSimulation.electrification.isLowerPantograph
+  )
+    drawZone.call(addTextZone);
 
   // create pop-up when hovering rect-profile
   drawZone

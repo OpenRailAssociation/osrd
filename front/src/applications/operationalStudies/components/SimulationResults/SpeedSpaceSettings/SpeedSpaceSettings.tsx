@@ -41,22 +41,6 @@ export default function SpeedSpaceSettings({
 
   const [getRollingStock] = osrdEditoastApi.endpoints.getLightRollingStockById.useLazyQuery();
 
-  useEffect(() => {
-    if (selectedTrain) {
-      getTrainSchedule({ id: selectedTrain.id })
-        .unwrap()
-        .then((trainSchedule) => {
-          getRollingStock({ id: trainSchedule.rolling_stock_id })
-            .unwrap()
-            .then((lightRollingStock) => {
-              setRollingStock(lightRollingStock);
-            });
-        });
-    }
-  }, [selectedTrain]);
-
-  console.log('speedspace settings - elec ranges : ', electrificationRanges);
-
   const isOnlyThermal = (modes: RollingStockMode) =>
     !Object.keys(modes).some((mode) => mode !== 'thermal');
 
@@ -68,6 +52,27 @@ export default function SpeedSpaceSettings({
     setSettings(newSettings);
     onSetSettings(newSettings);
   };
+
+  useEffect(() => {
+    if (selectedTrain) {
+      getTrainSchedule({ id: selectedTrain.id })
+        .unwrap()
+        .then((trainSchedule) => {
+          getRollingStock({ id: trainSchedule.rolling_stock_id })
+            .unwrap()
+            .then((lightRollingStock) => {
+              setRollingStock(lightRollingStock);
+
+              if (
+                isOnlyThermal(lightRollingStock.effort_curves.modes) &&
+                settings.electricalProfiles
+              ) {
+                toggleSetting(SPEED_SPACE_SETTINGS_KEYS.ELECTRICAL_PROFILES);
+              }
+            });
+        });
+    }
+  }, [selectedTrain]);
 
   const getCheckboxRadio = useCallback(
     (settingKey: SpeedSpaceSettingKey, isChecked: boolean, disabled?: boolean) => (
