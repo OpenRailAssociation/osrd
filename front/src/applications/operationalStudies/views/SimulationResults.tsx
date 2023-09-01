@@ -29,7 +29,7 @@ import cx from 'classnames';
 import { Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { getSelectedTrain } from 'reducers/osrdsimulation/selectors';
 import ScenarioLoader from 'modules/scenario/components/ScenarioLoader';
-import { WarpedMap } from 'common/Map/WarpedMap/WarpedMap';
+import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
 
 const MAP_MIN_HEIGHT = 450;
 
@@ -156,7 +156,7 @@ export default function SimulationResults({ isDisplayed, collapsedTimetable, inf
 
       {/* SIMULATION : SPACE TIME CHART */}
       <div className="d-flex flex-row align-items-stretch mb-2">
-        <WarpedMap />
+        <SimulationWarpedMap />
 
         <div className="osrd-simulation-container d-flex flex-grow-1 flex-shrink-1">
           <div
