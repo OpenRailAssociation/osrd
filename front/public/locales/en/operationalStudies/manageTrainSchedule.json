@@ -22,6 +22,7 @@
     "noDestination": "The destination is not defined",
     "noName": "Please choose a name for the train",
     "noOrigin": "The origin is not defined",
+    "noPathfinding": "Please relaunch the pathfinding",
     "noRollingStock": "The train composition is missing",
     "noSpeedLimitByTag": "Please choose a composition code",
     "noTimetable": "Please choose or create a timetable",

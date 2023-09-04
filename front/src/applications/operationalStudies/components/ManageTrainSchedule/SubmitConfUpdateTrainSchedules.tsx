@@ -34,7 +34,18 @@ export default function SubmitConfUpdateTrainSchedules({
 
     // First train tested, and next we put the other trains
     const simulationConf = formatConf(dispatch, t, osrdconf.simulationConf, true);
-    if (simulationConf && trainScheduleIDsToModify) {
+    if (!osrdconf.simulationConf.pathfindingID) {
+      dispatch(
+        setFailure({
+          name: t('errorMessages.error'),
+          message: t(`errorMessages.noPathfinding`),
+        })
+      );
+    } else if (
+      simulationConf &&
+      trainScheduleIDsToModify &&
+      osrdconf.simulationConf.pathfindingID
+    ) {
       setIsWorking(true);
       try {
         await Promise.all(

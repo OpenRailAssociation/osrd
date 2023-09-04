@@ -58,7 +58,14 @@ export default function SubmitConfAddTrainSchedule({ infraState, setIsWorking }:
     const { osrdconf } = store.getState();
     const osrdConfig = formatConf(dispatch, t, osrdconf.simulationConf);
 
-    if (
+    if (!osrdconf.simulationConf.pathfindingID) {
+      dispatch(
+        setFailure({
+          name: t('errorMessages.error'),
+          message: t(`errorMessages.noPathfinding`),
+        })
+      );
+    } else if (
       osrdConfig &&
       osrdconf.simulationConf.pathfindingID &&
       osrdconf.simulationConf.timetableID
