@@ -297,8 +297,7 @@ def print_path_payload(payload):
 
 
 def compare_with_lease(a, b):
-    # maybe we should use 0.002 instead of 0.001, but I'm not sure about what degree of precision we want
-    return a - 0.001 <= b <= a + 0.001
+    return abs(a - b) < 0.022
 
 
 # Allows to replay a specific log
@@ -346,7 +345,28 @@ def compare_specific_payload(payload):
     else:
         routes_path = json.loads(routes_result.content.decode())
         blocks_path = json.loads(blocks_result.content.decode())
+        write_geojson(routes_path, blocks_path, "geo.json")
         compare_paths(routes_path, blocks_path, path_payload_routes, stats, iteration)
+
+
+def write_geojson(routes, blocks, path):
+    def make_feature(geo):
+        return {
+            "type": "Feature",
+            "properties": {},
+            "geometry": geo
+        }
+    with open(path, "w") as f:
+        features = [make_feature(routes["geographic"])]
+        features += [make_feature(blocks["geographic"])]
+        for p in routes["steps"]:
+            features.append(make_feature(p["geo"]))
+        for p in blocks["steps"]:
+            features.append(make_feature(p["geo"]))
+        print(json.dumps({
+            "type": "FeatureCollection",
+            "features": features
+        }), file=f)
 
 
 if __name__ == "__main__":
