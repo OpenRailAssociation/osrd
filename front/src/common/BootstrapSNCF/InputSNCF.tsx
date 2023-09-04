@@ -37,7 +37,7 @@ export type InputSNCFProps = {
   step?: number | string;
   isFlex?: boolean;
   condensed?: boolean;
-  textAlignment?: 'left' | 'right';
+  textRight?: boolean;
 };
 
 const InputSNCF = ({
@@ -72,7 +72,7 @@ const InputSNCF = ({
   step = 1,
   isFlex = false,
   condensed = false,
-  textAlignment = 'right',
+  textRight = true,
 }: InputSNCFProps): JSX.Element => {
   // Build custom classes
   const formSize = sm ? 'form-control-sm' : '';
@@ -82,7 +82,7 @@ const InputSNCF = ({
   const flex = isFlex ? 'd-flex align-items-center' : '';
   const condensedIcon = condensed ? 'condensed-icon' : '';
   const condensedInput = condensed ? 'px-2' : '';
-  const textAlignmentClass = textAlignment === 'right' ? 'right-alignment' : 'left-alignment';
+  const textAlignmentClass = textRight ? 'right-alignment' : 'left-alignment';
 
   // Test and adapt display if entry is invalid
   let invalidClass = '';
