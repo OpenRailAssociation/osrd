@@ -22,6 +22,7 @@
     "noDestination": "La destination n'est pas définie",
     "noName": "Veuillez choisir un nom pour le train",
     "noOrigin": "L'origine n'est pas définie",
+    "noPathfinding": "Veuillez relancer la recherche d'itinéraire",
     "noRollingStock": "La composition de train n'est pas renseignée",
     "noSpeedLimitByTag": "Veuillez choisir un code de composition",
     "noTimetable": "Veuillez choisir ou créer une grille horaire",

@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import OptionsSNCF, { Option } from 'common/BootstrapSNCF/OptionsSNCF';
 import {
+  updatePathfindingID,
   updatePowerRestrictionRanges,
   updateRollingStockComfort,
   updateRollingStockID,
@@ -37,6 +38,7 @@ const RollingStockCardButtons = ({
     dispatch(updateShouldRunPathfinding(true));
     dispatch(updateRollingStockID(id));
     dispatch(updatePowerRestrictionRanges([]));
+    dispatch(updatePathfindingID(undefined));
     closeModal();
   };
 
