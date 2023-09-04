@@ -53,7 +53,7 @@ const STDCMAllowances = () => {
       <div className="col-3">
         <InputSNCF
           id="standardAllowanceTypeGridMarginBefore"
-          type="text"
+          type="number"
           value={gridMarginBefore}
           unit={ALLOWANCE_UNITS_KEYS.time}
           condensed
@@ -61,12 +61,13 @@ const STDCMAllowances = () => {
           sm
           noMargin
           label={t('allowances:gridMarginBeforeAfter')}
+          textRight={false}
         />
       </div>
       <div className="col-3">
         <InputSNCF
           id="standardAllowanceTypeGridMarginAfter"
-          type="text"
+          type="number"
           value={gridMarginAfter}
           unit={ALLOWANCE_UNITS_KEYS.time}
           condensed
@@ -74,6 +75,7 @@ const STDCMAllowances = () => {
           sm
           noMargin
           label=" "
+          textRight={false}
         />
       </div>
       <div className="col-6">
@@ -88,6 +90,7 @@ const STDCMAllowances = () => {
           typeValue="number"
           condensed
           sm
+          textRight={false}
         />
       </div>
     </div>
