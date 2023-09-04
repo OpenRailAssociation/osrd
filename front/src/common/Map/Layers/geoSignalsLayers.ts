@@ -4,9 +4,9 @@ import {
   ALL_SIGNAL_LAYERS,
   ALL_SIGNAL_LAYERS_SET,
   LIGHT_SIGNALS,
-  PANELS_STOPS,
+  SIGNS_STOPS,
 } from 'common/Map/Consts/SignalsNames';
-import { SIGNALS_PANELS } from 'common/Map/const';
+import { SIGNALS_SIGNS } from 'common/Map/const';
 import { SourceLayer, Theme, OmitLayer } from '../../../types';
 
 const signalTextOffsetX = 5;
@@ -46,7 +46,7 @@ export function getSignalsList(signalsSettings: SignalsSettings) {
     return ALL_SIGNAL_LAYERS;
   }
   if (signalsSettings.stops) {
-    signalsList = signalsList.concat(PANELS_STOPS);
+    signalsList = signalsList.concat(SIGNS_STOPS);
   }
   if (signalsSettings.lights) {
     signalsList = signalsList.concat(LIGHT_SIGNALS);
@@ -408,7 +408,7 @@ export function getSignalLayerProps(
   let textOffsetX = 30;
   const textOffsetY = 5;
   let isSignal = true;
-  if (SIGNALS_PANELS.indexOf(type) !== -1 && SIGNALS_PANELS.indexOf(type) === -1) {
+  if (SIGNALS_SIGNS.indexOf(type) !== -1 && SIGNALS_SIGNS.indexOf(type) === -1) {
     size = 0.4;
     iconOffsetX = 55;
     textOffsetX = 3;
@@ -419,11 +419,6 @@ export function getSignalLayerProps(
     iconOffsetX = 30;
     offsetY = -80;
   }
-  /*
-  if (SIGNALS_PANELS.indexOf(type) !== -1) {
-    offsetY = -105;
-  }
-  */
 
   const minZoom = 14;
 

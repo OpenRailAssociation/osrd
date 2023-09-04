@@ -36,15 +36,12 @@ import {
 } from './SpeedLimits';
 import { MapState } from '../../../reducers/map';
 import {
-  getLPVFilter,
-  getLPVSpeedLineBGLayerProps,
-  getLPVSpeedLineLayerProps,
-  getLPVSpeedValueLayerProps,
-} from './extensions/SNCF/SNCF_LPV';
-import {
-  getLPVPanelsLayerProps,
-  getLPVPanelsMastLayerProps,
-} from './extensions/SNCF/SNCF_LPV_PANELS';
+  getPSLFilter,
+  getPSLSpeedLineBGLayerProps,
+  getPSLSpeedLineLayerProps,
+  getPSLSpeedValueLayerProps,
+} from './extensions/SNCF/SNCF_PSL';
+import { getPSLSignsLayerProps, getPSLSignsMastLayerProps } from './extensions/SNCF/SNCF_PSL_SIGNS';
 import { LayerContext } from './types';
 import { getCatenariesProps, getCatenariesTextParams } from './Catenaries';
 import OrderedLayer from './OrderedLayer';
@@ -203,37 +200,37 @@ function getDetectorsLayers(context: LayerContext, prefix: string): LayerProps[]
   ];
 }
 
-function getLPVPanelsLayers(context: LayerContext, prefix: string): LayerProps[] {
+function getPSLSignsLayers(context: LayerContext, prefix: string): LayerProps[] {
   return [
     {
-      ...getLPVPanelsLayerProps(context),
-      id: `${prefix}geo/lpv-panels`,
+      ...getPSLSignsLayerProps(context),
+      id: `${prefix}geo/psl-signs`,
       minzoom: POINT_ENTITIES_MIN_ZOOM,
     },
     {
-      ...getLPVPanelsMastLayerProps(context),
-      id: `${prefix}geo/lpv-panels-mast`,
+      ...getPSLSignsMastLayerProps(context),
+      id: `${prefix}geo/psl-signs-mast`,
       minzoom: POINT_ENTITIES_MIN_ZOOM,
     },
   ];
 }
 
-function getLPVLayers(context: LayerContext, prefix: string): LayerProps[] {
-  const filter = getLPVFilter(context.layersSettings);
+function getPSLLayers(context: LayerContext, prefix: string): LayerProps[] {
+  const filter = getPSLFilter(context.layersSettings);
   return [
     {
-      ...getLPVSpeedValueLayerProps(context),
-      id: `${prefix}geo/lpv-value`,
+      ...getPSLSpeedValueLayerProps(context),
+      id: `${prefix}geo/psl-value`,
       filter,
     },
     {
-      ...getLPVSpeedLineBGLayerProps(context),
-      id: `${prefix}geo/lpv-line-bg`,
+      ...getPSLSpeedLineBGLayerProps(context),
+      id: `${prefix}geo/psl-line-bg`,
       filter,
     },
     {
-      ...getLPVSpeedLineLayerProps(context),
-      id: `${prefix}geo/lpv-line`,
+      ...getPSLSpeedLineLayerProps(context),
+      id: `${prefix}geo/psl-line`,
       filter,
     },
   ];
@@ -308,8 +305,8 @@ const SOURCES_DEFINITION: {
   { entityType: 'detectors', getLayers: getDetectorsLayers },
   { entityType: 'switches', getLayers: getSwitchesLayers },
   { entityType: 'speed_sections', getLayers: getSpeedSectionLayers },
-  { entityType: 'lpv', getLayers: getLPVLayers },
-  { entityType: 'lpv_panels', getLayers: getLPVPanelsLayers },
+  { entityType: 'psl', getLayers: getPSLLayers },
+  { entityType: 'psl_signs', getLayers: getPSLSignsLayers },
   { entityType: 'catenaries', getLayers: getCatenariesLayers },
   { entityType: 'errors', getLayers: getErrorsLayers },
 ];

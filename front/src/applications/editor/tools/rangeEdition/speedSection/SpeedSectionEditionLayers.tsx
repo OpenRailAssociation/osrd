@@ -14,12 +14,12 @@ import { getEntities, getEntity } from 'applications/editor/data/api';
 import { mapValues } from 'lodash';
 import { Layer, Popup, Source } from 'react-map-gl/maplibre';
 import {
-  generateLpvPanelFeatures,
+  generatePslSignFeatures,
   getTrackRangeFeatures,
   isOnModeMove,
-  speedSectionIsLpv,
+  speedSectionIsPsl,
 } from '../utils';
-import { LpvPanelFeature, RangeEditionState, TrackState } from '../types';
+import { PslSignFeature, RangeEditionState, TrackState } from '../types';
 import { ExtendedEditorContextType } from '../../editorContextTypes';
 import EntitySumUp from '../../../components/EntitySumUp';
 import { LayerType } from '../../types';
@@ -31,7 +31,7 @@ export const SpeedSectionEditionLayers: FC = () => {
     state: { entity, trackSectionsCache, hoveredItem, interactionState, mousePosition },
     setState,
   } = useContext(EditorContext) as ExtendedEditorContextType<RangeEditionState<SpeedSectionEntity>>;
-  const isLPV = speedSectionIsLpv(entity);
+  const isPSL = speedSectionIsPsl(entity);
   const { mapStyle, layersSettings, showIGNBDORTHO } = useSelector(getMap);
   const infraId = useSelector(getInfraID);
   const selection = useMemo(() => {
@@ -63,15 +63,15 @@ export const SpeedSectionEditionLayers: FC = () => {
         : [];
     }) as Feature<LineString | Point>[];
 
-    // generate lpvPanelFeatures
-    let lpvPanelFeatures = [] as LpvPanelFeature[];
-    if (entity.properties?.extensions?.lpv_sncf) {
-      lpvPanelFeatures = generateLpvPanelFeatures(
-        entity.properties?.extensions?.lpv_sncf,
+    // generate pslSignFeatures
+    let pslSignFeatures = [] as PslSignFeature[];
+    if (entity.properties?.extensions?.psl_sncf) {
+      pslSignFeatures = generatePslSignFeatures(
+        entity.properties?.extensions?.psl_sncf,
         trackSectionsCache
       );
     }
-    return featureCollection([...trackRangeFeatures, ...lpvPanelFeatures]);
+    return featureCollection([...trackRangeFeatures, ...pslSignFeatures]);
   }, [entity, trackSectionsCache]);
 
   const layersProps = useMemo(() => {
@@ -85,16 +85,16 @@ export const SpeedSectionEditionLayers: FC = () => {
       showIGNBDORTHO,
       layersSettings,
     };
-    if (!isLPV) {
+    if (!isPSL) {
       return SourcesDefinitionsIndex.speed_sections(context, 'speedSectionsEditor/speedSection/');
     }
-    const lpvLayers = SourcesDefinitionsIndex.lpv(context, 'speedSectionsEditor/lpv/');
-    const lpvPanelLayers = SourcesDefinitionsIndex.lpv_panels(
+    const pslLayers = SourcesDefinitionsIndex.psl(context, 'speedSectionsEditor/psl/');
+    const pslSignLayers = SourcesDefinitionsIndex.psl_signs(
       context,
-      'speedSectionsEditor/lpv_panels/'
+      'speedSectionsEditor/psl_signs/'
     );
-    return [...lpvLayers, ...lpvPanelLayers];
-  }, [isLPV, mapStyle, showIGNBDORTHO, layersSettings]);
+    return [...pslLayers, ...pslSignLayers];
+  }, [isPSL, mapStyle, showIGNBDORTHO, layersSettings]);
 
   const layers = useMemo(() => new Set(['track_sections']) as Set<LayerType>, []);
 
@@ -177,7 +177,7 @@ export const SpeedSectionEditionLayers: FC = () => {
           <EntitySumUp entity={hoveredItem.track} />
         </Popup>
       )}
-      {hoveredItem?.speedSectionItemType === 'LPVPanel' && (
+      {hoveredItem?.speedSectionItemType === 'PSLSign' && (
         <Popup
           className="popup"
           anchor="bottom"
@@ -185,7 +185,7 @@ export const SpeedSectionEditionLayers: FC = () => {
           latitude={hoveredItem.position[1]}
           closeButton={false}
         >
-          {t('Editor.tools.speed-edition.hovered-panel', { panelType: hoveredItem.panelType })}
+          {t('Editor.tools.speed-edition.hovered-sign', { signType: hoveredItem.signType })}
         </Popup>
       )}
       {interactionState.type !== 'moveRangeExtremity' &&
@@ -216,7 +216,7 @@ export const SpeedSectionEditionLayers: FC = () => {
         layersSettings={layersSettings}
         isEmphasized={false}
       />
-      <Source type="geojson" data={speedSectionsFeature} key={isLPV ? 'lpv' : 'speed-section'}>
+      <Source type="geojson" data={speedSectionsFeature} key={isPSL ? 'psl' : 'speed-section'}>
         {layersProps.map((props, i) => (
           <Layer {...props} key={i} />
         ))}
