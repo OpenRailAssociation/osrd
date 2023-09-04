@@ -121,9 +121,14 @@ blockquote {
 *   INPUT
 *
 */
-.has-right-icon input, .input-group input {
+.right-alignment {
   text-align: right;
 }
+
+.left-alignment {
+  text-align: left;
+}
+
 input {
   &.form-control {
     padding-bottom: 0.45rem;
