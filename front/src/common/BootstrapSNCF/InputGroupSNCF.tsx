@@ -29,6 +29,7 @@ type Props = {
   min?: number;
   max?: number;
   step?: number | string;
+  textAlignment?: 'left' | 'right';
 };
 
 export default function InputGroupSNCF({
@@ -49,6 +50,7 @@ export default function InputGroupSNCF({
   min,
   max,
   step,
+  textAlignment = 'right',
 }: Props) {
   const [isDropdownShown, setIsDropdownShown] = useState(false);
   const [selected, setSelected] = useState(
@@ -58,6 +60,7 @@ export default function InputGroupSNCF({
         }
       : { id: options[0].id, label: options[0].label, unit: options[0].unit }
   );
+  const textAlignmentClass = textAlignment === 'right' ? 'right-alignment' : 'left-alignment';
 
   useEffect(() => {
     const selectedOption = options?.find((option) => option.id === type);
@@ -79,7 +82,7 @@ export default function InputGroupSNCF({
     >
       <input
         type={typeValue}
-        className={cx('form-control h-100', condensed && 'px-2')}
+        className={cx('form-control h-100', condensed && 'px-2', textAlignmentClass)}
         title={placeholder}
         placeholder={placeholder}
         onChange={(e) => handleType({ type: selected.id, value: e.target.value })}
