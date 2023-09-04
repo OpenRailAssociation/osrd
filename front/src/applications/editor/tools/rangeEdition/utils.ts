@@ -10,18 +10,18 @@ import { getNearestPoint } from 'utils/mapHelper';
 import { NEW_ENTITY_ID } from '../../data/utils';
 import {
   CatenaryEntity,
-  LPVExtension,
-  LPVPanel,
+  PSLExtension,
+  PSLSign,
   SpeedSectionEntity,
-  SpeedSectionLpvEntity,
+  SpeedSectionPslEntity,
   TrackRange,
   TrackSectionEntity,
 } from '../../../../types';
 import {
-  LPV_PANEL_TYPE,
-  LPV_PANEL_TYPES,
-  LpvPanelFeature,
-  LpvPanelInformation,
+  PSL_SIGN_TYPE,
+  PSL_SIGN_TYPES,
+  PslSignFeature,
+  PslSignInformation,
   RangeEditionState,
   TrackRangeExtremityFeature,
   TrackRangeFeature,
@@ -54,12 +54,13 @@ export function getNewCatenary(): CatenaryEntity {
 }
 
 /**
- * Given a hover event and a trackSectionCache when moving a LpvPanel, return the new position of the panel, with the trackRange's id on which the panel is and its distance from the beginning of the trackRange.
+ * Given a hover event and a trackSectionCache when moving a PslSign, return the new position of the sign, with the trackRange's id on which the sign is and its distance from the beginning of the trackRange.
  * - retrieve the trackRanges around the mouse
  * - retrieve the nearest point of the mouse (and the trackRange it belongs to)
  * - compute the distance between the beginning of the track and the nearest point (with approximation because of Editoast data)
  */
-export function getLpvPanelNewPosition(
+
+export function getPslSignNewPosition(
   e: MapLayerMouseEvent,
   trackSectionsCache: Record<string, TrackState>
 ) {
@@ -90,7 +91,7 @@ export function getNewSpeedSection(): SpeedSectionEntity {
     properties: {
       id: NEW_ENTITY_ID,
       extensions: {
-        lpv_sncf: null,
+        psl_sncf: null,
       },
       track_ranges: [],
       speed_limit_by_tag: {},
@@ -102,58 +103,58 @@ export function getNewSpeedSection(): SpeedSectionEntity {
   };
 }
 
-/** return the LPV panel type and its index (if the panel is not a Z panel) */
-export function getPanelInformationFromInteractionState(
-  interactionState: { type: 'movePanel' } & LpvPanelInformation
+/** return the PSL sign type and its index (if the sign is not a Z sign) */
+export function getSignInformationFromInteractionState(
+  interactionState: { type: 'moveSign' } & PslSignInformation
 ) {
-  const { panelType } = interactionState;
+  const { signType } = interactionState;
   return (
-    panelType === LPV_PANEL_TYPES.Z
-      ? { panelType: LPV_PANEL_TYPES.Z }
-      : { panelType, panelIndex: interactionState.panelIndex }
-  ) as LpvPanelInformation;
+    signType === PSL_SIGN_TYPES.Z
+      ? { signType: PSL_SIGN_TYPES.Z }
+      : { signType, signIndex: interactionState.signIndex }
+  ) as PslSignInformation;
 }
 
-export function getNewLpvExtension(
-  newLpvExtension: LPVExtension,
-  panelInformation: LpvPanelInformation,
+export function getNewPslExtension(
+  newPslExtension: PSLExtension,
+  signInformation: PslSignInformation,
   newPosition: { track: string; position: number }
 ) {
-  const { panelType } = panelInformation;
-  if (panelType === LPV_PANEL_TYPES.Z) {
-    newLpvExtension.z = {
-      ...newLpvExtension.z,
+  const { signType } = signInformation;
+  if (signType === PSL_SIGN_TYPES.Z) {
+    newPslExtension.z = {
+      ...newPslExtension.z,
       ...newPosition,
     };
   } else {
-    const { panelIndex } = panelInformation;
-    if (panelType === LPV_PANEL_TYPES.ANNOUNCEMENT) {
-      newLpvExtension.announcement[panelIndex] = {
-        ...newLpvExtension.announcement[panelIndex],
+    const { signIndex } = signInformation;
+    if (signType === PSL_SIGN_TYPES.ANNOUNCEMENT) {
+      newPslExtension.announcement[signIndex] = {
+        ...newPslExtension.announcement[signIndex],
         ...newPosition,
       };
     } else {
-      newLpvExtension.r[panelIndex] = {
-        ...newLpvExtension.r[panelIndex],
+      newPslExtension.r[signIndex] = {
+        ...newPslExtension.r[signIndex],
         ...newPosition,
       };
     }
   }
-  return newLpvExtension;
+  return newPslExtension;
 }
 
-export function getMovedLpvEntity(
-  entity: SpeedSectionLpvEntity,
-  panelInfo: LpvPanelInformation,
+export function getMovedPslEntity(
+  entity: SpeedSectionPslEntity,
+  signInfo: PslSignInformation,
   newPosition: { track: string; position: number }
 ) {
-  const newLpvExtension = getNewLpvExtension(
-    cloneDeep(entity.properties.extensions.lpv_sncf),
-    panelInfo,
+  const newPslExtension = getNewPslExtension(
+    cloneDeep(entity.properties.extensions.psl_sncf),
+    signInfo,
     newPosition
   );
   const updatedEntity = cloneDeep(entity);
-  updatedEntity.properties.extensions.lpv_sncf = newLpvExtension;
+  updatedEntity.properties.extensions.psl_sncf = newPslExtension;
   return updatedEntity;
 }
 
@@ -272,46 +273,46 @@ export function getTrackRangeFeatures(
 }
 
 /**
- * Given a LPV panel and the cached trackSections, generate a point feature to represent a SpeedSection Lpv Panel.
- * If the panel's track is not in the trackSectionsCache object, then return null.
- * This feature will be used to display the panel on the map.
+ * Given a PSL sign and the cached trackSections, generate a point feature to represent a SpeedSection Psl Sign.
+ * If the sign's track is not in the trackSectionsCache object, then return null.
+ * This feature will be used to display the sign on the map.
  */
-function generatePointFromLPVPanel(
-  panel: LPVPanel,
-  panelIndex: number,
-  panelType: LPV_PANEL_TYPE,
+function generatePointFromPSLSign(
+  sign: PSLSign,
+  signIndex: number,
+  signType: PSL_SIGN_TYPE,
   trackSectionsCache: Record<string, TrackState>
-): LpvPanelFeature | null {
-  const trackState = trackSectionsCache[panel.track];
+): PslSignFeature | null {
+  const trackState = trackSectionsCache[sign.track];
   if (trackState?.type !== 'success') {
     return null;
   }
-  const panelPoint = along(trackState.track, panel.position, { units: 'meters' });
-  panelPoint.properties = {
-    ...panel,
-    speedSectionItemType: 'LPVPanel',
-    speedSectionPanelIndex: panelIndex,
-    speedSectionPanelType: panelType,
+  const signPoint = along(trackState.track, sign.position, { units: 'meters' });
+  signPoint.properties = {
+    ...sign,
+    speedSectionItemType: 'PSLSign',
+    speedSectionSignIndex: signIndex,
+    speedSectionSignType: signType,
   };
-  return panelPoint as LpvPanelFeature;
+  return signPoint as PslSignFeature;
 }
 
 /**
- * Given a LPV extension and cached trackSections, generate an array of Point Features to display the LPV panels on the map.
+ * Given a PSL extension and cached trackSections, generate an array of Point Features to display the PSL signs on the map.
  */
-export function generateLpvPanelFeatures(
-  lpv: LPVExtension,
+export function generatePslSignFeatures(
+  psl: PSLExtension,
   trackSectionsCache: Record<string, TrackState>
 ) {
-  const panelsLists = [
-    { type: LPV_PANEL_TYPES.Z, panels: lpv.z ? [lpv.z] : [] },
-    { type: LPV_PANEL_TYPES.R, panels: lpv.r },
-    { type: LPV_PANEL_TYPES.ANNOUNCEMENT, panels: lpv.announcement },
+  const signsLists = [
+    { type: PSL_SIGN_TYPES.Z, signs: psl.z ? [psl.z] : [] },
+    { type: PSL_SIGN_TYPES.R, signs: psl.r },
+    { type: PSL_SIGN_TYPES.ANNOUNCEMENT, signs: psl.announcement },
   ];
-  const panelPoints = panelsLists.flatMap(({ type, panels }) =>
-    panels.map((panel, i) => generatePointFromLPVPanel(panel, i, type, trackSectionsCache))
+  const signPoints = signsLists.flatMap(({ type, signs }) =>
+    signs.map((sign, i) => generatePointFromPSLSign(sign, i, type, trackSectionsCache))
   );
-  return compact(panelPoints);
+  return compact(signPoints);
 }
 
 export function getPointAt(track: TrackSectionEntity, at: number): Position {
@@ -331,29 +332,29 @@ export function kmhToMs(v: number): number {
 }
 
 /**
- * Given a lpvPanel information, update the state to notify that the user is moving the panel.
- * - set the interaction state on 'movePanel'
- * - store in the interaction state the panel informations
+ * Given a pslSign information, update the state to notify that the user is moving the sign.
+ * - set the interaction state on 'moveSign'
+ * - store in the interaction state the sign informations
  */
-export function selectLpvPanel(
-  lpvPanel: LpvPanelInformation,
+export function selectPslSign(
+  pslSign: PslSignInformation,
   setState: (stateOrReducer: PartialOrReducer<RangeEditionState<SpeedSectionEntity>>) => void
 ) {
-  const { panelType } = lpvPanel;
+  const { signType } = pslSign;
   const interactionState =
-    panelType === LPV_PANEL_TYPES.Z
-      ? ({ type: 'movePanel', panelType: LPV_PANEL_TYPES.Z } as {
-          type: 'movePanel';
-          panelType: LPV_PANEL_TYPES.Z;
+    signType === PSL_SIGN_TYPES.Z
+      ? ({ type: 'moveSign', signType: PSL_SIGN_TYPES.Z } as {
+          type: 'moveSign';
+          signType: PSL_SIGN_TYPES.Z;
         })
       : ({
-          type: 'movePanel',
-          panelType,
-          panelIndex: lpvPanel.panelIndex,
+          type: 'moveSign',
+          signType,
+          signIndex: pslSign.signIndex,
         } as {
-          type: 'movePanel';
-          panelType: LPV_PANEL_TYPES.ANNOUNCEMENT | LPV_PANEL_TYPES.R;
-          panelIndex: number;
+          type: 'moveSign';
+          signType: PSL_SIGN_TYPES.ANNOUNCEMENT | PSL_SIGN_TYPES.R;
+          signIndex: number;
         });
   setState({
     hoveredItem: null,
@@ -361,10 +362,10 @@ export function selectLpvPanel(
   });
 }
 
-export function speedSectionIsLpv(entity: SpeedSectionEntity): boolean {
-  return !!entity.properties?.extensions?.lpv_sncf;
+export function speedSectionIsPsl(entity: SpeedSectionEntity): boolean {
+  return !!entity.properties?.extensions?.psl_sncf;
 }
 
 export function isOnModeMove(interactionStateType: string): boolean {
-  return ['moveRangeExtremity', 'movePanel'].includes(interactionStateType);
+  return ['moveRangeExtremity', 'moveSign'].includes(interactionStateType);
 }

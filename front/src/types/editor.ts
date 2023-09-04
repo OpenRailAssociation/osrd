@@ -38,7 +38,7 @@ export interface TrackSectionEntity
 
 export const APPLICABLE_DIRECTIONS = ['BOTH', 'START_TO_STOP', 'STOP_TO_START'] as const;
 export type ApplicableDirection = (typeof APPLICABLE_DIRECTIONS)[number];
-export interface LPVPanel {
+export interface PSLSign {
   angle_sch: number;
   angle_geo: number;
   position: number;
@@ -48,10 +48,10 @@ export interface LPVPanel {
   value: string | null;
 }
 
-export interface LPVExtension {
-  announcement: LPVPanel[];
-  z: LPVPanel;
-  r: LPVPanel[];
+export interface PSLExtension {
+  announcement: PSLSign[];
+  z: PSLSign;
+  r: PSLSign[];
 }
 export interface SpeedSectionProperties {
   speed_limit?: number;
@@ -63,13 +63,13 @@ export interface SpeedSectionProperties {
     track: string;
   }[];
   extensions?: {
-    lpv_sncf: null | LPVExtension;
+    psl_sncf: null | PSLExtension;
   };
 }
-export interface SpeedSectionLpvEntity
+export interface SpeedSectionPslEntity
   extends EditorEntity<
     MultiLineString,
-    Omit<SpeedSectionProperties, 'extensions'> & { extensions: { lpv_sncf: LPVExtension } }
+    Omit<SpeedSectionProperties, 'extensions'> & { extensions: { psl_sncf: PSLExtension } }
   > {
   objType: 'SpeedSection';
 }

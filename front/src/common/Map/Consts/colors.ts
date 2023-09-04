@@ -36,7 +36,7 @@ const colors: Record<string, Theme> = {
       text: '#555555',
       halo: '#eee',
     },
-    lpv: {
+    psl: {
       pointtext: '#5b5b5b',
       pointhalo: '#ffffff',
       detailtext: '#555555',
@@ -52,7 +52,7 @@ const colors: Record<string, Theme> = {
       text: '#202258',
       halo: '#eee',
     },
-    panel: {
+    sign: {
       text: '#333333',
       halo: '#ffffff',
     },
@@ -185,7 +185,7 @@ const colors: Record<string, Theme> = {
       text: '#4895ef',
       halo: '#0b011d',
     },
-    lpv: {
+    psl: {
       pointtext: '#eeeeee',
       pointhalo: '#3a86ff',
       detailtext: '#3a86ff',
@@ -201,7 +201,7 @@ const colors: Record<string, Theme> = {
       text: '#4895ef',
       halo: '#0b011d',
     },
-    panel: {
+    sign: {
       text: '#eeeeee',
       halo: '#333333',
     },
@@ -326,7 +326,7 @@ const colors: Record<string, Theme> = {
       text: bpLight,
       halo: bpBg,
     },
-    lpv: {
+    psl: {
       pointtext: bpLight,
       pointhalo: bpBg,
       detailtext: bpLight,
@@ -342,7 +342,7 @@ const colors: Record<string, Theme> = {
       text: bpLight,
       halo: bpBg,
     },
-    panel: {
+    sign: {
       text: bpLight,
       halo: bpBg,
     },

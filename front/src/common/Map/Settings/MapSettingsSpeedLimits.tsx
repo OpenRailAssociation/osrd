@@ -122,8 +122,8 @@ export default function MapSettingsLayers() {
       <FormatSwitch name="speedlimits" icon={IoMdSpeedometer} />
       <div className="col-lg-6">
         <SimpleFormatSwitch
-          name="sncf_lpv"
-          icon={<Icon2SVG file={TIVsSVGFile} altName="SNCF LPV TIV icon svg" />}
+          name="sncf_psl"
+          icon={<Icon2SVG file={TIVsSVGFile} altName="SNCF PSL TIV icon svg" />}
         />
       </div>
     </div>

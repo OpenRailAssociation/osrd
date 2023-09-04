@@ -8,24 +8,24 @@ import { ComponentType } from 'react';
 import { LAYER_TO_EDITOAST_DICT, LAYERS_SET, LayerType } from '../types';
 import {
   HoveredExtremityState,
-  HoveredPanelState,
+  HoveredSignState,
   HoveredRangeState,
-  LpvPanelFeature,
+  PslSignFeature,
   RangeEditionState,
   TrackRangeExtremityFeature,
   TrackRangeFeature,
 } from './types';
 import {
-  getLpvPanelNewPosition,
-  getMovedLpvEntity,
-  getPanelInformationFromInteractionState,
+  getPslSignNewPosition,
+  getMovedPslEntity,
+  getSignInformationFromInteractionState,
   isOnModeMove,
-  selectLpvPanel,
+  selectPslSign,
 } from './utils';
 import {
   CatenaryEntity,
   SpeedSectionEntity,
-  SpeedSectionLpvEntity,
+  SpeedSectionPslEntity,
   TrackSectionEntity,
 } from '../../../../types';
 import { getNearestPoint } from '../../../../utils/mapHelper';
@@ -73,7 +73,7 @@ function getRangeEditionTool<T extends EditorRange>({
         : 'Editor.tools.catenary-edition.label',
     requiredLayers: new Set(
       layersEntity.objType === 'SpeedSection'
-        ? ['speed_sections', 'lpv', 'lpv_panels']
+        ? ['speed_sections', 'psl', 'psl_signs']
         : ['catenaries']
     ),
     getInitialState,
@@ -148,12 +148,12 @@ function getRangeEditionTool<T extends EditorRange>({
               extremity: hoveredExtremity.properties.extremity,
             },
           });
-        } else if (feature.properties?.speedSectionItemType === 'LPVPanel') {
+        } else if (feature.properties?.speedSectionItemType === 'PSLSign') {
           const {
-            properties: { speedSectionPanelType, speedSectionPanelIndex },
-          } = feature as unknown as LpvPanelFeature;
-          selectLpvPanel(
-            { panelType: speedSectionPanelType, panelIndex: speedSectionPanelIndex },
+            properties: { speedSectionSignType, speedSectionSignIndex },
+          } = feature as unknown as PslSignFeature;
+          selectPslSign(
+            { signType: speedSectionSignType, signIndex: speedSectionSignIndex },
             setState as (
               stateOrReducer: PartialOrReducer<RangeEditionState<SpeedSectionEntity>>
             ) => void
@@ -233,17 +233,17 @@ function getRangeEditionTool<T extends EditorRange>({
           setState({
             hoveredItem: newHoveredItem,
           });
-      } else if (feature.properties?.speedSectionItemType === 'LPVPanel') {
+      } else if (feature.properties?.speedSectionItemType === 'PSLSign') {
         const hoveredExtremity = feature as unknown as TrackRangeExtremityFeature;
         const trackState = trackSectionsCache[hoveredExtremity.properties.track];
         if (trackState?.type !== 'success') return;
 
-        const newHoveredItem: HoveredPanelState = {
-          speedSectionItemType: 'LPVPanel',
+        const newHoveredItem: HoveredSignState = {
+          speedSectionItemType: 'PSLSign',
           position: hoveredExtremity.geometry.coordinates,
           track: trackState.track,
-          panelIndex: feature.properties?.speedSectionPanelIndex as number,
-          panelType: feature.properties?.speedSectionPanelType as string,
+          signIndex: feature.properties?.speedSectionSignIndex as number,
+          signType: feature.properties?.speedSectionSignType as string,
         };
         if (!isEqual(newHoveredItem, hoveredItem))
           setState({
@@ -291,14 +291,14 @@ function getRangeEditionTool<T extends EditorRange>({
         setState({
           entity: newEntity,
         });
-      } else if (interactionState.type === 'movePanel') {
-        if (entity.objType === 'SpeedSection' && entity.properties.extensions?.lpv_sncf) {
-          const newPosition = getLpvPanelNewPosition(e, trackSectionsCache);
+      } else if (interactionState.type === 'moveSign') {
+        if (entity.objType === 'SpeedSection' && entity.properties.extensions?.psl_sncf) {
+          const newPosition = getPslSignNewPosition(e, trackSectionsCache);
           if (newPosition) {
-            const panelInfo = getPanelInformationFromInteractionState(interactionState);
-            const updatedEntity = getMovedLpvEntity(
-              entity as SpeedSectionLpvEntity,
-              panelInfo,
+            const signInfo = getSignInformationFromInteractionState(interactionState);
+            const updatedEntity = getMovedPslEntity(
+              entity as SpeedSectionPslEntity,
+              signInfo,
               newPosition
             ) as T;
             setState({ entity: updatedEntity });

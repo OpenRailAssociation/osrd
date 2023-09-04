@@ -74,7 +74,7 @@ export class ProjectPage {
       .getByText('Supprimer', { exact: true });
   }
 
-  // Completly remove VITE button & panel
+  // Completly remove VITE button & sign
   async removeViteOverlay() {
     if ((await this.getViteOverlay.count()) > 0) {
       await this.getViteOverlay.evaluate((node) => node.setAttribute('style', 'display:none;'));
