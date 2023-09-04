@@ -15,7 +15,6 @@ import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
-import fr.sncf.osrd.sim_infra.api.LoadedSignalingInfraKt;
 import fr.sncf.osrd.sim_infra.api.RawSignalingInfra;
 import fr.sncf.osrd.sim_infra.api.Route;
 import fr.sncf.osrd.sim_infra.api.SignalingSystem;
@@ -127,7 +126,7 @@ public class Helpers {
                 infra.rawInfra(),
                 infra.blockInfra(),
                 routes,
-                getSignalingSystem(infra)
+                getSignalingSystems(infra)
         );
         for (var candidate : candidates)
             res.addAll(toList(candidate).stream().map(BlockPathElement::getBlock).toList());
@@ -144,7 +143,7 @@ public class Helpers {
     }
 
     /** Returns the idx list of signaling systems */
-    private static StaticIdxList<SignalingSystem> getSignalingSystem(FullInfra infra) {
+    private static StaticIdxList<SignalingSystem> getSignalingSystems(FullInfra infra) {
         var res = new MutableStaticIdxArrayList<SignalingSystem>();
         for (int i = 0; i < infra.signalingSimulator().getSigModuleManager().getSignalingSystems(); i++)
             res.add(i);
