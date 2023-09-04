@@ -17,15 +17,15 @@ import {
   CatenaryEntity,
   EntityObjectOperationResult,
   SpeedSectionEntity,
-  SpeedSectionLpvEntity,
+  SpeedSectionPslEntity,
 } from '../../../../types';
 import { NEW_ENTITY_ID } from '../../data/utils';
 import { LoaderFill } from '../../../../common/Loader';
 import EntitySumUp from '../../components/EntitySumUp';
 import { save } from '../../../../reducers/editor';
-import EditLPVSection from './speedSection/EditLPVSection';
+import EditPSLSection from './speedSection/EditPSLSection';
 import { ExtendedEditorContextType, PartialOrReducer } from '../editorContextTypes';
-import { getPointAt, speedSectionIsLpv } from './utils';
+import { getPointAt, speedSectionIsPsl } from './utils';
 import SpeedSectionMetadataForm from './speedSection/SpeedSectionMetadataForm';
 import CatenaryMetadataForm from './catenary/CatenaryMetadataForm';
 
@@ -211,7 +211,7 @@ export const RangeEditionLeftPanel: FC = () => {
   >;
   const isNew = entity.properties.id === NEW_ENTITY_ID;
   const [isLoading, setIsLoading] = useState(false);
-  const isLPV = speedSectionIsLpv(entity as SpeedSectionEntity);
+  const isPSL = speedSectionIsPsl(entity as SpeedSectionEntity);
 
   const infraID = useSelector(getInfraID);
 
@@ -308,19 +308,19 @@ export const RangeEditionLeftPanel: FC = () => {
             <div className="d-flex">
               <CheckboxRadioSNCF
                 type="checkbox"
-                id="is-lpv-checkbox"
-                name="is-lpv-checkbox"
-                checked={isLPV}
-                label={t('Editor.tools.speed-edition.toggle-lpv')}
+                id="is-psl-checkbox"
+                name="is-psl-checkbox"
+                checked={isPSL}
+                label={t('Editor.tools.speed-edition.toggle-psl')}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                   let newExtension: SpeedSectionEntity['properties']['extensions'] = {
-                    lpv_sncf: null,
+                    psl_sncf: null,
                   };
                   if (e.target.checked) {
                     const firstRange = (entity.properties?.track_ranges || [])[0];
                     if (!firstRange) return;
                     newExtension = {
-                      lpv_sncf: initialEntity.properties?.extensions?.lpv_sncf || {
+                      psl_sncf: initialEntity.properties?.extensions?.psl_sncf || {
                         announcement: [],
                         r: [],
                         z: {
@@ -339,9 +339,9 @@ export const RangeEditionLeftPanel: FC = () => {
                 }}
               />
             </div>
-            {isLPV && (
-              <EditLPVSection
-                entity={entity as SpeedSectionLpvEntity}
+            {isPSL && (
+              <EditPSLSection
+                entity={entity as SpeedSectionPslEntity}
                 setState={
                   setState as (
                     stateOrReducer: PartialOrReducer<RangeEditionState<SpeedSectionEntity>>

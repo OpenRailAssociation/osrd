@@ -12,21 +12,21 @@ import { MAP_URL } from 'common/Map/const';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import { MapState } from 'reducers/map';
-import SNCF_LPV_Panels from './SNCF_LPV_PANELS';
 import { getSpeedSectionsTag, getSpeedSectionsName } from '../../SpeedLimits';
 import { Theme, SourceLayer, OmitLayer } from '../../../../../types';
+import SNCF_PSL_Signs from './SNCF_PSL_SIGNS';
 
-interface SNCF_LPVProps {
+interface SNCF_PSLProps {
   geomType: SourceLayer;
   colors: Theme;
   layerOrder?: number;
 }
 
-export function getLPVFilter(layersSettings: MapState['layersSettings']): FilterSpecification {
+export function getPSLFilter(layersSettings: MapState['layersSettings']): FilterSpecification {
   return ['any', ['has', 'speed_limit'], ['has', getSpeedSectionsTag(layersSettings)]];
 }
 
-export function getLPVSpeedValueLayerProps({
+export function getPSLSpeedValueLayerProps({
   colors,
   sourceTable,
   layersSettings,
@@ -59,8 +59,8 @@ export function getLPVSpeedValueLayerProps({
       'text-offset': [0, -1],
     },
     paint: {
-      'text-color': colors.lpv.text,
-      'text-halo-color': colors.lpv.halo,
+      'text-color': colors.psl.text,
+      'text-halo-color': colors.psl.halo,
       'text-halo-width': 1,
       'text-opacity': 1,
     },
@@ -71,7 +71,7 @@ export function getLPVSpeedValueLayerProps({
   return res;
 }
 
-export function getLPVSpeedLineBGLayerProps({
+export function getPSLSpeedLineBGLayerProps({
   sourceTable,
 }: {
   colors?: Theme;
@@ -100,7 +100,7 @@ export function getLPVSpeedLineBGLayerProps({
   return res;
 }
 
-export function getLPVSpeedLineLayerProps({
+export function getPSLSpeedLineLayerProps({
   sourceTable,
   layersSettings,
 }: {
@@ -153,67 +153,67 @@ export function getLPVSpeedLineLayerProps({
   return res;
 }
 
-export default function SNCF_LPV(props: SNCF_LPVProps) {
+export default function SNCF_PSL(props: SNCF_PSLProps) {
   const { t } = useTranslation('map-settings');
   const { layersSettings } = useSelector((state: RootState) => state.map);
   const infraID = useSelector(getInfraID);
   const { geomType, colors, layerOrder } = props;
 
-  const speedSectionFilter = getLPVFilter(layersSettings);
+  const speedSectionFilter = getPSLFilter(layersSettings);
 
   const speedValueParams = {
-    ...getLPVSpeedValueLayerProps({
+    ...getPSLSpeedValueLayerProps({
       t,
       colors,
       layersSettings,
-      sourceTable: 'lpv',
+      sourceTable: 'psl',
     }),
     filter: speedSectionFilter,
   };
 
   const speedLineBGParams = {
-    ...getLPVSpeedLineBGLayerProps({
+    ...getPSLSpeedLineBGLayerProps({
       colors,
       layersSettings,
-      sourceTable: 'lpv',
+      sourceTable: 'psl',
     }),
     filter: speedSectionFilter,
   };
 
   const speedLineParams = {
-    ...getLPVSpeedLineLayerProps({
+    ...getPSLSpeedLineLayerProps({
       colors,
       layersSettings,
-      sourceTable: 'lpv',
+      sourceTable: 'psl',
     }),
     filter: speedSectionFilter,
   };
 
-  if (layersSettings.sncf_lpv) {
+  if (layersSettings.sncf_psl) {
     return (
       <>
         <Source
-          id={`osrd_sncf_lpv_${geomType}`}
+          id={`osrd_sncf_psl_${geomType}`}
           type="vector"
-          url={`${MAP_URL}/layer/lpv/mvt/${geomType}/?infra=${infraID}`}
+          url={`${MAP_URL}/layer/psl/mvt/${geomType}/?infra=${infraID}`}
         >
           <OrderedLayer
             {...speedValueParams}
-            id={`chartis/osrd_sncf_lpv_value/${geomType}`}
+            id={`chartis/osrd_sncf_psl_value/${geomType}`}
             layerOrder={layerOrder}
           />
           <OrderedLayer
             {...speedLineBGParams}
-            id={`chartis/osrd_sncf_lpv_colors_bg/${geomType}`}
+            id={`chartis/osrd_sncf_psl_colors_bg/${geomType}`}
             layerOrder={layerOrder}
           />
           <OrderedLayer
             {...speedLineParams}
-            id={`chartis/osrd_sncf_lpv_colors/${geomType}`}
+            id={`chartis/osrd_sncf_psl_colors/${geomType}`}
             layerOrder={layerOrder}
           />
         </Source>
-        <SNCF_LPV_Panels geomType={geomType} layerOrder={layerOrder} />
+        <SNCF_PSL_Signs geomType={geomType} layerOrder={layerOrder} />
       </>
     );
   }

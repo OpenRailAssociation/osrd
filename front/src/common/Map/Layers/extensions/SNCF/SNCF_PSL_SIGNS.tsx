@@ -9,19 +9,19 @@ import { getMap } from 'reducers/map/selectors';
 import OrderedLayer from '../../OrderedLayer';
 import { LayerContext } from '../../types';
 
-interface SNCF_LPV_PanelsProps {
+interface SNCF_PSL_SignsProps {
   geomType: SourceLayer;
   layerOrder?: number;
 }
 
-export function getLPVPanelsLayerProps({
+export function getPSLSignsLayerProps({
   sourceTable,
   prefix,
   sourceLayer,
 }: Pick<LayerContext, 'sourceTable' | 'prefix' | 'sourceLayer'>): Omit<SymbolLayer, 'source'> {
   const angleName = sourceLayer === 'sch' ? 'angle_sch' : 'angle_geo';
   const res: Omit<SymbolLayer, 'source'> = {
-    id: 'panelParams',
+    id: 'signParams',
     type: 'symbol',
     minzoom: 11,
     paint: {},
@@ -65,7 +65,7 @@ export function getLPVPanelsLayerProps({
   return res;
 }
 
-export function getLPVPanelsMastLayerProps({
+export function getPSLSignsMastLayerProps({
   sourceTable,
   sourceLayer,
 }: Pick<LayerContext, 'sourceTable' | 'sourceLayer'>): OmitLayer<SymbolLayer> {
@@ -98,7 +98,7 @@ export function getLPVPanelsMastLayerProps({
   return res;
 }
 
-export default function SNCF_LPV_Panels(props: SNCF_LPV_PanelsProps) {
+export default function SNCF_PSL_Signs(props: SNCF_PSL_SignsProps) {
   const infraID = useSelector(getInfraID);
   const { geomType, layerOrder } = props;
 
@@ -110,25 +110,25 @@ export default function SNCF_LPV_Panels(props: SNCF_LPV_PanelsProps) {
     prefix = geomType === 'sch' ? 'SCH ' : '';
   }
 
-  const panelsParams: LayerProps = getLPVPanelsLayerProps({
-    sourceTable: 'lpv_panels',
+  const signsParams: LayerProps = getPSLSignsLayerProps({
+    sourceTable: 'psl_signs',
     sourceLayer: geomType,
     prefix,
   });
 
-  const mastsParams: LayerProps = getLPVPanelsMastLayerProps({
-    sourceTable: 'lpv_panels',
+  const mastsParams: LayerProps = getPSLSignsMastLayerProps({
+    sourceTable: 'psl_signs',
     sourceLayer: geomType,
   });
 
   return (
     <Source
-      id={`osrd_sncf_lpv_panels_${geomType}`}
+      id={`osrd_sncf_psl_signs_${geomType}`}
       type="vector"
-      url={`${MAP_URL}/layer/lpv_panels/mvt/${geomType}/?infra=${infraID}`}
+      url={`${MAP_URL}/layer/psl_signs/mvt/${geomType}/?infra=${infraID}`}
     >
       <OrderedLayer {...mastsParams} layerOrder={layerOrder} />
-      <OrderedLayer {...panelsParams} layerOrder={layerOrder} />
+      <OrderedLayer {...signsParams} layerOrder={layerOrder} />
     </Source>
   );
 }

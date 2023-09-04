@@ -11,7 +11,7 @@ export const LIGHT_SIGNALS = [
   'CARRE',
 ];
 
-export const SIGNALS_PANELS = [
+export const SIGNALS_SIGNS = [
   'Aig M',
   'Aig T',
   'APPROCHETS',
@@ -201,7 +201,7 @@ export const SYMBOLS_TO_LAYERS: Record<SignalType, SignalType> = ALL_SIGNAL_LAYE
   {}
 );
 
-export const PANELS_STOPS: SignalType[] = [
+export const SIGNS_STOPS: SignalType[] = [
   'ARRET VOY',
   'ARRET',
   'CHEVRON',
@@ -216,7 +216,7 @@ export const DYNAMIC_LIGHTS_ATT: SignalType[] = ['CARRE A', 'S A'];
 
 export const DYNAMIC_LIGHTS_STOP: SignalType[] = ['CARRE STOP', 'S STOP'];
 
-export const PANELS_TIVS: SignalType[] = [
+export const SIGNS_TIVS: SignalType[] = [
   'TIV A TRAM',
   'TIV D FIXE',
   'TIV D MOB',

@@ -21,7 +21,7 @@ export type TrackRangeExtremityFeature = Feature<
     speedSectionRangeIndex: number;
   }
 >;
-export type LpvPanelFeature = Feature<
+export type PslSignFeature = Feature<
   Point,
   {
     angle_sch: number;
@@ -31,9 +31,9 @@ export type LpvPanelFeature = Feature<
     track: string;
     type: string;
     value: string | null;
-    speedSectionItemType: 'LPVPanel';
-    speedSectionPanelIndex: number;
-    speedSectionPanelType: LPV_PANEL_TYPE;
+    speedSectionItemType: 'PSLSign';
+    speedSectionSignIndex: number;
+    speedSectionSignType: PSL_SIGN_TYPE;
   }
 >;
 
@@ -54,12 +54,12 @@ export type HoveredRangeState = {
   type?: undefined;
   id?: undefined;
 };
-export type HoveredPanelState = {
-  speedSectionItemType: 'LPVPanel';
+export type HoveredSignState = {
+  speedSectionItemType: 'PSLSign';
   track: TrackSectionEntity;
   position: Position;
-  panelIndex: number;
-  panelType: string;
+  signIndex: number;
+  signType: string;
   // (trick to help dealing with heterogeneous types)
   type?: undefined;
   id?: undefined;
@@ -70,16 +70,16 @@ export type TrackState =
   | { type: 'error' }
   | { type: 'success'; track: TrackSectionEntity };
 
-export enum LPV_PANEL_TYPES {
+export enum PSL_SIGN_TYPES {
   Z = 'z',
   R = 'r',
   ANNOUNCEMENT = 'announcement',
 }
-export type LPV_PANEL_TYPE = LPV_PANEL_TYPES.Z | LPV_PANEL_TYPES.R | LPV_PANEL_TYPES.ANNOUNCEMENT;
+export type PSL_SIGN_TYPE = PSL_SIGN_TYPES.Z | PSL_SIGN_TYPES.R | PSL_SIGN_TYPES.ANNOUNCEMENT;
 
-export type LpvPanelInformation =
-  | { panelType: LPV_PANEL_TYPES.ANNOUNCEMENT | LPV_PANEL_TYPES.R; panelIndex: number }
-  | { panelType: LPV_PANEL_TYPES.Z };
+export type PslSignInformation =
+  | { signType: PSL_SIGN_TYPES.ANNOUNCEMENT | PSL_SIGN_TYPES.R; signIndex: number }
+  | { signType: PSL_SIGN_TYPES.Z };
 
 export type RangeEditionState<E extends EditorEntity> = CommonToolState & {
   initialEntity: E;
@@ -88,11 +88,11 @@ export type RangeEditionState<E extends EditorEntity> = CommonToolState & {
     | null
     | HoveredExtremityState
     | HoveredRangeState
-    | HoveredPanelState
+    | HoveredSignState
     | (NonNullable<CommonToolState['hovered']> & { speedSectionItemType?: undefined });
   interactionState:
     | { type: 'idle' }
     | { type: 'moveRangeExtremity'; rangeIndex: number; extremity: 'BEGIN' | 'END' }
-    | ({ type: 'movePanel' } & LpvPanelInformation);
+    | ({ type: 'moveSign' } & PslSignInformation);
   trackSectionsCache: Record<string, TrackState>;
 };

@@ -32,8 +32,8 @@ const OSRD_LAYER_ORDERS: Record<LayerType, number> = {
   track_sections: LAYER_GROUPS_ORDER[LAYERS.TRACKS_SCHEMATIC.GROUP],
   // Unused:
   catenaries: 0,
-  lpv: 0,
-  lpv_panels: 0,
+  psl: 0,
+  psl_signs: 0,
   routes: 0,
   speed_sections: 0,
   errors: 0,
