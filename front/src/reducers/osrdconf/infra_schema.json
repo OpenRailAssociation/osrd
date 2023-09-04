@@ -657,72 +657,6 @@
             "title": "OperationalPointSncfExtension",
             "type": "object"
         },
-        "Panel": {
-            "description": "This class is used to define panels.\n    This is a physical, punctual, cosmetic object.\n    ",
-            "properties": {
-                "angle_geo": {
-                    "default": 0,
-                    "description": "Geographic angle in degrees",
-                    "title": "Angle Geo",
-                    "type": "number"
-                },
-                "angle_sch": {
-                    "default": 0,
-                    "description": "Schematic angle in degrees",
-                    "title": "Angle Sch",
-                    "type": "number"
-                },
-                "position": {
-                    "description": "Offset of the point in meters to the beginning of the track section",
-                    "minimum": 0,
-                    "title": "Position",
-                    "type": "number"
-                },
-                "side": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/Side"
-                        }
-                    ],
-                    "default": "CENTER",
-                    "description": "Side of the panel on the track"
-                },
-                "track": {
-                    "description": "Reference to the track section on which the object is located",
-                    "maxLength": 255,
-                    "minLength": 1,
-                    "title": "Track",
-                    "type": "string"
-                },
-                "type": {
-                    "description": "Precise the type of the panel",
-                    "minLength": 1,
-                    "title": "Type",
-                    "type": "string"
-                },
-                "value": {
-                    "anyOf": [
-                        {
-                            "minLength": 1,
-                            "type": "string"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "default": null,
-                    "description": "If the panel is an announcement, precise the value(s)",
-                    "title": "Value"
-                }
-            },
-            "required": [
-                "track",
-                "position",
-                "type"
-            ],
-            "title": "Panel",
-            "type": "object"
-        },
         "Route": {
             "description": "\n    This class is used to describe routes on the infrastructure.\n    ",
             "properties": {
@@ -818,6 +752,72 @@
             ],
             "title": "Side",
             "type": "string"
+        },
+        "Sign": {
+            "description": "This class is used to define signs.\n    This is a physical, ponctual, cosmetic object.\n    ",
+            "properties": {
+                "angle_geo": {
+                    "default": 0,
+                    "description": "Geographic angle in degrees",
+                    "title": "Angle Geo",
+                    "type": "number"
+                },
+                "angle_sch": {
+                    "default": 0,
+                    "description": "Schematic angle in degrees",
+                    "title": "Angle Sch",
+                    "type": "number"
+                },
+                "position": {
+                    "description": "Offset of the point in meters to the beginning of the track section",
+                    "minimum": 0,
+                    "title": "Position",
+                    "type": "number"
+                },
+                "side": {
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/Side"
+                        }
+                    ],
+                    "default": "CENTER",
+                    "description": "Side of the sign on the track"
+                },
+                "track": {
+                    "description": "Reference to the track section on which the object is located",
+                    "maxLength": 255,
+                    "minLength": 1,
+                    "title": "Track",
+                    "type": "string"
+                },
+                "type": {
+                    "description": "Precise the type of the sign",
+                    "minLength": 1,
+                    "title": "Type",
+                    "type": "string"
+                },
+                "value": {
+                    "anyOf": [
+                        {
+                            "minLength": 1,
+                            "type": "string"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "If the sign is an announcement, precise the value(s)",
+                    "title": "Value"
+                }
+            },
+            "required": [
+                "track",
+                "position",
+                "type"
+            ],
+            "title": "Sign",
+            "type": "object"
         },
         "Signal": {
             "description": "This class is used to describe the signal.\n    A signal is characterized by its id and its corresponding track.\n    By default, the signal is located at the center of the track.\n    ",
@@ -1087,7 +1087,7 @@
         },
         "SpeedSectionExtensions": {
             "properties": {
-                "lpv_sncf": {
+                "psl_sncf": {
                     "allOf": [
                         {
                             "$ref": "#/$defs/SpeedSectionPslSncfExtension"
@@ -1104,15 +1104,15 @@
                 "announcement": {
                     "description": "Precise the value(s) of the speed",
                     "items": {
-                        "$ref": "#/$defs/Panel"
+                        "$ref": "#/$defs/Sign"
                     },
                     "title": "Announcement",
                     "type": "array"
                 },
                 "r": {
-                    "description": "End of the lpv speed section",
+                    "description": "End of the psl speed section",
                     "items": {
-                        "$ref": "#/$defs/Panel"
+                        "$ref": "#/$defs/Sign"
                     },
                     "title": "R",
                     "type": "array"
@@ -1120,10 +1120,10 @@
                 "z": {
                     "allOf": [
                         {
-                            "$ref": "#/$defs/Panel"
+                            "$ref": "#/$defs/Sign"
                         }
                     ],
-                    "description": "Beginning of the lpv speed section"
+                    "description": "Beginning of the psl speed section"
                 }
             },
             "required": [

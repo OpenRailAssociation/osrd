@@ -1,5 +1,5 @@
 import { IoMdAddCircleOutline } from 'react-icons/io';
-import { CatenaryEntity, SpeedSectionEntity, SpeedSectionLpvEntity } from 'types';
+import { CatenaryEntity, SpeedSectionEntity, SpeedSectionPslEntity } from 'types';
 import { GiElectric } from 'react-icons/gi';
 import getRangeEditionTool from './tool-factory';
 import { getNewCatenary, getNewSpeedSection } from './utils';
@@ -10,7 +10,7 @@ import {
 } from './speedSection/SpeedSectionEditionLayers';
 import { CatenaryEditionLayers, CatenaryMessages } from './catenary/CatenaryEditionLayers';
 
-export const SpeedEditionTool = getRangeEditionTool<SpeedSectionEntity | SpeedSectionLpvEntity>({
+export const SpeedEditionTool = getRangeEditionTool<SpeedSectionEntity | SpeedSectionPslEntity>({
   id: 'SpeedSection',
   icon: IoMdAddCircleOutline,
   getNewEntity: getNewSpeedSection,

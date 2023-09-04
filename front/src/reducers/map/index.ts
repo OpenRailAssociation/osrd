@@ -68,7 +68,7 @@ export interface MapState {
     operationalpoints: boolean;
     routes: boolean;
     signalingtype: boolean;
-    sncf_lpv: boolean;
+    sncf_psl: boolean;
     speedlimittag: unknown;
     speedlimits: boolean;
     switches: boolean;
@@ -118,7 +118,7 @@ export const initialState: MapState = {
     operationalpoints: false,
     routes: false,
     signalingtype: true,
-    sncf_lpv: false,
+    sncf_psl: false,
     speedlimittag: undefined,
     speedlimits: false,
     switches: false,

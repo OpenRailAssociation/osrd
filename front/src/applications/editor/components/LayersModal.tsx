@@ -10,7 +10,7 @@ import switchesIcon from 'assets/pictures/layersicons/switches.svg';
 import detectorsIcon from 'assets/pictures/layersicons/detectors.svg';
 import trackSectionsIcon from 'assets/pictures/layersicons/layer_adv.svg';
 import signalsIcon from 'assets/pictures/layersicons/layer_signal.svg';
-import lpvsIcon from 'assets/pictures/layersicons/layer_tivs.svg';
+import pslsIcon from 'assets/pictures/layersicons/layer_tivs.svg';
 
 import SwitchSNCF from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
 import { useModal, Modal } from 'common/BootstrapSNCF/ModalSNCF';
@@ -31,7 +31,7 @@ const LAYERS: Array<{ layers: LayerType[]; icon: string | JSX.Element }> = [
   { layers: ['detectors'], icon: detectorsIcon },
   { layers: ['switches'], icon: switchesIcon },
   { layers: ['speed_sections'], icon: <MdSpeed style={{ width: '20px' }} className="mx-2" /> },
-  { layers: ['lpv', 'lpv_panels'], icon: lpvsIcon },
+  { layers: ['psl', 'psl_signs'], icon: pslsIcon },
   { layers: ['catenaries'], icon: <GiElectric style={{ width: '20px' }} className="mx-2" /> },
   {
     layers: ['errors'],
@@ -69,7 +69,7 @@ const LayersModal: FC<LayersModalProps> = ({
     () =>
       selection
         ? mapKeys(
-            // TODO: ATM we don't know if a selected speed section should be considered as SpeedSection or LPV,
+            // TODO: ATM we don't know if a selected speed section should be considered as SpeedSection or PSL,
             // which are two different layers.
             mapValues(groupBy(selection, 'objType'), (values) => values.length),
             (_values, key) => EDITOAST_TO_LAYER_DICT[key as EditoastType]

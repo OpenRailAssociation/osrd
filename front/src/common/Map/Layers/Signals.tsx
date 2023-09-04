@@ -10,8 +10,8 @@ import { MAP_URL } from 'common/Map/const';
 import {
   ALL_SIGNAL_LAYERS,
   LIGHT_SIGNALS,
-  PANELS_STOPS,
-  PANELS_TIVS,
+  SIGNS_STOPS,
+  SIGNS_TIVS,
 } from 'common/Map/Consts/SignalsNames';
 
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
@@ -54,7 +54,7 @@ function Signals(props: PlatformProps) {
   const [greenSignalsIds, setGreenSignalsIds] = useState<string[]>([]);
 
   const dynamicLayersIds = LIGHT_SIGNALS.map(
-    (panel) => `chartis/signal/${sourceLayer}/${panel}`
+    (sign) => `chartis/signal/${sourceLayer}/${sign}`
   ).filter((dynamicLayerId) => mapRef?.current?.getMap().getLayer(dynamicLayerId)); // We need the layers concerned by eventual changes of signals
 
   /* EveryTime the viewPort change or the timePosition or the simulation change,
@@ -122,10 +122,10 @@ function Signals(props: PlatformProps) {
       return ALL_SIGNAL_LAYERS;
     }
     if (signalsSettings.stops) {
-      signalsList = signalsList.concat(PANELS_STOPS);
+      signalsList = signalsList.concat(SIGNS_STOPS);
     }
     if (signalsSettings.tivs) {
-      signalsList = signalsList.concat(PANELS_TIVS);
+      signalsList = signalsList.concat(SIGNS_TIVS);
     }
     if (signalsSettings.lights) {
       signalsList = signalsList.concat(LIGHT_SIGNALS);

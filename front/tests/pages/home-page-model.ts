@@ -47,7 +47,7 @@ export class PlaywrightHomePage {
     this.getViteOverlay = page.locator('vite-plugin-checker-error-overlay');
   }
 
-  // Completly remove VITE button & panel
+  // Completly remove VITE button & sign
   async removeViteOverlay() {
     if ((await this.getViteOverlay.count()) > 0) {
       await this.getViteOverlay.evaluate((node) => node.setAttribute('style', 'display:none;'));

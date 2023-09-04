@@ -38,7 +38,7 @@ import colors from 'common/Map/Consts/colors';
 import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import 'common/Map/Map.scss';
-import SNCF_LPV from 'common/Map/Layers/extensions/SNCF/SNCF_LPV';
+import SNCF_PSL from 'common/Map/Layers/extensions/SNCF/SNCF_PSL';
 import IGN_BD_ORTHO from 'common/Map/Layers/IGN_BD_ORTHO';
 import IGN_SCAN25 from 'common/Map/Layers/IGN_SCAN25';
 import IGN_CADASTRE from 'common/Map/Layers/IGN_CADASTRE';
@@ -272,7 +272,7 @@ function Map() {
               colors={colors[mapStyle]}
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS.GROUP]}
             />
-            <SNCF_LPV
+            <SNCF_PSL
               geomType="geo"
               colors={colors[mapStyle]}
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS.GROUP]}
@@ -337,7 +337,7 @@ function Map() {
               colors={colors[mapStyle]}
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS.GROUP]}
             />
-            <SNCF_LPV
+            <SNCF_PSL
               geomType="sch"
               colors={colors[mapStyle]}
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS.GROUP]}
