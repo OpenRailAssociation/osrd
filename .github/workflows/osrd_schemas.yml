@@ -23,7 +23,7 @@ jobs:
     name: Linter railjson schema
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install poetry
         run: pipx install poetry
       - name: Set up Python
@@ -58,7 +58,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
         - name: Checkout
-          uses: actions/checkout@v3
+          uses: actions/checkout@v4
           with:
             # run the CI on the actual latest commit of the PR, not the attempted merge
             ref: ${{ github.event.pull_request.head.sha }}
