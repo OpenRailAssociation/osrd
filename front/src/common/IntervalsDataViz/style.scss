@@ -10,6 +10,7 @@ $tooltip-padding: 1em;
 $dataviz-height: 7em;
 $scaling-height: 1px;
 $scaling-y-width: 1.5em;
+$spacer-height: 3px;
 $resize-width: 3px;
 
 // lighten ~ mix with white function
@@ -26,6 +27,19 @@ $resize-width: 3px;
   -webkit-user-select: none;
   -ms-user-select: none;
   user-select: none;
+}
+
+@mixin horizontal-row {
+  border: 0 dotted;
+  border-left-width: 1px;
+  border-right-width: 1px;
+
+  &.start-visible {
+    border-left-style: solid;
+  }
+  &.end-visible {
+    border-right-style: solid;
+  }
 }
 
 .linear-metadata {
@@ -79,8 +93,6 @@ $resize-width: 3px;
         }
       }
 
-
-
       .tools {
         display: flex;
         flex-direction: column;
@@ -122,20 +134,10 @@ $resize-width: 3px;
 
         .data {
           @include unselectable;
+          @include horizontal-row;
           display: flex;
           flex-wrap: nowrap;
-          flex-direction: row;
           position: relative;
-          border: 0 dotted;
-          border-left-width: 1px;
-          border-right-width: 1px;
-
-          &.start-visible {
-            border-left-style: solid;
-          }
-          &.end-visible {
-            border-right-style: solid;
-          }
 
           &.dragging {
             cursor: grabbing;
@@ -217,6 +219,52 @@ $resize-width: 3px;
               font-size: medium;
               padding-left: 3px;
               color: var(--coolgray11);
+            }
+          }
+        }
+
+        .spacer {
+          @include horizontal-row;
+          height: $spacer-height;
+        }
+
+        .additional-data {
+          @include horizontal-row;
+          display: flex;
+          background: mixw($color, 0.9);
+
+          div.item {
+            background: mixw($color, 0.9);
+            display: flex;
+
+            div.value {
+              @include unselectable;
+              width: calc(100% - $resize-width);
+              flex-grow: 1;
+              text-align: center;
+              white-space: nowrap;
+              span {
+                display: block;
+                font-size: 0.8em;
+              }
+
+              &.no-data {
+                background-color: mixw($color, 0.9);
+                background-image: repeating-linear-gradient(
+                  45deg,
+                  $color-nodata,
+                  $color-nodata 1px,
+                  transparent 2px,
+                  transparent 10px
+                );
+              }
+            }
+
+            div.resize {
+              width: 1px;
+              height: 100%;
+              z-index: 2;
+              background-color: #fff;
             }
           }
         }

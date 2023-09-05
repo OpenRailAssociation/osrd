@@ -17,8 +17,9 @@ export const NO_POWER_RESTRICTION = 'NO_POWER_RESTRICTION';
 const DEFAULT_SEGMENT_LENGTH = 1000;
 
 interface PowerRestrictionsSelectorProps {
-  rollingStock: RollingStock;
   pathCatenaryRanges: CatenaryRange[];
+  rollingStockPowerRestrictions: RollingStock['power_restrictions'];
+  rollingStockModes: RollingStock['effort_curves']['modes'];
 }
 
 /**
@@ -27,15 +28,16 @@ interface PowerRestrictionsSelectorProps {
  * ex: { "1500": ["C1US", "C2US"], "2500": ["M1US"], "thermal": []}
  */
 const getRollingStockPowerRestrictionsByMode = (
-  rollingStockToClean: RollingStock
+  rollingStockModes: RollingStock['effort_curves']['modes']
 ): { [mode: string]: string[] } => {
-  const curvesMode = rollingStockToClean.effort_curves.modes;
-  const curvesModesKey = Object.keys(curvesMode);
+  const curvesModesKey = Object.keys(rollingStockModes);
 
   return reduce(
     curvesModesKey,
     (result, mode) => {
-      const powerCodes = curvesMode[mode].curves.map((curve) => curve.cond?.power_restriction_code);
+      const powerCodes = rollingStockModes[mode].curves.map(
+        (curve) => curve.cond?.power_restriction_code
+      );
       compact(uniq(powerCodes));
       return {
         ...result,
@@ -47,8 +49,9 @@ const getRollingStockPowerRestrictionsByMode = (
 };
 
 const PowerRestrictionsSelector = ({
-  rollingStock,
   pathCatenaryRanges,
+  rollingStockModes,
+  rollingStockPowerRestrictions,
 }: PowerRestrictionsSelectorProps) => {
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const dispatch = useDispatch();
@@ -59,7 +62,7 @@ const PowerRestrictionsSelector = ({
     return lastPathSegment ? lastPathSegment.end : DEFAULT_SEGMENT_LENGTH;
   }, [pathCatenaryRanges]);
 
-  /** Compute the list of points where the electrification changes on path */
+  /** Compute the list of points where the electrification changes on path to give them to the intervals editor as operationalPoints */
   const electrificationChangePoints = useMemo(() => {
     const specialPoints = [
       ...pathCatenaryRanges.map((catenaryRange) => ({
@@ -69,6 +72,22 @@ const PowerRestrictionsSelector = ({
     specialPoints.pop();
     return specialPoints;
   }, [pathCatenaryRanges]);
+
+  /** Format the catenary ranges to display them on the interval editor */
+  const formattedPathCatenaryRanges = useMemo(
+    () =>
+      pathCatenaryRanges.map((catenaryRange) => ({
+        begin: catenaryRange.begin,
+        end: catenaryRange.end,
+        value: `${catenaryRange.mode}V`,
+      })),
+    [pathCatenaryRanges]
+  );
+
+  const powerRestrictionsByMode = useMemo(
+    () => getRollingStockPowerRestrictionsByMode(rollingStockModes),
+    [rollingStockModes]
+  );
 
   /** Set up the powerRestrictionRanges with the electrificationChangePoints */
   useEffect(() => {
@@ -100,11 +119,8 @@ const PowerRestrictionsSelector = ({
 
   /** List of options of the rollingStock's power restrictions + option noPowerRestriction */
   const powerRestrictionOptions = useMemo(
-    () =>
-      !isEmpty(rollingStock.power_restrictions)
-        ? [NO_POWER_RESTRICTION, ...Object.keys(rollingStock.power_restrictions)]
-        : [],
-    [rollingStock]
+    () => [NO_POWER_RESTRICTION, ...Object.keys(rollingStockPowerRestrictions)],
+    [rollingStockPowerRestrictions]
   );
 
   const editPowerRestrictionRanges = (newPowerRestrictionRanges: IntervalItem[]) => {
@@ -114,8 +130,6 @@ const PowerRestrictionsSelector = ({
   /** Check the compatibility between the powerRestrictionRanges and the catenaries */
   useEffect(() => {
     if (!isEmpty(pathCatenaryRanges) && !isEmpty(powerRestrictionRanges)) {
-      const powerRestrictionsByMode = getRollingStockPowerRestrictionsByMode(rollingStock);
-
       powerRestrictionRanges.forEach((powerRestrictionRange) => {
         // find path ranges crossed or included in the power restriction range
         pathCatenaryRanges.forEach((pathCatenaryRange) => {
@@ -163,25 +177,26 @@ const PowerRestrictionsSelector = ({
     }
   }, [powerRestrictionRanges]);
 
-  return powerRestrictionOptions.length > 0 ? (
+  return (
     <div className="osrd-config-item mb-2">
       <div className="osrd-config-item-container text-muted">
         <img width="32px" className="mr-2" src={icon} alt="PowerRestrictionIcon" />
         <span>{t('powerRestriction')}</span>
         <p className="mb-1 mt-1">{t('powerRestrictionExplanationText')}</p>
         <IntervalsEditor
+          additionalData={formattedPathCatenaryRanges}
           intervalType={INTERVAL_TYPES.SELECT}
-          selectOptions={powerRestrictionOptions}
           data={powerRestrictionRanges}
           defaultValue={NO_POWER_RESTRICTION}
           emptyValue={NO_POWER_RESTRICTION}
           operationalPoints={electrificationChangePoints}
+          selectOptions={powerRestrictionOptions}
           setData={editPowerRestrictionRanges}
           totalLength={pathLength}
         />
       </div>
     </div>
-  ) : null;
+  );
 };
 
 export default PowerRestrictionsSelector;

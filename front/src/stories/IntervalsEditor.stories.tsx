@@ -6,6 +6,7 @@ import { LinearMetadataItem, OperationalPoint } from 'common/IntervalsDataViz/ty
 import { notEmpty } from 'common/IntervalsDataViz/utils';
 import IntervalsEditor from 'common/IntervalsEditor/IntervalsEditor';
 import {
+  AdditionalDataItem,
   INTERVAL_TYPES,
   IntervalItem,
   IntervalsEditorToolsConfig,
@@ -16,6 +17,13 @@ const operationalPoints: OperationalPoint[] = [
   { id: 'b', position: 10000, name: 'b' },
   { id: 'c', position: 22000, name: 'c' },
   { id: 'd', position: 25000, name: 'd' },
+];
+
+const additionalData: AdditionalDataItem[] = [
+  { begin: 0, end: 10000, value: '25000V' },
+  { begin: 10000, end: 20000, value: '' },
+  { begin: 20000, end: 22000, value: '1500V' },
+  { begin: 22000, end: 25000, value: '25000V' },
 ];
 
 const dataNumber = [
@@ -93,6 +101,7 @@ const IntervalsEditorWrapper: React.FC<IntervalsEditorProps> = (props) => {
       return (
         <IntervalsEditor
           {...props}
+          additionalData={additionalData}
           data={data as LinearMetadataItem<{ value: number | string }>[]}
           intervalType={intervalType}
           operationalPoints={operationalPoints}
