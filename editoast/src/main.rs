@@ -23,6 +23,7 @@ use crate::schema::RailJson;
 use crate::views::infra::InfraForm;
 use crate::views::OpenApiRoot;
 use actix_cors::Cors;
+use actix_web::dev::{Service, ServiceRequest};
 use actix_web::middleware::{Condition, Logger, NormalizePath};
 use actix_web::web::{scope, Data, JsonConfig, PayloadConfig};
 use actix_web::{App, HttpServer};
@@ -118,6 +119,21 @@ fn init_sentry(args: &RunserverArgs) -> Option<ClientInitGuard> {
     }
 }
 
+fn log_received_request(req: &ServiceRequest) {
+    let request_line = if req.query_string().is_empty() {
+        format!("{} {} {:?}", req.method(), req.path(), req.version())
+    } else {
+        format!(
+            "{} {}?{} {:?}",
+            req.method(),
+            req.path(),
+            req.query_string(),
+            req.version()
+        )
+    };
+    log::info!(target: "actix_logger", "{} RECEIVED", request_line);
+}
+
 /// Create and run the server
 async fn runserver(
     args: RunserverArgs,
@@ -162,6 +178,8 @@ async fn runserver(
             args.backend_token.clone(),
         );
 
+        let actix_logger_format = r#"%r STATUS: %s in %T s ("%{Referer}i" "%{User-Agent}i")"#;
+
         App::new()
             .wrap(Condition::new(
                 is_sentry_initialized,
@@ -169,7 +187,11 @@ async fn runserver(
             ))
             .wrap(cors)
             .wrap(NormalizePath::trim())
-            .wrap(Logger::default())
+            .wrap_fn(|req, srv| {
+                log_received_request(&req);
+                srv.call(req)
+            })
+            .wrap(Logger::new(actix_logger_format).log_target("actix_logger"))
             .app_data(json_cfg.clone())
             .app_data(payload_config.clone())
             .app_data(Data::new(pool.clone()))
