@@ -47,7 +47,7 @@ const WarpedMap: FC<{
   // Data to display on the map (must be transformed already):
   osrdData: Partial<Record<LayerType, FeatureCollection>>;
   osmData: Record<string, FeatureCollection>;
-  trains?: (TrainPosition & { isSelected?: true })[];
+  trains?: (TrainPosition & { isSelected?: boolean })[];
   itinerary?: Feature<LineString>;
 }> = ({ bbox, osrdLayers, osrdData, osmData, trains, itinerary }) => {
   const prefix = 'warped/';

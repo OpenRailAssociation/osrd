@@ -7,7 +7,7 @@ import lineIntersect from '@turf/line-intersect';
 import lineSlice from '@turf/line-slice';
 import WebMercatorViewport from 'viewport-mercator-project';
 import { ViewState } from 'react-map-gl/maplibre';
-import { BBox, Coord, featureCollection } from '@turf/helpers';
+import { BBox, Coord, featureCollection, lineString } from '@turf/helpers';
 import {
   Feature,
   FeatureCollection,
@@ -90,7 +90,7 @@ export function zoneToBBox(zone: Zone): BBox {
 export function intersectPolygonLine(
   poly: Feature<Polygon>,
   line: Feature<LineString | MultiLineString>
-): Feature<MultiLineString> | null {
+): Feature<LineString | MultiLineString> | null {
   const lines: Position[][] =
     line.geometry.type === 'MultiLineString'
       ? line.geometry.coordinates
@@ -130,7 +130,11 @@ export function intersectPolygonLine(
     });
   });
 
-  return res.geometry.coordinates.length ? res : null;
+  if (res.geometry.coordinates.length > 1) return res;
+  if (res.geometry.coordinates.length === 1)
+    return lineString(res.geometry.coordinates[0], res.properties);
+
+  return null;
 }
 
 /**
@@ -365,8 +369,8 @@ export function getMapMouseEventNearestFeature(
           case 'MultiLineString': {
             const points: FeatureCollection<Point> = {
               type: 'FeatureCollection',
-              features: feature.geometry.coordinates.map((lineString) =>
-                nearestPointOnLine({ type: 'LineString', coordinates: lineString }, coord)
+              features: feature.geometry.coordinates.map((coordinates) =>
+                nearestPointOnLine({ type: 'LineString', coordinates }, coord)
               ),
             };
             const pt = nearestPoint(coord, points);
