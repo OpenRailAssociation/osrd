@@ -102,6 +102,42 @@ public class PathfindingResultConverterTest {
         assertEquals("South_West_station", waypoints.get(1).id);
     }
 
+    /** Test the waypoints on a path that starts and ends on the same block. This can happen in rare cases with loops
+     * and can easily cause errors. The path isn't continuous in this test, we only check the waypoint offsets */
+    @Test
+    public void testPathWaypointOnLoop() {
+        var infra = Helpers.getSmallInfra();
+        var blocks = getBlocksOnRoutes(infra, List.of(
+                "rt.buffer_stop.0->DA2"
+        ));
+        assert blocks.size() == 1;
+        var blockId = blocks.get(0);
+        var blockLength = infra.blockInfra().getBlockLength(blockId);
+        var ranges = List.of(
+                new Pathfinding.EdgeRange<>(blockId, 600_000, blockLength),
+                new Pathfinding.EdgeRange<>(blockId, 0, 200_000)
+        );
+        var rawResult = new Pathfinding.Result<>(ranges, List.of(
+                new Pathfinding.EdgeLocation<>(ranges.get(0).edge(), 600_000),
+                new Pathfinding.EdgeLocation<>(ranges.get(0).edge(), 200_000)
+        ));
+        var path = makePath(infra.rawInfra(), infra.blockInfra(), ranges);
+        var waypoints = makePathWaypoint(
+                path, rawResult, infra.rawInfra(), infra.blockInfra()
+        );
+
+        var userDefinedWaypoints = waypoints.stream()
+                .filter(wp -> !wp.suggestion)
+                .toList();
+
+        assertEquals(2, userDefinedWaypoints.size());
+
+        assertEquals("TA0", userDefinedWaypoints.get(0).location.trackSection);
+        assertEquals(600.0, userDefinedWaypoints.get(0).location.offset, 1e-5);
+        assertEquals("TA0", userDefinedWaypoints.get(1).location.trackSection);
+        assertEquals(200.0, userDefinedWaypoints.get(1).location.offset, 1e-5);
+    }
+
     private static void checkBlocks(
             FullInfra infra,
             PathImpl path,

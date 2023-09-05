@@ -114,8 +114,10 @@ public class PathfindingResultConverter {
         long startFirstRange = Math.round(rawPath.ranges().get(0).start());
         for (var blockRange : rawPath.ranges()) {
             for (var waypoint : userDefinedWaypointsPerBlock.get(blockRange.edge())) {
-                var pathOffset = lengthPrevBlocks + waypoint - startFirstRange;
-                res.add(makePendingWaypoint(infra, path, false, pathOffset, null));
+                if (blockRange.start() <= waypoint && waypoint <= blockRange.end()) {
+                    var pathOffset = lengthPrevBlocks + waypoint - startFirstRange;
+                    res.add(makePendingWaypoint(infra, path, false, pathOffset, null));
+                }
             }
             lengthPrevBlocks += blockInfra.getBlockLength(blockRange.edge());
         }
