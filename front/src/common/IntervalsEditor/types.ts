@@ -7,6 +7,7 @@ export enum INTERVAL_TYPES {
 }
 
 export type IntervalItem = LinearMetadataItem<{ value: number | string; unit?: string }>;
+export type AdditionalDataItem = LinearMetadataItem<{ value: number | string }>;
 
 export enum INTERVALS_EDITOR_TOOLS {
   ADD_TOOL = 'add-tool',

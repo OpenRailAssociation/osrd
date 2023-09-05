@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { head, last, maxBy, minBy } from 'lodash';
 import cx from 'classnames';
 
+import { AdditionalDataItem } from 'common/IntervalsEditor/types';
 import { preventDefault, computeStyleForDataValue, getPositionFromMouseEvent } from './utils';
 import {
   cropForDatavizViewbox,
@@ -15,6 +16,12 @@ import { IntervalItemBaseProps, LinearMetadataItem, OperationalPoint } from './t
 import './style.scss';
 
 export interface LinearMetadataDatavizProps<T> extends IntervalItemBaseProps<T> {
+  /**
+   * Data to display on ranges below the main chart. The data must cover the whole path.
+   * Ex: display the catenary ranges to help the user selecting the correct power restrictions on path
+   */
+  additionalData?: AdditionalDataItem[];
+
   /**
    * List of special points to display on the chart
    */
@@ -56,6 +63,7 @@ export interface LinearMetadataDatavizProps<T> extends IntervalItemBaseProps<T> 
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
+  additionalData = [],
   creating = false,
   data = [],
   emptyValue = undefined,
@@ -96,6 +104,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
   const [operationalPoints4viz, setOperationalPoints4viz] = useState<
     Array<OperationalPoint & { positionInPx: number }>
   >([]);
+  const [additionalData4viz, setAdditionalData4viz] = useState<AdditionalDataItem[]>([]);
   const [hoverAtx, setHoverAtx] = useState<number | null>(null);
 
   /**
@@ -123,11 +132,16 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
    * When data change
    * => we recompute the data for the viz
    * => we recompute the full length of the displayed data.
+   * => we recompute the additionalData4viz
    * => we recompute the operationalPoints4viz
    */
   useEffect(() => {
     const nData = cropForDatavizViewbox(data, viewBox);
     const nFullLength = (last(nData)?.end || 0) - (head(nData)?.begin || 0);
+    const croppedAdditionalData = cropForDatavizViewbox(
+      additionalData,
+      viewBox
+    ) as LinearMetadataItem[] as AdditionalDataItem[];
     const nOperationalPoints = cropOperationPointsForDatavizViewbox(
       operationalPoints,
       viewBox,
@@ -136,6 +150,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
     );
     setData4viz(nData);
     setFullLength(nFullLength);
+    setAdditionalData4viz(croppedAdditionalData);
     setOperationalPoints4viz(nOperationalPoints);
   }, [data, viewBox]);
 
@@ -178,6 +193,20 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
       window.removeEventListener('resize', debounceResize);
     };
   }, [operationalPoints, viewBox, wrapper, fullLength]);
+
+  /**
+   * When additionalData change
+   * => we recompute the additionalData4viz
+   */
+  useEffect(() => {
+    if (fullLength > 0) {
+      const croppedAdditionalData = cropForDatavizViewbox(
+        additionalData,
+        viewBox
+      ) as LinearMetadataItem[] as AdditionalDataItem[];
+      setAdditionalData4viz(croppedAdditionalData);
+    }
+  }, [additionalData, fullLength]);
 
   /**
    * When the wrapper div change
@@ -402,6 +431,40 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
           />
         ))}
       </div>
+
+      {/* Display the additionalData */}
+      {additionalData4viz.length > 0 && (
+        <>
+          <div
+            className={cx(
+              'spacer',
+              (viewBox === null || viewBox[0] === 0) && 'start-visible',
+              (viewBox === null || viewBox[1] === last(data)?.end) && 'end-visible'
+            )}
+          />
+          <div
+            className={cx(
+              'additional-data',
+              (viewBox === null || viewBox[0] === 0) && 'start-visible',
+              (viewBox === null || viewBox[1] === last(data)?.end) && 'end-visible'
+            )}
+          >
+            {additionalData4viz.map((item, index) => (
+              <div
+                className="item"
+                style={{
+                  width: `${((item.end - item.begin) / fullLength) * 100}%`,
+                }}
+              >
+                <div className={cx('value', item.value === '' && 'no-data')}>
+                  <span>{item.value}</span>
+                </div>
+                {index !== additionalData4viz.length - 1 && <div className="resize" />}
+              </div>
+            ))}
+          </div>
+        </>
+      )}
 
       {/* Display the X axis */}
       {options.resizingScale && wrapper.current ? (

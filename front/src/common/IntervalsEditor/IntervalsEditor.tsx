@@ -16,6 +16,7 @@ import { LinearMetadataItem, OperationalPoint } from 'common/IntervalsDataViz/ty
 import IntervalsEditorTootlip from './IntervalsEditorTooltip';
 import IntervalsEditorCommonForm from './IntervalsEditorCommonForm';
 import {
+  AdditionalDataItem,
   INTERVALS_EDITOR_TOOLS,
   INTERVAL_TYPES,
   IntervalItem,
@@ -29,6 +30,7 @@ import IntervalsEditorSelectForm from './IntervalsEditorSelectForm';
 import { createEmptySegmentAt, removeSegment } from './utils';
 
 type IntervalsEditorProps = {
+  additionalData?: AdditionalDataItem[];
   defaultValue: number | string;
   emptyValue?: unknown;
   operationalPoints?: OperationalPoint[];
@@ -64,6 +66,7 @@ type IntervalsEditorProps = {
  */
 const IntervalsEditor = (props: IntervalsEditorProps) => {
   const {
+    additionalData,
     data = [],
     defaultValue,
     emptyValue = undefined,
@@ -180,6 +183,7 @@ const IntervalsEditor = (props: IntervalsEditorProps) => {
       <div className="content">
         <div className="dataviz">
           <LinearMetadataDataviz
+            additionalData={additionalData}
             creating={selectedTool === INTERVALS_EDITOR_TOOLS.ADD_TOOL}
             data={resizingData}
             emptyValue={emptyValue}

@@ -1,5 +1,5 @@
 import { isEmpty } from 'lodash';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -64,11 +64,6 @@ export default function ManageTrainSchedule() {
       { pathId: pathFindingID as number },
       { skip: !pathFindingID }
     );
-
-  const rollingStockHasPowerRestictions = useMemo(() => {
-    if (!rollingStock) return false;
-    return !isEmpty(rollingStock.power_restrictions);
-  }, [rollingStock]);
 
   const tabRollingStock = {
     title: rollingStock ? (
@@ -150,9 +145,10 @@ export default function ManageTrainSchedule() {
             <SpeedLimitByTagSelector />
           </div>
         </div>
-        {rollingStock && rollingStockHasPowerRestictions && (
+        {rollingStock && !isEmpty(rollingStock.power_restrictions) && (
           <PowerRestrictionsSelector
-            rollingStock={rollingStock}
+            rollingStockModes={rollingStock.effort_curves.modes}
+            rollingStockPowerRestrictions={rollingStock.power_restrictions}
             pathCatenaryRanges={pathWithCatenaries.catenary_ranges}
           />
         )}
