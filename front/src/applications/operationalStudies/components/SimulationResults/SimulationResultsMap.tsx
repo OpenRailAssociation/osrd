@@ -3,23 +3,16 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import { MapLayerMouseEvent } from 'maplibre-gl';
 import WebMercatorViewport from 'viewport-mercator-project';
-import ReactMapGL, { AttributionControl, ScaleControl, MapRef } from 'react-map-gl/maplibre';
+import ReactMapGL, { AttributionControl, MapRef, ScaleControl } from 'react-map-gl/maplibre';
 import { Feature, LineString } from 'geojson';
-import { lineString, point, BBox } from '@turf/helpers';
-import along from '@turf/along';
+import { BBox, lineString, point } from '@turf/helpers';
 import bbox from '@turf/bbox';
 import lineLength from '@turf/length';
 import lineSlice from '@turf/line-slice';
-import { last } from 'lodash';
 
 import { updateTimePositionValues } from 'reducers/osrdsimulation/actions';
 import { getPresentSimulation, getSelectedTrain } from 'reducers/osrdsimulation/selectors';
-import {
-  AllowancesSettings,
-  PositionValues,
-  PositionSpeedTime,
-  Train,
-} from 'reducers/osrdsimulation/types';
+import { PositionSpeedTime, Train } from 'reducers/osrdsimulation/types';
 import { updateViewport, Viewport } from 'reducers/map';
 import { RootState } from 'reducers';
 import { TrainPosition } from 'applications/operationalStudies/components/SimulationResults/SimulationResultsMap/types';
@@ -51,12 +44,11 @@ import TracksSchematic from 'common/Map/Layers/TracksSchematic';
 import TrainHoverPosition from 'applications/operationalStudies/components/SimulationResults/SimulationResultsMap/TrainHoverPosition';
 
 import colors from 'common/Map/Consts/colors';
-import { datetime2Isostring, datetime2sec, timeString2datetime } from 'utils/timeManipulation';
+import { datetime2Isostring } from 'utils/timeManipulation';
 import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
 import {
   getDirection,
   interpolateOnPosition,
-  interpolateOnTime,
 } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/ChartHelpers';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 
@@ -69,32 +61,11 @@ import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
 import { SimulationReport, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import Terrain from 'common/Map/Layers/Terrain';
 import { getTerrain3DExaggeration } from 'reducers/map/selectors';
-
-function getPosition(
-  positionValues: PositionValues,
-  allowancesSettings?: AllowancesSettings,
-  trainId?: number,
-  baseKey?: string
-) {
-  const key = (
-    allowancesSettings && trainId && allowancesSettings[trainId]?.ecoBlocks
-      ? `eco_${baseKey}`
-      : baseKey
-  ) as keyof PositionValues;
-  return positionValues[key] as PositionSpeedTime;
-}
+import { getRegimeKey, getSimulationHoverPositions } from './SimulationResultsMap/helpers';
 
 interface MapProps {
   setExtViewport: (viewport: Viewport) => void;
 }
-
-type InterpoledTrain = {
-  name: string;
-  id: number;
-  head_positions?: PositionSpeedTime;
-  tail_positions?: PositionSpeedTime;
-  speeds?: PositionSpeedTime;
-};
 
 const Map: FC<MapProps> = ({ setExtViewport }) => {
   const [mapLoaded, setMapLoaded] = useState(false);
@@ -123,123 +94,6 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
     [dispatch]
   );
   const mapRef = React.useRef<MapRef>(null);
-
-  /**
-   *
-   * @param {int} trainId
-   * @returns correct key (eco or base) to get positions in a train simulation
-   */
-  const getRegimeKey = (trainId: number) =>
-    allowancesSettings && allowancesSettings[trainId]?.ecoBlocks ? 'eco' : 'base';
-
-  const createOtherPoints = (): InterpoledTrain[] => {
-    const timePositionDate = timeString2datetime(timePosition);
-    let actualTime = 0;
-    if (timePositionDate instanceof Date) {
-      actualTime = datetime2sec(timePositionDate);
-    } else {
-      console.warn('Try to create Other Train Point from unspecified current time Position');
-      return [];
-    }
-
-    // First find trains where actual time from position is between start & stop
-    const concernedTrains: InterpoledTrain[] = [];
-    simulation.trains.forEach((train, idx: number) => {
-      const baseOrEco = getRegimeKey(train.id);
-      const trainRegime = train[baseOrEco];
-      if (trainRegime && trainRegime.head_positions[0]) {
-        const trainTime = trainRegime.head_positions[0][0].time;
-        const train2ndTime = last(last(trainRegime.head_positions))?.time as number;
-        if (
-          actualTime >= trainTime &&
-          actualTime <= train2ndTime &&
-          train.id !== selectedTrain?.id
-        ) {
-          const interpolation = interpolateOnTime(
-            train[baseOrEco],
-            ['time', 'position'],
-            ['head_positions', 'tail_positions', 'speeds'],
-            actualTime
-          ) as Record<string, PositionSpeedTime>;
-          if (interpolation.head_positions && interpolation.speeds) {
-            concernedTrains.push({
-              ...interpolation,
-              name: train.name,
-              id: idx,
-            });
-          }
-        }
-      }
-    });
-    return concernedTrains;
-  };
-
-  // specifies the position of the trains when hovering over the simulation
-  const getSimulationHoverPositions = () => {
-    if (geojsonPath) {
-      const line = lineString(geojsonPath.geometry.coordinates);
-      if (selectedTrain) {
-        const headPositionRaw = getPosition(
-          positionValues,
-          allowancesSettings,
-          selectedTrain.id,
-          'headPosition'
-        );
-        const tailPositionRaw = getPosition(
-          positionValues,
-          allowancesSettings,
-          selectedTrain.id,
-          'tailPosition'
-        );
-        if (headPositionRaw) {
-          setTrainHoverPosition(() => {
-            const headDistanceAlong = headPositionRaw.position / 1000;
-            const tailDistanceAlong = tailPositionRaw.position / 1000;
-            const headPosition = along(line, headDistanceAlong, {
-              units: 'kilometers',
-            });
-            const tailPosition = tailPositionRaw
-              ? along(line, tailDistanceAlong, { units: 'kilometers' })
-              : headPosition;
-            const trainLength = Math.abs(headDistanceAlong - tailDistanceAlong);
-            return {
-              id: 'main-train',
-              headPosition,
-              tailPosition,
-              headDistanceAlong,
-              tailDistanceAlong,
-              speedTime: positionValues.speed,
-              trainLength,
-            };
-          });
-        }
-      }
-
-      // Found trains including timePosition, and organize them with geojson collection of points
-      setOtherTrainsHoverPosition(
-        createOtherPoints().map((train) => {
-          const headDistanceAlong = (train.head_positions?.position ?? 0) / 1000;
-          const tailDistanceAlong = (train.tail_positions?.position ?? 0) / 1000;
-          const headPosition = along(line, headDistanceAlong, {
-            units: 'kilometers',
-          });
-          const tailPosition = train.tail_positions
-            ? along(line, tailDistanceAlong, { units: 'kilometers' })
-            : headPosition;
-          const trainLength = Math.abs(headDistanceAlong - tailDistanceAlong);
-          return {
-            id: `other-train-${train.id}`,
-            headPosition,
-            tailPosition,
-            headDistanceAlong,
-            tailDistanceAlong,
-            speedTime: positionValues.speed,
-            trainLength,
-          };
-        })
-      );
-    }
-  };
 
   const zoomToFeature = (boundingBox: BBox) => {
     const [minLng, minLat, maxLng, maxLat] = boundingBox;
@@ -372,7 +226,16 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
 
   useEffect(() => {
     if (timePosition && geojsonPath) {
-      getSimulationHoverPositions();
+      const trains = getSimulationHoverPositions(
+        geojsonPath,
+        simulation,
+        timePosition,
+        positionValues,
+        selectedTrain?.id,
+        allowancesSettings
+      );
+      setTrainHoverPosition(trains.find((train) => train.isSelected));
+      setOtherTrainsHoverPosition(trains.filter((train) => !train.isSelected));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timePosition]);
@@ -431,7 +294,7 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
           </>
         )}
 
-        {/* Have to  duplicate objects with sourceLayer to avoid cache problems */}
+        {/* Have to duplicate objects with sourceLayer to avoid cache problems */}
         {mapTrackSources === 'geographic' ? (
           <>
             <Platforms
