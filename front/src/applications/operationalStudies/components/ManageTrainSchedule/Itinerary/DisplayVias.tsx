@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { useSelector, useDispatch } from 'react-redux';
 import {
@@ -12,9 +11,17 @@ import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useDebounce } from 'utils/helpers';
 import { getConf, getVias } from 'reducers/osrdconf/selectors';
 import cx from 'classnames';
+import { AnyAction, ThunkAction } from '@reduxjs/toolkit';
+import { Position } from 'geojson';
+import { RootState } from 'reducers';
 
-function InputStopTime(props) {
-  const { index, dispatchAndRun, setIndexSelected } = props;
+type InputStopTimeProps = {
+  index: number;
+  setIndexSelected: (selectedIndex?: number) => void;
+  dispatchAndRun: (dispatch: ThunkAction<void, RootState, null, AnyAction>) => void;
+};
+
+function InputStopTime({ index, setIndexSelected, dispatchAndRun }: InputStopTimeProps) {
   const vias = useSelector(getVias);
   const [stopTime, setStopTime] = useState(vias[index].duration ? vias[index].duration : 0);
   const [firstStart, setFirstStart] = useState(true);
@@ -33,7 +40,7 @@ function InputStopTime(props) {
     <InputSNCF
       type="number"
       id={`osrd-config-stoptime-via-${index}`}
-      onChange={(e) => setStopTime(e.target.value)}
+      onChange={(e) => setStopTime(Number(e.target.value))}
       value={stopTime}
       unit="s"
       focus
@@ -44,14 +51,17 @@ function InputStopTime(props) {
   );
 }
 
-export default function DisplayVias(props) {
+type DisplayViasProps = {
+  zoomToFeaturePoint: (lngLat?: Position, id?: string) => void;
+};
+
+export default function DisplayVias({ zoomToFeaturePoint }: DisplayViasProps) {
   const osrdconf = useSelector(getConf);
   const dispatch = useDispatch();
   const vias = useSelector(getVias);
-  const [indexSelected, setIndexSelected] = useState(undefined);
-  const { zoomToFeaturePoint } = props;
+  const [indexSelected, setIndexSelected] = useState<number | undefined>(undefined);
 
-  const dispatchAndRun = (action) => {
+  const dispatchAndRun = (action: ThunkAction<void, RootState, null, AnyAction>) => {
     dispatch(updateShouldRunPathfinding(true));
     dispatch(action);
   };
@@ -59,6 +69,7 @@ export default function DisplayVias(props) {
   return (
     <DragDropContext
       onDragEnd={(e) =>
+        e.destination &&
         dispatchAndRun(permuteVias(osrdconf.vias, e.source.index, e.destination.index))
       }
     >
@@ -88,7 +99,10 @@ export default function DisplayVias(props) {
                       >
                         <small className="font-weight-bold text-muted mr-1">{index + 1}</small>
                         <small className="mr-1 text-nowrap">
-                          {`${place.name || `KM ${Math.round(place.position) / 1000}`}`}
+                          {`${
+                            place.name ||
+                            `KM ${place.position && Math.round(place.position) / 1000}`
+                          }`}
                         </small>
                       </div>
                       {index !== indexSelected && (
@@ -113,7 +127,7 @@ export default function DisplayVias(props) {
                           </button>
                         </div>
                       )}
-                      <div role="button" tabIndex="-1" onClick={() => setIndexSelected(index)}>
+                      <div role="button" tabIndex={-1} onClick={() => setIndexSelected(index)}>
                         {index === indexSelected ? (
                           <InputStopTime
                             index={index}
@@ -148,13 +162,3 @@ export default function DisplayVias(props) {
     </DragDropContext>
   );
 }
-
-DisplayVias.propTypes = {
-  zoomToFeaturePoint: PropTypes.func.isRequired,
-};
-
-InputStopTime.propTypes = {
-  index: PropTypes.number.isRequired,
-  dispatchAndRun: PropTypes.func.isRequired,
-  setIndexSelected: PropTypes.func.isRequired,
-};
