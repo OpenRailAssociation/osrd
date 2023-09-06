@@ -4,9 +4,9 @@ import com.google.devtools.ksp.processing.*
 import com.google.devtools.ksp.symbol.*
 import com.google.devtools.ksp.validate
 
-const val ANNOTATION_PACKAGE = "fr.sncf.osrd.fast_collections"
-const val ANNOTATION_SIMPLE_NAME = "PrimitiveWrapperCollections"
-const val ANNOTATION_QUALIFIED_NAME = "${ANNOTATION_PACKAGE}.${ANNOTATION_SIMPLE_NAME}"
+private const val ANNOTATION_PACKAGE = "fr.sncf.osrd.fast_collections"
+private const val ANNOTATION_SIMPLE_NAME = "PrimitiveWrapperCollections"
+private const val ANNOTATION_QUALIFIED_NAME = "${ANNOTATION_PACKAGE}.${ANNOTATION_SIMPLE_NAME}"
 
 fun addGenerator(generators: MutableSet<CollectionGenerator>, generatorId: String) {
     val generator = GENERATORS[generatorId] ?: throw RuntimeException("unknown generator: $generatorId")
@@ -19,10 +19,14 @@ fun addGenerator(generators: MutableSet<CollectionGenerator>, generatorId: Strin
 fun getArrayType(primitive: KSDeclaration): String {
     val primitiveQName = primitive.qualifiedName!!.asString()
     when (primitiveQName) {
-        "kotlin.Int" -> return "IntArray"
-        "kotlin.UInt" -> return "UIntArray"
-        "kotlin.Long" -> return "LongArray"
-        "kotlin.ULong" -> return "ULongArray"
+        "kotlin.Int" -> return "kotlin.IntArray"
+        "kotlin.UInt" -> return "kotlin.UIntArray"
+        "kotlin.Long" -> return "kotlin.LongArray"
+        "kotlin.ULong" -> return "kotlin.ULongArray"
+        "kotlin.Float" -> return "kotlin.FloatArray"
+        "kotlin.Double" -> return "kotlin.DoubleArray"
+        "kotlin.Boolean" -> return "kotlin.BooleanArray"
+        "kotlin.Char" -> return "kotlin.CharArray"
     }
     throw NotImplementedError("unsupported primitive type: $primitiveQName")
 }

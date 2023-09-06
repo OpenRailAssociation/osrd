@@ -71,6 +71,10 @@ class StorageType(
             "UInt" -> return "0u"
             "Long" -> return "0L"
             "ULong" -> return "0uL"
+            "Float" -> return "0.0f"
+            "Double" -> return "0.0"
+            "Boolean" -> return "false"
+            "Char" -> return "' '"
         }
         throw RuntimeException("unknown primitive type")
     }
