@@ -23,7 +23,10 @@ import { getSelectedTrain } from 'reducers/osrdsimulation/selectors';
 import { AsyncMemoState, getAsyncMemoData, useAsyncMemo } from 'utils/useAsyncMemo';
 import { getSimulationHoverPositions } from 'applications/operationalStudies/components/SimulationResults/SimulationResultsMap/helpers';
 
+import './SimulationWarpedMap.scss';
+
 const TIME_LABEL = 'Warping OSRD and OSM data';
+const WIDTH = 200;
 
 interface PathStatePayload {
   path: Feature<LineString>;
@@ -41,7 +44,7 @@ interface DataStatePayload {
  * This component handles loading the simulation path, all the surrounding data (OSM and OSRD), transforms them, and
  * then mounts a WarpedMap with all that data:
  */
-const SimulationWarpedMap: FC = () => {
+const SimulationWarpedMap: FC<{ collapsed?: boolean }> = ({ collapsed }) => {
   const infraID = useSelector(getInfraID);
   const [state, setState] = useState<
     | { type: 'idle' }
@@ -94,8 +97,6 @@ const SimulationWarpedMap: FC = () => {
       if (!path || state.type !== 'dataLoaded') return [];
 
       const transformedPath = state.transform(path) as typeof path;
-      console.log('PATH', path);
-      console.log('TRANSFORMED PATH', transformedPath);
       return getSimulationHoverPositions(
         path,
         simulation,
@@ -178,53 +179,54 @@ const SimulationWarpedMap: FC = () => {
     });
   }, [state]);
 
-  if (state.type === 'idle' || state.type === 'loading' || state.type === 'error')
-    return <LoaderFill />;
-
-  if (state.type === 'pathLoaded')
-    return (
-      <DataLoader
-        bbox={state.pathBBox}
-        layers={layers}
-        getGeoJSONs={(osrdData, osmData) => {
-          console.time(TIME_LABEL);
-          const transformed = {
-            osm: omitBy(
-              mapValues(osmData, (collection) => state.transform(collection)),
-              isNil
-            ) as DataStatePayload['osm'],
-            osrd: omitBy(
-              mapValues(osrdData, (collection: FeatureCollection) => state.transform(collection)),
-              isNil
-            ) as DataStatePayload['osrd'],
-          };
-          console.timeEnd(TIME_LABEL);
-          setState({ ...state, ...transformed, type: 'dataLoaded' });
-        }}
-      />
-    );
-
   return (
-    <div className="warped-map position-relative d-flex flex-row">
-      <div
-        className="bg-white"
-        style={{
-          width: 200,
-          height: '100%',
-          padding: '1rem',
-          borderRadius: 4,
-          marginRight: '0.5rem',
-        }}
-      >
-        <WarpedMap
-          osrdLayers={layers}
-          bbox={state.regularBBox}
-          osrdData={state.osrd}
-          osmData={state.osm}
-          itinerary={warpedItinerary}
-          trains={getAsyncMemoData(trainsState) || undefined}
+    <div
+      className="warped-map position-relative d-flex flex-row"
+      style={{ width: collapsed ? 0 : WIDTH }}
+    >
+      {state.type === 'pathLoaded' && (
+        <DataLoader
+          bbox={state.pathBBox}
+          layers={layers}
+          getGeoJSONs={(osrdData, osmData) => {
+            console.time(TIME_LABEL);
+            const transformed = {
+              osm: omitBy(
+                mapValues(osmData, (collection) => state.transform(collection)),
+                isNil
+              ) as DataStatePayload['osm'],
+              osrd: omitBy(
+                mapValues(osrdData, (collection: FeatureCollection) => state.transform(collection)),
+                isNil
+              ) as DataStatePayload['osrd'],
+            };
+            console.timeEnd(TIME_LABEL);
+            setState({ ...state, ...transformed, type: 'dataLoaded' });
+          }}
         />
-      </div>
+      )}
+      {(state.type !== 'dataLoaded') && (
+        <LoaderFill />
+      )}
+      {state.type === 'dataLoaded' && (
+        <div
+          className="bg-white border m-3"
+          style={{
+            width: WIDTH,
+            borderRadius: 4,
+            marginRight: '0.5rem',
+          }}
+        >
+          <WarpedMap
+            osrdLayers={layers}
+            bbox={state.regularBBox}
+            osrdData={state.osrd}
+            osmData={state.osm}
+            itinerary={warpedItinerary}
+            trains={getAsyncMemoData(trainsState) || undefined}
+          />
+        </div>
+      )}
     </div>
   );
 };
