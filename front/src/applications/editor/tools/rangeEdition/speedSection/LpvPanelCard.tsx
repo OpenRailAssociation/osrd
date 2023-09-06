@@ -115,9 +115,9 @@ const LpvPanelCard = ({
             <div className="my-2">
               <SelectImprovedSNCF
                 sm
-                title={t('Editor.tools.speed-edition.panel-type')}
+                label={t('Editor.tools.speed-edition.panel-type').toString()}
                 options={['TIV_B', 'TIV_D']}
-                selectedValue={panel.type}
+                value={panel.type}
                 onChange={() =>
                   updatePanel(panelInfo, {
                     ...panel,
@@ -130,11 +130,13 @@ const LpvPanelCard = ({
         )}
         <div className="my-2">
           <SelectImprovedSNCF
-            title={t('Editor.tools.speed-edition.panel-side')}
+            label={t('Editor.tools.speed-edition.panel-side').toString()}
             sm
             options={['LEFT', 'RIGHT', 'CENTER']}
-            onChange={(selectedValue) => updatePanel(panelInfo, { ...panel, side: selectedValue })}
-            selectedValue={panel.side}
+            onChange={(selectedValue) => {
+              if (selectedValue) updatePanel(panelInfo, { ...panel, side: selectedValue });
+            }}
+            value={panel.side}
           />
         </div>
         <div className="mt-2">

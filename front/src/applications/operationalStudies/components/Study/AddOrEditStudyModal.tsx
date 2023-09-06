@@ -6,7 +6,7 @@ import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
+import SelectImprovedSNCF, { SelectOptionObject } from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
 import { useTranslation } from 'react-i18next';
 import { FaPencilAlt, FaPlus, FaTasks, FaTrash } from 'react-icons/fa';
@@ -34,8 +34,6 @@ type Props = {
 
 type OptionsList = StudyType[] | StudyState[];
 
-type SelectOptions = { key: string | null; value: string }[];
-
 const emptyStudy: StudyUpsertRequest = { name: '', tags: [] };
 
 export default function AddOrEditStudyModal({ editionMode, study }: Props) {
@@ -56,16 +54,18 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
   const [deleteStudies, { isError: isDeleteStudyError }] =
     osrdEditoastApi.useDeleteProjectsByProjectIdStudiesAndStudyIdMutation();
 
-  const createSelectOptions = (translationList: string, list: OptionsList) => {
-    if (isEmpty(list)) return [{ key: null, value: t('nothingSelected') }];
-    const options: SelectOptions = [
-      { key: null, value: t(`${translationList}.nothingSelected`) },
+  const createSelectOptions = (
+    translationList: string,
+    list: OptionsList
+  ): SelectOptionObject[] => {
+    if (isEmpty(list)) return [{ label: t('nothingSelected').toString() }];
+    return [
+      { label: t(`${translationList}.nothingSelected`).toString() },
       ...sortBy(
-        list.map((key) => ({ key, value: t(`${translationList}.${key}`) })),
+        list.map((key) => ({ id: key, label: t(`${translationList}.${key}`) })),
         'value'
       ),
     ];
-    return options;
   };
 
   const studyStateOptions = createSelectOptions('studyStates', studyStates);
@@ -189,7 +189,7 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
               <div className="col-xl-6">
                 <div className="study-edition-modal-type mb-2">
                   <SelectImprovedSNCF
-                    title={
+                    label={
                       <div className="d-flex align-items-center">
                         <span className="mr-2">
                           <RiQuestionLine />
@@ -197,12 +197,19 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
                         {t('studyType')}
                       </div>
                     }
-                    selectedValue={{
-                      key: currentStudy?.study_type,
-                      value: t(`studyCategories.${currentStudy?.study_type || 'nothingSelected'}`),
+                    value={{
+                      id: currentStudy.study_type,
+                      label: t(
+                        `studyCategories.${currentStudy.study_type || 'nothingSelected'}`
+                      ).toString(),
                     }}
                     options={studyCategoriesOptions}
-                    onChange={(e) => setCurrentStudy({ ...currentStudy, study_type: e.key })}
+                    onChange={(e) =>
+                      setCurrentStudy({
+                        ...currentStudy,
+                        study_type: e?.id as StudyUpsertRequest['study_type'],
+                      })
+                    }
                     data-testid="studyType"
                   />
                 </div>
@@ -210,7 +217,7 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
               <div className="col-xl-6">
                 <div className="study-edition-modal-state mb-2">
                   <SelectImprovedSNCF
-                    title={
+                    label={
                       <div className="d-flex align-items-center">
                         <span className="mr-2">
                           <FaTasks />
@@ -218,12 +225,17 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
                         {t('studyState')}
                       </div>
                     }
-                    selectedValue={{
-                      key: currentStudy?.state,
-                      value: t(`studyStates.${currentStudy?.state || 'nothingSelected'}`),
+                    value={{
+                      id: currentStudy.state,
+                      label: t(`studyStates.${currentStudy.state || 'nothingSelected'}`).toString(),
                     }}
                     options={studyStateOptions}
-                    onChange={(e) => setCurrentStudy({ ...currentStudy, state: e.key })}
+                    onChange={(e) =>
+                      setCurrentStudy({
+                        ...currentStudy,
+                        state: e?.id as StudyUpsertRequest['state'],
+                      })
+                    }
                   />
                 </div>
               </div>

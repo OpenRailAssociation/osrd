@@ -99,13 +99,6 @@ function EmptyLine<T extends RangeAllowance>(props: EmptyLineProps<T>) {
   const [fromTo, setFromTo] = useState('from');
   const { t } = useTranslation(['allowances']);
 
-  const handleDistribution: React.ChangeEventHandler<HTMLSelectElement> = (e) => {
-    setValues({
-      ...values,
-      distribution: JSON.parse(e.target.value).id,
-    });
-  };
-
   useEffect(() => {
     setValues({
       ...values,
@@ -186,15 +179,24 @@ function EmptyLine<T extends RangeAllowance>(props: EmptyLineProps<T>) {
       </div>
       <div className="col-lg-4 col-xl-2">
         <SelectSNCF
+          sm
           id="distributionTypeSelector"
           options={distributionsTypes}
-          selectedValue={{
-            id: defaultDistributionId,
-            label: t(`distributions.${defaultDistributionId?.toLowerCase()}`),
+          value={
+            defaultDistributionId
+              ? {
+                  id: defaultDistributionId,
+                  label: t(`distributions.${defaultDistributionId?.toLowerCase()}`),
+                }
+              : undefined
+          }
+          onChange={(e) => {
+            if (e)
+              setValues({
+                ...values,
+                distribution: e.id,
+              });
           }}
-          labelKey="label"
-          onChange={handleDistribution}
-          sm
         />
       </div>
       <div className="col-lg-6 col-xl-3">

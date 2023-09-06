@@ -1,15 +1,16 @@
 import React, { ComponentType, useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { updateSpeedLimitByTag } from 'reducers/osrdconf';
-import { setFailure } from 'reducers/main';
-import icon from 'assets/pictures/components/speedometer.svg';
-import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
-import { getInfraID, getSpeedLimitByTag } from 'reducers/osrdconf/selectors';
 import { Dispatch } from 'redux';
 import { isEmpty, noop } from 'lodash';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query/react';
+
+import { setFailure } from 'reducers/main';
+import { updateSpeedLimitByTag } from 'reducers/osrdconf';
+import { getInfraID, getSpeedLimitByTag } from 'reducers/osrdconf/selectors';
+import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import icon from 'assets/pictures/components/speedometer.svg';
 import './SpeedLimitByTagSelector.scss';
 
 type SpeedLimitByTagSelectorProps = {
@@ -88,12 +89,14 @@ export function IsolatedSpeedLimitByTagSelector({
         <img width="32px" className="mr-2" src={icon} alt="infraIcon" />
         <span className="text-muted">{t('speedLimitByTag')}</span>
         <SelectImprovedSNCF
-          options={speedLimitsTagsList}
-          onChange={(e) => dispatchUpdateSpeedLimitByTag(e)}
-          selectedValue={speedLimitByTag || t('noSpeedLimitByTag')}
           sm
           withSearch
           dataTestId="speed-limit-by-tag-selector"
+          value={speedLimitByTag || t('noSpeedLimitByTag').toString()}
+          options={speedLimitsTagsList}
+          onChange={(e) => {
+            if (e) dispatchUpdateSpeedLimitByTag(e);
+          }}
         />
       </div>
     </div>

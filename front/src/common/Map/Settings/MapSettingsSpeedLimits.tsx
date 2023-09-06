@@ -3,17 +3,18 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { MapState, updateLayersSettings } from 'reducers/map';
 import { IoMdSpeedometer } from 'react-icons/io';
+import { IconType } from 'react-icons';
+import { SerializedError } from '@reduxjs/toolkit';
+
+import TIVsSVGFile from 'assets/pictures/layersicons/layer_tivs.svg';
 import SwitchSNCF, { SWITCH_TYPES } from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
 import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
-import { setFailure } from 'reducers/main';
-import TIVsSVGFile from 'assets/pictures/layersicons/layer_tivs.svg';
-import { getInfraID } from 'reducers/osrdconf/selectors';
-import { getMap } from 'reducers/map/selectors';
-import { IconType } from 'react-icons';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { ApiError } from 'common/api/emptyApi';
-import { SerializedError } from '@reduxjs/toolkit';
+import { setFailure } from 'reducers/main';
+import { getInfraID } from 'reducers/osrdconf/selectors';
+import { getMap } from 'reducers/map/selectors';
 import { FormatSwitch as SimpleFormatSwitch, Icon2SVG } from './MapSettingsLayers';
 
 type FormatSwitchProps = {
@@ -39,9 +40,7 @@ const FormatSwitch = ({ name, icon: IconComponent, color = '', disabled }: Forma
     }
   );
 
-  const [speedLimitsTags, setSpeedLimitsTags] = useState<
-    { key: string; value: string }[] | undefined
-  >(undefined);
+  const [speedLimitsTags, setSpeedLimitsTags] = useState<string[] | undefined>(undefined);
 
   const setLayerSettings = (setting: keyof MapState['layersSettings']) => {
     dispatch(
@@ -52,26 +51,20 @@ const FormatSwitch = ({ name, icon: IconComponent, color = '', disabled }: Forma
     );
   };
 
-  const dispatchSetSpeedLimitsTags = (item: { key: string; value: string }) => {
-    dispatch(
-      updateLayersSettings({
-        ...layersSettings,
-        speedlimittag: item.key,
-      })
-    );
-  };
-
-  const changeTagsListToObject = (tagsListArray: string[]) => {
-    const tagsListObject = [{ key: t('noSpeedLimitByTag'), value: t('noSpeedLimitByTag') }].concat(
-      tagsListArray.map((tag) => ({ key: tag, value: tag }))
-    );
-    setSpeedLimitsTags(tagsListObject);
+  const dispatchSetSpeedLimitsTags = (item?: string) => {
+    if (item)
+      dispatch(
+        updateLayersSettings({
+          ...layersSettings,
+          speedlimittag: item,
+        })
+      );
   };
 
   useEffect(() => {
-    setSpeedLimitsTags(undefined);
-    if (tagsList) changeTagsListToObject(tagsList);
-  }, [infraID, tagsList]);
+    if (tagsList) setSpeedLimitsTags([t('noSpeedLimitByTag').toString(), ...tagsList]);
+    else setSpeedLimitsTags(undefined);
+  }, [tagsList]);
 
   useEffect(() => {
     if (isGetSpeedLimitTagsError && getSpeedLimitTagsError) {
@@ -107,11 +100,11 @@ const FormatSwitch = ({ name, icon: IconComponent, color = '', disabled }: Forma
       <div className="col-lg-6 pt-1">
         {speedLimitsTags ? (
           <SelectImprovedSNCF
-            options={speedLimitsTags}
-            onChange={dispatchSetSpeedLimitsTags}
-            selectedValue={layersSettings.speedlimittag}
             sm
             withSearch
+            value={layersSettings.speedlimittag}
+            options={speedLimitsTags}
+            onChange={dispatchSetSpeedLimitsTags}
           />
         ) : (
           <span className="ml-3">

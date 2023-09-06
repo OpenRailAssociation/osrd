@@ -17,13 +17,13 @@ const CatenaryMetadataForm = ({ voltages }: { voltages: string[] }) => {
 
   return (
     <SelectImprovedSNCF
-      title={
+      label={
         <>
           <GiElectric className="me-1" /> {t('Editor.tools.catenary-edition.catenaries')}
         </>
       }
       options={voltages}
-      selectedValue={entity.properties.voltage || ''}
+      value={entity.properties.voltage || ''}
       onChange={(newCatenary) => {
         const newEntity = cloneDeep(entity);
         newEntity.properties.voltage = newCatenary;
