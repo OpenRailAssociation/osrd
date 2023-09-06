@@ -3,7 +3,7 @@
     primitive = UInt::class,
     fromPrimitive = "TestIndex(%s)",
     toPrimitive = "%s.data",
-    collections = ["Array", "ArrayList", "ArraySortedSet"],
+    collections = ["Array", "ArrayList", "ArraySortedSet", "RingBuffer"],
 )
 
 @file:PrimitiveWrapperCollections(
@@ -11,7 +11,7 @@
     primitive = UInt::class,
     fromPrimitive = "TestGenericIndex(%s)",
     toPrimitive = "%s.data",
-    collections = ["Array", "ArrayList", "ArraySortedSet"],
+    collections = ["Array", "ArrayList", "ArraySortedSet", "RingBuffer"],
 )
 
 package fr.sncf.osrd.fast_collections
@@ -44,5 +44,15 @@ class TestIndexes {
             testB.add(TestIndex(i))
         }
         assertEquals(testA, testB)
+    }
+
+    @Test
+    fun testRingBuffer() {
+        val ringBuffer = MutableTestIndexRingBuffer()
+        assertEquals(0, ringBuffer.addFront(TestIndex(1u)))
+        assertEquals(1, ringBuffer.addBack(TestIndex(2u)))
+        assertEquals(-1, ringBuffer.addFront(TestIndex(3u)))
+        assertEquals(2, ringBuffer.addBack(TestIndex(4u)))
+        assertEquals(listOf(3u, 1u, 2u, 4u), ringBuffer.map { it.data })
     }
 }

@@ -115,4 +115,5 @@ val GENERATORS = mapOf<String, CollectionGenerator>(
     Pair("Array", ArrayGenerator),
     Pair("ArrayList", ArrayListGenerator),
     Pair("ArraySortedSet", ArraySortedSetGenerator),
+    Pair("RingBuffer", RingBufferGenerator),
 )
