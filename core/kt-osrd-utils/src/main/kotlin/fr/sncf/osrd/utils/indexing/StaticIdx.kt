@@ -3,7 +3,7 @@
     primitive = UInt::class,
     fromPrimitive = "StaticIdx(%s)",
     toPrimitive = "%s.index",
-    collections = ["Array", "ArrayList", "ArraySortedSet"],
+    collections = ["Array", "ArrayList", "ArraySortedSet", "RingBuffer"],
 )
 
 package fr.sncf.osrd.utils.indexing

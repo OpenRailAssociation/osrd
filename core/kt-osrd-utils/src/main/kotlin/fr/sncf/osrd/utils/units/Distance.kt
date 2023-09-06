@@ -3,7 +3,7 @@
     primitive = Long::class,
     fromPrimitive = "Distance(%s)",
     toPrimitive = "%s.millimeters",
-    collections = ["Array", "ArrayList"],
+    collections = ["Array", "ArrayList", "RingBuffer"],
 )
 
 @file:PrimitiveWrapperCollections(
@@ -11,7 +11,7 @@
     primitive = Long::class,
     fromPrimitive = "Offset(Distance(%s))",
     toPrimitive = "%s.distance.millimeters",
-    collections = ["Array", "ArrayList"],
+    collections = ["Array", "ArrayList", "RingBuffer"],
 )
 
 package fr.sncf.osrd.utils.units

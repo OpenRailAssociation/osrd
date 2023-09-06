@@ -34,6 +34,7 @@ dependencies {
     testImplementation libs.kotlinx.coroutines.test
 
     implementation project(':kt-osrd-utils')
+    implementation project(':kt-fast-collections')
     implementation project(':kt-osrd-signaling')
     implementation project(":kt-osrd-sim-interlocking")
     implementation project(":kt-osrd-sim-infra")

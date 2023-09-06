@@ -113,4 +113,20 @@ class RingBufferTest {
         assertEquals(-2, deque.addFront(5))
         assertEquals(listOf(5, 3, 1, 2, 4), deque.toList())
     }
+
+    @Test
+    fun `test removeFrontUntil`() {
+        val deque = MutableIntRingBuffer()
+        assertEquals(0, deque.addFront(1))
+        assertEquals(1, deque.addBack(2))
+        assertEquals(-1, deque.addFront(3))
+        assertEquals(2, deque.addBack(4))
+        assertEquals(-2, deque.addFront(5))
+        assertEquals(listOf(5, 3, 1, 2, 4), deque.toList())
+        deque.removeFrontUntil(1) // 1 is the index of "2"
+        assertEquals(2, deque[1])
+        assertEquals(listOf(2, 4), deque.toList())
+        deque.removeFrontUntil(3) // 3 is the index of "2"
+        assertEquals(listOf(), deque.toList())
+    }
 }

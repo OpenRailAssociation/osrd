@@ -16,7 +16,7 @@ interface BlockInfraBuilder {
 }
 
 
-class BlockInfraBuilderImpl : BlockInfraBuilder {
+class BlockInfraBuilderImpl(val loadedSignalInfra: LoadedSignalInfra, val rawInfra: RawInfra) : BlockInfraBuilder {
     private val blockSet = mutableMapOf<BlockDescriptor, BlockId>()
     private val blockPool = StaticPool<Block, BlockDescriptor>()
     override fun block(
@@ -27,11 +27,16 @@ class BlockInfraBuilderImpl : BlockInfraBuilder {
         signalsDistances: OffsetList<Block>,
     ): BlockId {
         assert(path.size != 0)
-        val newBlock = BlockDescriptor(startAtBufferStop, stopsAtBufferStop, path, signals, signalsDistances)
+
+        var length = Length<Block>(0.meters)
+        for (zonePath in path)
+            length += rawInfra.getZonePathLength(zonePath).distance
+
+        val newBlock = BlockDescriptor(length, startAtBufferStop, stopsAtBufferStop, path, signals, signalsDistances)
         return blockSet.getOrPut(newBlock) { blockPool.add(newBlock) }
     }
 
-    fun build(loadedSignalInfra: LoadedSignalInfra, rawInfra: RawInfra): BlockInfra {
+    fun build(): BlockInfra {
         return BlockInfraImpl(blockPool, loadedSignalInfra, rawInfra)
     }
 }
@@ -42,7 +47,7 @@ fun blockInfraBuilder(
     rawInfra: RawInfra,
     init: BlockInfraBuilder.() -> Unit,
 ): BlockInfra {
-    val builder = BlockInfraBuilderImpl()
+    val builder = BlockInfraBuilderImpl(loadedSignalInfra, rawInfra)
     builder.init()
-    return builder.build(loadedSignalInfra, rawInfra)
+    return builder.build()
 }

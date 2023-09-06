@@ -2,7 +2,9 @@
 
 package fr.sncf.osrd.standalone_sim
 
+
 import fr.sncf.osrd.api.FullInfra
+import fr.sncf.osrd.conflicts.*
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.EnvelopePhysics
 import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
@@ -27,9 +29,11 @@ import fr.sncf.osrd.utils.indexing.*
 import kotlin.collections.*
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.MutableDistanceArray
+import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import mu.KotlinLogging
 import kotlin.math.abs
+import kotlin.math.absoluteValue
 import kotlin.math.max
 import kotlin.math.min
 
@@ -104,6 +108,11 @@ fun run(
 
     // Compute signal updates
     val startOffset = trainPathBlockOffset(trainPath)
+    var blockPathLength = 0.meters
+    for (block in blockPath)
+        blockPathLength += blockInfra.getBlockLength(block).distance
+    val endOffset = blockPathLength - startOffset - (envelope.endPos - envelope.beginPos).meters
+
     val pathSignals = pathSignalsInEnvelope(startOffset, blockPath, blockInfra, envelopeWithStops)
     val zoneOccupationChangeEvents =
         zoneOccupationChangeEvents(startOffset, blockPath, blockInfra, envelopeWithStops, rawInfra, trainLength)
@@ -136,16 +145,15 @@ fun run(
     val mechanicalEnergyConsumed =
         EnvelopePhysics.getMechanicalEnergyConsumed(envelope, envelopePath, schedule.rollingStock)
 
-    val spacingRequirements = spacingRequirements(
-        simulator,
-        blockPath,
-        loadedSignalInfra,
-        blockInfra,
-        envelopeWithStops,
-        rawInfra,
-        pathSignals,
-        zoneOccupationChangeEvents
-    )
+    val incrementalPath = incrementalPathOf(rawInfra, blockInfra)
+    val envelopeAdapter = IncrementalRequirementEnvelopeAdapter(incrementalPath, schedule.rollingStock, envelopeWithStops)
+    val spacingGenerator = SpacingRequirementAutomaton(rawInfra, loadedSignalInfra, blockInfra, simulator, envelopeAdapter, incrementalPath)
+    incrementalPath.extend(PathFragment(
+        routePath, blockPath,
+        containsStart = true, containsEnd = true,
+        startOffset, endOffset
+    ))
+    val spacingRequirements = spacingGenerator.processPathUpdate()
 
     val routingRequirements = routingRequirements(
         startOffset,
@@ -171,55 +179,6 @@ fun run(
         spacingRequirements,
         routingRequirements,
     )
-}
-
-enum class SpacingRequirementPhase {
-    HeadRoom,
-    Begin,
-    Main,
-    End,
-    TailRoom;
-
-    /** Checks whether the current state accepts this zone configuration */
-    fun check(occupied: Boolean, hasRequirement: Boolean): Boolean {
-        return when (this) {
-            HeadRoom -> !occupied && !hasRequirement
-            Begin -> occupied && !hasRequirement
-            Main -> occupied && hasRequirement
-            End -> !occupied && hasRequirement
-            TailRoom -> !occupied && !hasRequirement
-        }
-    }
-
-    fun react(occupied: Boolean, hasRequirement: Boolean): SpacingRequirementPhase {
-        // no state change
-        if (check(occupied, hasRequirement))
-            return this
-
-        when (this) {
-            HeadRoom -> {
-                if (occupied)
-                    return Begin.react(true, hasRequirement)
-            }
-            Begin -> {
-                if (hasRequirement)
-                    return Main.react(occupied, true)
-                if (!occupied)
-                    return TailRoom
-            }
-            Main -> {
-                if (!occupied)
-                    return End.react(false, hasRequirement)
-            }
-            End -> {
-                if (!hasRequirement)
-                    return TailRoom
-
-            }
-            TailRoom -> return TailRoom
-        }
-        return this
-    }
 }
 
 private fun routingRequirements(
@@ -406,141 +365,6 @@ fun EnvelopeTimeInterpolate.clampInterpolate(position: Distance): Double {
     return interpolateTotalTime(criticalPos)
 }
 
-private fun spacingRequirements(
-    simulator: SignalingSimulator,
-    blockPath: StaticIdxList<Block>,
-    loadedSignalInfra: LoadedSignalInfra,
-    blockInfra: BlockInfra,
-    envelope: EnvelopeTimeInterpolate,
-    rawInfra: SimInfraAdapter,
-    pathSignals: List<PathSignal>,
-    zoneOccupationChangeEvents: MutableList<ZoneOccupationChangeEvent>
-): List<SpacingRequirement> {
-    val res = mutableListOf<SpacingRequirement>()
-    data class ZoneOccupation(val entry: Double, val exit: Double)
-    val zoneOccupancies = zoneOccupationChangeEvents.groupBy { it.zone }.mapValues { (_, events) ->
-        assert(events.size <= 2)
-        assert(events[0].isEntry)
-        assert(events.size == 1 || !events[1].isEntry)
-        val entryTime = events.first().time / 1000.0
-        val exitTime = if (events.size == 1) envelope.totalTime else events.last().time / 1000.0
-        ZoneOccupation(entryTime, exitTime)
-    }
-    val zoneMap = arrayListOf<ZoneId>()
-    var zoneCount = 0
-    for (block in blockPath) {
-        for (zonePath in blockInfra.getBlockPath(block)) {
-            val zone = rawInfra.getNextZone(rawInfra.getZonePathEntry(zonePath))!!
-            zoneMap.add(zone)
-            zoneCount++
-        }
-    }
-
-
-    val zoneRequirementTimes = DoubleArray(zoneCount) { Double.POSITIVE_INFINITY }
-
-    for (pathSignal in pathSignals) {
-        val physicalSignal = loadedSignalInfra.getPhysicalSignal(pathSignal.signal)
-        val sightOffset = max(0.0, (pathSignal.pathOffset - rawInfra.getSignalSightDistance(physicalSignal)).meters)
-        val sightTime = envelope.interpolateTotalTime(sightOffset)
-
-        val signalZoneOffset =
-            blockPath.take(pathSignal.minBlockPathIndex + 1).sumOf { blockInfra.getBlockPath(it).size }
-
-        val zoneStates = ArrayList<ZoneStatus>(zoneCount)
-        for (i in 0 until zoneCount) zoneStates.add(ZoneStatus.CLEAR)
-
-        var lastConstrainingZone = -1
-        for (i in signalZoneOffset until zoneCount) {
-            zoneStates[i] = ZoneStatus.OCCUPIED
-            val simulatedSignalStates = simulator.evaluate(
-                rawInfra, loadedSignalInfra, blockInfra,
-                blockPath, 0, blockPath.size,
-                zoneStates, ZoneStatus.CLEAR
-            )
-            zoneStates[i] = ZoneStatus.CLEAR
-            val signalState = simulatedSignalStates[pathSignal.signal]!!
-
-            // FIXME: Have a better way to check if the signal is constraining
-            if (signalState.getEnum("aspect") == "VL")
-                break
-            lastConstrainingZone = i
-        }
-
-        if (lastConstrainingZone == -1) {
-            logger.error { "signal ${rawInfra.getLogicalSignalName(pathSignal.signal)} does not react to zone occupation" }
-            continue
-        }
-
-        for (zoneIndex in signalZoneOffset .. lastConstrainingZone) {
-            val prevRequiredTime = zoneRequirementTimes[zoneIndex]
-            zoneRequirementTimes[zoneIndex] = min(sightTime, prevRequiredTime)
-        }
-    }
-
-    /*
-    For all zones which either occupied by the train or required at some point, emit a zone requirement.
-    Some zones do not have requirements: those before the train's starting position, and those far enough from
-    the end of the train path.
-
-                  zone occupied                   Y           Y
-      explicit zone requirement                               Y         Y
-         zone needs requirement                   Y           Y         Y
-                        signals           ┎o         ┎o         ┎o         ┎o         ┎o         ┎o
-                          zones   +----------|----------|----------|----------|----------|----------|
-                     train path                   =============
-                          phase     headroom    begin      main        end          tailroom
-    */
-
-    var phase = SpacingRequirementPhase.HeadRoom
-    for (zoneIndex in 0 until zoneCount) {
-        val zoneRequirementTime = zoneRequirementTimes[zoneIndex]
-        val zone = zoneMap[zoneIndex]
-        val zoneOccupancy = zoneOccupancies[zone]
-
-        val explicitRequirement = zoneRequirementTime.isFinite()
-        val occupied = zoneOccupancy != null
-
-        phase = phase.react(occupied, explicitRequirement)
-        val correctPhase = phase.check(occupied, explicitRequirement)
-        if (!correctPhase)
-            logger.error { "incorrect phase for zone $zoneIndex" }
-
-        if (phase == SpacingRequirementPhase.HeadRoom || phase == SpacingRequirementPhase.TailRoom)
-            continue
-
-        var beginTime: Double
-        var endTime: Double
-
-        val zoneName = rawInfra.getZoneName(zone)
-
-        when (phase) {
-            SpacingRequirementPhase.Begin -> {
-                beginTime = 0.0
-                endTime = zoneOccupancy!!.exit
-            }
-            SpacingRequirementPhase.Main -> {
-                beginTime = if (zoneRequirementTime.isFinite()) {
-                    zoneRequirementTime
-                } else {
-                    // zones may not be required due to faulty signaling.
-                    // in this case, fall back to the time at which the zone was first occupied
-                    logger.error { "missing main phase zone requirement on zone $zoneName" }
-                    zoneOccupancy!!.entry
-                }
-                endTime = zoneOccupancy!!.exit
-            }
-            else -> /* SpacingRequirementPhase.End */ {
-                assert(zoneRequirementTime.isFinite())
-                beginTime = zoneRequirementTime
-                endTime = envelope.totalTime
-            }
-        }
-
-        res.add(SpacingRequirement(zoneName, beginTime, endTime))
-    }
-    return res
-}
 
 private fun routeOccupancies(
     zoneOccupationChangeEvents: MutableList<ZoneOccupationChangeEvent>,
@@ -632,10 +456,8 @@ private fun zoneOccupationChangeEvents(
 data class PathSignal(
     val signal: LogicalSignalId,
     val pathOffset: Distance,
-    // when a signal is between blocks, these two values will be different.
-    // for distant signals, minBlockPath index will be one less than maxBlockPathIndex
+    // when a signal is between blocks, prefer the index of the first block
     val minBlockPathIndex: Int,
-    val maxBlockPathIndex: Int,
 )
 
 
@@ -648,7 +470,6 @@ fun pathSignals(
     val pathSignals = mutableListOf<PathSignal>()
     var currentOffset = -startOffset
     for ((blockIdx, block) in blockPath.withIndex()) {
-        val blockSize = blockInfra.getBlockLength(block).distance
         val blockSignals = blockInfra.getBlockSignals(block)
         val blockSignalPositions = blockInfra.getSignalsPositions(block)
         for (signalIndex in 0 until blockSignals.size) {
@@ -658,13 +479,10 @@ fun pathSignals(
                 continue
             val signal = blockSignals[signalIndex]
             val position = blockSignalPositions[signalIndex].distance
-            val dedupedSignal = blockIdx != blockPath.size - 1 && signalIndex == blockSignals.size - 1
-            val maxBlockPathIndex = if (dedupedSignal) blockIdx + 1 else blockIdx
-            pathSignals.add(PathSignal(signal, currentOffset + position, blockIdx, maxBlockPathIndex))
+            pathSignals.add(PathSignal(signal, currentOffset + position, blockIdx))
         }
-        currentOffset += blockSize
+        currentOffset += blockInfra.getBlockLength(block).distance
     }
-
     return pathSignals
 }
 
