@@ -1,0 +1,11 @@
+.show-warped-map-button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--coolgray7);
+}
+
+.warped-map {
+  overflow: hidden;
+  transition: 0.2s;
+}

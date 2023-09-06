@@ -43,6 +43,7 @@ export default function SimulationResults({ isDisplayed, collapsedTimetable, inf
   const { t } = useTranslation(['translation', 'simulation', 'allowances']);
   const timeTableRef = useRef<HTMLDivElement | null>(null);
   const [extViewport, setExtViewport] = useState<Viewport | undefined>(undefined);
+  const [showWarpedMap, setShowWarpedMap] = useState(false);
 
   const [heightOfSpaceTimeChart, setHeightOfSpaceTimeChart] = useState(600);
 
@@ -155,8 +156,15 @@ export default function SimulationResults({ isDisplayed, collapsedTimetable, inf
       <TimeLine />
 
       {/* SIMULATION : SPACE TIME CHART */}
-      <div className="d-flex flex-row align-items-stretch mb-2">
-        <SimulationWarpedMap />
+      <div className="d-flex flex-row align-items-stretch mb-2 bg-white">
+        <button
+          type="button"
+          className="show-warped-map-button my-3 ml-3 mr-1"
+          onClick={() => setShowWarpedMap(!showWarpedMap)}
+        >
+          <i className={showWarpedMap ? 'icons-arrow-prev' : 'icons-arrow-next'} />
+        </button>
+        <SimulationWarpedMap collapsed={!showWarpedMap} />
 
         <div className="osrd-simulation-container d-flex flex-grow-1 flex-shrink-1">
           <div
