@@ -1,4 +1,12 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { FaPencilAlt, FaPlus, FaTrash } from 'react-icons/fa';
+import { GiElectric } from 'react-icons/gi';
+import { MdDescription, MdTitle } from 'react-icons/md';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { sortBy } from 'lodash';
+
 import scenarioLogo from 'assets/pictures/views/studies.svg';
 import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
@@ -9,17 +17,10 @@ import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
 import InfraSelectorModal from 'common/InfraSelector/InfraSelectorModal';
-import { useTranslation } from 'react-i18next';
-import { FaPencilAlt, FaPlus, FaTrash } from 'react-icons/fa';
-import { GiElectric } from 'react-icons/gi';
-import { MdDescription, MdTitle } from 'react-icons/md';
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { ScenarioListResult, osrdEditoastApi, ScenarioRequest } from 'common/api/osrdEditoastApi';
 import { setFailure, setSuccess } from 'reducers/main';
 import { updateScenarioID } from 'reducers/osrdconf';
 import { getInfraID, getProjectID, getStudyID } from 'reducers/osrdconf/selectors';
-import { ScenarioListResult, osrdEditoastApi, ScenarioRequest } from 'common/api/osrdEditoastApi';
-import { sortBy } from 'lodash';
 
 const scenarioTypesDefaults = {
   name: '',
@@ -33,8 +34,6 @@ type AddOrEditScenarioModalProps = {
   getScenarioTimetable?: (v: boolean) => void;
 };
 
-type SelectOptionsType = { key: number | undefined; value: string };
-
 export default function AddOrEditScenarioModal({
   editionMode = false,
   scenario,
@@ -44,7 +43,7 @@ export default function AddOrEditScenarioModal({
   const { closeModal } = useContext(ModalContext);
   const noElectricalProfileSetOption = {
     key: undefined,
-    value: t('noElectricalProfileSet'),
+    value: t('noElectricalProfileSet').toString(),
   };
 
   const [deleteScenarioRTK] =
@@ -81,13 +80,15 @@ export default function AddOrEditScenarioModal({
   const studyID = useSelector(getStudyID);
   const infraID = useSelector(getInfraID);
 
-  const selectedValue: SelectOptionsType = useMemo(
-    () =>
-      electricalProfilOptions.find(
+  const selectedValue = useMemo(() => {
+    if (currentScenario.electrical_profile_set_id) {
+      const element = electricalProfilOptions.find(
         (option) => option.key === currentScenario.electrical_profile_set_id
-      ) || noElectricalProfileSetOption,
-    [currentScenario.electrical_profile_set_id, electricalProfilOptions]
-  );
+      );
+      if (element) return { id: `${element.key}`, label: element.value };
+    }
+    return undefined;
+  }, [currentScenario.electrical_profile_set_id, electricalProfilOptions]);
 
   type ElectricalProfileSetType = { id: number; name: string };
 
@@ -243,7 +244,7 @@ export default function AddOrEditScenarioModal({
             {!editionMode && electricalProfilOptions.length > 1 && (
               <div className="scenario-edition-modal-description">
                 <SelectImprovedSNCF
-                  title={
+                  label={
                     <div className="d-flex align-items-center">
                       <span className="mr-2">
                         <GiElectric />
@@ -251,10 +252,16 @@ export default function AddOrEditScenarioModal({
                       {t('electricalProfileSet')}
                     </div>
                   }
-                  selectedValue={selectedValue}
-                  options={electricalProfilOptions}
-                  onChange={(e: SelectOptionsType) =>
-                    setCurrentScenario({ ...currentScenario, electrical_profile_set_id: e.key })
+                  value={selectedValue}
+                  options={electricalProfilOptions.map((e) => ({
+                    id: `${e.key}`,
+                    label: e.value,
+                  }))}
+                  onChange={(e) =>
+                    setCurrentScenario({
+                      ...currentScenario,
+                      electrical_profile_set_id: e?.id ? +e.id : undefined,
+                    })
                   }
                 />
               </div>

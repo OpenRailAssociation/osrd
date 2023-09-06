@@ -21,16 +21,18 @@ const IntervalsEditorSelectForm = ({
 }: IntervalsEditorSelectFormProps) => (
   <div className="intervals-editor-select-form">
     <SelectSNCF
+      sm
+      value={`${interval.value}`}
       options={selectOptions}
       onChange={(newValue) => {
-        const result = cloneDeep(data);
-        if (result[selectedIntervalIndex]) {
-          result[selectedIntervalIndex].value = newValue;
-          setData(result);
+        if (newValue) {
+          const result = cloneDeep(data);
+          if (result[selectedIntervalIndex]) {
+            result[selectedIntervalIndex].value = newValue;
+            setData(result);
+          }
         }
       }}
-      sm
-      selectedValue={(interval.value as string) || ''}
     />
   </div>
 );

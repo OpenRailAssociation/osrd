@@ -1,47 +1,70 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, ReactNode, useCallback, useMemo } from 'react';
+import { isObject, isNil } from 'lodash';
+
+import { SelectOptionObject, getOptionLabel, getOptionValue } from './SelectSNCF';
 import './SelectImprovedSNCF.scss';
 
-import PropTypes from 'prop-types';
-import nextId from 'react-id-generator';
+interface SelectProps<T> {
+  inline?: boolean;
+  label?: ReactNode;
+  options: T[];
+  value?: T;
+  onChange: (value?: T) => void;
+  sm?: boolean;
+  withSearch?: boolean;
+  withNewValueInput?: boolean;
+  addButtonTitle?: string;
+  bgWhite?: boolean;
+  dataTestId?: string;
+}
 
-export default function SelectImprovedSNCF(props) {
-  const {
-    inline,
-    title,
-    options,
-    selectedValue,
-    onChange,
-    sm,
-    withSearch,
-    withNewValueInput,
-    addButtonTitle,
-    bgWhite,
-    dataTestId,
-  } = props;
+function SelectImproved<T extends string | SelectOptionObject>({
+  inline,
+  label,
+  options,
+  value,
+  onChange,
+  sm,
+  withSearch,
+  withNewValueInput,
+  addButtonTitle = 'Add',
+  bgWhite,
+  dataTestId,
+}: SelectProps<T>) {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState();
-  const [filteredOptions, setFilteredOptions] = useState(options);
+  const [selectedItem, setSelectedItem] = useState<T | undefined>(value);
+  const [filteredOptions, setFilteredOptions] = useState<Array<T>>(options);
   const [filterText, setFilterText] = useState('');
-
-  const selectItem = (selectedOption) => {
-    setSelectedItem(selectedOption);
-    onChange(selectedOption);
-    setIsOpen(false);
-  };
-
-  const renderOptions = () =>
-    filteredOptions.map((option) => {
-      const value = typeof option === 'string' ? option : option.value;
-      return (
-        <span className="select-menu-item" role="listitem" key={nextId()}>
-          <button type="button" onClick={() => selectItem(option)}>
-            {value}
-          </button>
-        </span>
+  const filterOptions = useCallback(
+    (text: string) => {
+      const localFilteredOptions = options.filter((el) =>
+        typeof el === 'string'
+          ? el.toLowerCase().includes(text.toLowerCase())
+          : el.label.toLowerCase().includes(text.toLowerCase())
       );
-    });
+      setFilteredOptions(text ? localFilteredOptions : options);
+    },
+    [options, setFilteredOptions]
+  );
 
-  const renderNewValueInput = (currentValue) => (
+  const selectItem = useCallback(
+    (selectedOption: T) => {
+      setSelectedItem(selectedOption);
+      onChange(selectedOption);
+      setIsOpen(false);
+    },
+    [setSelectedItem, onChange, setIsOpen]
+  );
+
+  useEffect(() => {
+    setSelectedItem(value);
+  }, [value]);
+
+  useEffect(() => {
+    filterOptions(filterText);
+  }, [filterOptions, filterText]);
+
+  const renderNewValueInput = (currentValue: string) => (
     <div className="select-menu-item" role="listitem">
       <div className="d-flex flex-column flex-sm-row" data-role="add">
         <div className="form-control-container w-100 has-left-icon">
@@ -49,7 +72,11 @@ export default function SelectImprovedSNCF(props) {
             type="button"
             className="btn btn-primary btn-block btn-sm"
             onClick={() => {
-              selectItem(currentValue);
+              const item =
+                options.length > 0 && isObject(options[0]) ? { value: currentValue } : currentValue;
+              // We force the type, because we detect the type of the value with the options.
+              // if options are empty, we possibly have a problem (default is string)
+              selectItem(item as T);
             }}
           >
             {addButtonTitle}
@@ -60,35 +87,32 @@ export default function SelectImprovedSNCF(props) {
   );
 
   const renderSelectedItem = () => {
-    if (selectedItem) {
-      return typeof selectedItem === 'string' ? selectedItem : selectedItem.value;
-    }
-    return null;
+    if (isNil(selectedItem)) return null;
+    return getOptionLabel(selectedItem);
   };
 
-  const filterOptions = (text) => {
-    const localFilteredOptions = options.filter((el) =>
-      typeof el === 'string'
-        ? el.toLowerCase().includes(text.toLowerCase())
-        : el.value.toLowerCase().includes(text.toLowerCase())
-    );
-    setFilteredOptions(text ? localFilteredOptions : options);
-  };
+  const optionsComponents = useMemo(
+    () =>
+      filteredOptions.map((option) => (
+        <span className="select-menu-item" role="listitem" key={getOptionValue(option)}>
+          <button type="button" onClick={() => selectItem(option)}>
+            {getOptionLabel(option)}
+          </button>
+        </span>
+      )),
+    [filteredOptions]
+  );
 
-  useEffect(() => {
-    setSelectedItem(selectedValue);
-  }, [selectedValue]);
-
-  useEffect(() => {
-    filterOptions(filterText);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filterText, options]);
+  const shouldDisplayNewInputValue =
+    withNewValueInput &&
+    filterText.length > 0 &&
+    !filteredOptions.map((e) => (isObject(e) ? e.label : e)).includes(filterText);
 
   return (
     <div className={inline ? 'd-flex align-items-baseline' : ''} data-testid={dataTestId}>
-      {title && (
+      {label && (
         <label htmlFor="select1" className={inline ? 'pr-2' : ''}>
-          {title}
+          {label}
         </label>
       )}
       <div className={`select-improved ${isOpen ? 'active' : ''}`}>
@@ -149,11 +173,8 @@ export default function SelectImprovedSNCF(props) {
                 </div>
               )}
               <div className="flex-fluid overflow-y" role="list" data-role="menu">
-                {renderOptions()}
-                {withNewValueInput &&
-                  filterText &&
-                  !filteredOptions.includes(filterText) &&
-                  renderNewValueInput(filterText)}
+                {optionsComponents}
+                {shouldDisplayNewInputValue && renderNewValueInput(filterText)}
               </div>
             </div>
           </div>
@@ -180,28 +201,5 @@ export default function SelectImprovedSNCF(props) {
   );
 }
 
-SelectImprovedSNCF.propTypes = {
-  inline: PropTypes.bool,
-  options: PropTypes.array.isRequired,
-  onChange: PropTypes.func.isRequired,
-  sm: PropTypes.bool,
-  selectedValue: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
-  title: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
-  withSearch: PropTypes.bool,
-  withNewValueInput: PropTypes.bool,
-  addButtonTitle: PropTypes.string,
-  bgWhite: PropTypes.bool,
-  dataTestId: PropTypes.string,
-};
-
-SelectImprovedSNCF.defaultProps = {
-  inline: false,
-  selectedValue: undefined,
-  sm: false,
-  title: null,
-  withSearch: false,
-  withNewValueInput: false,
-  addButtonTitle: null,
-  bgWhite: false,
-  dataTestId: '',
-};
+export default SelectImproved;
+export type { SelectOptionObject };

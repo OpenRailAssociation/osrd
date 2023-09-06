@@ -1,7 +1,7 @@
 import React from 'react';
+import { cloneDeep, head } from 'lodash';
 
 import SelectSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
-import { cloneDeep } from 'lodash';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { IntervalItem } from './types';
 
@@ -45,14 +45,14 @@ const IntervalsEditorMarginForm = ({
 
     {units.length > 1 && (
       <SelectSNCF
+        sm
         options={units}
         onChange={(newUnit) => {
           const result = cloneDeep(data);
           result[selectedIntervalIndex].unit = newUnit;
-          setData(result as IntervalItem[]);
+          setData(result);
         }}
-        sm
-        selectedValue={(interval.unit as string) || defaultUnit || units[0]}
+        value={interval.unit || defaultUnit || head(units)}
       />
     )}
   </div>

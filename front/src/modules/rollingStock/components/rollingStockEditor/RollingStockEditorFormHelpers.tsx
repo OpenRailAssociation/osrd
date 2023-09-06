@@ -1,7 +1,7 @@
 import React, { SetStateAction } from 'react';
 import { useTranslation } from 'react-i18next';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import InputGroupSNCF, { InputGroupSNCFValue } from 'common/BootstrapSNCF/InputGroupSNCF';
+import InputGroupSNCF from 'common/BootstrapSNCF/InputGroupSNCF';
 import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
 import {
   RollingStockEditorMetadata,
@@ -108,26 +108,20 @@ const RollingStockEditorParameterFormColumn = ({
           return (
             <div className="d-flex align-items-center justify-content-between rollingstock-editor-select">
               <SelectSNCF
-                id={property.title}
-                name={property.title}
-                title={t(`${property.title}`)}
-                labelKey="label"
-                value={JSON.stringify({
-                  label: rollingStockValues[property.title],
-                  value: rollingStockValues[property.title],
-                } as InputGroupSNCFValue)}
-                options={property.enum.map((option) => ({
-                  label: option,
-                  value: option,
-                }))}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                  setRollingStockValues({
-                    ...rollingStockValues,
-                    [property.title]: JSON.parse(e.target.value).value,
-                  });
-                }}
                 sm
                 key={property.title}
+                id={property.title}
+                name={property.title}
+                label={t(`${property.title}`).toString()}
+                // with an enum, type is a string
+                value={rollingStockValues[property.title] as string}
+                options={property.enum}
+                onChange={(value?: string) => {
+                  setRollingStockValues({
+                    ...rollingStockValues,
+                    [property.title]: value || null,
+                  });
+                }}
               />
             </div>
           );

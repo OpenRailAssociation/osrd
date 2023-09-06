@@ -1,13 +1,13 @@
 import React, { useEffect, useMemo, useState, useCallback, SetStateAction } from 'react';
 import debounce from 'lodash/debounce';
 import InputGroupSNCF, { InputGroupSNCFValue } from 'common/BootstrapSNCF/InputGroupSNCF';
-import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
+import SelectSNCF, { SelectOptionObject } from 'common/BootstrapSNCF/SelectSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { StandardAllowance, TrainSchedule } from 'common/api/osrdEditoastApi';
 import { TYPES_UNITS, ALLOWANCE_UNITS_KEYS, AllowanceType } from './allowancesConsts';
 
 interface StandardAllowanceDefaultProps {
-  distributionsTypes?: { id: string; label: string }[];
+  distributionsTypes?: SelectOptionObject[];
   trainDetail?: TrainSchedule;
   changeType?: (type: unknown, typekey: string) => void;
   options?: {
@@ -51,10 +51,10 @@ const StandardAllowanceDefault = (props: StandardAllowanceDefaultProps) => {
     },
   ]);
 
-  let distributionType: { id: string; label: string } = { id: '', label: '' };
+  let distributionType: SelectOptionObject = { id: '', label: '' };
   if (distributionsTypes) [distributionType] = distributionsTypes;
 
-  const [distribution, setDistribution] = useState<{ id: string; label: string } | undefined>(
+  const [distribution, setDistribution] = useState<SelectOptionObject | undefined>(
     distributionType
   );
 
@@ -91,10 +91,6 @@ const StandardAllowanceDefault = (props: StandardAllowanceDefaultProps) => {
     },
     [debouncedChangeType]
   );
-
-  const handleDistribution = (e: { target: { value: string } }) => {
-    setDistribution(JSON.parse(e.target.value));
-  };
 
   useEffect(() => {
     let thereIsStandard = false;
@@ -166,12 +162,11 @@ const StandardAllowanceDefault = (props: StandardAllowanceDefaultProps) => {
               <div className="col-md-2 text-normal">{t ? t('perDefaultValue') : ''}</div>
               <div className="col-md-4">
                 <SelectSNCF
-                  id="distributionTypeSelector"
-                  options={distributionsTypes as { id: string; label: string }[]}
-                  labelKey="label"
-                  onChange={handleDistribution}
                   sm
-                  value={distribution || ''}
+                  id="distributionTypeSelector"
+                  options={distributionsTypes || []}
+                  onChange={(e) => setDistribution(e)}
+                  value={distribution}
                 />
               </div>
             </>
