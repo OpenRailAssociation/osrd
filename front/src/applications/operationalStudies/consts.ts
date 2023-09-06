@@ -129,6 +129,7 @@ export interface PointOnMap {
   duration?: number;
   track?: string;
   position?: number;
+  path_offset?: number;
   location?: {
     track_section?: string;
     offset?: number;

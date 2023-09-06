@@ -45,7 +45,9 @@ export default function ModalSugerredVias({
     dispatch(
       replaceVias(
         vias.filter(
-          (via) => via.track !== step.location.track_section || via.position !== step.path_offset
+          (via) =>
+            via.location?.track_section !== step.location.track_section ||
+            via.path_offset !== step.path_offset
         )
       )
     );
