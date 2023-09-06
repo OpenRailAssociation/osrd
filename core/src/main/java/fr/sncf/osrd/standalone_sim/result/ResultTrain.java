@@ -74,6 +74,8 @@ public class ResultTrain {
             this.endTime = endTime;
             assert !Double.isNaN(beginTime);
             assert !Double.isNaN(endTime);
+            assert Double.isFinite(beginTime);
+            assert Double.isFinite(endTime);
         }
     }
 

@@ -12,13 +12,10 @@ private fun CollectionItemType.generateRingBuffer(context: GeneratorContext, cur
     val simpleName = type.simpleName
     val paramsDecl = type.paramsDecl
     val paramsUse = type.paramsUse
-    val paramsStar = type.paramsStar
     val fileName = "${simpleName}RingBuffer"
     val bufferType = "Mutable${simpleName}Array${paramsUse}"
-    val itemListType = "${simpleName}List${paramsUse}"
     val storageType = storageType!!
     val primitiveZero = storageType.primitiveZero()
-    val toPrimitive = storageType.toPrimitive
     val wrapperZero = storageType.fromPrimitive(primitiveZero)
     val file = context.codeGenerator.createNewFile(Dependencies(true, currentFile), generatedPackage, fileName)
     file.appendText("""
@@ -44,6 +41,12 @@ private fun CollectionItemType.generateRingBuffer(context: GeneratorContext, cur
                 public constructor() : this(${DEFAULT_CAPACITY})
 
                 val size get() = _size
+
+                fun isEmpty() = size == 0
+                fun isNotEmpty() = size != 0
+
+                val beginIndex get() = if (isEmpty()) -1 else startIndex
+                val endIndex get() = if (isEmpty()) -1 else startIndex + size
 
                 /** GENERATED CODE */
                 override fun iterator(): Iterator<$type> {
@@ -165,6 +168,18 @@ private fun CollectionItemType.generateRingBuffer(context: GeneratorContext, cur
                     val oldValue = buffer[offset.mod(capacity)]
                     offset = (offset + 1).mod(capacity)
                     return oldValue
+                }
+
+                /** GENERATED CODE */
+                fun removeFrontUntil(cutoffIndex: Int) {
+                    val removedCount = cutoffIndex - startIndex
+                    if (removedCount == 0)
+                        return
+                    assert(removedCount > 0)
+                    assert(removedCount <= size)
+                    _size -= removedCount
+                    startIndex += removedCount
+                    offset = (offset + removedCount).mod(capacity)
                 }
 
                 /** GENERATED CODE */

@@ -6,6 +6,7 @@ import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.utils.units.*
 
 class BlockDescriptor(
+    val length: Length<Block>,
     val startAtBufferStop: Boolean,
     val stopsAtBufferStop: Boolean,
     val path: StaticIdxList<ZonePath>,
@@ -117,10 +118,6 @@ class BlockInfraImpl(
     }
 
     override fun getBlockLength(block: BlockId): Length<Block> {
-        var length = Length<Block>(0.meters)
-        for (path in blockPool[block].path) {
-            length += rawInfra.getZonePathLength(path).distance
-        }
-        return length
+        return blockPool[block].length
     }
 }

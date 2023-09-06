@@ -54,6 +54,10 @@ interface ReservationInfra : LocationInfra {
     fun getZonePathChunks(zonePath: ZonePathId): DirStaticIdxList<TrackChunk>
 }
 
+fun ReservationInfra.getZonePathZone(zonePath: ZonePathId): ZoneId {
+    return getNextZone(getZonePathEntry(zonePath))!!
+}
+
 /** A zone path is a path inside a zone */
 sealed interface ZonePath
 typealias ZonePathId = StaticIdx<ZonePath>
