@@ -1,403 +1,751 @@
-table! {
-    osrd_infra_infra {
-        id -> BigInt,
-        name -> Text,
-        railjson_version -> Text,
-        owner -> Uuid,
-        version -> Text,
-        generated_version -> Nullable<Text>,
-        locked -> Bool,
-        created -> Timestamp,
-        modified -> Timestamp,
-    }
-}
+// @generated automatically by Diesel CLI.
 
-joinable!(osrd_infra_scenario -> osrd_infra_infra (infra_id));
-allow_tables_to_appear_in_same_query!(osrd_infra_infra, osrd_infra_scenario,);
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
 
-table! {
-    osrd_infra_tracksectionlayer {
-        id -> BigInt,
-        obj_id -> Text,
-        infra_id -> BigInt,
-    }
-}
-
-table! {
-    osrd_infra_signallayer {
-        id -> BigInt,
-        obj_id -> Text,
-        infra_id -> BigInt,
-    }
-}
-
-table! {
-    osrd_infra_speedsectionlayer {
-        id -> BigInt,
-        obj_id -> Text,
-        infra_id -> BigInt,
-    }
-}
-
-table! {
-    osrd_infra_tracksectionlinklayer {
-        id -> BigInt,
-        obj_id -> Text,
-        infra_id -> BigInt,
-    }
-}
-
-table! {
-    osrd_infra_switchlayer {
-        id -> BigInt,
-        obj_id -> Text,
-        infra_id -> BigInt,
-    }
-}
-
-table! {
-    osrd_infra_detectorlayer {
-        id -> BigInt,
-        obj_id -> Text,
-        infra_id -> BigInt,
-    }
-}
-
-table! {
-    osrd_infra_bufferstoplayer {
-        id -> BigInt,
-        obj_id -> Text,
-        infra_id -> BigInt,
-    }
-}
-
-table! {
-    osrd_infra_operationalpointlayer {
-        id -> BigInt,
-        obj_id -> Text,
-        infra_id -> BigInt,
-    }
-}
-
-table! {
-    osrd_infra_catenarylayer {
-        id -> BigInt,
-        obj_id -> Text,
-        infra_id -> BigInt,
-    }
-}
-
-table! {
-    osrd_infra_lpvpanellayer {
-        id -> BigInt,
-        obj_id -> Text,
-        infra_id -> BigInt,
-        data -> Jsonb,
-    }
-}
-
-table! {
-    osrd_infra_neutralsectionlayer {
-        id -> BigInt,
-        obj_id -> Text,
-        infra_id -> BigInt,
-    }
-}
-
-table! {
-    osrd_infra_backwardpantographneutralsectionlayer {
-        id -> BigInt,
-        obj_id -> Text,
-        infra_id -> BigInt,
-    }
-}
-
-// Models
-
-table! {
-    osrd_infra_tracksectionmodel(id) {
-        id -> BigInt,
-        obj_id -> Text,
-        data -> Jsonb,
-        infra_id -> BigInt,
-    }
-}
-
-table! {
-    osrd_infra_signalmodel(id) {
-        id -> BigInt,
-        obj_id -> Text,
-        data -> Jsonb,
-        infra_id -> BigInt,
-    }
-}
-
-table! {
-    osrd_infra_speedsectionmodel(id) {
-        id -> BigInt,
-        obj_id -> Text,
-        data -> Jsonb,
-        infra_id -> BigInt,
-    }
-}
-
-table! {
-    osrd_infra_tracksectionlinkmodel(id) {
-        id -> BigInt,
-        obj_id -> Text,
-        data -> Jsonb,
-        infra_id -> BigInt,
-    }
-}
-
-table! {
-    osrd_infra_switchmodel(id) {
-        id -> BigInt,
-        obj_id -> Text,
-        data -> Jsonb,
-        infra_id -> BigInt,
-    }
-}
-
-table! {
-    osrd_infra_switchtypemodel(id) {
-        id -> BigInt,
-        obj_id -> Text,
-        data -> Jsonb,
-        infra_id -> BigInt,
-    }
-}
-
-table! {
-    osrd_infra_detectormodel(id) {
-        id -> BigInt,
-        obj_id -> Text,
-        data -> Jsonb,
-        infra_id -> BigInt,
+    document (id) {
+        id -> Int8,
+        #[max_length = 255]
+        content_type -> Varchar,
+        data -> Bytea,
     }
 }
 
 diesel::table! {
-    osrd_infra_bufferstopmodel(id) {
-        id -> BigInt,
-        obj_id -> Text,
-        data -> Jsonb,
-        infra_id -> BigInt,
-    }
-}
-
-table! {
-    osrd_infra_routemodel(id) {
-        id -> BigInt,
-        obj_id -> Text,
-        data -> Jsonb,
-        infra_id -> BigInt,
-    }
-}
-
-table! {
-    osrd_infra_operationalpointmodel(id) {
-        id -> BigInt,
-        obj_id -> Text,
-        data -> Jsonb,
-        infra_id -> BigInt,
-    }
-}
-
-table! {
-    osrd_infra_catenarymodel(id) {
-        id -> BigInt,
-        obj_id -> Text,
-        data -> Jsonb,
-        infra_id -> BigInt,
-    }
-}
-
-table! {
-    osrd_infra_neutralsectionmodel(id) {
-        id -> BigInt,
-        obj_id -> Text,
-        data -> Jsonb,
-        infra_id -> BigInt,
-    }
-}
-
-table! {
-    osrd_infra_electricalprofileset(id) {
-        id -> BigInt,
-        name -> Text,
-        data -> Jsonb,
-    }
-}
-
-table! {
-    osrd_infra_project {
-        id -> BigInt,
-        name -> Text,
-        description -> Text,
-        objectives -> Text,
-        funders -> Text,
-        budget -> Integer,
-        image_id -> Nullable<BigInt>,
-        creation_date -> Timestamp,
-        last_modification -> Timestamp,
-        tags -> Array<Text>,
-    }
-}
-
-table! {
-    osrd_infra_study {
-        id -> BigInt,
-        project_id -> BigInt,
-        name -> Text,
-        description -> Text,
-        business_code -> Text,
-        service_code -> Text,
-        creation_date -> Timestamp,
-        last_modification -> Timestamp,
-        start_date -> Nullable<Date>,
-        expected_end_date -> Nullable<Date>,
-        actual_end_date -> Nullable<Date>,
-        budget -> Integer,
-        tags -> Array<Text>,
-        state -> Text,
-        study_type -> Text,
-    }
-}
-
-joinable!(osrd_infra_study -> osrd_infra_project (project_id));
-
-table! {
-    osrd_infra_scenario {
-        id -> BigInt,
-        study_id -> BigInt,
-        infra_id -> BigInt,
-        electrical_profile_set_id -> Nullable<BigInt>,
-        timetable_id -> BigInt,
-        name -> Text,
-        description -> Text,
-        creation_date -> Timestamp,
-        last_modification -> Timestamp,
-        tags -> Array<Text>,
-    }
-}
-
-table! {
-    osrd_infra_document(id) {
-        id -> BigInt,
-        content_type -> Text,
-        data -> Binary,
-    }
-}
-
-table! {
-    osrd_infra_rollingstock {
-        id -> BigInt,
-        name -> Text,
-        railjson_version -> Text,
-        locked -> Bool,
-        effort_curves -> Jsonb,
-        base_power_class -> Text,
-        length -> Double,
-        max_speed -> Double,
-        startup_time -> Double,
-        startup_acceleration -> Double,
-        comfort_acceleration -> Double,
-        gamma -> Jsonb,
-        inertia_coefficient -> Double,
-        features -> Array<Text>,
-        mass -> Double,
-        rolling_resistance -> Jsonb,
-        loading_gauge -> Text,
-        metadata -> Jsonb,
-        power_restrictions -> Nullable<Jsonb>,
-        energy_sources -> Jsonb,
-        electrical_power_startup_time -> Nullable<Double>,
-        raise_pantograph_time -> Nullable<Double>,
-        version -> BigInt
-    }
-}
-
-table! {
-    osrd_infra_rollingstocklivery(id) {
-        id -> BigInt,
-        name -> Text,
-        rolling_stock_id -> BigInt,
-        compound_image_id -> Nullable<BigInt>,
-    }
-}
-
-table! {
-    osrd_infra_rollingstockseparatedimage(id) {
-        id -> BigInt,
-        image_id -> BigInt,
-        livery_id -> BigInt,
-        order -> Integer,
-    }
-}
-
-table! {
-    osrd_infra_timetable(id) {
-        id -> BigInt,
-        name -> Text,
-    }
-}
-
-table! {
-    osrd_infra_trainschedule(id) {
-        id -> BigInt,
-        train_name -> Text,
-        labels -> Jsonb,
-        departure_time -> Double,
-        initial_speed -> Double,
-        allowances -> Jsonb,
-        scheduled_points -> Jsonb,
-        comfort -> Text,
-        speed_limit_tags -> Nullable<Text>,
-        power_restriction_ranges -> Nullable<Jsonb>,
-        options -> Nullable<Jsonb>,
-        path_id -> BigInt,
-        rolling_stock_id -> BigInt,
-        timetable_id -> BigInt,
-        infra_version -> Text,
-        rollingstock_version -> BigInt,
-    }
-}
-
-joinable!(  osrd_infra_trainschedule -> osrd_infra_timetable (timetable_id));
-
-allow_tables_to_appear_in_same_query!(osrd_infra_trainschedule, osrd_infra_timetable);
-
-table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
 
-    osrd_infra_pathmodel(id) {
-        id -> BigInt,
+    electrical_profile_set (id) {
+        id -> Int8,
+        #[max_length = 128]
+        name -> Varchar,
+        data -> Jsonb,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    infra (id) {
+        id -> Int8,
+        #[max_length = 128]
+        name -> Varchar,
+        #[max_length = 16]
+        railjson_version -> Varchar,
         owner -> Uuid,
-        created -> Timestamp,
-        length -> Double,
+        #[max_length = 40]
+        version -> Varchar,
+        #[max_length = 40]
+        generated_version -> Nullable<Varchar>,
+        locked -> Bool,
+        created -> Timestamptz,
+        modified -> Timestamptz,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    infra_layer_buffer_stop (id) {
+        id -> Int8,
+        #[max_length = 255]
+        obj_id -> Varchar,
+        geographic -> Geometry,
+        schematic -> Geometry,
+        infra_id -> Int8,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    infra_layer_catenary (id) {
+        id -> Int8,
+        #[max_length = 255]
+        obj_id -> Varchar,
+        geographic -> Geometry,
+        schematic -> Geometry,
+        infra_id -> Int8,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    infra_layer_detector (id) {
+        id -> Int8,
+        #[max_length = 255]
+        obj_id -> Varchar,
+        geographic -> Geometry,
+        schematic -> Geometry,
+        infra_id -> Int8,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    infra_layer_error (id) {
+        id -> Int8,
+        geographic -> Nullable<Geometry>,
+        schematic -> Nullable<Geometry>,
+        information -> Jsonb,
+        infra_id -> Int8,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    infra_layer_lpv_panel (id) {
+        id -> Int8,
+        #[max_length = 255]
+        obj_id -> Varchar,
+        geographic -> Geometry,
+        schematic -> Geometry,
+        data -> Jsonb,
+        infra_id -> Int8,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    infra_layer_neutral_section (id) {
+        id -> Int8,
+        #[max_length = 255]
+        obj_id -> Varchar,
+        geographic -> Geometry,
+        schematic -> Geometry,
+        infra_id -> Int8,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    infra_layer_operational_point (id) {
+        id -> Int8,
+        #[max_length = 255]
+        obj_id -> Varchar,
+        geographic -> Geometry,
+        schematic -> Geometry,
+        infra_id -> Int8,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    infra_layer_signal (id) {
+        id -> Int8,
+        #[max_length = 255]
+        obj_id -> Varchar,
+        geographic -> Geometry,
+        schematic -> Geometry,
+        infra_id -> Int8,
+        angle_geo -> Float8,
+        angle_sch -> Float8,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    infra_layer_speed_section (id) {
+        id -> Int8,
+        #[max_length = 255]
+        obj_id -> Varchar,
+        geographic -> Geometry,
+        schematic -> Geometry,
+        infra_id -> Int8,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    infra_layer_switch (id) {
+        id -> Int8,
+        #[max_length = 255]
+        obj_id -> Varchar,
+        geographic -> Geometry,
+        schematic -> Geometry,
+        infra_id -> Int8,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    infra_layer_track_section (id) {
+        id -> Int8,
+        #[max_length = 255]
+        obj_id -> Varchar,
+        geographic -> Geometry,
+        schematic -> Geometry,
+        infra_id -> Int8,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    infra_layer_track_section_link (id) {
+        id -> Int8,
+        #[max_length = 255]
+        obj_id -> Varchar,
+        geographic -> Geometry,
+        schematic -> Geometry,
+        infra_id -> Int8,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    infra_object_buffer_stop (id) {
+        id -> Int8,
+        #[max_length = 255]
+        obj_id -> Varchar,
+        data -> Jsonb,
+        infra_id -> Int8,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    infra_object_catenary (id) {
+        id -> Int8,
+        #[max_length = 255]
+        obj_id -> Varchar,
+        data -> Jsonb,
+        infra_id -> Int8,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    infra_object_detector (id) {
+        id -> Int8,
+        #[max_length = 255]
+        obj_id -> Varchar,
+        data -> Jsonb,
+        infra_id -> Int8,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    infra_object_neutral_section (id) {
+        id -> Int8,
+        #[max_length = 255]
+        obj_id -> Varchar,
+        data -> Jsonb,
+        infra_id -> Int8,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    infra_object_operational_point (id) {
+        id -> Int8,
+        #[max_length = 255]
+        obj_id -> Varchar,
+        data -> Jsonb,
+        infra_id -> Int8,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    infra_object_route (id) {
+        id -> Int8,
+        #[max_length = 255]
+        obj_id -> Varchar,
+        data -> Jsonb,
+        infra_id -> Int8,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    infra_object_signal (id) {
+        id -> Int8,
+        #[max_length = 255]
+        obj_id -> Varchar,
+        data -> Jsonb,
+        infra_id -> Int8,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    infra_object_speed_section (id) {
+        id -> Int8,
+        #[max_length = 255]
+        obj_id -> Varchar,
+        data -> Jsonb,
+        infra_id -> Int8,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    infra_object_switch (id) {
+        id -> Int8,
+        #[max_length = 255]
+        obj_id -> Varchar,
+        data -> Jsonb,
+        infra_id -> Int8,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    infra_object_switch_type (id) {
+        id -> Int8,
+        #[max_length = 255]
+        obj_id -> Varchar,
+        data -> Jsonb,
+        infra_id -> Int8,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    infra_object_track_section (id) {
+        id -> Int8,
+        #[max_length = 255]
+        obj_id -> Varchar,
+        data -> Jsonb,
+        infra_id -> Int8,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    infra_object_track_section_link (id) {
+        id -> Int8,
+        #[max_length = 255]
+        obj_id -> Varchar,
+        data -> Jsonb,
+        infra_id -> Int8,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    pathfinding (id) {
+        id -> Int8,
+        owner -> Uuid,
+        created -> Timestamptz,
         payload -> Jsonb,
         slopes -> Jsonb,
         curves -> Jsonb,
         geographic -> Geometry,
         schematic -> Geometry,
-        infra_id -> BigInt,
+        infra_id -> Int8,
+        length -> Float8,
     }
 }
 
-joinable!(osrd_infra_trainschedule -> osrd_infra_pathmodel (path_id));
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
 
-table! {
-    osrd_infra_simulationoutput (id) {
-        id -> BigInt,
+    project (id) {
+        id -> Int8,
+        #[max_length = 128]
+        name -> Varchar,
+        #[max_length = 4096]
+        objectives -> Varchar,
+        #[max_length = 1024]
+        description -> Varchar,
+        #[max_length = 255]
+        funders -> Varchar,
+        budget -> Int4,
+        creation_date -> Timestamptz,
+        last_modification -> Timestamptz,
+        tags -> Array<Nullable<Text>>,
+        image_id -> Nullable<Int8>,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    rolling_stock (id) {
+        id -> Int8,
+        #[max_length = 16]
+        railjson_version -> Varchar,
+        #[max_length = 255]
+        name -> Varchar,
+        effort_curves -> Jsonb,
+        metadata -> Jsonb,
+        length -> Float8,
+        max_speed -> Float8,
+        startup_time -> Float8,
+        startup_acceleration -> Float8,
+        comfort_acceleration -> Float8,
+        gamma -> Jsonb,
+        inertia_coefficient -> Float8,
+        #[max_length = 255]
+        base_power_class -> Varchar,
+        features -> Array<Nullable<Text>>,
+        mass -> Float8,
+        rolling_resistance -> Jsonb,
+        #[max_length = 16]
+        loading_gauge -> Varchar,
+        power_restrictions -> Nullable<Jsonb>,
+        energy_sources -> Jsonb,
+        locked -> Bool,
+        electrical_power_startup_time -> Nullable<Float8>,
+        raise_pantograph_time -> Nullable<Float8>,
+        version -> Int8,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    rolling_stock_livery (id) {
+        id -> Int8,
+        #[max_length = 255]
+        name -> Varchar,
+        rolling_stock_id -> Int8,
+        compound_image_id -> Nullable<Int8>,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    rolling_stock_separate_image (id) {
+        id -> Int8,
+        order -> Int4,
+        livery_id -> Int8,
+        image_id -> Int8,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    scenario (id) {
+        id -> Int8,
+        #[max_length = 128]
+        name -> Varchar,
+        #[max_length = 1024]
+        description -> Varchar,
+        creation_date -> Timestamptz,
+        last_modification -> Timestamptz,
+        tags -> Array<Nullable<Text>>,
+        infra_id -> Int8,
+        timetable_id -> Int8,
+        study_id -> Int8,
+        electrical_profile_set_id -> Nullable<Int8>,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    search_operational_point (id) {
+        id -> Int8,
+        name -> Nullable<Text>,
+        infra_id -> Nullable<Int4>,
+        #[max_length = 255]
+        obj_id -> Nullable<Varchar>,
+        uic -> Nullable<Int4>,
+        ch -> Nullable<Text>,
+        #[max_length = 3]
+        trigram -> Nullable<Varchar>,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    search_project (id) {
+        id -> Int8,
+        name -> Nullable<Text>,
+        description -> Nullable<Text>,
+        tags -> Nullable<Text>,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    search_scenario (id) {
+        id -> Int8,
+        name -> Nullable<Text>,
+        description -> Nullable<Text>,
+        study_id -> Nullable<Int4>,
+        tags -> Nullable<Text>,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    search_signal (id) {
+        id -> Int8,
+        label -> Nullable<Text>,
+        line_name -> Nullable<Text>,
+        infra_id -> Nullable<Int4>,
+        #[max_length = 255]
+        obj_id -> Nullable<Varchar>,
+        aspects -> Nullable<Array<Nullable<Text>>>,
+        systems -> Nullable<Array<Nullable<Text>>>,
+        line_code -> Nullable<Int4>,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    search_study (id) {
+        id -> Int8,
+        name -> Nullable<Text>,
+        description -> Nullable<Text>,
+        project_id -> Nullable<Int4>,
+        tags -> Nullable<Text>,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    search_track (id) {
+        infra_id -> Int4,
+        line_code -> Int4,
+        line_name -> Text,
+        unprocessed_line_name -> Text,
+        id -> Int8,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    simulation_output (id) {
+        id -> Int8,
         mrsp -> Jsonb,
         base_simulation -> Jsonb,
         eco_simulation -> Nullable<Jsonb>,
         electrification_ranges -> Jsonb,
+        train_schedule_id -> Nullable<Int8>,
         power_restriction_ranges -> Jsonb,
-        train_schedule_id -> Nullable<BigInt>,
     }
 }
 
-joinable!(  osrd_infra_simulationoutput -> osrd_infra_trainschedule (train_schedule_id));
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    study (id) {
+        id -> Int8,
+        #[max_length = 128]
+        name -> Varchar,
+        #[max_length = 1024]
+        description -> Varchar,
+        #[max_length = 128]
+        business_code -> Varchar,
+        #[max_length = 128]
+        service_code -> Varchar,
+        creation_date -> Timestamptz,
+        last_modification -> Timestamptz,
+        start_date -> Nullable<Date>,
+        expected_end_date -> Nullable<Date>,
+        actual_end_date -> Nullable<Date>,
+        budget -> Int4,
+        tags -> Array<Nullable<Text>>,
+        #[max_length = 16]
+        state -> Varchar,
+        #[max_length = 100]
+        study_type -> Varchar,
+        project_id -> Int8,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    timetable (id) {
+        id -> Int8,
+        #[max_length = 128]
+        name -> Varchar,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    train_schedule (id) {
+        id -> Int8,
+        #[max_length = 128]
+        train_name -> Varchar,
+        labels -> Jsonb,
+        departure_time -> Float8,
+        initial_speed -> Float8,
+        allowances -> Jsonb,
+        #[max_length = 8]
+        comfort -> Varchar,
+        #[max_length = 128]
+        speed_limit_tags -> Nullable<Varchar>,
+        power_restriction_ranges -> Nullable<Jsonb>,
+        options -> Nullable<Jsonb>,
+        path_id -> Int8,
+        rolling_stock_id -> Int8,
+        timetable_id -> Int8,
+        scheduled_points -> Jsonb,
+        #[max_length = 40]
+        infra_version -> Varchar,
+        rollingstock_version -> Int8,
+    }
+}
+
+diesel::joinable!(infra_layer_buffer_stop -> infra (infra_id));
+diesel::joinable!(infra_layer_catenary -> infra (infra_id));
+diesel::joinable!(infra_layer_detector -> infra (infra_id));
+diesel::joinable!(infra_layer_error -> infra (infra_id));
+diesel::joinable!(infra_layer_lpv_panel -> infra (infra_id));
+diesel::joinable!(infra_layer_neutral_section -> infra (infra_id));
+diesel::joinable!(infra_layer_operational_point -> infra (infra_id));
+diesel::joinable!(infra_layer_signal -> infra (infra_id));
+diesel::joinable!(infra_layer_speed_section -> infra (infra_id));
+diesel::joinable!(infra_layer_switch -> infra (infra_id));
+diesel::joinable!(infra_layer_track_section -> infra (infra_id));
+diesel::joinable!(infra_layer_track_section_link -> infra (infra_id));
+diesel::joinable!(infra_object_buffer_stop -> infra (infra_id));
+diesel::joinable!(infra_object_catenary -> infra (infra_id));
+diesel::joinable!(infra_object_detector -> infra (infra_id));
+diesel::joinable!(infra_object_neutral_section -> infra (infra_id));
+diesel::joinable!(infra_object_operational_point -> infra (infra_id));
+diesel::joinable!(infra_object_route -> infra (infra_id));
+diesel::joinable!(infra_object_signal -> infra (infra_id));
+diesel::joinable!(infra_object_speed_section -> infra (infra_id));
+diesel::joinable!(infra_object_switch -> infra (infra_id));
+diesel::joinable!(infra_object_switch_type -> infra (infra_id));
+diesel::joinable!(infra_object_track_section -> infra (infra_id));
+diesel::joinable!(infra_object_track_section_link -> infra (infra_id));
+diesel::joinable!(pathfinding -> infra (infra_id));
+diesel::joinable!(project -> document (image_id));
+diesel::joinable!(rolling_stock_livery -> document (compound_image_id));
+diesel::joinable!(rolling_stock_livery -> rolling_stock (rolling_stock_id));
+diesel::joinable!(rolling_stock_separate_image -> document (image_id));
+diesel::joinable!(rolling_stock_separate_image -> rolling_stock_livery (livery_id));
+diesel::joinable!(scenario -> electrical_profile_set (electrical_profile_set_id));
+diesel::joinable!(scenario -> infra (infra_id));
+diesel::joinable!(scenario -> study (study_id));
+diesel::joinable!(scenario -> timetable (timetable_id));
+diesel::joinable!(search_operational_point -> infra_object_operational_point (id));
+diesel::joinable!(search_project -> project (id));
+diesel::joinable!(search_scenario -> scenario (id));
+diesel::joinable!(search_signal -> infra_object_signal (id));
+diesel::joinable!(search_study -> study (id));
+diesel::joinable!(simulation_output -> train_schedule (train_schedule_id));
+diesel::joinable!(study -> project (project_id));
+diesel::joinable!(train_schedule -> pathfinding (path_id));
+diesel::joinable!(train_schedule -> rolling_stock (rolling_stock_id));
+diesel::joinable!(train_schedule -> timetable (timetable_id));
+
+diesel::allow_tables_to_appear_in_same_query!(
+    document,
+    electrical_profile_set,
+    infra,
+    infra_layer_buffer_stop,
+    infra_layer_catenary,
+    infra_layer_detector,
+    infra_layer_error,
+    infra_layer_lpv_panel,
+    infra_layer_neutral_section,
+    infra_layer_operational_point,
+    infra_layer_signal,
+    infra_layer_speed_section,
+    infra_layer_switch,
+    infra_layer_track_section,
+    infra_layer_track_section_link,
+    infra_object_buffer_stop,
+    infra_object_catenary,
+    infra_object_detector,
+    infra_object_neutral_section,
+    infra_object_operational_point,
+    infra_object_route,
+    infra_object_signal,
+    infra_object_speed_section,
+    infra_object_switch,
+    infra_object_switch_type,
+    infra_object_track_section,
+    infra_object_track_section_link,
+    pathfinding,
+    project,
+    rolling_stock,
+    rolling_stock_livery,
+    rolling_stock_separate_image,
+    scenario,
+    search_operational_point,
+    search_project,
+    search_scenario,
+    search_signal,
+    search_study,
+    search_track,
+    simulation_output,
+    study,
+    timetable,
+    train_schedule,
+);
