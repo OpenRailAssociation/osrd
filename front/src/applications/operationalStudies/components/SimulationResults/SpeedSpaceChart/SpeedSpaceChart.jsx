@@ -13,7 +13,7 @@ import {
   LIST_VALUES_NAME_SPEED_SPACE,
   SPEED_SPACE_CHART_KEY_VALUES,
 } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
-import SpeedSpaceSettings from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceSettings/SpeedSpaceSettings';
+import SpeedSpaceSettings from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceSettings/withOSRDData';
 import {
   createChart,
   drawTrain,

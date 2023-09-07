@@ -1,7 +1,7 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { updateSpeedSpaceSettings } from 'reducers/osrdsimulation';
+import { updateSpeedSpaceSettings } from 'reducers/osrdsimulation/speedSpaceSettings';
 
 import SpeedSpaceSettings from './SpeedSpaceSettings';
 
@@ -26,4 +26,4 @@ const withOSRDData = (Component) =>
 
 export const OSRDSpeedSpaceSettings = withOSRDData(SpeedSpaceSettings);
 
-export default withOSRDData;
+export default OSRDSpeedSpaceSettings;
