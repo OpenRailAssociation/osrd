@@ -3,7 +3,6 @@ import { cloneDeep } from 'lodash';
 // osrd Redux reducers
 import {
   updateConsolidatedSimulation,
-  updateMustRedraw,
   updateSelectedTrainId,
   updateSimulation,
   updateSelectedProjection,
@@ -15,20 +14,27 @@ import { getConf } from 'reducers/osrdconf/selectors';
 // Generic components
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
-import PropTypes from 'prop-types';
 import ReactModal from 'react-modal';
 // OSRD helpers
 import createTrain from 'modules/simulationResult/components/SpaceTimeChart/createTrain';
 import formatStdcmConf from 'applications/stdcm/formatStcmConf';
 // Static Data and Assets
 import { setFailure } from 'reducers/main';
-import { STDCM_REQUEST_STATUS } from 'applications/operationalStudies/consts';
+import { OsrdStdcmConfState } from 'applications/operationalStudies/consts';
+import STDCM_REQUEST_STATUS from 'applications/stdcm/consts';
 import { updateItinerary } from 'reducers/osrdconf';
 import { useTranslation } from 'react-i18next';
 import { Spinner } from 'common/Loader';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { Train } from 'reducers/osrdsimulation/types';
+import { StdcmRequestStatus } from 'applications/stdcm/types';
 
-export default function StdcmRequestModal(props) {
+type StdcmRequestModalProps = {
+  setCurrentStdcmRequestStatus: (currentStdcmRequestStatus: StdcmRequestStatus) => void;
+  currentStdcmRequestStatus: StdcmRequestStatus;
+};
+
+export default function StdcmRequestModal(props: StdcmRequestModalProps) {
   const { t } = useTranslation([
     'translation',
     'operationalStudies/manageTrainSchedule',
@@ -50,69 +56,69 @@ export default function StdcmRequestModal(props) {
 
   const timetableId = osrdconf.timetableID;
 
-  // Returns a promise that will be a fetch or an axios (through react-query)
-  const stdcmRequest = async () => {
-    const params = formatStdcmConf(dispatch, setFailure, t, osrdconf);
-    return postStdcm(params).unwrap();
-  };
-
   useEffect(() => {
-    if (currentStdcmRequestStatus === STDCM_REQUEST_STATUS.pending && timetableId) {
-      stdcmRequest()
+    const payload = formatStdcmConf(dispatch, setFailure, t, osrdconf as OsrdStdcmConfState);
+    if (payload && currentStdcmRequestStatus === STDCM_REQUEST_STATUS.pending && timetableId) {
+      postStdcm(payload)
+        .unwrap()
         .then((result) => {
           setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.success);
-          dispatch(updateItinerary(result.path));
+          if ('path' in result && 'simulation' in result) {
+            dispatch(updateItinerary(result.path));
 
-          const fakedNewTrain = {
-            ...cloneDeep(result.simulation),
-            id: 1500,
-            isStdcm: true,
-          };
+            const fakedNewTrain = {
+              ...cloneDeep(result.simulation),
+              id: 1500,
+              isStdcm: true,
+            };
 
-          fakedNewTrain.base.stops = fakedNewTrain.base.head_positions[0].map(
-            (headPosition, index) => ({
-              id: fakedNewTrain.id,
-              name: `stop ${index}`,
-              time: headPosition.time,
-              position: headPosition.position,
-              duration: 0,
+            fakedNewTrain.base.stops = fakedNewTrain.base.head_positions[0].map(
+              (headPosition: { position: number; time: number }, index: number) => ({
+                id: fakedNewTrain.id.toString(),
+                name: `stop ${index}`,
+                time: headPosition.time,
+                position: headPosition.position,
+                duration: headPosition.time,
+                line_code: 0,
+                line_name: '',
+                track_number: 0,
+                track_name: '',
+              })
+            );
+
+            getTrainScheduleResults({
+              timetableId,
+              pathId: result.path.id,
             })
-          );
+              .unwrap()
+              .then((timetableTrains) => {
+                const trains: Train[] = [...timetableTrains, fakedNewTrain];
+                const consolidatedSimulation = createTrain(
+                  dispatch,
+                  KEY_VALUES_FOR_CONSOLIDATED_SIMULATION,
+                  trains,
+                  t
+                );
+                dispatch(updateConsolidatedSimulation(consolidatedSimulation));
+                dispatch(updateSimulation({ trains }));
+                dispatch(updateSelectedTrainId(fakedNewTrain.id));
 
-          getTrainScheduleResults({
-            timetableId,
-            pathId: result.path.id,
-          })
-            .unwrap()
-            .then((timetableTrains) => {
-              const trains = [...timetableTrains, fakedNewTrain];
-              const consolidatedSimulation = createTrain(
-                dispatch,
-                KEY_VALUES_FOR_CONSOLIDATED_SIMULATION,
-                trains,
-                t
-              );
-              dispatch(updateConsolidatedSimulation(consolidatedSimulation));
-              dispatch(updateSimulation({ trains }));
-              dispatch(updateSelectedTrainId(fakedNewTrain.id));
-
-              dispatch(
-                updateSelectedProjection({
-                  id: fakedNewTrain.id,
-                  path: result.path,
-                })
-              );
-
-              dispatch(updateMustRedraw(true));
-            })
-            .catch(() => {
-              dispatch(
-                setFailure({
-                  name: t('operationalStudies/manageTrainSchedule:errorMessages.stdcmError'),
-                  message: t('translation:common.error'),
-                })
-              );
-            });
+                dispatch(
+                  updateSelectedProjection({
+                    id: fakedNewTrain.id,
+                    path: result.path.id,
+                  })
+                );
+              })
+              .catch(() => {
+                dispatch(
+                  setFailure({
+                    name: t('operationalStudies/manageTrainSchedule:errorMessages.stdcmError'),
+                    message: t('translation:common.error'),
+                  })
+                );
+              });
+          }
         })
         .catch((e) => {
           // Update simu in redux with data;
@@ -148,7 +154,7 @@ export default function StdcmRequestModal(props) {
   return (
     <ReactModal
       isOpen={currentStdcmRequestStatus === STDCM_REQUEST_STATUS.pending}
-      htmlID="stdcmRequestModal"
+      id="stdcmRequestModal"
       className="modal-dialog-centered"
       style={{ overlay: { zIndex: 3 } }}
       ariaHideApp={false}
@@ -188,8 +194,3 @@ export default function StdcmRequestModal(props) {
     </ReactModal>
   );
 }
-
-StdcmRequestModal.propTypes = {
-  setCurrentStdcmRequestStatus: PropTypes.func.isRequired,
-  currentStdcmRequestStatus: PropTypes.string.isRequired,
-};

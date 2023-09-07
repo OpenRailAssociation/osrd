@@ -100,15 +100,6 @@ export const STDCM_MODES = Object.freeze({
 
 export const DEFAULT_STDCM_MODE = STDCM_MODES.byOrigin;
 
-export const STDCM_REQUEST_STATUS = Object.freeze({
-  idle: 'IDLE',
-  pending: 'PENDING',
-  success: 'SUCCESS',
-  rejected: 'REJECTED',
-  canceled: 'CANCELED',
-  noresults: 'NORESULTS',
-});
-
 export interface StandardAllowance {
   type: AllowanceValue['value_type'];
   value: number;

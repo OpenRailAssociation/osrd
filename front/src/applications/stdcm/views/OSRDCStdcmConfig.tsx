@@ -1,14 +1,14 @@
-import { noop } from 'lodash';
-import React, { useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import { STDCM_REQUEST_STATUS } from 'applications/operationalStudies/consts';
 import { Itinerary, Map } from 'modules/trainschedule/components/ManageTrainSchedule';
+import { StdcmRequestStatus } from 'applications/stdcm/types';
+import STDCM_REQUEST_STATUS from 'applications/stdcm/consts';
 import ScenarioExplorer from 'common/ScenarioExplorer/ScenarioExplorer';
 import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector/SpeedLimitByTagSelector';
 import {
+  getConf,
   getInfraID,
   getProjectID,
   getScenarioID,
@@ -19,12 +19,13 @@ import { getSelectedTrain } from 'reducers/osrdsimulation/selectors';
 import { RollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import STDCMAllowances from 'modules/stdcmAllowances/components/STDCMAllowances';
+import { OsrdStdcmConfState } from 'applications/operationalStudies/consts';
 import OSRDStdcmResults from './OSRDStdcmResults';
 import RunningTime from '../components/RunningTime';
 
 type OSRDStdcmConfigProps = {
   currentStdcmRequestStatus: string;
-  setCurrentStdcmRequestStatus: (status: string) => void;
+  setCurrentStdcmRequestStatus: (currentStdcmRequestStatus: StdcmRequestStatus) => void;
 };
 
 export default function OSRDConfig({
@@ -39,6 +40,7 @@ export default function OSRDConfig({
   const selectedTrain = useSelector(getSelectedTrain);
   const [showMap, setShowMap] = useState<boolean>(true);
   const [isInfraLoaded, setIsInfraLoaded] = useState<boolean>(false);
+  const osrdconf: OsrdStdcmConfState = useSelector(getConf) as OsrdStdcmConfState;
 
   const { t } = useTranslation([
     'translation',
@@ -55,6 +57,16 @@ export default function OSRDConfig({
   );
 
   const shouldDisplayStdcmResult = selectedTrain !== undefined;
+
+  const disabledApplyButton = useMemo(
+    () =>
+      infra?.state !== 'CACHED' ||
+      !osrdconf.origin ||
+      !osrdconf.destination ||
+      !(osrdconf.originTime || osrdconf.destinationTime) ||
+      !osrdconf.rollingStockID,
+    [infra, osrdconf]
+  );
 
   useEffect(() => {
     if (infra && infra.state === 'NOT_LOADED') {
@@ -92,7 +104,7 @@ export default function OSRDConfig({
                   data-testid="applyStdcmButton"
                   className="btn btn-sm  btn-primary "
                   type="button"
-                  disabled={infra?.state !== 'CACHED'}
+                  disabled={disabledApplyButton}
                   onClick={() => {
                     setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.pending);
                     setShowMap(false);
@@ -143,10 +155,3 @@ export default function OSRDConfig({
     </main>
   );
 }
-
-OSRDConfig.propTypes = {
-  setCurrentStdcmRequestStatus: PropTypes.func,
-};
-OSRDConfig.defaultProps = {
-  setCurrentStdcmRequestStatus: noop,
-};
