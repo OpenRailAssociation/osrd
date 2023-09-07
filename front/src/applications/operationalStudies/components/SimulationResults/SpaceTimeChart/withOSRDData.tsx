@@ -1,7 +1,5 @@
-import React from 'react';
+import React, { ComponentType } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { compose } from 'redux';
-import PropTypes from 'prop-types';
 
 import {
   updateMustRedraw,
@@ -20,18 +18,40 @@ import {
   getSelectedTrain,
 } from 'reducers/osrdsimulation/selectors';
 import { persistentUpdateSimulation } from 'reducers/osrdsimulation/simulation';
-import { time2sec, datetime2time, sec2datetime } from 'utils/timeManipulation';
-import SpaceTimeChart from './SpaceTimeChart';
+import {
+  time2sec,
+  datetime2time,
+  sec2datetime,
+  time2datetime,
+  datetime2Isostring,
+} from 'utils/timeManipulation';
+import {
+  AllowancesSetting,
+  Chart,
+  Train,
+  TrainsWithArrivalAndDepartureTimes,
+} from 'reducers/osrdsimulation/types';
+import { TimeString } from 'common/types';
+import SpaceTimeChart, { SpaceTimeChartProps } from './SpaceTimeChart';
+import {
+  DispatchUpdateChart,
+  DispatchUpdateDepartureArrivalTimes,
+  DispatchUpdateMustRedraw,
+  DispatchUpdateSelectedTrainId,
+  DispatchUpdateTimePositionValues,
+} from './types';
 
 /**
  * Stdcm will automatically show ecoBlocks if exisiting. This function takes a component and returns another component that will set the forcedEcoAllowancesSettings prop on its children
  * @param {*} Component
  * @returns RFC with OSRD Data. SignalSwitch
  */
-const withForcedEcoAllowanceSettings = (Component) =>
-  function WrapperComponent(props) {
+function withForcedEcoAllowanceSettings<T extends SpaceTimeChartProps>(
+  Component: ComponentType<T>
+): React.ComponentType<T> {
+  return (props: T) => {
     const { simulation } = props;
-    const forcedEcoAllowancesSettings = [];
+    const forcedEcoAllowancesSettings: AllowancesSetting[] = [];
     // eslint-disable-next-line react/prop-types
     simulation?.trains?.forEach((train) => {
       forcedEcoAllowancesSettings[train.id] = train.eco?.route_aspects
@@ -49,21 +69,20 @@ const withForcedEcoAllowanceSettings = (Component) =>
           };
     });
 
-    WrapperComponent.propTypes = {
-      simulation: PropTypes.object.isRequired,
-    };
-
     // Render the original component passing all props and forcedEcoAllowancesSettings as props to it
     return <Component {...props} allowancesSettings={forcedEcoAllowancesSettings} />;
   };
+}
 
 /**
  * HOC to provide store data
  * @param {RFC} Component
  * @returns RFC with OSRD Data. SignalSwitch
  */
-const withOSRDData = (Component) =>
-  function WrapperComponent(props) {
+function withOSRDData<T extends SpaceTimeChartProps>(
+  Component: React.ComponentType<T>
+): React.ComponentType<T> {
+  return (props: T) => {
     const allowancesSettings = useSelector(getAllowancesSettings);
     const positionValues = useSelector(getPositionValues);
     const selectedTrain = useSelector(getSelectedTrain);
@@ -76,32 +95,40 @@ const withOSRDData = (Component) =>
     const dispatch = useDispatch();
 
     // Consequence of direct actions by component
-    const onOffsetTimeByDragging = (trains, offset) => {
+    const onOffsetTimeByDragging = (trains: Train[], offset: number) => {
       dispatch(persistentUpdateSimulation({ ...simulation, trains }));
       if (timePosition && offset) {
-        const newTimePositionSec = time2sec(datetime2time(timePosition)) + offset;
-
-        dispatch(updateTimePositionValues(sec2datetime(newTimePositionSec)));
+        const newTimePositionSec: number =
+          time2sec(datetime2time(time2datetime(timePosition) as Date)) + offset;
+        dispatch(
+          updateTimePositionValues(datetime2Isostring(sec2datetime(newTimePositionSec) as Date))
+        );
       }
     };
 
-    const dispatchUpdateTimePositionValues = (newTimePositionValues) => {
+    const dispatchUpdateTimePositionValues: DispatchUpdateTimePositionValues = (
+      newTimePositionValues: TimeString
+    ) => {
       dispatch(updateTimePositionValues(newTimePositionValues));
     };
 
-    const dispatchUpdateMustRedraw = (newMustRedraw) => {
+    const dispatchUpdateMustRedraw: DispatchUpdateMustRedraw = (newMustRedraw: boolean) => {
       dispatch(updateMustRedraw(newMustRedraw));
     };
 
-    const dispatchUpdateChart = (chart) => {
+    const dispatchUpdateChart: DispatchUpdateChart = (chart: Chart) => {
       dispatch(updateChart(chart));
     };
 
-    const dispatchUpdateSelectedTrainId = (_selectedTrainId) => {
+    const dispatchUpdateSelectedTrainId: DispatchUpdateSelectedTrainId = (
+      _selectedTrainId: number
+    ) => {
       dispatch(updateSelectedTrainId(_selectedTrainId));
     };
 
-    const dispatchUpdateDepartureArrivalTimes = (newDepartureArrivalTimes) => {
+    const dispatchUpdateDepartureArrivalTimes: DispatchUpdateDepartureArrivalTimes = (
+      newDepartureArrivalTimes: TrainsWithArrivalAndDepartureTimes[]
+    ) => {
       dispatch(updateDepartureArrivalTimes(newDepartureArrivalTimes));
     };
 
@@ -125,12 +152,13 @@ const withOSRDData = (Component) =>
       />
     );
   };
+}
 
-export const ForcedEcoSpaceTimeChart = compose(
-  withOSRDData,
-  withForcedEcoAllowanceSettings
-)(SpaceTimeChart);
+export const ForcedEcoSpaceTimeChart: React.FC<SpaceTimeChartProps> = (props) => {
+  const WithOSRDData = withOSRDData(SpaceTimeChart);
+  const WithForcedEcoAllowanceSettings = withForcedEcoAllowanceSettings(WithOSRDData);
+  return <WithForcedEcoAllowanceSettings {...props} />;
+};
 
 const OSRDSpaceTimeChart = withOSRDData(SpaceTimeChart);
-
 export default OSRDSpaceTimeChart;

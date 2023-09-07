@@ -11,12 +11,12 @@ import defineChart from 'applications/operationalStudies/components/SimulationRe
 
 // This is only used by SpaceTimeChart for now.
 export default function createChart<T extends number | Date>(
-  chart: Chart,
+  chart: Chart | undefined,
   chartID: string,
   dataSimulation: SimulationTrain[],
   heightOfSpaceTimeChart: number,
   keyValues: ['time', 'position'],
-  ref: React.MutableRefObject<HTMLDivElement>,
+  ref: React.MutableRefObject<HTMLDivElement> | React.RefObject<HTMLDivElement>,
   reset: boolean,
   rotate: boolean
 ): Chart {

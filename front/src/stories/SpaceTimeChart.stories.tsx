@@ -16,7 +16,7 @@ export default {
 const Template: ComponentStory<typeof SpaceTimeChart> = (args) => (
   <div className="simulation-results">
     <div className="speedspacechart-container">
-      <SpaceTimeChart initialHeightOfSpaceTimeChart={400} {...args} />
+      <SpaceTimeChart {...args} />
     </div>
   </div>
 );

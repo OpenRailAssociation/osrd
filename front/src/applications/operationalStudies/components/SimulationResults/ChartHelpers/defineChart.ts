@@ -7,14 +7,15 @@ import {
 } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/ChartHelpers';
 import nextId from 'react-id-generator';
 import svgDefs from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/svgDefs';
+import { SimulationD3Scale } from 'reducers/osrdsimulation/types';
 
 // keyValues ['position', 'gradient']
 const defineChart = (
   svgWidth: number,
   svgHeight: number,
-  defineX: d3.ScaleTime<number, number>,
-  defineY: d3.ScaleLinear<number, number>,
-  ref: React.MutableRefObject<HTMLDivElement>,
+  defineX: SimulationD3Scale,
+  defineY: SimulationD3Scale,
+  ref: React.MutableRefObject<HTMLDivElement> | React.RefObject<HTMLDivElement>,
   rotate: boolean,
   keyValues: string[],
   id: string
@@ -52,11 +53,11 @@ const defineChart = (
   svgDefs(defs);
 
   // Add X axis
-  const x = defineX.range([0, width]);
+  const x = defineX.range([0, width]) as SimulationD3Scale;
   const axisBottomX =
     !rotate && isGET(keyValues)
-      ? d3.axisBottom<Date>(x).tickFormat(d3.timeFormat('%H:%M:%S'))
-      : d3.axisBottom(x);
+      ? d3.axisBottom<Date>(x as d3.ScaleTime<number, number>).tickFormat(d3.timeFormat('%H:%M:%S'))
+      : d3.axisBottom(x as d3.ScaleLinear<number, number>);
   const xAxis = svg.append('g').attr('transform', `translate(0,${height})`).call(axisBottomX);
   const xAxisGrid = svg
     .append('g')
@@ -66,7 +67,7 @@ const defineChart = (
   const originalScaleX = x; // We need to keep a ref on that to not double translation
 
   // Add Y axis
-  const y = defineY.range([height, 0]);
+  const y = defineY.range([height, 0]) as SimulationD3Scale;
   const axisLeftY =
     rotate && isGET(keyValues)
       ? d3

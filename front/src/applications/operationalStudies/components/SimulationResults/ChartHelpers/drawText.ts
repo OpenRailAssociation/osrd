@@ -2,7 +2,7 @@ import { Chart } from 'reducers/osrdsimulation/types';
 
 const drawText = (
   chart: Chart,
-  direction: boolean,
+  direction: boolean | undefined,
   groupID: string,
   isSelected: boolean,
   text: string,

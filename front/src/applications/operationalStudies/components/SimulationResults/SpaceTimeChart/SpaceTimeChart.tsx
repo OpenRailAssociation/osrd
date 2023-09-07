@@ -20,10 +20,24 @@ import {
   KEY_VALUES_FOR_SPACE_TIME_CHART,
   LIST_VALUES_NAME_SPACE_TIME,
 } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
-import PropTypes from 'prop-types';
 import { isolatedCreateTrain as createTrain } from 'applications/operationalStudies/components/SimulationResults/SpaceTimeChart/createTrain';
 
 import { drawAllTrains } from 'applications/operationalStudies/components/SimulationResults/SpaceTimeChart/d3Helpers';
+import {
+  AllowancesSettings,
+  Chart,
+  OsrdSimulationState,
+  PositionValues,
+  SimulationSnapshot,
+  Train,
+} from 'reducers/osrdsimulation/types';
+import {
+  DispatchUpdateDepartureArrivalTimes,
+  DispatchUpdateChart,
+  DispatchUpdateMustRedraw,
+  DispatchUpdateSelectedTrainId,
+  DispatchUpdateTimePositionValues,
+} from './types';
 
 const CHART_ID = 'SpaceTimeChart';
 const CHART_MIN_HEIGHT = 250;
@@ -42,33 +56,53 @@ const CHART_MIN_HEIGHT = 250;
  * - Resize vertically
  *
  */
-export default function SpaceTimeChart(props) {
-  const ref = useRef();
-  const rndContainerRef = useRef(null);
+
+export type SpaceTimeChartProps = {
+  allowancesSettings?: AllowancesSettings;
+  dispatchUpdateDepartureArrivalTimes?: DispatchUpdateDepartureArrivalTimes;
+  dispatchUpdateChart?: DispatchUpdateChart;
+  dispatchUpdateMustRedraw?: DispatchUpdateMustRedraw;
+  dispatchUpdateSelectedTrainId?: DispatchUpdateSelectedTrainId;
+  dispatchUpdateTimePositionValues?: DispatchUpdateTimePositionValues;
+  initialHeightOfSpaceTimeChart?: number;
+  inputSelectedTrain?: Train;
+  positionValues?: PositionValues;
+  selectedProjection?: OsrdSimulationState['selectedProjection'];
+  simulation?: SimulationSnapshot;
+  simulationIsPlaying?: boolean;
+  timePosition?: OsrdSimulationState['timePosition'];
+  onOffsetTimeByDragging?: (trains: Train[], offset: number) => void;
+  onSetBaseHeightOfSpaceTimeChart?: (newHeight: number) => void;
+  isDisplayed?: boolean;
+};
+
+export default function SpaceTimeChart(props: SpaceTimeChartProps) {
+  const ref = useRef<HTMLDivElement>(null);
+  const rndContainerRef = useRef<Rnd>(null);
 
   const {
-    allowancesSettings,
-    dispatchUpdateChart,
-    dispatchUpdateDepartureArrivalTimes,
-    dispatchUpdateMustRedraw,
-    dispatchUpdateSelectedTrainId,
-    dispatchUpdateTimePositionValues,
-    initialHeightOfSpaceTimeChart,
-    inputSelectedTrain,
-    onOffsetTimeByDragging,
-    onSetBaseHeightOfSpaceTimeChart,
-    positionValues,
+    allowancesSettings = ORSD_GRAPH_SAMPLE_DATA.allowancesSettings,
+    dispatchUpdateDepartureArrivalTimes = noop,
+    dispatchUpdateMustRedraw = noop,
+    dispatchUpdateSelectedTrainId = noop,
+    dispatchUpdateTimePositionValues = noop,
+    dispatchUpdateChart = noop,
+    initialHeightOfSpaceTimeChart = 400,
+    inputSelectedTrain = ORSD_GRAPH_SAMPLE_DATA.selectedTrain as unknown as Train,
+    positionValues = ORSD_GRAPH_SAMPLE_DATA.positionValues,
     selectedProjection,
-    simulation,
-    simulationIsPlaying,
-    timePosition,
-    isDisplayed,
+    simulation = ORSD_GRAPH_SAMPLE_DATA.simulation.present as unknown as SimulationSnapshot,
+    simulationIsPlaying = false,
+    timePosition = ORSD_GRAPH_SAMPLE_DATA.timePosition,
+    isDisplayed = true,
+    onOffsetTimeByDragging = noop,
+    onSetBaseHeightOfSpaceTimeChart = noop,
   } = props;
 
   const [baseHeightOfSpaceTimeChart, setBaseHeightOfSpaceTimeChart] = useState(
     initialHeightOfSpaceTimeChart
   );
-  const [chart, setChart] = useState(undefined);
+  const [chart, setChart] = useState<Chart | undefined>(undefined);
   const [dragOffset, setDragOffset] = useState(0);
   const [heightOfSpaceTimeChart, setHeightOfSpaceTimeChart] = useState(
     initialHeightOfSpaceTimeChart
@@ -80,10 +114,12 @@ export default function SpaceTimeChart(props) {
   const [, setLocalPosition] = useState(0);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [showModal, setShowModal] = useState('');
-  const [trainSimulations, setTrainSimulations] = useState(undefined);
+  const [trainSimulations, setTrainSimulations] = useState<
+    SimulationSnapshot['trains'] | undefined
+  >(undefined);
 
   const dragShiftTrain = useCallback(
-    (offset) => {
+    (offset: number) => {
       if (trainSimulations) {
         const trains = trainSimulations.map((train) =>
           train.id === selectedTrain.id ? timeShiftTrain(train, offset) : train
@@ -129,9 +165,11 @@ export default function SpaceTimeChart(props) {
    * everything should be done by Hoc, has no direct effect on Comp behavior
    */
   const toggleRotation = () => {
-    const newRotate = !rotate;
-    setChart({ ...chart, x: chart.y, y: chart.x, rotate: newRotate });
-    setRotate(newRotate);
+    if (chart) {
+      const newRotate = !rotate;
+      setChart({ ...chart, x: chart.y, y: chart.x, rotate: newRotate });
+      setRotate(newRotate);
+    }
   };
 
   /*
@@ -183,7 +221,6 @@ export default function SpaceTimeChart(props) {
         setChart,
         setDragOffset,
         trainSimulations,
-        simulationIsPlaying,
         trainsToDraw
       );
       setResetChart(false);
@@ -256,14 +293,14 @@ export default function SpaceTimeChart(props) {
     moveGridLinesOnMouseMove();
   }, [mousePos]);
 
-  const handleKey = ({ key }) => {
+  const handleKey = ({ key }: KeyboardEvent) => {
     if (isDisplayed && ['+', '-'].includes(key)) {
       setShowModal(key);
     }
   };
 
   const debounceResize = () => {
-    const height = d3.select(`#container-${CHART_ID}`).node().clientHeight;
+    const height = (d3.select(`#container-${CHART_ID}`)?.node() as HTMLDivElement).clientHeight;
     setHeightOfSpaceTimeChart(height);
   };
 
@@ -340,40 +377,3 @@ export default function SpaceTimeChart(props) {
     </Rnd>
   );
 }
-
-SpaceTimeChart.propTypes = {
-  allowancesSettings: PropTypes.any,
-  dispatchUpdateChart: PropTypes.any,
-  dispatchUpdateDepartureArrivalTimes: PropTypes.func,
-  dispatchUpdateMustRedraw: PropTypes.func,
-  dispatchUpdateSelectedTrainId: PropTypes.func,
-  dispatchUpdateTimePositionValues: PropTypes.any,
-  initialHeightOfSpaceTimeChart: PropTypes.any,
-  inputSelectedTrain: PropTypes.any,
-  positionValues: PropTypes.any,
-  selectedProjection: PropTypes.any.isRequired,
-  simulation: PropTypes.any,
-  simulationIsPlaying: PropTypes.bool,
-  timePosition: PropTypes.any,
-  onOffsetTimeByDragging: PropTypes.func,
-  onSetBaseHeightOfSpaceTimeChart: PropTypes.any,
-  isDisplayed: PropTypes.bool,
-};
-
-SpaceTimeChart.defaultProps = {
-  allowancesSettings: ORSD_GRAPH_SAMPLE_DATA.allowancesSettings,
-  dispatchUpdateChart: noop,
-  dispatchUpdateDepartureArrivalTimes: noop,
-  dispatchUpdateMustRedraw: noop,
-  dispatchUpdateSelectedTrainId: noop,
-  dispatchUpdateTimePositionValues: noop,
-  inputSelectedTrain: ORSD_GRAPH_SAMPLE_DATA.selectedTrain,
-  initialHeightOfSpaceTimeChart: 400,
-  onOffsetTimeByDragging: noop,
-  onSetBaseHeightOfSpaceTimeChart: noop,
-  positionValues: ORSD_GRAPH_SAMPLE_DATA.positionValues,
-  simulation: ORSD_GRAPH_SAMPLE_DATA.simulation.present,
-  simulationIsPlaying: false,
-  timePosition: ORSD_GRAPH_SAMPLE_DATA.timePosition,
-  isDisplayed: true,
-};

@@ -48,7 +48,12 @@ export default function DriverTrainScheduleStopList({ train, baseOrEco }: Props)
           </thead>
           <tbody>
             {trainRegime.stops.map((stop, idx) => (
-              <DriverTrainScheduleStop stop={stop} idx={idx} train={train} />
+              <DriverTrainScheduleStop
+                stop={stop}
+                idx={idx}
+                train={train}
+                key={`${stop.id}-${stop.name}`}
+              />
             ))}
           </tbody>
         </table>

@@ -1,7 +1,21 @@
 import drawTrain from 'applications/operationalStudies/components/SimulationResults/SpaceTimeChart/drawTrain';
 import createChart from 'applications/operationalStudies/components/SimulationResults/SpaceTimeChart/createChart';
+import {
+  AllowancesSettings,
+  Chart,
+  OsrdSimulationState,
+  SimulationTrain,
+  Train,
+} from 'reducers/osrdsimulation/types';
+import {
+  DispatchUpdateChart,
+  DispatchUpdateDepartureArrivalTimes,
+  DispatchUpdateMustRedraw,
+  DispatchUpdateSelectedTrainId,
+} from './types';
+import { KEY_VALUES_FOR_SPACE_TIME_CHART } from '../simulationResultsConsts';
 
-function drawOPs(chartLocal, selectedTrainSimulation, rotate) {
+function drawOPs(chartLocal: Chart, selectedTrainSimulation: Train, rotate: boolean) {
   const operationalPointsZone = chartLocal.drawZone
     .append('g')
     .attr('id', 'get-operationalPointsZone');
@@ -28,7 +42,7 @@ function drawOPs(chartLocal, selectedTrainSimulation, rotate) {
   });
 }
 
-const drawAxisTitle = (chart, rotate) => {
+const drawAxisTitle = (chart: Chart, rotate: boolean) => {
   chart.drawZone
     .append('text')
     .attr('class', 'axis-unit')
@@ -40,25 +54,24 @@ const drawAxisTitle = (chart, rotate) => {
 };
 
 const drawAllTrains = (
-  allowancesSettings,
-  chart,
-  CHART_ID,
-  dispatchUpdateChart,
-  dispatchUpdateDepartureArrivalTimes,
-  dispatchUpdateMustRedraw,
-  dispatchUpdateSelectedTrainId,
-  heightOfSpaceTimeChart,
-  keyValues,
-  ref,
-  reset,
-  rotate,
-  selectedProjection,
-  selectedTrain,
-  setChart,
-  setDragOffset,
-  simulationTrains,
-  simulationIsPlaying,
-  trainsToDraw
+  allowancesSettings: AllowancesSettings,
+  chart: Chart | undefined,
+  CHART_ID: string,
+  dispatchUpdateChart: DispatchUpdateChart,
+  dispatchUpdateDepartureArrivalTimes: DispatchUpdateDepartureArrivalTimes,
+  dispatchUpdateMustRedraw: DispatchUpdateMustRedraw,
+  dispatchUpdateSelectedTrainId: DispatchUpdateSelectedTrainId,
+  heightOfSpaceTimeChart: number,
+  keyValues: typeof KEY_VALUES_FOR_SPACE_TIME_CHART,
+  ref: React.MutableRefObject<HTMLDivElement> | React.RefObject<HTMLDivElement>,
+  reset: boolean,
+  rotate: boolean,
+  selectedProjection: OsrdSimulationState['selectedProjection'],
+  selectedTrain: Train,
+  setChart: React.Dispatch<React.SetStateAction<Chart | undefined>>,
+  setDragOffset: React.Dispatch<React.SetStateAction<number>>,
+  simulationTrains: Train[],
+  trainsToDraw: SimulationTrain[]
 ) => {
   const chartLocal = createChart(
     chart,
