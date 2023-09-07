@@ -72,7 +72,6 @@ pub fn study_routes() -> impl HttpServiceFactory {
             // Timetable endpoints
             timetable::TimetableImportItem,
             timetable::TimetableImportPathStep,
-            timetable::TimetableImportPathLocation,
             timetable::TimetableImportPathSchedule,
             timetable::TimetableImportTrain
         ),

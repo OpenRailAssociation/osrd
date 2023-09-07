@@ -546,6 +546,14 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/timetable/${queryArg.id}/` }),
         providesTags: ['timetable'],
       }),
+      postTimetableById: build.mutation<PostTimetableByIdApiResponse, PostTimetableByIdApiArg>({
+        query: (queryArg) => ({
+          url: `/timetable/${queryArg.id}/`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
+        invalidatesTags: ['timetable'],
+      }),
       getTimetableByIdConflicts: build.query<
         GetTimetableByIdConflictsApiResponse,
         GetTimetableByIdConflictsApiArg
@@ -1199,6 +1207,12 @@ export type GetTimetableByIdApiResponse =
 export type GetTimetableByIdApiArg = {
   /** Timetable ID */
   id: number;
+};
+export type PostTimetableByIdApiResponse = unknown;
+export type PostTimetableByIdApiArg = {
+  /** Timetable id */
+  id: number;
+  body: TimetableImportItem[];
 };
 export type GetTimetableByIdConflictsApiResponse =
   /** status 200 The timetable conflicts content */ {
@@ -2036,6 +2050,41 @@ export type TimetableWithSchedulesDetails = {
   id: number;
   name: string;
   train_schedule_summaries: TrainScheduleSummary[];
+};
+export type TrackOffsetLocation = {
+  offset: number;
+  track_section: string;
+  type: 'track_offset';
+};
+export type OperationalPointLocation = {
+  type: 'operational_point';
+  uic: number;
+};
+export type TimetableImportPathLocation =
+  | ({
+      type: 'track_offset';
+    } & TrackOffsetLocation)
+  | ({
+      type: 'operational_point';
+    } & OperationalPointLocation);
+export type TimetableImportPathSchedule = {
+  arrival_time: string;
+  departure_time: string;
+};
+export type TimetableImportPathStep = {
+  location: TimetableImportPathLocation;
+  schedule?: {
+    [key: string]: TimetableImportPathSchedule;
+  };
+};
+export type TimetableImportTrain = {
+  departure_time: string;
+  name: string;
+};
+export type TimetableImportItem = {
+  path: TimetableImportPathStep[];
+  rolling_stock: string;
+  trains: TimetableImportTrain[];
 };
 export type TrainSchedulePatch = {
   allowances?: Allowance[];
