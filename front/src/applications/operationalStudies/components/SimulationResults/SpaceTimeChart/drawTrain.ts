@@ -1,5 +1,5 @@
 import * as d3 from 'd3';
-import { drag as d3drag } from 'd3-drag';
+import { drag as d3drag, DragContainerElement } from 'd3-drag';
 
 import {
   getDirection,
@@ -8,34 +8,43 @@ import {
 import drawCurve from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/drawCurve';
 import drawRect from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/drawRect';
 import drawText from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/drawText';
+import {
+  AllowancesSettings,
+  Chart,
+  SimulationTrain,
+  Train,
+  TrainsWithArrivalAndDepartureTimes,
+} from 'reducers/osrdsimulation/types';
 
 export default function drawTrain(
-  allowancesSettings,
-  chart,
-  dispatchUpdateDepartureArrivalTimes,
-  dispatchUpdateMustRedraw,
-  dispatchUpdateSelectedTrainId,
-  isPathSelected,
-  isSelected,
-  keyValues,
-  rotate,
-  setDragOffset,
-  simulationTrains,
-  trainToDraw
+  allowancesSettings: AllowancesSettings,
+  chart: Chart,
+  dispatchUpdateDepartureArrivalTimes: (
+    departureArrivalTimes: TrainsWithArrivalAndDepartureTimes[]
+  ) => void,
+  dispatchUpdateMustRedraw: (mustRedraw: boolean) => void,
+  dispatchUpdateSelectedTrainId: (selectedTrainId: number) => void,
+  isPathSelected: boolean,
+  isSelected: boolean,
+  keyValues: ['time', 'position'],
+  rotate: boolean,
+  setDragOffset: React.Dispatch<React.SetStateAction<number>>,
+  trainSimulations: Train[],
+  trainToDraw: SimulationTrain
 ) {
   const groupID = `spaceTime-${trainToDraw.id}`;
 
-  const initialDrag = rotate ? chart.y.invert(0) : chart.x.invert(0);
-
   let dragFullOffset = 0;
 
-  const getDragOffsetValue = (offset) =>
-    rotate
-      ? Math.floor((chart.y.invert(offset) - initialDrag) / 1000)
-      : Math.floor((chart.x.invert(offset) - initialDrag) / 1000);
+  const getDragOffsetValue = (offset: number): number => {
+    const initialDrag = Number(rotate ? chart.y.invert(0) : chart.x.invert(0));
+    return rotate
+      ? Math.floor((Number(chart.y.invert(offset)) - initialDrag) / 1000)
+      : Math.floor((Number(chart.x.invert(offset)) - initialDrag) / 1000);
+  };
 
   /** Compute, in seconds, the offset to drill down to the parent through setDragOffset passed hook */
-  const dragTimeOffset = (offset) => {
+  const dragTimeOffset = (offset: number) => {
     const value = getDragOffsetValue(offset);
     setDragOffset(value);
   };
@@ -46,26 +55,29 @@ export default function drawTrain(
    *
    * @param {int} offset
    */
-  const applyTrainCurveTranslation = (offset) => {
+  const applyTrainCurveTranslation = (offset: number) => {
     const translation = rotate ? `0,${offset}` : `${offset},0`;
     d3.select(`#${groupID}`).attr('transform', `translate(${translation})`);
     const releventLine = rotate ? '#horizontal-line' : '#vertical-line';
     d3.select(releventLine).attr('transform', `translate(${translation})`);
   };
 
-  let debounceTimeoutId;
+  let debounceTimeoutId: number;
 
-  function debounceUpdateDepartureArrivalTimes(computedDepartureArrivalTimes, interval) {
+  function debounceUpdateDepartureArrivalTimes(
+    computedDepartureArrivalTimes: TrainsWithArrivalAndDepartureTimes[],
+    interval: number
+  ) {
     clearTimeout(debounceTimeoutId);
-    debounceTimeoutId = setTimeout(() => {
+    debounceTimeoutId = window.setTimeout(() => {
       dispatchUpdateDepartureArrivalTimes(computedDepartureArrivalTimes);
     }, interval);
   }
 
   const drag = d3drag()
-    .container((d) => d) // the component is dragged from its initial position
+    .container((d) => d as DragContainerElement) // the component is dragged from its initial position
     .on('end', () => {
-      dragTimeOffset(dragFullOffset, true);
+      dragTimeOffset(dragFullOffset);
       dispatchUpdateMustRedraw(true);
     })
     .on('start', () => {
@@ -75,17 +87,20 @@ export default function drawTrain(
     .on('drag', (event) => {
       dragFullOffset += rotate ? event.dy : event.dx;
       const offset = getDragOffsetValue(dragFullOffset);
-      const newDepartureArrivalTimes = makeTrainList(simulationTrains, trainToDraw.id, offset);
+      const newDepartureArrivalTimes = makeTrainList(trainSimulations, trainToDraw.id, offset);
       debounceUpdateDepartureArrivalTimes(newDepartureArrivalTimes, 15);
       applyTrainCurveTranslation(dragFullOffset);
     });
 
-  chart.drawZone
-    .append('g')
-    .attr('id', groupID)
-    .attr('class', 'chartTrain')
-    .attr('filter', () => (trainToDraw?.isStdcm ? `url(#stdcmFilter)` : null))
-    .call(drag);
+  const dragSelectionAppliance = (selection: d3.Selection<Element, unknown, null, undefined>) => {
+    selection
+      .attr('id', groupID)
+      .attr('class', 'chartTrain')
+      .attr('filter', () => (trainToDraw?.isStdcm ? `url(#stdcmFilter)` : null))
+      .call(drag);
+  };
+
+  chart.drawZone.append<Element>('g').call(dragSelectionAppliance);
 
   // Test direction to avoid displaying block
   const direction = getDirection(trainToDraw.headPosition);
@@ -149,21 +164,6 @@ export default function drawTrain(
     );
   }
 
-  if (trainToDraw.allowances_headPosition && currentAllowanceSettings?.allowances) {
-    trainToDraw.allowances_headPosition.forEach((tailPositionSection) =>
-      drawCurve(
-        chart,
-        `${isSelected && 'selected'} head allowances`,
-        tailPositionSection,
-        groupID,
-        'curveLinear',
-        keyValues,
-        'allowances_headPosition',
-        rotate,
-        isSelected
-      )
-    );
-  }
   if (currentAllowanceSettings?.eco && trainToDraw.eco_headPosition) {
     trainToDraw.eco_headPosition.forEach((tailPositionSection) =>
       drawCurve(
@@ -179,17 +179,16 @@ export default function drawTrain(
       )
     );
   }
-  drawText(
-    chart,
-    direction,
-    groupID,
-    isSelected,
-    `${isPathSelected ? '🎢' : ''} ${trainToDraw.name}`, // text
-    trainToDraw.headPosition[0] &&
-      trainToDraw.headPosition[0][0] &&
-      trainToDraw.headPosition[0][0].time, // x
-    trainToDraw.headPosition[0] &&
-      trainToDraw.headPosition[0][0] &&
-      trainToDraw.headPosition[0][0].position // y
-  );
+  const trainToDrawHeadPos = trainToDraw.headPosition[0][0];
+  if (trainToDrawHeadPos && trainToDrawHeadPos.time != null) {
+    drawText(
+      chart,
+      direction,
+      groupID,
+      isSelected,
+      `${isPathSelected ? '🎢' : ''} ${trainToDraw.name}`, // text
+      trainToDrawHeadPos.time, // x
+      trainToDrawHeadPos.position // y
+    );
+  }
 }

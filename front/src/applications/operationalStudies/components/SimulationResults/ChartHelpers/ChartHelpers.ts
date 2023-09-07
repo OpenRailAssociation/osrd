@@ -13,6 +13,7 @@ import {
   MergedDataPoint,
   Train,
   Stop,
+  SimulationD3Scale,
 } from 'reducers/osrdsimulation/types';
 import { TIME } from '../simulationResultsConsts';
 
@@ -41,8 +42,8 @@ export function offsetSeconds(seconds: number) {
   return seconds;
 }
 
-export function getDirection(data: Position[][]) {
-  const lastOfLast = last(last(data)) as Position;
+export function getDirection<T>(data: Position<T>[][]) {
+  const lastOfLast = last(last(data));
   return data[0] && lastOfLast && data[0][0].position < lastOfLast.position;
 }
 
@@ -103,7 +104,7 @@ export function makeStairCase(data: Array<{ time: number; position: number }>) {
 }
 
 // Time shift a train
-export const timeShiftTrain = (train: Train, offset: number) => ({
+export const timeShiftTrain = (train: Train, offset: number): Train => ({
   ...train,
   base: {
     mechanical_energy_consumed: train.base.mechanical_energy_consumed,
@@ -129,6 +130,7 @@ export const timeShiftTrain = (train: Train, offset: number) => ({
   },
   margins: train.margins
     ? {
+        ...train.margins,
         head_positions: train.margins.head_positions.map((section) =>
           section.map((step) => ({ ...step, time: offsetSeconds(step.time + offset) }))
         ),
@@ -144,9 +146,10 @@ export const timeShiftTrain = (train: Train, offset: number) => ({
           time: offsetSeconds(stop.time + offset),
         })),
       }
-    : null,
+    : undefined,
   eco: train.eco
     ? {
+        ...train.eco,
         head_positions: train.eco.head_positions.map((section) =>
           section.map((step) => ({ ...step, time: offsetSeconds(step.time + offset) }))
         ),
@@ -167,7 +170,7 @@ export const timeShiftTrain = (train: Train, offset: number) => ({
           time: offsetSeconds(stop.time + offset),
         })),
       }
-    : null,
+    : undefined,
 });
 
 // Merge two curves for creating area between
@@ -235,16 +238,16 @@ export const mergeDatasAreaConstant = <Keys extends string>(
     value1: data2,
   })) as MergedBlock<Keys>[];
 
-export const gridX = (x: d3.ScaleTime<number, number>, height: number) =>
+export const gridX = (axisScale: SimulationD3Scale, height: number) =>
   d3
-    .axisBottom(x)
+    .axisBottom(axisScale)
     .ticks(10)
     .tickSize(-height)
     .tickFormat(() => '');
 
-export const gridY = (y: d3.ScaleLinear<number, number>, width: number) =>
+export const gridY = (axisScale: SimulationD3Scale, width: number) =>
   d3
-    .axisLeft(y)
+    .axisLeft(axisScale)
     .ticks(10)
     .tickSize(-width)
     .tickFormat(() => '');

@@ -14,7 +14,7 @@ export type MergedDataPoint<T = number> = {
   value1: number | T;
 };
 export type ConsolidatedMergeDataPoint = MergedDataPoint<Date | null>;
-
+export type SimulationD3Scale = d3.ScaleTime<number, number> | d3.ScaleLinear<number, number>;
 export interface Chart {
   width: number;
   height: number;
@@ -24,10 +24,10 @@ export interface Chart {
     bottom: number;
     left: number;
   };
-  x: d3.ScaleTime<number, number>;
+  x: SimulationD3Scale;
   xAxis: d3.Selection<SVGGElement, unknown, null, undefined>;
   xAxisGrid: d3.Selection<SVGGElement, unknown, null, undefined>;
-  y: d3.ScaleLinear<number, number>;
+  y: SimulationD3Scale;
   yAxis: d3.Selection<SVGGElement, unknown, null, undefined>;
   yAxisGrid: d3.Selection<SVGGElement, unknown, null, undefined>;
   svg: d3.Selection<SVGGElement, unknown, null, undefined>;

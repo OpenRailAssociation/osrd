@@ -134,6 +134,7 @@
     "@testing-library/user-event": "^14.4.3",
     "@types/chroma-js": "^2.1.4",
     "@types/d3": "^7.4.0",
+    "@types/d3-drag": "^3.0.3",
     "@types/jest": "^27.0.1",
     "@types/lodash": "^4.14.192",
     "@types/node": "^18.15.11",

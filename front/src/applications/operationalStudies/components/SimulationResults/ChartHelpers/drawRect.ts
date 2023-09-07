@@ -1,4 +1,4 @@
-import { Chart, RouteAspect } from 'reducers/osrdsimulation/types';
+import { Chart, ConsolidatedRouteAspect } from 'reducers/osrdsimulation/types';
 
 /**
  * Draw rect for SpaceTimeChart
@@ -6,11 +6,14 @@ import { Chart, RouteAspect } from 'reducers/osrdsimulation/types';
 const drawRect = (
   chart: Chart,
   classes: string,
-  dataSimulation: RouteAspect<Date, string>,
+  dataSimulation: ConsolidatedRouteAspect,
   groupID: string,
   rotate: boolean,
-  id = null
+  id: string | null = null
 ) => {
+  if (dataSimulation.time_end === null || dataSimulation.time_start === null) {
+    return;
+  }
   const width = rotate
     ? chart.x(dataSimulation.position_end) - chart.x(dataSimulation.position_start)
     : chart.x(dataSimulation.time_end) - chart.x(dataSimulation.time_start);
