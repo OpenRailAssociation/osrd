@@ -1,11 +1,12 @@
 /* eslint-disable no-console */
 import { useSelector } from 'react-redux';
-import React, { FC, useEffect, useMemo, useState } from 'react';
+import React, { FC, PropsWithChildren, useEffect, useMemo, useState } from 'react';
 import { groupBy, map, omit } from 'lodash';
 import { featureCollection } from '@turf/helpers';
 import { BBox2d } from '@turf/helpers/dist/js/lib/geojson';
 import { Feature, FeatureCollection, LineString } from 'geojson';
 import ReactMapGL, { Layer, MapRef, Source } from 'react-map-gl/maplibre';
+import { LngLatBoundsLike } from 'maplibre-gl';
 
 import { RootState } from 'reducers';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
@@ -21,7 +22,8 @@ import { EditorSource, SourcesDefinitionsIndex } from 'common/Map/Layers/GeoJSON
 import OrderedLayer, { OrderedLayerProps } from 'common/Map/Layers/OrderedLayer';
 import { genLayerProps } from 'common/Map/Layers/OSM';
 import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
-import { LngLatBoundsLike } from 'maplibre-gl';
+import { Viewport } from '../../../reducers/map';
+import { AllowancesSettings, Train } from '../../../reducers/osrdsimulation/types';
 
 const OSRD_LAYER_ORDERS: Record<LayerType, number> = {
   buffer_stops: LAYER_GROUPS_ORDER[LAYERS.BUFFER_STOPS.GROUP],
@@ -49,12 +51,23 @@ const WarpedMap: FC<{
   // Data to display on the map (must be transformed already):
   osrdData: Partial<Record<LayerType, FeatureCollection>>;
   osmData: Record<string, FeatureCollection>;
-  trains?: (TrainPosition & { isSelected?: boolean })[];
+  trainsPositions?: (TrainPosition & { train: Train; isSelected?: boolean })[];
   itinerary?: Feature<LineString>;
-}> = ({ bbox, osrdLayers, osrdData, osmData, trains, itinerary, boundingBox }) => {
+  allowancesSettings?: AllowancesSettings;
+}> = ({
+  bbox,
+  osrdLayers,
+  osrdData,
+  osmData,
+  trainsPositions,
+  itinerary,
+  boundingBox,
+  allowancesSettings,
+}) => {
   const prefix = 'warped/';
   const [mapRef, setMapRef] = useState<MapRef | null>(null);
   const { mapStyle, layersSettings, showIGNBDORTHO } = useSelector((s: RootState) => s.map);
+  const [viewport, setViewport] = useState<Viewport | null>(null);
 
   // Main OSM and OSRD data:
   const layerContext: LayerContext = useMemo(
@@ -110,7 +123,7 @@ const WarpedMap: FC<{
     }, 0);
   }, [mapRef, bbox, boundingBox]);
 
-  // This effect handles the map initial position:
+  // This effect handles bounding box updates:
   useEffect(() => {
     if (!mapRef || !boundingBox) return;
 
@@ -123,6 +136,14 @@ const WarpedMap: FC<{
       ref={setMapRef}
       mapStyle={osmBlankStyle}
       style={{ width: '100%', height: '100%' }}
+      onMove={(e) => {
+        setViewport({
+          ...e.viewState,
+          transformRequest: undefined,
+          width: e.target.getContainer().offsetWidth,
+          height: e.target.getContainer().offsetHeight,
+        });
+      }}
       // Viewport specifics:
       dragPan={!boundingBox}
       doubleClickZoom={!boundingBox}
@@ -159,13 +180,17 @@ const WarpedMap: FC<{
         />
       )}
       {itinerary &&
-        trains?.map((train) => (
+        viewport &&
+        trainsPositions?.map((position) => (
           <TrainHoverPosition
-            key={train.id}
-            point={train}
+            key={position.id}
+            point={position}
+            train={position.train}
             geojsonPath={itinerary}
-            isSelectedTrain={train.isSelected}
+            isSelectedTrain={position.isSelected}
             layerOrder={LAYER_GROUPS_ORDER[LAYERS.TRAIN.GROUP]}
+            allowancesSettings={allowancesSettings}
+            viewport={viewport}
           />
         ))}
     </ReactMapGL>

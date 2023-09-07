@@ -16,6 +16,7 @@ import { TrainPosition } from './types';
 export type InterpoledTrain = {
   name: string;
   id: number;
+  trainId: number;
   head_positions?: PositionSpeedTime;
   tail_positions?: PositionSpeedTime;
   speeds?: PositionSpeedTime;
@@ -75,6 +76,7 @@ export function getSimulationHoverPositions(
       const trainLength = Math.abs(headDistanceAlong - tailDistanceAlong);
       positions.push({
         id: 'main-train',
+        trainId: selectedTrainId,
         headPosition,
         tailPosition,
         headDistanceAlong,
@@ -116,6 +118,7 @@ export function getSimulationHoverPositions(
             ...interpolation,
             name: train.name,
             id: idx,
+            trainId: train.id,
           });
         }
       }
@@ -134,11 +137,15 @@ export function getSimulationHoverPositions(
       const trainLength = Math.abs(headDistanceAlong - tailDistanceAlong);
       return {
         id: `other-train-${train.id}`,
+        trainId: train.id,
         headPosition,
         tailPosition,
         headDistanceAlong,
         tailDistanceAlong,
-        speedTime: positionValues.speed,
+        speedTime: {
+          speed: train.speeds?.speed || positionValues.speed.speed,
+          time: positionValues?.speed?.time,
+        },
         trainLength,
       };
     })

@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useEffect, useState } from 'react';
+import React, { FC, useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import { MapLayerMouseEvent } from 'maplibre-gl';
@@ -9,6 +9,7 @@ import { BBox, lineString, point } from '@turf/helpers';
 import bbox from '@turf/bbox';
 import lineLength from '@turf/length';
 import lineSlice from '@turf/line-slice';
+import { keyBy } from 'lodash';
 
 import { updateTimePositionValues } from 'reducers/osrdsimulation/actions';
 import { getPresentSimulation, getSelectedTrain } from 'reducers/osrdsimulation/selectors';
@@ -76,6 +77,7 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
     (state: RootState) => state.osrdsimulation
   );
   const simulation = useSelector(getPresentSimulation);
+  const trains = useMemo(() => keyBy(simulation.trains, 'id'), [simulation.trains]);
   const selectedTrain = useSelector(getSelectedTrain);
   const terrain3DExaggeration = useSelector(getTerrain3DExaggeration);
   const [geojsonPath, setGeojsonPath] = useState<Feature<LineString>>();
@@ -226,7 +228,7 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
 
   useEffect(() => {
     if (timePosition && geojsonPath) {
-      const trains = getSimulationHoverPositions(
+      const positions = getSimulationHoverPositions(
         geojsonPath,
         simulation,
         timePosition,
@@ -234,8 +236,8 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
         selectedTrain?.id,
         allowancesSettings
       );
-      setTrainHoverPosition(trains.find((train) => train.isSelected));
-      setOtherTrainsHoverPosition(trains.filter((train) => !train.isSelected));
+      setTrainHoverPosition(positions.find((train) => train.isSelected));
+      setOtherTrainsHoverPosition(positions.filter((train) => !train.isSelected));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timePosition]);
@@ -440,23 +442,31 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
           />
         )}
 
-        {geojsonPath && selectedTrainHoverPosition && (
+        {geojsonPath && selectedTrainHoverPosition && selectedTrain && (
           <TrainHoverPosition
             point={selectedTrainHoverPosition}
             isSelectedTrain
             geojsonPath={geojsonPath}
             layerOrder={LAYER_GROUPS_ORDER[LAYERS.TRAIN.GROUP]}
+            viewport={viewport}
+            train={selectedTrain}
+            allowancesSettings={allowancesSettings}
           />
         )}
         {geojsonPath &&
-          otherTrainsHoverPosition.map((pt) => (
-            <TrainHoverPosition
-              point={pt}
-              geojsonPath={geojsonPath}
-              key={pt.id}
-              layerOrder={LAYER_GROUPS_ORDER[LAYERS.TRAIN.GROUP]}
-            />
-          ))}
+          otherTrainsHoverPosition.map((pt) =>
+            trains[pt.trainId] ? (
+              <TrainHoverPosition
+                point={pt}
+                geojsonPath={geojsonPath}
+                key={pt.id}
+                layerOrder={LAYER_GROUPS_ORDER[LAYERS.TRAIN.GROUP]}
+                train={trains[pt.trainId] as Train}
+                viewport={viewport}
+                allowancesSettings={allowancesSettings}
+              />
+            ) : null
+          )}
       </ReactMapGL>
     </>
   );
