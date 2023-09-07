@@ -1175,8 +1175,8 @@ export type PostSearchApiArg = {
 export type PostStdcmApiResponse =
   /** status 200 Simulation result */
   | {
-      path?: Path;
-      simulation?: TrainScheduleResult;
+      path: Path;
+      simulation: SimulationReport;
     }
   | {
       error?: string;
@@ -1855,49 +1855,45 @@ export type SearchScenarioResult = {
   trains_count?: number;
 };
 export type SearchQuery = (boolean | number | number | string | SearchQuery)[] | null;
-export type TrainScheduleResultData = {
-  head_positions?: {
-    position?: number;
-    time?: number;
-  }[][];
-  mechanical_energy_consumed?: number;
-  route_aspects?: {
-    aspect_label?: string;
-    blinking?: boolean;
-    color?: number;
-    position_end?: number;
-    position_start?: number;
-    route_id?: string;
-    signal_id?: string;
-    time_end?: number;
-    time_start?: number;
+export type SpaceTimePosition = {
+  position: number;
+  time: number;
+};
+export type SimulationReportByTrain = {
+  head_positions: SpaceTimePosition[][];
+  mechanical_energy_consumed: number;
+  route_aspects: {
+    aspect_label: string;
+    blinking: boolean;
+    color: number;
+    position_end: number;
+    position_start: number;
+    route_id: string;
+    signal_id: string;
+    time_end: number;
+    time_start: number;
   }[];
-  signals?: {
-    aspects?: string[];
-    geo_position?: number[];
-    schema_position?: number[];
-    signal_id?: number;
+  signals: {
+    aspects: string[];
+    geo_position: number[];
+    schema_position: number[];
+    signal_id: number;
   }[];
-  speeds?: {
-    position?: number;
-    speed?: number;
-    time?: number;
+  speeds: (SpaceTimePosition & {
+    speed: number;
+  })[];
+  stops: {
+    duration: number;
+    id: string | null;
+    line_code: number;
+    line_name: string;
+    name: string;
+    position: number;
+    time: number;
+    track_name: string;
+    track_number: number;
   }[];
-  stops?: {
-    duration?: number;
-    id?: number;
-    line_code?: number;
-    line_name?: string;
-    name?: string;
-    position?: number;
-    time?: number;
-    track_name?: string;
-    track_number?: number;
-  }[];
-  tail_positions?: {
-    position?: number;
-    time?: number;
-  }[][];
+  tail_positions: SpaceTimePosition[][];
 };
 export type Electrified = {
   mode: string;
@@ -1927,35 +1923,33 @@ export type ElectrificationRange = {
   start: number;
   stop: number;
 };
-export type TrainScheduleResult = {
-  base: TrainScheduleResultData;
+export type PowerRestrictionRangeItem = {
+  code: string;
+  handled: boolean;
+  start: number;
+  stop: number;
+};
+export type SimulationReport = {
+  base: SimulationReportByTrain;
   curves: {
-    position?: number;
-    radius?: number;
+    position: number;
+    radius: number;
   }[];
-  eco?:
-    | TrainScheduleResultData
-    | {
-        error?: string;
-      };
+  eco?: SimulationReportByTrain;
   electrification_ranges: ElectrificationRange[];
   id: number;
   labels: string[];
   name: string;
   path: number;
-  power_restriction_ranges: {
-    code: string;
-    handled: boolean;
-    start: number;
-    stop: number;
-  }[];
+  power_restriction_ranges: PowerRestrictionRangeItem[];
   slopes: {
-    gradient?: number;
-    position?: number;
+    gradient: number;
+    position: number;
   }[];
+  speed_limit_tags?: string;
   vmax: {
-    position?: number;
-    speed?: number;
+    position: number;
+    speed: number;
   }[];
 };
 export type AllowanceTimePerDistanceValue = {
@@ -2103,75 +2097,6 @@ export type TrainSchedulePatch = {
   }[];
   speed_limit_tags?: string;
   train_name?: string;
-};
-export type SpaceTimePosition = {
-  position: number;
-  time: number;
-};
-export type SimulationReportByTrain = {
-  head_positions: SpaceTimePosition[][];
-  mechanical_energy_consumed: number;
-  route_aspects: {
-    aspect_label: string;
-    blinking: boolean;
-    color: number;
-    position_end: number;
-    position_start: number;
-    route_id: string;
-    signal_id: string;
-    time_end: number;
-    time_start: number;
-  }[];
-  signals: {
-    aspects: string[];
-    geo_position: number[];
-    schema_position: number[];
-    signal_id: number;
-  }[];
-  speeds: (SpaceTimePosition & {
-    speed: number;
-  })[];
-  stops: {
-    duration: number;
-    id: string | null;
-    line_code: number;
-    line_name: string;
-    name: string;
-    position: number;
-    time: number;
-    track_name: string;
-    track_number: number;
-  }[];
-  tail_positions: SpaceTimePosition[][];
-};
-export type PowerRestrictionRangeItem = {
-  code: string;
-  handled: boolean;
-  start: number;
-  stop: number;
-};
-export type SimulationReport = {
-  base: SimulationReportByTrain;
-  curves: {
-    position: number;
-    radius: number;
-  }[];
-  eco?: SimulationReportByTrain;
-  electrification_ranges: ElectrificationRange[];
-  id: number;
-  labels: string[];
-  name: string;
-  path: number;
-  power_restriction_ranges: PowerRestrictionRangeItem[];
-  slopes: {
-    gradient: number;
-    position: number;
-  }[];
-  speed_limit_tags?: string;
-  vmax: {
-    position: number;
-    speed: number;
-  }[];
 };
 export type TrainScheduleBatchItem = {
   allowances?: Allowance[];
