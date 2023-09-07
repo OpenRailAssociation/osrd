@@ -658,6 +658,19 @@ components:
       oneOf:
       - $ref: '#/components/schemas/DeleteOperation'
       - $ref: '#/components/schemas/OperationObject'
+    OperationalPointLocation:
+      properties:
+        type:
+          enum:
+          - operational_point
+          type: string
+        uic:
+          format: int64
+          type: integer
+      required:
+      - uic
+      - type
+      type: object
     Patch:
       description: A JSONPatch document as defined by RFC 6902
       properties:
@@ -2138,33 +2151,8 @@ components:
       discriminator:
         propertyName: type
       oneOf:
-      - properties:
-          offset:
-            format: double
-            type: number
-          track_section:
-            type: string
-          type:
-            enum:
-            - track_offset
-            type: string
-        required:
-        - track_section
-        - offset
-        - type
-        type: object
-      - properties:
-          type:
-            enum:
-            - operational_point
-            type: string
-          uic:
-            format: int64
-            type: integer
-        required:
-        - uic
-        - type
-        type: object
+      - $ref: '#/components/schemas/TrackOffsetLocation'
+      - $ref: '#/components/schemas/OperationalPointLocation'
     TimetableImportPathSchedule:
       properties:
         arrival_time:
@@ -2232,6 +2220,22 @@ components:
           description: The track section ID
           example: 61205924-6667-11e3-81ff-01f464e0362d
           type: string
+      type: object
+    TrackOffsetLocation:
+      properties:
+        offset:
+          format: double
+          type: number
+        track_section:
+          type: string
+        type:
+          enum:
+          - track_offset
+          type: string
+      required:
+      - track_section
+      - offset
+      - type
       type: object
     TrackRange:
       description: Track range
