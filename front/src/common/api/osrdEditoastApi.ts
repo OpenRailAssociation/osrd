@@ -1630,32 +1630,32 @@ export type CatenaryRange = {
   mode: string;
 };
 export type ProjectResult = {
-  budget?: number;
-  creation_date?: string;
-  description?: string;
-  funders?: string;
-  id?: number;
+  budget: number;
+  creation_date: string;
+  description: string;
+  funders: string;
+  id: number;
   image?: number | null;
-  last_modification?: string;
-  name?: string;
-  objectives?: string;
-  studies_count?: number;
-  tags?: string[];
+  last_modification: string;
+  name: string;
+  objectives: string;
+  studies_count: number;
+  tags: string[];
 };
 export type ProjectCreateRequest = {
-  budget?: number;
-  description?: string;
-  funders?: string;
-  image?: number;
+  budget: number;
+  description: string;
+  funders: string;
+  image?: number | null;
   name: string;
-  objectives?: string;
-  tags?: string[];
+  objectives: string;
+  tags: string[];
 };
 export type ProjectPatchRequest = {
   budget?: number;
   description?: string;
   funders?: string;
-  image?: number;
+  image?: number | null;
   name?: string;
   objectives?: string;
   tags?: string[];
@@ -1846,7 +1846,7 @@ export type SearchProjectResult = {
   last_modification: string;
   name: string;
   studies_count?: number;
-  tags?: any;
+  tags: string[];
 };
 export type SearchScenarioResult = {
   description?: string;

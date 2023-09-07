@@ -3357,6 +3357,7 @@ components:
         - name
         - description
         - last_modification
+        - tags
       properties:
         id:
           type: integer
@@ -3373,6 +3374,8 @@ components:
           format: date-time
         tags:
           type: array
+          items:
+            type: string
 
     SearchStudyResult:
       required:
@@ -3452,6 +3455,7 @@ components:
         budget:
           type: integer
         image:
+          nullable: true
           type: integer
           description: The id of the image in the document table
         tags:
@@ -3461,6 +3465,11 @@ components:
             maxLength: 255
       required:
         - name
+        - description
+        - objectives
+        - funders
+        - budget
+        - tags
 
     ProjectPatchRequest:
       properties:
@@ -3479,6 +3488,7 @@ components:
         budget:
           type: integer
         image:
+          nullable: true
           type: integer
           description: The id of the image in the document table
         tags:
@@ -3517,6 +3527,17 @@ components:
           type: array
           items:
             type: string
+      required:
+        - id
+        - name
+        - objectives
+        - description
+        - funders
+        - budget
+        - creation_date
+        - last_modification
+        - studies_count
+        - tags
 
     StudyUpsertRequest:
       properties:

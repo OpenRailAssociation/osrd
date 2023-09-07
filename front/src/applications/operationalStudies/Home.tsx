@@ -30,12 +30,12 @@ export default function Home() {
   const { t } = useTranslation('operationalStudies/home');
   const safeWord = useSelector((state: RootState) => state.main.safeWord);
   const [sortOption, setSortOption] = useState<SortOptions>('LastModifiedDesc');
-  const [projectsList, setProjectsList] = useState<ProjectResult[]>([]);
+  const [projectsList, setProjectsList] = useState<Array<ProjectResult | SearchProjectResult>>([]);
   const [selectedProjectIds, setSelectedProjectIds] = useState<number[]>([]);
   const [filter, setFilter] = useState('');
   const [filterChips, setFilterChips] = useState('');
-  const [postSearch] = osrdEditoastApi.usePostSearchMutation();
-  const [getProjects] = osrdEditoastApi.useLazyGetProjectsQuery();
+  const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
+  const [getProjects] = osrdEditoastApi.endpoints.getProjects.useLazyQuery();
 
   const sortOptions = [
     {
