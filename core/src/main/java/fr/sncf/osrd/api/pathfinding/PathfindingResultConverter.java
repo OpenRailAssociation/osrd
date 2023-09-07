@@ -8,7 +8,6 @@ import static fr.sncf.osrd.utils.indexing.DirStaticIdxKt.toDirection;
 import static fr.sncf.osrd.utils.indexing.DirStaticIdxKt.toValue;
 import static fr.sncf.osrd.utils.units.Distance.toMeters;
 
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
 import fr.sncf.osrd.api.pathfinding.response.CurveChartPointResult;
 import fr.sncf.osrd.api.pathfinding.response.PathWaypointResult;
@@ -26,11 +25,7 @@ import fr.sncf.osrd.utils.Direction;
 import fr.sncf.osrd.utils.DistanceRangeMap;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import fr.sncf.osrd.utils.indexing.MutableDirStaticIdxArrayList;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
@@ -104,16 +99,18 @@ public class PathfindingResultConverter {
             Pathfinding.Result<Integer> rawPath
     ) {
         // Builds a mapping between blocks and all user defined waypoints on the block
-        var userDefinedWaypointsPerBlock = HashMultimap.<Integer, Long>create();
-        for (var waypoint : rawPath.waypoints())
-            userDefinedWaypointsPerBlock.put(waypoint.edge(), (long) waypoint.offset());
+        var userDefinedWaypointsPerBlock = new HashMap<Integer, List<Long>>();
+        for (var waypoint : rawPath.waypoints()) {
+            var offsets = userDefinedWaypointsPerBlock.computeIfAbsent(waypoint.edge(), k -> new ArrayList<>());
+            offsets.add((long) waypoint.offset());
+        }
 
         var res = new ArrayList<PathWaypointResult>();
 
         long lengthPrevBlocks = 0;
         long startFirstRange = Math.round(rawPath.ranges().get(0).start());
         for (var blockRange : rawPath.ranges()) {
-            for (var waypoint : userDefinedWaypointsPerBlock.get(blockRange.edge())) {
+            for (var waypoint : userDefinedWaypointsPerBlock.getOrDefault(blockRange.edge(), new ArrayList<>())) {
                 if (blockRange.start() <= waypoint && waypoint <= blockRange.end()) {
                     var pathOffset = lengthPrevBlocks + waypoint - startFirstRange;
                     res.add(makePendingWaypoint(infra, path, false, pathOffset, null));
