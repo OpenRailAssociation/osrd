@@ -10,6 +10,9 @@ FROM chef as builder
 # geos crate requirement
 RUN apt update -yqq &&  apt install -yqq --no-install-recommends libgeos-dev
 
+# Instal diesel_cli
+RUN cargo install diesel_cli --no-default-features --features postgres
+
 COPY --from=planner /app/recipe.json recipe.json
 COPY --from=planner /app/editoast_derive/ editoast_derive
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
@@ -28,6 +31,8 @@ RUN apt update -yqq && \
     rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /usr/local/cargo/bin/editoast /usr/local/bin/editoast
+COPY --from=builder /usr/local/cargo/bin/diesel /usr/local/bin/diesel
+COPY --from=builder /app/migrations /migrations
 
 ARG OSRD_GIT_DESCRIBE
 ENV OSRD_GIT_DESCRIBE=${OSRD_GIT_DESCRIBE}
