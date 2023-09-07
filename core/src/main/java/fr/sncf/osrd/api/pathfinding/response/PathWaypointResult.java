@@ -65,6 +65,9 @@ public class PathWaypointResult {
      * Check if two steps result are at the same location
      */
     public boolean isDuplicate(PathWaypointResult other) {
+        // Don't merge user-defined waypoints even if they're on the same location
+        if (!suggestion && !other.suggestion)
+            return false;
         return Math.abs(pathOffset - other.pathOffset) < 0.001;
     }
 
