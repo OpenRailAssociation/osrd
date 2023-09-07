@@ -1,35 +1,40 @@
-import React, { useState, useEffect } from 'react';
+import React, { FC, useState, useEffect, useCallback } from 'react';
 import nextId from 'react-id-generator';
 import { useTranslation } from 'react-i18next';
+
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { get } from 'common/requests';
 import { useDebounce } from 'utils/helpers';
 
 const searchURI = '/gaia/osrd/signalbox/'; // '/matgaia/search_station';
-
-export default function MapSearchSignalBox() {
+type SearchParams = { q?: string; linecode?: string };
+type SearchResult = {
+  results: Array<{ name: string; linecode: string; stationname: string }>;
+};
+const MapSearchSignalBox: FC<unknown> = () => {
+  const { t } = useTranslation(['translation', 'map-search']);
   const [searchState, setSearch] = useState('');
   const [searchLineState, setSearchLine] = useState('');
   const [dontSearch, setDontSearch] = useState(false);
-  const [searchResults, setSearchResults] = useState(undefined);
-
-  const { t } = useTranslation(['translation', 'map-search']);
-
-  const updateSearch = async (params) => {
-    try {
-      const data = await get(searchURI, { params });
-      setSearchResults(data);
-    } catch (e) {
-      /* empty */
-    }
-  };
+  const [searchResults, setSearchResults] = useState<SearchResult | undefined>(undefined);
 
   const debouncedSearchTerm = useDebounce(searchState, 300);
   const debouncedSearchLine = useDebounce(searchLineState, 300);
 
+  const updateSearch = useCallback(async (params: SearchParams) => {
+    const data = await get<SearchResult>(searchURI, { params });
+    setSearchResults(data);
+  }, []);
+
+  const onResultClick = useCallback((result: { name: string }) => {
+    setDontSearch(true);
+    setSearch(result.name);
+    setSearchResults(undefined);
+  }, []);
+
   useEffect(() => {
     if (!dontSearch && (debouncedSearchTerm || debouncedSearchLine)) {
-      const params = {};
+      const params: SearchParams = {};
       if (searchState !== '') {
         params.q = searchState;
       }
@@ -40,27 +45,11 @@ export default function MapSearchSignalBox() {
     }
   }, [debouncedSearchTerm, debouncedSearchLine]);
 
-  const onResultClick = (result) => {
-    setDontSearch(true);
-    setSearch(result.name);
-    setSearchResults(undefined);
-
-    /* if (latlon !== null) {
-      const newViewport = {
-        ...map.viewport,
-        longitude: latlon[0],
-        latitude: latlon[1],
-        zoom: 12,
-        transitionDuration: 1000,
-        transitionInterpolator: new FlyToInterpolator(),
-      };
-      updateExtViewport(newViewport);
-    } */
-  };
-
   const formatSearchResults = () => {
-    const searchResultsContent = searchResults.results.sort((a, b) => a.name.localeCompare(b.name));
-    return searchResultsContent.map((result) => (
+    const searchResultsContent = searchResults?.results.sort((a, b) =>
+      a.name.localeCompare(b.name)
+    );
+    return searchResultsContent?.map((result) => (
       <button
         type="button"
         className="search-result-item"
@@ -120,4 +109,6 @@ export default function MapSearchSignalBox() {
       </div>
     </>
   );
-}
+};
+
+export default MapSearchSignalBox;

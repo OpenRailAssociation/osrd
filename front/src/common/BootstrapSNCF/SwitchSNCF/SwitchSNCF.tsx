@@ -1,4 +1,4 @@
-import React, { InputHTMLAttributes } from 'react';
+import React, { FC, InputHTMLAttributes } from 'react';
 import './SwitchSNCF.scss';
 
 export const SWITCH_TYPES = {
@@ -8,7 +8,7 @@ export const SWITCH_TYPES = {
   switch: 'switch',
 };
 
-type Props = {
+export type SwitchSNCFProps = {
   type: string;
   onChange: InputHTMLAttributes<HTMLInputElement>['onChange'];
   options?: { label: string; value: string }[];
@@ -20,7 +20,7 @@ type Props = {
   disabled?: boolean;
 };
 
-export default function SwitchSNCF({
+const SwitchSNCF: FC<SwitchSNCFProps> = ({
   type,
   options = [],
   onChange,
@@ -28,9 +28,9 @@ export default function SwitchSNCF({
   name,
   id,
   checked = true,
-  warning = false,
-  disabled = false,
-}: Props): JSX.Element | null {
+  warning,
+  disabled,
+}) => {
   const warningClass = warning ? 'warning' : '';
 
   switch (type) {
@@ -128,4 +128,6 @@ export default function SwitchSNCF({
     default:
       return null;
   }
-}
+};
+
+export default SwitchSNCF;

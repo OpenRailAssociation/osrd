@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
+import React, { FC, useState } from 'react';
 import MapSettingsLayers from 'common/Map/Settings/MapSettingsLayers';
 import MapSettingsMapStyle from 'common/Map/Settings/MapSettingsMapStyle';
 import MapSettingsBackgroundSwitches from 'common/Map/Settings/MapSettingsBackgroundSwitches';
@@ -9,15 +8,14 @@ import MapSettingsTrackSources from 'common/Map/Settings/MapSettingsTrackSources
 import { useTranslation } from 'react-i18next';
 import HearderPopUp from '../HeaderPopUp';
 
-export default function MapSettings(props) {
-  const { closeMapSettingsPopUp } = props;
+interface MapSettingsProps {
+  closeMapSettingsPopUp: () => void;
+}
+const MapSettings: FC<MapSettingsProps> = ({ closeMapSettingsPopUp }) => {
   const { t } = useTranslation(['translation', 'map-settings']);
   const [showSettingsSignals, setShowSettingsSignals] = useState(false);
   const [showSettingsLayers, setShowSettingsLayers] = useState(false);
   const [showSettingsSpeedLimits, setShowSettingsSpeedLimits] = useState(false);
-  const toggleShowSettings = (setShowSettings) => {
-    setShowSettings((prevState) => !prevState);
-  };
 
   return (
     <div className="map-modal">
@@ -29,7 +27,7 @@ export default function MapSettings(props) {
       <MapSettingsBackgroundSwitches />
       <div
         className="mb-1 mt-3 border-bottom d-flex align-items-center sub-section-title"
-        onClick={() => toggleShowSettings(setShowSettingsSignals)}
+        onClick={() => setShowSettingsSignals((v) => !v)}
         role="button"
         tabIndex={0}
       >
@@ -42,7 +40,7 @@ export default function MapSettings(props) {
       {showSettingsSignals && <MapSettingsSignals />}
       <div
         className="mb-1 mt-3 border-bottom d-flex align-items-center sub-section-title"
-        onClick={() => toggleShowSettings(setShowSettingsLayers)}
+        onClick={() => setShowSettingsLayers((v) => !v)}
         role="button"
         tabIndex={0}
       >
@@ -55,7 +53,7 @@ export default function MapSettings(props) {
       {showSettingsLayers && <MapSettingsLayers />}
       <div
         className="mb-1 mt-3 border-bottom d-flex align-items-center sub-section-title"
-        onClick={() => toggleShowSettings(setShowSettingsSpeedLimits)}
+        onClick={() => setShowSettingsSpeedLimits((v) => !v)}
         role="button"
         tabIndex={0}
       >
@@ -68,8 +66,6 @@ export default function MapSettings(props) {
       {showSettingsSpeedLimits && <MapSettingsSpeedLimits />}
     </div>
   );
-}
-
-MapSettings.propTypes = {
-  closeMapSettingsPopUp: PropTypes.func.isRequired,
 };
+
+export default MapSettings;
