@@ -21,6 +21,7 @@ import { EditorSource, SourcesDefinitionsIndex } from 'common/Map/Layers/GeoJSON
 import OrderedLayer, { OrderedLayerProps } from 'common/Map/Layers/OrderedLayer';
 import { genLayerProps } from 'common/Map/Layers/OSM';
 import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
+import { LngLatBoundsLike } from 'maplibre-gl';
 
 const OSRD_LAYER_ORDERS: Record<LayerType, number> = {
   buffer_stops: LAYER_GROUPS_ORDER[LAYERS.BUFFER_STOPS.GROUP],
@@ -44,12 +45,13 @@ const OSRD_LAYER_ORDERS: Record<LayerType, number> = {
 const WarpedMap: FC<{
   bbox: BBox2d;
   osrdLayers: Set<LayerType>;
+  boundingBox?: LngLatBoundsLike;
   // Data to display on the map (must be transformed already):
   osrdData: Partial<Record<LayerType, FeatureCollection>>;
   osmData: Record<string, FeatureCollection>;
   trains?: (TrainPosition & { isSelected?: boolean })[];
   itinerary?: Feature<LineString>;
-}> = ({ bbox, osrdLayers, osrdData, osmData, trains, itinerary }) => {
+}> = ({ bbox, osrdLayers, osrdData, osmData, trains, itinerary, boundingBox }) => {
   const prefix = 'warped/';
   const [mapRef, setMapRef] = useState<MapRef | null>(null);
   const { mapStyle, layersSettings, showIGNBDORTHO } = useSelector((s: RootState) => s.map);
@@ -103,13 +105,30 @@ const WarpedMap: FC<{
     const avgLon = (bbox[0] + bbox[2]) / 2;
     const thinBBox: BBox2d = [avgLon, bbox[1], avgLon, bbox[3]];
     setTimeout(() => {
-      mapRef.fitBounds(thinBBox, { animate: false });
+      mapRef.fitBounds(boundingBox || thinBBox, { animate: false });
       mapRef.resize();
     }, 0);
-  }, [mapRef, bbox]);
+  }, [mapRef, bbox, boundingBox]);
+
+  // This effect handles the map initial position:
+  useEffect(() => {
+    if (!mapRef || !boundingBox) return;
+
+    mapRef.fitBounds(boundingBox);
+    mapRef.resize();
+  }, [boundingBox]);
 
   return (
-    <ReactMapGL ref={setMapRef} mapStyle={osmBlankStyle} style={{ width: '100%', height: '100%' }}>
+    <ReactMapGL
+      ref={setMapRef}
+      mapStyle={osmBlankStyle}
+      style={{ width: '100%', height: '100%' }}
+      // Viewport specifics:
+      dragPan={!boundingBox}
+      doubleClickZoom={!boundingBox}
+      scrollZoom={!boundingBox}
+      interactive={!boundingBox}
+    >
       <Layer type="background" paint={{ 'background-color': 'white' }} />
       <VirtualLayers />
       {map(osmSources, (layers, sourceLayer) => (

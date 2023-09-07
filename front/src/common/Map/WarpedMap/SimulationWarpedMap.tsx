@@ -1,13 +1,14 @@
 /* eslint-disable no-console */
 import { useSelector } from 'react-redux';
 import React, { FC, useEffect, useMemo, useState } from 'react';
-import { isEmpty, isNil, mapValues, omitBy } from 'lodash';
+import { clamp, first, isEmpty, isNil, last, mapValues, omitBy } from 'lodash';
 
 import bbox from '@turf/bbox';
 import length from '@turf/length';
 import { lineString } from '@turf/helpers';
 import { BBox2d } from '@turf/helpers/dist/js/lib/geojson';
 import { Feature, FeatureCollection, LineString, Position } from 'geojson';
+import { LngLatBoundsLike } from 'maplibre-gl';
 
 import { RootState } from 'reducers';
 import { LoaderFill } from 'common/Loader';
@@ -22,11 +23,12 @@ import { getImprovedOSRDData } from 'common/Map/WarpedMap/core/helpers';
 import { getSelectedTrain } from 'reducers/osrdsimulation/selectors';
 import { AsyncMemoState, getAsyncMemoData, useAsyncMemo } from 'utils/useAsyncMemo';
 import { getSimulationHoverPositions } from 'applications/operationalStudies/components/SimulationResults/SimulationResultsMap/helpers';
+import { clip } from 'utils/mapHelper';
 
 import './SimulationWarpedMap.scss';
 
 const TIME_LABEL = 'Warping OSRD and OSM data';
-const WIDTH = 200;
+const WIDTH = 300;
 
 interface PathStatePayload {
   path: Feature<LineString>;
@@ -63,6 +65,78 @@ const SimulationWarpedMap: FC<{ collapsed?: boolean }> = ({ collapsed }) => {
   ) as number;
   const [getPath] = osrdEditoastApi.useLazyGetPathfindingByIdQuery();
   const layers = useMemo(() => new Set<LayerType>(['track_sections']), []);
+
+  // Boundaries handling (ie zoom sync):
+  const chart = useSelector((s: RootState) => s.osrdsimulation.chart);
+  const syncedBoundingBox: LngLatBoundsLike = useMemo(() => {
+    if (chart && state.type === 'dataLoaded') {
+      const { y, height } = chart;
+      const { path, transform, regularBBox } = state;
+      const l = length(path, { units: 'meters' });
+
+      const yStart = y(0);
+      const yEnd = y(l);
+
+      const transformedPath = transform(path) as typeof path;
+      const latStart = (first(transformedPath.geometry.coordinates) as Position)[1];
+      const latEnd = (last(transformedPath.geometry.coordinates) as Position)[1];
+
+      /**
+       * Here, `y` is the function provided by d3 to scale distance in meters from the beginning of the path to pixels
+       * from the bottom of the `SpaceTimeChart` (going upwards) to the related point.
+       * So, `yStart` is the y coordinate of the start of the path at the current zoom level, and yEnd is the y
+       * coordinate of the end of the path.
+       * Finally, `height` is the height in pixels of the SpaceTimeChart.
+       *
+       * Also, we now `latStart` and `latEnd`, which are the latitudes of the first and the last points of our
+       * transformed path.
+       *
+       * We are looking for `latBottom` and `latTop` so that our warped map is as much "aligned" as we can with the
+       * `SpaceTimeChart`. According to Thalès, we know that:
+       *
+       * (latStart - latBottom) / yStart = (latTop - latBottom) / height = (latEnd - latStart) / (yEnd - yStart)
+       *
+       * That explains the following computations:
+       */
+      const ratio = (latEnd - latStart) / (yEnd - yStart);
+      const latBottom = clamp(latStart - yStart * ratio, -90, 90);
+      const latTop = clamp(latBottom + height * ratio, -90, 90);
+
+      // Since we are here describing a bounding box where only the latBottom and latTop are important, it will have a
+      // 0 width, and we just need to specify the middle longitude (based on the visible part of the path on the screen,
+      // so depending on the latTop and latBottom values):
+      const clippedPath = clip(transformedPath, {
+        type: 'rectangle',
+        points: [
+          [regularBBox[0], latTop],
+          [regularBBox[2], latBottom],
+        ],
+      }) as typeof transformedPath;
+      const clippedPathBBox = bbox(clippedPath) as BBox2d;
+      const lngAverage = (clippedPathBBox[0] + clippedPathBBox[2]) / 2;
+
+      return [
+        [lngAverage, latTop],
+        [lngAverage, latBottom],
+      ] as LngLatBoundsLike;
+    }
+
+    if (state.type === 'dataLoaded' || state.type === 'pathLoaded') {
+      const { regularBBox } = state;
+      const lngAverage = (regularBBox[0] + regularBBox[2]) / 2;
+
+      return [
+        [lngAverage, regularBBox[1]],
+        [lngAverage, regularBBox[3]],
+      ];
+    }
+
+    // This should never occur:
+    return [
+      [0, 0],
+      [0, 0],
+    ] as LngLatBoundsLike;
+  }, [chart, state]);
 
   // Itinerary handling:
   const {
@@ -205,9 +279,7 @@ const SimulationWarpedMap: FC<{ collapsed?: boolean }> = ({ collapsed }) => {
           }}
         />
       )}
-      {(state.type !== 'dataLoaded') && (
-        <LoaderFill />
-      )}
+      {state.type !== 'dataLoaded' && <LoaderFill />}
       {state.type === 'dataLoaded' && (
         <div
           className="bg-white border m-3"
@@ -224,6 +296,7 @@ const SimulationWarpedMap: FC<{ collapsed?: boolean }> = ({ collapsed }) => {
             osmData={state.osm}
             itinerary={warpedItinerary}
             trains={getAsyncMemoData(trainsState) || undefined}
+            boundingBox={syncedBoundingBox}
           />
         </div>
       )}

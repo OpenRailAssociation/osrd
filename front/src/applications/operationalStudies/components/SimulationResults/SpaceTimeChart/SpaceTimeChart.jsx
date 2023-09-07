@@ -226,6 +226,8 @@ export default function SpaceTimeChart(props) {
       );
       moveGridLinesOnMouseMove();
     }
+
+    dispatchUpdateChart(chart);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chart]);
 
