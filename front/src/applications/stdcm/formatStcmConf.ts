@@ -20,7 +20,7 @@ export default function formatStdcmConf(
   const { isByOrigin, isByDestination } = makeEnumBooleans(STDCM_MODES, osrdconf.stdcmMode);
 
   let error = false;
-  if (!osrdconf.origin && isByOrigin) {
+  if (!osrdconf.origin) {
     error = true;
     dispatch(
       setFailure({
@@ -38,7 +38,7 @@ export default function formatStdcmConf(
       })
     );
   }
-  if (!osrdconf.destination && isByDestination) {
+  if (!osrdconf.destination) {
     error = true;
     dispatch(
       setFailure({
