@@ -956,6 +956,7 @@ components:
           type: string
         image:
           description: The id of the image in the document table
+          nullable: true
           type: integer
         name:
           maxLength: 128
@@ -971,6 +972,11 @@ components:
           type: array
       required:
       - name
+      - description
+      - objectives
+      - funders
+      - budget
+      - tags
     ProjectPatchRequest:
       properties:
         budget:
@@ -983,6 +989,7 @@ components:
           type: string
         image:
           description: The id of the image in the document table
+          nullable: true
           type: integer
         name:
           maxLength: 128
@@ -1025,6 +1032,17 @@ components:
           items:
             type: string
           type: array
+      required:
+      - id
+      - name
+      - objectives
+      - description
+      - funders
+      - budget
+      - creation_date
+      - last_modification
+      - studies_count
+      - tags
     Railjson:
       additionalProperties: true
       description: This field follows railjson format
@@ -1581,12 +1599,15 @@ components:
         studies_count:
           type: integer
         tags:
+          items:
+            type: string
           type: array
       required:
       - id
       - name
       - description
       - last_modification
+      - tags
     SearchQuery:
       example:
       - and

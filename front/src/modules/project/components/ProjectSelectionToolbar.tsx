@@ -1,6 +1,6 @@
-import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
-import { ProjectResult, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import React from 'react';
+import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
+import { ProjectResult, SearchProjectResult, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useTranslation } from 'react-i18next';
 import { AiFillCheckCircle } from 'react-icons/ai';
 import { FaTrash } from 'react-icons/fa';
@@ -10,8 +10,8 @@ import DeleteProjectsModal from './DeleteProjectsModal';
 type Props = {
   selectedProjectIds: number[];
   setSelectedProjectIds: (ids: number[]) => void;
-  projectsList: ProjectResult[];
-  setProjectsList: (list: ProjectResult[]) => void;
+  projectsList: Array<ProjectResult | SearchProjectResult>;
+  setProjectsList: (list: Array<ProjectResult | SearchProjectResult>) => void;
 };
 
 export default function ProjectSelectionToolbar({
@@ -22,14 +22,12 @@ export default function ProjectSelectionToolbar({
 }: Props) {
   const { t } = useTranslation('operationalStudies/home');
   const { openModal } = useModal();
-  const [deleteProject] = osrdEditoastApi.useDeleteProjectsByProjectIdMutation();
+  const [deleteProject] = osrdEditoastApi.endpoints.deleteProjectsByProjectId.useMutation();
 
   const handleDeleteProjects = () => {
     if (selectedProjectIds.length > 0) {
       selectedProjectIds.forEach((projectId) => deleteProject({ projectId }));
-      setProjectsList(
-        projectsList.filter((project) => project.id && !selectedProjectIds.includes(project.id))
-      );
+      setProjectsList(projectsList.filter((project) => !selectedProjectIds.includes(project.id)));
       setSelectedProjectIds([]);
     }
   };
