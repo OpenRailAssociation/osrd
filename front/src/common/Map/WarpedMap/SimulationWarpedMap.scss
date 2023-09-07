@@ -8,4 +8,10 @@
 .warped-map {
   overflow: hidden;
   transition: 0.2s;
+
+  .buttons {
+    position: absolute;
+    bottom: 2em;
+    right: 2em;
+  }
 }

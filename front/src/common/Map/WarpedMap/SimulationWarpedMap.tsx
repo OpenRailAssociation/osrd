@@ -1,7 +1,8 @@
 /* eslint-disable no-console */
 import { useSelector } from 'react-redux';
 import React, { FC, useEffect, useMemo, useState } from 'react';
-import { clamp, first, isEmpty, isNil, last, mapValues, omitBy } from 'lodash';
+import { clamp, first, isEmpty, isNil, keyBy, last, mapValues, omitBy } from 'lodash';
+import { PiLinkBold, PiLinkBreakBold } from 'react-icons/pi';
 
 import bbox from '@turf/bbox';
 import length from '@turf/length';
@@ -26,6 +27,7 @@ import { getSimulationHoverPositions } from 'applications/operationalStudies/com
 import { clip } from 'utils/mapHelper';
 
 import './SimulationWarpedMap.scss';
+import { Train } from '../../../reducers/osrdsimulation/types';
 
 const TIME_LABEL = 'Warping OSRD and OSM data';
 const WIDTH = 300;
@@ -65,6 +67,7 @@ const SimulationWarpedMap: FC<{ collapsed?: boolean }> = ({ collapsed }) => {
   ) as number;
   const [getPath] = osrdEditoastApi.useLazyGetPathfindingByIdQuery();
   const layers = useMemo(() => new Set<LayerType>(['track_sections']), []);
+  const [mode, setMode] = useState<'manual' | 'auto'>('auto');
 
   // Boundaries handling (ie zoom sync):
   const chart = useSelector((s: RootState) => s.osrdsimulation.chart);
@@ -165,49 +168,51 @@ const SimulationWarpedMap: FC<{ collapsed?: boolean }> = ({ collapsed }) => {
   }, [itineraryState, state]);
 
   // Trains handling:
-  const trainsState: AsyncMemoState<(TrainPosition & { isSelected?: boolean })[]> =
-    useAsyncMemo(async () => {
-      const path = getAsyncMemoData(itineraryState);
-      if (!path || state.type !== 'dataLoaded') return [];
+  const trainsIndex = useMemo(() => keyBy(simulation.trains, 'id'), [simulation.trains]);
+  const trainsPositionsState: AsyncMemoState<
+    (TrainPosition & { train: Train; isSelected?: boolean })[]
+  > = useAsyncMemo(async () => {
+    const path = getAsyncMemoData(itineraryState);
+    if (!path || state.type !== 'dataLoaded') return [];
 
-      const transformedPath = state.transform(path) as typeof path;
-      return getSimulationHoverPositions(
-        path,
-        simulation,
-        timePosition,
-        positionValues,
-        selectedTrain?.id,
-        allowancesSettings
-      ).map((train) => {
-        const transformedTrain = { ...train };
-        const pathLength = length(path);
-        const transformedPathLength = length(transformedPath);
-
-        // Transform positions:
-        transformedTrain.headPosition = state.transform(
-          train.headPosition
-        ) as TrainPosition['headPosition'];
-        transformedTrain.tailPosition = state.transform(
-          train.tailPosition
-        ) as TrainPosition['tailPosition'];
-
-        // Interpolate positions:
-        transformedTrain.headDistanceAlong =
-          (train.headDistanceAlong / pathLength) * transformedPathLength;
-        transformedTrain.tailDistanceAlong =
-          (train.tailDistanceAlong / pathLength) * transformedPathLength;
-
-        return transformedTrain;
-      });
-    }, [
-      itineraryState,
+    const transformedPath = state.transform(path) as typeof path;
+    return getSimulationHoverPositions(
+      path,
       simulation,
       timePosition,
       positionValues,
-      selectedTrain,
-      allowancesSettings,
-      state,
-    ]);
+      selectedTrain?.id,
+      allowancesSettings
+    ).map((position) => {
+      const transformedTrain = { ...position };
+      const pathLength = length(path);
+      const transformedPathLength = length(transformedPath);
+
+      // Transform positions:
+      transformedTrain.headPosition = state.transform(
+        position.headPosition
+      ) as TrainPosition['headPosition'];
+      transformedTrain.tailPosition = state.transform(
+        position.tailPosition
+      ) as TrainPosition['tailPosition'];
+
+      // Interpolate positions:
+      transformedTrain.headDistanceAlong =
+        (position.headDistanceAlong / pathLength) * transformedPathLength;
+      transformedTrain.tailDistanceAlong =
+        (position.tailDistanceAlong / pathLength) * transformedPathLength;
+
+      return { ...transformedTrain, train: trainsIndex[position.trainId] };
+    });
+  }, [
+    itineraryState,
+    simulation,
+    timePosition,
+    positionValues,
+    selectedTrain,
+    allowancesSettings,
+    state,
+  ]);
 
   /**
    * This effect handles loading the simulation path, and retrieve the warping function:
@@ -295,9 +300,19 @@ const SimulationWarpedMap: FC<{ collapsed?: boolean }> = ({ collapsed }) => {
             osrdData={state.osrd}
             osmData={state.osm}
             itinerary={warpedItinerary}
-            trains={getAsyncMemoData(trainsState) || undefined}
-            boundingBox={syncedBoundingBox}
+            trainsPositions={getAsyncMemoData(trainsPositionsState) || undefined}
+            boundingBox={mode === 'auto' ? syncedBoundingBox : undefined}
+            allowancesSettings={allowancesSettings}
           />
+          <div className="buttons">
+            <button
+              type="button"
+              className="btn-rounded btn-rounded-white box-shadow btn-rotate"
+              onClick={() => setMode(mode === 'auto' ? 'manual' : 'auto')}
+            >
+              {mode === 'manual' ? <PiLinkBold /> : <PiLinkBreakBold />}
+            </button>
+          </div>
         </div>
       )}
     </div>

@@ -1,5 +1,4 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
 import { Source, Marker } from 'react-map-gl/maplibre';
 import along from '@turf/along';
 import lineSliceAlong from '@turf/line-slice-along';
@@ -11,10 +10,8 @@ import { Feature, LineString } from 'geojson';
 import cx from 'classnames';
 import { mapValues, get } from 'lodash';
 
-import { RootState } from 'reducers';
 import { Viewport } from 'reducers/map';
-import { AllowancesSetting } from 'reducers/osrdsimulation/types';
-import { getSelectedTrain } from 'reducers/osrdsimulation/selectors';
+import { AllowancesSetting, AllowancesSettings, Train } from 'reducers/osrdsimulation/types';
 import { sec2time } from 'utils/timeManipulation';
 import { boundedValue } from 'utils/numbers';
 import { getCurrentBearing } from 'utils/geometry';
@@ -176,9 +173,12 @@ function getTrainPieces(
 
 interface TrainHoverPositionProps {
   point: TrainPosition;
-  isSelectedTrain?: boolean;
   geojsonPath: Feature<LineString>;
   layerOrder: number;
+  train: Train;
+  viewport: Viewport;
+  allowancesSettings?: AllowancesSettings;
+  isSelectedTrain?: boolean;
 }
 
 const labelShiftFactor = {
@@ -187,13 +187,18 @@ const labelShiftFactor = {
 };
 
 function TrainHoverPosition(props: TrainHoverPositionProps) {
-  const { point, isSelectedTrain = false, geojsonPath, layerOrder } = props;
-  const { allowancesSettings } = useSelector((state: RootState) => state.osrdsimulation);
-  const { viewport } = useSelector((state: RootState) => state.map);
-  const selectedTrain = useSelector(getSelectedTrain);
+  const {
+    point,
+    isSelectedTrain = false,
+    geojsonPath,
+    layerOrder,
+    viewport,
+    train,
+    allowancesSettings,
+  } = props;
 
-  if (selectedTrain && geojsonPath && point.headDistanceAlong && point.tailDistanceAlong) {
-    const { ecoBlocks } = get(allowancesSettings, selectedTrain.id, {} as AllowancesSetting);
+  if (train && geojsonPath && point.headDistanceAlong && point.tailDistanceAlong) {
+    const { ecoBlocks } = get(allowancesSettings, train.id, {} as AllowancesSetting);
     const fill = getFill(isSelectedTrain as boolean, ecoBlocks);
     const label = getSpeedAndTimeLabel(isSelectedTrain, ecoBlocks, point);
 
