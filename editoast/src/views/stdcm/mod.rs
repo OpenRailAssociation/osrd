@@ -29,7 +29,7 @@ use super::train_schedule::projection::Projection;
 use super::train_schedule::simulation_report::{create_simulation_report, SimulationReport};
 
 use crate::schema::utils::geometry::diesel_linestring_to_geojson;
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, TimeZone, Utc};
 use derivative::Derivative;
 use geos::geojson::Geometry;
 use uuid::Uuid;
@@ -91,10 +91,8 @@ impl From<PathfindingChangeset> for STDCMPath {
         Self {
             id: changeset.id.expect("id is missing"),
             owner: changeset.owner.expect("owner is missing"),
-            created: DateTime::from_utc(
-                changeset.created.expect("created timestamp is missing"),
-                Utc,
-            ),
+            created: Utc
+                .from_utc_datetime(&changeset.created.expect("created timestamp is missing")),
             length: changeset.length,
             slopes: changeset
                 .slopes
