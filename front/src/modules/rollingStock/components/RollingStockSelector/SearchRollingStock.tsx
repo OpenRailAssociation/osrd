@@ -98,6 +98,8 @@ type SearchRollingStockProps = {
   filteredRollingStockList: LightRollingStock[];
   setIsLoading?: (isLoading: boolean) => void;
   isSuccess?: boolean;
+  mustResetFilters?: boolean;
+  setMustResetFilters?: (mustResetFilters: boolean) => void;
 };
 
 const SearchRollingStock = ({
@@ -106,6 +108,8 @@ const SearchRollingStock = ({
   filteredRollingStockList,
   setIsLoading,
   isSuccess,
+  mustResetFilters,
+  setMustResetFilters,
 }: SearchRollingStockProps) => {
   const { t } = useTranslation('rollingStockEditor');
 
@@ -149,6 +153,16 @@ const SearchRollingStock = ({
     setFilteredRollingStockList(newFilteredRollingStock);
   }
 
+  const resetFilters = () => {
+    setFilters({
+      text: '',
+      elec: false,
+      thermal: false,
+      locked: false,
+      notLocked: false,
+    });
+  };
+
   useEffect(() => {
     handleRollingStockLoaded();
   }, [isSuccess]);
@@ -160,8 +174,15 @@ const SearchRollingStock = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters, rollingStocks]);
 
+  useEffect(() => {
+    if (mustResetFilters && setMustResetFilters) {
+      resetFilters();
+      setMustResetFilters(false);
+    }
+  }, [mustResetFilters]);
+
   return (
-    <div className="row no-gutters">
+    <div className="row no-gutters rollingstock-editor-filters">
       <div className="col-md-4 mb-3">
         <InputSNCF
           id="searchfilter"

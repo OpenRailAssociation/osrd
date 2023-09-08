@@ -31,6 +31,7 @@ export default function RollingStockEditor({ rollingStocks }: RollingStockEditor
   const [isLoading, setIsLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
+  const [isDuplicating, setIsDuplicating] = useState(false);
   const dispatch = useDispatch();
 
   const [openedRollingStockCardId, setOpenedRollingStockCardId] = useState<number>();
@@ -84,6 +85,7 @@ export default function RollingStockEditor({ rollingStocks }: RollingStockEditor
                     isCondensed
                     rollingStock={selectedRollingStock}
                     setIsEditing={setIsEditing}
+                    setIsDuplicating={setIsDuplicating}
                     isRollingStockLocked={selectedRollingStock.locked as boolean}
                   />
                 </div>
@@ -181,6 +183,8 @@ export default function RollingStockEditor({ rollingStocks }: RollingStockEditor
           setFilteredRollingStockList={setFilteredRollingStockList}
           filteredRollingStockList={filteredRollingStockList}
           setIsLoading={setIsLoading}
+          mustResetFilters={isDuplicating}
+          setMustResetFilters={setIsDuplicating}
         />
         {displayList()}
       </div>

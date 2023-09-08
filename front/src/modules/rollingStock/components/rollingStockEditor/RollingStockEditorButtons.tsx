@@ -11,6 +11,7 @@ import RollingStockEditorFormModal from 'modules/rollingStock/components/rolling
 type RollingStockEditorButtonsProps = {
   rollingStock: RollingStock;
   setIsEditing: (isEditing: boolean) => void;
+  setIsDuplicating: (isDuplicating: boolean) => void;
   setOpenedRollingStockCardId: React.Dispatch<React.SetStateAction<number | undefined>>;
   isRollingStockLocked: boolean;
   isCondensed: boolean;
@@ -19,6 +20,7 @@ type RollingStockEditorButtonsProps = {
 function RollingStockEditorButtons({
   rollingStock,
   setIsEditing,
+  setIsDuplicating,
   setOpenedRollingStockCardId,
   isRollingStockLocked,
   isCondensed,
@@ -71,6 +73,7 @@ function RollingStockEditorButtons({
       .then((res) => {
         setOpenedRollingStockCardId(res.id);
         setIsEditing(true);
+        setIsDuplicating(true);
         dispatch(
           setSuccess({
             title: t('messages.success'),
