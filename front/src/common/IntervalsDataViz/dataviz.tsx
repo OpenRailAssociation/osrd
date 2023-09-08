@@ -199,7 +199,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
    * => we recompute the additionalData4viz
    */
   useEffect(() => {
-    if (fullLength > 0) {
+    if (fullLength > 0 && additionalData.length > 0) {
       const croppedAdditionalData = cropForDatavizViewbox(
         additionalData,
         viewBox
@@ -452,6 +452,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
             {additionalData4viz.map((item, index) => (
               <div
                 className="item"
+                key={`${item.begin}-${item.end}-${item.value}`}
                 style={{
                   width: `${((item.end - item.begin) / fullLength) * 100}%`,
                 }}
