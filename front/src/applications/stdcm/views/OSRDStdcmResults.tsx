@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import SpaceTimeChart from 'applications/operationalStudies/components/SimulationResults/SpaceTimeChart/withOSRDData';
-import SpeedSpaceChart from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/withOSRDData';
+import SpeedSpaceChart from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/SpeedSpaceChart';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { getPresentSimulation } from 'reducers/osrdsimulation/selectors';
@@ -74,7 +74,6 @@ const OSRDStcdmResults = () => {
                 <SpeedSpaceChart
                   initialHeight={450}
                   onSetChartBaseHeight={setSpeedSpaceChartHeight}
-                  showSettings={false}
                 />
               </div>
             )}

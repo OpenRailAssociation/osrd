@@ -8,6 +8,7 @@ import {
 import nextId from 'react-id-generator';
 import svgDefs from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/svgDefs';
 import { SimulationD3Scale } from 'reducers/osrdsimulation/types';
+import { Chart } from 'reducers/osrdsimulation/types';
 
 // keyValues ['position', 'gradient']
 const defineChart = (
@@ -19,7 +20,7 @@ const defineChart = (
   rotate: boolean,
   keyValues: string[],
   id: string
-) => {
+): Chart => {
   const margin = {
     top: 1,
     right: 1,

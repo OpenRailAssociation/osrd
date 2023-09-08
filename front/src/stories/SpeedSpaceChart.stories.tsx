@@ -1,8 +1,12 @@
 import React from 'react';
 import { noop } from 'lodash';
-import { ComponentStory } from '@storybook/react';
-import SpeedSpaceChart from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/SpeedSpaceChart';
+import { StoryFn } from '@storybook/react';
+import SpeedSpaceChart, {
+  SpeedSpaceChartProps,
+} from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/SpeedSpaceChart';
 import 'stories/storybook.css';
+import { Provider } from 'react-redux';
+import { store } from 'Store';
 
 export default {
   /* 👇 The title prop is optional.
@@ -13,21 +17,20 @@ export default {
   component: SpeedSpaceChart,
 };
 
-const Template: ComponentStory<typeof SpeedSpaceChart> = (args) => (
-  <div className="simulation-results">
-    <div className="speedspacechart-container">
-      <SpeedSpaceChart initialHeight={400} {...args} />
+const Template: StoryFn<SpeedSpaceChartProps & { heightOfSpeedSpaceChart: number }> = (args) => (
+  <Provider store={store}>
+    <div className="simulation-results">
+      <div className="speedspacechart-container">
+        <SpeedSpaceChart {...args} />
+      </div>
     </div>
-  </div>
+  </Provider>
 );
 
 export const Standard = Template.bind({});
 
 Standard.args = {
   heightOfSpeedSpaceChart: 250,
-  dispatch: noop,
-  toggleSetting: noop,
-  onSetSettings: noop,
-  dispatchUpdateMustRedraw: noop,
+  initialHeight: 400,
   onSetChartBaseHeight: noop,
 };

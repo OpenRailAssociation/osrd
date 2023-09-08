@@ -49,3 +49,15 @@ export const getSelectedTrain = (state: RootState) => {
     (train) => train.id && train.id === selectedTrainId
   );
 };
+export const getDisplaySimulation = makeSubSelector<OsrdSimulationState, 'displaySimulation'>(
+  getOsrdSimulation,
+  'displaySimulation'
+);
+export const getIsUpdating = makeSubSelector<OsrdSimulationState, 'isUpdating'>(
+  getOsrdSimulation,
+  'isUpdating'
+);
+export const getSpeedSpaceSettings = makeSubSelector<OsrdSimulationState, 'speedSpaceSettings'>(
+  getOsrdSimulation,
+  'speedSpaceSettings'
+);

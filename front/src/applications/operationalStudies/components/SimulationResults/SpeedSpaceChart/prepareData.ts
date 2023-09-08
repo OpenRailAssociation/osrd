@@ -1,5 +1,3 @@
-import createSlopeCurve from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/createSlopeCurve';
-import createCurveCurve from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/createCurveCurve';
 import {
   GradientPosition,
   HeightPosition,
@@ -9,6 +7,7 @@ import {
   Train,
 } from 'reducers/osrdsimulation/types';
 import { ElectrificationRange, PowerRestrictionRangeItem } from 'common/api/osrdEditoastApi';
+import { createCurveCurve, createSlopeCurve } from './utils';
 
 export interface AreaBlock {
   position: number;
@@ -104,11 +103,7 @@ function prepareData(trainSimulation: Train): GevPreparedata {
   const areaSlopesHistogram = buildAreaSlopesHistograms(slopesHistogram, zeroLineSlope);
 
   // Curves
-  const curvesHistogram: RadiusPosition[] = createCurveCurve(
-    trainSimulation.curves,
-    speed,
-    'speed'
-  );
+  const curvesHistogram = createCurveCurve(trainSimulation.curves, speed, 'speed');
 
   return {
     areaBlock,
