@@ -357,7 +357,7 @@ async fn post_timetable(
         let mut train_schedules = vec![];
         for train in import_item.trains.iter() {
             assert_eq!(waypoint_offsets.len(), import_item.path.len());
-            let stops = import_item
+            let mut stops: Vec<_> = import_item
                 .path
                 .iter()
                 .zip(&waypoint_offsets)
@@ -372,6 +372,12 @@ async fn post_timetable(
                     }
                 })
                 .collect();
+
+            // Force the last stop to be at least 1s long.
+            // This is to avoid the train to stop with a non-zero speed.
+            let last_stop = stops.last_mut().unwrap();
+            last_stop.duration = last_stop.duration.max(1.);
+
             let departure_time = train.departure_time.num_seconds_from_midnight() as f64;
             let scheduled_points = import_item
                 .path
