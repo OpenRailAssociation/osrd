@@ -12,8 +12,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import { CgLoadbar } from 'react-icons/cg';
 import { LIST_VALUES_NAME_SPACE_CURVES_SLOPES } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
 import PropTypes from 'prop-types';
-import createCurveCurve from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/createCurveCurve';
-import createSlopeCurve from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/createSlopeCurve';
+import {
+  createCurveCurve,
+  createSlopeCurve,
+} from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/utils';
 import defineChart from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/defineChart';
 import drawArea from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/drawArea';
 import drawCurve from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/drawCurve';

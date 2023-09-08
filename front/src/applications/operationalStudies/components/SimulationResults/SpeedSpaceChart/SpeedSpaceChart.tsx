@@ -1,10 +1,8 @@
 import { noop } from 'lodash';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { CgLoadbar } from 'react-icons/cg';
 import { GiResize } from 'react-icons/gi';
-import PropTypes from 'prop-types';
 import { Rnd } from 'react-rnd';
-import ORSD_GRAPH_SAMPLE_DATA from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/sampleData';
 import {
   isolatedEnableInteractivity,
   traceVerticalLine,
@@ -13,16 +11,36 @@ import {
   LIST_VALUES_NAME_SPEED_SPACE,
   SPEED_SPACE_CHART_KEY_VALUES,
 } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
-import SpeedSpaceSettings from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceSettings/SpeedSpaceSettings';
 import {
   createChart,
   drawTrain,
 } from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/d3Helpers';
+import { Chart, SpeedSpaceSettingsType } from 'reducers/osrdsimulation/types';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  getIsPlaying,
+  getPositionValues,
+  getSelectedTrain,
+  getSpeedSpaceSettings,
+  getTimePosition,
+} from 'reducers/osrdsimulation/selectors';
+import {
+  updateMustRedraw,
+  updateSpeedSpaceSettings,
+  updateTimePositionValues,
+} from 'reducers/osrdsimulation/actions';
 import ElectricalProfilesLegend from './ElectricalProfilesLegend';
 import prepareData from './prepareData';
+import SpeedSpaceSettings from './SpeedSpaceSettings';
+import ORSD_GRAPH_SAMPLE_DATA from './sampleData';
 
 const CHART_ID = 'SpeedSpaceChart';
 const CHART_MIN_HEIGHT = 250;
+
+export type SpeedSpaceChartProps = {
+  initialHeight: number;
+  onSetChartBaseHeight: (chartBaseHeight: number) => void;
+};
 
 /**
  * A chart to see the evolution of speed of one train on its journey
@@ -33,21 +51,17 @@ const CHART_MIN_HEIGHT = 250;
  * - 2 marchs displayed: base and alternative
  *
  */
-export default function SpeedSpaceChart(props) {
-  const {
-    dispatchUpdateMustRedraw,
-    dispatchUpdateTimePositionValues,
-    initialHeight,
-    positionValues,
-    trainSimulation,
-    simulationIsPlaying,
-    speedSpaceSettings,
-    onSetSettings,
-    onSetChartBaseHeight,
-    timePosition,
-  } = props;
+export default function SpeedSpaceChart({
+  initialHeight,
+  onSetChartBaseHeight,
+}: SpeedSpaceChartProps) {
+  const selectedTrain = useSelector(getSelectedTrain);
+  const timePosition = useSelector(getTimePosition);
+  const positionValues = useSelector(getPositionValues);
+  const simulationIsPlaying = useSelector(getIsPlaying);
+  const speedSpaceSettings = useSelector(getSpeedSpaceSettings);
 
-  const [chart, setChart] = useState(undefined);
+  const [chart, setChart] = useState<Chart | undefined>(undefined);
   const [chartBaseHeight, setChartBaseHeight] = useState(initialHeight);
   const [chartHeight, setChartHeight] = useState(initialHeight);
   const [hasJustRotated, setHasJustRotated] = useState(false);
@@ -57,12 +71,35 @@ export default function SpeedSpaceChart(props) {
   const [rotate, setRotate] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
 
-  const ref = useRef();
+  const ref = useRef<HTMLDivElement>(null);
 
-  const onLocalSetSettings = (settings) => {
-    setLocalSettings(settings);
-    onSetSettings(settings);
+  const dispatch = useDispatch();
+
+  const dispatchUpdateMustRedraw = (newMustRedraw: boolean) => {
+    dispatch(updateMustRedraw(newMustRedraw));
   };
+
+  const dispatchUpdateTimePositionValues = (newTimePositionValues: string) => {
+    dispatch(updateTimePositionValues(newTimePositionValues));
+  };
+
+  const toggleSetting = (settings: SpeedSpaceSettingsType) => {
+    dispatch(updateSpeedSpaceSettings(settings));
+    dispatch(updateMustRedraw(true));
+  };
+
+  const onLocalSetSettings = (settings: SpeedSpaceSettingsType) => {
+    setLocalSettings(settings);
+    toggleSetting(settings);
+  };
+
+  const trainSimulation = useMemo(
+    () =>
+      selectedTrain
+        ? prepareData(selectedTrain)
+        : prepareData(ORSD_GRAPH_SAMPLE_DATA.simulation.present.trains[0]),
+    [selectedTrain]
+  );
 
   /**
    * DRAW AND REDRAW TRAIN
@@ -71,12 +108,12 @@ export default function SpeedSpaceChart(props) {
   const createChartAndTrain = () => {
     const localChart = createChart(
       CHART_ID,
-      chart,
       resetChart,
       trainSimulation,
       hasJustRotated,
       initialHeight,
-      ref
+      ref,
+      chart
     );
     setChart(localChart);
     drawTrain(trainSimulation, rotate, localSettings, localChart);
@@ -267,43 +304,3 @@ export default function SpeedSpaceChart(props) {
     </Rnd>
   );
 }
-
-SpeedSpaceChart.propTypes = {
-  dispatchUpdateMustRedraw: PropTypes.func,
-  dispatchUpdateTimePositionValues: PropTypes.func,
-  /**
-   * height of chart
-   */
-  initialHeight: PropTypes.number.isRequired,
-  /**
-   * Current Position to be showed (vertical line)
-   */
-  positionValues: PropTypes.object,
-  /**
-   * current simulation (selected train)
-   */
-  trainSimulation: PropTypes.object,
-  simulationIsPlaying: PropTypes.bool,
-  /**
-   * Chart settings
-   */
-  speedSpaceSettings: PropTypes.object,
-  onSetSettings: PropTypes.func,
-  onSetChartBaseHeight: PropTypes.func,
-  /**
-   * Current Time Position to be showed (vertical line)
-   */
-  timePosition: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)]),
-};
-
-SpeedSpaceChart.defaultProps = {
-  dispatchUpdateMustRedraw: noop,
-  dispatchUpdateTimePositionValues: noop,
-  onSetChartBaseHeight: noop,
-  onSetSettings: noop,
-  positionValues: ORSD_GRAPH_SAMPLE_DATA.positionValues,
-  simulationIsPlaying: false,
-  speedSpaceSettings: ORSD_GRAPH_SAMPLE_DATA.speedSpaceSettings,
-  timePosition: ORSD_GRAPH_SAMPLE_DATA.timePosition,
-  trainSimulation: prepareData(ORSD_GRAPH_SAMPLE_DATA.selectedTrain),
-};

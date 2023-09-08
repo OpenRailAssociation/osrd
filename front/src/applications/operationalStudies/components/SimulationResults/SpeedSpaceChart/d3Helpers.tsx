@@ -8,29 +8,39 @@ import {
   createPowerRestrictionSegment,
 } from 'applications/operationalStudies/consts';
 import { isEmpty } from 'lodash';
+import { Chart } from 'reducers/osrdsimulation/types';
 import drawElectricalProfile from '../ChartHelpers/drawElectricalProfile';
 import { POSITION, SPEED, SPEED_SPACE_CHART_KEY_VALUES } from '../simulationResultsConsts';
 import drawPowerRestriction from '../ChartHelpers/drawPowerRestriction';
+import { GevPreparedata } from './prepareData';
+
+/**
+ * Typeguard to check if a selector is of type "Element"
+ * @returns a boolean
+ */
+function isElement(selector: d3.BaseType): selector is Element {
+  return selector !== null && 'clientHeight' in selector;
+}
 
 function createChart(
-  CHART_ID,
-  chart,
-  resetChart,
-  trainSimulation,
-  hasJustRotated,
-  initialHeight,
-  ref
+  CHART_ID: string,
+  resetChart: boolean,
+  trainSimulation: GevPreparedata,
+  hasJustRotated: boolean,
+  initialHeight: number,
+  ref: React.RefObject<HTMLDivElement>,
+  chart?: Chart
 ) {
   d3.select(`#${CHART_ID}`).remove();
 
-  let scaleX;
-  let scaleY;
+  let scaleX: d3.ScaleTime<number, number, never> | d3.ScaleLinear<number, number, never>;
+  let scaleY: d3.ScaleTime<number, number, never> | d3.ScaleLinear<number, number, never>;
 
   if (chart === undefined || resetChart) {
-    scaleX = defineLinear(
-      d3.max(trainSimulation.speed, (speedObject) => speedObject[POSITION]) + 100
-    );
-    scaleY = defineLinear(d3.max(trainSimulation.speed, (speedObject) => speedObject[SPEED]) + 50);
+    const maxX = d3.max(trainSimulation.speed, (speedObject) => speedObject[POSITION]);
+    if (maxX) scaleX = defineLinear(maxX + 100);
+    const maxY = d3.max(trainSimulation.speed, (speedObject) => speedObject[SPEED]);
+    if (maxY) scaleY = defineLinear(maxY + 50);
   } else {
     scaleX = !hasJustRotated ? chart.x : chart.y;
     scaleY = !hasJustRotated ? chart.y : chart.x;
@@ -40,9 +50,11 @@ function createChart(
     d3.select(`#container-${CHART_ID}`) !== null
       ? parseInt(d3.select(`#container-${CHART_ID}`)?.style('width'), 10)
       : 250;
+  const chartContainerElement = d3.select(`#container-${CHART_ID}`).node();
+
   const height =
-    d3.select(`#container-${CHART_ID}`) !== null
-      ? d3.select(`#container-${CHART_ID}`).node().clientHeight
+    chartContainerElement !== null && isElement(chartContainerElement)
+      ? chartContainerElement.clientHeight
       : initialHeight;
 
   return defineChart(

@@ -32,6 +32,8 @@ export interface Chart {
   yAxisGrid: d3.Selection<SVGGElement, unknown, null, undefined>;
   svg: d3.Selection<SVGGElement, unknown, null, undefined>;
   drawZone: d3.Selection<SVGGElement, unknown, null, undefined>;
+  originalScaleX?: d3.ScaleTime<number, number, never>;
+  originalScaleY?: d3.ScaleLinear<number, number, never>;
   rotate?: boolean;
 }
 export interface AllowancesSetting {
@@ -69,13 +71,16 @@ export interface Stop {
 
 export interface RouteAspect<Time = number, Color = number> {
   signal_id?: string;
-  route_id: string;
+  route_id?: string;
   time_start: Time;
   time_end: Time;
   position_start: number;
   position_end: number;
   color: Color;
   blinking: boolean;
+  aspect_label?: string;
+  track?: string;
+  track_offset?: number;
 }
 export type ConsolidatedRouteAspect<DateType = Date> = RouteAspect<DateType | null, string>;
 
@@ -198,6 +203,8 @@ export type SpeedSpaceSettingKey =
   | SPEED_SPACE_SETTINGS_KEYS.SLOPES
   | SPEED_SPACE_SETTINGS_KEYS.ELECTRICAL_PROFILES
   | SPEED_SPACE_SETTINGS_KEYS.POWER_RESTRICTION;
+
+export type SpeedSpaceSettingsType = { [key in SpeedSpaceSettingKey]: boolean };
 
 export type TrainsWithArrivalAndDepartureTimes = {
   id: number;

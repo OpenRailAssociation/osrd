@@ -14,19 +14,25 @@ import SimulationResultsMap from 'applications/operationalStudies/components/Sim
 import { Rnd } from 'react-rnd';
 import SpaceCurvesSlopes from 'applications/operationalStudies/components/SimulationResults/SpaceCurvesSlopes';
 import SpaceTimeChartIsolated from 'applications/operationalStudies/components/SimulationResults/SpaceTimeChart/withOSRDData';
-import SpeedSpaceChart from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/withOSRDData';
+import SpeedSpaceChart from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/SpeedSpaceChart';
 import TimeButtons from 'applications/operationalStudies/components/SimulationResults/TimeButtons';
 import TimeLine from 'applications/operationalStudies/components/SimulationResults/TimeLine/TimeLine';
 import TrainDetails from 'applications/operationalStudies/components/SimulationResults/TrainDetails';
 import getTimetable from 'applications/operationalStudies/components/Scenario/getSimulationResults';
 
-import { RootState } from 'reducers';
 import { updateViewport, Viewport } from 'reducers/map';
 import DriverTrainSchedule from 'applications/operationalStudies/components/SimulationResults/DriverTrainSchedule/DriverTrainSchedule';
 import { getTimetableID } from 'reducers/osrdconf/selectors';
 import cx from 'classnames';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { getSelectedTrain } from 'reducers/osrdsimulation/selectors';
+import { Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import {
+  getDisplaySimulation,
+  getIsUpdating,
+  getPresentSimulation,
+  getSelectedProjection,
+  getSelectedTrain,
+} from 'reducers/osrdsimulation/selectors';
+import ScenarioLoader from 'modules/scenario/components/ScenarioLoader';
 import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
 
 const MAP_MIN_HEIGHT = 450;
@@ -51,14 +57,13 @@ export default function SimulationResults({ isDisplayed, collapsedTimetable }: P
   const [initialHeightOfSpaceCurvesSlopesChart, setInitialHeightOfSpaceCurvesSlopesChart] =
     useState(heightOfSpaceCurvesSlopesChart);
 
+  const displaySimulation = useSelector(getDisplaySimulation);
   const selectedTrain = useSelector(getSelectedTrain);
-  const selectedProjection = useSelector(
-    (state: RootState) => state.osrdsimulation.selectedProjection
-  );
-  const displaySimulation = useSelector(
-    (state: RootState) => state.osrdsimulation.displaySimulation
-  );
+  const selectedProjection = useSelector(getSelectedProjection);
   const timetableID = useSelector(getTimetableID);
+  const isUpdating = useSelector(getIsUpdating);
+  const simulation = useSelector(getPresentSimulation);
+
   const dispatch = useDispatch();
 
   const [getTimetableWithTrainSchedulesDetails] = osrdEditoastApi.useLazyGetTimetableByIdQuery();
