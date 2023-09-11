@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
 import { TimeString } from 'common/types';
-import { SIGNAL_BASE_DEFAULT } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
+import { SIGNAL_BASE_DEFAULT } from 'modules/simulationResult/components/simulationResultsConsts';
 import {
   ElectrificationRange,
   PowerRestrictionRangeItem,

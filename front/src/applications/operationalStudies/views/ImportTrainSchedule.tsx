@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import ImportTrainScheduleConfig from 'applications/operationalStudies/components/ImportTrainSchedule/ImportTrainScheduleConfig';
-import ImportTrainScheduleTrainsList from 'applications/operationalStudies/components/ImportTrainSchedule/ImportTrainScheduleTrainsList';
+import {
+  ImportTrainScheduleConfig,
+  ImportTrainScheduleTrainsList,
+} from 'modules/trainschedule/components/ImportTrainSchedule';
 import Loader from 'common/Loader';
 import { TrainSchedule } from 'applications/operationalStudies/types';
 import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';

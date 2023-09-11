@@ -33,7 +33,7 @@ import {
   getGeojson,
 } from 'reducers/osrdconf/selectors';
 
-import ModalPathJSONDetail from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary/ModalPathJSONDetail';
+import ModalPathJSONDetail from 'modules/trainschedule/components/ManageTrainSchedule/Itinerary/ModalPathJSONDetail';
 import infraLogo from 'assets/pictures/components/tracks.svg';
 import InfraLoadingState from 'applications/operationalStudies/components/Scenario/InfraLoadingState';
 import { Spinner } from '../Loader';

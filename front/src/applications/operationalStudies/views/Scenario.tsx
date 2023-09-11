@@ -2,12 +2,12 @@ import React, { useEffect, useState } from 'react';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import logo from 'assets/pictures/home/operationalStudies.svg';
 import { useTranslation } from 'react-i18next';
-import Timetable from 'applications/operationalStudies/components/Scenario/Timetable';
+import Timetable from 'modules/trainschedule/components/Timetable/Timetable';
 import infraLogo from 'assets/pictures/components/tracks.svg';
 import { useSelector, useDispatch } from 'react-redux';
 import { MODES, MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import { updateInfraID, updateMode, updateTimetableID } from 'reducers/osrdconf';
-import TimetableManageTrainSchedule from 'applications/operationalStudies/components/Scenario/TimetableManageTrainSchedule';
+import TimetableManageTrainSchedule from 'modules/trainschedule/components/Timetable/TimetableManageTrainSchedule';
 import BreadCrumbs from 'applications/operationalStudies/components/BreadCrumbs';
 import {
   getInfraID,

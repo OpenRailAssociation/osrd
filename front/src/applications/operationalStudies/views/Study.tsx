@@ -24,8 +24,8 @@ import {
   StudyResult,
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
+import AddOrEditStudyModal from 'modules/study/components/AddOrEditStudyModal';
 import BreadCrumbs from '../components/BreadCrumbs';
-import AddOrEditStudyModal from '../components/Study/AddOrEditStudyModal';
 import FilterTextField from '../components/FilterTextField';
 import { studyStates } from '../consts';
 

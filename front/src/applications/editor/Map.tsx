@@ -5,7 +5,7 @@ import { withTranslation } from 'react-i18next';
 import { TFunction } from 'i18next';
 import { isEmpty, isEqual } from 'lodash';
 
-import VirtualLayers from 'applications/operationalStudies/components/SimulationResults/SimulationResultsMap/VirtualLayers';
+import VirtualLayers from 'modules/simulationResult/components/SimulationResultsMap/VirtualLayers';
 import colors from 'common/Map/Consts/colors';
 import 'common/Map/Map.scss';
 

@@ -10,7 +10,7 @@ import {
 } from 'reducers/osrdsimulation/actions';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { KEY_VALUES_FOR_CONSOLIDATED_SIMULATION } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
+import { KEY_VALUES_FOR_CONSOLIDATED_SIMULATION } from 'modules/simulationResult/components/simulationResultsConsts';
 import { getConf } from 'reducers/osrdconf/selectors';
 // Generic components
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
@@ -18,7 +18,7 @@ import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import PropTypes from 'prop-types';
 import ReactModal from 'react-modal';
 // OSRD helpers
-import createTrain from 'applications/operationalStudies/components/SimulationResults/SpaceTimeChart/createTrain';
+import createTrain from 'modules/simulationResult/components/SpaceTimeChart/createTrain';
 import formatStdcmConf from 'applications/stdcm/formatStcmConf';
 // Static Data and Assets
 import { setFailure } from 'reducers/main';

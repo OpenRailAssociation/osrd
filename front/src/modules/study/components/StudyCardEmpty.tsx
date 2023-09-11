@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { FaPlus } from 'react-icons/fa';
-import AddOrEditStudyModal from 'applications/operationalStudies/components/Study/AddOrEditStudyModal';
+import AddOrEditStudyModal from 'modules/study/components/AddOrEditStudyModal';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 
 export default function StudyCard() {

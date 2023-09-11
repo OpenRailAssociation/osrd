@@ -17,7 +17,7 @@ import { LayerType } from 'applications/editor/tools/types';
 import DataLoader from 'common/Map/WarpedMap/DataLoader';
 import getWarping, { WarpingFunction } from 'common/Map/WarpedMap/getWarping';
 import WarpedMap from 'common/Map/WarpedMap/WarpedMap';
-import { TrainPosition } from 'applications/operationalStudies/components/SimulationResults/SimulationResultsMap/types';
+import { TrainPosition } from 'modules/simulationResult/components/SimulationResultsMap/types';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import { getImprovedOSRDData } from 'common/Map/WarpedMap/core/helpers';
 import {
@@ -27,7 +27,7 @@ import {
 } from 'reducers/osrdsimulation/selectors';
 import { Train } from 'reducers/osrdsimulation/types';
 import { AsyncMemoState, getAsyncMemoData, useAsyncMemo } from 'utils/useAsyncMemo';
-import { getSimulationHoverPositions } from 'applications/operationalStudies/components/SimulationResults/SimulationResultsMap/helpers';
+import { getSimulationHoverPositions } from 'modules/simulationResult/components/SimulationResultsMap/helpers';
 import { clip } from 'utils/mapHelper';
 
 import './SimulationWarpedMap.scss';

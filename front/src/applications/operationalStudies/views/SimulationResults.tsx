@@ -15,21 +15,23 @@ import {
   getSelectedProjection,
   getSelectedTrain,
 } from 'reducers/osrdsimulation/selectors';
-import { updateViewport, Viewport } from 'reducers/map';
-import { getTimetableID } from 'reducers/osrdconf/selectors';
-import { updateSelectedProjection, updateSimulation } from 'reducers/osrdsimulation/actions';
 
 import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
-import SimulationResultsMap from 'applications/operationalStudies/components/SimulationResults/SimulationResultsMap';
-import SpaceCurvesSlopes from 'applications/operationalStudies/components/SimulationResults/SpaceCurvesSlopes';
-import SpaceTimeChartIsolated from 'applications/operationalStudies/components/SimulationResults/SpaceTimeChart/withOSRDData';
-import SpeedSpaceChart from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/SpeedSpaceChart';
-import TimeButtons from 'applications/operationalStudies/components/SimulationResults/TimeButtons';
-import TimeLine from 'applications/operationalStudies/components/SimulationResults/TimeLine/TimeLine';
-import TrainDetails from 'applications/operationalStudies/components/SimulationResults/TrainDetails';
-import getSimulationResults from 'applications/operationalStudies/components/Scenario/getSimulationResults';
-import DriverTrainSchedule from 'applications/operationalStudies/components/SimulationResults/DriverTrainSchedule/DriverTrainSchedule';
 
+import { updateSelectedProjection, updateSimulation } from 'reducers/osrdsimulation/actions';
+
+import SimulationResultsMap from 'modules/simulationResult/components/SimulationResultsMap';
+import SpaceCurvesSlopes from 'modules/simulationResult/components/SpaceCurvesSlopes';
+import SpaceTimeChartIsolated from 'modules/simulationResult/components/SpaceTimeChart/withOSRDData';
+import SpeedSpaceChart from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChart';
+import TimeButtons from 'modules/simulationResult/components/TimeButtons';
+import TimeLine from 'modules/simulationResult/components/TimeLine/TimeLine';
+import TrainDetails from 'modules/simulationResult/components/TrainDetails';
+import getSimulationResults from 'applications/operationalStudies/components/Scenario/getSimulationResults';
+
+import { updateViewport, Viewport } from 'reducers/map';
+import DriverTrainSchedule from 'modules/trainschedule/components/DriverTrainSchedule/DriverTrainSchedule';
+import { getTimetableID } from 'reducers/osrdconf/selectors';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 
 const MAP_MIN_HEIGHT = 450;
