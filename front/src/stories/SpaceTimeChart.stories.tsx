@@ -1,7 +1,7 @@
 import React from 'react';
 import { ComponentStory } from '@storybook/react';
 import SpaceTimeChart from 'applications/operationalStudies/components/SimulationResults/SpaceTimeChart/SpaceTimeChart';
-import 'styles/main.css';
+import 'stories/storybook.css';
 import ORSD_GEV_SAMPLE_DATA from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/sampleData';
 
 export default {
