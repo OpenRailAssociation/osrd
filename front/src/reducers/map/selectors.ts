@@ -25,9 +25,9 @@ export const getShowOSMtracksections = makeSubSelector<MapState, 'showOSMtrackse
   getMap,
   'showOSMtracksections'
 );
-export const getTerrain3DExaggeration = makeSubSelector<MapState, 'terrain3DExagerration'>(
+export const getTerrain3DExaggeration = makeSubSelector<MapState, 'terrain3DExaggeration'>(
   getMap,
-  'terrain3DExagerration'
+  'terrain3DExaggeration'
 );
 export const getViewport = makeSubSelector<MapState, 'viewport'>(getMap, 'viewport');
 export const getFeatureInfoHoverID = makeSubSelector<MapState, 'featureInfoHoverID'>(

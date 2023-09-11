@@ -49,7 +49,7 @@ export interface MapState {
   showIGNCadastre: boolean;
   showOSM: boolean;
   showOSMtracksections: boolean;
-  terrain3DExagerration: number;
+  terrain3DExaggeration: number;
   viewport: Viewport;
   featureInfoHoverID: unknown;
   featureInfoClickID: unknown;
@@ -89,7 +89,7 @@ export const initialState: MapState = {
   showIGNCadastre: false,
   showOSM: true,
   showOSMtracksections: false,
-  terrain3DExagerration: 1,
+  terrain3DExaggeration: 0,
   viewport: {
     latitude: 48.32,
     longitude: 2.44,
@@ -181,7 +181,7 @@ export default function reducer(inputState: MapState | undefined, action: AnyAct
         draft.signalsSettings = action.signalsSettings;
         break;
       case UPDATE_TERRAIN_3D_EXAGGERATION:
-        draft.terrain3DExagerration = action.terrain3DExagerration;
+        draft.terrain3DExaggeration = action.terrain3DExaggeration;
         break;
     }
   });
@@ -287,12 +287,12 @@ export function updateShowOSMtracksections(showOSMtracksections: MapState['showO
 }
 
 export function updateTerrain3DExaggeration(
-  terrain3DExagerration: MapState['terrain3DExagerration']
+  terrain3DExaggeration: MapState['terrain3DExaggeration']
 ) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_TERRAIN_3D_EXAGGERATION,
-      terrain3DExagerration,
+      terrain3DExaggeration,
     });
   };
 }

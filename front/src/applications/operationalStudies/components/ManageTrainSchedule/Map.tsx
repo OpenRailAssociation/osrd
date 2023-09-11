@@ -51,7 +51,7 @@ import { getMapMouseEventNearestFeature } from '../../../../utils/mapHelper';
 function Map() {
   const { viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM, layersSettings } =
     useSelector((state: RootState) => state.map);
-  const terrain3DExagerration = useSelector(getTerrain3DExaggeration);
+  const terrain3DExaggeration = useSelector(getTerrain3DExaggeration);
   const [idHover, setIdHover] = useState<string | undefined>(undefined);
   const [snappedPoint, setSnappedPoint] = useState<NearestPointOnLine>();
   const { urlLat = '', urlLon = '', urlZoom = '', urlBearing = '', urlPitch = '' } = useParams();
@@ -189,7 +189,7 @@ function Map() {
         interactiveLayerIds={defineInteractiveLayers()}
         touchZoomRotate
         maxPitch={85}
-        terrain={{ source: 'terrain', exaggeration: terrain3DExagerration }}
+        terrain={{ source: 'terrain', exaggeration: terrain3DExaggeration }}
       >
         <VirtualLayers />
         <AttributionControl position="bottom-right" customAttribution={CUSTOM_ATTRIBUTION} />

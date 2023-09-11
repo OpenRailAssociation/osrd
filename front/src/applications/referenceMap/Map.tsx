@@ -47,7 +47,7 @@ import 'common/Map/Map.scss';
 function Map() {
   const { viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM, layersSettings } =
     useSelector((state: RootState) => state.map);
-  const terrain3DExagerration = useSelector(getTerrain3DExaggeration);
+  const terrain3DExaggeration = useSelector(getTerrain3DExaggeration);
   const mapRef = useRef<MapRef | null>(null);
   const [idHover, setIdHover] = useState<string | undefined>(undefined);
   const { urlLat, urlLon, urlZoom, urlBearing, urlPitch } = useParams();
@@ -128,7 +128,7 @@ function Map() {
         interactiveLayerIds={defineInteractiveLayers()}
         touchZoomRotate
         maxPitch={85}
-        terrain={{ source: 'terrain', exaggeration: terrain3DExagerration }}
+        terrain={{ source: 'terrain', exaggeration: terrain3DExaggeration }}
       >
         <VirtualLayers />
         <AttributionControl customAttribution={CUSTOM_ATTRIBUTION} />
@@ -150,7 +150,7 @@ function Map() {
             <Hillshade
               mapStyle={mapStyle}
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]}
-              display={terrain3DExagerration > 0}
+              display={terrain3DExaggeration > 0}
             />
           </>
         )}
