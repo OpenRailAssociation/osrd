@@ -39,6 +39,7 @@ const mapWhiteList = [
   'layersSettings',
   'userPreference',
   'signalsSettings',
+  'terrain3DExaggeration',
 ];
 
 const userWhiteList = ['account'];

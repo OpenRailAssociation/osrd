@@ -106,7 +106,7 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
   );
   const simulation = useSelector((state: RootState) => state.osrdsimulation.simulation.present);
   const selectedTrain = useSelector(getSelectedTrain);
-  const terrain3DExagerration = useSelector(getTerrain3DExaggeration);
+  const terrain3DExaggeration = useSelector(getTerrain3DExaggeration);
   const [geojsonPath, setGeojsonPath] = useState<Feature<LineString>>();
   const [selectedTrainHoverPosition, setTrainHoverPosition] = useState<TrainPosition>();
   const [otherTrainsHoverPosition, setOtherTrainsHoverPosition] = useState<TrainPosition[]>([]);
@@ -398,7 +398,7 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
         interactiveLayerIds={interactiveLayerIds}
         touchZoomRotate
         maxPitch={85}
-        terrain={{ source: 'terrain', exaggeration: terrain3DExagerration }}
+        terrain={{ source: 'terrain', exaggeration: terrain3DExaggeration }}
         onLoad={handleLoadFinished}
       >
         <VirtualLayers />
@@ -421,7 +421,7 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
             <Hillshade
               mapStyle={mapStyle}
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]}
-              display={terrain3DExagerration > 0}
+              display={terrain3DExaggeration > 0}
             />
           </>
         )}

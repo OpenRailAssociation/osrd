@@ -69,7 +69,7 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
   const switchTypes = useSelector(getSwitchTypes);
   const editorState = useSelector((state: { editor: EditorState }) => state.editor);
   const showOSM = useSelector(getShowOSM);
-  const terrain3DExagerration = useSelector(getTerrain3DExaggeration);
+  const terrain3DExaggeration = useSelector(getTerrain3DExaggeration);
   const extendedContext = useMemo<ExtendedEditorContextType<CommonToolState>>(
     () => ({
       ...context,
@@ -193,7 +193,7 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
           attributionControl={false}
           touchZoomRotate
           maxPitch={85}
-          terrain={{ source: 'terrain', exaggeration: terrain3DExagerration }}
+          terrain={{ source: 'terrain', exaggeration: terrain3DExaggeration }}
           doubleClickZoom={false}
           interactive
           cursor={cursor}
@@ -264,7 +264,7 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
               <Hillshade
                 mapStyle={mapStyle}
                 layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]}
-                display={terrain3DExagerration > 0}
+                display={terrain3DExaggeration > 0}
               />
             </>
           )}
