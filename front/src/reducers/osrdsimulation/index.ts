@@ -2,16 +2,16 @@ import { AnyAction } from 'redux';
 import produce from 'immer';
 import { noop } from 'lodash';
 
-import createTrain from 'applications/operationalStudies/components/SimulationResults/SpaceTimeChart/createTrain';
+import createTrain from 'modules/simulationResult/components/SpaceTimeChart/createTrain';
 import {
   LIST_VALUES_NAME_SPACE_TIME,
   SIGNAL_BASE_DEFAULT,
   KEY_VALUES_FOR_CONSOLIDATED_SIMULATION,
-} from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
+} from 'modules/simulationResult/components/simulationResultsConsts';
 import {
   interpolateOnTime,
   makeTrainListWithAllTrainsOffset,
-} from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/ChartHelpers';
+} from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
 import {
   SPEED_SPACE_SETTINGS_KEYS,
   OsrdSimulationState,

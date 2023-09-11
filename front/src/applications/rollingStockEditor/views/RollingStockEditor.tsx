@@ -8,9 +8,9 @@ import { useDispatch } from 'react-redux';
 import Loader from 'common/Loader';
 import { useTranslation } from 'react-i18next';
 import { LightRollingStock, osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import RollingStockEditorButtons from 'modules/rollingStock/components/rollingStockEditor/RollingStockEditorButtons';
-import RollingStockEditorCard from 'modules/rollingStock/components/rollingStockEditor/RollingStockEditorCard';
-import RollingStockEditorForm from 'modules/rollingStock/components/rollingStockEditor/RollingStockEditorForm';
+import RollingStockEditorButtons from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorButtons';
+import RollingStockEditorCard from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorCard';
+import RollingStockEditorForm from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorForm';
 import { STANDARD_COMFORT_LEVEL } from 'modules/rollingStock/consts';
 import {
   updateComfortLvl,
@@ -18,7 +18,7 @@ import {
   updateElectricalProfile,
   updatePowerRestriction,
 } from 'reducers/rollingstockEditor';
-import RollingStockEditorFormModal from 'modules/rollingStock/components/rollingStockEditor/RollingStockEditorFormModal';
+import RollingStockEditorFormModal from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorFormModal';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 
 type RollingStockEditorProps = {

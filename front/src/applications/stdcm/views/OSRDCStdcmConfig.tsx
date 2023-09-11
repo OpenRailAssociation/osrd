@@ -5,8 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { STDCM_REQUEST_STATUS } from 'applications/operationalStudies/consts';
-import Itinerary from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary';
-import Map from 'applications/operationalStudies/components/ManageTrainSchedule/Map';
+import { Itinerary, Map } from 'modules/trainschedule/components/ManageTrainSchedule';
 import ScenarioExplorer from 'common/ScenarioExplorer/ScenarioExplorer';
 import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector/SpeedLimitByTagSelector';
 import {
@@ -19,7 +18,7 @@ import {
 import { getSelectedTrain } from 'reducers/osrdsimulation/selectors';
 import { RollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import STDCMAllowances from '../../../modules/allowances/components/STDCMAllowances';
+import STDCMAllowances from 'modules/stdcmAllowances/components/STDCMAllowances';
 import OSRDStdcmResults from './OSRDStdcmResults';
 import RunningTime from '../components/RunningTime';
 

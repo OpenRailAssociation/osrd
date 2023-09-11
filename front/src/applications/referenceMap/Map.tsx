@@ -13,7 +13,7 @@ import { getTerrain3DExaggeration } from 'reducers/map/selectors';
 /* Main data & layers */
 import Background from 'common/Map/Layers/Background';
 import Terrain from 'common/Map/Layers/Terrain';
-import VirtualLayers from 'applications/operationalStudies/components/SimulationResults/SimulationResultsMap/VirtualLayers';
+import VirtualLayers from 'modules/simulationResult/components/SimulationResultsMap/VirtualLayers';
 import BufferStops from 'common/Map/Layers/BufferStops';
 /* Settings & Buttons */
 import MapButtons from 'common/Map/Buttons/MapButtons';

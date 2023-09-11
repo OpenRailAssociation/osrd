@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import SpaceTimeChart from 'applications/operationalStudies/components/SimulationResults/SpaceTimeChart/withOSRDData';
-import SpeedSpaceChart from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/SpeedSpaceChart';
+import SpaceTimeChart from 'modules/simulationResult/components/SpaceTimeChart/withOSRDData';
+import SpeedSpaceChart from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChart';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { getPresentSimulation, getSelectedTrain } from 'reducers/osrdsimulation/selectors';

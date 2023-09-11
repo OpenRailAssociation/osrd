@@ -1,0 +1,263 @@
+import * as d3 from 'd3';
+
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  defineLinear,
+  mergeDatasAreaConstant,
+} from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
+import enableInteractivity, {
+  traceVerticalLine,
+} from 'modules/simulationResult/components/ChartHelpers/enableInteractivity';
+import { useDispatch, useSelector } from 'react-redux';
+import { CgLoadbar } from 'react-icons/cg';
+import { LIST_VALUES_NAME_SPACE_CURVES_SLOPES } from 'modules/simulationResult/components/simulationResultsConsts';
+import PropTypes from 'prop-types';
+import {
+  createCurveCurve,
+  createSlopeCurve,
+} from 'modules/simulationResult/components/SpeedSpaceChart/utils';
+import defineChart from 'modules/simulationResult/components/ChartHelpers/defineChart';
+import drawArea from 'modules/simulationResult/components/ChartHelpers/drawArea';
+import drawCurve from 'modules/simulationResult/components/ChartHelpers/drawCurve';
+import { updateMustRedraw } from 'reducers/osrdsimulation/actions';
+import { getSelectedTrain } from 'reducers/osrdsimulation/selectors';
+
+const CHART_ID = 'SpaceCurvesSlopes';
+
+const drawAxisTitle = (chart, rotate) => {
+  chart.drawZone
+    .append('text')
+    .attr('class', 'axis-unit')
+    .attr('text-anchor', 'end')
+    .attr('transform', rotate ? 'rotate(0)' : 'rotate(-90)')
+    .attr('x', rotate ? chart.width - 10 : -10)
+    .attr('y', rotate ? chart.height - 10 : 20)
+    .text('M/KM');
+
+  chart.drawZone
+    .append('text')
+    .attr('class', 'axis-unit')
+    .attr('text-anchor', 'end')
+    .attr('transform', rotate ? 'rotate(-90)' : 'rotate(0)')
+    .attr('x', rotate ? -10 : chart.width - 10)
+    .attr('y', rotate ? 20 : chart.height - 10)
+    .text('M');
+};
+
+export default function SpaceCurvesSlopes({ height }) {
+  const dispatch = useDispatch();
+  const selectedTrain = useSelector(getSelectedTrain);
+  const { positionValues, timePosition } = useSelector((state) => state.osrdsimulation);
+  const [rotate] = useState(false);
+  const [chart, setChart] = useState(undefined);
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const [yPosition, setYPosition] = useState(0);
+  const [dataSimulation, setDataSimulation] = useState();
+
+  const ref = useRef();
+  const keyValues = ['position', 'gradient'];
+
+  const createChart = () => {
+    d3.select(`#${CHART_ID}`).remove();
+
+    const defineX =
+      chart === undefined
+        ? defineLinear(
+            d3.max(
+              dataSimulation.slopesHistogram,
+              (d) => d[rotate ? keyValues[1] : keyValues[0]] + 100
+            )
+          )
+        : chart.x;
+    const defineY =
+      chart === undefined
+        ? defineLinear(
+            d3.max(dataSimulation.slopesHistogram, (d) => d[rotate ? keyValues[0] : keyValues[1]]),
+            0,
+            d3.min(dataSimulation.slopesHistogram, (d) => d[rotate ? keyValues[0] : keyValues[1]])
+          )
+        : chart.y;
+
+    const width = parseInt(d3.select(`#container-${CHART_ID}`).style('width'), 10);
+    return defineChart(width, height, defineX, defineY, ref, rotate, keyValues, CHART_ID);
+  };
+
+  const drawOPs = (chartLocal) => {
+    const operationalPointsZone = chartLocal.drawZone
+      .append('g')
+      .attr('id', 'gev-operationalPointsZone');
+    selectedTrain.base.stops.forEach((stop) => {
+      operationalPointsZone
+        .append('line')
+        .datum(stop.position)
+        .attr('id', `op-${stop.id}`)
+        .attr('class', 'op-line')
+        .attr('x1', rotate ? 0 : (d) => chartLocal.x(d))
+        .attr('y1', rotate ? (d) => chartLocal.y(d) : chartLocal.height)
+        .attr('x2', rotate ? chartLocal.width : (d) => chartLocal.x(d))
+        .attr('y2', rotate ? (d) => chartLocal.y(d) : 0);
+      operationalPointsZone
+        .append('text')
+        .datum(stop.position)
+        .attr('class', 'op-text')
+        .text(`${stop.name}`)
+        .attr('x', rotate ? 0 : (d) => chartLocal.x(d))
+        .attr('y', rotate ? (d) => chartLocal.y(d) : chartLocal.height)
+        .attr('text-anchor', 'center')
+        .attr('transform', `rotate(0 ${chartLocal.x(stop.position)}, ${chartLocal.height})`)
+        .attr('dx', 5)
+        .attr('dy', rotate ? -5 : 15 - chartLocal.height);
+    });
+  };
+
+  const drawTrain = () => {
+    if (dataSimulation) {
+      const chartLocal = createChart();
+      chartLocal.drawZone.append('g').attr('id', 'curvesSlopesChart').attr('class', 'chartTrain');
+      drawAxisTitle(chartLocal, rotate);
+      if (dataSimulation.slopesHistogram) {
+        drawCurve(
+          chartLocal,
+          'speed slopesHistogram',
+          dataSimulation.slopesHistogram,
+          'curvesSlopesChart',
+          'curveMonotoneX',
+          ['position', 'gradient'],
+          'slopesHistogram',
+          rotate
+        );
+        drawArea(
+          chartLocal,
+          'area slopes',
+          dataSimulation.areaSlopesHistogram,
+          'curvesSlopesChart',
+          'curveMonotoneX',
+          rotate
+        );
+      }
+      if (dataSimulation.curvesHistogram) {
+        drawCurve(
+          chartLocal,
+          'speed curvesHistogram',
+          dataSimulation.curvesHistogram,
+          'curvesSlopesChart',
+          'curveLinear',
+          ['position', 'radius'],
+          'curvesHistogram',
+          rotate
+        );
+      }
+      if (dataSimulation.slopesCurve) {
+        drawCurve(
+          chartLocal,
+          'speed slopes',
+          dataSimulation.slopesCurve,
+          'curvesSlopesChart',
+          'curveLinear',
+          ['position', 'height'],
+          'slopes',
+          rotate
+        );
+      }
+
+      // Operational points
+      drawOPs(chartLocal);
+
+      enableInteractivity(
+        chartLocal,
+        dataSimulation,
+        dispatch,
+        keyValues,
+        LIST_VALUES_NAME_SPACE_CURVES_SLOPES,
+        positionValues,
+        rotate,
+        setChart,
+        setYPosition,
+        setZoomLevel,
+        yPosition,
+        zoomLevel
+      );
+      setChart(chartLocal);
+    }
+  };
+
+  useEffect(() => {
+    if (selectedTrain) {
+      drawTrain();
+    }
+  }, [rotate, dataSimulation, height]);
+
+  useEffect(() => {
+    if (dataSimulation) {
+      traceVerticalLine(
+        chart,
+        dataSimulation,
+        keyValues,
+        LIST_VALUES_NAME_SPACE_CURVES_SLOPES,
+        positionValues,
+        'slopesCurve',
+        rotate,
+        timePosition
+      );
+    }
+  }, [chart, positionValues, timePosition, dataSimulation]);
+
+  useEffect(() => {
+    if (selectedTrain) {
+      const speed = selectedTrain.base.speeds.map((step) => ({
+        ...step,
+        speed: step.speed * 3.6,
+      }));
+      // Slopes
+      const slopesHistogram = selectedTrain.slopes.map((step) => ({
+        position: step.position,
+        gradient: step.gradient,
+      }));
+      const areaSlopesHistogram = mergeDatasAreaConstant(slopesHistogram, 0, [
+        'position',
+        'gradient',
+      ]);
+      const slopesCurve = createSlopeCurve(selectedTrain.slopes, slopesHistogram, 'gradient');
+      // Curves
+      const curvesHistogram = createCurveCurve(selectedTrain.curves, slopesHistogram, 'gradient');
+
+      setDataSimulation({
+        speed,
+        slopesHistogram,
+        areaSlopesHistogram,
+        slopesCurve,
+        curvesHistogram,
+      });
+    }
+  }, [selectedTrain]);
+
+  useEffect(() => {
+    let timeOutFunctionId;
+    const timeOutResize = () => {
+      clearTimeout(timeOutFunctionId);
+      timeOutFunctionId = setTimeout(() => dispatch(updateMustRedraw(true)), 500);
+    };
+    window.addEventListener('resize', timeOutResize);
+    return () => {
+      window.removeEventListener('resize', timeOutResize);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return (
+    <div
+      id={`container-${CHART_ID}`}
+      className="spacecurvesslopes-chart w-100"
+      style={{ height: `${height}px` }}
+    >
+      <div ref={ref} />
+      <div className="handle-tab-resize">
+        <CgLoadbar />
+      </div>
+    </div>
+  );
+}
+
+SpaceCurvesSlopes.propTypes = {
+  height: PropTypes.number.isRequired,
+};

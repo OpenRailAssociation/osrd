@@ -1,7 +1,7 @@
 import React from 'react';
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 import { RollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector';
-import { OSRD_ROLLINGSTOCKSELECTED_SAMPLE_DATA } from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/sampleData';
+import { OSRD_ROLLINGSTOCKSELECTED_SAMPLE_DATA } from 'modules/simulationResult/components/SpeedSpaceChart/sampleData';
 import { RollingStock } from 'common/api/osrdEditoastApi';
 import exampleRollingStockImage1 from 'assets/defaultRSImages/example_rolling_stock_image_1.gif';
 import exampleRollingStockImage2 from 'assets/defaultRSImages/example_rolling_stock_image_2.gif';

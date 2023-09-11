@@ -1,8 +1,8 @@
 import React from 'react';
 import { ComponentStory } from '@storybook/react';
-import SpaceTimeChart from 'applications/operationalStudies/components/SimulationResults/SpaceTimeChart/SpaceTimeChart';
+import SpaceTimeChart from 'modules/simulationResult/components/SpaceTimeChart/SpaceTimeChart';
 import 'stories/storybook.css';
-import ORSD_GEV_SAMPLE_DATA from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/sampleData';
+import ORSD_GEV_SAMPLE_DATA from 'modules/simulationResult/components/SpeedSpaceChart/sampleData';
 
 export default {
   /* 👇 The title prop is optional.

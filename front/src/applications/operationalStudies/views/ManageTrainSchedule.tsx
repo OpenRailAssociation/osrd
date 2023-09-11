@@ -3,14 +3,14 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 
-import TrainSettings from 'applications/operationalStudies/components/ManageTrainSchedule/TrainSettings';
-import Itinerary from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary';
-import Map from 'applications/operationalStudies/components/ManageTrainSchedule/Map';
+import TrainSettings from 'modules/trainschedule/components/ManageTrainSchedule/TrainSettings';
+import Itinerary from 'modules/trainschedule/components/ManageTrainSchedule/Itinerary';
+import Map from 'modules/trainschedule/components/ManageTrainSchedule/Map';
 import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector/SpeedLimitByTagSelector';
-import PowerRestrictionsSelector from 'applications/operationalStudies/components/ManageTrainSchedule/PowerRestrictionsSelector';
-import adjustConfWithTrainToModify from 'applications/operationalStudies/components/ManageTrainSchedule/helpers/adjustConfWithTrainToModify';
-import ElectricalProfiles from 'applications/operationalStudies/components/ManageTrainSchedule/ElectricalProfiles';
-import Allowances from 'applications/operationalStudies/components/ManageTrainSchedule/Allowances/Allowances';
+import PowerRestrictionsSelector from 'modules/trainschedule/components/ManageTrainSchedule/PowerRestrictionsSelector';
+import adjustConfWithTrainToModify from 'modules/trainschedule/components/ManageTrainSchedule/helpers/adjustConfWithTrainToModify';
+import ElectricalProfiles from 'modules/trainschedule/components/ManageTrainSchedule/ElectricalProfiles';
+import Allowances from 'modules/trainschedule/components/ManageTrainSchedule/Allowances/Allowances';
 import {
   getPathfindingID,
   getRollingStockID,

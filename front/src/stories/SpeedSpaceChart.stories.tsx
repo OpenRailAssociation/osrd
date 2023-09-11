@@ -3,11 +3,11 @@ import { noop } from 'lodash';
 import { StoryFn } from '@storybook/react';
 import SpeedSpaceChart, {
   SpeedSpaceChartProps,
-} from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/SpeedSpaceChart';
+} from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChart';
 import 'stories/storybook.css';
 import { Provider } from 'react-redux';
 import { store } from 'Store';
-import ORSD_GRAPH_SAMPLE_DATA from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/sampleData';
+import ORSD_GRAPH_SAMPLE_DATA from 'modules/simulationResult/components/SpeedSpaceChart/sampleData';
 
 export default {
   /* 👇 The title prop is optional.

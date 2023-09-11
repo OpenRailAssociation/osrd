@@ -2,7 +2,7 @@ import { noop } from 'lodash';
 import {
   changeTrain,
   getTrainDetailsForAPI,
-} from 'applications/operationalStudies/components/SimulationResults/simulationResultsHelpers';
+} from 'modules/simulationResult/components/simulationResultsHelpers';
 import { setFailure } from 'reducers/main';
 import i18n from 'i18next';
 
