@@ -2,7 +2,7 @@ import React from 'react';
 import { noop } from 'lodash';
 import { ComponentStory } from '@storybook/react';
 import SpeedSpaceChart from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/SpeedSpaceChart';
-import 'styles/main.css';
+import 'stories/storybook.css';
 
 export default {
   /* 👇 The title prop is optional.
