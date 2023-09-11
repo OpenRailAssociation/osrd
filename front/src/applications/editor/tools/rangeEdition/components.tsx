@@ -151,25 +151,27 @@ export const TrackRangesList: FC = () => {
                   </div>
                   <div className="flex-grow-1 flex-shrink-1">
                     <EntitySumUp entity={trackState.track} />
-                    <div>
-                      <select
-                        id="filterLevel"
-                        className="form-control"
-                        value={range.applicable_directions}
-                        onChange={(e) => {
-                          const newEntity = cloneDeep(entity);
-                          const newRange = (newEntity.properties.track_ranges || [])[i];
-                          newRange.applicable_directions = e.target.value as ApplicableDirection;
-                          setState({ entity: newEntity, hoveredItem: null });
-                        }}
-                      >
-                        {APPLICABLE_DIRECTIONS.map((direction) => (
-                          <option key={direction} value={direction}>
-                            {t(`Editor.directions.${direction}`)}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+                    {entity.objType !== 'Catenary' && (
+                      <div>
+                        <select
+                          id="filterLevel"
+                          className="form-control"
+                          value={range.applicable_directions}
+                          onChange={(e) => {
+                            const newEntity = cloneDeep(entity);
+                            const newRange = (newEntity.properties.track_ranges || [])[i];
+                            newRange.applicable_directions = e.target.value as ApplicableDirection;
+                            setState({ entity: newEntity, hoveredItem: null });
+                          }}
+                        >
+                          {APPLICABLE_DIRECTIONS.map((direction) => (
+                            <option key={direction} value={direction}>
+                              {t(`Editor.directions.${direction}`)}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
                   </div>
                 </>
               )}
