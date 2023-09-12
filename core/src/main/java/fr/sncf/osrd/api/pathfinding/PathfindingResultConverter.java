@@ -2,7 +2,7 @@ package fr.sncf.osrd.api.pathfinding;
 
 import static fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection.START_TO_STOP;
 import static fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection.STOP_TO_START;
-import static fr.sncf.osrd.sim_infra.api.PathKt.buildPathFrom;
+import static fr.sncf.osrd.sim_infra.api.PathPropertiesKt.buildPathPropertiesFrom;
 import static fr.sncf.osrd.utils.KtToJavaConverter.toIntList;
 import static fr.sncf.osrd.utils.indexing.DirStaticIdxKt.toDirection;
 import static fr.sncf.osrd.utils.indexing.DirStaticIdxKt.toValue;
@@ -19,7 +19,7 @@ import fr.sncf.osrd.railjson.schema.infra.RJSRoutePath;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSDirectionalTrackRange;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import fr.sncf.osrd.sim_infra.api.BlockInfra;
-import fr.sncf.osrd.sim_infra.api.Path;
+import fr.sncf.osrd.sim_infra.api.PathProperties;
 import fr.sncf.osrd.sim_infra.api.RawSignalingInfra;
 import fr.sncf.osrd.sim_infra.api.TrackChunk;
 import fr.sncf.osrd.utils.Direction;
@@ -61,7 +61,7 @@ public class PathfindingResultConverter {
     }
 
     /** Creates a `Path` instance from a list of block range */
-    static Path makePath(
+    static PathProperties makePath(
             RawSignalingInfra infra,
             BlockInfra blockInfra,
             List<Pathfinding.EdgeRange<Integer>> blockRanges
@@ -81,12 +81,12 @@ public class PathfindingResultConverter {
         var lastRange = blockRanges.get(blockRanges.size() - 1);
         var lastBlockLength = blockInfra.getBlockLength(lastRange.edge());
         var endOffset = totalBlockPathLength - lastBlockLength + Math.round(lastRange.end());
-        return buildPathFrom(infra, chunks, startOffset, endOffset);
+        return buildPathPropertiesFrom(infra, chunks, startOffset, endOffset);
     }
 
     /** Make the list of waypoints on the path, in order. Both user-defined waypoints and operational points. */
     static List<PathWaypointResult> makePathWaypoint(
-            Path path,
+            PathProperties path,
             Pathfinding.Result<Integer> rawPath,
             RawSignalingInfra infra,
             BlockInfra blockInfra) {
@@ -98,7 +98,7 @@ public class PathfindingResultConverter {
 
     /** Returns all the user defined waypoints on the path */
     private static Collection<PathWaypointResult> makeUserDefinedWaypoints(
-            Path path,
+            PathProperties path,
             RawSignalingInfra infra,
             BlockInfra blockInfra,
             Pathfinding.Result<Integer> rawPath
@@ -128,7 +128,7 @@ public class PathfindingResultConverter {
     /** Returns all the operational points on the path as waypoints */
     private static Collection<PathWaypointResult> makeOperationalPoints(
             RawSignalingInfra infra,
-            Path path
+            PathProperties path
     ) {
         var res = new ArrayList<PathWaypointResult>();
         for (var opWithOffset : path.getOperationalPointParts()) {
@@ -142,7 +142,7 @@ public class PathfindingResultConverter {
     /** Creates a pending waypoint from a path and its offset */
     private static PathWaypointResult makePendingWaypoint(
             RawSignalingInfra infra,
-            Path path,
+            PathProperties path,
             boolean suggestion,
             long pathOffset,
             String opName
@@ -173,22 +173,22 @@ public class PathfindingResultConverter {
     }
 
     /** Returns the geographic linestring of the path */
-    private static RJSLineString makeGeographic(Path path) {
+    private static RJSLineString makeGeographic(PathProperties path) {
         return GeomUtils.toRJSLineString(path.getGeo());
     }
 
     /** Returns the schematic linestring of the path */
-    private static RJSLineString makeSchematic(Path path) {
+    private static RJSLineString makeSchematic(PathProperties path) {
         return makeGeographic(path);    // TODO: add schematic data to the infra
     }
 
     /** Returns the slopes on the path */
-    private static List<SlopeChartPointResult> makeSlopes(Path path) {
+    private static List<SlopeChartPointResult> makeSlopes(PathProperties path) {
         return generateChartPoints(path.getSlopes(), SlopeChartPointResult::new);
     }
 
     /** Returns the curves on the path */
-    private static List<CurveChartPointResult> makeCurves(Path path) {
+    private static List<CurveChartPointResult> makeCurves(PathProperties path) {
         return generateChartPoints(path.getCurves(), CurveChartPointResult::new);
     }
 

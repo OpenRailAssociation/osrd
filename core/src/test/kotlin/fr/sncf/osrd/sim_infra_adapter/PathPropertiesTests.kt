@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test
 import kotlin.math.absoluteValue
 import kotlin.test.assertEquals
 
-class PathTests {
+class PathPropertiesTests {
 
     @Test
     fun testSmallInfraSlopes() {
@@ -333,12 +333,12 @@ class PathTests {
     /** Build a path from track ids */
     private fun pathFromTracks(infra: LocationInfra, trackIds: List<String>,
                                dir: Direction, start: Distance, end: Distance
-    ): Path {
+    ): PathProperties {
         val chunkList = mutableDirStaticIdxArrayListOf<TrackChunk>()
         trackIds
             .map { id ->  infra.getTrackSectionFromName(id)!! }
             .flatMap { track -> infra.getTrackSectionChunks(track).dirIter(dir) }
             .forEach { dirChunk -> chunkList.add(dirChunk) }
-        return buildPathFrom(infra, chunkList, start, end)
+        return buildPathPropertiesFrom(infra, chunkList, start, end)
     }
 }
