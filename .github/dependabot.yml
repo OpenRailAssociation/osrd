@@ -10,16 +10,6 @@ updates:
     labels:
       - "dependencies"
       - "area:editoast"
-  - package-ecosystem: "pip"
-    directory: "/python/"
-    schedule:
-      interval: "daily"
-    commit-message:
-      prefix: "api:"
-    open-pull-requests-limit: 100
-    labels:
-      - "dependencies"
-      - "area:api"
   - package-ecosystem: "npm"
     directory: "/front/"
     schedule:
