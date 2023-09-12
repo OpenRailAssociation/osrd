@@ -5,130 +5,34 @@ import {
 } from 'applications/operationalStudies/components/SimulationResults/simulationResultsHelpers';
 import { setFailure } from 'reducers/main';
 import i18n from 'i18next';
-import trainNameWithNum from 'applications/operationalStudies/components/ManageTrainSchedule/helpers/trainNameHelper';
+
 import { AnyAction, Dispatch, Reducer } from 'redux';
-// Dependency cycle will be removed during the refactoring of store
+// TODO: Dependency cycle will be removed during the refactoring of store
 // eslint-disable-next-line import/no-cycle
 import { RootState } from 'reducers';
-import {
-  SimulationReport,
-  TrainSchedule,
-  TrainScheduleBatchItem,
-  osrdEditoastApi,
-} from 'common/api/osrdEditoastApi';
+import { SimulationReport, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { ApiError } from 'common/api/emptyApi';
 import { SerializedError } from '@reduxjs/toolkit';
-import { OsrdSimulationState, SimulationSnapshot, Train } from './types';
-import { UPDATE_SIMULATION, UNDO_SIMULATION, REDO_SIMULATION } from './actions';
-
-export const updateSimulation = (simulation: SimulationReport[]) => (dispatch: Dispatch) => {
-  dispatch({
-    type: UPDATE_SIMULATION,
-    simulation,
-  });
-};
-
-/**
- * This version of getTimeTable does not erase the simulations trains
- */
-export async function progressiveDuplicateTrain(
-  timetableID: string,
-  selectedProjection: SimulationReport,
-  simulationTrains: TrainSchedule[],
-  selectedTrain: Train,
-  trainDelta: number,
-  dispatch: Dispatch
-) {
-  // Get train details
-  dispatch(
-    osrdEditoastApi.endpoints.getTrainScheduleById.initiate({
-      id: selectedTrain.id,
-    })
-  )
-    .unwrap()
-    .then((trainDetail) => {
-      // TODO: REMOVE THIS AFTER REFACTORING
-      // const trainDetail: TrainSchedule = await get(`${trainscheduleURI}${selectedTrain.id}/`);
-      const params: { timetable: number; path: number; schedules: TrainSchedule[] } = {
-        timetable: trainDetail.timetable_id,
-        path: trainDetail.path_id,
-        schedules: [],
-      };
-      let actualTrainCount = 1;
-      const trainName = selectedTrain.name;
-      const trainCount = simulationTrains.length;
-      const trainStep = 10;
-      for (let nb = 1; nb <= trainCount; nb += 1) {
-        const newTrainDelta = 60 * trainDelta * nb;
-        const newOriginTime = selectedTrain.base.stops[0].time + newTrainDelta;
-        const newTrainName = trainNameWithNum(trainName, actualTrainCount, trainCount);
-        params.schedules.push({
-          ...trainDetail,
-          departure_time: newOriginTime,
-          train_name: newTrainName,
-        });
-      }
-      actualTrainCount += trainStep;
-
-      // Post the new train
-      dispatch(
-        osrdEditoastApi.endpoints.postTrainScheduleStandaloneSimulation.initiate({
-          body: { ...params, schedules: params.schedules as TrainScheduleBatchItem[] },
-        })
-      );
-      // await post(`${trainscheduleURI}standalone_simulation/`, params);
-    })
-    .catch((getTrainScheduleByIdError) => {
-      dispatch(
-        setFailure({
-          name: i18n.t('unableToRetrieveTrainSchedule'),
-          message:
-            `${(getTrainScheduleByIdError as ApiError).data.message}` ||
-            `${(getTrainScheduleByIdError as SerializedError).message}`,
-        })
-      );
-    });
-
-  const { data: simulationLocal, error: getSimulationError } =
-    osrdEditoastApi.useGetTrainScheduleResultsQuery({
-      timetableId: timetableID,
-      pathId: selectedProjection.path,
-    });
-  // TODO: REMOVE THIS AFTER REFACTORING
-  // const simulationLocal: SimulationReport[] = await get(`${trainscheduleURI}results/`, {
-  //   params: {
-  //     timetable_id: timetableID,
-  //     path_id: selectedProjection.path,
-  //   },
-  // });
-  if (simulationLocal) {
-    simulationLocal?.sort((a, b) => a.base.stops[0].time - b.base.stops[0].time);
-    dispatch(updateSimulation(simulationLocal));
-  }
-
-  if (getSimulationError) {
-    dispatch(
-      setFailure({
-        name: i18n.t('unableToRetrieveTrainSchedule'),
-        message:
-          `${(getSimulationError as ApiError).data.message}` ||
-          `${(getSimulationError as SerializedError).message}`,
-      })
-    );
-  }
-}
+import { OsrdSimulationState, SimulationSnapshot } from './types';
+import {
+  UPDATE_SIMULATION,
+  UNDO_SIMULATION,
+  REDO_SIMULATION,
+  undoSimulation,
+  redoSimulation,
+  updateSimulation,
+} from './actions';
 
 // CONTEXT HELPERS
 
-function simulationEquals(present: SimulationSnapshot, newPresent: SimulationSnapshot) {
-  return JSON.stringify(present) === JSON.stringify(newPresent);
-}
+const simulationEquals = (present: SimulationSnapshot, newPresent: SimulationSnapshot) =>
+  JSON.stringify(present) === JSON.stringify(newPresent);
 
-function apiSyncOnDiff(
+const apiSyncOnDiff = (
   present: SimulationSnapshot,
   nextPresent: SimulationSnapshot,
   dispatch = noop
-) {
+) => {
   // If there is not mod don't do anything
   if (simulationEquals(present, nextPresent)) return;
   // test missing trains and apply delete api
@@ -167,31 +71,22 @@ function apiSyncOnDiff(
       changeTrain(getTrainDetailsForAPI(nextTrain), nextTrain.id, dispatch);
     }
   }
-}
+};
 
 // THUNKS
-export function persistentUndoSimulation() {
-  return async function persistentUndoSimulationParts(
-    dispatch: Dispatch,
-    getState: () => RootState
-  ) {
+export const persistentUndoSimulation = () =>
+  async function persistentUndoSimulationParts(dispatch: Dispatch, getState: () => RootState) {
     // use getState to check the diff between past and present
     const { present, past } = getState().osrdsimulation.simulation;
     const nextPresent = past[past.length - 1];
-    if (nextPresent) apiSyncOnDiff(present, nextPresent);
+    if (nextPresent) apiSyncOnDiff(present, nextPresent, dispatch);
 
     // do the undo:
-    dispatch({
-      type: UNDO_SIMULATION,
-    });
+    undoSimulation();
   };
-}
 
-export function persistentRedoSimulation() {
-  return async function persistentRedoSimulationParts(
-    dispatch: Dispatch,
-    getState: () => RootState
-  ) {
+export const persistentRedoSimulation = () =>
+  async function persistentRedoSimulationParts(dispatch: Dispatch, getState: () => RootState) {
     // use getState to check the diff between next one and present
     const present = getState()?.osrdsimulation.simulation.present;
     const future = getState()?.osrdsimulation.simulation.future;
@@ -199,17 +94,11 @@ export function persistentRedoSimulation() {
     // call the corresponding API
     if (nextPresent) apiSyncOnDiff(present, nextPresent, dispatch);
     // do the undo:
-    dispatch({
-      type: REDO_SIMULATION,
-    });
+    redoSimulation();
   };
-}
 
-export function persistentUpdateSimulation(simulation: SimulationSnapshot) {
-  return async function persistentUpdateSimulationParts(
-    dispatch: Dispatch,
-    getState: () => RootState
-  ) {
+export const persistentUpdateSimulation = (simulation: SimulationSnapshot) =>
+  async function persistentUpdateSimulationParts(dispatch: Dispatch, getState: () => RootState) {
     // use getState to check the diff between past and present
     const present = getState()?.osrdsimulation.simulation.present;
     const nextPresent = simulation; // To be the next present
@@ -217,14 +106,10 @@ export function persistentUpdateSimulation(simulation: SimulationSnapshot) {
     apiSyncOnDiff(present, nextPresent, dispatch);
 
     // do the undo:
-    dispatch({
-      type: UPDATE_SIMULATION,
-      simulation,
-    });
+    updateSimulation(simulation);
   };
-}
 
-function undoable(simulationReducer: Reducer<SimulationSnapshot, AnyAction>) {
+const undoable = (simulationReducer: Reducer<SimulationSnapshot, AnyAction>) => {
   // Call the reducer with empty action to populate the initial state
   const initialStateU = {
     past: [],
@@ -275,7 +160,7 @@ function undoable(simulationReducer: Reducer<SimulationSnapshot, AnyAction>) {
       }
     }
   };
-}
+};
 
 // Reducer
 const initialState: SimulationSnapshot = {
@@ -287,7 +172,6 @@ function reducer(state: SimulationSnapshot | undefined, action: AnyAction) {
 
   switch (action.type) {
     case UPDATE_SIMULATION: {
-      console.log('action:', action);
       return action.simulation;
     }
     default:
