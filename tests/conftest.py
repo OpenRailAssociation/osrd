@@ -9,7 +9,7 @@ from railjson_generator.scripts.generate import main
 from tests.infra import Infra
 from tests.path import Path as TrainPath
 from tests.scenario import Scenario
-from tests.services import API_URL, EDITOAST_URL
+from tests.services import EDITOAST_URL
 from tests.test_e2e import FAST_ROLLING_STOCK_JSON_PATH, TestRollingStock
 from tests.utils.timetable import create_scenario
 
@@ -151,7 +151,7 @@ def west_to_south_east_simulation(
     fast_rolling_stock: int,
 ) -> List[int]:
     response = requests.post(
-        f"{API_URL}train_schedule/standalone_simulation/",
+        f"{EDITOAST_URL}train_schedule/standalone_simulation/",
         json={
             "timetable": small_scenario.timetable,
             "path": west_to_south_east_path.id,
@@ -162,13 +162,13 @@ def west_to_south_east_simulation(
                     "allowances": [],
                     "departure_time": 0,
                     "initial_speed": 0,
-                    "rolling_stock": fast_rolling_stock,
+                    "rolling_stock_id": fast_rolling_stock,
                     "speed_limit_category": "foo",
                 }
             ],
         },
     )
-    yield response.json()["ids"]
+    yield response.json()
 
 
 @pytest.fixture
@@ -183,11 +183,11 @@ def west_to_south_east_simulations(
         "allowances": [],
         "departure_time": 0,
         "initial_speed": 0,
-        "rolling_stock": fast_rolling_stock,
+        "rolling_stock_id": fast_rolling_stock,
         "speed_limit_category": "foo",
     }
     response = requests.post(
-        f"{API_URL}train_schedule/standalone_simulation/",
+        f"{EDITOAST_URL}train_schedule/standalone_simulation/",
         json={
             "timetable": small_scenario.timetable,
             "path": west_to_south_east_path.id,
@@ -207,4 +207,4 @@ def west_to_south_east_simulations(
             ],
         },
     )
-    yield response.json()["ids"]
+    yield response.json()
