@@ -30,9 +30,9 @@ public class StopTests {
         var infra = infraBuilder.build();
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra)
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)), 0, true))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 50)), 10_000, true))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 100)), 0, true))
+                .addStep(new LegacySTDCMStep(Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)), 0, true))
+                .addStep(new LegacySTDCMStep(Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 50)), 10_000, true))
+                .addStep(new LegacySTDCMStep(Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 100)), 0, true))
                 .run();
         assertNotNull(res);
         double expectedOffset = 150;
@@ -61,9 +61,9 @@ public class StopTests {
         var infra = infraBuilder.build();
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra)
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)), 0, true))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 0)), 10_000, true))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 100)), 0, true))
+                .addStep(new LegacySTDCMStep(Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)), 0, true))
+                .addStep(new LegacySTDCMStep(Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 0)), 10_000, true))
+                .addStep(new LegacySTDCMStep(Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 100)), 0, true))
                 .run();
         assertNotNull(res);
         checkStop(res, List.of(
@@ -83,9 +83,9 @@ public class StopTests {
         var infra = infraBuilder.build();
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra)
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)), 0, true))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 100)), 10_000, true))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 100)), 0, true))
+                .addStep(new LegacySTDCMStep(Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)), 0, true))
+                .addStep(new LegacySTDCMStep(Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 100)), 10_000, true))
+                .addStep(new LegacySTDCMStep(Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 100)), 0, true))
                 .run();
         assertNotNull(res);
         checkStop(res, List.of(
@@ -121,9 +121,9 @@ public class StopTests {
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra)
                 .setStartTime(100)
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(routesDirectPath.get(0), 0)), 0, false))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(detour.get(1), 1_000)), 0, stop))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(routesDirectPath.get(3), 0)), 0, true))
+                .addStep(new LegacySTDCMStep(Set.of(new Pathfinding.EdgeLocation<>(routesDirectPath.get(0), 0)), 0, false))
+                .addStep(new LegacySTDCMStep(Set.of(new Pathfinding.EdgeLocation<>(detour.get(1), 1_000)), 0, stop))
+                .addStep(new LegacySTDCMStep(Set.of(new Pathfinding.EdgeLocation<>(routesDirectPath.get(3), 0)), 0, true))
                 .run();
         assertNotNull(res);
         var routes = res.routes().ranges().stream()
@@ -155,9 +155,9 @@ public class StopTests {
         );
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra)
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)), 0, true))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 10)), 100_000, true))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 100)), 0, true))
+                .addStep(new LegacySTDCMStep(Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)), 0, true))
+                .addStep(new LegacySTDCMStep(Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 10)), 100_000, true))
+                .addStep(new LegacySTDCMStep(Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 100)), 0, true))
                 .setUnavailableTimes(unavailableTimes)
                 .run();
         assertNull(res);
@@ -182,9 +182,9 @@ public class StopTests {
         );
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra)
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(routes.get(0), 0)), 0, true))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(routes.get(0), 50)), 10_000, true))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(routes.get(2), 1)), 0, true))
+                .addStep(new LegacySTDCMStep(Set.of(new Pathfinding.EdgeLocation<>(routes.get(0), 0)), 0, true))
+                .addStep(new LegacySTDCMStep(Set.of(new Pathfinding.EdgeLocation<>(routes.get(0), 50)), 10_000, true))
+                .addStep(new LegacySTDCMStep(Set.of(new Pathfinding.EdgeLocation<>(routes.get(2), 1)), 0, true))
                 .setUnavailableTimes(occupancy)
                 .run();
         assertNotNull(res);
@@ -234,9 +234,9 @@ public class StopTests {
                 .setInfra(infra)
                 .setUnavailableTimes(occupancy)
                 .setTimeStep(timeStep)
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(routes.get(0), 0)), 0, true))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(routes.get(1), 50)), 1_000, true))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(routes.get(3), 1)), 0, true))
+                .addStep(new LegacySTDCMStep(Set.of(new Pathfinding.EdgeLocation<>(routes.get(0), 0)), 0, true))
+                .addStep(new LegacySTDCMStep(Set.of(new Pathfinding.EdgeLocation<>(routes.get(1), 50)), 1_000, true))
+                .addStep(new LegacySTDCMStep(Set.of(new Pathfinding.EdgeLocation<>(routes.get(3), 1)), 0, true))
                 .run();
         assertNotNull(res);
         checkStop(res, List.of(
@@ -284,9 +284,9 @@ public class StopTests {
                 .setUnavailableTimes(occupancy)
                 .setTimeStep(timeStep)
                 .setStandardAllowance(allowance)
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(routes.get(0), 0)), 0, true))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(routes.get(1), 50)), 1_000, true))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(routes.get(3), 1)), 0, true))
+                .addStep(new LegacySTDCMStep(Set.of(new Pathfinding.EdgeLocation<>(routes.get(0), 0)), 0, true))
+                .addStep(new LegacySTDCMStep(Set.of(new Pathfinding.EdgeLocation<>(routes.get(1), 50)), 1_000, true))
+                .addStep(new LegacySTDCMStep(Set.of(new Pathfinding.EdgeLocation<>(routes.get(3), 1)), 0, true))
         );
         assertNotNull(res);
         var expectedStops = List.of(
@@ -341,9 +341,9 @@ public class StopTests {
                 .setUnavailableTimes(occupancy)
                 .setTimeStep(timeStep)
                 .setStandardAllowance(allowance)
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(routes.get(0), 0)), 0, true))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(routes.get(1), 50)), 1_000, true))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(routes.get(3), 1)), 0, true))
+                .addStep(new LegacySTDCMStep(Set.of(new Pathfinding.EdgeLocation<>(routes.get(0), 0)), 0, true))
+                .addStep(new LegacySTDCMStep(Set.of(new Pathfinding.EdgeLocation<>(routes.get(1), 50)), 1_000, true))
+                .addStep(new LegacySTDCMStep(Set.of(new Pathfinding.EdgeLocation<>(routes.get(3), 1)), 0, true))
         );
         assertNotNull(res);
         var expectedStops = List.of(

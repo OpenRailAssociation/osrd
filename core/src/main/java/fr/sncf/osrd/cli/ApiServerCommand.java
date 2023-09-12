@@ -4,7 +4,7 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import fr.sncf.osrd.api.*;
 import fr.sncf.osrd.api.pathfinding.PathfindingBlocksEndpoint;
-import fr.sncf.osrd.api.stdcm.STDCMEndpoint;
+import fr.sncf.osrd.api.stdcm.LegacySTDCMEndpoint;
 import io.sentry.Sentry;
 import okhttp3.OkHttpClient;
 import org.slf4j.Logger;
@@ -72,7 +72,7 @@ public final class ApiServerCommand implements CliCommand {
                     new FkRegex("/detect_conflicts", new ConflictDetectionEndpoint()),
                     new FkRegex("/cache_status", new InfraCacheStatusEndpoint(infraManager)),
                     new FkRegex("/version", new VersionEndpoint()),
-                    new FkRegex("/stdcm", new STDCMEndpoint(infraManager)),
+                    new FkRegex("/stdcm", new LegacySTDCMEndpoint(infraManager)),
                     new FkRegex("/infra_load", new InfraLoadEndpoint(infraManager))
             );
 

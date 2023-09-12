@@ -7,7 +7,7 @@ import fr.sncf.osrd.api.pathfinding.constraints.LegacyLoadingGaugeConstraints;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
-import fr.sncf.osrd.stdcm.STDCMStep;
+import fr.sncf.osrd.stdcm.LegacySTDCMStep;
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.RouteAvailabilityInterface;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.utils.graph.Pathfinding;
@@ -29,7 +29,7 @@ public class STDCMPathfinding {
             RollingStock.Comfort comfort,
             double startTime,
             double endTime,
-            List<STDCMStep> steps,
+            List<LegacySTDCMStep> steps,
             RouteAvailabilityInterface routeAvailability,
             double timeStep,
             double maxDepartureDelay,
@@ -57,7 +57,7 @@ public class STDCMPathfinding {
 
         // Initialize the A* heuristic
         var locations = steps.stream()
-                .map(STDCMStep::locations)
+                .map(LegacySTDCMStep::locations)
                 .toList();
         var remainingDistanceEstimators = PathfindingRoutesEndpoint.makeHeuristics(locations);
 
@@ -88,7 +88,7 @@ public class STDCMPathfinding {
 
     /** Make the objective function from the edge locations */
     private static List<TargetsOnEdge<STDCMEdge>> makeObjectiveFunction(
-            List<STDCMStep> steps
+            List<LegacySTDCMStep> steps
     ) {
         var globalResult = new ArrayList<TargetsOnEdge<STDCMEdge>>();
         for (int i = 1; i < steps.size(); i++) {

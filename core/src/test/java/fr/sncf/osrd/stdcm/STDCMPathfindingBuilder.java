@@ -25,7 +25,7 @@ public class STDCMPathfindingBuilder {
     // region NON-OPTIONAL
     private SignalingInfra infra = null;
 
-    List<STDCMStep> steps = new ArrayList<>();
+    List<LegacySTDCMStep> steps = new ArrayList<>();
 
     // endregion NON-OPTIONAL
 
@@ -56,18 +56,18 @@ public class STDCMPathfindingBuilder {
 
     /** Sets the locations at which the train can start. Meant to be used for simple tests with no intermediate steps */
     public STDCMPathfindingBuilder setStartLocations(Set<Pathfinding.EdgeLocation<SignalingRoute>> startLocations) {
-        this.steps.add(0, new STDCMStep(startLocations, 0, true));
+        this.steps.add(0, new LegacySTDCMStep(startLocations, 0, true));
         return this;
     }
 
     /** Sets the locations the train must reach. Meant to be used for simple tests with no intermediate steps */
     public STDCMPathfindingBuilder setEndLocations(Set<Pathfinding.EdgeLocation<SignalingRoute>> endLocations) {
-        this.steps.add(new STDCMStep(endLocations, 0, true));
+        this.steps.add(new LegacySTDCMStep(endLocations, 0, true));
         return this;
     }
 
     /** Add a step to the path */
-    public STDCMPathfindingBuilder addStep(STDCMStep step) {
+    public STDCMPathfindingBuilder addStep(LegacySTDCMStep step) {
         this.steps.add(step);
         return this;
     }

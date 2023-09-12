@@ -4,7 +4,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
-import fr.sncf.osrd.stdcm.STDCMStep;
+import fr.sncf.osrd.stdcm.LegacySTDCMStep;
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.RouteAvailabilityInterface;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.utils.graph.Graph;
@@ -25,7 +25,7 @@ public class STDCMGraph implements Graph<STDCMNode, STDCMEdge> {
     public final RollingStock rollingStock;
     public final RollingStock.Comfort comfort;
     public final double timeStep;
-    final List<STDCMStep> steps;
+    final List<LegacySTDCMStep> steps;
     final DelayManager delayManager;
     final AllowanceManager allowanceManager;
     final BacktrackingManager backtrackingManager;
@@ -41,7 +41,7 @@ public class STDCMGraph implements Graph<STDCMNode, STDCMEdge> {
             RouteAvailabilityInterface routeAvailability,
             double maxRunTime,
             double minScheduleTimeStart,
-            List<STDCMStep> steps,
+            List<LegacySTDCMStep> steps,
             String tag,
             AllowanceValue standardAllowance
     ) {

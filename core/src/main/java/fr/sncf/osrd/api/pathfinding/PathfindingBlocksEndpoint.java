@@ -51,6 +51,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class PathfindingBlocksEndpoint implements Take {
     private final InfraManager infraManager;
@@ -198,6 +199,19 @@ public class PathfindingBlocksEndpoint implements Take {
         }
         // It didn’t fail due to a constraint, no path exists
         throw new OSRDError(ErrorType.PathfindingGenericError);
+    }
+
+    /**
+     * Returns all the EdgeLocations of a waypoint list.
+     * @param infra full infra.
+     * @param waypoints corresponding waypoints.
+     * @return corresponding edge locations.
+     */
+    public static Set<Pathfinding.EdgeLocation<Integer>> findWaypointBlocks(FullInfra infra,
+                                                                            Collection<PathfindingWaypoint> waypoints) {
+        return waypoints.stream()
+                .flatMap(waypoint -> findWaypointBlocks(infra, waypoint).stream())
+                .collect(Collectors.toSet());
     }
 
     /**
