@@ -64,10 +64,8 @@ jobs:
         with:
           load: true
           files: "docker-compose.yml"
-          targets: "api,editoast,core,front"
+          targets: "editoast,core,front"
           set: |
-            api.cache-from=type=gha,scope=api
-            api.cache-to=type=gha,mode=max,scope=api
             editoast.cache-from=type=gha,scope=editoast
             editoast.cache-to=type=gha,mode=max,scope=editoast
             core.cache-from=type=gha,scope=core
@@ -76,7 +74,7 @@ jobs:
             front.cache-to=type=gha,mode=max,scope=front
 
       - name: Startup the test infrastructure
-        run: "docker-compose up --no-build -d api editoast core front wait-healthy"
+        run: "docker-compose up --no-build -d editoast core front wait-healthy"
         env:
           DOCKER_BUILDKIT: 1
           COMPOSE_DOCKER_CLI_BUILD: 1
