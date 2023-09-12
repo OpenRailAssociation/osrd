@@ -29,6 +29,10 @@ private fun CollectionItemType.generateArray(context: GeneratorContext, currentF
 
                 val size get() = data.size
 
+                fun asPrimitiveArray(): $bufferType {
+                    return data
+                }
+
                 operator fun get(index: Int): $type {
                     return ${storageType.fromPrimitive("data[index]")}
                 }
@@ -62,15 +66,23 @@ private fun CollectionItemType.generateArray(context: GeneratorContext, currentF
                 }
 
                 fun clone(): Mutable${simpleName}Array${paramsUse} {
-                    return Mutable${simpleName}Array${paramsUse}(data.copyOf())
+                    return copyOf()
                 }
 
                 fun copyOf(): Mutable${simpleName}Array${paramsUse} {
-                    return clone()
+                    return Mutable${simpleName}Array${paramsUse}(data.copyOf())
                 }
 
                 fun copyOf(size: Int): Mutable${simpleName}Array${paramsUse} {
                     return Mutable${simpleName}Array${paramsUse}(data.copyOf(size))
+                }
+
+                fun immutableCopyOf(): ${simpleName}Array${paramsUse} {
+                    return ${simpleName}Array${paramsUse}(data.copyOf())
+                }
+
+                fun immutableCopyOf(size: Int): ${simpleName}Array${paramsUse} {
+                    return ${simpleName}Array${paramsUse}(data.copyOf(size))
                 }
             }
 

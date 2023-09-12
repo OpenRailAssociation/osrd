@@ -41,6 +41,8 @@ private fun CollectionItemType.generateArrayList(context: GeneratorContext, curr
                 public constructor() : this(${DEFAULT_CAPACITY})
 
                 override val size get() = usedElements
+                fun isEmpty() = size == 0
+                fun isNotEmpty() = size != 0
 
                 /** GENERATED CODE */
                 override fun iterator(): Iterator<$type> {
@@ -149,6 +151,16 @@ private fun CollectionItemType.generateArrayList(context: GeneratorContext, curr
                         buffer[i] = buffer[i + 1]
                     usedElements--
                     return oldValue
+                }
+
+                /** GENERATED CODE */
+                fun toMutableArray() : Mutable${simpleName}Array${paramsUse} {
+                    return buffer.copyOf(usedElements)
+                }
+
+                /** GENERATED CODE */
+                fun toArray() : ${simpleName}Array${paramsUse} {
+                    return buffer.immutableCopyOf(usedElements)
                 }
 
                 /** GENERATED CODE */
