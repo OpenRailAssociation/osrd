@@ -47,7 +47,6 @@ pub struct STDCMRequestPayload {
     pub start_time: Option<f64>,
     pub end_time: Option<f64>,
     pub steps: Vec<StepPayload>,
-    pub rolling_stocks: Vec<i64>,
     pub rolling_stock_id: i64,
     pub comfort: RollingStockComfortType,
     pub maximum_departure_delay: Option<f64>,
@@ -391,7 +390,6 @@ pub mod tests {
         ))
         .unwrap();
         *payload.get_mut("infra_id").unwrap() = json!(-999);
-        *payload.get_mut("rolling_stocks").unwrap() = json!([fast_rolling_stock.id()]);
         *payload.get_mut("rolling_stock_id").unwrap() = json!(fast_rolling_stock.id());
         *payload.get_mut("timetable_id").unwrap() = json!(timetable.id());
 
