@@ -22,12 +22,12 @@ interface SpeedSpaceSettingsProps {
   onSetSettings: (newSettings: { [key in SPEED_SPACE_SETTINGS_KEYS]: boolean }) => void;
 }
 
-export default function SpeedSpaceSettings({
+const SpeedSpaceSettings = ({
   electrificationRanges,
   showSettings,
   speedSpaceSettings,
   onSetSettings,
-}: SpeedSpaceSettingsProps) {
+}: SpeedSpaceSettingsProps) => {
   const { t } = useTranslation(['simulation']);
   const [settings, setSettings] = useState(speedSpaceSettings);
 
@@ -118,4 +118,6 @@ export default function SpeedSpaceSettings({
       {getCheckboxRadio(SPEED_SPACE_SETTINGS_KEYS.POWER_RESTRICTION, settings.powerRestriction)}
     </div>
   );
-}
+};
+
+export default SpeedSpaceSettings;
