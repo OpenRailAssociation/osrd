@@ -10,7 +10,6 @@ from typing import Dict, Iterable, List, Set, Tuple
 import requests
 from requests import Response, Timeout
 
-URL = "http://127.0.0.1:8000/"
 TIMEOUT = 15
 INFRA_ID = 1
 EDITOAST_URL = "http://127.0.0.1:8090/"
@@ -90,24 +89,24 @@ def make_error(
     )
 
 
-def run_test(infra: InfraGraph, base_url: str, scenario: Scenario, infra_name: str):
+def run_test(infra: InfraGraph, editoast_url: str, scenario: Scenario, infra_name: str):
     """
     Runs a single random test
     :param infra: infra graph
-    :param base_url: Api url
+    :param editoast_url: Api url
     :param scenario: Scenario to use for the test
     :param infra_name: name of the infra, for better reporting
     """
-    rolling_stock = get_random_rolling_stock(base_url)
+    rolling_stock = get_random_rolling_stock(editoast_url)
     path, path_length = make_valid_path(infra)
     if random.randint(0, 1) == 0:
-        test_new_train(base_url, scenario, rolling_stock, path_length, infra_name, path)
+        test_new_train(editoast_url, scenario, rolling_stock, path_length, infra_name, path)
     else:
-        test_stdcm(base_url, scenario, rolling_stock, infra_name, path)
+        test_stdcm(editoast_url, scenario, rolling_stock, infra_name, path)
 
 
 def test_new_train(
-    base_url: str,
+    editoast_url: str,
     scenario: Scenario,
     rolling_stock: int,
     path_length: float,
@@ -120,7 +119,7 @@ def test_new_train(
     """
     print("testing new train")
     path_payload = make_payload_path(scenario.infra, path)
-    r = post_with_timeout(base_url + "pathfinding/", json=path_payload)
+    r = post_with_timeout(editoast_url + "pathfinding/", json=path_payload)
     if r.status_code // 100 != 2:
         if r.status_code // 100 == 4:
             print("ignore: invalid user input")
@@ -134,7 +133,7 @@ def test_new_train(
     path_id = r.json()["id"]
     schedule_payload = make_payload_schedule(scenario, path_id, rolling_stock, path_length)
     r = post_with_timeout(
-        base_url + "train_schedule/standalone_simulation/",
+        editoast_url + "train_schedule/standalone_simulation/",
         json=schedule_payload,
     )
     if r.status_code // 100 != 2:
@@ -150,7 +149,7 @@ def test_new_train(
         )
 
     schedule_id = r.json()["ids"][0]
-    r = get_with_timeout(f"{base_url}train_schedule/{schedule_id}/result/")
+    r = get_with_timeout(f"{editoast_url}train_schedule/{schedule_id}/result/")
     if r.status_code // 100 != 2:
         make_error(
             ErrorType.RESULT,
@@ -168,7 +167,7 @@ def test_new_train(
 
 
 def test_stdcm(
-    base_url: str,
+    editoast_url: str,
     scenario: Scenario,
     rolling_stock: int,
     infra_name: str,
@@ -180,7 +179,7 @@ def test_stdcm(
     """
     print("testing stdcm")
     stdcm_payload = make_stdcm_payload(scenario, path, rolling_stock)
-    r = post_with_timeout(base_url + "stdcm/", json=stdcm_payload)
+    r = post_with_timeout(editoast_url + "stdcm/", json=stdcm_payload)
     if r.status_code // 100 != 2:
         if r.status_code // 100 == 4 and "no_path_found" in r.content.decode("utf-8"):
             print("ignore: no path found")
@@ -217,7 +216,6 @@ def make_stdcm_payload(scenario: Scenario, path: List[Tuple[str, float]], rollin
 
 
 def run(
-    base_url: str,
     editoast_url: str,
     scenario: Scenario,
     n_test: int = 1000,
@@ -227,14 +225,14 @@ def run(
 ):
     """
     Runs every test
-    :param base_url: url to reach the api
+    :param editoast_url: url to reach the editoast api
     :param scenario: scenario to use for the tests
     :param n_test: number of tests to run
     :param log_folder: (optional) path to a folder to log errors in
     :param infra_name: name of the infra, for better reporting
     :param seed: first seed, incremented by 1 for each individual test
     """
-    infra_graph = make_graph(base_url, scenario.infra)
+    infra_graph = make_graph(editoast_url, scenario.infra)
     requests.post(editoast_url + f"infra/{scenario.infra}/load").raise_for_status()
     for i in range(n_test):
         seed += 1
@@ -243,7 +241,7 @@ def run(
         time.sleep(0.1)
 
         try:
-            run_test(infra_graph, base_url, scenario, infra_name)
+            run_test(infra_graph, editoast_url, scenario, infra_name)
         except Exception as e:
             if log_folder is None:
                 raise e
@@ -254,13 +252,13 @@ def run(
                     print(json.dumps(e.args[0], indent=4), file=f)
 
 
-def get_random_rolling_stock(base_url: str) -> int:
+def get_random_rolling_stock(editoast_url: str) -> int:
     """
     Returns a random rolling stock ID
-    :param base_url: Api url
+    :param editoast_url: Api url
     :return: ID of a valid rolling stock
     """
-    r = get_with_timeout(base_url + "rolling_stock/")
+    r = get_with_timeout(editoast_url + "light_rolling_stock/")
     if r.status_code // 100 != 2:
         raise RuntimeError(f"Rolling stock error {r.status_code}: {r.content}")
     stocks = r.json()["results"]
@@ -277,13 +275,13 @@ def format_route_node(waypoint_id, direction):
     return f"{waypoint_id};{direction}"
 
 
-def make_graph(base_url: str, infra: int) -> InfraGraph:
+def make_graph(editoast_url: str, infra: int) -> InfraGraph:
     """
     Makes a graph from the infra
-    :param base_url: infra url
+    :param editoast_url: editoast url
     :param infra: infra id
     """
-    url = base_url + f"infra/{infra}/railjson/"
+    url = editoast_url + f"infra/{infra}/railjson/"
     r = get_with_timeout(url)
     infra = r.json()
     graph = InfraGraph(infra)
@@ -438,17 +436,17 @@ def make_payload_path(infra: int, path: List[Tuple[str, float]]) -> Dict:
     return path_payload
 
 
-def create_scenario(base_url: str, infra_id: int) -> Scenario:
+def create_scenario(editoast_url: str, infra_id: int) -> Scenario:
     # Create the project
     project_payload = {"name": "fuzzer_project"}
-    r = post_with_timeout(base_url + "projects/", json=project_payload)
+    r = post_with_timeout(editoast_url + "projects/", json=project_payload)
     r.raise_for_status()
     project_id = r.json()["id"]
     project_url = f"projects/{project_id}"
 
     # Create the study
     study_payload = {"name": "fuzzer_study"}
-    r = post_with_timeout(base_url + f"{project_url}/studies/", json=study_payload)
+    r = post_with_timeout(editoast_url + f"{project_url}/studies/", json=study_payload)
     r.raise_for_status()
     study_id = r.json()["id"]
     study_url = f"{project_url}/studies/{study_id}"
@@ -456,11 +454,11 @@ def create_scenario(base_url: str, infra_id: int) -> Scenario:
     # Create the scenario
     scenario_payload = {
         "name": "fuzzer_scenario",
-        "infra": infra_id,
+        "infra_id": infra_id,
     }
-    r = post_with_timeout(base_url + f"{study_url}/scenarios/", json=scenario_payload)
+    r = post_with_timeout(editoast_url + f"{study_url}/scenarios/", json=scenario_payload)
     r.raise_for_status()
-    timetable_id = r.json()["timetable"]
+    timetable_id = r.json()["timetable_id"]
     return Scenario(infra_id, timetable_id)
 
 
@@ -578,18 +576,17 @@ def request_with_timeout(request_type: str, *args, **kwargs) -> Response:
         return res
 
 
-def get_infra_name(base_url: str, infra_id: int):
-    r = get_with_timeout(base_url + f"infra/{infra_id}/")
+def get_infra_name(editoast_url: str, infra_id: int):
+    r = get_with_timeout(editoast_url + f"infra/{infra_id}/")
     return r.json()["name"]
 
 
 if __name__ == "__main__":
-    new_scenario = create_scenario(URL, INFRA_ID)
+    new_scenario = create_scenario(EDITOAST_URL, INFRA_ID)
     run(
-        URL,
         EDITOAST_URL,
         new_scenario,
         10000,
         Path(__file__).parent / "errors",
-        infra_name=get_infra_name(URL, INFRA_ID),
+        infra_name=get_infra_name(EDITOAST_URL, INFRA_ID),
     )

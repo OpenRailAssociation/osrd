@@ -4,8 +4,7 @@ from pathlib import Path
 FRONT_FOLDER = Path(__file__).parents[2] / "front"
 MIDDLEWARE_FOLDER = FRONT_FOLDER / "src" / "common" / "api"
 MIDDLEWARE_FILES = {
-    "api": MIDDLEWARE_FOLDER / "osrdEditoastApi.ts",
-    "editoast": MIDDLEWARE_FOLDER / "osrdMiddlewareApi.ts",
+    "editoast": MIDDLEWARE_FOLDER / "osrdEditoastApi.ts",
 }
 
 

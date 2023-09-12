@@ -6,7 +6,7 @@ import requests
 
 from .path import Path
 from .scenario import Scenario
-from .services import API_URL, EDITOAST_URL
+from .services import EDITOAST_URL
 
 
 @dataclass(frozen=True)
@@ -39,11 +39,6 @@ class _TimetableResponse:
     train_schedule_summaries: List[dict]
 
 
-@dataclass(frozen=True)
-class _SimulationResponse:
-    ids: List[int]
-
-
 def _two_train_simulation_payload(path_id: int, timetable_id: int, rolling_stock_id: int):
     return {
         "timetable": timetable_id,
@@ -54,7 +49,7 @@ def _two_train_simulation_payload(path_id: int, timetable_id: int, rolling_stock
                 "labels": ["new train", "west", "south east"],
                 "departure_time": 3600,
                 "initial_speed": 0,
-                "rolling_stock": rolling_stock_id,
+                "rolling_stock_id": rolling_stock_id,
                 "comfort": "STANDARD",
             },
             {
@@ -62,7 +57,7 @@ def _two_train_simulation_payload(path_id: int, timetable_id: int, rolling_stock
                 "labels": ["new train", "west", "south east"],
                 "departure_time": 5100,
                 "initial_speed": 0,
-                "rolling_stock": rolling_stock_id,
+                "rolling_stock_id": rolling_stock_id,
                 "comfort": "STANDARD",
             },
         ],
@@ -106,12 +101,12 @@ def test_get_timetable(
 
     # add simulation
     simulation_response = requests.post(
-        f"{API_URL}train_schedule/standalone_simulation/",
+        f"{EDITOAST_URL}train_schedule/standalone_simulation/",
         json=_two_train_simulation_payload(west_to_south_east_path.id, small_scenario.timetable, fast_rolling_stock),
     )
-    assert simulation_response.status_code == 201
-    simulation = _SimulationResponse(**simulation_response.json())
-    assert len(simulation.ids) == 2
+    assert simulation_response.status_code == 200
+    simulation = simulation_response.json()
+    assert len(simulation) == 2
     response = requests.get(f"{service_url}timetable/{timetable_id}/")
     timetable = _TimetableResponse(**response.json())
     assert timetable.id == small_scenario.timetable
@@ -119,7 +114,7 @@ def test_get_timetable(
     assert len(timetable.train_schedule_summaries) == 2
     expected_schedules = [
         _TrainScheduleSummary(
-            id=simulation.ids[0],
+            id=simulation[0],
             train_name="West to South East 1",
             departure_time=3600,
             arrival_time=4384.388065381583,
@@ -140,7 +135,7 @@ def test_get_timetable(
             invalid_reasons=[],
         ),
         _TrainScheduleSummary(
-            id=simulation.ids[1],
+            id=simulation[1],
             train_name="West to South East 3",
             departure_time=5100,
             arrival_time=5884.388065381583,
