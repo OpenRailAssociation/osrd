@@ -6,7 +6,6 @@ import storage from 'redux-persist/lib/storage'; // defaults to localStorage
 
 import { OsrdConfState, OsrdMultiConfState } from 'applications/operationalStudies/consts';
 
-import { osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 
 import mainReducer, { MainState, MainActions, initialState as mainInitialState } from './main';
@@ -80,7 +79,6 @@ export interface RootState {
   main: MainState;
   osrdconf: OsrdMultiConfState;
   osrdsimulation: OsrdSimulationState;
-  [osrdMiddlewareApi.reducerPath]: ReturnType<typeof osrdMiddlewareApi.reducer>;
   [osrdEditoastApi.reducerPath]: ReturnType<typeof osrdEditoastApi.reducer>;
   rsEditorCurvesParams: RsEditorCurvesState;
 }
@@ -92,7 +90,6 @@ export const rootInitialState: RootState = {
   main: mainInitialState,
   osrdconf: osrdconfInitialState,
   osrdsimulation: osrdSimulationInitialState,
-  [osrdMiddlewareApi.reducerPath]: {} as ReturnType<typeof osrdMiddlewareApi.reducer>,
   [osrdEditoastApi.reducerPath]: {} as ReturnType<typeof osrdEditoastApi.reducer>,
   rsEditorCurvesParams: rsEditorCurvesInitialState,
 };
@@ -116,7 +113,6 @@ export const rootReducer: ReducersMapObject<RootState> = {
     AnyAction
   >,
   osrdsimulation: osrdsimulationReducer,
-  [osrdMiddlewareApi.reducerPath]: osrdMiddlewareApi.reducer,
   [osrdEditoastApi.reducerPath]: osrdEditoastApi.reducer,
   rsEditorCurvesParams: rollingstockeditorReducer,
 };
