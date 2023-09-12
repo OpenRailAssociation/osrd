@@ -199,5 +199,3 @@ export function redoSimulation() {
     });
   };
 }
-
-

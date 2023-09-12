@@ -19,6 +19,8 @@ import {
 } from 'reducers/osrdsimulation/types';
 import { time2sec } from 'utils/timeManipulation';
 import { SimulationReport } from 'common/api/osrdEditoastApi';
+// TODO: Dependency cycle will be removed during the refactoring of store
+// eslint-disable-next-line import/no-cycle
 import undoableSimulation from './simulation';
 
 import {
