@@ -1,7 +1,7 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { updateSpeedSpaceSettings } from 'reducers/osrdsimulation/speedSpaceSettings';
+import { updateSpeedSpaceSettings } from 'reducers/osrdsimulation/actions';
 
 import SpeedSpaceSettings from './SpeedSpaceSettings';
 

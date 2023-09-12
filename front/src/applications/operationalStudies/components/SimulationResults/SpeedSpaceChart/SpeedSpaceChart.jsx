@@ -13,7 +13,7 @@ import {
   LIST_VALUES_NAME_SPEED_SPACE,
   SPEED_SPACE_CHART_KEY_VALUES,
 } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
-import SpeedSpaceSettings from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceSettings/withOSRDData';
+import SpeedSpaceSettings from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceSettings/SpeedSpaceSettings';
 import {
   createChart,
   drawTrain,
@@ -109,6 +109,7 @@ export default function SpeedSpaceChart(props) {
    * - the local settings have been changed
    * - the chart has been resized (vertically only)
    */
+
   useEffect(() => {
     createChartAndTrain();
   }, [rotate, localSettings, chartHeight]);
