@@ -6,6 +6,14 @@
     collections = ["Array", "ArrayList"],
 )
 
+@file:PrimitiveWrapperCollections(
+    wrapper = Offset::class,
+    primitive = Long::class,
+    fromPrimitive = "Offset(Distance(%s))",
+    toPrimitive = "%s.distance.millimeters",
+    collections = ["Array", "ArrayList"],
+)
+
 package fr.sncf.osrd.utils.units
 
 import fr.sncf.osrd.fast_collections.PrimitiveWrapperCollections
@@ -55,3 +63,29 @@ value class Distance(val millimeters: Long) : Comparable<Distance> {
 
 val Double.meters: Distance get() = Distance((this * 1000).toLong())
 val Int.meters: Distance get() = Distance(this.toLong() * 1000)
+
+
+@JvmInline
+value class Offset<T>(val distance: Distance) : Comparable<Offset<T>> {
+    operator fun plus(value: Distance): Offset<T> {
+        return Offset(distance + value)
+    }
+
+    operator fun minus(value: Distance): Offset<T> {
+        return Offset(distance - value)
+    }
+
+    operator fun minus(value: Offset<T>): Distance {
+        return distance - value.distance
+    }
+
+    override fun compareTo(other: Offset<T>): Int {
+        return distance.compareTo(other.distance)
+    }
+
+    override fun toString(): String {
+        return distance.toString()
+    }
+}
+
+typealias Length<T> = Offset<T>
