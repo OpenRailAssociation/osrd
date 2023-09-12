@@ -5,7 +5,6 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
 
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
@@ -17,7 +16,6 @@ function ReleaseInformations() {
   const { t } = useTranslation('home/navbar');
   const { data: editoastVersion } = osrdEditoastApi.useGetVersionQuery();
   const { data: coreVersion } = osrdEditoastApi.useGetVersionCoreQuery();
-  const { data: apiVersion } = osrdMiddlewareApi.useGetVersionApiQuery();
 
   const osrdWebSite = 'https://osrd.fr/';
 
@@ -68,7 +66,6 @@ function ReleaseInformations() {
                 <tbody>
                   {serviceRow('Editoast', editoastVersion?.git_describe)}
                   {serviceRow('Core', coreVersion?.git_describe)}
-                  {serviceRow('API', apiVersion?.git_describe)}
                   {serviceRow('Front', import.meta.env.OSRD_GIT_DESCRIBE)}
                 </tbody>
               </table>

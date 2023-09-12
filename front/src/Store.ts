@@ -4,7 +4,6 @@ import thunk from 'redux-thunk';
 import { persistStore, getStoredState } from 'redux-persist';
 import { Config } from '@redux-devtools/extension';
 
-import { osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import persistedReducer, {
   rootReducer,
@@ -21,7 +20,7 @@ const reduxDevToolsOptions: Config = {
   },
 };
 
-const middlewares: Middleware[] = [thunk, osrdMiddlewareApi.middleware, osrdEditoastApi.middleware];
+const middlewares: Middleware[] = [thunk, osrdEditoastApi.middleware];
 
 const store = configureStore({
   reducer: persistedReducer,
