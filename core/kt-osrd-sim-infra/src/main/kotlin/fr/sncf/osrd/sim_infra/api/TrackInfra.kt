@@ -4,6 +4,7 @@ import fr.sncf.osrd.reporting.exceptions.OSRDError.newUnknownTrackSectionError
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.utils.units.Distance
+import fr.sncf.osrd.utils.units.Length
 
 
 /** Detectors detect when trains arrive and leave a given point location */
@@ -23,7 +24,7 @@ interface TrackInfra {
     @JvmName("getTrackSectionChunks")
     fun getTrackSectionChunks(trackSection: TrackSectionId): StaticIdxList<TrackChunk>
     @JvmName("getTrackSectionLength")
-    fun getTrackSectionLength(trackSection: TrackSectionId): Distance
+    fun getTrackSectionLength(trackSection: TrackSectionId): Length<TrackSection>
 }
 
 /** A directional detector encodes a direction over a detector */

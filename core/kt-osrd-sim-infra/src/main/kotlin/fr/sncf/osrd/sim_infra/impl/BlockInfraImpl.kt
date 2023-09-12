@@ -10,7 +10,7 @@ class BlockDescriptor(
     val stopsAtBufferStop: Boolean,
     val path: StaticIdxList<ZonePath>,
     val signals: StaticIdxList<LogicalSignal>,
-    val signalsPositions: DistanceList,
+    val signalsPositions: OffsetList<Block>,
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -104,7 +104,7 @@ class BlockInfraImpl(
         return blockEntrySignalMap[signal] ?: mutableStaticIdxArrayListOf()
     }
 
-    override fun getSignalsPositions(block: BlockId): DistanceList {
+    override fun getSignalsPositions(block: BlockId): OffsetList<Block> {
         return blockPool[block].signalsPositions
     }
 
@@ -116,10 +116,10 @@ class BlockInfraImpl(
         return blockToTrackChunkMap[block] ?: mutableDirStaticIdxArrayListOf()
     }
 
-    override fun getBlockLength(block: BlockId): Distance {
-        var length = Distance.ZERO
+    override fun getBlockLength(block: BlockId): Length<Block> {
+        var length = Length<Block>(0.meters)
         for (path in blockPool[block].path) {
-            length += rawInfra.getZonePathLength(path)
+            length += rawInfra.getZonePathLength(path).distance
         }
         return length
     }

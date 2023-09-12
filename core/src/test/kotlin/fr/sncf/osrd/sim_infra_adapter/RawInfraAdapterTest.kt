@@ -40,7 +40,7 @@ class RawInfraAdapterTest {
             val chunks = infra.getChunksOnRoute(route)
             var offset = 0.meters
             for (chunk in chunks) {
-                val end = offset + infra.getTrackChunkLength(chunk.value)
+                val end = offset + infra.getTrackChunkLength(chunk.value).distance
                 val trackRangeViews = oldRoute.getTrackRanges(offset.meters, end.meters)!!
                 assertTrue { trackRangeViews.size == 1 } // This may fail because of float rounding,
                                                          // but as long as it's true it makes testing much easier
@@ -49,7 +49,7 @@ class RawInfraAdapterTest {
                     trackRangeView.track.edge.id,
                     infra.getTrackSectionName(infra.getTrackFromChunk(chunk.value))
                 )
-                assertEquals(trackRangeView.length, infra.getTrackChunkLength(chunk.value).meters, epsilon)
+                assertEquals(trackRangeView.length, infra.getTrackChunkLength(chunk.value).distance.meters, epsilon)
                 assertEquals(trackRangeView.track.direction.toKtDirection(), chunk.direction)
 
                 offset = end
@@ -69,7 +69,7 @@ class RawInfraAdapterTest {
             val chunks = infra.getChunksOnRoute(route)
             var offset = 0.meters
             for (chunk in chunks) {
-                val end = offset + infra.getTrackChunkLength(chunk.value)
+                val end = offset + infra.getTrackChunkLength(chunk.value).distance
                 val trackRangeViews = oldRoute.getTrackRanges(offset.meters, end.meters)!!
                 assertTrue { trackRangeViews.size == 1 } // This may fail because of float rounding,
                                                          // but as long as it's true it makes testing much easier

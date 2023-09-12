@@ -23,10 +23,10 @@ typealias LogicalSignalId = StaticIdx<LogicalSignal>
 
 interface RawSignalingInfra : RoutingInfra {
     fun getSignals(zonePath: ZonePathId): StaticIdxList<PhysicalSignal>
-    fun getSignalPositions(zonePath: ZonePathId): DistanceList
+    fun getSignalPositions(zonePath: ZonePathId): OffsetList<ZonePath>
     fun getSpeedLimits(route: RouteId): StaticIdxList<SpeedLimit>
-    fun getSpeedLimitStarts(route: RouteId): DistanceList
-    fun getSpeedLimitEnds(route: RouteId): DistanceList
+    fun getSpeedLimitStarts(route: RouteId): OffsetList<Route>
+    fun getSpeedLimitEnds(route: RouteId): OffsetList<Route>
 
     val physicalSignals: StaticIdxSpace<PhysicalSignal>
     val logicalSignals: StaticIdxSpace<LogicalSignal>

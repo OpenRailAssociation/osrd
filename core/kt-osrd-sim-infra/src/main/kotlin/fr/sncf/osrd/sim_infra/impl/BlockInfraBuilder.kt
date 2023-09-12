@@ -11,7 +11,7 @@ interface BlockInfraBuilder {
         stopsAtBufferStop: Boolean,
         path: StaticIdxList<ZonePath>,
         signals: StaticIdxList<LogicalSignal>,
-        signalsDistances: DistanceList,
+        signalsDistances: OffsetList<Block>,
     ): BlockId
 }
 
@@ -24,7 +24,7 @@ class BlockInfraBuilderImpl : BlockInfraBuilder {
         stopsAtBufferStop: Boolean,
         path: StaticIdxList<ZonePath>,
         signals: StaticIdxList<LogicalSignal>,
-        signalsDistances: DistanceList,
+        signalsDistances: OffsetList<Block>,
     ): BlockId {
         assert(path.size != 0)
         val newBlock = BlockDescriptor(startAtBufferStop, stopsAtBufferStop, path, signals, signalsDistances)

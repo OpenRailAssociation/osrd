@@ -64,7 +64,7 @@ fun project(
 
     // compute signal updates
     val startOffset = trainPathBlockOffset(trainPath)
-    val pathSignals = pathSignals(startOffset, blockPath, blockInfra, rawInfra)
+    val pathSignals = pathSignals(startOffset, blockPath, blockInfra)
 
     val signalAspectChangeEvents = computeSignalAspectChangeEvents(
         blockPath, zoneMap, blockInfra, pathSignals, zoneUpdates, simulator, rawInfra, loadedSignalInfra

@@ -9,6 +9,7 @@ import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.RawInfraBuilder
 import fr.sncf.osrd.utils.indexing.MutableArena
 import fr.sncf.osrd.utils.indexing.mutableArenaMap
+import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.meters
 import kotlinx.coroutines.*
 import kotlinx.coroutines.test.currentTime
@@ -63,7 +64,7 @@ class TestReservation {
         val detectorZ = builder.detector("Z")
         builder.setNextZone(detectorZ.decreasing, zoneD)
 
-        val testZonePath = builder.zonePath(detectorU.increasing, detectorV.increasing, 42.meters) {}
+        val testZonePath = builder.zonePath(detectorU.increasing, detectorV.increasing, Length(42.meters)) {}
 
         val infra = builder.build()
         // endregion

@@ -6,6 +6,8 @@ import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.indexing.StaticIdxList
+import fr.sncf.osrd.utils.units.Length
+import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.Speed
 
 
@@ -18,12 +20,11 @@ typealias OperationalPointPartId = StaticIdx<OperationalPointPart>
 
 @Suppress("INAPPLICABLE_JVM_NAME")
 interface TrackProperties {
-
     // Chunk attributes
     @JvmName("getTrackChunkLength")
-    fun getTrackChunkLength(trackChunk: TrackChunkId): Distance
+    fun getTrackChunkLength(trackChunk: TrackChunkId): Length<TrackChunk>
     @JvmName("getTrackChunkOffset")
-    fun getTrackChunkOffset(trackChunk: TrackChunkId): Distance
+    fun getTrackChunkOffset(trackChunk: TrackChunkId): Offset<TrackSection>
     @JvmName("getTrackFromChunk")
     fun getTrackFromChunk(trackChunk: TrackChunkId): TrackSectionId
 
@@ -42,7 +43,7 @@ interface TrackProperties {
     // Operational points
     fun getTrackChunkOperationalPointParts(trackChunk: TrackChunkId): StaticIdxList<OperationalPointPart>
     fun getOperationalPointPartChunk(operationalPoint: OperationalPointPartId): TrackChunkId
-    fun getOperationalPointPartChunkOffset(operationalPoint: OperationalPointPartId): Distance
+    fun getOperationalPointPartChunkOffset(operationalPoint: OperationalPointPartId): Offset<TrackChunk>
     @JvmName("getOperationalPointPartName")
     fun getOperationalPointPartName(operationalPoint: OperationalPointPartId): String
 }

@@ -3,6 +3,7 @@ package fr.sncf.osrd.signaling
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.DistanceList
+import fr.sncf.osrd.utils.units.OffsetList
 import fr.sncf.osrd.utils.units.Speed
 
 
@@ -53,7 +54,7 @@ data class SigBlock(
     val stopsAtBufferStop: Boolean,
     val signalTypes: List<String>,
     val signalSettings: List<SigSettings>,
-    val signalPositions: DistanceList,
+    val signalPositions: OffsetList<Block>,
     val length: Distance,
 )
 

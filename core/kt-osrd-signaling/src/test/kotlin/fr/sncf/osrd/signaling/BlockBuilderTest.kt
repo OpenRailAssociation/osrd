@@ -8,7 +8,7 @@ import fr.sncf.osrd.sim_infra.impl.blockInfraBuilder
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
-import fr.sncf.osrd.utils.units.meters
+import fr.sncf.osrd.utils.units.*
 import fr.sncf.osrd.utils.units.mutableDistanceArrayListOf
 import kotlin.test.Test
 import kotlin.test.assertTrue
@@ -69,18 +69,18 @@ class BlockBuilderTest {
         // endregion
 
         // region zone paths
-        val zonePathWX = builder.zonePath(detectorW.increasing, detectorX.increasing, 10.meters) {
-            signal(signalX, 8.meters)
+        val zonePathWX = builder.zonePath(detectorW.increasing, detectorX.increasing, Length(10.meters)) {
+            signal(signalX, Offset(8.meters))
         }
-        val zonePathXY = builder.zonePath(detectorX.increasing, detectorY.increasing, 10.meters) {
-            movableElement(switch, StaticIdx(0u), 5.meters)
+        val zonePathXY = builder.zonePath(detectorX.increasing, detectorY.increasing, Length(10.meters)) {
+            movableElement(switch, StaticIdx(0u), Offset(5.meters))
         }
-        val zonePathYZ = builder.zonePath(detectorY.increasing, detectorZ.increasing, 10.meters)
-        val zonePathUV = builder.zonePath(detectorU.increasing, detectorV.increasing, 10.meters) {
-            signal(signalV, 8.meters)
+        val zonePathYZ = builder.zonePath(detectorY.increasing, detectorZ.increasing, Length(10.meters))
+        val zonePathUV = builder.zonePath(detectorU.increasing, detectorV.increasing, Length(10.meters)) {
+            signal(signalV, Offset(8.meters))
         }
-        val zonePathVY = builder.zonePath(detectorV.increasing, detectorY.increasing, 10.meters) {
-            movableElement(switch, StaticIdx(1u), 5.meters)
+        val zonePathVY = builder.zonePath(detectorV.increasing, detectorY.increasing, Length(10.meters)) {
+            movableElement(switch, StaticIdx(1u), Offset(5.meters))
         }
         // endregion
 
@@ -112,10 +112,10 @@ class BlockBuilderTest {
 
         val testResultBlockInfra = blockInfraBuilder(loadedSignalInfra, infra) {
             // TODO: check the distances are correct too
-            block(true, false, mutableStaticIdxArrayListOf(zonePathUV), infra.getLogicalSignals(signalV), mutableDistanceArrayListOf())
-            block(false, true, mutableStaticIdxArrayListOf(zonePathVY, zonePathYZ), infra.getLogicalSignals(signalV), mutableDistanceArrayListOf())
-            block(true, false, mutableStaticIdxArrayListOf(zonePathWX), infra.getLogicalSignals(signalX), mutableDistanceArrayListOf())
-            block(false, true, mutableStaticIdxArrayListOf(zonePathXY, zonePathYZ), infra.getLogicalSignals(signalX), mutableDistanceArrayListOf())
+            block(true, false, mutableStaticIdxArrayListOf(zonePathUV), infra.getLogicalSignals(signalV), mutableOffsetArrayListOf())
+            block(false, true, mutableStaticIdxArrayListOf(zonePathVY, zonePathYZ), infra.getLogicalSignals(signalV), mutableOffsetArrayListOf())
+            block(true, false, mutableStaticIdxArrayListOf(zonePathWX), infra.getLogicalSignals(signalX), mutableOffsetArrayListOf())
+            block(false, true, mutableStaticIdxArrayListOf(zonePathXY, zonePathYZ), infra.getLogicalSignals(signalX), mutableOffsetArrayListOf())
         }
 
         assertTrue(blockInfraEquals(blockInfra, testResultBlockInfra))
