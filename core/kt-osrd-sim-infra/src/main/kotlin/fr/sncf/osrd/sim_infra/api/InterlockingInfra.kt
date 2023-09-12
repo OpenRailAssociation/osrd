@@ -42,13 +42,13 @@ interface ReservationInfra : LocationInfra {
     @JvmName("getZonePathExit")
     fun getZonePathExit(zonePath: ZonePathId): DirDetectorId
     @JvmName("getZonePathLength")
-    fun getZonePathLength(zonePath: ZonePathId): Distance
+    fun getZonePathLength(zonePath: ZonePathId): Length<ZonePath>
     /** The movable elements in the order encountered when traversing the zone from entry to exit */
     fun getZonePathMovableElements(zonePath: ZonePathId): StaticIdxList<TrackNode>
     /** The movable element configs in the same order as movable elements */
     fun getZonePathMovableElementsConfigs(zonePath: ZonePathId): StaticIdxList<TrackNodeConfig>
     /** The distances from the beginning of the zone path to its switches, in encounter order */
-    fun getZonePathMovableElementsDistances(zonePath: ZonePathId): DistanceList
+    fun getZonePathMovableElementsPositions(zonePath: ZonePathId): OffsetList<ZonePath>
     /** Returns the list of track chunks on the zone path */
     @JvmName("getZonePathChunks")
     fun getZonePathChunks(zonePath: ZonePathId): DirStaticIdxList<TrackChunk>

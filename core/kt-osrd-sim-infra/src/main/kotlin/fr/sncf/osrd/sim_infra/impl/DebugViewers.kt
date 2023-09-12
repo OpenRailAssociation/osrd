@@ -8,6 +8,8 @@ import fr.sncf.osrd.utils.indexing.MutableStaticIdxArrayList
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.units.Distance
+import fr.sncf.osrd.utils.units.Length
+import fr.sncf.osrd.utils.units.Offset
 
 /** These classes shouldn't be generally used, it's only here to make it easier to track objects
  * when using a debugger. They can be used to create watches containing the object properties. */
@@ -19,8 +21,8 @@ data class DirectedViewer<T>(
 
 data class ChunkViewer(
     val trackName: String,
-    val offset: Distance,
-    val length: Distance,
+    val offset: Offset<TrackSection>,
+    val length: Length<TrackChunk>,
     val id: TrackChunkId,
 )
 

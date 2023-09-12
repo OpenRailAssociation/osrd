@@ -10,6 +10,8 @@ import fr.sncf.osrd.sim_infra.api.decreasing
 import fr.sncf.osrd.sim_infra.impl.RawInfraBuilder
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
+import fr.sncf.osrd.utils.units.Length
+import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -70,18 +72,18 @@ class TestBALtoBAL {
         // endregion
 
         // region zone paths
-        val zonePathWX = builder.zonePath(detectorW.increasing, detectorX.increasing, 10.meters) {
-            signal(signalX, 8.meters)
+        val zonePathWX = builder.zonePath(detectorW.increasing, detectorX.increasing, Length(10.meters)) {
+            signal(signalX, Offset(8.meters))
         }
-        val zonePathXY = builder.zonePath(detectorX.increasing, detectorY.increasing, 10.meters) {
-            movableElement(switch, StaticIdx(0u), 5.meters)
+        val zonePathXY = builder.zonePath(detectorX.increasing, detectorY.increasing, Length(10.meters)) {
+            movableElement(switch, StaticIdx(0u), Offset(5.meters))
         }
-        val zonePathYZ = builder.zonePath(detectorY.increasing, detectorZ.increasing, 10.meters)
-        val zonePathUV = builder.zonePath(detectorU.increasing, detectorV.increasing, 10.meters) {
-            signal(signalV, 8.meters)
+        val zonePathYZ = builder.zonePath(detectorY.increasing, detectorZ.increasing, Length(10.meters))
+        val zonePathUV = builder.zonePath(detectorU.increasing, detectorV.increasing, Length(10.meters)) {
+            signal(signalV, Offset(8.meters))
         }
-        val zonePathVY = builder.zonePath(detectorV.increasing, detectorY.increasing, 10.meters) {
-            movableElement(switch, StaticIdx(1u), 5.meters)
+        val zonePathVY = builder.zonePath(detectorV.increasing, detectorY.increasing, Length(10.meters)) {
+            movableElement(switch, StaticIdx(1u), Offset(5.meters))
         }
         // endregion
 

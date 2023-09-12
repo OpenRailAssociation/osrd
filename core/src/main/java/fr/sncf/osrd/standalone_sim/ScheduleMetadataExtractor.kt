@@ -104,7 +104,7 @@ fun run(
 
     // Compute signal updates
     val startOffset = trainPathBlockOffset(trainPath)
-    val pathSignals = pathSignalsInEnvelope(startOffset, blockPath, blockInfra, envelopeWithStops, rawInfra)
+    val pathSignals = pathSignalsInEnvelope(startOffset, blockPath, blockInfra, envelopeWithStops)
     val zoneOccupationChangeEvents =
         zoneOccupationChangeEvents(startOffset, blockPath, blockInfra, envelopeWithStops, rawInfra, trainLength)
 
@@ -254,10 +254,8 @@ private fun routingRequirements(
     var curOffset = 0.meters
     for (i in 0 until blockPath.size) {
         blockOffsets[i] = curOffset
-        val blockLength = blockInfra.getBlockPath(blockPath[i]).fold(0.meters) {
-                acc, zonePath -> acc + rawInfra.getZonePathLength(zonePath)
-        }
-        curOffset += blockLength
+        val blockLength = blockInfra.getBlockLength(blockPath[i])
+        curOffset += blockLength.distance
     }
 
     fun findRouteSetDeadline(routeIndex: Int): Double? {
@@ -295,7 +293,7 @@ private fun routingRequirements(
             ?: return null
         val limitingBlock = blockPath[limitingSignalSpec.blockIndex]
         val signal = blockInfra.getBlockSignals(limitingBlock)[limitingSignalSpec.signalIndex]
-        val signalOffset = blockInfra.getSignalsPositions(limitingBlock)[limitingSignalSpec.signalIndex]
+        val signalOffset = blockInfra.getSignalsPositions(limitingBlock)[limitingSignalSpec.signalIndex].distance
 
         val blockOffset = blockOffsets[limitingSignalSpec.blockIndex]
         val sightDistance = rawInfra.getSignalSightDistance(rawInfra.getPhysicalSignal(signal))
@@ -321,7 +319,7 @@ private fun routingRequirements(
         val zoneRequirements = mutableListOf<RoutingZoneRequirement>()
         for (zonePathIndex in 0 until routeZonePath.size) {
             val zonePath = routeZonePath[zonePathIndex]
-            routePathOffset += rawInfra.getZonePathLength(zonePath)
+            routePathOffset += rawInfra.getZonePathLength(zonePath).distance
             // the distance to the end of the zone from the start of the train path
             val pathOffset = routePathOffset - startOffset
             // the point in the train path at which the zone is released
@@ -603,7 +601,7 @@ private fun zoneOccupationChangeEvents(
                     entryTime, entryOffset, zoneCount, true, blockIdx, zone
                 )
             )
-            currentOffset += rawInfra.getZonePathLength(zonePath)
+            currentOffset += rawInfra.getZonePathLength(zonePath).distance
             if (currentOffset > envelope.endPos.meters) {
                 zoneCount++
                 break
@@ -646,16 +644,11 @@ fun pathSignals(
     startOffset: Distance,
     blockPath: StaticIdxList<Block>,
     blockInfra: BlockInfra,
-    rawInfra: SimInfraAdapter
 ): List<PathSignal> {
     val pathSignals = mutableListOf<PathSignal>()
     var currentOffset = -startOffset
     for ((blockIdx, block) in blockPath.withIndex()) {
-        var blockSize = Distance.ZERO
-        for (zonePath in blockInfra.getBlockPath(block)) {
-            blockSize += rawInfra.getZonePathLength(zonePath)
-        }
-
+        val blockSize = blockInfra.getBlockLength(block).distance
         val blockSignals = blockInfra.getBlockSignals(block)
         val blockSignalPositions = blockInfra.getSignalsPositions(block)
         for (signalIndex in 0 until blockSignals.size) {
@@ -664,7 +657,7 @@ fun pathSignals(
             if (signalIndex == 0 && blockIdx != 0)
                 continue
             val signal = blockSignals[signalIndex]
-            val position = blockSignalPositions[signalIndex]
+            val position = blockSignalPositions[signalIndex].distance
             val dedupedSignal = blockIdx != blockPath.size - 1 && signalIndex == blockSignals.size - 1
             val maxBlockPathIndex = if (dedupedSignal) blockIdx + 1 else blockIdx
             pathSignals.add(PathSignal(signal, currentOffset + position, blockIdx, maxBlockPathIndex))
@@ -684,9 +677,8 @@ private fun pathSignalsInEnvelope(
     blockPath: StaticIdxList<Block>,
     blockInfra: BlockInfra,
     envelope: EnvelopeTimeInterpolate,
-    rawInfra: SimInfraAdapter
 ): List<PathSignal> {
-    return pathSignals(startOffset, blockPath, blockInfra, rawInfra).filter { signal ->
+    return pathSignals(startOffset, blockPath, blockInfra).filter { signal ->
         signal.pathOffset >= 0.meters && signal.pathOffset <= envelope.endPos.meters
     }
 }

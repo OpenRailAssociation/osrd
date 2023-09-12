@@ -10,6 +10,8 @@ import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.RawInfraBuilder
 import fr.sncf.osrd.utils.indexing.IdxMap
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
+import fr.sncf.osrd.utils.units.Length
+import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -63,15 +65,15 @@ class TestBAPRtoBAL {
         // endregion
 
         // region zone paths
-        val zonePathWX = builder.zonePath(detectorW.increasing, detectorX.increasing, 10.meters) {
-            signal(signalm, 6.meters)
-            signal(signalM, 8.meters)
+        val zonePathWX = builder.zonePath(detectorW.increasing, detectorX.increasing, Length(10.meters)) {
+            signal(signalm, Offset(6.meters))
+            signal(signalM, Offset(8.meters))
         }
-        val zonePathXY = builder.zonePath(detectorX.increasing, detectorY.increasing, 10.meters) {
-            signal(signaln, 6.meters)
-            signal(signalN, 8.meters)
+        val zonePathXY = builder.zonePath(detectorX.increasing, detectorY.increasing, Length(10.meters)) {
+            signal(signaln, Offset(6.meters))
+            signal(signalN, Offset(8.meters))
         }
-        val zonePathYZ = builder.zonePath(detectorY.increasing, detectorZ.increasing, 10.meters)
+        val zonePathYZ = builder.zonePath(detectorY.increasing, detectorZ.increasing, Length(10.meters))
 
         // endregion
 

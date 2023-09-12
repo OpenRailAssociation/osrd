@@ -311,8 +311,8 @@ private fun makeChunk(
     val chunkId = builder.trackChunk(
         rangeViewForward.geo,
         makeDirectionalMap { range -> DistanceRangeMapImpl.from(range.slopes) },
-        endOffset - startOffset,
-        startOffset,
+        Length(endOffset - startOffset),
+        Offset(startOffset),
         makeDirectionalMap { range -> DistanceRangeMapImpl.from(range.curves) },
         makeDirectionalMap { range -> DistanceRangeMapImpl.from(range.gradients) },
         DistanceRangeMapImpl.from(rangeViewForward.blockedGaugeTypes),
@@ -343,10 +343,10 @@ private fun buildZonePath(
     // 2) compute the length of each zone path
     // 3) compute the zone path's track section path in order to find signals
 
-    var zonePathLength = 0.meters
+    var zonePathLength = Offset<ZonePath>(0.meters)
     val movableElements = MutableStaticIdxArrayList<TrackNode>()
     val movableElementsConfigs = MutableStaticIdxArrayList<TrackNodeConfig>()
-    val movableElementsDistances = MutableDistanceArrayList()
+    val movableElementsDistances = MutableOffsetArrayList<ZonePath>()
 
     val zoneTrackPath = mutableListOf<ZonePathTrackSpan>()
     assert(viewIterator.view.track.edge == oldStartDet.detector.trackSection)
@@ -394,10 +394,10 @@ private fun buildZonePath(
     }
 
     // iterate on the route's track ranges, and fetch the signals which belong there
-    data class ZonePathSignal(val position: Distance, val signal: PhysicalSignalId)
+    data class ZonePathSignal(val position: Offset<ZonePath>, val signal: PhysicalSignalId)
     val zonePathSignals: MutableList<ZonePathSignal> = mutableListOf()
     // the current position along the route, in millimeters
-    var zonePathPosition = Distance.ZERO
+    var zonePathPosition = Offset<ZonePath>(Distance.ZERO)
     for (range in zoneTrackPath) {
         val edge = range.track
         val rangeBegin = range.begin
@@ -422,7 +422,7 @@ private fun buildZonePath(
                 rangeEnd - trackSignal.position
 
             val position = zonePathPosition + sigRangeStartDistance
-            if (position == Distance.ZERO)
+            if (position.distance == Distance.ZERO)
                 continue
 
             zonePathSignals.add(ZonePathSignal(position, trackSignal.signal))
@@ -434,9 +434,9 @@ private fun buildZonePath(
 
     zonePathSignals.sortBy { it.position }
     val signals = MutableStaticIdxArrayList<PhysicalSignal>()
-    val signalPositions = MutableDistanceArrayList()
+    val signalPositions = MutableOffsetArrayList<ZonePath>()
     for (zonePathSignal in zonePathSignals) {
-        assert(zonePathSignal.position >= Distance.ZERO)
+        assert(zonePathSignal.position.distance >= Distance.ZERO)
         assert(zonePathSignal.position <= zoneLength)
         signals.add(zonePathSignal.signal)
         signalPositions.add(zonePathSignal.position)
@@ -457,7 +457,7 @@ private fun buildZonePath(
     }
 
     return builder.zonePath(
-        entry, exit, zonePathLength,
+        entry, exit, Length(zonePathLength.distance),
         movableElements, movableElementsConfigs, movableElementsDistances,
         signals, signalPositions, chunks
     )
@@ -506,7 +506,7 @@ fun getChunkLocation(
     track: TrackEdge,
     offset: Distance,
     trackChunkMap: Map<TrackSection, Map<Distance, StaticIdx<TrackChunk>>>
-): Pair<TrackChunkId, Distance> {
+): Pair<TrackChunkId, Offset<TrackChunk>> {
     val entries = trackChunkMap[track]!!.entries
         .sortedBy { entry -> entry.key }
     var i = 0
@@ -515,5 +515,5 @@ fun getChunkLocation(
             break
         i++
     }
-    return Pair(entries[i].value, offset - entries[i].key)
+    return Pair(entries[i].value, Offset(offset - entries[i].key))
 }

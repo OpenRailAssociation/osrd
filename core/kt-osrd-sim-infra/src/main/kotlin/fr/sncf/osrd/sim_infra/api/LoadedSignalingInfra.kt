@@ -4,9 +4,6 @@ import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.utils.units.*
 
-import java.util.Comparator
-import java.util.PriorityQueue
-
 
 /** A type of signaling system, which is used both for blocks and signals */
 sealed interface SignalingSystem
@@ -69,11 +66,11 @@ interface BlockInfra {
     @JvmName("getBlocksAtDetector")
     fun getBlocksAtDetector(detector: DirDetectorId): StaticIdxList<Block>
     fun getBlocksAtSignal(signal: LogicalSignalId): StaticIdxList<Block>
-    fun getSignalsPositions(block: BlockId): DistanceList
+    fun getSignalsPositions(block: BlockId): OffsetList<Block>
     @JvmName("getBlocksFromTrackChunk")
     fun getBlocksFromTrackChunk(trackChunk: TrackChunkId, direction: Direction): MutableStaticIdxArraySet<Block>
     @JvmName("getTrackChunksFromBlock")
     fun getTrackChunksFromBlock(block: BlockId): DirStaticIdxList<TrackChunk>
     @JvmName("getBlockLength")
-    fun getBlockLength(block: BlockId): Distance
+    fun getBlockLength(block: BlockId): Length<Block>
 }

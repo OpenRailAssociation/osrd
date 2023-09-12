@@ -32,10 +32,10 @@ class TrackChunkDescriptor(
     val slopes: DirectionalMap<DistanceRangeMap<Double>>,
     val curves: DirectionalMap<DistanceRangeMap<Double>>,
     val gradients: DirectionalMap<DistanceRangeMap<Double>>,
-    val length: Distance,
+    val length: Length<TrackChunk>,
     val routes: DirectionalMap<StaticIdxList<Route>>,
     var track: StaticIdx<TrackSection>,
-    val offset: Distance,
+    val offset: Offset<TrackSection>,
     var operationalPointParts: StaticIdxList<OperationalPointPart>,
     val loadingGaugeConstraints: DistanceRangeMap<LoadingGaugeConstraint>,
     val catenaryVoltage: DistanceRangeMap<String>,
@@ -51,8 +51,8 @@ interface RouteDescriptor {
     val path: StaticIdxList<ZonePath>
     val releaseZones: IntArray
     val speedLimits: StaticIdxList<SpeedLimit>
-    val speedLimitStarts: DistanceList
-    val speedLimitEnds: DistanceList
+    val speedLimitStarts: OffsetList<Route>
+    val speedLimitEnds: OffsetList<Route>
     val chunks: DirStaticIdxList<TrackChunk>
 }
 
@@ -94,18 +94,18 @@ open class ZonePathSpec(
 class ZonePathDescriptor(
     entry: DirDetectorId,
     exit: DirDetectorId,
-    val length: Distance,
+    val length: Length<ZonePath>,
     movableElements: StaticIdxList<TrackNode>,
     movableElementsConfigs: StaticIdxList<TrackNodeConfig>,
-    val movableElementsDistances: DistanceList,
+    val movableElementsPositions: OffsetList<ZonePath>,
     val signals: StaticIdxList<PhysicalSignal>,
-    val signalPositions: DistanceList,
+    val signalPositions: OffsetList<ZonePath>,
     val chunks: DirStaticIdxList<TrackChunk>,
 ) : ZonePathSpec(entry, exit, movableElements, movableElementsConfigs)
 
 class OperationalPointPartDescriptor(
     val name: String,
-    val chunkOffset: Distance,
+    val chunkOffset: Offset<TrackChunk>,
     val chunk: TrackChunkId,
 )
 
@@ -153,19 +153,19 @@ class RawInfraImpl(
         return trackSectionPool[trackSection].chunks
     }
 
-    override fun getTrackSectionLength(trackSection: TrackSectionId): Distance {
+    override fun getTrackSectionLength(trackSection: TrackSectionId): Length<TrackSection> {
         var length = Distance(0)
         for (trackChunk in getTrackSectionChunks(trackSection)) {
-            length += getTrackChunkLength(trackChunk)
+            length += getTrackChunkLength(trackChunk).distance
         }
-        return length
+        return Length(length)
     }
 
-    override fun getTrackChunkLength(trackChunk: TrackChunkId): Distance {
+    override fun getTrackChunkLength(trackChunk: TrackChunkId): Length<TrackChunk> {
         return trackChunkPool[trackChunk].length
     }
 
-    override fun getTrackChunkOffset(trackChunk: TrackChunkId): Distance {
+    override fun getTrackChunkOffset(trackChunk: TrackChunkId): Offset<TrackSection> {
         return trackChunkPool[trackChunk].offset
     }
 
@@ -181,7 +181,7 @@ class RawInfraImpl(
         return operationalPointPartPool[operationalPoint].chunk
     }
 
-    override fun getOperationalPointPartChunkOffset(operationalPoint: OperationalPointPartId): Distance {
+    override fun getOperationalPointPartChunkOffset(operationalPoint: OperationalPointPartId): Offset<TrackChunk> {
         return operationalPointPartPool[operationalPoint].chunkOffset
     }
 
@@ -358,7 +358,7 @@ class RawInfraImpl(
         return zonePathPool[zonePath].signals
     }
 
-    override fun getSignalPositions(zonePath: ZonePathId): DistanceList {
+    override fun getSignalPositions(zonePath: ZonePathId): OffsetList<ZonePath> {
         return zonePathPool[zonePath].signalPositions
     }
 
@@ -366,11 +366,11 @@ class RawInfraImpl(
         return routeDescriptors[route].speedLimits
     }
 
-    override fun getSpeedLimitStarts(route: RouteId): DistanceList {
+    override fun getSpeedLimitStarts(route: RouteId): OffsetList<Route> {
         return routeDescriptors[route].speedLimitStarts
     }
 
-    override fun getSpeedLimitEnds(route: RouteId): DistanceList {
+    override fun getSpeedLimitEnds(route: RouteId): OffsetList<Route> {
         return routeDescriptors[route].speedLimitEnds
     }
 
@@ -427,7 +427,7 @@ class RawInfraImpl(
         return zonePathPool[zonePath].exit
     }
 
-    override fun getZonePathLength(zonePath: ZonePathId): Distance {
+    override fun getZonePathLength(zonePath: ZonePathId): Length<ZonePath> {
         return zonePathPool[zonePath].length
     }
 
@@ -439,8 +439,8 @@ class RawInfraImpl(
         return zonePathPool[zonePath].movableElementsConfigs
     }
 
-    override fun getZonePathMovableElementsDistances(zonePath: ZonePathId): DistanceList {
-        return zonePathPool[zonePath].movableElementsDistances
+    override fun getZonePathMovableElementsPositions(zonePath: ZonePathId): OffsetList<ZonePath> {
+        return zonePathPool[zonePath].movableElementsPositions
     }
 
     override fun getZonePathChunks(zonePath: ZonePathId): DirStaticIdxList<TrackChunk> {

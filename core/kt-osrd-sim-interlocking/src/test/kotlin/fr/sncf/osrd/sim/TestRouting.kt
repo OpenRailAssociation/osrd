@@ -12,6 +12,8 @@ import fr.sncf.osrd.sim_infra.api.decreasing
 import fr.sncf.osrd.sim_infra.impl.RawInfraBuilder
 import fr.sncf.osrd.utils.indexing.MutableArena
 import fr.sncf.osrd.utils.indexing.StaticIdx
+import fr.sncf.osrd.utils.units.Length
+import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import kotlinx.coroutines.*
 import kotlinx.coroutines.test.currentTime
@@ -75,22 +77,22 @@ class TestRouting {
         // region routes
         // create a route from W to Z, releasing at Y and Z
         val routeWZ = builder.route("W-Z") {
-            zonePath(builder.zonePath(detectorW.increasing, detectorX.increasing, 10.meters)) // zone B
-            zonePath(builder.zonePath(detectorX.increasing, detectorY.increasing, 10.meters) {
-                movableElement(switch, StaticIdx(0u), 5.meters)
+            zonePath(builder.zonePath(detectorW.increasing, detectorX.increasing, Length(10.meters))) // zone B
+            zonePath(builder.zonePath(detectorX.increasing, detectorY.increasing, Length(10.meters)) {
+                movableElement(switch, StaticIdx(0u), Offset(5.meters))
             }) // zone C
-            zonePath(builder.zonePath(detectorY.increasing, detectorZ.increasing, 10.meters)) // zone D
+            zonePath(builder.zonePath(detectorY.increasing, detectorZ.increasing, Length(10.meters))) // zone D
             // release at zone C and D
             releaseZone(1)
             releaseZone(2)
         }
 
         val routeUZ = builder.route("U-Z") {
-            zonePath(builder.zonePath(detectorU.increasing, detectorV.increasing, 10.meters)) // zone A
-            zonePath(builder.zonePath(detectorV.increasing, detectorY.increasing, 10.meters) {
-                movableElement(switch, StaticIdx(1u), 5.meters)
+            zonePath(builder.zonePath(detectorU.increasing, detectorV.increasing, Length(10.meters))) // zone A
+            zonePath(builder.zonePath(detectorV.increasing, detectorY.increasing, Length(10.meters)) {
+                movableElement(switch, StaticIdx(1u), Offset(5.meters))
             }) // zone C
-            zonePath(builder.zonePath(detectorY.increasing, detectorZ.increasing, 10.meters)) // zone D
+            zonePath(builder.zonePath(detectorY.increasing, detectorZ.increasing, Length(10.meters))) // zone D
             // release at zone D
             releaseZone(2)
         }
