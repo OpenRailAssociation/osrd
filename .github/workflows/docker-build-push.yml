@@ -22,18 +22,6 @@ jobs:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
-  build_push_api:
-    name: API
-    uses: osrd-project/osrd/.github/workflows/docker-build-push-template.yml@dev
-    with:
-      context: python
-      dockerfile: api/Dockerfile
-      image_name: osrd/api
-      cache_scope: api
-    secrets:
-      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-
   build_push_front:
     name: Front
     uses: osrd-project/osrd/.github/workflows/docker-build-push-template.yml@dev
