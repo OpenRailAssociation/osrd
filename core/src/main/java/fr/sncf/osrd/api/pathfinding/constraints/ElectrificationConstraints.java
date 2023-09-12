@@ -6,7 +6,7 @@ import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
 import com.google.common.collect.TreeRangeSet;
 import fr.sncf.osrd.sim_infra.api.BlockInfra;
-import fr.sncf.osrd.sim_infra.api.Path;
+import fr.sncf.osrd.sim_infra.api.PathProperties;
 import fr.sncf.osrd.sim_infra.api.RawSignalingInfra;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.utils.DistanceRangeMap;
@@ -36,7 +36,7 @@ public record ElectrificationConstraints(
      * Returns the sections of the given block that can't be used by the given rolling stock
      * because it needs electrified tracks and isn't compatible with the catenaries in some range
      */
-    private static Set<Pathfinding.Range> getBlockedRanges(RollingStock stock, Path path) {
+    private static Set<Pathfinding.Range> getBlockedRanges(RollingStock stock, PathProperties path) {
         if (stock.isThermal())
             return Set.of();
 

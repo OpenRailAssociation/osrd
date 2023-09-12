@@ -3,7 +3,7 @@ package fr.sncf.osrd.api.pathfinding.constraints;
 import static fr.sncf.osrd.api.pathfinding.PathfindingUtils.makePath;
 
 import fr.sncf.osrd.sim_infra.api.BlockInfra;
-import fr.sncf.osrd.sim_infra.api.Path;
+import fr.sncf.osrd.sim_infra.api.PathProperties;
 import fr.sncf.osrd.sim_infra.api.RawSignalingInfra;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.utils.graph.Pathfinding;
@@ -30,7 +30,7 @@ public record LoadingGaugeConstraints(
     /**
      * Returns the sections of the given block that can't be used by the given rolling stock
      */
-    private Collection<Pathfinding.Range> getBlockedRanges(RollingStock stock, Path path) {
+    private Collection<Pathfinding.Range> getBlockedRanges(RollingStock stock, PathProperties path) {
         return path.getLoadingGauge().asList().stream()
                 .filter(entry -> !entry.getValue().isCompatibleWith(stock.loadingGaugeType.ordinal()))
                 .map(entry -> new Pathfinding.Range(entry.getLower(), entry.getUpper()))

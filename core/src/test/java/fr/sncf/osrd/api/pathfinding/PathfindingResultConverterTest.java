@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.api.FullInfra;
-import fr.sncf.osrd.sim_infra.impl.PathImpl;
+import fr.sncf.osrd.sim_infra.impl.PathPropertiesImpl;
 import fr.sncf.osrd.utils.Direction;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import org.junit.jupiter.api.Test;
@@ -36,7 +36,7 @@ public class PathfindingResultConverterTest {
             ranges.add(new Pathfinding.EdgeRange<>(block, 0, infra.blockInfra().getBlockLength(block)));
         }
         var path = makePath(infra.rawInfra(), infra.blockInfra(), ranges);
-        var pathImpl = (PathImpl) path;
+        var pathImpl = (PathPropertiesImpl) path;
 
         var expectedLength = 10_000_000 + 1_000_000; // length of route 1 + 2
         assertEquals(0, pathImpl.getBeginOffset());
@@ -64,7 +64,7 @@ public class PathfindingResultConverterTest {
                         infra.blockInfra().getBlockLength(blocks.get(3)) - 10_000)
         );
         var path = makePath(infra.rawInfra(), infra.blockInfra(), ranges);
-        var pathImpl = (PathImpl) path;
+        var pathImpl = (PathPropertiesImpl) path;
 
         var expectedBlockLength = 1_050_000 + 10_000_000; // length of route 1 + 2
         assertEquals(10_000, pathImpl.getBeginOffset());
@@ -140,7 +140,7 @@ public class PathfindingResultConverterTest {
 
     private static void checkBlocks(
             FullInfra infra,
-            PathImpl path,
+            PathPropertiesImpl path,
             Set<String> allowedTracks,
             Direction direction,
             long length

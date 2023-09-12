@@ -2,7 +2,7 @@ package fr.sncf.osrd.sim_infra.api
 
 import fr.sncf.osrd.geom.LineString
 import fr.sncf.osrd.sim_infra.impl.NeutralSection
-import fr.sncf.osrd.sim_infra.impl.PathImpl
+import fr.sncf.osrd.sim_infra.impl.PathPropertiesImpl
 import fr.sncf.osrd.utils.indexing.DirStaticIdxList
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.units.Distance
@@ -25,7 +25,7 @@ data class TrackLocation(
 )
 
 @Suppress("INAPPLICABLE_JVM_NAME")
-interface Path {
+interface PathProperties {
     fun getSlopes(): DistanceRangeMap<Double>
     fun getOperationalPointParts(): List<IdxWithOffset<OperationalPointPart>>
     fun getGradients(): DistanceRangeMap<Double>
@@ -44,13 +44,13 @@ interface Path {
 }
 
 /** Build a Path from chunks and offsets, filtering the chunks outside the offsets */
-@JvmName("buildPathFrom")
-fun buildPathFrom(
+@JvmName("buildPathPropertiesFrom")
+fun buildPathPropertiesFrom(
     infra: TrackProperties,
     chunks: DirStaticIdxList<TrackChunk>,
     pathBeginOffset: Distance,
     pathEndOffset: Distance,
-): Path {
+): PathProperties {
     val filteredChunks = mutableDirStaticIdxArrayListOf<TrackChunk>()
     var totalLength = 0.meters
     var mutBeginOffset = pathBeginOffset
@@ -71,5 +71,5 @@ fun buildPathFrom(
         }
         totalLength += length.distance
     }
-    return PathImpl(infra, filteredChunks, mutBeginOffset, mutEndOffset)
+    return PathPropertiesImpl(infra, filteredChunks, mutBeginOffset, mutEndOffset)
 }

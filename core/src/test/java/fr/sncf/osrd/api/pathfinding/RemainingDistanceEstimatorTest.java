@@ -8,7 +8,7 @@ import com.google.common.collect.Iterables;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.api.FullInfra;
-import fr.sncf.osrd.sim_infra.api.Path;
+import fr.sncf.osrd.sim_infra.api.PathProperties;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
@@ -24,7 +24,7 @@ public class RemainingDistanceEstimatorTest {
 
     private FullInfra smallInfra;
     private int block;
-    private Path path;
+    private PathProperties path;
 
     @BeforeAll
     public void setUp() {

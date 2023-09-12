@@ -11,14 +11,14 @@ import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import java.lang.RuntimeException
 
-data class PathImpl(
+data class PathPropertiesImpl(
     val infra: TrackProperties,
     val chunks: DirStaticIdxList<TrackChunk>,
     @get:JvmName("getBeginOffset")
     val beginOffset: Distance,
     @get:JvmName("getEndOffset")
     val endOffset: Distance,
-) : Path {
+) : PathProperties {
     override fun getSlopes(): DistanceRangeMap<Double> {
         return getRangeMap { dirChunkId -> infra.getTrackChunkSlope(dirChunkId) }
     }
