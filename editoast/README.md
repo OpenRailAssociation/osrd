@@ -22,6 +22,9 @@ It will apply modification and update generated data such as object geometry.
 $ rustup toolchain install nightly
 # Set nightly as default for the project
 $ rustup override set nightly
+# apply database migration
+$ cargo install diesel_cli --no-default-features --features postgres
+$ diesel migration run
 # Build and run
 $ cargo build
 $ cargo run -- runserver
