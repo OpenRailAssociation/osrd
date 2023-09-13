@@ -4,7 +4,7 @@ import com.google.common.collect.Multimap;
 import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra_state.api.TrainPath;
-import fr.sncf.osrd.stdcm.OccupancyBlock;
+import fr.sncf.osrd.stdcm.LegacyOccupancyBlock;
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.RouteAvailabilityInterface;
 import java.util.List;
 
@@ -12,11 +12,11 @@ import java.util.List;
  * It's meant to be removed once the rest of the "signaling sim - stdcm" pipeline is implemented. */
 public class RouteAvailabilityLegacyAdapter implements RouteAvailabilityInterface {
 
-    private final Multimap<SignalingRoute, OccupancyBlock> unavailableSpace;
+    private final Multimap<SignalingRoute, LegacyOccupancyBlock> unavailableSpace;
 
     /** Constructor */
     public RouteAvailabilityLegacyAdapter(
-            Multimap<SignalingRoute, OccupancyBlock> unavailableSpace
+            Multimap<SignalingRoute, LegacyOccupancyBlock> unavailableSpace
     ) {
         this.unavailableSpace = unavailableSpace;
     }
@@ -133,7 +133,7 @@ public class RouteAvailabilityLegacyAdapter implements RouteAvailabilityInterfac
 
     /** Returns the time interval during which the train is on the given blocK. */
     private static TimeInterval timeTrainInBlock(
-            OccupancyBlock block,
+            LegacyOccupancyBlock block,
             TrainPath.LocatedElement<SignalingRoute> route,
             double startOffset,
             EnvelopeTimeInterpolate envelope,

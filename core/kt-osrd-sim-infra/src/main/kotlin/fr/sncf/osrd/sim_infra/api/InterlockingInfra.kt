@@ -81,16 +81,22 @@ interface RoutingInfra : ReservationInfra {
     fun getChunksOnRoute(route: RouteId): DirStaticIdxList<TrackChunk>
     @JvmName("getRoutesOnTrackChunk")
     fun getRoutesOnTrackChunk(trackChunk: DirTrackChunkId): StaticIdxList<Route>
+    @JvmName("getRoutesStartingAtDet")
+    fun getRoutesStartingAtDet(dirDetector: DirDetectorId): StaticIdxList<Route>
+    @JvmName("getRoutesEndingAtDet")
+    fun getRoutesEndingAtDet(dirDetector: DirDetectorId): StaticIdxList<Route>
 }
 
 fun ReservationInfra.findZonePath(entry: DirDetectorId, exit: DirDetectorId): ZonePathId? {
     return findZonePath(entry, exit, mutableStaticIdxArrayListOf(), mutableStaticIdxArrayListOf())
 }
 
+@JvmName("getRouteEntry")
 fun RoutingInfra.getRouteEntry(route: RouteId): DirDetectorId {
     return getZonePathEntry(getRoutePath(route).first())
 }
 
+@JvmName("getRouteExit")
 fun RoutingInfra.getRouteExit(route: RouteId): DirDetectorId {
     return getZonePathExit(getRoutePath(route).last())
 }

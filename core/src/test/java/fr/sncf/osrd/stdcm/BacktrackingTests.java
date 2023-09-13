@@ -29,7 +29,7 @@ public class BacktrackingTests {
         var runTime = firstRouteEnvelope.getTotalTime();
         var infra = infraBuilder.build();
         var occupancyGraph = ImmutableMultimap.of(
-                route, new OccupancyBlock(runTime + 1, POSITIVE_INFINITY, 0, 1000)
+                route, new LegacyOccupancyBlock(runTime + 1, POSITIVE_INFINITY, 0, 1000)
         );
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra)
@@ -59,7 +59,7 @@ public class BacktrackingTests {
         var runTime = firstRouteEnvelope.getTotalTime();
         var infra = infraBuilder.build();
         var occupancyGraph = ImmutableMultimap.of(
-                lastRoute, new OccupancyBlock(runTime + 10, POSITIVE_INFINITY, 0, 10)
+                lastRoute, new LegacyOccupancyBlock(runTime + 10, POSITIVE_INFINITY, 0, 10)
         );
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra)
@@ -87,7 +87,7 @@ public class BacktrackingTests {
         var runTime = firstRouteEnvelope.getTotalTime();
         var infra = infraBuilder.build();
         var occupancyGraph = ImmutableMultimap.of(
-                firstRoute, new OccupancyBlock(runTime + 10, POSITIVE_INFINITY, 0, 1000)
+                firstRoute, new LegacyOccupancyBlock(runTime + 10, POSITIVE_INFINITY, 0, 1000)
         );
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra)

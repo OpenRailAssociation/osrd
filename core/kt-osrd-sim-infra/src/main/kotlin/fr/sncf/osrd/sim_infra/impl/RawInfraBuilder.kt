@@ -393,7 +393,33 @@ class RawInfraBuilderImpl : RawInfraBuilder {
             operationalPointPartPool,
             makeTrackNameMap(),
             makeRouteNameMap(),
+            makeDetEntryToRouteMap(),
+            makeDetExitToRouteMap()
         )
+    }
+
+    /** Create the mapping from each dir detector to routes that start there */
+    private fun makeDetEntryToRouteMap(): Map<DirStaticIdx<Detector>, StaticIdxList<Route>> {
+        val res = HashMap<DirStaticIdx<Detector>, MutableStaticIdxArrayList<Route>>()
+        for (routeId in routePool) {
+            val firstZonePath = routePool[routeId].path.first()
+            val entry = zonePathPool[firstZonePath].entry
+            res.computeIfAbsent(entry) { mutableStaticIdxArrayListOf() }
+                .add(routeId)
+        }
+        return res
+    }
+
+    /** Create the mapping from each dir detector to routes that end there */
+    private fun makeDetExitToRouteMap(): Map<DirStaticIdx<Detector>, StaticIdxList<Route>> {
+        val res = HashMap<DirStaticIdx<Detector>, MutableStaticIdxArrayList<Route>>()
+        for (routeId in routePool) {
+            val lastZonePath = routePool[routeId].path.last()
+            val exit = zonePathPool[lastZonePath].exit
+            res.computeIfAbsent(exit) { mutableStaticIdxArrayListOf() }
+                .add(routeId)
+        }
+        return res
     }
 
     /** Create the mapping from track name to id */

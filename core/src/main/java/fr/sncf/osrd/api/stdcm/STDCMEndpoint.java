@@ -20,7 +20,7 @@ import fr.sncf.osrd.standalone_sim.ScheduleMetadataExtractor;
 import fr.sncf.osrd.standalone_sim.result.ResultEnvelopePoint;
 import fr.sncf.osrd.standalone_sim.result.StandaloneSimResult;
 import fr.sncf.osrd.stdcm.preprocessing.implementation.RouteAvailabilityLegacyAdapter;
-import fr.sncf.osrd.stdcm.preprocessing.implementation.UnavailableSpaceBuilder;
+import fr.sncf.osrd.stdcm.preprocessing.implementation.LegacyUnavailableSpaceBuilder;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.StandaloneTrainSchedule;
 import fr.sncf.osrd.train.TrainStop;
@@ -93,7 +93,7 @@ public class STDCMEndpoint implements Take {
             // Build the unavailable space
             // temporary workaround, to remove with new signaling
             occupancies = addWarningOccupancies(infra, occupancies);
-            var unavailableSpace = UnavailableSpaceBuilder.computeUnavailableSpace(
+            var unavailableSpace = LegacyUnavailableSpaceBuilder.computeUnavailableSpace(
                     infra,
                     occupancies,
                     rollingStock,

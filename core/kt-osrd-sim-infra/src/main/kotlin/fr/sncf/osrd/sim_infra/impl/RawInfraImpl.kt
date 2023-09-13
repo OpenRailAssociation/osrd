@@ -136,6 +136,8 @@ class RawInfraImpl(
     val operationalPointPartPool: StaticPool<OperationalPointPart, OperationalPointPartDescriptor>,
     val trackSectionNameMap: Map<String, TrackSectionId>,
     val routeNameMap: Map<String, RouteId>,
+    val dirDetEntryToRouteMap: Map<DirDetectorId, StaticIdxList<Route>>,
+    val dirDetExitToRouteMap: Map<DirDetectorId, StaticIdxList<Route>>
 ) : RawInfra {
     override val trackNodes: StaticIdxSpace<TrackNode>
         get() = trackNodePool.space()
@@ -247,6 +249,14 @@ class RawInfraImpl(
 
     override fun getRoutesOnTrackChunk(trackChunk: DirTrackChunkId): StaticIdxList<Route> {
         return trackChunkPool[trackChunk.value].routes.get(trackChunk.direction)
+    }
+
+    override fun getRoutesStartingAtDet(dirDetector: DirDetectorId): StaticIdxList<Route> {
+        return dirDetEntryToRouteMap.getOrDefault(dirDetector, MutableStaticIdxArrayList())
+    }
+
+    override fun getRoutesEndingAtDet(dirDetector: DirDetectorId): StaticIdxList<Route> {
+        return dirDetExitToRouteMap.getOrDefault(dirDetector, MutableStaticIdxArrayList())
     }
 
     private val zoneDetectors: IdxMap<ZoneId, MutableList<DirDetectorId>> = IdxMap()
