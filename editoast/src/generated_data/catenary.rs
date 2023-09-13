@@ -4,7 +4,7 @@ use crate::diesel::ExpressionMethods;
 use crate::error::Result;
 use crate::infra_cache::InfraCache;
 use crate::schema::ObjectType;
-use crate::tables::osrd_infra_catenarylayer::dsl;
+use crate::tables::infra_layer_catenary::dsl;
 use async_trait::async_trait;
 use diesel::delete;
 use diesel::query_dsl::methods::FilterDsl;
@@ -18,7 +18,7 @@ pub struct CatenaryLayer;
 #[async_trait]
 impl GeneratedData for CatenaryLayer {
     fn table_name() -> &'static str {
-        "osrd_infra_catenarylayer"
+        "infra_layer_catenary"
     }
 
     async fn generate(
@@ -51,7 +51,7 @@ impl GeneratedData for CatenaryLayer {
                 .chain(involved_objects.updated.iter());
 
             delete(
-                dsl::osrd_infra_catenarylayer
+                dsl::infra_layer_catenary
                     .filter(dsl::infra_id.eq(infra))
                     .filter(dsl::obj_id.eq_any(objs)),
             )

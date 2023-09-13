@@ -18,7 +18,7 @@ use std::collections::HashMap;
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, InfraModel)]
 #[serde(deny_unknown_fields)]
-#[infra_model(table = "crate::tables::osrd_infra_speedsectionmodel")]
+#[infra_model(table = "crate::tables::infra_object_speed_section")]
 #[derivative(Default)]
 pub struct SpeedSection {
     pub id: Identifier,

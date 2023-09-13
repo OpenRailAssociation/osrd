@@ -11,27 +11,27 @@ use crate::schema::GeoJson;
 
 #[derive(Search)]
 #[search(
-    table = "osrd_search_track",
+    table = "search_track",
     column(name = "infra_id", data_type = "INT"),
     column(name = "line_code", data_type = "INT"),
     column(name = "line_name", data_type = "TEXT")
 )]
 #[allow(unused)]
 struct Track {
-    #[search(sql = "osrd_search_track.infra_id")]
+    #[search(sql = "search_track.infra_id")]
     infra_id: i64,
-    #[search(sql = "osrd_search_track.unprocessed_line_name")]
+    #[search(sql = "search_track.unprocessed_line_name")]
     line_name: String,
-    #[search(sql = "osrd_search_track.line_code")]
+    #[search(sql = "search_track.line_code")]
     line_code: i64,
 }
 
 #[derive(Search)]
 #[search(
-    table = "osrd_search_operationalpoint",
+    table = "search_operational_point",
     joins = "
-        INNER JOIN osrd_infra_operationalpointmodel AS OP ON OP.id = osrd_search_operationalpoint.id
-        INNER JOIN osrd_infra_operationalpointlayer AS lay ON OP.obj_id = lay.obj_id AND OP.infra_id = lay.infra_id",
+        INNER JOIN infra_object_operational_point AS OP ON OP.id = search_operational_point.id
+        INNER JOIN infra_layer_operational_point AS lay ON OP.obj_id = lay.obj_id AND OP.infra_id = lay.infra_id",
     column(name = "obj_id", data_type = "string"),
     column(name = "infra_id", data_type = "integer"),
     column(name = "name", data_type = "string"),
@@ -68,11 +68,11 @@ struct OperationalPointTrackSections {
 
 #[derive(Search)]
 #[search(
-    table = "osrd_search_signal",
+    table = "search_signal",
     joins = "
-        INNER JOIN osrd_infra_signalmodel AS sig ON sig.id = osrd_search_signal.id
-        INNER JOIN osrd_infra_tracksectionmodel AS ts ON ts.obj_id = sig.data->>'track' AND ts.infra_id = sig.infra_id
-        INNER JOIN osrd_infra_signallayer AS lay ON lay.infra_id = sig.infra_id AND lay.obj_id = sig.obj_id",
+        INNER JOIN infra_object_signal AS sig ON sig.id = search_signal.id
+        INNER JOIN infra_object_track_section AS ts ON ts.obj_id = sig.data->>'track' AND ts.infra_id = sig.infra_id
+        INNER JOIN infra_layer_signal AS lay ON lay.infra_id = sig.infra_id AND lay.obj_id = sig.obj_id",
     column(name = "infra_id", data_type = "integer"),
     column(name = "line_name", data_type = "string"),
     column(name = "line_code", data_type = "integer"),
@@ -85,16 +85,16 @@ struct Signal {
     infra_id: String,
     #[search(sql = "sig.data->'extensions'->'sncf'->>'label'")]
     label: String,
-    #[search(sql = "osrd_search_signal.aspects")]
+    #[search(sql = "search_signal.aspects")]
     aspects: Vec<String>,
-    #[search(sql = "osrd_search_signal.systems")]
+    #[search(sql = "search_signal.systems")]
     systems: String,
     #[search(
         sql = "sig.data->'extensions'->'sncf'->>'installation_type'",
         rename = "type"
     )]
     installation_type: String,
-    #[search(sql = "osrd_search_signal.line_code")]
+    #[search(sql = "search_signal.line_code")]
     line_code: String,
     #[search(sql = "ts.data->'extensions'->'sncf'->>'line_name'")]
     line_name: String,
@@ -106,8 +106,8 @@ struct Signal {
 
 #[derive(Search)]
 #[search(
-    table = "osrd_search_project",
-    joins = "INNER JOIN osrd_infra_project AS project ON project.id = osrd_search_project.id",
+    table = "search_project",
+    joins = "INNER JOIN project ON project.id = search_project.id",
     column(name = "id", data_type = "integer"),
     column(name = "name", data_type = "string"),
     column(name = "description", data_type = "string"),
@@ -122,7 +122,7 @@ struct Project {
     #[search(sql = "project.name")]
     name: String,
     #[search(
-        sql = "(SELECT COUNT(study.id) FROM osrd_infra_study AS study WHERE osrd_search_project.id = study.project_id)"
+        sql = "(SELECT COUNT(study.id) FROM study WHERE search_project.id = study.project_id)"
     )]
     studies_count: u64,
     #[search(sql = "project.description")]
@@ -135,8 +135,8 @@ struct Project {
 
 #[derive(Search)]
 #[search(
-    table = "osrd_search_study",
-    joins = "INNER JOIN osrd_infra_study AS study ON study.id = osrd_search_study.id",
+    table = "search_study",
+    joins = "INNER JOIN study ON study.id = search_study.id",
     column(name = "id", data_type = "integer"),
     column(name = "name", data_type = "string"),
     column(name = "description", data_type = "string"),
@@ -152,7 +152,7 @@ struct Study {
     #[search(sql = "study.name")]
     name: String,
     #[search(
-        sql = "(SELECT COUNT(scenario.id) FROM osrd_infra_scenario AS scenario WHERE osrd_search_study.id = scenario.study_id)"
+        sql = "(SELECT COUNT(scenario.id) FROM scenario WHERE search_study.id = scenario.study_id)"
     )]
     scenarios_count: u64,
     #[search(sql = "study.description")]
@@ -165,10 +165,10 @@ struct Study {
 
 #[derive(Search)]
 #[search(
-    table = "osrd_search_scenario",
+    table = "search_scenario",
     joins = "
-        INNER JOIN osrd_infra_scenario AS scenario ON scenario.id = osrd_search_scenario.id
-        INNER JOIN osrd_infra_infra AS infra ON infra.id = scenario.infra_id",
+        INNER JOIN scenario ON scenario.id = search_scenario.id
+        INNER JOIN infra ON infra.id = scenario.infra_id",
     column(name = "id", data_type = "integer"),
     column(name = "name", data_type = "string"),
     column(name = "description", data_type = "string"),
@@ -190,7 +190,7 @@ struct Scenario {
     #[search(sql = "infra.name")]
     infra_name: String,
     #[search(
-        sql = "(SELECT COUNT(trains.id) FROM osrd_infra_trainschedule AS trains WHERE scenario.timetable_id = trains.timetable_id)"
+        sql = "(SELECT COUNT(trains.id) FROM train_schedule AS trains WHERE scenario.timetable_id = trains.timetable_id)"
     )]
     trains_count: u64,
     #[search(sql = "scenario.description")]

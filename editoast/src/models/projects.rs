@@ -1,6 +1,7 @@
 use crate::error::Result;
+use crate::models::TextArray;
 use crate::models::{Delete, Document, Identifiable, Retrieve};
-use crate::tables::osrd_infra_project;
+use crate::tables::project;
 use crate::views::pagination::{Paginate, PaginatedResponse};
 use crate::DbPool;
 use actix_web::web::Data;
@@ -25,14 +26,14 @@ use super::{List, Update};
     Derivative,
     Queryable,
     QueryableByName,
-    AsChangeset,
     Identifiable,
+    AsChangeset,
     Model,
 )]
 #[derivative(Default)]
-#[model(table = "osrd_infra_project")]
+#[model(table = "project")]
 #[model(create, retrieve)]
-#[diesel(table_name = osrd_infra_project)]
+#[diesel(table_name = project)]
 pub struct Project {
     #[diesel(deserialize_as = i64)]
     pub id: Option<i64>,
@@ -40,26 +41,26 @@ pub struct Project {
     pub name: Option<String>,
     #[diesel(deserialize_as = String)]
     #[derivative(Default(value = "Some(String::new())"))]
-    pub description: Option<String>,
+    pub objectives: Option<String>,
     #[diesel(deserialize_as = String)]
     #[derivative(Default(value = "Some(String::new())"))]
-    pub objectives: Option<String>,
+    pub description: Option<String>,
     #[diesel(deserialize_as = String)]
     #[derivative(Default(value = "Some(String::new())"))]
     pub funders: Option<String>,
     #[diesel(deserialize_as = i32)]
     #[derivative(Default(value = "Some(0)"))]
     pub budget: Option<i32>,
-    #[diesel(deserialize_as = Option<i64>)]
-    #[diesel(column_name = "image_id")]
-    pub image: Option<Option<i64>>,
     #[diesel(deserialize_as = NaiveDateTime)]
     pub creation_date: Option<NaiveDateTime>,
     #[derivative(Default(value = "Utc::now().naive_utc()"))]
     pub last_modification: NaiveDateTime,
-    #[diesel(deserialize_as = Vec<String>)]
+    #[diesel(deserialize_as = TextArray)]
     #[derivative(Default(value = "Some(Vec::new())"))]
     pub tags: Option<Vec<String>>,
+    #[diesel(deserialize_as = Option<i64>)]
+    #[diesel(column_name = "image_id")]
+    pub image: Option<Option<i64>>,
 }
 
 impl Identifiable for Project {
@@ -108,9 +109,9 @@ impl Project {
     }
 
     pub async fn with_studies(self, db_pool: Data<DbPool>) -> Result<ProjectWithStudies> {
-        use crate::tables::osrd_infra_study::dsl as study_dsl;
+        use crate::tables::study::dsl as study_dsl;
         let mut conn = db_pool.get().await?;
-        let studies_count = study_dsl::osrd_infra_study
+        let studies_count = study_dsl::study
             .filter(study_dsl::project_id.eq(self.id.unwrap()))
             .count()
             .get_result(&mut conn)
@@ -126,20 +127,20 @@ impl Project {
     /// If the project id is `None` this function panics.
     pub async fn update(self, db_pool: Data<DbPool>) -> Result<Option<Project>> {
         let project_id = self.id.expect("Project id is None");
-        let project = match Project::retrieve(db_pool.clone(), project_id).await? {
-            Some(project) => project,
+        let project_obj = match Project::retrieve(db_pool.clone(), project_id).await? {
+            Some(project_obj) => project_obj,
             None => return Ok(None),
         };
-        let image_to_delete = if project.image != self.image {
-            project.image.unwrap()
+        let image_to_delete = if project_obj.image != self.image {
+            project_obj.image.unwrap()
         } else {
             None
         };
 
         let db_pool_ref = db_pool.clone();
-        use crate::tables::osrd_infra_project::dsl::*;
+        use crate::tables::project::dsl::*;
         let mut conn = db_pool_ref.get().await?;
-        let project = update(osrd_infra_project.find(project_id))
+        let project_obj = update(project.find(project_id))
             .set(&self)
             .get_result::<Project>(&mut conn)
             .await
@@ -153,25 +154,25 @@ impl Project {
             let _ = Document::delete(db_pool, image).await;
         }
 
-        Ok(Some(project))
+        Ok(Some(project_obj))
     }
 }
 
 #[async_trait]
 impl Delete for Project {
     async fn delete_conn(conn: &mut PgConnection, project_id: i64) -> Result<bool> {
-        use crate::tables::osrd_infra_project::dsl::*;
+        use crate::tables::project::dsl::*;
         // Delete project
-        let project = match delete(osrd_infra_project.filter(id.eq(project_id)))
+        let project_obj = match delete(project.filter(id.eq(project_id)))
             .get_result::<Project>(conn)
             .await
         {
-            Ok(project) => project,
+            Ok(project_obj) => project_obj,
             Err(DieselError::NotFound) => return Ok(false),
             Err(err) => return Err(err.into()),
         };
         // Delete image if any
-        if let Some(image) = project.image.unwrap() {
+        if let Some(image) = project_obj.image.unwrap() {
             // We don't check the result. We don't want to throw an error if the image is used in another project.
             let _ = Document::delete_conn(conn, image).await;
         };
@@ -184,18 +185,18 @@ impl Update for Project {
     /// Update a project. If the image is changed, the old image is deleted.
     /// If the image is not found, return `None`.
     async fn update_conn(self, conn: &mut PgConnection, project_id: i64) -> Result<Option<Self>> {
-        let project = match Project::retrieve_conn(conn, project_id).await? {
-            Some(project) => project,
+        let project_obj = match Project::retrieve_conn(conn, project_id).await? {
+            Some(project_obj) => project_obj,
             None => return Ok(None),
         };
-        let image_to_delete = if project.image != self.image {
-            project.image.unwrap()
+        let image_to_delete = if project_obj.image != self.image {
+            project_obj.image.unwrap()
         } else {
             None
         };
 
-        use crate::tables::osrd_infra_project::dsl::osrd_infra_project;
-        let project = update(osrd_infra_project.find(project_id))
+        use crate::tables::project::dsl::project;
+        let project_obj = update(project.find(project_id))
             .set(&self)
             .get_result::<Project>(conn)
             .await?;
@@ -205,7 +206,7 @@ impl Update for Project {
             let _ = Document::delete_conn(conn, image).await;
         }
 
-        Ok(Some(project))
+        Ok(Some(project_obj))
     }
 }
 
@@ -219,8 +220,8 @@ impl List<Ordering> for ProjectWithStudies {
     ) -> Result<PaginatedResponse<Self>> {
         let ordering = ordering.to_sql();
         sql_query(format!(
-            "SELECT t.*, COUNT(study.*) as studies_count FROM osrd_infra_project t
-            LEFT JOIN osrd_infra_study study ON study.project_id = t.id
+            "SELECT t.*, COUNT(study.*) as studies_count FROM project as t
+            LEFT JOIN study ON study.project_id = t.id
             GROUP BY t.id ORDER BY {ordering}"
         ))
         .paginate(page, page_size)

@@ -8,7 +8,7 @@ use crate::models::{
     },
     SimulationOutput,
 };
-use crate::tables::osrd_infra_timetable;
+use crate::tables::timetable;
 use crate::DbPool;
 use actix_web::web::Data;
 use derivative::Derivative;
@@ -37,9 +37,9 @@ use super::Scenario;
     Deserialize,
 )]
 #[derivative(Default)]
-#[model(table = "osrd_infra_timetable")]
+#[model(table = "timetable")]
 #[model(create, delete, retrieve)]
-#[diesel(table_name = osrd_infra_timetable)]
+#[diesel(table_name = timetable)]
 pub struct Timetable {
     #[diesel(deserialize_as = i64)]
     pub id: Option<i64>,
@@ -73,12 +73,12 @@ impl Timetable {
         self,
         db_pool: Data<DbPool>,
     ) -> Result<TimetableWithSchedulesDetails> {
-        use crate::tables::osrd_infra_infra::dsl as infra_dsl;
-        use crate::tables::osrd_infra_scenario::dsl as scenario_dsl;
+        use crate::tables::infra::dsl as infra_dsl;
+        use crate::tables::scenario::dsl as scenario_dsl;
         let mut conn = db_pool.get().await?;
-        let infra_version = scenario_dsl::osrd_infra_scenario
+        let infra_version = scenario_dsl::scenario
             .filter(scenario_dsl::timetable_id.eq(self.id.unwrap()))
-            .inner_join(infra_dsl::osrd_infra_infra)
+            .inner_join(infra_dsl::infra)
             .select(infra_dsl::version)
             .first::<String>(&mut conn)
             .await
@@ -155,13 +155,13 @@ impl Timetable {
 
     /// Get infra_version from timetable
     pub async fn infra_version_from_timetable(&self, db_pool: Data<DbPool>) -> String {
-        use crate::tables::osrd_infra_infra::dsl as infra_dsl;
-        use crate::tables::osrd_infra_scenario::dsl as scenario_dsl;
+        use crate::tables::infra::dsl as infra_dsl;
+        use crate::tables::scenario::dsl as scenario_dsl;
         let timetable_id = self.id.unwrap();
         let mut conn = db_pool.get().await.unwrap();
-        scenario_dsl::osrd_infra_scenario
+        scenario_dsl::scenario
             .filter(scenario_dsl::timetable_id.eq(timetable_id))
-            .inner_join(infra_dsl::osrd_infra_infra)
+            .inner_join(infra_dsl::infra)
             .select(infra_dsl::version)
             .first::<String>(&mut conn)
             .await
@@ -170,14 +170,14 @@ impl Timetable {
 
     /// Retrieve the associated scenario
     pub async fn get_scenario_conn(&self, conn: &mut PgConnection) -> Result<Scenario> {
-        use crate::tables::osrd_infra_scenario::dsl::*;
+        use crate::tables::scenario::dsl::*;
         let self_id = self.id.expect("Timetable should have an id");
-        match osrd_infra_scenario
+        match scenario
             .filter(timetable_id.eq(self_id))
             .get_result(conn)
             .await
         {
-            Ok(scenario) => Ok(scenario),
+            Ok(scenario_obj) => Ok(scenario_obj),
             Err(diesel::result::Error::NotFound) => panic!("Timetables should have a scenario"),
             Err(err) => Err(err.into()),
         }
@@ -194,10 +194,10 @@ pub async fn get_timetable_train_schedules(
     timetable_id: i64,
     db_pool: Data<DbPool>,
 ) -> Result<Vec<TrainSchedule>> {
-    use crate::tables::osrd_infra_trainschedule;
+    use crate::tables::train_schedule;
     let mut conn = db_pool.get().await?;
-    Ok(osrd_infra_trainschedule::table
-        .filter(osrd_infra_trainschedule::timetable_id.eq(timetable_id))
+    Ok(train_schedule::table
+        .filter(train_schedule::timetable_id.eq(timetable_id))
         .load(&mut conn)
         .await?)
 }

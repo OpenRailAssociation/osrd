@@ -3,15 +3,15 @@ WITH collect AS (
         jsonb_path_query_first(switches.data->'ports', '$.*')->>'endpoint' AS ep,
         tracks_layer.geographic AS track_geo,
         tracks_layer.schematic AS track_sch
-    FROM osrd_infra_switchmodel AS switches
-        INNER JOIN osrd_infra_tracksectionmodel AS tracks ON tracks.obj_id = jsonb_path_query_first(switches.data->'ports', '$.*')->>'track'
+    FROM infra_object_switch AS switches
+        INNER JOIN infra_object_track_section AS tracks ON tracks.obj_id = jsonb_path_query_first(switches.data->'ports', '$.*')->>'track'
         AND tracks.infra_id = switches.infra_id
-        INNER JOIN osrd_infra_tracksectionlayer AS tracks_layer ON tracks.obj_id = tracks_layer.obj_id
+        INNER JOIN infra_layer_track_section AS tracks_layer ON tracks.obj_id = tracks_layer.obj_id
         AND tracks.infra_id = tracks_layer.infra_id
     WHERE switches.infra_id = $1
         AND switches.obj_id = ANY($2)
 )
-INSERT INTO osrd_infra_switchlayer (obj_id, infra_id, geographic, schematic)
+INSERT INTO infra_layer_switch (obj_id, infra_id, geographic, schematic)
 SELECT switch_id,
     $1,
     CASE

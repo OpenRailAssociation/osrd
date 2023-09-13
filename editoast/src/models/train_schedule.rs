@@ -1,10 +1,10 @@
 use std::collections::HashMap;
 
 use crate::error::Result;
-use crate::tables::osrd_infra_trainschedule;
+use crate::tables::train_schedule;
 use crate::{
     models::{Identifiable, Timetable},
-    tables::osrd_infra_simulationoutput,
+    tables::simulation_output,
 };
 use crate::{DbPool, DieselJson};
 use actix_web::web::Data;
@@ -35,10 +35,10 @@ use super::{
     Selectable,
     Serialize,
 )]
-#[model(table = "osrd_infra_trainschedule")]
+#[model(table = "train_schedule")]
 #[model(create, delete, retrieve)]
 #[diesel(belongs_to(Timetable))]
-#[diesel(table_name = osrd_infra_trainschedule)]
+#[diesel(table_name = train_schedule)]
 #[derivative(Default)]
 pub struct TrainSchedule {
     #[diesel(deserialize_as = i64)]
@@ -49,8 +49,6 @@ pub struct TrainSchedule {
     pub initial_speed: f64,
     #[derivative(Default(value = "DieselJson(Default::default())"))]
     pub allowances: DieselJson<Vec<Allowance>>,
-    #[derivative(Default(value = "DieselJson(Default::default())"))]
-    pub scheduled_points: DieselJson<Vec<ScheduledPoint>>,
     #[derivative(Default(
         value = "crate::schema::rolling_stock::RollingStockComfortType::default().to_string()"
     ))]
@@ -61,6 +59,8 @@ pub struct TrainSchedule {
     pub path_id: i64,
     pub rolling_stock_id: i64,
     pub timetable_id: i64,
+    #[derivative(Default(value = "DieselJson(Default::default())"))]
+    pub scheduled_points: DieselJson<Vec<ScheduledPoint>>,
     #[serde(skip_serializing)]
     #[diesel(deserialize_as = String)]
     pub infra_version: Option<String>,
@@ -76,10 +76,10 @@ impl Identifiable for TrainSchedule {
 }
 
 #[derive(Clone, Default, Debug, Deserialize, Queryable, Insertable, AsChangeset, Model)]
-#[model(table = "osrd_infra_trainschedule")]
+#[model(table = "train_schedule")]
 #[model(update)]
 #[diesel(belongs_to(Timetable))]
-#[diesel(table_name = osrd_infra_trainschedule)]
+#[diesel(table_name = train_schedule)]
 pub struct TrainScheduleChangeset {
     #[diesel(deserialize_as = i64)]
     pub id: Option<i64>,
@@ -93,8 +93,6 @@ pub struct TrainScheduleChangeset {
     pub initial_speed: Option<f64>,
     #[diesel(deserialize_as = DieselJson<Vec<Allowance>>)]
     pub allowances: Option<DieselJson<Vec<Allowance>>>,
-    #[diesel(deserialize_as = DieselJson<Vec<ScheduledPoint>>)]
-    pub scheduled_points: Option<DieselJson<Vec<ScheduledPoint>>>,
     #[diesel(deserialize_as = String)]
     pub comfort: Option<String>,
     #[diesel(deserialize_as = Option<String>)]
@@ -109,6 +107,8 @@ pub struct TrainScheduleChangeset {
     pub rolling_stock_id: Option<i64>,
     #[diesel(deserialize_as = i64)]
     pub timetable_id: Option<i64>,
+    #[diesel(deserialize_as = DieselJson<Vec<ScheduledPoint>>)]
+    pub scheduled_points: Option<DieselJson<Vec<ScheduledPoint>>>,
     #[diesel(deserialize_as = String)]
     pub infra_version: Option<String>,
     #[diesel(deserialize_as = i64)]
@@ -288,18 +288,18 @@ pub struct ResultTrain {
     QueryableByName,
 )]
 #[derivative(Default)]
-#[model(table = "osrd_infra_simulationoutput")]
+#[model(table = "simulation_output")]
 #[model(delete, retrieve)]
 #[diesel(belongs_to(TrainSchedule))]
-#[diesel(table_name = osrd_infra_simulationoutput)]
+#[diesel(table_name = simulation_output)]
 pub struct SimulationOutput {
     pub id: i64,
     pub mrsp: JsonValue,
     pub base_simulation: DieselJson<ResultTrain>,
     pub eco_simulation: Option<DieselJson<ResultTrain>>,
     pub electrification_ranges: JsonValue,
-    pub power_restriction_ranges: JsonValue,
     pub train_schedule_id: Option<i64>,
+    pub power_restriction_ranges: JsonValue,
 }
 
 impl Identifiable for SimulationOutput {
@@ -311,10 +311,10 @@ impl Identifiable for SimulationOutput {
 #[derive(
     Clone, Debug, Deserialize, Queryable, Derivative, Insertable, Identifiable, AsChangeset, Model,
 )]
-#[model(table = "osrd_infra_simulationoutput")]
+#[model(table = "simulation_output")]
 #[model(create, delete)]
 #[diesel(belongs_to(TrainSchedule))]
-#[diesel(table_name = osrd_infra_simulationoutput)]
+#[diesel(table_name = simulation_output)]
 #[derivative(Default(new = "true"))]
 pub struct SimulationOutputChangeset {
     #[diesel(deserialize_as = i64)]
@@ -327,10 +327,10 @@ pub struct SimulationOutputChangeset {
     pub eco_simulation: Option<Option<DieselJson<ResultTrain>>>,
     #[diesel(deserialize_as = JsonValue)]
     pub electrification_ranges: Option<JsonValue>,
-    #[diesel(deserialize_as = JsonValue)]
-    pub power_restriction_ranges: Option<JsonValue>,
     #[diesel(deserialize_as = Option<i64>)]
     pub train_schedule_id: Option<Option<i64>>,
+    #[diesel(deserialize_as = JsonValue)]
+    pub power_restriction_ranges: Option<JsonValue>,
 }
 
 impl From<SimulationOutput> for SimulationOutputChangeset {

@@ -14,7 +14,7 @@ pub struct SwitchLayer;
 #[async_trait]
 impl GeneratedData for SwitchLayer {
     fn table_name() -> &'static str {
-        "osrd_infra_switchlayer"
+        "infra_layer_switch"
     }
 
     async fn generate(conn: &mut PgConnection, infra: i64, _cache: &InfraCache) -> Result<()> {

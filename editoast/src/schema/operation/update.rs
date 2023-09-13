@@ -146,7 +146,7 @@ mod tests {
             assert!(update_track.apply(infra.id.unwrap(), conn).await.is_ok());
 
             let updated_length = sql_query(format!(
-                "SELECT (data->>'length')::float as val FROM osrd_infra_tracksectionmodel WHERE obj_id = '{}' AND infra_id = {}",
+                "SELECT (data->>'length')::float as val FROM infra_object_track_section WHERE obj_id = '{}' AND infra_id = {}",
                 track.get_id(),
                 infra.id.unwrap()
             ))
@@ -205,7 +205,7 @@ mod tests {
             assert!(update_signal.apply(infra.id.unwrap(), conn).await.is_ok());
 
             let updated_length = sql_query(format!(
-                "SELECT (data->>'sight_distance')::float as val FROM osrd_infra_signalmodel WHERE obj_id = '{}' AND infra_id = {}",
+                "SELECT (data->>'sight_distance')::float as val FROM infra_object_signal WHERE obj_id = '{}' AND infra_id = {}",
                 signal.get_id(),
                 infra.id.unwrap()
             ))
@@ -234,7 +234,7 @@ mod tests {
             assert!(update_switch.apply(infra.id.unwrap(), conn).await.is_ok());
 
             let updated_comment = sql_query(format!(
-                "SELECT (data->'extensions'->'sncf'->>'label') as label FROM osrd_infra_switchmodel WHERE obj_id = '{}' AND infra_id = {}",
+                "SELECT (data->'extensions'->'sncf'->>'label') as label FROM infra_object_switch WHERE obj_id = '{}' AND infra_id = {}",
                 switch.get_id(),
                 infra.id.unwrap()
             ))
@@ -263,7 +263,7 @@ mod tests {
             assert!(update_speed.apply(infra.id.unwrap(), conn).await.is_ok());
 
             let updated_speed = sql_query(format!(
-                "SELECT (data->>'speed_limit')::float as val FROM osrd_infra_speedsectionmodel WHERE obj_id = '{}' AND infra_id = {}",
+                "SELECT (data->>'speed_limit')::float as val FROM infra_object_speed_section WHERE obj_id = '{}' AND infra_id = {}",
                 speed.get_id(),
                 infra.id.unwrap()
             ))

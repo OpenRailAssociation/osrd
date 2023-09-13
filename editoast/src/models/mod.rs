@@ -7,6 +7,7 @@ mod projects;
 pub mod rolling_stock;
 mod scenario;
 mod study;
+mod text_array;
 mod timetable;
 pub mod train_schedule;
 
@@ -27,6 +28,7 @@ pub use rolling_stock::{
 };
 pub use scenario::{Scenario, ScenarioWithCountTrains, ScenarioWithDetails};
 pub use study::{Study, StudyWithScenarios};
+pub use text_array::TextArray;
 pub use timetable::{
     check_train_validity, get_timetable_train_schedules, Timetable, TimetableWithSchedules,
     TimetableWithSchedulesDetails,

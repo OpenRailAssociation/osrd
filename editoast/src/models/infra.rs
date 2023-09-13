@@ -6,8 +6,8 @@ use crate::schema::{
     BufferStop, Catenary, Detector, NeutralSection, OperationalPoint, RailJson, RailjsonError,
     Route, Signal, SpeedSection, Switch, SwitchType, TrackSection, TrackSectionLink,
 };
-use crate::tables::osrd_infra_infra;
-use crate::tables::osrd_infra_infra::dsl;
+use crate::tables::infra;
+use crate::tables::infra::dsl;
 use crate::views::pagination::{Paginate, PaginatedResponse};
 use crate::{generated_data, DbPool};
 use actix_web::web::Data;
@@ -39,9 +39,9 @@ pub const INFRA_VERSION: &str = "0";
     AsChangeset,
     Derivative,
 )]
-#[diesel(table_name = osrd_infra_infra)]
+#[diesel(table_name = infra)]
 #[model(retrieve, delete, create, update)]
-#[model(table = "osrd_infra_infra")]
+#[model(table = "infra")]
 #[derivative(Default)]
 pub struct Infra {
     #[diesel(deserialize_as = i64)]
@@ -67,16 +67,12 @@ pub struct Infra {
 
 impl Infra {
     pub async fn retrieve_for_update(conn: &mut PgConnection, infra_id: i64) -> Result<Infra> {
-        let infra = dsl::osrd_infra_infra
-            .for_update()
-            .find(infra_id)
-            .first(conn)
-            .await?;
+        let infra = dsl::infra.for_update().find(infra_id).first(conn).await?;
         Ok(infra)
     }
 
     pub async fn list_for_update(conn: &mut PgConnection) -> Vec<Infra> {
-        dsl::osrd_infra_infra
+        dsl::infra
             .for_update()
             .load::<Self>(conn)
             .await
@@ -84,7 +80,7 @@ impl Infra {
     }
 
     pub async fn all(conn: &mut PgConnection) -> Vec<Infra> {
-        dsl::osrd_infra_infra
+        dsl::infra
             .load::<Self>(conn)
             .await
             .expect("List infra query failed")
@@ -141,7 +137,6 @@ impl Infra {
                 db_pool.clone()
             ),
         );
-
         match res {
             Err(err) => {
                 error!("Could not import infrastructure {infra_id}. Rolling back");
@@ -160,9 +155,9 @@ impl Infra {
 
         let mut conn = db_pool.get().await?;
         sql_query(
-            "INSERT INTO osrd_infra_infra (name, railjson_version, owner, version, generated_version, locked, created, modified
+            "INSERT INTO infra (name, railjson_version, owner, version, generated_version, locked, created, modified
             )
-            SELECT $1, $2, '00000000-0000-0000-0000-000000000000', $3, $4, $5, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP FROM osrd_infra_infra
+            SELECT $1, $2, '00000000-0000-0000-0000-000000000000', $3, $4, $5, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP FROM infra
              WHERE id = $6
              RETURNING *",
         )
@@ -223,7 +218,7 @@ impl List<NoParams> for Infra {
         page_size: i64,
         _: NoParams,
     ) -> Result<PaginatedResponse<Self>> {
-        dsl::osrd_infra_infra
+        dsl::infra
             .distinct()
             .paginate(page, page_size)
             .load_and_count(conn)

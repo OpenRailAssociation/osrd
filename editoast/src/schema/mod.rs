@@ -91,18 +91,18 @@ pub enum ObjectType {
 impl ObjectType {
     pub fn get_table(&self) -> &'static str {
         match *self {
-            ObjectType::TrackSection => "osrd_infra_tracksectionmodel",
-            ObjectType::Signal => "osrd_infra_signalmodel",
-            ObjectType::NeutralSection => "osrd_infra_neutralsectionmodel",
-            ObjectType::SpeedSection => "osrd_infra_speedsectionmodel",
-            ObjectType::Detector => "osrd_infra_detectormodel",
-            ObjectType::TrackSectionLink => "osrd_infra_tracksectionlinkmodel",
-            ObjectType::Switch => "osrd_infra_switchmodel",
-            ObjectType::SwitchType => "osrd_infra_switchtypemodel",
-            ObjectType::BufferStop => "osrd_infra_bufferstopmodel",
-            ObjectType::Route => "osrd_infra_routemodel",
-            ObjectType::OperationalPoint => "osrd_infra_operationalpointmodel",
-            ObjectType::Catenary => "osrd_infra_catenarymodel",
+            ObjectType::TrackSection => "infra_object_track_section",
+            ObjectType::Signal => "infra_object_signal",
+            ObjectType::NeutralSection => "infra_object_neutral_section",
+            ObjectType::SpeedSection => "infra_object_speed_section",
+            ObjectType::Detector => "infra_object_detector",
+            ObjectType::TrackSectionLink => "infra_object_track_section_link",
+            ObjectType::Switch => "infra_object_switch",
+            ObjectType::SwitchType => "infra_object_switch_type",
+            ObjectType::BufferStop => "infra_object_buffer_stop",
+            ObjectType::Route => "infra_object_route",
+            ObjectType::OperationalPoint => "infra_object_operational_point",
+            ObjectType::Catenary => "infra_object_catenary",
         }
     }
 
@@ -110,15 +110,15 @@ impl ObjectType {
     /// Returns `None` for objects that doesn't have a layer such as routes or switch types.
     pub fn get_geometry_layer_table(&self) -> Option<&'static str> {
         match *self {
-            ObjectType::TrackSection => Some("osrd_infra_tracksectionlayer"),
-            ObjectType::Signal => Some("osrd_infra_signallayer"),
-            ObjectType::SpeedSection => Some("osrd_infra_speedsectionlayer"),
-            ObjectType::Detector => Some("osrd_infra_detectorlayer"),
-            ObjectType::TrackSectionLink => Some("osrd_infra_tracksectionlinklayer"),
-            ObjectType::Switch => Some("osrd_infra_switchlayer"),
-            ObjectType::BufferStop => Some("osrd_infra_bufferstoplayer"),
-            ObjectType::OperationalPoint => Some("osrd_infra_operationalpointlayer"),
-            ObjectType::Catenary => Some("osrd_infra_catenarylayer"),
+            ObjectType::TrackSection => Some("infra_layer_track_section"),
+            ObjectType::Signal => Some("infra_layer_signal"),
+            ObjectType::SpeedSection => Some("infra_layer_speed_section"),
+            ObjectType::Detector => Some("infra_layer_detector"),
+            ObjectType::TrackSectionLink => Some("infra_layer_track_section_link"),
+            ObjectType::Switch => Some("infra_layer_switch"),
+            ObjectType::BufferStop => Some("infra_layer_buffer_stop"),
+            ObjectType::OperationalPoint => Some("infra_layer_operational_point"),
+            ObjectType::Catenary => Some("infra_layer_catenary"),
             _ => None,
         }
     }

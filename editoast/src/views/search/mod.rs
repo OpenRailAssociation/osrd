@@ -95,7 +95,7 @@
 //!
 //! ```yaml
 //! operationalpoint:
-//!   table: osrd_search_operationalpoint
+//!   table: search_operational_point
 //!   columns:
 //!     obj_id: string
 //!     infra_id: integer
@@ -104,8 +104,8 @@
 //!     trigram: string
 //!   result:
 //!     joins: |
-//!       INNER JOIN osrd_infra_operationalpointmodel AS opm ON opm.id = osrd_search_operationalpoint.id
-//!       INNER JOIN osrd_infra_operationalpointlayer AS opl ON opm.obj_id = opl.obj_id AND opm.infra_id = opl.infra_id
+//!       INNER JOIN infra_object_operational_point AS opm ON opm.id = search_operational_point.id
+//!       INNER JOIN infra_layer_operational_point AS opl ON opm.obj_id = opl.obj_id AND opm.infra_id = opl.infra_id
 //!     columns:
 //!       obj_id: opm.obj_id
 //!       infra_id: opm.infra_id
@@ -163,7 +163,7 @@
 //! within a [QueryContext] ; which contains several things:
 //!
 //! - The list of expected columns and their type. That data is extracted from `search.yml`.
-//! - The name of the search table (e.g.: `osrd_search_operationalpoint`). That
+//! - The name of the search table (e.g.: `search_operational_point`). That
 //!     information is useful to prevent ambiguities in the SQL query because of
 //!     column name conflicts.
 //! - The list of functions (or operators) the query can use, their type signatures

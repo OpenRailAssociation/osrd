@@ -179,11 +179,11 @@ async fn make_track_map<I: Iterator<Item = String>>(
     infra_id: i64,
     it: I,
 ) -> Result<TrackMap> {
-    use tables::osrd_infra_tracksectionmodel::dsl;
+    use tables::infra_object_track_section::dsl;
     // TODO: implement a BatchRetrieve trait for tracksections for a better error handling + check all tracksections are there
     let ids = it.collect::<HashSet<_>>().into_iter().collect::<Vec<_>>();
     let expected_count = ids.len();
-    let tracksections: Vec<_> = match dsl::osrd_infra_tracksectionmodel
+    let tracksections: Vec<_> = match dsl::infra_object_track_section
         .filter(dsl::infra_id.eq(infra_id))
         .filter(dsl::obj_id.eq_any(&ids))
         .get_results::<TrackSectionModel>(conn)
@@ -210,11 +210,11 @@ async fn make_op_map<I: Iterator<Item = String>>(
     infra: i64,
     it: I,
 ) -> Result<OpMap> {
-    use tables::osrd_infra_operationalpointmodel::dsl;
+    use tables::infra_object_operational_point::dsl;
     // TODO: implement a BatchRetrieve trait for tracksections for a better error handling + check all tracksections are there
     let ids = it.collect::<HashSet<_>>().into_iter().collect::<Vec<_>>();
     let expected_count = ids.len();
-    let tracksections: Vec<_> = match dsl::osrd_infra_operationalpointmodel
+    let tracksections: Vec<_> = match dsl::infra_object_operational_point
         .filter(dsl::infra_id.eq(infra))
         .filter(dsl::obj_id.eq_any(&ids))
         .get_results::<OperationalPointModel>(conn)

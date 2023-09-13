@@ -12,14 +12,14 @@ use super::GeneratedData;
 use crate::diesel::ExpressionMethods;
 use crate::infra_cache::InfraCache;
 use crate::schema::ObjectType;
-use crate::tables::osrd_infra_tracksectionlayer::dsl;
+use crate::tables::infra_layer_track_section::dsl;
 
 pub struct TrackSectionLayer;
 
 #[async_trait]
 impl GeneratedData for TrackSectionLayer {
     fn table_name() -> &'static str {
-        "osrd_infra_tracksectionlayer"
+        "infra_layer_track_section"
     }
 
     async fn generate(conn: &mut PgConnection, infra: i64, _cache: &InfraCache) -> Result<()> {
@@ -42,7 +42,7 @@ impl GeneratedData for TrackSectionLayer {
         // Delete elements
         if !involved_objects.deleted.is_empty() {
             delete(
-                dsl::osrd_infra_tracksectionlayer
+                dsl::infra_layer_track_section
                     .filter(dsl::infra_id.eq(infra))
                     .filter(dsl::obj_id.eq_any(involved_objects.deleted)),
             )

@@ -1,6 +1,6 @@
 layers:
   track_sections:
-    table_name: osrd_infra_tracksectionlayer
+    table_name: infra_layer_track_section
     id_field: id
     views:
       geo:
@@ -9,17 +9,17 @@ layers:
         data_expr: track_section.data
         exclude_fields: [geo, sch]
         joins:
-          - inner join osrd_infra_tracksectionmodel track_section on track_section.obj_id = layer.obj_id and track_section.infra_id = layer.infra_id
+          - inner join infra_object_track_section track_section on track_section.obj_id = layer.obj_id and track_section.infra_id = layer.infra_id
       sch:
         on_field: schematic
         cache_duration: 3600
         data_expr: track_section.data
         exclude_fields: [geo, sch]
         joins:
-          - inner join osrd_infra_tracksectionmodel track_section on track_section.obj_id = layer.obj_id and track_section.infra_id = layer.infra_id
+          - inner join infra_object_track_section track_section on track_section.obj_id = layer.obj_id and track_section.infra_id = layer.infra_id
 
   signals:
-    table_name: osrd_infra_signallayer
+    table_name: infra_layer_signal
     id_field: id
     views:
       geo:
@@ -27,16 +27,16 @@ layers:
         cache_duration: 3600
         data_expr: signal.data || jsonb_build_object('angle', layer.angle_geo)
         joins:
-          - inner join osrd_infra_signalmodel signal on signal.obj_id = layer.obj_id and signal.infra_id = layer.infra_id
+          - inner join infra_object_signal signal on signal.obj_id = layer.obj_id and signal.infra_id = layer.infra_id
       sch:
         on_field: schematic
         cache_duration: 3600
         data_expr: signal.data || jsonb_build_object('angle', layer.angle_sch)
         joins:
-          - inner join osrd_infra_signalmodel signal on signal.obj_id = layer.obj_id and signal.infra_id = layer.infra_id
+          - inner join infra_object_signal signal on signal.obj_id = layer.obj_id and signal.infra_id = layer.infra_id
 
   speed_sections:
-    table_name: osrd_infra_speedsectionlayer
+    table_name: infra_layer_speed_section
     id_field: id
     views:
       geo:
@@ -44,7 +44,7 @@ layers:
         cache_duration: 3600
         data_expr: speed_section.data
         joins:
-          - inner join osrd_infra_speedsectionmodel speed_section on speed_section.obj_id = layer.obj_id and speed_section.infra_id = layer.infra_id
+          - inner join infra_object_speed_section speed_section on speed_section.obj_id = layer.obj_id and speed_section.infra_id = layer.infra_id
         where:
           - not (speed_section.data @? '$.extensions.lpv_sncf.z')
       sch:
@@ -52,12 +52,12 @@ layers:
         cache_duration: 3600
         data_expr: speed_section.data
         joins:
-          - inner join osrd_infra_speedsectionmodel speed_section on speed_section.obj_id = layer.obj_id and speed_section.infra_id = layer.infra_id
+          - inner join infra_object_speed_section speed_section on speed_section.obj_id = layer.obj_id and speed_section.infra_id = layer.infra_id
         where:
           - not (speed_section.data @? '$.extensions.lpv_sncf.z')
 
   lpv:
-    table_name: osrd_infra_speedsectionlayer
+    table_name: infra_layer_speed_section
     id_field: id
     views:
       geo:
@@ -65,7 +65,7 @@ layers:
         cache_duration: 3600
         data_expr: speed_section.data
         joins:
-          - inner join osrd_infra_speedsectionmodel speed_section on speed_section.obj_id = layer.obj_id and speed_section.infra_id = layer.infra_id
+          - inner join infra_object_speed_section speed_section on speed_section.obj_id = layer.obj_id and speed_section.infra_id = layer.infra_id
         where:
           - speed_section.data @? '$.extensions.lpv_sncf.z'
       sch:
@@ -73,12 +73,12 @@ layers:
         cache_duration: 3600
         data_expr: speed_section.data
         joins:
-          - inner join osrd_infra_speedsectionmodel speed_section on speed_section.obj_id = layer.obj_id and speed_section.infra_id = layer.infra_id
+          - inner join infra_object_speed_section speed_section on speed_section.obj_id = layer.obj_id and speed_section.infra_id = layer.infra_id
         where:
           - speed_section.data @? '$.extensions.lpv_sncf.z'
 
   track_section_links:
-    table_name: osrd_infra_tracksectionlinklayer
+    table_name: infra_layer_track_section_link
     id_field: id
     views:
       geo:
@@ -86,16 +86,16 @@ layers:
         cache_duration: 3600
         data_expr: track_section_link.data
         joins:
-          - inner join osrd_infra_tracksectionlinkmodel track_section_link on track_section_link.obj_id = layer.obj_id and track_section_link.infra_id = layer.infra_id
+          - inner join infra_object_track_section_link track_section_link on track_section_link.obj_id = layer.obj_id and track_section_link.infra_id = layer.infra_id
       sch:
         on_field: schematic
         cache_duration: 3600
         data_expr: track_section_link.data
         joins:
-          - inner join osrd_infra_tracksectionlinkmodel track_section_link on track_section_link.obj_id = layer.obj_id and track_section_link.infra_id = layer.infra_id
+          - inner join infra_object_track_section_link track_section_link on track_section_link.obj_id = layer.obj_id and track_section_link.infra_id = layer.infra_id
 
   switches:
-    table_name: osrd_infra_switchlayer
+    table_name: infra_layer_switch
     id_field: id
     views:
       geo:
@@ -103,16 +103,16 @@ layers:
         cache_duration: 3600
         data_expr: switch.data
         joins:
-          - inner join osrd_infra_switchmodel switch on switch.obj_id = layer.obj_id and switch.infra_id = layer.infra_id
+          - inner join infra_object_switch switch on switch.obj_id = layer.obj_id and switch.infra_id = layer.infra_id
       sch:
         on_field: schematic
         cache_duration: 3600
         data_expr: switch.data
         joins:
-          - inner join osrd_infra_switchmodel switch on switch.obj_id = layer.obj_id and switch.infra_id = layer.infra_id
+          - inner join infra_object_switch switch on switch.obj_id = layer.obj_id and switch.infra_id = layer.infra_id
 
   detectors:
-    table_name: osrd_infra_detectorlayer
+    table_name: infra_layer_detector
     id_field: id
     views:
       geo:
@@ -120,16 +120,16 @@ layers:
         cache_duration: 3600
         data_expr: detector.data
         joins:
-          - inner join osrd_infra_detectormodel detector on detector.obj_id = layer.obj_id and detector.infra_id = layer.infra_id
+          - inner join infra_object_detector detector on detector.obj_id = layer.obj_id and detector.infra_id = layer.infra_id
       sch:
         on_field: schematic
         cache_duration: 3600
         data_expr: detector.data
         joins:
-          - inner join osrd_infra_detectormodel detector on detector.obj_id = layer.obj_id and detector.infra_id = layer.infra_id
+          - inner join infra_object_detector detector on detector.obj_id = layer.obj_id and detector.infra_id = layer.infra_id
 
   buffer_stops:
-    table_name: osrd_infra_bufferstoplayer
+    table_name: infra_layer_buffer_stop
     id_field: id
     views:
       geo:
@@ -137,16 +137,16 @@ layers:
         cache_duration: 3600
         data_expr: buffer_stop.data
         joins:
-          - inner join osrd_infra_bufferstopmodel buffer_stop on buffer_stop.obj_id = layer.obj_id and buffer_stop.infra_id = layer.infra_id
+          - inner join infra_object_buffer_stop buffer_stop on buffer_stop.obj_id = layer.obj_id and buffer_stop.infra_id = layer.infra_id
       sch:
         on_field: schematic
         cache_duration: 3600
         data_expr: buffer_stop.data
         joins:
-          - inner join osrd_infra_bufferstopmodel buffer_stop on buffer_stop.obj_id = layer.obj_id and buffer_stop.infra_id = layer.infra_id
+          - inner join infra_object_buffer_stop buffer_stop on buffer_stop.obj_id = layer.obj_id and buffer_stop.infra_id = layer.infra_id
 
   operational_points:
-    table_name: osrd_infra_operationalpointlayer
+    table_name: infra_layer_operational_point
     id_field: id
     views:
       geo:
@@ -154,16 +154,16 @@ layers:
         cache_duration: 3600
         data_expr: operational_point.data
         joins:
-          - inner join osrd_infra_operationalpointmodel operational_point on operational_point.obj_id = layer.obj_id and operational_point.infra_id = layer.infra_id
+          - inner join infra_object_operational_point operational_point on operational_point.obj_id = layer.obj_id and operational_point.infra_id = layer.infra_id
       sch:
         on_field: schematic
         cache_duration: 3600
         data_expr: operational_point.data
         joins:
-          - inner join osrd_infra_operationalpointmodel operational_point on operational_point.obj_id = layer.obj_id and operational_point.infra_id = layer.infra_id
+          - inner join infra_object_operational_point operational_point on operational_point.obj_id = layer.obj_id and operational_point.infra_id = layer.infra_id
 
   catenaries:
-    table_name: osrd_infra_catenarylayer
+    table_name: infra_layer_catenary
     id_field: id
     views:
       geo:
@@ -171,16 +171,16 @@ layers:
         cache_duration: 3600
         data_expr: catenary.data
         joins:
-          - inner join osrd_infra_catenarymodel catenary on catenary.obj_id = layer.obj_id and catenary.infra_id = layer.infra_id
+          - inner join infra_object_catenary catenary on catenary.obj_id = layer.obj_id and catenary.infra_id = layer.infra_id
       sch:
         on_field: schematic
         cache_duration: 3600
         data_expr: catenary.data
         joins:
-          - inner join osrd_infra_catenarymodel catenary on catenary.obj_id = layer.obj_id and catenary.infra_id = layer.infra_id
+          - inner join infra_object_catenary catenary on catenary.obj_id = layer.obj_id and catenary.infra_id = layer.infra_id
 
   lpv_panels:
-    table_name: osrd_infra_lpvpanellayer
+    table_name: infra_layer_lpv_panel
     id_field: id
     views:
       geo:
@@ -191,9 +191,9 @@ layers:
         on_field: schematic
         cache_duration: 3600
         data_expr: layer.data
-  
+
   neutral_sections:
-    table_name: osrd_infra_neutralsectionlayer
+    table_name: infra_layer_neutral_section
     id_field: id
     views:
       geo:
@@ -201,16 +201,16 @@ layers:
         cache_duration: 3600
         data_expr: neutral_section.data
         joins:
-          - inner join osrd_infra_neutralsectionmodel neutral_section on neutral_section.obj_id = layer.obj_id and neutral_section.infra_id = layer.infra_id
+          - inner join infra_object_neutral_section neutral_section on neutral_section.obj_id = layer.obj_id and neutral_section.infra_id = layer.infra_id
       sch:
         on_field: schematic
         cache_duration: 3600
         data_expr: neutral_section.data
         joins:
-          - inner join osrd_infra_neutralsectionmodel neutral_section on neutral_section.obj_id = layer.obj_id and neutral_section.infra_id = layer.infra_id
+          - inner join infra_object_neutral_section neutral_section on neutral_section.obj_id = layer.obj_id and neutral_section.infra_id = layer.infra_id
 
   errors:
-    table_name: osrd_infra_errorlayer
+    table_name: infra_layer_error
     id_field: id
     views:
       geo:

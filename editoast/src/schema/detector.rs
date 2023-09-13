@@ -16,7 +16,7 @@ use editoast_derive::InfraModel;
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, InfraModel)]
 #[serde(deny_unknown_fields)]
-#[infra_model(table = "crate::tables::osrd_infra_detectormodel")]
+#[infra_model(table = "crate::tables::infra_object_detector")]
 #[derivative(Default)]
 pub struct Detector {
     pub id: Identifier,

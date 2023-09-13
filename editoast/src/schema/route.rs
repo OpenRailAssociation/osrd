@@ -11,7 +11,7 @@ use crate::infra_cache::{Cache, Graph, InfraCache, ObjectCache};
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq, InfraModel)]
 #[serde(deny_unknown_fields)]
-#[infra_model(table = "crate::tables::osrd_infra_routemodel")]
+#[infra_model(table = "crate::tables::infra_object_route")]
 #[derivative(Default)]
 pub struct Route {
     pub id: Identifier,

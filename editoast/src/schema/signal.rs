@@ -19,7 +19,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, InfraModel)]
 #[serde(deny_unknown_fields)]
-#[infra_model(table = "crate::tables::osrd_infra_signalmodel")]
+#[infra_model(table = "crate::tables::infra_object_signal")]
 #[derivative(Default)]
 pub struct Signal {
     pub id: Identifier,

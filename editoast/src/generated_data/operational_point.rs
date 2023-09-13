@@ -12,14 +12,14 @@ use crate::diesel::ExpressionMethods;
 use crate::error::Result;
 use crate::infra_cache::InfraCache;
 use crate::schema::ObjectType;
-use crate::tables::osrd_infra_operationalpointlayer::dsl;
+use crate::tables::infra_layer_operational_point::dsl;
 
 pub struct OperationalPointLayer;
 
 #[async_trait]
 impl GeneratedData for OperationalPointLayer {
     fn table_name() -> &'static str {
-        "osrd_infra_operationalpointlayer"
+        "infra_layer_operational_point"
     }
 
     async fn generate(conn: &mut PgConnection, infra: i64, _cache: &InfraCache) -> Result<()> {
@@ -48,7 +48,7 @@ impl GeneratedData for OperationalPointLayer {
                 .chain(involved_objects.updated.iter());
 
             delete(
-                dsl::osrd_infra_operationalpointlayer
+                dsl::infra_layer_operational_point
                     .filter(dsl::infra_id.eq(infra))
                     .filter(dsl::obj_id.eq_any(objs)),
             )

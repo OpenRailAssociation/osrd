@@ -7,7 +7,7 @@ WITH track_ranges AS (
             jsonb_array_elements(data->'track_ranges')->'end'
         )::float AS slice_end,
         jsonb_array_elements(data->'track_ranges')->>'track' AS track_id
-    FROM osrd_infra_catenarymodel
+    FROM infra_object_catenary
     WHERE infra_id = $1
         AND obj_id = ANY($2)
 ),
@@ -52,12 +52,12 @@ sliced_tracks AS (
             )
         ) AS sch
     FROM track_ranges
-        INNER JOIN osrd_infra_tracksectionmodel AS tracks ON tracks.obj_id = track_ranges.track_id
+        INNER JOIN infra_object_track_section AS tracks ON tracks.obj_id = track_ranges.track_id
         AND tracks.infra_id = $1
-        INNER JOIN osrd_infra_tracksectionlayer AS tracks_layer ON tracks.obj_id = tracks_layer.obj_id
+        INNER JOIN infra_layer_track_section AS tracks_layer ON tracks.obj_id = tracks_layer.obj_id
         AND tracks.infra_id = tracks_layer.infra_id
 )
-INSERT INTO osrd_infra_catenarylayer (obj_id, infra_id, geographic, schematic)
+INSERT INTO infra_layer_catenary (obj_id, infra_id, geographic, schematic)
 SELECT catenary_id,
     $1,
     St_Collect(geo),

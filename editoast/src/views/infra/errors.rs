@@ -91,7 +91,7 @@ async fn get_paginated_infra_errors(
 ) -> Result<PaginatedResponse<InfraError>> {
     let mut query =
         String::from("SELECT information::text, ST_AsGeoJSON(ST_Transform(geographic, 4326))::json as geographic,
-        ST_AsGeoJSON(ST_Transform(schematic, 4326))::json as schematic FROM osrd_infra_errorlayer WHERE infra_id = $1");
+        ST_AsGeoJSON(ST_Transform(schematic, 4326))::json as schematic FROM infra_layer_error WHERE infra_id = $1");
     if params.level == Level::Warnings {
         query += " AND information->>'is_warning' = 'true'"
     } else if params.level == Level::Errors {

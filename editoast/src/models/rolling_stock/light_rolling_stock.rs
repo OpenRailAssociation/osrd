@@ -4,7 +4,7 @@ use crate::schema::rolling_stock::light_rolling_stock::{
     LightEffortCurves, LightRollingStock, LightRollingStockWithLiveries,
 };
 use crate::schema::rolling_stock::{EnergySource, Gamma, RollingResistance, RollingStockMetadata};
-use crate::tables::osrd_infra_rollingstock;
+use crate::tables::rolling_stock;
 use crate::views::pagination::{Paginate, PaginatedResponse};
 use crate::DbPool;
 use actix_web::web::Data;
@@ -17,16 +17,15 @@ use serde::Serialize;
 use serde_json::Value as JsonValue;
 
 #[derive(Debug, Model, Queryable, QueryableByName, Serialize)]
-#[model(table = "osrd_infra_rollingstock")]
+#[model(table = "rolling_stock")]
 #[model(retrieve)]
-#[diesel(table_name = osrd_infra_rollingstock)]
+#[diesel(table_name = rolling_stock)]
 pub struct LightRollingStockModel {
     pub id: i64,
-    name: String,
     railjson_version: String,
-    locked: bool,
+    name: String,
     effort_curves: DieselJson<LightEffortCurves>,
-    base_power_class: String,
+    metadata: DieselJson<RollingStockMetadata>,
     length: f64,
     max_speed: f64,
     startup_time: f64,
@@ -34,13 +33,14 @@ pub struct LightRollingStockModel {
     comfort_acceleration: f64,
     gamma: DieselJson<Gamma>,
     inertia_coefficient: f64,
-    features: Vec<String>,
+    base_power_class: String,
+    features: Vec<Option<String>>,
     mass: f64,
     rolling_resistance: DieselJson<RollingResistance>,
     loading_gauge: String,
-    metadata: DieselJson<RollingStockMetadata>,
     power_restrictions: Option<JsonValue>,
     energy_sources: DieselJson<Vec<EnergySource>>,
+    locked: bool,
     electrical_power_startup_time: Option<f64>,
     raise_pantograph_time: Option<f64>,
     pub version: i64,
@@ -51,9 +51,9 @@ impl LightRollingStockModel {
         self,
         db_pool: Data<DbPool>,
     ) -> Result<LightRollingStockWithLiveries> {
-        use crate::tables::osrd_infra_rollingstocklivery::dsl as livery_dsl;
+        use crate::tables::rolling_stock_livery::dsl as livery_dsl;
         let mut conn = db_pool.get().await?;
-        let liveries = livery_dsl::osrd_infra_rollingstocklivery
+        let liveries = livery_dsl::rolling_stock_livery
             .filter(livery_dsl::rolling_stock_id.eq(self.id))
             .select(RollingStockLiveryMetadata::as_select())
             .load(&mut conn)
@@ -73,11 +73,11 @@ impl LightRollingStockModel {
         let mut conn = db_pool.get().await?;
         sql_query(
             "WITH liveries_by_rs AS (SELECT rolling_stock_id, jsonb_build_object('id', livery.id, 'name', livery.name, 'compound_image_id', livery.compound_image_id) AS liveries
-            FROM osrd_infra_rollingstocklivery livery)
+            FROM rolling_stock_livery livery)
             SELECT
                 rolling_stock.*,
                 COALESCE(ARRAY_AGG(liveries_by_rs.liveries) FILTER (WHERE liveries_by_rs.liveries is not NULL), ARRAY[]::jsonb[]) AS liveries
-            FROM osrd_infra_rollingstock rolling_stock
+            FROM rolling_stock
             LEFT JOIN liveries_by_rs liveries_by_rs ON liveries_by_rs.rolling_stock_id = rolling_stock.id
             GROUP BY rolling_stock.id"
         )
@@ -102,7 +102,7 @@ impl From<LightRollingStockModel> for LightRollingStock {
             comfort_acceleration: rolling_stock_model.comfort_acceleration,
             gamma: rolling_stock_model.gamma,
             inertia_coefficient: rolling_stock_model.inertia_coefficient,
-            features: rolling_stock_model.features,
+            features: rolling_stock_model.features.into_iter().flatten().collect(),
             mass: rolling_stock_model.mass,
             rolling_resistance: rolling_stock_model.rolling_resistance,
             loading_gauge: rolling_stock_model.loading_gauge,

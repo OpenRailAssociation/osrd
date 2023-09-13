@@ -1,7 +1,7 @@
 WITH errors AS (
     SELECT unnest($2) AS information
 )
-INSERT INTO osrd_infra_errorlayer (
+INSERT INTO infra_layer_error (
         infra_id,
         geographic,
         schematic,
@@ -12,5 +12,5 @@ SELECT $1 AS infra_id,
     buffer_stops.schematic,
     errors.information
 FROM errors
-    LEFT JOIN osrd_infra_bufferstoplayer AS buffer_stops ON buffer_stops.obj_id = information->>'obj_id'
+    LEFT JOIN infra_layer_buffer_stop AS buffer_stops ON buffer_stops.obj_id = information->>'obj_id'
     AND buffer_stops.infra_id = $1

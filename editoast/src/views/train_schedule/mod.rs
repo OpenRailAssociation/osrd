@@ -116,10 +116,10 @@ pub async fn delete_multiple(
     db_pool: Data<DbPool>,
     request: Json<BatchDeletionRequest>,
 ) -> Result<HttpResponse> {
-    use crate::tables::osrd_infra_trainschedule::dsl::*;
+    use crate::tables::train_schedule::dsl::*;
 
     let train_schedule_ids = request.into_inner().ids;
-    diesel::delete(osrd_infra_trainschedule.filter(id.eq_any(train_schedule_ids)))
+    diesel::delete(train_schedule.filter(id.eq_any(train_schedule_ids)))
         .execute(&mut db_pool.get().await?)
         .await?;
 
@@ -199,14 +199,13 @@ async fn patch_multiple(
 
             // Delete the associated simulation output
             {
-                use crate::tables::osrd_infra_simulationoutput::dsl::*;
+                use crate::tables::simulation_output::dsl::*;
                 let train_schedule_ids = train_schedules
                     .iter()
                     .map(|ts| ts.id.unwrap())
                     .collect::<Vec<_>>();
                 diesel::delete(
-                    osrd_infra_simulationoutput
-                        .filter(train_schedule_id.eq_any(train_schedule_ids)),
+                    simulation_output.filter(train_schedule_id.eq_any(train_schedule_ids)),
                 )
                 .execute(conn)
                 .await?;

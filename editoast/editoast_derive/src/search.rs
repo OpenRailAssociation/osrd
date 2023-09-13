@@ -205,17 +205,17 @@ mod test {
     fn track() -> syn::DeriveInput {
         syn::parse_quote! {
             #[search(
-                table = "osrd_search_track",
+                table = "search_track",
                 column(name = "infra_id", data_type = "INT"),
                 column(name = "line_code", data_type = "INT"),
                 column(name = "line_name", data_type = "TEXT")
             )]
             pub struct Track {
-                #[search(sql = "osrd_search_track.infra_id")]
+                #[search(sql = "search_track.infra_id")]
                 infra_id: i64,
-                #[search(sql = "osrd_search_track.unprocessed_line_name")]
+                #[search(sql = "search_track.unprocessed_line_name")]
                 line_name: std::string::String,
-                #[search(sql = "osrd_search_track.line_code", rename = "code")]
+                #[search(sql = "search_track.line_code", rename = "code")]
                 line_code: i64,
             }
         }
@@ -234,7 +234,7 @@ mod test {
     #[test]
     fn test_construction() {
         let params = SearchParams::from_derive_input(&track()).unwrap();
-        assert_eq!(&params.table, "osrd_search_track");
+        assert_eq!(&params.table, "search_track");
         assert!(&params.joins.is_empty());
         assert_eq!(
             params.columns.iter().map(|c| &c.name).collect::<Vec<_>>(),
@@ -262,13 +262,9 @@ mod test {
                 .map(|t| (t.0.as_ref(), t.1.as_ref(), t.2.as_ref()))
                 .collect::<Vec<_>>(),
             vec![
-                ("infra_id", "i64", "osrd_search_track.infra_id"),
-                (
-                    "line_name",
-                    "String",
-                    "osrd_search_track.unprocessed_line_name"
-                ),
-                ("code", "i64", "osrd_search_track.line_code")
+                ("infra_id", "i64", "search_track.infra_id"),
+                ("line_name", "String", "search_track.unprocessed_line_name"),
+                ("code", "i64", "search_track.line_code")
             ]
         );
     }
@@ -281,7 +277,7 @@ mod test {
                 fn search_config() -> crate::views::search::SearchConfig {
                     crate::views::search::SearchConfig {
                         name: "track".to_owned(),
-                        table: "osrd_search_track".to_owned(),
+                        table: "search_track".to_owned(),
                         joins: None,
                         criterias: vec![
                             crate::views::search::Criteria {
@@ -300,17 +296,17 @@ mod test {
                         properties: vec![
                             crate::views::search::Property {
                                 name: "infra_id".to_owned(),
-                                sql: "osrd_search_track.infra_id".to_owned(),
+                                sql: "search_track.infra_id".to_owned(),
                                 data_type: Some(crate::views::search::TypeSpec::Type(crate::views::search::AstType::Integer)),
                             },
                             crate::views::search::Property {
                                 name: "line_name".to_owned(),
-                                sql: "osrd_search_track.unprocessed_line_name".to_owned(),
+                                sql: "search_track.unprocessed_line_name".to_owned(),
                                 data_type: Some(crate::views::search::TypeSpec::Type(crate::views::search::AstType::String)),
                             },
                             crate::views::search::Property {
                                 name: "code".to_owned(),
-                                sql: "osrd_search_track.line_code".to_owned(),
+                                sql: "search_track.line_code".to_owned(),
                                 data_type: Some(crate::views::search::TypeSpec::Type(crate::views::search::AstType::Integer)),
                             }
                         ],

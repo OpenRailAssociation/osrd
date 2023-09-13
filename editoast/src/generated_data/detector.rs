@@ -12,14 +12,14 @@ use crate::diesel::ExpressionMethods;
 use crate::error::Result;
 use crate::infra_cache::InfraCache;
 use crate::schema::ObjectType;
-use crate::tables::osrd_infra_detectorlayer::dsl;
+use crate::tables::infra_layer_detector::dsl;
 
 pub struct DetectorLayer;
 
 #[async_trait]
 impl GeneratedData for DetectorLayer {
     fn table_name() -> &'static str {
-        "osrd_infra_detectorlayer"
+        "infra_layer_detector"
     }
 
     async fn generate(conn: &mut PgConnection, infra: i64, _cache: &InfraCache) -> Result<()> {
@@ -42,7 +42,7 @@ impl GeneratedData for DetectorLayer {
         // Delete elements
         if !involved_objects.deleted.is_empty() {
             delete(
-                dsl::osrd_infra_detectorlayer
+                dsl::infra_layer_detector
                     .filter(dsl::infra_id.eq(infra))
                     .filter(dsl::obj_id.eq_any(involved_objects.deleted)),
             )

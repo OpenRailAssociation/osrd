@@ -1,7 +1,7 @@
 use crate::error::Result;
 use crate::models::train_schedule::LightTrainSchedule;
-use crate::models::Delete;
-use crate::tables::osrd_infra_scenario;
+use crate::models::{Delete, TextArray};
+use crate::tables::scenario;
 use crate::views::pagination::Paginate;
 use crate::views::pagination::PaginatedResponse;
 use crate::DbPool;
@@ -34,20 +34,12 @@ use super::List;
     Model,
 )]
 #[derivative(Default)]
-#[model(table = "osrd_infra_scenario")]
+#[model(table = "scenario")]
 #[model(create, retrieve, update)]
-#[diesel(table_name = osrd_infra_scenario)]
+#[diesel(table_name = scenario)]
 pub struct Scenario {
     #[diesel(deserialize_as = i64)]
     pub id: Option<i64>,
-    #[diesel(deserialize_as = i64)]
-    pub study_id: Option<i64>,
-    #[diesel(deserialize_as = i64)]
-    pub infra_id: Option<i64>,
-    #[diesel(deserialize_as = Option<i64>)]
-    pub electrical_profile_set_id: Option<Option<i64>>,
-    #[diesel(deserialize_as = i64)]
-    pub timetable_id: Option<i64>,
     #[diesel(deserialize_as = String)]
     #[derivative(Default(value = "Some(String::new())"))]
     pub name: Option<String>,
@@ -58,9 +50,17 @@ pub struct Scenario {
     pub creation_date: Option<NaiveDateTime>,
     #[derivative(Default(value = "Utc::now().naive_utc()"))]
     pub last_modification: NaiveDateTime,
-    #[diesel(deserialize_as = Vec<String>)]
+    #[diesel(deserialize_as = TextArray)]
     #[derivative(Default(value = "Some(Vec::new())"))]
     pub tags: Option<Vec<String>>,
+    #[diesel(deserialize_as = i64)]
+    pub infra_id: Option<i64>,
+    #[diesel(deserialize_as = i64)]
+    pub timetable_id: Option<i64>,
+    #[diesel(deserialize_as = i64)]
+    pub study_id: Option<i64>,
+    #[diesel(deserialize_as = Option<i64>)]
+    pub electrical_profile_set_id: Option<Option<i64>>,
 }
 
 impl crate::models::Identifiable for Scenario {
@@ -95,11 +95,11 @@ pub struct ScenarioWithCountTrains {
 
 impl Scenario {
     pub async fn with_details(self, db_pool: Data<DbPool>) -> Result<ScenarioWithDetails> {
-        use crate::tables::osrd_infra_electricalprofileset::dsl as elec_dsl;
-        use crate::tables::osrd_infra_infra::dsl as infra_dsl;
-        use crate::tables::osrd_infra_trainschedule::dsl::*;
+        use crate::tables::electrical_profile_set::dsl as elec_dsl;
+        use crate::tables::infra::dsl as infra_dsl;
+        use crate::tables::train_schedule::dsl::*;
         let mut conn = db_pool.get().await?;
-        let infra_name = infra_dsl::osrd_infra_infra
+        let infra_name = infra_dsl::infra
             .filter(infra_dsl::id.eq(self.infra_id.unwrap()))
             .select(infra_dsl::name)
             .first::<String>(&mut conn)
@@ -107,7 +107,7 @@ impl Scenario {
 
         let electrical_profile_set_name = match self.electrical_profile_set_id.unwrap() {
             Some(electrical_profile_set) => Some(
-                elec_dsl::osrd_infra_electricalprofileset
+                elec_dsl::electrical_profile_set
                     .filter(elec_dsl::id.eq(electrical_profile_set))
                     .select(elec_dsl::name)
                     .first::<String>(&mut conn)
@@ -116,7 +116,7 @@ impl Scenario {
             None => None,
         };
 
-        let train_schedules = osrd_infra_trainschedule
+        let train_schedules = train_schedule
             .filter(timetable_id.eq(self.timetable_id.unwrap()))
             .select((id, train_name, departure_time, path_id))
             .load::<LightTrainSchedule>(&mut conn)
@@ -139,15 +139,13 @@ impl Scenario {
 #[async_trait]
 impl Delete for Scenario {
     async fn delete_conn(conn: &mut PgConnection, scenario_id: i64) -> Result<bool> {
-        use crate::tables::osrd_infra_scenario::dsl as scenario_dsl;
-        use crate::tables::osrd_infra_timetable::dsl as timetable_dsl;
+        use crate::tables::scenario::dsl as scenario_dsl;
+        use crate::tables::timetable::dsl as timetable_dsl;
 
         // Delete scenario
-        let scenario = match delete(
-            scenario_dsl::osrd_infra_scenario.filter(scenario_dsl::id.eq(scenario_id)),
-        )
-        .get_result::<Scenario>(conn)
-        .await
+        let scenario = match delete(scenario_dsl::scenario.filter(scenario_dsl::id.eq(scenario_id)))
+            .get_result::<Scenario>(conn)
+            .await
         {
             Ok(scenario) => scenario,
             Err(DieselError::NotFound) => return Ok(false),
@@ -156,8 +154,7 @@ impl Delete for Scenario {
 
         // Delete timetable
         delete(
-            timetable_dsl::osrd_infra_timetable
-                .filter(timetable_dsl::id.eq(scenario.timetable_id.unwrap())),
+            timetable_dsl::timetable.filter(timetable_dsl::id.eq(scenario.timetable_id.unwrap())),
         )
         .execute(conn)
         .await?;
@@ -177,8 +174,9 @@ impl List<(i64, Ordering)> for ScenarioWithCountTrains {
     ) -> Result<PaginatedResponse<Self>> {
         let study_id = params.0;
         let ordering = params.1.to_sql();
-        sql_query(format!("SELECT t.*,COUNT(trainschedule.id) as trains_count FROM osrd_infra_scenario t
-            LEFT JOIN osrd_infra_trainschedule trainschedule ON t.timetable_id = trainschedule.timetable_id WHERE t.study_id = $1
+        dbg!("ok");
+        sql_query(format!("SELECT t.*,COUNT(train_schedule.id) as trains_count FROM scenario as t
+            LEFT JOIN train_schedule ON t.timetable_id = train_schedule.timetable_id WHERE t.study_id = $1
             GROUP BY t.id ORDER BY {ordering}"))
             .bind::<BigInt, _>(study_id)
             .paginate(page, page_size)

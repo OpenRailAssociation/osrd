@@ -484,7 +484,7 @@ mod tests {
         let mut conn = PgConnection::establish(&pg_config.url())
             .await
             .expect("Error while connecting DB");
-        sql_query("DELETE FROM osrd_infra_infra WHERE name = $1")
+        sql_query("DELETE FROM infra WHERE name = $1")
             .bind::<Text, _>(infra_name)
             .execute(&mut conn)
             .await

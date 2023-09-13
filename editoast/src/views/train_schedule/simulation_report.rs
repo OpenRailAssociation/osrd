@@ -129,11 +129,11 @@ pub async fn fetch_simulation_output(
     train_schedule: &TrainSchedule,
     db_pool: Data<DbPool>,
 ) -> error::Result<SimulationOutput> {
-    use crate::tables::osrd_infra_simulationoutput::dsl::*;
+    use crate::tables::simulation_output::dsl::*;
     let ts_id = train_schedule.id.unwrap();
 
     let mut conn = db_pool.get().await?;
-    osrd_infra_simulationoutput
+    simulation_output
         .filter(train_schedule_id.eq(ts_id))
         .get_result(&mut conn)
         .await
@@ -216,7 +216,7 @@ async fn add_stops_additional_information(
         .map(|pw| pw.location.track_section.0.clone())
         .collect();
     let track_sections: Vec<TrackSectionModel> = sql_query(
-        "SELECT * FROM osrd_infra_tracksectionmodel WHERE infra_id = $1 AND obj_id = ANY($2);",
+        "SELECT * FROM infra_object_track_section WHERE infra_id = $1 AND obj_id = ANY($2);",
     )
     .bind::<BigInt, _>(infra_id)
     .bind::<SqlArray<Text>, _>(&track_ids)

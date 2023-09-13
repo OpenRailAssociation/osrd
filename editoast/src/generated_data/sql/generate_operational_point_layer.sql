@@ -4,7 +4,7 @@ WITH ops AS (
             jsonb_array_elements(data->'parts')->'position'
         )::float AS position,
         jsonb_array_elements(data->'parts')->>'track' AS track_id
-    FROM osrd_infra_operationalpointmodel
+    FROM infra_object_operational_point
     WHERE infra_id = $1
 ),
 collect AS (
@@ -30,12 +30,12 @@ collect AS (
             )
         ) AS sch
     FROM ops
-        INNER JOIN osrd_infra_tracksectionmodel AS tracks ON tracks.obj_id = ops.track_id
+        INNER JOIN infra_object_track_section AS tracks ON tracks.obj_id = ops.track_id
         AND tracks.infra_id = $1
-        INNER JOIN osrd_infra_tracksectionlayer AS tracks_layer ON tracks.obj_id = tracks_layer.obj_id
+        INNER JOIN infra_layer_track_section AS tracks_layer ON tracks.obj_id = tracks_layer.obj_id
         AND tracks.infra_id = tracks_layer.infra_id
 )
-INSERT INTO osrd_infra_operationalpointlayer (obj_id, infra_id, geographic, schematic)
+INSERT INTO infra_layer_operational_point (obj_id, infra_id, geographic, schematic)
 SELECT op_id,
     $1,
     St_Collect(geo),

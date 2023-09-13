@@ -336,7 +336,6 @@ pub mod tests {
         ))
         .unwrap();
         *payload.get_mut("infra_id").unwrap() = json!(small_infra.id());
-        *payload.get_mut("rolling_stocks").unwrap() = json!([fast_rolling_stock.id()]);
         *payload.get_mut("rolling_stock_id").unwrap() = json!(fast_rolling_stock.id());
         *payload.get_mut("timetable_id").unwrap() = json!(timetable.id());
 
