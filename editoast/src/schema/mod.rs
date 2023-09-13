@@ -41,6 +41,7 @@ pub use switch::{Switch, SwitchCache};
 pub use switch_type::{SwitchPortConnection, SwitchType};
 pub use track_section::{Curve, Slope, TrackSection, TrackSectionCache};
 pub use track_section_link::TrackSectionLink;
+use utoipa::ToSchema;
 
 use self::utils::{Identifier, NonBlankString};
 
@@ -70,7 +71,18 @@ impl<T: OSRDIdentified + OSRDTyped> OSRDObject for T {
 }
 
 #[derive(
-    Debug, Clone, Copy, Deserialize, Hash, Eq, PartialEq, Serialize, Enum, EnumIter, Display,
+    Debug,
+    Clone,
+    Copy,
+    Deserialize,
+    Hash,
+    Eq,
+    PartialEq,
+    Serialize,
+    Enum,
+    EnumIter,
+    Display,
+    ToSchema,
 )]
 #[serde(deny_unknown_fields)]
 pub enum ObjectType {
@@ -124,7 +136,7 @@ impl ObjectType {
     }
 }
 
-#[derive(Deserialize, Derivative, Serialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Deserialize, Derivative, Serialize, Clone, Debug, PartialEq, Eq, Hash, ToSchema)]
 #[derivative(Default)]
 #[serde(deny_unknown_fields)]
 pub struct ObjectRef {

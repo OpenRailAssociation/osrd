@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 
-use actix_web::dev::HttpServiceFactory;
 use actix_web::post;
 use actix_web::web::{Data, Json, Path};
 use diesel::sql_types::{Array, BigInt, Jsonb, Nullable, Text};
@@ -9,14 +8,14 @@ use diesel_async::RunQueryDsl;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use thiserror::Error;
+use utoipa::ToSchema;
 
 use crate::error::Result;
 use crate::schema::ObjectType;
-use crate::DbPool;
+use crate::{routes, DbPool};
 use editoast_derive::EditoastError;
 
-/// Return `/infra/<infra_id>/objects` routes
-pub fn routes() -> impl HttpServiceFactory {
+routes! {
     get_objects
 }
 
@@ -37,7 +36,7 @@ fn has_unique_ids(obj_ids: &Vec<String>) -> bool {
     obj_ids_2.len() == obj_ids.len()
 }
 
-#[derive(QueryableByName, Debug, Clone, Serialize, Deserialize)]
+#[derive(QueryableByName, Debug, Clone, Serialize, Deserialize, ToSchema)]
 struct ObjectQueryable {
     #[diesel(sql_type = Text)]
     #[serde(skip_serializing)]
@@ -51,6 +50,11 @@ struct ObjectQueryable {
 }
 
 /// Return the railjson list of a specific OSRD object
+#[utoipa::path(
+    responses(
+        (status = 200, description = "The list of objects", body = Vec<ObjectQueryable>),
+    ),
+)]
 #[post("/objects/{object_type}")]
 async fn get_objects(
     path_params: Path<(i64, ObjectType)>,

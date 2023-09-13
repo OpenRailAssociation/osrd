@@ -3,8 +3,8 @@ use crate::infra_cache::InfraCache;
 use crate::models::Infra;
 use crate::schema::ObjectType;
 use crate::views::infra::InfraApiError;
-use crate::DbPool;
-use actix_web::dev::HttpServiceFactory;
+use crate::{routes, DbPool};
+
 use actix_web::get;
 use actix_web::web::{Data, Json, Path};
 use chashmap::CHashMap;
@@ -24,8 +24,7 @@ const ATTACHED_OBJECTS_TYPES: &[ObjectType] = &[
     ObjectType::Catenary,
 ];
 
-/// Return `/infra/<infra_id>/attached` routes
-pub fn routes() -> impl HttpServiceFactory {
+routes! {
     attached
 }
 
@@ -38,6 +37,7 @@ enum AttachedError {
 }
 
 /// This endpoint returns attached objects of given track
+#[utoipa::path()]
 #[get("/attached/{track_id}")]
 async fn attached(
     infra: Path<(i64, String)>,

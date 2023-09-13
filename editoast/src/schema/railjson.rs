@@ -14,8 +14,9 @@ use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
 use editoast_derive::EditoastError;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use thiserror::Error;
+use utoipa::ToSchema;
 
-#[derive(Deserialize, Derivative, Serialize, Clone, Debug)]
+#[derive(Deserialize, Derivative, Serialize, Clone, Debug, ToSchema)]
 #[derivative(Default)]
 #[serde(deny_unknown_fields)]
 pub struct RailJson {

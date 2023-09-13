@@ -12,12 +12,21 @@ use crate::infra_cache::InfraCache;
 use crate::map::{self, MapLayers, Zone};
 use crate::models::{Infra, Update};
 use crate::schema::operation::{Operation, OperationResult};
-use crate::{generated_data, DbPool};
+use crate::{generated_data, routes, DbPool};
 use editoast_derive::EditoastError;
 
-/// CRUD for edit an infrastructure. Takes a batch of operations.
+routes! {
+    edit
+}
+
+/// CRUD to edit an infrastructure. Takes a batch of operations.
+#[utoipa::path(
+    responses(
+        (status = 200, description = "Return the list of operations results", body = inline(Vec<OperationResult>)),
+    ),
+)]
 #[post("")]
-pub async fn edit<'a>(
+pub async fn edit(
     infra: Path<i64>,
     operations: Json<Vec<Operation>>,
     db_pool: Data<DbPool>,

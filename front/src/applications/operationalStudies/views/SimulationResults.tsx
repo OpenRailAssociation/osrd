@@ -26,7 +26,7 @@ import { useTranslation } from 'react-i18next';
 import DriverTrainSchedule from 'applications/operationalStudies/components/SimulationResults/DriverTrainSchedule/DriverTrainSchedule';
 import { getTimetableID } from 'reducers/osrdconf/selectors';
 import cx from 'classnames';
-import { Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { InfraWithState, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { getSelectedTrain } from 'reducers/osrdsimulation/selectors';
 import ScenarioLoader from 'modules/scenario/components/ScenarioLoader';
 
@@ -35,7 +35,7 @@ const MAP_MIN_HEIGHT = 450;
 type Props = {
   isDisplayed: boolean;
   collapsedTimetable: boolean;
-  infraState: Infra['state'];
+  infraState: InfraWithState['state'];
 };
 
 export default function SimulationResults({ isDisplayed, collapsedTimetable, infraState }: Props) {

@@ -2,7 +2,6 @@ use crate::error::Result;
 use crate::schema::InfraErrorType;
 use crate::views::pagination::{Paginate, PaginatedResponse, PaginationQueryParam};
 use crate::DbPool;
-use actix_web::dev::HttpServiceFactory;
 use actix_web::get;
 use actix_web::web::{Data, Json as WebJson, Path, Query};
 use diesel::sql_query;
@@ -13,8 +12,9 @@ use serde_json::Value as JsonValue;
 use strum::VariantNames;
 use thiserror::Error;
 
-/// Return `/infra/<infra_id>/errors` routes
-pub fn routes() -> impl HttpServiceFactory {
+use crate::routes;
+
+routes! {
     list_errors
 }
 
@@ -27,6 +27,11 @@ struct QueryParams {
 }
 
 /// Return the list of errors of an infra
+#[utoipa::path(
+    responses(
+        (status = 200, description = "The list of errors of an infra", body = PaginatedResponse<InfraError>),
+    ),
+)]
 #[get("/errors")]
 async fn list_errors(
     db_pool: Data<DbPool>,

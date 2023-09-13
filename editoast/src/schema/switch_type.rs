@@ -12,14 +12,29 @@ use derivative::Derivative;
 use editoast_derive::InfraModel;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use utoipa::ToSchema;
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq, InfraModel)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq, InfraModel, ToSchema)]
 #[serde(deny_unknown_fields)]
 #[infra_model(table = "crate::tables::infra_object_switch_type")]
 #[derivative(Default)]
+#[schema(example = json!(
+    {
+        "id": "Point",
+        "ports": ["LEFT", "RIGHT", "BASE"],
+        "groups":
+        {
+            "LEFT": { "src": "BASE", "dst": "LEFT" },
+            "RIGHT": { "src": "BASE", "dst": "RIGHT" }
+        }
+    }
+))]
 pub struct SwitchType {
+    #[schema(value_type = String)]
     pub id: Identifier,
+    #[schema(value_type = Vec<String>)]
     pub ports: Vec<Identifier>,
+    #[schema(additional_properties = false, value_type = HashMap<String, Vec<SwitchPortConnection>>)]
     pub groups: HashMap<Identifier, Vec<SwitchPortConnection>>,
 }
 
@@ -35,11 +50,13 @@ impl OSRDIdentified for SwitchType {
     }
 }
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq, Hash)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq, Hash, ToSchema)]
 #[serde(deny_unknown_fields)]
 #[derivative(Default)]
 pub struct SwitchPortConnection {
+    #[schema(value_type = String)]
     pub src: Identifier,
+    #[schema(value_type = String)]
     pub dst: Identifier,
 }
 

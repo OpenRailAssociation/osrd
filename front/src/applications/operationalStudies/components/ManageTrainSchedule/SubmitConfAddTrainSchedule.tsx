@@ -8,11 +8,20 @@ import { time2sec, sec2time } from 'utils/timeManipulation';
 import getSimulationResults from 'applications/operationalStudies/components/Scenario/getSimulationResults';
 import formatConf from 'applications/operationalStudies/components/ManageTrainSchedule/helpers/formatConf';
 import trainNameWithNum from 'applications/operationalStudies/components/ManageTrainSchedule/helpers/trainNameHelper';
-import { Infra, TrainScheduleBatchItem, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { TrainScheduleOptions } from 'common/api/osrdMiddlewareApi';
+import {
+  Allowance,
+  Comfort,
+  InfraWithState,
+  PowerRestrictionRange,
+  Infra,
+  TrainScheduleBatchItem,
+  osrdEditoastApi,
+} from 'common/api/osrdEditoastApi';
 import { updateReloadTimetable } from 'reducers/osrdsimulation/actions';
 
 type Props = {
-  infraState?: Infra['state'];
+  infraState?: InfraWithState['state'];
   setIsWorking: (isWorking: boolean) => void;
 };
 

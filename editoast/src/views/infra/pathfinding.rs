@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use actix_web::dev::HttpServiceFactory;
+
 use actix_web::post;
 use actix_web::web::{Data, Json, Path, Query};
 use chashmap::CHashMap;
@@ -15,11 +15,10 @@ use crate::models::Infra;
 use crate::schema::utils::Identifier;
 use crate::schema::{Direction, DirectionalTrackRange, Endpoint, ObjectType, TrackEndpoint};
 use crate::views::infra::InfraApiError;
-use crate::DbPool;
+use crate::{routes, DbPool};
 use editoast_derive::EditoastError;
 
-/// Return `/infra/<infra_id>/pathfinding` routes
-pub fn routes() -> impl HttpServiceFactory {
+routes! {
     pathfinding_view
 }
 
@@ -74,6 +73,7 @@ struct QueryParam {
 }
 
 /// This endpoint search path between starting and ending track locations
+#[utoipa::path()]
 #[post("/pathfinding")]
 async fn pathfinding_view(
     infra: Path<i64>,

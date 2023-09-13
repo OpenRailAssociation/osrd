@@ -6,6 +6,7 @@ use super::{AsCoreRequest, Json};
 use derivative::Derivative;
 use serde::Serialize;
 use serde_derive::Deserialize;
+use utoipa::ToSchema;
 
 /// A Core infra load request
 #[derive(Debug, Serialize, Derivative)]
@@ -15,7 +16,7 @@ pub struct InfraStateRequest {
     pub infra: Option<i64>,
 }
 
-#[derive(Debug, Clone, Default, Deserialize, Serialize)]
+#[derive(Debug, Clone, Default, Deserialize, Serialize, ToSchema)]
 pub struct InfraStateResponse {
     pub last_status: Option<InfraState>,
     pub status: InfraState,

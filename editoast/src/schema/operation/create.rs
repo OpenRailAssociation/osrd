@@ -9,10 +9,11 @@ use diesel::sql_types::{BigInt, Json, Text};
 use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use utoipa::ToSchema;
 
 use super::OperationError;
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize, ToSchema)]
 #[serde(tag = "obj_type", deny_unknown_fields)]
 pub enum RailjsonObject {
     TrackSection { railjson: TrackSection },

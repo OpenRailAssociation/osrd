@@ -4,11 +4,11 @@ use crate::models::infra::RAILJSON_VERSION;
 use crate::models::{Infra, Retrieve};
 use crate::schema::{ObjectType, RailJson};
 use crate::views::infra::{InfraApiError, InfraForm};
-use crate::DbPool;
-use actix_web::dev::HttpServiceFactory;
+use crate::{routes, DbPool};
+
 use actix_web::http::header::ContentType;
 use actix_web::web::{Data, Json, Path, Query};
-use actix_web::{get, post, services, HttpResponse, Responder};
+use actix_web::{get, post, HttpResponse, Responder};
 use chashmap::CHashMap;
 use diesel::sql_query;
 use diesel::sql_types::{BigInt, Text};
@@ -19,10 +19,11 @@ use futures::future::try_join_all;
 use serde::{Deserialize, Serialize};
 use strum::IntoEnumIterator;
 use thiserror::Error;
+use utoipa::{IntoParams, ToSchema};
 
-/// Return `/infra/<infra_id>/railjson` routes
-pub fn routes() -> impl HttpServiceFactory {
-    services![get_railjson, post_railjson]
+routes! {
+    get_railjson,
+    post_railjson
 }
 
 #[derive(QueryableByName, Default)]
@@ -38,7 +39,12 @@ enum ListErrorsRailjson {
     WrongRailjsonVersionProvided,
 }
 
-/// Serialize an infra
+/// Serializes an infra into RailJson
+#[utoipa::path(
+    responses(
+        (status = 200, description = "The infra as RailJson", body = RailJson),
+    ),
+)]
 #[get("/{infra}/railjson")]
 async fn get_railjson(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<impl Responder> {
     let infra = infra.into_inner();
@@ -116,19 +122,26 @@ async fn get_railjson(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<impl Re
         .body(railjson))
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, IntoParams)]
 struct PostRailjsonQueryParams {
     name: String,
     #[serde(default)]
     generate_data: bool,
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, ToSchema)]
 struct PostRailjsonResponse {
     pub infra: i64,
 }
 
-/// Import an infra
+/// Import an infra from a RailJson object
+#[utoipa::path(
+    params(PostRailjsonQueryParams),
+    request_body = RailJson,
+    responses(
+        (status = 201, description = "The imported infra ID", body = inline(PostRailjsonResponse)),
+    ),
+)]
 #[post("/railjson")]
 async fn post_railjson(
     params: Query<PostRailjsonQueryParams>,

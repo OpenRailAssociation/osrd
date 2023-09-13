@@ -83,6 +83,10 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/infra/`, method: 'POST', body: queryArg.body }),
         invalidatesTags: ['infra'],
       }),
+      getInfraCacheStatus: build.query<GetInfraCacheStatusApiResponse, GetInfraCacheStatusApiArg>({
+        query: (queryArg) => ({ url: `/infra/cache_status/`, body: queryArg.body }),
+        providesTags: ['infra'],
+      }),
       postInfraRailjson: build.mutation<PostInfraRailjsonApiResponse, PostInfraRailjsonApiArg>({
         query: (queryArg) => ({
           url: `/infra/railjson/`,
@@ -96,7 +100,7 @@ const injectedRtkApi = api
         query: (queryArg) => ({
           url: `/infra/refresh/`,
           method: 'POST',
-          params: { infras: queryArg.infras, force: queryArg.force },
+          params: { force: queryArg.force, infras: queryArg.infras },
         }),
         invalidatesTags: ['infra'],
       }),
@@ -668,24 +672,29 @@ export type GetElectricalProfileSetByIdLevelOrderApiArg = {
 };
 export type GetHealthApiResponse = unknown;
 export type GetHealthApiArg = void;
-export type GetInfraApiResponse = /** status 200 The infras list */ {
-  count: number;
-  next: any;
-  previous: any;
-  results?: Infra[];
-};
+export type GetInfraApiResponse = /** status 200 A list of infras */ PaginatedInfras;
 export type GetInfraApiArg = {
   /** Page number */
   page?: number;
   /** Number of elements by page */
-  pageSize?: number;
+  pageSize?: number | null;
 };
-export type PostInfraApiResponse = /** status 201 The created infra */ Infra;
+export type PostInfraApiResponse = /** status 200 Information about the created infra */ Infra;
 export type PostInfraApiArg = {
-  /** Name of the infra to create */
   body: {
-    name?: string;
+    name: string;
   };
+};
+export type GetInfraCacheStatusApiResponse = /** status 200 The status of the infras in cache */ {
+  [key: string]: {
+    last_status?: InfraState | null;
+    status: InfraState;
+  };
+};
+export type GetInfraCacheStatusApiArg = {
+  body: {
+    infra?: number | null;
+  } | null;
 };
 export type PostInfraRailjsonApiResponse = /** status 201 The imported infra id */ {
   id?: string;
@@ -698,21 +707,22 @@ export type PostInfraRailjsonApiArg = {
   railjsonFile: RailjsonFile;
 };
 export type PostInfraRefreshApiResponse =
-  /** status 200 A list thats contains the ID of the infras that were refreshed* */ number[];
+  /** status 200 A list thats contains the ID of the infras that were refreshed */ {
+    infra_refreshed: number[];
+  };
 export type PostInfraRefreshApiArg = {
-  /** A list of infra ID */
-  infras?: number[];
   /** Force the refresh of the layers */
   force?: boolean;
+  /** Comma-separated list of infra IDs */
+  infras?: string;
 };
 export type DeleteInfraByIdApiResponse = unknown;
 export type DeleteInfraByIdApiArg = {
-  /** infra id */
   id: number;
 };
-export type GetInfraByIdApiResponse = /** status 200 Information about the retrieved infra */ Infra;
+export type GetInfraByIdApiResponse =
+  /** status 200 Information about the retrieved infra */ InfraWithState;
 export type GetInfraByIdApiArg = {
-  /** infra id */
   id: number;
 };
 export type PostInfraByIdApiResponse =
@@ -723,13 +733,11 @@ export type PostInfraByIdApiArg = {
   /** Operations to do on the infra */
   body: Operation[];
 };
-export type PutInfraByIdApiResponse = /** status 200 The updated infra */ Infra;
+export type PutInfraByIdApiResponse = /** status 200 Information about the updated infra */ Infra;
 export type PutInfraByIdApiArg = {
-  /** infra id */
   id: number;
-  /** the name we want to give to the infra */
   body: {
-    name?: string;
+    name?: string | null;
   };
 };
 export type GetInfraByIdAttachedAndTrackIdApiResponse =
@@ -742,14 +750,10 @@ export type GetInfraByIdAttachedAndTrackIdApiArg = {
   /** Track ID */
   trackId: string;
 };
-export type PostInfraByIdCloneApiResponse = /** status 201 The duplicated infra id */ {
-  id?: number;
-};
+export type PostInfraByIdCloneApiResponse = unknown;
 export type PostInfraByIdCloneApiArg = {
-  /** Infra id */
-  id: number;
-  /** New infra name */
   name: string;
+  id: number;
 };
 export type GetInfraByIdErrorsApiResponse = /** status 200 A paginated list of errors */ {
   count?: number;
@@ -781,12 +785,10 @@ export type GetInfraByIdLinesAndLineCodeBboxApiArg = {
 };
 export type PostInfraByIdLoadApiResponse = unknown;
 export type PostInfraByIdLoadApiArg = {
-  /** infra id */
   id: number;
 };
 export type PostInfraByIdLockApiResponse = unknown;
 export type PostInfraByIdLockApiArg = {
-  /** infra id */
   id: number;
 };
 export type PostInfraByIdObjectsAndObjectTypeApiResponse = /** status 200 No content */ {
@@ -853,27 +855,29 @@ export type GetInfraByIdRoutesAndWaypointTypeWaypointIdApiArg = {
   /** The waypoint id */
   waypointId: string;
 };
-export type GetInfraByIdSpeedLimitTagsApiResponse = /** status 200 Tags list */ string[];
+export type GetInfraByIdSpeedLimitTagsApiResponse =
+  /** status 200 The list of speed limit tags */ string[];
 export type GetInfraByIdSpeedLimitTagsApiArg = {
-  /** Infra id */
   id: number;
 };
-export type GetInfraByIdSwitchTypesApiResponse = /** status 200 A list of switch types */ object[];
+export type GetInfraByIdSwitchTypesApiResponse =
+  /** status 200 A switch type following Railjson spec */ {
+    groups: object;
+    id: string;
+    ports: string[];
+  }[];
 export type GetInfraByIdSwitchTypesApiArg = {
-  /** infra id */
   id: number;
 };
 export type PostInfraByIdUnlockApiResponse = unknown;
 export type PostInfraByIdUnlockApiArg = {
-  /** infra id */
   id: number;
 };
-export type GetInfraByIdVoltagesApiResponse = /** status 200 Voltages list */ string[];
+export type GetInfraByIdVoltagesApiResponse = /** status 200 The list of voltages */ string[];
 export type GetInfraByIdVoltagesApiArg = {
-  /** Infra ID */
-  id: number;
-  /** include rolling stocks modes or not */
+  /** Include rolling stocks modes or not */
   includeRollingStockModes?: boolean;
+  id: number;
 };
 export type GetLayersLayerByLayerSlugMvtAndViewSlugApiResponse =
   /** status 200 Successful Response */ ViewMetadata;
@@ -1289,19 +1293,28 @@ export type Infra = {
   modified: string;
   name: string;
   railjson_version: string;
-  state:
-    | 'NOT_LOADED'
-    | 'INITIALIZING'
-    | 'DOWNLOADING'
-    | 'PARSING_JSON'
-    | 'PARSING_INFRA'
-    | 'ADAPTING_KOTLIN'
-    | 'LOADING_SIGNALS'
-    | 'BUILDING_BLOCKS'
-    | 'CACHED'
-    | 'TRANSIENT_ERROR'
-    | 'ERROR';
   version: string;
+};
+export type InfraState =
+  | 'NOT_LOADED'
+  | 'INITIALIZING'
+  | 'DOWNLOADING'
+  | 'PARSING_JSON'
+  | 'PARSING_INFRA'
+  | 'ADAPTING_KOTLIN'
+  | 'LOADING_SIGNALS'
+  | 'BUILDING_BLOCKS'
+  | 'CACHED'
+  | 'TRANSIENT_ERROR'
+  | 'ERROR';
+export type InfraWithState = Infra & {
+  state: InfraState;
+};
+export type PaginatedInfras = {
+  count: number;
+  next: number | null;
+  previous: number | null;
+  results: InfraWithState[];
 };
 export type RailjsonFile = {
   buffer_stops?: any;

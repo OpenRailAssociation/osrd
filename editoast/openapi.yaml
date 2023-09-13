@@ -1,11 +1,9 @@
 components:
   schemas:
     Allowance:
-      discriminator:
-        propertyName: allowance_type
       oneOf:
-      - $ref: '#/components/schemas/EngineeringAllowance'
-      - $ref: '#/components/schemas/StandardAllowance'
+        - $ref: "#/components/schemas/EngineeringAllowance"
+        - $ref: "#/components/schemas/StandardAllowance"
     AllowancePercentValue:
       properties:
         percentage:
@@ -13,11 +11,11 @@ components:
           type: number
         value_type:
           enum:
-          - percentage
+            - percentage
           type: string
       required:
-      - value_type
-      - percentage
+        - value_type
+        - percentage
     AllowanceTimePerDistanceValue:
       properties:
         minutes:
@@ -26,11 +24,11 @@ components:
           type: number
         value_type:
           enum:
-          - time_per_distance
+            - time_per_distance
           type: string
       required:
-      - value_type
-      - minutes
+        - value_type
+        - minutes
     AllowanceTimeValue:
       properties:
         seconds:
@@ -38,18 +36,16 @@ components:
           type: number
         value_type:
           enum:
-          - time
+            - time
           type: string
       required:
-      - value_type
-      - seconds
+        - value_type
+        - seconds
     AllowanceValue:
-      discriminator:
-        propertyName: value_type
       oneOf:
-      - $ref: '#/components/schemas/AllowanceTimePerDistanceValue'
-      - $ref: '#/components/schemas/AllowanceTimeValue'
-      - $ref: '#/components/schemas/AllowancePercentValue'
+        - $ref: "#/components/schemas/AllowanceTimePerDistanceValue"
+        - $ref: "#/components/schemas/AllowanceTimeValue"
+        - $ref: "#/components/schemas/AllowancePercentValue"
     Battery:
       description: energy source for a rolling stock representing a battery
       properties:
@@ -60,32 +56,21 @@ components:
           type: number
         energy_source_type:
           enum:
-          - Battery
+            - Battery
           type: string
         energy_storage:
-          $ref: '#/components/schemas/EnergyStorage'
+          $ref: "#/components/schemas/EnergyStorage"
         max_input_power:
-          $ref: '#/components/schemas/SpeedDependantPower'
+          $ref: "#/components/schemas/SpeedDependantPower"
         max_output_power:
-          $ref: '#/components/schemas/SpeedDependantPower'
+          $ref: "#/components/schemas/SpeedDependantPower"
       required:
-      - energy_source_type
-      - max_input_power
-      - max_output_power
-      - energy_storage
-      - efficiency
+        - energy_source_type
+        - max_input_power
+        - max_output_power
+        - energy_storage
+        - efficiency
       type: object
-    BoundingBox:
-      description: A bounding box
-      items:
-        items:
-          type: integer
-        maxItems: 2
-        minItems: 2
-        type: array
-      maxItems: 2
-      minItems: 2
-      type: array
     Catenary:
       description: energy source for a rolling stock representing a catenary
       properties:
@@ -96,17 +81,17 @@ components:
           type: number
         energy_source_type:
           enum:
-          - Catenary
+            - Catenary
           type: string
         max_input_power:
-          $ref: '#/components/schemas/SpeedDependantPower'
+          $ref: "#/components/schemas/SpeedDependantPower"
         max_output_power:
-          $ref: '#/components/schemas/SpeedDependantPower'
+          $ref: "#/components/schemas/SpeedDependantPower"
       required:
-      - energy_source_type
-      - max_input_power
-      - max_output_power
-      - efficiency
+        - energy_source_type
+        - max_input_power
+        - max_output_power
+        - efficiency
       type: object
     CatenaryRange:
       properties:
@@ -119,20 +104,20 @@ components:
           format: float
           type: number
         mode:
-          example: '25000'
+          example: "25000"
           type: string
       required:
-      - begin
-      - end
-      - mode
+        - begin
+        - end
+        - mode
       type: object
     Comfort:
       default: STANDARD
       description: Train comfort that will be used for the simulation
       enum:
-      - AC
-      - HEATING
-      - STANDARD
+        - AC
+        - HEATING
+        - STANDARD
       type: string
     ConditionalEffortCurve:
       properties:
@@ -140,7 +125,7 @@ components:
           nullable: true
           properties:
             comfort:
-              $ref: '#/components/schemas/Comfort'
+              $ref: "#/components/schemas/Comfort"
               nullable: true
             electrical_profile_level:
               nullable: true
@@ -150,12 +135,12 @@ components:
               type: string
           type: object
         curve:
-          $ref: '#/components/schemas/EffortCurve'
+          $ref: "#/components/schemas/EffortCurve"
       type: object
     Conflict:
       properties:
         conflict_type:
-          $ref: '#/components/schemas/ConflictType'
+          $ref: "#/components/schemas/ConflictType"
         end_time:
           format: int64
           minimum: 0
@@ -174,16 +159,16 @@ components:
             type: string
           type: array
       required:
-      - train_ids
-      - train_names
-      - start_time
-      - end_time
-      - conflict_type
+        - train_ids
+        - train_names
+        - start_time
+        - end_time
+        - conflict_type
       type: object
     ConflictType:
       enum:
-      - Spacing
-      - Routing
+        - Spacing
+        - Routing
       type: string
     DeleteOperation:
       properties:
@@ -191,19 +176,19 @@ components:
           example: bd840b06-84ba-4566-98c1-ccf0196c5f16
           type: string
         obj_type:
-          $ref: '#/components/schemas/ObjectType'
+          $ref: "#/components/schemas/ObjectType"
         operation_type:
           enum:
-          - DELETE
+            - DELETE
           type: string
       required:
-      - operation_type
-      - obj_type
-      - obj_id
+        - operation_type
+        - obj_type
+        - obj_id
     Direction:
       enum:
-      - START_TO_STOP
-      - STOP_TO_START
+        - START_TO_STOP
+        - STOP_TO_START
       type: string
     DirectionalTrackRange:
       description: Track range associated with a direction
@@ -212,7 +197,7 @@ components:
           format: float
           type: number
         direction:
-          $ref: '#/components/schemas/Direction'
+          $ref: "#/components/schemas/Direction"
         end:
           example: 100.0
           format: float
@@ -221,18 +206,18 @@ components:
           example: 01234567-89ab-cdef-0123-456789abcdef
           type: string
       required:
-      - track
-      - begin
-      - end
-      - direction
+        - track
+        - begin
+        - end
+        - direction
       type: object
     EffortCurve:
       properties:
         max_efforts:
           example:
-          - 23500.0
-          - 23200.0
-          - 21200.0
+            - 23500.0
+            - 23200.0
+            - 21200.0
           items:
             format: float
             type: number
@@ -240,9 +225,9 @@ components:
           type: array
         speeds:
           example:
-          - 0.0
-          - 2.958
-          - 46.719
+            - 0.0
+            - 2.958
+            - 46.719
           items:
             format: float
             type: number
@@ -252,11 +237,11 @@ components:
     ElectricalProfile:
       properties:
         power_class:
-          example: '1'
+          example: "1"
           type: string
         track_ranges:
           items:
-            $ref: '#/components/schemas/TrackRange'
+            $ref: "#/components/schemas/TrackRange"
           type: array
         value:
           example: A
@@ -265,12 +250,10 @@ components:
     ElectrificationRange:
       properties:
         electrificationUsage:
-          discriminator:
-            propertyName: object_type
           oneOf:
-          - $ref: '#/components/schemas/Electrified'
-          - $ref: '#/components/schemas/Neutral'
-          - $ref: '#/components/schemas/NonElectrified'
+            - $ref: "#/components/schemas/Electrified"
+            - $ref: "#/components/schemas/Neutral"
+            - $ref: "#/components/schemas/NonElectrified"
         start:
           format: double
           type: number
@@ -278,10 +261,10 @@ components:
           format: double
           type: number
       required:
-      - start
-      - stop
-      - is_electrified
-      - electrificationUsage
+        - start
+        - stop
+        - is_electrified
+        - electrificationUsage
     Electrified:
       properties:
         mode:
@@ -290,7 +273,7 @@ components:
           type: boolean
         object_type:
           enum:
-          - Electrified
+            - Electrified
           type: string
         profile:
           nullable: true
@@ -298,18 +281,16 @@ components:
         profile_handled:
           type: boolean
       required:
-      - mode
-      - mode_handled
-      - object_type
-      - profile_handled
+        - mode
+        - mode_handled
+        - object_type
+        - profile_handled
     EnergySource:
       description: enery source of a rolling stock
-      discriminator:
-        propertyName: energy_source_type
       oneOf:
-      - $ref: '#/components/schemas/Catenary'
-      - $ref: '#/components/schemas/PowerPack'
-      - $ref: '#/components/schemas/Battery'
+        - $ref: "#/components/schemas/Catenary"
+        - $ref: "#/components/schemas/PowerPack"
+        - $ref: "#/components/schemas/Battery"
     EnergyStorage:
       description: energy storage of an energy source (of a rolling stock, can be a electrical battery or a hydrogen/fuel powerPack)
       properties:
@@ -330,8 +311,8 @@ components:
               minimum: 0
               type: number
           required:
-          - tau
-          - soc_ref
+            - tau
+            - soc_ref
           type: object
         soc:
           format: float
@@ -349,33 +330,33 @@ components:
           minimum: 0
           type: number
       required:
-      - capacity
-      - soc
-      - soc_min
-      - soc_max
-      - refill_law
+        - capacity
+        - soc
+        - soc_min
+        - soc_max
+        - refill_law
       type: object
     EngineeringAllowance:
       allOf:
-      - properties:
-          allowance_type:
-            enum:
-            - engineering
-            type: string
-          capacity_speed_limit:
-            default: -1
-            format: double
-            type: number
-          distribution:
-            enum:
-            - MARECO
-            - LINEAR
-            type: string
-        required:
-        - allowance_type
-        - distribution
-        type: object
-      - $ref: '#/components/schemas/RangeAllowance'
+        - properties:
+            allowance_type:
+              enum:
+                - engineering
+              type: string
+            capacity_speed_limit:
+              default: -1
+              format: double
+              type: number
+            distribution:
+              enum:
+                - MARECO
+                - LINEAR
+              type: string
+          required:
+            - allowance_type
+            - distribution
+          type: object
+        - $ref: "#/components/schemas/RangeAllowance"
     GeoJsonObject:
       description: GeoJson format
       properties:
@@ -389,8 +370,8 @@ components:
         type:
           type: string
       required:
-      - coordinates
-      - type
+        - coordinates
+        - type
       type: object
     GeoJsonPosition:
       properties:
@@ -404,234 +385,112 @@ components:
         type:
           type: string
       required:
-      - coordinates
-      - type
+        - coordinates
+        - type
       type: object
-    Geometry:
-      description: Definition of a GeoJSON geometry
-      oneOf:
-      - $ref: '#/components/schemas/Point'
-      - $ref: '#/components/schemas/LineString'
-      - $ref: '#/components/schemas/Polygon'
-      - $ref: '#/components/schemas/MultiPoint'
-      - $ref: '#/components/schemas/MultiLineString'
-      - $ref: '#/components/schemas/MultiPolygon'
-      type: object
-    Infra:
+    InfraForm:
       properties:
-        created:
-          format: date
-          type: string
-        generated_version:
-          example: '1'
-          nullable: true
-          type: string
-        id:
-          type: integer
-        locked:
-          type: boolean
-        modified:
-          format: date
-          type: string
         name:
           type: string
-        railjson_version:
-          example: 3.3.1
-          type: string
-        state:
-          enum:
-          - NOT_LOADED
-          - INITIALIZING
-          - DOWNLOADING
-          - PARSING_JSON
-          - PARSING_INFRA
-          - ADAPTING_KOTLIN
-          - LOADING_SIGNALS
-          - BUILDING_BLOCKS
-          - CACHED
-          - TRANSIENT_ERROR
-          - ERROR
-          type: string
-        version:
-          example: '1'
-          type: string
       required:
-      - id
-      - name
-      - version
-      - railjson_version
-      - generated_version
-      - created
-      - modified
-      - locked
-      - state
-    InfraError:
-      description: An infra error or warning
-      properties:
-        geographic:
-          $ref: '#/components/schemas/Geometry'
-          description: Geojson of the geographic geometry of the error
-          nullable: true
-        information:
-          description: Information about the error (check schema documentation for more details)
-          properties:
-            error_type:
-              $ref: '#/components/schemas/InfraErrorType'
-            field:
-              type: string
-            is_warning:
-              type: boolean
-            obj_id:
-              type: string
-            obj_type:
-              enum:
-              - TrackSection
-              - Signal
-              - BufferStop
-              - Detector
-              - Switch
-              - Route
-              type: string
-          required:
-          - obj_id
-          - obj_type
-          - error_type
-          - is_warning
-          type: object
-        schematic:
-          description: Geojson of the schematic geometry of the error
-          nullable: true
-          type: object
-      required:
-      - information
+        - name
       type: object
-    InfraErrorType:
-      description: Type of the infra error
+    InfraPatchForm:
+      description: Patch form for a project
+      properties:
+        name:
+          nullable: true
+          type: string
+      type: object
+    InfraState:
       enum:
-      - duplicated_group
-      - empty_object
-      - invalid_group
-      - invalid_reference
-      - invalid_route
-      - invalid_switch_ports
-      - missing_route
-      - missing_buffer_stop
-      - object_out_of_path
-      - odd_buffer_stop_location
-      - out_of_range
-      - overlapping_speed_sections
-      - overlapping_switches
-      - overlapping_track_links
-      - overlapping_catenaries
-      - unknown_port_name
-      - unused_port
+        - NOT_LOADED
+        - INITIALIZING
+        - DOWNLOADING
+        - PARSING_JSON
+        - PARSING_INFRA
+        - ADAPTING_KOTLIN
+        - LOADING_SIGNALS
+        - BUILDING_BLOCKS
+        - CACHED
+        - TRANSIENT_ERROR
+        - ERROR
       type: string
+    InfraStateResponse:
+      properties:
+        last_status:
+          allOf:
+            - $ref: "#/components/schemas/InfraState"
+          nullable: true
+        status:
+          $ref: "#/components/schemas/InfraState"
+      required:
+        - status
+      type: object
+    InfraWithState:
+      allOf:
+        - $ref: "#/components/schemas/Infra"
+        - properties:
+            state:
+              $ref: "#/components/schemas/InfraState"
+          required:
+            - state
+          type: object
     InvalidTrainValues:
       enum:
-      - NewerRollingStock
-      - NewerInfra
+        - NewerRollingStock
+        - NewerInfra
       type: string
     LightRollingStock:
       allOf:
-      - $ref: '#/components/schemas/RollingStockBase'
-      - properties:
-          effort_curves:
-            properties:
-              default_mode:
-                type: string
-              modes:
-                additionalProperties:
-                  properties:
-                    is_electric:
-                      type: boolean
-                  required:
-                  - is_electric
+        - $ref: "#/components/schemas/RollingStockBase"
+        - properties:
+            effort_curves:
+              properties:
+                default_mode:
+                  type: string
+                modes:
+                  additionalProperties:
+                    properties:
+                      is_electric:
+                        type: boolean
+                    required:
+                      - is_electric
+                    type: object
                   type: object
-                type: object
-            required:
-            - default_mode
-            - modes
-            type: object
-          id:
-            type: number
-          liveries:
-            items:
-              $ref: '#/components/schemas/RollingStockLivery'
-            type: array
-          railjson_version:
-            example: '3.2'
-            type: string
-        required:
-        - railjson_version
-        - id
-        - liveries
-        - effort_curves
-        type: object
-    LineString:
-      description: GeoJSon geometry
-      properties:
-        coordinates:
-          items:
-            $ref: '#/components/schemas/Point3D'
-          type: array
-        type:
-          enum:
-          - LineString
-          type: string
-      required:
-      - type
-      - coordinates
-      type: object
-    MultiLineString:
-      description: GeoJSon geometry
-      properties:
-        coordinates:
-          items:
-            items:
-              $ref: '#/components/schemas/Point3D'
-            type: array
-          type: array
-        type:
-          enum:
-          - MultiLineString
-          type: string
-      required:
-      - type
-      - coordinates
-      type: object
+              required:
+                - default_mode
+                - modes
+              type: object
+            id:
+              type: number
+            liveries:
+              items:
+                $ref: "#/components/schemas/RollingStockLivery"
+              type: array
+            railjson_version:
+              example: "3.2"
+              type: string
+          required:
+            - railjson_version
+            - id
+            - liveries
+            - effort_curves
+          type: object
     MultiPoint:
       description: GeoJSon geometry
       properties:
         coordinates:
           items:
-            $ref: '#/components/schemas/Point3D'
+            $ref: "#/components/schemas/Point3D"
           type: array
         type:
           enum:
-          - MultiPoint
+            - MultiPoint
           type: string
       required:
-      - type
-      - coordinates
-      type: object
-    MultiPolygon:
-      description: GeoJSon geometry
-      properties:
-        coordinates:
-          items:
-            items:
-              items:
-                $ref: '#/components/schemas/Point3D'
-              type: array
-            type: array
-          type: array
-        type:
-          enum:
-          - MultiPolygon
-          type: string
-      required:
-      - type
-      - coordinates
+        - type
+        - coordinates
       type: object
     Neutral:
       properties:
@@ -639,101 +498,56 @@ components:
           type: boolean
         object_type:
           enum:
-          - Neutral
+            - Neutral
           type: string
       required:
-      - lower_pantograph
-      - object_type
+        - lower_pantograph
+        - object_type
     NonElectrified:
       properties:
         object_type:
           enum:
-          - NonElectrified
+            - NonElectrified
           type: string
       required:
-      - object_type
-    ObjectType:
-      description: Type of the object
-      enum:
-      - TrackSection
-      - Signal
-      - SpeedSection
-      - Detector
-      - TrackSectionLink
-      - Switch
-      - SwitchType
-      - BufferStop
-      - Route
-      - OperationalPoint
-      - Catenary
-      type: string
-    Operation:
-      oneOf:
-      - $ref: '#/components/schemas/RailjsonObject'
-      - $ref: '#/components/schemas/DeleteOperation'
-      - $ref: '#/components/schemas/UpdateOperation'
-    OperationObject:
-      properties:
-        obj_type:
-          $ref: '#/components/schemas/ObjectType'
-        operation_type:
-          enum:
-          - CREATE
-          - UPDATE
-          type: string
-        railjson:
-          $ref: '#/components/schemas/Railjson'
-      required:
-      - operation_type
-      - obj_type
-      - railjson
-    OperationResult:
-      oneOf:
-      - $ref: '#/components/schemas/DeleteOperation'
-      - $ref: '#/components/schemas/OperationObject'
+        - object_type
     OperationalPointLocation:
       properties:
         type:
           enum:
-          - operational_point
+            - operational_point
           type: string
         uic:
           format: int64
           type: integer
       required:
-      - uic
-      - type
+        - uic
+        - type
       type: object
-    Patch:
-      description: A JSONPatch document as defined by RFC 6902
+    PaginatedResponse:
+      description: A paginated response
       properties:
-        from:
-          description: A string containing a JSON Pointer value.
-          type: string
-        op:
-          description: The operation to be performed
-          enum:
-          - add
-          - remove
-          - replace
-          - move
-          - copy
-          - test
-          type: string
-        path:
-          description: A JSON-Pointer
-          type: string
-        value:
-          description: The value to be used within the operations.
-          type: object
+        count:
+          format: int64
+          type: integer
+        next:
+          format: int64
+          nullable: true
+          type: integer
+        previous:
+          format: int64
+          nullable: true
+          type: integer
+        results:
+          items:
+            $ref: "#/components/schemas/T"
+          type: array
       required:
-      - op
-      - path
-    Patches:
-      description: A list of Patch
-      items:
-        $ref: '#/components/schemas/Patch'
-      type: array
+        - count
+        - previous
+        - next
+        - results
+      type: object
     Path:
       properties:
         created:
@@ -750,12 +564,12 @@ components:
                 format: float
                 type: number
             required:
-            - radius
-            - position
+              - radius
+              - position
             type: object
           type: array
         geographic:
-          $ref: '#/components/schemas/GeoJsonObject'
+          $ref: "#/components/schemas/GeoJsonObject"
         id:
           type: integer
         length:
@@ -766,7 +580,7 @@ components:
           format: uuid
           type: string
         schematic:
-          $ref: '#/components/schemas/GeoJsonObject'
+          $ref: "#/components/schemas/GeoJsonObject"
         slopes:
           description: Slopes on the path
           items:
@@ -778,24 +592,24 @@ components:
                 format: float
                 type: number
             required:
-            - gradient
-            - position
+              - gradient
+              - position
             type: object
           type: array
         steps:
           items:
-            $ref: '#/components/schemas/PathStep'
+            $ref: "#/components/schemas/PathStep"
           type: array
       required:
-      - id
-      - owner
-      - created
-      - length
-      - geographic
-      - schematic
-      - slopes
-      - curves
-      - steps
+        - id
+        - owner
+        - created
+        - length
+        - geographic
+        - schematic
+        - slopes
+        - curves
+        - steps
     PathQuery:
       properties:
         infra:
@@ -813,18 +627,18 @@ components:
                 type: number
               waypoints:
                 items:
-                  $ref: '#/components/schemas/PathWaypoint'
+                  $ref: "#/components/schemas/PathWaypoint"
                 type: array
             required:
-            - duration
-            - waypoints
+              - duration
+              - waypoints
             type: object
           minItems: 2
           type: array
       required:
-      - infra
-      - steps
-      - rolling_stocks
+        - infra
+        - steps
+        - rolling_stocks
       type: object
     PathStep:
       properties:
@@ -832,11 +646,11 @@ components:
           format: float
           type: number
         geo:
-          $ref: '#/components/schemas/GeoJsonPosition'
+          $ref: "#/components/schemas/GeoJsonPosition"
         id:
           type: string
         location:
-          $ref: '#/components/schemas/TrackSectionLocation'
+          $ref: "#/components/schemas/TrackSectionLocation"
         name:
           type: string
         path_offset:
@@ -844,16 +658,16 @@ components:
           format: float
           type: number
         sch:
-          $ref: '#/components/schemas/GeoJsonPosition'
+          $ref: "#/components/schemas/GeoJsonPosition"
         suggestion:
           type: boolean
       required:
-      - suggestion
-      - duration
-      - path_offset
-      - location
-      - sch
-      - geo
+        - suggestion
+        - duration
+        - path_offset
+        - location
+        - sch
+        - geo
       type: object
     PathWaypoint:
       properties:
@@ -870,21 +684,21 @@ components:
           description: track section ID of the waypoint
           type: string
       required:
-      - track_section
-      - geo_cordinate
+        - track_section
+        - geo_cordinate
       type: object
     Point:
       description: GeoJSon geometry
       properties:
         coordinates:
-          $ref: '#/components/schemas/Point3D'
+          $ref: "#/components/schemas/Point3D"
         type:
           enum:
-          - Point
+            - Point
           type: string
       required:
-      - type
-      - coordinates
+        - type
+        - coordinates
       type: object
     Point3D:
       description: Point in 3D space
@@ -893,23 +707,6 @@ components:
       maxItems: 3
       minItems: 2
       type: array
-    Polygon:
-      description: GeoJSon geometry
-      properties:
-        coordinates:
-          items:
-            items:
-              $ref: '#/components/schemas/Point3D'
-            type: array
-          type: array
-        type:
-          enum:
-          - Polygon
-          type: string
-      required:
-      - type
-      - coordinates
-      type: object
     PowerPack:
       description: energy source for a rolling stock representing a power pack (hydrogen, fuel...)
       properties:
@@ -920,20 +717,20 @@ components:
           type: number
         energy_source_type:
           enum:
-          - PowerPack
+            - PowerPack
           type: string
         energy_storage:
-          $ref: '#/components/schemas/EnergyStorage'
+          $ref: "#/components/schemas/EnergyStorage"
         max_input_power:
-          $ref: '#/components/schemas/SpeedDependantPower'
+          $ref: "#/components/schemas/SpeedDependantPower"
         max_output_power:
-          $ref: '#/components/schemas/SpeedDependantPower'
+          $ref: "#/components/schemas/SpeedDependantPower"
       required:
-      - energy_source_type
-      - max_input_power
-      - max_output_power
-      - energy_storage
-      - efficiency
+        - energy_source_type
+        - max_input_power
+        - max_output_power
+        - energy_storage
+        - efficiency
       type: object
     PowerRestrictionRange:
       description: A range along the train path where a power restriction is applied.
@@ -954,9 +751,9 @@ components:
           description: The power restriction code to apply.
           type: string
       required:
-      - begin_position
-      - end_position
-      - power_restriction_code
+        - begin_position
+        - end_position
+        - power_restriction_code
       type: object
     PowerRestrictionRangeItem:
       properties:
@@ -971,20 +768,20 @@ components:
           format: double
           type: number
       required:
-      - start
-      - stop
-      - code
-      - handled
+        - start
+        - stop
+        - code
+        - handled
     ProjectCreateRequest:
       properties:
         budget:
           type: integer
         description:
-          default: ''
+          default: ""
           maxLength: 1024
           type: string
         funders:
-          default: ''
+          default: ""
           maxLength: 1024
           type: string
         image:
@@ -994,7 +791,7 @@ components:
           maxLength: 128
           type: string
         objectives:
-          default: ''
+          default: ""
           maxLength: 4096
           type: string
         tags:
@@ -1003,7 +800,7 @@ components:
             type: string
           type: array
       required:
-      - name
+        - name
     ProjectPatchRequest:
       properties:
         budget:
@@ -1058,82 +855,6 @@ components:
           items:
             type: string
           type: array
-    Railjson:
-      additionalProperties: true
-      description: This field follows railjson format
-      example:
-        curves: []
-        geo:
-          coordinates:
-          - - 1.0
-            - 41.0
-          - - 2.0
-            - 42.0
-          type: LineString
-        id: bd840b06-84ba-4566-98c1-ccf0196c5f16
-        length: 1000
-        line_code: 1
-        line_name: my line
-        navigability: BOTH
-        sch:
-          coordinates:
-          - - 1.0
-            - 41.0
-          - - 2.0
-            - 42.0
-          type: LineString
-        slopes:
-        - begin: 250
-          end: 500
-          gradient: -1
-        track_name: track name
-        track_number: 1
-      properties:
-        id:
-          type: string
-      required:
-      - id
-      type: object
-    RailjsonFile:
-      properties:
-        buffer_stops:
-          type: array
-        catenaries:
-          type: array
-        detectors:
-          type: array
-        operational_points:
-          type: array
-        routes:
-          type: array
-        signals:
-          type: array
-        speed_sections:
-          type: array
-        switch_types:
-          type: array
-        switches:
-          type: array
-        track_section_links:
-          type: array
-        track_sections:
-          type: array
-        version:
-          type: string
-    RailjsonObject:
-      properties:
-        obj_type:
-          $ref: '#/components/schemas/ObjectType'
-        operation_type:
-          enum:
-          - CREATE
-          type: string
-        railjson:
-          $ref: '#/components/schemas/Railjson'
-      required:
-      - operation_type
-      - obj_type
-      - railjson
     RangeAllowance:
       properties:
         begin_position:
@@ -1142,33 +863,43 @@ components:
           example: 1000.0
           type: number
         value:
-          $ref: '#/components/schemas/AllowanceValue'
+          $ref: "#/components/schemas/AllowanceValue"
       required:
-      - begin_position
-      - end_position
-      - value
+        - begin_position
+        - end_position
+        - value
+    RefreshResponse:
+      properties:
+        infra_refreshed:
+          items:
+            format: int64
+            type: integer
+          type: array
+      required:
+        - infra_refreshed
+      type: object
     RollingStock:
       allOf:
-      - $ref: '#/components/schemas/RollingStockUpsertPayload'
-      - properties:
-          id:
-            type: number
-          liveries:
-            items:
-              $ref: '#/components/schemas/RollingStockLivery'
-            type: array
-          railjson_version:
-            example: '3.2'
-            type: string
-        required:
-        - railjson_version
-        - id
-        - liveries
-        type: object
+        - $ref: "#/components/schemas/RollingStockUpsertPayload"
+        - properties:
+            id:
+              type: number
+            liveries:
+              items:
+                $ref: "#/components/schemas/RollingStockLivery"
+              type: array
+            railjson_version:
+              example: "3.2"
+              type: string
+          required:
+            - railjson_version
+            - id
+            - liveries
+          type: object
     RollingStockBase:
       properties:
         base_power_class:
-          example: '5'
+          example: "5"
           type: string
         comfort_acceleration:
           format: float
@@ -1181,7 +912,7 @@ components:
           type: number
         energy_sources:
           items:
-            $ref: '#/components/schemas/EnergySource'
+            $ref: "#/components/schemas/EnergySource"
           type: array
         features:
           items:
@@ -1191,15 +922,15 @@ components:
           properties:
             type:
               enum:
-              - CONST
-              - MAX
+                - CONST
+                - MAX
               type: string
             value:
               format: float
               type: number
           required:
-          - type
-          - value
+            - type
+            - value
           type: object
         inertia_coefficient:
           format: float
@@ -1209,15 +940,15 @@ components:
           type: number
         loading_gauge:
           enum:
-          - G1
-          - G2
-          - GA
-          - GB
-          - GB1
-          - GC
-          - FR3.3
-          - FR3.3/GB/G2
-          - GLOTT
+            - G1
+            - G2
+            - GA
+            - GB
+            - GB1
+            - GC
+            - FR3.3
+            - FR3.3/GB/G2
+            - GLOTT
           type: string
         locked:
           default: false
@@ -1234,8 +965,8 @@ components:
             detail: BB 7200
             family: LOCOMOTIVES
             grouping: Locomotives électriques courant continu
-            number: '1'
-            reference: '7200'
+            number: "1"
+            reference: "7200"
             series: BB 7200
             subseries: GV
             type: Locomotives électriques
@@ -1260,15 +991,15 @@ components:
             unit:
               type: string
           required:
-          - detail
-          - family
-          - grouping
-          - number
-          - reference
-          - series
-          - subseries
-          - type
-          - unit
+            - detail
+            - family
+            - grouping
+            - number
+            - reference
+            - series
+            - subseries
+            - type
+            - unit
           type: object
         name:
           type: string
@@ -1277,8 +1008,8 @@ components:
             type: string
           description: Mapping of power restriction code to power class
           example:
-            C1US: '4'
-            C2US: '3'
+            C1US: "4"
+            C2US: "3"
           type: object
         raise_pantograph_time:
           description: The time it takes to raise this train's pantograph in seconds. Is null if the train is not electric.
@@ -1296,13 +1027,13 @@ components:
               type: number
             type:
               enum:
-              - davis
+                - davis
               type: string
           required:
-          - A
-          - B
-          - C
-          - type
+            - A
+            - B
+            - C
+            - type
           type: object
         startup_acceleration:
           format: float
@@ -1311,24 +1042,24 @@ components:
           format: float
           type: number
       required:
-      - name
-      - length
-      - max_speed
-      - startup_time
-      - startup_acceleration
-      - comfort_acceleration
-      - gamma
-      - inertia_coefficient
-      - features
-      - mass
-      - rolling_resistance
-      - loading_gauge
-      - base_power_class
-      - power_restrictions
-      - metadata
-      - energy_sources
-      - electrical_power_startup_time
-      - raise_pantograph_time
+        - name
+        - length
+        - max_speed
+        - startup_time
+        - startup_acceleration
+        - comfort_acceleration
+        - gamma
+        - inertia_coefficient
+        - features
+        - mass
+        - rolling_resistance
+        - loading_gauge
+        - base_power_class
+        - power_restrictions
+        - metadata
+        - energy_sources
+        - electrical_power_startup_time
+        - raise_pantograph_time
     RollingStockLivery:
       properties:
         compound_image_id:
@@ -1339,41 +1070,41 @@ components:
         name:
           type: string
       required:
-      - id
-      - name
-      - compound_image_id
+        - id
+        - name
+        - compound_image_id
     RollingStockUpsertPayload:
       allOf:
-      - $ref: '#/components/schemas/RollingStockBase'
-      - properties:
-          effort_curves:
-            properties:
-              default_mode:
-                type: string
-              modes:
-                additionalProperties:
-                  properties:
-                    curves:
-                      items:
-                        $ref: '#/components/schemas/ConditionalEffortCurve'
-                      type: array
-                    default_curve:
-                      $ref: '#/components/schemas/EffortCurve'
-                    is_electric:
-                      type: boolean
-                  required:
-                  - curves
-                  - default_curve
-                  - is_electric
+        - $ref: "#/components/schemas/RollingStockBase"
+        - properties:
+            effort_curves:
+              properties:
+                default_mode:
+                  type: string
+                modes:
+                  additionalProperties:
+                    properties:
+                      curves:
+                        items:
+                          $ref: "#/components/schemas/ConditionalEffortCurve"
+                        type: array
+                      default_curve:
+                        $ref: "#/components/schemas/EffortCurve"
+                      is_electric:
+                        type: boolean
+                    required:
+                      - curves
+                      - default_curve
+                      - is_electric
+                    type: object
                   type: object
-                type: object
-            required:
-            - default_mode
-            - modes
-            type: object
-        required:
-        - effort_curves
-        type: object
+              required:
+                - default_mode
+                - modes
+              type: object
+          required:
+            - effort_curves
+          type: object
     RollingStockUsage:
       properties:
         rolling_stock_id:
@@ -1397,53 +1128,18 @@ components:
             train_schedule_id:
               type: integer
           required:
-          - train_schedule_id
-          - train_name
-          - project_id
-          - project_name
-          - study_id
-          - study_name
-          - scenario_id
-          - scenario_name
+            - train_schedule_id
+            - train_name
+            - project_id
+            - project_name
+            - study_id
+            - study_name
+            - scenario_id
+            - scenario_name
           type: object
       required:
-      - rolling_stock_id
-      - usage
-      type: object
-    RouteTrackRangesCantComputePathError:
-      description: Error when the route path couldn't be computed
-      properties:
-        type:
-          enum:
-          - CantComputePath
-          type: string
-      required:
-      - type
-      type: object
-    RouteTrackRangesComputed:
-      description: Route track ranges successfully computed
-      properties:
-        track_ranges:
-          items:
-            $ref: '#/components/schemas/DirectionalTrackRange'
-          type: array
-        type:
-          enum:
-          - Computed
-          type: string
-      required:
-      - type
-      - track_ranges
-      type: object
-    RouteTrackRangesNotFoundError:
-      description: Error when the route id couldn't be found
-      properties:
-        type:
-          enum:
-          - NotFound
-          type: string
-      required:
-      - type
+        - rolling_stock_id
+        - usage
       type: object
     ScenarioListResult:
       properties:
@@ -1511,8 +1207,8 @@ components:
             type: string
           type: array
       required:
-      - name
-      - infra_id
+        - name
+        - infra_id
     ScenarioResult:
       properties:
         creation_date:
@@ -1565,7 +1261,7 @@ components:
         ch:
           type: string
         geographic:
-          $ref: '#/components/schemas/MultiPoint'
+          $ref: "#/components/schemas/MultiPoint"
         infra_id:
           type: string
         name:
@@ -1573,7 +1269,7 @@ components:
         obj_id:
           type: string
         schematic:
-          $ref: '#/components/schemas/MultiPoint'
+          $ref: "#/components/schemas/MultiPoint"
         track_sections:
           items:
             properties:
@@ -1582,8 +1278,8 @@ components:
               track:
                 type: string
             required:
-            - track
-            - position
+              - track
+              - position
             type: object
           type: array
         trigram:
@@ -1591,13 +1287,13 @@ components:
         uic:
           type: integer
       required:
-      - obj_id
-      - name
-      - geographic
-      - ch
-      - schematic
-      - trigram
-      - track_sections
+        - obj_id
+        - name
+        - geographic
+        - ch
+        - schematic
+        - trigram
+        - track_sections
     SearchProjectResult:
       properties:
         description:
@@ -1616,30 +1312,30 @@ components:
         tags:
           type: array
       required:
-      - id
-      - name
-      - description
-      - last_modification
+        - id
+        - name
+        - description
+        - last_modification
     SearchQuery:
       example:
-      - and
-      - - or
-        - - search
-          - - name
-          - mich st
-        - - search
-          - - trigram
-          - null
-      - - =
-        - - infra_id
-        - 2
+        - and
+        - - or
+          - - search
+            - - name
+            - mich st
+          - - search
+            - - trigram
+            - null
+        - - =
+          - - infra_id
+          - 2
       items:
         oneOf:
-        - type: boolean
-        - type: number
-        - type: integer
-        - type: string
-        - $ref: '#/components/schemas/SearchQuery'
+          - type: boolean
+          - type: number
+          - type: integer
+          - type: string
+          - $ref: "#/components/schemas/SearchQuery"
       minItems: 1
       nullable: true
       type: array
@@ -1669,12 +1365,12 @@ components:
         trains_count:
           type: integer
       required:
-      - id
-      - name
-      - study_id
-      - last_modification
-      - infra_id
-      - timetable_id
+        - id
+        - name
+        - study_id
+        - last_modification
+        - infra_id
+        - timetable_id
     SearchSignalResult:
       properties:
         aspects:
@@ -1682,7 +1378,7 @@ components:
             type: string
           type: array
         geographic:
-          $ref: '#/components/schemas/Point'
+          $ref: "#/components/schemas/Point"
         infra_id:
           type: integer
         label:
@@ -1692,7 +1388,7 @@ components:
         line_name:
           type: string
         schematic:
-          $ref: '#/components/schemas/Point'
+          $ref: "#/components/schemas/Point"
         systems:
           items:
             type: string
@@ -1700,11 +1396,11 @@ components:
         type:
           type: string
       required:
-      - label
-      - geographic
-      - schematic
-      - line_code
-      - line_name
+        - label
+        - geographic
+        - schematic
+        - line_code
+        - line_name
     SearchStudyResult:
       properties:
         description:
@@ -1725,10 +1421,10 @@ components:
             type: string
           type: array
       required:
-      - id
-      - name
-      - project_id
-      - last_modification
+        - id
+        - name
+        - project_id
+        - last_modification
     SearchTrackResult:
       properties:
         infra_id:
@@ -1738,13 +1434,13 @@ components:
         line_name:
           type: string
       required:
-      - infra_id
-      - line_code
-      - line_name
+        - infra_id
+        - line_code
+        - line_name
     SimulationReport:
       properties:
         base:
-          $ref: '#/components/schemas/SimulationReportByTrain'
+          $ref: "#/components/schemas/SimulationReportByTrain"
         curves:
           items:
             properties:
@@ -1753,17 +1449,17 @@ components:
               radius:
                 type: number
             required:
-            - position
-            - radius
+              - position
+              - radius
             type: object
           minItems: 2
           type: array
         eco:
-          $ref: '#/components/schemas/SimulationReportByTrain'
+          $ref: "#/components/schemas/SimulationReportByTrain"
         electrification_ranges:
           description: A list of ranges which should be contiguous and which describe the electrification on the path and if it is handled by the train
           items:
-            $ref: '#/components/schemas/ElectrificationRange'
+            $ref: "#/components/schemas/ElectrificationRange"
           minItems: 1
           type: array
         id:
@@ -1780,7 +1476,7 @@ components:
         power_restriction_ranges:
           description: The list of ranges where power restrictions are applied
           items:
-            $ref: '#/components/schemas/PowerRestrictionRangeItem'
+            $ref: "#/components/schemas/PowerRestrictionRangeItem"
           type: array
         slopes:
           items:
@@ -1790,8 +1486,8 @@ components:
               position:
                 type: number
             required:
-            - position
-            - gradient
+              - position
+              - gradient
             type: object
           minItems: 2
           type: array
@@ -1805,28 +1501,28 @@ components:
               speed:
                 type: number
             required:
-            - position
-            - speed
+              - position
+              - speed
             type: object
           minItems: 2
           type: array
       required:
-      - id
-      - name
-      - labels
-      - path
-      - vmax
-      - slopes
-      - curves
-      - base
-      - electrification_ranges
-      - power_restriction_ranges
+        - id
+        - name
+        - labels
+        - path
+        - vmax
+        - slopes
+        - curves
+        - base
+        - electrification_ranges
+        - power_restriction_ranges
     SimulationReportByTrain:
       properties:
         head_positions:
           items:
             items:
-              $ref: '#/components/schemas/SpaceTimePosition'
+              $ref: "#/components/schemas/SpaceTimePosition"
             minItems: 1
             type: array
           minItems: 1
@@ -1870,15 +1566,15 @@ components:
                 format: float
                 type: number
             required:
-            - signal_id
-            - route_id
-            - time_start
-            - time_end
-            - position_start
-            - position_end
-            - color
-            - blinking
-            - aspect_label
+              - signal_id
+              - route_id
+              - time_start
+              - time_end
+              - position_start
+              - position_end
+              - color
+              - blinking
+              - aspect_label
             type: object
           type: array
         signals:
@@ -1905,23 +1601,23 @@ components:
               signal_id:
                 type: integer
             required:
-            - signal_id
-            - aspects
-            - geo_position
-            - schema_position
+              - signal_id
+              - aspects
+              - geo_position
+              - schema_position
             type: object
           type: array
         speeds:
           items:
             allOf:
-            - $ref: '#/components/schemas/SpaceTimePosition'
-            - properties:
-                speed:
-                  format: float
-                  type: number
-              required:
-              - speed
-              type: object
+              - $ref: "#/components/schemas/SpaceTimePosition"
+              - properties:
+                  speed:
+                    format: float
+                    type: number
+                required:
+                  - speed
+                type: object
           minItems: 1
           type: array
         stops:
@@ -1952,33 +1648,33 @@ components:
               track_number:
                 type: number
             required:
-            - id
-            - name
-            - time
-            - position
-            - duration
-            - line_code
-            - track_number
-            - line_name
-            - track_name
+              - id
+              - name
+              - time
+              - position
+              - duration
+              - line_code
+              - track_number
+              - line_name
+              - track_name
             type: object
           type: array
         tail_positions:
           items:
             items:
-              $ref: '#/components/schemas/SpaceTimePosition'
+              $ref: "#/components/schemas/SpaceTimePosition"
             minItems: 1
             type: array
           minItems: 1
           type: array
       required:
-      - speeds
-      - head_positions
-      - tail_positions
-      - stops
-      - route_aspects
-      - signals
-      - mechanical_energy_consumed
+        - speeds
+        - head_positions
+        - tail_positions
+        - stops
+        - route_aspects
+        - signals
+        - mechanical_energy_consumed
     SpaceTimePosition:
       properties:
         position:
@@ -1988,9 +1684,9 @@ components:
           format: float
           type: number
       required:
-      - time
-      - position
-      - speed
+        - time
+        - position
+        - speed
       type: object
     SpeedDependantPower:
       description: power-speed curve (in an energy source)
@@ -2006,35 +1702,42 @@ components:
             type: number
           type: array
       required:
-      - speeds
-      - powers
+        - speeds
+        - powers
       type: object
     StandardAllowance:
       properties:
         allowance_type:
           enum:
-          - standard
+            - standard
           type: string
         capacity_speed_limit:
           default: -1
           format: double
           type: number
         default_value:
-          $ref: '#/components/schemas/AllowanceValue'
+          $ref: "#/components/schemas/AllowanceValue"
         distribution:
           enum:
-          - MARECO
-          - LINEAR
+            - MARECO
+            - LINEAR
           type: string
         ranges:
           items:
-            $ref: '#/components/schemas/RangeAllowance'
+            $ref: "#/components/schemas/RangeAllowance"
           type: array
       required:
-      - allowance_type
-      - default_value
-      - ranges
-      - distribution
+        - allowance_type
+        - default_value
+        - ranges
+        - distribution
+    StatePayload:
+      properties:
+        infra:
+          format: int64
+          nullable: true
+          type: integer
+      type: object
     StudyResult:
       properties:
         actual_end_date:
@@ -2073,41 +1776,41 @@ components:
           type: string
         state:
           enum:
-          - started
-          - inProgress
-          - finish
+            - started
+            - inProgress
+            - finish
           type: string
         study_type:
           enum:
-          - timeTables
-          - flowRate
-          - parkSizing
-          - garageRequirement
-          - operationOrSizing
-          - operability
-          - strategicPlanning
-          - chartStability
-          - disturbanceTests
+            - timeTables
+            - flowRate
+            - parkSizing
+            - garageRequirement
+            - operationOrSizing
+            - operability
+            - strategicPlanning
+            - chartStability
+            - disturbanceTests
           type: string
         tags:
           items:
             type: string
           type: array
       required:
-      - id
-      - name
-      - project_id
-      - description
-      - budget
-      - tags
-      - service_code
-      - business_code
-      - creation_date
-      - last_modification
-      - scenarios_count
-      - start_date
-      - expected_end_date
-      - actual_end_date
+        - id
+        - name
+        - project_id
+        - description
+        - budget
+        - tags
+        - service_code
+        - business_code
+        - creation_date
+        - last_modification
+        - scenarios_count
+        - start_date
+        - expected_end_date
+        - actual_end_date
     StudyUpsertRequest:
       properties:
         actual_end_date:
@@ -2138,21 +1841,21 @@ components:
           type: string
         state:
           enum:
-          - started
-          - inProgress
-          - finish
+            - started
+            - inProgress
+            - finish
           type: string
         study_type:
           enum:
-          - timeTables
-          - flowRate
-          - parkSizing
-          - garageRequirement
-          - operationOrSizing
-          - operability
-          - strategicPlanning
-          - chartStability
-          - disturbanceTests
+            - timeTables
+            - flowRate
+            - parkSizing
+            - garageRequirement
+            - operationOrSizing
+            - operability
+            - strategicPlanning
+            - chartStability
+            - disturbanceTests
           type: string
         tags:
           items:
@@ -2160,55 +1863,55 @@ components:
             type: string
           type: array
       required:
-      - name
-      - tags
+        - name
+        - tags
     TimetableImportItem:
       properties:
         path:
           items:
-            $ref: '#/components/schemas/TimetableImportPathStep'
+            $ref: "#/components/schemas/TimetableImportPathStep"
           type: array
         rolling_stock:
           example: 2TGV2N2
           type: string
         trains:
           items:
-            $ref: '#/components/schemas/TimetableImportTrain'
+            $ref: "#/components/schemas/TimetableImportTrain"
           type: array
       required:
-      - rolling_stock
-      - path
-      - trains
+        - rolling_stock
+        - path
+        - trains
       type: object
     TimetableImportPathLocation:
       oneOf:
-      - properties:
-          offset:
-            format: double
-            type: number
-          track_section:
-            type: string
-          type:
-            enum:
-            - track_offset
-            type: string
-        required:
-        - track_section
-        - offset
-        - type
-        type: object
-      - properties:
-          type:
-            enum:
-            - operational_point
-            type: string
-          uic:
-            format: int64
-            type: integer
-        required:
-        - uic
-        - type
-        type: object
+        - properties:
+            offset:
+              format: double
+              type: number
+            track_section:
+              type: string
+            type:
+              enum:
+                - track_offset
+              type: string
+          required:
+            - track_section
+            - offset
+            - type
+          type: object
+        - properties:
+            type:
+              enum:
+                - operational_point
+              type: string
+            uic:
+              format: int64
+              type: integer
+          required:
+            - uic
+            - type
+          type: object
     TimetableImportPathSchedule:
       properties:
         arrival_time:
@@ -2218,23 +1921,23 @@ components:
           format: date-time
           type: string
       required:
-      - arrival_time
-      - departure_time
+        - arrival_time
+        - departure_time
       type: object
     TimetableImportPathStep:
       properties:
         location:
-          $ref: '#/components/schemas/TimetableImportPathLocation'
+          $ref: "#/components/schemas/TimetableImportPathLocation"
         schedule:
           additionalProperties:
-            $ref: '#/components/schemas/TimetableImportPathSchedule'
+            $ref: "#/components/schemas/TimetableImportPathSchedule"
           example:
-            '7015':
+            "7015":
               arrival_time: 2023-08-17T09:46:00+02:00
               departure_time: 2023-08-17T09:56:00+02:00
           type: object
       required:
-      - location
+        - location
       type: object
     TimetableImportTrain:
       properties:
@@ -2243,11 +1946,11 @@ components:
           format: date-time
           type: string
         name:
-          example: '7015'
+          example: "7015"
           type: string
       required:
-      - name
-      - departure_time
+        - name
+        - departure_time
       type: object
     TimetableWithSchedulesDetails:
       properties:
@@ -2257,25 +1960,12 @@ components:
           type: string
         train_schedule_summaries:
           items:
-            $ref: '#/components/schemas/TrainScheduleSummary'
+            $ref: "#/components/schemas/TrainScheduleSummary"
           type: array
       required:
-      - id
-      - name
-      - train_schedule_summaries
-      type: object
-    TrackLocation:
-      description: A track location (track section and offset)
-      properties:
-        offset:
-          description: The offset on the track section
-          example: 42.0
-          format: float
-          type: number
-        track:
-          description: The track section ID
-          example: 61205924-6667-11e3-81ff-01f464e0362d
-          type: string
+        - id
+        - name
+        - train_schedule_summaries
       type: object
     TrackOffsetLocation:
       properties:
@@ -2286,12 +1976,12 @@ components:
           type: string
         type:
           enum:
-          - track_offset
+            - track_offset
           type: string
       required:
-      - track_section
-      - offset
-      - type
+        - track_section
+        - offset
+        - type
       type: object
     TrackRange:
       description: Track range
@@ -2320,17 +2010,17 @@ components:
           example: 61205924-6667-11e3-81ff-01f464e0362d
           type: string
       required:
-      - track_section
-      - offset
+        - track_section
+        - offset
       type: object
     TrainSchedule:
       properties:
         allowances:
           items:
-            $ref: '#/components/schemas/Allowance'
+            $ref: "#/components/schemas/Allowance"
           type: array
         comfort:
-          $ref: '#/components/schemas/Comfort'
+          $ref: "#/components/schemas/Comfort"
         departure_time:
           format: float
           type: number
@@ -2345,14 +2035,14 @@ components:
           type: array
         options:
           allOf:
-          - $ref: '#/components/schemas/TrainScheduleOptions'
+            - $ref: "#/components/schemas/TrainScheduleOptions"
           nullable: true
         path_id:
           type: integer
         power_restriction_ranges:
           description: A list of ranges along the train path where power restrictions apply.
           items:
-            $ref: '#/components/schemas/PowerRestrictionRange'
+            $ref: "#/components/schemas/PowerRestrictionRange"
           nullable: true
           type: array
         rolling_stock_id:
@@ -2369,8 +2059,8 @@ components:
                 format: float
                 type: number
             required:
-            - path_offset
-            - time
+              - path_offset
+              - time
             type: object
           type: array
         speed_limit_tags:
@@ -2382,30 +2072,30 @@ components:
         train_name:
           type: string
       required:
-      - id
-      - train_name
-      - timetable_id
-      - rolling_stock_id
-      - departure_time
-      - path_id
-      - initial_speed
-      - labels
-      - scheduled_points
-      - allowances
-      - speed_limit_tags
-      - comfort
-      - options
-      - power_restriction_ranges
+        - id
+        - train_name
+        - timetable_id
+        - rolling_stock_id
+        - departure_time
+        - path_id
+        - initial_speed
+        - labels
+        - scheduled_points
+        - allowances
+        - speed_limit_tags
+        - comfort
+        - options
+        - power_restriction_ranges
       type: object
     TrainScheduleBatchItem:
       properties:
         allowances:
           default: []
           items:
-            $ref: '#/components/schemas/Allowance'
+            $ref: "#/components/schemas/Allowance"
           type: array
         comfort:
-          $ref: '#/components/schemas/Comfort'
+          $ref: "#/components/schemas/Comfort"
         departure_time:
           format: float
           type: number
@@ -2419,12 +2109,12 @@ components:
           type: array
         options:
           allOf:
-          - $ref: '#/components/schemas/TrainScheduleOptions'
+            - $ref: "#/components/schemas/TrainScheduleOptions"
           nullable: true
         power_restriction_ranges:
           description: A list of ranges along the train path where power restrictions apply.
           items:
-            $ref: '#/components/schemas/PowerRestrictionRange'
+            $ref: "#/components/schemas/PowerRestrictionRange"
           nullable: true
           type: array
         rolling_stock_id:
@@ -2442,8 +2132,8 @@ components:
                 format: float
                 type: number
             required:
-            - path_offset
-            - time
+              - path_offset
+              - time
             type: object
           type: array
         speed_limit_tags:
@@ -2453,10 +2143,10 @@ components:
         train_name:
           type: string
       required:
-      - train_name
-      - departure_time
-      - initial_speed
-      - rolling_stock_id
+        - train_name
+        - departure_time
+        - initial_speed
+        - rolling_stock_id
       type: object
     TrainScheduleOptions:
       description: Options for the standalone simulation
@@ -2469,10 +2159,10 @@ components:
       properties:
         allowances:
           items:
-            $ref: '#/components/schemas/Allowance'
+            $ref: "#/components/schemas/Allowance"
           type: array
         comfort:
-          $ref: '#/components/schemas/Comfort'
+          $ref: "#/components/schemas/Comfort"
         departure_time:
           format: float
           type: number
@@ -2487,14 +2177,14 @@ components:
           type: array
         options:
           allOf:
-          - $ref: '#/components/schemas/TrainScheduleOptions'
+            - $ref: "#/components/schemas/TrainScheduleOptions"
           nullable: true
         path_id:
           type: integer
         power_restriction_ranges:
           description: A list of ranges along the train path where power restrictions apply.
           items:
-            $ref: '#/components/schemas/PowerRestrictionRange'
+            $ref: "#/components/schemas/PowerRestrictionRange"
           nullable: true
           type: array
         rolling_stock_id:
@@ -2511,8 +2201,8 @@ components:
                 format: float
                 type: number
             required:
-            - path_offset
-            - time
+              - path_offset
+              - time
             type: object
           type: array
         speed_limit_tags:
@@ -2521,64 +2211,47 @@ components:
         train_name:
           type: string
       required:
-      - id
+        - id
       type: object
     TrainScheduleSummary:
       allOf:
-      - $ref: '#/components/schemas/TrainSchedule'
-      - properties:
-          arrival_time:
-            type: number
-          invalid_reasons:
-            items:
-              $ref: '#/components/schemas/InvalidTrainValues'
-            type: array
-          mechanical_energy_consumed:
-            properties:
-              base:
-                type: number
-              eco:
-                nullable: true
-                type: number
-            required:
-            - base
-            - eco
-            type: object
-          path_length:
-            type: integer
-          stops_count:
-            type: integer
-        required:
-        - arrival_time
-        - mechanical_energy_consumed
-        - stops_count
-        - path_length
-        - invalid_reasons
-        type: object
-    UpdateOperation:
-      properties:
-        obj_id:
-          example: bd840b06-84ba-4566-98c1-ccf0196c5f16
-          type: string
-        obj_type:
-          $ref: '#/components/schemas/ObjectType'
-        operation_type:
-          enum:
-          - UPDATE
-          type: string
-        railjson_patch:
-          $ref: '#/components/schemas/Patches'
-      required:
-      - operation_type
-      - obj_type
-      - railjson_patch
+        - $ref: "#/components/schemas/TrainSchedule"
+        - properties:
+            arrival_time:
+              type: number
+            invalid_reasons:
+              items:
+                $ref: "#/components/schemas/InvalidTrainValues"
+              type: array
+            mechanical_energy_consumed:
+              properties:
+                base:
+                  type: number
+                eco:
+                  nullable: true
+                  type: number
+              required:
+                - base
+                - eco
+              type: object
+            path_length:
+              type: integer
+            stops_count:
+              type: integer
+          required:
+            - arrival_time
+            - mechanical_energy_consumed
+            - stops_count
+            - path_length
+            - invalid_reasons
+          type: object
     Version:
       properties:
         git_describe:
           nullable: true
           type: string
       required:
-      - git_describe
+        - git_describe
       type: object
     ViewMetadata:
       properties:
@@ -2621,13 +2294,6 @@ components:
             type: string
         type: object
       type: array
-    Zone:
-      properties:
-        geo:
-          $ref: '#/components/schemas/BoundingBox'
-        sch:
-          $ref: '#/components/schemas/BoundingBox'
-      type: object
 info:
   description: OSRD Edition service description
   title: OSRD Editoast
@@ -2637,7 +2303,7 @@ paths:
   /documents/:
     post:
       responses:
-        '201':
+        "201":
           content:
             application/json:
               schema:
@@ -2649,40 +2315,40 @@ paths:
           description: The key of the added document
       summary: Add a document
       tags:
-      - documents
+        - documents
   /documents/{key}/:
     delete:
       parameters:
-      - description: A key identifying the document
-        in: path
-        name: key
-        required: true
-        schema:
-          type: integer
+        - description: A key identifying the document
+          in: path
+          name: key
+          required: true
+          schema:
+            type: integer
       responses:
-        '204':
+        "204":
           description: No content
       summary: Delete a document
       tags:
-      - documents
+        - documents
     get:
       parameters:
-      - description: A key identifying the document
-        in: path
-        name: key
-        required: true
-        schema:
-          type: integer
+        - description: A key identifying the document
+          in: path
+          name: key
+          required: true
+          schema:
+            type: integer
       responses:
-        '200':
+        "200":
           description: A document of any type (can be an image, a pdf...)
       summary: Retrieve a document binary content
       tags:
-      - documents
+        - documents
   /electrical_profile_set/:
     get:
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
@@ -2694,63 +2360,63 @@ paths:
                       example: France 2023
                       type: string
                   required:
-                  - id
-                  - name
+                    - id
+                    - name
                   type: object
                 type: array
           description: The list of ids and names of electrical profile sets available
       summary: Retrieve the list of ids and names of electrical profile sets available
       tags:
-      - electrical_profiles
+        - electrical_profiles
     post:
       parameters:
-      - in: query
-        name: name
-        required: true
-        schema:
-          type: string
+        - in: query
+          name: name
+          required: true
+          schema:
+            type: string
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ElectricalProfile'
+                $ref: "#/components/schemas/ElectricalProfile"
           description: The list of ids and names of electrical profile sets available
       summary: import a new electrical profile set
       tags:
-      - electrical_profiles
+        - electrical_profiles
   /electrical_profile_set/{id}/:
     get:
       parameters:
-      - description: Electrical profile set ID
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
+        - description: Electrical profile set ID
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
                 items:
-                  $ref: '#/components/schemas/ElectricalProfile'
+                  $ref: "#/components/schemas/ElectricalProfile"
                 type: array
           description: The list of electrical profiles in the set
       summary: Retrieve the set of electrical profiles with the given id
       tags:
-      - electrical_profiles
+        - electrical_profiles
   /electrical_profile_set/{id}/level_order/:
     get:
       parameters:
-      - description: Electrical profile set ID
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
+        - description: Electrical profile set ID
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
@@ -2759,70 +2425,31 @@ paths:
                     type: string
                   type: array
                 example:
-                  '1500':
-                  - A
-                  - B
-                  - C
-                  '25000':
-                  - '25000'
-                  - '22500'
-                  - '20000'
+                  "1500":
+                    - A
+                    - B
+                    - C
+                  "25000":
+                    - "25000"
+                    - "22500"
+                    - "20000"
                 type: object
           description: A dictionary mapping catenary modes to a list of electrical profiles ordered by decreasing strength
       summary: Retrieve the order of strength of the electrical profiles in the set with the given id
       tags:
-      - electrical_profiles
+        - electrical_profiles
   /health/:
     get:
       responses:
-        '200':
+        "200":
           content:
             text/plain:
               schema:
                 type: string
           description: Check if Editoast is running correctly
   /infra/:
-    get:
-      parameters:
-      - description: Page number
-        in: query
-        name: page
-        schema:
-          default: 1
-          minimum: 1
-          type: integer
-      - description: Number of elements by page
-        in: query
-        name: page_size
-        schema:
-          default: 25
-          maximum: 10000
-          minimum: 1
-          type: integer
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                properties:
-                  count:
-                    type: number
-                  next: {}
-                  previous: {}
-                  results:
-                    items:
-                      $ref: '#/components/schemas/Infra'
-                    type: array
-                required:
-                - count
-                - next
-                - previous
-                type: object
-          description: The infras list
-      summary: Paginated list of all available infras
-      tags:
-      - infra
     post:
+      description: Create an infra
       requestBody:
         content:
           application/json:
@@ -2830,376 +2457,226 @@ paths:
               properties:
                 name:
                   type: string
+              required:
+                - name
               type: object
-        description: Name of the infra to create
+        required: true
       responses:
-        '201':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Infra'
-          description: The created infra
+                $ref: "#/components/schemas/Infra"
+          description: Information about the created infra
       summary: Create an infra
-      tags:
-      - infra
-  /infra/railjson/:
-    post:
-      parameters:
-      - description: Infra name
-        in: query
-        name: name
-        required: true
-        schema:
-          type: string
-      - in: query
-        name: generate_data
-        schema:
-          default: false
-          description: whether the layer should be generated or no
-          type: boolean
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RailjsonFile'
-        description: Railjson infra
-        required: true
-      responses:
-        '201':
-          content:
-            application/json:
-              schema:
-                properties:
-                  id:
-                    type: string
-                type: object
-          description: The imported infra id
-      summary: Import an infra from railjson
-      tags:
-      - infra
-  /infra/refresh/:
-    post:
-      parameters:
-      - description: A list of infra ID
-        in: query
-        name: infras
-        schema:
-          default: []
-          items:
-            type: integer
-          type: array
-      - description: Force the refresh of the layers
-        in: query
-        name: force
-        schema:
-          default: false
-          type: boolean
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                items:
-                  type: integer
-                type: array
-          description: A list thats contains the ID of the infras that were refreshed*
-      summary: Refresh the layers
-      tags:
-      - infra
-  /infra/{id}/:
-    delete:
-      parameters:
-      - description: infra id
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
-      responses:
-        '204':
-          description: No content
-      summary: Delete an infra and all entities linked to it
-      tags:
-      - infra
+  /infra/cache_status/:
     get:
-      parameters:
-      - description: infra id
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Infra'
-          description: Information about the retrieved infra
-      summary: Retrieve a specific infra
-      tags:
-      - infra
-    post:
-      parameters:
-      - description: infra id
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
+      description: Returns the status of the infras in cache
       requestBody:
         content:
           application/json:
             schema:
-              items:
-                $ref: '#/components/schemas/Operation'
-              type: array
-        description: Operations to do on the infra
+              allOf:
+                - properties:
+                    infra:
+                      format: int64
+                      nullable: true
+                      type: integer
+                  type: object
+              nullable: true
+        required: false
       responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/OperationResult'
-                type: array
-          description: An array containing infos about the operations processed
-      summary: Update/Create/Delete an object of the infra
-      tags:
-      - infra
-    put:
-      parameters:
-      - description: infra id
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
-      requestBody:
-        content:
-          application/json:
-            schema:
-              properties:
-                name:
-                  type: string
-              type: object
-        description: the name we want to give to the infra
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Infra'
-          description: The updated infra
-      summary: Update an infrastructure name
-      tags:
-      - infra
-  /infra/{id}/attached/{track_id}/:
-    get:
-      parameters:
-      - description: Infra ID
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
-      - description: Track ID
-        in: path
-        name: track_id
-        required: true
-        schema:
-          type: string
-      responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
                 additionalProperties:
-                  items:
-                    description: Object IDs
-                    type: string
-                  type: array
-                example:
-                  BufferStop: []
-                  Detector:
-                  - detector.0
-                  Switch:
-                  - switch.0
-                  - switch.1
+                  properties:
+                    last_status:
+                      allOf:
+                        - $ref: "#/components/schemas/InfraState"
+                      nullable: true
+                    status:
+                      $ref: "#/components/schemas/InfraState"
+                  required:
+                    - status
+                  type: object
                 type: object
-          description: All objects attached to the given track (arranged by types)
-      summary: Retrieve all objects attached to a given track
-      tags:
-      - infra
-  /infra/{id}/clone/:
+          description: The status of the infras in cache
+      summary: Returns the status of the infras in cache
+  /infra/railjson/:
     post:
+      description: Import an infra from a RailJson object
       parameters:
-      - description: Infra id
-        in: path
-        name: id
+        - in: query
+          name: name
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: generate_data
+          required: false
+          schema:
+            type: boolean
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RailJson"
         required: true
-        schema:
-          type: integer
-      - description: New infra name
-        in: query
-        name: name
-        required: true
-        schema:
-          type: string
       responses:
-        '201':
+        "201":
           content:
             application/json:
               schema:
                 properties:
-                  id:
+                  infra:
+                    format: int64
                     type: integer
+                required:
+                  - infra
                 type: object
-          description: The duplicated infra id
-      summary: Duplicate an infra
-      tags:
-      - infra
-  /infra/{id}/errors/:
-    get:
+          description: The imported infra ID
+      summary: Import an infra from a RailJson object
+  /infra/refresh/:
+    post:
+      description: Refresh infra generated data
       parameters:
-      - description: infra id
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
-      - description: The page number
-        in: query
-        name: page
-        schema:
-          default: 1
-          type: integer
-      - description: The number of item per page
-        in: query
-        name: page_size
-        schema:
-          default: 25
-          minimum: 10
-          type: integer
-      - description: The type of error to filter on
-        in: query
-        name: error_type
-        schema:
-          $ref: '#/components/schemas/InfraErrorType'
-      - description: errors and warnings that only part of a given object
-        in: query
-        name: object_id
-        schema:
-          type: string
-      - description: Whether the response should include errors or warnings
-        in: query
-        name: level
-        schema:
-          default: all
-          enum:
-          - errors
-          - warnings
-          - all
-          type: string
+        - description: Force the refresh of the layers
+          in: query
+          name: force
+          required: false
+          schema:
+            default: false
+            type: boolean
+        - description: Comma-separated list of infra IDs
+          example: 1,2,3
+          in: query
+          name: infras
+          required: false
+          schema:
+            type: string
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
                 properties:
-                  count:
-                    description: Total number of elements
-                    example: 1
-                    type: integer
-                  next:
-                    description: The index of the following page (null if no more pages available)
-                    example: null
-                    nullable: true
-                    type: integer
-                  previous:
-                    description: The index of the previous page (null if requesting the first page)
-                    example: null
-                    nullable: true
-                    type: integer
-                  results:
+                  infra_refreshed:
                     items:
-                      $ref: '#/components/schemas/InfraError'
+                      format: int64
+                      type: integer
                     type: array
+                required:
+                  - infra_refreshed
                 type: object
-          description: A paginated list of errors
-      summary: Retrieve a paginated list of errors
-      tags:
-      - infra
-  /infra/{id}/lines/{line_code}/bbox/:
-    get:
-      parameters:
-      - description: infra id
-        in: path
-        name: id
+          description: A list thats contains the ID of the infras that were refreshed
+      summary: Refresh infra generated data
+  /infra/{infra}/:
+    put:
+      description: Update an infrastructure name
+      requestBody:
+        content:
+          application/json:
+            schema:
+              description: Patch form for a project
+              properties:
+                name:
+                  nullable: true
+                  type: string
+              type: object
         required: true
-        schema:
-          type: integer
-      - description: a line code
-        in: path
-        name: line_code
-        required: true
-        schema:
-          type: integer
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Zone'
-          description: The BBox of the line
-      summary: Returns the BBoxes (geo and schematic) of a line
-      tags:
-      - infra
-  /infra/{id}/load/:
-    post:
+                $ref: "#/components/schemas/Infra"
+          description: Information about the updated infra
+      summary: Update an infrastructure name
+  /infra/{infra}/attached/{track_id}/:
+    get:
+      description: This endpoint returns attached objects of given track
       parameters:
-      - description: infra id
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
+        - in: path
+          name: track_id
+          required: true
+          schema:
+            format: int64
+            type: integer
+      responses: {}
+      summary: This endpoint returns attached objects of given track
+  /infra/{infra}/clone/:
+    post:
+      description: Duplicate an infra
+      parameters:
+        - in: query
+          name: name
+          required: true
+          schema:
+            type: string
       responses:
-        '200':
-          description: No content
+        "200":
+          content:
+            text/plain:
+              schema:
+                format: int64
+                type: integer
+          description: The duplicated infra ID
+      summary: Duplicate an infra
+  /infra/{infra}/errors/:
+    get:
+      description: Return the list of errors of an infra
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedResponse"
+          description: The list of errors of an infra
+      summary: Return the list of errors of an infra
+  /infra/{infra}/lines/{line_code}/bbox/:
+    get:
+      parameters:
+        - in: path
+          name: line_code
+          required: true
+          schema:
+            format: int64
+            type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/Zone"
+                type: array
+          description: The bbox of the line
+  /infra/{infra}/load/:
+    post:
+      description: Load an infra if not loaded
+      responses:
+        "204":
+          description: The infra was loaded
       summary: Load an infra if not loaded
-      tags:
-      - infra
-  /infra/{id}/lock/:
+  /infra/{infra}/lock/:
     post:
-      parameters:
-      - description: infra id
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
+      description: Lock an infra from edition
       responses:
-        '204':
-          description: No content
+        "204":
+          description: The infra was locked
       summary: Lock an infra from edition
-      tags:
-      - infra
-  /infra/{id}/objects/{object_type}/:
+  /infra/{infra}/objects/{object_type}/:
     post:
+      description: Return the railjson list of a specific OSRD object
       parameters:
-      - description: Infra id
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
-      - description: The type of the object
-        in: path
-        name: object_type
-        required: true
-        schema:
-          $ref: '#/components/schemas/ObjectType'
+        - in: path
+          name: object_type
+          required: true
+          schema:
+            format: int64
+            type: integer
       requestBody:
         content:
           application/json:
@@ -3207,240 +2684,73 @@ paths:
               items:
                 type: string
               type: array
-        description: List of object id's
+        description: ""
         required: true
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
                 items:
-                  properties:
-                    geographic:
-                      $ref: '#/components/schemas/Geometry'
-                      description: object's geographic in geojson format
-                    railjson:
-                      $ref: '#/components/schemas/Railjson'
-                      description: Object properties in railjson format
-                    schematic:
-                      $ref: '#/components/schemas/Geometry'
-                      description: object's schematic in geojson format
-                  required:
-                  - railjson
-                  - geographic
-                  - schematic
-                  type: object
+                  $ref: "#/components/schemas/ObjectQueryable"
                 type: array
-          description: No content
-      summary: Retrieve a list of specific objects in railjson format
-      tags:
-      - infra
-  /infra/{id}/pathfinding/:
+          description: The list of objects
+      summary: Return the railjson list of a specific OSRD object
+  /infra/{infra}/pathfinding/:
     post:
-      parameters:
-      - description: Infra ID
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
-      - description: Maximum number of paths to return
-        in: query
-        name: number
-        schema:
-          default: 5
-          format: integer
-          maximum: 5
-          minimum: 1
-          type: number
+      description: This endpoint search path between starting and ending track locations
       requestBody:
         content:
           application/json:
             schema:
-              properties:
-                ending:
-                  $ref: '#/components/schemas/TrackLocation'
-                starting:
-                  allOf:
-                  - $ref: '#/components/schemas/TrackLocation'
-                  - properties:
-                      direction:
-                        $ref: '#/components/schemas/Direction'
-                    type: object
-              type: object
-        description: Starting and ending track location
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                items:
-                  properties:
-                    detectors:
-                      items:
-                        example: detector1
-                        type: string
-                      type: array
-                    switches_directions:
-                      additionalProperties:
-                        type: string
-                      example:
-                        switch1: left
-                        switch2: right
-                      type: object
-                    track_ranges:
-                      items:
-                        $ref: '#/components/schemas/DirectionalTrackRange'
-                      minItems: 1
-                      type: array
-                  type: object
-                type: array
-          description: Paths, containing track ranges, detectors and switches with their directions. If no path is found, an empty list is returned.
-      summary: Compute paths given starting and ending track location. Return shortest paths.
-      tags:
-      - infra
-      - pathfinding
-  /infra/{id}/railjson/:
+              $ref: "#/components/schemas/PathfindingInput"
+        description: ""
+        required: true
+      responses: {}
+      summary: This endpoint search path between starting and ending track locations
+  /infra/{infra}/railjson/:
     get:
+      description: Serializes an infra into RailJson
       parameters:
-      - description: Infra ID
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
+        - in: path
+          name: infra
+          required: true
+          schema:
+            format: int64
+            type: integer
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RailjsonFile'
-          description: The infra in railjson format
-      summary: Serialize an infra to railjson
-      tags:
-      - infra
-  /infra/{id}/routes/track_ranges/:
+                $ref: "#/components/schemas/RailJson"
+          description: The infra as RailJson
+      summary: Serializes an infra into RailJson
+  /infra/{infra}/speed_limit_tags/:
     get:
-      parameters:
-      - description: Infra ID
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
-      - in: query
-        name: routes
-        required: true
-        schema:
-          description: A list of routes seperated by comma
-          example: route1,route2,route3
-          type: string
+      description: Returns the set of speed limit tags for a given infra
       responses:
-        '200':
+        "200":
           content:
             application/json:
-              schema:
-                items:
-                  oneOf:
-                  - $ref: '#/components/schemas/RouteTrackRangesNotFoundError'
-                  - $ref: '#/components/schemas/RouteTrackRangesCantComputePathError'
-                  - $ref: '#/components/schemas/RouteTrackRangesComputed'
-                type: array
-          description: Foreach route, the track ranges through which it passes or an error
-      summary: Compute the track ranges through which routes passes.
-      tags:
-      - infra
-      - routes
-  /infra/{id}/routes/{waypoint_type}/{waypoint_id}/:
-    get:
-      parameters:
-      - description: Infra ID
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
-      - description: Type of the waypoint
-        in: path
-        name: waypoint_type
-        required: true
-        schema:
-          enum:
-          - Detector
-          - BufferStop
-          type: string
-      - description: The waypoint id
-        in: path
-        name: waypoint_id
-        required: true
-        schema:
-          type: string
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                properties:
-                  ending:
-                    example:
-                    - route3
-                    - route4
-                    items:
-                      type: string
-                    type: array
-                  starting:
-                    example:
-                    - route1
-                    - route2
-                    items:
-                      type: string
-                    type: array
-                type: object
-          description: All routes that starting and ending by the given waypoint
-      summary: Retrieve all routes that starting and ending by the given waypoint (detector or buffer stop)
-      tags:
-      - infra
-      - routes
-  /infra/{id}/speed_limit_tags/:
-    get:
-      parameters:
-      - description: Infra id
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                example:
+              example:
                 - freight
                 - heavy_load
+              schema:
                 items:
                   type: string
                 type: array
-          description: Tags list
-      summary: List all speed limit tags
-      tags:
-      - infra
-  /infra/{id}/switch_types/:
+          description: The list of speed limit tags
+      summary: Returns the set of speed limit tags for a given infra
+  /infra/{infra}/switch_types/:
     get:
-      parameters:
-      - description: infra id
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
+      description: Return the railjson list of switch types
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
                 items:
-                  description: A switch type following Railjson spec
                   example:
                     groups:
                       LEFT:
@@ -3451,133 +2761,153 @@ paths:
                         src: BASE
                     id: Point
                     ports:
-                    - LEFT
-                    - RIGHT
-                    - BASE
+                      - LEFT
+                      - RIGHT
+                      - BASE
+                  properties:
+                    groups:
+                      additionalProperties: false
+                      type: object
+                    id:
+                      type: string
+                    ports:
+                      items:
+                        type: string
+                      type: array
+                  required:
+                    - id
+                    - ports
+                    - groups
                   type: object
                 type: array
-          description: A list of switch types
-      summary: Retrieve a list of switch types
-      tags:
-      - infra
-  /infra/{id}/unlock/:
-    post:
-      parameters:
-      - description: infra id
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
-      responses:
-        '204':
-          description: No content
-      summary: Unlock an infra from edition
-      tags:
-      - infra
-  /infra/{id}/voltages/:
+          description: A switch type following Railjson spec
+      summary: Return the railjson list of switch types
+  /infra/{infra}/track_ranges/:
     get:
-      parameters:
-      - description: Infra ID
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
-      - description: include rolling stocks modes or not
-        in: query
-        name: include_rolling_stock_modes
-        required: false
-        schema:
-          type: boolean
+      responses: {}
+  /infra/{infra}/unlock/:
+    post:
+      description: Unlock an infra from edition
       responses:
-        '200':
+        "204":
+          description: The infra was unlocked
+      summary: Unlock an infra from edition
+  /infra/{infra}/voltages/:
+    get:
+      description: |-
+        Returns the set of voltages for a given infra and/or rolling_stocks modes.
+        If include_rolling_stocks_modes is true, it returns also rolling_stocks modes.
+      parameters:
+        - description: Include rolling stocks modes or not
+          in: query
+          name: include_rolling_stock_modes
+          required: false
+          schema:
+            default: false
+            type: boolean
+      responses:
+        "200":
           content:
             application/json:
+              example:
+                - "750"
+                - "1500"
+                - "2500.5"
               schema:
-                example:
-                - '750'
-                - '1500'
-                - '2500.5'
                 items:
                   type: string
                 type: array
-          description: Voltages list
-      summary: List all voltages
-      tags:
-      - infra
+          description: The list of voltages
+      summary: Returns the set of voltages for a given infra and/or rolling_stocks modes.
+  /infra/{infra}/{waypoint_type}/{waypoint}/:
+    get:
+      description: Return the railjson list of a specific OSRD object
+      parameters:
+        - in: path
+          name: waypoint_type
+          required: true
+          schema:
+            format: int64
+            type: integer
+        - in: path
+          name: waypoint
+          required: true
+          schema:
+            $ref: "#/components/schemas/WaypointType"
+      responses: {}
+      summary: Return the railjson list of a specific OSRD object
   /layers/layer/{layer_slug}/mvt/{view_slug}/:
     get:
       parameters:
-      - in: path
-        name: layer_slug
-        required: true
-        schema:
-          title: Layer Slug
-          type: string
-      - in: path
-        name: view_slug
-        required: true
-        schema:
-          title: View Slug
-          type: string
-      - in: query
-        name: infra
-        required: true
-        schema:
-          title: Infra id
-          type: integer
+        - in: path
+          name: layer_slug
+          required: true
+          schema:
+            title: Layer Slug
+            type: string
+        - in: path
+          name: view_slug
+          required: true
+          schema:
+            title: View Slug
+            type: string
+        - in: query
+          name: infra
+          required: true
+          schema:
+            title: Infra id
+            type: integer
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ViewMetadata'
+                $ref: "#/components/schemas/ViewMetadata"
           description: Successful Response
       summary: Mvt View Metadata
       tags:
-      - layers
+        - layers
   /layers/tile/{layer_slug}/{view_slug}/{z}/{x}/{y}/:
     get:
       parameters:
-      - in: path
-        name: layer_slug
-        required: true
-        schema:
-          title: Layer Slug
-          type: string
-      - in: path
-        name: view_slug
-        required: true
-        schema:
-          title: View Slug
-          type: string
-      - in: path
-        name: z
-        required: true
-        schema:
-          title: Z
-          type: integer
-      - in: path
-        name: x
-        required: true
-        schema:
-          title: X
-          type: integer
-      - in: path
-        name: y
-        required: true
-        schema:
-          title: Y
-          type: integer
-      - in: query
-        name: infra
-        required: true
-        schema:
-          title: Infra
-          type: integer
+        - in: path
+          name: layer_slug
+          required: true
+          schema:
+            title: Layer Slug
+            type: string
+        - in: path
+          name: view_slug
+          required: true
+          schema:
+            title: View Slug
+            type: string
+        - in: path
+          name: z
+          required: true
+          schema:
+            title: Z
+            type: integer
+        - in: path
+          name: x
+          required: true
+          schema:
+            title: X
+            type: integer
+        - in: path
+          name: y
+          required: true
+          schema:
+            title: Y
+            type: integer
+        - in: query
+          name: infra
+          required: true
+          schema:
+            title: Infra
+            type: integer
       responses:
-        '200':
+        "200":
           content:
             application/x-octet-stream:
               schema:
@@ -3585,27 +2915,27 @@ paths:
           description: Successful Response
       summary: Mvt tile from the cache or the database, cache data in redis if needed
       tags:
-      - layers
+        - layers
   /light_rolling_stock/:
     get:
       parameters:
-      - description: Page number
-        in: query
-        name: page
-        schema:
-          default: 1
-          minimum: 1
-          type: integer
-      - description: Number of elements by page
-        in: query
-        name: page_size
-        schema:
-          default: 100
-          maximum: 10000
-          minimum: 1
-          type: integer
+        - description: Page number
+          in: query
+          name: page
+          schema:
+            default: 1
+            minimum: 1
+            type: integer
+        - description: Number of elements by page
+          in: query
+          name: page_size
+          schema:
+            default: 100
+            maximum: 10000
+            minimum: 1
+            type: integer
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
@@ -3616,127 +2946,127 @@ paths:
                   previous: {}
                   results:
                     items:
-                      $ref: '#/components/schemas/LightRollingStock'
+                      $ref: "#/components/schemas/LightRollingStock"
                     type: array
                 required:
-                - results
+                  - results
                 type: object
           description: The rolling stock list
       summary: Paginated list of rolling stock with a lighter response
       tags:
-      - rolling_stock
+        - rolling_stock
   /light_rolling_stock/{id}/:
     get:
       parameters:
-      - description: Rolling Stock ID
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
+        - description: Rolling Stock ID
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/LightRollingStock'
+                $ref: "#/components/schemas/LightRollingStock"
           description: The rolling stock with their simplified effort curves
       summary: Retrieve a rolling stock's light representation
       tags:
-      - rolling_stock
+        - rolling_stock
   /pathfinding/:
     post:
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PathQuery'
+              $ref: "#/components/schemas/PathQuery"
         description: Path information
       responses:
-        '201':
+        "201":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Path'
+                $ref: "#/components/schemas/Path"
           description: The created Path
       summary: Create a Path
   /pathfinding/{id}/:
     delete:
       parameters:
-      - description: Path ID
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
+        - description: Path ID
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
       responses:
-        '204':
+        "204":
           description: No content
       summary: Delete a path
       tags:
-      - pathfinding
+        - pathfinding
     get:
       parameters:
-      - description: Path ID
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
+        - description: Path ID
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Path'
+                $ref: "#/components/schemas/Path"
           description: The retrieved path
       summary: Retrieve a Path
       tags:
-      - pathfinding
+        - pathfinding
     put:
       parameters:
-      - description: Path ID
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
+        - description: Path ID
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PathQuery'
+              $ref: "#/components/schemas/PathQuery"
         description: Updated Path
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
                 items:
-                  $ref: '#/components/schemas/Path'
+                  $ref: "#/components/schemas/Path"
                 type: array
           description: The updated path
       summary: Update a path
       tags:
-      - pathfinding
+        - pathfinding
   /pathfinding/{path_id}/catenaries/:
     get:
       parameters:
-      - description: The path's id
-        in: path
-        name: path_id
-        required: true
-        schema:
-          type: integer
+        - description: The path's id
+          in: path
+          name: path_id
+          required: true
+          schema:
+            type: integer
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
                 properties:
                   catenary_ranges:
                     items:
-                      $ref: '#/components/schemas/CatenaryRange'
+                      $ref: "#/components/schemas/CatenaryRange"
                     type: array
                   warnings:
                     items:
@@ -3745,71 +3075,71 @@ paths:
                           type: string
                         overlapping_ranges:
                           items:
-                            $ref: '#/components/schemas/TrackRange'
+                            $ref: "#/components/schemas/TrackRange"
                           type: array
                         type:
                           enum:
-                          - CatenaryOverlap
+                            - CatenaryOverlap
                           type: string
                       required:
-                      - type
-                      - catenary_id
-                      - overlapping_ranges
+                        - type
+                        - catenary_id
+                        - overlapping_ranges
                       type: object
                     type: array
                 required:
-                - catenary_ranges
-                - warnings
+                  - catenary_ranges
+                  - warnings
                 type: object
           description: A list of ranges associated to catenary modes. When a catenary overlapping another is found, a warning is added to the list.
       summary: Retrieve the modes of catenaries along a path
       tags:
-      - infra
+        - infra
   /projects/:
     get:
       parameters:
-      - in: query
-        name: ordering
-        schema:
-          enum:
-          - NameAsc
-          - NameDesc
-          - CreationDateAsc
-          - CreationDateDesc
-          - LastModifiedAsc
-          - LastModifiedDesc
-          type: string
-      - description: Filter projects by name
-        in: query
-        name: name
-        schema:
-          type: string
-      - description: Filter projects by description
-        in: query
-        name: description
-        schema:
-          type: string
-      - description: Filter projects by tags
-        in: query
-        name: tags
-        schema:
-          type: string
-      - description: Page number
-        in: query
-        name: page
-        schema:
-          minimum: 0
-          type: integer
-      - description: Number of elements by page
-        in: query
-        name: page_size
-        schema:
-          default: 100
-          maximum: 10000
-          minimum: 1
-          type: integer
+        - in: query
+          name: ordering
+          schema:
+            enum:
+              - NameAsc
+              - NameDesc
+              - CreationDateAsc
+              - CreationDateDesc
+              - LastModifiedAsc
+              - LastModifiedDesc
+            type: string
+        - description: Filter projects by name
+          in: query
+          name: name
+          schema:
+            type: string
+        - description: Filter projects by description
+          in: query
+          name: description
+          schema:
+            type: string
+        - description: Filter projects by tags
+          in: query
+          name: tags
+          schema:
+            type: string
+        - description: Page number
+          in: query
+          name: page
+          schema:
+            minimum: 0
+            type: integer
+        - description: Number of elements by page
+          in: query
+          name: page_size
+          schema:
+            default: 100
+            maximum: 10000
+            minimum: 1
+            type: integer
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
@@ -3820,136 +3150,136 @@ paths:
                   previous: {}
                   results:
                     items:
-                      $ref: '#/components/schemas/ProjectResult'
+                      $ref: "#/components/schemas/ProjectResult"
                     type: array
                 type: object
           description: the project list
       summary: Paginated list of projects
       tags:
-      - projects
+        - projects
     post:
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ProjectCreateRequest'
+              $ref: "#/components/schemas/ProjectCreateRequest"
       responses:
-        '201':
+        "201":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProjectResult'
+                $ref: "#/components/schemas/ProjectResult"
           description: The created project
       summary: Create a new project
       tags:
-      - projects
+        - projects
   /projects/{project_id}/:
     delete:
       parameters:
-      - description: project id you want to delete
-        in: path
-        name: project_id
-        required: true
-        schema:
-          type: integer
+        - description: project id you want to delete
+          in: path
+          name: project_id
+          required: true
+          schema:
+            type: integer
       responses:
-        '204':
+        "204":
           description: No content
       summary: delete a project
       tags:
-      - projects
+        - projects
     get:
       parameters:
-      - description: project id you want to retrieve
-        in: path
-        name: project_id
-        required: true
-        schema:
-          type: integer
+        - description: project id you want to retrieve
+          in: path
+          name: project_id
+          required: true
+          schema:
+            type: integer
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProjectResult'
+                $ref: "#/components/schemas/ProjectResult"
           description: The project info
       summary: Retrieve a project
       tags:
-      - projects
+        - projects
     patch:
       parameters:
-      - description: project id you want to update
-        in: path
-        name: project_id
-        required: true
-        schema:
-          type: integer
+        - description: project id you want to update
+          in: path
+          name: project_id
+          required: true
+          schema:
+            type: integer
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ProjectPatchRequest'
+              $ref: "#/components/schemas/ProjectPatchRequest"
         description: The fields you want to update
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProjectResult'
+                $ref: "#/components/schemas/ProjectResult"
           description: The project updated
       summary: Update a project
       tags:
-      - projects
+        - projects
   /projects/{project_id}/studies/:
     get:
       parameters:
-      - in: path
-        name: project_id
-        required: true
-        schema:
-          type: integer
-      - in: query
-        name: ordering
-        schema:
-          enum:
-          - NameAsc
-          - NameDesc
-          - CreationDateAsc
-          - CreationDateDesc
-          - LastModifiedAsc
-          - LastModifiedDesc
-          type: string
-      - description: Filter operational studies by name
-        in: query
-        name: name
-        schema:
-          type: string
-      - description: Filter operational studies by description
-        in: query
-        name: description
-        schema:
-          type: string
-      - description: Filter operational studies by tags
-        in: query
-        name: tags
-        schema:
-          type: string
-      - description: Page number
-        in: query
-        name: page
-        schema:
-          minimum: 0
-          type: integer
-      - description: Number of elements by page
-        in: query
-        name: page_size
-        schema:
-          default: 100
-          maximum: 10000
-          minimum: 1
-          type: integer
+        - in: path
+          name: project_id
+          required: true
+          schema:
+            type: integer
+        - in: query
+          name: ordering
+          schema:
+            enum:
+              - NameAsc
+              - NameDesc
+              - CreationDateAsc
+              - CreationDateDesc
+              - LastModifiedAsc
+              - LastModifiedDesc
+            type: string
+        - description: Filter operational studies by name
+          in: query
+          name: name
+          schema:
+            type: string
+        - description: Filter operational studies by description
+          in: query
+          name: description
+          schema:
+            type: string
+        - description: Filter operational studies by tags
+          in: query
+          name: tags
+          schema:
+            type: string
+        - description: Page number
+          in: query
+          name: page
+          schema:
+            minimum: 0
+            type: integer
+        - description: Number of elements by page
+          in: query
+          name: page_size
+          schema:
+            default: 100
+            maximum: 10000
+            minimum: 1
+            type: integer
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
@@ -3960,150 +3290,150 @@ paths:
                   previous: {}
                   results:
                     items:
-                      $ref: '#/components/schemas/StudyResult'
+                      $ref: "#/components/schemas/StudyResult"
                     type: array
                 type: object
           description: the studies list
       summary: Paginated list of operational studies
       tags:
-      - studies
+        - studies
     post:
       parameters:
-      - in: path
-        name: project_id
-        required: true
-        schema:
-          type: integer
+        - in: path
+          name: project_id
+          required: true
+          schema:
+            type: integer
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/StudyUpsertRequest'
+              $ref: "#/components/schemas/StudyUpsertRequest"
       responses:
-        '201':
+        "201":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StudyResult'
+                $ref: "#/components/schemas/StudyResult"
           description: The created operational study
       summary: Create a new operational study
       tags:
-      - studies
+        - studies
   /projects/{project_id}/studies/{study_id}/:
     delete:
       parameters:
-      - description: project id refered to the operational study
-        in: path
-        name: project_id
-        required: true
-        schema:
-          type: integer
-      - description: study id you want to delete
-        in: path
-        name: study_id
-        required: true
-        schema:
-          type: integer
+        - description: project id refered to the operational study
+          in: path
+          name: project_id
+          required: true
+          schema:
+            type: integer
+        - description: study id you want to delete
+          in: path
+          name: study_id
+          required: true
+          schema:
+            type: integer
       responses:
-        '204':
+        "204":
           description: No content
       summary: delete an operational study
       tags:
-      - studies
+        - studies
     get:
       parameters:
-      - description: project id refered to the operational study
-        in: path
-        name: project_id
-        required: true
-        schema:
-          type: integer
-      - description: study id you want to retrieve
-        in: path
-        name: study_id
-        required: true
-        schema:
-          type: integer
+        - description: project id refered to the operational study
+          in: path
+          name: project_id
+          required: true
+          schema:
+            type: integer
+        - description: study id you want to retrieve
+          in: path
+          name: study_id
+          required: true
+          schema:
+            type: integer
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StudyResult'
+                $ref: "#/components/schemas/StudyResult"
           description: The operational study info
       summary: Retrieve an operational study
       tags:
-      - studies
+        - studies
     patch:
       parameters:
-      - description: project id refered to the study
-        in: path
-        name: project_id
-        required: true
-        schema:
-          type: integer
-      - description: study id you want to retrieve
-        in: path
-        name: study_id
-        required: true
-        schema:
-          type: integer
+        - description: project id refered to the study
+          in: path
+          name: project_id
+          required: true
+          schema:
+            type: integer
+        - description: study id you want to retrieve
+          in: path
+          name: study_id
+          required: true
+          schema:
+            type: integer
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/StudyUpsertRequest'
+              $ref: "#/components/schemas/StudyUpsertRequest"
         description: The fields you want to update
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StudyResult'
+                $ref: "#/components/schemas/StudyResult"
           description: The operational study updated
       summary: update an operational study
       tags:
-      - studies
+        - studies
   /projects/{project_id}/studies/{study_id}/scenarios/:
     get:
       parameters:
-      - in: path
-        name: project_id
-        required: true
-        schema:
-          type: integer
-      - in: path
-        name: study_id
-        required: true
-        schema:
-          type: integer
-      - in: query
-        name: ordering
-        schema:
-          enum:
-          - NameAsc
-          - NameDesc
-          - CreationDateAsc
-          - CreationDateDesc
-          - LastModifiedAsc
-          - LastModifiedDesc
-          type: string
-      - description: Page number
-        in: query
-        name: page
-        schema:
-          minimum: 0
-          type: integer
-      - description: Number of elements by page
-        in: query
-        name: page_size
-        schema:
-          default: 100
-          maximum: 10000
-          minimum: 1
-          type: integer
+        - in: path
+          name: project_id
+          required: true
+          schema:
+            type: integer
+        - in: path
+          name: study_id
+          required: true
+          schema:
+            type: integer
+        - in: query
+          name: ordering
+          schema:
+            enum:
+              - NameAsc
+              - NameDesc
+              - CreationDateAsc
+              - CreationDateDesc
+              - LastModifiedAsc
+              - LastModifiedDesc
+            type: string
+        - description: Page number
+          in: query
+          name: page
+          schema:
+            minimum: 0
+            type: integer
+        - description: Number of elements by page
+          in: query
+          name: page_size
+          schema:
+            default: 100
+            maximum: 10000
+            minimum: 1
+            type: integer
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
@@ -4114,233 +3444,233 @@ paths:
                   previous: {}
                   results:
                     items:
-                      $ref: '#/components/schemas/ScenarioListResult'
+                      $ref: "#/components/schemas/ScenarioListResult"
                     type: array
                 type: object
           description: list of scenarios
       summary: Paginated list of scenarios
       tags:
-      - scenarios
+        - scenarios
     post:
       parameters:
-      - in: path
-        name: project_id
-        required: true
-        schema:
-          type: integer
-      - in: path
-        name: study_id
-        required: true
-        schema:
-          type: integer
+        - in: path
+          name: project_id
+          required: true
+          schema:
+            type: integer
+        - in: path
+          name: study_id
+          required: true
+          schema:
+            type: integer
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ScenarioRequest'
+              $ref: "#/components/schemas/ScenarioRequest"
       responses:
-        '201':
+        "201":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ScenarioResult'
+                $ref: "#/components/schemas/ScenarioResult"
           description: The created scenario
       summary: Create a new scenario
       tags:
-      - scenarios
+        - scenarios
   /projects/{project_id}/studies/{study_id}/scenarios/{scenario_id}/:
     delete:
       parameters:
-      - description: project id refered to the scenario
-        in: path
-        name: project_id
-        required: true
-        schema:
-          type: integer
-      - description: study id refered to the scenario
-        in: path
-        name: study_id
-        required: true
-        schema:
-          type: integer
-      - description: scenario id you want to delete
-        in: path
-        name: scenario_id
-        required: true
-        schema:
-          type: integer
+        - description: project id refered to the scenario
+          in: path
+          name: project_id
+          required: true
+          schema:
+            type: integer
+        - description: study id refered to the scenario
+          in: path
+          name: study_id
+          required: true
+          schema:
+            type: integer
+        - description: scenario id you want to delete
+          in: path
+          name: scenario_id
+          required: true
+          schema:
+            type: integer
       responses:
-        '204':
+        "204":
           description: No content
       summary: delete a scenario
       tags:
-      - scenarios
+        - scenarios
     get:
       parameters:
-      - description: project id refered to the scenario
-        in: path
-        name: project_id
-        required: true
-        schema:
-          type: integer
-      - in: path
-        name: study_id
-        required: true
-        schema:
-          type: integer
-      - description: scenario id you want to retrieve
-        in: path
-        name: scenario_id
-        required: true
-        schema:
-          type: integer
+        - description: project id refered to the scenario
+          in: path
+          name: project_id
+          required: true
+          schema:
+            type: integer
+        - in: path
+          name: study_id
+          required: true
+          schema:
+            type: integer
+        - description: scenario id you want to retrieve
+          in: path
+          name: scenario_id
+          required: true
+          schema:
+            type: integer
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ScenarioResult'
+                $ref: "#/components/schemas/ScenarioResult"
           description: The operational study info
       summary: Retrieve a scenario
       tags:
-      - scenarios
+        - scenarios
     patch:
       parameters:
-      - description: project id refered to the scenario
-        in: path
-        name: project_id
-        required: true
-        schema:
-          type: integer
-      - description: study refered to the scenario
-        in: path
-        name: study_id
-        required: true
-        schema:
-          type: integer
-      - description: scenario you want to update
-        in: path
-        name: scenario_id
-        required: true
-        schema:
-          type: integer
+        - description: project id refered to the scenario
+          in: path
+          name: project_id
+          required: true
+          schema:
+            type: integer
+        - description: study refered to the scenario
+          in: path
+          name: study_id
+          required: true
+          schema:
+            type: integer
+        - description: scenario you want to update
+          in: path
+          name: scenario_id
+          required: true
+          schema:
+            type: integer
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ScenarioPatchRequest'
+              $ref: "#/components/schemas/ScenarioPatchRequest"
         description: The fields you want to update
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ScenarioResult'
+                $ref: "#/components/schemas/ScenarioResult"
           description: The scenario updated
       summary: update a scenario
       tags:
-      - scenarios
+        - scenarios
   /rolling_stock/:
     post:
       parameters:
-      - description: whether or not the rolling_stock can be edited/deleted.
-        in: query
-        name: locked
-        schema:
-          default: false
-          type: boolean
+        - description: whether or not the rolling_stock can be edited/deleted.
+          in: query
+          name: locked
+          schema:
+            default: false
+            type: boolean
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RollingStockUpsertPayload'
+              $ref: "#/components/schemas/RollingStockUpsertPayload"
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RollingStock'
+                $ref: "#/components/schemas/RollingStock"
           description: The created rolling stock
       summary: Create a rolling stock
       tags:
-      - rolling_stock
+        - rolling_stock
   /rolling_stock/{id}/:
     delete:
       parameters:
-      - description: rolling_stock id
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
-      - description: force the deletion even if it’s used
-        in: query
-        name: force
-        schema:
-          default: false
-          type: boolean
+        - description: rolling_stock id
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - description: force the deletion even if it’s used
+          in: query
+          name: force
+          schema:
+            default: false
+            type: boolean
       responses:
-        '204':
+        "204":
           description: No content
-        '409':
+        "409":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RollingStockUsage'
+                $ref: "#/components/schemas/RollingStockUsage"
           description: Rolling stock is used in a train schedule.
       summary: Delete a rolling_stock and all entities linked to it
       tags:
-      - rolling_stock
+        - rolling_stock
     get:
       parameters:
-      - description: Rolling Stock ID
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
+        - description: Rolling Stock ID
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RollingStock'
+                $ref: "#/components/schemas/RollingStock"
           description: The rolling stock information
       summary: Retrieve a rolling stock
       tags:
-      - rolling_stock
+        - rolling_stock
     patch:
       parameters:
-      - description: Rolling Stock ID
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
+        - description: Rolling Stock ID
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RollingStockUpsertPayload'
+              $ref: "#/components/schemas/RollingStockUpsertPayload"
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RollingStock'
+                $ref: "#/components/schemas/RollingStock"
           description: The updated rolling stock
       summary: Patch a rolling stock
       tags:
-      - rolling_stock
+        - rolling_stock
   /rolling_stock/{id}/livery/:
     post:
       parameters:
-      - description: Rolling Stock ID
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
+        - description: Rolling Stock ID
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
       requestBody:
         content:
           multipart/form-data:
@@ -4355,25 +3685,25 @@ paths:
                   type: string
               type: object
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RollingStockLivery'
+                $ref: "#/components/schemas/RollingStockLivery"
           description: The rolling stock livery
       summary: Create a rolling stock livery
       tags:
-      - rolling_stock
-      - rolling_stock_livery
+        - rolling_stock
+        - rolling_stock_livery
   /rolling_stock/{id}/locked/:
     patch:
       parameters:
-      - description: Rolling_stock id
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
+        - description: Rolling_stock id
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
       requestBody:
         content:
           application/json:
@@ -4385,21 +3715,21 @@ paths:
         description: New locked value
         required: true
       responses:
-        '204':
+        "204":
           description: No content
-        '404':
+        "404":
           description: Not found
       summary: Update rolling_stock locked field
       tags:
-      - rolling_stock
+        - rolling_stock
   /search/:
     post:
       parameters:
-      - description: number of results
-        in: query
-        name: page_size
-        schema:
-          type: integer
+        - description: number of results
+          in: query
+          name: page_size
+          schema:
+            type: integer
       requestBody:
         content:
           application/json:
@@ -4415,23 +3745,23 @@ paths:
                   default: 25
                   type: integer
                 query:
-                  $ref: '#/components/schemas/SearchQuery'
+                  $ref: "#/components/schemas/SearchQuery"
               type: object
         description: Search query
         required: true
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
                 items:
                   oneOf:
-                  - $ref: '#/components/schemas/SearchTrackResult'
-                  - $ref: '#/components/schemas/SearchOperationalPointResult'
-                  - $ref: '#/components/schemas/SearchSignalResult'
-                  - $ref: '#/components/schemas/SearchStudyResult'
-                  - $ref: '#/components/schemas/SearchProjectResult'
-                  - $ref: '#/components/schemas/SearchScenarioResult'
+                    - $ref: "#/components/schemas/SearchTrackResult"
+                    - $ref: "#/components/schemas/SearchOperationalPointResult"
+                    - $ref: "#/components/schemas/SearchSignalResult"
+                    - $ref: "#/components/schemas/SearchStudyResult"
+                    - $ref: "#/components/schemas/SearchProjectResult"
+                    - $ref: "#/components/schemas/SearchScenarioResult"
                 type: array
           description: Search results, the structure of the returned objects depend on their type
       summary: Generic search endpoint
@@ -4443,7 +3773,7 @@ paths:
             schema:
               properties:
                 comfort:
-                  $ref: '#/components/schemas/Comfort'
+                  $ref: "#/components/schemas/Comfort"
                 end_time:
                   format: double
                   type: number
@@ -4481,7 +3811,7 @@ paths:
                   description: Train category for speed limits
                   type: string
                 standard_allowance:
-                  $ref: '#/components/schemas/AllowanceValue'
+                  $ref: "#/components/schemas/AllowanceValue"
                 start_time:
                   format: double
                   type: number
@@ -4492,10 +3822,10 @@ paths:
                         format: float
                         type: number
                       waypoints:
-                        $ref: '#/components/schemas/Waypoint'
+                        $ref: "#/components/schemas/Waypoint"
                     required:
-                    - duration
-                    - waypoints
+                      - duration
+                      - waypoints
                     type: object
                   minItems: 2
                   type: array
@@ -4503,116 +3833,116 @@ paths:
                   description: timetable ID
                   type: integer
               required:
-              - infra_id
-              - timetable_id
-              - steps
-              - rolling_stocks
-              - rolling_stock_id
-              - comfort
-              - standard_allowance
+                - infra_id
+                - timetable_id
+                - steps
+                - rolling_stocks
+                - rolling_stock_id
+                - comfort
+                - standard_allowance
               type: object
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
                 oneOf:
-                - properties:
-                    path:
-                      $ref: '#/components/schemas/Path'
-                    simulation:
-                      $ref: '#/components/schemas/SimulationReport'
-                  required:
-                  - simulation
-                  - path
-                - properties:
-                    error:
-                      description: Error message
-                      example: No path could be found
-                      type: string
-                  type: object
+                  - properties:
+                      path:
+                        $ref: "#/components/schemas/Path"
+                      simulation:
+                        $ref: "#/components/schemas/SimulationReport"
+                    required:
+                      - simulation
+                      - path
+                  - properties:
+                      error:
+                        description: Error message
+                        example: No path could be found
+                        type: string
+                    type: object
           description: Simulation result
-        '400':
+        "400":
           description: The request body is invalid
       summary: Find a stdcm and return a simulation result
       tags:
-      - stdcm
+        - stdcm
   /timetable/{id}/:
     get:
       description: Return a specific timetable with its associated schedules
       parameters:
-      - description: Timetable id
-        in: path
-        name: id
-        required: true
-        schema:
-          format: int64
-          minimum: 0
-          type: integer
+        - description: Timetable id
+          in: path
+          name: id
+          required: true
+          schema:
+            format: int64
+            minimum: 0
+            type: integer
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TimetableWithSchedulesDetails'
+                $ref: "#/components/schemas/TimetableWithSchedulesDetails"
           description: Timetable with schedules
-        '404':
+        "404":
           description: Timetable not found
       summary: Return a specific timetable with its associated schedules
       tags:
-      - timetable
+        - timetable
     post:
       description: Import a timetable
       parameters:
-      - description: Timetable id
-        in: path
-        name: id
-        required: true
-        schema:
-          format: int64
-          minimum: 0
-          type: integer
+        - description: Timetable id
+          in: path
+          name: id
+          required: true
+          schema:
+            format: int64
+            minimum: 0
+            type: integer
       requestBody:
         content:
           application/json:
             schema:
               items:
-                $ref: '#/components/schemas/TimetableImportItem'
+                $ref: "#/components/schemas/TimetableImportItem"
               type: array
-        description: ''
+        description: ""
         required: true
       responses:
-        '204':
+        "204":
           description: Timetable was successfully imported
       summary: Import a timetable
       tags:
-      - timetable
+        - timetable
   /timetable/{id}/conflicts/:
     get:
       description: |-
         Compute spacing conflicts for a given timetable
         TODO: This should compute itinary conflicts too
       parameters:
-      - description: Timetable id
-        in: path
-        name: id
-        required: true
-        schema:
-          format: int64
-          minimum: 0
-          type: integer
+        - description: Timetable id
+          in: path
+          name: id
+          required: true
+          schema:
+            format: int64
+            minimum: 0
+            type: integer
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
                 items:
-                  $ref: '#/components/schemas/Conflict'
+                  $ref: "#/components/schemas/Conflict"
                 type: array
           description: Spacing conflicts
       summary: Compute spacing conflicts for a given timetable
       tags:
-      - timetable
+        - timetable
   /train_schedule/:
     delete:
       requestBody:
@@ -4625,59 +3955,59 @@ paths:
                     type: integer
                   type: array
               required:
-              - ids
+                - ids
               type: object
         required: true
       responses:
-        '204':
+        "204":
           description: No content
       summary: Delete multiple train schedule
       tags:
-      - train_schedule
+        - train_schedule
     patch:
       requestBody:
         content:
           application/json:
             schema:
               items:
-                $ref: '#/components/schemas/TrainSchedulePatch'
+                $ref: "#/components/schemas/TrainSchedulePatch"
               minimum: 1
               type: array
         description: A list of changes. Each changeset contains the corresponding train id
         required: true
       responses:
-        '200':
+        "200":
           description: The train schedule was updated successfully
       summary: Update train schedules and run a simulation accordingly
       tags:
-      - train_schedule
+        - train_schedule
   /train_schedule/results/:
     get:
       parameters:
-      - description: Path id used to project the train path
-        in: query
-        name: path_id
-        required: true
-        schema:
-          type: integer
-      - description: Timetable id
-        in: query
-        name: timetable_id
-        required: true
-        schema:
-          type: string
+        - description: Path id used to project the train path
+          in: query
+          name: path_id
+          required: true
+          schema:
+            type: integer
+        - description: Timetable id
+          in: query
+          name: timetable_id
+          required: true
+          schema:
+            type: string
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
                 items:
-                  $ref: '#/components/schemas/SimulationReport'
+                  $ref: "#/components/schemas/SimulationReport"
                 type: array
           description: The train schedules results
       summary: Retrieve the simulation result of multiple train schedules of the timetable
       tags:
-      - train_schedule
+        - train_schedule
   /train_schedule/standalone_simulation/:
     post:
       requestBody:
@@ -4689,20 +4019,20 @@ paths:
                   type: integer
                 schedules:
                   items:
-                    $ref: '#/components/schemas/TrainScheduleBatchItem'
+                    $ref: "#/components/schemas/TrainScheduleBatchItem"
                   minItems: 1
                   type: array
                 timetable:
                   type: integer
               required:
-              - timetable
-              - path
-              - schedules
+                - timetable
+                - path
+                - schedules
               type: object
         description: The list of train schedules to simulate
         required: true
       responses:
-        '201':
+        "201":
           content:
             application/json:
               schema:
@@ -4714,96 +4044,95 @@ paths:
           description: The ids of the train_schedules created
       summary: Create a batch of train schedule and run simulations accordingly
       tags:
-      - train_schedule
+        - train_schedule
   /train_schedule/{id}/:
     delete:
       parameters:
-      - description: Train schedule ID
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
+        - description: Train schedule ID
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
       responses:
-        '204':
+        "204":
           description: No content
       summary: Delete a train schedule and its result
       tags:
-      - train_schedule
+        - train_schedule
     get:
       parameters:
-      - description: Train schedule ID
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
+        - description: Train schedule ID
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TrainSchedule'
+                $ref: "#/components/schemas/TrainSchedule"
           description: The train schedule info
       summary: Retrieve a train schedule
       tags:
-      - train_schedule
+        - train_schedule
   /train_schedule/{id}/result/:
     get:
       parameters:
-      - description: Train schedule ID
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
-      - description: Path id used to project the train path
-        in: query
-        name: path_id
-        required: true
-        schema:
-          type: integer
+        - description: Train schedule ID
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - description: Path id used to project the train path
+          in: query
+          name: path_id
+          required: true
+          schema:
+            type: integer
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SimulationReport'
+                $ref: "#/components/schemas/SimulationReport"
           description: The train schedule result
       summary: Retrieve a simulation result
       tags:
-      - train_schedule
+        - train_schedule
   /version/:
     get:
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Version'
+                $ref: "#/components/schemas/Version"
           description: Return the service version
   /version/core/:
     get:
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Version'
+                $ref: "#/components/schemas/Version"
           description: Return the core service version
 tags:
-- description: Infra
-  name: infra
-- description: Operations related to infra routes
-  name: routes
-- description: Timetable
-  name: timetable
-- description: Pathfinding operations
-  name: pathfinding
-- description: Map layers
-  name: layers
-- description: Electrical profiles
-  name: electrical_profiles
-- description: Train Schedule
-  name: train_schedule
-
+  - description: Infra
+    name: infra
+  - description: Operations related to infra routes
+    name: routes
+  - description: Timetable
+    name: timetable
+  - description: Pathfinding operations
+    name: pathfinding
+  - description: Map layers
+    name: layers
+  - description: Electrical profiles
+    name: electrical_profiles
+  - description: Train Schedule
+    name: train_schedule

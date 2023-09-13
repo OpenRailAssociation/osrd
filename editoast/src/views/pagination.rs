@@ -1,4 +1,7 @@
 use crate::error::Result;
+use crate::schema::InfraError;
+use crate::schemas;
+use crate::views::infra::InfraWithState;
 use diesel::pg::Pg;
 use diesel::query_builder::*;
 use diesel::sql_types::BigInt;
@@ -9,22 +12,38 @@ use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
 use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
+use utoipa::{IntoParams, ToSchema};
 
 use editoast_derive::EditoastError;
 
+schemas! {
+    PaginatedInfras,
+    PaginatedInfraErrors,
+}
+
 /// A paginated response
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
+#[aliases(
+    PaginatedInfras = PaginatedResponse<InfraWithState>,
+    PaginatedInfraErrors = PaginatedResponse<InfraError>
+)]
 pub struct PaginatedResponse<T> {
     pub count: i64,
+    #[schema(required)]
     pub previous: Option<i64>,
+    #[schema(required)]
     pub next: Option<i64>,
     pub results: Vec<T>,
 }
 
-#[derive(Debug, Clone, Copy, Deserialize)]
+#[derive(Debug, Clone, Copy, Deserialize, IntoParams)]
 pub struct PaginationQueryParam {
+    /// Page number
     #[serde(default = "default_page")]
+    #[param(minimum = 1, default = 1)]
     pub page: i64,
+    /// Number of elements by page
+    #[param(minimum = 1, maximum = 10000, default = 25)]
     pub page_size: Option<i64>,
 }
 

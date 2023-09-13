@@ -21,7 +21,11 @@ import { OsrdSimulationState, ScheduledTrain } from 'reducers/osrdsimulation/typ
 import { RootState } from 'reducers';
 import { updateTrainScheduleIDsToModify } from 'reducers/osrdconf';
 import { valueToInterval } from 'utils/numbers';
-import { GetTimetableByIdApiResponse, Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import {
+  GetTimetableByIdApiResponse,
+  InfraWithState,
+  osrdEditoastApi,
+} from 'common/api/osrdEditoastApi';
 import { durationInSeconds } from 'utils/timeManipulation';
 import { getSelectedTrainId } from 'reducers/osrdsimulation/selectors';
 import { isEmpty } from 'lodash';
@@ -36,7 +40,7 @@ import findTrainsDurationsIntervals from '../ManageTrainSchedule/helpers/trainsD
 type Props = {
   setDisplayTrainScheduleManagement: (mode: string) => void;
   trainsWithDetails: boolean;
-  infraState: Infra['state'];
+  infraState: InfraWithState['state'];
 };
 
 export default function Timetable({
@@ -202,7 +206,7 @@ export default function Timetable({
   };
 
   const isProjectionPathUsed = (
-    infraStateStatus: Infra['state'],
+    infraStateStatus: InfraWithState['state'],
     trainId: number,
     projection?: OsrdSimulationState['selectedProjection']
   ): boolean => {

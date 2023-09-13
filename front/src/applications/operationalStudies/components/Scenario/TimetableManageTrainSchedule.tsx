@@ -5,14 +5,14 @@ import { updateTrainScheduleIDsToModify } from 'reducers/osrdconf';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
 import { useDispatch } from 'react-redux';
 import TrainAddingSettings from 'applications/operationalStudies/components/ManageTrainSchedule/TrainAddingSettings';
-import { Infra } from 'common/api/osrdEditoastApi';
+import { InfraWithState } from 'common/api/osrdEditoastApi';
 import SubmitConfAddTrainSchedule from '../ManageTrainSchedule/SubmitConfAddTrainSchedule';
 import SubmitConfUpdateTrainSchedules from '../ManageTrainSchedule/SubmitConfUpdateTrainSchedules';
 
 type Props = {
   displayTrainScheduleManagement: string;
   setDisplayTrainScheduleManagement: (type: string) => void;
-  infraState?: Infra['state'];
+  infraState?: InfraWithState['state'];
 };
 
 export default function TimetableManageTrainSchedule({

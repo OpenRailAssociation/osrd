@@ -4,10 +4,10 @@ use crate::models::{Infra, Retrieve};
 use crate::schema::DirectionalTrackRange;
 use crate::views::infra::InfraApiError;
 use crate::views::params::List;
-use crate::DbPool;
-use actix_web::dev::HttpServiceFactory;
+use crate::{routes, DbPool};
+
 use actix_web::get;
-use actix_web::web::{scope, Data, Json, Path, Query};
+use actix_web::web::{Data, Json, Path, Query};
 use chashmap::CHashMap;
 use diesel::sql_query;
 use diesel::sql_types::{BigInt, Bool, Text};
@@ -17,9 +17,9 @@ use serde_json::{json, Value as JsonValue};
 use serde::{Deserialize, Serialize};
 use strum_macros::Display;
 
-/// Return `/infra/<infra_id>/routes` routes
-pub fn routes() -> impl HttpServiceFactory {
-    scope("/routes").service((get_routes_track_ranges, get_routes_from_waypoint))
+routes! {
+    get_routes_track_ranges,
+    get_routes_from_waypoint
 }
 
 #[derive(QueryableByName)]
@@ -37,6 +37,7 @@ enum WaypointType {
 }
 
 /// Return the railjson list of a specific OSRD object
+#[utoipa::path()]
 #[get("/{waypoint_type}/{waypoint}")]
 async fn get_routes_from_waypoint(
     path: Path<(i64, WaypointType, String)>,
@@ -81,6 +82,7 @@ struct RouteTrackRangesParams {
     routes: List<String>,
 }
 
+#[utoipa::path()]
 #[get("/track_ranges")]
 async fn get_routes_track_ranges<'a>(
     infra: Path<i64>,

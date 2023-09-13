@@ -21,6 +21,7 @@ use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
 use editoast_derive::Model;
 use log::{debug, error};
 use serde::{Deserialize, Serialize};
+use utoipa::{schema, ToSchema};
 use uuid::Uuid;
 
 pub const RAILJSON_VERSION: &str = "3.4.1";
@@ -38,6 +39,7 @@ pub const INFRA_VERSION: &str = "0";
     Model,
     AsChangeset,
     Derivative,
+    ToSchema,
 )]
 #[diesel(table_name = infra)]
 #[model(retrieve, delete, create, update)]
@@ -45,21 +47,29 @@ pub const INFRA_VERSION: &str = "0";
 #[derivative(Default)]
 pub struct Infra {
     #[diesel(deserialize_as = i64)]
+    #[schema(value_type = i64)]
     pub id: Option<i64>,
     #[diesel(deserialize_as = String)]
+    #[schema(value_type = String)]
     pub name: Option<String>,
     #[diesel(deserialize_as = String)]
+    #[schema(example = "3.3.1", value_type = String)]
     pub railjson_version: Option<String>,
     #[serde(skip_serializing)]
     #[diesel(deserialize_as = Uuid)]
+    #[schema(value_type = Uuid)]
     pub owner: Option<Uuid>,
     #[diesel(deserialize_as = String)]
+    #[schema(example = "1", value_type = String)]
     pub version: Option<String>,
     #[diesel(deserialize_as = Option<String>)]
+    #[schema(example = "1", value_type = Option<String>, required)]
     pub generated_version: Option<Option<String>>,
     #[diesel(deserialize_as = bool)]
+    #[schema(value_type = bool)]
     pub locked: Option<bool>,
     #[diesel(deserialize_as = NaiveDateTime)]
+    #[schema(value_type = NaiveDateTime)]
     pub created: Option<NaiveDateTime>,
     #[derivative(Default(value = "Utc::now().naive_utc()"))]
     pub modified: NaiveDateTime,
