@@ -2,7 +2,7 @@ package fr.sncf.osrd.stdcm;
 
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
-import fr.sncf.osrd.stdcm.graph.STDCMPathfinding;
+import fr.sncf.osrd.stdcm.graph.LegacySTDCMPathfinding;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
@@ -129,7 +129,7 @@ public class STDCMPathfindingBuilder {
         assert infra != null : "infra is a required parameter and was not set";
         assert rollingStock != null : "rolling stock is a required parameter and was not set";
         assert steps.size() >= 2 : "Not enough steps have been set";
-        return STDCMPathfinding.findPath(
+        return LegacySTDCMPathfinding.findPath(
                 infra,
                 rollingStock,
                 comfort,

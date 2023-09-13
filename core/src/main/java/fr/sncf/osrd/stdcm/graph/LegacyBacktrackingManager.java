@@ -10,11 +10,11 @@ package fr.sncf.osrd.stdcm.graph;
  * will be set to be the existing "a->b" edge (if we don't need to backtrack any further).
  * We can then create a new edge starting at c with the correct speed.
  * */
-public class BacktrackingManager {
+public class LegacyBacktrackingManager {
 
-    private final STDCMGraph graph;
+    private final LegacySTDCMGraph graph;
 
-    public BacktrackingManager(STDCMGraph graph) {
+    public LegacyBacktrackingManager(LegacySTDCMGraph graph) {
         this.graph = graph;
     }
 
@@ -23,7 +23,7 @@ public class BacktrackingManager {
      * The given edge does not change but the previous ones are new instances with a different envelope.
      * If no backtracking is needed, nothing is done and the edge is returned as it is.
      * If the new edge is invalid (for example if it would cause conflicts), returns null. */
-    STDCMEdge backtrack(STDCMEdge e) {
+    LegacySTDCMEdge backtrack(LegacySTDCMEdge e) {
         if (e.previousNode() == null) {
             // First edge of the path
             assert e.envelope().getBeginSpeed() == 0;
@@ -55,8 +55,8 @@ public class BacktrackingManager {
      * recursive calls are made when needed (through the EdgeBuilder).
      * The start time and any data related to delays will be updated accordingly.
      * */
-    private STDCMEdge rebuildEdgeBackward(STDCMEdge old, double endSpeed) {
-        var newEnvelope = STDCMSimulations.simulateBackwards(
+    private LegacySTDCMEdge rebuildEdgeBackward(LegacySTDCMEdge old, double endSpeed) {
+        var newEnvelope = LegacySTDCMSimulations.simulateBackwards(
                 old.route(),
                 endSpeed,
                 old.envelopeStartOffset(),

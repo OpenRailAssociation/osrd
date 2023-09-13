@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-public class STDCMPathfindingTests {
+public class LegacySTDCMPathfindingTests {
 
     /** Look for a path in an empty timetable */
     @Test

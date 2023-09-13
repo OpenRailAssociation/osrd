@@ -142,7 +142,7 @@ public class STDCMSimulations {
             double endSpeed,
             long start,
             Envelope oldEnvelope,
-            STDCMGraph graph
+            LegacySTDCMGraph graph
     ) {
         var context = makeSimContext(
                 infra,

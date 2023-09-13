@@ -3,8 +3,8 @@ package fr.sncf.osrd.stdcm.graph;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
-import fr.sncf.osrd.sim_infra.api.RawSignalingInfra;
-import fr.sncf.osrd.stdcm.STDCMStep;
+import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
+import fr.sncf.osrd.stdcm.LegacySTDCMStep;
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.RouteAvailabilityInterface;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.utils.graph.Graph;
@@ -19,40 +19,40 @@ import java.util.List;
  * DelayManager handles how much delay we can and need to add to avoid conflicts,
  * STDCMEdgeBuilder handles the creation of new STDCMEdge instances */
 @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
-public class STDCMGraph implements Graph<STDCMNode, STDCMEdge> {
+public class LegacySTDCMGraph implements Graph<LegacySTDCMNode, LegacySTDCMEdge> {
 
-    public final RawSignalingInfra rawInfra;
+    public final SignalingInfra infra;
     public final RollingStock rollingStock;
     public final RollingStock.Comfort comfort;
     public final double timeStep;
-    final List<STDCMStep> steps;
-    final DelayManager delayManager;
-    final AllowanceManager allowanceManager;
-    final BacktrackingManager backtrackingManager;
+    final List<LegacySTDCMStep> steps;
+    final LegacyDelayManager delayManager;
+    final LegacyAllowanceManager allowanceManager;
+    final LegacyBacktrackingManager backtrackingManager;
     final String tag;
     final AllowanceValue standardAllowance;
 
     /** Constructor */
-    public STDCMGraph(
-            RawSignalingInfra rawInfra,
+    public LegacySTDCMGraph(
+            SignalingInfra infra,
             RollingStock rollingStock,
             RollingStock.Comfort comfort,
             double timeStep,
             RouteAvailabilityInterface routeAvailability,
             double maxRunTime,
             double minScheduleTimeStart,
-            List<STDCMStep> steps,
+            List<LegacySTDCMStep> steps,
             String tag,
             AllowanceValue standardAllowance
     ) {
-        this.rawInfra = rawInfra;
+        this.infra = infra;
         this.rollingStock = rollingStock;
         this.comfort = comfort;
         this.timeStep = timeStep;
         this.steps = steps;
-        this.delayManager = new DelayManager(minScheduleTimeStart, maxRunTime, routeAvailability, this);
-        this.allowanceManager = new AllowanceManager(this);
-        this.backtrackingManager = new BacktrackingManager(this);
+        this.delayManager = new LegacyDelayManager(minScheduleTimeStart, maxRunTime, routeAvailability, this);
+        this.allowanceManager = new LegacyAllowanceManager(this);
+        this.backtrackingManager = new LegacyBacktrackingManager(this);
         this.tag = tag;
         this.standardAllowance = standardAllowance;
 
@@ -74,18 +74,18 @@ public class STDCMGraph implements Graph<STDCMNode, STDCMEdge> {
     }
 
     @Override
-    public STDCMNode getEdgeEnd(STDCMEdge edge) {
+    public LegacySTDCMNode getEdgeEnd(LegacySTDCMEdge edge) {
         return edge.getEdgeEnd(this);
     }
 
     @Override
-    public Collection<STDCMEdge> getAdjacentEdges(STDCMNode node) {
+    public Collection<LegacySTDCMEdge> getAdjacentEdges(LegacySTDCMNode node) {
         if (node.detector() == null)
             return STDCMEdgeBuilder.fromNode(this, node, node.locationOnRoute().edge())
                     .makeAllEdges();
         else {
-            var res = new ArrayList<STDCMEdge>();
-            var neighbors = rawInfra.getSignalingRouteGraph().outEdges(node.detector());
+            var res = new ArrayList<LegacySTDCMEdge>();
+            var neighbors = infra.getSignalingRouteGraph().outEdges(node.detector());
             for (var neighbor : neighbors) {
                 res.addAll(
                         STDCMEdgeBuilder.fromNode(this, node, neighbor)

@@ -5,8 +5,6 @@ import fr.sncf.osrd.api.InfraManager;
 import fr.sncf.osrd.api.pathfinding.LegacyPathfindingResultConverter;
 import fr.sncf.osrd.api.pathfinding.PathfindingRoutesEndpoint;
 import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint;
-import fr.sncf.osrd.stdcm.LegacySTDCMStep;
-import fr.sncf.osrd.stdcm.graph.STDCMPathfinding;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.envelope_sim_infra.LegacyMRSP;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
@@ -19,8 +17,10 @@ import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import fr.sncf.osrd.standalone_sim.ScheduleMetadataExtractor;
 import fr.sncf.osrd.standalone_sim.result.ResultEnvelopePoint;
 import fr.sncf.osrd.standalone_sim.result.StandaloneSimResult;
+import fr.sncf.osrd.stdcm.LegacySTDCMStep;
+import fr.sncf.osrd.stdcm.graph.LegacySTDCMPathfinding;
+import fr.sncf.osrd.stdcm.preprocessing.implementation.LegacyUnavailableSpaceBuilder;
 import fr.sncf.osrd.stdcm.preprocessing.implementation.RouteAvailabilityLegacyAdapter;
-import fr.sncf.osrd.stdcm.preprocessing.implementation.UnavailableSpaceBuilder;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.StandaloneTrainSchedule;
 import fr.sncf.osrd.train.TrainStop;
@@ -35,7 +35,11 @@ import org.takes.rs.RsJson;
 import org.takes.rs.RsText;
 import org.takes.rs.RsWithBody;
 import org.takes.rs.RsWithStatus;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 
 public class LegacySTDCMEndpoint implements Take {
@@ -93,7 +97,7 @@ public class LegacySTDCMEndpoint implements Take {
             // Build the unavailable space
             // temporary workaround, to remove with new signaling
             occupancies = addWarningOccupancies(infra, occupancies);
-            var unavailableSpace = UnavailableSpaceBuilder.computeUnavailableSpace(
+            var unavailableSpace = LegacyUnavailableSpaceBuilder.computeUnavailableSpace(
                     infra,
                     occupancies,
                     rollingStock,
@@ -102,7 +106,7 @@ public class LegacySTDCMEndpoint implements Take {
             );
 
             // Run the STDCM pathfinding
-            var res = STDCMPathfinding.findPath(
+            var res = LegacySTDCMPathfinding.findPath(
                     infra,
                     rollingStock,
                     comfort,

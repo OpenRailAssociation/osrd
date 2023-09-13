@@ -1,12 +1,13 @@
 package fr.sncf.osrd.stdcm.graph;
 
 import fr.sncf.osrd.envelope.Envelope;
+import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import java.util.Objects;
 
-public record STDCMEdge(
+public record LegacySTDCMEdge(
         // Route considered for this edge
-        Integer route,
+        SignalingRoute route,
         // Envelope of the train going through the route (starts at t=0). Does not account for allowances.
         Envelope envelope,
         // Time at which the train enters the route
@@ -20,7 +21,7 @@ public record STDCMEdge(
         // Total delay we have added by shifting the departure time since the start of the path
         double totalDepartureTimeShift,
         // Node located at the start of this edge, null if this is the first edge
-        STDCMNode previousNode,
+        LegacySTDCMNode previousNode,
         // Offset of the envelope if it doesn't start at the beginning of the edge
         double envelopeStartOffset,
         // Time at which the train enters the route, discretized by only considering the minutes.
@@ -36,10 +37,10 @@ public record STDCMEdge(
 ) {
     @Override
     public boolean equals(Object other) {
-        if (other == null || other.getClass() != STDCMEdge.class)
+        if (other == null || other.getClass() != LegacySTDCMEdge.class)
             return false;
-        var otherEdge = (STDCMEdge) other;
-        if (!route.equals(otherEdge.route))
+        var otherEdge = (LegacySTDCMEdge) other;
+        if (!route.getInfraRoute().getID().equals(otherEdge.route.getInfraRoute().getID()))
             return false;
 
         // We need to consider that the edges aren't equal if the times are different,
@@ -51,17 +52,20 @@ public record STDCMEdge(
 
     @Override
     public int hashCode() {
-        return Objects.hash(route, timeNextOccupancy);
+        return Objects.hash(
+                route.getInfraRoute().getID(),
+                timeNextOccupancy
+        );
     }
 
     /** Returns the node at the end of this edge */
-    STDCMNode getEdgeEnd(STDCMGraph graph) {
+    LegacySTDCMNode getEdgeEnd(LegacySTDCMGraph graph) {
         if (!endAtStop) {
             // We move on to the next route
-            return new STDCMNode(
+            return new LegacySTDCMNode(
                     getTotalTime() + timeStart(),
                     envelope().getEndSpeed(),
-                    graph.,
+                    graph.infra.getSignalingRouteGraph().incidentNodes(route()).nodeV(),
                     totalDepartureTimeShift(),
                     maximumAddedDelayAfter(),
                     this,
@@ -75,7 +79,7 @@ public record STDCMEdge(
             var newWaypointIndex = waypointIndex + 1;
             while (newWaypointIndex + 1 < graph.steps.size() && !graph.steps.get(newWaypointIndex + 1).stop())
                 newWaypointIndex++; // Skip waypoints where we don't stop (not handled here)
-            return new STDCMNode(
+            return new LegacySTDCMNode(
                     getTotalTime() + timeStart() + stopDuration,
                     envelope.getEndSpeed(),
                     null,
@@ -83,7 +87,7 @@ public record STDCMEdge(
                     maximumAddedDelayAfter(),
                     this,
                     newWaypointIndex,
-                    new Pathfinding.EdgeLocation<>(blockId, envelopeStartOffset + getLength()),
+                    new Pathfinding.EdgeLocation<>(route, envelopeStartOffset + getLength()),
                     stopDuration
             );
         }

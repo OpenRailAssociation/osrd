@@ -25,7 +25,7 @@ public class STDCMPostProcessing {
     /** Builds the STDCM result object from the raw pathfinding result.
      * This is the only non-private method of this class, the rest is implementation detail. */
     static STDCMResult makeResult(
-            Pathfinding.Result<STDCMEdge> path,
+            Pathfinding.Result<LegacySTDCMEdge> path,
             double startTime,
             AllowanceValue standardAllowance,
             RollingStock rollingStock,
@@ -71,7 +71,7 @@ public class STDCMPostProcessing {
 
     /** Creates the list of waypoints on the path */
     private static List<Pathfinding.EdgeLocation<SignalingRoute>> makeRouteWaypoints(
-            Pathfinding.Result<STDCMEdge> path
+            Pathfinding.Result<LegacySTDCMEdge> path
     ) {
         var res = new ArrayList<Pathfinding.EdgeLocation<SignalingRoute>>();
         for (var waypoint : path.waypoints()) {
@@ -83,7 +83,7 @@ public class STDCMPostProcessing {
 
     /** Builds the list of route ranges, merging the ranges on the same route */
     private static List<Pathfinding.EdgeRange<SignalingRoute>> makeRouteRanges(
-            List<Pathfinding.EdgeRange<STDCMEdge>> ranges
+            List<Pathfinding.EdgeRange<LegacySTDCMEdge>> ranges
     ) {
         var res = new ArrayList<Pathfinding.EdgeRange<SignalingRoute>>();
         int i = 0;
@@ -111,10 +111,10 @@ public class STDCMPostProcessing {
     /** Builds the actual list of EdgeRange given the raw result of the pathfinding.
      * We can't use the pathfinding result directly because we use our own method
      * to keep track of previous nodes/edges. */
-    private static List<Pathfinding.EdgeRange<STDCMEdge>> makeEdgeRange(
-            Pathfinding.Result<STDCMEdge> raw
+    private static List<Pathfinding.EdgeRange<LegacySTDCMEdge>> makeEdgeRange(
+            Pathfinding.Result<LegacySTDCMEdge> raw
     ) {
-        var orderedEdges = new ArrayDeque<STDCMEdge>();
+        var orderedEdges = new ArrayDeque<LegacySTDCMEdge>();
         var firstRange = raw.ranges().get(0);
         var lastRange = raw.ranges().get(raw.ranges().size() - 1);
         var current = lastRange.edge();
@@ -127,7 +127,7 @@ public class STDCMPostProcessing {
         firstRange = new Pathfinding.EdgeRange<>(orderedEdges.removeFirst(), firstRange.start(), firstRange.end());
         if (lastRange.edge() != firstRange.edge())
             lastRange = new Pathfinding.EdgeRange<>(orderedEdges.removeLast(), lastRange.start(), lastRange.end());
-        var res = new ArrayList<Pathfinding.EdgeRange<STDCMEdge>>();
+        var res = new ArrayList<Pathfinding.EdgeRange<LegacySTDCMEdge>>();
         res.add(firstRange);
         for (var edge : orderedEdges)
             res.add(new Pathfinding.EdgeRange<>(edge, 0, edge.getLength()));
@@ -138,7 +138,7 @@ public class STDCMPostProcessing {
 
     /** Converts the list of pathfinding edges into a list of TrackRangeView that covers the path exactly */
     private static List<TrackRangeView> makeTrackRanges(
-            List<Pathfinding.EdgeRange<STDCMEdge>> edges
+            List<Pathfinding.EdgeRange<LegacySTDCMEdge>> edges
     ) {
         var trackRanges = new ArrayList<TrackRangeView>();
         for (var routeRange : edges) {
@@ -154,7 +154,7 @@ public class STDCMPostProcessing {
 
     /** Creates a TrainPath instance from the list of pathfinding edges */
     static TrainPath makeTrainPath(
-            List<Pathfinding.EdgeRange<STDCMEdge>> ranges
+            List<Pathfinding.EdgeRange<LegacySTDCMEdge>> ranges
     ) {
         var routeList = new ArrayList<SignalingRoute>();
         for (var range : ranges) {
@@ -171,14 +171,14 @@ public class STDCMPostProcessing {
     }
 
     /** Computes the departure time, made of the sum of all delays added over the path */
-    static double computeDepartureTime(List<Pathfinding.EdgeRange<STDCMEdge>> ranges, double startTime) {
+    static double computeDepartureTime(List<Pathfinding.EdgeRange<LegacySTDCMEdge>> ranges, double startTime) {
         for (var range : ranges)
             startTime += range.edge().addedDelay();
         return startTime;
     }
 
     /** Builds the list of stops from the ranges */
-    private static List<TrainStop> makeStops(List<Pathfinding.EdgeRange<STDCMEdge>> ranges) {
+    private static List<TrainStop> makeStops(List<Pathfinding.EdgeRange<LegacySTDCMEdge>> ranges) {
         var res = new ArrayList<TrainStop>();
         double offset = 0;
         for (var range : ranges) {

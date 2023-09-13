@@ -11,7 +11,7 @@ import java.util.Set;
 public class STDCMEdgeBuilder {
 
     /** STDCM Graph, needed for most operations */
-    private final STDCMGraph graph;
+    private final LegacySTDCMGraph graph;
 
     /** Route considered for the new edge(s) */
     private final SignalingRoute route;
@@ -33,7 +33,7 @@ public class STDCMEdgeBuilder {
     private double prevAddedDelay = 0;
 
     /** Previous node, used to compute the final path */
-    private STDCMNode prevNode = null;
+    private LegacySTDCMNode prevNode = null;
 
     /** Envelope to use on the edge, if unspecified we try to go at maximum allowed speed */
     private Envelope envelope = null;
@@ -47,12 +47,12 @@ public class STDCMEdgeBuilder {
 
     // region CONSTRUCTORS
 
-    STDCMEdgeBuilder(SignalingRoute route, STDCMGraph graph) {
+    STDCMEdgeBuilder(SignalingRoute route, LegacySTDCMGraph graph) {
         this.route = route;
         this.graph = graph;
     }
 
-    static STDCMEdgeBuilder fromNode(STDCMGraph graph, STDCMNode node, SignalingRoute route) {
+    static STDCMEdgeBuilder fromNode(LegacySTDCMGraph graph, LegacySTDCMNode node, SignalingRoute route) {
         var builder = new STDCMEdgeBuilder(route, graph);
         if (node.locationOnRoute() != null) {
             assert route.equals(node.locationOnRoute().edge());
@@ -103,7 +103,7 @@ public class STDCMEdgeBuilder {
     }
 
     /** Sets the previous node, used to compute the final path */
-    public STDCMEdgeBuilder setPrevNode(STDCMNode prevNode) {
+    public STDCMEdgeBuilder setPrevNode(LegacySTDCMNode prevNode) {
         this.prevNode = prevNode;
         return this;
     }
@@ -132,7 +132,7 @@ public class STDCMEdgeBuilder {
     // region BUILDERS
 
     /** Creates all edges that can be accessed on the given route, using all the parameters specified. */
-    public Collection<STDCMEdge> makeAllEdges() {
+    public Collection<LegacySTDCMEdge> makeAllEdges() {
         if (envelope == null)
             envelope = LegacySTDCMSimulations.simulateRoute(
                     route,
@@ -146,7 +146,7 @@ public class STDCMEdgeBuilder {
             );
         if (envelope == null)
             return List.of();
-        var res = new ArrayList<STDCMEdge>();
+        var res = new ArrayList<LegacySTDCMEdge>();
         Set<Double> delaysPerOpening;
         if (forceMaxDelay)
             delaysPerOpening = findMaxDelay();
@@ -179,7 +179,7 @@ public class STDCMEdgeBuilder {
     }
 
     /** Creates a single STDCM edge, adding the given amount of delay */
-    private STDCMEdge makeSingleEdge(double delayNeeded) {
+    private LegacySTDCMEdge makeSingleEdge(double delayNeeded) {
         if (Double.isInfinite(delayNeeded))
             return null;
         var maximumDelay = Math.min(
@@ -188,7 +188,7 @@ public class STDCMEdgeBuilder {
         );
         var actualStartTime = startTime + delayNeeded;
         var endAtStop = STDCMUtils.getStopOnRoute(graph, route, startOffset, waypointIndex) != null;
-        var res = new STDCMEdge(
+        var res = new LegacySTDCMEdge(
                 route,
                 envelope,
                 actualStartTime,
@@ -216,7 +216,7 @@ public class STDCMEdgeBuilder {
     /** Creates all the edges in the given settings, then look for one that shares the given time of next occupancy.
      * This is used to identify the "openings" between two occupancies,
      * it is used to ensure we use the same one when re-building edges. */
-    STDCMEdge findEdgeSameNextOccupancy(double timeNextOccupancy) {
+    LegacySTDCMEdge findEdgeSameNextOccupancy(double timeNextOccupancy) {
         var newEdges = makeAllEdges();
         // We look for an edge that uses the same opening, identified by the next occupancy
         for (var newEdge : newEdges) {

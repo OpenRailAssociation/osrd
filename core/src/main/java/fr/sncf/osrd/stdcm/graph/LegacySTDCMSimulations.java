@@ -140,7 +140,7 @@ public class LegacySTDCMSimulations {
             double endSpeed,
             double start,
             Envelope oldEnvelope,
-            STDCMGraph graph
+            LegacySTDCMGraph graph
     ) {
         var context = makeSimContext(
                 List.of(route),

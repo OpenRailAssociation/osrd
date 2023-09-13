@@ -26,7 +26,7 @@ public class STDCMStandardAllowance {
     /** Applies the allowance to the final envelope */
     static Envelope applyAllowance(
             Envelope envelope,
-            List<Pathfinding.EdgeRange<STDCMEdge>> ranges,
+            List<Pathfinding.EdgeRange<LegacySTDCMEdge>> ranges,
             AllowanceValue standardAllowance,
             EnvelopeSimPath envelopeSimPath,
             RollingStock rollingStock,
@@ -74,7 +74,7 @@ public class STDCMStandardAllowance {
     private static double findConflictOffsets(
             Envelope envelope,
             RouteAvailabilityInterface routeAvailability,
-            List<Pathfinding.EdgeRange<STDCMEdge>> ranges,
+            List<Pathfinding.EdgeRange<LegacySTDCMEdge>> ranges,
             double departureTime,
             List<TrainStop> stops
     ) {

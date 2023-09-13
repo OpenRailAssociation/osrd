@@ -10,11 +10,11 @@ import java.util.List;
 /** This class contains all the methods used to handle allowances.
  * This is how we add delays in limited ranges of the path.
  * */
-public class AllowanceManager {
+public class LegacyAllowanceManager {
 
-    private final STDCMGraph graph;
+    private final LegacySTDCMGraph graph;
 
-    public AllowanceManager(STDCMGraph graph) {
+    public LegacyAllowanceManager(LegacySTDCMGraph graph) {
         this.graph = graph;
     }
 

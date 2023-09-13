@@ -1,11 +1,9 @@
 package fr.sncf.osrd.stdcm.graph;
 
 import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.POSITION_EPSILON;
-import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.computeAcceleration;
 
 import com.google.common.collect.Iterables;
 import fr.sncf.osrd.envelope.Envelope;
-import fr.sncf.osrd.envelope.EnvelopeDebug;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView;
@@ -20,7 +18,7 @@ public class STDCMUtils {
 
     /** Combines all the envelopes in the given edge ranges */
     public static Envelope mergeEnvelopeRanges(
-            List<Pathfinding.EdgeRange<STDCMEdge>> edges
+            List<Pathfinding.EdgeRange<LegacySTDCMEdge>> edges
     ) {
         var parts = new ArrayList<EnvelopePart>();
         double offset = 0;
@@ -41,7 +39,7 @@ public class STDCMUtils {
 
     /** Combines all the envelopes in the given edges */
     public static Envelope mergeEnvelopes(
-            List<STDCMEdge> edges
+            List<LegacySTDCMEdge> edges
     ) {
         return mergeEnvelopeRanges(
                 edges.stream()
@@ -51,7 +49,7 @@ public class STDCMUtils {
     }
 
     /** Returns the offset of the stops on the given route, starting at startOffset*/
-    static Double getStopOnRoute(STDCMGraph graph, SignalingRoute route, double startOffset, int waypointIndex) {
+    static Double getStopOnRoute(LegacySTDCMGraph graph, SignalingRoute route, double startOffset, int waypointIndex) {
         var res = new ArrayList<Double>();
         while (waypointIndex + 1 < graph.steps.size() && !graph.steps.get(waypointIndex + 1).stop())
             waypointIndex++; // Only the next point where we actually stop matters here
@@ -89,7 +87,7 @@ public class STDCMUtils {
     }
 
     /** Create a TrainPath instance from a list of edge ranges */
-    static TrainPath makePathFromRanges(List<Pathfinding.EdgeRange<STDCMEdge>> ranges) {
+    static TrainPath makePathFromRanges(List<Pathfinding.EdgeRange<LegacySTDCMEdge>> ranges) {
         var firstEdge = ranges.get(0).edge();
         var lastRange = ranges.get(ranges.size() - 1);
         var lastEdge = lastRange.edge();
