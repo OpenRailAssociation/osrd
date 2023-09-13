@@ -2850,6 +2850,25 @@ paths:
       summary: Refresh the layers
       tags:
       - infra
+  /infra/voltages/:
+    get:
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                example:
+                - '750'
+                - '1500'
+                - '2500.5'
+                items:
+                  type: string
+                type: array
+          description: Voltages list
+      summary: List all voltages of all infras
+      tags:
+      - infra
+      - rolling_stock
   /infra/{id}/:
     delete:
       parameters:

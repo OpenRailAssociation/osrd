@@ -4,10 +4,10 @@ export const addTagTypes = [
   'documents',
   'electrical_profiles',
   'infra',
+  'rolling_stock',
   'pathfinding',
   'routes',
   'layers',
-  'rolling_stock',
   'projects',
   'studies',
   'scenarios',
@@ -99,6 +99,10 @@ const injectedRtkApi = api
           params: { infras: queryArg.infras, force: queryArg.force },
         }),
         invalidatesTags: ['infra'],
+      }),
+      getInfraVoltages: build.query<GetInfraVoltagesApiResponse, GetInfraVoltagesApiArg>({
+        query: () => ({ url: `/infra/voltages/` }),
+        providesTags: ['infra', 'rolling_stock'],
       }),
       deleteInfraById: build.mutation<DeleteInfraByIdApiResponse, DeleteInfraByIdApiArg>({
         query: (queryArg) => ({ url: `/infra/${queryArg.id}/`, method: 'DELETE' }),
@@ -705,6 +709,8 @@ export type PostInfraRefreshApiArg = {
   /** Force the refresh of the layers */
   force?: boolean;
 };
+export type GetInfraVoltagesApiResponse = /** status 200 Voltages list */ string[];
+export type GetInfraVoltagesApiArg = void;
 export type DeleteInfraByIdApiResponse = unknown;
 export type DeleteInfraByIdApiArg = {
   /** infra id */
