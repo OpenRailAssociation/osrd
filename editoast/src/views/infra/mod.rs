@@ -46,7 +46,14 @@ use uuid::Uuid;
 /// Return `/infra` routes
 pub fn routes() -> impl HttpServiceFactory {
     scope("/infra")
-        .service((list, create, refresh, cache_status, railjson::routes()))
+        .service((
+            list,
+            create,
+            refresh,
+            cache_status,
+            get_all_voltages,
+            railjson::routes(),
+        ))
         .service(
             scope("/{infra}")
                 .service((
@@ -436,6 +443,15 @@ async fn get_voltages(
     Ok(Json(voltages.into_iter().map(|el| (el.voltage)).collect()))
 }
 
+/// Returns the set of voltages for all infras and rolling_stocks modes.
+#[get("/voltages")]
+async fn get_all_voltages(db_pool: Data<DbPool>) -> Result<Json<Vec<String>>> {
+    let mut conn = db_pool.get().await?;
+    let query = include_str!("sql/get_all_voltages_and_modes.sql");
+    let voltages: Vec<Voltage> = sql_query(query).load(&mut conn).await?;
+    Ok(Json(voltages.into_iter().map(|el| (el.voltage)).collect()))
+}
+
 /// Lock an infra
 #[post("/lock")]
 async fn lock(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<HttpResponse> {
@@ -530,7 +546,9 @@ async fn cache_status(
 pub mod tests {
     use super::*;
     use crate::core::mocking::MockingClient;
-    use crate::fixtures::tests::{db_pool, empty_infra, other_rolling_stock, TestFixture};
+    use crate::fixtures::tests::{
+        db_pool, empty_infra, other_rolling_stock, small_infra, TestFixture,
+    };
     use crate::models::RollingStockModel;
     use crate::schema::operation::{Operation, RailjsonObject};
     use crate::schema::{Catenary, SpeedSection};
@@ -704,6 +722,47 @@ pub mod tests {
             .to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
+    }
+
+    #[rstest]
+    async fn infra_get_all_voltages(
+        #[future] empty_infra: TestFixture<Infra>,
+        #[future] small_infra: TestFixture<Infra>,
+        #[future] other_rolling_stock: TestFixture<RollingStockModel>,
+    ) {
+        let app = create_test_service().await;
+        let infra_1 = empty_infra.await;
+        let infra_2 = small_infra.await;
+
+        // Create catenaries
+        let catenary_1 = Catenary {
+            id: "test1".into(),
+            voltage: "0".into(),
+            track_ranges: vec![],
+        };
+        let catenary_2 = Catenary {
+            id: "test2".into(),
+            voltage: "1".into(),
+            track_ranges: vec![],
+        };
+
+        let req = create_object_request(infra_1.id(), catenary_1.into());
+        assert_eq!(call_service(&app, req).await.status(), StatusCode::OK);
+
+        let req = create_object_request(infra_2.id(), catenary_2.into());
+        assert_eq!(call_service(&app, req).await.status(), StatusCode::OK);
+
+        // Create rolling_stock
+        let _rolling_stock = other_rolling_stock.await;
+
+        let req = TestRequest::get().uri("/infra/voltages/").to_request();
+        let response = call_service(&app, req).await;
+        assert_eq!(response.status(), StatusCode::OK);
+        let voltages: Vec<String> = read_body_json(response).await;
+        assert!(voltages.len() >= 3);
+        assert!(voltages.contains(&String::from("0")));
+        assert!(voltages.contains(&String::from("1")));
+        assert!(voltages.contains(&String::from("25000")));
     }
 
     #[rstest]

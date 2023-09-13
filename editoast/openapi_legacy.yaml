@@ -497,6 +497,22 @@ paths:
                 items:
                   type: integer
 
+  /infra/voltages/:
+    get:
+      tags:
+        - infra
+      summary: List all voltages of all infras
+      responses:
+        200:
+          description: Voltages list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                example: ["750", "1500", "2500.5"]
+
   /infra/{id}/lines/{line_code}/bbox/:
     get:
       tags:
