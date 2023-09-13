@@ -36,6 +36,7 @@ pub enum Commands {
     Clear(ClearArgs),
     ImportRailjson(ImportRailjsonArgs),
     ImportProfileSet(ImportProfileSetArgs),
+    ImportRollingStock(ImportRollingStockArgs),
     OsmToRailjson(OsmToRailjsonArgs),
     #[command(about, long_about = "Prints the OpenApi of the service")]
     Openapi,
@@ -115,6 +116,13 @@ pub struct ImportProfileSetArgs {
     pub name: String,
     /// Electrical profile set file path
     pub electrical_profile_set_path: PathBuf,
+}
+
+#[derive(Args, Debug)]
+#[command(about, long_about = "Import a rolling stock given a json file")]
+pub struct ImportRollingStockArgs {
+    /// Rolling stock file path
+    pub rolling_stock_path: Vec<PathBuf>,
 }
 
 #[derive(Args, Debug)]

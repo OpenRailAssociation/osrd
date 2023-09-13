@@ -31,7 +31,7 @@ use chashmap::CHashMap;
 use clap::Parser;
 use client::{
     ClearArgs, Client, Color, Commands, GenerateArgs, ImportProfileSetArgs, ImportRailjsonArgs,
-    PostgresConfig, RedisConfig, RunserverArgs,
+    ImportRollingStockArgs, PostgresConfig, RedisConfig, RunserverArgs,
 };
 use colored::*;
 use diesel_async::pooled_connection::deadpool::Pool;
@@ -42,7 +42,7 @@ use infra_cache::InfraCache;
 use log::{error, info, warn};
 use map::MapLayers;
 use models::electrical_profile::ElectricalProfileSet;
-use models::Retrieve;
+use models::{Retrieve, RollingStockModel};
 use sentry::ClientInitGuard;
 use std::env;
 use std::error::Error;
@@ -84,6 +84,7 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
         Commands::Clear(args) => clear(args, pg_config, redis_config).await,
         Commands::ImportRailjson(args) => import_railjson(args, pg_config).await,
         Commands::ImportProfileSet(args) => add_electrical_profile_set(args, pg_config).await,
+        Commands::ImportRollingStock(args) => import_rolling_stock(args, pg_config).await,
         Commands::OsmToRailjson(args) => {
             converters::osm_to_railjson(args.osm_pbf_in, args.railjson_out)
         }
@@ -291,6 +292,32 @@ async fn generate(
                 infra.id.unwrap()
             );
         }
+    }
+    Ok(())
+}
+
+async fn import_rolling_stock(
+    args: ImportRollingStockArgs,
+    pg_config: PostgresConfig,
+) -> Result<(), Box<dyn Error + Send + Sync>> {
+    let manager = ConnectionManager::<PgConnection>::new(pg_config.url());
+    let pool = Data::new(Pool::builder(manager).build().unwrap());
+    for rolling_stock_path in args.rolling_stock_path {
+        let rolling_stock_file = File::open(rolling_stock_path)?;
+        let mut rolling_stock: RollingStockModel =
+            serde_json::from_reader(BufReader::new(rolling_stock_file))?;
+        info!(
+            "🍞 Importing rolling stock {}",
+            rolling_stock.name.clone().unwrap().bold()
+        );
+        rolling_stock.locked = Some(false);
+        rolling_stock.version = Some(0);
+        let rolling_stock = rolling_stock.create(pool.clone()).await?;
+        info!(
+            "✅ Rolling stock {}[{}] saved!",
+            rolling_stock.name.clone().unwrap().bold(),
+            rolling_stock.id.unwrap()
+        );
     }
     Ok(())
 }
