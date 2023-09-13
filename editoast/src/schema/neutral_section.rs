@@ -14,7 +14,7 @@ use serde::{Deserialize, Serialize};
 /// For more details see [the documentation](https://osrd.fr/en/docs/explanation/neutral_sections/).
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, InfraModel)]
 #[serde(deny_unknown_fields)]
-#[infra_model(table = "crate::tables::osrd_infra_neutralsectionmodel")]
+#[infra_model(table = "crate::tables::infra_object_neutral_section")]
 #[derivative(Default)]
 pub struct NeutralSection {
     pub id: Identifier,

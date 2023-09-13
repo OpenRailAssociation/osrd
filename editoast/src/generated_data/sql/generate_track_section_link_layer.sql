@@ -3,14 +3,14 @@ WITH collect AS (
         links.data->'dst'->>'endpoint' AS ep,
         tracks_layer.geographic AS track_geo,
         tracks_layer.schematic AS track_sch
-    FROM osrd_infra_tracksectionlinkmodel AS links
-        INNER JOIN osrd_infra_tracksectionmodel AS tracks ON tracks.obj_id = links.data->'dst'->>'track'
+    FROM infra_object_track_section_link AS links
+        INNER JOIN infra_object_track_section AS tracks ON tracks.obj_id = links.data->'dst'->>'track'
         AND tracks.infra_id = links.infra_id
-        INNER JOIN osrd_infra_tracksectionlayer AS tracks_layer ON tracks.obj_id = tracks_layer.obj_id
+        INNER JOIN infra_layer_track_section AS tracks_layer ON tracks.obj_id = tracks_layer.obj_id
         AND tracks.infra_id = tracks_layer.infra_id
     WHERE links.infra_id = $1
 )
-INSERT INTO osrd_infra_tracksectionlinklayer (obj_id, infra_id, geographic, schematic)
+INSERT INTO infra_layer_track_section_link (obj_id, infra_id, geographic, schematic)
 SELECT link_id,
     $1,
     CASE

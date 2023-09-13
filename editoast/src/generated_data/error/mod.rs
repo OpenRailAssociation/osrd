@@ -192,7 +192,7 @@ pub struct ErrorLayer;
 #[async_trait]
 impl GeneratedData for ErrorLayer {
     fn table_name() -> &'static str {
-        "osrd_infra_errorlayer"
+        "infra_layer_error"
     }
 
     async fn generate(

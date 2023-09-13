@@ -12,14 +12,14 @@ use crate::diesel::ExpressionMethods;
 use crate::error::Result;
 use crate::infra_cache::InfraCache;
 use crate::schema::ObjectType;
-use crate::tables::osrd_infra_lpvpanellayer::dsl;
+use crate::tables::infra_layer_lpv_panel::dsl;
 
 pub struct LPVPanelLayer;
 
 #[async_trait]
 impl GeneratedData for LPVPanelLayer {
     fn table_name() -> &'static str {
-        "osrd_infra_lpvpanellayer"
+        "infra_layer_lpv_panel"
     }
 
     async fn generate(conn: &mut PgConnection, infra: i64, _cache: &InfraCache) -> Result<()> {
@@ -47,7 +47,7 @@ impl GeneratedData for LPVPanelLayer {
                 .iter()
                 .chain(involved_objects.updated.iter());
             delete(
-                dsl::osrd_infra_lpvpanellayer
+                dsl::infra_layer_lpv_panel
                     .filter(dsl::infra_id.eq(infra))
                     .filter(dsl::obj_id.eq_any(objs)),
             )

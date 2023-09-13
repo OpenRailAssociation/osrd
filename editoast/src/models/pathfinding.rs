@@ -6,7 +6,7 @@ use crate::models::Identifiable;
 use crate::schema::Direction;
 use crate::schema::DirectionalTrackRange;
 use crate::schema::TrackLocation;
-use crate::tables::osrd_infra_pathmodel;
+use crate::tables::pathfinding;
 use chrono::{NaiveDateTime, Utc};
 use derivative::Derivative;
 use diesel::{result::Error as DieselError, ExpressionMethods, QueryDsl};
@@ -33,15 +33,14 @@ use serde::{Deserialize, Serialize};
     Insertable,
 )]
 #[derivative(Default(new = "true"))]
-#[model(table = "osrd_infra_pathmodel")]
+#[model(table = "pathfinding")]
 #[model(retrieve, delete)]
-#[diesel(table_name = osrd_infra_pathmodel)]
+#[diesel(table_name = pathfinding)]
 pub struct Pathfinding {
     pub id: i64,
     pub owner: uuid::Uuid,
     #[derivative(Default(value = "Utc::now().naive_utc()"))]
     pub created: NaiveDateTime,
-    pub length: f64,
     #[derivative(Default(value = "diesel_json::Json::new(Default::default())"))]
     pub payload: diesel_json::Json<PathfindingPayload>,
     #[derivative(Default(value = "diesel_json::Json::new(Default::default())"))]
@@ -53,13 +52,14 @@ pub struct Pathfinding {
     #[derivative(Default(value = "LineString { points: vec![], srid: None }"))]
     pub schematic: LineString<Point>,
     pub infra_id: i64,
+    pub length: f64,
 }
 
 #[derive(Clone, Debug, Serialize, Queryable, Insertable, Derivative, AsChangeset, Model)]
 #[derivative(Default(new = "true"))]
-#[model(table = "osrd_infra_pathmodel")]
+#[model(table = "pathfinding")]
 #[model(create, update)]
-#[diesel(table_name = osrd_infra_pathmodel)]
+#[diesel(table_name = pathfinding)]
 pub struct PathfindingChangeset {
     #[diesel(deserialize_as=i64)]
     pub id: Option<i64>,
@@ -67,8 +67,6 @@ pub struct PathfindingChangeset {
     pub owner: Option<uuid::Uuid>,
     #[diesel(deserialize_as=NaiveDateTime)]
     pub created: Option<NaiveDateTime>,
-    #[diesel(deserialize_as=f64)]
-    pub length: Option<f64>,
     #[diesel(deserialize_as=diesel_json::Json<PathfindingPayload>)]
     pub payload: Option<diesel_json::Json<PathfindingPayload>>,
     #[diesel(deserialize_as=diesel_json::Json<SlopeGraph>)]
@@ -81,6 +79,8 @@ pub struct PathfindingChangeset {
     pub schematic: Option<LineString<Point>>,
     #[diesel(deserialize_as=i64)]
     pub infra_id: Option<i64>,
+    #[diesel(deserialize_as=f64)]
+    pub length: Option<f64>,
 }
 
 impl From<Pathfinding> for PathfindingChangeset {

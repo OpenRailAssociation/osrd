@@ -12,14 +12,14 @@ use crate::diesel::ExpressionMethods;
 use crate::error::Result;
 use crate::infra_cache::InfraCache;
 use crate::schema::ObjectType;
-use crate::tables::osrd_infra_signallayer::dsl;
+use crate::tables::infra_layer_signal::dsl;
 
 pub struct SignalLayer;
 
 #[async_trait]
 impl GeneratedData for SignalLayer {
     fn table_name() -> &'static str {
-        "osrd_infra_signallayer"
+        "infra_layer_signal"
     }
 
     async fn generate(conn: &mut PgConnection, infra: i64, _cache: &InfraCache) -> Result<()> {
@@ -42,7 +42,7 @@ impl GeneratedData for SignalLayer {
         // Delete elements
         if !involved_objects.deleted.is_empty() {
             delete(
-                dsl::osrd_infra_signallayer
+                dsl::infra_layer_signal
                     .filter(dsl::infra_id.eq(infra))
                     .filter(dsl::obj_id.eq_any(involved_objects.deleted)),
             )

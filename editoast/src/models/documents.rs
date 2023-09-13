@@ -4,7 +4,7 @@
 //!
 //! Each document is identified by a unique key (`i64`).
 
-use crate::tables::osrd_infra_document;
+use crate::tables::document;
 use diesel::result::Error as DieselError;
 use diesel::ExpressionMethods;
 use diesel::QueryDsl;
@@ -13,9 +13,9 @@ use editoast_derive::Model;
 use super::Identifiable;
 
 #[derive(Debug, Default, Identifiable, Insertable, Model, Queryable)]
-#[model(table = "osrd_infra_document")]
+#[model(table = "document")]
 #[model(create, delete, retrieve)]
-#[diesel(table_name = osrd_infra_document)]
+#[diesel(table_name = document)]
 pub struct Document {
     #[diesel(deserialize_as = i64)]
     pub id: Option<i64>,

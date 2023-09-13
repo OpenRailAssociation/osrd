@@ -183,7 +183,7 @@ mod tests {
              SELECT
                  ST_AsGeoJson(ST_AsMVTGeom(schematic, bbox.geom)) AS geo_json,
              layer.id AS id
-             FROM osrd_infra_tracksectionlayer layer
+             FROM infra_layer_track_section layer
              CROSS JOIN bbox
              WHERE layer.infra_id = $4
                    AND schematic && bbox.geom
@@ -193,8 +193,8 @@ mod tests {
             matches.geo_json as geo_json,
             track_section.data - 'geo' - 'sch' AS data
         FROM matches
-        INNER JOIN osrd_infra_tracksectionlayer layer on matches.id = layer.id
-        inner join osrd_infra_tracksectionmodel track_section on track_section.obj_id = layer.obj_id and track_section.infra_id = layer.infra_id
+        INNER JOIN infra_layer_track_section layer on matches.id = layer.id
+        inner join infra_object_track_section track_section on track_section.obj_id = layer.obj_id and track_section.infra_id = layer.infra_id
         WHERE geo_json is not NULL
         ",
         "
@@ -204,7 +204,7 @@ mod tests {
              SELECT
                  ST_AsGeoJson(ST_AsMVTGeom(schematic, bbox.geom)) AS geo_json,
              layer.id AS id
-             FROM osrd_infra_speedsectionlayer layer
+             FROM infra_layer_speed_section layer
              CROSS JOIN bbox
              WHERE layer.infra_id = $4
                    AND schematic && bbox.geom
@@ -214,8 +214,8 @@ mod tests {
             matches.geo_json as geo_json,
             speed_section.data  AS data
         FROM matches
-        INNER JOIN osrd_infra_speedsectionlayer layer on matches.id = layer.id
-        inner join osrd_infra_speedsectionmodel speed_section on speed_section.obj_id = layer.obj_id and speed_section.infra_id = layer.infra_id
+        INNER JOIN infra_layer_speed_section layer on matches.id = layer.id
+        inner join infra_object_speed_section speed_section on speed_section.obj_id = layer.obj_id and speed_section.infra_id = layer.infra_id
         WHERE geo_json is not NULL AND (not (speed_section.data @? '$.extensions.lpv_sncf.z'))
         "
         ];

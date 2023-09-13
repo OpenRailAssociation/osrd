@@ -1,7 +1,7 @@
 use crate::error::Result;
-use crate::models::Project;
 use crate::models::{Identifiable, Update};
-use crate::tables::osrd_infra_study;
+use crate::models::{Project, TextArray};
+use crate::tables::study;
 use crate::views::pagination::{Paginate, PaginatedResponse};
 use crate::DbPool;
 use actix_web::web::Data;
@@ -37,14 +37,12 @@ use super::List;
 )]
 #[derivative(Default)]
 #[diesel(belongs_to(Project))]
-#[model(table = "osrd_infra_study")]
+#[model(table = "study")]
 #[model(create, delete, retrieve, update)]
-#[diesel(table_name = osrd_infra_study)]
+#[diesel(table_name = study)]
 pub struct Study {
     #[diesel(deserialize_as = i64)]
     pub id: Option<i64>,
-    #[diesel(deserialize_as = i64)]
-    pub project_id: Option<i64>,
     #[diesel(deserialize_as = String)]
     #[derivative(Default(value = "Some(String::new())"))]
     pub name: Option<String>,
@@ -70,7 +68,7 @@ pub struct Study {
     #[diesel(deserialize_as = i32)]
     #[derivative(Default(value = "Some(0)"))]
     pub budget: Option<i32>,
-    #[diesel(deserialize_as = Vec<String>)]
+    #[diesel(deserialize_as = TextArray)]
     #[derivative(Default(value = "Some(Vec::new())"))]
     pub tags: Option<Vec<String>>,
     #[diesel(deserialize_as = String)]
@@ -79,6 +77,8 @@ pub struct Study {
     #[diesel(deserialize_as = String)]
     #[derivative(Default(value = "Some(String::new())"))]
     pub study_type: Option<String>,
+    #[diesel(deserialize_as = i64)]
+    pub project_id: Option<i64>,
 }
 
 impl Identifiable for Study {
@@ -105,9 +105,9 @@ impl Study {
 
     /// This function adds the list of scenarios ID that are linked to the study
     pub async fn with_scenarios(self, db_pool: Data<DbPool>) -> Result<StudyWithScenarios> {
-        use crate::tables::osrd_infra_scenario::dsl as scenario_dsl;
+        use crate::tables::scenario::dsl as scenario_dsl;
         let mut conn = db_pool.get().await?;
-        scenario_dsl::osrd_infra_scenario
+        scenario_dsl::scenario
             .filter(scenario_dsl::study_id.eq(self.id.unwrap()))
             .count()
             .get_result(&mut conn)
@@ -130,12 +130,15 @@ impl List<(i64, Ordering)> for StudyWithScenarios {
     ) -> Result<PaginatedResponse<Self>> {
         let project_id = params.0;
         let ordering = params.1.to_sql();
-        sql_query(format!("SELECT t.*, COUNT(scenario.*) as scenarios_count FROM osrd_infra_study t
-            LEFT JOIN osrd_infra_scenario scenario ON scenario.study_id = t.id WHERE t.project_id = $1
-            GROUP BY t.id ORDER BY {ordering} "))
-            .bind::<BigInt, _>(project_id)
-            .paginate(page, page_size)
-            .load_and_count(conn).await
+        sql_query(format!(
+            "SELECT t.*, COUNT(scenario.*) as scenarios_count FROM study as t
+            LEFT JOIN scenario ON scenario.study_id = t.id WHERE t.project_id = $1
+            GROUP BY t.id ORDER BY {ordering} "
+        ))
+        .bind::<BigInt, _>(project_id)
+        .paginate(page, page_size)
+        .load_and_count(conn)
+        .await
     }
 }
 

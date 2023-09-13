@@ -84,11 +84,8 @@ async fn get_level_order(
 
 impl ElectricalProfileSet {
     async fn list_light(conn: &mut PgConnection) -> Result<Vec<LightElectricalProfileSet>> {
-        use crate::tables::osrd_infra_electricalprofileset::dsl::*;
-        let result = osrd_infra_electricalprofileset
-            .select((id, name))
-            .load(conn)
-            .await?;
+        use crate::tables::electrical_profile_set::dsl::*;
+        let result = electrical_profile_set.select((id, name)).load(conn).await?;
         Ok(result)
     }
 }
@@ -123,7 +120,7 @@ mod tests {
     use diesel_json::Json as DieselJson;
     use rstest::rstest;
 
-    use crate::tables::osrd_infra_electricalprofileset::dsl;
+    use crate::tables::electrical_profile_set::dsl;
 
     use crate::schema::electrical_profiles::ElectricalProfileSetData;
     use crate::schema::TrackRange;
@@ -138,7 +135,7 @@ mod tests {
         let _ = conn
             .test_transaction::<_, Error, _>(|conn| {
                 async move {
-                    diesel::delete(dsl::osrd_infra_electricalprofileset)
+                    diesel::delete(dsl::electrical_profile_set)
                         .execute(conn)
                         .await?;
                     let ep_set_data = ElectricalProfileSetData {
@@ -160,7 +157,7 @@ mod tests {
                         data: Some(DieselJson::new(ep_set_data)),
                     };
 
-                    diesel::insert_into(dsl::osrd_infra_electricalprofileset)
+                    diesel::insert_into(dsl::electrical_profile_set)
                         .values(&[ep_set, ep_set_2])
                         .execute(conn)
                         .await

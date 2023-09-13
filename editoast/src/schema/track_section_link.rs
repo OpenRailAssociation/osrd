@@ -15,7 +15,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq, InfraModel)]
 #[serde(deny_unknown_fields)]
-#[infra_model(table = "crate::tables::osrd_infra_tracksectionlinkmodel")]
+#[infra_model(table = "crate::tables::infra_object_track_section_link")]
 #[derivative(Default)]
 pub struct TrackSectionLink {
     pub id: Identifier,

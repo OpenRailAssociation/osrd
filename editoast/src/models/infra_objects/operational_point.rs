@@ -1,7 +1,7 @@
 //! Provides the [OperationalPointModel] model
 
 use crate::error::Result;
-use crate::{schema::OperationalPoint, tables::osrd_infra_operationalpointmodel};
+use crate::{schema::OperationalPoint, tables::infra_object_operational_point};
 use derivative::Derivative;
 use diesel::sql_types::{Array, BigInt};
 use diesel::{result::Error as DieselError, sql_query};
@@ -12,9 +12,9 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Derivative, Serialize, Deserialize, Queryable, QueryableByName, Model)]
 #[derivative(Default(new = "true"))]
-#[model(table = "osrd_infra_operationalpointmodel")]
+#[model(table = "infra_object_operational_point")]
 #[model(retrieve, delete)]
-#[diesel(table_name = osrd_infra_operationalpointmodel)]
+#[diesel(table_name = infra_object_operational_point)]
 pub struct OperationalPointModel {
     pub id: i64,
     pub obj_id: String,
@@ -30,7 +30,7 @@ impl OperationalPointModel {
         infra_id: i64,
         uic: Vec<i64>,
     ) -> Result<Vec<Self>> {
-        let query = "SELECT * FROM osrd_infra_operationalpointmodel
+        let query = "SELECT * FROM infra_object_operational_point
                                 WHERE infra_id = $1 AND (data->'extensions'->'identifier'->'uic')::integer = ANY($2)".to_string();
         Ok(sql_query(query)
             .bind::<BigInt, _>(infra_id)

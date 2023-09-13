@@ -9,12 +9,12 @@ pub use rolling_stock_livery::RollingStockLiveryModel;
 
 use crate::error::Result;
 use crate::models::rolling_stock::rolling_stock_livery::RollingStockLiveryMetadata;
-use crate::models::{Identifiable, Update};
+use crate::models::{Identifiable, TextArray, Update};
 use crate::schema::rolling_stock::{
     EffortCurves, EnergySource, Gamma, RollingResistance, RollingStock, RollingStockCommon,
     RollingStockMetadata, RollingStockWithLiveries,
 };
-use crate::tables::osrd_infra_rollingstock;
+use crate::tables::rolling_stock;
 use crate::views::rolling_stocks::RollingStockError;
 use crate::DbPool;
 use actix_web::web::Data;
@@ -40,24 +40,22 @@ use serde_json::Value as JsonValue;
     Serialize,
 )]
 #[derivative(Default, PartialEq)]
-#[model(table = "osrd_infra_rollingstock")]
+#[model(table = "rolling_stock")]
 #[model(create, retrieve, delete)]
-#[diesel(table_name = osrd_infra_rollingstock)]
+#[diesel(table_name = rolling_stock)]
 pub struct RollingStockModel {
     #[diesel(deserialize_as = i64)]
     pub id: Option<i64>,
-    #[derivative(PartialEq = "ignore")]
-    #[diesel(deserialize_as = String)]
-    pub name: Option<String>,
     #[diesel(deserialize_as = String)]
     pub railjson_version: Option<String>,
     #[derivative(PartialEq = "ignore")]
-    #[diesel(deserialize_as = bool)]
-    pub locked: Option<bool>,
+    #[diesel(deserialize_as = String)]
+    pub name: Option<String>,
     #[diesel(deserialize_as = DieselJson<EffortCurves>)]
     pub effort_curves: Option<DieselJson<EffortCurves>>,
-    #[diesel(deserialize_as = String)]
-    pub base_power_class: Option<String>,
+    #[derivative(PartialEq = "ignore")]
+    #[diesel(deserialize_as = DieselJson<RollingStockMetadata>)]
+    pub metadata: Option<DieselJson<RollingStockMetadata>>,
     #[diesel(deserialize_as = f64)]
     pub length: Option<f64>,
     #[diesel(deserialize_as = f64)]
@@ -72,7 +70,9 @@ pub struct RollingStockModel {
     pub gamma: Option<DieselJson<Gamma>>,
     #[diesel(deserialize_as = f64)]
     pub inertia_coefficient: Option<f64>,
-    #[diesel(deserialize_as = Vec<String>)]
+    #[diesel(deserialize_as = String)]
+    pub base_power_class: Option<String>,
+    #[diesel(deserialize_as = TextArray)]
     pub features: Option<Vec<String>>,
     #[diesel(deserialize_as = f64)]
     pub mass: Option<f64>,
@@ -80,13 +80,13 @@ pub struct RollingStockModel {
     pub rolling_resistance: Option<DieselJson<RollingResistance>>,
     #[diesel(deserialize_as = String)]
     pub loading_gauge: Option<String>,
-    #[derivative(PartialEq = "ignore")]
-    #[diesel(deserialize_as = DieselJson<RollingStockMetadata>)]
-    pub metadata: Option<DieselJson<RollingStockMetadata>>,
     #[diesel(deserialize_as = Option<JsonValue>)]
     pub power_restrictions: Option<Option<JsonValue>>,
     #[diesel(deserialize_as = DieselJson<Vec<EnergySource>>)]
     pub energy_sources: Option<DieselJson<Vec<EnergySource>>>,
+    #[derivative(PartialEq = "ignore")]
+    #[diesel(deserialize_as = bool)]
+    pub locked: Option<bool>,
     #[diesel(deserialize_as = Option<f64>)]
     pub electrical_power_startup_time: Option<Option<f64>>,
     #[diesel(deserialize_as = Option<f64>)]
@@ -105,9 +105,9 @@ impl Identifiable for RollingStockModel {
 
 impl RollingStockModel {
     pub async fn with_liveries(self, db_pool: Data<DbPool>) -> Result<RollingStockWithLiveries> {
-        use crate::tables::osrd_infra_rollingstocklivery::dsl as livery_dsl;
+        use crate::tables::rolling_stock_livery::dsl as livery_dsl;
         let mut conn = db_pool.get().await?;
-        let liveries = livery_dsl::osrd_infra_rollingstocklivery
+        let liveries = livery_dsl::rolling_stock_livery
             .filter(livery_dsl::rolling_stock_id.eq(self.id.unwrap()))
             .select(RollingStockLiveryMetadata::as_select())
             .load(&mut conn)
@@ -123,8 +123,8 @@ impl RollingStockModel {
         conn: &mut PgConnection,
         rs_name: String,
     ) -> Result<Option<Self>> {
-        use crate::tables::osrd_infra_rollingstock::dsl::*;
-        match osrd_infra_rollingstock
+        use crate::tables::rolling_stock::dsl::*;
+        match rolling_stock
             .filter(name.eq(rs_name))
             .get_result::<Self>(conn)
             .await
@@ -143,14 +143,14 @@ impl Update for RollingStockModel {
         conn: &mut PgConnection,
         rolling_stock_id: i64,
     ) -> Result<Option<Self>> {
-        use crate::tables::osrd_infra_rollingstock::dsl::*;
+        use crate::tables::rolling_stock::dsl::*;
 
-        match update(osrd_infra_rollingstock.find(rolling_stock_id))
+        match update(rolling_stock.find(rolling_stock_id))
             .set(&self)
             .get_result::<RollingStockModel>(conn)
             .await
         {
-            Ok(rolling_stock) => Ok(Some(rolling_stock)),
+            Ok(rs) => Ok(Some(rs)),
             Err(DieselError::NotFound) => {
                 Err(RollingStockError::NotFound { rolling_stock_id }.into())
             }

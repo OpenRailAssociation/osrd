@@ -86,7 +86,7 @@ mod tests {
             assert!(track_deletion.apply(infra.id.unwrap(), conn).await.is_ok());
 
             let res_del = sql_query(format!(
-                "SELECT COUNT (*) AS nb FROM osrd_infra_tracksectionmodel WHERE obj_id = '{}' AND infra_id = {}",
+                "SELECT COUNT (*) AS nb FROM infra_object_track_section WHERE obj_id = '{}' AND infra_id = {}",
                 track.get_id(),
                 infra.id.unwrap()
             ))
@@ -106,7 +106,7 @@ mod tests {
             assert!(signal_deletion.apply(infra.id.unwrap(), conn).await.is_ok());
 
             let res_del = sql_query(format!(
-                "SELECT COUNT (*) AS nb FROM osrd_infra_signalmodel WHERE obj_id = '{}' AND infra_id = {}",
+                "SELECT COUNT (*) AS nb FROM infra_object_signal WHERE obj_id = '{}' AND infra_id = {}",
                 signal.get_id(),
                 infra.id.unwrap()
             ))
@@ -126,7 +126,7 @@ mod tests {
             assert!(speed_deletion.apply(infra.id.unwrap(), conn).await.is_ok());
 
             let res_del = sql_query(format!(
-                "SELECT COUNT (*) AS nb FROM osrd_infra_speedsectionmodel WHERE obj_id = '{}' AND infra_id = {}",
+                "SELECT COUNT (*) AS nb FROM infra_object_speed_section WHERE obj_id = '{}' AND infra_id = {}",
                 speed.get_id(),
                 infra.id.unwrap()
             ))
@@ -146,7 +146,7 @@ mod tests {
             assert!(link_deletion.apply(infra.id.unwrap(), conn).await.is_ok());
 
             let res_del = sql_query(format!(
-                "SELECT COUNT (*) AS nb FROM osrd_infra_tracksectionlinkmodel WHERE obj_id = '{}' AND infra_id = {}",
+                "SELECT COUNT (*) AS nb FROM infra_object_track_section_link WHERE obj_id = '{}' AND infra_id = {}",
                 link.get_id(),
                 infra.id.unwrap()
             ))
@@ -166,7 +166,7 @@ mod tests {
             assert!(switch_deletion.apply(infra.id.unwrap(), conn).await.is_ok());
 
             let res_del = sql_query(format!(
-                "SELECT COUNT (*) AS nb FROM osrd_infra_switchmodel WHERE obj_id = '{}' AND infra_id = {}",
+                "SELECT COUNT (*) AS nb FROM infra_object_switch WHERE obj_id = '{}' AND infra_id = {}",
                 switch.get_id(),
                 infra.id.unwrap()
             ))
@@ -186,7 +186,7 @@ mod tests {
             assert!(detector_deletion.apply(infra.id.unwrap(), conn).await.is_ok());
 
             let res_del = sql_query(format!(
-                "SELECT COUNT (*) AS nb FROM osrd_infra_detectormodel WHERE obj_id = '{}' AND infra_id = {}",
+                "SELECT COUNT (*) AS nb FROM infra_object_detector WHERE obj_id = '{}' AND infra_id = {}",
                 detector.get_id(),
                 infra.id.unwrap()
             ))
@@ -206,7 +206,7 @@ mod tests {
             assert!(buffer_stop_deletion.apply(infra.id.unwrap(), conn).await.is_ok());
 
             let res_del = sql_query(format!(
-                "SELECT COUNT (*) AS nb FROM osrd_infra_bufferstopmodel WHERE obj_id = '{}' AND infra_id = {}",
+                "SELECT COUNT (*) AS nb FROM infra_object_buffer_stop WHERE obj_id = '{}' AND infra_id = {}",
                 buffer_stop.get_id(),
                 infra.id.unwrap()
             ))
@@ -226,7 +226,7 @@ mod tests {
             assert!(route_deletion.apply(infra.id.unwrap(), conn).await.is_ok());
 
             let res_del = sql_query(format!(
-                "SELECT COUNT (*) AS nb FROM osrd_infra_routemodel WHERE obj_id = '{}' AND infra_id = {}",
+                "SELECT COUNT (*) AS nb FROM infra_object_route WHERE obj_id = '{}' AND infra_id = {}",
                 route.get_id(),
                 infra.id.unwrap()
             ))
@@ -246,7 +246,7 @@ mod tests {
             assert!(op_deletion.apply(infra.id.unwrap(), conn).await.is_ok());
 
             let res_del = sql_query(format!(
-                "SELECT COUNT (*) AS nb FROM osrd_infra_operationalpointmodel WHERE obj_id = '{}' AND infra_id = {}",
+                "SELECT COUNT (*) AS nb FROM infra_object_operational_point WHERE obj_id = '{}' AND infra_id = {}",
                 op.get_id(),
                 infra.id.unwrap()
             ))
@@ -266,7 +266,7 @@ mod tests {
             assert!(op_deletion.apply(infra.id.unwrap(), conn).await.is_ok());
 
             let res_del = sql_query(format!(
-                "SELECT COUNT (*) AS nb FROM osrd_infra_catenarymodel WHERE obj_id = '{}' AND infra_id = {}",
+                "SELECT COUNT (*) AS nb FROM infra_object_catenary WHERE obj_id = '{}' AND infra_id = {}",
                 catenary.get_id(),
                 infra.id.unwrap()
             ))

@@ -1,6 +1,6 @@
 //! Provides the [TrackSectionModel] model
 
-use crate::{schema::TrackSection, tables::osrd_infra_tracksectionmodel};
+use crate::{schema::TrackSection, tables::infra_object_track_section};
 use derivative::Derivative;
 use diesel::{result::Error as DieselError, ExpressionMethods, QueryDsl};
 use editoast_derive::Model;
@@ -8,9 +8,9 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Derivative, Serialize, Deserialize, Queryable, QueryableByName, Model)]
 #[derivative(Default(new = "true"))]
-#[model(table = "osrd_infra_tracksectionmodel")]
+#[model(table = "infra_object_track_section")]
 #[model(retrieve, delete)]
-#[diesel(table_name = osrd_infra_tracksectionmodel)]
+#[diesel(table_name = infra_object_track_section)]
 pub struct TrackSectionModel {
     pub id: i64,
     pub obj_id: String,

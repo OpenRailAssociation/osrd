@@ -1,15 +1,15 @@
 #![cfg(test)]
 
 use crate::models::Identifiable;
-use crate::{schema::Catenary as CatenarySchema, tables::osrd_infra_catenarymodel};
+use crate::{schema::Catenary as CatenarySchema, tables::infra_object_catenary};
 use diesel::ExpressionMethods;
 use diesel::QueryDsl;
 use editoast_derive::Model;
 
 #[derive(Debug, Insertable, Queryable, QueryableByName, Model)]
-#[model(table = "osrd_infra_catenarymodel")]
+#[model(table = "infra_object_catenary")]
 #[model(create, delete)]
-#[diesel(table_name = osrd_infra_catenarymodel)]
+#[diesel(table_name = infra_object_catenary)]
 pub struct Catenary {
     #[diesel(deserialize_as = i64)]
     pub id: Option<i64>,

@@ -1,7 +1,7 @@
 WITH errors AS (
     SELECT unnest($2) AS information
 )
-INSERT INTO osrd_infra_errorlayer (
+INSERT INTO infra_layer_error (
         infra_id,
         geographic,
         schematic,

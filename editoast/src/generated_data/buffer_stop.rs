@@ -11,7 +11,7 @@ use crate::diesel::ExpressionMethods;
 use crate::error::Result;
 use crate::infra_cache::InfraCache;
 use crate::schema::ObjectType;
-use crate::tables::osrd_infra_bufferstoplayer::dsl;
+use crate::tables::infra_layer_buffer_stop::dsl;
 use std::iter::Iterator;
 
 pub struct BufferStopLayer;
@@ -19,7 +19,7 @@ pub struct BufferStopLayer;
 #[async_trait]
 impl GeneratedData for BufferStopLayer {
     fn table_name() -> &'static str {
-        "osrd_infra_bufferstoplayer"
+        "infra_layer_buffer_stop"
     }
 
     async fn generate(conn: &mut PgConnection, infra: i64, _cache: &InfraCache) -> Result<()> {
@@ -42,7 +42,7 @@ impl GeneratedData for BufferStopLayer {
         // Delete elements
         if !involved_objects.deleted.is_empty() {
             delete(
-                dsl::osrd_infra_bufferstoplayer
+                dsl::infra_layer_buffer_stop
                     .filter(dsl::infra_id.eq(infra))
                     .filter(dsl::obj_id.eq_any(involved_objects.deleted)),
             )

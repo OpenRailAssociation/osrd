@@ -4,10 +4,10 @@ WITH collect AS (
         (tracks.data->>'length')::float AS track_length,
         tracks_layer.geographic AS track_geo,
         tracks_layer.schematic AS track_sch
-    FROM osrd_infra_detectormodel AS detectors
-        INNER JOIN osrd_infra_tracksectionmodel AS tracks ON tracks.obj_id = detectors.data->>'track'
+    FROM infra_object_detector AS detectors
+        INNER JOIN infra_object_track_section AS tracks ON tracks.obj_id = detectors.data->>'track'
         AND tracks.infra_id = detectors.infra_id
-        INNER JOIN osrd_infra_tracksectionlayer AS tracks_layer ON tracks.obj_id = tracks_layer.obj_id
+        INNER JOIN infra_layer_track_section AS tracks_layer ON tracks.obj_id = tracks_layer.obj_id
         AND tracks.infra_id = tracks_layer.infra_id
     WHERE detectors.infra_id = $1
 ),
@@ -19,7 +19,7 @@ collect2 AS (
         ) AS norm_pos
     FROM collect
 )
-INSERT INTO osrd_infra_detectorlayer (obj_id, infra_id, geographic, schematic)
+INSERT INTO infra_layer_detector (obj_id, infra_id, geographic, schematic)
 SELECT collect.detector_id,
     $1,
     ST_LineInterpolatePoint(track_geo, norm_pos),

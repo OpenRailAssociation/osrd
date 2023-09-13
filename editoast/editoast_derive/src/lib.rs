@@ -11,7 +11,7 @@ use syn::{parse_macro_input, DeriveInput};
 /// An InfraModel custom derive.
 ///
 /// Usage: you should provide a diesel table path, like so
-/// `#[infra_model(table = "crate::tables::osrd_infra_bufferstopmodel")]`
+/// `#[infra_model(table = "crate::tables::infra_object_buffer_stop")]`
 ///
 /// The type must be OSRDIdentified, and must be serializable
 ///
@@ -64,7 +64,7 @@ pub fn error(input: TokenStream) -> TokenStream {
 /// ## Usage
 ///
 /// You should provide a diesel table path, like so
-/// ```#[model(table = "crate::tables::osrd_infra_project")]```
+/// ```#[model(table = "crate::tables::project")]```
 ///
 /// Then you can enable implementations like so:
 /// ```#[model(retrieve, create, delete)]```
@@ -104,17 +104,17 @@ pub fn model(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 /// ```ignore
 /// #[derive(Search)]
 /// #[search(
-///     table = "osrd_search_track",
+///     table = "search_track",
 ///     column(name = "infra_id", data_type = "INT"),
 ///     column(name = "line_code", data_type = "INT"),
 ///     column(name = "line_name", data_type = "TEXT")
 /// )]
 /// struct Track {
-///     #[search(sql = "osrd_search_track.infra_id")]
+///     #[search(sql = "search_track.infra_id")]
 ///     infra_id: i64,
-///     #[search(sql = "osrd_search_track.unprocessed_line_name")]
+///     #[search(sql = "search_track.unprocessed_line_name")]
 ///     line_name: String,
-///     #[search(sql = "osrd_search_track.line_code")]
+///     #[search(sql = "search_track.line_code")]
 ///     line_code: i64,
 /// }
 /// ```

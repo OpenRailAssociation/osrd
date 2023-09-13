@@ -12,7 +12,7 @@ pub struct NeutralSectionLayer;
 #[async_trait]
 impl GeneratedData for NeutralSectionLayer {
     fn table_name() -> &'static str {
-        "osrd_infra_neutralsectionlayer"
+        "infra_layer_neutral_section"
     }
 
     async fn generate(conn: &mut PgConnection, infra: i64, _cache: &InfraCache) -> Result<()> {

@@ -14,7 +14,7 @@ use derivative::Derivative;
 use serde::{Deserialize, Serialize};
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, InfraModel)]
 #[serde(deny_unknown_fields)]
-#[infra_model(table = "crate::tables::osrd_infra_catenarymodel")]
+#[infra_model(table = "crate::tables::infra_object_catenary")]
 #[derivative(Default)]
 pub struct Catenary {
     pub id: Identifier,

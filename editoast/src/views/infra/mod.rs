@@ -283,7 +283,7 @@ async fn clone(
     for object in ObjectType::iter() {
         let model_table = object.get_table();
         let model = sql_query(format!(
-                "INSERT INTO {model_table}(id, obj_id,data,infra_id) SELECT nextval('{model_table}_id_seq'), obj_id,data,$1 FROM {model_table} WHERE infra_id=$2"
+                "INSERT INTO {model_table}(obj_id,data,infra_id) SELECT obj_id,data,$1 FROM {model_table} WHERE infra_id=$2"
             ))
             .bind::<BigInt, _>(cloned_infra.id.unwrap())
             .bind::<BigInt, _>(infra)
@@ -294,10 +294,10 @@ async fn clone(
             let layer_table = layer_table.to_string();
             let sql = if layer_table != ObjectType::Signal.get_geometry_layer_table().unwrap() {
                 format!(
-                    "INSERT INTO {layer_table}(id, obj_id,geographic,schematic,infra_id) SELECT nextval('{layer_table}_id_seq'), obj_id,geographic,schematic,$1 FROM {layer_table} WHERE infra_id=$2")
+                    "INSERT INTO {layer_table}(obj_id,geographic,schematic,infra_id) SELECT obj_id,geographic,schematic,$1 FROM {layer_table} WHERE infra_id=$2")
             } else {
                 format!(
-                    "INSERT INTO {layer_table}(id, obj_id,geographic,schematic,infra_id, angle_geo, angle_sch) SELECT nextval('{layer_table}_id_seq'), obj_id,geographic,schematic,$1,angle_geo,angle_sch FROM {layer_table} WHERE infra_id=$2"
+                    "INSERT INTO {layer_table}(obj_id,geographic,schematic,infra_id, angle_geo, angle_sch) SELECT obj_id,geographic,schematic,$1,angle_geo,angle_sch FROM {layer_table} WHERE infra_id=$2"
                 )
             };
 
@@ -395,7 +395,7 @@ async fn get_speed_limit_tags(
     let mut conn = db_pool.get().await?;
     let speed_limits_tags: Vec<SpeedLimitTags> = sql_query(
         "SELECT DISTINCT jsonb_object_keys(data->'speed_limit_by_tag') AS tag
-        FROM osrd_infra_speedsectionmodel
+        FROM infra_object_speed_section
         WHERE infra_id = $1
         ORDER BY tag",
     )

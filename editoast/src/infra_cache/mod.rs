@@ -362,7 +362,7 @@ impl InfraCache {
                 data->>'slopes' as slopes,
                 data->>'geo' as geo,
                 data->>'sch' as sch
-            FROM osrd_infra_tracksectionmodel WHERE infra_id = $1",
+            FROM infra_object_track_section WHERE infra_id = $1",
         )
         .bind::<BigInt, _>(infra_id)
         .load::<TrackQueryable>(conn)
@@ -372,7 +372,7 @@ impl InfraCache {
 
         // Load signal tracks references
         sql_query(
-            "SELECT obj_id, data->>'track' AS track, (data->>'position')::float AS position FROM osrd_infra_signalmodel WHERE infra_id = $1")
+            "SELECT obj_id, data->>'track' AS track, (data->>'position')::float AS position FROM infra_object_signal WHERE infra_id = $1")
         .bind::<BigInt, _>(infra_id)
         .load::<SignalCache>(conn).await?.into_iter().for_each(|signal|
             infra_cache.add(signal)
@@ -392,7 +392,7 @@ impl InfraCache {
 
         // Load operational points tracks references
         sql_query(
-            "SELECT obj_id, data->>'parts' AS parts FROM osrd_infra_operationalpointmodel WHERE infra_id = $1")
+            "SELECT obj_id, data->>'parts' AS parts FROM infra_object_operational_point WHERE infra_id = $1")
         .bind::<BigInt, _>(infra_id)
         .load::<OperationalPointQueryable>(conn).await?.into_iter().for_each(|op|
             infra_cache.add::<OperationalPointCache>(op.into())
@@ -406,7 +406,7 @@ impl InfraCache {
 
         // Load switch tracks references
         sql_query(
-            "SELECT obj_id, data->>'switch_type' AS switch_type, data->>'ports' AS ports FROM osrd_infra_switchmodel WHERE infra_id = $1")
+            "SELECT obj_id, data->>'switch_type' AS switch_type, data->>'ports' AS ports FROM infra_object_switch WHERE infra_id = $1")
         .bind::<BigInt, _>(infra_id)
         .load::<SwitchQueryable>(conn).await?.into_iter().for_each(|switch| {
             infra_cache.add::<SwitchCache>(switch.into());
@@ -420,7 +420,7 @@ impl InfraCache {
 
         // Load detector tracks references
         sql_query(
-            "SELECT obj_id, data->>'track' AS track, (data->>'position')::float AS position FROM osrd_infra_detectormodel WHERE infra_id = $1")
+            "SELECT obj_id, data->>'track' AS track, (data->>'position')::float AS position FROM infra_object_detector WHERE infra_id = $1")
         .bind::<BigInt, _>(infra_id)
         .load::<DetectorCache>(conn).await?.into_iter().for_each(|detector|
             infra_cache.add(detector)
@@ -428,7 +428,7 @@ impl InfraCache {
 
         // Load buffer stop tracks references
         sql_query(
-            "SELECT obj_id, data->>'track' AS track, (data->>'position')::float AS position FROM osrd_infra_bufferstopmodel WHERE infra_id = $1")
+            "SELECT obj_id, data->>'track' AS track, (data->>'position')::float AS position FROM infra_object_buffer_stop WHERE infra_id = $1")
         .bind::<BigInt, _>(infra_id)
         .load::<BufferStopCache>(conn).await?.into_iter().for_each(|buffer_stop|
             infra_cache.add(buffer_stop)

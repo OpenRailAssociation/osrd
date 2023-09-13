@@ -2,7 +2,7 @@ use crate::diesel::{delete, QueryDsl};
 use crate::error::Result;
 use crate::models::{Delete, Document, Identifiable};
 use crate::schema::rolling_stock::rolling_stock_livery::RollingStockLivery;
-use crate::tables::osrd_infra_rollingstocklivery;
+use crate::tables::rolling_stock_livery;
 use async_trait::async_trait;
 use derivative::Derivative;
 use diesel::expression_methods::ExpressionMethods;
@@ -26,10 +26,10 @@ use editoast_derive::Model;
 ///
 #[derive(Debug, Derivative, Identifiable, Insertable, Model, Queryable, Serialize)]
 #[derivative(Default)]
-#[model(table = "osrd_infra_rollingstocklivery")]
+#[model(table = "rolling_stock_livery")]
 #[model(create, retrieve)]
 #[diesel(belongs_to(RollingStockModel, foreign_key = rolling_stock_id))]
-#[diesel(table_name = osrd_infra_rollingstocklivery)]
+#[diesel(table_name = rolling_stock_livery)]
 pub struct RollingStockLiveryModel {
     #[diesel(deserialize_as = i64)]
     pub id: Option<i64>,
@@ -50,17 +50,16 @@ impl Identifiable for RollingStockLiveryModel {
 #[async_trait]
 impl Delete for RollingStockLiveryModel {
     async fn delete_conn(conn: &mut PgConnection, livery_id: i64) -> Result<bool> {
-        use crate::tables::osrd_infra_rollingstocklivery::dsl::*;
+        use crate::tables::rolling_stock_livery::dsl::*;
         // Delete livery
-        let livery: RollingStockLivery =
-            match delete(osrd_infra_rollingstocklivery.filter(id.eq(livery_id)))
-                .get_result::<RollingStockLiveryModel>(conn)
-                .await
-            {
-                Ok(livery) => livery.into(),
-                Err(DieselError::NotFound) => return Ok(false),
-                Err(err) => return Err(err.into()),
-            };
+        let livery: RollingStockLivery = match delete(rolling_stock_livery.filter(id.eq(livery_id)))
+            .get_result::<RollingStockLiveryModel>(conn)
+            .await
+        {
+            Ok(livery) => livery.into(),
+            Err(DieselError::NotFound) => return Ok(false),
+            Err(err) => return Err(err.into()),
+        };
         // Delete compound_image if any
         if let Some(image_id) = livery.compound_image_id {
             let _ = Document::delete_conn(conn, image_id).await;
@@ -81,7 +80,7 @@ impl From<RollingStockLiveryModel> for RollingStockLivery {
 }
 
 #[derive(Debug, Deserialize, Queryable, QueryableByName, Selectable, Serialize)]
-#[diesel(table_name = osrd_infra_rollingstocklivery)]
+#[diesel(table_name = rolling_stock_livery)]
 pub struct RollingStockLiveryMetadata {
     #[diesel(sql_type = BigInt)]
     #[diesel(deserialize_as = i64)]

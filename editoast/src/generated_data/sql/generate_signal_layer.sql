@@ -5,10 +5,10 @@ WITH collect AS (
         (tracks.data->>'length')::float AS track_length,
         tracks_layer.geographic AS track_geo,
         tracks_layer.schematic AS track_sch
-    FROM osrd_infra_signalmodel AS signals
-        INNER JOIN osrd_infra_tracksectionmodel AS tracks ON tracks.obj_id = signals.data->>'track'
+    FROM infra_object_signal AS signals
+        INNER JOIN infra_object_track_section AS tracks ON tracks.obj_id = signals.data->>'track'
         AND tracks.infra_id = signals.infra_id
-        INNER JOIN osrd_infra_tracksectionlayer AS tracks_layer ON tracks.obj_id = tracks_layer.obj_id
+        INNER JOIN infra_layer_track_section AS tracks_layer ON tracks.obj_id = tracks_layer.obj_id
         AND tracks.infra_id = tracks_layer.infra_id
     WHERE signals.infra_id = $1
 ),
@@ -22,7 +22,7 @@ collect2 AS (
         END AS angle_direction
     FROM collect
 )
-INSERT INTO osrd_infra_signallayer (
+INSERT INTO infra_layer_signal (
         obj_id,
         infra_id,
         angle_geo,

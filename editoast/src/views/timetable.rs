@@ -85,12 +85,12 @@ async fn get_conflicts(
 
     let (schedules, simulations): (Vec<TrainSchedule>, Vec<SimulationOutput>) = {
         let mut conn = db_pool.get().await?;
-        use crate::tables::osrd_infra_trainschedule;
+        use crate::tables::train_schedule;
         use diesel::{BelongingToDsl, ExpressionMethods, GroupedBy, QueryDsl};
         use diesel_async::RunQueryDsl;
 
-        let train_schedules = osrd_infra_trainschedule::table
-            .filter(osrd_infra_trainschedule::timetable_id.eq(timetable_id))
+        let train_schedules = train_schedule::table
+            .filter(train_schedule::timetable_id.eq(timetable_id))
             .load::<TrainSchedule>(&mut conn)
             .await?;
 

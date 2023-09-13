@@ -16,7 +16,7 @@ use std::collections::HashMap;
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, InfraModel)]
 #[serde(deny_unknown_fields)]
-#[infra_model(table = "crate::tables::osrd_infra_switchmodel")]
+#[infra_model(table = "crate::tables::infra_object_switch")]
 #[derivative(Default)]
 pub struct Switch {
     pub id: Identifier,

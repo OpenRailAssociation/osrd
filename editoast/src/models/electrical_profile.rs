@@ -1,5 +1,5 @@
 use crate::schema::electrical_profiles::ElectricalProfileSetData;
-use crate::tables::osrd_infra_electricalprofileset;
+use crate::tables::electrical_profile_set;
 
 use crate::diesel::ExpressionMethods;
 use crate::diesel::QueryDsl;
@@ -24,9 +24,9 @@ use serde::{Deserialize, Serialize};
     Selectable,
     Serialize,
 )]
-#[model(table = "osrd_infra_electricalprofileset")]
+#[model(table = "electrical_profile_set")]
 #[model(create, delete, retrieve)]
-#[diesel(table_name = osrd_infra_electricalprofileset)]
+#[diesel(table_name = electrical_profile_set)]
 pub struct ElectricalProfileSet {
     #[diesel(deserialize_as = i64)]
     pub id: Option<i64>,
@@ -43,7 +43,7 @@ impl Identifiable for ElectricalProfileSet {
 }
 
 #[derive(Debug, Default, Queryable, Identifiable, Serialize, Deserialize)]
-#[diesel(table_name = osrd_infra_electricalprofileset)]
+#[diesel(table_name = electrical_profile_set)]
 pub struct LightElectricalProfileSet {
     #[diesel(deserialize_as = i64)]
     pub id: Option<i64>,

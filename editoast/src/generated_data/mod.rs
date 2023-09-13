@@ -98,11 +98,15 @@ pub async fn refresh_all(
         BufferStopLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
         CatenaryLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
         DetectorLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
+        OperationalPointLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
+        TrackSectionLinkLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
         LPVPanelLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
         NeutralSectionLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
     )?;
+    log::debug!("⚙️ Infra {infra}: object layers is generated");
     // The error layer depends on the other layers and must be executed at the end.
     ErrorLayer::refresh_pool(db_pool.clone(), infra, infra_cache).await?;
+    log::debug!("⚙️ Infra {infra}: errors layer is generated");
     Ok(())
 }
 
