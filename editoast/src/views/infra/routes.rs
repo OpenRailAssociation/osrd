@@ -4,7 +4,7 @@ use crate::models::{Infra, Retrieve};
 use crate::schema::DirectionalTrackRange;
 use crate::views::infra::InfraApiError;
 use crate::views::params::List;
-use crate::{routes, DbPool};
+use crate::{routes, schemas, DbPool};
 
 use actix_web::get;
 use actix_web::web::{Data, Json, Path, Query};
@@ -12,14 +12,21 @@ use chashmap::CHashMap;
 use diesel::sql_query;
 use diesel::sql_types::{BigInt, Bool, Text};
 use diesel_async::RunQueryDsl;
-use serde_json::{json, Value as JsonValue};
 
 use serde::{Deserialize, Serialize};
 use strum_macros::Display;
+use utoipa::ToSchema;
 
 routes! {
-    get_routes_track_ranges,
-    get_routes_from_waypoint
+    "routes" => {
+        get_routes_track_ranges,
+        get_routes_from_waypoint
+    }
+}
+
+schemas! {
+    RouteTrackRangesResult,
+    WaypointType,
 }
 
 #[derive(QueryableByName)]
@@ -30,19 +37,31 @@ struct RouteFromWaypointResult {
     is_entry_point: bool,
 }
 
-#[derive(Debug, Display, Clone, Copy, Deserialize)]
+#[derive(Debug, Display, Clone, Copy, Deserialize, ToSchema)]
 enum WaypointType {
     Detector,
     BufferStop,
 }
 
-/// Return the railjson list of a specific OSRD object
-#[utoipa::path()]
+#[derive(Debug, Serialize, ToSchema)]
+struct WaypointRoutes {
+    starting: Vec<String>,
+    ending: Vec<String>,
+}
+
+/// Retrieve all routes that starting and ending by the given waypoint (detector or buffer stop)
+#[utoipa::path(
+    params(super::InfraId),
+    responses(
+        (status = 200, body = inline(WaypointRoutes),
+         description = "All routes that starting and ending by the given waypoint"),
+    )
+)]
 #[get("/{waypoint_type}/{waypoint}")]
 async fn get_routes_from_waypoint(
     path: Path<(i64, WaypointType, String)>,
     db_pool: Data<DbPool>,
-) -> Result<Json<JsonValue>> {
+) -> Result<Json<WaypointRoutes>> {
     let (infra, waypoint_type, waypoint) = path.into_inner();
     let mut conn = db_pool.get().await?;
     let routes: Vec<RouteFromWaypointResult> =
@@ -64,12 +83,13 @@ async fn get_routes_from_waypoint(
         }
     });
 
-    Ok(Json(
-        json!({"starting": starting_routes, "ending": ending_routes}),
-    ))
+    Ok(Json(WaypointRoutes {
+        starting: starting_routes,
+        ending: ending_routes,
+    }))
 }
 
-#[derive(Debug, Clone, Serialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, PartialEq, ToSchema)]
 #[serde(deny_unknown_fields, tag = "type", content = "track_ranges")]
 enum RouteTrackRangesResult {
     Computed(Vec<DirectionalTrackRange>),
@@ -82,7 +102,14 @@ struct RouteTrackRangesParams {
     routes: List<String>,
 }
 
-#[utoipa::path()]
+/// Compute the track ranges through which routes passes.
+#[utoipa::path(
+    params(super::InfraId),
+    responses(
+        (status = 200, body = inline(Vec<RouteTrackRangesResult>),
+         description = "Foreach route, the track ranges through which it passes or an error"),
+    )
+)]
 #[get("/track_ranges")]
 async fn get_routes_track_ranges<'a>(
     infra: Path<i64>,

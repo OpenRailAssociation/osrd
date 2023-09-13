@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 
-
 use actix_web::post;
 use actix_web::web::{Data, Json, Path, Query};
 use chashmap::CHashMap;
@@ -8,6 +7,7 @@ use derivative::Derivative;
 use pathfinding::prelude::yen;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
+use utoipa::ToSchema;
 
 use crate::error::Result;
 use crate::infra_cache::{Graph, InfraCache};
@@ -15,11 +15,18 @@ use crate::models::Infra;
 use crate::schema::utils::Identifier;
 use crate::schema::{Direction, DirectionalTrackRange, Endpoint, ObjectType, TrackEndpoint};
 use crate::views::infra::InfraApiError;
-use crate::{routes, DbPool};
+use crate::{routes, DbPool, schemas};
 use editoast_derive::EditoastError;
 
 routes! {
     pathfinding_view
+}
+
+schemas! {
+    PathfindingInput,
+    PathfindingTrackLocationDirInput,
+    PathfindingTrackLocationInput,
+    PathfindingOutput,
 }
 
 const DEFAULT_NUMBER_OF_PATHS: u8 = 5;
@@ -39,7 +46,7 @@ enum PathfindingViewErrors {
     InvalidNumberOfPaths(u8),
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, ToSchema)]
 #[serde(deny_unknown_fields)]
 struct PathfindingTrackLocationDirInput {
     track: Identifier,
@@ -47,20 +54,20 @@ struct PathfindingTrackLocationDirInput {
     direction: Direction,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, ToSchema)]
 #[serde(deny_unknown_fields)]
 struct PathfindingTrackLocationInput {
     track: Identifier,
     position: f64,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, ToSchema)]
 struct PathfindingInput {
     starting: PathfindingTrackLocationDirInput,
     ending: PathfindingTrackLocationInput,
 }
 
-#[derive(Debug, Default, Clone, Serialize)]
+#[derive(Debug, Default, Clone, Serialize, ToSchema)]
 struct PathfindingOutput {
     track_ranges: Vec<DirectionalTrackRange>,
     detectors: Vec<Identifier>,
@@ -72,8 +79,17 @@ struct QueryParam {
     number: Option<u8>,
 }
 
-/// This endpoint search path between starting and ending track locations
-#[utoipa::path()]
+/// Compute paths given starting and ending track location. Return shortest paths.
+#[utoipa::path(
+    params(super::InfraId),
+    responses(
+        (
+            status = 200, 
+            body = Vec<PathfindingOutput>, 
+            description = "Paths, containing track ranges, detectors and switches with their directions. If no path is found, an empty list is returned."
+        )
+    ),
+)]
 #[post("/pathfinding")]
 async fn pathfinding_view(
     infra: Path<i64>,

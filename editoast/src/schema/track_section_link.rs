@@ -7,13 +7,19 @@ use super::TrackEndpoint;
 
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
+use crate::schemas;
 
 use derivative::Derivative;
 
 use editoast_derive::InfraModel;
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq, InfraModel)]
+schemas! {
+    TrackSectionLink,
+}
+
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq, InfraModel, ToSchema)]
 #[serde(deny_unknown_fields)]
 #[infra_model(table = "crate::tables::infra_object_track_section_link")]
 #[derivative(Default)]

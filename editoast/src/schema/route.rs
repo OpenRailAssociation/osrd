@@ -2,14 +2,22 @@ use derivative::Derivative;
 use editoast_derive::InfraModel;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use utoipa::ToSchema;
 
 use super::{
     Direction, DirectionalTrackRange, Endpoint, Identifier, OSRDIdentified, OSRDTyped, ObjectType,
     TrackEndpoint, Waypoint,
 };
-use crate::infra_cache::{Cache, Graph, InfraCache, ObjectCache};
+use crate::{
+    infra_cache::{Cache, Graph, InfraCache, ObjectCache},
+    schemas,
+};
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq, InfraModel)]
+schemas! {
+    Route,
+}
+
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq, InfraModel, ToSchema)]
 #[serde(deny_unknown_fields)]
 #[infra_model(table = "crate::tables::infra_object_route")]
 #[derivative(Default)]

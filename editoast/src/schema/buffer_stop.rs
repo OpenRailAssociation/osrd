@@ -2,12 +2,18 @@ use super::{OSRDIdentified, OSRDTyped, ObjectType};
 
 use super::utils::Identifier;
 use crate::infra_cache::{Cache, ObjectCache};
+use crate::schemas;
 use derivative::Derivative;
 use diesel::sql_types::{Double, Text};
 use editoast_derive::InfraModel;
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, InfraModel)]
+schemas! {
+    BufferStop,
+}
+
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, InfraModel, ToSchema)]
 #[serde(deny_unknown_fields)]
 #[infra_model(table = "crate::tables::infra_object_buffer_stop")]
 #[derivative(Default)]

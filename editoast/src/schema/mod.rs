@@ -43,7 +43,41 @@ pub use track_section::{Curve, Slope, TrackSection, TrackSectionCache};
 pub use track_section_link::TrackSectionLink;
 use utoipa::ToSchema;
 
+use crate::schemas;
+
 use self::utils::{Identifier, NonBlankString};
+
+schemas! {
+    ObjectRef,
+    ObjectType,
+    Waypoint,
+    DirectionalTrackRange,
+    ApplicableDirectionsTrackRange,
+    Direction,
+    ApplicableDirections,
+    Endpoint,
+    TrackEndpoint,
+    Side,
+    Panel,
+
+    utils::schemas(),
+    errors::schemas(),
+    railjson::schemas(),
+    operation::schemas(),
+
+    operational_point::schemas(),
+    signal::schemas(),
+    switch::schemas(),
+    switch_type::schemas(),
+    track_section::schemas(),
+    track_section_link::schemas(),
+    speed_section::schemas(),
+    neutral_section::schemas(),
+    detector::schemas(),
+    catenary::schemas(),
+    buffer_stop::schemas(),
+    route::schemas(),
+}
 
 /// This trait should be implemented by all struct that represents an OSRD type.
 pub trait OSRDTyped {
@@ -154,7 +188,7 @@ impl ObjectRef {
     }
 }
 
-#[derive(Deserialize, Serialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Deserialize, Serialize, Clone, Debug, PartialEq, Eq, Hash, ToSchema)]
 #[serde(tag = "type", deny_unknown_fields)]
 pub enum Waypoint {
     BufferStop { id: Identifier },
@@ -224,7 +258,7 @@ pub struct TrackRange {
     pub end: f64,
 }
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
 #[serde(deny_unknown_fields)]
 #[derivative(Default)]
 pub struct DirectionalTrackRange {
@@ -262,7 +296,7 @@ impl DirectionalTrackRange {
     }
 }
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
 #[serde(deny_unknown_fields)]
 #[derivative(Default)]
 pub struct ApplicableDirectionsTrackRange {
@@ -274,14 +308,14 @@ pub struct ApplicableDirectionsTrackRange {
     pub applicable_directions: ApplicableDirections,
 }
 
-#[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq, Hash, ToSchema)]
 #[serde(deny_unknown_fields, rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Direction {
     StartToStop,
     StopToStart,
 }
 
-#[derive(Debug, Derivative, Copy, Clone, Deserialize, Serialize, PartialEq, Eq)]
+#[derive(Debug, Derivative, Copy, Clone, Deserialize, Serialize, PartialEq, Eq, ToSchema)]
 #[derivative(Default)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum ApplicableDirections {
@@ -291,14 +325,14 @@ pub enum ApplicableDirections {
     Both,
 }
 
-#[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq, Hash, ToSchema)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum Endpoint {
     Begin,
     End,
 }
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq, Hash)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq, Hash, ToSchema)]
 #[derivative(Default)]
 #[serde(deny_unknown_fields)]
 pub struct TrackEndpoint {
@@ -330,7 +364,7 @@ impl TrackEndpoint {
     }
 }
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq, ToSchema)]
 #[derivative(Default)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum Side {
@@ -340,7 +374,7 @@ pub enum Side {
     Center,
 }
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
 #[derivative(Default)]
 #[serde(deny_unknown_fields)]
 pub struct Panel {

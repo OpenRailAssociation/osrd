@@ -6,8 +6,9 @@ use diesel::sql_query;
 use diesel::sql_types::{BigInt, Text};
 use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Clone, Deserialize, Serialize, ToSchema)]
 #[serde(deny_unknown_fields)]
 /// A delete operation. Contains same information as a object ref but has another serialization.
 pub struct DeleteOperation {

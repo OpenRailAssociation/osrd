@@ -16,6 +16,7 @@ pub use self::layer_cache::{
     get_view_cache_prefix, Tile,
 };
 pub use self::redis_utils::{delete, get, keys, set};
+pub use bounding_box::schemas;
 
 /// Invalidates layer cache for a specific infra and view if provided
 ///

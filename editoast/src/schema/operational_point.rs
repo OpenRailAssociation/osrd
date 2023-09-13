@@ -7,12 +7,22 @@ use super::ObjectType;
 
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
+use crate::schemas;
 use derivative::Derivative;
 
 use editoast_derive::InfraModel;
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, InfraModel)]
+schemas! {
+    OperationalPoint,
+    OperationalPointPart,
+    OperationalPointExtensions,
+    OperationalPointSncfExtension,
+    OperationalPointIdentifierExtension,
+}
+
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, InfraModel, ToSchema)]
 #[serde(deny_unknown_fields)]
 #[infra_model(table = "crate::tables::infra_object_operational_point")]
 #[derivative(Default)]
@@ -23,7 +33,7 @@ pub struct OperationalPoint {
     pub extensions: OperationalPointExtensions,
 }
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, ToSchema)]
 #[serde(deny_unknown_fields)]
 #[derivative(Default, PartialEq)]
 pub struct OperationalPointPart {
@@ -32,14 +42,14 @@ pub struct OperationalPointPart {
     pub position: f64,
 }
 
-#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct OperationalPointExtensions {
     pub sncf: Option<OperationalPointSncfExtension>,
     pub identifier: Option<OperationalPointIdentifierExtension>,
 }
 
-#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct OperationalPointSncfExtension {
     pub ci: i64,
@@ -49,7 +59,7 @@ pub struct OperationalPointSncfExtension {
     pub trigram: String,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct OperationalPointIdentifierExtension {
     pub name: NonBlankString,

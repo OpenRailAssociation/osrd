@@ -2,7 +2,7 @@ use super::{
     BufferStop, Catenary, Detector, NeutralSection, OSRDTyped, OperationalPoint, Route, Signal,
     SpeedSection, Switch, SwitchType, TrackSection, TrackSectionLink,
 };
-use crate::models::RAILJSON_VERSION;
+use crate::{models::RAILJSON_VERSION, schemas};
 
 use derivative::Derivative;
 use diesel::{
@@ -15,6 +15,10 @@ use editoast_derive::EditoastError;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use thiserror::Error;
 use utoipa::ToSchema;
+
+schemas! {
+    RailJson,
+}
 
 #[derive(Deserialize, Derivative, Serialize, Clone, Debug, ToSchema)]
 #[derivative(Default)]

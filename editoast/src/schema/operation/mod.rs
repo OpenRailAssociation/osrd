@@ -14,7 +14,15 @@ pub use self::delete::DeleteOperation;
 pub use create::RailjsonObject;
 pub use update::UpdateOperation;
 
-#[derive(Clone, Deserialize, Serialize)]
+crate::schemas! {
+    Operation,
+    OperationResult,
+    &create::RailjsonObject,
+    &update::UpdateOperation,
+    &delete::DeleteOperation,
+}
+
+#[derive(Clone, Deserialize, Serialize, ToSchema)]
 #[serde(tag = "operation_type", deny_unknown_fields)]
 pub enum Operation {
     #[serde(rename = "CREATE")]

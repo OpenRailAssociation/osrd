@@ -3,16 +3,23 @@ use super::utils::NonBlankString;
 use super::ApplicableDirectionsTrackRange;
 use super::OSRDIdentified;
 use editoast_derive::InfraModel;
+use utoipa::ToSchema;
 
 use super::OSRDTyped;
 use super::ObjectType;
 
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
+use crate::schemas;
 use derivative::Derivative;
 
 use serde::{Deserialize, Serialize};
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, InfraModel)]
+
+schemas! {
+    Catenary,
+}
+
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, InfraModel, ToSchema)]
 #[serde(deny_unknown_fields)]
 #[infra_model(table = "crate::tables::infra_object_catenary")]
 #[derivative(Default)]

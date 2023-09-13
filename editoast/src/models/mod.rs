@@ -11,8 +11,8 @@ mod text_array;
 mod timetable;
 pub mod train_schedule;
 
-use crate::DbPool;
 use crate::{error::Result, views::pagination::PaginatedResponse};
+use crate::{schemas, DbPool};
 use actix_web::web::Data;
 use async_trait::async_trait;
 use diesel_async::AsyncPgConnection as PgConnection;
@@ -39,6 +39,10 @@ pub use train_schedule::{
     SimulationOutputChangeset, SpacingRequirement, TrainSchedule, TrainScheduleChangeset,
     ZoneUpdate,
 };
+
+schemas! {
+    infra::schemas(),
+}
 
 pub trait Identifiable {
     fn get_id(&self) -> i64;

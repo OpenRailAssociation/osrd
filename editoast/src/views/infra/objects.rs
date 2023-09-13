@@ -6,7 +6,7 @@ use diesel::sql_types::{Array, BigInt, Jsonb, Nullable, Text};
 use diesel::{sql_query, QueryableByName};
 use diesel_async::RunQueryDsl;
 use serde::{Deserialize, Serialize};
-use serde_json::Value as JsonValue;
+use serde_json::{json, Value as JsonValue};
 use thiserror::Error;
 use utoipa::ToSchema;
 
@@ -36,23 +36,68 @@ fn has_unique_ids(obj_ids: &Vec<String>) -> bool {
     obj_ids_2.len() == obj_ids.len()
 }
 
+// The schema is build that way because I couldn't achieve this (admitedly strange)
+// structure using the derive macro ToSchema.
+fn untyped_railjson_object() -> utoipa::openapi::Object {
+    utoipa::openapi::ObjectBuilder::new()
+        .description(Some("This field follows railjson format"))
+        .additional_properties(Some(
+            utoipa::openapi::schema::AdditionalProperties::FreeForm(true),
+        ))
+        .property("id", <String as utoipa::PartialSchema>::schema())
+        .required("id")
+        .example(Some(json!({
+            "id": "bd840b06-84ba-4566-98c1-ccf0196c5f16",
+            "geo": {
+                "type": "LineString",
+                "coordinates": [[1, 41], [2, 42]]
+            },
+            "sch": {
+                "type": "LineString",
+                "coordinates": [[1, 41], [2, 42]]
+            },
+            "curves": [],
+            "length": 1000,
+            "slopes": [
+                {
+                    "end": 500,
+                    "begin": 250,
+                    "gradient": -1
+                }
+            ],
+            "line_code": 1,
+            "line_name": "my line",
+            "track_name": "track name",
+            "navigability": "BOTH",
+            "track_number": 1
+        })))
+        .build()
+}
+
 #[derive(QueryableByName, Debug, Clone, Serialize, Deserialize, ToSchema)]
 struct ObjectQueryable {
     #[diesel(sql_type = Text)]
     #[serde(skip_serializing)]
     obj_id: String,
+    /// Object properties in railjson format
     #[diesel(sql_type = Jsonb)]
+    #[schema(schema_with = untyped_railjson_object)]
     railjson: JsonValue,
+    /// object's geographic in geojson format
     #[diesel(sql_type = Nullable<Jsonb>)]
+    #[schema(value_type = GeometryValue)]
     geographic: Option<JsonValue>,
+    /// object's schematic in geojson format
     #[diesel(sql_type = Nullable<Jsonb>)]
+    #[schema(value_type = GeometryValue)]
     schematic: Option<JsonValue>,
 }
 
 /// Return the railjson list of a specific OSRD object
 #[utoipa::path(
+    params(super::InfraId),
     responses(
-        (status = 200, description = "The list of objects", body = Vec<ObjectQueryable>),
+        (status = 200, description = "The list of objects", body = inline(Vec<ObjectQueryable>)),
     ),
 )]
 #[post("/objects/{object_type}")]

@@ -9,7 +9,7 @@ use crate::schema::{
 use crate::tables::infra;
 use crate::tables::infra::dsl;
 use crate::views::pagination::{Paginate, PaginatedResponse};
-use crate::{generated_data, DbPool};
+use crate::{generated_data, schemas, DbPool};
 use actix_web::web::Data;
 use async_trait::async_trait;
 use chrono::{NaiveDateTime, Utc};
@@ -26,6 +26,10 @@ use uuid::Uuid;
 
 pub const RAILJSON_VERSION: &str = "3.4.1";
 pub const INFRA_VERSION: &str = "0";
+
+schemas! {
+    Infra,
+}
 
 #[derive(
     Clone,

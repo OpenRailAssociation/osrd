@@ -1,7 +1,7 @@
 use crate::error::Result;
 use crate::schema::InfraErrorType;
 use crate::views::pagination::{Paginate, PaginatedResponse, PaginationQueryParam};
-use crate::DbPool;
+use crate::{schemas, DbPool};
 use actix_web::get;
 use actix_web::web::{Data, Json as WebJson, Path, Query};
 use diesel::sql_query;
@@ -11,6 +11,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use strum::VariantNames;
 use thiserror::Error;
+use utoipa::{IntoParams, ToSchema};
 
 use crate::routes;
 
@@ -18,7 +19,12 @@ routes! {
     list_errors
 }
 
-#[derive(Debug, Clone, Deserialize)]
+schemas! {
+    InfraError,
+    Level,
+}
+
+#[derive(Debug, Clone, Deserialize, IntoParams)]
 struct QueryParams {
     #[serde(default)]
     level: Level,
@@ -28,8 +34,9 @@ struct QueryParams {
 
 /// Return the list of errors of an infra
 #[utoipa::path(
+    params(super::InfraId, QueryParams, PaginationQueryParam),
     responses(
-        (status = 200, description = "The list of errors of an infra", body = PaginatedResponse<InfraError>),
+        (status = 200, description = "The list of errors of an infra", body = PaginatedInfraErrors)
     ),
 )]
 #[get("/errors")]
@@ -67,18 +74,21 @@ enum ListErrorsErrors {
     WrongErrorTypeProvided,
 }
 
-#[derive(QueryableByName, Debug, Clone, Serialize)]
+#[derive(QueryableByName, Debug, Clone, Serialize, ToSchema)]
 #[serde(deny_unknown_fields)]
 struct InfraError {
     #[diesel(sql_type = Json)]
+    #[schema(value_type = Value)]
     pub information: JsonValue,
     #[diesel(sql_type = Nullable<Json>)]
+    #[schema(value_type = Value, nullable = true)]
     pub geographic: Option<JsonValue>,
     #[diesel(sql_type = Nullable<Json>)]
+    #[schema(value_type = Value, nullable = true)]
     pub schematic: Option<JsonValue>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Eq, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Eq, Deserialize, ToSchema)]
 #[serde(rename_all = "lowercase")]
 pub enum Level {
     Warnings,

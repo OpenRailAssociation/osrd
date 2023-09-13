@@ -1,9 +1,15 @@
 use super::{Endpoint, OSRDIdentified, OSRDObject, ObjectType};
-use crate::schema::ObjectRef;
+use crate::{schema::ObjectRef, schemas};
 use serde::{Deserialize, Serialize};
 use strum_macros::EnumVariantNames;
+use utoipa::ToSchema;
 
-#[derive(Serialize, Deserialize, PartialEq, Debug)]
+schemas! {
+    InfraError,
+    InfraErrorType,
+}
+
+#[derive(Serialize, Deserialize, PartialEq, Debug, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct InfraError {
     obj_id: String,
@@ -14,7 +20,7 @@ pub struct InfraError {
     sub_type: InfraErrorType,
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Debug, EnumVariantNames)]
+#[derive(Serialize, Deserialize, PartialEq, Debug, EnumVariantNames, ToSchema)]
 #[strum(serialize_all = "snake_case")]
 #[serde(tag = "error_type", rename_all = "snake_case", deny_unknown_fields)]
 pub enum InfraErrorType {

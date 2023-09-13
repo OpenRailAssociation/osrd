@@ -41,11 +41,12 @@ enum ListErrorsRailjson {
 
 /// Serializes an infra into RailJson
 #[utoipa::path(
+    params(super::InfraId),
     responses(
         (status = 200, description = "The infra as RailJson", body = RailJson),
     ),
 )]
-#[get("/{infra}/railjson")]
+#[get("/{id}/railjson")]
 async fn get_railjson(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<impl Responder> {
     let infra = infra.into_inner();
     let infra_meta = Infra::retrieve(db_pool.clone(), infra).await?.unwrap();

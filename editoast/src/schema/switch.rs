@@ -8,13 +8,21 @@ use super::TrackEndpoint;
 
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
+use crate::schemas;
 use derivative::Derivative;
 
 use editoast_derive::InfraModel;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use utoipa::ToSchema;
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, InfraModel)]
+schemas! {
+    Switch,
+    SwitchExtensions,
+    SwitchSncfExtension,
+}
+
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, InfraModel, ToSchema)]
 #[serde(deny_unknown_fields)]
 #[infra_model(table = "crate::tables::infra_object_switch")]
 #[derivative(Default)]
@@ -27,13 +35,13 @@ pub struct Switch {
     pub extensions: SwitchExtensions,
 }
 
-#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct SwitchExtensions {
     sncf: Option<SwitchSncfExtension>,
 }
 
-#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct SwitchSncfExtension {
     pub label: NonBlankString,

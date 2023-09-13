@@ -5,9 +5,16 @@ use std::{
 
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use utoipa::ToSchema;
+
+use crate::schemas;
+
+schemas! {
+    Identifier,
+}
 
 /// A wrapper around a String that ensures that the string is not empty and not longer than 255 characters.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, ToSchema)]
 pub struct Identifier(pub String);
 
 impl<'de> Deserialize<'de> for Identifier {

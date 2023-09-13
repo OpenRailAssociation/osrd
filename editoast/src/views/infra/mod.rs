@@ -49,7 +49,7 @@ routes! {
         refresh,
         cache_status,
         railjson::routes(),
-        "/{infra}" => {
+        "/{id}" => {
             get,
             load,
             delete,
@@ -80,6 +80,18 @@ schemas! {
     InfraWithState,
     InfraPatchForm,
     StatePayload,
+    attached::schemas(),
+    errors::schemas(),
+    pathfinding::schemas(),
+    routes::schemas(),
+}
+
+// Only meant to be used in utoipa::path as param()
+#[derive(IntoParams)]
+#[allow(unused)]
+struct InfraId {
+    /// An infra ID
+    id: i64,
 }
 
 #[derive(Debug, Error, EditoastError)]
@@ -270,6 +282,7 @@ pub struct InfraWithState {
 
 /// Retrieve a specific infra
 #[utoipa::path(
+    params(InfraId),
     responses(
         (status = 200, description = "Information about the retrieved infra", body = InfraWithState),
     ),
@@ -296,6 +309,7 @@ async fn get(
 
 /// Create an infra
 #[utoipa::path(
+    params(InfraId),
     request_body = inline(InfraForm),
     responses(
         (status = 200, description = "Information about the created infra", body = Infra),
@@ -310,7 +324,7 @@ async fn create(db_pool: Data<DbPool>, data: Json<InfraForm>) -> Result<impl Res
 
 /// Duplicate an infra
 #[utoipa::path(
-    params(InfraForm),
+    params(InfraForm, InfraId),
     responses(
         (status = 200, description = "The duplicated infra ID", body = i64),
     ),
@@ -365,6 +379,7 @@ async fn clone(
 
 /// Delete an infra and all entities linked to it
 #[utoipa::path(
+    params(InfraId),
     responses(
         (status = 204, description = "The infra was deleted"),
         (status = 404, description = "The infra was not found"),
@@ -403,6 +418,7 @@ impl InfraPatchForm {
 
 /// Update an infrastructure name
 #[utoipa::path(
+    params(InfraId),
     request_body = inline(InfraPatchForm),
     responses(
         (status = 200, description = "Information about the updated infra", body = Infra),
@@ -425,6 +441,7 @@ async fn rename(
 
 /// Return the railjson list of switch types
 #[utoipa::path(
+    params(InfraId),
     responses(
         (status = 200, description = "A switch type following Railjson spec", body = inline(Vec<SwitchType>)),
     ),
@@ -454,6 +471,7 @@ async fn get_switch_types(
 
 /// Returns the set of speed limit tags for a given infra
 #[utoipa::path(
+    params(InfraId),
     responses(
         (
             status = 200,
@@ -495,7 +513,7 @@ struct GetVoltagesQueryParams {
 /// Returns the set of voltages for a given infra and/or rolling_stocks modes.
 /// If include_rolling_stocks_modes is true, it returns also rolling_stocks modes.
 #[utoipa::path(
-    params(GetVoltagesQueryParams),
+    params(GetVoltagesQueryParams, InfraId),
     responses(
         (
             status = 200,
@@ -528,6 +546,7 @@ async fn get_voltages(
 
 /// Lock an infra from edition
 #[utoipa::path(
+    params(InfraId),
     responses(
         (status = 204, description = "The infra was locked"),
     ),
@@ -546,6 +565,7 @@ async fn lock(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<HttpResponse> {
 
 /// Unlock an infra from edition
 #[utoipa::path(
+    params(InfraId),
     responses(
         (status = 204, description = "The infra was unlocked"),
     ),
@@ -562,13 +582,7 @@ async fn unlock(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<HttpResponse>
     Ok(HttpResponse::NoContent().finish())
 }
 
-#[derive(Debug, Default, Deserialize)]
-pub struct LoadPayload {
-    infra: i64,
-}
-
 #[derive(Debug, Default, Deserialize, ToSchema)]
-
 pub struct StatePayload {
     infra: Option<i64>,
 }
@@ -592,6 +606,7 @@ async fn call_core_infra_load(
 
 /// Load an infra if not loaded
 #[utoipa::path(
+    params(InfraId),
     responses(
         (status = 204, description = "The infra was loaded"),
     ),
@@ -625,6 +640,7 @@ pub async fn call_core_infra_state(
 
 /// Returns the status of the infras in cache
 #[utoipa::path(
+    params(InfraId),
     request_body = inline(Option<StatePayload>),
     responses(
         (

@@ -5,9 +5,10 @@ use std::{
 
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use utoipa::ToSchema;
 
 /// A wrapper around a String that ensures that the string is not empty.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, ToSchema)]
 pub struct NonBlankString(pub String);
 
 impl<'de> Deserialize<'de> for NonBlankString {

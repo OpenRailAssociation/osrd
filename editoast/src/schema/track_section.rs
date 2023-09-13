@@ -9,13 +9,25 @@ use super::TrackEndpoint;
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
 use crate::map::BoundingBox;
+use crate::schemas;
 
 use derivative::Derivative;
 use editoast_derive::InfraModel;
 use geos::geojson::{Geometry, Value::LineString};
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, InfraModel)]
+schemas! {
+    TrackSection,
+    TrackSectionExtensions,
+    TrackSectionSncfExtension,
+    Curve,
+    Slope,
+    LoadingGaugeLimit,
+    LoadingGaugeType,
+}
+
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, InfraModel, ToSchema)]
 #[serde(deny_unknown_fields)]
 #[infra_model(table = "crate::tables::infra_object_track_section")]
 #[derivative(Default)]
@@ -28,20 +40,22 @@ pub struct TrackSection {
     #[serde(default)]
     pub loading_gauge_limits: Vec<LoadingGaugeLimit>,
     #[derivative(Default(value = "Geometry::new(LineString(vec![]))"))]
+    #[schema(value_type = GeometryValue)]
     pub geo: Geometry,
     #[derivative(Default(value = "Geometry::new(LineString(vec![]))"))]
+    #[schema(value_type = GeometryValue)]
     pub sch: Geometry,
     #[serde(default)]
     pub extensions: TrackSectionExtensions,
 }
 
-#[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq, Eq, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct TrackSectionExtensions {
     pub sncf: Option<TrackSectionSncfExtension>,
 }
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq, ToSchema)]
 #[serde(deny_unknown_fields)]
 #[derivative(Default)]
 pub struct TrackSectionSncfExtension {
@@ -80,7 +94,7 @@ impl TrackSection {
     }
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct Curve {
     pub radius: f64,
@@ -88,7 +102,7 @@ pub struct Curve {
     pub end: f64,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct Slope {
     pub gradient: f64,
@@ -96,7 +110,7 @@ pub struct Slope {
     pub end: f64,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq, ToSchema)]
 pub enum LoadingGaugeType {
     G1,
     G2,
@@ -112,7 +126,7 @@ pub enum LoadingGaugeType {
     Glott,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct LoadingGaugeLimit {
     pub category: LoadingGaugeType,

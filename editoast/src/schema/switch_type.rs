@@ -6,6 +6,7 @@ use super::ObjectType;
 
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
+use crate::schemas;
 
 use derivative::Derivative;
 
@@ -13,6 +14,11 @@ use editoast_derive::InfraModel;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use utoipa::ToSchema;
+
+schemas! {
+    SwitchType,
+    SwitchPortConnection,
+}
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq, InfraModel, ToSchema)]
 #[serde(deny_unknown_fields)]

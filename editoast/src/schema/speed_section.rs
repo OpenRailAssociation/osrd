@@ -9,14 +9,22 @@ use super::Panel;
 
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
+use crate::schemas;
 
 use derivative::Derivative;
 
 use editoast_derive::InfraModel;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use utoipa::ToSchema;
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, InfraModel)]
+schemas! {
+    SpeedSection,
+    SpeedSectionExtensions,
+    SpeedSectionLpvSncfExtension,
+}
+
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, InfraModel, ToSchema)]
 #[serde(deny_unknown_fields)]
 #[infra_model(table = "crate::tables::infra_object_speed_section")]
 #[derivative(Default)]
@@ -30,13 +38,13 @@ pub struct SpeedSection {
     pub extensions: SpeedSectionExtensions,
 }
 
-#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq)]
+#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct SpeedSectionExtensions {
     pub lpv_sncf: Option<SpeedSectionLpvSncfExtension>,
 }
 
-#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq)]
+#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct SpeedSectionLpvSncfExtension {
     announcement: Vec<Panel>,

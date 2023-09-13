@@ -7,14 +7,20 @@ use super::ObjectType;
 
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
+use crate::schemas;
 use derivative::Derivative;
 use diesel::sql_types::{Double, Text};
 
 use serde::{Deserialize, Serialize};
 
 use editoast_derive::InfraModel;
+use utoipa::ToSchema;
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, InfraModel)]
+schemas! {
+    Detector,
+}
+
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, InfraModel, ToSchema)]
 #[serde(deny_unknown_fields)]
 #[infra_model(table = "crate::tables::infra_object_detector")]
 #[derivative(Default)]

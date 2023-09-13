@@ -3,14 +3,16 @@ use crate::infra_cache::InfraCache;
 use crate::models::Infra;
 use crate::schema::ObjectType;
 use crate::views::infra::InfraApiError;
-use crate::{routes, DbPool};
+use crate::{routes, schemas, DbPool};
 
 use actix_web::get;
 use actix_web::web::{Data, Json, Path};
 use chashmap::CHashMap;
 use editoast_derive::EditoastError;
+use serde_derive::Serialize;
 use std::collections::HashMap;
 use thiserror::Error;
+use utoipa::ToSchema;
 
 /// Objects types that can be attached to a track
 const ATTACHED_OBJECTS_TYPES: &[ObjectType] = &[
@@ -28,6 +30,10 @@ routes! {
     attached
 }
 
+schemas! {
+    AttachedObjects,
+}
+
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "attached")]
 enum AttachedError {
@@ -36,14 +42,27 @@ enum AttachedError {
     TrackNotFound { track_id: String },
 }
 
-/// This endpoint returns attached objects of given track
-#[utoipa::path()]
+/// Objects attached to a track section, grouped by type
+#[derive(Serialize, ToSchema)]
+struct AttachedObjects {
+    #[serde(flatten)]
+    #[schema(additional_properties = false, value_type = HashMap<ObjectType, Vec<String>>)]
+    objects: HashMap<ObjectType, Vec<String>>,
+}
+
+/// Retrieve all objects attached to a given track
+#[utoipa::path(
+    params(super::InfraId),
+    responses(
+        (status = 200, body = AttachedObjects),
+    )
+)]
 #[get("/attached/{track_id}")]
 async fn attached(
     infra: Path<(i64, String)>,
     infra_caches: Data<CHashMap<i64, InfraCache>>,
     db_pool: Data<DbPool>,
-) -> Result<Json<HashMap<ObjectType, Vec<String>>>> {
+) -> Result<Json<AttachedObjects>> {
     let (infra, track_id) = infra.into_inner();
 
     let mut conn = db_pool.get().await?;
@@ -73,7 +92,7 @@ async fn attached(
             )
         })
         .collect();
-    Ok(Json(res))
+    Ok(Json(AttachedObjects { objects: res }))
 }
 
 #[cfg(test)]

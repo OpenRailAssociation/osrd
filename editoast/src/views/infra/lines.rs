@@ -22,7 +22,9 @@ enum LinesErrors {
     LineNotFound { line_code: i32 },
 }
 
+/// Returns the bbox enclosing all the track sections of a train line
 #[utoipa::path(
+    params(super::InfraId),
     responses(
         (status = 200, description = "The bbox of the line", body = Vec<Zone>),
     ),

@@ -8,8 +8,14 @@ use crate::error::Result;
 use crate::infra_cache::{InfraCache, ObjectCache};
 use crate::schema::operation::{OperationResult, RailjsonObject};
 use crate::schema::{ObjectRef, ObjectType};
+use crate::schemas;
 
-// impl Iter trait
+schemas! {
+    Zone,
+    BoundingBox,
+}
+
+/// A bounding box represented by its top-left and bottom-right corners
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
 pub struct BoundingBox(pub (f64, f64), pub (f64, f64));
 
@@ -74,7 +80,7 @@ impl Default for BoundingBox {
     }
 }
 
-/// Geographic and Schematic bounding box zone impacted by a list of operations
+/// Geographic and Schematic bounding boxes of a zone impacted by a list of operations
 #[derive(Debug, Clone, Default, Serialize, ToSchema)]
 pub struct Zone {
     pub geo: BoundingBox,

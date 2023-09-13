@@ -11,13 +11,22 @@ use super::Side;
 
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
+use crate::schemas;
 use derivative::Derivative;
 use diesel::sql_types::{Double, Text};
 
 use editoast_derive::InfraModel;
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, InfraModel)]
+schemas! {
+    Signal,
+    LogicalSignal,
+    SignalExtensions,
+    SignalSncfExtension,
+}
+
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, InfraModel, ToSchema)]
 #[serde(deny_unknown_fields)]
 #[infra_model(table = "crate::tables::infra_object_signal")]
 #[derivative(Default)]
@@ -37,20 +46,20 @@ pub struct Signal {
     pub extensions: SignalExtensions,
 }
 
-#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq, ToSchema)]
 pub struct LogicalSignal {
     pub signaling_system: String,
     pub next_signaling_systems: Vec<String>,
     pub settings: HashMap<NonBlankString, NonBlankString>,
 }
 
-#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq)]
+#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct SignalExtensions {
     pub sncf: Option<SignalSncfExtension>,
 }
 
-#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq)]
+#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct SignalSncfExtension {
     pub aspects: Vec<String>,

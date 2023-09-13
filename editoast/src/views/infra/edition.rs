@@ -21,6 +21,7 @@ routes! {
 
 /// CRUD to edit an infrastructure. Takes a batch of operations.
 #[utoipa::path(
+    params(super::InfraId),
     responses(
         (status = 200, description = "Return the list of operations results", body = inline(Vec<OperationResult>)),
     ),

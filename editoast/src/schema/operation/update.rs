@@ -8,14 +8,17 @@ use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
 use json_patch::Patch;
 use serde::{Deserialize, Serialize};
 use serde_json::{from_value, json, Value};
+use utoipa::ToSchema;
 
 use super::OperationError;
 
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Clone, Deserialize, Serialize, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct UpdateOperation {
     pub obj_id: String,
     pub obj_type: ObjectType,
+    /// The partial Railjson object patch to apply
+    #[schema(value_type = Object)]
     railjson_patch: Patch,
 }
 
