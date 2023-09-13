@@ -6,6 +6,8 @@ import fr.sncf.osrd.reporting.exceptions.ErrorType;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.sim_infra.api.Path;
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface;
+
+import java.util.List;
 import java.util.NavigableSet;
 import java.util.TreeSet;
 
@@ -45,13 +47,12 @@ public class DelayManager {
 
         var res = new TreeSet<Double>();
         var endOffset = startOffset + (long) envelope.getEndPos();
-        var path = STDCMUtils.makeTrainPath(graph, blockId, startOffset, endOffset);
         double time = startTime;
         while (Double.isFinite(time)) {
             var availability = getScaledAvailability(
-                    path,
-                    0,
-                    path.getLength(),
+                    blockId,
+                    startOffset,
+                    endOffset,
                     envelope,
                     time
             );
@@ -70,11 +71,10 @@ public class DelayManager {
     /** Returns the start time of the next occupancy for the route */
     double findNextOccupancy(int blockId, double time, long startOffset, Envelope envelope) {
         var endOffset = startOffset + (long) envelope.getEndPos();
-        var path = STDCMUtils.makeTrainPath(graph, blockId, startOffset, endOffset);
         var availability = getScaledAvailability(
-                path,
-                0,
-                path.getLength(),
+                blockId,
+                startOffset,
+                endOffset,
                 envelope,
                 time
         );
@@ -97,9 +97,8 @@ public class DelayManager {
      * and we need to leave the route at t=60s, this will return 8s. */
     double findMaximumAddedDelay(int blockId, double startTime, long startOffset, Envelope envelope) {
         long endOffset = startOffset + (long) envelope.getEndPos();
-        var path = STDCMUtils.makeTrainPath(graph, blockId, startOffset, endOffset);
         var availability = getScaledAvailability(
-                path, 0, path.getLength(), envelope, startTime
+                blockId, startOffset, endOffset, envelope, startTime
         );
         assert availability instanceof BlockAvailabilityInterface.Available;
         return ((BlockAvailabilityInterface.Available) availability).maximumDelay;
@@ -107,7 +106,7 @@ public class DelayManager {
 
     /** Calls `routeAvailability.getAvailability`, on an envelope scaled to account for the standard allowance. */
     private BlockAvailabilityInterface.Availability getScaledAvailability(
-            Path path,
+            int blockId,
             long startOffset,
             long endOffset,
             Envelope envelope,
@@ -120,7 +119,7 @@ public class DelayManager {
         else
             scaledEnvelope = LinearAllowance.scaleEnvelope(envelope, speedRatio);
         return blockAvailability.getAvailability(
-                path,
+                List.of(blockId),
                 startOffset,
                 endOffset,
                 scaledEnvelope,

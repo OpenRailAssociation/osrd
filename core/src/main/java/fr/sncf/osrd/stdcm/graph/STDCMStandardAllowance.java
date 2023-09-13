@@ -16,6 +16,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.*;
 
+import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.POSITION_EPSILON;
+
 /** We try to apply the standard allowance as one mareco computation over the whole path.
  * If it causes conflicts, we split the mareco ranges so that the passage time at the points of conflict
  * stays the same as the one we expected when exploring the graph. */
@@ -80,12 +82,19 @@ public class STDCMStandardAllowance {
             double departureTime,
             List<TrainStop> stops
     ) {
-        var path = STDCMUtils.makePathFromRanges(graph, ranges);
         var envelopeWithStops = new EnvelopeStopWrapper(envelope, stops);
+        var startOffset = ranges.get(0).start();
+        var endOffset = startOffset + ranges.stream()
+                .mapToLong(range -> range.end() - range.start())
+                .sum();
+        var blocks = ranges.stream()
+                .map(x -> x.edge().block())
+                .toList();
+        assert Math.abs(envelopeWithStops.getEndPos() - (endOffset - startOffset)) < POSITION_EPSILON;
         var availability = blockAvailability.getAvailability(
-                path,
-                0,
-                envelope.getEndPos(),
+                blocks,
+                startOffset,
+                endOffset,
                 envelopeWithStops,
                 departureTime
         );
