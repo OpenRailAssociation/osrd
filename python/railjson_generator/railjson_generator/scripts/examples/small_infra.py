@@ -653,7 +653,7 @@ train_2.add_standard_single_value_allowance("time_per_distance", 10)
 stop_locations = [Location(ta0, 500), Location(tc0, 500), Location(td0, 14000), Location(th1, 1500)]
 train_3 = builder.add_train_schedule(
     *stop_locations,
-    label="train.2",
+    label="train.3",
     departure_time=11 * 3600,
     stops=[Stop(location=loc, duration=60) for loc in stop_locations],
 )
