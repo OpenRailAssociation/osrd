@@ -7,7 +7,6 @@ import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.
 import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.POSITION_EPSILON;
 import static fr.sncf.osrd.envelope_sim_infra.MRSP.computeMRSP;
 
-import fr.sncf.osrd.api.FullInfra;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.OverlayEnvelopeBuilder;
 import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder;
@@ -25,6 +24,8 @@ import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
+import fr.sncf.osrd.sim_infra.api.BlockInfra;
+import fr.sncf.osrd.sim_infra.api.RawSignalingInfra;
 import fr.sncf.osrd.stdcm.BacktrackingEnvelopeAttr;
 import fr.sncf.osrd.train.RollingStock;
 import java.util.List;
@@ -35,14 +36,15 @@ public class STDCMSimulations {
     /** Create an EnvelopeSimContext instance from the blocks and extra parameters.
      * offsetFirstBlock is in millimeters. */
     static EnvelopeSimContext makeSimContext(
-            FullInfra infra,
+            RawSignalingInfra rawInfra,
+            BlockInfra blockInfra,
             List<Integer> blocks,
             long offsetFirstBlock,
             RollingStock rollingStock,
             RollingStock.Comfort comfort,
             double timeStep
     ) {
-        var path = makePathFromBlocks(infra, blocks, offsetFirstBlock);
+        var path = makePathFromBlocks(rawInfra, blockInfra, blocks, offsetFirstBlock);
         var envelopePath = EnvelopeTrainPath.from(path);
         return EnvelopeSimContextBuilder.build(rollingStock, envelopePath, timeStep, comfort);
     }
@@ -57,7 +59,8 @@ public class STDCMSimulations {
      * </p>
      */
     public static Envelope simulateBlock(
-            FullInfra fullInfra,
+            RawSignalingInfra rawInfra,
+            BlockInfra blockInfra,
             Integer blockId,
             double initialSpeed,
             long start,
@@ -69,14 +72,14 @@ public class STDCMSimulations {
     ) {
         if (stopPosition != null && Math.abs(stopPosition) < POSITION_EPSILON)
             return makeSinglePointEnvelope(0);
-        if (start >= fullInfra.blockInfra().getBlockLength(blockId))
+        if (start >= blockInfra.getBlockLength(blockId))
             return makeSinglePointEnvelope(initialSpeed);
-        var context = makeSimContext(fullInfra, List.of(blockId), start, rollingStock, comfort, timeStep);
+        var context = makeSimContext(rawInfra, blockInfra, List.of(blockId), start, rollingStock, comfort, timeStep);
         double[] stops = new double[]{};
         if (stopPosition != null) {
             stops = new double[]{stopPosition};
         }
-        var path = makePath(fullInfra.blockInfra(), fullInfra.rawInfra(), blockId);
+        var path = makePath(blockInfra, rawInfra, blockId);
         var mrsp = computeMRSP(path, rollingStock, false, trainTag);
         try {
             var maxSpeedEnvelope = MaxSpeedEnvelope.from(context, stops, mrsp);
@@ -137,15 +140,17 @@ public class STDCMSimulations {
      * returns an envelope for a block that already has an envelope, but with a different end speed
      */
     static Envelope simulateBackwards(
-            FullInfra infra,
+            RawSignalingInfra rawInfra,
+            BlockInfra blockInfra,
             Integer blockId,
             double endSpeed,
             long start,
             Envelope oldEnvelope,
-            LegacySTDCMGraph graph
+            STDCMGraph graph
     ) {
         var context = makeSimContext(
-                infra,
+                rawInfra,
+                blockInfra,
                 List.of(blockId),
                 start,
                 graph.rollingStock,

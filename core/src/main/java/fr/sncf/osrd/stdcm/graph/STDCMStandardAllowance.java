@@ -8,7 +8,7 @@ import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.reporting.exceptions.ErrorType;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper;
-import fr.sncf.osrd.stdcm.preprocessing.interfaces.RouteAvailabilityInterface;
+import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.TrainStop;
 import fr.sncf.osrd.utils.graph.Pathfinding;
@@ -25,14 +25,15 @@ public class STDCMStandardAllowance {
 
     /** Applies the allowance to the final envelope */
     static Envelope applyAllowance(
+            STDCMGraph graph,
             Envelope envelope,
-            List<Pathfinding.EdgeRange<LegacySTDCMEdge>> ranges,
+            List<Pathfinding.EdgeRange<STDCMEdge>> ranges,
             AllowanceValue standardAllowance,
             EnvelopeSimPath envelopeSimPath,
             RollingStock rollingStock,
             double timeStep,
             RollingStock.Comfort comfort,
-            RouteAvailabilityInterface routeAvailability,
+            BlockAvailabilityInterface blockAvailability,
             double departureTime,
             List<TrainStop> stops
     ) {
@@ -50,7 +51,7 @@ public class STDCMStandardAllowance {
                     rangeTransitions
             );
             var conflictOffset = findConflictOffsets(
-                    newEnvelope, routeAvailability, ranges, departureTime, stops);
+                    graph, newEnvelope, blockAvailability, ranges, departureTime, stops);
             if (Double.isNaN(conflictOffset))
                 return newEnvelope;
             assert !rangeTransitions.contains(conflictOffset) : "conflict offset is already on a range transition";
@@ -72,23 +73,24 @@ public class STDCMStandardAllowance {
      * If a conflict is found, returns its offset.
      * Otherwise, returns NaN. */
     private static double findConflictOffsets(
+            STDCMGraph graph,
             Envelope envelope,
-            RouteAvailabilityInterface routeAvailability,
-            List<Pathfinding.EdgeRange<LegacySTDCMEdge>> ranges,
+            BlockAvailabilityInterface blockAvailability,
+            List<Pathfinding.EdgeRange<STDCMEdge>> ranges,
             double departureTime,
             List<TrainStop> stops
     ) {
-        var path = STDCMUtils.makePathFromRanges(ranges);
+        var path = STDCMUtils.makePathFromRanges(graph, ranges);
         var envelopeWithStops = new EnvelopeStopWrapper(envelope, stops);
-        var availability = routeAvailability.getAvailability(
+        var availability = blockAvailability.getAvailability(
                 path,
                 0,
                 envelope.getEndPos(),
                 envelopeWithStops,
                 departureTime
         );
-        assert !(availability.getClass() == RouteAvailabilityInterface.NotEnoughLookahead.class);
-        if (availability instanceof RouteAvailabilityInterface.Unavailable unavailable)
+        assert !(availability.getClass() == BlockAvailabilityInterface.NotEnoughLookahead.class);
+        if (availability instanceof BlockAvailabilityInterface.Unavailable unavailable)
             return unavailable.firstConflictOffset;
         return Double.NaN;
     }

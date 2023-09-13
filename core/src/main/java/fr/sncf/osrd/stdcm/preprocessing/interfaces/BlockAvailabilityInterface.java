@@ -26,7 +26,7 @@ public interface BlockAvailabilityInterface {
      * The implementation of RouteAvailabilityInterface must account for train length, sight distance,
      * and similar factors.
      *
-     * @param routes List of route IDs taken by the train
+     * @param blocks List of block IDs taken by the train
      * @param startOffset Start of the section to check for availability, as an offset from the start of the path
      * @param endOffset End of the section to check for availability, as an offset from the start of the path
      * @param envelope Envelope describing the position of the train at any moment.
@@ -35,7 +35,7 @@ public interface BlockAvailabilityInterface {
      * @return An Availability instance.
      */
     Availability getAvailability(
-            List<Integer> routes,
+            List<Integer> blocks,
             double startOffset,
             double endOffset,
             EnvelopeTimeInterpolate envelope,

@@ -2,7 +2,6 @@ package fr.sncf.osrd.stdcm.graph;
 
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
-import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,13 +17,13 @@ public class AllowanceManager {
         this.graph = graph;
     }
 
-    /** Try to run an engineering allowance on the routes leading to the given edge. Returns null if it failed. */
-    public LegacySTDCMEdge tryEngineeringAllowance(
-            LegacySTDCMEdge oldEdge
+    /** Try to run an engineering allowance on the blocks leading to the given edge. Returns null if it failed. */
+    public STDCMEdge tryEngineeringAllowance(
+            STDCMEdge oldEdge
     ) {
         var neededDelay = getNeededDelay(oldEdge);
         if (oldEdge.previousNode() == null)
-            return null; // The conflict happens on the first route, we can't add delay here
+            return null; // The conflict happens on the first block, we can't add delay here
         var affectedEdges = findAffectedEdges(
                 oldEdge.previousNode().previousEdge(),
                 oldEdge.addedDelay()
@@ -32,20 +31,20 @@ public class AllowanceManager {
         if (affectedEdges.isEmpty())
             return null; // No space to try the allowance
         var context = makeAllowanceContext(affectedEdges);
-        var oldEnvelope = STDCMUtils.mergeEnvelopes(affectedEdges);
-        var newEnvelope = LegacySTDCMSimulations.findEngineeringAllowance(context, oldEnvelope, neededDelay);
+        var oldEnvelope = STDCMUtils.mergeEnvelopes(graph, affectedEdges);
+        var newEnvelope = STDCMSimulations.findEngineeringAllowance(context, oldEnvelope, neededDelay);
         if (newEnvelope == null)
             return null; // We couldn't find an envelope
         var newPreviousEdge = makeNewEdges(affectedEdges, newEnvelope);
         if (newPreviousEdge == null)
             return null; // The new edges are invalid, conflicts shouldn't happen here but it can be too slow
         var newPreviousNode = newPreviousEdge.getEdgeEnd(graph);
-        return STDCMEdgeBuilder.fromNode(graph, newPreviousNode, oldEdge.route())
+        return STDCMEdgeBuilder.fromNode(graph, newPreviousNode, oldEdge.block())
                 .findEdgeSameNextOccupancy(oldEdge.timeNextOccupancy());
     }
 
     /** Computes the delay we need to add */
-    private double getNeededDelay(LegacySTDCMEdge oldEdge) {
+    private double getNeededDelay(STDCMEdge oldEdge) {
         var neededDelay = -oldEdge.maximumAddedDelayAfter();
         assert neededDelay > 0;
         var targetRunTime = oldEdge.getTotalTime() + neededDelay;
@@ -57,9 +56,9 @@ public class AllowanceManager {
     }
 
     /** Re-create the edges in order, following the given envelope. */
-    private LegacySTDCMEdge makeNewEdges(List<LegacySTDCMEdge> edges, Envelope totalEnvelope) {
+    private STDCMEdge makeNewEdges(List<STDCMEdge> edges, Envelope totalEnvelope) {
         double previousEnd = 0;
-        LegacySTDCMEdge prevEdge = null;
+        STDCMEdge prevEdge = null;
         if (edges.get(0).previousNode() != null)
             prevEdge = edges.get(0).previousNode().previousEdge();
         for (var edge : edges) {
@@ -68,7 +67,7 @@ public class AllowanceManager {
             var maxAddedDelayAfter = edge.maximumAddedDelayAfter() + edge.addedDelay();
             if (node != null)
                 maxAddedDelayAfter = node.maximumAddedDelay();
-            prevEdge = new STDCMEdgeBuilder(edge.route(), graph)
+            prevEdge = new STDCMEdgeBuilder(edge.block(), graph)
                     .setStartTime(node == null ? edge.timeStart() : node.time())
                     .setStartSpeed(edge.envelope().getBeginSpeed())
                     .setStartOffset(edge.envelopeStartOffset())
@@ -96,18 +95,20 @@ public class AllowanceManager {
     }
 
     /** Creates the EnvelopeSimContext to run an allowance on the given edges */
-    private EnvelopeSimContext makeAllowanceContext(List<LegacySTDCMEdge> edges) {
-        var routes = new ArrayList<SignalingRoute>();
-        var firstOffset = edges.get(0).route().getInfraRoute().getLength() - edges.get(0).envelope().getEndPos();
+    private EnvelopeSimContext makeAllowanceContext(List<STDCMEdge> edges) {
+        var blocks = new ArrayList<Integer>();
+        var firstOffset = graph.blockInfra.getBlockLength(edges.get(0).block())
+                - (long) edges.get(0).envelope().getEndPos();
         for (var edge : edges)
-            routes.add(edge.route());
-        return LegacySTDCMSimulations.makeSimContext(
-                routes, firstOffset, graph.rollingStock, graph.comfort, graph.timeStep);
+            blocks.add(edge.block());
+        return STDCMSimulations.makeSimContext(
+                graph.rawInfra, graph.blockInfra, blocks, firstOffset,
+                graph.rollingStock, graph.comfort, graph.timeStep);
     }
 
     /** Find on which edges to run the allowance */
-    private List<LegacySTDCMEdge> findAffectedEdges(LegacySTDCMEdge edge, double delayNeeded) {
-        var res = new ArrayDeque<LegacySTDCMEdge>();
+    private List<STDCMEdge> findAffectedEdges(STDCMEdge edge, double delayNeeded) {
+        var res = new ArrayDeque<STDCMEdge>();
         while (true) {
             if (edge.endAtStop()) {
                 // Engineering allowances can't span over stops

@@ -254,7 +254,7 @@ public class PathfindingBlocksEndpoint implements Take {
 
     }
 
-    private static double getBlockOffset(int blockId, int trackChunkId, int trackSectionId, double waypointOffsetMeters,
+    private static long getBlockOffset(int blockId, int trackChunkId, int trackSectionId, double waypointOffsetMeters,
                                          EdgeDirection direction, FullInfra infra) {
         var waypointOffset = fromMeters(waypointOffsetMeters);
         var trackSectionLength = infra.rawInfra().getTrackSectionLength(trackSectionId);

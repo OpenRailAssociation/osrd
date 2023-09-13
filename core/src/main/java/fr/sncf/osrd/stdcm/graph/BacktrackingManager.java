@@ -42,7 +42,7 @@ public class BacktrackingManager {
 
         // Create the new edge
         var newNode = newPreviousEdge.getEdgeEnd(graph);
-        return STDCMEdgeBuilder.fromNode(graph, newNode, e.route())
+        return STDCMEdgeBuilder.fromNode(graph, newNode, e.block())
                 .setStartOffset(e.envelopeStartOffset())
                 .setEnvelope(e.envelope())
                 .findEdgeSameNextOccupancy(e.timeNextOccupancy());
@@ -57,14 +57,16 @@ public class BacktrackingManager {
      * */
     private STDCMEdge rebuildEdgeBackward(STDCMEdge old, double endSpeed) {
         var newEnvelope = STDCMSimulations.simulateBackwards(
-                old.route(),
+                graph.rawInfra,
+                graph.blockInfra,
+                old.block(),
                 endSpeed,
                 old.envelopeStartOffset(),
                 old.envelope(),
                 graph
         );
         var prevNode = old.previousNode();
-        return new STDCMEdgeBuilder(old.route(), graph)
+        return new STDCMEdgeBuilder(old.block(), graph)
                 .setStartTime(old.timeStart() - old.addedDelay())
                 .setStartOffset(old.envelopeStartOffset())
                 .setPrevMaximumAddedDelay(old.maximumAddedDelayAfter() + old.addedDelay())

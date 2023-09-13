@@ -1,15 +1,17 @@
 package fr.sncf.osrd.stdcm.graph;
 
-import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.POSITION_EPSILON;
+import static fr.sncf.osrd.sim_infra.api.PathKt.buildPathFrom;
+import static fr.sncf.osrd.utils.KtToJavaConverter.toIntList;
 
 import com.google.common.collect.Iterables;
+import fr.sncf.osrd.api.pathfinding.PathfindingUtils;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
-import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
-import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView;
-import fr.sncf.osrd.infra_state.api.TrainPath;
-import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
+import fr.sncf.osrd.sim_infra.api.Path;
+import fr.sncf.osrd.sim_infra.api.TrackChunk;
 import fr.sncf.osrd.utils.graph.Pathfinding;
+import fr.sncf.osrd.utils.indexing.MutableDirStaticIdxArrayList;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -18,7 +20,7 @@ public class STDCMUtils {
 
     /** Combines all the envelopes in the given edge ranges */
     public static Envelope mergeEnvelopeRanges(
-            List<Pathfinding.EdgeRange<LegacySTDCMEdge>> edges
+            List<Pathfinding.EdgeRange<STDCMEdge>> edges
     ) {
         var parts = new ArrayList<EnvelopePart>();
         double offset = 0;
@@ -39,17 +41,18 @@ public class STDCMUtils {
 
     /** Combines all the envelopes in the given edges */
     public static Envelope mergeEnvelopes(
-            List<LegacySTDCMEdge> edges
+            STDCMGraph graph,
+            List<STDCMEdge> edges
     ) {
         return mergeEnvelopeRanges(
                 edges.stream()
-                        .map(e -> new Pathfinding.EdgeRange<>(e, 0, e.route().getInfraRoute().getLength()))
+                        .map(e -> new Pathfinding.EdgeRange<>(e, 0, graph.blockInfra.getBlockLength(e.block())))
                         .toList()
         );
     }
 
-    /** Returns the offset of the stops on the given route, starting at startOffset*/
-    static Double getStopOnRoute(LegacySTDCMGraph graph, SignalingRoute route, double startOffset, int waypointIndex) {
+    /** Returns the offset of the stops on the given block, starting at startOffset*/
+    static Double getStopOnBlock(STDCMGraph graph, int block, double startOffset, int waypointIndex) {
         var res = new ArrayList<Double>();
         while (waypointIndex + 1 < graph.steps.size() && !graph.steps.get(waypointIndex + 1).stop())
             waypointIndex++; // Only the next point where we actually stop matters here
@@ -59,7 +62,7 @@ public class STDCMUtils {
         if (!nextStep.stop())
             return null;
         for (var endLocation : nextStep.locations()) {
-            if (endLocation.edge() == route) {
+            if (endLocation.edge() == block) {
                 var offset = endLocation.offset() - startOffset;
                 if (offset >= 0)
                     res.add(offset);
@@ -70,40 +73,31 @@ public class STDCMUtils {
         return Collections.min(res);
     }
 
-    /** Builds a train path from a route, and offset from its start, and an envelope. */
-    static TrainPath makeTrainPath(SignalingRoute route, double startOffset, double endOffset) {
-        var routeLength = route.getInfraRoute().getLength();
-        if (endOffset > routeLength) {
-            assert Math.abs(endOffset - routeLength) < POSITION_EPSILON;
-            endOffset = routeLength;
-        }
-        assert 0 <= startOffset && startOffset <= routeLength;
-        assert 0 <= endOffset && endOffset <= routeLength;
+    /** Builds a train path from a block, offsets from its start, and an envelope. */
+    static Path makeTrainPath(STDCMGraph graph, int block, long startOffset, long endOffset) {
+        var blockLength = graph.blockInfra.getBlockLength(block);
+        assert 0 <= startOffset && startOffset <= blockLength;
+        assert 0 <= endOffset && endOffset <= blockLength;
         assert startOffset <= endOffset;
-        var infraRoute = route.getInfraRoute();
-        var start = TrackRangeView.getLocationFromList(infraRoute.getTrackRanges(), startOffset);
-        var end = TrackRangeView.getLocationFromList(infraRoute.getTrackRanges(), endOffset);
-        return TrainPathBuilder.from(List.of(route), start, end);
+        return PathfindingUtils.makePath(graph.blockInfra, graph.rawInfra, block, startOffset, endOffset);
     }
 
     /** Create a TrainPath instance from a list of edge ranges */
-    static TrainPath makePathFromRanges(List<Pathfinding.EdgeRange<LegacySTDCMEdge>> ranges) {
-        var firstEdge = ranges.get(0).edge();
+    static Path makePathFromRanges(STDCMGraph graph, List<Pathfinding.EdgeRange<STDCMEdge>> ranges) {
+        var blocks = ranges.stream()
+                .map(range -> range.edge().block())
+                .toList();
+        var totalBlockLength = blocks.stream()
+                .mapToLong(graph.blockInfra::getBlockLength)
+                .sum();
         var lastRange = ranges.get(ranges.size() - 1);
-        var lastEdge = lastRange.edge();
-        var start = TrackRangeView.getLocationFromList(
-                firstEdge.route().getInfraRoute().getTrackRanges(),
-                firstEdge.envelopeStartOffset()
-        );
-        var lastRangeLength = lastRange.end() - lastRange.start();
-        var end = TrackRangeView.getLocationFromList(
-                lastEdge.route().getInfraRoute().getTrackRanges(),
-                lastEdge.envelopeStartOffset() + lastRangeLength
-        );
-        var routes = new ArrayList<SignalingRoute>();
-        for (var range : ranges)
-            if (routes.isEmpty() || !Iterables.getLast(routes).equals(range.edge().route()))
-                routes.add(range.edge().route());
-        return TrainPathBuilder.from(routes, start, end);
+        var firstOffset = ranges.get(0).edge().envelopeStartOffset() + ranges.get(0).start();
+        var lastOffset = totalBlockLength - graph.blockInfra.getBlockLength(Iterables.getLast(blocks))
+                + lastRange.edge().envelopeStartOffset() + lastRange.end();
+        var chunks = new MutableDirStaticIdxArrayList<TrackChunk>();
+        blocks.stream()
+                .flatMap(block -> toIntList(graph.blockInfra.getTrackChunksFromBlock(block)).stream())
+                .forEach(chunks::add);
+        return buildPathFrom(graph.rawInfra, chunks, firstOffset, lastOffset);
     }
 }

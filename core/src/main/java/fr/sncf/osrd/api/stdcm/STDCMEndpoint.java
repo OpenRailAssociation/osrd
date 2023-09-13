@@ -6,7 +6,9 @@ import fr.sncf.osrd.api.ExceptionHandler;
 import fr.sncf.osrd.api.FullInfra;
 import fr.sncf.osrd.api.InfraManager;
 import fr.sncf.osrd.api.pathfinding.PathfindingBlocksEndpoint;
+import fr.sncf.osrd.api.pathfinding.PathfindingResultConverter;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
+import fr.sncf.osrd.envelope_sim_infra.MRSP;
 import fr.sncf.osrd.railjson.parser.RJSRollingStockParser;
 import fr.sncf.osrd.railjson.parser.RJSStandaloneTrainScheduleParser;
 import fr.sncf.osrd.reporting.exceptions.ErrorType;
@@ -14,8 +16,11 @@ import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import fr.sncf.osrd.sim_infra.api.InterlockingInfraKt;
 import fr.sncf.osrd.sim_infra.api.RawSignalingInfra;
+import fr.sncf.osrd.standalone_sim.ScheduleMetadataExtractor;
+import fr.sncf.osrd.standalone_sim.result.ResultEnvelopePoint;
+import fr.sncf.osrd.standalone_sim.result.StandaloneSimResult;
 import fr.sncf.osrd.stdcm.STDCMStep;
-import fr.sncf.osrd.stdcm.graph.LegacySTDCMPathfinding;
+import fr.sncf.osrd.stdcm.graph.STDCMPathfinding;
 import fr.sncf.osrd.stdcm.preprocessing.implementation.BlockAvailabilityLegacyAdapter;
 import fr.sncf.osrd.stdcm.preprocessing.implementation.UnavailableSpaceBuilder;
 import fr.sncf.osrd.train.RollingStock;
@@ -25,7 +30,9 @@ import org.takes.Request;
 import org.takes.Response;
 import org.takes.Take;
 import org.takes.rq.RqPrint;
+import org.takes.rs.RsJson;
 import org.takes.rs.RsText;
+import org.takes.rs.RsWithBody;
 import org.takes.rs.RsWithStatus;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -58,11 +65,10 @@ public class STDCMEndpoint implements Take {
             if (Double.isNaN(startTime))
                 throw new OSRDError(ErrorType.InvalidSTDCMUnspecifiedStartTime);
             // TODO : change with get infra when the front is ready
-            final var fullInfra = infraManager.getInfra(request.infra, request.expectedVersion, recorder);
-            final var infra = fullInfra.java();
+            final var infra = infraManager.getInfra(request.infra, request.expectedVersion, recorder);
             final var rollingStock = RJSRollingStockParser.parse(request.rollingStock);
             final var comfort = RJSRollingStockParser.parseComfort(request.comfort);
-            final var steps = parseSteps(fullInfra, request.steps);
+            final var steps = parseSteps(infra, request.steps);
             final String tag = request.speedLimitComposition;
             var occupancies = request.routeOccupancies;
             AllowanceValue standardAllowance = null;
@@ -75,51 +81,52 @@ public class STDCMEndpoint implements Take {
 
             // Build the unavailable space
             // temporary workaround, to remove with new signaling
-            occupancies = addWarningOccupancies(fullInfra.rawInfra(), occupancies);
+            occupancies = addWarningOccupancies(infra.rawInfra(), occupancies);
             var unavailableSpace = UnavailableSpaceBuilder.computeUnavailableSpace(
-                    fullInfra.rawInfra(),
-                    fullInfra.blockInfra(),
+                    infra.rawInfra(),
+                    infra.blockInfra(),
                     occupancies,
                     rollingStock,
                     request.gridMarginAfterSTDCM,
                     request.gridMarginBeforeSTDCM
             );
-//
-//            // Run the STDCM pathfinding
-            var res = LegacySTDCMPathfinding.findPath(
+
+            // Run the STDCM pathfinding
+            var res = STDCMPathfinding.findPath(
                     infra,
                     rollingStock,
                     comfort,
                     startTime,
                     endTime,
                     steps,
-                    new BlockAvailabilityLegacyAdapter(fullInfra.blockInfra(), unavailableSpace),
+                    new BlockAvailabilityLegacyAdapter(infra.blockInfra(), unavailableSpace),
                     request.timeStep,
                     request.maximumDepartureDelay,
                     request.maximumRunTime,
                     tag,
                     standardAllowance
             );
-//            if (res == null) {
-//                var error = new OSRDError(ErrorType.PathfindingGenericError);
-//                return ExceptionHandler.toResponse(error);
-//            }
-//
-//            // Build the response
-//            var simResult = new StandaloneSimResult();
-//            simResult.speedLimits.add(ResultEnvelopePoint.from(
-//                    LegacyMRSP.from(res.trainPath(), rollingStock, false, tag)
-//            ));
-//            simResult.baseSimulations.add(ScheduleMetadataExtractor.run(
-//                    res.envelope(),
-//                    res.trainPath(),
-//                    makeTrainSchedule(res.envelope().getEndPos(), rollingStock, comfort, res.stopResults()),
-//                    fullInfra
-//            ));
-//            simResult.ecoSimulations.add(null);
-//            var pathfindingRes = LegacyPathfindingResultConverter.convert(res.routes(), infra, recorder);
-//            var response = new STDCMResponse(simResult, pathfindingRes, res.departureTime());
-//            return new RsJson(new RsWithBody(STDCMResponse.adapter.toJson(response)));
+            if (res == null) {
+                var error = new OSRDError(ErrorType.PathfindingGenericError);
+                return ExceptionHandler.toResponse(error);
+            }
+
+            // Build the response
+            var simResult = new StandaloneSimResult();
+            simResult.speedLimits.add(ResultEnvelopePoint.from(
+                    MRSP.computeMRSP(res.trainPath(), rollingStock, false, tag)
+            ));
+            simResult.baseSimulations.add(ScheduleMetadataExtractor.run(
+                    res.envelope(),
+                    res.trainPath(),
+                    makeTrainSchedule(res.envelope().getEndPos(), rollingStock, comfort, res.stopResults()),
+                    infra
+            ));
+            simResult.ecoSimulations.add(null);
+            var pathfindingRes = PathfindingResultConverter.convert(infra.blockInfra(), infra.rawInfra(),
+                    res.blocks(), recorder);
+            var response = new STDCMResponse(simResult, pathfindingRes, res.departureTime());
+            return new RsJson(new RsWithBody(STDCMResponse.adapter.toJson(response)));
             return null;
         } catch (Throwable ex) {
             return ExceptionHandler.handle(ex);

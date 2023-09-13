@@ -2,6 +2,7 @@ package fr.sncf.osrd.utils.graph;
 
 import fr.sncf.osrd.sim_infra.api.BlockInfra;
 import fr.sncf.osrd.sim_infra.api.RawSignalingInfra;
+import fr.sncf.osrd.sim_infra.impl.BlockInfraImplKt;
 import fr.sncf.osrd.utils.KtToJavaConverter;
 import java.util.Collection;
 
@@ -21,9 +22,7 @@ public class GraphAdapter implements Graph<Integer, Integer> {
 
     @Override
     public Integer getEdgeEnd(Integer blockId) {
-        var blockPath = blockInfra.getBlockPath(blockId);
-        var lastZonePath = blockPath.get(blockPath.getSize() - 1);
-        return rawSignalingInfra.getZonePathExit(lastZonePath);
+        return BlockInfraImplKt.getBlockExit(blockInfra, rawSignalingInfra, blockId);
     }
 
     /** Returns all the edges (blocks) that start at the given node (detector) */

@@ -30,17 +30,18 @@ public class PathfindingUtils {
      * @param offsetFirstBlock the path offset on the first block in millimeters
      * @return corresponding path
      */
-    public static Path makePathFromBlocks(FullInfra infra,
+    public static Path makePathFromBlocks(RawSignalingInfra rawInfra,
+                                          BlockInfra blockInfra,
                                           List<Integer> blockIds,
                                           long offsetFirstBlock) {
         var chunks = new MutableDirStaticIdxArrayList<TrackChunk>();
         long totalLength = 0;
         for (var blockId : blockIds) {
-            for (var zoneId : toIntList(infra.blockInfra().getBlockPath(blockId))) {
-                chunks.addAll(infra.rawInfra().getZonePathChunks(zoneId));
-                totalLength += infra.rawInfra().getZonePathLength(zoneId);
+            for (var zoneId : toIntList(blockInfra.getBlockPath(blockId))) {
+                chunks.addAll(rawInfra.getZonePathChunks(zoneId));
+                totalLength += rawInfra.getZonePathLength(zoneId);
             }
         }
-        return buildPathFrom(infra.rawInfra(), chunks, offsetFirstBlock, totalLength);
+        return buildPathFrom(rawInfra, chunks, offsetFirstBlock, totalLength);
     }
 }

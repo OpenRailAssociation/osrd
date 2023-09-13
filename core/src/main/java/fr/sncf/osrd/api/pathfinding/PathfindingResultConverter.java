@@ -74,7 +74,7 @@ public class PathfindingResultConverter {
                 totalBlockPathLength += zoneLength;
             }
         }
-        long startOffset = (long) blockRanges.get(0).start();
+        long startOffset = blockRanges.get(0).start();
         var lastRange = blockRanges.get(blockRanges.size() - 1);
         var lastBlockLength = blockInfra.getBlockLength(lastRange.edge());
         var endOffset = totalBlockPathLength - lastBlockLength + Math.round(lastRange.end());
@@ -103,7 +103,7 @@ public class PathfindingResultConverter {
         // Builds a mapping between blocks and all user defined waypoints on the block
         var userDefinedWaypointsPerBlock = HashMultimap.<Integer, Long>create();
         for (var waypoint : rawPath.waypoints())
-            userDefinedWaypointsPerBlock.put(waypoint.edge(), (long) waypoint.offset());
+            userDefinedWaypointsPerBlock.put(waypoint.edge(), waypoint.offset());
 
         var res = new ArrayList<PathWaypointResult>();
 
@@ -320,7 +320,7 @@ public class PathfindingResultConverter {
             Pathfinding.EdgeRange<Integer> range
     ) {
         return getRouteChunkOffset(rawInfra, routeStaticIdx, firstChunk) 
-                - getBlockChunkOffset(blockInfra, rawInfra, firstChunk, range) + (long) range.start();
+                - getBlockChunkOffset(blockInfra, rawInfra, firstChunk, range) + range.start();
     }
 
     /** Returns the offset of the range end on the given route */
@@ -332,7 +332,7 @@ public class PathfindingResultConverter {
             Pathfinding.EdgeRange<Integer> range
     ) {
         return getRouteChunkOffset(rawInfra, routeStaticIdx, lastChunk)
-                - getBlockChunkOffset(blockInfra, rawInfra, lastChunk, range) + (long) range.end();
+                - getBlockChunkOffset(blockInfra, rawInfra, lastChunk, range) + range.end();
     }
 
     private static long getBlockChunkOffset(BlockInfra blockInfra, RawSignalingInfra rawInfra, int chunk,

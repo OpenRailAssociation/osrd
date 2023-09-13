@@ -33,7 +33,7 @@ public class RemainingDistanceEstimator implements AStarHeuristic<Integer> {
         this.rawInfra = rawInfra;
         this.blockInfra = blockInfra;
         for (var edgeLocation : edgeLocations) {
-            var point = blockOffsetToPoint(blockInfra, rawInfra, edgeLocation.edge(), (long) edgeLocation.offset());
+            var point = blockOffsetToPoint(blockInfra, rawInfra, edgeLocation.edge(), edgeLocation.offset());
             // Avoid adding duplicate geo points to the target list
             if (targets.stream().noneMatch(target -> point.distanceAsMeters(target) < distanceThreshold)) {
                 targets.add(point);
@@ -65,10 +65,10 @@ public class RemainingDistanceEstimator implements AStarHeuristic<Integer> {
             Collection<Pathfinding.EdgeLocation<Integer>> step2
     ) {
         var step1Points = step1.stream()
-                .map(loc -> blockOffsetToPoint(blockInfra, rawInfra, loc.edge(), (long) loc.offset()))
+                .map(loc -> blockOffsetToPoint(blockInfra, rawInfra, loc.edge(), loc.offset()))
                 .toList();
         var step2Points = step2.stream()
-                .map(loc -> blockOffsetToPoint(blockInfra, rawInfra, loc.edge(), (long) loc.offset()))
+                .map(loc -> blockOffsetToPoint(blockInfra, rawInfra, loc.edge(), loc.offset()))
                 .toList();
 
         var res = Double.POSITIVE_INFINITY;
@@ -81,9 +81,9 @@ public class RemainingDistanceEstimator implements AStarHeuristic<Integer> {
     }
 
     @Override
-    public double apply(Integer blockIdx, double offset) {
+    public double apply(Integer blockIdx, long offset) {
         var res = Double.POSITIVE_INFINITY;
-        var point = blockOffsetToPoint(this.blockInfra, this.rawInfra, blockIdx, (long) offset);
+        var point = blockOffsetToPoint(this.blockInfra, this.rawInfra, blockIdx, offset);
         for (var target : targets)
             res = Double.min(res, point.distanceAsMeters(target));
         return res + remainingDistance;

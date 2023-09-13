@@ -1,22 +1,13 @@
 package fr.sncf.osrd.stdcm.graph;
 
-import static fr.sncf.osrd.sim_infra.api.RawSignalingInfraKt.getRouteLength;
-
 import fr.sncf.osrd.api.FullInfra;
 import fr.sncf.osrd.api.pathfinding.PathfindingBlocksEndpoint;
-import fr.sncf.osrd.api.pathfinding.PathfindingRoutesEndpoint;
 import fr.sncf.osrd.api.pathfinding.constraints.ElectrificationConstraints;
 import fr.sncf.osrd.api.pathfinding.constraints.LoadingGaugeConstraints;
-import fr.sncf.osrd.sim_infra.api.BlockInfra;
-import fr.sncf.osrd.sim_infra.api.RawSignalingInfra;
 import fr.sncf.osrd.stdcm.STDCMResult;
-import fr.sncf.osrd.api.pathfinding.constraints.LegacyElectrificationConstraints;
-import fr.sncf.osrd.api.pathfinding.constraints.LegacyLoadingGaugeConstraints;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
-import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
-import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
-import fr.sncf.osrd.stdcm.LegacySTDCMStep;
 import fr.sncf.osrd.stdcm.STDCMStep;
+import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface;
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.RouteAvailabilityInterface;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.utils.graph.Pathfinding;
@@ -39,7 +30,7 @@ public class STDCMPathfinding {
             double startTime,
             double endTime,
             List<STDCMStep> steps,
-            RouteAvailabilityInterface routeAvailability,
+            BlockAvailabilityInterface blockAvailability,
             double timeStep,
             double maxDepartureDelay,
             double maxRunTime,
@@ -48,11 +39,12 @@ public class STDCMPathfinding {
     ) {
         assert steps.size() >= 2 : "Not enough steps have been set to find a path";
         var graph = new STDCMGraph(
-                rawInfra,
+                fullInfra.rawInfra(),
+                fullInfra.blockInfra(),
                 rollingStock,
                 comfort,
                 timeStep,
-                routeAvailability,
+                blockAvailability,
                 maxRunTime,
                 startTime,
                 steps,
@@ -73,11 +65,11 @@ public class STDCMPathfinding {
         var remainingDistanceEstimators = PathfindingBlocksEndpoint.makeHeuristics(fullInfra, locations);
 
         var path = new Pathfinding<>(graph)
-                .setEdgeToLength(edge -> getRouteLength(fullInfra.rawInfra(), edge.route()))
+                .setEdgeToLength(edge -> fullInfra.blockInfra().getBlockLength(edge.block()))
                 .setRemainingDistanceEstimator(makeAStarHeuristic(remainingDistanceEstimators, rollingStock))
                 .setEdgeToLength(STDCMEdge::getLength)
-                .addBlockedRangeOnEdges(edge -> loadingGaugeConstraints.apply(edge.route()))
-                .addBlockedRangeOnEdges(edge -> electrificationConstraints.apply(edge.route()))
+                .addBlockedRangeOnEdges(edge -> loadingGaugeConstraints.apply(edge.block()))
+                .addBlockedRangeOnEdges(edge -> electrificationConstraints.apply(edge.block()))
                 .setTotalCostUntilEdgeLocation(range -> totalCostUntilEdgeLocation(range, maxDepartureDelay))
                 .runPathfinding(
                         convertLocations(graph, steps.get(0).locations(), startTime, maxDepartureDelay),
@@ -85,7 +77,7 @@ public class STDCMPathfinding {
                 );
         if (path == null)
             return null;
-        return STDCMPostProcessing.makeResult(
+        return new STDCMPostProcessing(graph).makeResult(
                 path,
                 startTime,
                 graph.standardAllowance,
@@ -93,21 +85,21 @@ public class STDCMPathfinding {
                 timeStep,
                 comfort,
                 maxRunTime,
-                routeAvailability
+                blockAvailability
         );
     }
 
     /** Make the objective function from the edge locations */
-    private static List<TargetsOnEdge<LegacySTDCMEdge>> makeObjectiveFunction(
-            List<LegacySTDCMStep> steps
+    private static List<TargetsOnEdge<STDCMEdge>> makeObjectiveFunction(
+            List<STDCMStep> steps
     ) {
-        var globalResult = new ArrayList<TargetsOnEdge<LegacySTDCMEdge>>();
+        var globalResult = new ArrayList<TargetsOnEdge<STDCMEdge>>();
         for (int i = 1; i < steps.size(); i++) {
             var step = steps.get(i);
             globalResult.add((edge) -> {
-                var res = new HashSet<Pathfinding.EdgeLocation<LegacySTDCMEdge>>();
+                var res = new HashSet<Pathfinding.EdgeLocation<STDCMEdge>>();
                 for (var loc : step.locations())
-                    if (loc.edge().equals(edge.route())) {
+                    if (loc.edge().equals(edge.block())) {
                         var offsetOnEdge = loc.offset() - edge.envelopeStartOffset();
                         if (offsetOnEdge >= 0 && offsetOnEdge <= edge.getLength())
                             res.add(new Pathfinding.EdgeLocation<>(edge, offsetOnEdge));
@@ -137,7 +129,7 @@ public class STDCMPathfinding {
             double searchTimeRange
     ) {
         var envelope = range.edge().envelope();
-        var timeEnd = LegacySTDCMSimulations.interpolateTime(
+        var timeEnd = STDCMSimulations.interpolateTime(
                 envelope,
                 range.edge().envelopeStartOffset(),
                 range.offset(),
@@ -157,7 +149,7 @@ public class STDCMPathfinding {
         var res = new ArrayList<AStarHeuristic<STDCMEdge>>();
         for (var signalingRouteHeuristic : signalingRouteHeuristics) {
             res.add((edge, offset) -> {
-                var distance = signalingRouteHeuristic.apply(edge.route(), offset);
+                var distance = signalingRouteHeuristic.apply(edge.block(), offset);
                 return distance / rollingStock.maxSpeed;
             });
         }
@@ -166,7 +158,7 @@ public class STDCMPathfinding {
 
     /** Converts locations on a SignalingRoute into a location on a STDCMGraph.Edge. */
     private static Set<Pathfinding.EdgeLocation<STDCMEdge>> convertLocations(
-            LegacySTDCMGraph graph,
+            STDCMGraph graph,
             Collection<Pathfinding.EdgeLocation<Integer>> locations,
             double startTime,
             double maxDepartureDelay
