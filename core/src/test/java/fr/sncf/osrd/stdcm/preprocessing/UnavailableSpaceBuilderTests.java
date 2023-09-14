@@ -7,8 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.api.stdcm.STDCMRequest;
-import fr.sncf.osrd.stdcm.DummyInfraBuilder;
 import fr.sncf.osrd.stdcm.OccupancySegment;
+import fr.sncf.osrd.utils.DummyInfra;
 import org.junit.jupiter.api.Test;
 import java.util.Set;
 
@@ -23,12 +23,12 @@ public class UnavailableSpaceBuilderTests {
 
     @Test
     public void testFirstBlockOccupied() {
-        var infraBuilder = new DummyInfraBuilder();
-        var firstBlock = infraBuilder.addBlock("a", "b", 1000);
-        var secondBlock = infraBuilder.addBlock("b", "c", 1000);
+        var infra = DummyInfra.make();
+        var firstBlock = infra.addBlock("a", "b", 1000);
+        var secondBlock = infra.addBlock("b", "c", 1000);
         var res = computeUnavailableSpace(
-                infraBuilder.rawInfra,
-                infraBuilder.blockInfra,
+                infra,
+                infra,
                 Set.of(new STDCMRequest.RouteOccupancy("a->b", 0, 100)),
                 REALISTIC_FAST_TRAIN,
                 0,
@@ -55,12 +55,12 @@ public class UnavailableSpaceBuilderTests {
 
     @Test
     public void testSecondBlockOccupied() {
-        var infraBuilder = new DummyInfraBuilder();
-        var firstBlock = infraBuilder.addBlock("a", "b", 1000);
-        var secondBlock = infraBuilder.addBlock("b", "c", 1000);
+        var infra = DummyInfra.make();
+        var firstBlock = infra.addBlock("a", "b", 1000);
+        var secondBlock = infra.addBlock("b", "c", 1000);
         var res = computeUnavailableSpace(
-                infraBuilder.rawInfra,
-                infraBuilder.blockInfra,
+                infra,
+                infra,
                 Set.of(new STDCMRequest.RouteOccupancy("b->c", 0, 100)),
                 REALISTIC_FAST_TRAIN,
                 0,
@@ -92,14 +92,14 @@ public class UnavailableSpaceBuilderTests {
            /      v
          a2       b2
          */
-        final var infraBuilder = new DummyInfraBuilder();
-        final var a1 = infraBuilder.addBlock("a1", "center", 1000);
-        final var a2 = infraBuilder.addBlock("a2", "center", 1000);
-        final var b1 = infraBuilder.addBlock("center", "b1", 1000);
-        final var b2 = infraBuilder.addBlock("center", "b2", 1000);
+        final var infra = DummyInfra.make();
+        final var a1 = infra.addBlock("a1", "center", 1000);
+        final var a2 = infra.addBlock("a2", "center", 1000);
+        final var b1 = infra.addBlock("center", "b1", 1000);
+        final var b2 = infra.addBlock("center", "b2", 1000);
         final var res = computeUnavailableSpace(
-                infraBuilder.rawInfra,
-                infraBuilder.blockInfra,
+                infra,
+                infra,
                 Set.of(new STDCMRequest.RouteOccupancy("a1->center", 0, 100)),
                 REALISTIC_FAST_TRAIN,
                 0,
@@ -131,13 +131,13 @@ public class UnavailableSpaceBuilderTests {
 
     @Test
     public void testThirdBlock() {
-        var infraBuilder = new DummyInfraBuilder();
-        infraBuilder.addBlock("a", "b", 1000);
-        infraBuilder.addBlock("b", "c", 1000);
-        var thirdBlock = infraBuilder.addBlock("c", "d", 1000);
+        var infra = DummyInfra.make();
+        infra.addBlock("a", "b", 1000);
+        infra.addBlock("b", "c", 1000);
+        var thirdBlock = infra.addBlock("c", "d", 1000);
         var res = computeUnavailableSpace(
-                infraBuilder.rawInfra,
-                infraBuilder.blockInfra,
+                infra,
+                infra,
                 Set.of(new STDCMRequest.RouteOccupancy("a->b", 0, 100)),
                 REALISTIC_FAST_TRAIN,
                 0,
@@ -156,12 +156,12 @@ public class UnavailableSpaceBuilderTests {
 
     @Test
     public void testGridMargins() {
-        var infraBuilder = new DummyInfraBuilder();
-        var firstBlock = infraBuilder.addBlock("a", "b", 1000);
-        var secondBlock = infraBuilder.addBlock("b", "c", 1000);
+        var infra = DummyInfra.make();
+        var firstBlock = infra.addBlock("a", "b", 1000);
+        var secondBlock = infra.addBlock("b", "c", 1000);
         var res = computeUnavailableSpace(
-                infraBuilder.rawInfra,
-                infraBuilder.blockInfra,
+                infra,
+                infra,
                 Set.of(new STDCMRequest.RouteOccupancy("a->b", 100, 200)),
                 REALISTIC_FAST_TRAIN,
                 20,

@@ -7,6 +7,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import com.google.common.collect.ImmutableMultimap;
 import fr.sncf.osrd.stdcm.graph.STDCMSimulations;
 import fr.sncf.osrd.train.RollingStock;
+import fr.sncf.osrd.utils.DummyInfra;
+import fr.sncf.osrd.utils.DummyInfra;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import org.junit.jupiter.api.Test;
 import java.util.List;
@@ -31,15 +33,16 @@ public class EngineeringAllowanceTests {
         a |/_##################_> time
 
          */
-        var infraBuilder = new DummyInfraBuilder();
-        var firstBlock = infraBuilder.addBlock("a", "b", 1_000, 30);
-        var secondBlock = infraBuilder.addBlock("b", "c", 10_000, 30);
-        var thirdBlock = infraBuilder.addBlock("c", "d", 100, 30);
-        var firstBlockEnvelope = STDCMSimulations.simulateBlock(infraBuilder.rawInfra, infraBuilder.blockInfra,
+
+        var infra = DummyInfra.make();
+        var firstBlock = infra.addBlock("a", "b", 1_000, 30);
+        var secondBlock = infra.addBlock("b", "c", 10_000, 30);
+        var thirdBlock = infra.addBlock("c", "d", 100, 30);
+        var firstBlockEnvelope = STDCMSimulations.simulateBlock(infra, infra,
                 firstBlock, 0, 0,
                 REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., null, null);
         assert firstBlockEnvelope != null;
-        var secondBlockEnvelope = STDCMSimulations.simulateBlock(infraBuilder.rawInfra, infraBuilder.blockInfra,
+        var secondBlockEnvelope = STDCMSimulations.simulateBlock(infra, infra,
                 secondBlock, firstBlockEnvelope.getEndSpeed(),
                 0, REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., null, null);
         assert secondBlockEnvelope != null;
@@ -51,7 +54,7 @@ public class EngineeringAllowanceTests {
         );
         double timeStep = 2;
         var res = new STDCMPathfindingBuilder()
-                .setInfra(infraBuilder.fullInfra())
+                .setInfra(infra.fullInfra())
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 0)))
                 .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(thirdBlock, 1)))
                 .setUnavailableTimes(occupancyGraph)
@@ -84,17 +87,17 @@ public class EngineeringAllowanceTests {
 
          */
         final double timeStep = 2;
-        final var infraBuilder = new DummyInfraBuilder();
-        final var firstBlock = infraBuilder.addBlock("a", "b", 1_000, 20);
-        final var secondBlock = infraBuilder.addBlock("b", "c", 1_000, 20);
-        infraBuilder.addBlock("c", "d", 1_000, 20);
-        infraBuilder.addBlock("d", "e", 1_000, 20);
-        var lastBlock = infraBuilder.addBlock("e", "f", 1_000, 20);
-        var firstBlockEnvelope = STDCMSimulations.simulateBlock(infraBuilder.rawInfra, infraBuilder.blockInfra,
+        final var infra = DummyInfra.make();
+        final var firstBlock = infra.addBlock("a", "b", 1_000, 20);
+        final var secondBlock = infra.addBlock("b", "c", 1_000, 20);
+        infra.addBlock("c", "d", 1_000, 20);
+        infra.addBlock("d", "e", 1_000, 20);
+        var lastBlock = infra.addBlock("e", "f", 1_000, 20);
+        var firstBlockEnvelope = STDCMSimulations.simulateBlock(infra, infra,
                 firstBlock, 0, 0,
                 REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., null, null);
         assert firstBlockEnvelope != null;
-        var secondBlockEnvelope = STDCMSimulations.simulateBlock(infraBuilder.rawInfra, infraBuilder.blockInfra,
+        var secondBlockEnvelope = STDCMSimulations.simulateBlock(infra, infra,
                 secondBlock, firstBlockEnvelope.getEndSpeed(),
                 0, REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., null, null);
         assert secondBlockEnvelope != null;
@@ -105,7 +108,7 @@ public class EngineeringAllowanceTests {
                 lastBlock, new OccupancySegment(0, timeLastBlockFree, 0, 1_000)
         );
         var res = new STDCMPathfindingBuilder()
-                .setInfra(infraBuilder.fullInfra())
+                .setInfra(infra.fullInfra())
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 0)))
                 .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(lastBlock, 1_000)))
                 .setUnavailableTimes(occupancyGraph)
@@ -144,17 +147,17 @@ public class EngineeringAllowanceTests {
 
          */
         final double timeStep = 2;
-        final var infraBuilder = new DummyInfraBuilder();
-        final var firstBlock = infraBuilder.addBlock("a", "b", 1_000, 20);
-        final var secondBlock = infraBuilder.addBlock("b", "c", 1_000, 20);
-        final var thirdBlock = infraBuilder.addBlock("c", "d", 1_000, 20);
-        infraBuilder.addBlock("d", "e", 1_000, 20);
-        var lastBlock = infraBuilder.addBlock("e", "f", 1_000, 20);
-        var firstBlockEnvelope = STDCMSimulations.simulateBlock(infraBuilder.rawInfra, infraBuilder.blockInfra,
+        final var infra = DummyInfra.make();
+        final var firstBlock = infra.addBlock("a", "b", 1_000, 20);
+        final var secondBlock = infra.addBlock("b", "c", 1_000, 20);
+        final var thirdBlock = infra.addBlock("c", "d", 1_000, 20);
+        infra.addBlock("d", "e", 1_000, 20);
+        var lastBlock = infra.addBlock("e", "f", 1_000, 20);
+        var firstBlockEnvelope = STDCMSimulations.simulateBlock(infra, infra,
                 firstBlock, 0, 0,
                 REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., null, null);
         assert firstBlockEnvelope != null;
-        var secondBlockEnvelope = STDCMSimulations.simulateBlock(infraBuilder.rawInfra, infraBuilder.blockInfra,
+        var secondBlockEnvelope = STDCMSimulations.simulateBlock(infra, infra,
                 secondBlock, firstBlockEnvelope.getEndSpeed(),
                 0, REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., null, null);
         assert secondBlockEnvelope != null;
@@ -167,7 +170,7 @@ public class EngineeringAllowanceTests {
                 thirdBlock, new OccupancySegment(timeThirdBlockOccupied, POSITIVE_INFINITY, 0, 1_000)
         );
         var res = new STDCMPathfindingBuilder()
-                .setInfra(infraBuilder.fullInfra())
+                .setInfra(infra.fullInfra())
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 0)))
                 .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(lastBlock, 1_000)))
                 .setUnavailableTimes(occupancyGraph)
@@ -199,11 +202,11 @@ public class EngineeringAllowanceTests {
      max delay at departure time
 
          */
-        var infraBuilder = new DummyInfraBuilder();
-        var firstBlock = infraBuilder.addBlock("a", "b", 1_000, 30);
-        var secondBlock = infraBuilder.addBlock("b", "c", 1_000, 30);
-        var thirdBlock = infraBuilder.addBlock("c", "d", 1, 30);
-        var lastBlockEntryTime = STDCMHelpers.getBlocksRunTime(infraBuilder.fullInfra(),
+        var infra = DummyInfra.make();
+        var firstBlock = infra.addBlock("a", "b", 1_000, 30);
+        var secondBlock = infra.addBlock("b", "c", 1_000, 30);
+        var thirdBlock = infra.addBlock("c", "d", 1, 30);
+        var lastBlockEntryTime = STDCMHelpers.getBlocksRunTime(infra.fullInfra(),
                 List.of(firstBlock, secondBlock));
         var timeThirdBlockFree = lastBlockEntryTime + 3600 * 2 + 60;
         var occupancyGraph = ImmutableMultimap.of(
@@ -211,7 +214,7 @@ public class EngineeringAllowanceTests {
         );
         double timeStep = 2;
         var res = new STDCMPathfindingBuilder()
-                .setInfra(infraBuilder.fullInfra())
+                .setInfra(infra.fullInfra())
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 0)))
                 .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(thirdBlock, 1)))
                 .setUnavailableTimes(occupancyGraph)
@@ -243,11 +246,11 @@ public class EngineeringAllowanceTests {
         a start____________________##     #################_> time
 
          */
-        var infraBuilder = new DummyInfraBuilder();
-        var firstBlock = infraBuilder.addBlock("a", "b", 2_000, 20);
-        var secondBlock = infraBuilder.addBlock("b", "c", 2_000, 20);
-        var thirdBlock = infraBuilder.addBlock("c", "d", 2_000, 20);
-        var forthBlock = infraBuilder.addBlock("d", "e", 2_000, 20);
+        var infra = DummyInfra.make();
+        var firstBlock = infra.addBlock("a", "b", 2_000, 20);
+        var secondBlock = infra.addBlock("b", "c", 2_000, 20);
+        var thirdBlock = infra.addBlock("c", "d", 2_000, 20);
+        var forthBlock = infra.addBlock("d", "e", 2_000, 20);
         var occupancyGraph = ImmutableMultimap.of(
                 firstBlock, new OccupancySegment(0, 600, 0, 100),
                 firstBlock, new OccupancySegment(2_000, POSITIVE_INFINITY, 0, 100),
@@ -257,7 +260,7 @@ public class EngineeringAllowanceTests {
         );
         double timeStep = 2;
         var res = new STDCMPathfindingBuilder()
-                .setInfra(infraBuilder.fullInfra())
+                .setInfra(infra.fullInfra())
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 0)))
                 .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(forthBlock, 1)))
                 .setUnavailableTimes(occupancyGraph)
@@ -286,18 +289,18 @@ public class EngineeringAllowanceTests {
         The second block is very short and not long enough to slow down
 
          */
-        var infraBuilder = new DummyInfraBuilder();
+        var infra = DummyInfra.make();
         var blocks = List.of(
-                infraBuilder.addBlock("a", "b", 1_000),
-                infraBuilder.addBlock("b", "c", 1),
-                infraBuilder.addBlock("c", "d", 1_000)
+                infra.addBlock("a", "b", 1_000),
+                infra.addBlock("b", "c", 1),
+                infra.addBlock("c", "d", 1_000)
         );
         var occupancyGraph = ImmutableMultimap.of(
                 blocks.get(0), new OccupancySegment(300, POSITIVE_INFINITY, 0, 1_000),
                 blocks.get(2), new OccupancySegment(0, 3600, 0, 1_000)
         );
         var res = new STDCMPathfindingBuilder()
-                .setInfra(infraBuilder.fullInfra())
+                .setInfra(infra.fullInfra())
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(0), 0)))
                 .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(2), 1_000)))
                 .setUnavailableTimes(occupancyGraph)
@@ -323,11 +326,11 @@ public class EngineeringAllowanceTests {
           |  /################## /
         a |_/_##################/____> time
          */
-        var infraBuilder = new DummyInfraBuilder();
+        var infra = DummyInfra.make();
         var blocks = List.of(
-                infraBuilder.addBlock("a", "b"),
-                infraBuilder.addBlock("b", "c"),
-                infraBuilder.addBlock("c", "d")
+                infra.addBlock("a", "b"),
+                infra.addBlock("b", "c"),
+                infra.addBlock("c", "d")
         );
         var occupancyGraph = ImmutableMultimap.of(
                 blocks.get(0), new OccupancySegment(300, 3600, 0, 1),
@@ -335,7 +338,7 @@ public class EngineeringAllowanceTests {
         );
         double timeStep = 2;
         var res = new STDCMPathfindingBuilder()
-                .setInfra(infraBuilder.fullInfra())
+                .setInfra(infra.fullInfra())
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(0), 0)))
                 .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(2), 100)))
                 .setUnavailableTimes(occupancyGraph)

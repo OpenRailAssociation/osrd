@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.google.common.collect.ImmutableMultimap;
 import fr.sncf.osrd.stdcm.graph.STDCMSimulations;
 import fr.sncf.osrd.train.RollingStock;
+import fr.sncf.osrd.utils.DummyInfra;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import org.junit.jupiter.api.Test;
 import java.util.Set;
@@ -21,9 +22,9 @@ public class BacktrackingTests {
         /*
         a ------> b
          */
-        var infraBuilder = new DummyInfraBuilder();
-        var block = infraBuilder.addBlock("a", "b", 1000);
-        var firstBlockEnvelope = STDCMSimulations.simulateBlock(infraBuilder.rawInfra, infraBuilder.blockInfra,
+        var infra = DummyInfra.make();
+        var block = infra.addBlock("a", "b", 1000);
+        var firstBlockEnvelope = STDCMSimulations.simulateBlock(infra, infra,
                 block, 0, 0, REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., null, null);
         assert firstBlockEnvelope != null;
         var runTime = firstBlockEnvelope.getTotalTime();
@@ -31,7 +32,7 @@ public class BacktrackingTests {
                 block, new OccupancySegment(runTime + 1, POSITIVE_INFINITY, 0, 1000)
         );
         var res = new STDCMPathfindingBuilder()
-                .setInfra(infraBuilder.fullInfra())
+                .setInfra(infra.fullInfra())
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(block, 0)))
                 .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(block, 1_000)))
                 .setUnavailableTimes(occupancyGraph)
@@ -47,12 +48,12 @@ public class BacktrackingTests {
         /*
         a ------> b -> c -> d -> e
          */
-        var infraBuilder = new DummyInfraBuilder();
-        var firstBlock = infraBuilder.addBlock("a", "b", 1000);
-        infraBuilder.addBlock("b", "c", 10);
-        infraBuilder.addBlock("c", "d", 10);
-        var lastBlock = infraBuilder.addBlock("d", "e", 10);
-        var firstBlockEnvelope = STDCMSimulations.simulateBlock(infraBuilder.rawInfra, infraBuilder.blockInfra,
+        var infra = DummyInfra.make();
+        var firstBlock = infra.addBlock("a", "b", 1000);
+        infra.addBlock("b", "c", 10);
+        infra.addBlock("c", "d", 10);
+        var lastBlock = infra.addBlock("d", "e", 10);
+        var firstBlockEnvelope = STDCMSimulations.simulateBlock(infra, infra,
                 firstBlock, 0, 0, REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., null, null);
         assert firstBlockEnvelope != null;
         var runTime = firstBlockEnvelope.getTotalTime();
@@ -60,7 +61,7 @@ public class BacktrackingTests {
                 lastBlock, new OccupancySegment(runTime + 10, POSITIVE_INFINITY, 0, 10)
         );
         var res = new STDCMPathfindingBuilder()
-                .setInfra(infraBuilder.fullInfra())
+                .setInfra(infra.fullInfra())
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 0)))
                 .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(lastBlock, 5)))
                 .setUnavailableTimes(occupancyGraph)
@@ -76,10 +77,10 @@ public class BacktrackingTests {
         /*
         a ------> b -> c
          */
-        var infraBuilder = new DummyInfraBuilder();
-        var firstBlock = infraBuilder.addBlock("a", "b", 1000);
-        var secondBlock = infraBuilder.addBlock("b", "c", 100, 5);
-        var firstBlockEnvelope = STDCMSimulations.simulateBlock(infraBuilder.rawInfra, infraBuilder.blockInfra,
+        var infra = DummyInfra.make();
+        var firstBlock = infra.addBlock("a", "b", 1000);
+        var secondBlock = infra.addBlock("b", "c", 100, 5);
+        var firstBlockEnvelope = STDCMSimulations.simulateBlock(infra, infra,
                 firstBlock, 0, 0, REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., null, null);
         assert firstBlockEnvelope != null;
         var runTime = firstBlockEnvelope.getTotalTime();
@@ -87,7 +88,7 @@ public class BacktrackingTests {
                 firstBlock, new OccupancySegment(runTime + 10, POSITIVE_INFINITY, 0, 1000)
         );
         var res = new STDCMPathfindingBuilder()
-                .setInfra(infraBuilder.fullInfra())
+                .setInfra(infra.fullInfra())
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 0)))
                 .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(secondBlock, 5)))
                 .setUnavailableTimes(occupancyGraph)
@@ -105,14 +106,14 @@ public class BacktrackingTests {
 
         Long first block for speedup, then the MRSP drops at each (short) block
          */
-        var infraBuilder = new DummyInfraBuilder();
-        var firstBlock = infraBuilder.addBlock("a", "b", 10000);
-        infraBuilder.addBlock("b", "c", 10, 20);
-        infraBuilder.addBlock("c", "d", 10, 15);
-        infraBuilder.addBlock("d", "e", 10, 10);
-        var lastBlock = infraBuilder.addBlock("e", "f", 1000, 5);
+        var infra = DummyInfra.make();
+        var firstBlock = infra.addBlock("a", "b", 10000);
+        infra.addBlock("b", "c", 10, 20);
+        infra.addBlock("c", "d", 10, 15);
+        infra.addBlock("d", "e", 10, 10);
+        var lastBlock = infra.addBlock("e", "f", 1000, 5);
         var res = new STDCMPathfindingBuilder()
-                .setInfra(infraBuilder.fullInfra())
+                .setInfra(infra.fullInfra())
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 0)))
                 .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(lastBlock, 1_000)))
                 .run();

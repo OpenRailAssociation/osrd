@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import com.google.common.collect.ImmutableMultimap;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.train.TrainStop;
+import fr.sncf.osrd.utils.DummyInfra;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -24,11 +25,11 @@ public class StopTests {
         /*
         a --> b --> c
          */
-        var infraBuilder = new DummyInfraBuilder();
-        var firstBlock = infraBuilder.addBlock("a", "b");
-        var secondBlock = infraBuilder.addBlock("b", "c");
+        var infra = DummyInfra.make();
+        var firstBlock = infra.addBlock("a", "b");
+        var secondBlock = infra.addBlock("b", "c");
         var res = new STDCMPathfindingBuilder()
-                .setInfra(infraBuilder.fullInfra())
+                .setInfra(infra.fullInfra())
                 .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 0)), 0, true))
                 .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(secondBlock, 50)), 10_000, true))
                 .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(secondBlock, 100)), 0, true))
@@ -54,11 +55,11 @@ public class StopTests {
         /*
         a --> b --> c
          */
-        var infraBuilder = new DummyInfraBuilder();
-        var firstBlock = infraBuilder.addBlock("a", "b");
-        var secondBlock = infraBuilder.addBlock("b", "c");
+        var infra = DummyInfra.make();
+        var firstBlock = infra.addBlock("a", "b");
+        var secondBlock = infra.addBlock("b", "c");
         var res = new STDCMPathfindingBuilder()
-                .setInfra(infraBuilder.fullInfra())
+                .setInfra(infra.fullInfra())
                 .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 0)), 0, true))
                 .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(secondBlock, 0)), 10_000, true))
                 .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(secondBlock, 100)), 0, true))
@@ -75,11 +76,11 @@ public class StopTests {
         /*
         a --> b --> c
          */
-        var infraBuilder = new DummyInfraBuilder();
-        var firstBlock = infraBuilder.addBlock("a", "b");
-        var secondBlock = infraBuilder.addBlock("b", "c");
+        var infra = DummyInfra.make();
+        var firstBlock = infra.addBlock("a", "b");
+        var secondBlock = infra.addBlock("b", "c");
         var res = new STDCMPathfindingBuilder()
-                .setInfra(infraBuilder.fullInfra())
+                .setInfra(infra.fullInfra())
                 .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 0)), 0, true))
                 .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 100)), 10_000, true))
                 .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(secondBlock, 100)), 0, true))
@@ -103,19 +104,19 @@ public class StopTests {
                    v /
                     x
          */
-        var infraBuilder = new DummyInfraBuilder();
+        var infra = DummyInfra.make();
         var blocksDirectPath = List.of(
-                infraBuilder.addBlock("a", "b"),
-                infraBuilder.addBlock("b", "c"),
-                infraBuilder.addBlock("c", "d"),
-                infraBuilder.addBlock("d", "e")
+                infra.addBlock("a", "b"),
+                infra.addBlock("b", "c"),
+                infra.addBlock("c", "d"),
+                infra.addBlock("d", "e")
         );
         var detour = List.of(
-                infraBuilder.addBlock("b", "x", 100_000),
-                infraBuilder.addBlock("x", "d", 100_000)
+                infra.addBlock("b", "x", 100_000),
+                infra.addBlock("x", "d", 100_000)
         );
         var res = new STDCMPathfindingBuilder()
-                .setInfra(infraBuilder.fullInfra())
+                .setInfra(infra.fullInfra())
                 .setStartTime(100)
                 .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(blocksDirectPath.get(0), 0)), 0, false))
                 .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(detour.get(1), 1_000)), 0, stop))
@@ -144,14 +145,14 @@ public class StopTests {
         /*
         a --> b --> c
          */
-        var infraBuilder = new DummyInfraBuilder();
-        var firstBlock = infraBuilder.addBlock("a", "b");
-        var secondBlock = infraBuilder.addBlock("b", "c");
+        var infra = DummyInfra.make();
+        var firstBlock = infra.addBlock("a", "b");
+        var secondBlock = infra.addBlock("b", "c");
         var unavailableTimes = ImmutableMultimap.of(
                 secondBlock, new OccupancySegment(100_000, POSITIVE_INFINITY, 0, 100)
         );
         var res = new STDCMPathfindingBuilder()
-                .setInfra(infraBuilder.fullInfra())
+                .setInfra(infra.fullInfra())
                 .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 0)), 0, true))
                 .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 10)), 100_000, true))
                 .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(secondBlock, 100)), 0, true))
@@ -166,18 +167,18 @@ public class StopTests {
         /*
         a --> b --> c -> d
          */
-        var infraBuilder = new DummyInfraBuilder();
+        var infra = DummyInfra.make();
         var blocks = List.of(
-                infraBuilder.addBlock("a", "b"),
-                infraBuilder.addBlock("b", "c"),
-                infraBuilder.addBlock("c", "d", 1)
+                infra.addBlock("a", "b"),
+                infra.addBlock("b", "c"),
+                infra.addBlock("c", "d", 1)
         );
         var occupancy = ImmutableMultimap.of(
                 blocks.get(2), new OccupancySegment(0, 12_000, 0, 1),
                 blocks.get(2), new OccupancySegment(12_010, POSITIVE_INFINITY, 0, 1)
         );
         var res = new STDCMPathfindingBuilder()
-                .setInfra(infraBuilder.fullInfra())
+                .setInfra(infra.fullInfra())
                 .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(0), 0)), 0, true))
                 .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(0), 50)), 10_000, true))
                 .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(2), 1)), 0, true))
@@ -212,12 +213,12 @@ public class StopTests {
 
         // Note: this test will need to be updated once we can add delay by making stops longer
 
-        var infraBuilder = new DummyInfraBuilder();
+        var infra = DummyInfra.make();
         var blocks = List.of(
-                infraBuilder.addBlock("a", "b", 1, 20),
-                infraBuilder.addBlock("b", "c", 1_000, 20),
-                infraBuilder.addBlock("c", "d", 100, 20),
-                infraBuilder.addBlock("d", "e", 1, 20)
+                infra.addBlock("a", "b", 1, 20),
+                infra.addBlock("b", "c", 1_000, 20),
+                infra.addBlock("c", "d", 100, 20),
+                infra.addBlock("d", "e", 1, 20)
         );
         var occupancy = ImmutableMultimap.of(
                 blocks.get(0), new OccupancySegment(10, POSITIVE_INFINITY, 0, 1),
@@ -226,7 +227,7 @@ public class StopTests {
         );
         double timeStep = 2;
         var res = new STDCMPathfindingBuilder()
-                .setInfra(infraBuilder.fullInfra())
+                .setInfra(infra.fullInfra())
                 .setUnavailableTimes(occupancy)
                 .setTimeStep(timeStep)
                 .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(0), 0)), 0, true))
@@ -260,12 +261,12 @@ public class StopTests {
 
          */
 
-        var infraBuilder = new DummyInfraBuilder();
+        var infra = DummyInfra.make();
         var blocks = List.of(
-                infraBuilder.addBlock("a", "b", 1, 20),
-                infraBuilder.addBlock("b", "c", 1_000, 20),
-                infraBuilder.addBlock("c", "d", 100, 20),
-                infraBuilder.addBlock("d", "e", 1, 20)
+                infra.addBlock("a", "b", 1, 20),
+                infra.addBlock("b", "c", 1_000, 20),
+                infra.addBlock("c", "d", 100, 20),
+                infra.addBlock("d", "e", 1, 20)
         );
         var occupancy = ImmutableMultimap.of(
                 blocks.get(3), new OccupancySegment(0, 1_200, 0, 1),
@@ -274,7 +275,7 @@ public class StopTests {
         double timeStep = 2;
         var allowance = new AllowanceValue.Percentage(20);
         var res = runWithAndWithoutAllowance(new STDCMPathfindingBuilder()
-                .setInfra(infraBuilder.fullInfra())
+                .setInfra(infra.fullInfra())
                 .setUnavailableTimes(occupancy)
                 .setTimeStep(timeStep)
                 .setStandardAllowance(allowance)
@@ -315,12 +316,12 @@ public class StopTests {
 
         // Note: this test will need to be updated once we can add delay by making stops longer
 
-        var infraBuilder = new DummyInfraBuilder();
+        var infra = DummyInfra.make();
         var blocks = List.of(
-                infraBuilder.addBlock("a", "b", 1, 20),
-                infraBuilder.addBlock("b", "c", 1_000, 20),
-                infraBuilder.addBlock("c", "d", 100, 20),
-                infraBuilder.addBlock("d", "e", 1, 20)
+                infra.addBlock("a", "b", 1, 20),
+                infra.addBlock("b", "c", 1_000, 20),
+                infra.addBlock("c", "d", 100, 20),
+                infra.addBlock("d", "e", 1, 20)
         );
         var occupancy = ImmutableMultimap.of(
                 blocks.get(0), new OccupancySegment(10, POSITIVE_INFINITY, 0, 1),
@@ -330,7 +331,7 @@ public class StopTests {
         double timeStep = 2;
         var allowance = new AllowanceValue.Percentage(20);
         var res = runWithAndWithoutAllowance(new STDCMPathfindingBuilder()
-                .setInfra(infraBuilder.fullInfra())
+                .setInfra(infra.fullInfra())
                 .setUnavailableTimes(occupancy)
                 .setTimeStep(timeStep)
                 .setStandardAllowance(allowance)

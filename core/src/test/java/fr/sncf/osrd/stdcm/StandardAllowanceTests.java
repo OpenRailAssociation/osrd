@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import com.google.common.collect.ImmutableMultimap;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
+import fr.sncf.osrd.utils.DummyInfra;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -62,15 +63,15 @@ public class StandardAllowanceTests {
         /*
         a --> b --> c --> d
          */
-        var infraBuilder = new DummyInfraBuilder();
+        var infra = DummyInfra.make();
         var blocks = List.of(
-                infraBuilder.addBlock("a", "b", 1_000, 30),
-                infraBuilder.addBlock("b", "c", 1_000, 30),
-                infraBuilder.addBlock("c", "d", 1_000, 30)
+                infra.addBlock("a", "b", 1_000, 30),
+                infra.addBlock("b", "c", 1_000, 30),
+                infra.addBlock("c", "d", 1_000, 30)
         );
         var allowance = new AllowanceValue.Percentage(10);
         var res = runWithAndWithoutAllowance(new STDCMPathfindingBuilder()
-                .setInfra(infraBuilder.fullInfra())
+                .setInfra(infra.fullInfra())
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(0), 0)))
                 .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(2), 1_000)))
                 .setStandardAllowance(allowance)
@@ -86,15 +87,15 @@ public class StandardAllowanceTests {
         /*
         a --> b --> c --> d
          */
-        var infraBuilder = new DummyInfraBuilder();
+        var infra = DummyInfra.make();
         var blocks = List.of(
-                infraBuilder.addBlock("a", "b", 1_000, 30),
-                infraBuilder.addBlock("b", "c", 1_000, 30),
-                infraBuilder.addBlock("c", "d", 1_000, 30)
+                infra.addBlock("a", "b", 1_000, 30),
+                infra.addBlock("b", "c", 1_000, 30),
+                infra.addBlock("c", "d", 1_000, 30)
         );
         var allowance = new AllowanceValue.Percentage(1_000);
         var res = runWithAndWithoutAllowance(new STDCMPathfindingBuilder()
-                .setInfra(infraBuilder.fullInfra())
+                .setInfra(infra.fullInfra())
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(0), 0)))
                 .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(2), 1_000)))
                 .setStandardAllowance(allowance)
@@ -110,16 +111,16 @@ public class StandardAllowanceTests {
         /*
         a --> b --> c
          */
-        var infraBuilder = new DummyInfraBuilder();
-        var firstBlock = infraBuilder.addBlock("a", "b");
-        var secondBlock = infraBuilder.addBlock("b", "c");
+        var infra = DummyInfra.make();
+        var firstBlock = infra.addBlock("a", "b");
+        var secondBlock = infra.addBlock("b", "c");
         var occupancyGraph = ImmutableMultimap.of(
                 secondBlock, new OccupancySegment(0, 3600, 0, 100)
         );
         var allowance = new AllowanceValue.Percentage(20);
 
         var res = runWithAndWithoutAllowance(new STDCMPathfindingBuilder()
-                .setInfra(infraBuilder.fullInfra())
+                .setInfra(infra.fullInfra())
                 .setUnavailableTimes(occupancyGraph)
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 0)))
                 .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(secondBlock, 50)))
@@ -128,7 +129,7 @@ public class StandardAllowanceTests {
         assertNotNull(res.withoutAllowance);
         assertNotNull(res.withAllowance);
         var secondBlockEntryTime = res.withAllowance.departureTime()
-                + res.withAllowance.envelope().interpolateTotalTime(infraBuilder.blockInfra.getBlockLength(firstBlock));
+                + res.withAllowance.envelope().interpolateTotalTime(infra.getBlockLength(firstBlock));
         assertTrue(secondBlockEntryTime >= 3600 - timeStep);
         occupancyTest(res.withAllowance, occupancyGraph, timeStep);
         checkAllowanceResult(res, allowance);
@@ -142,15 +143,15 @@ public class StandardAllowanceTests {
 
         The block is occupied from a certain point only, we check that we don't add too little or too much delay
          */
-        var infraBuilder = new DummyInfraBuilder();
-        var block = infraBuilder.addBlock("a", "b", 10_000);
+        var infra = DummyInfra.make();
+        var block = infra.addBlock("a", "b", 10_000);
         var occupancyGraph = ImmutableMultimap.of(
                 block, new OccupancySegment(0, 3600, 5_000, 10_000)
         );
         var allowance = new AllowanceValue.Percentage(20);
 
         var res = runWithAndWithoutAllowance(new STDCMPathfindingBuilder()
-                .setInfra(infraBuilder.fullInfra())
+                .setInfra(infra.fullInfra())
                 .setUnavailableTimes(occupancyGraph)
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(block, 0)))
                 .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(block, 10_000)))
@@ -183,11 +184,11 @@ public class StandardAllowanceTests {
         a |_/##################_> time
 
          */
-        var infraBuilder = new DummyInfraBuilder();
+        var infra = DummyInfra.make();
         var blocks = List.of(
-                infraBuilder.addBlock("a", "b", 1_000, 30),
-                infraBuilder.addBlock("b", "c", 10_000, 30),
-                infraBuilder.addBlock("c", "d", 1_000, 30)
+                infra.addBlock("a", "b", 1_000, 30),
+                infra.addBlock("b", "c", 10_000, 30),
+                infra.addBlock("c", "d", 1_000, 30)
         );
         var occupancyGraph = ImmutableMultimap.of(
                 blocks.get(0), new OccupancySegment(120, POSITIVE_INFINITY, 0, 1_000),
@@ -196,7 +197,7 @@ public class StandardAllowanceTests {
         var allowance = new AllowanceValue.Percentage(20);
 
         var res = new STDCMPathfindingBuilder()
-                .setInfra(infraBuilder.fullInfra())
+                .setInfra(infra.fullInfra())
                 .setUnavailableTimes(occupancyGraph)
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(0), 0)))
                 .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(2), 1_000)))
@@ -226,11 +227,11 @@ public class StandardAllowanceTests {
         a |_/##################_> time
 
          */
-        var infraBuilder = new DummyInfraBuilder();
+        var infra = DummyInfra.make();
         var blocks = List.of(
-                infraBuilder.addBlock("a", "b", 1, 30),
-                infraBuilder.addBlock("b", "c", 10_000, 30),
-                infraBuilder.addBlock("c", "d", 1, 30)
+                infra.addBlock("a", "b", 1, 30),
+                infra.addBlock("b", "c", 10_000, 30),
+                infra.addBlock("c", "d", 1, 30)
         );
         var occupancyGraph = ImmutableMultimap.of(
                 blocks.get(0), new OccupancySegment(60, POSITIVE_INFINITY, 0, 1),
@@ -239,7 +240,7 @@ public class StandardAllowanceTests {
         var allowance = new AllowanceValue.Percentage(20);
 
         var res = new STDCMPathfindingBuilder()
-                .setInfra(infraBuilder.fullInfra())
+                .setInfra(infra.fullInfra())
                 .setUnavailableTimes(occupancyGraph)
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(0), 0)))
                 .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(2), 1)))
@@ -256,16 +257,16 @@ public class StandardAllowanceTests {
     /** This test checks that we add the right delay while backtracking several times, by adding mrsp drops */
     @Test
     public void testManyMRSPDrops() {
-        var infraBuilder = new DummyInfraBuilder();
+        var infra = DummyInfra.make();
         var blocks = new ArrayList<Integer>();
         for (int i = 0; i < 10; i++) {
-            blocks.add(infraBuilder.addBlock(
+            blocks.add(infra.addBlock(
                     Integer.toString(i),
                     String.format("%d.5", i),
                     1_000,
                     50
             ));
-            blocks.add(infraBuilder.addBlock(
+            blocks.add(infra.addBlock(
                     String.format("%d.5", i),
                     Integer.toString(i + 1),
                     10,
@@ -274,7 +275,7 @@ public class StandardAllowanceTests {
         }
         var allowance = new AllowanceValue.Percentage(50);
         var res = runWithAndWithoutAllowance(new STDCMPathfindingBuilder()
-                .setInfra(infraBuilder.fullInfra())
+                .setInfra(infra.fullInfra())
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(0), 0)))
                 .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(blocks.size() - 1), 0)))
                 .setStandardAllowance(allowance)
@@ -303,11 +304,11 @@ public class StandardAllowanceTests {
         a start______/____/_________/__________________> time
 
          */
-        var infraBuilder = new DummyInfraBuilder();
-        var firstBlock = infraBuilder.addBlock("a", "b");
-        var secondBlock = infraBuilder.addBlock("b", "c");
-        var thirdBlock = infraBuilder.addBlock("c", "d");
-        var forthBlock = infraBuilder.addBlock("d", "e");
+        var infra = DummyInfra.make();
+        var firstBlock = infra.addBlock("a", "b");
+        var secondBlock = infra.addBlock("b", "c");
+        var thirdBlock = infra.addBlock("c", "d");
+        var forthBlock = infra.addBlock("d", "e");
         var allowance = new AllowanceValue.Percentage(100);
         var occupancyGraph = ImmutableMultimap.of(
                 firstBlock, new OccupancySegment(0, 200, 0, 100),
@@ -316,7 +317,7 @@ public class StandardAllowanceTests {
                 forthBlock, new OccupancySegment(0, 2000, 0, 100)
         );
         var res = runWithAndWithoutAllowance(new STDCMPathfindingBuilder()
-                .setInfra(infraBuilder.fullInfra())
+                .setInfra(infra.fullInfra())
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 0)))
                 .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(forthBlock, 1)))
                 .setUnavailableTimes(occupancyGraph)
@@ -346,11 +347,11 @@ public class StandardAllowanceTests {
         a |_/##################_> time
 
          */
-        var infraBuilder = new DummyInfraBuilder();
+        var infra = DummyInfra.make();
         var blocks = List.of(
-                infraBuilder.addBlock("a", "b", 1_000, 30),
-                infraBuilder.addBlock("b", "c", 10_000, 30),
-                infraBuilder.addBlock("c", "d", 1_000, 30)
+                infra.addBlock("a", "b", 1_000, 30),
+                infra.addBlock("b", "c", 10_000, 30),
+                infra.addBlock("c", "d", 1_000, 30)
         );
         var occupancyGraph = ImmutableMultimap.of(
                 blocks.get(0), new OccupancySegment(120, POSITIVE_INFINITY, 0, 1_000),
@@ -359,7 +360,7 @@ public class StandardAllowanceTests {
         var allowance = new AllowanceValue.TimePerDistance(60);
 
         var res = new STDCMPathfindingBuilder()
-                .setInfra(infraBuilder.fullInfra())
+                .setInfra(infra.fullInfra())
                 .setUnavailableTimes(occupancyGraph)
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(0), 0)))
                 .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(2), 1_000)))
@@ -378,14 +379,14 @@ public class StandardAllowanceTests {
         /*
         a --> b --> c --> d --> e
          */
-        var infraBuilder = new DummyInfraBuilder();
-        var firstBlock = infraBuilder.addBlock("a", "b");
-        infraBuilder.addBlock("b", "c");
-        infraBuilder.addBlock("c", "d");
-        var forthBlock = infraBuilder.addBlock("d", "e");
+        var infra = DummyInfra.make();
+        var firstBlock = infra.addBlock("a", "b");
+        infra.addBlock("b", "c");
+        infra.addBlock("c", "d");
+        var forthBlock = infra.addBlock("d", "e");
         var allowance = new AllowanceValue.TimePerDistance(1);
         var res = runWithAndWithoutAllowance(new STDCMPathfindingBuilder()
-                .setInfra(infraBuilder.fullInfra())
+                .setInfra(infra.fullInfra())
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 0)))
                 .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(forthBlock, 100)))
                 .setStandardAllowance(allowance)
@@ -403,14 +404,14 @@ public class StandardAllowanceTests {
         /*
         a --> b --> c --> d --> e
          */
-        var infraBuilder = new DummyInfraBuilder();
-        var firstBlock = infraBuilder.addBlock("a", "b");
-        infraBuilder.addBlock("b", "c");
-        infraBuilder.addBlock("c", "d");
-        var forthBlock = infraBuilder.addBlock("d", "e");
+        var infra = DummyInfra.make();
+        var firstBlock = infra.addBlock("a", "b");
+        infra.addBlock("b", "c");
+        infra.addBlock("c", "d");
+        var forthBlock = infra.addBlock("d", "e");
         var allowance = new AllowanceValue.TimePerDistance(15);
         var res = runWithAndWithoutAllowance(new STDCMPathfindingBuilder()
-                .setInfra(infraBuilder.fullInfra())
+                .setInfra(infra.fullInfra())
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 0)))
                 .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(forthBlock, 100)))
                 .setStandardAllowance(allowance)
@@ -441,11 +442,11 @@ public class StandardAllowanceTests {
         a start______/____/_________/__________________> time
 
          */
-        var infraBuilder = new DummyInfraBuilder();
-        var firstBlock = infraBuilder.addBlock("a", "b");
-        var secondBlock = infraBuilder.addBlock("b", "c");
-        var thirdBlock = infraBuilder.addBlock("c", "d");
-        var forthBlock = infraBuilder.addBlock("d", "e");
+        var infra = DummyInfra.make();
+        var firstBlock = infra.addBlock("a", "b");
+        var secondBlock = infra.addBlock("b", "c");
+        var thirdBlock = infra.addBlock("c", "d");
+        var forthBlock = infra.addBlock("d", "e");
         var allowance = new AllowanceValue.TimePerDistance(15);
         var occupancyGraph = ImmutableMultimap.of(
                 firstBlock, new OccupancySegment(0, 200, 0, 100),
@@ -454,7 +455,7 @@ public class StandardAllowanceTests {
                 forthBlock, new OccupancySegment(0, 2000, 0, 100)
         );
         var res = runWithAndWithoutAllowance(new STDCMPathfindingBuilder()
-                .setInfra(infraBuilder.fullInfra())
+                .setInfra(infra.fullInfra())
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 0)))
                 .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(forthBlock, 100)))
                 .setUnavailableTimes(occupancyGraph)
@@ -486,10 +487,10 @@ public class StandardAllowanceTests {
         a |_______/__#################> time
 
          */
-        var infraBuilder = new DummyInfraBuilder();
-        var firstBlock = infraBuilder.addBlock("a", "b", 1_000, 30);
-        var secondBlock = infraBuilder.addBlock("b", "c", 1_000, 30);
-        var thirdBlock = infraBuilder.addBlock("c", "d");
+        var infra = DummyInfra.make();
+        var firstBlock = infra.addBlock("a", "b", 1_000, 30);
+        var secondBlock = infra.addBlock("b", "c", 1_000, 30);
+        var thirdBlock = infra.addBlock("c", "d");
         AllowanceValue allowance = new AllowanceValue.Percentage(100);
         if (isTimePerDistance)
             allowance = new AllowanceValue.TimePerDistance(120);
@@ -498,7 +499,7 @@ public class StandardAllowanceTests {
                 secondBlock, new OccupancySegment(0, 2_000 - timeStep, 0, 1_000)
         );
         var res = runWithAndWithoutAllowance(new STDCMPathfindingBuilder()
-                .setInfra(infraBuilder.fullInfra())
+                .setInfra(infra.fullInfra())
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 0)))
                 .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(thirdBlock, 100)))
                 .setUnavailableTimes(occupancyGraph)
