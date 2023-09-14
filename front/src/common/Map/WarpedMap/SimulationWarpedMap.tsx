@@ -11,7 +11,6 @@ import { BBox2d } from '@turf/helpers/dist/js/lib/geojson';
 import { Feature, FeatureCollection, LineString, Position } from 'geojson';
 import { LngLatBoundsLike } from 'maplibre-gl';
 
-import { RootState } from 'reducers';
 import { LoaderFill } from 'common/Loader';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { LayerType } from 'applications/editor/tools/types';
@@ -21,13 +20,17 @@ import WarpedMap from 'common/Map/WarpedMap/WarpedMap';
 import { TrainPosition } from 'applications/operationalStudies/components/SimulationResults/SimulationResultsMap/types';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import { getImprovedOSRDData } from 'common/Map/WarpedMap/core/helpers';
-import { getSelectedTrain } from 'reducers/osrdsimulation/selectors';
+import {
+  getOsrdSimulation,
+  getSelectedProjection,
+  getSelectedTrain,
+} from 'reducers/osrdsimulation/selectors';
+import { Train } from 'reducers/osrdsimulation/types';
 import { AsyncMemoState, getAsyncMemoData, useAsyncMemo } from 'utils/useAsyncMemo';
 import { getSimulationHoverPositions } from 'applications/operationalStudies/components/SimulationResults/SimulationResultsMap/helpers';
 import { clip } from 'utils/mapHelper';
 
 import './SimulationWarpedMap.scss';
-import { Train } from '../../../reducers/osrdsimulation/types';
 
 const TIME_LABEL = 'Warping OSRD and OSM data';
 const WIDTH = 300;
@@ -35,13 +38,23 @@ const WIDTH = 300;
 interface PathStatePayload {
   path: Feature<LineString>;
   pathBBox: BBox2d;
-  regularBBox: BBox2d;
+  warpedBBox: BBox2d;
   transform: WarpingFunction;
 }
 
 interface DataStatePayload {
   osm: Record<string, FeatureCollection>;
   osrd: Partial<Record<LayerType, FeatureCollection>>;
+}
+
+function transformDataStatePayload(
+  data: Record<string, FeatureCollection>,
+  transform: WarpingFunction
+) {
+  return omitBy(
+    mapValues(data, (collection) => (collection ? transform(collection) : null)),
+    isNil
+  );
 }
 
 /**
@@ -62,19 +75,23 @@ const SimulationWarpedMap: FC<{ collapsed?: boolean }> = ({ collapsed }) => {
       } & PathStatePayload &
         DataStatePayload)
   >({ type: 'idle' });
-  const pathfindingID = useSelector(
-    (s: RootState) => s.osrdsimulation.selectedProjection?.path
-  ) as number;
-  const [getPath] = osrdEditoastApi.useLazyGetPathfindingByIdQuery();
+  const pathfindingID = useSelector(getSelectedProjection)?.path as number;
+  const [getPath] = osrdEditoastApi.endpoints.getPathfindingById.useLazyQuery();
   const layers = useMemo(() => new Set<LayerType>(['track_sections']), []);
   const [mode, setMode] = useState<'manual' | 'auto'>('auto');
+  const {
+    chart,
+    positionValues,
+    timePosition,
+    allowancesSettings,
+    simulation: { present: simulation },
+  } = useSelector(getOsrdSimulation);
 
   // Boundaries handling (ie zoom sync):
-  const chart = useSelector((s: RootState) => s.osrdsimulation.chart);
   const syncedBoundingBox: LngLatBoundsLike = useMemo(() => {
     if (chart && state.type === 'dataLoaded') {
       const { y, height } = chart;
-      const { path, transform, regularBBox } = state;
+      const { path, transform, warpedBBox } = state;
       const l = length(path, { units: 'meters' });
 
       const yStart = y(0);
@@ -84,14 +101,14 @@ const SimulationWarpedMap: FC<{ collapsed?: boolean }> = ({ collapsed }) => {
       const latStart = (first(transformedPath.geometry.coordinates) as Position)[1];
       const latEnd = (last(transformedPath.geometry.coordinates) as Position)[1];
 
-      /**
+      /*
        * Here, `y` is the function provided by d3 to scale distance in meters from the beginning of the path to pixels
        * from the bottom of the `SpaceTimeChart` (going upwards) to the related point.
        * So, `yStart` is the y coordinate of the start of the path at the current zoom level, and yEnd is the y
        * coordinate of the end of the path.
        * Finally, `height` is the height in pixels of the SpaceTimeChart.
        *
-       * Also, we now `latStart` and `latEnd`, which are the latitudes of the first and the last points of our
+       * Also, we know `latStart` and `latEnd`, which are the latitudes of the first and the last points of our
        * transformed path.
        *
        * We are looking for `latBottom` and `latTop` so that our warped map is as much "aligned" as we can with the
@@ -111,8 +128,8 @@ const SimulationWarpedMap: FC<{ collapsed?: boolean }> = ({ collapsed }) => {
       const clippedPath = clip(transformedPath, {
         type: 'rectangle',
         points: [
-          [regularBBox[0], latTop],
-          [regularBBox[2], latBottom],
+          [warpedBBox[0], latTop],
+          [warpedBBox[2], latBottom],
         ],
       }) as typeof transformedPath;
       const clippedPathBBox = bbox(clippedPath) as BBox2d;
@@ -125,12 +142,12 @@ const SimulationWarpedMap: FC<{ collapsed?: boolean }> = ({ collapsed }) => {
     }
 
     if (state.type === 'dataLoaded' || state.type === 'pathLoaded') {
-      const { regularBBox } = state;
-      const lngAverage = (regularBBox[0] + regularBBox[2]) / 2;
+      const { warpedBBox } = state;
+      const lngAverage = (warpedBBox[0] + warpedBBox[2]) / 2;
 
       return [
-        [lngAverage, regularBBox[1]],
-        [lngAverage, regularBBox[3]],
+        [lngAverage, warpedBBox[1]],
+        [lngAverage, warpedBBox[3]],
       ];
     }
 
@@ -142,21 +159,11 @@ const SimulationWarpedMap: FC<{ collapsed?: boolean }> = ({ collapsed }) => {
   }, [chart, state]);
 
   // Itinerary handling:
-  const {
-    positionValues,
-    timePosition,
-    allowancesSettings,
-    simulation: { present: simulation },
-  } = useSelector((s: RootState) => s.osrdsimulation);
   const selectedTrain = useSelector(getSelectedTrain);
   const itineraryState: AsyncMemoState<Feature<LineString> | null> = useAsyncMemo(async () => {
-    if (!selectedTrain) return null;
-    if (state.type !== 'dataLoaded') return null;
+    if (!selectedTrain || state.type !== 'dataLoaded') return null;
 
-    const foundTrain = simulation.trains.find((train) => train.id === selectedTrain.id);
-    if (!foundTrain) return null;
-
-    const { data: path } = await getPath({ id: foundTrain.path });
+    const { data: path } = await getPath({ id: selectedTrain.path });
     if (!path) return null;
 
     return lineString(path.geographic.coordinates);
@@ -168,14 +175,17 @@ const SimulationWarpedMap: FC<{ collapsed?: boolean }> = ({ collapsed }) => {
   }, [itineraryState, state]);
 
   // Trains handling:
-  const trainsIndex = useMemo(() => keyBy(simulation.trains, 'id'), [simulation.trains]);
+  // TODO: remove the cast to Train
+  const trainsIndex = useMemo(() => keyBy(simulation.trains as Train[], 'id'), [simulation.trains]);
   const trainsPositionsState: AsyncMemoState<
     (TrainPosition & { train: Train; isSelected?: boolean })[]
   > = useAsyncMemo(async () => {
     const path = getAsyncMemoData(itineraryState);
-    if (!path || state.type !== 'dataLoaded') return [];
+    if (!path || !warpedItinerary || state.type !== 'dataLoaded') return [];
 
-    const transformedPath = state.transform(path) as typeof path;
+    const pathLength = length(path);
+    const transformedPathLength = length(warpedItinerary);
+
     return getSimulationHoverPositions(
       path,
       simulation,
@@ -185,8 +195,6 @@ const SimulationWarpedMap: FC<{ collapsed?: boolean }> = ({ collapsed }) => {
       allowancesSettings
     ).map((position) => {
       const transformedTrain = { ...position };
-      const pathLength = length(path);
-      const transformedPathLength = length(transformedPath);
 
       // Transform positions:
       transformedTrain.headPosition = state.transform(
@@ -228,9 +236,9 @@ const SimulationWarpedMap: FC<{ collapsed?: boolean }> = ({ collapsed }) => {
         } else {
           const path = lineString(data?.geographic?.coordinates as Position[]);
           const pathBBox = bbox(path) as BBox2d;
-          const { regularBBox, transform } = getWarping(path);
+          const { warpedBBox, transform } = getWarping(path);
 
-          setState({ type: 'pathLoaded', path, pathBBox, regularBBox, transform });
+          setState({ type: 'pathLoaded', path, pathBBox, warpedBBox, transform });
         }
       })
       .catch((error) => setState({ type: 'error', message: error }));
@@ -270,13 +278,10 @@ const SimulationWarpedMap: FC<{ collapsed?: boolean }> = ({ collapsed }) => {
           getGeoJSONs={(osrdData, osmData) => {
             console.time(TIME_LABEL);
             const transformed = {
-              osm: omitBy(
-                mapValues(osmData, (collection) => state.transform(collection)),
-                isNil
-              ) as DataStatePayload['osm'],
-              osrd: omitBy(
-                mapValues(osrdData, (collection: FeatureCollection) => state.transform(collection)),
-                isNil
+              osm: transformDataStatePayload(osmData, state.transform) as DataStatePayload['osm'],
+              osrd: transformDataStatePayload(
+                osrdData,
+                state.transform
               ) as DataStatePayload['osrd'],
             };
             console.timeEnd(TIME_LABEL);
@@ -296,7 +301,7 @@ const SimulationWarpedMap: FC<{ collapsed?: boolean }> = ({ collapsed }) => {
         >
           <WarpedMap
             osrdLayers={layers}
-            bbox={state.regularBBox}
+            bbox={state.warpedBBox}
             osrdData={state.osrd}
             osmData={state.osm}
             itinerary={warpedItinerary}

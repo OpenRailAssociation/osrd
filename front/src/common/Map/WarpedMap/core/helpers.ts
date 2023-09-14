@@ -1,6 +1,6 @@
 /* eslint-disable prefer-destructuring, no-plusplus */
 import { Feature, FeatureCollection, LineString, Point, Polygon, Position } from 'geojson';
-import _, { clamp, first, last, mapValues } from 'lodash';
+import _, { first, last, mapValues } from 'lodash';
 import length from '@turf/length';
 import { point } from '@turf/helpers';
 import along from '@turf/along';
@@ -12,7 +12,7 @@ import { getMixedEntities } from 'applications/editor/data/api';
 import { flattenEntity } from 'applications/editor/data/utils';
 import vec, { Vec2 } from 'common/Map/WarpedMap/core/vec-lib';
 
-/**
+/*
  * Useful types:
  */
 export type TriangleProperties = { triangleId: string };
@@ -21,12 +21,12 @@ export type BarycentricCoordinates = [number, number, number];
 export type GridFeature = FeatureCollection<Polygon, TriangleProperties>;
 export type GridIndex = Record<string, Triangle>;
 export type Grids = {
-  regular: GridFeature;
   warped: GridFeature;
+  original: GridFeature;
 };
 export type PointsGrid = Record<number, Position>[];
 
-/**
+/*
  * Path manipulation helpers:
  */
 export function getSamples(
@@ -44,14 +44,16 @@ export function getSamples(
     } else if (i === samples - 1) {
       points.push(point(last(line.geometry.coordinates) as Position));
     } else {
-      const at = clamp(step * i, 0, l);
-      points.push(along(line, at, { units: 'meters' }));
+      points.push(along(line, step * i, { units: 'meters' }));
     }
   }
 
   return { step, points };
 }
 
+/**
+ * Given a line and a lengthToAdd, extend the line at its two extremities by lengthToAdd meters.
+ */
 export function extendLine(line: Feature<LineString>, lengthToAdd: number): Feature<LineString> {
   if (lengthToAdd <= 1) throw new Error('lengthToAdd must be a positive');
 
@@ -86,7 +88,7 @@ export function extendLine(line: Feature<LineString>, lengthToAdd: number): Feat
   };
 }
 
-/**
+/*
  * Triangle helpers:
  */
 export function getBarycentricCoordinates(
@@ -120,7 +122,7 @@ export function getPointInTriangle(
   return [a * x0 + b * x1 + c * x2, a * y0 + b * y1 + c * y2];
 }
 
-/**
+/*
  * Data helpers:
  */
 const OSRD_BATCH_SIZE = 500;

@@ -19,7 +19,7 @@ export function bboxIntersect([mx1, my1, Mx1, My1]: BBox2d, [mx2, my2, Mx2, My2]
   return !(mx1 > Mx2) && !(Mx1 < mx2) && !(my1 > My2) && !(My1 < my2);
 }
 
-export function getNewQuadChild<T>(box: BBox2d, isLeaf?: boolean): QuadChild<T> {
+function getNewQuadChild<T>(box: BBox2d, isLeaf?: boolean): QuadChild<T> {
   return isLeaf
     ? {
         type: 'leaf',

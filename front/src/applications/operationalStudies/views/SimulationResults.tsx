@@ -156,7 +156,7 @@ export default function SimulationResults({ isDisplayed, collapsedTimetable, inf
       <TimeLine />
 
       {/* SIMULATION : SPACE TIME CHART */}
-      <div className="d-flex flex-row align-items-stretch mb-2 bg-white">
+      <div className="simulation-warped-map d-flex flex-row align-items-stretch mb-2 bg-white">
         <button
           type="button"
           className="show-warped-map-button my-3 ml-3 mr-1"
