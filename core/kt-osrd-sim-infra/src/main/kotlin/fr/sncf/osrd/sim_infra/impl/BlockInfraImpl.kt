@@ -139,3 +139,7 @@ fun BlockInfra.getRouteExit(rawInfra: RawInfra, block: BlockId): DirDetectorId {
     val lastZonePath: ZonePathId = blockPath[blockPath.size - 1]
     return rawInfra.getZonePathExit(lastZonePath)
 }
+
+fun BlockInfra.getTrackChunksFromBlocks(blocks: List<BlockId>): List<DirStaticIdx<TrackChunk>> {
+    return blocks.flatMap { getTrackChunksFromBlock(it) }
+}

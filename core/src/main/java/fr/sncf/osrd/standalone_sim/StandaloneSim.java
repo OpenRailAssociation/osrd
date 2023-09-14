@@ -91,25 +91,27 @@ public class StandaloneSim {
                                 context.tractiveEffortCurveMap));
                 var envelope = MaxEffortEnvelope.from(context, trainSchedule.initialSpeed, maxSpeedEnvelope);
 
-                var simResultTrain = ScheduleMetadataExtractor.run(
-                        envelope,
-                        trainPath,
-                        trainSchedule,
-                        infra
-                );
-                cacheMaxEffort.put(trainSchedule, simResultTrain);
+                //FIXME: we need a Path here
+//                var simResultTrain = ScheduleMetadataExtractor.run(
+//                        envelope,
+//                        trainPath,
+//                        trainSchedule,
+//                        infra
+//                );
+                cacheMaxEffort.put(trainSchedule, null);
 
                 // Eco: Integrate allowances and scheduled points
                 if (!trainSchedule.allowances.isEmpty() || !trainSchedule.scheduledPoints.isEmpty()) {
                     var ecoEnvelope = applyAllowances(context, envelope, trainSchedule.allowances);
                     ecoEnvelope = applyScheduledPoints(
                             context, ecoEnvelope, trainSchedule.stops, trainSchedule.scheduledPoints);
-                    var simEcoResultTrain = ScheduleMetadataExtractor.run(
-                            ecoEnvelope,
-                            trainPath,
-                            trainSchedule,
-                            infra);
-                    cacheEco.put(trainSchedule, simEcoResultTrain);
+                    //FIXME: we need a Path here
+//                    var simEcoResultTrain = ScheduleMetadataExtractor.run(
+//                            ecoEnvelope,
+//                            trainPath,
+//                            trainSchedule,
+//                            infra);
+                    cacheEco.put(trainSchedule, null);
                 }
             }
 

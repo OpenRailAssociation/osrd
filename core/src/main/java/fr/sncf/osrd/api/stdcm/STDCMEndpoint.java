@@ -120,6 +120,7 @@ public class STDCMEndpoint implements Take {
             simResult.baseSimulations.add(ScheduleMetadataExtractor.run(
                     res.envelope(),
                     res.trainPath(),
+                    res.blocks(),
                     makeTrainSchedule(res.envelope().getEndPos(), rollingStock, comfort, res.stopResults()),
                     infra
             ));

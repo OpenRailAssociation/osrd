@@ -55,3 +55,4 @@ value class Distance(val millimeters: Long) : Comparable<Distance> {
 
 val Double.meters: Distance get() = Distance((this * 1000).toLong())
 val Int.meters: Distance get() = Distance(this.toLong() * 1000)
+val Long.millimeters: Distance get() = Distance(this)

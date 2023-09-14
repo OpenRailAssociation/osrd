@@ -358,7 +358,7 @@ public class PathfindingResultConverter {
     }
 
     /** Converts a list of blocks into a list of routes, ignoring ranges */
-    private static List<Integer> blocksToRoutes(
+    public static List<Integer> blocksToRoutes(
             ArrayList<Integer> pathChunks,
             BlockInfra blockInfra,
             RawSignalingInfra infra,
@@ -369,15 +369,14 @@ public class PathfindingResultConverter {
                 pathChunks.addAll(toIntList(infra.getZonePathChunks(zonePathId)));
         var chunkStartIndex = 0;
         var res = new ArrayList<Integer>();
-        while (true) {
+        while (chunkStartIndex < pathChunks.size()) {
             var route = findRoute(infra, pathChunks, chunkStartIndex, chunkStartIndex != 0);
             res.add(route);
             var chunkSetOnRoute = new HashSet<>(toIntList(infra.getChunksOnRoute(route)));
             while (chunkStartIndex < pathChunks.size() && chunkSetOnRoute.contains(pathChunks.get(chunkStartIndex)))
                 chunkStartIndex++; // Increase the index in the chunk path, for as long as it is covered by the route
-            if (chunkStartIndex >= pathChunks.size())
-                return res;
         }
+        return res;
     }
 
     /** Finds a valid route that follows the given path */

@@ -3,31 +3,33 @@
 package fr.sncf.osrd.standalone_sim
 
 import fr.sncf.osrd.api.FullInfra
+import fr.sncf.osrd.api.pathfinding.PathfindingResultConverter.blocksToRoutes
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.EnvelopePhysics
 import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
-import fr.sncf.osrd.envelope_sim_infra.LegacyEnvelopeTrainPath
-import fr.sncf.osrd.infra_state.api.TrainPath
+import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
 import fr.sncf.osrd.signaling.SignalingSimulator
 import fr.sncf.osrd.signaling.ZoneStatus
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.utils.BlockPathElement
+import fr.sncf.osrd.sim_infra.utils.recoverBlocks
+import fr.sncf.osrd.sim_infra.utils.toList
 import fr.sncf.osrd.sim_infra_adapter.SimInfraAdapter
 import fr.sncf.osrd.standalone_sim.result.*
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.RoutingRequirement
-import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
-import fr.sncf.osrd.sim_infra.utils.recoverBlocks
-import fr.sncf.osrd.sim_infra.utils.toList
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.RoutingZoneRequirement
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SignalSighting
+import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.StandaloneTrainSchedule
 import fr.sncf.osrd.utils.CurveSimplification
+import fr.sncf.osrd.utils.graph.Pathfinding
 import fr.sncf.osrd.utils.indexing.*
-import kotlin.collections.*
+import fr.sncf.osrd.utils.toRouteIdList
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.MutableDistanceArray
 import fr.sncf.osrd.utils.units.meters
+import fr.sncf.osrd.utils.units.millimeters
 import mu.KotlinLogging
 import kotlin.math.abs
 import kotlin.math.max
@@ -58,9 +60,8 @@ private fun recoverBlockPath(
 
 
 /** Use an already computed envelope to extract various metadata about a trip.  */
-fun run(
-    envelope: Envelope, trainPath: TrainPath, schedule: StandaloneTrainSchedule, fullInfra: FullInfra
-): ResultTrain {
+fun run(envelope: Envelope, trainPath: Path, pathBlocks: Pathfinding.Result<Int?>, schedule: StandaloneTrainSchedule,
+        fullInfra: FullInfra): ResultTrain {
     assert(envelope.continuous)
 
     val rawInfra = fullInfra.rawInfra as SimInfraAdapter;
@@ -69,11 +70,8 @@ fun run(
     val simulator = fullInfra.signalingSimulator;
 
     // get a new generation route path
-    val routePath = MutableStaticIdxArrayList<Route>()
-    for (javaRoute in trainPath.routePath) {
-        val route = rawInfra.routeMap[javaRoute.element.infraRoute]!!
-        routePath.add(route)
-    }
+    val blocks = pathBlocks.ranges.map { it.edge }
+    val routePath = toRouteIdList(blocksToRoutes(ArrayList(), blockInfra, rawInfra, blocks))
 
     // recover blocks from the route paths
     val detailedBlockPath = recoverBlockPath(simulator, fullInfra, routePath)
@@ -88,7 +86,7 @@ fun run(
     var headPositions = ArrayList<ResultPosition>()
     for (point in envelopeWithStops.iterateCurve()) {
         speeds.add(ResultSpeed(point.time, point.speed, point.position))
-        headPositions.add(ResultPosition.from(point.time, point.position, trainPath))
+        headPositions.add(ResultPosition.from(point.time, point.position, trainPath, rawInfra))
     }
 
     // Simplify data
@@ -103,7 +101,7 @@ fun run(
     }
 
     // Compute signal updates
-    val startOffset = trainPathBlockOffset(trainPath)
+    val startOffset = trainPathBlockOffset(pathBlocks)
     val pathSignals = pathSignalsInEnvelope(startOffset, blockPath, blockInfra, envelopeWithStops, rawInfra)
     val zoneOccupationChangeEvents =
         zoneOccupationChangeEvents(startOffset, blockPath, blockInfra, envelopeWithStops, rawInfra, trainLength)
@@ -132,7 +130,7 @@ fun run(
     val routeOccupancies = routeOccupancies(zoneOccupationChangeEvents, rawInfra, envelopeWithStops)
 
     // Compute energy consumed
-    val envelopePath = LegacyEnvelopeTrainPath.from(trainPath)
+    val envelopePath = EnvelopeTrainPath.from(trainPath)
     val mechanicalEnergyConsumed =
         EnvelopePhysics.getMechanicalEnergyConsumed(envelope, envelopePath, schedule.rollingStock)
 
@@ -232,7 +230,7 @@ private fun routingRequirements(
     loadedSignalInfra: LoadedSignalInfra,
     blockInfra: BlockInfra,
     envelope: EnvelopeTimeInterpolate,
-    rawInfra: SimInfraAdapter,
+    rawInfra: RawInfra,
     rollingStock: RollingStock,
 ): List<RoutingRequirement> {
     // count the number of zones in the path
@@ -414,7 +412,7 @@ private fun spacingRequirements(
     loadedSignalInfra: LoadedSignalInfra,
     blockInfra: BlockInfra,
     envelope: EnvelopeTimeInterpolate,
-    rawInfra: SimInfraAdapter,
+    rawInfra: RawInfra,
     pathSignals: List<PathSignal>,
     zoneOccupationChangeEvents: MutableList<ZoneOccupationChangeEvent>
 ): List<SpacingRequirement> {
@@ -546,13 +544,13 @@ private fun spacingRequirements(
 
 private fun routeOccupancies(
     zoneOccupationChangeEvents: MutableList<ZoneOccupationChangeEvent>,
-    rawInfra: SimInfraAdapter,
+    simInfraAdapter: SimInfraAdapter,
     envelope: EnvelopeTimeInterpolate
 ): Map<String, ResultOccupancyTiming> {
     val routeOccupancies = mutableMapOf<String, ResultOccupancyTiming>()
     val zoneOccupationChangeEventsByRoute = mutableMapOf<String, MutableList<ZoneOccupationChangeEvent>>()
     for (event in zoneOccupationChangeEvents) {
-        for (route in rawInfra.zoneMap.inverse()[event.zone]!!.routes) {
+        for (route in simInfraAdapter.zoneMap.inverse()[event.zone]!!.routes) {
             zoneOccupationChangeEventsByRoute.getOrPut(route.id) { mutableListOf() }.add(event)
         }
     }
@@ -695,10 +693,10 @@ private fun pathSignalsInEnvelope(
  * Computes the offset between the beginning of the first block and the beginning of the train path - and
  * thus of the envelope
  */
-fun trainPathBlockOffset(trainPath: TrainPath): Distance {
-    val dist = -trainPath.routePath.first().pathOffset.meters
-    assert(dist >= 0.meters)
-    return dist
+fun trainPathBlockOffset(pathBlocks: Pathfinding.Result<Int?>): Distance {
+    val dist = pathBlocks.ranges[0]!!.start
+    assert(dist >= 0)
+    return dist.millimeters
 }
 
 private fun simplifyPositions(

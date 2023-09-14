@@ -25,6 +25,7 @@ public class PathfindingUtils {
 
 
     /**
+     * Creates the path from given blocks.
      * @param rawInfra RawSignalingInfra
      * @param blockInfra BlockInfra
      * @param blockIds the blocks in the order they are encountered

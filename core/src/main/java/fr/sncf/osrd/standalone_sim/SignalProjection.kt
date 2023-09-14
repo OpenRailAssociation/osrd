@@ -16,6 +16,7 @@ import fr.sncf.osrd.standalone_sim.result.SignalUpdate
 import fr.sncf.osrd.utils.indexing.MutableStaticIdxArrayList
 import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
+import fr.sncf.osrd.utils.units.meters
 import java.awt.Color
 
 data class SignalAspectChangeEvent(val newAspect: String, val time: Long)
@@ -63,7 +64,9 @@ fun project(
     }
 
     // compute signal updates
-    val startOffset = trainPathBlockOffset(trainPath)
+    // FIXME: remove this once we use infra path
+//    val startOffset = trainPathBlockOffset(trainPath)
+    val startOffset = -trainPath.routePath.first().pathOffset.meters
     val pathSignals = pathSignals(startOffset, blockPath, blockInfra, rawInfra)
 
     val signalAspectChangeEvents = computeSignalAspectChangeEvents(
