@@ -40,7 +40,7 @@ jobs:
         run: yarn --cwd front test-coverage
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           # github runs PR workflows on the result of a merge commit.
           # tell codecov the sha of the unmerged PR https://github.com/codecov/uploader/issues/525
