@@ -42,7 +42,7 @@ redis = { version = "0.23.3", features = [
     "tokio-native-tls-comp",
 ] }
 sentry = "0.31.6"
-sentry-actix = "0.31.6"
+sentry-actix = "0.31.7"
 serde = "1.0.188"
 serde_derive = "1.0.188"
 serde_json = "1.0.105"
