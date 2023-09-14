@@ -41,7 +41,7 @@ public class RemainingDistanceEstimatorTest {
             Collection<Pathfinding.EdgeLocation<Integer>> edgeLocations,
             double remainingDistance,
             double expectedDistance,
-            double blockOffset
+            long blockOffset
     ) {
         var estimator = new RemainingDistanceEstimator(smallInfra.blockInfra(), smallInfra.rawInfra(), edgeLocations,
                 remainingDistance);

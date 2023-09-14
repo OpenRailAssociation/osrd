@@ -38,7 +38,7 @@ public class DepartureTimeShiftTests {
         var secondBlockEntryTime = res.departureTime()
                 + res.envelope().interpolateTotalTime(infraBuilder.blockInfra.getBlockLength(firstBlock));
         assertTrue(secondBlockEntryTime >= 3600);
-        occupancyTest(infraBuilder.fullInfra(), res, occupancyGraph);
+        occupancyTest(res, occupancyGraph);
     }
 
     /** Test that we can add delays to avoid several occupied blocks */
@@ -69,7 +69,7 @@ public class DepartureTimeShiftTests {
                 + res.envelope().interpolateTotalTime(infraBuilder.blockInfra.getBlockLength(firstBlock));
         assertTrue(secondBlockEntryTime >= 3600);
 
-        occupancyTest(infraBuilder.fullInfra(), res, occupancyGraph);
+        occupancyTest(res, occupancyGraph);
     }
 
     /** Test that the path we find is the one with the earliest arrival time rather than the shortest */
@@ -232,7 +232,7 @@ public class DepartureTimeShiftTests {
                 .run();
 
         assertNotNull(res);
-        occupancyTest(infraBuilder.fullInfra(), res, occupancyGraph);
+        occupancyTest(res, occupancyGraph);
     }
 
     /** This is the same test as the one above, but with the split on the first block. */
@@ -266,7 +266,7 @@ public class DepartureTimeShiftTests {
                 .run();
 
         assertNotNull(res);
-        occupancyTest(infraBuilder.fullInfra(), res, occupancyGraph);
+        occupancyTest(res, occupancyGraph);
     }
 
     /** This is the same test as the one above, but with the split on the last block. */
@@ -299,7 +299,7 @@ public class DepartureTimeShiftTests {
                 .run();
 
         assertNotNull(res);
-        occupancyTest(infraBuilder.fullInfra(), res, occupancyGraph);
+        occupancyTest(res, occupancyGraph);
     }
 
     /** Test that we keep track of how much we can shift the departure time over several blocks */
@@ -420,7 +420,7 @@ public class DepartureTimeShiftTests {
                 .run();
 
         assertNotNull(res);
-        occupancyTest(infraBuilder.fullInfra(), res, occupancyGraph);
+        occupancyTest(res, occupancyGraph);
     }
 
     /** Test that we don't add more delay than specified */

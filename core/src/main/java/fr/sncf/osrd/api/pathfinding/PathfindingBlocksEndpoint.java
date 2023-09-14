@@ -154,7 +154,7 @@ public class PathfindingBlocksEndpoint implements Take {
         for (int i = 0; i < waypoints.size() - 1; i++) {
             remainingDistanceEstimators.add(new RemainingDistanceEstimator(
                     infra.blockInfra(),
-                    infra.rawInfra().getSimInfra(),
+                    infra.rawInfra(),
                     waypoints.get(i + 1),
                     stepMinDistance[i]
             ));

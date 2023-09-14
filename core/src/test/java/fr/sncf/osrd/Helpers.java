@@ -17,6 +17,7 @@ import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import fr.sncf.osrd.sim_infra.api.Route;
 import fr.sncf.osrd.sim_infra.api.SignalingSystem;
 import fr.sncf.osrd.sim_infra.utils.BlockPathElement;
+import fr.sncf.osrd.utils.graph.Pathfinding;
 import fr.sncf.osrd.utils.indexing.MutableStaticIdxArrayList;
 import fr.sncf.osrd.utils.indexing.StaticIdxList;
 import fr.sncf.osrd.utils.moshi.MoshiUtils;
@@ -140,5 +141,21 @@ public class Helpers {
         for (int i = 0; i < infra.signalingSimulator().getSigModuleManager().getSignalingSystems(); i++)
             res.add(i);
         return res;
+    }
+
+    /** Converts a route + offset into a block location. */
+    public static Pathfinding.EdgeLocation<Integer> convertRouteLocation(
+            FullInfra infra,
+            String routeName,
+            long offset
+    ) {
+        var blocks = getBlocksOnRoutes(infra, List.of(routeName));
+        for (var block : blocks) {
+            var blockLength = infra.blockInfra().getBlockLength(block);
+            if (offset <= blockLength)
+                return new Pathfinding.EdgeLocation<>(block, offset);
+            offset -= blockLength;
+        }
+        throw new RuntimeException("Couldn't find route location");
     }
 }

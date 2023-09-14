@@ -26,7 +26,7 @@ fun project(
     signalSightings: List<SignalSighting>,
     zoneUpdates: List<ZoneUpdate>
 ): SignalProjectionResult {
-    val rawInfra = fullInfra.rawInfra;
+    val rawInfra = fullInfra.rawInfra as SimInfraAdapter;
     val loadedSignalInfra = fullInfra.loadedSignalInfra;
     val blockInfra = fullInfra.blockInfra;
     val simulator = fullInfra.signalingSimulator;

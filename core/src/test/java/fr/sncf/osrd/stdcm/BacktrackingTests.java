@@ -38,7 +38,7 @@ public class BacktrackingTests {
                 .run();
         if (res == null)
             return;
-        STDCMHelpers.occupancyTest(infraBuilder.fullInfra(), res, occupancyGraph);
+        STDCMHelpers.occupancyTest(res, occupancyGraph);
     }
 
     /** This is the same test as the one above, but with the braking curve spanning over several blocks */
@@ -67,7 +67,7 @@ public class BacktrackingTests {
                 .run();
         if (res == null)
             return;
-        STDCMHelpers.occupancyTest(infraBuilder.fullInfra(), res, occupancyGraph);
+        STDCMHelpers.occupancyTest(res, occupancyGraph);
     }
 
     /** Test that we don't stay in the first block for too long when there is an MRSP drop at the block transition */
@@ -94,7 +94,7 @@ public class BacktrackingTests {
                 .run();
         if (res == null)
             return;
-        STDCMHelpers.occupancyTest(infraBuilder.fullInfra(), res, occupancyGraph);
+        STDCMHelpers.occupancyTest(res, occupancyGraph);
     }
 
     /** Test that we can backtrack several times over the same edges */

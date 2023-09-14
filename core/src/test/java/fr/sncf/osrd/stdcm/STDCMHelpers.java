@@ -114,7 +114,7 @@ public class STDCMHelpers {
     }
 
     /** Checks that the result don't cross in an occupied section */
-    static void occupancyTest(FullInfra infra, STDCMResult res,
+    static void occupancyTest(STDCMResult res,
                               ImmutableMultimap<Integer, OccupancySegment> occupancyGraph) {
         occupancyTest(res, occupancyGraph, 0);
     }

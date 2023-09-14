@@ -5,7 +5,7 @@ import static fr.sncf.osrd.utils.takes.TakesUtils.readBodyResponse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint;
-import fr.sncf.osrd.api.stdcm.LegacySTDCMEndpoint;
+import fr.sncf.osrd.api.stdcm.STDCMEndpoint;
 import fr.sncf.osrd.api.stdcm.STDCMRequest;
 import fr.sncf.osrd.api.stdcm.STDCMResponse;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
@@ -15,7 +15,7 @@ import org.takes.rq.RqFake;
 import java.util.*;
 
 
-public class LegacySTDCMEndpointTest extends ApiTest {
+public class STDCMEndpointTest extends ApiTest {
 
     @Test
     public void simpleEmptyTimetable() throws Exception {
@@ -45,7 +45,7 @@ public class LegacySTDCMEndpointTest extends ApiTest {
         ));
 
         var result = readBodyResponse(
-                new LegacySTDCMEndpoint(infraManager).act(
+                new STDCMEndpoint(infraManager).act(
                         new RqFake("POST", "/stdcm", requestBody))
         );
         var response = STDCMResponse.adapter.fromJson(result);

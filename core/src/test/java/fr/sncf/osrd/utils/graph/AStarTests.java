@@ -4,12 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.Sets;
-import com.google.common.graph.ImmutableNetwork;
 import fr.sncf.osrd.Helpers;
-import fr.sncf.osrd.api.pathfinding.LegacyRemainingDistanceEstimator;
-import fr.sncf.osrd.infra.api.reservation.DiDetector;
-import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
-import fr.sncf.osrd.infra.implementation.signaling.modules.bal3.BAL3;
+import fr.sncf.osrd.api.FullInfra;
+import fr.sncf.osrd.api.pathfinding.RemainingDistanceEstimator;
 import org.junit.jupiter.api.Test;
 import java.util.Collection;
 import java.util.HashSet;
@@ -24,23 +21,20 @@ public class AStarTests {
      * there are routes left unvisited. */
     @Test
     public void notAllRoutesVisitedWithHeuristic() throws Exception {
-        var infra = Helpers.infraFromRJS(Helpers.getExampleInfra("small_infra/infra.json"));
-        var graph = infra.getSignalingRouteGraph();
-        var firstRoute = infra.findSignalingRoute("rt.DA2->DA5", "BAL3");
-        var lastRoute = infra.findSignalingRoute("rt.DH2->buffer_stop.7", "BAL3");
-        assert firstRoute != null && lastRoute != null;
-        var origin = Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0));
-        var destination = Set.of(new Pathfinding.EdgeLocation<>(lastRoute, 0));
-        var remainingDistanceEstimator = new LegacyRemainingDistanceEstimator(destination, 0.);
-        var seen = new HashSet<SignalingRoute>();
-        new Pathfinding<>(new LegacyGraphAdapter<>(graph))
-                .setEdgeToLength(x -> x.getInfraRoute().getLength())
-                .setRemainingDistanceEstimator(List.of((route, offset) -> {
-                    seen.add(route);
-                    return remainingDistanceEstimator.apply(route, offset);
+        var infra = Helpers.fullInfraFromRJS(Helpers.getExampleInfra("small_infra/infra.json"));
+        var origin = Set.of(Helpers.convertRouteLocation(infra, "rt.DA2->DA5", 0));
+        var destination = Set.of(Helpers.convertRouteLocation(infra, "rt.DH2->buffer_stop.7", 0));
+        var remainingDistanceEstimator = new RemainingDistanceEstimator(infra.blockInfra(), infra.rawInfra(),
+                destination, 0.);
+        var seen = new HashSet<Integer>();
+        new Pathfinding<>(new GraphAdapter(infra.blockInfra(), infra.rawInfra()))
+                .setEdgeToLength(blockId -> infra.blockInfra().getBlockLength(blockId))
+                .setRemainingDistanceEstimator(List.of((block, offset) -> {
+                    seen.add(block);
+                    return remainingDistanceEstimator.apply(block, offset);
                 }))
                 .runPathfinding(List.of(origin, destination));
-        var allRoutes = allReachableRoutes(graph, origin);
+        var allRoutes = allReachableRoutes(infra, origin);
 
         // We shouldn't visit all routes
         var notSeen = Sets.difference(allRoutes, seen);
@@ -51,22 +45,18 @@ public class AStarTests {
      * the test above does need a good heuristic to pass. */
     @Test
     public void allRoutesVisitedWithoutHeuristic() throws Exception {
-        var infra = Helpers.infraFromRJS(Helpers.getExampleInfra("small_infra/infra.json"));
-        var graph = infra.getSignalingRouteGraph();
-        var firstRoute = infra.findSignalingRoute("rt.DA2->DA5", "BAL3");
-        var lastRoute = infra.findSignalingRoute("rt.DH2->buffer_stop.7", "BAL3");
-        assert firstRoute != null && lastRoute != null;
-        var origin = Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0));
-        var destination = Set.of(new Pathfinding.EdgeLocation<>(lastRoute, 0));
-        var seen = new HashSet<SignalingRoute>();
-        new Pathfinding<>(new LegacyGraphAdapter<>(graph))
-                .setEdgeToLength(x -> x.getInfraRoute().getLength())
-                .setRemainingDistanceEstimator(List.of((route, offset) -> {
-                    seen.add(route);
+        var infra = Helpers.fullInfraFromRJS(Helpers.getExampleInfra("small_infra/infra.json"));
+        var origin = Set.of(Helpers.convertRouteLocation(infra, "rt.DA2->DA5", 0));
+        var destination = Set.of(Helpers.convertRouteLocation(infra, "rt.DH2->buffer_stop.7", 0));
+        var seen = new HashSet<Integer>();
+        new Pathfinding<>(new GraphAdapter(infra.blockInfra(), infra.rawInfra()))
+                .setEdgeToLength(blockId -> infra.blockInfra().getBlockLength(blockId))
+                .setRemainingDistanceEstimator(List.of((block, offset) -> {
+                    seen.add(block);
                     return 0;
                 }))
                 .runPathfinding(List.of(origin, destination));
-        var allRoutes = allReachableRoutes(graph, origin);
+        var allRoutes = allReachableRoutes(infra, origin);
 
         // We should visit all routes
         var notSeen = Sets.difference(allRoutes, seen);
@@ -74,21 +64,21 @@ public class AStarTests {
     }
 
     /** Returns all route that can be accessed from the origin point(s) */
-    private Set<SignalingRoute> allReachableRoutes(
-            ImmutableNetwork<DiDetector, SignalingRoute> graph,
-            Collection<Pathfinding.EdgeLocation<SignalingRoute>> origin
+    private Set<Integer> allReachableRoutes(
+            FullInfra infra,
+            Collection<Pathfinding.EdgeLocation<Integer>> origin
     ) {
-        var seen = new HashSet<SignalingRoute>();
-        var res = new Pathfinding<>(new LegacyGraphAdapter<>(graph))
-                .setEdgeToLength(x -> x.getInfraRoute().getLength())
-                .setRemainingDistanceEstimator(List.of((route, offset) -> {
-                    seen.add(route);
+        var seen = new HashSet<Integer>();
+        var res = new Pathfinding<>(new GraphAdapter(infra.blockInfra(), infra.rawInfra()))
+                .setEdgeToLength(blockId -> infra.blockInfra().getBlockLength(blockId))
+                .setRemainingDistanceEstimator(List.of((block, offset) -> {
+                    seen.add(block);
                     return 0;
                 }))
                 .runPathfinding(List.of(
                         origin,
                         List.of(new Pathfinding.EdgeLocation<>(
-                                new BAL3.BAL3Route(null, null, null),
+                                -1,
                                 0
                         ))
                 ));

@@ -63,7 +63,7 @@ fun run(
 ): ResultTrain {
     assert(envelope.continuous)
 
-    val rawInfra = fullInfra.rawInfra;
+    val rawInfra = fullInfra.rawInfra as SimInfraAdapter;
     val loadedSignalInfra = fullInfra.loadedSignalInfra;
     val blockInfra = fullInfra.blockInfra;
     val simulator = fullInfra.signalingSimulator;
@@ -71,7 +71,7 @@ fun run(
     // get a new generation route path
     val routePath = MutableStaticIdxArrayList<Route>()
     for (javaRoute in trainPath.routePath) {
-        val route = fullInfra.rawInfra.routeMap[javaRoute.element.infraRoute]!!
+        val route = rawInfra.routeMap[javaRoute.element.infraRoute]!!
         routePath.add(route)
     }
 

@@ -26,8 +26,8 @@ import java.util.stream.Stream;
 public class LoadingGaugeConstraintsTest {
 
     private LoadingGaugeConstraints loadingGaugeConstraints;
-    private double chunk0Length;
-    private double chunk1Length;
+    private long chunk0Length;
+    private long chunk1Length;
 
     @BeforeAll
     public void setUp() throws IOException, URISyntaxException {
@@ -56,9 +56,9 @@ public class LoadingGaugeConstraintsTest {
     Stream<Arguments> testLoadingGaugeArgs() {
         return Stream.of(
                 // Loading gauge constraints partially applied to block
-                Arguments.of(0, Set.of(new Pathfinding.Range(0., chunk0Length))),
+                Arguments.of(0, Set.of(new Pathfinding.Range(0, chunk0Length))),
                 // Loading gauge constraints fully applied to block
-                Arguments.of(1, Set.of(new Pathfinding.Range(0., chunk1Length))),
+                Arguments.of(1, Set.of(new Pathfinding.Range(0, chunk1Length))),
                 // No loading gauge constraints
                 Arguments.of(2, new HashSet<>())
         );

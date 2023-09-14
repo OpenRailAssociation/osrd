@@ -187,7 +187,7 @@ public class StopTests {
         checkStop(res, List.of(
                 new TrainStop(50, 10_000)
         ));
-        occupancyTest(infraBuilder.fullInfra(), res, occupancy);
+        occupancyTest(res, occupancy);
     }
 
     /** Checks that we can handle engineering allowance with a stop */

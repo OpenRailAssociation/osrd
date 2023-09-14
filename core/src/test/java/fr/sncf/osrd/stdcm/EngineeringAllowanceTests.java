@@ -219,7 +219,7 @@ public class EngineeringAllowanceTests {
                 .run();
 
         assertNotNull(res);
-        STDCMHelpers.occupancyTest(infraBuilder.fullInfra(), res, occupancyGraph);
+        STDCMHelpers.occupancyTest(res, occupancyGraph);
         assertEquals(3600 * 2, res.departureTime(), 2 * timeStep);
         assertTrue(res.departureTime() <= 3600 * 2);
     }
@@ -343,7 +343,7 @@ public class EngineeringAllowanceTests {
                 .run();
 
         assertNotNull(res);
-        STDCMHelpers.occupancyTest(infraBuilder.fullInfra(), res, occupancyGraph);
+        STDCMHelpers.occupancyTest(res, occupancyGraph);
         assertEquals(3600, res.departureTime(), timeStep);
     }
 }

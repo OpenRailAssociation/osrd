@@ -51,7 +51,7 @@ public class STDCMPathfindingTests {
                 .setUnavailableTimes(occupancyGraph)
                 .run();
         assertNotNull(res);
-        STDCMHelpers.occupancyTest(infraBuilder.fullInfra(), res, occupancyGraph);
+        STDCMHelpers.occupancyTest(res, occupancyGraph);
     }
 
     /** Test that no path is found when the blocks aren't connected */
@@ -118,7 +118,7 @@ public class STDCMPathfindingTests {
                 .setUnavailableTimes(occupancyGraph)
                 .run();
         assertNotNull(res);
-        STDCMHelpers.occupancyTest(infraBuilder.fullInfra(), res, occupancyGraph);
+        STDCMHelpers.occupancyTest(res, occupancyGraph);
     }
 
     /** Test that the path can change depending on the occupancy */
@@ -388,7 +388,7 @@ public class STDCMPathfindingTests {
                 .run();
 
         assertNotNull(res);
-        STDCMHelpers.occupancyTest(infraBuilder.fullInfra(), res, occupancyGraph);
+        STDCMHelpers.occupancyTest(res, occupancyGraph);
     }
 
     /** Test that we return the earliest path among the fastest ones*/
@@ -417,7 +417,7 @@ public class STDCMPathfindingTests {
                 .run();
 
         assertNotNull(res);
-        STDCMHelpers.occupancyTest(infraBuilder.fullInfra(), res, occupancyGraph);
+        STDCMHelpers.occupancyTest(res, occupancyGraph);
         assertTrue(res.departureTime() < 300);
     }
   

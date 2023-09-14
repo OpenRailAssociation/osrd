@@ -4,14 +4,11 @@ import static fr.sncf.osrd.Helpers.getExampleRollingStock;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import fr.sncf.osrd.Helpers;
-import fr.sncf.osrd.api.FullInfra;
 import fr.sncf.osrd.railjson.parser.RJSRollingStockParser;
-import fr.sncf.osrd.utils.graph.Pathfinding;
 import fr.sncf.osrd.utils.units.Distance;
 import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.List;
 import java.util.Set;
 
 public class FullSTDCMTests {
@@ -26,10 +23,10 @@ public class FullSTDCMTests {
                 .setRollingStock(
                         RJSRollingStockParser.parse(getExampleRollingStock("fast_rolling_stock.json"))
                 )
-                .setStartLocations(Set.of(convertRouteLocation(infra,
+                .setStartLocations(Set.of(Helpers.convertRouteLocation(infra,
                         "rt.buffer_stop_b->tde.foo_b-switch_foo", Distance.fromMeters(100)))
                 )
-                .setEndLocations(Set.of(convertRouteLocation(infra,
+                .setEndLocations(Set.of(Helpers.convertRouteLocation(infra,
                         "rt.tde.foo_b-switch_foo->buffer_stop_c", Distance.fromMeters(10125))))
                 .run();
         assertNotNull(res);
@@ -41,9 +38,9 @@ public class FullSTDCMTests {
     @Test
     public void testTinyInfraSmallOpening() throws IOException, URISyntaxException {
         var infra = Helpers.fullInfraFromRJS(Helpers.getExampleInfra("tiny_infra/infra.json"));
-        var start = Set.of(convertRouteLocation(infra,
+        var start = Set.of(Helpers.convertRouteLocation(infra,
                 "rt.buffer_stop_b->tde.foo_b-switch_foo", Distance.fromMeters(100)));
-        var end = Set.of(convertRouteLocation(infra,
+        var end = Set.of(Helpers.convertRouteLocation(infra,
                 "rt.tde.foo_b-switch_foo->buffer_stop_c", Distance.fromMeters(10125)));
         var occupancies = STDCMHelpers.makeOccupancyFromPath(infra, start, end, 0);
         double minDelay = STDCMHelpers.getMaxOccupancyLength(occupancies); // Eventually we may need to add a % margin
@@ -62,9 +59,9 @@ public class FullSTDCMTests {
     @Test
     public void testSmallInfraSmallOpening() throws IOException, URISyntaxException {
         var infra = Helpers.fullInfraFromRJS(Helpers.getExampleInfra("small_infra/infra.json"));
-        var start = Set.of(convertRouteLocation(infra,
+        var start = Set.of(Helpers.convertRouteLocation(infra,
                 "rt.buffer_stop_b->tde.foo_b-switch_foo", Distance.fromMeters(100)));
-        var end = Set.of(convertRouteLocation(infra,
+        var end = Set.of(Helpers.convertRouteLocation(infra,
                 "rt.tde.foo_b-switch_foo->buffer_stop_c", Distance.fromMeters(10125)));
         var occupancies = STDCMHelpers.makeOccupancyFromPath(infra, start, end, 0);
         occupancies.putAll(STDCMHelpers.makeOccupancyFromPath(infra, start, end, 600));
@@ -76,20 +73,5 @@ public class FullSTDCMTests {
                 .setUnavailableTimes(occupancies)
                 .run();
         assertNotNull(res);
-    }
-
-    private static Pathfinding.EdgeLocation<Integer> convertRouteLocation(
-            FullInfra infra,
-            String routeName,
-            long offset
-    ) {
-        var blocks = Helpers.getBlocksOnRoutes(infra, List.of(routeName));
-        for (var block : blocks) {
-            var blockLength = infra.blockInfra().getBlockLength(block);
-            if (offset <= blockLength)
-                return new Pathfinding.EdgeLocation<>(block, offset);
-            offset -= blockLength;
-        }
-        throw new RuntimeException("Couldn't find route location");
     }
 }

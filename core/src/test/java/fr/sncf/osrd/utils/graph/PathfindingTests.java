@@ -12,7 +12,7 @@ public class PathfindingTests {
 
     private static class SimpleGraphBuilder {
 
-        private record Edge(double length, String label, Set<Pathfinding.Range> blockedRanges){}
+        private record Edge(long length, String label, Set<Pathfinding.Range> blockedRanges){}
 
         private static class Node{}
 
@@ -34,14 +34,14 @@ public class PathfindingTests {
                 makeNode();
         }
 
-        public void makeEdge(int n1, int n2, double length, Set<Pathfinding.Range> blockedRanges) {
+        public void makeEdge(int n1, int n2, long length, Set<Pathfinding.Range> blockedRanges) {
             var label = String.format("%d-%s", n1, n2);
             var res = new Edge(length, label, blockedRanges);
             builder.addEdge(nodes.get(n1), nodes.get(n2), res);
             edges.put(label, res);
         }
 
-        public void makeEdge(int n1, int n2, double length) {
+        public void makeEdge(int n1, int n2, long length) {
             makeEdge(n1, n2, length, Set.of());
         }
 
@@ -49,7 +49,7 @@ public class PathfindingTests {
             return new LegacyGraphAdapter<>(builder.build());
         }
 
-        public Pathfinding.EdgeLocation<Edge> getEdgeLocation(String id, double offset) {
+        public Pathfinding.EdgeLocation<Edge> getEdgeLocation(String id, long offset) {
             return new Pathfinding.EdgeLocation<>(edges.get(id), offset);
         }
 
