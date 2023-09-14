@@ -38,7 +38,7 @@ jobs:
           cd python/railjson_generator
           poetry run pflake8 --config ./pyproject.toml --output-file flake8.xml --format junit-xml
       - name: Publish flake8 report
-        uses: mikepenz/action-junit-report@v3
+        uses: mikepenz/action-junit-report@v4
         if: failure()
         with:
           report_paths: flake8.xml
