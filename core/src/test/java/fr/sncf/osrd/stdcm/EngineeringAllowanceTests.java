@@ -59,7 +59,7 @@ public class EngineeringAllowanceTests {
                 .run();
 
         assertNotNull(res);
-        STDCMHelpers.occupancyTest(infraBuilder.fullInfra(), res, occupancyGraph, 2 * timeStep);
+        STDCMHelpers.occupancyTest(res, occupancyGraph, 2 * timeStep);
     }
 
     /** Test that we can add an engineering allowance over several blocks to avoid an occupied section */
@@ -113,7 +113,7 @@ public class EngineeringAllowanceTests {
                 .run();
 
         assertNotNull(res);
-        STDCMHelpers.occupancyTest(infraBuilder.fullInfra(), res, occupancyGraph, 2 * timeStep);
+        STDCMHelpers.occupancyTest(res, occupancyGraph, 2 * timeStep);
         assertEquals(0, res.departureTime(), 2 * timeStep);
     }
 
@@ -175,7 +175,7 @@ public class EngineeringAllowanceTests {
                 .run();
 
         assertNotNull(res);
-        STDCMHelpers.occupancyTest(infraBuilder.fullInfra(), res, occupancyGraph, 2 * timeStep);
+        STDCMHelpers.occupancyTest(res, occupancyGraph, 2 * timeStep);
         assertEquals(0, res.departureTime(), 2 * timeStep);
     }
 
@@ -264,7 +264,7 @@ public class EngineeringAllowanceTests {
                 .setTimeStep(timeStep)
                 .run();
         assertNotNull(res);
-        STDCMHelpers.occupancyTest(infraBuilder.fullInfra(), res, occupancyGraph, 2 * timeStep);
+        STDCMHelpers.occupancyTest(res, occupancyGraph, 2 * timeStep);
     }
 
     /** Test that we return null with no crash when we can't slow down fast enough */

@@ -237,7 +237,7 @@ public class StopTests {
         checkStop(res, List.of(
                 new TrainStop(51, 1_000)
         ));
-        occupancyTest(infraBuilder.fullInfra(), res, occupancy, 2 * timeStep);
+        occupancyTest(res, occupancy, 2 * timeStep);
     }
 
     /** Checks that we can handle a standard allowance with a stop */
@@ -288,8 +288,8 @@ public class StopTests {
         );
         checkStop(res.withAllowance(), expectedStops);
         checkStop(res.withoutAllowance(), expectedStops);
-        occupancyTest(infraBuilder.fullInfra(), res.withAllowance(), occupancy, 2 * timeStep);
-        occupancyTest(infraBuilder.fullInfra(), res.withoutAllowance(), occupancy, 2 * timeStep);
+        occupancyTest(res.withAllowance(), occupancy, 2 * timeStep);
+        occupancyTest(res.withoutAllowance(), occupancy, 2 * timeStep);
         checkAllowanceResult(res, allowance, 4 * timeStep);
     }
 
@@ -344,8 +344,8 @@ public class StopTests {
         );
         checkStop(res.withAllowance(), expectedStops);
         checkStop(res.withoutAllowance(), expectedStops);
-        occupancyTest(infraBuilder.fullInfra(), res.withAllowance(), occupancy, 2 * timeStep);
-        occupancyTest(infraBuilder.fullInfra(), res.withoutAllowance(), occupancy, 2 * timeStep);
+        occupancyTest(res.withAllowance(), occupancy, 2 * timeStep);
+        occupancyTest(res.withoutAllowance(), occupancy, 2 * timeStep);
     }
 
     /** Check that the train actually stops at the expected times and positions */

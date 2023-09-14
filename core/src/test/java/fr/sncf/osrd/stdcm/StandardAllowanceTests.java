@@ -130,7 +130,7 @@ public class StandardAllowanceTests {
         var secondBlockEntryTime = res.withAllowance.departureTime()
                 + res.withAllowance.envelope().interpolateTotalTime(infraBuilder.blockInfra.getBlockLength(firstBlock));
         assertTrue(secondBlockEntryTime >= 3600 - timeStep);
-        occupancyTest(infraBuilder.fullInfra(), res.withAllowance, occupancyGraph, timeStep);
+        occupancyTest(res.withAllowance, occupancyGraph, timeStep);
         checkAllowanceResult(res, allowance);
     }
 
@@ -161,7 +161,7 @@ public class StandardAllowanceTests {
         var timeEnterOccupiedSection = res.withAllowance.departureTime()
                 + res.withAllowance.envelope().interpolateTotalTime(5_000);
         assertEquals(3600, timeEnterOccupiedSection, 2 * timeStep);
-        occupancyTest(infraBuilder.fullInfra(), res.withAllowance, occupancyGraph, 2 * timeStep);
+        occupancyTest(res.withAllowance, occupancyGraph, 2 * timeStep);
         checkAllowanceResult(res, allowance);
     }
 
@@ -202,7 +202,7 @@ public class StandardAllowanceTests {
                 .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(2), 1_000)))
                 .setStandardAllowance(allowance)
                 .run();
-        occupancyTest(infraBuilder.fullInfra(), res, occupancyGraph, timeStep);
+        occupancyTest(res, occupancyGraph, timeStep);
 
         var thirdBlockEntryTime = res.departureTime()
                 + res.envelope().interpolateTotalTime(11_000);
@@ -245,7 +245,7 @@ public class StandardAllowanceTests {
                 .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(2), 1)))
                 .setStandardAllowance(allowance)
                 .run();
-        occupancyTest(infraBuilder.fullInfra(), res, occupancyGraph, timeStep);
+        occupancyTest(res, occupancyGraph, timeStep);
 
         var thirdBlockEntryTime = res.departureTime()
                 + res.envelope().interpolateTotalTime(10_001);
@@ -324,7 +324,7 @@ public class StandardAllowanceTests {
         );
         assertNotNull(res.withoutAllowance);
         assertNotNull(res.withAllowance);
-        occupancyTest(infraBuilder.fullInfra(), res.withAllowance, occupancyGraph, timeStep);
+        occupancyTest(res.withAllowance, occupancyGraph, timeStep);
         checkAllowanceResult(res, allowance);
     }
 
@@ -365,7 +365,7 @@ public class StandardAllowanceTests {
                 .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(2), 1_000)))
                 .setStandardAllowance(allowance)
                 .run();
-        occupancyTest(infraBuilder.fullInfra(), res, occupancyGraph, timeStep);
+        occupancyTest(res, occupancyGraph, timeStep);
 
         var thirdBlockEntryTime = res.departureTime()
                 + res.envelope().interpolateTotalTime(11_000);
@@ -462,7 +462,7 @@ public class StandardAllowanceTests {
         );
         assertNotNull(res.withoutAllowance);
         assertNotNull(res.withAllowance);
-        occupancyTest(infraBuilder.fullInfra(), res.withAllowance, occupancyGraph, timeStep);
+        occupancyTest(res.withAllowance, occupancyGraph, timeStep);
 
         // We need a high tolerance because there are several binary searches
         checkAllowanceResult(res, allowance, 4 * timeStep);
@@ -508,7 +508,7 @@ public class StandardAllowanceTests {
         assertNotNull(res.withAllowance);
         assertEquals(0, res.withAllowance.envelope().getEndSpeed());
         assertEquals(0, res.withoutAllowance.envelope().getEndSpeed());
-        occupancyTest(infraBuilder.fullInfra(), res.withAllowance, occupancyGraph, 2 * timeStep);
+        occupancyTest(res.withAllowance, occupancyGraph, 2 * timeStep);
 
         // We need a high tolerance because there are several binary searches
         checkAllowanceResult(res, allowance, 4 * timeStep);

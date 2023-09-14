@@ -4,11 +4,14 @@ import static fr.sncf.osrd.Helpers.getExampleRollingStock;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import fr.sncf.osrd.Helpers;
+import fr.sncf.osrd.api.FullInfra;
 import fr.sncf.osrd.railjson.parser.RJSRollingStockParser;
 import fr.sncf.osrd.utils.graph.Pathfinding;
+import fr.sncf.osrd.utils.units.Distance;
 import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.List;
 import java.util.Set;
 
 public class FullSTDCMTests {
@@ -17,16 +20,17 @@ public class FullSTDCMTests {
      * This is the same test as the one testing the STDCM API, but calling the methods directly */
     @Test
     public void testTinyInfra() throws IOException, URISyntaxException {
-        var infra = Helpers.infraFromRJS(Helpers.getExampleInfra("tiny_infra/infra.json"));
-        var firstRoute = infra.findSignalingRoute("rt.buffer_stop_b->tde.foo_b-switch_foo", "BAL3");
-        var secondRoute = infra.findSignalingRoute("rt.tde.foo_b-switch_foo->buffer_stop_c", "BAL3");
+        var infra = Helpers.fullInfraFromRJS(Helpers.getExampleInfra("tiny_infra/infra.json"));
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra)
                 .setRollingStock(
                         RJSRollingStockParser.parse(getExampleRollingStock("fast_rolling_stock.json"))
                 )
-                .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 100)))
-                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 10125)))
+                .setStartLocations(Set.of(convertRouteLocation(infra,
+                        "rt.buffer_stop_b->tde.foo_b-switch_foo", Distance.fromMeters(100)))
+                )
+                .setEndLocations(Set.of(convertRouteLocation(infra,
+                        "rt.tde.foo_b-switch_foo->buffer_stop_c", Distance.fromMeters(10125))))
                 .run();
         assertNotNull(res);
     }
@@ -36,15 +40,14 @@ public class FullSTDCMTests {
      * add a train at `2 * min delay`, and try to fit a train between the two. */
     @Test
     public void testTinyInfraSmallOpening() throws IOException, URISyntaxException {
-        var fullInfra = Helpers.fullInfraFromRJS(Helpers.getExampleInfra("tiny_infra/infra.json"));
-        var infra = fullInfra.java();
-        var firstRoute = infra.findSignalingRoute("rt.buffer_stop_b->tde.foo_b-switch_foo", "BAL3");
-        var secondRoute = infra.findSignalingRoute("rt.tde.foo_b-switch_foo->buffer_stop_c", "BAL3");
-        var start = Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 100));
-        var end = Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 10125));
-        var occupancies = STDCMHelpers.makeOccupancyFromPath(fullInfra, start, end, 0);
+        var infra = Helpers.fullInfraFromRJS(Helpers.getExampleInfra("tiny_infra/infra.json"));
+        var start = Set.of(convertRouteLocation(infra,
+                "rt.buffer_stop_b->tde.foo_b-switch_foo", Distance.fromMeters(100)));
+        var end = Set.of(convertRouteLocation(infra,
+                "rt.tde.foo_b-switch_foo->buffer_stop_c", Distance.fromMeters(10125)));
+        var occupancies = STDCMHelpers.makeOccupancyFromPath(infra, start, end, 0);
         double minDelay = STDCMHelpers.getMaxOccupancyLength(occupancies); // Eventually we may need to add a % margin
-        occupancies.putAll(STDCMHelpers.makeOccupancyFromPath(fullInfra, start, end, minDelay * 2));
+        occupancies.putAll(STDCMHelpers.makeOccupancyFromPath(infra, start, end, minDelay * 2));
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra)
                 .setStartTime(minDelay)
@@ -58,14 +61,13 @@ public class FullSTDCMTests {
     /** We try to fit a train in a short opening between two trains, this time on small_infra */
     @Test
     public void testSmallInfraSmallOpening() throws IOException, URISyntaxException {
-        var fullInfra = Helpers.fullInfraFromRJS(Helpers.getExampleInfra("small_infra/infra.json"));
-        var infra = fullInfra.java();
-        var firstRoute = infra.findSignalingRoute("rt.buffer_stop.3->DB0", "BAL3");
-        var secondRoute = infra.findSignalingRoute("rt.DH2->buffer_stop.7", "BAL3");
-        var start = Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 1590));
-        var end = Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 5000));
-        var occupancies = STDCMHelpers.makeOccupancyFromPath(fullInfra, start, end, 0);
-        occupancies.putAll(STDCMHelpers.makeOccupancyFromPath(fullInfra, start, end, 600));
+        var infra = Helpers.fullInfraFromRJS(Helpers.getExampleInfra("small_infra/infra.json"));
+        var start = Set.of(convertRouteLocation(infra,
+                "rt.buffer_stop_b->tde.foo_b-switch_foo", Distance.fromMeters(100)));
+        var end = Set.of(convertRouteLocation(infra,
+                "rt.tde.foo_b-switch_foo->buffer_stop_c", Distance.fromMeters(10125)));
+        var occupancies = STDCMHelpers.makeOccupancyFromPath(infra, start, end, 0);
+        occupancies.putAll(STDCMHelpers.makeOccupancyFromPath(infra, start, end, 600));
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra)
                 .setStartTime(300)
@@ -74,5 +76,20 @@ public class FullSTDCMTests {
                 .setUnavailableTimes(occupancies)
                 .run();
         assertNotNull(res);
+    }
+
+    private static Pathfinding.EdgeLocation<Integer> convertRouteLocation(
+            FullInfra infra,
+            String routeName,
+            long offset
+    ) {
+        var blocks = Helpers.getBlocksOnRoutes(infra, List.of(routeName));
+        for (var block : blocks) {
+            var blockLength = infra.blockInfra().getBlockLength(block);
+            if (offset <= blockLength)
+                return new Pathfinding.EdgeLocation<>(block, offset);
+            offset -= blockLength;
+        }
+        throw new RuntimeException("Couldn't find route location");
     }
 }

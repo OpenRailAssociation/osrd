@@ -1,7 +1,5 @@
 package fr.sncf.osrd.stdcm;
 
-import com.google.common.graph.ImmutableNetwork;
-import com.google.common.graph.NetworkBuilder;
 import fr.sncf.osrd.api.FullInfra;
 import fr.sncf.osrd.geom.LineString;
 import fr.sncf.osrd.sim_infra.api.*;

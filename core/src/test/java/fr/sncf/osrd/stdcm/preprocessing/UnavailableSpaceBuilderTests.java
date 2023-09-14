@@ -1,33 +1,34 @@
 package fr.sncf.osrd.stdcm.preprocessing;
 
-import static fr.sncf.osrd.stdcm.preprocessing.implementation.LegacyUnavailableSpaceBuilder.computeUnavailableSpace;
+import static fr.sncf.osrd.stdcm.preprocessing.implementation.UnavailableSpaceBuilder.computeUnavailableSpace;
 import static fr.sncf.osrd.train.TestTrains.REALISTIC_FAST_TRAIN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.api.stdcm.STDCMRequest;
-import fr.sncf.osrd.stdcm.DummyRouteGraphBuilder;
-import fr.sncf.osrd.stdcm.LegacyOccupancyBlock;
+import fr.sncf.osrd.stdcm.DummyInfraBuilder;
+import fr.sncf.osrd.stdcm.OccupancySegment;
 import org.junit.jupiter.api.Test;
 import java.util.Set;
 
 public class UnavailableSpaceBuilderTests {
     @Test
     public void testNoOccupancy() throws Exception {
-        var infra = Helpers.infraFromRJS(Helpers.getExampleInfra("tiny_infra/infra.json"));
-        var res = computeUnavailableSpace(infra, Set.of(), REALISTIC_FAST_TRAIN, 0, 0);
+        var infra = Helpers.fullInfraFromRJS(Helpers.getExampleInfra("tiny_infra/infra.json"));
+        var res = computeUnavailableSpace(infra.rawInfra(), infra.blockInfra(),
+                Set.of(), REALISTIC_FAST_TRAIN, 0, 0);
         assertTrue(res.isEmpty());
     }
 
     @Test
-    public void testFirstRouteOccupied() {
-        var infraBuilder = new DummyRouteGraphBuilder();
-        var firstRoute = infraBuilder.addRoute("a", "b", 1000);
-        var secondRoute = infraBuilder.addRoute("b", "c", 1000);
-        var infra = infraBuilder.build();
+    public void testFirstBlockOccupied() {
+        var infraBuilder = new DummyInfraBuilder();
+        var firstBlock = infraBuilder.addBlock("a", "b", 1000);
+        var secondBlock = infraBuilder.addBlock("b", "c", 1000);
         var res = computeUnavailableSpace(
-                infra,
+                infraBuilder.rawInfra,
+                infraBuilder.blockInfra,
                 Set.of(new STDCMRequest.RouteOccupancy("a->b", 0, 100)),
                 REALISTIC_FAST_TRAIN,
                 0,
@@ -35,31 +36,31 @@ public class UnavailableSpaceBuilderTests {
         );
         assertEquals(
                 Set.of(
-                        new LegacyOccupancyBlock(0, 100, 0, 1000) // base occupancy
+                        new OccupancySegment(0, 100, 0, 1000) // base occupancy
                 ),
-                res.get(firstRoute)
+                res.get(firstBlock)
         );
         assertEquals(
                 Set.of(
-                        // If the train is in this area, the previous route would be "yellow", causing a conflict
-                        new LegacyOccupancyBlock(0, 100, 0, 1000)
+                        // If the train is in this area, the previous block would be "yellow", causing a conflict
+                        new OccupancySegment(0, 100, 0, 1000)
 
                         // Margin added to the base occupancy to account for the train length,
                         // it can be removed if this test fails as it overlaps with the previous one
-                        //new OccupancyBlock(0, 100, 0, REALISTIC_FAST_TRAIN.getLength())
+                        //new OccupancySegment(0, 100, 0, REALISTIC_FAST_TRAIN.getLength())
                 ),
-                res.get(secondRoute)
+                res.get(secondBlock)
         );
     }
 
     @Test
-    public void testSecondRouteOccupied() {
-        var infraBuilder = new DummyRouteGraphBuilder();
-        var firstRoute = infraBuilder.addRoute("a", "b", 1000);
-        var secondRoute = infraBuilder.addRoute("b", "c", 1000);
-        var infra = infraBuilder.build();
+    public void testSecondBlockOccupied() {
+        var infraBuilder = new DummyInfraBuilder();
+        var firstBlock = infraBuilder.addBlock("a", "b", 1000);
+        var secondBlock = infraBuilder.addBlock("b", "c", 1000);
         var res = computeUnavailableSpace(
-                infra,
+                infraBuilder.rawInfra,
+                infraBuilder.blockInfra,
                 Set.of(new STDCMRequest.RouteOccupancy("b->c", 0, 100)),
                 REALISTIC_FAST_TRAIN,
                 0,
@@ -68,20 +69,20 @@ public class UnavailableSpaceBuilderTests {
         assertEquals(
                 Set.of(
                         // Entering this area would cause the train to see a signal that isn't green
-                        new LegacyOccupancyBlock(0, 100, 1000 - 400, 1000)
+                        new OccupancySegment(0, 100, 1000 - 400, 1000)
                 ),
-                res.get(firstRoute)
+                res.get(firstBlock)
         );
         assertEquals(
                 Set.of(
-                        new LegacyOccupancyBlock(0, 100, 0, 1000) // base occupancy
+                        new OccupancySegment(0, 100, 0, 1000) // base occupancy
                 ),
-                res.get(secondRoute)
+                res.get(secondBlock)
         );
     }
 
     @Test
-    public void testBranchingRoutes() {
+    public void testBranchingBlocks() {
         /*
         a1        b1
            \      ^
@@ -91,14 +92,14 @@ public class UnavailableSpaceBuilderTests {
            /      v
          a2       b2
          */
-        final var infraBuilder = new DummyRouteGraphBuilder();
-        final var a1 = infraBuilder.addRoute("a1", "center", 1000);
-        final var a2 = infraBuilder.addRoute("a2", "center", 1000);
-        final var b1 = infraBuilder.addRoute("center", "b1", 1000);
-        final var b2 = infraBuilder.addRoute("center", "b2", 1000);
-        final var infra = infraBuilder.build();
+        final var infraBuilder = new DummyInfraBuilder();
+        final var a1 = infraBuilder.addBlock("a1", "center", 1000);
+        final var a2 = infraBuilder.addBlock("a2", "center", 1000);
+        final var b1 = infraBuilder.addBlock("center", "b1", 1000);
+        final var b2 = infraBuilder.addBlock("center", "b2", 1000);
         final var res = computeUnavailableSpace(
-                infra,
+                infraBuilder.rawInfra,
+                infraBuilder.blockInfra,
                 Set.of(new STDCMRequest.RouteOccupancy("a1->center", 0, 100)),
                 REALISTIC_FAST_TRAIN,
                 0,
@@ -106,7 +107,7 @@ public class UnavailableSpaceBuilderTests {
         );
         assertEquals(
                 Set.of(
-                        new LegacyOccupancyBlock(0, 100, 0, 1000) // base occupancy
+                        new OccupancySegment(0, 100, 0, 1000) // base occupancy
                 ),
                 res.get(a1)
         );
@@ -116,12 +117,12 @@ public class UnavailableSpaceBuilderTests {
         );
         assertEquals(
                 Set.of(
-                        // If the train is in this area, the previous route would be "yellow", causing a conflict
-                        new LegacyOccupancyBlock(0, 100, 0, 1000)
+                        // If the train is in this area, the previous block would be "yellow", causing a conflict
+                        new OccupancySegment(0, 100, 0, 1000)
 
                         // Margin added to the base occupancy to account for the train length,
                         // it can be removed if this test fails as it overlaps with the previous one
-                        // new OccupancyBlock(0, 100, 0, REALISTIC_FAST_TRAIN.getLength())
+                        // new OccupancySegment(0, 100, 0, REALISTIC_FAST_TRAIN.getLength())
                 ),
                 res.get(b1)
         );
@@ -129,14 +130,14 @@ public class UnavailableSpaceBuilderTests {
     }
 
     @Test
-    public void testThirdRoute() {
-        var infraBuilder = new DummyRouteGraphBuilder();
-        infraBuilder.addRoute("a", "b", 1000);
-        infraBuilder.addRoute("b", "c", 1000);
-        var thirdRoute = infraBuilder.addRoute("c", "d", 1000);
-        var infra = infraBuilder.build();
+    public void testThirdBlock() {
+        var infraBuilder = new DummyInfraBuilder();
+        infraBuilder.addBlock("a", "b", 1000);
+        infraBuilder.addBlock("b", "c", 1000);
+        var thirdBlock = infraBuilder.addBlock("c", "d", 1000);
         var res = computeUnavailableSpace(
-                infra,
+                infraBuilder.rawInfra,
+                infraBuilder.blockInfra,
                 Set.of(new STDCMRequest.RouteOccupancy("a->b", 0, 100)),
                 REALISTIC_FAST_TRAIN,
                 0,
@@ -144,23 +145,23 @@ public class UnavailableSpaceBuilderTests {
         );
         assertEquals(
                 Set.of(
-                        // The second route can't be occupied in that time because it would cause a "yellow" state
+                        // The second block can't be occupied in that time because it would cause a "yellow" state
                         // in the first one (conflict), and this accounts for the extra margin needed in the third
-                        // route caused by the train length
-                        new LegacyOccupancyBlock(0, 100, 0, REALISTIC_FAST_TRAIN.getLength())
+                        // block caused by the train length
+                        new OccupancySegment(0, 100, 0, (long) REALISTIC_FAST_TRAIN.getLength())
                 ),
-                res.get(thirdRoute)
+                res.get(thirdBlock)
         );
     }
 
     @Test
     public void testGridMargins() {
-        var infraBuilder = new DummyRouteGraphBuilder();
-        var firstRoute = infraBuilder.addRoute("a", "b", 1000);
-        var secondRoute = infraBuilder.addRoute("b", "c", 1000);
-        var infra = infraBuilder.build();
+        var infraBuilder = new DummyInfraBuilder();
+        var firstBlock = infraBuilder.addBlock("a", "b", 1000);
+        var secondBlock = infraBuilder.addBlock("b", "c", 1000);
         var res = computeUnavailableSpace(
-                infra,
+                infraBuilder.rawInfra,
+                infraBuilder.blockInfra,
                 Set.of(new STDCMRequest.RouteOccupancy("a->b", 100, 200)),
                 REALISTIC_FAST_TRAIN,
                 20,
@@ -170,15 +171,15 @@ public class UnavailableSpaceBuilderTests {
         // (20s before and 60s after)
         assertEquals(
                 Set.of(
-                        new LegacyOccupancyBlock(80, 260, 0, 1000)
+                        new OccupancySegment(80, 260, 0, 1000)
                 ),
-                res.get(firstRoute)
+                res.get(firstBlock)
         );
         assertEquals(
                 Set.of(
-                        new LegacyOccupancyBlock(80, 260, 0, 1000)
+                        new OccupancySegment(80, 260, 0, 1000)
                 ),
-                res.get(secondRoute)
+                res.get(secondBlock)
         );
     }
 }
