@@ -129,8 +129,9 @@ export default function SpaceTimeChart(props) {
    * everything should be done by Hoc, has no direct effect on Comp behavior
    */
   const toggleRotation = () => {
-    setChart({ ...chart, x: chart.y, y: chart.x });
-    setRotate(!rotate);
+    const newRotate = !rotate;
+    setChart({ ...chart, x: chart.y, y: chart.x, rotate: newRotate });
+    setRotate(newRotate);
   };
 
   /*

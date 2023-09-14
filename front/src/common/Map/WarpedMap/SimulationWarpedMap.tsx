@@ -90,12 +90,13 @@ const SimulationWarpedMap: FC<{ collapsed?: boolean }> = ({ collapsed }) => {
   // Boundaries handling (ie zoom sync):
   const syncedBoundingBox: LngLatBoundsLike = useMemo(() => {
     if (chart && state.type === 'dataLoaded') {
-      const { y, height } = chart;
+      const { x, y, width, height, rotate } = chart;
       const { path, transform, warpedBBox } = state;
       const l = length(path, { units: 'meters' });
 
-      const yStart = y(0);
-      const yEnd = y(l);
+      const chartStart = !rotate ? y(0) : x(0);
+      const chartEnd = !rotate ? y(l) : x(l);
+      const size = !rotate ? height : width;
 
       const transformedPath = transform(path) as typeof path;
       const latStart = (first(transformedPath.geometry.coordinates) as Position)[1];
@@ -103,10 +104,11 @@ const SimulationWarpedMap: FC<{ collapsed?: boolean }> = ({ collapsed }) => {
 
       /*
        * Here, `y` is the function provided by d3 to scale distance in meters from the beginning of the path to pixels
-       * from the bottom of the `SpaceTimeChart` (going upwards) to the related point.
-       * So, `yStart` is the y coordinate of the start of the path at the current zoom level, and yEnd is the y
+       * from the bottom of the `SpaceTimeChart` (going upwards) to the related point (we use `x` instead when the chart
+       * is rotated).
+       * So, `chartStart` is the y coordinate of the start of the path at the current zoom level, and chartEnd is the y
        * coordinate of the end of the path.
-       * Finally, `height` is the height in pixels of the SpaceTimeChart.
+       * Finally, `size` is the height in pixels of the SpaceTimeChart (or width when the chart is rotated).
        *
        * Also, we know `latStart` and `latEnd`, which are the latitudes of the first and the last points of our
        * transformed path.
@@ -114,13 +116,15 @@ const SimulationWarpedMap: FC<{ collapsed?: boolean }> = ({ collapsed }) => {
        * We are looking for `latBottom` and `latTop` so that our warped map is as much "aligned" as we can with the
        * `SpaceTimeChart`. According to Thalès, we know that:
        *
-       * (latStart - latBottom) / yStart = (latTop - latBottom) / height = (latEnd - latStart) / (yEnd - yStart)
+       *   (latStart - latBottom) / chartStart
+       * = (latTop - latBottom) / size
+       * = (latEnd - latStart) / (chartEnd - chartStart)
        *
        * That explains the following computations:
        */
-      const ratio = (latEnd - latStart) / (yEnd - yStart);
-      const latBottom = clamp(latStart - yStart * ratio, -90, 90);
-      const latTop = clamp(latBottom + height * ratio, -90, 90);
+      const ratio = (latEnd - latStart) / (chartEnd - chartStart);
+      const latBottom = clamp(latStart - chartStart * ratio, -90, 90);
+      const latTop = clamp(latBottom + size * ratio, -90, 90);
 
       // Since we are here describing a bounding box where only the latBottom and latTop are important, it will have a
       // 0 width, and we just need to specify the middle longitude (based on the visible part of the path on the screen,
