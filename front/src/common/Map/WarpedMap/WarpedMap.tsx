@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import { useSelector } from 'react-redux';
-import React, { FC, PropsWithChildren, useEffect, useMemo, useState } from 'react';
+import React, { FC, useEffect, useMemo, useState } from 'react';
 import { groupBy, map, omit } from 'lodash';
 import { featureCollection } from '@turf/helpers';
 import { BBox2d } from '@turf/helpers/dist/js/lib/geojson';
@@ -8,7 +8,6 @@ import { Feature, FeatureCollection, LineString } from 'geojson';
 import ReactMapGL, { Layer, MapRef, Source } from 'react-map-gl/maplibre';
 import { LngLatBoundsLike } from 'maplibre-gl';
 
-import { RootState } from 'reducers';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import colors from 'common/Map/Consts/colors';
 import { ALL_SIGNAL_LAYERS } from 'common/Map/Consts/SignalsNames';
@@ -20,10 +19,11 @@ import TrainHoverPosition from 'applications/operationalStudies/components/Simul
 import { LayerContext } from 'common/Map/Layers/types';
 import { EditorSource, SourcesDefinitionsIndex } from 'common/Map/Layers/GeoJSONs';
 import OrderedLayer, { OrderedLayerProps } from 'common/Map/Layers/OrderedLayer';
-import { genLayerProps } from 'common/Map/Layers/OSM';
+import { genOSMLayerProps } from 'common/Map/Layers/OSM';
 import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
-import { Viewport } from '../../../reducers/map';
-import { AllowancesSettings, Train } from '../../../reducers/osrdsimulation/types';
+import { Viewport } from 'reducers/map';
+import { getMap } from 'reducers/map/selectors';
+import { AllowancesSettings, Train } from 'reducers/osrdsimulation/types';
 
 const OSRD_LAYER_ORDERS: Record<LayerType, number> = {
   buffer_stops: LAYER_GROUPS_ORDER[LAYERS.BUFFER_STOPS.GROUP],
@@ -66,7 +66,7 @@ const WarpedMap: FC<{
 }) => {
   const prefix = 'warped/';
   const [mapRef, setMapRef] = useState<MapRef | null>(null);
-  const { mapStyle, layersSettings, showIGNBDORTHO } = useSelector((s: RootState) => s.map);
+  const { mapStyle, layersSettings, showIGNBDORTHO } = useSelector(getMap);
   const [viewport, setViewport] = useState<Viewport | null>(null);
 
   // Main OSM and OSRD data:
@@ -99,13 +99,20 @@ const WarpedMap: FC<{
     () =>
       groupBy(
         (
-          genLayerProps(
+          genOSMLayerProps(
             mapStyle,
             LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]
           ) as (OrderedLayerProps & {
             'source-layer': string;
           })[]
-        ).filter((layer) => !layer.id?.match(/-en$/)),
+        ).filter(
+          // Here, we filter out various OSM layers (visible in OSMStyle.json), such as:
+          // - "poi_label-en"
+          // - "road_major_label-en"
+          // - "place_label_other-en"
+          // - ...
+          (layer) => !layer.id?.match(/-en$/)
+        ),
         (layer) => layer['source-layer']
       ),
     [mapStyle]

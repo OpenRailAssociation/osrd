@@ -17,19 +17,23 @@ import {
 import vec, { Vec2 } from 'common/Map/WarpedMap/core/vec-lib';
 import { PolygonZone } from 'types';
 
-/**
+/*
  * Base helpers to manipulate grids:
  */
 export function getGridIndex(grid: GridFeature): GridIndex {
   return keyBy(grid.features, (feature) => feature.properties.triangleId);
 }
 
-export function featureToPointsGrid(grid: GridFeature, steps: number): PointsGrid {
+/**
+ * Given a grid (feature collection of triangles) and the sample number of the path,
+ * returns the matrix of points (array of dicts) from the grid.
+ */
+export function featureToPointsGrid(grid: GridFeature, stepsCount: number): PointsGrid {
   const points: PointsGrid = [];
   const gridIndex = getGridIndex(grid);
-  const stripsPerSide = grid.features.length / steps / 2 / 2;
+  const stripsPerSide = grid.features.length / stepsCount / 2 / 2;
 
-  for (let i = 0; i < steps; i++) {
+  for (let i = 0; i < stepsCount; i++) {
     points[i] = points[i] || {};
     points[i + 1] = points[i + 1] || {};
     for (let direction = -1; direction <= 1; direction += 2) {
@@ -49,7 +53,7 @@ export function featureToPointsGrid(grid: GridFeature, steps: number): PointsGri
 
   return points;
 }
-export function pointsGridToFeature(points: PointsGrid): GridFeature {
+function pointsGridToFeature(points: PointsGrid): GridFeature {
   const grid = featureCollection([]) as GridFeature;
   const steps = points.length - 1;
   const stripsPerSide = (Object.keys(points[0]).length - 1) / 2;
@@ -111,37 +115,52 @@ export function pointsGridToZone(points: PointsGrid): PolygonZone {
 
 /**
  * This function takes a path, and returns two isomorphic grids:
- * - The `regular` grid is vertical grid, with each pair of triangles making a
+ * - The `warped` grid is vertical grid, with each pair of triangles making a
  *   perfectly regular triangle (considering the earth is flat, ie lat/lng are
  *   considered as x/y)
- * - The `warped` grid follows the path
+ * - The `original` grid follows the path
  * Using these two grids, it becomes possible to project any point from one grid
  * to the other.
  */
-export function getGrids(line: Feature<LineString>, params?: { stripsPerSide?: number }): Grids {
-  const l = line.geometry.coordinates.length;
-  if (l <= 2) throw new Error('line must have at least 3 points');
+export function getGrids(line: Feature<LineString>): Grids {
+  const pointsCount = line.geometry.coordinates.length;
+  if (pointsCount <= 2) throw new Error('line must have at least 3 points');
 
-  const stripsPerSide = params?.stripsPerSide || 2;
+  const STRIPS_PER_SIZE = 3;
 
   const totalLength = length(line);
-  const step = totalLength / (l - 1);
+  const step = totalLength / (pointsCount - 1);
   const c = center(line);
   const flatGrid = featureCollection([]) as GridFeature;
 
-  // Generate flat line:
+  /*
+   * Generate flat line:
+   *    flatLineEnd
+   *       |
+   * ┌─────▲─────┐
+   * │     │     │
+   * │     │     │
+   * │     │     │
+   * │     │-----│- c (center of the line)
+   * │     │     │
+   * │     │     │
+   * │     │     │
+   * └─────┴─────┘
+   *       |
+   *   flatLineStart
+   */
   const flatLineStart = destination(c, totalLength / 2, 180);
   const flatLinePoints: Position[] = [];
-  for (let i = 0; i < l; i++)
+  for (let i = 0; i < pointsCount; i++)
     flatLinePoints.push(destination(flatLineStart, -i * step, 180).geometry.coordinates);
   const flatLine = lineString(flatLinePoints);
 
   // Generate flat grid:
-  for (let i = 0; i < l - 1; i++) {
+  for (let i = 0; i < pointsCount - 1; i++) {
     const p0 = flatLine.geometry.coordinates[i];
     const p1 = flatLine.geometry.coordinates[i + 1];
     for (let direction = -1; direction <= 1; direction += 2) {
-      for (let j = 0; j < stripsPerSide; j++) {
+      for (let j = 0; j < STRIPS_PER_SIZE; j++) {
         const p00 = destination(p0, step * j, direction * 90).geometry.coordinates;
         const p01 = destination(p0, step * (j + 1), direction * 90).geometry.coordinates;
         const p10 = destination(p1, step * j, direction * 90).geometry.coordinates;
@@ -163,15 +182,15 @@ export function getGrids(line: Feature<LineString>, params?: { stripsPerSide?: n
   // Generate "twisted" grid:
   // 1. Store points for each triangle:
   const points: PointsGrid = [];
-  for (let i = 0; i < l; i++) {
+  for (let i = 0; i < pointsCount; i++) {
     points[i] = {};
     const p = line.geometry.coordinates[i];
     const pP = line.geometry.coordinates[i === 0 ? i : i - 1];
-    const pN = line.geometry.coordinates[i === l - 1 ? i : i + 1];
+    const pN = line.geometry.coordinates[i === pointsCount - 1 ? i : i + 1];
     const angle = bearing(pP, pN) + 90;
     points[i][0] = p;
     for (let direction = -1; direction <= 1; direction += 2) {
-      for (let j = 1; j <= stripsPerSide; j++) {
+      for (let j = 1; j <= STRIPS_PER_SIZE; j++) {
         points[i][direction * j] = destination(p, step * j * direction, angle).geometry.coordinates;
       }
     }
@@ -180,11 +199,11 @@ export function getGrids(line: Feature<LineString>, params?: { stripsPerSide?: n
   // 2. Store triangles:
   const grid = pointsGridToFeature(points);
 
-  return { warped: grid, regular: flatGrid };
+  return { original: grid, warped: flatGrid };
 }
 
 /**
- * This grid created by `getGrids` are a bit brute, and can have some weird
+ * This grid created by `getGrids` is a bit brute, and can have some weird
  * knots, when the input path is too curved. This function helps to get a
  * better warped curve, by moving each point (except the path and the first and
  * last rows) towards the barycenter of its neighbors.

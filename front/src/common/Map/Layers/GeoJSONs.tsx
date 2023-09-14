@@ -69,10 +69,17 @@ function transformTheme(theme: Theme, reducer: (color: string) => string): Theme
 /**
  * Helper to add filters to existing LayerProps.filter values:
  */
-function adaptFilter(layer: LayerProps, blackList: string[], whiteList: string[]): LayerProps {
+function adaptFilter(
+  layer: LayerProps,
+  blackList: string[],
+  whiteList: string[],
+  removeZoomContraint?: boolean
+): LayerProps {
   if (layer.type === 'background') return layer;
 
-  const res = { ...layer };
+  const updatedLayer: LayerProps = removeZoomContraint
+    ? (omit(layer, 'minzoom') as LayerProps)
+    : { ...layer };
   const conditions: FilterSpecification[] = layer.filter ? [layer.filter] : [];
 
   if (whiteList.length) conditions.push(['in', 'id', ...whiteList]);
@@ -80,13 +87,13 @@ function adaptFilter(layer: LayerProps, blackList: string[], whiteList: string[]
 
   switch (conditions.length) {
     case 0:
-      return res;
+      return updatedLayer;
     case 1:
-      return { ...res, filter: conditions[0] };
+      return { ...updatedLayer, filter: conditions[0] } as LayerProps;
     default:
       // for 'all' predicate, 'conditions' must be a 'LegacyFilterSpecification' type
       // that why we use the 'as'
-      return { ...res, filter: ['all', ...conditions] as FilterSpecification };
+      return { ...updatedLayer, filter: ['all', ...conditions] } as LayerProps;
   }
 }
 
@@ -339,6 +346,7 @@ const GeoJSONs: FC<{
   fingerprint?: string | number;
   isEmphasized?: boolean;
   beforeId?: string;
+  // When true, all layers are rendered (ie "minZoom" restrictions are ignored)
   renderAll?: boolean;
 }> = ({
   colors,
@@ -394,45 +402,42 @@ const GeoJSONs: FC<{
     [hiddenColors, layerContext]
   );
 
-  const sources = useMemo(() => {
-    const res = SOURCES_DEFINITION.flatMap((source) =>
-      !layers || layers.has(source.entityType)
-        ? [
-            {
-              id: `${prefix}geo/${source.entityType}`,
-              url: `${MAP_URL}/layer/${source.entityType}/mvt/geo/?infra=${infraID}`,
-              layers: source
-                .getLayers({ ...hiddenLayerContext, sourceTable: source.entityType }, prefix)
-                .map((layer) => adaptFilter(layer, (hidden || []).concat(selection || []), [])),
-            },
-            {
-              id: `${selectedPrefix}geo/${source.entityType}`,
-              url: `${MAP_URL}/layer/${source.entityType}/mvt/geo/?infra=${infraID}`,
-              layers: source
-                .getLayers({ ...layerContext, sourceTable: source.entityType }, selectedPrefix)
-                .map((layer) => adaptFilter(layer, hidden || [], selection || [])),
-            },
-          ]
-        : []
-    );
-
-    return renderAll
-      ? res.map((source) => ({
-          ...source,
-          layers: source.layers.map((layer) => omit(layer, 'minzoom') as typeof layer),
-        }))
-      : res;
-  }, [
-    hidden,
-    hiddenLayerContext,
-    layerContext,
-    layers,
-    infraID,
-    prefix,
-    selectedPrefix,
-    selection,
-    renderAll,
-  ]);
+  const sources = useMemo(
+    () =>
+      SOURCES_DEFINITION.flatMap((source) =>
+        !layers || layers.has(source.entityType)
+          ? [
+              {
+                id: `${prefix}geo/${source.entityType}`,
+                url: `${MAP_URL}/layer/${source.entityType}/mvt/geo/?infra=${infraID}`,
+                layers: source
+                  .getLayers({ ...hiddenLayerContext, sourceTable: source.entityType }, prefix)
+                  .map((layer) =>
+                    adaptFilter(layer, (hidden || []).concat(selection || []), [], renderAll)
+                  ),
+              },
+              {
+                id: `${selectedPrefix}geo/${source.entityType}`,
+                url: `${MAP_URL}/layer/${source.entityType}/mvt/geo/?infra=${infraID}`,
+                layers: source
+                  .getLayers({ ...layerContext, sourceTable: source.entityType }, selectedPrefix)
+                  .map((layer) => adaptFilter(layer, hidden || [], selection || [], renderAll)),
+              },
+            ]
+          : []
+      ),
+    [
+      hidden,
+      hiddenLayerContext,
+      layerContext,
+      layers,
+      infraID,
+      prefix,
+      selectedPrefix,
+      selection,
+      renderAll,
+    ]
+  );
 
   if (skipSources) {
     return null;

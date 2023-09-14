@@ -227,6 +227,7 @@ export default function SpaceTimeChart(props) {
       moveGridLinesOnMouseMove();
     }
 
+    // Required to sync the camera in SimulationWarpedMap:
     dispatchUpdateChart(chart);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chart]);

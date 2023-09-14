@@ -1,17 +1,19 @@
-.show-warped-map-button {
-  border: none;
-  background: none;
-  cursor: pointer;
-  color: var(--coolgray7);
-}
+.simulation-warped-map {
+  .show-warped-map-button {
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: var(--coolgray7);
+  }
 
-.warped-map {
-  overflow: hidden;
-  transition: 0.2s;
+  .warped-map {
+    overflow: hidden;
+    transition: 0.2s;
 
-  .buttons {
-    position: absolute;
-    bottom: 2em;
-    right: 2em;
+    .buttons {
+      position: absolute;
+      bottom: 2em;
+      right: 2em;
+    }
   }
 }

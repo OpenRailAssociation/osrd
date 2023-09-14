@@ -14,7 +14,7 @@ interface OSMProps {
   layerOrder?: number;
 }
 
-export function getMapStyle(mapStyle: string): LayerProps[] {
+function getMapStyle(mapStyle: string): LayerProps[] {
   switch (mapStyle) {
     case 'empty':
       return [] as LayerProps[];
@@ -27,7 +27,7 @@ export function getMapStyle(mapStyle: string): LayerProps[] {
   }
 }
 
-export function genLayerProps(
+export function genOSMLayerProps(
   mapStyle: string,
   layerOrder?: number
 ): (OrderedLayerProps & { key?: string })[] {
@@ -40,8 +40,8 @@ export function genLayerProps(
   }));
 }
 
-export function genLayers(mapStyle: string, layerOrder?: number) {
-  return genLayerProps(mapStyle, layerOrder).map((props) => <OrderedLayer {...props} />);
+export function genOSMLayers(mapStyle: string, layerOrder?: number) {
+  return genOSMLayerProps(mapStyle, layerOrder).map((props) => <OrderedLayer {...props} />);
 }
 
 function OSM(props: OSMProps) {
@@ -49,7 +49,7 @@ function OSM(props: OSMProps) {
 
   return (
     <Source id="osm" type="vector" url={OSM_URL}>
-      {genLayers(mapStyle, layerOrder)}
+      {genOSMLayers(mapStyle, layerOrder)}
     </Source>
   );
 }
