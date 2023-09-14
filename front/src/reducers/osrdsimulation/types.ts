@@ -32,6 +32,7 @@ export interface Chart {
   yAxisGrid: d3.Selection<SVGGElement, unknown, null, undefined>;
   svg: d3.Selection<SVGGElement, unknown, null, undefined>;
   drawZone: d3.Selection<SVGGElement, unknown, null, undefined>;
+  rotate?: boolean;
 }
 export interface AllowancesSetting {
   base: boolean;

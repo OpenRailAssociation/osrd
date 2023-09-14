@@ -119,6 +119,7 @@ const defineChart = (
     drawZone,
     originalScaleX,
     originalScaleY,
+    rotate,
   };
 };
 
