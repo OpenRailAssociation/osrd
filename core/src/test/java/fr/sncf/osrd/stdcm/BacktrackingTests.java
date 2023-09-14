@@ -5,7 +5,7 @@ import static java.lang.Double.POSITIVE_INFINITY;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableMultimap;
-import fr.sncf.osrd.stdcm.graph.LegacySTDCMSimulations;
+import fr.sncf.osrd.stdcm.graph.STDCMSimulations;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import org.junit.jupiter.api.Test;
@@ -21,83 +21,80 @@ public class BacktrackingTests {
         /*
         a ------> b
          */
-        var infraBuilder = new DummyRouteGraphBuilder();
-        var route = infraBuilder.addRoute("a", "b", 1000);
-        var firstRouteEnvelope = LegacySTDCMSimulations.simulateRoute(route, 0, 0,
-                REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., null, null);
-        assert firstRouteEnvelope != null;
-        var runTime = firstRouteEnvelope.getTotalTime();
-        var infra = infraBuilder.build();
+        var infraBuilder = new DummyInfraBuilder();
+        var block = infraBuilder.addBlock("a", "b", 1000);
+        var firstBlockEnvelope = STDCMSimulations.simulateBlock(infraBuilder.rawInfra, infraBuilder.blockInfra,
+                block, 0, 0, REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., null, null);
+        assert firstBlockEnvelope != null;
+        var runTime = firstBlockEnvelope.getTotalTime();
         var occupancyGraph = ImmutableMultimap.of(
-                route, new LegacyOccupancyBlock(runTime + 1, POSITIVE_INFINITY, 0, 1000)
+                block, new OccupancySegment(runTime + 1, POSITIVE_INFINITY, 0, 1000)
         );
         var res = new STDCMPathfindingBuilder()
-                .setInfra(infra)
-                .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(route, 0)))
-                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(route, 1_000)))
+                .setInfra(infraBuilder.fullInfra())
+                .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(block, 0)))
+                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(block, 1_000)))
                 .setUnavailableTimes(occupancyGraph)
                 .run();
         if (res == null)
             return;
-        STDCMHelpers.occupancyTest(res, occupancyGraph);
+        STDCMHelpers.occupancyTest(infraBuilder.fullInfra(), res, occupancyGraph);
     }
 
-    /** This is the same test as the one above, but with the braking curve spanning over several routes */
+    /** This is the same test as the one above, but with the braking curve spanning over several blocks */
     @Test
-    public void testBacktrackingBrakingCurveSeveralRoutes() {
+    public void testBacktrackingBrakingCurveSeveralBlocks() {
         /*
         a ------> b -> c -> d -> e
          */
-        var infraBuilder = new DummyRouteGraphBuilder();
-        var firstRoute = infraBuilder.addRoute("a", "b", 1000);
-        infraBuilder.addRoute("b", "c", 10);
-        infraBuilder.addRoute("c", "d", 10);
-        var lastRoute = infraBuilder.addRoute("d", "e", 10);
-        var firstRouteEnvelope = LegacySTDCMSimulations.simulateRoute(firstRoute, 0, 0,
-                REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., null, null);
-        assert firstRouteEnvelope != null;
-        var runTime = firstRouteEnvelope.getTotalTime();
-        var infra = infraBuilder.build();
+        var infraBuilder = new DummyInfraBuilder();
+        var firstBlock = infraBuilder.addBlock("a", "b", 1000);
+        infraBuilder.addBlock("b", "c", 10);
+        infraBuilder.addBlock("c", "d", 10);
+        var lastBlock = infraBuilder.addBlock("d", "e", 10);
+        var firstBlockEnvelope = STDCMSimulations.simulateBlock(infraBuilder.rawInfra, infraBuilder.blockInfra,
+                firstBlock, 0, 0, REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., null, null);
+        assert firstBlockEnvelope != null;
+        var runTime = firstBlockEnvelope.getTotalTime();
         var occupancyGraph = ImmutableMultimap.of(
-                lastRoute, new LegacyOccupancyBlock(runTime + 10, POSITIVE_INFINITY, 0, 10)
+                lastBlock, new OccupancySegment(runTime + 10, POSITIVE_INFINITY, 0, 10)
         );
         var res = new STDCMPathfindingBuilder()
-                .setInfra(infra)
-                .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)))
-                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(lastRoute, 5)))
+                .setInfra(infraBuilder.fullInfra())
+                .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 0)))
+                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(lastBlock, 5)))
                 .setUnavailableTimes(occupancyGraph)
                 .run();
         if (res == null)
             return;
-        STDCMHelpers.occupancyTest(res, occupancyGraph);
+        STDCMHelpers.occupancyTest(infraBuilder.fullInfra(), res, occupancyGraph);
     }
 
-    /** Test that we don't stay in the first route for too long when there is an MRSP drop at the route transition */
+    /** Test that we don't stay in the first block for too long when there is an MRSP drop at the block transition */
     @Test
     public void testBacktrackingMRSPDrop() {
         /*
         a ------> b -> c
          */
-        var infraBuilder = new DummyRouteGraphBuilder();
-        var firstRoute = infraBuilder.addRoute("a", "b", 1000);
-        var secondRoute = infraBuilder.addRoute("b", "c", 100, 5);
-        var firstRouteEnvelope = LegacySTDCMSimulations.simulateRoute(firstRoute, 0, 0,
-                REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., null, null);
-        assert firstRouteEnvelope != null;
-        var runTime = firstRouteEnvelope.getTotalTime();
-        var infra = infraBuilder.build();
+        var infraBuilder = new DummyInfraBuilder();
+        var firstBlock = infraBuilder.addBlock("a", "b", 1000);
+        var secondBlock = infraBuilder.addBlock("b", "c", 100, 5);
+        var firstBlockEnvelope = STDCMSimulations.simulateBlock(infraBuilder.rawInfra, infraBuilder.blockInfra,
+                firstBlock, 0, 0, REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., null, null);
+        assert firstBlockEnvelope != null;
+        var runTime = firstBlockEnvelope.getTotalTime();
         var occupancyGraph = ImmutableMultimap.of(
-                firstRoute, new LegacyOccupancyBlock(runTime + 10, POSITIVE_INFINITY, 0, 1000)
+                firstBlock, new OccupancySegment(runTime + 10, POSITIVE_INFINITY, 0, 1000)
         );
         var res = new STDCMPathfindingBuilder()
-                .setInfra(infra)
-                .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)))
-                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 5)))
+                .setInfra(infraBuilder.fullInfra())
+                .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 0)))
+                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(secondBlock, 5)))
                 .setUnavailableTimes(occupancyGraph)
                 .run();
         if (res == null)
             return;
-        STDCMHelpers.occupancyTest(res, occupancyGraph);
+        STDCMHelpers.occupancyTest(infraBuilder.fullInfra(), res, occupancyGraph);
     }
 
     /** Test that we can backtrack several times over the same edges */
@@ -106,19 +103,18 @@ public class BacktrackingTests {
         /*
         a ------> b -> c -> d -> e ----> f
 
-        Long first route for speedup, then the MRSP drops at each (short) route
+        Long first block for speedup, then the MRSP drops at each (short) block
          */
-        var infraBuilder = new DummyRouteGraphBuilder();
-        var firstRoute = infraBuilder.addRoute("a", "b", 10000);
-        infraBuilder.addRoute("b", "c", 10, 20);
-        infraBuilder.addRoute("c", "d", 10, 15);
-        infraBuilder.addRoute("d", "e", 10, 10);
-        var lastRoute = infraBuilder.addRoute("e", "f", 1000, 5);
-        var infra = infraBuilder.build();
+        var infraBuilder = new DummyInfraBuilder();
+        var firstBlock = infraBuilder.addBlock("a", "b", 10000);
+        infraBuilder.addBlock("b", "c", 10, 20);
+        infraBuilder.addBlock("c", "d", 10, 15);
+        infraBuilder.addBlock("d", "e", 10, 10);
+        var lastBlock = infraBuilder.addBlock("e", "f", 1000, 5);
         var res = new STDCMPathfindingBuilder()
-                .setInfra(infra)
-                .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)))
-                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(lastRoute, 1_000)))
+                .setInfra(infraBuilder.fullInfra())
+                .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 0)))
+                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(lastBlock, 1_000)))
                 .run();
         assert res != null;
         assertTrue(res.envelope().continuous);

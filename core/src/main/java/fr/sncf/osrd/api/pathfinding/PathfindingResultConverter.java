@@ -58,12 +58,12 @@ public class PathfindingResultConverter {
     }
 
     /** Creates a `Path` instance from a list of block range */
-    static Path makePath(
+    public static Path makePath(
             RawSignalingInfra infra,
             BlockInfra blockInfra,
             List<Pathfinding.EdgeRange<Integer>> blockRanges
     ) {
-        assert (blockRanges.size() > 0);
+        assert !blockRanges.isEmpty();
         long totalBlockPathLength = 0;
         var chunks = new MutableDirStaticIdxArrayList<TrackChunk>();
         for (var range : blockRanges) {
@@ -77,7 +77,7 @@ public class PathfindingResultConverter {
         long startOffset = blockRanges.get(0).start();
         var lastRange = blockRanges.get(blockRanges.size() - 1);
         var lastBlockLength = blockInfra.getBlockLength(lastRange.edge());
-        var endOffset = totalBlockPathLength - lastBlockLength + Math.round(lastRange.end());
+        var endOffset = totalBlockPathLength - lastBlockLength + lastRange.end();
         return buildPathFrom(infra, chunks, startOffset, endOffset);
     }
 
@@ -108,7 +108,7 @@ public class PathfindingResultConverter {
         var res = new ArrayList<PathWaypointResult>();
 
         long lengthPrevBlocks = 0;
-        long startFirstRange = Math.round(rawPath.ranges().get(0).start());
+        long startFirstRange = rawPath.ranges().get(0).start();
         for (var blockRange : rawPath.ranges()) {
             for (var waypoint : userDefinedWaypointsPerBlock.get(blockRange.edge())) {
                 if (blockRange.start() <= waypoint && waypoint <= blockRange.end()) {

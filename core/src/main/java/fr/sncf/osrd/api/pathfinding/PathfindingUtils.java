@@ -25,7 +25,8 @@ public class PathfindingUtils {
 
 
     /**
-     * @param infra FullInfra
+     * @param rawInfra RawSignalingInfra
+     * @param blockInfra BlockInfra
      * @param blockIds the blocks in the order they are encountered
      * @param offsetFirstBlock the path offset on the first block in millimeters
      * @return corresponding path

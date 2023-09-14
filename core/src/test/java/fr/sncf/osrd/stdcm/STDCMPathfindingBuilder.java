@@ -2,11 +2,10 @@ package fr.sncf.osrd.stdcm;
 
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
-import fr.sncf.osrd.stdcm.graph.LegacySTDCMPathfinding;
+import fr.sncf.osrd.api.FullInfra;
+import fr.sncf.osrd.stdcm.graph.STDCMPathfinding;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
-import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
-import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
-import fr.sncf.osrd.stdcm.preprocessing.implementation.RouteAvailabilityLegacyAdapter;
+import fr.sncf.osrd.stdcm.preprocessing.implementation.BlockAvailabilityLegacyAdapter;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.TestTrains;
 import fr.sncf.osrd.utils.graph.Pathfinding;
@@ -23,9 +22,9 @@ import java.util.Set;
 public class STDCMPathfindingBuilder {
 
     // region NON-OPTIONAL
-    private SignalingInfra infra = null;
+    private FullInfra infra = null;
 
-    List<LegacySTDCMStep> steps = new ArrayList<>();
+    List<STDCMStep> steps = new ArrayList<>();
 
     // endregion NON-OPTIONAL
 
@@ -33,7 +32,7 @@ public class STDCMPathfindingBuilder {
     private RollingStock rollingStock = TestTrains.REALISTIC_FAST_TRAIN;
     private double startTime = 0;
     private RollingStock.Comfort comfort = RollingStock.Comfort.STANDARD;
-    Multimap<SignalingRoute, LegacyOccupancyBlock> unavailableTimes = ImmutableMultimap.of();
+    Multimap<Integer, OccupancySegment> unavailableTimes = ImmutableMultimap.of();
     double timeStep = 2.;
     double maxDepartureDelay = 3600 * 2;
     double maxRunTime = Double.POSITIVE_INFINITY;
@@ -43,7 +42,7 @@ public class STDCMPathfindingBuilder {
 
     // region SETTERS
     /** Sets the infra to be used */
-    public STDCMPathfindingBuilder setInfra(SignalingInfra infra) {
+    public STDCMPathfindingBuilder setInfra(FullInfra infra) {
         this.infra = infra;
         return this;
     }
@@ -55,19 +54,19 @@ public class STDCMPathfindingBuilder {
     }
 
     /** Sets the locations at which the train can start. Meant to be used for simple tests with no intermediate steps */
-    public STDCMPathfindingBuilder setStartLocations(Set<Pathfinding.EdgeLocation<SignalingRoute>> startLocations) {
-        this.steps.add(0, new LegacySTDCMStep(startLocations, 0, true));
+    public STDCMPathfindingBuilder setStartLocations(Set<Pathfinding.EdgeLocation<Integer>> startLocations) {
+        this.steps.add(0, new STDCMStep(startLocations, 0, true));
         return this;
     }
 
     /** Sets the locations the train must reach. Meant to be used for simple tests with no intermediate steps */
-    public STDCMPathfindingBuilder setEndLocations(Set<Pathfinding.EdgeLocation<SignalingRoute>> endLocations) {
-        this.steps.add(new LegacySTDCMStep(endLocations, 0, true));
+    public STDCMPathfindingBuilder setEndLocations(Set<Pathfinding.EdgeLocation<Integer>> endLocations) {
+        this.steps.add(new STDCMStep(endLocations, 0, true));
         return this;
     }
 
     /** Add a step to the path */
-    public STDCMPathfindingBuilder addStep(LegacySTDCMStep step) {
+    public STDCMPathfindingBuilder addStep(STDCMStep step) {
         this.steps.add(step);
         return this;
     }
@@ -86,7 +85,7 @@ public class STDCMPathfindingBuilder {
 
     /** Sets at which times each section of routes are unavailable. By default, everything is available */
     public STDCMPathfindingBuilder setUnavailableTimes(
-            Multimap<SignalingRoute, LegacyOccupancyBlock> unavailableTimes
+            Multimap<Integer, OccupancySegment> unavailableTimes
     ) {
         this.unavailableTimes = unavailableTimes;
         return this;
@@ -129,14 +128,14 @@ public class STDCMPathfindingBuilder {
         assert infra != null : "infra is a required parameter and was not set";
         assert rollingStock != null : "rolling stock is a required parameter and was not set";
         assert steps.size() >= 2 : "Not enough steps have been set";
-        return LegacySTDCMPathfinding.findPath(
+        return STDCMPathfinding.findPath(
                 infra,
                 rollingStock,
                 comfort,
                 startTime,
                 0,
                 steps,
-                new RouteAvailabilityLegacyAdapter(unavailableTimes),
+                new BlockAvailabilityLegacyAdapter(infra.blockInfra(), unavailableTimes),
                 timeStep,
                 maxDepartureDelay,
                 maxRunTime,

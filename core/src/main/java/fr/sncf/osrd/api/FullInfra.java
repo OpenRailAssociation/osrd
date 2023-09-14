@@ -10,13 +10,14 @@ import fr.sncf.osrd.reporting.warnings.DiagnosticRecorder;
 import fr.sncf.osrd.signaling.SignalingSimulator;
 import fr.sncf.osrd.sim_infra.api.BlockInfra;
 import fr.sncf.osrd.sim_infra.api.LoadedSignalInfra;
+import fr.sncf.osrd.sim_infra.api.RawSignalingInfra;
 import fr.sncf.osrd.sim_infra_adapter.SimInfraAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.Set;
 
 public record FullInfra(SignalingInfra java,
-                        SimInfraAdapter rawInfra,
+                        RawSignalingInfra rawInfra,
                         LoadedSignalInfra loadedSignalInfra,
                         BlockInfra blockInfra,
                         SignalingSimulator signalingSimulator) {

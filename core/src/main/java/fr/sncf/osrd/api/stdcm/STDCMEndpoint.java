@@ -116,18 +116,19 @@ public class STDCMEndpoint implements Take {
             simResult.speedLimits.add(ResultEnvelopePoint.from(
                     MRSP.computeMRSP(res.trainPath(), rollingStock, false, tag)
             ));
+            /*
             simResult.baseSimulations.add(ScheduleMetadataExtractor.run(
                     res.envelope(),
                     res.trainPath(),
                     makeTrainSchedule(res.envelope().getEndPos(), rollingStock, comfort, res.stopResults()),
                     infra
             ));
+             */
             simResult.ecoSimulations.add(null);
             var pathfindingRes = PathfindingResultConverter.convert(infra.blockInfra(), infra.rawInfra(),
                     res.blocks(), recorder);
             var response = new STDCMResponse(simResult, pathfindingRes, res.departureTime());
             return new RsJson(new RsWithBody(STDCMResponse.adapter.toJson(response)));
-            return null;
         } catch (Throwable ex) {
             return ExceptionHandler.handle(ex);
         }

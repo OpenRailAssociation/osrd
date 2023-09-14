@@ -2,7 +2,6 @@ package fr.sncf.osrd.stdcm.graph;
 
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.sim_infra.impl.BlockInfraImplKt;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
