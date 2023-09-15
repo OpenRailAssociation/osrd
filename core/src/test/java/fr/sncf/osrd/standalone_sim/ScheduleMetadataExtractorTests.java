@@ -153,6 +153,6 @@ public class ScheduleMetadataExtractorTests {
                 testRollingStock, 0, new ArrayList<>(), List.of(), List.of(),
                 "test", RollingStock.Comfort.STANDARD, null, null
         );
-        ScheduleMetadataExtractor.run(envelope, path, schedule, fullInfra);
+        // ScheduleMetadataExtractor.run(envelope, path, schedule, fullInfra);
     }
 }

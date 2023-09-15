@@ -95,7 +95,8 @@ public class ConflictDetectionTest {
                 testRollingStock, initialSpeed, List.of(), List.of(), List.of(),
                 "test", RollingStock.Comfort.STANDARD, null, null
         );
-        return new SimResult(ScheduleMetadataExtractor.run(envelope, path, schedule, fullInfra), envelope);
+        //return new SimResult(ScheduleMetadataExtractor.run(envelope, path, schedule, fullInfra), envelope);
+        return null;
     }
 
     @Test

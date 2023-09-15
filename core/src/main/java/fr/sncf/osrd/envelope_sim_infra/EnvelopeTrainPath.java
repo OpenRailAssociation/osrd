@@ -71,7 +71,7 @@ public class EnvelopeTrainPath {
             DistanceRangeMap<Electrification> map) {
         TreeRangeMap<Double, Electrification> res = TreeRangeMap.create();
         for (var entry : map.asList()) {
-            res.put(Range.closedOpen(toMeters(entry.getLower()), toMeters(entry.getUpper())), entry.getValue());
+            res.put(Range.closed(toMeters(entry.getLower()), toMeters(entry.getUpper())), entry.getValue());
         }
         return ImmutableRangeMap.copyOf(res);
     }
