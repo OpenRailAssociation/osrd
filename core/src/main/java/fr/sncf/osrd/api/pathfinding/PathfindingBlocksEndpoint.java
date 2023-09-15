@@ -1,6 +1,7 @@
 package fr.sncf.osrd.api.pathfinding;
 
 import static fr.sncf.osrd.api.pathfinding.RemainingDistanceEstimator.minDistanceBetweenSteps;
+import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.POSITION_EPSILON;
 import static fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection.START_TO_STOP;
 import static fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection.STOP_TO_START;
 import static fr.sncf.osrd.sim_infra.api.TrackInfraKt.getTrackSectionFromNameOrThrow;
@@ -19,6 +20,7 @@ import fr.sncf.osrd.api.pathfinding.constraints.ElectrificationConstraints;
 import fr.sncf.osrd.api.pathfinding.constraints.LoadingGaugeConstraints;
 import fr.sncf.osrd.api.pathfinding.request.PathfindingRequest;
 import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint;
+import fr.sncf.osrd.api.pathfinding.response.PathWaypointResult;
 import fr.sncf.osrd.api.pathfinding.response.PathfindingResult;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.railjson.parser.RJSRollingStockParser;
@@ -291,7 +293,7 @@ public class PathfindingBlocksEndpoint implements Take {
                 .flatMap(route -> route.trackSections.stream())
                 .toList();
         assertPathTracksAreComplete(tracksOnPath, rawInfra);
-        assertRequiredWaypointsOnPathTracks(reqWaypoints, tracksOnPath);
+        assertRequiredWaypointsOnPathTracks(reqWaypoints, tracksOnPath, res.pathWaypoints);
     }
 
     private void assertPathRoutesAreAdjacent(List<Integer> routeTracks, RawSignalingInfra rawInfra) {
@@ -343,12 +345,22 @@ public class PathfindingBlocksEndpoint implements Take {
     }
 
     private void assertRequiredWaypointsOnPathTracks(PathfindingWaypoint[][] reqWaypoints,
-                                                     List<RJSDirectionalTrackRange> tracksOnPath) {
+                                                     List<RJSDirectionalTrackRange> tracksOnPath,
+                                                     List<PathWaypointResult> pathWaypoints) {
         // Checks that at least one waypoint of each step is on the path
         assert Arrays.stream(reqWaypoints).allMatch(step -> Arrays.stream(step)
                 .anyMatch(waypoint -> tracksOnPath.stream()
                         .anyMatch(trackOnPath -> isWaypointOnTrack(waypoint, trackOnPath))))
                 : "The path does not contain one of the wanted steps";
+
+        for (var waypoint : pathWaypoints) {
+            var loc = waypoint.location;
+            assert tracksOnPath.stream()
+                    .filter(range -> range.trackSectionID.equals(loc.trackSection))
+                    .anyMatch(range -> loc.offset >= range.begin - POSITION_EPSILON
+                            && loc.offset <= range.end + POSITION_EPSILON)
+                    : "A waypoint isn't included in the track path";
+        }
     }
 
     private boolean isWaypointOnTrack(PathfindingWaypoint waypoint, RJSDirectionalTrackRange track) {
