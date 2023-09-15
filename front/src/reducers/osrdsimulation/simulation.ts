@@ -51,8 +51,6 @@ const apiSyncOnDiff = (
     if (!nextTrain) {
       // Call delete API (await)
       try {
-        // TODO: REMOVE THIS AFTER REFACTORING
-        //   deleteRequest(`${trainscheduleURI}${id}/`);
         dispatch(osrdEditoastApi.endpoints.deleteTrainScheduleById.initiate({ id }));
       } catch (deleteTrainScheduleError) {
         dispatch(
