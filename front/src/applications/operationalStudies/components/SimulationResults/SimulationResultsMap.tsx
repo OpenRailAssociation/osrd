@@ -151,7 +151,7 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
         const trainTime = trainRegime.head_positions[0][0].time;
         const train2ndTime = last(last(trainRegime.head_positions))?.time as number;
         if (
-          actualTime >= (trainTime as number) &&
+          actualTime >= trainTime &&
           actualTime <= train2ndTime &&
           train.id !== selectedTrain?.id
         ) {
