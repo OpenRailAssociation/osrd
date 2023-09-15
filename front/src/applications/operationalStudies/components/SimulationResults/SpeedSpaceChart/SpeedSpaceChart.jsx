@@ -109,7 +109,6 @@ export default function SpeedSpaceChart(props) {
    * - the local settings have been changed
    * - the chart has been resized (vertically only)
    */
-
   useEffect(() => {
     createChartAndTrain();
   }, [rotate, localSettings, chartHeight]);
