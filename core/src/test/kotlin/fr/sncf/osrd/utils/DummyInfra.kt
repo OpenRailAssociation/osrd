@@ -5,6 +5,7 @@ import com.google.common.collect.HashMultimap
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.geom.LineString
 import fr.sncf.osrd.sim_infra.api.*
+import fr.sncf.osrd.sim_infra.impl.BlockDescriptor
 import fr.sncf.osrd.sim_infra.impl.NeutralSection
 import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.utils.units.Distance
@@ -18,6 +19,7 @@ import kotlin.time.Duration
 class DummyInfra : RawInfra, BlockInfra {
 
     /** get the FullInfra  */
+    @JvmName("fullInfra")
     fun fullInfra(): FullInfra {
         return FullInfra(
             null,
@@ -30,6 +32,7 @@ class DummyInfra : RawInfra, BlockInfra {
 
     /** Creates a block going from nodes `entry` to `exit` of length `length`, named $entry->$exit,
      * with the given maximum speed. Value class are used as their underlying type to use @JvmOverloads  */
+    @JvmName("addBlock")
     fun addBlock(
         entry: String,
         exit: String,
@@ -39,6 +42,7 @@ class DummyInfra : RawInfra, BlockInfra {
 
     /** Creates a block going from nodes `entry` to `exit` of length `length`, named $entry->$exit,
      * with the given maximum speed. Value class are used as their underlying type to use @JvmOverloads  */
+    @JvmName("addBlock")
     fun addBlock(
         entry: String,
         exit: String,
@@ -49,6 +53,7 @@ class DummyInfra : RawInfra, BlockInfra {
 
     /** Creates a block going from nodes `entry` to `exit` of length `length`, named $entry->$exit,
      * with the given maximum speed. */
+    @JvmName("addBlock")
     fun addBlock(
         entry: String,
         exit: String,
@@ -58,7 +63,8 @@ class DummyInfra : RawInfra, BlockInfra {
         val name = String.format("%s->%s", entry, exit)
         val entryId = detectorMap.computeIfAbsent(entry) { DirDetectorId(detectorMap.size.toUInt()) }
         val exitId = detectorMap.computeIfAbsent(exit) { DirDetectorId(detectorMap.size.toUInt()) }
-        val id = blockPool.add(
+        val id = BlockId(blockPool.size.toUInt())
+        blockPool.add(
             DummyBlockDescriptor(
                 length,
                 name,
@@ -69,7 +75,7 @@ class DummyInfra : RawInfra, BlockInfra {
         )
         entryMap.put(entryId, id)
         exitMap.put(exitId, id)
-        return id
+        return BlockId(0U)
     }
 
     class DummyBlockDescriptor(
@@ -79,7 +85,7 @@ class DummyInfra : RawInfra, BlockInfra {
         val exit: DirDetectorId,
         val allowedSpeed: Double,
     )
-    private val blockPool = StaticPool<Block, DummyBlockDescriptor>()
+    private val blockPool = mutableListOf<DummyBlockDescriptor>() // A StaticPool (somehow) fails to link with java here
     private val detectorMap = HashBiMap.create<String, DirDetectorId>()
     private val entryMap = HashMultimap.create<DirDetectorId, BlockId>()
     private val exitMap = HashMultimap.create<DirDetectorId, BlockId>()
@@ -418,6 +424,7 @@ class DummyInfra : RawInfra, BlockInfra {
         TODO("Not yet implemented")
     }
 
+    @JvmName("getBlockLength")
     override fun getBlockLength(block: BlockId): Distance {
         TODO("Not yet implemented")
     }
