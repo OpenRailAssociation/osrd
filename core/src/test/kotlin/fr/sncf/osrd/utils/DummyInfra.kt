@@ -43,7 +43,7 @@ class DummyInfra : RawInfra, BlockInfra {
         entry: String,
         exit: String,
     ): BlockId {
-        return addBlock(entry, exit, 100.0)
+        return addBlock(entry, exit, 100.meters)
     }
 
     /** Creates a block going from nodes `entry` to `exit` of length `length`, named $entry->$exit,
@@ -53,7 +53,7 @@ class DummyInfra : RawInfra, BlockInfra {
     fun addBlock(
         entry: String,
         exit: String,
-        length: Double
+        length: Distance
     ): BlockId {
         return addBlock(entry, exit, length, Double.POSITIVE_INFINITY)
     }
@@ -64,10 +64,9 @@ class DummyInfra : RawInfra, BlockInfra {
     fun addBlock(
         entry: String,
         exit: String,
-        lengthMeters: Double,
+        length: Distance,
         allowedSpeed: Double,
     ): BlockId {
-        val length = Distance.fromMeters(lengthMeters)
         val name = String.format("%s->%s", entry, exit)
         val entryId = detectorMap.computeIfAbsent(entry) { DirDetectorId(detectorMap.size.toUInt()) }
         val exitId = detectorMap.computeIfAbsent(exit) { DirDetectorId(detectorMap.size.toUInt()) }

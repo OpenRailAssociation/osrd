@@ -36,8 +36,8 @@ public interface BlockAvailabilityInterface {
      */
     Availability getAvailability(
             List<Integer> blocks,
-            double startOffset,
-            double endOffset,
+            long startOffset,
+            long endOffset,
             EnvelopeTimeInterpolate envelope,
             double startTime
     );

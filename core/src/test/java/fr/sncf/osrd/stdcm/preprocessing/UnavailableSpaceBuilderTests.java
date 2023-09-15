@@ -9,6 +9,7 @@ import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.api.stdcm.STDCMRequest;
 import fr.sncf.osrd.stdcm.OccupancySegment;
 import fr.sncf.osrd.utils.DummyInfra;
+import fr.sncf.osrd.utils.units.Distance;
 import org.junit.jupiter.api.Test;
 import java.util.Set;
 
@@ -24,8 +25,8 @@ public class UnavailableSpaceBuilderTests {
     @Test
     public void testFirstBlockOccupied() {
         var infra = DummyInfra.make();
-        var firstBlock = infra.addBlock("a", "b", 1000);
-        var secondBlock = infra.addBlock("b", "c", 1000);
+        var firstBlock = infra.addBlock("a", "b", 1000_000);
+        var secondBlock = infra.addBlock("b", "c", 1000_000);
         var res = computeUnavailableSpace(
                 infra,
                 infra,
@@ -36,14 +37,14 @@ public class UnavailableSpaceBuilderTests {
         );
         assertEquals(
                 Set.of(
-                        new OccupancySegment(0, 100, 0, 1000) // base occupancy
+                        new OccupancySegment(0, 100, 0, 1000_000) // base occupancy
                 ),
                 res.get(firstBlock)
         );
         assertEquals(
                 Set.of(
                         // If the train is in this area, the previous block would be "yellow", causing a conflict
-                        new OccupancySegment(0, 100, 0, 1000)
+                        new OccupancySegment(0, 100, 0, 1000_000)
 
                         // Margin added to the base occupancy to account for the train length,
                         // it can be removed if this test fails as it overlaps with the previous one
@@ -56,8 +57,8 @@ public class UnavailableSpaceBuilderTests {
     @Test
     public void testSecondBlockOccupied() {
         var infra = DummyInfra.make();
-        var firstBlock = infra.addBlock("a", "b", 1000);
-        var secondBlock = infra.addBlock("b", "c", 1000);
+        var firstBlock = infra.addBlock("a", "b", 1000_000);
+        var secondBlock = infra.addBlock("b", "c", 1000_000);
         var res = computeUnavailableSpace(
                 infra,
                 infra,
@@ -69,13 +70,13 @@ public class UnavailableSpaceBuilderTests {
         assertEquals(
                 Set.of(
                         // Entering this area would cause the train to see a signal that isn't green
-                        new OccupancySegment(0, 100, 1000 - 400, 1000)
+                        new OccupancySegment(0, 100, 1000_000 - 400_000, 1000_000)
                 ),
                 res.get(firstBlock)
         );
         assertEquals(
                 Set.of(
-                        new OccupancySegment(0, 100, 0, 1000) // base occupancy
+                        new OccupancySegment(0, 100, 0, 1000_000) // base occupancy
                 ),
                 res.get(secondBlock)
         );
@@ -93,10 +94,10 @@ public class UnavailableSpaceBuilderTests {
          a2       b2
          */
         final var infra = DummyInfra.make();
-        final var a1 = infra.addBlock("a1", "center", 1000);
-        final var a2 = infra.addBlock("a2", "center", 1000);
-        final var b1 = infra.addBlock("center", "b1", 1000);
-        final var b2 = infra.addBlock("center", "b2", 1000);
+        final var a1 = infra.addBlock("a1", "center", 1000_000);
+        final var a2 = infra.addBlock("a2", "center", 1000_000);
+        final var b1 = infra.addBlock("center", "b1", 1000_000);
+        final var b2 = infra.addBlock("center", "b2", 1000_000);
         final var res = computeUnavailableSpace(
                 infra,
                 infra,
@@ -107,7 +108,7 @@ public class UnavailableSpaceBuilderTests {
         );
         assertEquals(
                 Set.of(
-                        new OccupancySegment(0, 100, 0, 1000) // base occupancy
+                        new OccupancySegment(0, 100, 0, 1000_000) // base occupancy
                 ),
                 res.get(a1)
         );
@@ -118,7 +119,7 @@ public class UnavailableSpaceBuilderTests {
         assertEquals(
                 Set.of(
                         // If the train is in this area, the previous block would be "yellow", causing a conflict
-                        new OccupancySegment(0, 100, 0, 1000)
+                        new OccupancySegment(0, 100, 0, 1000_000)
 
                         // Margin added to the base occupancy to account for the train length,
                         // it can be removed if this test fails as it overlaps with the previous one
@@ -148,7 +149,7 @@ public class UnavailableSpaceBuilderTests {
                         // The second block can't be occupied in that time because it would cause a "yellow" state
                         // in the first one (conflict), and this accounts for the extra margin needed in the third
                         // block caused by the train length
-                        new OccupancySegment(0, 100, 0, (long) REALISTIC_FAST_TRAIN.getLength())
+                        new OccupancySegment(0, 100, 0, Distance.fromMeters(REALISTIC_FAST_TRAIN.getLength()))
                 ),
                 res.get(thirdBlock)
         );
@@ -157,8 +158,8 @@ public class UnavailableSpaceBuilderTests {
     @Test
     public void testGridMargins() {
         var infra = DummyInfra.make();
-        var firstBlock = infra.addBlock("a", "b", 1000);
-        var secondBlock = infra.addBlock("b", "c", 1000);
+        var firstBlock = infra.addBlock("a", "b", 1000_000);
+        var secondBlock = infra.addBlock("b", "c", 1000_000);
         var res = computeUnavailableSpace(
                 infra,
                 infra,
@@ -171,13 +172,13 @@ public class UnavailableSpaceBuilderTests {
         // (20s before and 60s after)
         assertEquals(
                 Set.of(
-                        new OccupancySegment(80, 260, 0, 1000)
+                        new OccupancySegment(80, 260, 0, 1000_000)
                 ),
                 res.get(firstBlock)
         );
         assertEquals(
                 Set.of(
-                        new OccupancySegment(80, 260, 0, 1000)
+                        new OccupancySegment(80, 260, 0, 1000_000)
                 ),
                 res.get(secondBlock)
         );

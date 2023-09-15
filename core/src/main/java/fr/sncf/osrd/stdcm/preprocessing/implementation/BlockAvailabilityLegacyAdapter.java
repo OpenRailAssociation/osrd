@@ -34,14 +34,12 @@ public class BlockAvailabilityLegacyAdapter implements BlockAvailabilityInterfac
     @Override
     public Availability getAvailability(
             List<Integer> blocks,
-            double startOffsetMeters,
-            double endOffsetMeters,
+            long startOffset,
+            long endOffset,
             EnvelopeTimeInterpolate envelope,
             double startTime
     ) {
-        assert Math.abs((endOffsetMeters - startOffsetMeters) - envelope.getEndPos()) < 1e-5;
-        long startOffset = Distance.fromMeters(startOffsetMeters);
-        long endOffset = Distance.fromMeters(endOffsetMeters);
+        assert Math.abs(Distance.toMeters(endOffset - startOffset) - envelope.getEndPos()) < 1e-5;
         var blocksWithOffsets = makeBlocksWithOffsets(blocks);
         var unavailability = findMinimumDelay(blocksWithOffsets, startOffset, endOffset, envelope, startTime);
         if (unavailability != null)

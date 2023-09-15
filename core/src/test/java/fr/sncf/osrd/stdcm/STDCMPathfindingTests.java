@@ -144,22 +144,22 @@ public class STDCMPathfindingTests {
         infra.addBlock("c2", "d");
         var lastBlock = infra.addBlock("d", "e");
         var occupancyGraph1 = ImmutableMultimap.of(
-                blockTop, new OccupancySegment(0, POSITIVE_INFINITY, 0, 100)
+                blockTop, new OccupancySegment(0, POSITIVE_INFINITY, 0, 100_000)
         );
         var occupancyGraph2 = ImmutableMultimap.of(
-                blockBottom, new OccupancySegment(0, POSITIVE_INFINITY, 0, 100)
+                blockBottom, new OccupancySegment(0, POSITIVE_INFINITY, 0, 100_000)
         );
 
         var res1 = new STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 0)))
-                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(lastBlock, 50)))
+                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(lastBlock, 50_000)))
                 .setUnavailableTimes(occupancyGraph1)
                 .run();
         var res2 = new STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 0)))
-                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(lastBlock, 50)))
+                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(lastBlock, 50_000)))
                 .setUnavailableTimes(occupancyGraph2)
                 .run();
         assertNotNull(res1);
@@ -187,13 +187,13 @@ public class STDCMPathfindingTests {
         a ------> b -----> c ------> d
          */
         var infra = DummyInfra.make();
-        var firstBlock = infra.addBlock("a", "b", 10000);
-        infra.addBlock("b", "c", 10000);
-        var lastBlock = infra.addBlock("c", "d", 10000);
+        var firstBlock = infra.addBlock("a", "b", 10000_000);
+        infra.addBlock("b", "c", 10000_000);
+        var lastBlock = infra.addBlock("c", "d", 10000_000);
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 0)))
-                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(lastBlock, 9000)))
+                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(lastBlock, 9000_000)))
                 .run();
         assertNotNull(res);
     }
@@ -223,7 +223,7 @@ public class STDCMPathfindingTests {
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 0)))
-                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(lastBlock, 50)))
+                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(lastBlock, 50_000)))
                 .run();
         assertNotNull(res);
     }
@@ -256,11 +256,11 @@ public class STDCMPathfindingTests {
         a ---------> b
          */
         var infra = DummyInfra.make();
-        var block = infra.addBlock("a", "b", 10_000);
+        var block = infra.addBlock("a", "b", 10_000_000);
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(block, 0)))
-                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(block, 10_000)))
+                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(block, 10_000_000)))
                 .setMaxRunTime(100)
                 .run();
         assertNull(res);
@@ -275,11 +275,11 @@ public class STDCMPathfindingTests {
         var infra = DummyInfra.make();
         var blocks = new ArrayList<Integer>();
         for (int i = 0; i < 10; i++)
-            blocks.add(infra.addBlock(Integer.toString(i + 1), Integer.toString(i + 2), 1000));
+            blocks.add(infra.addBlock(Integer.toString(i + 1), Integer.toString(i + 2), 1000_000));
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(0), 0)))
-                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(9), 1_000)))
+                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(9), 1_000_000)))
                 .setMaxRunTime(100)
                 .run();
         assertNull(res);
@@ -297,9 +297,9 @@ public class STDCMPathfindingTests {
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(block, 0)))
-                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(block, 100)))
+                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(block, 100_000)))
                 .setUnavailableTimes(ImmutableMultimap.of(
-                        block, new OccupancySegment(0, 1000, 0, 100)
+                        block, new OccupancySegment(0, 1000, 0, 100_000)
                 ))
                 .setMaxDepartureDelay(1000 + timeStep)
                 .setMaxRunTime(100)
@@ -317,13 +317,13 @@ public class STDCMPathfindingTests {
         The block is occupied after the destination
          */
         var infra = DummyInfra.make();
-        var block = infra.addBlock("a", "b", 100_000);
+        var block = infra.addBlock("a", "b", 100_000_000);
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(block, 0)))
-                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(block, 10)))
+                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(block, 10_000)))
                 .setUnavailableTimes(ImmutableMultimap.of(
-                        block, new OccupancySegment(0, POSITIVE_INFINITY, 99_000, 100_000)
+                        block, new OccupancySegment(0, POSITIVE_INFINITY, 99_000_000, 100_000_000)
                 ))
                 .run();
         assertNotNull(res);
@@ -338,13 +338,13 @@ public class STDCMPathfindingTests {
         The destination is reached early and the block is occupied after a while
          */
         var infra = DummyInfra.make();
-        var block = infra.addBlock("a", "b", 100_000);
+        var block = infra.addBlock("a", "b", 100_000_000);
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(block, 0)))
-                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(block, 10)))
+                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(block, 10_000)))
                 .setUnavailableTimes(ImmutableMultimap.of(
-                        block, new OccupancySegment(300, POSITIVE_INFINITY, 0, 100_000)
+                        block, new OccupancySegment(300, POSITIVE_INFINITY, 0, 100_000_000)
                 ))
                 .run();
         assertNotNull(res);
@@ -377,13 +377,13 @@ public class STDCMPathfindingTests {
         );
         var runTime = STDCMHelpers.getBlocksRunTime(infra.fullInfra(), blocks);
         var occupancyGraph = ImmutableMultimap.of(
-                blocks.get(0), new OccupancySegment(300, 3600, 0, 1),
-                blocks.get(2), new OccupancySegment(0, 3600, 0, 1)
+                blocks.get(0), new OccupancySegment(300, 3600, 0, 1_000),
+                blocks.get(2), new OccupancySegment(0, 3600, 0, 1_000)
         );
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(0), 0)))
-                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(2), 100)))
+                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(2), 100_000)))
                 .setUnavailableTimes(occupancyGraph)
                 .setMaxRunTime(runTime + 60) // We add a margin for the stop time
                 .run();
@@ -408,12 +408,12 @@ public class STDCMPathfindingTests {
         var infra = DummyInfra.make();
         var blocks = List.of(infra.addBlock("a", "b"));
         var occupancyGraph = ImmutableMultimap.of(
-                blocks.get(0), new OccupancySegment(300, 3600, 0, 1)
+                blocks.get(0), new OccupancySegment(300, 3600, 0, 1_000)
         );
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(0), 0)))
-                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(0), 100)))
+                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(0), 100_000)))
                 .setUnavailableTimes(occupancyGraph)
                 .run();
 
