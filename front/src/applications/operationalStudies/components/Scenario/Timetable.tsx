@@ -21,14 +21,19 @@ import { OsrdSimulationState, ScheduledTrain } from 'reducers/osrdsimulation/typ
 import { RootState } from 'reducers';
 import { updateTrainScheduleIDsToModify } from 'reducers/osrdconf';
 import { valueToInterval } from 'utils/numbers';
-import { GetTimetableByIdApiResponse, Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import {
+  Conflict,
+  GetTimetableByIdApiResponse,
+  Infra,
+  osrdEditoastApi,
+} from 'common/api/osrdEditoastApi';
 import { durationInSeconds } from 'utils/timeManipulation';
 import { getSelectedTrainId } from 'reducers/osrdsimulation/selectors';
 import { isEmpty } from 'lodash';
 import { BsFillExclamationTriangleFill } from 'react-icons/bs';
 import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import ConflictsList, { Conflict } from 'modules/conflict/components/ConflictsList';
+import ConflictsList from 'modules/conflict/components/ConflictsList';
 import getSimulationResults from './getSimulationResults';
 import TimetableTrainCard from './TimetableTrainCard';
 import findTrainsDurationsIntervals from '../ManageTrainSchedule/helpers/trainsDurationsIntervals';

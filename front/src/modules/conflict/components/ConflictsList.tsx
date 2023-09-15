@@ -3,14 +3,7 @@ import cx from 'classnames';
 import { BsLightningFill } from 'react-icons/bs';
 import { useTranslation } from 'react-i18next';
 import { sec2time } from 'utils/timeManipulation';
-
-export type Conflict = {
-  train_ids: number[];
-  conflict_type: string;
-  start_time: string;
-  end_time: string;
-  train_names: string[];
-};
+import { Conflict } from 'common/api/osrdEditoastApi';
 
 type ConflictTableProps = {
   conflicts: Conflict[];
@@ -32,8 +25,8 @@ function ConflictCard({ conflict }: { conflict: Conflict }) {
         <p className="card-text">{t(`${conflict.conflict_type}`)}</p>
       </div>
       <div className="conflict-times">
-        <div className="card-text start-time">{sec2time(Number(conflict.start_time))}</div>
-        <div className="card-text end-time">{sec2time(Number(conflict.end_time))}</div>
+        <div className="card-text start-time">{sec2time(conflict.start_time)}</div>
+        <div className="card-text end-time">{sec2time(conflict.end_time)}</div>
       </div>
     </div>
   );
