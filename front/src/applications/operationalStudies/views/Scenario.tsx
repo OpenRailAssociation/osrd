@@ -23,6 +23,8 @@ import { setSuccess } from 'reducers/main';
 import { useNavigate } from 'react-router-dom';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import AddAndEditScenarioModal from 'modules/scenario/components/AddOrEditScenarioModal';
+import ScenarioLoaderMessage from 'modules/scenario/components/ScenarioLoaderMessage';
+import { RootState } from 'reducers';
 import ImportTrainSchedule from './ImportTrainSchedule';
 import ManageTrainSchedule from './ManageTrainSchedule';
 import SimulationResults from './SimulationResults';
@@ -38,6 +40,8 @@ export default function Scenario() {
   const [collapsedTimetable, setCollapsedTimetable] = useState(false);
   const [isInfraLoaded, setIsInfraLoaded] = useState(false);
   const [reloadCount, setReloadCount] = useState(1);
+  const isUpdating = useSelector((state: RootState) => state.osrdsimulation.isUpdating);
+  const simulation = useSelector((state: RootState) => state.osrdsimulation.simulation.present);
 
   const { openModal } = useModal();
   const navigate = useNavigate();
@@ -237,6 +241,11 @@ export default function Scenario() {
               </div>
             </div>
             <div className={collapsedTimetable ? 'col-12' : 'col-hdp-9 col-xl-8 col-lg-7 col-md-6'}>
+              {(!isInfraLoaded || isUpdating) &&
+                displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.add &&
+                displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.edit && (
+                  <ScenarioLoaderMessage infraState={infra?.state} />
+                )}
               {(displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add ||
                 displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.edit) && (
                 <div className="scenario-managetrainschedule">
@@ -273,14 +282,17 @@ export default function Scenario() {
                     </div>
                   </div>
                 )}
-                {infra && (
-                  <SimulationResults
-                    isDisplayed={
-                      displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.import
-                    }
-                    collapsedTimetable={collapsedTimetable}
-                    infraState={infra?.state}
-                  />
+                {!simulation || (simulation.trains.length === 0 && !isUpdating && isInfraLoaded) ? (
+                  <h1 className="text-center mt-5">{t('simulation:noData')}</h1>
+                ) : (
+                  infra && (
+                    <SimulationResults
+                      isDisplayed={
+                        displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.import
+                      }
+                      collapsedTimetable={collapsedTimetable}
+                    />
+                  )
                 )}
               </div>
             </div>
