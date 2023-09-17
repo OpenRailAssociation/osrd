@@ -5,6 +5,13 @@ import cx from 'classnames';
 import { MainState } from 'reducers/main';
 import './Loader.scss';
 
+type LoaderProps = {
+  msg?: string;
+  position?: 'center' | 'top-left' | 'top-right' | 'bottom-right' | 'bottom-left';
+  childClass?: string;
+  className?: string;
+};
+
 export const Spinner: FC<HTMLAttributes<HTMLDivElement>> = (props) => (
   <div {...props}>
     <div className="spinner-border" role="status">
@@ -13,13 +20,15 @@ export const Spinner: FC<HTMLAttributes<HTMLDivElement>> = (props) => (
   </div>
 );
 
-const LoaderSNCF: FC<{
-  msg?: string;
-  position?: 'center' | 'top-left' | 'top-right' | 'bottom-right' | 'bottom-left';
-}> = ({ msg = '', position = 'center' }) => (
-  <div className={`loader ${position}`}>
+const LoaderSNCF: FC<LoaderProps> = ({
+  msg = '',
+  position = 'center',
+  childClass = '',
+  className = '',
+}) => (
+  <div className={`loader ${position} ${className}`}>
     <Spinner />
-    <div className="text-center mt-2">{msg}</div>
+    <div className={childClass}>{msg}</div>
   </div>
 );
 

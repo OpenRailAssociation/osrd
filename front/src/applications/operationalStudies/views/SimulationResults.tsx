@@ -22,13 +22,11 @@ import getTimetable from 'applications/operationalStudies/components/Scenario/ge
 
 import { RootState } from 'reducers';
 import { updateViewport, Viewport } from 'reducers/map';
-import { useTranslation } from 'react-i18next';
 import DriverTrainSchedule from 'applications/operationalStudies/components/SimulationResults/DriverTrainSchedule/DriverTrainSchedule';
 import { getTimetableID } from 'reducers/osrdconf/selectors';
 import cx from 'classnames';
-import { Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { getSelectedTrain } from 'reducers/osrdsimulation/selectors';
-import ScenarioLoader from 'modules/scenario/components/ScenarioLoader';
 import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
 
 const MAP_MIN_HEIGHT = 450;
@@ -36,11 +34,9 @@ const MAP_MIN_HEIGHT = 450;
 type Props = {
   isDisplayed: boolean;
   collapsedTimetable: boolean;
-  infraState: Infra['state'];
 };
 
-export default function SimulationResults({ isDisplayed, collapsedTimetable, infraState }: Props) {
-  const { t } = useTranslation(['translation', 'simulation', 'allowances']);
+export default function SimulationResults({ isDisplayed, collapsedTimetable }: Props) {
   const timeTableRef = useRef<HTMLDivElement | null>(null);
   const [extViewport, setExtViewport] = useState<Viewport | undefined>(undefined);
   const [showWarpedMap, setShowWarpedMap] = useState(false);
@@ -55,8 +51,6 @@ export default function SimulationResults({ isDisplayed, collapsedTimetable, inf
   const [initialHeightOfSpaceCurvesSlopesChart, setInitialHeightOfSpaceCurvesSlopesChart] =
     useState(heightOfSpaceCurvesSlopesChart);
 
-  const isUpdating = useSelector((state: RootState) => state.osrdsimulation.isUpdating);
-  const simulation = useSelector((state: RootState) => state.osrdsimulation.simulation.present);
   const selectedTrain = useSelector(getSelectedTrain);
   const selectedProjection = useSelector(
     (state: RootState) => state.osrdsimulation.selectedProjection
@@ -112,26 +106,6 @@ export default function SimulationResults({ isDisplayed, collapsedTimetable, inf
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [extViewport]);
-
-  const waitingMessage = () => {
-    if (infraState === 'ERROR' || infraState === 'TRANSIENT_ERROR') {
-      return <h1 className="text-center">{t('simulation:errorMessages.errorLoadingInfra')}</h1>;
-    }
-    if (infraState !== 'CACHED') {
-      return <ScenarioLoader msg={t('simulation:infraLoading')} />;
-    }
-    if ((!simulation || simulation.trains.length === 0) && !isUpdating && infraState === 'CACHED') {
-      return <h1 className="text-center">{t('simulation:noData')}</h1>;
-    }
-    if (isUpdating) {
-      return <ScenarioLoader msg={t('simulation:isUpdating')} />;
-    }
-    return null;
-  };
-
-  if (!displaySimulation || isUpdating) {
-    return <div className="pt-5 mt-5">{waitingMessage()}</div>;
-  }
 
   return (
     <div className="simulation-results">
