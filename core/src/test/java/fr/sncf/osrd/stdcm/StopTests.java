@@ -124,9 +124,9 @@ public class StopTests {
                 .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(blocksDirectPath.get(3), 0)), 0, true))
                 .run();
         assertNotNull(res);
-        /* FIXME
         var blocks = res.blocks().ranges().stream()
-                .map(block -> block.edge().getInfraBlock().getID()).toList();
+                .map(edgeRange -> infra.getBlockPool().get(edgeRange.edge()).getName())
+                .toList();
         assertEquals(
                 List.of(
                         "a->b",
@@ -135,7 +135,6 @@ public class StopTests {
                         "d->e"
                 ), blocks
         );
-         */
         assertNotEquals(stop, res.stopResults().isEmpty());
         assertEquals(stop, res.envelope().interpolateSpeed(101_100) == 0);
     }

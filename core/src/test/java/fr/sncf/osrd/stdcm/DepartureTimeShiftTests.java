@@ -14,6 +14,7 @@ import fr.sncf.osrd.utils.graph.Pathfinding;
 import fr.sncf.osrd.utils.units.Distance;
 import org.junit.jupiter.api.Test;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class DepartureTimeShiftTests {
 
@@ -107,15 +108,13 @@ public class DepartureTimeShiftTests {
                 .run();
 
         assertNotNull(res);
-        /* FIXME: figure out how to compare block "name"
         var blocks = res.blocks().ranges().stream()
-                .map(edgeRange -> edgeRange.edge().getInfraBlock().getID())
+                .map(edgeRange -> infra.getBlockPool().get(edgeRange.edge()).getName())
                 .collect(Collectors.toSet());
         assertTrue(blocks.contains("b->c2"));
         assertTrue(blocks.contains("c2->d"));
         assertFalse(blocks.contains("b->c1"));
         assertFalse(blocks.contains("c1->d"));
-         */
     }
 
     /** Test that the path we find is the one with the earliest arrival time rather than the shortest
@@ -159,15 +158,13 @@ public class DepartureTimeShiftTests {
                 .run();
 
         assertNotNull(res);
-        /*
         var blocks = res.blocks().ranges().stream()
-                .map(edgeRange -> edgeRange.edge().getInfraBlock().getID())
+                .map(edgeRange -> infra.getBlockPool().get(edgeRange.edge()).getName())
                 .collect(Collectors.toSet());
         assertTrue(blocks.contains("b->c1"));
         assertTrue(blocks.contains("c1->d"));
         assertFalse(blocks.contains("b->c2"));
         assertFalse(blocks.contains("c2->d"));
-         */
     }
 
     /** Test that we don't add too much delay, crossing over occupied sections in previous blocks */

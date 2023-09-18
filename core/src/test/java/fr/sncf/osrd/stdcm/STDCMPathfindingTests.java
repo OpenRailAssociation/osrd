@@ -165,11 +165,12 @@ public class STDCMPathfindingTests {
                 .run();
         assertNotNull(res1);
         assertNotNull(res2);
-        /* FIXME
         final var blocks1 = res1.blocks().ranges().stream()
-                .map(block -> block.edge().getInfraBlock().getID()).toList();
+                .map(block -> infra.getBlockPool().get(block.edge()).getName())
+                .toList();
         final var blocks2 = res2.blocks().ranges().stream()
-                .map(block -> block.edge().getInfraBlock().getID()).toList();
+                .map(block -> infra.getBlockPool().get(block.edge()).getName())
+                .toList();
 
         assertFalse(blocks1.contains("b->c1"));
         assertTrue(blocks1.contains("b->c2"));
@@ -178,7 +179,6 @@ public class STDCMPathfindingTests {
         assertFalse(blocks2.contains("b->c2"));
         assertTrue(blocks2.contains("b->c1"));
         STDCMHelpers.occupancyTest(res2, occupancyGraph2);
-         */
     }
 
     /** Test that everything works well when the train is at max speed during block transitions */
@@ -219,7 +219,7 @@ public class STDCMPathfindingTests {
         infra.addBlock("c2", "d");
         var lastBlock = infra.addBlock("d", "e");
 
-        // FIXME: add gradients to blockTop (or drop this test)
+        infra.getBlockPool().get(blockTop).setGradient(1000.);
 
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())

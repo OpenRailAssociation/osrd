@@ -18,7 +18,7 @@ import kotlin.time.Duration
 @Suppress("INAPPLICABLE_JVM_NAME")
 class DummyInfra : RawInfra, BlockInfra {
 
-    private val blockPool = mutableListOf<DummyBlockDescriptor>() // A StaticPool (somehow) fails to link with java here
+    val blockPool = mutableListOf<DummyBlockDescriptor>() // A StaticPool (somehow) fails to link with java here
     private val detectorMap = HashBiMap.create<String, DirDetectorId>()
     private val entryMap = HashMultimap.create<DirDetectorId, BlockId>()
     private val exitMap = HashMultimap.create<DirDetectorId, BlockId>()
@@ -77,6 +77,7 @@ class DummyInfra : RawInfra, BlockInfra {
                 entryId,
                 exitId,
                 allowedSpeed,
+                0.0,
             )
         )
         entryMap.put(entryId, id)
@@ -90,6 +91,7 @@ class DummyInfra : RawInfra, BlockInfra {
         val entry: DirDetectorId,
         val exit: DirDetectorId,
         val allowedSpeed: Double,
+        var gradient: Double,
     )
 
     // region not implemented
@@ -344,7 +346,8 @@ class DummyInfra : RawInfra, BlockInfra {
     }
 
     override fun getTrackChunkGradient(trackChunk: DirTrackChunkId): DistanceRangeMap<Double> {
-        return makeRangeMap(blockPool[trackChunk.value.index].length, 0.0)
+        val desc = blockPool[trackChunk.value.index]
+        return makeRangeMap(desc.length, desc.gradient)
     }
 
     override fun getTrackChunkLoadingGaugeConstraints(trackChunk: TrackChunkId): DistanceRangeMap<LoadingGaugeConstraint> {
