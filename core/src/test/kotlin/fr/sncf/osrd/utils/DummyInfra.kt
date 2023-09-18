@@ -361,7 +361,8 @@ class DummyInfra : RawInfra, BlockInfra {
     }
 
     override fun getTrackChunkSpeedSections(trackChunk: DirTrackChunkId, trainTag: String?): DistanceRangeMap<Speed> {
-        return DistanceRangeMapImpl()
+        val desc = blockPool[trackChunk.index]
+        return makeRangeMap(desc.length, Speed.fromMetersPerSecond(desc.allowedSpeed))
     }
 
     override fun getTrackChunkGeom(trackChunk: TrackChunkId): LineString {
