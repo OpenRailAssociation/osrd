@@ -68,8 +68,8 @@ class DummyInfra : RawInfra, BlockInfra {
         allowedSpeed: Double,
     ): BlockId {
         val name = String.format("%s->%s", entry, exit)
-        val entryId = detectorMap.computeIfAbsent(entry) { DirDetectorId(detectorMap.size.toUInt()) }
-        val exitId = detectorMap.computeIfAbsent(exit) { DirDetectorId(detectorMap.size.toUInt()) }
+        val entryId = detectorMap.computeIfAbsent(entry) { DirDetectorId(detectorMap.size.toUInt() * 2u) }
+        val exitId = detectorMap.computeIfAbsent(exit) { DirDetectorId(detectorMap.size.toUInt() * 2u) }
         val id = BlockId(blockPool.size.toUInt())
         blockPool.add(
             DummyBlockDescriptor(

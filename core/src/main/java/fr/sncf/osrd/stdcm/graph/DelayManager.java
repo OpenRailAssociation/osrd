@@ -6,6 +6,7 @@ import fr.sncf.osrd.reporting.exceptions.ErrorType;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.sim_infra.api.Path;
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface;
+import fr.sncf.osrd.utils.units.Distance;
 
 import java.util.List;
 import java.util.NavigableSet;
@@ -46,7 +47,7 @@ public class DelayManager {
         double margin = graph.timeStep;
 
         var res = new TreeSet<Double>();
-        var endOffset = startOffset + (long) envelope.getEndPos();
+        var endOffset = startOffset + Distance.fromMeters(envelope.getEndPos());
         double time = startTime;
         while (Double.isFinite(time)) {
             var availability = getScaledAvailability(
@@ -70,7 +71,7 @@ public class DelayManager {
 
     /** Returns the start time of the next occupancy for the route */
     double findNextOccupancy(int blockId, double time, long startOffset, Envelope envelope) {
-        var endOffset = startOffset + (long) envelope.getEndPos();
+        var endOffset = startOffset + Distance.fromMeters(envelope.getEndPos());
         var availability = getScaledAvailability(
                 blockId,
                 startOffset,
@@ -96,7 +97,7 @@ public class DelayManager {
      * e.g. if the train takes 42s to go through the route, enters the route at t=10s,
      * and we need to leave the route at t=60s, this will return 8s. */
     double findMaximumAddedDelay(int blockId, double startTime, long startOffset, Envelope envelope) {
-        long endOffset = startOffset + (long) envelope.getEndPos();
+        long endOffset = startOffset + Distance.fromMeters(envelope.getEndPos());
         var availability = getScaledAvailability(
                 blockId, startOffset, endOffset, envelope, startTime
         );

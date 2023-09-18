@@ -2,6 +2,8 @@ package fr.sncf.osrd.stdcm.graph;
 
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
+import fr.sncf.osrd.utils.units.Distance;
+
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,12 +59,12 @@ public class AllowanceManager {
 
     /** Re-create the edges in order, following the given envelope. */
     private STDCMEdge makeNewEdges(List<STDCMEdge> edges, Envelope totalEnvelope) {
-        double previousEnd = 0;
+        long previousEnd = 0;
         STDCMEdge prevEdge = null;
         if (edges.get(0).previousNode() != null)
             prevEdge = edges.get(0).previousNode().previousEdge();
         for (var edge : edges) {
-            var end = previousEnd + edge.envelope().getEndPos();
+            var end = previousEnd + Distance.fromMeters(edge.envelope().getEndPos());
             var node = prevEdge == null ? null : prevEdge.getEdgeEnd(graph);
             var maxAddedDelayAfter = edge.maximumAddedDelayAfter() + edge.addedDelay();
             if (node != null)
@@ -82,7 +84,7 @@ public class AllowanceManager {
                 return null;
             previousEnd = end;
         }
-        assert Math.abs(previousEnd - totalEnvelope.getEndPos()) < 1e-5;
+        assert Math.abs(Distance.toMeters(previousEnd) - totalEnvelope.getEndPos()) < 1e-5;
         return prevEdge;
     }
 
@@ -98,7 +100,7 @@ public class AllowanceManager {
     private EnvelopeSimContext makeAllowanceContext(List<STDCMEdge> edges) {
         var blocks = new ArrayList<Integer>();
         var firstOffset = graph.blockInfra.getBlockLength(edges.get(0).block())
-                - (long) edges.get(0).envelope().getEndPos();
+                - Distance.fromMeters(edges.get(0).envelope().getEndPos());
         for (var edge : edges)
             blocks.add(edge.block());
         return STDCMSimulations.makeSimContext(

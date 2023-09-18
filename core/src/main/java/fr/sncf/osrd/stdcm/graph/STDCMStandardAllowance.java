@@ -12,6 +12,7 @@ import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.TrainStop;
 import fr.sncf.osrd.utils.graph.Pathfinding;
+import fr.sncf.osrd.utils.units.Distance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.*;
@@ -90,7 +91,7 @@ public class STDCMStandardAllowance {
         var blocks = ranges.stream()
                 .map(x -> x.edge().block())
                 .toList();
-        assert Math.abs(envelopeWithStops.getEndPos() - (endOffset - startOffset)) < POSITION_EPSILON;
+        assert Math.abs(envelopeWithStops.getEndPos() - Distance.toMeters(endOffset - startOffset)) < POSITION_EPSILON;
         var availability = blockAvailability.getAvailability(
                 blocks,
                 startOffset,

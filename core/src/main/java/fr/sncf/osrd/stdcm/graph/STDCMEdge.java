@@ -3,6 +3,8 @@ package fr.sncf.osrd.stdcm.graph;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.sim_infra.api.InterlockingInfraKt;
 import fr.sncf.osrd.utils.graph.Pathfinding;
+import fr.sncf.osrd.utils.units.Distance;
+
 import java.util.Objects;
 
 public record STDCMEdge(
@@ -97,6 +99,6 @@ public record STDCMEdge(
 
     /** Returns the length of the edge */
     public long getLength() {
-        return (long) envelope.getEndPos();
+        return Distance.fromMeters(envelope.getEndPos());
     }
 }

@@ -11,6 +11,7 @@ import fr.sncf.osrd.sim_infra.api.Path;
 import fr.sncf.osrd.sim_infra.api.TrackChunk;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import fr.sncf.osrd.utils.indexing.MutableDirStaticIdxArrayList;
+import fr.sncf.osrd.utils.units.Distance;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,7 +27,7 @@ public class STDCMUtils {
         double offset = 0;
         for (var edge : edges) {
             var envelope = edge.edge().envelope();
-            var sliceUntil = Math.min(envelope.getEndPos(), Math.abs(edge.end() - edge.start()));
+            var sliceUntil = Math.min(envelope.getEndPos(), Distance.toMeters(Math.abs(edge.end() - edge.start())));
             if (sliceUntil == 0)
                 continue;
             var slicedEnvelope = Envelope.make(envelope.slice(0, sliceUntil));
@@ -52,8 +53,8 @@ public class STDCMUtils {
     }
 
     /** Returns the offset of the stops on the given block, starting at startOffset*/
-    static Double getStopOnBlock(STDCMGraph graph, int block, double startOffset, int waypointIndex) {
-        var res = new ArrayList<Double>();
+    static Long getStopOnBlock(STDCMGraph graph, int block, long startOffset, int waypointIndex) {
+        var res = new ArrayList<Long>();
         while (waypointIndex + 1 < graph.steps.size() && !graph.steps.get(waypointIndex + 1).stop())
             waypointIndex++; // Only the next point where we actually stop matters here
         if (waypointIndex + 1 >= graph.steps.size())

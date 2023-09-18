@@ -11,6 +11,7 @@ import fr.sncf.osrd.stdcm.graph.STDCMSimulations;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.utils.DummyInfra;
 import fr.sncf.osrd.utils.graph.Pathfinding;
+import fr.sncf.osrd.utils.units.Distance;
 import org.junit.jupiter.api.Test;
 import java.util.Set;
 
@@ -38,7 +39,7 @@ public class DepartureTimeShiftTests {
                 .run();
         assertNotNull(res);
         var secondBlockEntryTime = res.departureTime()
-                + res.envelope().interpolateTotalTime(infra.getBlockLength(firstBlock));
+                + res.envelope().interpolateTotalTime(Distance.toMeters(infra.getBlockLength(firstBlock)));
         assertTrue(secondBlockEntryTime >= 3600);
         occupancyTest(res, occupancyGraph);
     }
@@ -68,7 +69,7 @@ public class DepartureTimeShiftTests {
 
         assertNotNull(res);
         var secondBlockEntryTime = res.departureTime()
-                + res.envelope().interpolateTotalTime(infra.getBlockLength(firstBlock));
+                + res.envelope().interpolateTotalTime(Distance.toMeters(infra.getBlockLength(firstBlock)));
         assertTrue(secondBlockEntryTime >= 3600);
 
         occupancyTest(res, occupancyGraph);

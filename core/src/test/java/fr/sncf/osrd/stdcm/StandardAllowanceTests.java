@@ -2,6 +2,7 @@ package fr.sncf.osrd.stdcm;
 
 import static fr.sncf.osrd.stdcm.STDCMHelpers.m;
 import static fr.sncf.osrd.stdcm.STDCMHelpers.occupancyTest;
+import static fr.sncf.osrd.utils.units.Distance.toMeters;
 import static java.lang.Double.POSITIVE_INFINITY;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -9,6 +10,7 @@ import com.google.common.collect.ImmutableMultimap;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.utils.DummyInfra;
 import fr.sncf.osrd.utils.graph.Pathfinding;
+import fr.sncf.osrd.utils.units.Distance;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -130,7 +132,7 @@ public class StandardAllowanceTests {
         assertNotNull(res.withoutAllowance);
         assertNotNull(res.withAllowance);
         var secondBlockEntryTime = res.withAllowance.departureTime()
-                + res.withAllowance.envelope().interpolateTotalTime(infra.getBlockLength(firstBlock));
+                + res.withAllowance.envelope().interpolateTotalTime(toMeters(infra.getBlockLength(firstBlock)));
         assertTrue(secondBlockEntryTime >= 3600 - timeStep);
         occupancyTest(res.withAllowance, occupancyGraph, timeStep);
         checkAllowanceResult(res, allowance);

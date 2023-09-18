@@ -28,6 +28,8 @@ import fr.sncf.osrd.sim_infra.api.BlockInfra;
 import fr.sncf.osrd.sim_infra.api.RawSignalingInfra;
 import fr.sncf.osrd.stdcm.BacktrackingEnvelopeAttr;
 import fr.sncf.osrd.train.RollingStock;
+import fr.sncf.osrd.utils.units.Distance;
+
 import java.util.List;
 import java.util.Map;
 
@@ -67,7 +69,7 @@ public class STDCMSimulations {
             RollingStock rollingStock,
             RollingStock.Comfort comfort,
             double timeStep,
-            Double stopPosition,
+            Long stopPosition,
             String trainTag
     ) {
         if (stopPosition != null && Math.abs(stopPosition) < POSITION_EPSILON)
@@ -77,7 +79,7 @@ public class STDCMSimulations {
         var context = makeSimContext(rawInfra, blockInfra, List.of(blockId), start, rollingStock, comfort, timeStep);
         double[] stops = new double[]{};
         if (stopPosition != null) {
-            stops = new double[]{stopPosition};
+            stops = new double[]{Distance.toMeters(stopPosition)};
         }
         var path = makePath(blockInfra, rawInfra, blockId);
         var mrsp = computeMRSP(path, rollingStock, false, trainTag);
@@ -107,14 +109,14 @@ public class STDCMSimulations {
      */
     public static double interpolateTime(
             Envelope envelope,
-            double envelopeStartOffset,
-            double blockOffset,
+            long envelopeStartOffset,
+            long blockOffset,
             double startTime,
             double speedRatio
     ) {
         var envelopeOffset = Math.max(0, blockOffset - envelopeStartOffset);
-        assert envelopeOffset <= envelope.getEndPos();
-        return startTime + (envelope.interpolateTotalTime(envelopeOffset) / speedRatio);
+        assert envelopeOffset <= Distance.fromMeters(envelope.getEndPos());
+        return startTime + (envelope.interpolateTotalTime(Distance.toMeters(envelopeOffset)) / speedRatio);
     }
 
     /**

@@ -137,10 +137,10 @@ public class STDCMHelpers {
             var blockOccupancies = occupancyGraph.get(block);
             for (var occupancy : blockOccupancies) {
                 var enterTime = res.departureTime() + envelopeWrapper.interpolateTotalTimeClamp(
-                        startBlockPosition + occupancy.distanceStart()
+                        Distance.toMeters(startBlockPosition + occupancy.distanceStart())
                 );
                 var exitTime = res.departureTime() + envelopeWrapper.interpolateTotalTimeClamp(
-                        startBlockPosition + occupancy.distanceEnd()
+                        Distance.toMeters(startBlockPosition + occupancy.distanceEnd())
                 );
                 assertTrue(
                         enterTime + tolerance >= occupancy.timeEnd() || exitTime - tolerance <= occupancy.timeStart()
