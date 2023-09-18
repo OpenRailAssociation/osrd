@@ -44,7 +44,7 @@ public class StopTests {
         // Check that the stop is properly returned
         assertEquals(
                 List.of(
-                        new TrainStop(m(expectedOffset), 10_000)
+                        new TrainStop(expectedOffset, 10_000)
                 ),
                 res.stopResults()
         );
@@ -67,7 +67,7 @@ public class StopTests {
                 .run();
         assertNotNull(res);
         checkStop(res, List.of(
-                new TrainStop(m(100), 10_000)
+                new TrainStop(100, 10_000)
         ));
     }
 
@@ -88,7 +88,7 @@ public class StopTests {
                 .run();
         assertNotNull(res);
         checkStop(res, List.of(
-                new TrainStop(m(100), 10_000)
+                new TrainStop(100, 10_000)
         ));
     }
 
@@ -187,7 +187,7 @@ public class StopTests {
                 .run();
         assertNotNull(res);
         checkStop(res, List.of(
-                new TrainStop(m(50), 10_000)
+                new TrainStop(50, 10_000)
         ));
         occupancyTest(res, occupancy);
     }
@@ -237,7 +237,7 @@ public class StopTests {
                 .run();
         assertNotNull(res);
         checkStop(res, List.of(
-                new TrainStop(m(51), 1_000)
+                new TrainStop(51, 1_000)
         ));
         occupancyTest(res, occupancy, 2 * timeStep);
     }
@@ -286,7 +286,7 @@ public class StopTests {
         );
         assertNotNull(res);
         var expectedStops = List.of(
-                new TrainStop(m(51), 1_000)
+                new TrainStop(51, 1_000)
         );
         checkStop(res.withAllowance(), expectedStops);
         checkStop(res.withoutAllowance(), expectedStops);
@@ -342,7 +342,7 @@ public class StopTests {
         );
         assertNotNull(res);
         var expectedStops = List.of(
-                new TrainStop(m(51), 1_000)
+                new TrainStop(51, 1_000)
         );
         checkStop(res.withAllowance(), expectedStops);
         checkStop(res.withoutAllowance(), expectedStops);
