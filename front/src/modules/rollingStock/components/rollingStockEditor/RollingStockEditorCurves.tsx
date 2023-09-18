@@ -57,7 +57,7 @@ export default function RollingStockEditorCurves({
 }) {
   const { t } = useTranslation('rollingstock');
   const dispatch = useDispatch();
-  const { openModal, closeModal } = useModal();
+  const { openModal } = useModal();
 
   const selectedComfortLvl = useSelector(getComfortLevel);
   const selectedTractionMode = useSelector(getTractionMode);
@@ -146,7 +146,7 @@ export default function RollingStockEditorCurves({
       dispatchElectricalProfil(rsElectricalProfiles[0]);
     }
     if (!powerRestrictions.includes(selectedPowerRestriction)) {
-      dispatchPowerRestriction(powerRestrictions[0]);
+      dispatchPowerRestriction(powerRestrictions[0] || null);
     }
     const rollingstockParamsLists = {
       comfortLevels: [...new Set(rsComfortLevels)],
@@ -264,6 +264,7 @@ export default function RollingStockEditorCurves({
     }
     return newCurve;
   };
+
   const updateCurrentRs = (e: Matrix<{ value: string }>) => {
     const parsedCurve = parseCurve(e);
     const selectedTractionModeCurves = currentRsEffortCurve.modes[selectedTractionMode].curves;
@@ -333,6 +334,14 @@ export default function RollingStockEditorCurves({
     }
   };
 
+  const orderSpreadsheetValues = () => {
+    const orderedValuesByVelocity = curveForSpreadsheet.sort(
+      (a, b) => Number(a[0]?.value) - Number(b[0]?.value)
+    );
+    updateSpreadsheet(orderedValuesByVelocity);
+    updateCurrentRs(orderedValuesByVelocity);
+  };
+
   const updateComfortLevelsList = (value: string) => {
     const updatedModesCurves = Object.keys(currentRsEffortCurve.modes).reduce((acc, key) => {
       const currentMode = currentRsEffortCurve.modes[key];
@@ -350,8 +359,6 @@ export default function RollingStockEditorCurves({
       ...prevState,
       modes: updatedModesCurves,
     }));
-
-    closeModal();
   };
 
   const updateTractionModesList = (value: string) => {
@@ -362,7 +369,6 @@ export default function RollingStockEditorCurves({
         [value]: EMPTY_TRACTION_MODE,
       },
     }));
-    closeModal();
   };
 
   const updateElectricalProfilesList = (value: string) => {
@@ -381,7 +387,6 @@ export default function RollingStockEditorCurves({
     };
 
     setCurrentRsEffortCurve(updatedCurrentRsEffortCurve);
-    closeModal();
   };
 
   const removeTractionMode = (value: string) => {
@@ -560,6 +565,10 @@ export default function RollingStockEditorCurves({
             onChange={(e) => {
               updateSpreadsheet(e);
               updateCurrentRs(e);
+            }}
+            onBlur={orderSpreadsheetValues}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') orderSpreadsheetValues();
             }}
             columnLabels={[t('speed'), t('effort')]}
           />

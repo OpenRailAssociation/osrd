@@ -1,8 +1,7 @@
-import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import { Comfort } from 'common/api/osrdEditoastApi';
 import { RollingStockSelectorParams } from 'modules/rollingStock/consts';
-import React from 'react';
+import React, { useState } from 'react';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { RiAddFill } from 'react-icons/ri';
@@ -19,10 +18,12 @@ export default function AddRollingstockParam({
   displayedLists: RollingStockSelectorParams;
   updateDisplayedLists: (arg: string) => void;
 }) {
-  const { openModal } = useModal();
-  const { t } = useTranslation('rollingstock');
-
   const COMFORT_LEVELS_KEY: keyof RollingStockSelectorParams = 'comfortLevels';
+  const TRACTION_MODES_KEY: keyof RollingStockSelectorParams = 'tractionModes';
+
+  const { t } = useTranslation('rollingstock');
+  const [isSelectVisible, setIsSelectVisible] = useState(false);
+  const isTractionModes = listName === TRACTION_MODES_KEY;
 
   const optionsList = compact(allOptionsList)
     .filter(
@@ -43,29 +44,35 @@ export default function AddRollingstockParam({
     });
 
   return (
-    <button
-      type="button"
-      className={cx('rollingstock-selector-buttons', 'mb-2', {
-        disabled: (!optionsList || optionsList.length < 1) && listName !== 'tractionModes',
-      })}
-      onClick={() => {
-        if (optionsList)
-          openModal(
-            <SelectImprovedSNCF
-              options={optionsList}
-              onChange={(e) => {
-                if (e) updateDisplayedLists(e.id);
-              }}
-              withSearch
-              withNewValueInput
-              addButtonTitle={t('addNewTractionMode')}
-              bgWhite
-              isOpened
-            />
-          );
-      }}
-    >
-      <RiAddFill />
-    </button>
+    <div>
+      <button
+        type="button"
+        className={cx('rollingstock-selector-buttons', 'mb-2', {
+          disabled: (!optionsList || optionsList.length < 1) && listName !== 'tractionModes',
+        })}
+        onClick={() => setIsSelectVisible(true)}
+      >
+        <RiAddFill />
+      </button>
+      {isSelectVisible && (
+        <div className="rollingstock-editor-select">
+          <SelectImprovedSNCF
+            options={optionsList}
+            onChange={(e) => {
+              if (e) {
+                updateDisplayedLists(e.id);
+                setIsSelectVisible(false);
+              }
+            }}
+            withSearch
+            withNewValueInput={isTractionModes}
+            addButtonTitle={isTractionModes ? t('addNewTractionMode') : undefined}
+            bgWhite
+            isOpened
+            setSelectVisibility={setIsSelectVisible}
+          />
+        </div>
+      )}
+    </div>
   );
 }

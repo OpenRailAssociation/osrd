@@ -17,6 +17,7 @@ import {
   updateComfortLvl,
   updateTractionMode,
   updateElectricalProfile,
+  updatePowerRestriction,
 } from 'reducers/rollingstockEditor';
 import RollingStockEditorFormModal from 'modules/rollingStock/components/rollingStockEditor/RollingStockEditorFormModal';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
@@ -51,6 +52,7 @@ export default function RollingStockEditor({ rollingStocks }: RollingStockEditor
     dispatch(updateComfortLvl(STANDARD_COMFORT_LEVEL));
     dispatch(updateTractionMode(''));
     dispatch(updateElectricalProfile(null));
+    dispatch(updatePowerRestriction(null));
   };
 
   useEffect(() => setFilteredRollingStockList(rollingStocks), []);

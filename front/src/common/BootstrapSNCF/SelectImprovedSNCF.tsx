@@ -17,6 +17,7 @@ interface SelectProps<T> {
   bgWhite?: boolean;
   dataTestId?: string;
   isOpened?: boolean;
+  setSelectVisibility?: (arg: boolean) => void;
 }
 
 function SelectImproved<T extends string | SelectOptionObject>({
@@ -32,6 +33,7 @@ function SelectImproved<T extends string | SelectOptionObject>({
   bgWhite,
   dataTestId,
   isOpened = false,
+  setSelectVisibility,
 }: SelectProps<T>) {
   const [isOpen, setIsOpen] = useState(isOpened);
   const [selectedItem, setSelectedItem] = useState<T | undefined>(value);
@@ -197,7 +199,10 @@ function SelectImproved<T extends string | SelectOptionObject>({
           }}
           role="button"
           tabIndex={0}
-          onClick={() => setIsOpen(false)}
+          onClick={() => {
+            setIsOpen(false);
+            if (setSelectVisibility) setSelectVisibility(false);
+          }}
         >
           &nbsp;
         </div>
