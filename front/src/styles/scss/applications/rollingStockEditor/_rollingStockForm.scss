@@ -359,3 +359,9 @@
     pointer-events: none;
   }
 }
+
+.rollingstock-editor-select {
+  position: absolute;
+  z-index: 2;
+  width: 22rem;
+}
