@@ -1,6 +1,10 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { RollingStock, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import {
+  RollingStock,
+  RollingStockUpsertPayload,
+  osrdEditoastApi,
+} from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { useDispatch, useSelector } from 'react-redux';
 import { setFailure, setSuccess } from 'reducers/main';
@@ -42,8 +46,8 @@ const RollingStockEditorForm = ({
     'operationalStudies/manageTrainSchedule',
   ]);
   const { openModal } = useModal();
-  const [postRollingstock] = osrdEditoastApi.usePostRollingStockMutation();
-  const [patchRollingStock] = osrdEditoastApi.usePatchRollingStockByIdMutation();
+  const [postRollingstock] = osrdEditoastApi.endpoints.postRollingStock.useMutation();
+  const [patchRollingStock] = osrdEditoastApi.endpoints.patchRollingStockById.useMutation();
 
   const [isCurrentEffortCurveDefault, setIsCurrentEffortCurveDefault] = useState(true);
   const [isValid, setIsValid] = useState(true);
@@ -66,16 +70,10 @@ const RollingStockEditorForm = ({
 
   const [rollingStockValues, setRollingStockValues] = useState(defaultValues);
 
-  const addNewRollingstock = (data: RollingStockParametersValues) => () => {
-    const queryArg = rollingStockEditorQueryArg(
-      data,
-      selectedTractionMode,
-      currentRsEffortCurve,
-      isAdding
-    );
+  const addNewRollingstock = (payload: RollingStockUpsertPayload) => () => {
     postRollingstock({
       locked: false,
-      rollingStockUpsertPayload: queryArg,
+      rollingStockUpsertPayload: payload,
     })
       .unwrap()
       .then((res) => {
@@ -107,12 +105,11 @@ const RollingStockEditorForm = ({
       });
   };
 
-  const updateRollingStock = (data: RollingStockParametersValues) => () => {
-    const queryArg = rollingStockEditorQueryArg(data, selectedTractionMode, currentRsEffortCurve);
+  const updateRollingStock = (payload: RollingStockUpsertPayload) => () => {
     if (rollingStockData) {
       patchRollingStock({
-        id: rollingStockData?.id as number,
-        rollingStockUpsertPayload: queryArg,
+        id: rollingStockData.id,
+        rollingStockUpsertPayload: payload,
       })
         .unwrap()
         .then(() => {
@@ -146,14 +143,29 @@ const RollingStockEditorForm = ({
 
   const submit = (e: React.FormEvent<HTMLFormElement>, data: RollingStockParametersValues) => {
     e.preventDefault();
-    openModal(
-      <RollingStockEditorFormModal
-        setAddOrEditState={setAddOrEditState}
-        request={isAdding ? addNewRollingstock(data) : updateRollingStock(data)}
-        mainText={t('confirmUpdateRollingStock')}
-        buttonText={t('translation:common.yes')}
-      />
-    );
+    if (data.name) {
+      const payload = rollingStockEditorQueryArg(
+        data,
+        selectedTractionMode,
+        currentRsEffortCurve,
+        isAdding
+      );
+      openModal(
+        <RollingStockEditorFormModal
+          setAddOrEditState={setAddOrEditState}
+          request={isAdding ? addNewRollingstock(payload) : updateRollingStock(payload)}
+          mainText={t('confirmUpdateRollingStock')}
+          buttonText={t('translation:common.yes')}
+        />
+      );
+    } else {
+      dispatch(
+        setFailure({
+          name: t('messages.invalidForm'),
+          message: t('messages.missingName'),
+        })
+      );
+    }
   };
 
   const cancel = () => {

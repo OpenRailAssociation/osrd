@@ -38,7 +38,7 @@ export default function RollingStockEditor({ rollingStocks }: RollingStockEditor
 
   const [openedRollingStockCardId, setOpenedRollingStockCardId] = useState<number>();
 
-  const { data: selectedRollingStock } = osrdEditoastApi.useGetRollingStockByIdQuery(
+  const { data: selectedRollingStock } = osrdEditoastApi.endpoints.getRollingStockById.useQuery(
     {
       id: openedRollingStockCardId as number,
     },

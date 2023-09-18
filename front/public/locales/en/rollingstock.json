@@ -56,6 +56,8 @@
   "messages": {
     "success": "Group",
     "failure": "Operation failed",
+    "invalidForm": "Invalid form",
+    "missingName": "Please fill the name of the new rolling stock",
     "rollingStockAdded": "Rolling stock added",
     "rollingStockUpdated": "Rolling stock updated",
     "rollingStockDeleted": "Rolling stock deleted",
