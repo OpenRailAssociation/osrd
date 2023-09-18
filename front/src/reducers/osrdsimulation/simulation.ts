@@ -66,7 +66,7 @@ const apiSyncOnDiff = (
       JSON.stringify(apiDetailsForNextTrain) !== JSON.stringify(apiDetailsForPresentTrain)
     ) {
       // train exists, but is different. Patch this train
-      changeTrain(getTrainDetailsForAPI(nextTrain), nextTrain.id, dispatch);
+      changeTrain(getTrainDetailsForAPI(nextTrain), nextTrain.id)(dispatch);
     }
   }
 };
