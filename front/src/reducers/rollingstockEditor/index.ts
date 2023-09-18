@@ -13,14 +13,14 @@ export interface RsEditorCurvesState {
   comfortLvl: Comfort;
   electricalProfile: string | null;
   powerRestriction: string | null;
-  tractionMode: string;
+  tractionMode: string | null;
 }
 
 export const initialState: RsEditorCurvesState = {
   comfortLvl: STANDARD_COMFORT_LEVEL,
   electricalProfile: null,
   powerRestriction: null,
-  tractionMode: '',
+  tractionMode: null,
 };
 
 export default function reducer(inputState: RsEditorCurvesState | undefined, action: AnyAction) {
@@ -54,7 +54,7 @@ export function updateComfortLvl(comfortLvl: Comfort) {
   };
 }
 
-export function updateTractionMode(tractionMode: string) {
+export function updateTractionMode(tractionMode: string | null) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: TRACTION_MODE,

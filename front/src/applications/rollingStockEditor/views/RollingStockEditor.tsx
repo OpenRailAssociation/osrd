@@ -39,7 +39,7 @@ export default function RollingStockEditor({ rollingStocks }: RollingStockEditor
 
   const [openedRollingStockCardId, setOpenedRollingStockCardId] = useState<number>();
 
-  const { data: selectedRollingStock } = osrdEditoastApi.useGetRollingStockByIdQuery(
+  const { data: selectedRollingStock } = osrdEditoastApi.endpoints.getRollingStockById.useQuery(
     {
       id: openedRollingStockCardId as number,
     },
@@ -50,7 +50,7 @@ export default function RollingStockEditor({ rollingStocks }: RollingStockEditor
 
   const resetRollingstockCurvesParams = () => {
     dispatch(updateComfortLvl(STANDARD_COMFORT_LEVEL));
-    dispatch(updateTractionMode(''));
+    dispatch(updateTractionMode(null));
     dispatch(updateElectricalProfile(null));
     dispatch(updatePowerRestriction(null));
   };
@@ -171,6 +171,7 @@ export default function RollingStockEditor({ rollingStocks }: RollingStockEditor
             type="button"
             className="btn btn-primary mb-4"
             onClick={() => {
+              resetRollingstockCurvesParams();
               setIsAdding(true);
               setOpenedRollingStockCardId(undefined);
             }}

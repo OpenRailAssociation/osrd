@@ -5,7 +5,7 @@ export const STANDARD_COMFORT_LEVEL: Comfort = 'STANDARD';
 
 export const DEFAULT_SELECTORS_CLASSNAME = 'selector-SNCF';
 
-type EffortCurves = {
+export type EffortCurves = {
   modes: {
     [key: string]: {
       curves: ConditionalEffortCurve[];
@@ -81,7 +81,7 @@ export type RollingStockParametersValues = {
   rollingResistanceC: number;
   electricalPowerStartupTime: number | null;
   raisePantographTime: number | null;
-  defaultMode: string;
+  defaultMode: string | null;
   effortCurves: EffortCurves;
 };
 
