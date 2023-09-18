@@ -1,6 +1,7 @@
 package fr.sncf.osrd.stdcm;
 
 import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.SPEED_EPSILON;
+import static fr.sncf.osrd.stdcm.STDCMHelpers.m;
 import static fr.sncf.osrd.stdcm.STDCMHelpers.occupancyTest;
 import static fr.sncf.osrd.stdcm.StandardAllowanceTests.checkAllowanceResult;
 import static fr.sncf.osrd.stdcm.StandardAllowanceTests.runWithAndWithoutAllowance;
@@ -31,8 +32,8 @@ public class StopTests {
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
                 .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 0)), 0, true))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(secondBlock, 50_000)), 10_000, true))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(secondBlock, 100_000)), 0, true))
+                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(secondBlock, m(50))), 10_000, true))
+                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(secondBlock, m(100))), 0, true))
                 .run();
         assertNotNull(res);
         double expectedOffset = 150;
@@ -43,7 +44,7 @@ public class StopTests {
         // Check that the stop is properly returned
         assertEquals(
                 List.of(
-                        new TrainStop(expectedOffset, 10_000)
+                        new TrainStop(m(expectedOffset), 10_000)
                 ),
                 res.stopResults()
         );
@@ -62,11 +63,11 @@ public class StopTests {
                 .setInfra(infra.fullInfra())
                 .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 0)), 0, true))
                 .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(secondBlock, 0)), 10_000, true))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(secondBlock, 100_000)), 0, true))
+                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(secondBlock, m(100))), 0, true))
                 .run();
         assertNotNull(res);
         checkStop(res, List.of(
-                new TrainStop(100, 10_000)
+                new TrainStop(m(100), 10_000)
         ));
     }
 
@@ -82,12 +83,12 @@ public class StopTests {
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
                 .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 0)), 0, true))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 100_000)), 10_000, true))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(secondBlock, 100_000)), 0, true))
+                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, m(100))), 10_000, true))
+                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(secondBlock, m(100))), 0, true))
                 .run();
         assertNotNull(res);
         checkStop(res, List.of(
-                new TrainStop(100, 10_000)
+                new TrainStop(m(100), 10_000)
         ));
     }
 
@@ -112,14 +113,14 @@ public class StopTests {
                 infra.addBlock("d", "e")
         );
         var detour = List.of(
-                infra.addBlock("b", "x", 100_000_000),
-                infra.addBlock("x", "d", 100_000_000)
+                infra.addBlock("b", "x", m(100_000)),
+                infra.addBlock("x", "d", m(100_000))
         );
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
                 .setStartTime(100)
                 .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(blocksDirectPath.get(0), 0)), 0, false))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(detour.get(1), 1_000_000)), 0, stop))
+                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(detour.get(1), m(1_000))), 0, stop))
                 .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(blocksDirectPath.get(3), 0)), 0, true))
                 .run();
         assertNotNull(res);
@@ -149,13 +150,13 @@ public class StopTests {
         var firstBlock = infra.addBlock("a", "b");
         var secondBlock = infra.addBlock("b", "c");
         var unavailableTimes = ImmutableMultimap.of(
-                secondBlock, new OccupancySegment(100_000, POSITIVE_INFINITY, 0, 100_000)
+                secondBlock, new OccupancySegment(100_000, POSITIVE_INFINITY, 0, m(100))
         );
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
                 .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 0)), 0, true))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 10_000)), 100_000, true))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(secondBlock, 100_000)), 0, true))
+                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, m(10))), 100_000, true))
+                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(secondBlock, m(100))), 0, true))
                 .setUnavailableTimes(unavailableTimes)
                 .run();
         assertNull(res);
@@ -171,22 +172,22 @@ public class StopTests {
         var blocks = List.of(
                 infra.addBlock("a", "b"),
                 infra.addBlock("b", "c"),
-                infra.addBlock("c", "d", 1_000)
+                infra.addBlock("c", "d", m(1))
         );
         var occupancy = ImmutableMultimap.of(
-                blocks.get(2), new OccupancySegment(0, 12_000, 0, 1_000),
-                blocks.get(2), new OccupancySegment(12_010, POSITIVE_INFINITY, 0, 1_000)
+                blocks.get(2), new OccupancySegment(0, 12_000, 0, m(1)),
+                blocks.get(2), new OccupancySegment(12_010, POSITIVE_INFINITY, 0, m(1))
         );
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
                 .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(0), 0)), 0, true))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(0), 50_000)), 10_000, true))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(2), 1_000)), 0, true))
+                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(0), m(50))), 10_000, true))
+                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(2), m(1))), 0, true))
                 .setUnavailableTimes(occupancy)
                 .run();
         assertNotNull(res);
         checkStop(res, List.of(
-                new TrainStop(50, 10_000)
+                new TrainStop(m(50), 10_000)
         ));
         occupancyTest(res, occupancy);
     }
@@ -215,15 +216,15 @@ public class StopTests {
 
         var infra = DummyInfra.make();
         var blocks = List.of(
-                infra.addBlock("a", "b", 1_000, 20),
-                infra.addBlock("b", "c", 1_000_000, 20),
-                infra.addBlock("c", "d", 100_000, 20),
-                infra.addBlock("d", "e", 1_000, 20)
+                infra.addBlock("a", "b", m(1), 20),
+                infra.addBlock("b", "c", m(1_000), 20),
+                infra.addBlock("c", "d", m(100), 20),
+                infra.addBlock("d", "e", m(1), 20)
         );
         var occupancy = ImmutableMultimap.of(
-                blocks.get(0), new OccupancySegment(10, POSITIVE_INFINITY, 0, 1_000),
-                blocks.get(3), new OccupancySegment(0, 1_200, 0, 1_000),
-                blocks.get(3), new OccupancySegment(1_220, POSITIVE_INFINITY, 0, 1_000)
+                blocks.get(0), new OccupancySegment(10, POSITIVE_INFINITY, 0, m(1)),
+                blocks.get(3), new OccupancySegment(0, 1_200, 0, m(1)),
+                blocks.get(3), new OccupancySegment(1_220, POSITIVE_INFINITY, 0, m(1))
         );
         double timeStep = 2;
         var res = new STDCMPathfindingBuilder()
@@ -231,12 +232,12 @@ public class StopTests {
                 .setUnavailableTimes(occupancy)
                 .setTimeStep(timeStep)
                 .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(0), 0)), 0, true))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(1), 50_000)), 1_000, true))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(3), 1_000)), 0, true))
+                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(1), m(50))), 1_000, true))
+                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(3), m(1))), 0, true))
                 .run();
         assertNotNull(res);
         checkStop(res, List.of(
-                new TrainStop(51, 1_000)
+                new TrainStop(m(51), 1_000)
         ));
         occupancyTest(res, occupancy, 2 * timeStep);
     }
@@ -263,14 +264,14 @@ public class StopTests {
 
         var infra = DummyInfra.make();
         var blocks = List.of(
-                infra.addBlock("a", "b", 1_000, 20),
-                infra.addBlock("b", "c", 1_000_000, 20),
-                infra.addBlock("c", "d", 100_000, 20),
-                infra.addBlock("d", "e", 1_000, 20)
+                infra.addBlock("a", "b", m(1), 20),
+                infra.addBlock("b", "c", m(1_000), 20),
+                infra.addBlock("c", "d", m(100), 20),
+                infra.addBlock("d", "e", m(1), 20)
         );
         var occupancy = ImmutableMultimap.of(
-                blocks.get(3), new OccupancySegment(0, 1_200, 0, 1_000),
-                blocks.get(3), new OccupancySegment(1_220, POSITIVE_INFINITY, 0, 1_000)
+                blocks.get(3), new OccupancySegment(0, 1_200, 0, m(1)),
+                blocks.get(3), new OccupancySegment(1_220, POSITIVE_INFINITY, 0, m(1))
         );
         double timeStep = 2;
         var allowance = new AllowanceValue.Percentage(20);
@@ -280,12 +281,12 @@ public class StopTests {
                 .setTimeStep(timeStep)
                 .setStandardAllowance(allowance)
                 .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(0), 0)), 0, true))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(1), 50_000)), 1_000, true))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(3), 1_000)), 0, true))
+                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(1), m(50))), 1_000, true))
+                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(3), m(1))), 0, true))
         );
         assertNotNull(res);
         var expectedStops = List.of(
-                new TrainStop(51, 1_000)
+                new TrainStop(m(51), 1_000)
         );
         checkStop(res.withAllowance(), expectedStops);
         checkStop(res.withoutAllowance(), expectedStops);
@@ -318,15 +319,15 @@ public class StopTests {
 
         var infra = DummyInfra.make();
         var blocks = List.of(
-                infra.addBlock("a", "b", 1_000, 20),
-                infra.addBlock("b", "c", 1_000_000, 20),
-                infra.addBlock("c", "d", 100_000, 20),
-                infra.addBlock("d", "e", 1_000, 20)
+                infra.addBlock("a", "b", m(1), 20),
+                infra.addBlock("b", "c", m(1_000), 20),
+                infra.addBlock("c", "d", m(100), 20),
+                infra.addBlock("d", "e", m(1), 20)
         );
         var occupancy = ImmutableMultimap.of(
-                blocks.get(0), new OccupancySegment(10, POSITIVE_INFINITY, 0, 1_000),
-                blocks.get(3), new OccupancySegment(0, 1_200, 0, 1_000),
-                blocks.get(3), new OccupancySegment(1_300, POSITIVE_INFINITY, 0, 1_000)
+                blocks.get(0), new OccupancySegment(10, POSITIVE_INFINITY, 0, m(1)),
+                blocks.get(3), new OccupancySegment(0, 1_200, 0, m(1)),
+                blocks.get(3), new OccupancySegment(1_300, POSITIVE_INFINITY, 0, m(1))
         );
         double timeStep = 2;
         var allowance = new AllowanceValue.Percentage(20);
@@ -336,12 +337,12 @@ public class StopTests {
                 .setTimeStep(timeStep)
                 .setStandardAllowance(allowance)
                 .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(0), 0)), 0, true))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(1), 50_000)), 1_000, true))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(3), 1_000)), 0, true))
+                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(1), m(50))), 1_000, true))
+                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(3), m(1))), 0, true))
         );
         assertNotNull(res);
         var expectedStops = List.of(
-                new TrainStop(51, 1_000)
+                new TrainStop(m(51), 1_000)
         );
         checkStop(res.withAllowance(), expectedStops);
         checkStop(res.withoutAllowance(), expectedStops);

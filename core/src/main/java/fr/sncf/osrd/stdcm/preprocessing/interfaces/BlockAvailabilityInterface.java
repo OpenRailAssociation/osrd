@@ -93,7 +93,7 @@ public interface BlockAvailabilityInterface {
          * <br/>
          * It's either the offset where we start using a ressource before it's available,
          * or the offset where the train would have released a ressource it has kept for too long. */
-        public final double firstConflictOffset;
+        public final long firstConflictOffset;
 
         @Override
         public boolean equals(Object o) {
@@ -109,7 +109,7 @@ public interface BlockAvailabilityInterface {
             return Objects.hashCode(duration, firstConflictOffset);
         }
 
-        public Unavailable(double duration, double firstConflictOffset) {
+        public Unavailable(double duration, long firstConflictOffset) {
             this.duration = duration;
             this.firstConflictOffset = firstConflictOffset;
         }
