@@ -57,6 +57,9 @@
   "messages": {
     "success": "Opération réussie",
     "failure": "Opération échouée",
+    "invalidForm": "Formulaire incomplet",
+    "missingName": "Veuillez renseigner un nom",
+    "missingEffortCurves": "Veuillez renseigner une courbe effort-vitesse",
     "rollingStockAdded": "Le matériel roulant a été ajouté.",
     "rollingStockUpdated": "Le matériel roulant a été mis à jour.",
     "rollingStockDeleted": "Le matériel roulant a été supprimé.",

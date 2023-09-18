@@ -1,5 +1,5 @@
 import { isNull } from 'lodash';
-import React, { useMemo } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdArrowRight } from 'react-icons/md';
 import { getTranslationKey } from 'utils/strings';
@@ -13,6 +13,7 @@ export default function SelectorSNCF<T extends string | null, K extends string>(
   borderClass: string;
   title: K;
   itemsList: T[];
+  permanentItems?: T[];
   selectedItem?: T;
   hoveredItem?: string | null;
   onItemSelected?: (value: T) => void;
@@ -26,6 +27,7 @@ export default function SelectorSNCF<T extends string | null, K extends string>(
     borderClass,
     title,
     itemsList,
+    permanentItems,
     selectedItem,
     hoveredItem,
     onItemSelected,
@@ -43,39 +45,39 @@ export default function SelectorSNCF<T extends string | null, K extends string>(
       </div>
       <div className="d-flex align-items-center position-relative">
         <div className={cx(`${mainClass}-itemslist`, borderClass, 'overflow-auto', 'p-2')}>
-          {useMemo(
-            () =>
-              itemsList.map((item, index: number) => (
-                <div
-                  className={cx(`${mainClass}-item`, 'd-flex', 'mb-1', borderClass, {
-                    selected: item === selectedItem,
-                    hovered: item === hoveredItem && item !== null,
-                  })}
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => {
-                    if (onItemSelected) onItemSelected(item);
-                  }}
-                  onMouseOver={() => {
-                    if (onItemHovered) onItemHovered(item);
-                  }}
-                  onFocus={() => {
-                    if (onItemHovered) onItemHovered(item);
-                  }}
-                  key={`selector-${title}-${index}`}
-                >
-                  <div className={`${mainClass}-item-name pt-1 pl-3`}>
-                    {!isNull(item)
-                      ? t(getTranslationKey(translationList, String(item)))
-                      : t('unspecified')}
-                  </div>
-                  {onItemRemoved && (
+          {itemsList.map(
+            (item, index: number) => (
+              <div
+                className={cx(`${mainClass}-item`, 'd-flex', 'mb-1', borderClass, {
+                  selected: item === selectedItem,
+                  hovered: item === hoveredItem && item !== null,
+                })}
+                role="button"
+                tabIndex={0}
+                onClick={() => {
+                  if (onItemSelected) onItemSelected(item);
+                }}
+                onMouseOver={() => {
+                  if (onItemHovered) onItemHovered(item);
+                }}
+                onFocus={() => {
+                  if (onItemHovered) onItemHovered(item);
+                }}
+                key={`selector-${title}-${index}`}
+              >
+                <div className={`${mainClass}-item-name pt-1 pl-3`}>
+                  {!isNull(item)
+                    ? t(getTranslationKey(translationList, String(item)))
+                    : t('unspecified')}
+                </div>
+                {((permanentItems && !permanentItems.includes(item)) || !permanentItems) &&
+                  onItemRemoved && (
                     <div className={`${mainClass}-trash-icon`}>
                       <FaTrash onClick={() => onItemRemoved(item, title)} />
                     </div>
                   )}
-                </div>
-              )),
+              </div>
+            ),
             [itemsList, selectedItem, hoveredItem]
           )}
         </div>

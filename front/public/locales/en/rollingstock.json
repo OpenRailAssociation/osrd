@@ -56,6 +56,9 @@
   "messages": {
     "success": "Group",
     "failure": "Operation failed",
+    "invalidForm": "Invalid form",
+    "missingName": "Please fill the name of the new rolling stock",
+    "missingEffortCurves": "Please fill in at least one effort-speed curve",
     "rollingStockAdded": "Rolling stock added",
     "rollingStockUpdated": "Rolling stock updated",
     "rollingStockDeleted": "Rolling stock deleted",

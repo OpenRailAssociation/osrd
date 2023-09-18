@@ -1,11 +1,10 @@
-import {
-  Comfort,
-  EffortCurve,
-  RollingStock,
-  RollingStockUpsertPayload,
-} from 'common/api/osrdEditoastApi';
+import { Comfort, RollingStock, RollingStockUpsertPayload } from 'common/api/osrdEditoastApi';
 import { isNull } from 'lodash';
-import { RollingStockParametersValues, STANDARD_COMFORT_LEVEL } from 'modules/rollingStock/consts';
+import {
+  EffortCurves,
+  RollingStockParametersValues,
+  STANDARD_COMFORT_LEVEL,
+} from 'modules/rollingStock/consts';
 
 const newRollingStockValues = {
   railjsonVersion: '',
@@ -64,15 +63,24 @@ export const getDefaultRollingStockMode = (
 });
 
 const getRollingStockEditorDefaultValues = (
-  selectedMode: string,
+  selectedMode: string | null,
   rollingStockData?: RollingStock
 ): RollingStockParametersValues => {
-  const completeSelectedMode = getDefaultRollingStockMode(selectedMode).modes[selectedMode];
-  const formattedSelectedMode = {
-    curves: completeSelectedMode.curves,
-    isElectric: completeSelectedMode.is_electric,
-    defaultCurve: completeSelectedMode.default_curve,
-  };
+  let effortCurves: EffortCurves = { modes: {} };
+  const completeSelectedMode = selectedMode
+    ? getDefaultRollingStockMode(selectedMode).modes[selectedMode]
+    : null;
+  if (completeSelectedMode) {
+    effortCurves = {
+      modes: {
+        [selectedMode as string]: {
+          curves: completeSelectedMode.curves,
+          isElectric: completeSelectedMode.is_electric,
+          defaultCurve: completeSelectedMode.default_curve,
+        },
+      },
+    };
+  }
   return rollingStockData
     ? {
         railjsonVersion: rollingStockData.railjson_version,
@@ -100,29 +108,19 @@ const getRollingStockEditorDefaultValues = (
         rollingResistanceC: rollingStockData.rolling_resistance.C,
         electricalPowerStartupTime: rollingStockData.electrical_power_startup_time,
         raisePantographTime: rollingStockData.raise_pantograph_time,
-        defaultMode: rollingStockData.effort_curves.default_mode || selectedMode,
-        effortCurves: {
-          modes: {
-            [selectedMode]: formattedSelectedMode,
-          },
-        },
+        defaultMode: rollingStockData.effort_curves.default_mode,
+        effortCurves,
       }
     : {
         ...newRollingStockValues,
         defaultMode: selectedMode,
-        effortCurves: {
-          modes: {
-            [selectedMode]: formattedSelectedMode,
-          },
-        },
+        effortCurves,
       };
 };
 
 export const rollingStockEditorQueryArg = (
   data: RollingStockParametersValues,
-  selectedMode: string,
-  currentRsEffortCurve: RollingStock['effort_curves'],
-  isAdding?: boolean
+  currentRsEffortCurve: RollingStock['effort_curves']
 ): RollingStockUpsertPayload => ({
   name: data.name,
   length: data.length,
@@ -160,30 +158,18 @@ export const rollingStockEditorQueryArg = (
     type: data.type,
     unit: data.unit,
   },
-  effort_curves: {
-    default_mode: selectedMode,
-    modes: {
-      ...currentRsEffortCurve.modes,
-      [selectedMode]: {
-        curves: currentRsEffortCurve.modes[selectedMode].curves,
-        is_electric: currentRsEffortCurve.modes[selectedMode].is_electric,
-        default_curve: isAdding
-          ? (currentRsEffortCurve.modes[selectedMode].curves[0].curve as EffortCurve)
-          : currentRsEffortCurve.modes[selectedMode].default_curve,
-      },
-    },
-  },
+  effort_curves: currentRsEffortCurve,
 });
 
 export const createEmptyCurve = (
   comfort: Comfort,
-  electricalProfile: string | null,
-  powerRestriction: string | null
+  electricalProfile: string | null = null,
+  powerRestriction: string | null = null
 ) => ({
   cond: {
     comfort: comfort || STANDARD_COMFORT_LEVEL,
-    electrical_profile_level: electricalProfile || null,
-    power_restriction_code: powerRestriction || null,
+    electrical_profile_level: electricalProfile,
+    power_restriction_code: powerRestriction,
   },
   curve: { speeds: [0], max_efforts: [0] },
 });

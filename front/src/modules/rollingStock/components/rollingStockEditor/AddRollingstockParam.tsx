@@ -11,11 +11,13 @@ export default function AddRollingstockParam({
   listName,
   allOptionsList,
   displayedLists,
+  disabled,
   updateDisplayedLists,
 }: {
   listName: string;
   allOptionsList: string[] | (string | null)[];
   displayedLists: RollingStockSelectorParams;
+  disabled?: boolean;
   updateDisplayedLists: (arg: string) => void;
 }) {
   const COMFORT_LEVELS_KEY: keyof RollingStockSelectorParams = 'comfortLevels';
@@ -48,14 +50,14 @@ export default function AddRollingstockParam({
       <button
         type="button"
         className={cx('rollingstock-selector-buttons', 'mb-2', {
-          disabled: (!optionsList || optionsList.length < 1) && listName !== 'tractionModes',
+          disabled: disabled || (optionsList.length < 1 && listName !== 'tractionModes'),
         })}
         onClick={() => setIsSelectVisible(true)}
       >
         <RiAddFill />
       </button>
       {isSelectVisible && (
-        <div className="rollingstock-editor-select">
+        <div className="selector-select">
           <SelectImprovedSNCF
             options={optionsList}
             onChange={(e) => {

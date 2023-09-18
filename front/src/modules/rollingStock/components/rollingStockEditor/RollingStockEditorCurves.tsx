@@ -10,7 +10,7 @@ import {
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
 import { isEmpty, isNull } from 'lodash';
-import React, { Dispatch, SetStateAction, useEffect, useState, useCallback } from 'react';
+import React, { Dispatch, SetStateAction, useEffect, useState, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import Spreadsheet, { CellBase, Matrix, createEmptyMatrix } from 'react-spreadsheet';
 import { emptyStringRegex } from 'utils/strings';
@@ -25,7 +25,6 @@ import {
   getComfortLevel,
   getElectricalProfile,
   getPowerRestriction,
-  getTractionMode,
 } from 'reducers/rollingstockEditor/selectors';
 import SelectorSNCF from 'common/SelectorSNCF';
 import {
@@ -46,55 +45,62 @@ import { createEmptyCurve, orderSelectorList } from 'modules/rollingStock/helper
 import AddRollingstockParam from './AddRollingstockParam';
 import RollingStockEditorFormModal from './RollingStockEditorFormModal';
 
+const EMPTY_MATRIX = createEmptyMatrix<CellBase<string>>(8, 2);
+const EMPTY_PARAMS = {
+  comfortLevels: [STANDARD_COMFORT_LEVEL],
+  tractionModes: [],
+  electricalProfiles: [],
+  powerRestrictions: [],
+};
+
 export default function RollingStockEditorCurves({
   data,
   currentRsEffortCurve,
   setCurrentRsEffortCurve,
+  selectedTractionMode,
 }: {
   data?: RollingStock;
-  currentRsEffortCurve: RollingStock['effort_curves'];
-  setCurrentRsEffortCurve: Dispatch<SetStateAction<RollingStock['effort_curves']>>;
+  currentRsEffortCurve: RollingStock['effort_curves'] | null;
+  setCurrentRsEffortCurve: Dispatch<SetStateAction<RollingStock['effort_curves'] | null>>;
+  selectedTractionMode: string | null;
 }) {
   const { t } = useTranslation('rollingstock');
   const dispatch = useDispatch();
   const { openModal } = useModal();
 
   const selectedComfortLvl = useSelector(getComfortLevel);
-  const selectedTractionMode = useSelector(getTractionMode);
   const selectedElectricalProfile = useSelector(getElectricalProfile);
   const selectedPowerRestriction = useSelector(getPowerRestriction);
 
-  const EMPTY_MATRIX = createEmptyMatrix<CellBase<string>>(8, 2);
-  const EMPTY_SELECTED_CURVES: SelectedCurves = {
-    [selectedTractionMode]: {
-      ...currentRsEffortCurve.modes[selectedTractionMode],
-      curves: [],
-    },
-  };
-  const EMPTY_PARAMS = {
-    comfortLevels: [],
-    tractionModes: [],
-    electricalProfiles: [],
-    powerRestrictions: [],
-  };
+  const EmptySelectedCurves: SelectedCurves = useMemo(
+    () =>
+      selectedTractionMode && currentRsEffortCurve
+        ? {
+            [selectedTractionMode]: {
+              ...currentRsEffortCurve.modes[selectedTractionMode],
+              curves: [],
+            },
+          }
+        : {},
+    [selectedTractionMode]
+  );
 
   const [rollingstockParams, setRollingstockParams] =
     useState<RollingStockSelectorParams>(EMPTY_PARAMS);
 
-  const EMPTY_TRACTION_MODE = {
-    curves: rollingstockParams.comfortLevels.map((comfort) =>
-      createEmptyCurve(comfort, null, null)
-    ),
+  /** given a tractionMode and a list of comfort, return empty EffortCurves */
+  const createEmptyCurves = (tractionMode: string, comforts: Comfort[]) => ({
+    curves: comforts.map((comfort) => createEmptyCurve(comfort)),
     default_curve: { speeds: [0], max_efforts: [0] },
-    is_electric: currentRsEffortCurve.default_mode !== THERMAL_TRACTION_IDENTIFIER,
-  };
+    is_electric: tractionMode !== THERMAL_TRACTION_IDENTIFIER,
+  });
   const [hoveredRollingstockParam, setHoveredRollingstockParam] = useState<string | null>();
-  const [selectedCurves, setSelectedCurves] = useState(EMPTY_SELECTED_CURVES);
+  const [selectedCurves, setSelectedCurves] = useState(EmptySelectedCurves);
 
   const dispatchComfortLvl = (value: string) => {
     dispatch(updateComfortLvl(value as Comfort));
   };
-  const dispatchTractionMode = (value: string) => {
+  const dispatchTractionMode = (value: string | null) => {
     dispatch(updateTractionMode(value));
   };
   const dispatchElectricalProfil = (value: string | null) => {
@@ -109,10 +115,13 @@ export default function RollingStockEditorCurves({
    * the selected rollingstock to fill the selectors lists
    */
   const updateRollingstockParams = useCallback(() => {
+    if (!currentRsEffortCurve) return EMPTY_PARAMS;
+
     const rsComfortLevels = listCurvesComfort(currentRsEffortCurve);
     const tractionModes = Object.keys(currentRsEffortCurve.modes);
     const powerRestrictions: (string | null)[] = [];
     const rsElectricalProfiles =
+      selectedTractionMode &&
       selectedTractionMode !== THERMAL_TRACTION_IDENTIFIER &&
       currentRsEffortCurve.modes[selectedTractionMode]
         ? currentRsEffortCurve.modes[selectedTractionMode].curves.reduce((acc, curve) => {
@@ -139,8 +148,8 @@ export default function RollingStockEditorCurves({
     if (!rsComfortLevels.includes(selectedComfortLvl)) {
       dispatchComfortLvl(rsComfortLevels[0] || STANDARD_COMFORT_LEVEL);
     }
-    if (!tractionModes.includes(selectedTractionMode)) {
-      dispatchTractionMode(Object.keys(currentRsEffortCurve.modes)[0]);
+    if (selectedTractionMode && !tractionModes.includes(selectedTractionMode)) {
+      dispatchTractionMode(Object.keys(currentRsEffortCurve.modes)[0] || null);
     }
     if (!rsElectricalProfiles.includes(selectedElectricalProfile)) {
       dispatchElectricalProfil(rsElectricalProfiles[0]);
@@ -161,9 +170,10 @@ export default function RollingStockEditorCurves({
 
   /** Filter all the curves to find a list of curves matching the selected comfort and traction mode */
   const selectMatchingCurves = useCallback((): SelectedCurves => {
+    if (!selectedTractionMode || !currentRsEffortCurve) return {};
     const selectedTractionModeCurves = currentRsEffortCurve.modes[selectedTractionMode];
     if (!selectedTractionModeCurves) {
-      return EMPTY_SELECTED_CURVES;
+      return EmptySelectedCurves;
     }
     const curvesList = selectedTractionModeCurves?.curves.filter(
       (curve) => curve.cond?.comfort === selectedComfortLvl
@@ -188,7 +198,9 @@ export default function RollingStockEditorCurves({
   const selectAndFormatCurveForSpreadsheet = (
     newSelectedCurves: RollingStock['effort_curves']['modes']
   ): Matrix<CellBase<string>> => {
-    if (isEmpty(newSelectedCurves[selectedTractionMode].curves)) return EMPTY_MATRIX;
+    if (!selectedTractionMode || isEmpty(newSelectedCurves[selectedTractionMode].curves)) {
+      return EMPTY_MATRIX;
+    }
 
     const isElectric = selectedTractionMode !== THERMAL_TRACTION_IDENTIFIER;
     const curvesList = newSelectedCurves[selectedTractionMode].curves;
@@ -266,6 +278,7 @@ export default function RollingStockEditorCurves({
   };
 
   const updateCurrentRs = (e: Matrix<{ value: string }>) => {
+    if (!selectedTractionMode || !currentRsEffortCurve) return;
     const parsedCurve = parseCurve(e);
     const selectedTractionModeCurves = currentRsEffortCurve.modes[selectedTractionMode].curves;
     if (!isEmpty(parsedCurve.max_efforts) && !isEmpty(parsedCurve.speeds)) {
@@ -280,14 +293,14 @@ export default function RollingStockEditorCurves({
 
       const updatedSelectedCurve =
         index < 0
-          ? ({
+          ? {
               cond: {
                 comfort: selectedComfortLvl,
                 electrical_profile_level: selectedElectricalProfile,
                 power_restriction_code: selectedPowerRestriction,
               },
               curve: parsedCurve,
-            } as ConditionalEffortCurve)
+            }
           : {
               cond: selectedTractionModeCurves[index].cond,
               curve: parsedCurve,
@@ -299,6 +312,10 @@ export default function RollingStockEditorCurves({
       ];
 
       if (index > 0) updatedCurvesList.unshift(...selectedTractionModeCurves.slice(0, index));
+      const defaultCurve =
+        index === 0
+          ? updatedSelectedCurve.curve
+          : currentRsEffortCurve.modes[selectedTractionMode].default_curve;
 
       const updatedCurrentRsEffortCurve = {
         default_mode: currentRsEffortCurve.default_mode,
@@ -306,6 +323,7 @@ export default function RollingStockEditorCurves({
           ...currentRsEffortCurve.modes,
           [selectedTractionMode]: {
             ...currentRsEffortCurve.modes[selectedTractionMode],
+            default_curve: defaultCurve,
             curves: updatedCurvesList,
           },
         },
@@ -343,9 +361,10 @@ export default function RollingStockEditorCurves({
   };
 
   const updateComfortLevelsList = (value: string) => {
+    if (!currentRsEffortCurve) return;
     const updatedModesCurves = Object.keys(currentRsEffortCurve.modes).reduce((acc, key) => {
       const currentMode = currentRsEffortCurve.modes[key];
-      const newEmptyCurve = createEmptyCurve(value as Comfort, null, null);
+      const newEmptyCurve = createEmptyCurve(value as Comfort);
       return {
         ...acc,
         [key]: {
@@ -356,24 +375,27 @@ export default function RollingStockEditorCurves({
     }, {});
 
     setCurrentRsEffortCurve((prevState) => ({
-      ...prevState,
+      default_mode: prevState !== null ? prevState.default_mode : currentRsEffortCurve.default_mode,
       modes: updatedModesCurves,
     }));
+    dispatchComfortLvl(value as Comfort);
   };
 
-  const updateTractionModesList = (value: string) => {
+  const updateTractionModesList = (newTractionMode: string) => {
     setCurrentRsEffortCurve((prevState) => ({
-      ...prevState,
+      default_mode: prevState ? prevState.default_mode : newTractionMode,
       modes: {
-        ...prevState.modes,
-        [value]: EMPTY_TRACTION_MODE,
+        ...(prevState ? prevState.modes : {}),
+        [newTractionMode]: createEmptyCurves(newTractionMode, rollingstockParams.comfortLevels),
       },
     }));
+    dispatchTractionMode(newTractionMode);
   };
 
   const updateElectricalProfilesList = (value: string) => {
+    if (!selectedTractionMode || !currentRsEffortCurve) return;
     const selectedModeCurves = currentRsEffortCurve.modes[selectedTractionMode];
-    const newEmptyCurve = createEmptyCurve(selectedComfortLvl, value, null);
+    const newEmptyCurve = createEmptyCurve(selectedComfortLvl, value);
 
     const updatedCurrentRsEffortCurve = {
       ...currentRsEffortCurve,
@@ -387,13 +409,14 @@ export default function RollingStockEditorCurves({
     };
 
     setCurrentRsEffortCurve(updatedCurrentRsEffortCurve);
+    dispatchElectricalProfil(value);
   };
 
   const removeTractionMode = (value: string) => {
+    if (!currentRsEffortCurve) return;
     const filteredModesList = Object.fromEntries(
       Object.entries(currentRsEffortCurve.modes).filter(([key]) => key !== value)
     );
-
     const updatedCurrentRsEffortCurve = {
       default_mode: currentRsEffortCurve.default_mode,
       modes: filteredModesList,
@@ -405,6 +428,7 @@ export default function RollingStockEditorCurves({
     value: RollingStockSelectorParam[K],
     title: K
   ) => {
+    if (!currentRsEffortCurve) return;
     const updatedModesCurves = Object.keys(currentRsEffortCurve.modes).reduce((acc, key) => {
       const cleanedList = currentRsEffortCurve.modes[key].curves.filter((curve) => {
         const rsEffortCurveCondKey = effortCurveCondKeys[title as keyof EffortCurveCondKeys];
@@ -479,6 +503,7 @@ export default function RollingStockEditorCurves({
               itemsList={rollingstockParams.comfortLevels}
               selectedItem={selectedComfortLvl}
               hoveredItem={hoveredRollingstockParam}
+              permanentItems={[STANDARD_COMFORT_LEVEL]}
               onItemSelected={dispatchComfortLvl}
               onItemHovered={setHoveredRollingstockParam}
               onItemRemoved={confirmRsParamRemoval}
@@ -486,6 +511,7 @@ export default function RollingStockEditorCurves({
               translationList="comfortTypes"
             />
             <AddRollingstockParam
+              disabled={rollingstockParams.tractionModes.length === 0}
               displayedLists={rollingstockParams}
               updateDisplayedLists={updateComfortLevelsList}
               allOptionsList={comfortOptions}
@@ -498,7 +524,7 @@ export default function RollingStockEditorCurves({
               borderClass="selector-pink"
               title="tractionModes"
               itemsList={rollingstockParams.tractionModes}
-              selectedItem={selectedTractionMode}
+              selectedItem={selectedTractionMode || undefined}
               hoveredItem={hoveredRollingstockParam}
               onItemSelected={dispatchTractionMode}
               onItemHovered={setHoveredRollingstockParam}
@@ -514,7 +540,7 @@ export default function RollingStockEditorCurves({
               />
             )}
           </div>
-          {selectedTractionMode !== THERMAL_TRACTION_IDENTIFIER && (
+          {selectedTractionMode && selectedTractionMode !== THERMAL_TRACTION_IDENTIFIER && (
             <>
               <div className="selector-container">
                 <SelectorSNCF
@@ -558,40 +584,42 @@ export default function RollingStockEditorCurves({
           )}
         </div>
       )}
-      <div className="d-flex rollingstock-editor-curves p-3">
-        <div className="rollingstock-editor-spreadsheet">
-          <Spreadsheet
-            data={curveForSpreadsheet}
-            onChange={(e) => {
-              updateSpreadsheet(e);
-              updateCurrentRs(e);
-            }}
-            onBlur={orderSpreadsheetValues}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') orderSpreadsheetValues();
-            }}
-            columnLabels={[t('speed'), t('effort')]}
-          />
-        </div>
-        <div className="rollingstock-body">
-          {!isEmpty(selectedCurves[selectedTractionMode]?.curves) && rollingstockParams && (
-            <RollingStockCurve
-              curvesComfortList={[selectedComfortLvl]}
-              data={selectedCurves}
-              isOnEditionMode
-              showPowerRestriction={rollingstockParams.powerRestrictions.length > 1}
-              hoveredElectricalParam={hoveredRollingstockParam}
+      {selectedTractionMode && (
+        <div className="d-flex rollingstock-editor-curves p-3">
+          <div className="rollingstock-editor-spreadsheet">
+            <Spreadsheet
+              data={curveForSpreadsheet}
+              onChange={(e) => {
+                updateSpreadsheet(e);
+                updateCurrentRs(e);
+              }}
+              onBlur={orderSpreadsheetValues}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') orderSpreadsheetValues();
+              }}
+              columnLabels={[t('speed'), t('effort')]}
             />
-          )}
-          {data && (
-            <div className="rollingstock-detail-container-img">
-              <div className="rollingstock-detail-img">
-                <RollingStock2Img rollingStock={data} />
+          </div>
+          <div className="rollingstock-body">
+            {!isEmpty(selectedCurves[selectedTractionMode]?.curves) && rollingstockParams && (
+              <RollingStockCurve
+                curvesComfortList={[selectedComfortLvl]}
+                data={selectedCurves}
+                isOnEditionMode
+                showPowerRestriction={rollingstockParams.powerRestrictions.length > 1}
+                hoveredElectricalParam={hoveredRollingstockParam}
+              />
+            )}
+            {data && (
+              <div className="rollingstock-detail-container-img">
+                <div className="rollingstock-detail-img">
+                  <RollingStock2Img rollingStock={data} />
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </>
   );
 }
