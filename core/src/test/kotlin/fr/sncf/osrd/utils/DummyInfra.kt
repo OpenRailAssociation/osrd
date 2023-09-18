@@ -5,7 +5,6 @@ import com.google.common.collect.HashMultimap
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.geom.LineString
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.sim_infra.impl.BlockDescriptor
 import fr.sncf.osrd.sim_infra.impl.NeutralSection
 import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.utils.units.Distance
@@ -82,7 +81,7 @@ class DummyInfra : RawInfra, BlockInfra {
         )
         entryMap.put(entryId, id)
         exitMap.put(exitId, id)
-        return BlockId(0U)
+        return id
     }
 
     class DummyBlockDescriptor(
@@ -345,7 +344,7 @@ class DummyInfra : RawInfra, BlockInfra {
     }
 
     override fun getTrackChunkGradient(trackChunk: DirTrackChunkId): DistanceRangeMap<Double> {
-        return makeRangeMap(blockPool[trackChunk.index].length, 0.0)
+        return makeRangeMap(blockPool[trackChunk.value.index].length, 0.0)
     }
 
     override fun getTrackChunkLoadingGaugeConstraints(trackChunk: TrackChunkId): DistanceRangeMap<LoadingGaugeConstraint> {
@@ -361,7 +360,7 @@ class DummyInfra : RawInfra, BlockInfra {
     }
 
     override fun getTrackChunkSpeedSections(trackChunk: DirTrackChunkId, trainTag: String?): DistanceRangeMap<Speed> {
-        val desc = blockPool[trackChunk.index]
+        val desc = blockPool[trackChunk.value.index]
         return makeRangeMap(desc.length, Speed.fromMetersPerSecond(desc.allowedSpeed))
     }
 
@@ -443,7 +442,7 @@ class DummyInfra : RawInfra, BlockInfra {
 
     @JvmName("getBlockLength")
     override fun getBlockLength(block: BlockId): Distance {
-        return blockPool[block.index].length;
+        return blockPool[block.index].length
     }
     // endregion
 
@@ -462,7 +461,7 @@ class DummyInfra : RawInfra, BlockInfra {
 
     private fun <T, U> makeDirIndexList(id: StaticIdx<T>): DirStaticIdxList<U> {
         val res = MutableDirStaticIdxArrayList<U>()
-        res.add(DirStaticIdx(id.index))
+        res.add(DirStaticIdx(StaticIdx(id.index), Direction.INCREASING))
         return res
     }
     // endregion

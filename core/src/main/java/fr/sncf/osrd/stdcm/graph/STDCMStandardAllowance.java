@@ -55,7 +55,7 @@ public class STDCMStandardAllowance {
             );
             var conflictOffset = findConflictOffsets(
                     graph, newEnvelope, blockAvailability, ranges, departureTime, stops);
-            if (Double.isNaN(conflictOffset))
+            if (conflictOffset < 0)
                 return newEnvelope;
             assert !rangeTransitions.contains(conflictOffset) : "conflict offset is already on a range transition";
             logger.info("Conflict in new envelope at offset {}, splitting mareco ranges", conflictOffset);
@@ -65,17 +65,17 @@ public class STDCMStandardAllowance {
     }
 
     /** Initiates the range transitions with one transition on each stop */
-    private static NavigableSet<Double> initRangeTransitions(List<TrainStop> stops) {
-        var res = new TreeSet<Double>();
+    private static NavigableSet<Long> initRangeTransitions(List<TrainStop> stops) {
+        var res = new TreeSet<Long>();
         for (var stop : stops)
-            res.add(stop.position);
+            res.add(Distance.fromMeters(stop.position));
         return res;
     }
 
     /** Looks for the first detected conflict that would happen on the given envelope.
      * If a conflict is found, returns its offset.
      * Otherwise, returns NaN. */
-    private static double findConflictOffsets(
+    private static long findConflictOffsets(
             STDCMGraph graph,
             Envelope envelope,
             BlockAvailabilityInterface blockAvailability,
@@ -102,7 +102,7 @@ public class STDCMStandardAllowance {
         assert !(availability.getClass() == BlockAvailabilityInterface.NotEnoughLookahead.class);
         if (availability instanceof BlockAvailabilityInterface.Unavailable unavailable)
             return unavailable.firstConflictOffset;
-        return Double.NaN;
+        return -1;
     }
 
     /** Applies the allowance to the final envelope, with range transitions at the given offsets */
@@ -113,7 +113,7 @@ public class STDCMStandardAllowance {
             RollingStock rollingStock,
             double timeStep,
             RollingStock.Comfort comfort,
-            NavigableSet<Double> rangeTransitions
+            NavigableSet<Long> rangeTransitions
     ) {
 
         var allowance = new MarecoAllowance(
@@ -129,20 +129,21 @@ public class STDCMStandardAllowance {
     /** Create the list of `AllowanceRange`, with the given transitions */
     private static List<AllowanceRange> makeAllowanceRanges(
             AllowanceValue allowance,
-            double pathLength,
-            SortedSet<Double> rangeTransitions
+            double envelopeLength,
+            SortedSet<Long> rangeTransitions
     ) {
         double transition = 0;
         var res = new ArrayList<AllowanceRange>();
-        for (var end : rangeTransitions) {
+        for (var endMM : rangeTransitions) {
+            var end = Distance.toMeters(endMM);
             if (transition == end)
                 continue;
             assert transition < end;
             res.add(new AllowanceRange(transition, end, allowance));
             transition = end;
         }
-        if (transition < pathLength)
-            res.add(new AllowanceRange(transition, pathLength, allowance));
+        if (transition < envelopeLength)
+            res.add(new AllowanceRange(transition, envelopeLength, allowance));
         return res;
     }
 }

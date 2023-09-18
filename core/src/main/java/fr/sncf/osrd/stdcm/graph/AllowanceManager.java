@@ -8,6 +8,8 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 
+import static fr.sncf.osrd.utils.units.Distance.toMeters;
+
 /** This class contains all the methods used to handle allowances.
  * This is how we add delays in limited ranges of the path.
  * */
@@ -76,7 +78,7 @@ public class AllowanceManager {
                     .setPrevMaximumAddedDelay(maxAddedDelayAfter)
                     .setPrevAddedDelay(node == null ? 0 : node.totalPrevAddedDelay())
                     .setPrevNode(node)
-                    .setEnvelope(extractEnvelopeSection(totalEnvelope, previousEnd, end))
+                    .setEnvelope(extractEnvelopeSection(totalEnvelope, toMeters(previousEnd), toMeters(end)))
                     .setForceMaxDelay(true)
                     .setWaypointIndex(edge.waypointIndex())
                     .findEdgeSameNextOccupancy(edge.timeNextOccupancy());
@@ -84,7 +86,7 @@ public class AllowanceManager {
                 return null;
             previousEnd = end;
         }
-        assert Math.abs(Distance.toMeters(previousEnd) - totalEnvelope.getEndPos()) < 1e-5;
+        assert Math.abs(toMeters(previousEnd) - totalEnvelope.getEndPos()) < 1e-5;
         return prevEdge;
     }
 

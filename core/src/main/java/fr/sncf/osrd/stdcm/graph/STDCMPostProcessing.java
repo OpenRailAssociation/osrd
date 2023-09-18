@@ -12,6 +12,8 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 
+import static fr.sncf.osrd.utils.units.Distance.toMeters;
+
 /** This class contains all the static methods used to turn the raw pathfinding result into a full response.
  * This includes creating the final envelope (merging the parts + applying the allowances) */
 public class STDCMPostProcessing {
@@ -145,11 +147,11 @@ public class STDCMPostProcessing {
     /** Builds the list of stops from the ranges */
     private static List<TrainStop> makeStops(List<Pathfinding.EdgeRange<STDCMEdge>> ranges) {
         var res = new ArrayList<TrainStop>();
-        double offset = 0;
+        long offset = 0;
         for (var range : ranges) {
             var prevNode = range.edge().previousNode();
             if (prevNode != null && prevNode.stopDuration() >= 0 && range.start() == 0)
-                res.add(new TrainStop(offset, prevNode.stopDuration()));
+                res.add(new TrainStop(toMeters(offset), prevNode.stopDuration()));
             offset += range.end() - range.start();
         }
         return res;

@@ -95,12 +95,12 @@ data class PathImpl(
             beginChunkOffset: Distance?,
             endChunkOffset: Distance?
         ): LineString {
-            val chunkLength = infra.getTrackChunkLength(dirChunkId.value).meters
-            val beginSliceOffset = beginChunkOffset?.meters ?: 0.0
-            val endSliceOffset = endChunkOffset?.meters ?: chunkLength
+            val chunkLength = infra.getTrackChunkLength(dirChunkId.value)
+            val beginSliceOffset = beginChunkOffset ?: Distance(0)
+            val endSliceOffset = endChunkOffset ?: chunkLength
             return getDirData(dirChunkId).slice(
-                beginSliceOffset / chunkLength,
-                endSliceOffset / chunkLength
+                beginSliceOffset.meters / chunkLength.meters,
+                endSliceOffset.meters / chunkLength.meters
             )
         }
 
