@@ -19,7 +19,6 @@ import {
   ENDPOINTS,
   ENDPOINTS_SET,
   SwitchEntity,
-  SwitchType,
   TrackSectionEntity,
 } from '../../../../types';
 import colors from '../../../../common/Map/Consts/colors';
@@ -182,7 +181,6 @@ export const SwitchEditionLeftPanel: FC = () => {
 
   // Retrieve base JSON schema:
   const baseSchema = editorState.editorSchema.find((e) => e.objType === 'Switch')?.schema;
-
   // Retrieve proper data
   const switchTypes = useSelector(getSwitchTypes);
   const switchTypesDict = useMemo(() => keyBy(switchTypes, 'id'), [switchTypes]);
@@ -203,17 +201,21 @@ export const SwitchEditionLeftPanel: FC = () => {
   const switchType = useMemo(
     () =>
       switchTypes?.find((type) => type.id === switchEntity.properties.switch_type) ||
-      (first(switchTypes || []) as SwitchType),
+      first(switchTypes || []),
     [switchEntity.properties.switch_type, switchTypes]
   );
   const flatSwitchEntity = useMemo(
-    () => switchToFlatSwitch(switchType, switchEntity),
+    () => switchType && switchToFlatSwitch(switchType, switchEntity),
     [switchEntity, switchType]
   );
   const switchTypeJSONSchema = useMemo(
-    () => baseSchema && getSwitchTypeJSONSchema(baseSchema, switchType),
+    () => switchType && baseSchema && getSwitchTypeJSONSchema(baseSchema, switchType),
     [baseSchema, switchType]
   );
+
+  if (!switchType || !flatSwitchEntity) {
+    return null;
+  }
 
   return (
     <div>
