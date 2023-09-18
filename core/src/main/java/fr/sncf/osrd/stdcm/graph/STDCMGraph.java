@@ -1,5 +1,7 @@
 package fr.sncf.osrd.stdcm.graph;
 
+import static fr.sncf.osrd.utils.KtToJavaConverter.toIntList;
+
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
@@ -12,8 +14,6 @@ import fr.sncf.osrd.utils.graph.Graph;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
-import static fr.sncf.osrd.utils.KtToJavaConverter.toIntList;
 
 /** This is the class that encodes the STDCM problem as a graph on which we can run our pathfinding implementation.
  * Most of the logic has been delegated to helper classes in this module:

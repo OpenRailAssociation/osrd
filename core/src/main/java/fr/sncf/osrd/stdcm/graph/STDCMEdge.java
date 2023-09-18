@@ -4,7 +4,6 @@ import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.sim_infra.api.InterlockingInfraKt;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import fr.sncf.osrd.utils.units.Distance;
-
 import java.util.Objects;
 
 public record STDCMEdge(

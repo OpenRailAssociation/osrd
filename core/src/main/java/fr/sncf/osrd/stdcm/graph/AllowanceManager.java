@@ -1,14 +1,13 @@
 package fr.sncf.osrd.stdcm.graph;
 
+import static fr.sncf.osrd.utils.units.Distance.toMeters;
+
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.utils.units.Distance;
-
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
-
-import static fr.sncf.osrd.utils.units.Distance.toMeters;
 
 /** This class contains all the methods used to handle allowances.
  * This is how we add delays in limited ranges of the path.

@@ -1,5 +1,7 @@
 package fr.sncf.osrd.stdcm.graph;
 
+import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.POSITION_EPSILON;
+
 import fr.sncf.osrd.envelope_sim.EnvelopeSimPath;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;
@@ -16,8 +18,6 @@ import fr.sncf.osrd.utils.units.Distance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.*;
-
-import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.POSITION_EPSILON;
 
 /** We try to apply the standard allowance as one mareco computation over the whole path.
  * If it causes conflicts, we split the mareco ranges so that the passage time at the points of conflict

@@ -1,5 +1,7 @@
 package fr.sncf.osrd.stdcm.graph;
 
+import static fr.sncf.osrd.utils.units.Distance.toMeters;
+
 import fr.sncf.osrd.stdcm.STDCMResult;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
@@ -7,12 +9,9 @@ import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.TrainStop;
 import fr.sncf.osrd.utils.graph.Pathfinding;
-
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
-
-import static fr.sncf.osrd.utils.units.Distance.toMeters;
 
 /** This class contains all the static methods used to turn the raw pathfinding result into a full response.
  * This includes creating the final envelope (merging the parts + applying the allowances) */

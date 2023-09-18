@@ -29,7 +29,6 @@ import fr.sncf.osrd.sim_infra.api.RawSignalingInfra;
 import fr.sncf.osrd.stdcm.BacktrackingEnvelopeAttr;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.utils.units.Distance;
-
 import java.util.List;
 import java.util.Map;
 
@@ -74,14 +73,17 @@ public class STDCMSimulations {
     ) {
         if (stopPosition != null && Math.abs(stopPosition) < POSITION_EPSILON)
             return makeSinglePointEnvelope(0);
-        if (start >= blockInfra.getBlockLength(blockId))
+        var blockLength = blockInfra.getBlockLength(blockId);
+        if (start >= blockLength)
             return makeSinglePointEnvelope(initialSpeed);
         var context = makeSimContext(rawInfra, blockInfra, List.of(blockId), start, rollingStock, comfort, timeStep);
         double[] stops = new double[]{};
+        var simLength = blockLength;
         if (stopPosition != null) {
             stops = new double[]{Distance.toMeters(stopPosition)};
+            simLength = Math.min(simLength, stopPosition);
         }
-        var path = makePath(blockInfra, rawInfra, blockId);
+        var path = makePath(blockInfra, rawInfra, blockId, 0, simLength);
         var mrsp = computeMRSP(path, rollingStock, false, trainTag);
         try {
             var maxSpeedEnvelope = MaxSpeedEnvelope.from(context, stops, mrsp);

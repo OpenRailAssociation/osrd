@@ -32,6 +32,9 @@ data class ZonePathViewer(
 data class BlockViewer(
     val zones: List<ZonePathViewer>,
     val id: BlockId,
+    val entry: DirectedViewer<DetectorId>,
+    val exit: DirectedViewer<DetectorId>,
+    val length: Distance,
 )
 
 data class RouteViewer(
@@ -61,10 +64,15 @@ fun makeZonePath(infra: RawInfra, id: StaticIdx<ZonePath>): ZonePathViewer {
 
 @JvmName("makeBlock")
 fun makeBlock(rawInfra: RawInfra, blockInfra: BlockInfra, id: StaticIdx<Block>): BlockViewer {
+    val entry = rawInfra.getZonePathEntry(blockInfra.getBlockPath(id)[0])
+    val exit = rawInfra.getZonePathExit(blockInfra.getBlockPath(id).last())
     return BlockViewer(
         blockInfra.getBlockPath(id)
             .map { path -> makeZonePath(rawInfra, path) },
         id,
+        DirectedViewer(entry.direction, entry.value),
+        DirectedViewer(exit.direction, exit.value),
+        blockInfra.getBlockLength(id),
     )
 }
 
@@ -72,14 +80,13 @@ fun makeBlock(rawInfra: RawInfra, blockInfra: BlockInfra, id: StaticIdx<Block>):
 fun makeRoute(
     rawInfra: RawInfra,
     blockInfra: BlockInfra,
-    signalingSystems: StaticIdxList<SignalingSystem>,
     id: StaticIdx<Route>,
 ): RouteViewer {
     val ids = MutableStaticIdxArrayList<Route>()
     ids.add(id)
     return RouteViewer(
         rawInfra.getRouteName(id)!!,
-        recoverBlocks(rawInfra, blockInfra, ids, signalingSystems)[0]
+        recoverBlocks(rawInfra, blockInfra, ids, null)[0]
             .toList()
             .map { blockPathElement -> blockPathElement.block }
             .map { block -> makeBlock(rawInfra, blockInfra, block) },

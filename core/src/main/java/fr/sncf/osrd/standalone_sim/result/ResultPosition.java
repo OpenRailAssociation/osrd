@@ -24,6 +24,7 @@ public class ResultPosition {
         this.offset = offset;
     }
 
+    /** Create a ResultPosition */
     public static ResultPosition from(double time, double pathOffset, Path path, RawSignalingInfra rawInfra) {
         var location = path.getTrackLocationAtOffset(fromMeters(pathOffset));
         return new ResultPosition(time, pathOffset, rawInfra.getTrackSectionName(location.getTrackId()),
@@ -54,6 +55,7 @@ public class ResultPosition {
         return a.time + (position - a.pathOffset) * (b.time - a.time) / (b.pathOffset - a.pathOffset);
     }
 
+    /** Returns a new instance of ResultPosition with the given added time */
     public ResultPosition withAddedTime(double timeToAdd) {
         return new ResultPosition(time + timeToAdd, pathOffset, trackSection, offset);
     }

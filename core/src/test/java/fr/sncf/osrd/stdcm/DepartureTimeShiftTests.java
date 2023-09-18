@@ -1,6 +1,6 @@
 package fr.sncf.osrd.stdcm;
 
-import static fr.sncf.osrd.stdcm.STDCMHelpers.m;
+import static fr.sncf.osrd.stdcm.STDCMHelpers.meters;
 import static fr.sncf.osrd.stdcm.STDCMHelpers.occupancyTest;
 import static fr.sncf.osrd.train.TestTrains.REALISTIC_FAST_TRAIN;
 import static java.lang.Double.POSITIVE_INFINITY;
@@ -27,7 +27,7 @@ public class DepartureTimeShiftTests {
         var firstBlock = infra.addBlock("a", "b");
         var secondBlock = infra.addBlock("b", "c");
         var occupancyGraph = ImmutableMultimap.of(
-                secondBlock, new OccupancySegment(0, 3600, 0, m(100))
+                secondBlock, new OccupancySegment(0, 3600, 0, meters(100))
         );
 
         var res = new STDCMPathfindingBuilder()
@@ -35,7 +35,7 @@ public class DepartureTimeShiftTests {
                 .setStartTime(100)
                 .setUnavailableTimes(occupancyGraph)
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 0)))
-                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(secondBlock, m(50))))
+                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(secondBlock, meters(50))))
                 .run();
         assertNotNull(res);
         var secondBlockEntryTime = res.departureTime()
@@ -54,9 +54,9 @@ public class DepartureTimeShiftTests {
         var firstBlock = infra.addBlock("a", "b");
         var secondBlock = infra.addBlock("b", "c");
         var occupancyGraph = ImmutableMultimap.of(
-                secondBlock, new OccupancySegment(0, 1200, 0, m(100)),
-                secondBlock, new OccupancySegment(1200, 2400, 0, m(100)),
-                secondBlock, new OccupancySegment(2400, 3600, 0, m(100))
+                secondBlock, new OccupancySegment(0, 1200, 0, meters(100)),
+                secondBlock, new OccupancySegment(1200, 2400, 0, meters(100)),
+                secondBlock, new OccupancySegment(2400, 3600, 0, meters(100))
         );
 
         var res = new STDCMPathfindingBuilder()
@@ -64,7 +64,7 @@ public class DepartureTimeShiftTests {
                 .setStartTime(100)
                 .setUnavailableTimes(occupancyGraph)
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 0)))
-                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(secondBlock, m(50))))
+                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(secondBlock, meters(50))))
                 .run();
 
         assertNotNull(res);
@@ -92,18 +92,18 @@ public class DepartureTimeShiftTests {
                  c2
          */
         var infra = DummyInfra.make();
-        var firstBlock = infra.addBlock("a", "b", m(1000));
-        infra.addBlock("b", "c1", m(50), 1);
+        var firstBlock = infra.addBlock("a", "b", meters(1000));
+        infra.addBlock("b", "c1", meters(50), 1);
         infra.addBlock("b", "c2");
-        infra.addBlock("c1", "d", m(50), 1);
+        infra.addBlock("c1", "d", meters(50), 1);
         infra.addBlock("c2", "d");
-        var lastBlock = infra.addBlock("d", "e", m(1000));
+        var lastBlock = infra.addBlock("d", "e", meters(1000));
 
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
                 .setStartTime(100)
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 0)))
-                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(lastBlock, m(1000))))
+                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(lastBlock, meters(1000))))
                 .run();
 
         assertNotNull(res);
@@ -137,24 +137,24 @@ public class DepartureTimeShiftTests {
                  c2
          */
         var infra = DummyInfra.make();
-        var firstBlock = infra.addBlock("a", "b", m(1000));
+        var firstBlock = infra.addBlock("a", "b", meters(1000));
         infra.addBlock("b", "c1");
-        var delayedBlock = infra.addBlock("b", "c2", m(50));
+        var delayedBlock = infra.addBlock("b", "c2", meters(50));
         infra.addBlock("c1", "d");
         infra.addBlock("c2", "d");
-        var lastBlock = infra.addBlock("d", "e", m(1000));
+        var lastBlock = infra.addBlock("d", "e", meters(1000));
 
         var occupancyGraph = ImmutableMultimap.of(delayedBlock, new OccupancySegment(
                 0,
                 10000,
                 0,
-                m(50))
+                meters(50))
         );
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
                 .setStartTime(100)
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 0)))
-                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(lastBlock, m(1000))))
+                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(lastBlock, meters(1000))))
                 .setUnavailableTimes(occupancyGraph)
                 .run();
 
@@ -187,14 +187,14 @@ public class DepartureTimeShiftTests {
                 firstBlock, new OccupancySegment(
                         firstBlockEnvelope.getTotalTime() + 10,
                         POSITIVE_INFINITY,
-                        0, m(100)),
-                secondBlock, new OccupancySegment(0, 3600, 0, m(100))
+                        0, meters(100)),
+                secondBlock, new OccupancySegment(0, 3600, 0, meters(100))
         );
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
                 .setStartTime(100)
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 0)))
-                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(secondBlock, m(100))))
+                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(secondBlock, meters(100))))
                 .setUnavailableTimes(occupancyGraph)
                 .run();
         assertNull(res);
@@ -223,14 +223,14 @@ public class DepartureTimeShiftTests {
         var secondBlock = infra.addBlock("b", "c");
         var thirdBlock = infra.addBlock("c", "d");
         var occupancyGraph = ImmutableMultimap.of(
-                secondBlock, new OccupancySegment(300, 500, 0, m(100)),
-                thirdBlock, new OccupancySegment(0, 500, 0, m(100))
+                secondBlock, new OccupancySegment(300, 500, 0, meters(100)),
+                thirdBlock, new OccupancySegment(0, 500, 0, meters(100))
         );
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
                 .setStartTime(100)
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 0)))
-                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(thirdBlock, m(50))))
+                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(thirdBlock, meters(50))))
                 .setUnavailableTimes(occupancyGraph)
                 .run();
 
@@ -257,14 +257,14 @@ public class DepartureTimeShiftTests {
         var firstBlock = infra.addBlock("a", "b");
         var secondBlock = infra.addBlock("b", "c");
         var occupancyGraph = ImmutableMultimap.of(
-                firstBlock, new OccupancySegment(300, 500, 0, m(100)),
-                secondBlock, new OccupancySegment(0, 500, 0, m(100))
+                firstBlock, new OccupancySegment(300, 500, 0, meters(100)),
+                secondBlock, new OccupancySegment(0, 500, 0, meters(100))
         );
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
                 .setStartTime(100)
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 0)))
-                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(secondBlock, m(50))))
+                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(secondBlock, meters(50))))
                 .setUnavailableTimes(occupancyGraph)
                 .run();
 
@@ -291,13 +291,13 @@ public class DepartureTimeShiftTests {
         var firstBlock = infra.addBlock("a", "b");
         var secondBlock = infra.addBlock("b", "c");
         var occupancyGraph = ImmutableMultimap.of(
-                secondBlock, new OccupancySegment(300, 500, 0, m(100))
+                secondBlock, new OccupancySegment(300, 500, 0, meters(100))
         );
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
                 .setStartTime(100)
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 0)))
-                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(secondBlock, m(50))))
+                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(secondBlock, meters(50))))
                 .setUnavailableTimes(occupancyGraph)
                 .run();
 
@@ -330,14 +330,14 @@ public class DepartureTimeShiftTests {
         infra.addBlock("c", "d", 1); // Very short to prevent slowdowns
         var forthBlock = infra.addBlock("d", "e");
         var occupancyGraph = ImmutableMultimap.of(
-                firstBlock, new OccupancySegment(1200, POSITIVE_INFINITY, 0, m(100)),
-                secondBlock, new OccupancySegment(600, POSITIVE_INFINITY, 0, m(100)),
-                forthBlock, new OccupancySegment(0, 1000, 0, m(100))
+                firstBlock, new OccupancySegment(1200, POSITIVE_INFINITY, 0, meters(100)),
+                secondBlock, new OccupancySegment(600, POSITIVE_INFINITY, 0, meters(100)),
+                forthBlock, new OccupancySegment(0, 1000, 0, meters(100))
         );
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 0)))
-                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(forthBlock, m(1))))
+                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(forthBlock, meters(1))))
                 .setUnavailableTimes(occupancyGraph)
                 .run();
         assertNull(res);
@@ -370,16 +370,16 @@ public class DepartureTimeShiftTests {
         var thirdBlock = infra.addBlock("c", "d");
         var forthBlock = infra.addBlock("d", "e");
         var occupancyGraph = ImmutableMultimap.of(
-                firstBlock, new OccupancySegment(0, 200, 0, m(100)),
-                firstBlock, new OccupancySegment(500, POSITIVE_INFINITY, 0, m(100)),
-                secondBlock, new OccupancySegment(0, 400, 0, m(100)),
-                thirdBlock, new OccupancySegment(0, 600, 0, m(100)),
-                forthBlock, new OccupancySegment(0, 800, 0, m(100))
+                firstBlock, new OccupancySegment(0, 200, 0, meters(100)),
+                firstBlock, new OccupancySegment(500, POSITIVE_INFINITY, 0, meters(100)),
+                secondBlock, new OccupancySegment(0, 400, 0, meters(100)),
+                thirdBlock, new OccupancySegment(0, 600, 0, meters(100)),
+                forthBlock, new OccupancySegment(0, 800, 0, meters(100))
         );
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 0)))
-                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(forthBlock, m(1))))
+                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(forthBlock, meters(1))))
                 .setUnavailableTimes(occupancyGraph)
                 .run();
         assertNull(res);
@@ -408,17 +408,17 @@ public class DepartureTimeShiftTests {
         var secondBlock = infra.addBlock("b", "c");
         var thirdBlock = infra.addBlock("c", "d");
         var occupancyGraph = ImmutableMultimap.of(
-                secondBlock, new OccupancySegment(300, 600, 0, m(100)),
-                secondBlock, new OccupancySegment(900, 1200, 0, m(100)),
-                secondBlock, new OccupancySegment(1500, 1800, 0, m(100)),
-                thirdBlock, new OccupancySegment(0, 1200, 0, m(100)),
-                thirdBlock, new OccupancySegment(1500, POSITIVE_INFINITY, 0, m(100))
+                secondBlock, new OccupancySegment(300, 600, 0, meters(100)),
+                secondBlock, new OccupancySegment(900, 1200, 0, meters(100)),
+                secondBlock, new OccupancySegment(1500, 1800, 0, meters(100)),
+                thirdBlock, new OccupancySegment(0, 1200, 0, meters(100)),
+                thirdBlock, new OccupancySegment(1500, POSITIVE_INFINITY, 0, meters(100))
         );
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
                 .setStartTime(100)
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 0)))
-                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(thirdBlock, m(1))))
+                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(thirdBlock, meters(1))))
                 .setUnavailableTimes(occupancyGraph)
                 .run();
 
@@ -436,7 +436,7 @@ public class DepartureTimeShiftTests {
         var firstBlock = infra.addBlock("a", "b");
         var lastBlock = infra.addBlock("b", "c");
         var occupancyGraph = ImmutableMultimap.of(
-                firstBlock, new OccupancySegment(0, 1000, 0, m(100))
+                firstBlock, new OccupancySegment(0, 1000, 0, meters(100))
         );
         double timeStep = 2;
         var res1 = new STDCMPathfindingBuilder()

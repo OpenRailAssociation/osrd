@@ -2,7 +2,7 @@ package fr.sncf.osrd.stdcm.preprocessing;
 
 import static fr.sncf.osrd.Helpers.getBlocksOnRoutes;
 import static fr.sncf.osrd.Helpers.getSmallInfra;
-import static fr.sncf.osrd.stdcm.STDCMHelpers.m;
+import static fr.sncf.osrd.stdcm.STDCMHelpers.meters;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.Iterables;
@@ -48,7 +48,7 @@ public class BlockAvailabilityLegacyAdapterTests {
         var res = adapter.getAvailability(
                 List.of(Iterables.getLast(blocks)),
                 0,
-                m(1),
+                meters(1),
                 Envelope.make(EnvelopePart.generateTimes(new double[]{0., 1.}, new double[]{100., 100.})),
                 42
         );

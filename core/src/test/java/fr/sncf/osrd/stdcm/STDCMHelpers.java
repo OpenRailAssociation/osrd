@@ -21,7 +21,6 @@ import fr.sncf.osrd.train.TrainStop;
 import fr.sncf.osrd.utils.graph.GraphAdapter;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import fr.sncf.osrd.utils.units.Distance;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -43,7 +42,7 @@ public class STDCMHelpers {
                         REALISTIC_FAST_TRAIN,
                         0,
                         new ArrayList<>(),
-                        List.of(new TrainStop(trainPath.getLength(), 1)),
+                        List.of(new TrainStop(Distance.toMeters(trainPath.getLength()), 1)),
                         List.of(),
                         null,
                         RollingStock.Comfort.STANDARD,
@@ -150,7 +149,7 @@ public class STDCMHelpers {
     }
 
     /** This is just a short alias so that tests can be written in meters without being too verbose */
-    public static long m(double meters) {
+    public static long meters(double meters) {
         return Distance.fromMeters(meters);
     }
 }

@@ -12,7 +12,6 @@ import fr.sncf.osrd.sim_infra.api.TrackChunk;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import fr.sncf.osrd.utils.indexing.MutableDirStaticIdxArrayList;
 import fr.sncf.osrd.utils.units.Distance;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

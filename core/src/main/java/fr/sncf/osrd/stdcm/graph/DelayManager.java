@@ -4,10 +4,8 @@ import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.allowances.LinearAllowance;
 import fr.sncf.osrd.reporting.exceptions.ErrorType;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
-import fr.sncf.osrd.sim_infra.api.Path;
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface;
 import fr.sncf.osrd.utils.units.Distance;
-
 import java.util.List;
 import java.util.NavigableSet;
 import java.util.TreeSet;
