@@ -1,5 +1,9 @@
 package fr.sncf.osrd.standalone_sim;
 
+import static fr.sncf.osrd.sim_infra.api.TrackInfraKt.getTrackSectionFromNameOrThrow;
+import static fr.sncf.osrd.utils.KtToJavaConverter.toIntList;
+import static fr.sncf.osrd.utils.units.Distance.fromMeters;
+
 import fr.sncf.osrd.DriverBehaviour;
 import fr.sncf.osrd.api.FullInfra;
 import fr.sncf.osrd.envelope.Envelope;
@@ -11,16 +15,19 @@ import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope;
-import fr.sncf.osrd.envelope_sim_infra.LegacyEnvelopeTrainPath;
-import fr.sncf.osrd.envelope_sim_infra.LegacyMRSP;
-import fr.sncf.osrd.external_generated_inputs.LegacyElectricalProfileMapping;
+import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
+import fr.sncf.osrd.envelope_sim_infra.MRSP;
 import fr.sncf.osrd.infra_state.api.TrainPath;
-import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
+import fr.sncf.osrd.kt_external_generated_inputs.ElectricalProfileMapping;
 import fr.sncf.osrd.railjson.parser.RJSStandaloneTrainScheduleParser;
 import fr.sncf.osrd.railjson.schema.schedule.RJSStandaloneTrainSchedule;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPath;
 import fr.sncf.osrd.reporting.ErrorContext;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
+import fr.sncf.osrd.sim_infra.api.Path;
+import fr.sncf.osrd.sim_infra.api.PathKt;
+import fr.sncf.osrd.sim_infra.api.RawSignalingInfra;
+import fr.sncf.osrd.sim_infra.api.TrackChunk;
 import fr.sncf.osrd.standalone_sim.result.ElectrificationRange;
 import fr.sncf.osrd.standalone_sim.result.PowerRestrictionRange;
 import fr.sncf.osrd.standalone_sim.result.ResultEnvelopePoint;
@@ -30,6 +37,7 @@ import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.ScheduledPoint;
 import fr.sncf.osrd.train.StandaloneTrainSchedule;
 import fr.sncf.osrd.train.TrainStop;
+import fr.sncf.osrd.utils.indexing.MutableDirStaticIdxArrayList;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -43,7 +51,7 @@ public class StandaloneSim {
      */
     public static StandaloneSimResult run(
             FullInfra infra,
-            TrainPath trainPath,
+            Path trainPath,
             EnvelopeSimPath envelopeSimPath,
             List<StandaloneTrainSchedule> schedules,
             double timeStep,
@@ -61,8 +69,8 @@ public class StandaloneSim {
                 var rollingStock = trainSchedule.rollingStock;
 
                 // MRSP & SpeedLimits
-                var mrsp = LegacyMRSP.from(trainPath, rollingStock, true, trainSchedule.tag);
-                var speedLimits = LegacyMRSP.from(trainPath, rollingStock, false, trainSchedule.tag);
+                var mrsp = MRSP.computeMRSP(trainPath, rollingStock, true, trainSchedule.tag);
+                var speedLimits = MRSP.computeMRSP(trainPath, rollingStock, false, trainSchedule.tag);
                 mrsp = driverBehaviour.applyToMRSP(mrsp);
                 cacheSpeedLimits.put(trainSchedule, ResultEnvelopePoint.from(speedLimits));
 
@@ -91,13 +99,12 @@ public class StandaloneSim {
                                 context.tractiveEffortCurveMap));
                 var envelope = MaxEffortEnvelope.from(context, trainSchedule.initialSpeed, maxSpeedEnvelope);
 
-                //FIXME: we need a Path here
-//                var simResultTrain = ScheduleMetadataExtractor.run(
-//                        envelope,
-//                        trainPath,
-//                        trainSchedule,
-//                        infra
-//                );
+                var simResultTrain = ScheduleMetadataExtractor.run(
+                        envelope,
+                        trainPath,
+                        trainSchedule,
+                        infra
+                );
                 cacheMaxEffort.put(trainSchedule, null);
 
                 // Eco: Integrate allowances and scheduled points
@@ -105,12 +112,11 @@ public class StandaloneSim {
                     var ecoEnvelope = applyAllowances(context, envelope, trainSchedule.allowances);
                     ecoEnvelope = applyScheduledPoints(
                             context, ecoEnvelope, trainSchedule.stops, trainSchedule.scheduledPoints);
-                    //FIXME: we need a Path here
-//                    var simEcoResultTrain = ScheduleMetadataExtractor.run(
-//                            ecoEnvelope,
-//                            trainPath,
-//                            trainSchedule,
-//                            infra);
+                    var simEcoResultTrain = ScheduleMetadataExtractor.run(
+                            ecoEnvelope,
+                            trainPath,
+                            trainSchedule,
+                            infra);
                     cacheEco.put(trainSchedule, null);
                 }
             }
@@ -127,21 +133,21 @@ public class StandaloneSim {
     /** Parse some railJSON arguments and run a standalone simulation */
     public static StandaloneSimResult runFromRJS(
             FullInfra infra,
-            LegacyElectricalProfileMapping electricalProfileMap,
+            ElectricalProfileMapping electricalProfileMap,
             RJSTrainPath rjsTrainPath,
             HashMap<String, RollingStock> rollingStocks,
             List<RJSStandaloneTrainSchedule> rjsSchedules,
             double timeStep
     ) {
         // Parse trainPath
-        var trainPath = TrainPathBuilder.from(infra.java(), rjsTrainPath);
-        var envelopePath = LegacyEnvelopeTrainPath.from(trainPath, electricalProfileMap);
+        var trainPath = makeTrainPath(infra.rawInfra(), rjsTrainPath);
+        var envelopePath = EnvelopeTrainPath.from(trainPath, electricalProfileMap);
 
         // Parse train schedules
         var trainSchedules = new ArrayList<StandaloneTrainSchedule>();
         for (var rjsTrainSchedule : rjsSchedules)
             trainSchedules.add(RJSStandaloneTrainScheduleParser.parse(
-                    infra.java(), rollingStocks::get, rjsTrainSchedule, trainPath, envelopePath));
+                    infra, rollingStocks::get, rjsTrainSchedule, trainPath, envelopePath));
 
         // Compute envelopes and extract metadata
         return StandaloneSim.run(
@@ -152,6 +158,25 @@ public class StandaloneSim {
                 timeStep,
                 new DriverBehaviour()
         );
+    }
+
+    /** Builds a Path from an RJSTrainPath*/
+    public static Path makeTrainPath(RawSignalingInfra infra, RJSTrainPath rjsPath) {
+        var trackRanges = rjsPath.routePath.stream()
+                .flatMap(routeRange -> routeRange.trackSections.stream())
+                .toList();
+        var chunks = new MutableDirStaticIdxArrayList<TrackChunk>();
+        trackRanges.stream()
+                .map(trackRange -> getTrackSectionFromNameOrThrow(trackRange.trackSectionID, infra))
+                .flatMap(track -> toIntList(infra.getTrackSectionChunks(track)).stream())
+                .forEach(chunks::add);
+        var startOffset = fromMeters(trackRanges.get(0).begin);
+        var endOffset = startOffset + fromMeters(
+                trackRanges.stream()
+                        .mapToDouble(r -> r.begin - r.end)
+                        .sum()
+        );
+        return PathKt.buildPathFrom(infra, chunks, startOffset, endOffset);
     }
 
     /**

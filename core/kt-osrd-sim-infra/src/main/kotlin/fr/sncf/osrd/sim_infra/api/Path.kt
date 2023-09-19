@@ -1,6 +1,8 @@
 package fr.sncf.osrd.sim_infra.api
 
 import fr.sncf.osrd.geom.LineString
+import fr.sncf.osrd.reporting.exceptions.ErrorType
+import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.impl.NeutralSection
 import fr.sncf.osrd.sim_infra.impl.PathImpl
 import fr.sncf.osrd.utils.indexing.DirStaticIdxList
@@ -44,6 +46,16 @@ interface Path {
     @JvmName("getTrackLocationAtOffset")
     fun getTrackLocationAtOffset(pathOffset: Distance): TrackLocation
     fun getElectricalProfiles(mapping: HashMap<String, DistanceRangeMap<String>>): DistanceRangeMap<String>
+    fun getOffsetOfTrackLocation(location: TrackLocation): Distance?
+}
+
+/** Wraps the method without returning an optional, which can't be handled in java for value types */
+@JvmName("getOffsetOfTrackLocationOrThrow")
+fun Path.getOffsetOfTrackLocationOrThrow(location: TrackLocation): Distance {
+    val res = getOffsetOfTrackLocation(location)
+    if (res != null)
+        return res
+    throw OSRDError(ErrorType.InvalidScheduleTrackLocationNotIncludedInPath)
 }
 
 /** Build a Path from chunks and offsets, filtering the chunks outside the offsets */
@@ -75,4 +87,10 @@ fun buildPathFrom(
         totalLength += length
     }
     return PathImpl(infra, filteredChunks, mutBeginOffset, mutEndOffset)
+}
+
+/** For java interoperability purpose */
+@JvmName("makeTrackLocation")
+fun makeTrackLocation(track: TrackSectionId, offset: Distance): TrackLocation {
+    return TrackLocation(track, offset)
 }

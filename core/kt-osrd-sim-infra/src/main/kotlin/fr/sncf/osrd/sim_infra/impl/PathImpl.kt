@@ -1,6 +1,8 @@
 package fr.sncf.osrd.sim_infra.impl
 
 import fr.sncf.osrd.geom.LineString
+import fr.sncf.osrd.reporting.exceptions.ErrorType
+import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.DistanceRangeMap
@@ -79,6 +81,28 @@ data class PathImpl(
 
     override fun getElectricalProfiles(mapping: HashMap<String, DistanceRangeMap<String>>): DistanceRangeMap<String> {
         return getRangeMapFromUndirected { chunkId -> infra.getTrackChunkElectricalProfile(chunkId, mapping) }
+    }
+
+    override fun getOffsetOfTrackLocation(location: TrackLocation): Distance? {
+        var offsetAfterFirstChunk = 0.meters
+        for (dirChunk in chunks) {
+            val chunkLength = infra.getTrackChunkLength(dirChunk.value)
+            if (location.trackId.equals(infra.getTrackFromChunk(dirChunk.value))) {
+                val chunkOffset = infra.getTrackChunkOffset(dirChunk.value)
+                if (chunkOffset <= location.offset && location.offset <= (chunkOffset + chunkLength)) {
+                    val distanceToChunkStart = if (dirChunk.direction == Direction.INCREASING)
+                        location.offset - chunkOffset
+                    else
+                        (chunkOffset + chunkLength) - location.offset
+                    val offset = offsetAfterFirstChunk + distanceToChunkStart
+                    if (offset < beginOffset || offset > endOffset)
+                        return null
+                    return offset - beginOffset
+                }
+            }
+            offsetAfterFirstChunk += chunkLength
+        }
+        return null
     }
 
     private fun projectLineString(getData: (chunkId: TrackChunkId) -> LineString): LineString {
