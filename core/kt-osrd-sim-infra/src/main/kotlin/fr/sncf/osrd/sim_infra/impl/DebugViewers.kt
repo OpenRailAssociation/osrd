@@ -14,6 +14,7 @@ import fr.sncf.osrd.utils.units.Distance
  * when using a debugger. They can be used to create watches containing the object properties. */
 
 data class DirectedViewer<T>(
+    val rawId: UInt,
     val direction: Direction,
     val value: T,
 )
@@ -44,6 +45,10 @@ data class RouteViewer(
     val id: RouteId,
 )
 
+fun <T, U> makeDirViewer(id: DirStaticIdx<T>, value: U): DirectedViewer<U> {
+    return DirectedViewer(id.data, id.direction, value)
+}
+
 @JvmName("makeChunk")
 fun makeChunk(infra: RawInfra, id: StaticIdx<TrackChunk>): ChunkViewer {
     return ChunkViewer(
@@ -56,14 +61,14 @@ fun makeChunk(infra: RawInfra, id: StaticIdx<TrackChunk>): ChunkViewer {
 
 @JvmName("makeDirChunk")
 fun makeDirChunk(infra: RawInfra, id: DirStaticIdx<TrackChunk>): DirectedViewer<ChunkViewer> {
-    return DirectedViewer(id.direction, makeChunk(infra, id.value))
+    return makeDirViewer(id, makeChunk(infra, id.value))
 }
 
 @JvmName("makeZonePath")
 fun makeZonePath(infra: RawInfra, id: StaticIdx<ZonePath>): ZonePathViewer {
     return ZonePathViewer(
         infra.getZonePathChunks(id)
-            .map { dirChunk -> DirectedViewer(dirChunk.direction, makeChunk(infra, dirChunk.value)) },
+            .map { dirChunk -> makeDirViewer(dirChunk, makeChunk(infra, dirChunk.value)) },
         id,
     )
 }
@@ -76,8 +81,8 @@ fun makeBlock(rawInfra: RawInfra, blockInfra: BlockInfra, id: StaticIdx<Block>):
         blockInfra.getBlockPath(id)
             .map { path -> makeZonePath(rawInfra, path) },
         id,
-        DirectedViewer(entry.direction, entry.value),
-        DirectedViewer(exit.direction, exit.value),
+        makeDirViewer(entry, entry.value),
+        makeDirViewer(exit, exit.value),
         blockInfra.getBlockLength(id),
     )
 }

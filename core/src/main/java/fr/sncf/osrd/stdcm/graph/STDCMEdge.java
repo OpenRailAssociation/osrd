@@ -2,6 +2,7 @@ package fr.sncf.osrd.stdcm.graph;
 
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.sim_infra.api.InterlockingInfraKt;
+import fr.sncf.osrd.sim_infra.impl.BlockInfraImplKt;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import fr.sncf.osrd.utils.units.Distance;
 import java.util.Objects;
@@ -63,7 +64,7 @@ public record STDCMEdge(
             return new STDCMNode(
                     getTotalTime() + timeStart(),
                     envelope().getEndSpeed(),
-                    InterlockingInfraKt.getRouteExit(graph.rawInfra, block),
+                    BlockInfraImplKt.getBlockExit(graph.blockInfra, graph.rawInfra, block),
                     totalDepartureTimeShift(),
                     maximumAddedDelayAfter(),
                     this,
