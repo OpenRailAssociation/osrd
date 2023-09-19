@@ -8,7 +8,6 @@ import fr.sncf.osrd.stdcm.STDCMResult;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.stdcm.STDCMStep;
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface;
-import fr.sncf.osrd.stdcm.preprocessing.interfaces.RouteAvailabilityInterface;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import fr.sncf.osrd.utils.graph.functional_interfaces.TargetsOnEdge;

@@ -153,6 +153,7 @@ public class ScheduleMetadataExtractorTests {
                 testRollingStock, 0, new ArrayList<>(), List.of(), List.of(),
                 "test", RollingStock.Comfort.STANDARD, null, null
         );
+        // FIXME
         // ScheduleMetadataExtractor.run(envelope, path, schedule, fullInfra);
     }
 }

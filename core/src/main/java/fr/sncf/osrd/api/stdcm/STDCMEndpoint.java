@@ -116,15 +116,12 @@ public class STDCMEndpoint implements Take {
             simResult.speedLimits.add(ResultEnvelopePoint.from(
                     MRSP.computeMRSP(res.trainPath(), rollingStock, false, tag)
             ));
-            /*
             simResult.baseSimulations.add(ScheduleMetadataExtractor.run(
                     res.envelope(),
                     res.trainPath(),
-                    res.blocks(),
                     makeTrainSchedule(res.envelope().getEndPos(), rollingStock, comfort, res.stopResults()),
                     infra
             ));
-             */
             simResult.ecoSimulations.add(null);
             var pathfindingRes = PathfindingResultConverter.convert(infra.blockInfra(), infra.rawInfra(),
                     res.blocks(), recorder);

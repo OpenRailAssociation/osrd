@@ -212,7 +212,7 @@ public class STDCMPathfindingTests {
                  c2
          */
         var infra = DummyInfra.make();
-        var firstBlock = infra.addBlock("a", "b");
+        final var firstBlock = infra.addBlock("a", "b");
         infra.addBlock("b", "c1");
         infra.addBlock("b", "c2");
         var blockTop = infra.addBlock("c1", "d");

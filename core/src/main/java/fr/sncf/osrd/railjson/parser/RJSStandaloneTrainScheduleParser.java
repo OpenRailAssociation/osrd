@@ -66,7 +66,8 @@ public class RJSStandaloneTrainScheduleParser {
         if (rjsTrainSchedule.scheduledPoints != null) {
             for (var rjsSchedulePoints : rjsTrainSchedule.scheduledPoints) {
                 if (rjsSchedulePoints.pathOffset < 0)
-                    scheduledPoints.add(new ScheduledPoint(Distance.toMeters(trainPath.getLength()), rjsSchedulePoints.time));
+                    scheduledPoints.add(new ScheduledPoint(Distance.toMeters(trainPath.getLength()),
+                            rjsSchedulePoints.time));
                 else if (rjsSchedulePoints.pathOffset > Distance.toMeters(trainPath.getLength()))
                     throw new OSRDError(ErrorType.InvalidSchedulePoint);
                 else

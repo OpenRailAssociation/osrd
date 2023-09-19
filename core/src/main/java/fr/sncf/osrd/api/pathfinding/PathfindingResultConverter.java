@@ -357,6 +357,7 @@ public class PathfindingResultConverter {
         return offset;
     }
 
+    /** Returns the list of dir chunk id on the given block list */
     public static List<Integer> chunksOnBlocks(RawSignalingInfra rawInfra,
                                                BlockInfra blockInfra, List<Integer> blockIds) {
         return blockIds.stream()
