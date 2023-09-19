@@ -182,7 +182,7 @@ const SearchRollingStock = ({
   }, [mustResetFilters]);
 
   return (
-    <div className="row no-gutters rollingstock-editor-filters">
+    <div className="row no-gutters">
       <div className="col-md-4 mb-3">
         <InputSNCF
           id="searchfilter"
