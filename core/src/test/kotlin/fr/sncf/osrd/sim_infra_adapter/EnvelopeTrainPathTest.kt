@@ -130,35 +130,35 @@ class EnvelopeTrainPathTest {
 
         putInElectrificationMapByPowerClass(
             expected,
-            0.0, 500.0, NonElectrified(), "A"
+            0.0, 500.0, NonElectrified(), "A", false
         )
         putInElectrificationMapByPowerClass(
             expected,
-            500.0, 600.0, Electrified("1500"), "A"
+            500.0, 600.0, Electrified("1500"), "A", false
         )
         putInElectrificationMapByPowerClass(
             expected,
-            600.0, 800.0, Electrified("1500"), "B"
+            600.0, 800.0, Electrified("1500"), "B", false
         )
         putInElectrificationMapByPowerClass(
             expected,
-            800.0, 850.0, Electrified("1500"), "A"
+            800.0, 850.0, Electrified("1500"), "A", false
         )
         putInElectrificationMapByPowerClass(
             expected,
-            850.0, 960.0, Neutral(true, Electrified("1500"), true), "A"
+            850.0, 960.0, Neutral(true, Electrified("1500"), true), "A", false
         )
         putInElectrificationMapByPowerClass(
             expected,
-            960.0, 1000.0, Neutral(true, Electrified("1500"), false), "A"
+            960.0, 1000.0, Neutral(true, Electrified("1500"), false), "A", false
         )
         putInElectrificationMapByPowerClass(
             expected,
-            1_000.0, 1_500.0, Electrified("1500"), "B"
+            1_000.0, 1_500.0, Electrified("1500"), "B", false
         )
         putInElectrificationMapByPowerClass(
             expected,
-            1_500.0, 2_500.0, Electrified("25000"), "B"
+            1_500.0, 2_500.0, Electrified("25000"), "B", true
         )
         assertThat(electrificationByPowerClass).isEqualTo(expected.build())
     }
@@ -189,19 +189,19 @@ class EnvelopeTrainPathTest {
         val expectedElectrificationPowerClass1 = ImmutableRangeMap.Builder<Double, Electrification>()
         putInElectrificationMapByPowerClass(
             expectedElectrificationPowerClass1,
-            0.0, 700.0, Electrified("1500"), "B"
+            0.0, 700.0, Electrified("1500"), "B", false
         )
         putInElectrificationMapByPowerClass(
             expectedElectrificationPowerClass1,
-            700.0, 2_600.0, Electrified("1500"), "A"
+            700.0, 2_600.0, Electrified("1500"), "A", false
         )
         putInElectrificationMapByPowerClass(
             expectedElectrificationPowerClass1,
-            2_600.0, 3_300.0, Electrified("1500"), "B"
+            2_600.0, 3_300.0, Electrified("1500"), "B", false
         )
         putInElectrificationMapByPowerClass(
             expectedElectrificationPowerClass1,
-            3_300.0, 4_000.0, Electrified("1500"), "A"
+            3_300.0, 4_000.0, Electrified("1500"), "A", true
         )
 
         assertThat(electrificationPowerClass1).isEqualTo(expectedElectrificationPowerClass1.build())
@@ -212,19 +212,19 @@ class EnvelopeTrainPathTest {
         val expectedElectrificationPowerClass2 = ImmutableRangeMap.Builder<Double, Electrification>()
         putInElectrificationMapByPowerClass(
             expectedElectrificationPowerClass2,
-            0.0, 950.0, Electrified("1500"), "C"
+            0.0, 950.0, Electrified("1500"), "C", false
         )
         putInElectrificationMapByPowerClass(
             expectedElectrificationPowerClass2,
-            950.0, 2_700.0, Electrified("1500"), "D"
+            950.0, 2_700.0, Electrified("1500"), "D", false
         )
         putInElectrificationMapByPowerClass(
             expectedElectrificationPowerClass2,
-            2_700.0, 3_000.0, Electrified("1500"), "C"
+            2_700.0, 3_000.0, Electrified("1500"), "C", false
         )
         putInElectrificationMapByPowerClass(
             expectedElectrificationPowerClass2,
-            3_000.0, 4_000.0, Electrified("1500"), "D"
+            3_000.0, 4_000.0, Electrified("1500"), "D", true
         )
 
         assertThat(electrificationPowerClass2).isEqualTo(expectedElectrificationPowerClass2.build())
@@ -244,7 +244,7 @@ class EnvelopeTrainPathTest {
                         .put(Range.closedOpen(1460.0, 1500.0), Neutral(true, Electrified("1500"), false))
                         .put(Range.closedOpen(1500.0, 2500.0), Electrified("1500"))
                         .put(Range.closedOpen(2500.0, 2600.0), NonElectrified())
-                        .put(Range.closedOpen(2600.0, 3100.0), Electrified("25000"))
+                        .put(Range.closed(2600.0, 3100.0), Electrified("25000"))
                         .build()
                 ),
                 Arguments.of(
@@ -254,7 +254,7 @@ class EnvelopeTrainPathTest {
                         .put(Range.closedOpen(0.0, 350.0), Electrified("25000"))
                         .put(Range.closedOpen(350.0, 450.0), NonElectrified())
                         .put(Range.closedOpen(450.0, 2650.0), Electrified("1500"))
-                        .put(Range.closedOpen(2650.0, 3100.0), NonElectrified())
+                        .put(Range.closed(2650.0, 3100.0), NonElectrified())
                         .build()
                 ),
             )
@@ -269,7 +269,12 @@ private fun putInElectrificationMapByPowerClass(
     upper: Double,
     electrification: Electrification,
     electricalProfile: String,
+    includeUpperBound: Boolean
 ) {
+    val range = if (includeUpperBound)
+        Range.closed(lower, upper)
+    else
+        Range.closedOpen(lower, upper)
     val elecWithProfile = electrification.withElectricalProfile(electricalProfile)
-    expectedElectrificationMapByPowerClass.put(Range.closedOpen(lower, upper), elecWithProfile)
+    expectedElectrificationMapByPowerClass.put(range, elecWithProfile)
 }

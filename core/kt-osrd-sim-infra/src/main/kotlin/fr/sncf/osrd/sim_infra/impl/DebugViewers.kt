@@ -4,6 +4,7 @@ import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.utils.recoverBlocks
 import fr.sncf.osrd.sim_infra.utils.toList
 import fr.sncf.osrd.utils.Direction
+import fr.sncf.osrd.utils.indexing.DirStaticIdx
 import fr.sncf.osrd.utils.indexing.MutableStaticIdxArrayList
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.indexing.StaticIdxList
@@ -51,6 +52,11 @@ fun makeChunk(infra: RawInfra, id: StaticIdx<TrackChunk>): ChunkViewer {
         infra.getTrackChunkLength(id),
         id,
     )
+}
+
+@JvmName("makeDirChunk")
+fun makeDirChunk(infra: RawInfra, id: DirStaticIdx<TrackChunk>): DirectedViewer<ChunkViewer> {
+    return DirectedViewer(id.direction, makeChunk(infra, id.value))
 }
 
 @JvmName("makeZonePath")

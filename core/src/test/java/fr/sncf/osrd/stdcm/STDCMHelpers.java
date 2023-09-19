@@ -36,7 +36,7 @@ public class STDCMHelpers {
         var trainPath = makeTrainPath(infra, startLocations, endLocations);
         var result = StandaloneSim.run(
                 infra,
-                null, // FIXME: needs StandaloneSim to be adapted to the new infra apis
+                trainPath,
                 EnvelopeTrainPath.from(trainPath),
                 List.of(new StandaloneTrainSchedule(
                         REALISTIC_FAST_TRAIN,

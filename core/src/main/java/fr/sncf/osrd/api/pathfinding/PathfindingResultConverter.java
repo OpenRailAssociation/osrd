@@ -212,8 +212,8 @@ public class PathfindingResultConverter {
         var blocks = ranges.stream()
                 .map(Pathfinding.EdgeRange::edge)
                 .toList();
-        var chunkPath = new ArrayList<Integer>();
-        var routes = blocksToRoutes(chunkPath, blockInfra, rawInfra, blocks);
+        var chunkPath = chunksOnBlocks(rawInfra, blockInfra, blocks);
+        var routes = chunksToRoutes(rawInfra, chunkPath);
         var startOffset = findStartOffset(blockInfra, rawInfra, chunkPath.get(0), routes.get(0), ranges.get(0));
         var endOffset = findEndOffset(blockInfra, rawInfra, Iterables.getLast(chunkPath),
                 Iterables.getLast(routes), Iterables.getLast(ranges));
@@ -357,16 +357,19 @@ public class PathfindingResultConverter {
         return offset;
     }
 
-    /** Converts a list of blocks into a list of routes, ignoring ranges */
-    public static List<Integer> blocksToRoutes(
-            ArrayList<Integer> pathChunks,
-            BlockInfra blockInfra,
+    public static List<Integer> chunksOnBlocks(RawSignalingInfra rawInfra,
+                                               BlockInfra blockInfra, List<Integer> blockIds) {
+        return blockIds.stream()
+                .flatMap(blockId -> toIntList(blockInfra.getBlockPath(blockId)).stream())
+                .flatMap(zonePath -> toIntList(rawInfra.getZonePathChunks(zonePath)).stream())
+                .toList();
+    }
+
+    /** Converts a list of dir chunks into a list of routes */
+    public static List<Integer> chunksToRoutes(
             RawSignalingInfra infra,
-            List<Integer> blocks
+            List<Integer> pathChunks
     ) {
-        for (var blockId : blocks)
-            for (var zonePathId : toIntList(blockInfra.getBlockPath(blockId)))
-                pathChunks.addAll(toIntList(infra.getZonePathChunks(zonePathId)));
         var chunkStartIndex = 0;
         var res = new ArrayList<Integer>();
         while (chunkStartIndex < pathChunks.size()) {

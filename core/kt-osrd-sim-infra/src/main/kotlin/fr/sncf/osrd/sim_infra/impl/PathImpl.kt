@@ -15,7 +15,7 @@ import java.lang.RuntimeException
 
 data class PathImpl(
     val infra: TrackProperties,
-    val chunks: DirStaticIdxList<TrackChunk>,
+    override val chunks: DirStaticIdxList<TrackChunk>,
     @get:JvmName("getBeginOffset")
     val beginOffset: Distance,
     @get:JvmName("getEndOffset")
@@ -103,6 +103,10 @@ data class PathImpl(
             offsetAfterFirstChunk += chunkLength
         }
         return null
+    }
+
+    override fun getBeginOffset(): Distance {
+        return beginOffset
     }
 
     private fun projectLineString(getData: (chunkId: TrackChunkId) -> LineString): LineString {

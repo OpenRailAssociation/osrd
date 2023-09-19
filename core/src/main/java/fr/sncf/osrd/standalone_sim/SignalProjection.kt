@@ -2,6 +2,7 @@ package fr.sncf.osrd.standalone_sim
 
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.SignalProjectionEndpoint.SignalProjectionResult
+import fr.sncf.osrd.api.pathfinding.PathfindingResultConverter
 import fr.sncf.osrd.infra_state.api.TrainPath
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.signaling.SignalingSimulator
@@ -13,9 +14,11 @@ import fr.sncf.osrd.sim_infra_adapter.SimInfraAdapter
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SignalSighting
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.ZoneUpdate
 import fr.sncf.osrd.standalone_sim.result.SignalUpdate
+import fr.sncf.osrd.utils.KtToJavaConverter
 import fr.sncf.osrd.utils.indexing.MutableStaticIdxArrayList
 import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
+import fr.sncf.osrd.utils.toRouteIdList
 import fr.sncf.osrd.utils.units.meters
 import java.awt.Color
 
@@ -23,7 +26,7 @@ data class SignalAspectChangeEvent(val newAspect: String, val time: Long)
 
 fun project(
     fullInfra: FullInfra,
-    trainPath: TrainPath,
+    trainPath: Path,
     signalSightings: List<SignalSighting>,
     zoneUpdates: List<ZoneUpdate>
 ): SignalProjectionResult {
@@ -38,19 +41,19 @@ fun project(
     val bapr = sigSystemManager.findSignalingSystem("BAPR")
     val tvm = sigSystemManager.findSignalingSystem("TVM")
 
-    // Get the route path
-    // TODO: do it in the pathfinding
-    val routes = MutableStaticIdxArrayList<Route>()
-    for (javaRoute in trainPath.routePath) {
-        val route = rawInfra.routeMap[javaRoute.element.infraRoute]!!
-        routes.add(route)
-    }
+    // get a new generation route path
+    val routePath = toRouteIdList(PathfindingResultConverter.chunksToRoutes(rawInfra, KtToJavaConverter.toIntList(trainPath.chunks)))
+
+    // recover blocks from the route paths
+    val detailedBlockPath = recoverBlockPath(simulator, fullInfra, routePath)
+    val blockPath = mutableStaticIdxArrayListOf<Block>()
+    for (block in detailedBlockPath)
+        blockPath.add(block.block)
 
     val blockPaths = recoverBlocks(
-        rawInfra, blockInfra, routes, mutableStaticIdxArrayListOf(bal, bapr, tvm)
+        rawInfra, blockInfra, routePath, mutableStaticIdxArrayListOf(bal, bapr, tvm)
     )
     assert(blockPaths.isNotEmpty())
-    val blockPath = blockPaths[0].toBlockList() // TODO: have a better way to choose the block path
 
     val zoneMap = mutableMapOf<String, Int>()
     var zoneCount = 0
@@ -64,9 +67,7 @@ fun project(
     }
 
     // compute signal updates
-    // FIXME: remove this once we use infra path
-//    val startOffset = trainPathBlockOffset(trainPath)
-    val startOffset = -trainPath.routePath.first().pathOffset.meters
+    val startOffset = trainPathBlockOffset(fullInfra.rawInfra, fullInfra.blockInfra, blockPath, trainPath)
     val pathSignals = pathSignals(startOffset, blockPath, blockInfra, rawInfra)
 
     val signalAspectChangeEvents = computeSignalAspectChangeEvents(

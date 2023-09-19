@@ -47,6 +47,10 @@ interface Path {
     fun getTrackLocationAtOffset(pathOffset: Distance): TrackLocation
     fun getElectricalProfiles(mapping: HashMap<String, DistanceRangeMap<String>>): DistanceRangeMap<String>
     fun getOffsetOfTrackLocation(location: TrackLocation): Distance?
+
+    val chunks: DirStaticIdxList<TrackChunk>
+    /** Returns the offset where the train starts (must be located on the first chunk) */
+    fun getBeginOffset(): Distance
 }
 
 /** Wraps the method without returning an optional, which can't be handled in java for value types */

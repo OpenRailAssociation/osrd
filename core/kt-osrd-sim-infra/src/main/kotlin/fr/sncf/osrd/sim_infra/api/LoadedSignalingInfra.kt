@@ -4,9 +4,6 @@ import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.utils.units.*
 
-import java.util.Comparator
-import java.util.PriorityQueue
-
 
 /** A type of signaling system, which is used both for blocks and signals */
 sealed interface SignalingSystem
