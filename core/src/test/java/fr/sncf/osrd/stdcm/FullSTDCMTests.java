@@ -60,9 +60,9 @@ public class FullSTDCMTests {
     public void testSmallInfraSmallOpening() throws IOException, URISyntaxException {
         var infra = Helpers.fullInfraFromRJS(Helpers.getExampleInfra("small_infra/infra.json"));
         var start = Set.of(Helpers.convertRouteLocation(infra,
-                "rt.buffer_stop_b->tde.foo_b-switch_foo", Distance.fromMeters(100)));
+                "rt.buffer_stop.3->DB0", Distance.fromMeters(1590)));
         var end = Set.of(Helpers.convertRouteLocation(infra,
-                "rt.tde.foo_b-switch_foo->buffer_stop_c", Distance.fromMeters(10125)));
+                "rt.DH2->buffer_stop.7", Distance.fromMeters(5000)));
         var occupancies = STDCMHelpers.makeOccupancyFromPath(infra, start, end, 0);
         occupancies.putAll(STDCMHelpers.makeOccupancyFromPath(infra, start, end, 600));
         var res = new STDCMPathfindingBuilder()
