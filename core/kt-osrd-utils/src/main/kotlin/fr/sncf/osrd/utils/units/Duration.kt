@@ -15,11 +15,25 @@ value class Duration(val milliseconds: Long) : Comparable<Duration> {
     operator fun minus(value: Duration): Duration {
         return Duration(milliseconds - value.milliseconds)
     }
+    
+    override fun toString(): String {
+        val seconds = milliseconds / 1000
+        val decimal = (milliseconds % 1000).absoluteValue
+        if (decimal == 0L)
+            return String.format("%ss", seconds)
+        else
+            return String.format("%s.%ss",seconds,decimal)
+    }
 
     companion object {
         @JvmStatic
         val ZERO = Duration(milliseconds = 0L)
-        fun fromSeconds(seconds: Double) = Duration(milliseconds = (seconds * 1_000.0).toLong())
+        @JvmStatic
+        @JvmName("fromSeconds")
+        fun fromSeconds(time: Double): Duration = time.seconds
+        @JvmStatic
+        @JvmName("toSeconds")
+        fun fromSeconds(time: Duration): Double = time.seconds
     }
 
     override fun compareTo(other: Duration): Int {
