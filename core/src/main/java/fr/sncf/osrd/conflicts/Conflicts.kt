@@ -13,87 +13,9 @@ interface SpacingTrainRequirement {
     val spacingRequirements: List<SpacingRequirement>
 }
 
-fun detectSpacingConflicts(trainRequirements: List<SpacingTrainRequirement>): List<Conflict> {
-    val res = mutableListOf<Conflict>()
-
-    data class ZoneRequirement(
-        val trainId: Long,
-        override val beginTime: Double,
-        override val endTime: Double,
-    ): ResourceRequirement
-
-    // organize requirements by zone
-    val zoneRequirements = mutableMapOf<String, MutableList<ZoneRequirement>>()
-    for (req in trainRequirements) {
-        for (spacingReq in req.spacingRequirements) {
-            val zoneReq = ZoneRequirement(
-                req.trainId, spacingReq.beginTime, spacingReq.endTime
-            )
-            zoneRequirements.getOrPut(spacingReq.zone!!) { mutableListOf() }.add(zoneReq)
-        }
-    }
-
-    // look for requirement times overlaps.
-    // as spacing requirements are exclusive, any overlap is a conflict
-    for ((_, requirements) in zoneRequirements.entries) {
-        for (conflictGroup in detectRequirementConflicts(requirements) { _, _ -> true }) {
-            val trains = conflictGroup.map { it.trainId }
-            val beginTime = conflictGroup.minBy { it.beginTime }.beginTime
-            val endTime = conflictGroup.maxBy { it.endTime }.endTime
-            res.add(Conflict(trains, beginTime, endTime, ConflictType.SPACING))
-        }
-    }
-    return res
-}
-
-
 interface RoutingTrainRequirement {
     val trainId: Long
     val routingRequirements: List<RoutingRequirement>
-}
-
-
-fun detectRoutingConflicts(trainsRequirements: List<RoutingTrainRequirement>): List<Conflict> {
-    val res = mutableListOf<Conflict>()
-
-    data class RoutingZoneConfig(val entryDet: String, val exitDet: String, val switches: Map<String, String>)
-    data class ZoneRequirement(
-        val trainId: Long,
-        val route: String,
-        override val beginTime: Double,
-        override val endTime: Double,
-        val config: RoutingZoneConfig,
-    ): ResourceRequirement
-
-    // reorganize requirements by zone
-    val zoneRequirements = mutableMapOf<String, MutableList<ZoneRequirement>>()
-    for (trainRequirements in trainsRequirements) {
-        val trainId = trainRequirements.trainId;
-        for (routeRequirements in trainRequirements.routingRequirements) {
-            val route = routeRequirements.route!!
-            var beginTime = routeRequirements.beginTime
-            // TODO: make it a parameter
-            if (routeRequirements.zones.any { it.switches.isNotEmpty() })
-                beginTime -= 5.0
-            for (zoneRequirement in routeRequirements.zones) {
-                val endTime = zoneRequirement.endTime
-                val config = RoutingZoneConfig(zoneRequirement.entryDetector, zoneRequirement.exitDetector, zoneRequirement.switches!!)
-                val requirement = ZoneRequirement(trainId, route, beginTime, endTime, config)
-                zoneRequirements.getOrPut(zoneRequirement.zone) { mutableListOf() }.add(requirement)
-            }
-        }
-    }
-
-    // for each zone, check compatibility of overlapping requirements
-    for ((_, requirements) in zoneRequirements.entries) {
-        for (conflictGroup in detectRequirementConflicts(requirements) { a, b -> a.config != b.config }) {
-            val trains = conflictGroup.map { it.trainId }
-            val beginTime = conflictGroup.minBy { it.beginTime }.beginTime
-            val endTime = conflictGroup.maxBy { it.endTime }.endTime
-            res.add(Conflict(trains, beginTime, endTime, ConflictType.ROUTING))
-        }
-    }
-    return res
 }
 
 interface ResourceRequirement {
@@ -101,11 +23,175 @@ interface ResourceRequirement {
     val endTime: Double
 }
 
+class TrainRequirements(
+    @Json(name = "train_id")
+    override val trainId: Long, // Not the usual RJS ids, but an actual DB id
+    @Json(name = "spacing_requirements")
+    override val spacingRequirements: List<SpacingRequirement>,
+    @Json(name = "routing_requirements")
+    override val routingRequirements: List<RoutingRequirement>,
+) : SpacingTrainRequirement, RoutingTrainRequirement
+
+
+fun detectConflicts(trainRequirements: List<TrainRequirements>): List<Conflict> {
+    return incrementalConflictDetector(trainRequirements).checkConflicts()
+}
+
+interface IncrementalConflictDetector {
+    fun checkConflicts(): List<Conflict>
+    fun checkSpacingRequirement(req: SpacingRequirement): List<Conflict>
+    fun checkRoutingRequirement(req: RoutingRequirement): List<Conflict>
+}
+
+fun incrementalConflictDetector(trainRequirements: List<TrainRequirements>): IncrementalConflictDetector {
+    return IncrementalConflictDetectorImpl(trainRequirements)
+}
+
+class IncrementalConflictDetectorImpl(trainRequirements: List<TrainRequirements>) : IncrementalConflictDetector {
+    private val spacingZoneRequirements = mutableMapOf<String, MutableList<SpacingZoneRequirement>>()
+    private val routingZoneRequirements = mutableMapOf<String, MutableList<RoutingZoneRequirement>>()
+
+    init {
+        generateSpacingRequirements(trainRequirements)
+        generateRoutingRequirements(trainRequirements)
+    }
+
+    data class SpacingZoneRequirement(
+        val trainId: Long,
+        override val beginTime: Double,
+        override val endTime: Double,
+    ) : ResourceRequirement
+
+    private fun generateSpacingRequirements(trainRequirements: List<SpacingTrainRequirement>) {
+        // organize requirements by zone
+        for (req in trainRequirements) {
+            for (spacingReq in req.spacingRequirements) {
+                val zoneReq = SpacingZoneRequirement(
+                    req.trainId, spacingReq.beginTime, spacingReq.endTime
+                )
+                spacingZoneRequirements.getOrPut(spacingReq.zone!!) { mutableListOf() }.add(zoneReq)
+            }
+        }
+    }
+
+    data class RoutingZoneConfig(val entryDet: String, val exitDet: String, val switches: Map<String, String>)
+    data class RoutingZoneRequirement(
+        val trainId: Long,
+        val route: String,
+        override val beginTime: Double,
+        override val endTime: Double,
+        val config: RoutingZoneConfig,
+    ) : ResourceRequirement
+
+    private fun generateRoutingRequirements(trainsRequirements: List<RoutingTrainRequirement>) {
+        // reorganize requirements by zone
+        for (trainRequirements in trainsRequirements) {
+            val trainId = trainRequirements.trainId;
+            for (routeRequirements in trainRequirements.routingRequirements) {
+                val route = routeRequirements.route!!
+                var beginTime = routeRequirements.beginTime
+                // TODO: make it a parameter
+                if (routeRequirements.zones.any { it.switches.isNotEmpty() })
+                    beginTime -= 5.0
+                for (zoneRequirement in routeRequirements.zones) {
+                    val endTime = zoneRequirement.endTime
+                    val config = RoutingZoneConfig(
+                        zoneRequirement.entryDetector,
+                        zoneRequirement.exitDetector,
+                        zoneRequirement.switches!!
+                    )
+                    val requirement = RoutingZoneRequirement(trainId, route, beginTime, endTime, config)
+                    routingZoneRequirements.getOrPut(zoneRequirement.zone) { mutableListOf() }.add(requirement)
+                }
+            }
+        }
+    }
+
+    override fun checkConflicts(): List<Conflict> {
+        val res = mutableListOf<Conflict>()
+        res.addAll(detectSpacingConflicts())
+        res.addAll(detectRoutingConflicts())
+        return res
+    }
+
+    private fun detectSpacingConflicts(): List<Conflict> {
+        // look for requirement times overlaps.
+        // as spacing requirements are exclusive, any overlap is a conflict
+        val res = mutableListOf<Conflict>()
+        for ((_, requirements) in spacingZoneRequirements.entries) {
+            for (conflictGroup in detectRequirementConflicts(requirements) { _, _ -> true }) {
+                val trains = conflictGroup.map { it.trainId }
+                val beginTime = conflictGroup.minBy { it.beginTime }.beginTime
+                val endTime = conflictGroup.maxBy { it.endTime }.endTime
+                res.add(Conflict(trains, beginTime, endTime, ConflictType.SPACING))
+            }
+        }
+        return res
+    }
+
+    private fun detectRoutingConflicts(): List<Conflict> {
+        // for each zone, check compatibility of overlapping requirements
+        val res = mutableListOf<Conflict>()
+        for ((_, requirements) in routingZoneRequirements.entries) {
+            for (conflictGroup in detectRequirementConflicts(requirements) { a, b -> a.config != b.config }) {
+                val trains = conflictGroup.map { it.trainId }
+                val beginTime = conflictGroup.minBy { it.beginTime }.beginTime
+                val endTime = conflictGroup.maxBy { it.endTime }.endTime
+                res.add(Conflict(trains, beginTime, endTime, ConflictType.ROUTING))
+            }
+        }
+        return res
+    }
+
+    override fun checkSpacingRequirement(req: SpacingRequirement): List<Conflict> {
+        val requirements = (spacingZoneRequirements[req.zone!!] ?: return listOf()).toMutableList()
+        requirements.add(SpacingZoneRequirement(-1, req.beginTime, req.endTime))
+
+        val res = mutableListOf<Conflict>()
+        for (conflictGroup in detectRequirementConflicts(requirements) { _, _ -> true }) {
+            if (conflictGroup.none { it.trainId == -1L }) continue // don't report timetable conflicts to STDCM
+            val filteredConflictGroup = conflictGroup.filter { it.trainId != -1L }
+            val trains = filteredConflictGroup.map { it.trainId }
+            val beginTime = filteredConflictGroup.minBy { it.beginTime }.beginTime
+            val endTime = filteredConflictGroup.maxBy { it.endTime }.endTime
+            res.add(Conflict(trains, beginTime, endTime, ConflictType.SPACING))
+        }
+
+        return res
+    }
+
+    override fun checkRoutingRequirement(req: RoutingRequirement): List<Conflict> {
+        val res = mutableListOf<Conflict>()
+        for (zoneReq in req.zones) {
+            val requirements = (routingZoneRequirements[zoneReq.zone!!] ?: continue).toMutableList()
+            requirements.add(
+                RoutingZoneRequirement(
+                    -1,
+                    req.route,
+                    req.beginTime,
+                    zoneReq.endTime,
+                    RoutingZoneConfig(zoneReq.entryDetector, zoneReq.exitDetector, zoneReq.switches!!)
+                )
+            )
+
+            for (conflictGroup in detectRequirementConflicts(requirements) { a, b -> a.config != b.config }) {
+                if (conflictGroup.none { it.trainId == -1L }) continue // don't report timetable conflicts to STDCM
+                val filteredConflictGroup = conflictGroup.filter { it.trainId != -1L }
+                val trains = filteredConflictGroup.map { it.trainId }
+                val beginTime = filteredConflictGroup.minBy { it.beginTime }.beginTime
+                val endTime = filteredConflictGroup.maxBy { it.endTime }.endTime
+                res.add(Conflict(trains, beginTime, endTime, ConflictType.ROUTING))
+            }
+        }
+        return res
+    }
+}
+
 /**
  * Return a list of requirement conflict groups.
  * If requirements pairs (A, B) and (B, C) are conflicting, then (A, B, C) are part of the same conflict group.
  */
-fun <ReqT: ResourceRequirement> detectRequirementConflicts(
+private fun <ReqT : ResourceRequirement> detectRequirementConflicts(
     requirements: MutableList<ReqT>,
     conflicting: (ReqT, ReqT) -> Boolean,
 ): List<List<ReqT>> {
@@ -152,22 +238,4 @@ fun <ReqT: ResourceRequirement> detectRequirementConflicts(
         activeRequirements.add(requirementIndex)
     }
     return conflictGroups
-}
-
-
-class TrainRequirements(
-    @Json(name = "train_id")
-    override val trainId: Long, // Not the usual RJS ids, but an actual DB id
-    @Json(name = "spacing_requirements")
-    override val spacingRequirements: List<SpacingRequirement>,
-    @Json(name = "routing_requirements")
-    override val routingRequirements: List<RoutingRequirement>,
-): SpacingTrainRequirement, RoutingTrainRequirement
-
-
-fun detectConflicts(trainRequirements: List<TrainRequirements>) : List<Conflict> {
-    val res = mutableListOf<Conflict>()
-    res.addAll(detectSpacingConflicts(trainRequirements))
-    res.addAll(detectRoutingConflicts(trainRequirements))
-    return res
 }
