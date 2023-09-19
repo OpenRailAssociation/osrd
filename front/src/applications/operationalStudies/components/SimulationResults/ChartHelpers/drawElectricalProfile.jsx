@@ -13,8 +13,12 @@ const drawElectricalProfile = (
   rotate,
   isStripe,
   isIncompatible,
-  id = null
+  // TODO : when migrated id should be reverted with null by default
+  id
 ) => {
+  // TODO : remove line when parameter fixed
+  if (id === undefined) id = null;
+
   const width = rotate
     ? chart.x(dataSimulation[`${keyValues[1]}_end`]) -
       chart.x(dataSimulation[`${keyValues[1]}_start`])

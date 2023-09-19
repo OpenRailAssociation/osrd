@@ -14,7 +14,15 @@ export type MergedDataPoint<T = number> = {
   value1: number | T;
 };
 export type ConsolidatedMergeDataPoint = MergedDataPoint<Date | null>;
+
 export type SimulationD3Scale = d3.ScaleTime<number, number> | d3.ScaleLinear<number, number>;
+
+export interface SpeedSpaceChart extends Chart {
+  x: d3.ScaleLinear<number, number>;
+  y: d3.ScaleLinear<number, number>;
+  originalScaleX?: d3.ScaleLinear<number, number>;
+  originalScaleY?: d3.ScaleLinear<number, number>;
+}
 export interface Chart {
   width: number;
   height: number;
@@ -32,8 +40,8 @@ export interface Chart {
   yAxisGrid: d3.Selection<SVGGElement, unknown, null, undefined>;
   svg: d3.Selection<SVGGElement, unknown, null, undefined>;
   drawZone: d3.Selection<SVGGElement, unknown, null, undefined>;
-  originalScaleX?: d3.ScaleTime<number, number, never>;
-  originalScaleY?: d3.ScaleLinear<number, number, never>;
+  originalScaleX?: SimulationD3Scale;
+  originalScaleY?: SimulationD3Scale;
   rotate?: boolean;
 }
 export interface AllowancesSetting {

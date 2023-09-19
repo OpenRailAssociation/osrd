@@ -15,7 +15,7 @@ import {
   createChart,
   drawTrain,
 } from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/d3Helpers';
-import { Chart, SpeedSpaceSettingsType } from 'reducers/osrdsimulation/types';
+import { SpeedSpaceChart, SpeedSpaceSettingsType } from 'reducers/osrdsimulation/types';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   getIsPlaying,
@@ -61,7 +61,7 @@ export default function SpeedSpaceChart({
   const simulationIsPlaying = useSelector(getIsPlaying);
   const speedSpaceSettings = useSelector(getSpeedSpaceSettings);
 
-  const [chart, setChart] = useState<Chart | undefined>(undefined);
+  const [chart, setChart] = useState<SpeedSpaceChart | undefined>(undefined);
   const [chartBaseHeight, setChartBaseHeight] = useState(initialHeight);
   const [chartHeight, setChartHeight] = useState(initialHeight);
   const [hasJustRotated, setHasJustRotated] = useState(false);
@@ -114,7 +114,7 @@ export default function SpeedSpaceChart({
       initialHeight,
       ref,
       chart
-    );
+    ) as SpeedSpaceChart;
     setChart(localChart);
     drawTrain(trainSimulation, rotate, localSettings, localChart);
     setHasJustRotated(false);

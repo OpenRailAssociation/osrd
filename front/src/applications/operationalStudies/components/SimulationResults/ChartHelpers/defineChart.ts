@@ -7,8 +7,7 @@ import {
 } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/ChartHelpers';
 import nextId from 'react-id-generator';
 import svgDefs from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/svgDefs';
-import { SimulationD3Scale } from 'reducers/osrdsimulation/types';
-import { Chart } from 'reducers/osrdsimulation/types';
+import { Chart, SimulationD3Scale, SpeedSpaceChart } from 'reducers/osrdsimulation/types';
 
 // keyValues ['position', 'gradient']
 const defineChart = (
@@ -20,7 +19,7 @@ const defineChart = (
   rotate: boolean,
   keyValues: string[],
   id: string
-): Chart => {
+): Chart | SpeedSpaceChart => {
   const margin = {
     top: 1,
     right: 1,
@@ -64,7 +63,7 @@ const defineChart = (
     .append('g')
     .attr('transform', `translate(0,${height})`)
     .attr('class', 'grid')
-    .call(gridX(x, height));
+    .call(gridX(x as d3.ScaleTime<number, number>, height));
   const originalScaleX = x; // We need to keep a ref on that to not double translation
 
   // Add Y axis
@@ -81,7 +80,10 @@ const defineChart = (
           )
       : d3.axisLeft(y);
   const yAxis = svg.append('g').call(axisLeftY);
-  const yAxisGrid = svg.append('g').attr('class', 'grid').call(gridY(y, width));
+  const yAxisGrid = svg
+    .append('g')
+    .attr('class', 'grid')
+    .call(gridY(y as d3.ScaleLinear<number, number>, width));
   const originalScaleY = y; // We need to keep a ref on that to not double translation
 
   // Create clip path to hide everything out of this area

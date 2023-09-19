@@ -8,7 +8,7 @@ import {
   createPowerRestrictionSegment,
 } from 'applications/operationalStudies/consts';
 import { isEmpty } from 'lodash';
-import { Chart } from 'reducers/osrdsimulation/types';
+import { Chart, SpeedSpaceChart, SpeedSpaceSettingsType } from 'reducers/osrdsimulation/types';
 import drawElectricalProfile from '../ChartHelpers/drawElectricalProfile';
 import { POSITION, SPEED, SPEED_SPACE_CHART_KEY_VALUES } from '../simulationResultsConsts';
 import drawPowerRestriction from '../ChartHelpers/drawPowerRestriction';
@@ -29,18 +29,18 @@ function createChart(
   hasJustRotated: boolean,
   initialHeight: number,
   ref: React.RefObject<HTMLDivElement>,
-  chart?: Chart
+  chart?: SpeedSpaceChart
 ) {
   d3.select(`#${CHART_ID}`).remove();
 
-  let scaleX: d3.ScaleTime<number, number, never> | d3.ScaleLinear<number, number, never>;
-  let scaleY: d3.ScaleTime<number, number, never> | d3.ScaleLinear<number, number, never>;
+  let scaleX: d3.ScaleLinear<number, number, never>;
+  let scaleY: d3.ScaleLinear<number, number, never>;
 
   if (chart === undefined || resetChart) {
-    const maxX = d3.max(trainSimulation.speed, (speedObject) => speedObject[POSITION]);
-    if (maxX) scaleX = defineLinear(maxX + 100);
-    const maxY = d3.max(trainSimulation.speed, (speedObject) => speedObject[SPEED]);
-    if (maxY) scaleY = defineLinear(maxY + 50);
+    const maxX = d3.max(trainSimulation.speed, (speedObject) => speedObject[POSITION]) as number;
+    scaleX = defineLinear(maxX + 100);
+    const maxY = d3.max(trainSimulation.speed, (speedObject) => speedObject[SPEED]) as number;
+    scaleY = defineLinear(maxY + 50);
   } else {
     scaleX = !hasJustRotated ? chart.x : chart.y;
     scaleY = !hasJustRotated ? chart.y : chart.x;
@@ -69,7 +69,7 @@ function createChart(
   );
 }
 
-function drawAxisTitle(chart, rotate) {
+function drawAxisTitle(chart: Chart, rotate: boolean) {
   chart.drawZone
     .append('text')
     .attr('class', 'axis-unit')
@@ -89,7 +89,12 @@ function drawAxisTitle(chart, rotate) {
     .text('M');
 }
 
-function drawTrain(dataSimulation, rotate, speedSpaceSettings, chart) {
+function drawTrain(
+  dataSimulation: GevPreparedata,
+  rotate: boolean,
+  speedSpaceSettings: SpeedSpaceSettingsType,
+  chart: Chart
+) {
   if (chart) {
     const chartLocal = chart;
     chartLocal.drawZone.select('g').remove();
@@ -220,7 +225,7 @@ function drawTrain(dataSimulation, rotate, speedSpaceSettings, chart) {
     if (!isEmpty(powerRestrictionRanges) && speedSpaceSettings.powerRestriction) {
       const restrictionSegments = [];
       let currentRestrictionSegment = createPowerRestrictionSegment(
-        electrificationRanges,
+        powerRestrictionRanges,
         powerRestrictionRanges[0]
       );
       powerRestrictionRanges.forEach((powerRestrictionRange, index) => {
@@ -236,7 +241,7 @@ function drawTrain(dataSimulation, rotate, speedSpaceSettings, chart) {
         } else {
           restrictionSegments.push(currentRestrictionSegment);
           currentRestrictionSegment = createPowerRestrictionSegment(
-            electrificationRanges,
+            powerRestrictionRanges,
             powerRestrictionRange
           );
         }
@@ -256,8 +261,8 @@ function drawTrain(dataSimulation, rotate, speedSpaceSettings, chart) {
           source.isStriped,
           source.isIncompatiblePowerRestriction,
           source.isRestriction,
-          speedSpaceSettings.electricalProfiles,
-          `powerRestrictions_${index}`
+          `powerRestrictions_${index}`,
+          speedSpaceSettings.electricalProfiles
         );
       });
     }
