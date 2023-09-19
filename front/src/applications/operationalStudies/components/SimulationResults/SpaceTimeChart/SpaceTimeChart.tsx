@@ -81,17 +81,17 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
   const rndContainerRef = useRef<Rnd>(null);
 
   const {
-    allowancesSettings = ORSD_GRAPH_SAMPLE_DATA.allowancesSettings,
+    allowancesSettings = ORSD_GRAPH_SAMPLE_DATA.allowancesSettings as AllowancesSettings,
     dispatchUpdateDepartureArrivalTimes = noop,
     dispatchUpdateMustRedraw = noop,
     dispatchUpdateSelectedTrainId = noop,
     dispatchUpdateTimePositionValues = noop,
     dispatchUpdateChart = noop,
     initialHeightOfSpaceTimeChart = 400,
-    inputSelectedTrain = ORSD_GRAPH_SAMPLE_DATA.selectedTrain as unknown as Train,
+    inputSelectedTrain = ORSD_GRAPH_SAMPLE_DATA.simulation.present.trains[0],
     positionValues = ORSD_GRAPH_SAMPLE_DATA.positionValues,
     selectedProjection,
-    simulation = ORSD_GRAPH_SAMPLE_DATA.simulation.present as unknown as SimulationSnapshot,
+    simulation = ORSD_GRAPH_SAMPLE_DATA.simulation.present,
     simulationIsPlaying = false,
     timePosition = ORSD_GRAPH_SAMPLE_DATA.timePosition,
     isDisplayed = true,
