@@ -47,7 +47,7 @@ use sentry::ClientInitGuard;
 use std::env;
 use std::error::Error;
 use std::fs::File;
-use std::io::BufReader;
+use std::io::{BufReader, IsTerminal};
 use std::process::exit;
 use views::infra::InfraApiError;
 
@@ -75,7 +75,7 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
     match client.color {
         Color::Never => colored::control::set_override(false),
         Color::Always => colored::control::set_override(true),
-        Color::Auto => colored::control::set_override(atty::is(atty::Stream::Stderr)),
+        Color::Auto => colored::control::set_override(std::io::stderr().is_terminal()),
     }
 
     match client.command {
