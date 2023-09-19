@@ -120,7 +120,7 @@ export default function RollingStockCardDetail({
                 <tbody>
                   <tr>
                     <td className="text-primary text-nowrap pr-1">
-                      {t('powerRestriction', {
+                      {t('powerRestrictions', {
                         count: Object.keys(rollingStock.power_restrictions).length,
                       })}
                     </td>
