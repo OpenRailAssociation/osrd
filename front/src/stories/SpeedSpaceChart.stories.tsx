@@ -7,6 +7,7 @@ import SpeedSpaceChart, {
 import 'stories/storybook.css';
 import { Provider } from 'react-redux';
 import { store } from 'Store';
+import ORSD_GRAPH_SAMPLE_DATA from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/sampleData';
 
 export default {
   /* 👇 The title prop is optional.
@@ -33,4 +34,5 @@ Standard.args = {
   heightOfSpeedSpaceChart: 250,
   initialHeight: 400,
   onSetChartBaseHeight: noop,
+  selectedTrain: ORSD_GRAPH_SAMPLE_DATA.simulation.present.trains[0],
 };

@@ -45,7 +45,7 @@ export const getSelectedTrain = (state: RootState) => {
   const { trains } = getPresentSimulation(state);
   const selectedTrainId = getSelectedTrainId(state);
   // TODO: delete this cast when we have chosen the appropriate type for the simulation
-  return (trains as (SimulationReport & Train)[]).find(
+  return (trains as (SimulationReport | Train)[]).find(
     (train) => train.id && train.id === selectedTrainId
   );
 };

@@ -3,7 +3,7 @@ import SpaceTimeChart from 'applications/operationalStudies/components/Simulatio
 import SpeedSpaceChart from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/SpeedSpaceChart';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
-import { getPresentSimulation } from 'reducers/osrdsimulation/selectors';
+import { getPresentSimulation, getSelectedTrain } from 'reducers/osrdsimulation/selectors';
 import { AllowancesSettings } from 'reducers/osrdsimulation/types';
 import { SimulationReport } from 'common/api/osrdEditoastApi';
 
@@ -14,6 +14,7 @@ const OSRDStcdmResults = () => {
   const [spaceTimeChartHeight, setSpaceTimeChartHeight] = useState(450);
   const [speedSpaceChartHeight, setSpeedSpaceChartHeight] = useState(450);
 
+  const selectedTrain = useSelector(getSelectedTrain);
   const simulation = useSelector(getPresentSimulation);
   // by default, we show the ecoblocks for stdcm (if existing)
   const allowancesSettings = (simulation.trains as SimulationReport[]).reduce((acc, train) => {
@@ -66,7 +67,7 @@ const OSRDStcdmResults = () => {
                 }
               />
             </div>
-            {showSpeedSpaceChart && (
+            {showSpeedSpaceChart && selectedTrain && (
               <div
                 className="speedspacechart-container"
                 style={{ height: `${speedSpaceChartHeight}px`, marginBottom: '50px' }}
@@ -74,6 +75,7 @@ const OSRDStcdmResults = () => {
                 <SpeedSpaceChart
                   initialHeight={450}
                   onSetChartBaseHeight={setSpeedSpaceChartHeight}
+                  selectedTrain={selectedTrain}
                 />
               </div>
             )}

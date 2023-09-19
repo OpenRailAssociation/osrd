@@ -24,15 +24,12 @@ import { updateViewport, Viewport } from 'reducers/map';
 import DriverTrainSchedule from 'applications/operationalStudies/components/SimulationResults/DriverTrainSchedule/DriverTrainSchedule';
 import { getTimetableID } from 'reducers/osrdconf/selectors';
 import cx from 'classnames';
-import { Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import {
   getDisplaySimulation,
-  getIsUpdating,
-  getPresentSimulation,
   getSelectedProjection,
   getSelectedTrain,
 } from 'reducers/osrdsimulation/selectors';
-import ScenarioLoader from 'modules/scenario/components/ScenarioLoader';
 import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
 
 const MAP_MIN_HEIGHT = 450;
@@ -61,8 +58,6 @@ export default function SimulationResults({ isDisplayed, collapsedTimetable }: P
   const selectedTrain = useSelector(getSelectedTrain);
   const selectedProjection = useSelector(getSelectedProjection);
   const timetableID = useSelector(getTimetableID);
-  const isUpdating = useSelector(getIsUpdating);
-  const simulation = useSelector(getPresentSimulation);
 
   const dispatch = useDispatch();
 
@@ -162,19 +157,20 @@ export default function SimulationResults({ isDisplayed, collapsedTimetable }: P
       </div>
 
       {/* TRAIN : SPACE SPEED CHART */}
-      <div className="osrd-simulation-container d-flex mb-2">
-        <div
-          className="speedspacechart-container"
-          style={{ height: `${heightOfSpeedSpaceChart}px` }}
-        >
-          {displaySimulation && (
+      {selectedTrain && (
+        <div className="osrd-simulation-container d-flex mb-2">
+          <div
+            className="speedspacechart-container"
+            style={{ height: `${heightOfSpeedSpaceChart}px` }}
+          >
             <SpeedSpaceChart
               initialHeight={heightOfSpeedSpaceChart}
               onSetChartBaseHeight={setHeightOfSpeedSpaceChart}
+              selectedTrain={selectedTrain}
             />
-          )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* TRAIN : CURVES & SLOPES */}
       <div className="osrd-simulation-container d-flex mb-2">

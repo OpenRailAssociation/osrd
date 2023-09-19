@@ -15,24 +15,22 @@ import {
   createChart,
   drawTrain,
 } from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/d3Helpers';
-import { SpeedSpaceChart, SpeedSpaceSettingsType } from 'reducers/osrdsimulation/types';
+import { SpeedSpaceChart, SpeedSpaceSettingsType, Train } from 'reducers/osrdsimulation/types';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   getIsPlaying,
   getPositionValues,
-  getSelectedTrain,
   getSpeedSpaceSettings,
   getTimePosition,
 } from 'reducers/osrdsimulation/selectors';
 import {
-  updateMustRedraw,
   updateSpeedSpaceSettings,
   updateTimePositionValues,
 } from 'reducers/osrdsimulation/actions';
+import { SimulationReport } from 'common/api/osrdEditoastApi';
 import ElectricalProfilesLegend from './ElectricalProfilesLegend';
 import prepareData from './prepareData';
 import SpeedSpaceSettings from './SpeedSpaceSettings';
-import ORSD_GRAPH_SAMPLE_DATA from './sampleData';
 
 const CHART_ID = 'SpeedSpaceChart';
 const CHART_MIN_HEIGHT = 250;
@@ -40,6 +38,7 @@ const CHART_MIN_HEIGHT = 250;
 export type SpeedSpaceChartProps = {
   initialHeight: number;
   onSetChartBaseHeight: (chartBaseHeight: number) => void;
+  selectedTrain: SimulationReport | Train;
 };
 
 /**
@@ -54,8 +53,8 @@ export type SpeedSpaceChartProps = {
 export default function SpeedSpaceChart({
   initialHeight,
   onSetChartBaseHeight,
+  selectedTrain,
 }: SpeedSpaceChartProps) {
-  const selectedTrain = useSelector(getSelectedTrain);
   const timePosition = useSelector(getTimePosition);
   const positionValues = useSelector(getPositionValues);
   const simulationIsPlaying = useSelector(getIsPlaying);
@@ -75,17 +74,12 @@ export default function SpeedSpaceChart({
 
   const dispatch = useDispatch();
 
-  const dispatchUpdateMustRedraw = (newMustRedraw: boolean) => {
-    dispatch(updateMustRedraw(newMustRedraw));
-  };
-
   const dispatchUpdateTimePositionValues = (newTimePositionValues: string) => {
     dispatch(updateTimePositionValues(newTimePositionValues));
   };
 
   const toggleSetting = (settings: SpeedSpaceSettingsType) => {
     dispatch(updateSpeedSpaceSettings(settings));
-    dispatch(updateMustRedraw(true));
   };
 
   const onLocalSetSettings = (settings: SpeedSpaceSettingsType) => {
@@ -93,13 +87,7 @@ export default function SpeedSpaceChart({
     toggleSetting(settings);
   };
 
-  const trainSimulation = useMemo(
-    () =>
-      selectedTrain
-        ? prepareData(selectedTrain)
-        : prepareData(ORSD_GRAPH_SAMPLE_DATA.simulation.present.trains[0]),
-    [selectedTrain]
-  );
+  const trainSimulation = useMemo(() => prepareData(selectedTrain), [selectedTrain]);
 
   /**
    * DRAW AND REDRAW TRAIN
@@ -185,7 +173,7 @@ export default function SpeedSpaceChart({
       noop,
       noop,
       simulationIsPlaying,
-      dispatchUpdateMustRedraw,
+      noop,
       dispatchUpdateTimePositionValues
     );
   }, [chart]);
