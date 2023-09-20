@@ -179,16 +179,17 @@ export default function drawTrain(
       )
     );
   }
-  const trainToDrawHeadPos = trainToDraw.headPosition[0][0];
-  if (trainToDrawHeadPos && trainToDrawHeadPos.time != null) {
+  const { headPosition } = trainToDraw;
+  const firstHeadPos = headPosition.length && headPosition[0].length ? headPosition[0][0] : null;
+  if (firstHeadPos && firstHeadPos.time != null) {
     drawText(
       chart,
       direction,
       groupID,
       isSelected,
       `${isPathSelected ? '🎢' : ''} ${trainToDraw.name}`, // text
-      trainToDrawHeadPos.time, // x
-      trainToDrawHeadPos.position // y
+      firstHeadPos.time, // x
+      firstHeadPos.position // y
     );
   }
 }

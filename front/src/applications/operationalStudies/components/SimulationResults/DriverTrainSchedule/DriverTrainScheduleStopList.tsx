@@ -52,7 +52,7 @@ export default function DriverTrainScheduleStopList({ train, baseOrEco }: Props)
                 stop={stop}
                 idx={idx}
                 train={train}
-                key={`${stop.id}-${stop.name}`}
+                key={`train-${train.id}-stop-${idx}-${stop.id}-${stop.name}`}
               />
             ))}
           </tbody>
