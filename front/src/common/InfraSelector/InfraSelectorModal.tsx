@@ -8,6 +8,10 @@ import { useDebounce } from 'utils/helpers';
 import Loader from 'common/Loader';
 import { MdEditNote, MdList } from 'react-icons/md';
 import { Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { useDispatch } from 'react-redux';
+import { setFailure } from 'reducers/main';
+import { ApiError } from 'common/api/emptyApi';
+import { SerializedError } from '@reduxjs/toolkit';
 import InfraSelectorModalBodyEdition from './InfraSelectorModalBodyEdition';
 import InfraSelectorModalBodyStandard from './InfraSelectorModalBodyStandard';
 
@@ -21,6 +25,7 @@ const InfraSelectorModal = ({
   onlySelectionMode = false,
 }: InfraSelectorModalProps) => {
   const { t } = useTranslation(['translation', 'infraManagement']);
+  const dispatch = useDispatch();
   const [filter, setFilter] = useState('');
   const [filteredInfrasList, setFilteredInfrasList] = useState<Infra[]>([]);
   const [editionMode, setEditionMode] = useState(false);
@@ -28,7 +33,9 @@ const InfraSelectorModal = ({
     data: infrasList,
     isSuccess,
     isLoading,
-  } = osrdEditoastApi.useGetInfraQuery({ pageSize: 1000 });
+    isError,
+    error,
+  } = osrdEditoastApi.endpoints.getInfra.useQuery({ pageSize: 1000 });
 
   const debouncedFilter = useDebounce(filter, 250);
 
@@ -49,6 +56,17 @@ const InfraSelectorModal = ({
       filterInfras(infrasList.results);
     }
   }, [debouncedFilter]);
+
+  useEffect(() => {
+    if (isError && error) {
+      dispatch(
+        setFailure({
+          name: t('infraManagement:errorMessages.unableToRetrieveInfraList'),
+          message: `${(error as ApiError)?.data?.message || (error as SerializedError)?.message}`,
+        })
+      );
+    }
+  }, [isError]);
 
   useEffect(() => {
     if (isSuccess && infrasList?.results && infrasList.results.length > 0) {

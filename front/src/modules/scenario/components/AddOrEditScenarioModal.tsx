@@ -46,15 +46,18 @@ export default function AddOrEditScenarioModal({
     value: t('noElectricalProfileSet').toString(),
   };
 
-  const [deleteScenarioRTK] =
-    osrdEditoastApi.useDeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMutation({});
+  const [deleteScenario] =
+    osrdEditoastApi.endpoints.deleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId.useMutation(
+      {}
+    );
   const [patchScenario] =
-    osrdEditoastApi.usePatchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMutation({});
+    osrdEditoastApi.endpoints.patchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId.useMutation(
+      {}
+    );
   const [postScenario] =
-    osrdEditoastApi.usePostProjectsByProjectIdStudiesAndStudyIdScenariosMutation({});
-  const { electricalProfilOptions = [] } = osrdEditoastApi.useGetElectricalProfileSetQuery(
-    undefined,
-    {
+    osrdEditoastApi.endpoints.postProjectsByProjectIdStudiesAndStudyIdScenarios.useMutation({});
+  const { electricalProfilOptions = [] } =
+    osrdEditoastApi.endpoints.getElectricalProfileSet.useQuery(undefined, {
       selectFromResult: (response) => ({
         ...response,
         electricalProfilOptions: [
@@ -65,9 +68,8 @@ export default function AddOrEditScenarioModal({
           })),
         ],
       }),
-    }
-  );
-  const [loadInfra] = osrdEditoastApi.usePostInfraByIdLoadMutation();
+    });
+  const [loadInfra] = osrdEditoastApi.endpoints.postInfraByIdLoad.useMutation();
 
   const [currentScenario, setCurrentScenario] = useState<ScenarioListResult>(
     scenario || scenarioTypesDefaults
@@ -160,9 +162,9 @@ export default function AddOrEditScenarioModal({
     }
   };
 
-  const deleteScenario = async () => {
+  const removeScenario = async () => {
     if (projectID && studyID && scenario?.id) {
-      deleteScenarioRTK({ projectId: projectID, studyId: studyID, scenarioId: scenario.id })
+      deleteScenario({ projectId: projectID, studyId: studyID, scenarioId: scenario.id })
         .unwrap()
         .then(() => {
           dispatch(updateScenarioID(undefined));
@@ -295,7 +297,7 @@ export default function AddOrEditScenarioModal({
             <button
               className="btn btn-sm btn-outline-danger mr-auto"
               type="button"
-              onClick={deleteScenario}
+              onClick={removeScenario}
             >
               <span className="mr-2">
                 <FaTrash />
