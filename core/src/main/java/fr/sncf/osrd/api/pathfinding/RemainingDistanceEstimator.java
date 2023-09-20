@@ -7,6 +7,7 @@ import fr.sncf.osrd.sim_infra.api.BlockInfra;
 import fr.sncf.osrd.sim_infra.api.RawSignalingInfra;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import fr.sncf.osrd.utils.graph.functional_interfaces.AStarHeuristic;
+import fr.sncf.osrd.utils.units.Distance;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -77,15 +78,15 @@ public class RemainingDistanceEstimator implements AStarHeuristic<Integer> {
                 res = Double.min(res, point1.distanceAsMeters(point2));
             }
         }
-        return res;
+        return Distance.fromMeters(res);
     }
 
     @Override
     public double apply(Integer blockIdx, long offset) {
-        var res = Double.POSITIVE_INFINITY;
+        var resMeters = Double.POSITIVE_INFINITY;
         var point = blockOffsetToPoint(this.blockInfra, this.rawInfra, blockIdx, offset);
         for (var target : targets)
-            res = Double.min(res, point.distanceAsMeters(target));
-        return res + remainingDistance;
+            resMeters = Double.min(resMeters, point.distanceAsMeters(target));
+        return Distance.fromMeters(resMeters) + remainingDistance;
     }
 }
