@@ -23,7 +23,7 @@ type InputStopTimeProps = {
 
 function InputStopTime({ index, setIndexSelected, dispatchAndRun }: InputStopTimeProps) {
   const vias = useSelector(getVias);
-  const [stopTime, setStopTime] = useState(vias[index].duration ? vias[index].duration : 0);
+  const [stopTime, setStopTime] = useState(vias[index].duration || 0);
   const [firstStart, setFirstStart] = useState(true);
   const debouncedStopTime = useDebounce(stopTime, 1000);
 

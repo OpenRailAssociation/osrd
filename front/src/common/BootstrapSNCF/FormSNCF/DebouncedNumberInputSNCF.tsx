@@ -27,7 +27,7 @@ const DebouncedNumberInputSNCF = ({
     setValue(input);
   }, [input]);
 
-  const checkChangedInput = (newValue: number) => {
+  const checkChangedInput = (newValue: number | null) => {
     if (newValue !== null && newValue !== input && min <= newValue && newValue <= max)
       setInput(newValue);
     else if (value === null && input !== 0) setInput(0);
