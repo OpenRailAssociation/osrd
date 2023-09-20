@@ -72,7 +72,7 @@ const InputSNCF = ({
   step = 1,
   isFlex = false,
   condensed = false,
-  textRight = true,
+  textRight = false,
 }: InputSNCFProps): JSX.Element => {
   // Build custom classes
   const formSize = sm ? 'form-control-sm' : '';
@@ -83,7 +83,6 @@ const InputSNCF = ({
   const condensedIcon = condensed ? 'condensed-icon' : '';
   const condensedInput = condensed ? 'px-2' : '';
   const textAlignmentClass = textRight ? 'right-alignment' : 'left-alignment';
-
   // Test and adapt display if entry is invalid
   let invalidClass = '';
   let invalidMsg: JSX.Element | null = null;

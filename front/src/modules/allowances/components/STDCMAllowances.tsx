@@ -56,12 +56,11 @@ const STDCMAllowances = () => {
           type="number"
           value={gridMarginBefore}
           unit={ALLOWANCE_UNITS_KEYS.time}
-          condensed
           onChange={(e) => dispatch(updateGridMarginBefore(+e.target.value || 0))}
           sm
           noMargin
           label={t('allowances:gridMarginBeforeAfter')}
-          textRight={false}
+          textRight
         />
       </div>
       <div className="col-3">
@@ -70,12 +69,11 @@ const STDCMAllowances = () => {
           type="number"
           value={gridMarginAfter}
           unit={ALLOWANCE_UNITS_KEYS.time}
-          condensed
           onChange={(e) => dispatch(updateGridMarginAfter(+e.target.value || 0))}
           sm
           noMargin
           label=" "
-          textRight={false}
+          textRight
         />
       </div>
       <div className="col-6">
@@ -90,7 +88,7 @@ const STDCMAllowances = () => {
           typeValue="number"
           condensed
           sm
-          textRight={false}
+          textRight
         />
       </div>
     </div>

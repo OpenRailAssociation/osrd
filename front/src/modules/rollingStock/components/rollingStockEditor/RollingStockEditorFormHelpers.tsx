@@ -174,6 +174,7 @@ const RollingStockEditorParameterFormColumn = ({
               sm
               condensed
               orientation="right"
+              textRight
             />
           </div>
         ) : (
@@ -211,6 +212,7 @@ const RollingStockEditorParameterFormColumn = ({
             sm
             isFlex
             key={index}
+            {...(property.type === 'number' ? { textRight: true } : {})}
           />
         );
       })}{' '}
