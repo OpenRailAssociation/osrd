@@ -11,6 +11,7 @@ import {
 
 import { setFailure } from 'reducers/main';
 import { Train, SimulationTrain } from 'reducers/osrdsimulation/types';
+import { ChartAxes } from '../simulationResultsConsts';
 
 /**
  * Will do some formating & computation to get a trains to be displayed. Stored then with currentSimulation splitted reducer
@@ -24,7 +25,7 @@ import { Train, SimulationTrain } from 'reducers/osrdsimulation/types';
  */
 export default function createTrain(
   dispatch: Dispatch,
-  keyValues: string[],
+  keyValues: ChartAxes,
   simulationTrains: Train[],
   t: TFunction<Namespace<string>, undefined>
 ): SimulationTrain[] {
@@ -77,7 +78,7 @@ export default function createTrain(
  * @param {*} train simulation raw data
  * @returns
  */
-export function isolatedCreateTrain(keyValues: string[], train: Train): SimulationTrain {
+export function isolatedCreateTrain(keyValues: ChartAxes, train: Train): SimulationTrain {
   const dataSimulationTrain: SimulationTrain = {
     id: train.id,
     isStdcm: train.isStdcm,

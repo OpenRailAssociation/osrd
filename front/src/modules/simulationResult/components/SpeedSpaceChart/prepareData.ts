@@ -15,7 +15,7 @@ export interface AreaBlock {
   value1: number;
 }
 
-export interface GevPreparedata {
+export interface GevPreparedData {
   areaBlock: AreaBlock[];
   areaSlopesHistogram: AreaBlock[];
   curvesHistogram: RadiusPosition[];
@@ -53,7 +53,7 @@ function buildAreaSlopesHistograms(
  * - convert all speeds from m/s to km/h
  * - compute areaBlocks, slopesCurve and curvesHistogram
  */
-function prepareData(trainSimulation: Train): GevPreparedata {
+function prepareData(trainSimulation: Train): GevPreparedData {
   const speed = trainSimulation.base.speeds.map((step) => ({
     ...step,
     speed: step.speed * 3.6,

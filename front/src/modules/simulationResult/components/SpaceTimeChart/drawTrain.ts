@@ -15,6 +15,7 @@ import {
   Train,
   TrainsWithArrivalAndDepartureTimes,
 } from 'reducers/osrdsimulation/types';
+import { CHART_AXES } from '../simulationResultsConsts';
 
 export default function drawTrain(
   allowancesSettings: AllowancesSettings,
@@ -26,7 +27,6 @@ export default function drawTrain(
   dispatchUpdateSelectedTrainId: (selectedTrainId: number) => void,
   isPathSelected: boolean,
   isSelected: boolean,
-  keyValues: ['time', 'position'],
   rotate: boolean,
   setDragOffset: React.Dispatch<React.SetStateAction<number>>,
   trainSimulations: Train[],
@@ -143,7 +143,7 @@ export default function drawTrain(
         tailPositionSection,
         groupID,
         'curveLinear',
-        keyValues,
+        CHART_AXES.SPACE_TIME,
         'tailPosition',
         rotate,
         isSelected
@@ -156,7 +156,7 @@ export default function drawTrain(
         headPositionSection,
         groupID,
         'curveLinear',
-        keyValues,
+        CHART_AXES.SPACE_TIME,
         'headPosition',
         rotate,
         isSelected
@@ -172,7 +172,7 @@ export default function drawTrain(
         tailPositionSection,
         groupID,
         'curveLinear',
-        keyValues,
+        CHART_AXES.SPACE_TIME,
         'eco_headPosition',
         rotate,
         isSelected

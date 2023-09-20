@@ -1,22 +1,29 @@
 import * as d3 from 'd3';
 import { Chart, ConsolidatedPosition } from 'reducers/osrdsimulation/types';
-import { ArrayElement, ArrayElementKeys } from 'utils/types';
-import { GevPreparedata } from '../SpeedSpaceChart/prepareData';
+import { ArrayElement } from 'utils/types';
+import { ChartAxes } from '../simulationResultsConsts';
+import { GevPreparedData } from '../SpeedSpaceChart/prepareData';
+import { getAxis } from './ChartHelpers';
 
 const drawCurve = <
-  T extends ArrayElement<GevPreparedata[keyof GevPreparedata]> | ConsolidatedPosition
+  T extends ArrayElement<GevPreparedData[keyof GevPreparedData]> | ConsolidatedPosition
 >(
   chart: Chart,
   classes: string,
   dataSimulation: T[],
   groupID: string,
   interpolation: string,
-  keyValues: ArrayElementKeys<T[]>[],
+  keyValues: ChartAxes,
   name: string,
   rotate: boolean,
   isSelected = true
 ) => {
   const drawZone = chart.drawZone.select(`#${groupID}`);
+
+  const xAxis = getAxis(keyValues, 'x', rotate);
+  const yAxis = getAxis(keyValues, 'y', rotate);
+
+  type Key = keyof T;
 
   drawZone
     .append('path')
@@ -28,8 +35,8 @@ const drawCurve = <
       'd',
       d3
         .line<T>()
-        .x((d) => chart.x((rotate ? d[keyValues[1]] : d[keyValues[0]]) as number))
-        .y((d) => chart.y((rotate ? d[keyValues[0]] : d[keyValues[1]]) as number))
+        .x((d) => chart.x(d[xAxis as Key] as number))
+        .y((d) => chart.y(d[yAxis as Key] as number))
         .curve(d3[interpolation as keyof d3.CurveFactory])
     );
 

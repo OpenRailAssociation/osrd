@@ -6,14 +6,15 @@ import { last } from 'lodash';
 import {
   AllowancesSettings,
   PositionSpeedTime,
-  PositionValues,
   SimulationSnapshot,
+  PositionsSpeedTimes,
 } from 'reducers/osrdsimulation/types';
 import { interpolateOnTime } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
 import { datetime2sec } from 'utils/timeManipulation';
 import { TrainPosition } from './types';
+import { CHART_AXES, LIST_VALUES } from '../simulationResultsConsts';
 
-export type InterpoledTrain = {
+type InterpolatedTrain = {
   name: string;
   id: number;
   trainId: number;
@@ -22,8 +23,8 @@ export type InterpoledTrain = {
   speeds?: PositionSpeedTime;
 };
 
-export function getPosition(
-  positionValues: PositionValues,
+function getPosition(
+  positionValues: PositionsSpeedTimes<Date>,
   allowancesSettings?: AllowancesSettings,
   trainId?: number,
   baseKey?: string
@@ -32,8 +33,8 @@ export function getPosition(
     allowancesSettings && trainId && allowancesSettings[trainId]?.ecoBlocks
       ? `eco_${baseKey}`
       : baseKey
-  ) as keyof PositionValues;
-  return positionValues[key] as PositionSpeedTime;
+  ) as keyof PositionsSpeedTimes<Date>;
+  return positionValues[key] as PositionSpeedTime<Date>;
 }
 
 export function getRegimeKey(trainId: number, allowancesSettings?: AllowancesSettings) {
@@ -44,7 +45,7 @@ export function getSimulationHoverPositions(
   geojsonPath: Feature<LineString>,
   simulation: SimulationSnapshot,
   timePosition: Date,
-  positionValues: PositionValues,
+  positionValues: PositionsSpeedTimes<Date>,
   selectedTrainId?: number,
   allowancesSettings?: AllowancesSettings
 ) {
@@ -92,7 +93,7 @@ export function getSimulationHoverPositions(
   const actualTime = datetime2sec(timePosition);
 
   // First find trains where actual time from position is between start & stop
-  const concernedTrains: InterpoledTrain[] = [];
+  const concernedTrains: InterpolatedTrain[] = [];
   simulation.trains.forEach((train, idx: number) => {
     const baseOrEco = getRegimeKey(train.id);
     const trainRegime = train[baseOrEco];
@@ -101,11 +102,11 @@ export function getSimulationHoverPositions(
       const train2ndTime = last(last(trainRegime.head_positions))?.time as number;
       if (actualTime >= trainTime && actualTime <= train2ndTime && train.id !== selectedTrainId) {
         const interpolation = interpolateOnTime(
-          train[baseOrEco],
-          ['time', 'position'],
-          ['head_positions', 'tail_positions', 'speeds'],
-          actualTime
-        ) as Record<string, PositionSpeedTime>;
+          trainRegime,
+          CHART_AXES.SPACE_TIME,
+          LIST_VALUES.REGIME,
+          timePosition
+        ) as Record<string, PositionSpeedTime<Date>>;
         if (interpolation.head_positions && interpolation.speeds) {
           concernedTrains.push({
             ...interpolation,

@@ -5,9 +5,10 @@ import { Chart, SimulationTrain, ConsolidatedPosition } from 'reducers/osrdsimul
 import {
   defineLinear,
   defineTime,
-  isGET,
+  isSpaceTimeChart,
 } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
 import defineChart from 'modules/simulationResult/components/ChartHelpers/defineChart';
+import { ChartAxes } from '../simulationResultsConsts';
 
 // This is only used by SpaceTimeChart for now.
 export default function createChart<T extends number | Date>(
@@ -15,7 +16,7 @@ export default function createChart<T extends number | Date>(
   chartID: string,
   dataSimulation: SimulationTrain[],
   heightOfSpaceTimeChart: number,
-  keyValues: ['time', 'position'],
+  keyValues: ChartAxes,
   ref: React.MutableRefObject<HTMLDivElement> | React.RefObject<HTMLDivElement>,
   reset: boolean,
   rotate: boolean
@@ -25,7 +26,7 @@ export default function createChart<T extends number | Date>(
   const xValues: T[] = dataSimulation
     .map((train) =>
       train.headPosition.map((section) =>
-        section.map((position) => (isGET(keyValues) ? position.time : position.position))
+        section.map((position) => (isSpaceTimeChart(keyValues) ? position.time : position.position))
       )
     )
     .flat(Infinity) as T[];
@@ -37,7 +38,9 @@ export default function createChart<T extends number | Date>(
           d3.max(
             train[pos].map(
               (section) =>
-                d3.max(section.map((step: ConsolidatedPosition) => step[keyValues[1]])) as T
+                d3.max(
+                  section.map((step: ConsolidatedPosition) => step[keyValues[1] as 'position']) // dataSimulation is SimulationTrain[] so it’s always position here
+                ) as T
             )
           ) as T
       )

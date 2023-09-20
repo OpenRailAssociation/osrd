@@ -1,9 +1,14 @@
 import * as d3 from 'd3';
 import { select as d3select } from 'd3-selection';
-import { gridX, gridY, isGET } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
+import {
+  gridX,
+  gridY,
+  isSpaceTimeChart,
+} from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
 import nextId from 'react-id-generator';
 import svgDefs from 'modules/simulationResult/components/ChartHelpers/svgDefs';
 import { Chart, SimulationD3Scale } from 'reducers/osrdsimulation/types';
+import { ChartAxes } from 'modules/simulationResult/components/simulationResultsConsts';
 
 // keyValues ['position', 'gradient']
 const defineChart = (
@@ -13,7 +18,7 @@ const defineChart = (
   defineY: SimulationD3Scale,
   ref: React.MutableRefObject<HTMLDivElement> | React.RefObject<HTMLDivElement>,
   rotate: boolean,
-  keyValues: string[],
+  keyValues: ChartAxes,
   id: string
 ): Chart => {
   const margin = {
@@ -51,7 +56,7 @@ const defineChart = (
   // Add X axis
   const x = defineX.range([0, width]) as SimulationD3Scale;
   const axisBottomX =
-    !rotate && isGET(keyValues)
+    !rotate && isSpaceTimeChart(keyValues)
       ? d3.axisBottom<Date>(x as d3.ScaleTime<number, number>).tickFormat(d3.timeFormat('%H:%M:%S'))
       : d3.axisBottom(x as d3.ScaleLinear<number, number>);
   const xAxis = svg.append('g').attr('transform', `translate(0,${height})`).call(axisBottomX);
@@ -65,15 +70,8 @@ const defineChart = (
   // Add Y axis
   const y = defineY.range([height, 0]) as SimulationD3Scale;
   const axisLeftY =
-    rotate && isGET(keyValues)
-      ? d3
-          .axisLeft(y)
-          .tickFormat(
-            d3.timeFormat('%H:%M:%S') as unknown as (
-              dv: number | { valueOf(): number },
-              i: number
-            ) => string
-          )
+    rotate && isSpaceTimeChart(keyValues)
+      ? d3.axisLeft<Date>(y as d3.ScaleTime<number, number>).tickFormat(d3.timeFormat('%H:%M:%S'))
       : d3.axisLeft(y);
   const yAxis = svg.append('g').call(axisLeftY);
   const yAxisGrid = svg.append('g').attr('class', 'grid').call(gridY(y, width));

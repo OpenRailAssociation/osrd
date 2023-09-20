@@ -1,5 +1,8 @@
 import * as d3 from 'd3';
-import { SIGNAL_BASE_DEFAULT } from 'modules/simulationResult/components/simulationResultsConsts';
+import {
+  AllListValues,
+  SIGNAL_BASE_DEFAULT,
+} from 'modules/simulationResult/components/simulationResultsConsts';
 import {
   ElectrificationRange,
   PowerRestrictionRangeItem,
@@ -58,11 +61,10 @@ export interface Position<Time = number> {
 }
 export type ConsolidatedPosition<DateType = Date> = Position<DateType | null>;
 
-// a better name would be SpeedPositionTime
 export type PositionSpeedTime<Time = number> = Position<Time> & {
   speed: number;
 };
-export type ConsolidatePositionSpeed<DateType = Date> = PositionSpeedTime<DateType | null>;
+export type ConsolidatedPositionSpeedTime = PositionSpeedTime<Date>;
 
 export interface Stop {
   id: string | null;
@@ -141,6 +143,13 @@ export interface HeightPosition {
   position: number;
 }
 
+export interface SpeedTime<Time = number> {
+  speed: number;
+  time: Time;
+}
+
+export type ConsolidatedSpeedTime = SpeedTime<Date>;
+
 export interface Train {
   electrification_ranges: ElectrificationRange[];
   power_restriction_ranges: PowerRestrictionRangeItem[];
@@ -167,14 +176,7 @@ export interface SimulationSnapshot {
 
 export type SimulationHistory = SimulationSnapshot[];
 
-export interface PositionValues {
-  headPosition: PositionSpeedTime;
-  tailPosition: PositionSpeedTime;
-  speed: {
-    speed: number;
-    time: number;
-  };
-}
+export type PositionsSpeedTimes<Time = number> = Record<AllListValues, PositionSpeedTime<Time>>;
 
 export interface SimulationTrain<DateType = Date> {
   id: number;
@@ -185,13 +187,13 @@ export interface SimulationTrain<DateType = Date> {
   routeAspects: ConsolidatedRouteAspect<DateType>[];
   signalAspects: ConsolidatedSignalAspect[];
   areaBlock?: ConsolidatedMergeDataPoint[][];
-  speed: ConsolidatePositionSpeed<DateType>[];
+  speed: ConsolidatedPositionSpeedTime[];
   eco_headPosition?: ConsolidatedPosition<DateType>[][];
   eco_tailPosition?: ConsolidatedPosition<DateType>[][];
   eco_routeAspects?: ConsolidatedRouteAspect<DateType>[];
   eco_signalAspects?: ConsolidatedSignalAspect[];
   eco_areaBlock?: ConsolidatedMergeDataPoint[][];
-  eco_speed?: ConsolidatePositionSpeed<DateType>[];
+  eco_speed?: ConsolidatedPositionSpeedTime[];
 }
 
 export enum SPEED_SPACE_SETTINGS_KEYS {
@@ -237,7 +239,7 @@ export interface OsrdSimulationState {
   isUpdating: boolean;
   allowancesSettings?: AllowancesSettings;
   mustRedraw: boolean;
-  positionValues: PositionValues;
+  positionValues: PositionsSpeedTimes<Date>;
   selectedProjection?: {
     id: number;
     path: number;

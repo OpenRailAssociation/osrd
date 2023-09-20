@@ -5,20 +5,24 @@ import { ConsolidatedRouteAspect } from 'reducers/osrdsimulation/types';
 import { RootState } from 'reducers';
 
 /**
+ * Given the routeAspects and a timePosition, returns the bounds [start, end]
+ * of the currently occupied canton (in meters)
  *
  * @param routeAspects
  * @param time
  * @returns current Canton occupied by current train, [start, end] in meters
  * @TODO do not work with colors as string as soon as possible
  */
-const getOccupancyBounds = (routeAspects: ConsolidatedRouteAspect[], time: Date) => {
+const getOccupancyBounds = (
+  routeAspects: ConsolidatedRouteAspect[],
+  timePosition: Date
+): [number, number] => {
   const relevantAspect = routeAspects.find((routeAspect) => {
-    const relevantTime = time || new Date();
     const relevantStartTime = routeAspect.time_start || new Date();
     const relevantEndTime = routeAspect.time_end || new Date();
     return (
-      relevantStartTime < relevantTime &&
-      relevantEndTime >= relevantTime &&
+      relevantStartTime < timePosition &&
+      relevantEndTime >= timePosition &&
       routeAspect.color === 'rgba(255, 0, 0, 255)'
     );
   });

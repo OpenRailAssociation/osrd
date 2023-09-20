@@ -1,17 +1,19 @@
-import * as d3 from 'd3';
-
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import * as d3 from 'd3';
+import { CgLoadbar } from 'react-icons/cg';
+
+import { CHART_AXES } from 'modules/simulationResult/components/simulationResultsConsts';
 import {
   defineLinear,
   interpolateOnPosition,
   mergeDatasAreaConstant,
+  MergedBlock,
 } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
 import {
   traceVerticalLine,
-  isolatedEnableInteractivity as enableInteractivity,
+  enableInteractivity,
 } from 'modules/simulationResult/components/ChartHelpers/enableInteractivity';
-import { useDispatch, useSelector } from 'react-redux';
-import { CgLoadbar } from 'react-icons/cg';
 import {
   createCurveCurve,
   createSlopeCurve,
@@ -23,10 +25,11 @@ import {
   Chart,
   GradientPosition,
   HeightPosition,
-  PositionValues,
   RadiusPosition,
   SpeedSpaceChart,
+  PositionSpeedTime,
   Train,
+  PositionsSpeedTimes,
 } from 'reducers/osrdsimulation/types';
 import { dateIsInRange } from 'utils/date';
 import { updateTimePositionValues } from 'reducers/osrdsimulation/actions';
@@ -61,7 +64,7 @@ const drawSpaceCurvesSlopesChartCurve = <
   classes: string,
   data: T[],
   interpolation: 'curveLinear' | 'curveMonotoneX',
-  yAxisValue: keyof T,
+  yAxisValue: 'gradient' | 'radius' | 'height',
   curveName: string
 ) => {
   drawCurve(
@@ -76,9 +79,18 @@ const drawSpaceCurvesSlopesChartCurve = <
   );
 };
 
+export type SpaceCurvesSlopesData = {
+  gradients: number[];
+  speed: PositionSpeedTime<number>[];
+  slopesHistogram: GradientPosition[];
+  areaSlopesHistogram: MergedBlock<'position' | 'gradient'>[];
+  slopesCurve: HeightPosition[];
+  curvesHistogram: RadiusPosition[];
+};
+
 type SpaceCurvesSlopesProps = {
   initialHeight: number;
-  positionValues: PositionValues;
+  positionValues: PositionsSpeedTimes<Date>;
   selectedTrain: Train;
   timePosition: Date;
 };
@@ -96,14 +108,14 @@ const SpaceCurvesSlopes = ({
   const [height, setHeight] = useState(initialHeight);
 
   const ref = useRef<HTMLDivElement>(null);
-  const keyValues = ['position', 'gradient'];
+  const keyValues = CHART_AXES.SPACE_GRADIENT;
   const rotate = false;
 
   const dispatchUpdateTimePositionValues = (newTimePositionValue: Date) => {
     dispatch(updateTimePositionValues(newTimePositionValue));
   };
 
-  const trainData = useMemo(() => {
+  const trainData: SpaceCurvesSlopesData = useMemo(() => {
     // speeds (needed for enableInteractivity)
     const speed = selectedTrain.base.speeds.map((step) => ({
       ...step,
@@ -238,8 +250,7 @@ const SpaceCurvesSlopes = ({
     enableInteractivity(
       chartLocal,
       trainData,
-      ['position', 'gradient'],
-      ['slopesCurve'],
+      keyValues,
       rotate,
       setChart,
       simulationIsPlaying,
@@ -260,7 +271,7 @@ const SpaceCurvesSlopes = ({
 
   useEffect(() => {
     if (dateIsInRange(timePosition, timeScaleRange)) {
-      traceVerticalLine(chart, keyValues, ['slopesCurve'], positionValues, rotate, timePosition);
+      traceVerticalLine(chart, keyValues, positionValues, rotate, timePosition);
     }
   }, [positionValues, timePosition]);
 

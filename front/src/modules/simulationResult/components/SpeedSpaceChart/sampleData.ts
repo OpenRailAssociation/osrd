@@ -1,4 +1,4 @@
-import { OsrdSimulationState, PositionValues } from 'reducers/osrdsimulation/types';
+import { OsrdSimulationState, PositionsSpeedTimes } from 'reducers/osrdsimulation/types';
 
 const ORSD_GRAPH_SAMPLE_DATA: OsrdSimulationState = {
   chart: {
@@ -100,7 +100,7 @@ const ORSD_GRAPH_SAMPLE_DATA: OsrdSimulationState = {
     },
   },
   mustRedraw: false,
-  positionValues: {} as PositionValues,
+  positionValues: {} as PositionsSpeedTimes<Date>,
   selectedProjection: {
     id: 10,
     path: 4,

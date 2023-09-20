@@ -1,9 +1,13 @@
 import { SimulationTrain } from 'reducers/osrdsimulation/types';
-import { LIST_VALUES_NAME_SPACE_TIME } from 'modules/simulationResult/components/simulationResultsConsts';
+import {
+  LIST_VALUES,
+  CHART_AXES,
+} from 'modules/simulationResult/components/simulationResultsConsts';
 import {
   mergeDatasArea,
   interpolateOnTime,
   trainWithDepartureAndArrivalTimes,
+  getAxis,
 } from '../ChartHelpers';
 
 import train from '../../../../../../tests/assets/operationStudies/trainExample';
@@ -19,17 +23,20 @@ describe('interpolateOnTime', () => {
   describe('Regime', () => {
     it('should interpolate t=43294 using values t=43290 t=43298', () => {
       const dataSimulation = train.base;
-      const keyValues = ['time', 'position'];
-      const listValues = ['head_positions', 'tail_positions', 'speeds'];
       const time = 43294;
-      const result = interpolateOnTime(dataSimulation, keyValues, listValues, time);
+      const result = interpolateOnTime(
+        dataSimulation,
+        CHART_AXES.SPACE_TIME,
+        LIST_VALUES.REGIME,
+        time
+      );
       expect(result).toStrictEqual({
-        head_positions: { position: 1870.9890488984856, speed: NaN, time: 43294 },
-        tail_positions: { position: 1471.3290488984856, speed: NaN, time: 43294 },
+        head_positions: { position: 1870.9890488984856, speed: NaN, time },
+        tail_positions: { position: 1471.3290488984856, speed: NaN, time },
         speeds: {
           position: 1867.5542127909848,
           speed: 144.27589007183147,
-          time: 43294,
+          time,
         },
       });
     });
@@ -37,13 +44,11 @@ describe('interpolateOnTime', () => {
   describe('SimulationTrain', () => {
     it('should interpolate t=11:57:37 using values t=11:57:31 t=11:57:52', () => {
       const dataSimulation: SimulationTrain = simulationTrain[0];
-      const keyValues = ['time'] as const;
-      const listValues = LIST_VALUES_NAME_SPACE_TIME;
       const time = new Date('1900-01-01T11:57:37.000Z');
-      const result = interpolateOnTime<(typeof listValues)[number], Date>(
+      const result = interpolateOnTime(
         dataSimulation,
-        keyValues,
-        listValues,
+        CHART_AXES.SPACE_TIME,
+        LIST_VALUES.SPACE_TIME,
         time
       );
       expect(result).toStrictEqual({
@@ -149,4 +154,19 @@ describe('offsetTrainDepartureAndArrivalTimes', () => {
       });
     });
   });
+});
+
+describe('getAxis', () => {
+  it.each`
+    axis   | rotate   | expected
+    ${'x'} | ${false} | ${'time'}
+    ${'y'} | ${false} | ${'position'}
+    ${'x'} | ${true}  | ${'position'}
+    ${'y'} | ${true}  | ${'time'}
+  `(
+    'should return the correct axis name (axis=$axis, rotate=$rotate, expected=$expected',
+    ({ axis, rotate, expected }) => {
+      expect(getAxis(CHART_AXES.SPACE_TIME, axis, rotate)).toBe(expected);
+    }
+  );
 });

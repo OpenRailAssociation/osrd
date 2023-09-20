@@ -4,9 +4,9 @@ import { noop } from 'lodash';
 
 import createTrain from 'modules/simulationResult/components/SpaceTimeChart/createTrain';
 import {
-  LIST_VALUES_NAME_SPACE_TIME,
+  LIST_VALUES,
   SIGNAL_BASE_DEFAULT,
-  KEY_VALUES_FOR_CONSOLIDATED_SIMULATION,
+  CHART_AXES,
 } from 'modules/simulationResult/components/simulationResultsConsts';
 import {
   interpolateOnTime,
@@ -17,7 +17,6 @@ import {
   OsrdSimulationState,
   SimulationTrain,
 } from 'reducers/osrdsimulation/types';
-import { datetime2sec } from 'utils/timeManipulation';
 import { SimulationReport } from 'common/api/osrdEditoastApi';
 // TODO: Dependency cycle will be removed during the refactoring of store
 // eslint-disable-next-line import/no-cycle
@@ -52,22 +51,7 @@ export const initialState: OsrdSimulationState = {
   isUpdating: false,
   allowancesSettings: undefined,
   mustRedraw: true,
-  positionValues: {
-    headPosition: {
-      time: 0,
-      position: 0,
-      speed: 0,
-    },
-    tailPosition: {
-      time: 0,
-      position: 0,
-      speed: 0,
-    },
-    speed: {
-      speed: 0,
-      time: 0,
-    },
-  },
+  positionValues: {} as OsrdSimulationState['positionValues'],
   selectedProjection: undefined,
   selectedTrainId: undefined,
   speedSpaceSettings: {
@@ -129,9 +113,9 @@ export default function reducer(inputState: OsrdSimulationState | undefined, act
         );
         draft.positionValues = interpolateOnTime(
           currentTrainSimulation,
-          ['time'],
-          LIST_VALUES_NAME_SPACE_TIME,
-          datetime2sec(state.timePosition)
+          CHART_AXES.SPACE_TIME,
+          LIST_VALUES.SPACE_TIME,
+          state.timePosition
         );
         break;
       case UPDATE_DEPARTURE_ARRIVAL_TIMES:
@@ -149,7 +133,7 @@ export default function reducer(inputState: OsrdSimulationState | undefined, act
 
         draft.consolidatedSimulation = createTrain(
           noop,
-          KEY_VALUES_FOR_CONSOLIDATED_SIMULATION,
+          CHART_AXES.SPACE_TIME,
           draft.simulation.present.trains,
           noop
         );
@@ -182,8 +166,8 @@ export default function reducer(inputState: OsrdSimulationState | undefined, act
         );
         draft.positionValues = interpolateOnTime(
           currentTrainSimulation,
-          ['time'],
-          LIST_VALUES_NAME_SPACE_TIME,
+          CHART_AXES.SPACE_TIME,
+          LIST_VALUES.SPACE_TIME,
           action.timePosition
         );
         break;

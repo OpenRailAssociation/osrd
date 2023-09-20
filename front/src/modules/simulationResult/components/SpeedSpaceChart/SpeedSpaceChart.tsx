@@ -5,19 +5,16 @@ import { GiResize } from 'react-icons/gi';
 import { Rnd } from 'react-rnd';
 
 import {
-  isolatedEnableInteractivity,
+  enableInteractivity,
   traceVerticalLine,
 } from 'modules/simulationResult/components/ChartHelpers/enableInteractivity';
-import {
-  LIST_VALUES_NAME_SPEED_SPACE,
-  SPEED_SPACE_CHART_KEY_VALUES,
-} from 'modules/simulationResult/components/simulationResultsConsts';
+import { CHART_AXES } from 'modules/simulationResult/components/simulationResultsConsts';
 import {
   createChart,
   drawTrain,
 } from 'modules/simulationResult/components/SpeedSpaceChart/d3Helpers';
-import {
-  PositionValues,
+import type {
+  PositionsSpeedTimes,
   SpeedSpaceChart,
   SpeedSpaceSettingsType,
   Train,
@@ -29,9 +26,9 @@ import {
 } from 'reducers/osrdsimulation/actions';
 import { SimulationReport } from 'common/api/osrdEditoastApi';
 import { dateIsInRange } from 'utils/date';
+import SpeedSpaceSettings from './SpeedSpaceSettings';
 import ElectricalProfilesLegend from './ElectricalProfilesLegend';
 import prepareData from './prepareData';
-import SpeedSpaceSettings from './SpeedSpaceSettings';
 import { interpolateOnPosition } from '../ChartHelpers/ChartHelpers';
 
 const CHART_ID = 'SpeedSpaceChart';
@@ -40,7 +37,7 @@ const CHART_MIN_HEIGHT = 250;
 export type SpeedSpaceChartProps = {
   initialHeight: number;
   onSetChartBaseHeight: (chartBaseHeight: number) => void;
-  positionValues: PositionValues;
+  positionValues: PositionsSpeedTimes<Date>;
   selectedTrain: SimulationReport | Train;
   timePosition: Date;
 };
@@ -176,11 +173,10 @@ export default function SpeedSpaceChart({
    * - on mouse move: update pointers and vertical/horizontal guidelines
    */
   useEffect(() => {
-    isolatedEnableInteractivity(
+    enableInteractivity(
       chart,
       trainSimulation,
-      SPEED_SPACE_CHART_KEY_VALUES,
-      LIST_VALUES_NAME_SPEED_SPACE,
+      CHART_AXES.SPACE_SPEED,
       rotate,
       setChart,
       simulationIsPlaying,
@@ -197,14 +193,7 @@ export default function SpeedSpaceChart({
    */
   useEffect(() => {
     if (dateIsInRange(timePosition, timeScaleRange)) {
-      traceVerticalLine(
-        chart,
-        SPEED_SPACE_CHART_KEY_VALUES,
-        LIST_VALUES_NAME_SPEED_SPACE,
-        positionValues,
-        rotate,
-        timePosition
-      );
+      traceVerticalLine(chart, CHART_AXES.SPACE_SPEED, positionValues, rotate, timePosition);
     }
   }, [chart, positionValues, timePosition]);
 

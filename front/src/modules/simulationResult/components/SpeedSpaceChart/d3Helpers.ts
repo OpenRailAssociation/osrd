@@ -12,8 +12,8 @@ import { isEmpty } from 'lodash';
 import { Chart, SpeedSpaceChart, SpeedSpaceSettingsType } from 'reducers/osrdsimulation/types';
 import drawElectricalProfile from 'modules/simulationResult/components/ChartHelpers/drawElectricalProfile';
 import drawPowerRestriction from 'modules/simulationResult/components/ChartHelpers/drawPowerRestriction';
-import { POSITION, SPEED, SPEED_SPACE_CHART_KEY_VALUES } from '../simulationResultsConsts';
-import { GevPreparedata } from './prepareData';
+import { POSITION, SPEED, CHART_AXES } from '../simulationResultsConsts';
+import { GevPreparedData } from './prepareData';
 
 /**
  * Typeguard to check if a selector is of type "Element"
@@ -26,7 +26,7 @@ function isElement(selector: d3.BaseType): selector is Element {
 function createChart(
   CHART_ID: string,
   resetChart: boolean,
-  trainSimulation: GevPreparedata,
+  trainSimulation: GevPreparedData,
   hasJustRotated: boolean,
   initialHeight: number,
   ref: React.RefObject<HTMLDivElement>,
@@ -65,7 +65,7 @@ function createChart(
     scaleY,
     ref,
     false, // not used for GEV
-    SPEED_SPACE_CHART_KEY_VALUES,
+    CHART_AXES.SPACE_SPEED,
     CHART_ID
   );
 }
@@ -91,7 +91,7 @@ function drawAxisTitle(chart: Chart, rotate: boolean) {
 }
 
 function drawTrain(
-  dataSimulation: GevPreparedata,
+  dataSimulation: GevPreparedData,
   rotate: boolean,
   speedSpaceSettings: SpeedSpaceSettingsType,
   chart: Chart
@@ -117,7 +117,7 @@ function drawTrain(
       dataSimulation.speed,
       'speedSpaceChart',
       'curveLinear',
-      SPEED_SPACE_CHART_KEY_VALUES,
+      CHART_AXES.SPACE_SPEED,
       'speed',
       rotate
     );
@@ -128,7 +128,7 @@ function drawTrain(
         dataSimulation.margins_speed,
         'speedSpaceChart',
         'curveLinear',
-        SPEED_SPACE_CHART_KEY_VALUES,
+        CHART_AXES.SPACE_SPEED,
         'margins_speed',
         rotate
       );
@@ -140,7 +140,7 @@ function drawTrain(
         dataSimulation.eco_speed,
         'speedSpaceChart',
         'curveLinear',
-        SPEED_SPACE_CHART_KEY_VALUES,
+        CHART_AXES.SPACE_SPEED,
         'eco_speed',
         rotate
       );
@@ -152,7 +152,7 @@ function drawTrain(
         dataSimulation.vmax,
         'speedSpaceChart',
         'curveLinear',
-        SPEED_SPACE_CHART_KEY_VALUES,
+        CHART_AXES.SPACE_SPEED,
         'vmax',
         rotate
       );
@@ -164,7 +164,7 @@ function drawTrain(
         dataSimulation.slopesCurve,
         'speedSpaceChart',
         'curveLinear',
-        DRAWING_KEYS,
+        CHART_AXES.SPACE_HEIGHT,
         'slopes',
         rotate
       );
@@ -176,7 +176,7 @@ function drawTrain(
         dataSimulation.slopesHistogram,
         'speedSpaceChart',
         'curveMonotoneX',
-        ['position', 'gradient'],
+        CHART_AXES.SPACE_GRADIENT,
         'slopesHistogram',
         rotate
       );
@@ -196,7 +196,7 @@ function drawTrain(
         dataSimulation.curvesHistogram,
         'speedSpaceChart',
         'curveLinear',
-        ['position', 'radius'],
+        CHART_AXES.SPACE_RADIUS,
         'curvesHistogram',
         rotate
       );
