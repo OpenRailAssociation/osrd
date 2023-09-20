@@ -10,6 +10,7 @@ import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.api.FullInfra;
 import fr.sncf.osrd.sim_infra.api.Path;
 import fr.sncf.osrd.utils.graph.Pathfinding;
+import fr.sncf.osrd.utils.units.Distance;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -70,7 +71,7 @@ public class RemainingDistanceEstimatorTest {
                 Arguments.of(
                         List.of(new Pathfinding.EdgeLocation<>(block, path.getLength())),
                         0,
-                        points.get(0).distanceAsMeters(Iterables.getLast(points)),
+                        Distance.fromMeters(points.get(0).distanceAsMeters(Iterables.getLast(points))),
                         0
                 ),
                 // Test multiple targets
