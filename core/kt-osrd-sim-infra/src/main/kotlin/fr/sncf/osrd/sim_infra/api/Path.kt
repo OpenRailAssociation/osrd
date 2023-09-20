@@ -50,7 +50,7 @@ interface Path {
 
     val chunks: DirStaticIdxList<TrackChunk>
     /** Returns the offset where the train starts (must be located on the first chunk) */
-    fun getBeginOffset(): Distance
+    val beginOffset: Distance
 }
 
 /** Wraps the method without returning an optional, which can't be handled in java for value types */

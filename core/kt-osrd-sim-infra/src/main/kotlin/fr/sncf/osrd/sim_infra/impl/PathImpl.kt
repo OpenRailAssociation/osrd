@@ -17,7 +17,7 @@ data class PathImpl(
     val infra: TrackProperties,
     override val chunks: DirStaticIdxList<TrackChunk>,
     @get:JvmName("getBeginOffset")
-    val beginOffset: Distance,
+    override val beginOffset: Distance,
     @get:JvmName("getEndOffset")
     val endOffset: Distance,
 ) : Path {
@@ -103,10 +103,6 @@ data class PathImpl(
             offsetAfterFirstChunk += chunkLength
         }
         return null
-    }
-
-    override fun getBeginOffset(): Distance {
-        return beginOffset
     }
 
     private fun projectLineString(getData: (chunkId: TrackChunkId) -> LineString): LineString {

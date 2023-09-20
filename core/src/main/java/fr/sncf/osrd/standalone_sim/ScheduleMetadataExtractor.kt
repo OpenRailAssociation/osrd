@@ -698,7 +698,7 @@ fun trainPathBlockOffset(infra: RawInfra, blockInfra: BlockInfra,
     for (zonePath in blockInfra.getBlockPath(blockPath[0])) {
         for (dirChunk in infra.getZonePathChunks(zonePath)) {
             if (dirChunk == firstChunk)
-                return prevChunksLength + trainPath.getBeginOffset()
+                return prevChunksLength + trainPath.beginOffset
             prevChunksLength += infra.getTrackChunkLength(dirChunk.value)
         }
     }
