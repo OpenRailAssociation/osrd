@@ -161,7 +161,7 @@ export default function TimeLine() {
   };
 
   useEffect(() => {
-    if (chart) {
+    if (chart && dataRange[0] !== undefined && dataRange[1] !== undefined) {
       drawChart();
     }
   }, [chart]);
