@@ -1106,17 +1106,20 @@ dependencies = [
  "enum-map",
  "env_logger",
  "futures 0.3.28",
+ "futures-util",
  "geos",
  "image",
  "itertools",
  "json-patch",
  "log",
  "mvt",
+ "openssl",
  "osm4routing",
  "osmpbfreader",
  "pathfinding",
  "pointy",
  "postgis_diesel",
+ "postgres-openssl",
  "pretty_assertions",
  "rand 0.8.5",
  "rangemap",
@@ -1133,6 +1136,8 @@ dependencies = [
  "strum_macros",
  "tempfile",
  "thiserror",
+ "tokio",
+ "tokio-postgres",
  "utoipa",
  "uuid",
 ]
@@ -2523,6 +2528,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "postgres-openssl"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1de0ea6504e07ca78355a6fb88ad0f36cafe9e696cbc6717f16a207f3a60be72"
+dependencies = [
+ "futures 0.3.28",
+ "openssl",
+ "tokio",
+ "tokio-openssl",
+ "tokio-postgres",
+]
+
+[[package]]
 name = "postgres-protocol"
 version = "0.6.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3533,6 +3551,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bbae76ab933c85776efabc971569dd6119c580d8f5d448769dec1764bf796ef2"
 dependencies = [
  "native-tls",
+ "tokio",
+]
+
+[[package]]
+name = "tokio-openssl"
+version = "0.6.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c08f9ffb7809f1b20c1b398d92acf4cc719874b3b2b2d9ea2f09b4a80350878a"
+dependencies = [
+ "futures-util",
+ "openssl",
+ "openssl-sys",
  "tokio",
 ]
 

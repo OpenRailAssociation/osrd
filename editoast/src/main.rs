@@ -34,15 +34,20 @@ use client::{
     ImportRollingStockArgs, PostgresConfig, RedisConfig, RunserverArgs,
 };
 use colored::*;
+use diesel::{ConnectionError, ConnectionResult};
 use diesel_async::pooled_connection::deadpool::Pool;
 use diesel_async::pooled_connection::AsyncDieselConnectionManager as ConnectionManager;
+use diesel_async::AsyncPgConnection;
 use diesel_async::{AsyncConnection, AsyncPgConnection as PgConnection};
 use diesel_json::Json as DieselJson;
+use futures_util::future::BoxFuture;
+use futures_util::FutureExt;
 use infra_cache::InfraCache;
 use log::{error, info, warn};
 use map::MapLayers;
 use models::electrical_profile::ElectricalProfileSet;
 use models::{Retrieve, RollingStockModel};
+use openssl::ssl::{SslConnector, SslMethod, SslVerifyMode};
 use sentry::ClientInitGuard;
 use std::env;
 use std::error::Error;
@@ -135,6 +140,26 @@ fn log_received_request(req: &ServiceRequest) {
     log::info!(target: "actix_logger", "{} RECEIVED", request_line);
 }
 
+fn establish_connection(config: &str) -> BoxFuture<ConnectionResult<AsyncPgConnection>> {
+    let fut = async {
+        let mut connector_builder = SslConnector::builder(SslMethod::tls()).unwrap();
+        connector_builder.set_verify(SslVerifyMode::NONE);
+        let tls = postgres_openssl::MakeTlsConnector::new(connector_builder.build());
+        let (client, conn) = tokio_postgres::connect(config, tls)
+            .await
+            .map_err(|e| ConnectionError::BadConnection(e.to_string()))?;
+        // The connection object performs the actual communication with the database,
+        // so spawn it off to run on its own.
+        tokio::spawn(async move {
+            if let Err(e) = conn.await {
+                eprintln!("connection error: {}", e);
+            }
+        });
+        AsyncPgConnection::try_from(client).await
+    };
+    fut.boxed()
+}
+
 /// Create and run the server
 async fn runserver(
     args: RunserverArgs,
@@ -143,7 +168,8 @@ async fn runserver(
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     info!("Building server...");
     // Config databases
-    let manager = ConnectionManager::<PgConnection>::new(pg_config.url());
+    let manager =
+        ConnectionManager::<PgConnection>::new_with_setup(pg_config.url(), establish_connection);
     let pool = Pool::builder(manager)
         .max_size(pg_config.pool_size)
         .build()
