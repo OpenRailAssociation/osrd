@@ -2,7 +2,7 @@
 import { AnyAction, Dispatch } from 'redux';
 import { MapProps, ViewState } from 'react-map-gl/maplibre';
 import produce from 'immer';
-import { transformRequest as helperTransformRequest, gpsRound } from 'utils/helpers';
+import { transformMapRequest as helperTransformRequest, gpsRound } from 'utils/helpers';
 import history from 'main/history';
 import { MAP_URL } from 'common/Map/const';
 import { Position } from '@turf/helpers';
@@ -25,11 +25,11 @@ export const UPDATE_LAYERS_SETTINGS = 'osrdconf/UPDATE_LAYERS_SETTINGS';
 export const UPDATE_SIGNALS_SETTINGS = 'osrdconf/UPDATE_SIGNALS_SETTINGS';
 export const UPDATE_TERRAIN_3D_EXAGGERATION = 'osrdconf/UPDATE_TERRAIN_3D_EXAGGERATION';
 
-const transformRequest: MapProps['transformRequest'] = (url, resourceType) =>
-  helperTransformRequest(url as string, resourceType as string, MAP_URL as string);
+const transformMapRequest: MapProps['transformRequest'] = (url, resourceType) =>
+  helperTransformRequest(url, resourceType, MAP_URL);
 
 export type Viewport = ViewState & {
-  transformRequest: MapProps['transformRequest'];
+  transformMapRequest: MapProps['transformRequest'];
   width: number;
   height: number;
 };
@@ -97,7 +97,7 @@ export const initialState: MapState = {
     padding: { top: 0, left: 0, bottom: 0, right: 0 },
     width: 0,
     height: 0,
-    transformRequest,
+    transformMapRequest,
   },
   featureInfoHoverID: undefined,
   featureInfoClickID: undefined,
@@ -136,7 +136,7 @@ export default function reducer(inputState: MapState | undefined, action: AnyAct
         draft.viewport = { ...draft.viewport, ...action.viewport };
         break;
       case UPDATE_TRANSFORM_REQUEST:
-        draft.viewport.transformRequest = transformRequest;
+        draft.viewport.transformMapRequest = transformMapRequest;
         break;
       case UPDATE_MAPSTYLE:
         draft.mapStyle = action.mapStyle;

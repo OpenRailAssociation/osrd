@@ -146,7 +146,7 @@ const WarpedMap: FC<{
       onMove={(e) => {
         setViewport({
           ...e.viewState,
-          transformRequest: undefined,
+          transformMapRequest: undefined,
           width: e.target.getContainer().offsetWidth,
           height: e.target.getContainer().offsetHeight,
         });

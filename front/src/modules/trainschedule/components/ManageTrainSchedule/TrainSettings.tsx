@@ -28,7 +28,7 @@ export default function TrainSettings() {
   const dispatch = useDispatch();
   const debouncedName = useDebounce(name, 500);
   const debouncedDepartureTime = useDebounce(departureTime, 500);
-  const debouncedInitialSpeed = useDebounce(initialSpeed, 500);
+  const debouncedInitialSpeed = useDebounce(initialSpeed!, 500);
 
   const removeTag = (idx: number) => {
     const newTags = Array.from(labels);
