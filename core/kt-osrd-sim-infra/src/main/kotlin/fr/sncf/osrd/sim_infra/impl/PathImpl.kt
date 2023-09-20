@@ -84,25 +84,10 @@ data class PathImpl(
     }
 
     override fun getOffsetOfTrackLocation(location: TrackLocation): Distance? {
-        var offsetAfterFirstChunk = 0.meters
-        for (dirChunk in chunks) {
-            val chunkLength = infra.getTrackChunkLength(dirChunk.value)
-            if (location.trackId.equals(infra.getTrackFromChunk(dirChunk.value))) {
-                val chunkOffset = infra.getTrackChunkOffset(dirChunk.value)
-                if (chunkOffset <= location.offset && location.offset <= (chunkOffset + chunkLength)) {
-                    val distanceToChunkStart = if (dirChunk.direction == Direction.INCREASING)
-                        location.offset - chunkOffset
-                    else
-                        (chunkOffset + chunkLength) - location.offset
-                    val offset = offsetAfterFirstChunk + distanceToChunkStart
-                    if (offset < beginOffset || offset > endOffset)
-                        return null
-                    return offset - beginOffset
-                }
-            }
-            offsetAfterFirstChunk += chunkLength
-        }
-        return null
+        val offset = getOffsetOfTrackLocationOnChunks(infra, location, chunks) ?: return null
+        if (offset < beginOffset || offset > endOffset)
+            return null
+        return offset - beginOffset
     }
 
     private fun projectLineString(getData: (chunkId: TrackChunkId) -> LineString): LineString {
@@ -229,4 +214,38 @@ data class PathImpl(
         }
         return res
     }
+}
+
+/** Returns the offset of a location on a given list of chunks */
+fun getOffsetOfTrackLocationOnChunks(
+    infra: TrackProperties,
+    location: TrackLocation,
+    chunks: DirStaticIdxList<TrackChunk>,
+): Distance? {
+    var offsetAfterFirstChunk = 0.meters
+    for (dirChunk in chunks) {
+        val chunkLength = infra.getTrackChunkLength(dirChunk.value)
+        if (location.trackId == infra.getTrackFromChunk(dirChunk.value)) {
+            val chunkOffset = infra.getTrackChunkOffset(dirChunk.value)
+            if (chunkOffset <= location.offset && location.offset <= (chunkOffset + chunkLength)) {
+                val distanceToChunkStart = if (dirChunk.direction == Direction.INCREASING)
+                    location.offset - chunkOffset
+                else
+                    (chunkOffset + chunkLength) - location.offset
+                return offsetAfterFirstChunk + distanceToChunkStart
+            }
+        }
+        offsetAfterFirstChunk += chunkLength
+    }
+    return null
+}
+
+/** Returns the offset of a location on a given list of chunks, throws if not found */
+@JvmName("getOffsetOfTrackLocationOnChunksOrThrow")
+fun getOffsetOfTrackLocationOnChunksOrThrow(
+    infra: TrackProperties,
+    location: TrackLocation,
+    chunks: DirStaticIdxList<TrackChunk>,
+): Distance {
+    return getOffsetOfTrackLocationOnChunks(infra, location, chunks) ?: throw RuntimeException()
 }
