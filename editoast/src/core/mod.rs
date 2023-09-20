@@ -115,7 +115,7 @@ impl CoreClient {
                 .map_err(|err| {
                     if let Ok(utf8_raw_error) = String::from_utf8(bytes.as_ref().to_vec()) {
                         CoreError::GenericCoreError {
-                            status: status.as_str().to_owned(),
+                            status: Some(status.as_u16()),
                             url: url.clone(),
                             raw_error: utf8_raw_error,
                         }
@@ -295,13 +295,14 @@ enum CoreError {
     },
     /// A fallback error variant for when no meaningful error could be parsed
     /// from core's output.
-    #[error("Core error {status}: {raw_error}")]
-    #[editoast_error(status = 400)]
+    #[error("Core error {}: {raw_error}", status.unwrap_or(500))]
+    #[editoast_error(status = status.unwrap_or(500))]
     GenericCoreError {
-        status: String,
+        status: Option<u16>,
         url: String,
         raw_error: String,
     },
+
     #[error("Core connection closed before message completed. Should retry.")]
     #[editoast_error(status = 500)]
     ConnectionClosedBeforeMessageCompleted,
@@ -322,9 +323,7 @@ impl From<reqwest::Error> for CoreError {
 
         // Convert the reqwest error
         Self::GenericCoreError {
-            status: value
-                .status()
-                .map_or("<NO STATUS>".to_owned(), |st| st.to_string()),
+            status: value.status().map(|st| st.as_u16()),
             url: value
                 .url()
                 .map_or("<NO URL>", |url| url.as_str())
