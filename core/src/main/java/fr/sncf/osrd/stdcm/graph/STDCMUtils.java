@@ -87,13 +87,11 @@ public class STDCMUtils {
         var blocks = ranges.stream()
                 .map(range -> range.edge().block())
                 .toList();
-        var totalBlockLength = blocks.stream()
-                .mapToLong(graph.blockInfra::getBlockLength)
+        var totalPathLength = ranges.stream()
+                .mapToLong(range -> range.end() - range.start())
                 .sum();
-        var lastRange = ranges.get(ranges.size() - 1);
         var firstOffset = ranges.get(0).edge().envelopeStartOffset() + ranges.get(0).start();
-        var lastOffset = totalBlockLength - graph.blockInfra.getBlockLength(Iterables.getLast(blocks))
-                + lastRange.edge().envelopeStartOffset() + lastRange.end();
+        var lastOffset = firstOffset + totalPathLength;
         var chunks = new MutableDirStaticIdxArrayList<TrackChunk>();
         blocks.stream()
                 .flatMap(block -> toIntList(graph.blockInfra.getTrackChunksFromBlock(block)).stream())

@@ -78,7 +78,7 @@ public class STDCMSimulations {
             return makeSinglePointEnvelope(initialSpeed);
         var context = makeSimContext(rawInfra, blockInfra, List.of(blockId), start, rollingStock, comfort, timeStep);
         double[] stops = new double[]{};
-        var simLength = blockLength;
+        var simLength = blockLength - start;
         if (stopPosition != null) {
             stops = new double[]{Distance.toMeters(stopPosition)};
             simLength = Math.min(simLength, stopPosition);

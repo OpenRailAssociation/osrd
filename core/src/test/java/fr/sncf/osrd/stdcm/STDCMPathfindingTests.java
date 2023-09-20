@@ -31,6 +31,24 @@ public class STDCMPathfindingTests {
         assertNotNull(res);
     }
 
+    /** Look for a path starting and ending in the middle of blocks */
+    @Test
+    public void partialBlocks() {
+        /*
+        a --> b --> c
+         */
+        var infra = DummyInfra.make();
+        var firstBlock = infra.addBlock("a", "b");
+        var secondBlock = infra.addBlock("b", "c");
+        var res = new STDCMPathfindingBuilder()
+                .setInfra(infra.fullInfra())
+                .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, meters(30))))
+                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(secondBlock, meters(30))))
+                .run();
+        assertNotNull(res);
+        assertEquals(meters(100), res.trainPath().getLength());
+    }
+
     /** Look for a path where the blocks are occupied before and after */
     @Test
     public void betweenTrains() {
