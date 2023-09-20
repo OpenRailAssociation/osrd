@@ -210,6 +210,7 @@ export default function AllowancesActions({
             unit="m"
             sm
             noMargin
+            textRight
             min={0}
             isInvalid={beginPosition >= endPosition || (!beginPosition && beginPosition !== 0)}
             value={beginPosition}
@@ -242,6 +243,7 @@ export default function AllowancesActions({
             unit="m"
             sm
             noMargin
+            textRight
             min={0}
             isInvalid={
               beginPosition >= endPosition ||
@@ -278,6 +280,7 @@ export default function AllowancesActions({
             unit="m"
             sm
             noMargin
+            textRight
             min={1}
             isInvalid={allowanceLength < 1}
             value={allowanceLength}
@@ -310,6 +313,7 @@ export default function AllowancesActions({
             type={valueAndUnit?.value_type || defaultType()}
             min={0}
             isInvalid={!(getAllowanceValue(valueAndUnit) > 0)}
+            textRight
           />
         </div>
         {allowanceSelectedIndex !== undefined ? (

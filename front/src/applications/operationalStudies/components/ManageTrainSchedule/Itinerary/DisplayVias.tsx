@@ -47,6 +47,7 @@ function InputStopTime({ index, setIndexSelected, dispatchAndRun }: InputStopTim
       selectAllOnFocus
       sm
       noMargin
+      textRight
     />
   );
 }

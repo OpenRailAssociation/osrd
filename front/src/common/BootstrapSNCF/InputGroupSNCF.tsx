@@ -50,7 +50,7 @@ export default function InputGroupSNCF({
   min,
   max,
   step,
-  textRight = true,
+  textRight = false,
 }: Props) {
   const [isDropdownShown, setIsDropdownShown] = useState(false);
   const [selected, setSelected] = useState(
@@ -61,7 +61,6 @@ export default function InputGroupSNCF({
       : { id: options[0].id, label: options[0].label, unit: options[0].unit }
   );
   const textAlignmentClass = textRight ? 'right-alignment' : 'left-alignment';
-
   useEffect(() => {
     const selectedOption = options?.find((option) => option.id === type);
 

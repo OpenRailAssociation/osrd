@@ -110,6 +110,7 @@ export default function TrainSettings() {
           value={initialSpeed}
           noMargin
           unit="km/h"
+          textRight
         />
       </div>
       <div className="col-xl-6 col-lg-12 mt-xl-0 mt-lg-3">

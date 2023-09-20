@@ -40,6 +40,7 @@ const IntervalsEditorMarginForm = ({
         value={(interval.value as number) || 0}
         noMargin
         sm
+        textRight
       />
     </div>
 

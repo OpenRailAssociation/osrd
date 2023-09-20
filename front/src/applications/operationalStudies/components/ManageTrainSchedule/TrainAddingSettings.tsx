@@ -90,6 +90,7 @@ export default function TrainAddingSettings() {
           errorMsg={trainDelta < 1 ? t('errorMessages.noDeltaInput') : undefined}
           min={1}
           sm
+          textRight
         />
       </span>
     </div>

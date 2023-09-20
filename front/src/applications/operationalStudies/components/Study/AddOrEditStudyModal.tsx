@@ -361,6 +361,7 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
               }
               value={currentStudy?.budget || 0}
               onChange={(e) => setCurrentStudy({ ...currentStudy, budget: +e.target.value })}
+              textRight
             />
           </div>
         </div>

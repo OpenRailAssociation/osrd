@@ -319,6 +319,7 @@ export default function AddOrEditProjectModal({
               }
               value={currentProject.budget}
               onChange={(e) => setCurrentProject({ ...currentProject, budget: +e.target.value })}
+              textRight
             />
           </div>
         </div>

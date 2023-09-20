@@ -74,6 +74,7 @@ export default function AllowancesStandardSettings({
             typeValue="number"
             min={0}
             isInvalid={getAllowanceValue(valueAndUnit) < 0}
+            textRight
           />
         </div>
       </div>
