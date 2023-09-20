@@ -1,12 +1,10 @@
 package fr.sncf.osrd.api;
 
-import static fr.sncf.osrd.standalone_sim.StandaloneSim.makeTrainPath;
+import static fr.sncf.osrd.api.pathfinding.PathfindingUtils.makePath;
 
 import com.squareup.moshi.Json;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
-import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
-import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
@@ -59,7 +57,7 @@ public class SignalProjectionEndpoint implements Take {
             var infra = infraManager.getInfra(request.infra, request.expectedVersion, recorder);
 
             // Parse trainPath
-            var trainPath = makeTrainPath(infra.rawInfra(), request.trainPath);
+            var trainPath = makePath(infra.rawInfra(), request.trainPath);
             var result = SignalProjectionKt.project(infra, trainPath, request.signalSightings, request.zoneUpdates);
 
             result.warnings = recorder.warnings;

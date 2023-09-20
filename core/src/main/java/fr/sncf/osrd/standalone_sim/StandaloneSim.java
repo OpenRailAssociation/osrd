@@ -1,12 +1,8 @@
 package fr.sncf.osrd.standalone_sim;
 
-import static fr.sncf.osrd.sim_infra.api.TrackInfraKt.getTrackSectionFromNameOrThrow;
-import static fr.sncf.osrd.utils.KtToJavaConverter.toIntList;
-import static fr.sncf.osrd.utils.units.Distance.fromMeters;
-
-import com.google.common.collect.Iterables;
 import fr.sncf.osrd.DriverBehaviour;
 import fr.sncf.osrd.api.FullInfra;
+import fr.sncf.osrd.api.pathfinding.PathfindingUtils;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimPath;
@@ -20,16 +16,11 @@ import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
 import fr.sncf.osrd.envelope_sim_infra.MRSP;
 import fr.sncf.osrd.kt_external_generated_inputs.ElectricalProfileMapping;
 import fr.sncf.osrd.railjson.parser.RJSStandaloneTrainScheduleParser;
-import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
-import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSDirectionalTrackRange;
 import fr.sncf.osrd.railjson.schema.schedule.RJSStandaloneTrainSchedule;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPath;
 import fr.sncf.osrd.reporting.ErrorContext;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.sim_infra.api.Path;
-import fr.sncf.osrd.sim_infra.api.PathKt;
-import fr.sncf.osrd.sim_infra.api.RawSignalingInfra;
-import fr.sncf.osrd.sim_infra.api.TrackChunk;
 import fr.sncf.osrd.standalone_sim.result.ElectrificationRange;
 import fr.sncf.osrd.standalone_sim.result.PowerRestrictionRange;
 import fr.sncf.osrd.standalone_sim.result.ResultEnvelopePoint;
@@ -39,10 +30,11 @@ import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.ScheduledPoint;
 import fr.sncf.osrd.train.StandaloneTrainSchedule;
 import fr.sncf.osrd.train.TrainStop;
-import fr.sncf.osrd.utils.Direction;
-import fr.sncf.osrd.utils.indexing.DirStaticIdxKt;
-import fr.sncf.osrd.utils.indexing.MutableDirStaticIdxArrayList;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
 
 public class StandaloneSim {
     /**
@@ -140,7 +132,7 @@ public class StandaloneSim {
             double timeStep
     ) {
         // Parse trainPath
-        var trainPath = makeTrainPath(infra.rawInfra(), rjsTrainPath);
+        var trainPath = PathfindingUtils.makePath(infra.rawInfra(), rjsTrainPath);
         var envelopePath = EnvelopeTrainPath.from(trainPath, electricalProfileMap);
 
         // Parse train schedules
@@ -158,43 +150,6 @@ public class StandaloneSim {
                 timeStep,
                 new DriverBehaviour()
         );
-    }
-
-    /** Builds a Path from an RJSTrainPath*/
-    public static Path makeTrainPath(RawSignalingInfra infra, RJSTrainPath rjsPath) {
-        var trackRanges = new ArrayList<RJSDirectionalTrackRange>();
-        for (var routePath : rjsPath.routePath) {
-            for (var trackRange : routePath.trackSections) {
-                var last = Iterables.getLast(trackRanges, null);
-                if (last != null && last.trackSectionID.equals(trackRange.trackSectionID)) {
-                    assert last.getEnd() == trackRange.getBegin();
-                    assert last.direction == trackRange.direction;
-                    if (trackRange.direction == EdgeDirection.START_TO_STOP)
-                        last.end = trackRange.end;
-                    else
-                        last.begin = trackRange.begin;
-                } else {
-                    trackRanges.add(trackRange);
-                }
-            }
-        }
-        var chunks = new MutableDirStaticIdxArrayList<TrackChunk>();
-        for (var trackRange : trackRanges) {
-            var trackId = getTrackSectionFromNameOrThrow(trackRange.trackSectionID, infra);
-            var dir = trackRange.direction == EdgeDirection.START_TO_STOP ? Direction.INCREASING : Direction.DECREASING;
-            var chunksOnTrack = toIntList(infra.getTrackSectionChunks(trackId));
-            if (dir == Direction.DECREASING)
-                Collections.reverse(chunksOnTrack);
-            for (var chunk : chunksOnTrack)
-                chunks.add(DirStaticIdxKt.from(chunk, dir));
-        }
-        var startOffset = fromMeters(trackRanges.get(0).begin);
-        var endOffset = startOffset + fromMeters(
-                trackRanges.stream()
-                        .mapToDouble(r -> r.end - r.begin)
-                        .sum()
-        );
-        return PathKt.buildPathFrom(infra, chunks, startOffset, endOffset);
     }
 
     /**

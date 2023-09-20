@@ -2,7 +2,6 @@ package fr.sncf.osrd.api.pathfinding;
 
 import static fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection.START_TO_STOP;
 import static fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection.STOP_TO_START;
-import static fr.sncf.osrd.sim_infra.api.PathKt.buildPathFrom;
 import static fr.sncf.osrd.utils.KtToJavaConverter.toIntList;
 import static fr.sncf.osrd.utils.indexing.DirStaticIdxKt.toDirection;
 import static fr.sncf.osrd.utils.indexing.DirStaticIdxKt.toValue;
@@ -22,7 +21,6 @@ import fr.sncf.osrd.sim_infra.api.*;
 import fr.sncf.osrd.utils.Direction;
 import fr.sncf.osrd.utils.DistanceRangeMap;
 import fr.sncf.osrd.utils.graph.Pathfinding;
-import fr.sncf.osrd.utils.indexing.MutableDirStaticIdxArrayList;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -45,7 +43,7 @@ public class PathfindingResultConverter {
             Pathfinding.Result<Integer> rawPath,
             DiagnosticRecorderImpl warningRecorder
     ) {
-        var path = makePath(rawInfra, blockInfra, rawPath.ranges());
+        var path = PathfindingUtils.makePath(rawInfra, blockInfra, rawPath.ranges());
         var result = new PathfindingResult(toMeters(path.getLength()));
         result.routePaths = makeRoutePath(blockInfra, rawInfra, rawPath.ranges());
         result.pathWaypoints = makePathWaypoint(path, rawPath, rawInfra, blockInfra);
@@ -55,30 +53,6 @@ public class PathfindingResultConverter {
         result.curves = makeCurves(path);
         result.warnings = warningRecorder.getWarnings();
         return result;
-    }
-
-    /** Creates a `Path` instance from a list of block range */
-    public static Path makePath(
-            RawSignalingInfra infra,
-            BlockInfra blockInfra,
-            List<Pathfinding.EdgeRange<Integer>> blockRanges
-    ) {
-        assert !blockRanges.isEmpty();
-        long totalBlockPathLength = 0;
-        var chunks = new MutableDirStaticIdxArrayList<TrackChunk>();
-        for (var range : blockRanges) {
-            var zonePaths = blockInfra.getBlockPath(range.edge());
-            for (var zonePath : toIntList(zonePaths)) {
-                chunks.addAll(infra.getZonePathChunks(zonePath));
-                var zoneLength = infra.getZonePathLength(zonePath);
-                totalBlockPathLength += zoneLength;
-            }
-        }
-        long startOffset = blockRanges.get(0).start();
-        var lastRange = blockRanges.get(blockRanges.size() - 1);
-        var lastBlockLength = blockInfra.getBlockLength(lastRange.edge());
-        var endOffset = totalBlockPathLength - lastBlockLength + lastRange.end();
-        return buildPathFrom(infra, chunks, startOffset, endOffset);
     }
 
     /** Make the list of waypoints on the path, in order. Both user-defined waypoints and operational points. */

@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import fr.sncf.osrd.api.FullInfra;
-import fr.sncf.osrd.api.pathfinding.PathfindingResultConverter;
+import fr.sncf.osrd.api.pathfinding.PathfindingUtils;
 import fr.sncf.osrd.api.stdcm.STDCMRequest;
 import fr.sncf.osrd.DriverBehaviour;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
@@ -80,7 +80,7 @@ public class STDCMHelpers {
         var path = new Pathfinding<>(new GraphAdapter(infra.blockInfra(), infra.rawInfra()))
                 .setEdgeToLength(block -> infra.blockInfra().getBlockLength(block))
                 .runPathfinding(List.of(startLocations, endLocations));
-        return PathfindingResultConverter.makePath(infra.rawInfra(), infra.blockInfra(), path.ranges());
+        return PathfindingUtils.makePath(infra.rawInfra(), infra.blockInfra(), path.ranges());
     }
 
     /** Returns how long the longest occupancy segment lasts, which is the minimum delay we need to add
