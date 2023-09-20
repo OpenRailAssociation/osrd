@@ -13,8 +13,10 @@ import fr.sncf.osrd.utils.units.Speed
 import fr.sncf.osrd.utils.units.meters
 import kotlin.time.Duration
 
-/** This class is used to create a minimal infra to be used on STDCM tests, with a simple block graph.
- * Ids are all interchangeable, there's one zone, one chunk, one track, one route per block. */
+/** This class is used to create a minimal infra to be used on unit tests, with a simple block graph.
+ * Ids are all interchangeable, there's one zone, one chunk, one track, one route per block.
+ * Block descriptor can be edited when we need to set data that isn't included in the method parameters.
+ * Not all methods are implemented, but it can be added when relevant. */
 @Suppress("INAPPLICABLE_JVM_NAME")
 class DummyInfra : RawInfra, BlockInfra {
 
@@ -92,9 +94,12 @@ class DummyInfra : RawInfra, BlockInfra {
         val exit: DirDetectorId,
         val allowedSpeed: Double,
         var gradient: Double,
+        var voltage: String = "",
+        var neutralSectionForward: NeutralSection? = null,
+        var neutralSectionBackward: NeutralSection? = null,
     )
 
-    // region not implemented
+    // region inherited
 
     override fun getSignals(zonePath: ZonePathId): StaticIdxList<PhysicalSignal> {
         TODO("Not yet implemented")
@@ -156,8 +161,9 @@ class DummyInfra : RawInfra, BlockInfra {
         return makeIndexList(route)
     }
 
-    override fun getRouteName(route: RouteId): String? {
-        TODO("Not yet implemented")
+    @JvmName("getRouteName")
+    override fun getRouteName(route: RouteId): String {
+        return blockPool[route.index].name
     }
 
     override fun getRouteFromName(name: String): RouteId {
@@ -313,16 +319,18 @@ class DummyInfra : RawInfra, BlockInfra {
         TODO("Not yet implemented")
     }
 
-    override fun getTrackSectionFromName(name: String): TrackSectionId? {
-        TODO("Not yet implemented")
+    override fun getTrackSectionFromName(name: String): TrackSectionId {
+        return TrackSectionId(getRouteFromName(name).index)
     }
 
     override fun getTrackSectionChunks(trackSection: TrackSectionId): StaticIdxList<TrackChunk> {
-        TODO("Not yet implemented")
+        return mutableStaticIdxArrayListOf(
+            StaticIdx(trackSection.index)
+        )
     }
 
     override fun getTrackSectionLength(trackSection: TrackSectionId): Distance {
-        TODO("Not yet implemented")
+        return getBlockLength(BlockId(trackSection.index))
     }
 
     override fun getTrackChunkLength(trackChunk: TrackChunkId): Distance {
@@ -330,7 +338,7 @@ class DummyInfra : RawInfra, BlockInfra {
     }
 
     override fun getTrackChunkOffset(trackChunk: TrackChunkId): Distance {
-        TODO("Not yet implemented")
+        return 0.meters
     }
 
     override fun getTrackFromChunk(trackChunk: TrackChunkId): TrackSectionId {
@@ -355,11 +363,19 @@ class DummyInfra : RawInfra, BlockInfra {
     }
 
     override fun getTrackChunkCatenaryVoltage(trackChunk: TrackChunkId): DistanceRangeMap<String> {
-        return makeRangeMap(blockPool[trackChunk.index].length, "")
+        return makeRangeMap(blockPool[trackChunk.index].length, blockPool[trackChunk.index].voltage)
     }
 
     override fun getTrackChunkNeutralSections(trackChunk: DirTrackChunkId): DistanceRangeMap<NeutralSection> {
-        return DistanceRangeMapImpl()
+        val desc = blockPool[trackChunk.value.index]
+        val neutralSection = if (trackChunk.direction == Direction.INCREASING)
+            desc.neutralSectionForward
+        else
+            desc.neutralSectionBackward
+        return if (neutralSection == null)
+            DistanceRangeMapImpl()
+        else
+            makeRangeMap(desc.length, neutralSection)
     }
 
     override fun getTrackChunkSpeedSections(trackChunk: DirTrackChunkId, trainTag: String?): DistanceRangeMap<Speed> {
@@ -436,7 +452,9 @@ class DummyInfra : RawInfra, BlockInfra {
         trackChunk: TrackChunkId,
         direction: Direction
     ): MutableStaticIdxArraySet<Block> {
-        TODO("Not yet implemented")
+        return mutableStaticIdxArraySetOf(
+            StaticIdx(trackChunk.index)
+        )
     }
 
     override fun getTrackChunksFromBlock(block: BlockId): DirStaticIdxList<TrackChunk> {
