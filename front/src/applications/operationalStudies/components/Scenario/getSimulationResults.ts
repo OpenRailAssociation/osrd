@@ -13,7 +13,6 @@ import {
   TimetableWithSchedulesDetails,
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
-import { Train } from 'reducers/osrdsimulation/types';
 import { ApiError } from 'common/api/emptyApi';
 import { SerializedError } from '@reduxjs/toolkit';
 
@@ -67,7 +66,7 @@ export default async function getSimulationResults(
 
       // Create margins settings for each train if not set
       const newAllowancesSettings = { ...allowancesSettings };
-      sortedSimulationLocal.forEach((train: Train) => {
+      sortedSimulationLocal.forEach((train) => {
         if (!newAllowancesSettings[train.id]) {
           newAllowancesSettings[train.id] = {
             base: true,

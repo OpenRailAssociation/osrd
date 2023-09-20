@@ -1,6 +1,6 @@
 import i18n from 'i18n';
 import { SwitchType } from 'types';
-import { ValueOf } from 'utils/types';
+import { ObjectFieldsTypes } from 'utils/types';
 import { Position, Feature } from 'geojson';
 import {
   Allowance,
@@ -198,12 +198,12 @@ export interface OsrdConfState {
 
 export interface OsrdStdcmConfState extends OsrdConfState {
   maximumRunTime: number;
-  stdcmMode: ValueOf<typeof STDCM_MODES>;
+  stdcmMode: ObjectFieldsTypes<typeof STDCM_MODES>;
   standardStdcmAllowance?: StandardAllowance; // We wait for auto generated types
 }
 
 export interface OsrdMultiConfState {
-  mode: ValueOf<typeof MODES>;
+  mode: ObjectFieldsTypes<typeof MODES>;
   simulationConf: OsrdConfState;
   stdcmConf: OsrdStdcmConfState;
 }

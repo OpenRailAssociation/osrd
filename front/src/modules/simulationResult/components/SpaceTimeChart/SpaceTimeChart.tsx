@@ -2,7 +2,7 @@ import * as d3 from 'd3';
 import { noop } from 'lodash';
 import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import {
-  isolatedEnableInteractivity,
+  enableInteractivity,
   traceVerticalLine,
 } from 'modules/simulationResult/components/ChartHelpers/enableInteractivity';
 import { Rnd } from 'react-rnd';
@@ -10,10 +10,7 @@ import { timeShiftTrain } from 'modules/simulationResult/components/ChartHelpers
 import ORSD_GRAPH_SAMPLE_DATA from 'modules/simulationResult/components/SpeedSpaceChart/sampleData';
 import { CgLoadbar } from 'react-icons/cg';
 import { GiResize } from 'react-icons/gi';
-import {
-  KEY_VALUES_FOR_SPACE_TIME_CHART,
-  LIST_VALUES_NAME_SPACE_TIME,
-} from 'modules/simulationResult/components/simulationResultsConsts';
+import { CHART_AXES } from 'modules/simulationResult/components/simulationResultsConsts';
 import { isolatedCreateTrain as createTrain } from 'modules/simulationResult/components/SpaceTimeChart/createTrain';
 
 import { drawAllTrains } from 'modules/simulationResult/components/SpaceTimeChart/d3Helpers';
@@ -21,9 +18,9 @@ import {
   AllowancesSettings,
   Chart,
   OsrdSimulationState,
-  PositionValues,
   SimulationSnapshot,
   Train,
+  PositionsSpeedTimes,
 } from 'reducers/osrdsimulation/types';
 import ChartModal from 'modules/simulationResult/components/SpaceTimeChart/ChartModal';
 import { dateIsInRange } from 'utils/date';
@@ -62,7 +59,7 @@ export type SpaceTimeChartProps = {
   dispatchUpdateTimePositionValues?: DispatchUpdateTimePositionValues;
   initialHeightOfSpaceTimeChart?: number;
   inputSelectedTrain?: Train;
-  positionValues?: PositionValues;
+  positionValues?: PositionsSpeedTimes<Date>;
   selectedProjection?: OsrdSimulationState['selectedProjection'];
   simulation?: SimulationSnapshot;
   simulationIsPlaying?: boolean;
@@ -175,7 +172,7 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
   useEffect(() => {
     if (trainSimulations) {
       const trainsToDraw = trainSimulations.map((train) =>
-        createTrain(KEY_VALUES_FOR_SPACE_TIME_CHART, train)
+        createTrain(CHART_AXES.SPACE_TIME, train)
       );
       drawAllTrains(
         allowancesSettings,
@@ -186,7 +183,6 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
         dispatchUpdateMustRedraw,
         dispatchUpdateSelectedTrainId,
         heightOfSpaceTimeChart,
-        KEY_VALUES_FOR_SPACE_TIME_CHART,
         ref,
         resetChart,
         rotate,
@@ -206,12 +202,11 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
    */
   useEffect(() => {
     if (trainSimulations) {
-      const dataSimulation = createTrain(KEY_VALUES_FOR_SPACE_TIME_CHART, selectedTrain);
-      isolatedEnableInteractivity(
+      const dataSimulation = createTrain(CHART_AXES.SPACE_TIME, selectedTrain);
+      enableInteractivity(
         chart,
         dataSimulation,
-        KEY_VALUES_FOR_SPACE_TIME_CHART,
-        LIST_VALUES_NAME_SPACE_TIME,
+        CHART_AXES.SPACE_TIME,
         rotate,
         setChart,
         simulationIsPlaying,
@@ -229,14 +224,7 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
    */
   useEffect(() => {
     if (dateIsInRange(timePosition, timeScaleRange)) {
-      traceVerticalLine(
-        chart,
-        KEY_VALUES_FOR_SPACE_TIME_CHART,
-        LIST_VALUES_NAME_SPACE_TIME,
-        positionValues,
-        rotate,
-        timePosition
-      );
+      traceVerticalLine(chart, CHART_AXES.SPACE_TIME, positionValues, rotate, timePosition);
     }
   }, [chart, positionValues, timePosition]);
 

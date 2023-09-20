@@ -9,7 +9,7 @@ export interface TrainPosition {
   tailDistanceAlong: number;
   speedTime: {
     speed: number;
-    time: number;
+    time: Date;
   };
   trainLength: number;
 }

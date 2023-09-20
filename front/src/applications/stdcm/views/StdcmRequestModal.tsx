@@ -9,7 +9,7 @@ import {
 } from 'reducers/osrdsimulation/actions';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { KEY_VALUES_FOR_CONSOLIDATED_SIMULATION } from 'modules/simulationResult/components/simulationResultsConsts';
+import { CHART_AXES } from 'modules/simulationResult/components/simulationResultsConsts';
 import { getConf } from 'reducers/osrdconf/selectors';
 // Generic components
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
@@ -25,8 +25,7 @@ import STDCM_REQUEST_STATUS from 'applications/stdcm/consts';
 import { updateItinerary } from 'reducers/osrdconf';
 import { useTranslation } from 'react-i18next';
 import { Spinner } from 'common/Loader';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { Train } from 'reducers/osrdsimulation/types';
+import { osrdEditoastApi, SimulationReport } from 'common/api/osrdEditoastApi';
 import { StdcmRequestStatus } from 'applications/stdcm/types';
 import { extractMessageFromError, extractStatusFromError } from 'utils/error';
 
@@ -93,10 +92,10 @@ export default function StdcmRequestModal(props: StdcmRequestModalProps) {
             })
               .unwrap()
               .then((timetableTrains) => {
-                const trains: Train[] = [...timetableTrains, fakedNewTrain];
+                const trains: SimulationReport[] = [...timetableTrains, fakedNewTrain];
                 const consolidatedSimulation = createTrain(
                   dispatch,
-                  KEY_VALUES_FOR_CONSOLIDATED_SIMULATION,
+                  CHART_AXES.SPACE_TIME,
                   trains,
                   t
                 );
@@ -146,7 +145,7 @@ export default function StdcmRequestModal(props: StdcmRequestModalProps) {
     const emptySimulation = { trains: [] };
     const consolidatedSimulation = createTrain(
       dispatch,
-      KEY_VALUES_FOR_CONSOLIDATED_SIMULATION,
+      CHART_AXES.SPACE_TIME,
       emptySimulation.trains,
       t
     );

@@ -13,7 +13,7 @@ import {
   DispatchUpdateMustRedraw,
   DispatchUpdateSelectedTrainId,
 } from './types';
-import { KEY_VALUES_FOR_SPACE_TIME_CHART } from '../simulationResultsConsts';
+import { CHART_AXES } from '../simulationResultsConsts';
 
 function drawOPs(chartLocal: Chart, selectedTrainSimulation: Train, rotate: boolean) {
   const operationalPointsZone = chartLocal.drawZone
@@ -62,7 +62,6 @@ const drawAllTrains = (
   dispatchUpdateMustRedraw: DispatchUpdateMustRedraw,
   dispatchUpdateSelectedTrainId: DispatchUpdateSelectedTrainId,
   heightOfSpaceTimeChart: number,
-  keyValues: typeof KEY_VALUES_FOR_SPACE_TIME_CHART,
   ref: React.MutableRefObject<HTMLDivElement> | React.RefObject<HTMLDivElement>,
   reset: boolean,
   rotate: boolean,
@@ -78,7 +77,7 @@ const drawAllTrains = (
     CHART_ID,
     trainsToDraw,
     heightOfSpaceTimeChart,
-    keyValues,
+    CHART_AXES.SPACE_TIME,
     ref,
     reset,
     rotate
@@ -98,7 +97,6 @@ const drawAllTrains = (
       dispatchUpdateSelectedTrainId,
       train.id === selectedProjection?.id,
       train.id === selectedTrain?.id,
-      keyValues,
       rotate,
       setDragOffset,
       simulationTrains,

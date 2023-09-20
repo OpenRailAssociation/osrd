@@ -1,24 +1,44 @@
-export const LIST_VALUES_NAME_SPACE_TIME = [
-  'headPosition',
-  'tailPosition',
-  'speed',
-  'margins_speed',
-  'eco_speed',
-  'margins_headPosition',
-  'eco_headPosition',
-  'eco_tailPosition',
-] as const;
-export const LIST_VALUES_NAME_SPEED_SPACE = ['speed', 'margins_speed', 'eco_speed'];
-export const LIST_VALUES_NAME_SPACE_CURVES_SLOPES = ['slopesCurve'];
-export const KEY_VALUES_FOR_CONSOLIDATED_SIMULATION = ['time', 'position'];
+import { ArrayElement, ObjectFieldsTypes } from 'utils/types';
 
 // CHARTS
 export const TIME = 'time';
 export const POSITION = 'position';
 export const SPEED = 'speed';
-export const KEY_VALUES_FOR_SPACE_TIME_CHART: ['time', 'position'] = [TIME, POSITION];
-export const SPEED_SPACE_CHART_KEY_VALUES: ['position', 'speed'] = [POSITION, SPEED];
+export const GRADIENT = 'gradient';
+export const RADIUS = 'radius';
+export const HEIGHT = 'height';
 
+export type AxisKey = 'time' | 'position' | 'speed' | 'gradient' | 'radius' | 'height';
+
+export const CHART_AXES = {
+  SPACE_TIME: [TIME, POSITION],
+  SPACE_SPEED: [POSITION, SPEED],
+  SPACE_GRADIENT: [POSITION, GRADIENT],
+  SPACE_RADIUS: [POSITION, RADIUS],
+  SPACE_HEIGHT: [POSITION, HEIGHT],
+} as const;
+
+export type ChartAxes = ObjectFieldsTypes<typeof CHART_AXES>;
+export type XAxis = ChartAxes[0];
+export type YAxis = ChartAxes[1];
+
+export const LIST_VALUES = {
+  SPACE_TIME: [
+    'headPosition',
+    'tailPosition',
+    'speed',
+    'margins_speed',
+    'eco_speed',
+    'eco_headPosition',
+    'eco_tailPosition',
+  ],
+  SPACE_SPEED: ['speed', 'margins_speed', 'eco_speed'],
+  SPACE_GRADIENT: ['slopesCurve'],
+  REGIME: ['head_positions', 'tail_positions', 'speeds'],
+} as const;
+
+export type ListValues = ObjectFieldsTypes<typeof LIST_VALUES>;
+export type AllListValues = ArrayElement<ListValues>;
 // Signal Base is the Signaling system chosen for results display
 
 export const SIGNAL_BASE_DEFAULT = 'BAL3';

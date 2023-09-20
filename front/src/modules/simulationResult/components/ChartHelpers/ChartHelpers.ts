@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-use-before-define */
 import * as d3 from 'd3';
-import { last } from 'lodash';
+import { has, last } from 'lodash';
 
 import { durationInSeconds, sec2time } from 'utils/timeManipulation';
 // import/no-cycle is disabled because this func call will be removed by refacto
@@ -15,7 +16,14 @@ import {
   Stop,
   SimulationD3Scale,
 } from 'reducers/osrdsimulation/types';
-import { TIME } from 'modules/simulationResult/components/simulationResultsConsts';
+import {
+  AllListValues,
+  ChartAxes,
+  ListValues,
+  TIME,
+  XAxis,
+  YAxis,
+} from 'modules/simulationResult/components/simulationResultsConsts';
 
 export function sec2d3datetime(time: number) {
   return d3.timeParse('%H:%M:%S')(sec2time(time));
@@ -177,7 +185,7 @@ export const timeShiftTrain = (train: Train, offset: number): Train => ({
 export const mergeDatasArea = <T>(
   data1?: Position<T>[][],
   data2?: Position<T>[][],
-  keyValues?: string[]
+  keyValues?: ChartAxes
 ) => {
   if (data1 && data2 && keyValues) {
     const areas = data1.map((data1Section, sectionIdx) => {
@@ -267,66 +275,76 @@ export const interpolateOnPosition = (
     const proportion = distanceFromPosition / distance;
     return sec2d3datetime(d3.interpolateNumber(bisection[0].time, bisection[1].time)(proportion));
   }
-  return false;
+  return null;
 };
 
 // Interpolation of cursor based on time position
 // backend is giving only a few number of points. we need to interpolate values between these points.
-export const interpolateOnTime = <ListValues extends string, Time = number>(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  dataSimulation: Partial<Record<ListValues, any>> | undefined,
-  keyValues: readonly string[],
-  listValues: readonly ListValues[],
+export const interpolateOnTime = <
+  SimulationData extends Partial<{ [Key in ListValues[number]]: unknown }>,
+  Time extends Date | number
+>(
+  dataSimulation: SimulationData | undefined,
+  keyValues: ChartAxes,
+  listValues: ListValues,
   timePositionLocal: Time
 ) => {
-  type Key = (typeof keyValues)[0];
-  type ObjectWithGivenKey = { [key: Key]: Time } & {
-    [key: string]: unknown;
+  const xAxis = getAxis(keyValues, 'x', false);
+
+  type ObjectWithXAxis = {
+    [K in XAxis]?: K extends 'time' ? Time : number;
+  } & {
+    [K in string]?: K extends XAxis ? never : unknown;
   };
-  const bisect = d3.bisector<ObjectWithGivenKey, Time>((d) => d[keyValues[0]]).left;
-  const positionInterpolated = {} as Record<ListValues, PositionSpeedTime<Time>>;
+  const bisect = d3.bisector<ObjectWithXAxis, Time>((d) => d[xAxis]! as Time).left;
+  const positionInterpolated = {} as Record<AllListValues, PositionSpeedTime<Time>>;
+
   listValues.forEach((listValue) => {
-    let bisection;
-    if (dataSimulation?.[listValue]) {
-      // If not array of array
+    let bisection: [ObjectWithXAxis, ObjectWithXAxis] | undefined;
+    if (dataSimulation && has(dataSimulation, listValue)) {
+      // not array of array
       if (listValue === 'speed' || listValue === 'speeds') {
-        const comparator = dataSimulation[listValue] || dataSimulation[listValue][0];
-        if (comparator) {
-          const timeBisect = d3.bisector<ObjectWithGivenKey, Time>((d) => d.time).left;
-          const index = timeBisect(dataSimulation[listValue], timePositionLocal, 1);
-          bisection = [dataSimulation[listValue][index - 1], dataSimulation[listValue][index]];
+        const currentData = dataSimulation[listValue] as ObjectWithXAxis[];
+        if (currentData[0]) {
+          const timeBisect = d3.bisector<ObjectWithXAxis, Time>((d) => d.time as Time).left;
+          const index = timeBisect(currentData, timePositionLocal, 1);
+          bisection = [currentData[index - 1], currentData[index]];
         }
       } else {
         // Array of array
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        dataSimulation[listValue].forEach((section: any[]) => {
+        const currentData = dataSimulation[listValue] as ObjectWithXAxis[][];
+        currentData.forEach((section) => {
           const index = bisect(section, timePositionLocal, 1);
-          if (
-            index !== section.length &&
-            section[0] &&
-            timePositionLocal >= section[0][keyValues[0]]
-          ) {
+          const firstXValue = section[0] ? section[0][xAxis] : undefined;
+          if (index !== section.length && firstXValue && timePositionLocal >= firstXValue) {
             bisection = [section[index - 1], section[index]];
           }
         });
       }
-      if (bisection && bisection[1]) {
-        const duration = bisection[1].time - bisection[0].time;
-        const timePositionFromTime = Number(timePositionLocal) - bisection[0].time;
-        const proportion = timePositionFromTime / duration;
-        positionInterpolated[listValue] = {
-          position: d3.interpolateNumber(bisection[0].position, bisection[1].position)(proportion),
-          speed: d3.interpolateNumber(bisection[0].speed, bisection[1].speed)(proportion) * 3.6,
-          time: timePositionLocal,
-        };
+      if (bisection && bisection[1] && bisection[1].time) {
+        const bisec0 = bisection[0];
+        const bisec1 = bisection[1];
+        if (bisec0.time && bisec0.position && bisec1.time && bisec1.position) {
+          const duration = Number(bisec1.time) - Number(bisec0.time);
+          const timePositionFromTime = Number(timePositionLocal) - Number(bisec0.time);
+          const proportion = timePositionFromTime / duration;
+          positionInterpolated[listValue] = {
+            position: d3.interpolateNumber(bisec0.position, bisec1.position)(proportion),
+            speed:
+              bisec0.speed && bisec1.speed
+                ? d3.interpolateNumber(bisec0.speed as number, bisec1.speed as number)(proportion) *
+                  3.6
+                : NaN,
+            time: timePositionLocal,
+          };
+        }
       }
     }
   });
-
   return positionInterpolated;
 };
 
-export const isGET = (keyValues: string[]) => keyValues[0] === TIME;
+export const isSpaceTimeChart = (keyValues: ChartAxes) => keyValues[0] === TIME;
 
 export function trainWithDepartureAndArrivalTimes(train: Train, dragOffset = 0) {
   const firstStop = train.base.stops[0];
@@ -379,4 +397,13 @@ export function getElementWidth(text: string, fontSize: number, selector: string
   }
   const result = node.getBBox().width;
   return result;
+}
+
+export function getAxis(keyValues: ChartAxes, axis: 'x', rotate: boolean): XAxis;
+export function getAxis(keyValues: ChartAxes, axis: 'y', rotate: boolean): YAxis;
+export function getAxis(keyValues: ChartAxes, axis: 'x' | 'y', rotate: boolean) {
+  if (axis === 'x') {
+    return (!rotate ? keyValues[0] : keyValues[1]) as XAxis;
+  }
+  return (!rotate ? keyValues[1] : keyValues[0]) as YAxis;
 }

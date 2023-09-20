@@ -23,6 +23,12 @@ export function sec2datetime(sec: number) {
   return d3.timeParse('%H:%M:%S')(sec2time(sec)) as Date; // We conder it's utc to avoid +0 delta
 }
 
+/**
+ * Given a timeString, returns the number of seconds from midnight
+ *
+ * /!\ be carreful: this only handle time and not dates. Thus, it
+ * can not be used to compare dates.
+ */
 export function time2sec(timeString: TimeString) {
   const timeArray = timeString.split(':');
   const seconds = timeArray[2] ? Number(timeArray[2]) : 0;

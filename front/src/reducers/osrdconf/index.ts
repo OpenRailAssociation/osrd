@@ -14,7 +14,7 @@ import {
   PowerRestrictionRange,
 } from 'applications/operationalStudies/consts';
 import { formatIsoDate } from 'utils/date';
-import { ValueOf } from 'utils/types';
+import { ObjectFieldsTypes } from 'utils/types';
 import { sec2time, time2sec } from 'utils/timeManipulation';
 import { Allowance, Path, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { SwitchType, ThunkAction } from '../../types';
@@ -372,7 +372,7 @@ export function updateMode(mode: string) {
     });
   };
 }
-export function updateStdcmMode(stdcmMode: ValueOf<typeof STDCM_MODES>) {
+export function updateStdcmMode(stdcmMode: ObjectFieldsTypes<typeof STDCM_MODES>) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_STDCM_MODE,
