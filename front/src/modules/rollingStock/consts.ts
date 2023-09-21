@@ -83,6 +83,7 @@ export type RollingStockParametersValues = {
   raisePantographTime: number | null;
   defaultMode: string | null;
   effortCurves: EffortCurves;
+  basePowerClass: string | null;
 };
 
 export type SchemaProperty = {
