@@ -14,4 +14,8 @@ public class ResultSpeed {
         this.speed = speed;
         this.position = position;
     }
+
+    public ResultSpeed withAddedTime(double timeToAdd) {
+        return new ResultSpeed(time + timeToAdd, speed, position);
+    }
 }

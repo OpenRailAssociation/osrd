@@ -1,5 +1,6 @@
 package fr.sncf.osrd.standalone_sim.result;
 
+import com.google.common.collect.Maps;
 import com.squareup.moshi.Json;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.List;
@@ -30,6 +31,10 @@ public class ResultTrain {
             this.offset = offset;
             this.state = state;
         }
+
+        public SignalSighting withAddedTime(double timeToAdd) {
+            return new SignalSighting(signal, time + timeToAdd, offset, state);
+        }
     }
 
     @Json(name = "signal_sightings")
@@ -51,6 +56,10 @@ public class ResultTrain {
             this.time = time;
             this.offset = offset;
             this.isEntry = isEntry;
+        }
+
+        public ZoneUpdate withAddedTime(double timeToAdd) {
+            return new ZoneUpdate(zone, time + timeToAdd, offset, isEntry);
         }
     }
 
@@ -76,6 +85,10 @@ public class ResultTrain {
             assert !Double.isNaN(endTime);
             assert Double.isFinite(beginTime);
             assert Double.isFinite(endTime);
+        }
+
+        public SpacingRequirement withAddedTime(double timeToAdd) {
+            return new SpacingRequirement(zone, beginTime + timeToAdd, endTime + timeToAdd);
         }
     }
 
@@ -131,6 +144,10 @@ public class ResultTrain {
             this.beginTime = beginTime;
             this.zones = zones;
         }
+
+        public RoutingRequirement withAddedTime(double timeToAdd) {
+            return new RoutingRequirement(route, beginTime + timeToAdd, zones);
+        }
     }
 
     @Json(name = "routing_requirements")
@@ -163,8 +180,16 @@ public class ResultTrain {
 
     /** Shift the position curve by a given departure time */
     public ResultTrain withDepartureTime(Double departureTime) {
-        return new ResultTrain(speeds, headPositions.stream().map(pos -> pos.withAddedTime(departureTime)).toList(),
-                stops, routeOccupancies, mechanicalEnergyConsumed, signalSightings, zoneUpdates,
-                spacingRequirements, routingRequirements);
+        return new ResultTrain(
+                speeds.stream().map(speed -> speed.withAddedTime(departureTime)).toList(),
+                headPositions.stream().map(pos -> pos.withAddedTime(departureTime)).toList(),
+                stops.stream().map(stop -> stop.withAddedTime(departureTime)).toList(),
+                Maps.transformValues(routeOccupancies, occ -> occ.withAddedTime(departureTime)),
+                mechanicalEnergyConsumed,
+                signalSightings.stream().map(sighting -> sighting.withAddedTime(departureTime)).toList(),
+                zoneUpdates.stream().map(update -> update.withAddedTime(departureTime)).toList(),
+                spacingRequirements.stream().map(req -> req.withAddedTime(departureTime)).toList(),
+                routingRequirements.stream().map(req -> req.withAddedTime(departureTime)).toList()
+        );
     }
 }
