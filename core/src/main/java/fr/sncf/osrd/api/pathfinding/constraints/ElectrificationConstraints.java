@@ -1,6 +1,6 @@
 package fr.sncf.osrd.api.pathfinding.constraints;
 
-import static fr.sncf.osrd.api.pathfinding.PathfindingUtils.makePath;
+import static fr.sncf.osrd.api.utils.PathUtils.makePath;
 
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;

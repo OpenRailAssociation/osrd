@@ -1,6 +1,6 @@
 package fr.sncf.osrd.api;
 
-import static fr.sncf.osrd.api.pathfinding.PathfindingUtils.makePath;
+import static fr.sncf.osrd.api.utils.PathUtils.makePath;
 
 import com.squareup.moshi.Json;
 import com.squareup.moshi.JsonAdapter;

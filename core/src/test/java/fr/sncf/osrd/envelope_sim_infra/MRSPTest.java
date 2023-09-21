@@ -2,15 +2,13 @@ package fr.sncf.osrd.envelope_sim_infra;
 
 import static fr.sncf.osrd.Helpers.fullInfraFromRJS;
 import static fr.sncf.osrd.Helpers.getExampleInfra;
-import static fr.sncf.osrd.api.pathfinding.PathfindingUtils.makePath;
+import static fr.sncf.osrd.api.utils.PathUtils.makePath;
 import static fr.sncf.osrd.envelope.EnvelopeTestUtils.makeFlatPart;
 import static fr.sncf.osrd.envelope.MRSPEnvelopeBuilder.LimitKind.SPEED_LIMIT;
 import static fr.sncf.osrd.envelope.MRSPEnvelopeBuilder.LimitKind.TRAIN_LIMIT;
 import static fr.sncf.osrd.envelope_sim.EnvelopeProfile.CONSTANT_SPEED;
 import static fr.sncf.osrd.train.TestTrains.MAX_SPEED;
 import static fr.sncf.osrd.train.TestTrains.REALISTIC_FAST_TRAIN;
-import static fr.sncf.osrd.train.TestTrains.VERY_LONG_FAST_TRAIN;
-import static fr.sncf.osrd.train.TestTrains.VERY_SHORT_FAST_TRAIN;
 import static fr.sncf.osrd.utils.units.Distance.toMeters;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
@@ -30,7 +28,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;

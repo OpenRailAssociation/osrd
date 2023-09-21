@@ -13,6 +13,7 @@ import fr.sncf.osrd.api.pathfinding.response.CurveChartPointResult;
 import fr.sncf.osrd.api.pathfinding.response.PathWaypointResult;
 import fr.sncf.osrd.api.pathfinding.response.PathfindingResult;
 import fr.sncf.osrd.api.pathfinding.response.SlopeChartPointResult;
+import fr.sncf.osrd.api.utils.PathUtils;
 import fr.sncf.osrd.railjson.schema.geom.RJSLineString;
 import fr.sncf.osrd.railjson.schema.infra.RJSRoutePath;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSDirectionalTrackRange;
@@ -43,7 +44,7 @@ public class PathfindingResultConverter {
             Pathfinding.Result<Integer> rawPath,
             DiagnosticRecorderImpl warningRecorder
     ) {
-        var path = PathfindingUtils.makePath(rawInfra, blockInfra, rawPath.ranges());
+        var path = PathUtils.makePath(rawInfra, blockInfra, rawPath.ranges());
         var result = new PathfindingResult(toMeters(path.getLength()));
         result.routePaths = makeRoutePath(blockInfra, rawInfra, rawPath.ranges());
         result.pathWaypoints = makePathWaypoint(path, rawPath, rawInfra, blockInfra);

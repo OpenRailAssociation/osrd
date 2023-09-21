@@ -2,7 +2,7 @@ package fr.sncf.osrd.standalone_sim;
 
 import fr.sncf.osrd.DriverBehaviour;
 import fr.sncf.osrd.api.FullInfra;
-import fr.sncf.osrd.api.pathfinding.PathfindingUtils;
+import fr.sncf.osrd.api.utils.PathUtils;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimPath;
@@ -132,7 +132,7 @@ public class StandaloneSim {
             double timeStep
     ) {
         // Parse trainPath
-        var trainPath = PathfindingUtils.makePath(infra.rawInfra(), rjsTrainPath);
+        var trainPath = PathUtils.makePath(infra.rawInfra(), rjsTrainPath);
         var envelopePath = EnvelopeTrainPath.from(trainPath, electricalProfileMap);
 
         // Parse train schedules

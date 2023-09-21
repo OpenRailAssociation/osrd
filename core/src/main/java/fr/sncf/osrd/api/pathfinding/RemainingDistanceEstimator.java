@@ -1,6 +1,6 @@
 package fr.sncf.osrd.api.pathfinding;
 
-import static fr.sncf.osrd.api.pathfinding.PathfindingUtils.makePath;
+import static fr.sncf.osrd.api.utils.PathUtils.makePath;
 
 import fr.sncf.osrd.geom.Point;
 import fr.sncf.osrd.sim_infra.api.BlockInfra;

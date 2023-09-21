@@ -1,7 +1,7 @@
 package fr.sncf.osrd.api.pathfinding;
 
 import static fr.sncf.osrd.Helpers.getBlocksOnRoutes;
-import static fr.sncf.osrd.api.pathfinding.PathfindingUtils.makePath;
+import static fr.sncf.osrd.api.utils.PathUtils.makePath;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.Iterables;

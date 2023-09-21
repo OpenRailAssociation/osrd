@@ -3,8 +3,7 @@ package fr.sncf.osrd.stdcm.graph;
 import static fr.sncf.osrd.sim_infra.api.PathKt.buildPathFrom;
 import static fr.sncf.osrd.utils.KtToJavaConverter.toIntList;
 
-import com.google.common.collect.Iterables;
-import fr.sncf.osrd.api.pathfinding.PathfindingUtils;
+import fr.sncf.osrd.api.utils.PathUtils;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.sim_infra.api.Path;
@@ -79,7 +78,7 @@ public class STDCMUtils {
         assert 0 <= startOffset && startOffset <= blockLength;
         assert 0 <= endOffset && endOffset <= blockLength;
         assert startOffset <= endOffset;
-        return PathfindingUtils.makePath(graph.blockInfra, graph.rawInfra, block, startOffset, endOffset);
+        return PathUtils.makePath(graph.blockInfra, graph.rawInfra, block, startOffset, endOffset);
     }
 
     /** Create a TrainPath instance from a list of edge ranges */

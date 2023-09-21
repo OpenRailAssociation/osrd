@@ -1,12 +1,12 @@
 package fr.sncf.osrd.stdcm.graph;
 
-import static fr.sncf.osrd.api.pathfinding.PathfindingUtils.makePath;
+import static fr.sncf.osrd.api.utils.PathUtils.makePath;
 import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.CEILING;
 import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.FLOOR;
 import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.POSITION_EPSILON;
 import static fr.sncf.osrd.envelope_sim_infra.MRSP.computeMRSP;
 
-import fr.sncf.osrd.api.pathfinding.PathfindingUtils;
+import fr.sncf.osrd.api.utils.PathUtils;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.OverlayEnvelopeBuilder;
 import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder;
@@ -45,7 +45,7 @@ public class STDCMSimulations {
             RollingStock.Comfort comfort,
             double timeStep
     ) {
-        var path = PathfindingUtils.makePath(rawInfra, blockInfra, blocks, offsetFirstBlock);
+        var path = PathUtils.makePath(rawInfra, blockInfra, blocks, offsetFirstBlock);
         var envelopePath = EnvelopeTrainPath.from(path);
         return EnvelopeSimContextBuilder.build(rollingStock, envelopePath, timeStep, comfort);
     }

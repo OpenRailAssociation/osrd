@@ -1,4 +1,4 @@
-package fr.sncf.osrd.api.pathfinding;
+package fr.sncf.osrd.api.utils;
 
 import static fr.sncf.osrd.sim_infra.api.PathKt.buildPathFrom;
 import static fr.sncf.osrd.sim_infra.api.TrackInfraKt.getTrackSectionFromNameOrThrow;
@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class PathfindingUtils {
+public class PathUtils {
 
     public static Path makePath(BlockInfra blockInfra, RawSignalingInfra rawInfra, Integer blockIdx) {
         return makePath(blockInfra, rawInfra, blockIdx, 0, blockInfra.getBlockLength(blockIdx));
@@ -56,7 +56,7 @@ public class PathfindingUtils {
     }
 
     /** Creates a `Path` instance from a list of block ranges */
-    public static Path makePath(RawSignalingInfra infra, BlockInfra blockInfra,
+    public static Path makePath(RawSignalingInfra rawInfra, BlockInfra blockInfra,
                                 List<Pathfinding.EdgeRange<Integer>> blockRanges) {
         assert !blockRanges.isEmpty();
         long totalBlockPathLength = 0;
@@ -64,8 +64,8 @@ public class PathfindingUtils {
         for (var range : blockRanges) {
             var zonePaths = blockInfra.getBlockPath(range.edge());
             for (var zonePath : toIntList(zonePaths)) {
-                chunks.addAll(infra.getZonePathChunks(zonePath));
-                var zoneLength = infra.getZonePathLength(zonePath);
+                chunks.addAll(rawInfra.getZonePathChunks(zonePath));
+                var zoneLength = rawInfra.getZonePathLength(zonePath);
                 totalBlockPathLength += zoneLength;
             }
         }
@@ -73,11 +73,11 @@ public class PathfindingUtils {
         var lastRange = blockRanges.get(blockRanges.size() - 1);
         var lastBlockLength = blockInfra.getBlockLength(lastRange.edge());
         var endOffset = totalBlockPathLength - lastBlockLength + lastRange.end();
-        return buildPathFrom(infra, chunks, startOffset, endOffset);
+        return buildPathFrom(rawInfra, chunks, startOffset, endOffset);
     }
 
     /** Builds a Path from an RJSTrainPath */
-    public static Path makePath(RawSignalingInfra infra, RJSTrainPath rjsPath) {
+    public static Path makePath(RawSignalingInfra rawInfra, RJSTrainPath rjsPath) {
         var trackRanges = new ArrayList<RJSDirectionalTrackRange>();
         for (var routePath : rjsPath.routePath) {
             for (var trackRange : routePath.trackSections) {
@@ -96,9 +96,9 @@ public class PathfindingUtils {
         }
         var chunks = new MutableDirStaticIdxArrayList<TrackChunk>();
         for (var trackRange : trackRanges) {
-            var trackId = getTrackSectionFromNameOrThrow(trackRange.trackSectionID, infra);
+            var trackId = getTrackSectionFromNameOrThrow(trackRange.trackSectionID, rawInfra);
             var dir = trackRange.direction == EdgeDirection.START_TO_STOP ? Direction.INCREASING : Direction.DECREASING;
-            var chunksOnTrack = toIntList(infra.getTrackSectionChunks(trackId));
+            var chunksOnTrack = toIntList(rawInfra.getTrackSectionChunks(trackId));
             if (dir == Direction.DECREASING)
                 Collections.reverse(chunksOnTrack);
             for (var chunk : chunksOnTrack)
@@ -110,6 +110,6 @@ public class PathfindingUtils {
                         .mapToDouble(r -> r.end - r.begin)
                         .sum()
         );
-        return buildPathFrom(infra, chunks, startOffset, endOffset);
+        return buildPathFrom(rawInfra, chunks, startOffset, endOffset);
     }
 }
