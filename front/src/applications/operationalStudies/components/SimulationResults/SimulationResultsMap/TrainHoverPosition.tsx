@@ -197,7 +197,13 @@ function TrainHoverPosition(props: TrainHoverPositionProps) {
     allowancesSettings,
   } = props;
 
-  if (train && geojsonPath && point.headDistanceAlong && point.tailDistanceAlong) {
+  if (
+    train &&
+    geojsonPath &&
+    point.headPosition &&
+    point.headDistanceAlong &&
+    point.tailDistanceAlong
+  ) {
     const { ecoBlocks } = get(allowancesSettings, train.id, {} as AllowancesSetting);
     const fill = getFill(isSelectedTrain as boolean, ecoBlocks);
     const label = getSpeedAndTimeLabel(isSelectedTrain, ecoBlocks, point);
