@@ -22,23 +22,7 @@ public class ResultOccupancyTiming {
         this.timeTailFree = timeTailFree;
     }
 
-    /**
-     * Finds the occupancy on a given section
-     * @param startPosition the start of the target region
-     * @param endPosition the end of the target region
-     * @param headPositions the envelope of the head of the train
-     * @param trainLength the length of the train
-     * @return the occupancy times for this section
-     */
-    public static ResultOccupancyTiming fromPositions(
-            double startPosition,
-            double endPosition,
-            ArrayList<ResultPosition> headPositions,
-            double trainLength
-    ) {
-        var timeHeadOccupy = interpolateTime(startPosition, headPositions);
-        var pathLength = headPositions.get(headPositions.size() - 1).pathOffset;
-        var timeTailFree = interpolateTime(Math.min(pathLength, endPosition + trainLength), headPositions);
-        return new ResultOccupancyTiming(timeHeadOccupy, timeTailFree);
+    public ResultOccupancyTiming withAddedTime(double timeToAdd) {
+        return new ResultOccupancyTiming(timeHeadOccupy + timeToAdd, timeTailFree + timeToAdd);
     }
 }

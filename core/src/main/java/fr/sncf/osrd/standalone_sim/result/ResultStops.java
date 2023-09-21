@@ -15,4 +15,8 @@ public class ResultStops {
         this.position = position;
         this.duration = duration;
     }
+
+    public ResultStops withAddedTime(double timeToAdd) {
+        return new ResultStops(time + timeToAdd, position, duration);
+    }
 }
