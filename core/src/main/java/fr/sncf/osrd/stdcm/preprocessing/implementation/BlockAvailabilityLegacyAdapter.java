@@ -9,8 +9,8 @@ import fr.sncf.osrd.utils.units.Distance;
 import java.util.ArrayList;
 import java.util.List;
 
-/** This class implements the RouteAvailabilityInterface using the legacy block occupancy data.
- * It's meant to be removed once the rest of the "signaling sim - stdcm" pipeline is implemented. */
+/** This class implements the BlockAvailabilityInterface using the legacy block occupancy data.
+ * It's meant to be removed once STDCM is plugged to the conflict detection module. */
 public class BlockAvailabilityLegacyAdapter implements BlockAvailabilityInterface {
 
     private final BlockInfra blockInfra;

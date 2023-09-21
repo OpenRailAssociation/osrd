@@ -18,8 +18,8 @@ import java.util.*;
 /** This class combines all the (static) methods used to find a path in the STDCM graph. */
 public class STDCMPathfinding {
 
-    /** Given an infra, a rolling stock and a collection of unavailable time for each route,
-     * find a path made of a sequence of route ranges with a matching envelope.
+    /** Given an infra, a rolling stock and a collection of unavailable time for each block,
+     * find a path made of a sequence of block ranges with a matching envelope.
      * Returns null if no path is found.
      * */
     public static STDCMResult findPath(
@@ -139,23 +139,23 @@ public class STDCMPathfinding {
         return pathDuration * searchTimeRange + range.edge().totalDepartureTimeShift();
     }
 
-    /** Converts the "raw" heuristics based on infra graph, returning the most optimistic distance,
+    /** Converts the "raw" heuristics based on physical blocks, returning the most optimistic distance,
      * into heuristics based on stdcm edges, returning the most optimistic time */
     private static List<AStarHeuristic<STDCMEdge>> makeAStarHeuristic(
-            ArrayList<AStarHeuristic<Integer>> signalingRouteHeuristics,
+            ArrayList<AStarHeuristic<Integer>> baseBlockHeuristics,
             RollingStock rollingStock
     ) {
         var res = new ArrayList<AStarHeuristic<STDCMEdge>>();
-        for (var signalingRouteHeuristic : signalingRouteHeuristics) {
+        for (var baseBlockHeuristic : baseBlockHeuristics) {
             res.add((edge, offset) -> {
-                var distance = signalingRouteHeuristic.apply(edge.block(), offset);
+                var distance = baseBlockHeuristic.apply(edge.block(), offset);
                 return distance / rollingStock.maxSpeed;
             });
         }
         return res;
     }
 
-    /** Converts locations on a SignalingRoute into a location on a STDCMGraph.Edge. */
+    /** Converts locations on a block id into a location on a STDCMGraph.Edge. */
     private static Set<Pathfinding.EdgeLocation<STDCMEdge>> convertLocations(
             STDCMGraph graph,
             Collection<Pathfinding.EdgeLocation<Integer>> locations,

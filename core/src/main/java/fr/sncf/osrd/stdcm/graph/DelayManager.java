@@ -23,12 +23,12 @@ public class DelayManager {
     DelayManager(
             double minScheduleTimeStart,
             double maxRunTime,
-            BlockAvailabilityInterface routeAvailability,
+            BlockAvailabilityInterface blockAvailability,
             STDCMGraph graph
     ) {
         this.minScheduleTimeStart = minScheduleTimeStart;
         this.maxRunTime = maxRunTime;
-        this.blockAvailability = routeAvailability;
+        this.blockAvailability = blockAvailability;
         this.graph = graph;
     }
 
@@ -67,7 +67,7 @@ public class DelayManager {
         return res;
     }
 
-    /** Returns the start time of the next occupancy for the route */
+    /** Returns the start time of the next occupancy for the block */
     double findNextOccupancy(int blockId, double time, long startOffset, Envelope envelope) {
         var endOffset = startOffset + Distance.fromMeters(envelope.getEndPos());
         var availability = getScaledAvailability(
@@ -92,8 +92,8 @@ public class DelayManager {
 
     /** Returns by how much we can shift this envelope (in time) before causing a conflict.
      * </p>
-     * e.g. if the train takes 42s to go through the route, enters the route at t=10s,
-     * and we need to leave the route at t=60s, this will return 8s. */
+     * e.g. if the train takes 42s to go through the block, enters the block at t=10s,
+     * and we need to leave the block at t=60s, this will return 8s. */
     double findMaximumAddedDelay(int blockId, double startTime, long startOffset, Envelope envelope) {
         long endOffset = startOffset + Distance.fromMeters(envelope.getEndPos());
         var availability = getScaledAvailability(
@@ -103,7 +103,7 @@ public class DelayManager {
         return ((BlockAvailabilityInterface.Available) availability).maximumDelay;
     }
 
-    /** Calls `routeAvailability.getAvailability`, on an envelope scaled to account for the standard allowance. */
+    /** Calls `blockAvailability.getAvailability`, on an envelope scaled to account for the standard allowance. */
     private BlockAvailabilityInterface.Availability getScaledAvailability(
             int blockId,
             long startOffset,

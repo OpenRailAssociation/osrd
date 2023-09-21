@@ -7,7 +7,7 @@ public record STDCMNode(
         double time,
         // Speed at the end of the previous edge
         double speed,
-        // Detector that separates the routes, this is the physical location of the node (DirDetectorId)
+        // Detector that separates the blocks, this is the physical location of the node (DirDetectorId)
         int detector,
         // Sum of all the delays we have added by shifting the departure time
         double totalPrevAddedDelay,

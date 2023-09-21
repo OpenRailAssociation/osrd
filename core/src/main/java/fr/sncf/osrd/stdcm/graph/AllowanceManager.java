@@ -120,7 +120,7 @@ public class AllowanceManager {
             var endTime = edge.timeStart() + edge.getTotalTime();
             var maxDelayAddedOnEdge = edge.timeNextOccupancy() - endTime;
             if (delayNeeded > maxDelayAddedOnEdge) {
-                // We can't add delay in this route, the allowance range ends here (excluded)
+                // We can't add delay in this block, the allowance range ends here (excluded)
                 return new ArrayList<>(res);
             }
             res.addFirst(edge);

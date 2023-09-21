@@ -83,7 +83,7 @@ public class STDCMPathfindingBuilder {
         return this;
     }
 
-    /** Sets at which times each section of routes are unavailable. By default, everything is available */
+    /** Sets at which times each section of blocks are unavailable. By default, everything is available */
     public STDCMPathfindingBuilder setUnavailableTimes(
             Multimap<Integer, OccupancySegment> unavailableTimes
     ) {

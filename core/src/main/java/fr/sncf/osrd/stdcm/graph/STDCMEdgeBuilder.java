@@ -22,7 +22,7 @@ public class STDCMEdgeBuilder {
     /** Start speed, ignored if envelope is specified */
     private double startSpeed = 0;
 
-    /** Start offset on the given route */
+    /** Start offset on the given block */
     private long startOffset = 0;
 
     /** Maximum delay we can add on any of the previous edges by shifting the departure time,
@@ -84,7 +84,7 @@ public class STDCMEdgeBuilder {
         return this;
     }
 
-    /** Start offset on the given route */
+    /** Start offset on the given block */
     public STDCMEdgeBuilder setStartOffset(long startOffset) {
         this.startOffset = startOffset;
         return this;
@@ -131,7 +131,7 @@ public class STDCMEdgeBuilder {
 
     // region BUILDERS
 
-    /** Creates all edges that can be accessed on the given route, using all the parameters specified. */
+    /** Creates all edges that can be accessed on the given block, using all the parameters specified. */
     public Collection<STDCMEdge> makeAllEdges() {
         if (envelope == null)
             envelope = STDCMSimulations.simulateBlock(

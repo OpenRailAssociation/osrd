@@ -19,7 +19,7 @@ public class BacktrackingManager {
     }
 
     /** Given an edge that needs an envelope change in previous edges to avoid a discontinuity,
-     * returns an edge that has no discontinuity, going over the same route using the same opening.
+     * returns an edge that has no discontinuity, going over the same block using the same opening.
      * The given edge does not change but the previous ones are new instances with a different envelope.
      * If no backtracking is needed, nothing is done and the edge is returned as it is.
      * If the new edge is invalid (for example if it would cause conflicts), returns null. */

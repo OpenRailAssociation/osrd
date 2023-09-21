@@ -54,7 +54,7 @@ public class STDCMStandardAllowance {
                     rangeTransitions
             );
             var conflictOffset = findConflictOffsets(
-                    graph, newEnvelope, blockAvailability, ranges, departureTime, stops);
+                    newEnvelope, blockAvailability, ranges, departureTime, stops);
             if (conflictOffset < 0)
                 return newEnvelope;
             assert !rangeTransitions.contains(conflictOffset) : "conflict offset is already on a range transition";
@@ -76,7 +76,6 @@ public class STDCMStandardAllowance {
      * If a conflict is found, returns its offset.
      * Otherwise, returns NaN. */
     private static long findConflictOffsets(
-            STDCMGraph graph,
             Envelope envelope,
             BlockAvailabilityInterface blockAvailability,
             List<Pathfinding.EdgeRange<STDCMEdge>> ranges,

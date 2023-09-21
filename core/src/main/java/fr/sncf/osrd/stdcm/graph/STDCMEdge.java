@@ -10,15 +10,15 @@ import java.util.Objects;
 public record STDCMEdge(
         // Block considered for this edge
         int block,
-        // Envelope of the train going through the route (starts at t=0). Does not account for allowances.
+        // Envelope of the train going through the block (starts at t=0). Does not account for allowances.
         Envelope envelope,
-        // Time at which the train enters the route
+        // Time at which the train enters the block
         double timeStart,
-        // Maximum delay we can add after this route by delaying the start time without causing conflicts
+        // Maximum delay we can add after this block by delaying the start time without causing conflicts
         double maximumAddedDelayAfter,
-        // Delay we needed to add in this route to avoid conflicts (by shifting the departure time)
+        // Delay we needed to add in this block to avoid conflicts (by shifting the departure time)
         double addedDelay,
-        // Time of the next occupancy of the route, used to identify the "opening" used by the edge
+        // Time of the next occupancy of the block, used to identify the "opening" used by the edge
         double timeNextOccupancy,
         // Total delay we have added by shifting the departure time since the start of the path
         double totalDepartureTimeShift,
@@ -26,7 +26,7 @@ public record STDCMEdge(
         STDCMNode previousNode,
         // Offset of the envelope if it doesn't start at the beginning of the edge
         long envelopeStartOffset,
-        // Time at which the train enters the route, discretized by only considering the minutes.
+        // Time at which the train enters the block, discretized by only considering the minutes.
         // Used to identify visited edges
         int minuteTimeStart,
         // Speed factor used to account for standard allowance.
@@ -60,7 +60,7 @@ public record STDCMEdge(
     /** Returns the node at the end of this edge */
     STDCMNode getEdgeEnd(STDCMGraph graph) {
         if (!endAtStop) {
-            // We move on to the next route
+            // We move on to the next block
             return new STDCMNode(
                     getTotalTime() + timeStart(),
                     envelope().getEndSpeed(),
@@ -73,7 +73,7 @@ public record STDCMEdge(
                     -1
             );
         } else {
-            // New edge on the same route, after a stop
+            // New edge on the same block, after a stop
             double stopDuration = graph.steps.get(waypointIndex + 1).duration();
             var newWaypointIndex = waypointIndex + 1;
             while (newWaypointIndex + 1 < graph.steps.size() && !graph.steps.get(newWaypointIndex + 1).stop())
@@ -92,7 +92,7 @@ public record STDCMEdge(
         }
     }
 
-    /** Returns how long it takes to go from the start to the end of the route, accounting standard allowance. */
+    /** Returns how long it takes to go from the start to the end of the block, accounting standard allowance. */
     public double getTotalTime() {
         return envelope.getTotalTime() / standardAllowanceSpeedFactor;
     }

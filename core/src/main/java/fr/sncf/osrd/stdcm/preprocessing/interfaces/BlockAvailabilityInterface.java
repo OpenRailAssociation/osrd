@@ -23,7 +23,7 @@ public interface BlockAvailabilityInterface {
      * More details are given in the instances.
      * <br/>
      * Note: every position refers to the position of the head of the train.
-     * The implementation of RouteAvailabilityInterface must account for train length, sight distance,
+     * The implementation of BlockAvailabilityInterface must account for train length, sight distance,
      * and similar factors.
      *
      * @param blocks List of block IDs taken by the train
@@ -117,6 +117,6 @@ public interface BlockAvailabilityInterface {
 
     /** The availability of the requested section can't be determined,
      * the path needs to extend further. The availability depends
-     * on the route taken by the train after the end of the given path. */
+     * on the block taken by the train after the end of the given path. */
     final class NotEnoughLookahead extends Availability {}
 }

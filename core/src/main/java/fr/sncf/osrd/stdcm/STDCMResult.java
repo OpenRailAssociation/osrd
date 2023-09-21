@@ -2,7 +2,6 @@ package fr.sncf.osrd.stdcm;
 
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.PhysicsPath;
-import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.sim_infra.api.Path;
 import fr.sncf.osrd.train.TrainStop;
 import fr.sncf.osrd.utils.graph.Pathfinding;

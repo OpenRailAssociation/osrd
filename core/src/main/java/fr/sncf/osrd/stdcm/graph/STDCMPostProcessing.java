@@ -36,8 +36,8 @@ public class STDCMPostProcessing {
             BlockAvailabilityInterface blockAvailability
     ) {
         var ranges = makeEdgeRange(path);
-        var routeRanges = makeRouteRanges(ranges);
-        var routeWaypoints = makeRouteWaypoints(path);
+        var blockRanges = makeBlockRanges(ranges);
+        var blockWaypoints = makeBlockWaypoints(path);
         var trainPath = STDCMUtils.makePathFromRanges(graph, ranges);
         var physicsPath = EnvelopeTrainPath.from(trainPath);
         var mergedEnvelopes = STDCMUtils.mergeEnvelopeRanges(ranges);
@@ -57,7 +57,7 @@ public class STDCMPostProcessing {
                 stops
         );
         var res = new STDCMResult(
-                new Pathfinding.Result<>(routeRanges, routeWaypoints),
+                new Pathfinding.Result<>(blockRanges, blockWaypoints),
                 withAllowance,
                 trainPath,
                 physicsPath,
@@ -73,19 +73,19 @@ public class STDCMPostProcessing {
     }
 
     /** Creates the list of waypoints on the path */
-    private static List<Pathfinding.EdgeLocation<Integer>> makeRouteWaypoints(
+    private static List<Pathfinding.EdgeLocation<Integer>> makeBlockWaypoints(
             Pathfinding.Result<STDCMEdge> path
     ) {
         var res = new ArrayList<Pathfinding.EdgeLocation<Integer>>();
         for (var waypoint : path.waypoints()) {
-            var routeOffset = waypoint.offset() + waypoint.edge().envelopeStartOffset();
-            res.add(new Pathfinding.EdgeLocation<>(waypoint.edge().block(), routeOffset));
+            var blockOffset = waypoint.offset() + waypoint.edge().envelopeStartOffset();
+            res.add(new Pathfinding.EdgeLocation<>(waypoint.edge().block(), blockOffset));
         }
         return res;
     }
 
-    /** Builds the list of route ranges, merging the ranges on the same route */
-    private List<Pathfinding.EdgeRange<Integer>> makeRouteRanges(
+    /** Builds the list of block ranges, merging the ranges on the same block */
+    private List<Pathfinding.EdgeRange<Integer>> makeBlockRanges(
             List<Pathfinding.EdgeRange<STDCMEdge>> ranges
     ) {
         var res = new ArrayList<Pathfinding.EdgeRange<Integer>>();
