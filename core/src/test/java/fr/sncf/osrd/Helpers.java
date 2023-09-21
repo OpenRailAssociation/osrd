@@ -166,6 +166,7 @@ public class Helpers {
         throw new RuntimeException("Couldn't find route location");
     }
 
+    /** Creates a path from a list of route names and start/end locations */
     public static fr.sncf.osrd.sim_infra.api.Path pathFromRoutes(
             RawSignalingInfra infra,
             List<String> routeNames,

@@ -99,9 +99,9 @@ public class ScheduleMetadataExtractorTests {
 
     @Test
     public void oneLineInfraTests() throws Exception {
-        var rjsInfra = Helpers.getExampleInfra("one_line/infra.json");
-        var infra = fullInfraFromRJS(rjsInfra);
-        var routes = new ArrayList<String>();
+        final var rjsInfra = Helpers.getExampleInfra("one_line/infra.json");
+        final var infra = fullInfraFromRJS(rjsInfra);
+        final var routes = new ArrayList<String>();
         routes.add("rt.buffer_stop.0->detector.0");
         for (int i = 0; i < 9; i++)
             routes.add(String.format("rt.detector.%d->detector.%d", i, i + 1));
