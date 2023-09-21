@@ -1,1771 +1,1589 @@
 {
-    "$defs": {
-        "ApplicableDirections": {
-            "description": "This is used to know the direction of application of certain objects",
-            "enum": [
-                "START_TO_STOP",
-                "STOP_TO_START",
-                "BOTH"
-            ],
-            "title": "ApplicableDirections",
-            "type": "string"
-        },
-        "ApplicableDirectionsTrackRange": {
-            "description": "\n    An applicable directions track range is a track range with associated directions.\n    ",
-            "properties": {
-                "applicable_directions": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/ApplicableDirections"
-                        }
-                    ],
-                    "description": "Direction where the corresponding object is applied"
-                },
-                "begin": {
-                    "description": "Begin offset in meters of the corresponding track section",
-                    "minimum": 0,
-                    "title": "Begin",
-                    "type": "number"
-                },
-                "end": {
-                    "description": "End offset in meters of the corresponding track section",
-                    "minimum": 0,
-                    "title": "End",
-                    "type": "number"
-                },
-                "track": {
-                    "description": "Identifier of the track section",
-                    "maxLength": 255,
-                    "minLength": 1,
-                    "title": "Track",
-                    "type": "string"
-                }
-            },
-            "required": [
-                "track",
-                "begin",
-                "end",
-                "applicable_directions"
-            ],
-            "title": "ApplicableDirectionsTrackRange",
-            "type": "object"
-        },
-        "BalSystem": {
-            "properties": {
-                "next_signaling_systems": {
-                    "description": "The list of allowed input signaling systems",
-                    "items": {
-                        "$ref": "#/$defs/SignalingSystem"
-                    },
-                    "title": "Next Signaling Systems",
-                    "type": "array"
-                },
-                "settings": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/__main____BalSystem__Settings"
-                        }
-                    ],
-                    "description": "BAL signal settings"
-                },
-                "signaling_system": {
-                    "const": "BAL",
-                    "default": "BAL",
-                    "title": "Signaling System"
-                }
-            },
-            "required": [
-                "settings"
-            ],
-            "title": "BalSystem",
-            "type": "object"
-        },
-        "BaprSystem": {
-            "properties": {
-                "next_signaling_systems": {
-                    "description": "The list of allowed input signaling systems",
-                    "items": {
-                        "$ref": "#/$defs/SignalingSystem"
-                    },
-                    "title": "Next Signaling Systems",
-                    "type": "array"
-                },
-                "settings": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/__main____BaprSystem__Settings"
-                        }
-                    ],
-                    "description": "BAPR signal settings"
-                },
-                "signaling_system": {
-                    "const": "BAPR",
-                    "default": "BAPR",
-                    "title": "Signaling System"
-                }
-            },
-            "required": [
-                "settings"
-            ],
-            "title": "BaprSystem",
-            "type": "object"
-        },
-        "BufferStop": {
-            "description": "This class defines the buffer stop object.\n    A buffer stop is a device placed at the end of a dead-end road\n    to stop any drifting trains from continuing off the road.\n    A buffer stop is characterized by its id and its corresponding track.\n    ",
-            "properties": {
-                "id": {
-                    "description": "Unique identifier of the object",
-                    "maxLength": 255,
-                    "minLength": 1,
-                    "title": "Id",
-                    "type": "string"
-                },
-                "position": {
-                    "description": "Offset of the point in meters to the beginning of the track section",
-                    "minimum": 0,
-                    "title": "Position",
-                    "type": "number"
-                },
-                "track": {
-                    "description": "Reference to the track section on which the object is located",
-                    "maxLength": 255,
-                    "minLength": 1,
-                    "title": "Track",
-                    "type": "string"
-                }
-            },
-            "required": [
-                "track",
-                "position",
-                "id"
-            ],
-            "title": "BufferStop",
-            "type": "object"
-        },
-        "BufferStopReference": {
-            "properties": {
-                "id": {
-                    "description": "Identifier of the buffer stop",
-                    "maxLength": 255,
-                    "minLength": 1,
-                    "title": "Id",
-                    "type": "string"
-                },
-                "type": {
-                    "const": "BufferStop",
-                    "title": "Type"
-                }
-            },
-            "required": [
-                "type",
-                "id"
-            ],
-            "title": "BufferStopReference",
-            "type": "object"
-        },
-        "Catenary": {
-            "description": "\n    A catenary corresponds to a set of cables designed to power electric trains by capturing the current through the use\n    of a pantograph. Catenary is identified by its identifier.\n    ",
-            "properties": {
-                "id": {
-                    "description": "Unique identifier of the object",
-                    "maxLength": 255,
-                    "minLength": 1,
-                    "title": "Id",
-                    "type": "string"
-                },
-                "track_ranges": {
-                    "description": "List of locations where the voltage is applied",
-                    "items": {
-                        "$ref": "#/$defs/ApplicableDirectionsTrackRange"
-                    },
-                    "title": "Track Ranges",
-                    "type": "array"
-                },
-                "voltage": {
-                    "description": "Type of power supply (in Volts) used for electrification",
-                    "minLength": 1,
-                    "title": "Voltage",
-                    "type": "string"
-                }
-            },
-            "required": [
-                "id",
-                "voltage",
-                "track_ranges"
-            ],
-            "title": "Catenary",
-            "type": "object"
-        },
-        "Curve": {
-            "description": "This class is used to define the curve object.\n    A curve correspond at radius of curvature in the part of corresponding track section.",
-            "properties": {
-                "begin": {
-                    "description": "Offset in meters corresponding at the beginning of the corresponding radius in a track section ",
-                    "minimum": 0,
-                    "title": "Begin",
-                    "type": "number"
-                },
-                "end": {
-                    "description": "Offset in meters corresponding at the end of the corresponding radius in a track section",
-                    "minimum": 0,
-                    "title": "End",
-                    "type": "number"
-                },
-                "radius": {
-                    "description": "Corresponding radius of curvature measured in meters",
-                    "title": "Radius",
-                    "type": "number"
-                }
-            },
-            "required": [
-                "radius",
-                "begin",
-                "end"
-            ],
-            "title": "Curve",
-            "type": "object"
-        },
-        "Detector": {
-            "description": "This class defines detector object.\n    A detector is characterized by its id and its corresponding track.\n    A detector is used to locate a train\n    in order to consider the section as occupied when there is a train.\n    ",
-            "properties": {
-                "applicable_directions": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/ApplicableDirections"
-                        }
-                    ],
-                    "description": "Direction of the application of the detector"
-                },
-                "id": {
-                    "description": "Unique identifier of the object",
-                    "maxLength": 255,
-                    "minLength": 1,
-                    "title": "Id",
-                    "type": "string"
-                },
-                "position": {
-                    "description": "Offset of the point in meters to the beginning of the track section",
-                    "minimum": 0,
-                    "title": "Position",
-                    "type": "number"
-                },
-                "track": {
-                    "description": "Reference to the track section on which the object is located",
-                    "maxLength": 255,
-                    "minLength": 1,
-                    "title": "Track",
-                    "type": "string"
-                }
-            },
-            "required": [
-                "track",
-                "position",
-                "id",
-                "applicable_directions"
-            ],
-            "title": "Detector",
-            "type": "object"
-        },
-        "DetectorReference": {
-            "properties": {
-                "id": {
-                    "description": "Identifier of the detector",
-                    "maxLength": 255,
-                    "minLength": 1,
-                    "title": "Id",
-                    "type": "string"
-                },
-                "type": {
-                    "const": "Detector",
-                    "title": "Type"
-                }
-            },
-            "required": [
-                "type",
-                "id"
-            ],
-            "title": "DetectorReference",
-            "type": "object"
-        },
-        "Direction": {
-            "description": "This is the description of the direction (increasing or decreasing profile).",
-            "enum": [
-                "START_TO_STOP",
-                "STOP_TO_START"
-            ],
-            "title": "Direction",
-            "type": "string"
-        },
-        "DirectionalTrackRange": {
-            "description": "\n    A directional track range is a track range with an associated direction.\n    ",
-            "properties": {
-                "begin": {
-                    "description": "Begin offset in meters of the corresponding track section",
-                    "minimum": 0,
-                    "title": "Begin",
-                    "type": "number"
-                },
-                "direction": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/Direction"
-                        }
-                    ],
-                    "description": "Description of the direction"
-                },
-                "end": {
-                    "description": "End offset in meters of the corresponding track section",
-                    "minimum": 0,
-                    "title": "End",
-                    "type": "number"
-                },
-                "track": {
-                    "description": "Identifier of the track section",
-                    "maxLength": 255,
-                    "minLength": 1,
-                    "title": "Track",
-                    "type": "string"
-                }
-            },
-            "required": [
-                "track",
-                "begin",
-                "end",
-                "direction"
-            ],
-            "title": "DirectionalTrackRange",
-            "type": "object"
-        },
-        "Endpoint": {
-            "enum": [
-                "BEGIN",
-                "END"
-            ],
-            "title": "Endpoint",
-            "type": "string"
-        },
-        "FlagSignalParameter": {
-            "enum": [
-                "true",
-                "false"
-            ],
-            "title": "FlagSignalParameter",
-            "type": "string"
-        },
-        "LimitedLogicalSignal": {
-            "description": "Limited list of logical signals. Used to generate a usable schema for the front editor",
-            "discriminator": {
-                "mapping": {
-                    "BAL": "#/$defs/BalSystem",
-                    "BAPR": "#/$defs/BaprSystem",
-                    "TVM": "#/$defs/TvmSystem"
-                },
-                "propertyName": "signaling_system"
-            },
-            "oneOf": [
-                {
-                    "$ref": "#/$defs/BalSystem"
-                },
-                {
-                    "$ref": "#/$defs/BaprSystem"
-                },
-                {
-                    "$ref": "#/$defs/TvmSystem"
-                }
-            ],
-            "title": "LimitedLogicalSignal"
-        },
-        "LineString": {
-            "description": "LineString Model",
-            "properties": {
-                "bbox": {
-                    "anyOf": [
-                        {
-                            "maxItems": 4,
-                            "minItems": 4,
-                            "prefixItems": [
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "number"
-                                }
-                            ],
-                            "type": "array"
-                        },
-                        {
-                            "maxItems": 6,
-                            "minItems": 6,
-                            "prefixItems": [
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "number"
-                                }
-                            ],
-                            "type": "array"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "default": null,
-                    "title": "Bbox"
-                },
-                "coordinates": {
-                    "items": {
-                        "anyOf": [
-                            {
-                                "maxItems": 2,
-                                "minItems": 2,
-                                "prefixItems": [
-                                    {
-                                        "type": "number"
-                                    },
-                                    {
-                                        "type": "number"
-                                    }
-                                ],
-                                "type": "array"
-                            },
-                            {
-                                "maxItems": 3,
-                                "minItems": 3,
-                                "prefixItems": [
-                                    {
-                                        "type": "number"
-                                    },
-                                    {
-                                        "type": "number"
-                                    },
-                                    {
-                                        "type": "number"
-                                    }
-                                ],
-                                "type": "array"
-                            }
-                        ]
-                    },
-                    "minItems": 2,
-                    "title": "Coordinates",
-                    "type": "array"
-                },
-                "type": {
-                    "const": "LineString",
-                    "title": "Type"
-                }
-            },
-            "required": [
-                "type",
-                "coordinates"
-            ],
-            "title": "LineString",
-            "type": "object"
-        },
-        "LoadingGaugeLimit": {
-            "description": "This class is used to define loading gauge limit.\n    It represents a restriction on the trains according to their categories of loading gauge\n    and the type of the corresponding rolling stock.\n    ",
-            "properties": {
-                "begin": {
-                    "description": "Offset in meters corresponding at the beginning of the corresponding loading gauge limit",
-                    "minimum": 0,
-                    "title": "Begin",
-                    "type": "number"
-                },
-                "category": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/LoadingGaugeType"
-                        }
-                    ],
-                    "description": "Category of loading gauge for the corresponding rolling stock"
-                },
-                "end": {
-                    "description": "Offset in meters corresponding at the end of the corresponding loading gauge limit",
-                    "minimum": 0,
-                    "title": "End",
-                    "type": "number"
-                }
-            },
-            "required": [
-                "category",
-                "begin",
-                "end"
-            ],
-            "title": "LoadingGaugeLimit",
-            "type": "object"
-        },
-        "LoadingGaugeType": {
-            "description": "This class allows to know the category of the loading gauge.",
-            "enum": [
-                "G1",
-                "G2",
-                "GA",
-                "GB",
-                "GB1",
-                "GC",
-                "FR3.3",
-                "FR3.3/GB/G2",
-                "GLOTT"
-            ],
-            "title": "LoadingGaugeType",
-            "type": "string"
-        },
-        "LogicalSignal": {
-            "description": "A logical signal is what displays something, whereas a physical signal is a group of logical signals",
-            "properties": {
-                "next_signaling_systems": {
-                    "description": "The list of allowed input signaling systems",
-                    "items": {
-                        "type": "string"
-                    },
-                    "title": "Next Signaling Systems",
-                    "type": "array"
-                },
-                "settings": {
-                    "additionalProperties": {
-                        "minLength": 1,
-                        "type": "string"
-                    },
-                    "description": "A list of key value parameters, which are defined per signaling system",
-                    "title": "Settings",
-                    "type": "object"
-                },
-                "signaling_system": {
-                    "description": "The signal's output signaling system",
-                    "title": "Signaling System",
-                    "type": "string"
-                }
-            },
-            "required": [
-                "signaling_system",
-                "next_signaling_systems",
-                "settings"
-            ],
-            "title": "LogicalSignal",
-            "type": "object"
-        },
-        "NeutralSection": {
-            "description": "\n    Neutral sections are portions of track where trains aren't allowed to pull power from catenaries.\n    They have to rely on inertia to cross such sections.\n\n    In practice, neutral sections are delimited by signs. In OSRD, neutral sections are directional\n    to allow accounting for different sign placement depending on the direction.\n\n    For more details see [the documentation](https://osrd.fr/en/docs/explanation/neutral_sections/).\n    ",
-            "properties": {
-                "announcement_track_ranges": {
-                    "description": "List of locations where the upcoming neutral section is announced but not yet crossed",
-                    "items": {
-                        "$ref": "#/$defs/DirectionalTrackRange"
-                    },
-                    "title": "Announcement Track Ranges",
-                    "type": "array"
-                },
-                "id": {
-                    "description": "Unique identifier of the object",
-                    "maxLength": 255,
-                    "minLength": 1,
-                    "title": "Id",
-                    "type": "string"
-                },
-                "lower_pantograph": {
-                    "description": "Whether or not trains need to lower their pantograph in the section",
-                    "title": "Lower Pantograph",
-                    "type": "boolean"
-                },
-                "track_ranges": {
-                    "description": "List of locations where the train cannot pull power from catenaries",
-                    "items": {
-                        "$ref": "#/$defs/DirectionalTrackRange"
-                    },
-                    "minItems": 1,
-                    "title": "Track Ranges",
-                    "type": "array"
-                }
-            },
-            "required": [
-                "id",
-                "track_ranges",
-                "lower_pantograph"
-            ],
-            "title": "NeutralSection",
-            "type": "object"
-        },
-        "OperationalPoint": {
-            "description": "\n    This class describes the operational points of the corresponding infra.\n    ",
-            "properties": {
-                "extensions": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/OperationalPointExtensions"
-                        }
-                    ],
-                    "default": null
-                },
-                "id": {
-                    "description": "Unique identifier of the object",
-                    "maxLength": 255,
-                    "minLength": 1,
-                    "title": "Id",
-                    "type": "string"
-                },
-                "parts": {
-                    "items": {
-                        "$ref": "#/$defs/OperationalPointPart"
-                    },
-                    "title": "Parts",
-                    "type": "array"
-                }
-            },
-            "required": [
-                "id",
-                "parts"
-            ],
-            "title": "OperationalPoint",
-            "type": "object"
-        },
-        "OperationalPointExtensions": {
-            "properties": {
-                "identifier": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/OperationalPointIdentifierExtension"
-                        }
-                    ],
-                    "default": null
-                },
-                "sncf": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/OperationalPointSncfExtension"
-                        }
-                    ],
-                    "default": null
-                }
-            },
-            "title": "OperationalPointExtensions",
-            "type": "object"
-        },
-        "OperationalPointIdentifierExtension": {
-            "properties": {
-                "name": {
-                    "description": "Name of the operational point",
-                    "minLength": 1,
-                    "title": "Name",
-                    "type": "string"
-                },
-                "uic": {
-                    "description": "International Union of Railways code of the operational point",
-                    "title": "Uic",
-                    "type": "integer"
-                }
-            },
-            "required": [
-                "name",
-                "uic"
-            ],
-            "title": "OperationalPointIdentifierExtension",
-            "type": "object"
-        },
-        "OperationalPointPart": {
-            "description": "\n    Operational point part is a single point on the infrastructure. It's linked to an operational point.\n    ",
-            "properties": {
-                "position": {
-                    "description": "Offset of the point in meters to the beginning of the track section",
-                    "minimum": 0,
-                    "title": "Position",
-                    "type": "number"
-                },
-                "track": {
-                    "description": "Reference to the track section on which the object is located",
-                    "maxLength": 255,
-                    "minLength": 1,
-                    "title": "Track",
-                    "type": "string"
-                }
-            },
-            "required": [
-                "track",
-                "position"
-            ],
-            "title": "OperationalPointPart",
-            "type": "object"
-        },
-        "OperationalPointSncfExtension": {
-            "properties": {
-                "ch": {
-                    "description": "THOR site code of the operational point",
-                    "maxLength": 2,
-                    "minLength": 1,
-                    "title": "Ch",
-                    "type": "string"
-                },
-                "ch_long_label": {
-                    "description": "THOR site code long label of the operational point",
-                    "minLength": 1,
-                    "title": "Ch Long Label",
-                    "type": "string"
-                },
-                "ch_short_label": {
-                    "description": "THOR site code short label of the operational point",
-                    "minLength": 1,
-                    "title": "Ch Short Label",
-                    "type": "string"
-                },
-                "ci": {
-                    "description": "THOR immutable code of the operational point",
-                    "title": "Ci",
-                    "type": "integer"
-                },
-                "trigram": {
-                    "description": "Unique SNCF trigram of the operational point",
-                    "maxLength": 3,
-                    "minLength": 1,
-                    "title": "Trigram",
-                    "type": "string"
-                }
-            },
-            "required": [
-                "ci",
-                "ch",
-                "ch_short_label",
-                "ch_long_label",
-                "trigram"
-            ],
-            "title": "OperationalPointSncfExtension",
-            "type": "object"
-        },
-        "Panel": {
-            "description": "This class is used to define panels.\n    This is a physical, punctual, cosmetic object.\n    ",
-            "properties": {
-                "angle_geo": {
-                    "default": 0,
-                    "description": "Geographic angle in degrees",
-                    "title": "Angle Geo",
-                    "type": "number"
-                },
-                "angle_sch": {
-                    "default": 0,
-                    "description": "Schematic angle in degrees",
-                    "title": "Angle Sch",
-                    "type": "number"
-                },
-                "position": {
-                    "description": "Offset of the point in meters to the beginning of the track section",
-                    "minimum": 0,
-                    "title": "Position",
-                    "type": "number"
-                },
-                "side": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/Side"
-                        }
-                    ],
-                    "default": "CENTER",
-                    "description": "Side of the panel on the track"
-                },
-                "track": {
-                    "description": "Reference to the track section on which the object is located",
-                    "maxLength": 255,
-                    "minLength": 1,
-                    "title": "Track",
-                    "type": "string"
-                },
-                "type": {
-                    "description": "Precise the type of the panel",
-                    "minLength": 1,
-                    "title": "Type",
-                    "type": "string"
-                },
-                "value": {
-                    "anyOf": [
-                        {
-                            "minLength": 1,
-                            "type": "string"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "default": null,
-                    "description": "If the panel is an announcement, precise the value(s)",
-                    "title": "Value"
-                }
-            },
-            "required": [
-                "track",
-                "position",
-                "type"
-            ],
-            "title": "Panel",
-            "type": "object"
-        },
-        "Route": {
-            "description": "\n    This class is used to describe routes on the infrastructure.\n    ",
-            "properties": {
-                "entry_point": {
-                    "discriminator": {
-                        "mapping": {
-                            "BufferStop": "#/$defs/BufferStopReference",
-                            "Detector": "#/$defs/DetectorReference"
-                        },
-                        "propertyName": "type"
-                    },
-                    "oneOf": [
-                        {
-                            "$ref": "#/$defs/DetectorReference"
-                        },
-                        {
-                            "$ref": "#/$defs/BufferStopReference"
-                        }
-                    ],
-                    "title": "Entry Point"
-                },
-                "entry_point_direction": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/Direction"
-                        }
-                    ],
-                    "description": "Direction of the route at the entry point"
-                },
-                "exit_point": {
-                    "discriminator": {
-                        "mapping": {
-                            "BufferStop": "#/$defs/BufferStopReference",
-                            "Detector": "#/$defs/DetectorReference"
-                        },
-                        "propertyName": "type"
-                    },
-                    "oneOf": [
-                        {
-                            "$ref": "#/$defs/DetectorReference"
-                        },
-                        {
-                            "$ref": "#/$defs/BufferStopReference"
-                        }
-                    ],
-                    "title": "Exit Point"
-                },
-                "id": {
-                    "description": "Unique identifier of the object",
-                    "maxLength": 255,
-                    "minLength": 1,
-                    "title": "Id",
-                    "type": "string"
-                },
-                "release_detectors": {
-                    "description": "Detector allowing the release of resources reserved from the beginning of the route until this one",
-                    "items": {
-                        "maxLength": 255,
-                        "minLength": 1,
-                        "type": "string"
-                    },
-                    "title": "Release Detectors",
-                    "type": "array"
-                },
-                "switches_directions": {
-                    "additionalProperties": {
-                        "maxLength": 255,
-                        "minLength": 1,
-                        "type": "string"
-                    },
-                    "description": "Switches position part of the route",
-                    "title": "Switches Directions",
-                    "type": "object"
-                }
-            },
-            "required": [
-                "id",
-                "entry_point",
-                "entry_point_direction",
-                "exit_point",
-                "release_detectors",
-                "switches_directions"
-            ],
-            "title": "Route",
-            "type": "object"
-        },
-        "Side": {
-            "description": "This class describes the side of the track where the signal is located.",
-            "enum": [
-                "LEFT",
-                "RIGHT",
-                "CENTER"
-            ],
-            "title": "Side",
-            "type": "string"
-        },
-        "Signal": {
-            "description": "This class is used to describe the signal.\n    A signal is characterized by its id and its corresponding track.\n    By default, the signal is located at the center of the track.\n    ",
-            "properties": {
-                "direction": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/Direction"
-                        }
-                    ],
-                    "description": "Direction of use of the signal"
-                },
-                "extensions": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/SignalExtensions"
-                        }
-                    ],
-                    "default": null
-                },
-                "id": {
-                    "description": "Unique identifier of the object",
-                    "maxLength": 255,
-                    "minLength": 1,
-                    "title": "Id",
-                    "type": "string"
-                },
-                "linked_detector": {
-                    "anyOf": [
-                        {
-                            "maxLength": 255,
-                            "minLength": 1,
-                            "type": "string"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "default": null,
-                    "description": "Identifier of the detector linked to the signal",
-                    "title": "Linked Detector"
-                },
-                "logical_signals": {
-                    "description": "Logical signals bundled into this physical signal",
-                    "items": {
-                        "$ref": "#/$defs/LimitedLogicalSignal"
-                    },
-                    "title": "Logical Signals",
-                    "type": "array"
-                },
-                "position": {
-                    "description": "Offset of the point in meters to the beginning of the track section",
-                    "minimum": 0,
-                    "title": "Position",
-                    "type": "number"
-                },
-                "sight_distance": {
-                    "description": "Visibility distance of the signal in meters",
-                    "exclusiveMinimum": 0,
-                    "title": "Sight Distance",
-                    "type": "number"
-                },
-                "track": {
-                    "description": "Reference to the track section on which the object is located",
-                    "maxLength": 255,
-                    "minLength": 1,
-                    "title": "Track",
-                    "type": "string"
-                }
-            },
-            "required": [
-                "track",
-                "position",
-                "id",
-                "direction",
-                "sight_distance"
-            ],
-            "title": "Signal",
-            "type": "object"
-        },
-        "SignalExtensions": {
-            "properties": {
-                "sncf": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/SignalSncfExtension"
-                        }
-                    ],
-                    "default": null
-                }
-            },
-            "title": "SignalExtensions",
-            "type": "object"
-        },
-        "SignalSncfExtension": {
-            "properties": {
-                "aspects": {
-                    "items": {
-                        "type": "string"
-                    },
-                    "title": "Aspects",
-                    "type": "array"
-                },
-                "comment": {
-                    "title": "Comment",
-                    "type": "string"
-                },
-                "default_aspect": {
-                    "description": "Aspect displayed when no train is around",
-                    "title": "Default Aspect",
-                    "type": "string"
-                },
-                "installation_type": {
-                    "title": "Installation Type",
-                    "type": "string"
-                },
-                "is_in_service": {
-                    "description": "Precise if the signal is in service",
-                    "title": "Is In Service",
-                    "type": "boolean"
-                },
-                "is_lightable": {
-                    "description": "Precise if the signal is lightable",
-                    "title": "Is Lightable",
-                    "type": "boolean"
-                },
-                "is_operational": {
-                    "description": "Precise if the signal is operational",
-                    "title": "Is Operational",
-                    "type": "boolean"
-                },
-                "label": {
-                    "title": "Label",
-                    "type": "string"
-                },
-                "side": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/Side"
-                        }
-                    ],
-                    "default": "CENTER",
-                    "description": "Side of the signal on the track"
-                },
-                "support_type": {
-                    "title": "Support Type",
-                    "type": "string"
-                },
-                "type_code": {
-                    "title": "Type Code",
-                    "type": "string"
-                },
-                "value": {
-                    "title": "Value",
-                    "type": "string"
-                }
-            },
-            "required": [
-                "aspects",
-                "comment",
-                "default_aspect",
-                "installation_type",
-                "is_in_service",
-                "is_lightable",
-                "is_operational",
-                "label",
-                "support_type",
-                "type_code",
-                "value"
-            ],
-            "title": "SignalSncfExtension",
-            "type": "object"
-        },
-        "SignalingSystem": {
-            "enum": [
-                "BAL",
-                "BAPR",
-                "TVM"
-            ],
-            "title": "SignalingSystem",
-            "type": "string"
-        },
-        "Slope": {
-            "description": "\n    This class is used to define the slope object.\n    A slope correspond at the gradient in the part of corresponding track section.\n    The gradient can be positive (case of ramp) or negative (slope case)\n    ",
-            "properties": {
-                "begin": {
-                    "description": "Offset in meters corresponding at the beginning of the corresponding gradient in a track section",
-                    "minimum": 0,
-                    "title": "Begin",
-                    "type": "number"
-                },
-                "end": {
-                    "description": "Offset in meters corresponding at the end of the corresponding gradient in a track section",
-                    "minimum": 0,
-                    "title": "End",
-                    "type": "number"
-                },
-                "gradient": {
-                    "description": "Corresponding gradient, measured in meters per kilometers",
-                    "title": "Gradient",
-                    "type": "number"
-                }
-            },
-            "required": [
-                "gradient",
-                "begin",
-                "end"
-            ],
-            "title": "Slope",
-            "type": "object"
-        },
-        "SpeedSection": {
-            "description": "\n    Speed sections are recognized by their identifiers and are in meters per second.\n    ",
-            "properties": {
-                "extensions": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/SpeedSectionExtensions"
-                        }
-                    ],
-                    "default": null
-                },
-                "id": {
-                    "description": "Unique identifier of the object",
-                    "maxLength": 255,
-                    "minLength": 1,
-                    "title": "Id",
-                    "type": "string"
-                },
-                "speed_limit": {
-                    "anyOf": [
-                        {
-                            "exclusiveMinimum": 0,
-                            "type": "number"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "default": null,
-                    "description": "Speed limit (m/s) applied by default to trains that aren't in any specified category",
-                    "title": "Speed Limit"
-                },
-                "speed_limit_by_tag": {
-                    "additionalProperties": {
-                        "type": "number"
-                    },
-                    "description": "Speed limit (m/s) applied to trains with a given tag",
-                    "title": "Speed Limit By Tag",
-                    "type": "object"
-                },
-                "track_ranges": {
-                    "description": "List of locations where speed section is applied",
-                    "items": {
-                        "$ref": "#/$defs/ApplicableDirectionsTrackRange"
-                    },
-                    "title": "Track Ranges",
-                    "type": "array"
-                }
-            },
-            "required": [
-                "id",
-                "speed_limit_by_tag",
-                "track_ranges"
-            ],
-            "title": "SpeedSection",
-            "type": "object"
-        },
-        "SpeedSectionExtensions": {
-            "properties": {
-                "lpv_sncf": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/SpeedSectionLpvSncfExtension"
-                        }
-                    ],
-                    "default": null
-                }
-            },
-            "title": "SpeedSectionExtensions",
-            "type": "object"
-        },
-        "SpeedSectionLpvSncfExtension": {
-            "properties": {
-                "announcement": {
-                    "description": "Precise the value(s) of the speed",
-                    "items": {
-                        "$ref": "#/$defs/Panel"
-                    },
-                    "title": "Announcement",
-                    "type": "array"
-                },
-                "r": {
-                    "description": "End of the lpv speed section",
-                    "items": {
-                        "$ref": "#/$defs/Panel"
-                    },
-                    "title": "R",
-                    "type": "array"
-                },
-                "z": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/Panel"
-                        }
-                    ],
-                    "description": "Beginning of the lpv speed section"
-                }
-            },
-            "required": [
-                "announcement",
-                "z",
-                "r"
-            ],
-            "title": "SpeedSectionLpvSncfExtension",
-            "type": "object"
-        },
-        "Switch": {
-            "description": "\n    Switches are devices used for track changes.\n    ",
-            "properties": {
-                "extensions": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/SwitchExtensions"
-                        }
-                    ],
-                    "default": null
-                },
-                "group_change_delay": {
-                    "description": "Time it takes to change which group of the switch is activated",
-                    "minimum": 0,
-                    "title": "Group Change Delay",
-                    "type": "number"
-                },
-                "id": {
-                    "description": "Unique identifier of the object",
-                    "maxLength": 255,
-                    "minLength": 1,
-                    "title": "Id",
-                    "type": "string"
-                },
-                "ports": {
-                    "additionalProperties": {
-                        "$ref": "#/$defs/TrackEndpoint"
-                    },
-                    "description": "Location of different ports according to track sections",
-                    "title": "Ports",
-                    "type": "object"
-                },
-                "switch_type": {
-                    "description": "Identifier and type of the switch type",
-                    "maxLength": 255,
-                    "minLength": 1,
-                    "title": "Switch Type",
-                    "type": "string"
-                }
-            },
-            "required": [
-                "id",
-                "switch_type",
-                "group_change_delay",
-                "ports"
-            ],
-            "title": "Switch",
-            "type": "object"
-        },
-        "SwitchExtensions": {
-            "properties": {
-                "sncf": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/SwitchSncfExtension"
-                        }
-                    ],
-                    "default": null
-                }
-            },
-            "title": "SwitchExtensions",
-            "type": "object"
-        },
-        "SwitchPortConnection": {
-            "description": "\n    This class allows to know the connection between each port in switch type.\n    The connection is always bidirectional.\n    ",
-            "properties": {
-                "dst": {
-                    "description": "Port name that is destination of the connection",
-                    "maxLength": 255,
-                    "minLength": 1,
-                    "title": "Dst",
-                    "type": "string"
-                },
-                "src": {
-                    "description": "Port name that is source of the connection",
-                    "maxLength": 255,
-                    "minLength": 1,
-                    "title": "Src",
-                    "type": "string"
-                }
-            },
-            "required": [
-                "src",
-                "dst"
-            ],
-            "title": "SwitchPortConnection",
-            "type": "object"
-        },
-        "SwitchSncfExtension": {
-            "properties": {
-                "label": {
-                    "description": "Identifier of the switch",
-                    "minLength": 1,
-                    "title": "Label",
-                    "type": "string"
-                }
-            },
-            "required": [
-                "label"
-            ],
-            "title": "SwitchSncfExtension",
-            "type": "object"
-        },
-        "SwitchType": {
-            "description": "\n    Switch types are used to define what kind of switch is used in the infrastructure.\n    A switch type is defined by a list of ports and groups which are the possible configurations of the switch.\n    ",
-            "properties": {
-                "groups": {
-                    "additionalProperties": {
-                        "items": {
-                            "$ref": "#/$defs/SwitchPortConnection"
-                        },
-                        "type": "array"
-                    },
-                    "description": "Connection between and according ports",
-                    "title": "Groups",
-                    "type": "object"
-                },
-                "id": {
-                    "description": "Unique identifier of the object",
-                    "maxLength": 255,
-                    "minLength": 1,
-                    "title": "Id",
-                    "type": "string"
-                },
-                "ports": {
-                    "description": "List of ports. Ports map to the ends of switches",
-                    "items": {
-                        "maxLength": 255,
-                        "minLength": 1,
-                        "type": "string"
-                    },
-                    "minItems": 1,
-                    "title": "Ports",
-                    "type": "array"
-                }
-            },
-            "required": [
-                "id",
-                "ports",
-                "groups"
-            ],
-            "title": "SwitchType",
-            "type": "object"
-        },
-        "TrackEndpoint": {
-            "description": "\n    This class is used to define the endpoint (begin or end) of the considered track on the infrastructure.\n    ",
-            "properties": {
-                "endpoint": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/Endpoint"
-                        }
-                    ],
-                    "description": "Relative position of the considered end point"
-                },
-                "track": {
-                    "description": "Identifier and type of the track",
-                    "maxLength": 255,
-                    "minLength": 1,
-                    "title": "Track",
-                    "type": "string"
-                }
-            },
-            "required": [
-                "endpoint",
-                "track"
-            ],
-            "title": "TrackEndpoint",
-            "type": "object"
-        },
-        "TrackSection": {
-            "description": "\n    A track section is a piece of track and is the tracking system used in OSRD to locate a point.\n    A track section is identified by his unique id and its coordinates (geographic or schematic).\n    ",
-            "properties": {
-                "curves": {
-                    "description": "List of curves of corresponding track section",
-                    "items": {
-                        "$ref": "#/$defs/Curve"
-                    },
-                    "title": "Curves",
-                    "type": "array"
-                },
-                "extensions": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/TrackSectionExtensions"
-                        }
-                    ],
-                    "default": null
-                },
-                "geo": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/LineString"
-                        }
-                    ],
-                    "description": "Geographic coordinates of the corresponding object"
-                },
-                "id": {
-                    "description": "Unique identifier of the object",
-                    "maxLength": 255,
-                    "minLength": 1,
-                    "title": "Id",
-                    "type": "string"
-                },
-                "length": {
-                    "description": "Value of the length of the track section in meters",
-                    "exclusiveMinimum": 0,
-                    "title": "Length",
-                    "type": "number"
-                },
-                "loading_gauge_limits": {
-                    "description": "List of loading gauge limits of corresponding track section",
-                    "items": {
-                        "$ref": "#/$defs/LoadingGaugeLimit"
-                    },
-                    "title": "Loading Gauge Limits",
-                    "type": "array"
-                },
-                "sch": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/LineString"
-                        }
-                    ],
-                    "description": "Schematic coordinates of the corresponding object"
-                },
-                "slopes": {
-                    "description": "List of slopes of corresponding track section",
-                    "items": {
-                        "$ref": "#/$defs/Slope"
-                    },
-                    "title": "Slopes",
-                    "type": "array"
-                }
-            },
-            "required": [
-                "geo",
-                "sch",
-                "id",
-                "length",
-                "slopes",
-                "curves"
-            ],
-            "title": "TrackSection",
-            "type": "object"
-        },
-        "TrackSectionExtensions": {
-            "properties": {
-                "sncf": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/TrackSectionSncfExtension"
-                        }
-                    ],
-                    "default": null
-                }
-            },
-            "title": "TrackSectionExtensions",
-            "type": "object"
-        },
-        "TrackSectionLink": {
-            "description": "\n    Track section links is used to connect and link two track sections.\n    A track section link is characterized by its identifier.\n    ",
-            "properties": {
-                "dst": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/TrackEndpoint"
-                        }
-                    ],
-                    "description": "Finish track section, relative position in track section is defined by its end point"
-                },
-                "id": {
-                    "description": "Unique identifier of the object",
-                    "maxLength": 255,
-                    "minLength": 1,
-                    "title": "Id",
-                    "type": "string"
-                },
-                "src": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/TrackEndpoint"
-                        }
-                    ],
-                    "description": "Starting track section, relative position in track section is defined by its end point"
-                }
-            },
-            "required": [
-                "id",
-                "src",
-                "dst"
-            ],
-            "title": "TrackSectionLink",
-            "type": "object"
-        },
-        "TrackSectionSncfExtension": {
-            "properties": {
-                "line_code": {
-                    "description": "Code of the line used by the corresponding track section",
-                    "title": "Line Code",
-                    "type": "integer"
-                },
-                "line_name": {
-                    "description": "Name of the line used by the corresponding track section",
-                    "minLength": 1,
-                    "title": "Line Name",
-                    "type": "string"
-                },
-                "track_name": {
-                    "description": "Name corresponding to the track used",
-                    "minLength": 1,
-                    "title": "Track Name",
-                    "type": "string"
-                },
-                "track_number": {
-                    "description": "Number corresponding to the track used",
-                    "minimum": 0,
-                    "title": "Track Number",
-                    "type": "integer"
-                }
-            },
-            "required": [
-                "line_code",
-                "line_name",
-                "track_number",
-                "track_name"
-            ],
-            "title": "TrackSectionSncfExtension",
-            "type": "object"
-        },
-        "TvmSystem": {
-            "properties": {
-                "next_signaling_systems": {
-                    "description": "The list of allowed input signaling systems",
-                    "items": {
-                        "$ref": "#/$defs/SignalingSystem"
-                    },
-                    "title": "Next Signaling Systems",
-                    "type": "array"
-                },
-                "settings": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/__main____TvmSystem__Settings"
-                        }
-                    ],
-                    "description": "TVM signal settings"
-                },
-                "signaling_system": {
-                    "const": "TVM",
-                    "default": "TVM",
-                    "title": "Signaling System"
-                }
-            },
-            "required": [
-                "settings"
-            ],
-            "title": "TvmSystem",
-            "type": "object"
-        },
-        "__main____BalSystem__Settings": {
-            "properties": {
-                "Nf": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/FlagSignalParameter"
-                        }
-                    ],
-                    "description": "Is the signal non-passable"
-                }
-            },
-            "required": [
-                "Nf"
-            ],
-            "title": "Settings",
-            "type": "object"
-        },
-        "__main____BaprSystem__Settings": {
-            "properties": {
-                "Nf": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/FlagSignalParameter"
-                        }
-                    ],
-                    "description": "Is the signal non-passable"
-                },
-                "distant": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/FlagSignalParameter"
-                        }
-                    ],
-                    "description": "Is it a distant signal"
-                }
-            },
-            "required": [
-                "Nf",
-                "distant"
-            ],
-            "title": "Settings",
-            "type": "object"
-        },
-        "__main____TvmSystem__Settings": {
-            "properties": {
-                "is_430": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/FlagSignalParameter"
-                        }
-                    ],
-                    "description": "Is it TVM-430"
-                }
-            },
-            "required": [
-                "is_430"
-            ],
-            "title": "Settings",
-            "type": "object"
-        }
+  "$defs": {
+    "ApplicableDirections": {
+      "description": "This is used to know the direction of application of certain objects",
+      "enum": ["START_TO_STOP", "STOP_TO_START", "BOTH"],
+      "title": "ApplicableDirections",
+      "type": "string"
     },
-    "description": "This class is used to build an infra.",
-    "properties": {
-        "buffer_stops": {
-            "description": "Buffer stops of the infra",
-            "items": {
-                "$ref": "#/$defs/BufferStop"
-            },
-            "title": "Buffer Stops",
-            "type": "array"
+    "ApplicableDirectionsTrackRange": {
+      "description": "\n    An applicable directions track range is a track range with associated directions.\n    ",
+      "properties": {
+        "applicable_directions": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/ApplicableDirections"
+            }
+          ],
+          "description": "Direction where the corresponding object is applied"
         },
-        "catenaries": {
-            "description": "Catenaries of the infra",
-            "items": {
-                "$ref": "#/$defs/Catenary"
-            },
-            "title": "Catenaries",
-            "type": "array"
+        "begin": {
+          "description": "Begin offset in meters of the corresponding track section",
+          "minimum": 0,
+          "title": "Begin",
+          "type": "number"
         },
-        "detectors": {
-            "description": "Detectors of the infra",
-            "items": {
-                "$ref": "#/$defs/Detector"
-            },
-            "title": "Detectors",
-            "type": "array"
+        "end": {
+          "description": "End offset in meters of the corresponding track section",
+          "minimum": 0,
+          "title": "End",
+          "type": "number"
         },
-        "neutral_sections": {
-            "description": "Neutral sections of the infra",
-            "items": {
-                "$ref": "#/$defs/NeutralSection"
-            },
-            "title": "Neutral Sections",
-            "type": "array"
-        },
-        "operational_points": {
-            "description": "List of operational points of the corresponding infra",
-            "items": {
-                "$ref": "#/$defs/OperationalPoint"
-            },
-            "title": "Operational Points",
-            "type": "array"
-        },
-        "routes": {
-            "description": "Routes of the infra",
-            "items": {
-                "$ref": "#/$defs/Route"
-            },
-            "title": "Routes",
-            "type": "array"
-        },
-        "signals": {
-            "description": "Signals of the infra",
-            "items": {
-                "$ref": "#/$defs/Signal"
-            },
-            "title": "Signals",
-            "type": "array"
-        },
-        "speed_sections": {
-            "description": "Speed sections of the infra",
-            "items": {
-                "$ref": "#/$defs/SpeedSection"
-            },
-            "title": "Speed Sections",
-            "type": "array"
-        },
-        "switch_types": {
-            "description": "Switch types of the infra",
-            "items": {
-                "$ref": "#/$defs/SwitchType"
-            },
-            "title": "Switch Types",
-            "type": "array"
-        },
-        "switches": {
-            "description": "Switches of the infra",
-            "items": {
-                "$ref": "#/$defs/Switch"
-            },
-            "title": "Switches",
-            "type": "array"
-        },
-        "track_section_links": {
-            "description": "Track section links of the infra",
-            "items": {
-                "$ref": "#/$defs/TrackSectionLink"
-            },
-            "title": "Track Section Links",
-            "type": "array"
-        },
-        "track_sections": {
-            "description": "Track sections of the infra",
-            "items": {
-                "$ref": "#/$defs/TrackSection"
-            },
-            "title": "Track Sections",
-            "type": "array"
-        },
-        "version": {
-            "const": "3.4.1",
-            "default": "3.4.1",
-            "description": "Version of the schema",
-            "title": "Version"
+        "track": {
+          "description": "Identifier of the track section",
+          "maxLength": 255,
+          "minLength": 1,
+          "title": "Track",
+          "type": "string"
         }
+      },
+      "required": ["track", "begin", "end", "applicable_directions"],
+      "title": "ApplicableDirectionsTrackRange",
+      "type": "object"
     },
-    "required": [
-        "operational_points",
-        "routes",
-        "switch_types",
-        "switches",
-        "track_section_links",
-        "track_sections",
-        "speed_sections",
-        "catenaries",
-        "signals",
-        "buffer_stops",
-        "detectors",
-        "neutral_sections"
-    ],
-    "title": "RailJsonInfra",
-    "type": "object"
+    "BalSystem": {
+      "properties": {
+        "next_signaling_systems": {
+          "description": "The list of allowed input signaling systems",
+          "items": {
+            "$ref": "#/$defs/SignalingSystem"
+          },
+          "title": "Next Signaling Systems",
+          "type": "array"
+        },
+        "settings": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/__main____BalSystem__Settings"
+            }
+          ],
+          "description": "BAL signal settings"
+        }
+      },
+      "required": ["settings"],
+      "title": "BalSystem",
+      "type": "object"
+    },
+    "BaprSystem": {
+      "properties": {
+        "next_signaling_systems": {
+          "description": "The list of allowed input signaling systems",
+          "items": {
+            "$ref": "#/$defs/SignalingSystem"
+          },
+          "title": "Next Signaling Systems",
+          "type": "array"
+        },
+        "settings": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/__main____BaprSystem__Settings"
+            }
+          ],
+          "description": "BAPR signal settings"
+        }
+      },
+      "required": ["settings"],
+      "title": "BaprSystem",
+      "type": "object"
+    },
+    "BufferStop": {
+      "description": "This class defines the buffer stop object.\n    A buffer stop is a device placed at the end of a dead-end road\n    to stop any drifting trains from continuing off the road.\n    A buffer stop is characterized by its id and its corresponding track.\n    ",
+      "properties": {
+        "id": {
+          "description": "Unique identifier of the object",
+          "maxLength": 255,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "position": {
+          "description": "Offset of the point in meters to the beginning of the track section",
+          "minimum": 0,
+          "title": "Position",
+          "type": "number"
+        },
+        "track": {
+          "description": "Reference to the track section on which the object is located",
+          "maxLength": 255,
+          "minLength": 1,
+          "title": "Track",
+          "type": "string"
+        }
+      },
+      "required": ["track", "position", "id"],
+      "title": "BufferStop",
+      "type": "object"
+    },
+    "BufferStopReference": {
+      "properties": {
+        "id": {
+          "description": "Identifier of the buffer stop",
+          "maxLength": 255,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "type": {
+          "const": "BufferStop",
+          "title": "Type"
+        }
+      },
+      "required": ["type", "id"],
+      "title": "BufferStopReference",
+      "type": "object"
+    },
+    "Catenary": {
+      "description": "\n    A catenary corresponds to a set of cables designed to power electric trains by capturing the current through the use\n    of a pantograph. Catenary is identified by its identifier.\n    ",
+      "properties": {
+        "id": {
+          "description": "Unique identifier of the object",
+          "maxLength": 255,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "track_ranges": {
+          "description": "List of locations where the voltage is applied",
+          "items": {
+            "$ref": "#/$defs/ApplicableDirectionsTrackRange"
+          },
+          "title": "Track Ranges",
+          "type": "array"
+        },
+        "voltage": {
+          "description": "Type of power supply (in Volts) used for electrification",
+          "minLength": 1,
+          "title": "Voltage",
+          "type": "string"
+        }
+      },
+      "required": ["id", "voltage", "track_ranges"],
+      "title": "Catenary",
+      "type": "object"
+    },
+    "Curve": {
+      "description": "This class is used to define the curve object.\n    A curve correspond at radius of curvature in the part of corresponding track section.",
+      "properties": {
+        "begin": {
+          "description": "Offset in meters corresponding at the beginning of the corresponding radius in a track section ",
+          "minimum": 0,
+          "title": "Begin",
+          "type": "number"
+        },
+        "end": {
+          "description": "Offset in meters corresponding at the end of the corresponding radius in a track section",
+          "minimum": 0,
+          "title": "End",
+          "type": "number"
+        },
+        "radius": {
+          "description": "Corresponding radius of curvature measured in meters",
+          "title": "Radius",
+          "type": "number"
+        }
+      },
+      "required": ["radius", "begin", "end"],
+      "title": "Curve",
+      "type": "object"
+    },
+    "Detector": {
+      "description": "This class defines detector object.\n    A detector is characterized by its id and its corresponding track.\n    A detector is used to locate a train\n    in order to consider the section as occupied when there is a train.\n    ",
+      "properties": {
+        "applicable_directions": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/ApplicableDirections"
+            }
+          ],
+          "description": "Direction of the application of the detector"
+        },
+        "id": {
+          "description": "Unique identifier of the object",
+          "maxLength": 255,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "position": {
+          "description": "Offset of the point in meters to the beginning of the track section",
+          "minimum": 0,
+          "title": "Position",
+          "type": "number"
+        },
+        "track": {
+          "description": "Reference to the track section on which the object is located",
+          "maxLength": 255,
+          "minLength": 1,
+          "title": "Track",
+          "type": "string"
+        }
+      },
+      "required": ["track", "position", "id", "applicable_directions"],
+      "title": "Detector",
+      "type": "object"
+    },
+    "DetectorReference": {
+      "properties": {
+        "id": {
+          "description": "Identifier of the detector",
+          "maxLength": 255,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "type": {
+          "const": "Detector",
+          "title": "Type"
+        }
+      },
+      "required": ["type", "id"],
+      "title": "DetectorReference",
+      "type": "object"
+    },
+    "Direction": {
+      "description": "This is the description of the direction (increasing or decreasing profile).",
+      "enum": ["START_TO_STOP", "STOP_TO_START"],
+      "title": "Direction",
+      "type": "string"
+    },
+    "DirectionalTrackRange": {
+      "description": "\n    A directional track range is a track range with an associated direction.\n    ",
+      "properties": {
+        "begin": {
+          "description": "Begin offset in meters of the corresponding track section",
+          "minimum": 0,
+          "title": "Begin",
+          "type": "number"
+        },
+        "direction": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Direction"
+            }
+          ],
+          "description": "Description of the direction"
+        },
+        "end": {
+          "description": "End offset in meters of the corresponding track section",
+          "minimum": 0,
+          "title": "End",
+          "type": "number"
+        },
+        "track": {
+          "description": "Identifier of the track section",
+          "maxLength": 255,
+          "minLength": 1,
+          "title": "Track",
+          "type": "string"
+        }
+      },
+      "required": ["track", "begin", "end", "direction"],
+      "title": "DirectionalTrackRange",
+      "type": "object"
+    },
+    "Endpoint": {
+      "enum": ["BEGIN", "END"],
+      "title": "Endpoint",
+      "type": "string"
+    },
+    "FlagSignalParameter": {
+      "enum": ["true", "false"],
+      "title": "FlagSignalParameter",
+      "type": "checkbox"
+    },
+    "LimitedLogicalSignal": {
+      "description": "Limited list of logical signals. Used to generate a usable schema for the front editor",
+      "discriminator": {
+        "mapping": {
+          "BAL": "#/$defs/BalSystem",
+          "BAPR": "#/$defs/BaprSystem",
+          "TVM": "#/$defs/TvmSystem"
+        },
+        "propertyName": "signaling_system"
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/BalSystem"
+        },
+        {
+          "$ref": "#/$defs/BaprSystem"
+        },
+        {
+          "$ref": "#/$defs/TvmSystem"
+        }
+      ],
+      "title": "LimitedLogicalSignal"
+    },
+    "LineString": {
+      "description": "LineString Model",
+      "properties": {
+        "bbox": {
+          "anyOf": [
+            {
+              "maxItems": 4,
+              "minItems": 4,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "maxItems": 6,
+              "minItems": 6,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Bbox"
+        },
+        "coordinates": {
+          "items": {
+            "anyOf": [
+              {
+                "maxItems": 2,
+                "minItems": 2,
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "type": "array"
+              },
+              {
+                "maxItems": 3,
+                "minItems": 3,
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "type": "array"
+              }
+            ]
+          },
+          "minItems": 2,
+          "title": "Coordinates",
+          "type": "array"
+        },
+        "type": {
+          "const": "LineString",
+          "title": "Type"
+        }
+      },
+      "required": ["type", "coordinates"],
+      "title": "LineString",
+      "type": "object"
+    },
+    "LoadingGaugeLimit": {
+      "description": "This class is used to define loading gauge limit.\n    It represents a restriction on the trains according to their categories of loading gauge\n    and the type of the corresponding rolling stock.\n    ",
+      "properties": {
+        "begin": {
+          "description": "Offset in meters corresponding at the beginning of the corresponding loading gauge limit",
+          "minimum": 0,
+          "title": "Begin",
+          "type": "number"
+        },
+        "category": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/LoadingGaugeType"
+            }
+          ],
+          "description": "Category of loading gauge for the corresponding rolling stock"
+        },
+        "end": {
+          "description": "Offset in meters corresponding at the end of the corresponding loading gauge limit",
+          "minimum": 0,
+          "title": "End",
+          "type": "number"
+        }
+      },
+      "required": ["category", "begin", "end"],
+      "title": "LoadingGaugeLimit",
+      "type": "object"
+    },
+    "LoadingGaugeType": {
+      "description": "This class allows to know the category of the loading gauge.",
+      "enum": ["G1", "G2", "GA", "GB", "GB1", "GC", "FR3.3", "FR3.3/GB/G2", "GLOTT"],
+      "title": "LoadingGaugeType",
+      "type": "string"
+    },
+    "LogicalSignal": {
+      "description": "A logical signal is what displays something, whereas a physical signal is a group of logical signals",
+      "properties": {
+        "next_signaling_systems": {
+          "description": "The list of allowed input signaling systems",
+          "items": {
+            "type": "string"
+          },
+          "title": "Next Signaling Systems",
+          "type": "array"
+        },
+        "settings": {
+          "additionalProperties": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "description": "A list of key value parameters, which are defined per signaling system",
+          "title": "Settings",
+          "type": "object"
+        }
+      },
+      "required": ["signaling_system", "next_signaling_systems", "settings"],
+      "title": "LogicalSignal",
+      "type": "object"
+    },
+    "NeutralSection": {
+      "description": "\n    Neutral sections are portions of track where trains aren't allowed to pull power from catenaries.\n    They have to rely on inertia to cross such sections.\n\n    In practice, neutral sections are delimited by signs. In OSRD, neutral sections are directional\n    to allow accounting for different sign placement depending on the direction.\n\n    For more details see [the documentation](https://osrd.fr/en/docs/explanation/neutral_sections/).\n    ",
+      "properties": {
+        "announcement_track_ranges": {
+          "description": "List of locations where the upcoming neutral section is announced but not yet crossed",
+          "items": {
+            "$ref": "#/$defs/DirectionalTrackRange"
+          },
+          "title": "Announcement Track Ranges",
+          "type": "array"
+        },
+        "id": {
+          "description": "Unique identifier of the object",
+          "maxLength": 255,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "lower_pantograph": {
+          "description": "Whether or not trains need to lower their pantograph in the section",
+          "title": "Lower Pantograph",
+          "type": "boolean"
+        },
+        "track_ranges": {
+          "description": "List of locations where the train cannot pull power from catenaries",
+          "items": {
+            "$ref": "#/$defs/DirectionalTrackRange"
+          },
+          "minItems": 1,
+          "title": "Track Ranges",
+          "type": "array"
+        }
+      },
+      "required": ["id", "track_ranges", "lower_pantograph"],
+      "title": "NeutralSection",
+      "type": "object"
+    },
+    "OperationalPoint": {
+      "description": "\n    This class describes the operational points of the corresponding infra.\n    ",
+      "properties": {
+        "extensions": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/OperationalPointExtensions"
+            }
+          ],
+          "default": null
+        },
+        "id": {
+          "description": "Unique identifier of the object",
+          "maxLength": 255,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "parts": {
+          "items": {
+            "$ref": "#/$defs/OperationalPointPart"
+          },
+          "title": "Parts",
+          "type": "array"
+        }
+      },
+      "required": ["id", "parts"],
+      "title": "OperationalPoint",
+      "type": "object"
+    },
+    "OperationalPointExtensions": {
+      "properties": {
+        "identifier": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/OperationalPointIdentifierExtension"
+            }
+          ],
+          "default": null
+        },
+        "sncf": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/OperationalPointSncfExtension"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "OperationalPointExtensions",
+      "type": "object"
+    },
+    "OperationalPointIdentifierExtension": {
+      "properties": {
+        "name": {
+          "description": "Name of the operational point",
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "uic": {
+          "description": "International Union of Railways code of the operational point",
+          "title": "Uic",
+          "type": "integer"
+        }
+      },
+      "required": ["name", "uic"],
+      "title": "OperationalPointIdentifierExtension",
+      "type": "object"
+    },
+    "OperationalPointPart": {
+      "description": "\n    Operational point part is a single point on the infrastructure. It's linked to an operational point.\n    ",
+      "properties": {
+        "position": {
+          "description": "Offset of the point in meters to the beginning of the track section",
+          "minimum": 0,
+          "title": "Position",
+          "type": "number"
+        },
+        "track": {
+          "description": "Reference to the track section on which the object is located",
+          "maxLength": 255,
+          "minLength": 1,
+          "title": "Track",
+          "type": "string"
+        }
+      },
+      "required": ["track", "position"],
+      "title": "OperationalPointPart",
+      "type": "object"
+    },
+    "OperationalPointSncfExtension": {
+      "properties": {
+        "ch": {
+          "description": "THOR site code of the operational point",
+          "maxLength": 2,
+          "minLength": 1,
+          "title": "Ch",
+          "type": "string"
+        },
+        "ch_long_label": {
+          "description": "THOR site code long label of the operational point",
+          "minLength": 1,
+          "title": "Ch Long Label",
+          "type": "string"
+        },
+        "ch_short_label": {
+          "description": "THOR site code short label of the operational point",
+          "minLength": 1,
+          "title": "Ch Short Label",
+          "type": "string"
+        },
+        "ci": {
+          "description": "THOR immutable code of the operational point",
+          "title": "Ci",
+          "type": "integer"
+        },
+        "trigram": {
+          "description": "Unique SNCF trigram of the operational point",
+          "maxLength": 3,
+          "minLength": 1,
+          "title": "Trigram",
+          "type": "string"
+        }
+      },
+      "required": ["ci", "ch", "ch_short_label", "ch_long_label", "trigram"],
+      "title": "OperationalPointSncfExtension",
+      "type": "object"
+    },
+    "Panel": {
+      "description": "This class is used to define panels.\n    This is a physical, punctual, cosmetic object.\n    ",
+      "properties": {
+        "angle_geo": {
+          "default": 0,
+          "description": "Geographic angle in degrees",
+          "title": "Angle Geo",
+          "type": "number"
+        },
+        "angle_sch": {
+          "default": 0,
+          "description": "Schematic angle in degrees",
+          "title": "Angle Sch",
+          "type": "number"
+        },
+        "position": {
+          "description": "Offset of the point in meters to the beginning of the track section",
+          "minimum": 0,
+          "title": "Position",
+          "type": "number"
+        },
+        "side": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Side"
+            }
+          ],
+          "default": "CENTER",
+          "description": "Side of the panel on the track"
+        },
+        "track": {
+          "description": "Reference to the track section on which the object is located",
+          "maxLength": 255,
+          "minLength": 1,
+          "title": "Track",
+          "type": "string"
+        },
+        "type": {
+          "description": "Precise the type of the panel",
+          "minLength": 1,
+          "title": "Type",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "If the panel is an announcement, precise the value(s)",
+          "title": "Value"
+        }
+      },
+      "required": ["track", "position", "type"],
+      "title": "Panel",
+      "type": "object"
+    },
+    "Route": {
+      "description": "\n    This class is used to describe routes on the infrastructure.\n    ",
+      "properties": {
+        "entry_point": {
+          "discriminator": {
+            "mapping": {
+              "BufferStop": "#/$defs/BufferStopReference",
+              "Detector": "#/$defs/DetectorReference"
+            },
+            "propertyName": "type"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/DetectorReference"
+            },
+            {
+              "$ref": "#/$defs/BufferStopReference"
+            }
+          ],
+          "title": "Entry Point"
+        },
+        "entry_point_direction": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Direction"
+            }
+          ],
+          "description": "Direction of the route at the entry point"
+        },
+        "exit_point": {
+          "discriminator": {
+            "mapping": {
+              "BufferStop": "#/$defs/BufferStopReference",
+              "Detector": "#/$defs/DetectorReference"
+            },
+            "propertyName": "type"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/DetectorReference"
+            },
+            {
+              "$ref": "#/$defs/BufferStopReference"
+            }
+          ],
+          "title": "Exit Point"
+        },
+        "id": {
+          "description": "Unique identifier of the object",
+          "maxLength": 255,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "release_detectors": {
+          "description": "Detector allowing the release of resources reserved from the beginning of the route until this one",
+          "items": {
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Release Detectors",
+          "type": "array"
+        },
+        "switches_directions": {
+          "additionalProperties": {
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          },
+          "description": "Switches position part of the route",
+          "title": "Switches Directions",
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "entry_point",
+        "entry_point_direction",
+        "exit_point",
+        "release_detectors",
+        "switches_directions"
+      ],
+      "title": "Route",
+      "type": "object"
+    },
+    "Side": {
+      "description": "This class describes the side of the track where the signal is located.",
+      "enum": ["LEFT", "RIGHT", "CENTER"],
+      "title": "Side",
+      "type": "string"
+    },
+    "Signal": {
+      "description": "This class is used to describe the signal.\n    A signal is characterized by its id and its corresponding track.\n    By default, the signal is located at the center of the track.\n    ",
+      "properties": {
+        "direction": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Direction"
+            }
+          ],
+          "description": "Direction of use of the signal"
+        },
+        "extensions": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/SignalExtensions"
+            }
+          ],
+          "default": null
+        },
+        "id": {
+          "description": "Unique identifier of the object",
+          "maxLength": 255,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "linked_detector": {
+          "anyOf": [
+            {
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Identifier of the detector linked to the signal",
+          "title": "Linked Detector"
+        },
+        "logical_signals": {
+          "description": "Logical signals bundled into this physical signal",
+          "items": {
+            "$ref": "#/$defs/LimitedLogicalSignal"
+          },
+          "title": "Logical Signals",
+          "type": "array"
+        },
+        "position": {
+          "description": "Offset of the point in meters to the beginning of the track section",
+          "minimum": 0,
+          "title": "Position",
+          "type": "number"
+        },
+        "sight_distance": {
+          "description": "Visibility distance of the signal in meters",
+          "exclusiveMinimum": 0,
+          "title": "Sight Distance",
+          "type": "number"
+        },
+        "track": {
+          "description": "Reference to the track section on which the object is located",
+          "maxLength": 255,
+          "minLength": 1,
+          "title": "Track",
+          "type": "string"
+        }
+      },
+      "required": ["track", "position", "id", "direction", "sight_distance"],
+      "title": "Signal",
+      "type": "object"
+    },
+    "SignalExtensions": {
+      "properties": {
+        "sncf": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/SignalSncfExtension"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "SignalExtensions",
+      "type": "object"
+    },
+    "SignalSncfExtension": {
+      "properties": {
+        "aspects": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Aspects",
+          "type": "array"
+        },
+        "comment": {
+          "title": "Comment",
+          "type": "string"
+        },
+        "default_aspect": {
+          "description": "Aspect displayed when no train is around",
+          "title": "Default Aspect",
+          "type": "string"
+        },
+        "installation_type": {
+          "title": "Installation Type",
+          "type": "string"
+        },
+        "is_in_service": {
+          "description": "Precise if the signal is in service",
+          "title": "Is In Service",
+          "type": "boolean"
+        },
+        "is_lightable": {
+          "description": "Precise if the signal is lightable",
+          "title": "Is Lightable",
+          "type": "boolean"
+        },
+        "is_operational": {
+          "description": "Precise if the signal is operational",
+          "title": "Is Operational",
+          "type": "boolean"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "side": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Side"
+            }
+          ],
+          "default": "CENTER",
+          "description": "Side of the signal on the track"
+        },
+        "support_type": {
+          "title": "Support Type",
+          "type": "string"
+        },
+        "type_code": {
+          "title": "Type Code",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "aspects",
+        "comment",
+        "default_aspect",
+        "installation_type",
+        "is_in_service",
+        "is_lightable",
+        "is_operational",
+        "label",
+        "support_type",
+        "type_code",
+        "value"
+      ],
+      "title": "SignalSncfExtension",
+      "type": "object"
+    },
+    "SignalingSystem": {
+      "enum": ["BAL", "BAPR", "TVM"],
+      "title": "SignalingSystem",
+      "type": "string"
+    },
+    "Slope": {
+      "description": "\n    This class is used to define the slope object.\n    A slope correspond at the gradient in the part of corresponding track section.\n    The gradient can be positive (case of ramp) or negative (slope case)\n    ",
+      "properties": {
+        "begin": {
+          "description": "Offset in meters corresponding at the beginning of the corresponding gradient in a track section",
+          "minimum": 0,
+          "title": "Begin",
+          "type": "number"
+        },
+        "end": {
+          "description": "Offset in meters corresponding at the end of the corresponding gradient in a track section",
+          "minimum": 0,
+          "title": "End",
+          "type": "number"
+        },
+        "gradient": {
+          "description": "Corresponding gradient, measured in meters per kilometers",
+          "title": "Gradient",
+          "type": "number"
+        }
+      },
+      "required": ["gradient", "begin", "end"],
+      "title": "Slope",
+      "type": "object"
+    },
+    "SpeedSection": {
+      "description": "\n    Speed sections are recognized by their identifiers and are in meters per second.\n    ",
+      "properties": {
+        "extensions": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/SpeedSectionExtensions"
+            }
+          ],
+          "default": null
+        },
+        "id": {
+          "description": "Unique identifier of the object",
+          "maxLength": 255,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "speed_limit": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Speed limit (m/s) applied by default to trains that aren't in any specified category",
+          "title": "Speed Limit"
+        },
+        "speed_limit_by_tag": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "description": "Speed limit (m/s) applied to trains with a given tag",
+          "title": "Speed Limit By Tag",
+          "type": "object"
+        },
+        "track_ranges": {
+          "description": "List of locations where speed section is applied",
+          "items": {
+            "$ref": "#/$defs/ApplicableDirectionsTrackRange"
+          },
+          "title": "Track Ranges",
+          "type": "array"
+        }
+      },
+      "required": ["id", "speed_limit_by_tag", "track_ranges"],
+      "title": "SpeedSection",
+      "type": "object"
+    },
+    "SpeedSectionExtensions": {
+      "properties": {
+        "lpv_sncf": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/SpeedSectionLpvSncfExtension"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "SpeedSectionExtensions",
+      "type": "object"
+    },
+    "SpeedSectionLpvSncfExtension": {
+      "properties": {
+        "announcement": {
+          "description": "Precise the value(s) of the speed",
+          "items": {
+            "$ref": "#/$defs/Panel"
+          },
+          "title": "Announcement",
+          "type": "array"
+        },
+        "r": {
+          "description": "End of the lpv speed section",
+          "items": {
+            "$ref": "#/$defs/Panel"
+          },
+          "title": "R",
+          "type": "array"
+        },
+        "z": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Panel"
+            }
+          ],
+          "description": "Beginning of the lpv speed section"
+        }
+      },
+      "required": ["announcement", "z", "r"],
+      "title": "SpeedSectionLpvSncfExtension",
+      "type": "object"
+    },
+    "Switch": {
+      "description": "\n    Switches are devices used for track changes.\n    ",
+      "properties": {
+        "extensions": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/SwitchExtensions"
+            }
+          ],
+          "default": null
+        },
+        "group_change_delay": {
+          "description": "Time it takes to change which group of the switch is activated",
+          "minimum": 0,
+          "title": "Group Change Delay",
+          "type": "number"
+        },
+        "id": {
+          "description": "Unique identifier of the object",
+          "maxLength": 255,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "ports": {
+          "additionalProperties": {
+            "$ref": "#/$defs/TrackEndpoint"
+          },
+          "description": "Location of different ports according to track sections",
+          "title": "Ports",
+          "type": "object"
+        },
+        "switch_type": {
+          "description": "Identifier and type of the switch type",
+          "maxLength": 255,
+          "minLength": 1,
+          "title": "Switch Type",
+          "type": "string"
+        }
+      },
+      "required": ["id", "switch_type", "group_change_delay", "ports"],
+      "title": "Switch",
+      "type": "object"
+    },
+    "SwitchExtensions": {
+      "properties": {
+        "sncf": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/SwitchSncfExtension"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "SwitchExtensions",
+      "type": "object"
+    },
+    "SwitchPortConnection": {
+      "description": "\n    This class allows to know the connection between each port in switch type.\n    The connection is always bidirectional.\n    ",
+      "properties": {
+        "dst": {
+          "description": "Port name that is destination of the connection",
+          "maxLength": 255,
+          "minLength": 1,
+          "title": "Dst",
+          "type": "string"
+        },
+        "src": {
+          "description": "Port name that is source of the connection",
+          "maxLength": 255,
+          "minLength": 1,
+          "title": "Src",
+          "type": "string"
+        }
+      },
+      "required": ["src", "dst"],
+      "title": "SwitchPortConnection",
+      "type": "object"
+    },
+    "SwitchSncfExtension": {
+      "properties": {
+        "label": {
+          "description": "Identifier of the switch",
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        }
+      },
+      "required": ["label"],
+      "title": "SwitchSncfExtension",
+      "type": "object"
+    },
+    "SwitchType": {
+      "description": "\n    Switch types are used to define what kind of switch is used in the infrastructure.\n    A switch type is defined by a list of ports and groups which are the possible configurations of the switch.\n    ",
+      "properties": {
+        "groups": {
+          "additionalProperties": {
+            "items": {
+              "$ref": "#/$defs/SwitchPortConnection"
+            },
+            "type": "array"
+          },
+          "description": "Connection between and according ports",
+          "title": "Groups",
+          "type": "object"
+        },
+        "id": {
+          "description": "Unique identifier of the object",
+          "maxLength": 255,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "ports": {
+          "description": "List of ports. Ports map to the ends of switches",
+          "items": {
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Ports",
+          "type": "array"
+        }
+      },
+      "required": ["id", "ports", "groups"],
+      "title": "SwitchType",
+      "type": "object"
+    },
+    "TrackEndpoint": {
+      "description": "\n    This class is used to define the endpoint (begin or end) of the considered track on the infrastructure.\n    ",
+      "properties": {
+        "endpoint": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Endpoint"
+            }
+          ],
+          "description": "Relative position of the considered end point"
+        },
+        "track": {
+          "description": "Identifier and type of the track",
+          "maxLength": 255,
+          "minLength": 1,
+          "title": "Track",
+          "type": "string"
+        }
+      },
+      "required": ["endpoint", "track"],
+      "title": "TrackEndpoint",
+      "type": "object"
+    },
+    "TrackSection": {
+      "description": "\n    A track section is a piece of track and is the tracking system used in OSRD to locate a point.\n    A track section is identified by his unique id and its coordinates (geographic or schematic).\n    ",
+      "properties": {
+        "curves": {
+          "description": "List of curves of corresponding track section",
+          "items": {
+            "$ref": "#/$defs/Curve"
+          },
+          "title": "Curves",
+          "type": "array"
+        },
+        "extensions": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/TrackSectionExtensions"
+            }
+          ],
+          "default": null
+        },
+        "geo": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/LineString"
+            }
+          ],
+          "description": "Geographic coordinates of the corresponding object"
+        },
+        "id": {
+          "description": "Unique identifier of the object",
+          "maxLength": 255,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "length": {
+          "description": "Value of the length of the track section in meters",
+          "exclusiveMinimum": 0,
+          "title": "Length",
+          "type": "number"
+        },
+        "loading_gauge_limits": {
+          "description": "List of loading gauge limits of corresponding track section",
+          "items": {
+            "$ref": "#/$defs/LoadingGaugeLimit"
+          },
+          "title": "Loading Gauge Limits",
+          "type": "array"
+        },
+        "sch": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/LineString"
+            }
+          ],
+          "description": "Schematic coordinates of the corresponding object"
+        },
+        "slopes": {
+          "description": "List of slopes of corresponding track section",
+          "items": {
+            "$ref": "#/$defs/Slope"
+          },
+          "title": "Slopes",
+          "type": "array"
+        }
+      },
+      "required": ["geo", "sch", "id", "length", "slopes", "curves"],
+      "title": "TrackSection",
+      "type": "object"
+    },
+    "TrackSectionExtensions": {
+      "properties": {
+        "sncf": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/TrackSectionSncfExtension"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "TrackSectionExtensions",
+      "type": "object"
+    },
+    "TrackSectionLink": {
+      "description": "\n    Track section links is used to connect and link two track sections.\n    A track section link is characterized by its identifier.\n    ",
+      "properties": {
+        "dst": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/TrackEndpoint"
+            }
+          ],
+          "description": "Finish track section, relative position in track section is defined by its end point"
+        },
+        "id": {
+          "description": "Unique identifier of the object",
+          "maxLength": 255,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "src": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/TrackEndpoint"
+            }
+          ],
+          "description": "Starting track section, relative position in track section is defined by its end point"
+        }
+      },
+      "required": ["id", "src", "dst"],
+      "title": "TrackSectionLink",
+      "type": "object"
+    },
+    "TrackSectionSncfExtension": {
+      "properties": {
+        "line_code": {
+          "description": "Code of the line used by the corresponding track section",
+          "title": "Line Code",
+          "type": "integer"
+        },
+        "line_name": {
+          "description": "Name of the line used by the corresponding track section",
+          "minLength": 1,
+          "title": "Line Name",
+          "type": "string"
+        },
+        "track_name": {
+          "description": "Name corresponding to the track used",
+          "minLength": 1,
+          "title": "Track Name",
+          "type": "string"
+        },
+        "track_number": {
+          "description": "Number corresponding to the track used",
+          "minimum": 0,
+          "title": "Track Number",
+          "type": "integer"
+        }
+      },
+      "required": ["line_code", "line_name", "track_number", "track_name"],
+      "title": "TrackSectionSncfExtension",
+      "type": "object"
+    },
+    "TvmSystem": {
+      "properties": {
+        "next_signaling_systems": {
+          "description": "The list of allowed input signaling systems",
+          "items": {
+            "$ref": "#/$defs/SignalingSystem"
+          },
+          "title": "Next Signaling Systems",
+          "type": "array"
+        },
+        "settings": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/__main____TvmSystem__Settings"
+            }
+          ],
+          "description": "TVM signal settings"
+        }
+      },
+      "required": ["settings"],
+      "title": "TvmSystem",
+      "type": "object"
+    },
+    "__main____BalSystem__Settings": {
+      "properties": {
+        "Nf": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/FlagSignalParameter"
+            }
+          ],
+          "description": "Is the signal non-passable"
+        }
+      },
+      "required": ["Nf"],
+      "title": "Settings",
+      "type": "object"
+    },
+    "__main____BaprSystem__Settings": {
+      "properties": {
+        "Nf": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/FlagSignalParameter"
+            }
+          ],
+          "description": "Is the signal non-passable"
+        },
+        "distant": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/FlagSignalParameter"
+            }
+          ],
+          "description": "Is it a distant signal"
+        }
+      },
+      "required": ["Nf", "distant"],
+      "title": "Settings",
+      "type": "object"
+    },
+    "__main____TvmSystem__Settings": {
+      "properties": {
+        "is_430": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/FlagSignalParameter"
+            }
+          ],
+          "description": "Is it TVM-430"
+        }
+      },
+      "required": ["is_430"],
+      "title": "Settings",
+      "type": "object"
+    }
+  },
+  "description": "This class is used to build an infra.",
+  "properties": {
+    "buffer_stops": {
+      "description": "Buffer stops of the infra",
+      "items": {
+        "$ref": "#/$defs/BufferStop"
+      },
+      "title": "Buffer Stops",
+      "type": "array"
+    },
+    "catenaries": {
+      "description": "Catenaries of the infra",
+      "items": {
+        "$ref": "#/$defs/Catenary"
+      },
+      "title": "Catenaries",
+      "type": "array"
+    },
+    "detectors": {
+      "description": "Detectors of the infra",
+      "items": {
+        "$ref": "#/$defs/Detector"
+      },
+      "title": "Detectors",
+      "type": "array"
+    },
+    "neutral_sections": {
+      "description": "Neutral sections of the infra",
+      "items": {
+        "$ref": "#/$defs/NeutralSection"
+      },
+      "title": "Neutral Sections",
+      "type": "array"
+    },
+    "operational_points": {
+      "description": "List of operational points of the corresponding infra",
+      "items": {
+        "$ref": "#/$defs/OperationalPoint"
+      },
+      "title": "Operational Points",
+      "type": "array"
+    },
+    "routes": {
+      "description": "Routes of the infra",
+      "items": {
+        "$ref": "#/$defs/Route"
+      },
+      "title": "Routes",
+      "type": "array"
+    },
+    "signals": {
+      "description": "Signals of the infra",
+      "items": {
+        "$ref": "#/$defs/Signal"
+      },
+      "title": "Signals",
+      "type": "array"
+    },
+    "speed_sections": {
+      "description": "Speed sections of the infra",
+      "items": {
+        "$ref": "#/$defs/SpeedSection"
+      },
+      "title": "Speed Sections",
+      "type": "array"
+    },
+    "switch_types": {
+      "description": "Switch types of the infra",
+      "items": {
+        "$ref": "#/$defs/SwitchType"
+      },
+      "title": "Switch Types",
+      "type": "array"
+    },
+    "switches": {
+      "description": "Switches of the infra",
+      "items": {
+        "$ref": "#/$defs/Switch"
+      },
+      "title": "Switches",
+      "type": "array"
+    },
+    "track_section_links": {
+      "description": "Track section links of the infra",
+      "items": {
+        "$ref": "#/$defs/TrackSectionLink"
+      },
+      "title": "Track Section Links",
+      "type": "array"
+    },
+    "track_sections": {
+      "description": "Track sections of the infra",
+      "items": {
+        "$ref": "#/$defs/TrackSection"
+      },
+      "title": "Track Sections",
+      "type": "array"
+    },
+    "version": {
+      "const": "3.4.1",
+      "default": "3.4.1",
+      "description": "Version of the schema",
+      "title": "Version"
+    }
+  },
+  "required": [
+    "operational_points",
+    "routes",
+    "switch_types",
+    "switches",
+    "track_section_links",
+    "track_sections",
+    "speed_sections",
+    "catenaries",
+    "signals",
+    "buffer_stops",
+    "detectors",
+    "neutral_sections"
+  ],
+  "title": "RailJsonInfra",
+  "type": "object"
 }
