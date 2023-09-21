@@ -3,23 +3,16 @@ package fr.sncf.osrd.standalone_sim;
 import static fr.sncf.osrd.Helpers.fullInfraFromRJS;
 import static fr.sncf.osrd.envelope_sim.MaxEffortEnvelopeBuilder.makeSimpleMaxEffortEnvelope;
 import static fr.sncf.osrd.sim_infra.api.PathKt.makeTrackLocation;
-import static fr.sncf.osrd.utils.KtToJavaConverter.toIntList;
 
 import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.api.FullInfra;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.SimpleContextBuilder;
 import fr.sncf.osrd.sim_infra.api.Path;
-import fr.sncf.osrd.sim_infra.api.PathKt;
-import fr.sncf.osrd.sim_infra.api.RawSignalingInfra;
-import fr.sncf.osrd.sim_infra.api.TrackChunk;
 import fr.sncf.osrd.sim_infra.api.TrackInfraKt;
-import fr.sncf.osrd.sim_infra.api.TrackLocation;
-import fr.sncf.osrd.sim_infra.impl.PathImplKt;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.StandaloneTrainSchedule;
 import fr.sncf.osrd.train.TestTrains;
-import fr.sncf.osrd.utils.indexing.MutableDirStaticIdxArrayList;
 import fr.sncf.osrd.utils.units.Distance;
 import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
@@ -33,7 +26,7 @@ public class ScheduleMetadataExtractorTests {
         var infra = fullInfraFromRJS(rjsInfra);
         var barA = TrackInfraKt.getTrackSectionFromNameOrThrow("ne.micro.bar_a", infra.rawInfra());
         var fooA = TrackInfraKt.getTrackSectionFromNameOrThrow("ne.micro.foo_a", infra.rawInfra());
-        var path = pathFromRoutes(
+        var path = Helpers.pathFromRoutes(
                 infra.rawInfra(),
                 List.of(
                         "rt.buffer_stop_c->tde.track-bar",
@@ -58,7 +51,7 @@ public class ScheduleMetadataExtractorTests {
         var infra = fullInfraFromRJS(rjsInfra);
         var barA = TrackInfraKt.getTrackSectionFromNameOrThrow("ne.micro.bar_a", infra.rawInfra());
         var fooA = TrackInfraKt.getTrackSectionFromNameOrThrow("ne.micro.foo_a", infra.rawInfra());
-        var path = pathFromRoutes(
+        var path = Helpers.pathFromRoutes(
                 infra.rawInfra(),
                 List.of(
                         "rt.buffer_stop_c->tde.track-bar",
@@ -84,7 +77,7 @@ public class ScheduleMetadataExtractorTests {
         var infra = fullInfraFromRJS(rjsInfra);
         var barA = TrackInfraKt.getTrackSectionFromNameOrThrow("ne.micro.bar_a", infra.rawInfra());
         var fooA = TrackInfraKt.getTrackSectionFromNameOrThrow("ne.micro.foo_a", infra.rawInfra());
-        var path = pathFromRoutes(
+        var path = Helpers.pathFromRoutes(
                 infra.rawInfra(),
                 List.of(
                         "rt.buffer_stop_c->tde.track-bar",
@@ -113,7 +106,7 @@ public class ScheduleMetadataExtractorTests {
         for (int i = 0; i < 9; i++)
             routes.add(String.format("rt.detector.%d->detector.%d", i, i + 1));
         routes.add("rt.detector.9->buffer_stop.1");
-        var path = pathFromRoutes(
+        var path = Helpers.pathFromRoutes(
                 infra.rawInfra(),
                 routes,
                 makeTrackLocation(TrackInfraKt.getTrackSectionFromNameOrThrow("track.0", infra.rawInfra()), 0),
@@ -134,7 +127,7 @@ public class ScheduleMetadataExtractorTests {
         var rjsInfra = Helpers.getExampleInfra("one_line/infra.json");
         var infra = fullInfraFromRJS(rjsInfra);
         var routes = List.of("rt.buffer_stop.0->detector.0");
-        var path = pathFromRoutes(
+        var path = Helpers.pathFromRoutes(
                 infra.rawInfra(),
                 routes,
                 makeTrackLocation(TrackInfraKt.getTrackSectionFromNameOrThrow("track.0", infra.rawInfra()), 0),
@@ -160,22 +153,5 @@ public class ScheduleMetadataExtractorTests {
                 "test", RollingStock.Comfort.STANDARD, null, null
         );
         ScheduleMetadataExtractor.run(envelope, path, schedule, fullInfra);
-    }
-
-    private static Path pathFromRoutes(
-            RawSignalingInfra infra,
-            List<String> routeNames,
-            TrackLocation start,
-            TrackLocation end
-    ) {
-        var chunks = new MutableDirStaticIdxArrayList<TrackChunk>();
-        for (var name : routeNames) {
-            var routeId = infra.getRouteFromName(name);
-            for (var chunk : toIntList(infra.getChunksOnRoute(routeId)))
-                chunks.add(chunk);
-        }
-        long startOffset = PathImplKt.getOffsetOfTrackLocationOnChunksOrThrow(infra, start, chunks);
-        long endOffset = PathImplKt.getOffsetOfTrackLocationOnChunksOrThrow(infra, end, chunks);
-        return PathKt.buildPathFrom(infra, chunks, startOffset, endOffset);
     }
 }

@@ -1,12 +1,16 @@
 package fr.sncf.osrd.standalone_sim;
 
 import static fr.sncf.osrd.Helpers.fullInfraFromRJS;
+import static fr.sncf.osrd.Helpers.pathFromRoutes;
 import static fr.sncf.osrd.api.ConflictDetectionEndpoint.ConflictDetectionResult.Conflict.ConflictType.ROUTING;
 import static fr.sncf.osrd.api.ConflictDetectionEndpoint.ConflictDetectionResult.Conflict.ConflictType.SPACING;
-import static fr.sncf.osrd.envelope_sim.MaxEffortEnvelopeBuilder.makeSimpleMaxEffortEnvelope;
 import static fr.sncf.osrd.envelope_sim.TestMRSPBuilder.makeSimpleMRSP;
-import static fr.sncf.osrd.infra.InfraHelpers.getSignalingRoute;
-import static org.junit.jupiter.api.Assertions.*;
+import static fr.sncf.osrd.sim_infra.api.PathKt.makeTrackLocation;
+import static fr.sncf.osrd.sim_infra.api.TrackInfraKt.getTrackSectionFromNameOrThrow;
+import static fr.sncf.osrd.utils.units.Distance.toMeters;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertIterableEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.api.FullInfra;
@@ -16,10 +20,7 @@ import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.SimpleContextBuilder;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope;
-import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
-import fr.sncf.osrd.infra.api.tracks.undirected.TrackLocation;
-import fr.sncf.osrd.infra_state.api.TrainPath;
-import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
+import fr.sncf.osrd.sim_infra.api.Path;
 import fr.sncf.osrd.standalone_sim.result.ResultTrain;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.StandaloneTrainSchedule;
@@ -30,75 +31,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ConflictDetectionTest {
-    static TrainRequirements convertRequirements(long trainId, double offset, ResultTrain train) {
-        var spacingRequirements = new ArrayList<ResultTrain.SpacingRequirement>();
-        for (var req : train.spacingRequirements)
-            spacingRequirements.add(new ResultTrain.SpacingRequirement(
-                    req.zone,
-                    offset + req.beginTime,
-                    offset + req.endTime
-            ));
-        var routingRequirements = new ArrayList<ResultTrain.RoutingRequirement>();
-        for (var req : train.routingRequirements) {
-            var zoneReqs = new ArrayList<ResultTrain.RoutingZoneRequirement>();
-            for (var zoneReq : req.zones)
-                zoneReqs.add(new ResultTrain.RoutingZoneRequirement(
-                        zoneReq.zone,
-                        zoneReq.entryDetector,
-                        zoneReq.exitDetector,
-                        zoneReq.switches,
-                        zoneReq.endTime + offset
-                ));
-            routingRequirements.add(new ResultTrain.RoutingRequirement(
-                    req.route,
-                    offset + req.beginTime,
-                    zoneReqs
-            ));
-        }
-        return new TrainRequirements(trainId, spacingRequirements, routingRequirements);
-    }
 
-    static TrainPath makePath(
-            SignalingInfra infra,
-            List<String> routeIDs,
-            String startTrack,
-            double startOff,
-            String endTrack,
-            double endOff
-    ) {
-        var routes = routeIDs.stream().map((routeID) -> getSignalingRoute(infra, routeID)).toList();
-        return TrainPathBuilder.from(routes,
-                new TrackLocation(infra.getTrackSection(startTrack), startOff),
-                new TrackLocation(infra.getTrackSection(endTrack), endOff)
-        );
-    }
+    private record SimResult(ResultTrain train, Envelope envelope) {}
 
-    record SimResult(ResultTrain train, Envelope envelope) {}
-
-    static SimResult simpleSim(FullInfra fullInfra, TrainPath path, double initialSpeed, double maxSpeed) {
-        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
-        if (maxSpeed > testRollingStock.maxSpeed)
-            maxSpeed = testRollingStock.maxSpeed;
-
-        if (Double.isInfinite(initialSpeed))
-            initialSpeed = maxSpeed;
-
-        assert initialSpeed <= maxSpeed;
-
-        var stops = new double[]{ path.length() };
-        var context = SimpleContextBuilder.makeSimpleContext(path.length(), 0);
-        var flatMRSP = makeSimpleMRSP(context, maxSpeed);
-        var maxSpeedEnvelope = MaxSpeedEnvelope.from(context, stops, flatMRSP);
-        var envelope = MaxEffortEnvelope.from(context, initialSpeed, maxSpeedEnvelope);
-
-        var schedule = new StandaloneTrainSchedule(
-                testRollingStock, initialSpeed, List.of(), List.of(), List.of(),
-                "test", RollingStock.Comfort.STANDARD, null, null
-        );
-        // FIXME
-        //return new SimResult(ScheduleMetadataExtractor.run(envelope, path, schedule, fullInfra), envelope);
-        return null;
-    }
 
     @Test
     public void testRequirementProperties() throws Exception {
@@ -112,14 +47,12 @@ public class ConflictDetectionTest {
 
         var rjsInfra = Helpers.getExampleInfra("small_infra/infra.json");
         var fullInfra = fullInfraFromRJS(rjsInfra);
-        var infra = fullInfra.java();
+        var rawInfra = fullInfra.rawInfra();
 
         // A path from the center track of south-west station to the center-top track of mid west station
-        var path = makePath(
-                infra, List.of("rt.buffer_stop.1->DA0", "rt.DA0->DA5", "rt.DA5->DC5"),
-                "TA1", 146.6269028126681,
-                "TC1", 444.738508351214
-        );
+        var path = pathFromRoutes(rawInfra, List.of("rt.buffer_stop.1->DA0", "rt.DA0->DA5", "rt.DA5->DC5"),
+                makeTrackLocation(getTrackSectionFromNameOrThrow("TA1", rawInfra), 146),
+                makeTrackLocation(getTrackSectionFromNameOrThrow("TC1", rawInfra), 444));
 
         var simResult = simpleSim(fullInfra, path, 0, Double.POSITIVE_INFINITY);
         var spacingRequirements = simResult.train.spacingRequirements;
@@ -166,21 +99,17 @@ public class ConflictDetectionTest {
          */
         var rjsInfra = Helpers.getExampleInfra("small_infra/infra.json");
         var fullInfra = fullInfraFromRJS(rjsInfra);
-        var infra = fullInfra.java();
+        var rawInfra = fullInfra.rawInfra();
+        var ta0 = getTrackSectionFromNameOrThrow("TA0", rawInfra);
+        var tc0 = getTrackSectionFromNameOrThrow("TC0", rawInfra);
 
         // these paths are fairly distant from each other, but require passing a signal which protects
         // a very long route. As the routes for pathA and pathB are incompatible with each other,
         // a conflict should occur.
-        var pathA = makePath(
-                infra, List.of("rt.buffer_stop.0->DA2", "rt.DA2->DA5"),
-                "TA0", 1795,
-                "TA0", 1825
-        );
-        var pathB = makePath(
-                infra, List.of("rt.DD0->DC0", "rt.DC0->DA3"),
-                "TC0", 205,
-                "TC0", 175
-        );
+        var pathA = pathFromRoutes(rawInfra, List.of("rt.buffer_stop.0->DA2", "rt.DA2->DA5"),
+                makeTrackLocation(ta0, 1795), makeTrackLocation(ta0, 1825));
+        var pathB = pathFromRoutes(rawInfra, List.of("rt.DD0->DC0", "rt.DC0->DA3"),
+                makeTrackLocation(tc0, 205), makeTrackLocation(tc0, 175));
 
         var simResultA = simpleSim(fullInfra, pathA, 0, Double.POSITIVE_INFINITY);
         var simResultB = simpleSim(fullInfra, pathB, 0, Double.POSITIVE_INFINITY);
@@ -216,20 +145,17 @@ public class ConflictDetectionTest {
          */
         var rjsInfra = Helpers.getExampleInfra("small_infra/infra.json");
         var fullInfra = fullInfraFromRJS(rjsInfra);
-        var infra = fullInfra.java();
+        var rawInfra = fullInfra.rawInfra();
+        var ta6 = getTrackSectionFromNameOrThrow("TA6", rawInfra);
+        var tc0 = getTrackSectionFromNameOrThrow("TC0", rawInfra);
+        var td0 = getTrackSectionFromNameOrThrow("TD0", rawInfra);
 
         // path that stops in station
-        var pathA = makePath(
-                infra, List.of("rt.DA2->DA5", "rt.DA5->DC4"),
-                "TA6", 0,
-                "TC0", 600
-        );
+        var pathA = pathFromRoutes(rawInfra, List.of("rt.DA2->DA5", "rt.DA5->DC4"),
+                makeTrackLocation(ta6, 0), makeTrackLocation(tc0, 600));
         // path that continues on
-        var pathB = makePath(
-                infra, List.of("rt.DA2->DA5", "rt.DA5->DC5", "rt.DC5->DD2"),
-                "TA6", 0,
-                "TD0", 8500
-        );
+        var pathB = pathFromRoutes(rawInfra, List.of("rt.DA2->DA5", "rt.DA5->DC5", "rt.DC5->DD2"),
+                makeTrackLocation(ta6, 0), makeTrackLocation(td0, 8500));
 
         var simResultA = simpleSim(fullInfra, pathA, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY);
         var simResultB = simpleSim(fullInfra, pathB, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY);
@@ -260,5 +186,56 @@ public class ConflictDetectionTest {
                 new ConflictStatus(false, false)
         );
         assertIterableEquals(expectedStatusHist, statusHist);
+    }
+
+    private static TrainRequirements convertRequirements(long trainId, double offset, ResultTrain train) {
+        var spacingRequirements = new ArrayList<ResultTrain.SpacingRequirement>();
+        for (var req : train.spacingRequirements)
+            spacingRequirements.add(new ResultTrain.SpacingRequirement(
+                    req.zone,
+                    offset + req.beginTime,
+                    offset + req.endTime
+            ));
+        var routingRequirements = new ArrayList<ResultTrain.RoutingRequirement>();
+        for (var req : train.routingRequirements) {
+            var zoneReqs = new ArrayList<ResultTrain.RoutingZoneRequirement>();
+            for (var zoneReq : req.zones)
+                zoneReqs.add(new ResultTrain.RoutingZoneRequirement(
+                        zoneReq.zone,
+                        zoneReq.entryDetector,
+                        zoneReq.exitDetector,
+                        zoneReq.switches,
+                        zoneReq.endTime + offset
+                ));
+            routingRequirements.add(new ResultTrain.RoutingRequirement(
+                    req.route,
+                    offset + req.beginTime,
+                    zoneReqs
+            ));
+        }
+        return new TrainRequirements(trainId, spacingRequirements, routingRequirements);
+    }
+
+    private static SimResult simpleSim(FullInfra fullInfra, Path path, double initialSpeed, double maxSpeed) {
+        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
+        if (maxSpeed > testRollingStock.maxSpeed)
+            maxSpeed = testRollingStock.maxSpeed;
+
+        if (Double.isInfinite(initialSpeed))
+            initialSpeed = maxSpeed;
+
+        assert initialSpeed <= maxSpeed;
+
+        var stops = new double[]{ toMeters(path.getLength()) };
+        var context = SimpleContextBuilder.makeSimpleContext(toMeters(path.getLength()), 0);
+        var flatMRSP = makeSimpleMRSP(context, maxSpeed);
+        var maxSpeedEnvelope = MaxSpeedEnvelope.from(context, stops, flatMRSP);
+        var envelope = MaxEffortEnvelope.from(context, initialSpeed, maxSpeedEnvelope);
+
+        var schedule = new StandaloneTrainSchedule(
+                testRollingStock, initialSpeed, List.of(), List.of(), List.of(),
+                "test", RollingStock.Comfort.STANDARD, null, null
+        );
+        return new SimResult(ScheduleMetadataExtractor.run(envelope, path, schedule, fullInfra), envelope);
     }
 }
