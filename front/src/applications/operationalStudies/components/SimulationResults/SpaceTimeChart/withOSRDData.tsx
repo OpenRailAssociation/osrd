@@ -1,4 +1,4 @@
-import React, { ComponentType } from 'react';
+import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import {
@@ -25,12 +25,7 @@ import {
   time2datetime,
   datetime2Isostring,
 } from 'utils/timeManipulation';
-import {
-  AllowancesSetting,
-  Chart,
-  Train,
-  TrainsWithArrivalAndDepartureTimes,
-} from 'reducers/osrdsimulation/types';
+import { Chart, Train, TrainsWithArrivalAndDepartureTimes } from 'reducers/osrdsimulation/types';
 import { TimeString } from 'common/types';
 import SpaceTimeChart, { SpaceTimeChartProps } from './SpaceTimeChart';
 import {
@@ -40,39 +35,6 @@ import {
   DispatchUpdateSelectedTrainId,
   DispatchUpdateTimePositionValues,
 } from './types';
-
-/**
- * Stdcm will automatically show ecoBlocks if exisiting. This function takes a component and returns another component that will set the forcedEcoAllowancesSettings prop on its children
- * @param {*} Component
- * @returns RFC with OSRD Data. SignalSwitch
- */
-function withForcedEcoAllowanceSettings<T extends SpaceTimeChartProps>(
-  Component: ComponentType<T>
-): React.ComponentType<T> {
-  return (props: T) => {
-    const { simulation } = props;
-    const forcedEcoAllowancesSettings: AllowancesSetting[] = [];
-    // eslint-disable-next-line react/prop-types
-    simulation?.trains?.forEach((train) => {
-      forcedEcoAllowancesSettings[train.id] = train.eco?.route_aspects
-        ? {
-            base: true,
-            baseBlocks: false,
-            eco: true,
-            ecoBlocks: true,
-          }
-        : {
-            base: true,
-            baseBlocks: true,
-            eco: false,
-            ecoBlocks: false,
-          };
-    });
-
-    // Render the original component passing all props and forcedEcoAllowancesSettings as props to it
-    return <Component {...props} allowancesSettings={forcedEcoAllowancesSettings} />;
-  };
-}
 
 /**
  * HOC to provide store data
@@ -134,7 +96,6 @@ function withOSRDData<T extends SpaceTimeChartProps>(
 
     return (
       <Component
-        {...props}
         allowancesSettings={allowancesSettings}
         dispatchUpdateChart={dispatchUpdateChart}
         dispatchUpdateDepartureArrivalTimes={dispatchUpdateDepartureArrivalTimes}
@@ -149,16 +110,11 @@ function withOSRDData<T extends SpaceTimeChartProps>(
         simulation={simulation}
         simulationIsPlaying={isPlaying}
         timePosition={timePosition}
+        {...props}
       />
     );
   };
 }
-
-export const ForcedEcoSpaceTimeChart: React.FC<SpaceTimeChartProps> = (props) => {
-  const WithOSRDData = withOSRDData(SpaceTimeChart);
-  const WithForcedEcoAllowanceSettings = withForcedEcoAllowanceSettings(WithOSRDData);
-  return <WithForcedEcoAllowanceSettings {...props} />;
-};
 
 const OSRDSpaceTimeChart = withOSRDData(SpaceTimeChart);
 export default OSRDSpaceTimeChart;
