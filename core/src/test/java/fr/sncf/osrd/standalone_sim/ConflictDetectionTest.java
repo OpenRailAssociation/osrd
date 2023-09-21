@@ -7,6 +7,7 @@ import static fr.sncf.osrd.api.ConflictDetectionEndpoint.ConflictDetectionResult
 import static fr.sncf.osrd.envelope_sim.TestMRSPBuilder.makeSimpleMRSP;
 import static fr.sncf.osrd.sim_infra.api.PathKt.makeTrackLocation;
 import static fr.sncf.osrd.sim_infra.api.TrackInfraKt.getTrackSectionFromNameOrThrow;
+import static fr.sncf.osrd.utils.units.Distance.fromMeters;
 import static fr.sncf.osrd.utils.units.Distance.toMeters;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
@@ -34,7 +35,6 @@ public class ConflictDetectionTest {
 
     private record SimResult(ResultTrain train, Envelope envelope) {}
 
-
     @Test
     public void testRequirementProperties() throws Exception {
         /*
@@ -51,8 +51,8 @@ public class ConflictDetectionTest {
 
         // A path from the center track of south-west station to the center-top track of mid west station
         var path = pathFromRoutes(rawInfra, List.of("rt.buffer_stop.1->DA0", "rt.DA0->DA5", "rt.DA5->DC5"),
-                makeTrackLocation(getTrackSectionFromNameOrThrow("TA1", rawInfra), 146),
-                makeTrackLocation(getTrackSectionFromNameOrThrow("TC1", rawInfra), 444));
+                makeTrackLocation(getTrackSectionFromNameOrThrow("TA1", rawInfra), fromMeters(146.6269028126681)),
+                makeTrackLocation(getTrackSectionFromNameOrThrow("TC1", rawInfra), fromMeters(444.738508351214)));
 
         var simResult = simpleSim(fullInfra, path, 0, Double.POSITIVE_INFINITY);
         var spacingRequirements = simResult.train.spacingRequirements;
@@ -86,10 +86,6 @@ public class ConflictDetectionTest {
         Assertions.assertEquals(lastZoneReleaseTime, simResult.envelope.getTotalTime(), 0.001);
     }
 
-    static double getLastZoneReleaseTime(ResultTrain.RoutingRequirement requirement) {
-        return requirement.zones.stream().map(e -> e.endTime).reduce(Double::max).get();
-    }
-
     @Test
     public void headToHeadRoutingConflict() throws Exception {
         /*
@@ -107,9 +103,9 @@ public class ConflictDetectionTest {
         // a very long route. As the routes for pathA and pathB are incompatible with each other,
         // a conflict should occur.
         var pathA = pathFromRoutes(rawInfra, List.of("rt.buffer_stop.0->DA2", "rt.DA2->DA5"),
-                makeTrackLocation(ta0, 1795), makeTrackLocation(ta0, 1825));
+                makeTrackLocation(ta0, fromMeters(1795)), makeTrackLocation(ta0, fromMeters(1825)));
         var pathB = pathFromRoutes(rawInfra, List.of("rt.DD0->DC0", "rt.DC0->DA3"),
-                makeTrackLocation(tc0, 205), makeTrackLocation(tc0, 175));
+                makeTrackLocation(tc0, fromMeters(205)), makeTrackLocation(tc0, fromMeters(175)));
 
         var simResultA = simpleSim(fullInfra, pathA, 0, Double.POSITIVE_INFINITY);
         var simResultB = simpleSim(fullInfra, pathB, 0, Double.POSITIVE_INFINITY);
@@ -152,10 +148,10 @@ public class ConflictDetectionTest {
 
         // path that stops in station
         var pathA = pathFromRoutes(rawInfra, List.of("rt.DA2->DA5", "rt.DA5->DC4"),
-                makeTrackLocation(ta6, 0), makeTrackLocation(tc0, 600));
+                makeTrackLocation(ta6, 0), makeTrackLocation(tc0, fromMeters(600)));
         // path that continues on
         var pathB = pathFromRoutes(rawInfra, List.of("rt.DA2->DA5", "rt.DA5->DC5", "rt.DC5->DD2"),
-                makeTrackLocation(ta6, 0), makeTrackLocation(td0, 8500));
+                makeTrackLocation(ta6, 0), makeTrackLocation(td0, fromMeters(8500)));
 
         var simResultA = simpleSim(fullInfra, pathA, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY);
         var simResultB = simpleSim(fullInfra, pathB, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY);
@@ -166,7 +162,7 @@ public class ConflictDetectionTest {
         for (int i = 0; i < 200; i += 4) {
             var conflicts = ConflictsKt.detectConflicts(List.of(
                     convertRequirements(0L, 0, simResultA.train),
-                    convertRequirements(1L, (double) i, simResultB.train)
+                    convertRequirements(1L, i, simResultB.train)
             ));
             var spacingConflict = false;
             var routingConflict = false;
@@ -237,5 +233,9 @@ public class ConflictDetectionTest {
                 "test", RollingStock.Comfort.STANDARD, null, null
         );
         return new SimResult(ScheduleMetadataExtractor.run(envelope, path, schedule, fullInfra), envelope);
+    }
+
+    private static double getLastZoneReleaseTime(ResultTrain.RoutingRequirement requirement) {
+        return requirement.zones.stream().map(e -> e.endTime).reduce(Double::max).get();
     }
 }
