@@ -16,7 +16,7 @@ struct ErrorOptions {
 #[derive(FromVariant)]
 #[darling(attributes(editoast_error), forward_attrs(allow, doc, cfg))]
 struct ErrorVariantParams {
-    status: Option<u16>,
+    status: Option<syn::Expr>,
     no_context: Option<bool>,
 }
 
@@ -87,17 +87,29 @@ fn parse_variants(enum_data: &DataEnum) -> Result<Vec<ParsedVariant>> {
 fn expand_get_statuses(variants: &[ParsedVariant], default_status: u16) -> Result<TokenStream> {
     let match_variants = variants.iter().map(|variant| {
         let ident = &variant.ident;
-        quote! {#ident {..}}
+        match &variant.fields {
+            Fields::Named(fields_named) => {
+                let field_ident = fields_named.named.iter().map(|f| {
+                    let ident = f.ident.clone().unwrap();
+                    quote! {#ident}
+                });
+                quote! {#ident { #(#field_ident),* }}
+            }
+            Fields::Unnamed(_) => quote! {#ident(..)},
+            Fields::Unit => quote! {#ident},
+        }
     });
 
     let statuses = variants.iter().map(|variant| {
-        let status = variant.params.status.unwrap_or(default_status);
-        quote! { actix_web::http::StatusCode::from_u16(#status).unwrap() }
+        let Some(status) = variant.params.status.as_ref() else {
+            return quote! { actix_web::http::StatusCode::from_u16(#default_status).unwrap() };
+        };
+        quote! { actix_web::http::StatusCode::try_from(#status).expect("EditoastError: invalid status expression") }
     });
 
     Ok(quote! {
         match self {
-            #(Self::#match_variants => #statuses),*
+            #(#[allow(unused)] Self::#match_variants => #statuses),*
         }
     })
 }
