@@ -55,7 +55,7 @@ serde_yaml = "0.9.25"
 strum = "0.25.0"
 strum_macros = "0.25.2"
 thiserror = "1.0.48"
-enum-map = "2.6.2"
+enum-map = "2.6.3"
 editoast_derive = { path = "./editoast_derive" }
 mvt = "0.8.1"
 pointy = "0.4.0"
