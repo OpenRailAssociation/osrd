@@ -83,9 +83,6 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
   const [geojsonPath, setGeojsonPath] = useState<Feature<LineString>>();
   const [selectedTrainHoverPosition, setTrainHoverPosition] = useState<TrainPosition>();
   const [otherTrainsHoverPosition, setOtherTrainsHoverPosition] = useState<TrainPosition[]>([]);
-  const [simulationSelectedTrain, setSimulationSelectedTrain] = useState<
-    SimulationReport | Train
-  >();
   const [idHover, setIdHover] = useState<string | undefined>(undefined);
   const { urlLat = '', urlLon = '', urlZoom = '', urlBearing = '', urlPitch = '' } = useParams();
   const [getPath] = osrdEditoastApi.useLazyGetPathfindingByIdQuery();
@@ -175,12 +172,6 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
     }
   };
 
-  const displayPath = () => {
-    if (simulationSelectedTrain) {
-      getGeoJSONPath(simulationSelectedTrain.path);
-    }
-  };
-
   function defineInteractiveLayers() {
     const interactiveLayersLocal: string[] = [];
     if (mapLoaded && geojsonPath) {
@@ -215,13 +206,12 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
   }, []);
 
   useEffect(() => {
-    displayPath();
     if (selectedTrain) {
       // TODO: delete this cast when we have chosen the appropriate type for the simulation
       const foundTrain = (simulation.trains as SimulationReport[]).find(
         (train) => train.id === selectedTrain?.id
       );
-      setSimulationSelectedTrain(foundTrain);
+      if (foundTrain) getGeoJSONPath(foundTrain.path);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTrain]);
