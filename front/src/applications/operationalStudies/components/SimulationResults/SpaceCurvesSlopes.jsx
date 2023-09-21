@@ -9,7 +9,6 @@ import enableInteractivity, {
   traceVerticalLine,
 } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/enableInteractivity';
 import { useDispatch, useSelector } from 'react-redux';
-import { getSelectedTrain } from 'reducers/osrdsimulation/selectors';
 import { CgLoadbar } from 'react-icons/cg';
 import { LIST_VALUES_NAME_SPACE_CURVES_SLOPES } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
 import PropTypes from 'prop-types';
@@ -19,6 +18,7 @@ import defineChart from 'applications/operationalStudies/components/SimulationRe
 import drawArea from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/drawArea';
 import drawCurve from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/drawCurve';
 import { updateMustRedraw } from 'reducers/osrdsimulation/actions';
+import { getSelectedTrain } from 'reducers/osrdsimulation/selectors';
 
 const CHART_ID = 'SpaceCurvesSlopes';
 
@@ -42,13 +42,10 @@ const drawAxisTitle = (chart, rotate) => {
     .text('M');
 };
 
-export default function SpaceCurvesSlopes(props) {
-  const { heightOfSpaceCurvesSlopesChart } = props;
+export default function SpaceCurvesSlopes({ height }) {
   const dispatch = useDispatch();
-  const { chartXGEV, mustRedraw, positionValues, timePosition } = useSelector(
-    (state) => state.osrdsimulation
-  );
   const selectedTrain = useSelector(getSelectedTrain);
+  const { positionValues, timePosition } = useSelector((state) => state.osrdsimulation);
   const [rotate] = useState(false);
   const [chart, setChart] = useState(undefined);
   const [zoomLevel, setZoomLevel] = useState(1);
@@ -80,16 +77,7 @@ export default function SpaceCurvesSlopes(props) {
         : chart.y;
 
     const width = parseInt(d3.select(`#container-${CHART_ID}`).style('width'), 10);
-    return defineChart(
-      width,
-      heightOfSpaceCurvesSlopesChart,
-      defineX,
-      defineY,
-      ref,
-      rotate,
-      keyValues,
-      CHART_ID
-    );
+    return defineChart(width, height, defineX, defineY, ref, rotate, keyValues, CHART_ID);
   };
 
   const drawOPs = (chartLocal) => {
@@ -121,7 +109,7 @@ export default function SpaceCurvesSlopes(props) {
   };
 
   const drawTrain = () => {
-    if (mustRedraw && dataSimulation) {
+    if (dataSimulation) {
       const chartLocal = createChart();
       chartLocal.drawZone.append('g').attr('id', 'curvesSlopesChart').attr('class', 'chartTrain');
       drawAxisTitle(chartLocal, rotate);
@@ -188,7 +176,6 @@ export default function SpaceCurvesSlopes(props) {
         zoomLevel
       );
       setChart(chartLocal);
-      dispatch(updateMustRedraw(false));
     }
   };
 
@@ -196,8 +183,7 @@ export default function SpaceCurvesSlopes(props) {
     if (selectedTrain) {
       drawTrain();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chart, mustRedraw, rotate, dataSimulation]);
+  }, [rotate, dataSimulation, height]);
 
   useEffect(() => {
     if (dataSimulation) {
@@ -212,15 +198,7 @@ export default function SpaceCurvesSlopes(props) {
         timePosition
       );
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chart, mustRedraw, positionValues, timePosition, dataSimulation]);
-
-  useEffect(() => {
-    if (chartXGEV) {
-      setChart({ ...chart, x: chartXGEV });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chartXGEV]);
+  }, [chart, positionValues, timePosition, dataSimulation]);
 
   useEffect(() => {
     if (selectedTrain) {
@@ -268,7 +246,7 @@ export default function SpaceCurvesSlopes(props) {
     <div
       id={`container-${CHART_ID}`}
       className="spacecurvesslopes-chart w-100"
-      style={{ height: `${heightOfSpaceCurvesSlopesChart}px` }}
+      style={{ height: `${height}px` }}
     >
       <div ref={ref} />
       <div className="handle-tab-resize">
@@ -279,5 +257,5 @@ export default function SpaceCurvesSlopes(props) {
 }
 
 SpaceCurvesSlopes.propTypes = {
-  heightOfSpaceCurvesSlopesChart: PropTypes.number.isRequired,
+  height: PropTypes.number.isRequired,
 };
