@@ -197,11 +197,8 @@ export default function SimulationResults({ isDisplayed, collapsedTimetable }: P
                   initialHeightOfSpaceCurvesSlopesChart + delta.height
                 );
               }}
-              onResizeStop={() => {
-                dispatch(updateMustRedraw(true));
-              }}
             >
-              <SpaceCurvesSlopes heightOfSpaceCurvesSlopesChart={heightOfSpaceCurvesSlopesChart} />
+              <SpaceCurvesSlopes height={heightOfSpaceCurvesSlopesChart} />
             </Rnd>
           )}
         </div>
