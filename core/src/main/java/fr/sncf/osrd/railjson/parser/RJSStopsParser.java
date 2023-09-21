@@ -1,8 +1,5 @@
 package fr.sncf.osrd.railjson.parser;
 
-import fr.sncf.osrd.api.FullInfra;
-import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
-import fr.sncf.osrd.infra_state.api.TrainPath;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop;
 import fr.sncf.osrd.reporting.exceptions.ErrorType;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;

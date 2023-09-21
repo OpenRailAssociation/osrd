@@ -3,23 +3,24 @@ package fr.sncf.osrd.standalone_sim
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.SignalProjectionEndpoint.SignalProjectionResult
 import fr.sncf.osrd.api.pathfinding.PathfindingResultConverter
-import fr.sncf.osrd.infra_state.api.TrainPath
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.signaling.SignalingSimulator
 import fr.sncf.osrd.signaling.ZoneStatus
-import fr.sncf.osrd.sim_infra.api.*
+import fr.sncf.osrd.sim_infra.api.Block
+import fr.sncf.osrd.sim_infra.api.BlockInfra
+import fr.sncf.osrd.sim_infra.api.LoadedSignalInfra
+import fr.sncf.osrd.sim_infra.api.LogicalSignalId
+import fr.sncf.osrd.sim_infra.api.Path
+import fr.sncf.osrd.sim_infra.api.getZoneName
 import fr.sncf.osrd.sim_infra.utils.recoverBlocks
-import fr.sncf.osrd.sim_infra.utils.toBlockList
 import fr.sncf.osrd.sim_infra_adapter.SimInfraAdapter
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SignalSighting
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.ZoneUpdate
 import fr.sncf.osrd.standalone_sim.result.SignalUpdate
 import fr.sncf.osrd.utils.KtToJavaConverter
-import fr.sncf.osrd.utils.indexing.MutableStaticIdxArrayList
 import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import fr.sncf.osrd.utils.toRouteIdList
-import fr.sncf.osrd.utils.units.meters
 import java.awt.Color
 
 data class SignalAspectChangeEvent(val newAspect: String, val time: Long)
@@ -30,10 +31,10 @@ fun project(
     signalSightings: List<SignalSighting>,
     zoneUpdates: List<ZoneUpdate>
 ): SignalProjectionResult {
-    val rawInfra = fullInfra.rawInfra as SimInfraAdapter;
-    val loadedSignalInfra = fullInfra.loadedSignalInfra;
-    val blockInfra = fullInfra.blockInfra;
-    val simulator = fullInfra.signalingSimulator;
+    val rawInfra = fullInfra.rawInfra as SimInfraAdapter
+    val loadedSignalInfra = fullInfra.loadedSignalInfra
+    val blockInfra = fullInfra.blockInfra
+    val simulator = fullInfra.signalingSimulator
 
     // TODO: allowed signaling systems should depend on the type of train
     val sigSystemManager = simulator.sigModuleManager
