@@ -2043,7 +2043,7 @@ paths:
         - in: query
           name: timetable_id
           schema:
-            type: string
+            type: integer
           description: Timetable id
           required: true
       responses:
