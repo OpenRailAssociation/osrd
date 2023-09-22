@@ -18,7 +18,6 @@ import trainNameWithNum from 'applications/operationalStudies/components/ManageT
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import { getTimetableID, getTrainScheduleIDsToModify } from 'reducers/osrdconf/selectors';
 import { OsrdSimulationState, ScheduledTrain } from 'reducers/osrdsimulation/types';
-import { RootState } from 'reducers';
 import { updateTrainScheduleIDsToModify } from 'reducers/osrdconf';
 import { valueToInterval } from 'utils/numbers';
 import {
@@ -28,7 +27,11 @@ import {
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
 import { durationInSeconds } from 'utils/timeManipulation';
-import { getSelectedTrainId } from 'reducers/osrdsimulation/selectors';
+import {
+  getReloadTimetable,
+  getSelectedProjection,
+  getSelectedTrainId,
+} from 'reducers/osrdsimulation/selectors';
 import { isEmpty } from 'lodash';
 import { BsFillExclamationTriangleFill } from 'react-icons/bs';
 import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
@@ -49,13 +52,11 @@ export default function Timetable({
   trainsWithDetails,
   infraState,
 }: Props) {
-  const selectedProjection = useSelector(
-    (state: RootState) => state.osrdsimulation.selectedProjection
-  );
+  const selectedProjection = useSelector(getSelectedProjection);
   const selectedTrainId = useSelector(getSelectedTrainId);
   const timetableID = useSelector(getTimetableID);
   const trainScheduleIDsToModify = useSelector(getTrainScheduleIDsToModify);
-  const reloadTimetable = useSelector((state: RootState) => state.osrdsimulation.reloadTimetable);
+  const reloadTimetable = useSelector(getReloadTimetable);
   const [filter, setFilter] = useState('');
   const [trainsList, setTrainsList] = useState<ScheduledTrain[]>();
   const [trainsDurationsIntervals, setTrainsDurationsIntervals] = useState<number[]>();
@@ -305,7 +306,7 @@ export default function Timetable({
             findTrainsDurationsIntervals(timetableWithTrainSchedules.train_schedule_summaries)
           );
           if (!isEmpty(timetableWithTrainSchedules.train_schedule_summaries)) {
-            getSimulationResults(timetableWithTrainSchedules);
+            getSimulationResults(timetableWithTrainSchedules, selectedTrainId);
           }
         });
     }

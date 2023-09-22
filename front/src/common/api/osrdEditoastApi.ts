@@ -1242,7 +1242,7 @@ export type GetTrainScheduleResultsApiArg = {
   /** Path id used to project the train path */
   pathId: number;
   /** Timetable id */
-  timetableId: string;
+  timetableId: number;
 };
 export type PostTrainScheduleStandaloneSimulationApiResponse =
   /** status 201 The ids of the train_schedules created */ number[];

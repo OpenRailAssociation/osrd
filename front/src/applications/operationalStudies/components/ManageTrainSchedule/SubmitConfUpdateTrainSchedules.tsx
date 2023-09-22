@@ -11,8 +11,9 @@ import { getTrainScheduleIDsToModify } from 'reducers/osrdconf/selectors';
 import { updateReloadTimetable } from 'reducers/osrdsimulation/actions';
 import { useTranslation } from 'react-i18next';
 import { FaPen } from 'react-icons/fa';
+import { getSelectedTrainId } from 'reducers/osrdsimulation/selectors';
 
-type Props = {
+type SubmitConfUpdateTrainSchedulesProps = {
   setIsWorking: (isWorking: boolean) => void;
   setDisplayTrainScheduleManagement: (arg0: string) => void;
 };
@@ -22,11 +23,12 @@ type Props = {
 export default function SubmitConfUpdateTrainSchedules({
   setIsWorking,
   setDisplayTrainScheduleManagement,
-}: Props) {
+}: SubmitConfUpdateTrainSchedulesProps) {
   const dispatch = useDispatch();
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
+  const selectedTrainId = useSelector(getSelectedTrainId);
   const trainScheduleIDsToModify: undefined | number[] = useSelector(getTrainScheduleIDsToModify);
-  const [getTimetableWithTrainSchedulesDetails] = osrdEditoastApi.useLazyGetTimetableByIdQuery();
+  const [getTimetable] = osrdEditoastApi.endpoints.getTimetableById.useLazyQuery();
   const [patchTrainSchedules] = osrdEditoastApi.endpoints.patchTrainSchedule.useMutation();
 
   async function submitConfUpdateTrainSchedules() {
@@ -71,11 +73,11 @@ export default function SubmitConfUpdateTrainSchedules({
         setIsWorking(false);
         setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.none);
         dispatch(updateTrainScheduleIDsToModify(undefined));
-        const timetable = await getTimetableWithTrainSchedulesDetails({
+        const timetable = await getTimetable({
           id: osrdconf.simulationConf.timetableID as number,
         }).unwrap();
         dispatch(updateReloadTimetable(false));
-        getSimulationResults(timetable);
+        getSimulationResults(timetable, selectedTrainId);
       } catch (e: unknown) {
         setIsWorking(false);
         dispatch(updateReloadTimetable(false));

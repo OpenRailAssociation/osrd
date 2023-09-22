@@ -13,6 +13,10 @@ export const getIsPlaying = makeSubSelector<OsrdSimulationState, 'isPlaying'>(
   getOsrdSimulation,
   'isPlaying'
 );
+export const getIsUpdating = makeSubSelector<OsrdSimulationState, 'isUpdating'>(
+  getOsrdSimulation,
+  'isUpdating'
+);
 export const getMustRedraw = makeSubSelector<OsrdSimulationState, 'mustRedraw'>(
   getOsrdSimulation,
   'mustRedraw'
@@ -20,6 +24,10 @@ export const getMustRedraw = makeSubSelector<OsrdSimulationState, 'mustRedraw'>(
 export const getPositionValues = makeSubSelector<OsrdSimulationState, 'positionValues'>(
   getOsrdSimulation,
   'positionValues'
+);
+export const getReloadTimetable = makeSubSelector<OsrdSimulationState, 'reloadTimetable'>(
+  getOsrdSimulation,
+  'reloadTimetable'
 );
 export const getSelectedProjection = makeSubSelector<OsrdSimulationState, 'selectedProjection'>(
   getOsrdSimulation,
@@ -52,10 +60,6 @@ export const getSelectedTrain = (state: RootState) => {
 export const getDisplaySimulation = makeSubSelector<OsrdSimulationState, 'displaySimulation'>(
   getOsrdSimulation,
   'displaySimulation'
-);
-export const getIsUpdating = makeSubSelector<OsrdSimulationState, 'isUpdating'>(
-  getOsrdSimulation,
-  'isUpdating'
 );
 export const getSpeedSpaceSettings = makeSubSelector<OsrdSimulationState, 'speedSpaceSettings'>(
   getOsrdSimulation,

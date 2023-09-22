@@ -41,7 +41,6 @@ export default function Scenario() {
   const [isInfraLoaded, setIsInfraLoaded] = useState(false);
   const [reloadCount, setReloadCount] = useState(1);
   const isUpdating = useSelector((state: RootState) => state.osrdsimulation.isUpdating);
-  const simulation = useSelector((state: RootState) => state.osrdsimulation.simulation.present);
 
   const { openModal } = useModal();
   const navigate = useNavigate();
@@ -282,17 +281,13 @@ export default function Scenario() {
                     </div>
                   </div>
                 )}
-                {!simulation || (simulation.trains.length === 0 && !isUpdating && isInfraLoaded) ? (
-                  <h1 className="text-center mt-5">{t('simulation:noData')}</h1>
-                ) : (
-                  infra && (
-                    <SimulationResults
-                      isDisplayed={
-                        displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.import
-                      }
-                      collapsedTimetable={collapsedTimetable}
-                    />
-                  )
+                {isInfraLoaded && infra && (
+                  <SimulationResults
+                    isDisplayed={
+                      displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.import
+                    }
+                    collapsedTimetable={collapsedTimetable}
+                  />
                 )}
               </div>
             </div>

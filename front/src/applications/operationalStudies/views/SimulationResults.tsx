@@ -1,45 +1,50 @@
 import React, { useEffect, useState, useRef } from 'react';
+import cx from 'classnames';
+import { Rnd } from 'react-rnd';
+import { useTranslation } from 'react-i18next';
+import { useDispatch, useSelector } from 'react-redux';
+
 import {
   persistentRedoSimulation,
   persistentUndoSimulation,
 } from 'reducers/osrdsimulation/simulation';
 import {
-  updateMustRedraw,
-  updateSelectedProjection,
-  updateSimulation,
-} from 'reducers/osrdsimulation/actions';
-import { useDispatch, useSelector } from 'react-redux';
+  getIsUpdating,
+  getOsrdSimulation,
+  getPresentSimulation,
+  getSelectedProjection,
+  getSelectedTrain,
+} from 'reducers/osrdsimulation/selectors';
+import { updateViewport, Viewport } from 'reducers/map';
+import { getTimetableID } from 'reducers/osrdconf/selectors';
+import { updateSelectedProjection, updateSimulation } from 'reducers/osrdsimulation/actions';
 
+import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
 import SimulationResultsMap from 'applications/operationalStudies/components/SimulationResults/SimulationResultsMap';
-import { Rnd } from 'react-rnd';
 import SpaceCurvesSlopes from 'applications/operationalStudies/components/SimulationResults/SpaceCurvesSlopes';
 import SpaceTimeChartIsolated from 'applications/operationalStudies/components/SimulationResults/SpaceTimeChart/withOSRDData';
 import SpeedSpaceChart from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/SpeedSpaceChart';
 import TimeButtons from 'applications/operationalStudies/components/SimulationResults/TimeButtons';
 import TimeLine from 'applications/operationalStudies/components/SimulationResults/TimeLine/TimeLine';
 import TrainDetails from 'applications/operationalStudies/components/SimulationResults/TrainDetails';
-import getTimetable from 'applications/operationalStudies/components/Scenario/getSimulationResults';
-
-import { updateViewport, Viewport } from 'reducers/map';
+import getSimulationResults from 'applications/operationalStudies/components/Scenario/getSimulationResults';
 import DriverTrainSchedule from 'applications/operationalStudies/components/SimulationResults/DriverTrainSchedule/DriverTrainSchedule';
-import { getTimetableID } from 'reducers/osrdconf/selectors';
-import cx from 'classnames';
+
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import {
-  getDisplaySimulation,
-  getSelectedProjection,
-  getSelectedTrain,
-} from 'reducers/osrdsimulation/selectors';
-import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
 
 const MAP_MIN_HEIGHT = 450;
 
-type Props = {
+type SimulationResultsProps = {
   isDisplayed: boolean;
   collapsedTimetable: boolean;
 };
 
-export default function SimulationResults({ isDisplayed, collapsedTimetable }: Props) {
+export default function SimulationResults({
+  isDisplayed,
+  collapsedTimetable,
+}: SimulationResultsProps) {
+  const { t } = useTranslation('operationalStudies/scenario');
+
   const timeTableRef = useRef<HTMLDivElement | null>(null);
   const [extViewport, setExtViewport] = useState<Viewport | undefined>(undefined);
   const [showWarpedMap, setShowWarpedMap] = useState(false);
@@ -54,14 +59,17 @@ export default function SimulationResults({ isDisplayed, collapsedTimetable }: P
   const [initialHeightOfSpaceCurvesSlopesChart, setInitialHeightOfSpaceCurvesSlopesChart] =
     useState(heightOfSpaceCurvesSlopesChart);
 
-  const displaySimulation = useSelector(getDisplaySimulation);
   const selectedTrain = useSelector(getSelectedTrain);
   const selectedProjection = useSelector(getSelectedProjection);
+  const simulation = useSelector(getPresentSimulation);
+  const isUpdating = useSelector(getIsUpdating);
+
+  const { displaySimulation } = useSelector(getOsrdSimulation);
   const timetableID = useSelector(getTimetableID);
 
   const dispatch = useDispatch();
 
-  const [getTimetableWithTrainSchedulesDetails] = osrdEditoastApi.useLazyGetTimetableByIdQuery();
+  const [getTimetable] = osrdEditoastApi.endpoints.getTimetableById.useLazyQuery();
 
   const handleKey = (e: KeyboardEvent) => {
     if (e.key === 'z' && e.metaKey) {
@@ -84,10 +92,10 @@ export default function SimulationResults({ isDisplayed, collapsedTimetable }: P
 
   useEffect(() => {
     if (timetableID && selectedProjection) {
-      getTimetableWithTrainSchedulesDetails({ id: timetableID })
+      getTimetable({ id: timetableID })
         .unwrap()
         .then((result) => {
-          getTimetable(result);
+          getSimulationResults(result);
         });
     }
     return function cleanup() {
@@ -107,7 +115,9 @@ export default function SimulationResults({ isDisplayed, collapsedTimetable }: P
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [extViewport]);
 
-  return (
+  return simulation.trains.length === 0 && !isUpdating ? (
+    <h1 className="text-center mt-5">{t('simulation:noData')}</h1>
+  ) : (
     <div className="simulation-results">
       {/* SIMULATION : STICKY BAR */}
       <div
