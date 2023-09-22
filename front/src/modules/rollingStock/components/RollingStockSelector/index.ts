@@ -5,6 +5,5 @@ export { default as RollingStockCard } from 'modules/rollingStock/components/Rol
 export { default as RollingStockCardButtons } from 'modules/rollingStock/components/RollingStockSelector/RollingStockCardButtons';
 export { default as RollingStockCardDetail } from 'modules/rollingStock/components/RollingStockSelector/RollingStockCardDetail';
 export { default as RollingStockCurve } from 'modules/rollingStock/components/RollingStockSelector/RollingStockCurve';
-export { default as RollingStockEmpty } from 'modules/rollingStock/components/RollingStockSelector/RollingStockEmpty';
 export { default as RollingStockModal } from 'modules/rollingStock/components/RollingStockSelector/RollingStockModal';
 export { default as SearchRollingStock } from 'modules/rollingStock/components/RollingStockSelector/SearchRollingStock';

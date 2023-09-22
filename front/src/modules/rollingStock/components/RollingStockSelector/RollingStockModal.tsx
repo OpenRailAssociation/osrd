@@ -2,7 +2,6 @@ import React, { useState, useEffect, useContext, useMemo, MutableRefObject } fro
 import { useSelector, useDispatch } from 'react-redux';
 import { setFailure } from 'reducers/main';
 import { useTranslation } from 'react-i18next';
-import { isEmpty } from 'lodash';
 
 import { LightRollingStock } from 'common/api/osrdEditoastApi';
 import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
@@ -11,7 +10,6 @@ import { getRollingStockID } from 'reducers/osrdconf/selectors';
 import Loader from 'common/Loader';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import RollingStockEmpty from './RollingStockEmpty';
 import RollingStockCard from './RollingStockCard';
 import SearchRollingStock from './SearchRollingStock';
 
@@ -24,7 +22,7 @@ function RollingStockModal({ ref2scroll }: RollingStockModal) {
   const darkmode = useSelector((state: RootState) => state.main.darkmode);
   const rollingStockID = useSelector(getRollingStockID);
   const { t } = useTranslation(['translation', 'rollingstock']);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [openRollingStockCardId, setOpenRollingStockCardId] = useState(rollingStockID);
   const { closeModal } = useContext(ModalContext);
 
@@ -67,7 +65,7 @@ function RollingStockModal({ ref2scroll }: RollingStockModal) {
     }
   }, [isError]);
 
-  const listOfRollingStocks = useMemo(
+  const rollingStocksList = useMemo(
     () =>
       filteredRollingStockList.length > 0 ? (
         filteredRollingStockList.map((item: LightRollingStock) => (
@@ -81,20 +79,10 @@ function RollingStockModal({ ref2scroll }: RollingStockModal) {
           />
         ))
       ) : (
-        <RollingStockEmpty />
+        <div className="rollingstock-empty">{t('rollingstock:noResultFound')}</div>
       ),
     [filteredRollingStockList, openRollingStockCardId, ref2scroll, openRollingStockCardId]
   );
-
-  function displayList() {
-    if (isEmpty(filteredRollingStockList)) {
-      if (isLoading) {
-        return <Loader msg={t('rollingstock:waitingLoader')} />;
-      }
-      return <div className="rollingstock-empty">{t('rollingstock:noResultFound')}</div>;
-    }
-    return listOfRollingStocks;
-  }
 
   return (
     <ModalBodySNCF style={{ paddingBottom: 0 }}>
@@ -111,7 +99,9 @@ function RollingStockModal({ ref2scroll }: RollingStockModal) {
             setIsLoading={setIsLoading}
           />
         </div>
-        <div className="rollingstock-search-list">{displayList()}</div>
+        <div className="rollingstock-search-list">
+          {isLoading ? <Loader msg={t('rollingstock:waitingLoader')} /> : rollingStocksList}
+        </div>
       </div>
     </ModalBodySNCF>
   );

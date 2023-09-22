@@ -8,7 +8,6 @@ import { useDispatch } from 'react-redux';
 import Loader from 'common/Loader';
 import { useTranslation } from 'react-i18next';
 import { LightRollingStock, osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { isEmpty } from 'lodash';
 import RollingStockEditorButtons from 'modules/rollingStock/components/rollingStockEditor/RollingStockEditorButtons';
 import RollingStockEditorCard from 'modules/rollingStock/components/rollingStockEditor/RollingStockEditorCard';
 import RollingStockEditorForm from 'modules/rollingStock/components/rollingStockEditor/RollingStockEditorForm';
@@ -30,7 +29,7 @@ export default function RollingStockEditor({ rollingStocks }: RollingStockEditor
   const { t } = useTranslation('rollingstock');
   const ref2scroll: React.RefObject<HTMLInputElement> = useRef<HTMLInputElement>(null);
   const [filteredRollingStockList, setFilteredRollingStockList] = useState(rollingStocks);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [isDuplicating, setIsDuplicating] = useState(false);
@@ -57,75 +56,74 @@ export default function RollingStockEditor({ rollingStocks }: RollingStockEditor
 
   useEffect(() => setFilteredRollingStockList(rollingStocks), []);
 
-  const listOfRollingStocks = (
+  const rollingStocksList = (
     <div className="rollingstock-editor-list pr-1">
-      {filteredRollingStockList.length > 0 &&
-        filteredRollingStockList.map((data) => (
-          <div key={data.id}>
-            <div className="d-flex">
-              <div
-                role="button"
-                tabIndex={-1}
-                className="d-flex align-self-start rollingstock-elements w-100 rollingstock-editor-list-cards"
-                onClick={() => {
-                  setIsEditing(false);
-                  setIsAdding(false);
-                  resetRollingstockCurvesParams();
-                }}
-              >
-                <RollingStockCard
-                  isOnEditMode
-                  rollingStock={data}
-                  noCardSelected={openedRollingStockCardId === undefined}
-                  isOpen={data.id === openedRollingStockCardId}
-                  setOpenedRollingStockCardId={setOpenedRollingStockCardId}
-                  ref2scroll={openedRollingStockCardId === data.id ? ref2scroll : undefined}
-                />
-              </div>
-              {data.id === openedRollingStockCardId && selectedRollingStock && (
-                <div className="align-self-start">
-                  <RollingStockEditorButtons
-                    setOpenedRollingStockCardId={setOpenedRollingStockCardId}
-                    isCondensed
-                    rollingStock={selectedRollingStock}
-                    setIsEditing={setIsEditing}
-                    setIsDuplicating={setIsDuplicating}
-                    isRollingStockLocked={selectedRollingStock.locked as boolean}
-                  />
-                </div>
-              )}
+      {filteredRollingStockList.map((data) => (
+        <div key={data.id}>
+          <div className="d-flex">
+            <div
+              role="button"
+              tabIndex={-1}
+              className="d-flex align-self-start rollingstock-elements w-100 rollingstock-editor-list-cards"
+              onClick={() => {
+                setIsEditing(false);
+                setIsAdding(false);
+                resetRollingstockCurvesParams();
+              }}
+            >
+              <RollingStockCard
+                isOnEditMode
+                rollingStock={data}
+                noCardSelected={openedRollingStockCardId === undefined}
+                isOpen={data.id === openedRollingStockCardId}
+                setOpenedRollingStockCardId={setOpenedRollingStockCardId}
+                ref2scroll={openedRollingStockCardId === data.id ? ref2scroll : undefined}
+              />
             </div>
-            {openedRollingStockCardId === data.id && (
-              <div className="d-flex flex-column pl-0 rollingstock-editor-form-container mb-3">
-                {(selectedRollingStock || isEditing) &&
-                  ((selectedRollingStock && !isEditing && (
-                    <RollingStockEditorCard
-                      id={openedRollingStockCardId}
-                      isEditing={isEditing}
-                      rollingStock={selectedRollingStock}
-                    />
-                  )) ||
-                    (isEditing && (
-                      <RollingStockEditorForm
-                        rollingStockData={selectedRollingStock}
-                        setAddOrEditState={setIsEditing}
-                      />
-                    )))}
+            {data.id === openedRollingStockCardId && selectedRollingStock && (
+              <div className="align-self-start">
+                <RollingStockEditorButtons
+                  setOpenedRollingStockCardId={setOpenedRollingStockCardId}
+                  isCondensed
+                  rollingStock={selectedRollingStock}
+                  setIsEditing={setIsEditing}
+                  setIsDuplicating={setIsDuplicating}
+                  isRollingStockLocked={selectedRollingStock.locked as boolean}
+                />
               </div>
             )}
           </div>
-        ))}
+          {openedRollingStockCardId === data.id && (
+            <div className="d-flex flex-column pl-0 rollingstock-editor-form-container mb-3">
+              {(selectedRollingStock || isEditing) &&
+                ((selectedRollingStock && !isEditing && (
+                  <RollingStockEditorCard
+                    id={openedRollingStockCardId}
+                    isEditing={isEditing}
+                    rollingStock={selectedRollingStock}
+                  />
+                )) ||
+                  (isEditing && (
+                    <RollingStockEditorForm
+                      rollingStockData={selectedRollingStock}
+                      setAddOrEditState={setIsEditing}
+                    />
+                  )))}
+            </div>
+          )}
+        </div>
+      ))}
     </div>
   );
 
   function displayList() {
-    if (isEmpty(filteredRollingStockList)) {
-      if (isLoading) {
-        return <Loader msg={t('waitingLoader')} />;
-      }
-      return <div className="rollingstock-empty mx-auto">{t('noResultFound')}</div>;
+    if (isLoading) {
+      return <Loader msg={t('waitingLoader')} />;
     }
-    return listOfRollingStocks;
+    if (filteredRollingStockList.length === 0) {
+      return <div className="rollingstock-empty">{t('rollingstock:noResultFound')}</div>;
+    }
+    return rollingStocksList;
   }
 
   // depending on the current key of ref2scroll, scroll to the selected rolling stock card when it is opened with scrollIntoView()
