@@ -41,7 +41,9 @@
     "unableToRetrieveRollingStock": "Cannot fetch rolling stock",
     "unableToRetrieveTags": "Impossible to get tags",
     "unableToRetrieveTimetable": "Cannot fetch timetable",
-    "unableToRetrieveTimetableList": "Cannot fetch list of timetables"
+    "unableToRetrieveTimetableList": "Cannot fetch list of timetables",
+    "unableToPatchTrain": "Cannot update train",
+    "unableToRetrieveTrain": "Cannot fetch train"
   },
   "failedRequest": "Request failed",
   "gare": "Station, post",

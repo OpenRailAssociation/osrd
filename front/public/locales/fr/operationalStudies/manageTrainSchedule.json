@@ -41,7 +41,9 @@
     "unableToRetrieveRollingStock": "Récupération matériel impossible",
     "unableToRetrieveTags": "Impossible de récupérer les étiquettes",
     "unableToRetrieveTimetable": "Récupération grille horaire impossible",
-    "unableToRetrieveTimetableList": "Récupération liste de grilles horaires impossible"
+    "unableToRetrieveTimetableList": "Récupération liste de grilles horaires impossible",
+    "unableToPatchTrain": "Impossible de modifier le train",
+    "unableToRetrieveTrain": "Impossible de récupérer le train"
   },
   "failedRequest": "La requête a échoué",
   "gare": "Gare, poste",
