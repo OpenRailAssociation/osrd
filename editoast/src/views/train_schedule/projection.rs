@@ -177,6 +177,8 @@ impl Projection {
 
 #[cfg(test)]
 pub mod tests {
+    use rstest::fixture;
+
     use super::*;
     use crate::models::RoutePath;
     use crate::schema::Direction;
@@ -263,5 +265,182 @@ pub mod tests {
         let res = projection.intersect(&path);
 
         assert_eq!(res, expected);
+    }
+
+    #[fixture]
+    fn first_route() -> RoutePath {
+        RoutePath {
+            route: "route_1".to_string(),
+            track_ranges: vec![
+                DirectionalTrackRange {
+                    track: Identifier("track_1".to_string()),
+                    begin: 100.0,
+                    end: 1000.0,
+                    direction: Direction::StartToStop,
+                },
+                DirectionalTrackRange {
+                    track: Identifier("track_2".to_string()),
+                    begin: 0.0,
+                    end: 500.0,
+                    direction: Direction::StartToStop,
+                },
+            ],
+            signaling_type: "BAL3".to_string(),
+        }
+    }
+
+    #[fixture]
+    fn second_route() -> RoutePath {
+        RoutePath {
+            route: "route_2".to_string(),
+            track_ranges: vec![
+                DirectionalTrackRange {
+                    track: Identifier("track_2".to_string()),
+                    begin: 500.0,
+                    end: 1000.0,
+                    direction: Direction::StartToStop,
+                },
+                DirectionalTrackRange {
+                    track: Identifier("track_3".to_string()),
+                    begin: 500.0,
+                    end: 1000.0,
+                    direction: Direction::StopToStart,
+                },
+                DirectionalTrackRange {
+                    track: Identifier("track_3".to_string()),
+                    begin: 0.0,
+                    end: 500.0,
+                    direction: Direction::StopToStart,
+                },
+            ],
+            signaling_type: "BAL3".to_string(),
+        }
+    }
+
+    #[fixture]
+    fn third_route() -> RoutePath {
+        RoutePath {
+            route: "route_2".to_string(),
+            track_ranges: vec![
+                DirectionalTrackRange {
+                    track: Identifier("track_3".to_string()),
+                    begin: 500.0,
+                    end: 1000.0,
+                    direction: Direction::StopToStart,
+                },
+                DirectionalTrackRange {
+                    track: Identifier("track_3".to_string()),
+                    begin: 0.0,
+                    end: 500.0,
+                    direction: Direction::StopToStart,
+                },
+            ],
+            signaling_type: "BAL3".to_string(),
+        }
+    }
+
+    #[fixture]
+    fn simple_path_payload(first_route: RoutePath, second_route: RoutePath) -> PathfindingPayload {
+        PathfindingPayload {
+            route_paths: vec![first_route, second_route],
+            path_waypoints: vec![],
+        }
+    }
+
+    #[fixture]
+    fn simple_projection(simple_path_payload: PathfindingPayload) -> Projection {
+        Projection::new(&simple_path_payload)
+    }
+
+    #[rstest::rstest]
+    fn test_project_path_on_itself(simple_path_payload: PathfindingPayload) {
+        let projection = Projection::new(&simple_path_payload);
+        let res = projection.intersect(&simple_path_payload);
+        assert_eq!(res.len(), 1);
+        assert_eq!(res[0].begin.path_offset, 0.0);
+        assert_eq!(res[0].end.path_offset, projection.length);
+    }
+
+    #[rstest::rstest]
+    fn test_project_first_route(simple_path_payload: PathfindingPayload) {
+        let projection = Projection::new(&simple_path_payload);
+        let res = projection.intersect(&PathfindingPayload {
+            route_paths: vec![first_route()],
+            path_waypoints: vec![],
+        });
+        assert_eq!(res.len(), 1);
+        assert_eq!(res[0].begin.path_offset, 0.0);
+        assert_eq!(res[0].end.path_offset, 1400.0);
+        assert_eq!(res[0].end.offset, 500.0);
+        assert_eq!(res[0].end.track, Identifier("track_2".to_string()));
+    }
+
+    #[rstest::rstest]
+    fn test_project_second_route(
+        second_route: RoutePath,
+        simple_path_payload: PathfindingPayload,
+        simple_projection: Projection,
+    ) {
+        let projection = Projection::new(&simple_path_payload);
+        let res = projection.intersect(&PathfindingPayload {
+            route_paths: vec![second_route],
+            path_waypoints: vec![],
+        });
+        assert_eq!(res.len(), 1);
+        assert_eq!(res[0].begin.path_offset, 0.0);
+        assert_eq!(res[0].end.path_offset, simple_projection.length - 1400.0);
+        assert_eq!(res[0].begin.offset, 500.0);
+        assert_eq!(res[0].begin.track, Identifier("track_2".to_string()));
+    }
+
+    #[rstest::rstest]
+    fn test_long_path_on_short_projection(first_route: RoutePath, second_route: RoutePath) {
+        let projection = Projection::new(&PathfindingPayload {
+            route_paths: vec![first_route.clone()],
+            path_waypoints: vec![],
+        });
+        let res = projection.intersect(&PathfindingPayload {
+            route_paths: vec![first_route, second_route],
+            path_waypoints: vec![],
+        });
+        assert_eq!(res.len(), 1);
+        assert_eq!(res[0].begin.path_offset, 0.0);
+        assert_eq!(res[0].end.path_offset, projection.length);
+        assert_eq!(res[0].end.offset, 500.0);
+        assert_eq!(res[0].end.track, Identifier("track_2".to_string()));
+    }
+
+    #[rstest::rstest]
+    fn test_long_path_on_short_projection_inverted(
+        first_route: RoutePath,
+        second_route: RoutePath,
+        simple_projection: Projection,
+    ) {
+        let projection = Projection::new(&PathfindingPayload {
+            route_paths: vec![second_route.clone()],
+            path_waypoints: vec![],
+        });
+        let res = projection.intersect(&PathfindingPayload {
+            route_paths: vec![first_route, second_route],
+            path_waypoints: vec![],
+        });
+        assert_eq!(res.len(), 1);
+        assert_eq!(res[0].begin.path_offset, 1400.0);
+        assert_eq!(res[0].end.path_offset, simple_projection.length);
+        assert_eq!(res[0].begin.offset, 500.0);
+        assert_eq!(res[0].begin.track, Identifier("track_2".to_string()));
+    }
+
+    #[rstest::rstest]
+    fn test_no_intersection(first_route: RoutePath, third_route: RoutePath) {
+        let projection = Projection::new(&PathfindingPayload {
+            route_paths: vec![first_route],
+            path_waypoints: vec![],
+        });
+        let res = projection.intersect(&PathfindingPayload {
+            route_paths: vec![third_route],
+            path_waypoints: vec![],
+        });
+        assert_eq!(res.len(), 0);
     }
 }
