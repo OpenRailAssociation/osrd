@@ -1,19 +1,28 @@
 import React, { useEffect, useState } from 'react';
-
-import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
+import { onlyDigit } from 'utils/strings';
 
-function ChartModal(props) {
-  const { type, setShowModal, trainName, offsetTimeByDragging } = props;
+type ChartModalProsp = {
+  modificationKey: '+' | '-';
+  trainName: string;
+  setShowModal: (showModal: '+' | '-' | '') => void;
+  offsetTimeByDragging: (offset: number) => void;
+};
 
+/** Modal to delay or advance a train on the SpaceTimeChart */
+const ChartModal = ({
+  modificationKey,
+  setShowModal,
+  trainName,
+  offsetTimeByDragging,
+}: ChartModalProsp) => {
   const { t } = useTranslation(['simulation']);
   const [offset, setOffset] = useState('');
 
-  // ADN: just do an upadteSimulation, should do the rest
-  const sendOffset = ({ key }) => {
+  const sendOffset = ({ key }: { key: string }) => {
     if (key === 'Enter') {
       setShowModal('');
-      const seconds = parseInt(type === '-' ? offset * -1 : offset, 10);
+      const seconds = modificationKey === '-' ? parseInt(offset, 10) * -1 : parseInt(offset, 10);
       offsetTimeByDragging(seconds);
     }
   };
@@ -33,12 +42,13 @@ function ChartModal(props) {
           {trainName}
         </div>
         <div className="chart-modal-input">
-          <div className="chart-modal-type-label">{type}</div>
+          <div className="chart-modal-type-label">{modificationKey}</div>
           <input
             type="string"
-            autoFocus // eslint-disable-line jsx-a11y/no-autofocus
+            // eslint-disable-next-line jsx-a11y/no-autofocus
+            autoFocus
             onBlur={() => setShowModal('')}
-            onChange={(e) => setOffset(e.target.value.replace(/\D/g, ''))} // Filter non digit chars
+            onChange={(e) => setOffset(onlyDigit(e.target.value))} // Filter non digit chars
             value={offset}
           />
           <div className="chart-modal-type-unit">s</div>
@@ -46,13 +56,6 @@ function ChartModal(props) {
       </div>
     </div>
   );
-}
-
-ChartModal.propTypes = {
-  type: PropTypes.string.isRequired,
-  trainName: PropTypes.string.isRequired,
-  setShowModal: PropTypes.func.isRequired,
-  offsetTimeByDragging: PropTypes.func.isRequired,
 };
 
 export default ChartModal;
