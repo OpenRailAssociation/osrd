@@ -754,20 +754,10 @@ components:
           example: "infraID"
         rolling_stocks:
           $ref: "#/components/schemas/RollingStock"
-        route_occupancies:
+        spacing_requirements:
           type: array
           items:
-            type: object
-            properties:
-              id:
-                type: string
-                description: Route ID
-              start_occupancy_time:
-                type: number
-                format: double
-              end_occupancy_time:
-                type: number
-                format: double
+            $ref: "#/components/schemas/SpacingRequirement"
         start_time:
           type: number
           format: double

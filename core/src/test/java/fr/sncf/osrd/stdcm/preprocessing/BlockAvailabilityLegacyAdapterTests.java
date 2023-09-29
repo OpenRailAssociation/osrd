@@ -5,11 +5,11 @@ import static fr.sncf.osrd.Helpers.getSmallInfra;
 import static fr.sncf.osrd.stdcm.STDCMHelpers.meters;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.google.common.collect.Iterables;
-import fr.sncf.osrd.api.stdcm.STDCMRequest;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.envelope_sim.SimpleRollingStock;
+import fr.sncf.osrd.sim_infra.api.InterlockingInfraKt;
+import fr.sncf.osrd.standalone_sim.result.ResultTrain;
 import fr.sncf.osrd.stdcm.preprocessing.implementation.BlockAvailabilityLegacyAdapter;
 import fr.sncf.osrd.stdcm.preprocessing.implementation.UnavailableSpaceBuilder;
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface;
@@ -28,6 +28,9 @@ public class BlockAvailabilityLegacyAdapterTests {
                 "rt.DA6->DC6"
         );
         var blocks = getBlocksOnRoutes(infra, routes);
+        var zone = InterlockingInfraKt.getZonePathZone(infra.rawInfra(),
+                infra.blockInfra().getBlockPath(blocks.get(0)).get(0));
+        var zoneName = infra.rawInfra().getZoneName(zone);
 
         double startOccupancy = 42;
         double endOccupancy = 84;
@@ -35,8 +38,8 @@ public class BlockAvailabilityLegacyAdapterTests {
         var unavailableSpace = UnavailableSpaceBuilder.computeUnavailableSpace(
                 infra.rawInfra(),
                 infra.blockInfra(),
-                List.of(new STDCMRequest.RouteOccupancy(
-                        routes.get(1),
+                List.of(new ResultTrain.SpacingRequirement(
+                        zoneName,
                         startOccupancy,
                         endOccupancy
                 )),
@@ -46,7 +49,7 @@ public class BlockAvailabilityLegacyAdapterTests {
         );
         var adapter = new BlockAvailabilityLegacyAdapter(infra.blockInfra(), unavailableSpace);
         var res = adapter.getAvailability(
-                List.of(Iterables.getLast(blocks)),
+                List.of(blocks.get(0)),
                 0,
                 meters(1),
                 Envelope.make(EnvelopePart.generateTimes(new double[]{0., 1.}, new double[]{100., 100.})),

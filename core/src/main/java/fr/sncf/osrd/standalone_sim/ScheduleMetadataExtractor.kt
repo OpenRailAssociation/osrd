@@ -138,9 +138,6 @@ fun run(envelope: Envelope, trainPath: PathProperties, chunkPath: ChunkPath, sch
         ))
     }
 
-    // Compute route occupancies
-    val routeOccupancies = routeOccupancies(zoneOccupationChangeEvents, rawInfra, envelopeWithStops)
-
     // Compute energy consumed
     val envelopePath = EnvelopeTrainPath.from(fullInfra.rawInfra, trainPath)
     val mechanicalEnergyConsumed =
@@ -173,7 +170,6 @@ fun run(envelope: Envelope, trainPath: PathProperties, chunkPath: ChunkPath, sch
         speeds,
         headPositions,
         stops,
-        routeOccupancies,
         mechanicalEnergyConsumed,
         signalSightings,
         zoneUpdates,
@@ -364,33 +360,6 @@ fun EnvelopeTimeInterpolate.clampInterpolate(position: Distance): Double {
 
     // find when the train meets the critical location
     return interpolateTotalTime(criticalPos)
-}
-
-private fun routeOccupancies(
-    zoneOccupationChangeEvents: MutableList<ZoneOccupationChangeEvent>,
-    simInfraAdapter: SimInfraAdapter,
-    envelope: EnvelopeTimeInterpolate
-): Map<String, ResultOccupancyTiming> {
-    val routeOccupancies = mutableMapOf<String, ResultOccupancyTiming>()
-    val zoneOccupationChangeEventsByRoute = mutableMapOf<String, MutableList<ZoneOccupationChangeEvent>>()
-    for (event in zoneOccupationChangeEvents) {
-        for (route in simInfraAdapter.zoneMap.inverse()[event.zone]!!.routes) {
-            zoneOccupationChangeEventsByRoute.getOrPut(route.id) { mutableListOf() }.add(event)
-        }
-    }
-
-    for ((route, events) in zoneOccupationChangeEventsByRoute) {
-        events.sortBy { it.time }
-        val entry = events.first()
-        assert(entry.isEntry)
-        val exit = events.last()
-        if (exit.isEntry) {
-            routeOccupancies[route] = ResultOccupancyTiming(entry.time.toDouble() / 1000, envelope.totalTime)
-            continue
-        }
-        routeOccupancies[route] = ResultOccupancyTiming(entry.time.toDouble() / 1000, exit.time.toDouble() / 1000)
-    }
-    return routeOccupancies
 }
 
 private data class ZoneOccupationChangeEvent(

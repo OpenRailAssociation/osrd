@@ -11,6 +11,7 @@ import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceValue;
+import fr.sncf.osrd.standalone_sim.result.ResultTrain;
 import java.util.Collection;
 import java.util.List;
 
@@ -46,10 +47,10 @@ public final class STDCMRequest {
     public RJSComfortType comfort;
 
     /**
-     * Route occupancies in the given timetable
+     * Spacing requirements for any train in the timetable
      */
-    @Json(name = "route_occupancies")
-    public Collection<RouteOccupancy> routeOccupancies;
+    @Json(name = "spacing_requirements")
+    public Collection<ResultTrain.SpacingRequirement> spacingRequirements;
 
     /** A list of steps on the path. A step is a set of location with a stop duration.
      *  The path only has to go through a single point per location.
@@ -142,7 +143,7 @@ public final class STDCMRequest {
             String infra,
             String expectedVersion,
             RJSRollingStock rollingStock,
-            Collection<RouteOccupancy> routeOccupancies,
+            Collection<ResultTrain.SpacingRequirement> spacingRequirements,
             List<STDCMStep> steps,
             double startTime,
             double endTime,
@@ -154,7 +155,7 @@ public final class STDCMRequest {
         this.infra = infra;
         this.expectedVersion = expectedVersion;
         this.rollingStock = rollingStock;
-        this.routeOccupancies = routeOccupancies;
+        this.spacingRequirements = spacingRequirements;
         this.steps = steps;
         this.startTime = startTime;
         this.endTime = endTime;
@@ -182,32 +183,6 @@ public final class STDCMRequest {
             this.stopDuration = stopDuration;
             this.stop = stop;
             this.waypoints = waypoints;
-        }
-    }
-
-    public static class RouteOccupancy {
-        /**
-         * ID of the occupied route
-         */
-        public String id;
-
-        /**
-         * Time at which the route starts being occupied
-         */
-        @Json(name = "start_occupancy_time")
-        public double startOccupancyTime;
-
-        /**
-         * Time at which the route ends being occupied
-         */
-        @Json(name = "end_occupancy_time")
-        public double endOccupancyTime;
-
-        /** Creates a new route occupancy */
-        public RouteOccupancy(String id, double startOccupancyTime, double endOccupancyTime) {
-            this.id = id;
-            this.startOccupancyTime = startOccupancyTime;
-            this.endOccupancyTime = endOccupancyTime;
         }
     }
 }

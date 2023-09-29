@@ -111,7 +111,7 @@ private fun findRouteBlocks(
     // initialize with the BlockPathElements which are acceptable at the start of the route
     if (previousPaths == null) {
         val currentDet = signalingInfra.getZonePathEntry(routePath[0])
-        val blocks = blockInfra.getBlocksAtDetector(currentDet)
+        val blocks = blockInfra.getBlocksStartingAtDetector(currentDet)
         val blocksOnRoute = filterBlocks(allowedSignalingSystems, blockInfra, blocks, routePath, 0)
         for (block in blocksOnRoute) {
             val blockPath = blockInfra.getBlockPath(block)

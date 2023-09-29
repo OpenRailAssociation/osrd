@@ -93,7 +93,7 @@ public class STDCMGraph implements Graph<STDCMNode, STDCMEdge> {
                     .makeAllEdges();
         else {
             var res = new ArrayList<STDCMEdge>();
-            var neighbors = blockInfra.getBlocksAtDetector(node.detector());
+            var neighbors = blockInfra.getBlocksStartingAtDetector(node.detector());
             for (var neighbor : toIntList(neighbors)) {
                 res.addAll(
                         STDCMEdgeBuilder.fromNode(this, node, neighbor)

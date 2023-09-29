@@ -271,6 +271,14 @@ class DummyInfra : RawInfra, BlockInfra {
         TODO("Not yet implemented")
     }
 
+    override fun getZoneName(zone: ZoneId): String {
+        return getRouteName(RouteId(zone.index))
+    }
+
+    override fun getZoneFromName(name: String): ZoneId {
+        return ZoneId(getRouteFromName(name).index)
+    }
+
     override val detectors: StaticIdxSpace<Detector>
         get() = TODO("Not yet implemented")
 
@@ -434,6 +442,10 @@ class DummyInfra : RawInfra, BlockInfra {
         return makeIndexList(block)
     }
 
+    override fun getBlocksInZone(zone: ZoneId): StaticIdxList<Block> {
+        return mutableStaticIdxArrayListOf(BlockId(zone.index))
+    }
+
     override fun getBlockSignals(block: BlockId): StaticIdxList<LogicalSignal> {
         TODO("Not yet implemented")
     }
@@ -450,10 +462,17 @@ class DummyInfra : RawInfra, BlockInfra {
         TODO("Not yet implemented")
     }
 
-    override fun getBlocksAtDetector(detector: DirDetectorId): StaticIdxList<Block> {
+    override fun getBlocksStartingAtDetector(detector: DirDetectorId): StaticIdxList<Block> {
         val res = mutableStaticIdxArrayListOf<Block>()
         for (x in entryMap.get(detector))
             res.add(x)
+        return res
+    }
+
+    override fun getBlocksEndingAtDetector(detector: DirDetectorId): StaticIdxList<Block> {
+        val res = mutableStaticIdxArrayListOf<Block>()
+        for (id in getRoutesEndingAtDet(detector))
+            res.add(BlockId(id.index))
         return res
     }
 

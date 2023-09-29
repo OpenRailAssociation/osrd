@@ -98,9 +98,9 @@ class TestBAPRtoBAL {
         val loadedSignalInfra = simulator.loadSignals(infra)
         val blockInfra = simulator.buildBlocks(infra, loadedSignalInfra)
         val fullPath = mutableStaticIdxArrayListOf<Block>()
-        fullPath.add(blockInfra.getBlocksAtDetector(detectorW.increasing).first())
-        fullPath.add(blockInfra.getBlocksAtDetector(detectorX.increasing).first())
-        fullPath.add(blockInfra.getBlocksAtDetector(detectorY.increasing).first())
+        fullPath.add(blockInfra.getBlocksStartingAtDetector(detectorW.increasing).first())
+        fullPath.add(blockInfra.getBlocksStartingAtDetector(detectorX.increasing).first())
+        fullPath.add(blockInfra.getBlocksStartingAtDetector(detectorY.increasing).first())
         val zoneStates = mutableListOf(ZoneStatus.CLEAR, ZoneStatus.CLEAR, ZoneStatus.INCOMPATIBLE)
         val res = simulator.evaluate(infra, loadedSignalInfra, blockInfra, fullPath, 0, fullPath.size, zoneStates, ZoneStatus.INCOMPATIBLE)
         val logicalSignals = listOf(signalm, signalM, signaln, signalN).map{loadedSignalInfra.getLogicalSignals(it).first()}

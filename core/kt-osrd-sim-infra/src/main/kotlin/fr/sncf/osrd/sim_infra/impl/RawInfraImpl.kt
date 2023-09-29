@@ -91,8 +91,10 @@ class TrackChunkDescriptor(
     val speedSections: DirectionalMap<DistanceRangeMap<SpeedSection>>
 )
 
-@JvmInline
-value class ZoneDescriptor(val movableElements: StaticIdxSortedSet<TrackNode>)
+class ZoneDescriptor(
+    val movableElements: StaticIdxSortedSet<TrackNode>,
+    var name: String = "",
+)
 
 interface RouteDescriptor {
     val name: String?
@@ -186,7 +188,8 @@ class RawInfraImpl(
     val trackSectionNameMap: Map<String, TrackSectionId>,
     val routeNameMap: Map<String, RouteId>,
     val dirDetEntryToRouteMap: Map<DirDetectorId, StaticIdxList<Route>>,
-    val dirDetExitToRouteMap: Map<DirDetectorId, StaticIdxList<Route>>
+    val dirDetExitToRouteMap: Map<DirDetectorId, StaticIdxList<Route>>,
+    val zoneNameMap: HashMap<String, ZoneId> = HashMap(),
 ) : RawInfra {
     override val trackNodes: StaticIdxSpace<TrackNode>
         get() = trackNodePool.space()
@@ -307,6 +310,15 @@ class RawInfraImpl(
                 zoneDetectors[prevZone]!!.add(detector.decreasing)
         }
 
+        // initialize zone names
+        for (zone in zonePool) {
+            val name = getZoneBounds(zone)
+                .sortedBy { id -> id.index }
+                .map { "${getDetectorName(it.value)}:${it.direction}" }
+            zonePool[zone].name = "zone.${name}"
+            zoneNameMap[zonePool[zone].name] = zone
+        }
+
         // initialize the physical signal to logical signal map
         for (physicalSignal in physicalSignalPool)
             for (child in physicalSignalPool[physicalSignal].logicalSignals)
@@ -358,6 +370,14 @@ class RawInfraImpl(
 
     override fun getZoneBounds(zone: ZoneId): List<DirDetectorId> {
         return zoneDetectors[zone]!!
+    }
+
+    override fun getZoneName(zone: ZoneId): String {
+        return zonePool[zone].name
+    }
+
+    override fun getZoneFromName(name: String): ZoneId {
+        return zoneNameMap[name]!!
     }
 
     override val detectors: StaticIdxSpace<Detector>

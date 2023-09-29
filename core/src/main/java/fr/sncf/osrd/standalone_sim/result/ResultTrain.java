@@ -12,8 +12,6 @@ public class ResultTrain {
     @Json(name = "head_positions")
     public final List<ResultPosition> headPositions;
     public final List<ResultStops> stops;
-    @Json(name = "route_occupancies")
-    public final Map<String, ResultOccupancyTiming> routeOccupancies;
 
     /**
      * A signal sighting represents the time and offset at which a train first sees a signal.
@@ -160,8 +158,7 @@ public class ResultTrain {
     public ResultTrain(
             List<ResultSpeed> speeds,
             List<ResultPosition> headPositions,
-            List<ResultStops> stops, Map<String,
-            ResultOccupancyTiming> routeOccupancies,
+            List<ResultStops> stops,
             double mechanicalEnergyConsumed,
             List<SignalSighting> signalSightings,
             List<ZoneUpdate> zoneUpdates,
@@ -170,7 +167,6 @@ public class ResultTrain {
         this.speeds = speeds;
         this.headPositions = headPositions;
         this.stops = stops;
-        this.routeOccupancies = routeOccupancies;
         this.mechanicalEnergyConsumed = mechanicalEnergyConsumed;
         this.signalSightings = signalSightings;
         this.zoneUpdates = zoneUpdates;
@@ -184,7 +180,6 @@ public class ResultTrain {
                 speeds.stream().map(speed -> speed.withAddedTime(departureTime)).toList(),
                 headPositions.stream().map(pos -> pos.withAddedTime(departureTime)).toList(),
                 stops.stream().map(stop -> stop.withAddedTime(departureTime)).toList(),
-                Maps.transformValues(routeOccupancies, occ -> occ.withAddedTime(departureTime)),
                 mechanicalEnergyConsumed,
                 signalSightings.stream().map(sighting -> sighting.withAddedTime(departureTime)).toList(),
                 zoneUpdates.stream().map(update -> update.withAddedTime(departureTime)).toList(),
