@@ -115,7 +115,7 @@
       height: 2rem;
       span {
         display: flex;
-      }      
+      }
     }
     .infraslist-item-choice-footer {
       display: flex;
@@ -133,24 +133,14 @@
   .infraslist-item-edition {
     display: flex;
     align-items: center;
+    height: 3.5rem;
     position: relative;
     margin-bottom: .5rem;
     &.disabled {
       opacity: .25;
     }
-    .infralist-item-edition-disabled {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(white, .75);
-    }
     .infraslist-item-edition-delete {
       display: flex;
-      position: absolute;
-      left: 0;
-      top: 0;
       width: 100%;
       height: 100%;
       border-radius: 4px;
@@ -162,12 +152,19 @@
         overflow: hidden;
         padding-left: .5rem;
       }
+      .infraslist-item-delete-button-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 8rem;
+      }
       .infraslist-item-edition-delete-buttons {
         display: flex;
         align-items: center;
         border: none;
         justify-content: center;
-        width: 4rem;
+        width: 50%;
+        height: 100%;
         cursor: pointer;
         transition: .2s;
         font-weight: 400;
@@ -218,7 +215,7 @@
         }
         span {
           display: flex;
-        }    
+        }
         .infra-lock {
           display: flex;
           align-items: center;
@@ -229,7 +226,7 @@
             font-size: .6rem;
             margin-right: .25rem;
           }
-        }  
+        }
       }
       .infraslist-item-edition-footer {
         display: flex;

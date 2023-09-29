@@ -4,10 +4,11 @@ import Countdown from 'react-countdown';
 import { Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useDispatch } from 'react-redux';
 import { setFailure, setSuccess } from 'reducers/main';
+import { Spinner } from 'common/Loader';
 
 type InfraSelectorEditionActionsBarDeleteProps = {
   infra: Infra;
-  setRunningDelete: (infraId?: number) => void;
+  setRunningDelete: (runningDelete: boolean) => void;
 };
 
 export default function InfraSelectorEditionActionsBarDelete({
@@ -17,12 +18,13 @@ export default function InfraSelectorEditionActionsBarDelete({
   const { t } = useTranslation('infraManagement');
   const dispatch = useDispatch();
 
-  const [deleteInfra] = osrdEditoastApi.useDeleteInfraByIdMutation();
+  const [deleteInfra, { isLoading: isDeleting }] =
+    osrdEditoastApi.endpoints.deleteInfraById.useMutation();
 
   async function handleDeleteInfra() {
     try {
       await deleteInfra({ id: infra.id });
-      setRunningDelete(undefined);
+      setRunningDelete(false);
       dispatch(
         setSuccess({
           title: t('infraDeleted', { name: infra.name }),
@@ -68,16 +70,24 @@ export default function InfraSelectorEditionActionsBarDelete({
           <div className="font-weight-bold">{infra.name}</div>
         </div>
       </div>
-      <button
-        type="button"
-        className="infraslist-item-edition-delete-buttons no"
-        onClick={() => {
-          setRunningDelete(undefined);
-        }}
-      >
-        {t('no')}
-      </button>
-      <Countdown date={Date.now() + 3000} renderer={countDownDelete} />
+      <div className="infraslist-item-delete-button-container">
+        {isDeleting ? (
+          <Spinner />
+        ) : (
+          <>
+            <button
+              type="button"
+              className="infraslist-item-edition-delete-buttons no"
+              onClick={() => {
+                setRunningDelete(false);
+              }}
+            >
+              {t('no')}
+            </button>
+            <Countdown date={Date.now() + 3000} renderer={countDownDelete} />
+          </>
+        )}
+      </div>
     </div>
   );
 }
