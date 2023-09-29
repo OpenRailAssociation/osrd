@@ -17,7 +17,7 @@ mod views;
 use crate::core::CoreClient;
 use crate::error::InternalError;
 use crate::map::redis_utils::RedisClient;
-use crate::models::{Create, Infra};
+use crate::models::{Create, Delete, Infra};
 use crate::schema::electrical_profiles::ElectricalProfileSetData;
 use crate::schema::RailJson;
 use crate::views::infra::InfraForm;
@@ -30,8 +30,9 @@ use actix_web::{App, HttpServer};
 use chashmap::CHashMap;
 use clap::Parser;
 use client::{
-    ClearArgs, Client, Color, Commands, GenerateArgs, ImportProfileSetArgs, ImportRailjsonArgs,
-    ImportRollingStockArgs, PostgresConfig, RedisConfig, RunserverArgs,
+    ClearArgs, Client, Color, Commands, DeleteProfileSetArgs, ElectricalProfilesCommands,
+    GenerateArgs, ImportProfileSetArgs, ImportRailjsonArgs, ImportRollingStockArgs,
+    ListProfileSetArgs, PostgresConfig, RedisConfig, RunserverArgs,
 };
 use colored::*;
 use diesel::{ConnectionError, ConnectionResult};
@@ -88,7 +89,6 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
         Commands::Generate(args) => generate(args, pg_config, redis_config).await,
         Commands::Clear(args) => clear(args, pg_config, redis_config).await,
         Commands::ImportRailjson(args) => import_railjson(args, pg_config).await,
-        Commands::ImportProfileSet(args) => add_electrical_profile_set(args, pg_config).await,
         Commands::ImportRollingStock(args) => import_rolling_stock(args, pg_config).await,
         Commands::OsmToRailjson(args) => {
             converters::osm_to_railjson(args.osm_pbf_in, args.railjson_out)
@@ -97,6 +97,17 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
             generate_openapi();
             Ok(())
         }
+        Commands::ElectricalProfiles(subcommand) => match subcommand {
+            ElectricalProfilesCommands::Import(args) => {
+                electrical_profile_set_import(args, pg_config).await
+            }
+            ElectricalProfilesCommands::List(args) => {
+                electrical_profile_set_list(args, pg_config).await
+            }
+            ElectricalProfilesCommands::Delete(args) => {
+                electrical_profile_set_delete(args, pg_config).await
+            }
+        },
     }
 }
 
@@ -389,7 +400,7 @@ async fn import_railjson(
     Ok(())
 }
 
-async fn add_electrical_profile_set(
+async fn electrical_profile_set_import(
     args: ImportProfileSetArgs,
     pg_config: PostgresConfig,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
@@ -408,6 +419,44 @@ async fn add_electrical_profile_set(
     let created_ep_set = ep_set.create(pool).await.unwrap();
     let ep_set_id = created_ep_set.id.unwrap();
     info!("✅ Electrical profile set {ep_set_id} created");
+    Ok(())
+}
+
+async fn electrical_profile_set_list(
+    args: ListProfileSetArgs,
+    pg_config: PostgresConfig,
+) -> Result<(), Box<dyn Error + Send + Sync>> {
+    let mut conn = PgConnection::establish(&pg_config.url()).await?;
+    let electrical_profile_sets = ElectricalProfileSet::list_light(&mut conn).await.unwrap();
+    if !args.quiet {
+        println!("Electrical profile sets:\nID - Name");
+    }
+    for electrical_profile_set in electrical_profile_sets {
+        println!(
+            "{:<2} - {}",
+            electrical_profile_set.id.unwrap(),
+            electrical_profile_set.name.unwrap()
+        );
+    }
+    Ok(())
+}
+
+async fn electrical_profile_set_delete(
+    args: DeleteProfileSetArgs,
+    pg_config: PostgresConfig,
+) -> Result<(), Box<dyn Error + Send + Sync>> {
+    let manager = ConnectionManager::<PgConnection>::new(pg_config.url());
+    let pool = Data::new(Pool::builder(manager).max_size(1).build().unwrap());
+    for profile_set_id in args.profile_set_ids {
+        let deleted = ElectricalProfileSet::delete(pool.clone(), profile_set_id)
+            .await
+            .unwrap();
+        if !deleted {
+            println!("Electrical profile set {} not found", profile_set_id);
+        } else {
+            println!("Electrical profile set {} deleted", profile_set_id);
+        }
+    }
     Ok(())
 }
 
@@ -475,18 +524,16 @@ fn generate_openapi() {
 
 #[cfg(test)]
 mod tests {
-    use crate::client::{ImportRailjsonArgs, PostgresConfig};
+    use super::*;
 
-    use crate::import_railjson;
-    use crate::schema::RailJson;
+    use crate::fixtures::tests::{electrical_profile_set, TestFixture};
     use actix_web::test as actix_test;
     use diesel::sql_query;
     use diesel::sql_types::Text;
-    use diesel_async::{
-        AsyncConnection as Connection, AsyncPgConnection as PgConnection, RunQueryDsl,
-    };
+    use diesel_async::RunQueryDsl;
     use rand::distributions::Alphanumeric;
     use rand::{thread_rng, Rng};
+    use rstest::rstest;
     use std::io::Write;
     use tempfile::NamedTempFile;
 
@@ -547,5 +594,46 @@ mod tests {
         let mut tmp_file = NamedTempFile::new().unwrap();
         write!(tmp_file, "{}", serde_json::to_string(railjson).unwrap()).unwrap();
         tmp_file
+    }
+
+    #[rstest]
+    async fn test_electrical_profile_set_delete(
+        #[future] electrical_profile_set: TestFixture<ElectricalProfileSet>,
+    ) {
+        let pg_config = PostgresConfig::default();
+        let electrical_profile_set = electrical_profile_set.await;
+
+        let mut conn = PgConnection::establish(&pg_config.url()).await.unwrap();
+        let previous_length = ElectricalProfileSet::list_light(&mut conn)
+            .await
+            .unwrap()
+            .len();
+
+        let args = DeleteProfileSetArgs {
+            profile_set_ids: vec![electrical_profile_set.id()],
+        };
+        electrical_profile_set_delete(args, pg_config.clone())
+            .await
+            .unwrap();
+
+        let mut conn = PgConnection::establish(&pg_config.url()).await.unwrap();
+        let new_length = ElectricalProfileSet::list_light(&mut conn)
+            .await
+            .unwrap()
+            .len();
+        assert_eq!(new_length, previous_length - 1);
+    }
+
+    #[rstest]
+    async fn test_electrical_profile_set_list_doesnt_fail(
+        #[future] electrical_profile_set: TestFixture<ElectricalProfileSet>,
+    ) {
+        let _electrical_profile_set = electrical_profile_set.await;
+        for quiet in [true, false] {
+            let args = ListProfileSetArgs { quiet };
+            electrical_profile_set_list(args, PostgresConfig::default())
+                .await
+                .unwrap();
+        }
     }
 }
