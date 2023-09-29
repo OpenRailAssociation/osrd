@@ -33,9 +33,12 @@ RUN apt update -yqq && \
 COPY --from=builder /usr/local/cargo/bin/editoast /usr/local/bin/editoast
 COPY --from=builder /usr/local/cargo/bin/diesel /usr/local/bin/diesel
 COPY --from=builder /app/migrations /migrations
+COPY --from=builder /app/assets /assets
 
 ARG OSRD_GIT_DESCRIBE
 ENV OSRD_GIT_DESCRIBE=${OSRD_GIT_DESCRIBE}
+ENV ASSETS_PATH=/assets
+
 # We use jemalloc to reduce allocation fragmentation
 ENV LD_PRELOAD="/usr/lib/x86_64-linux-gnu/libjemalloc.so.2"
 CMD ["editoast", "runserver"]

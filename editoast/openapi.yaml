@@ -4573,6 +4573,48 @@ paths:
                 type: array
           description: Search results, the structure of the returned objects depend on their type
       summary: Generic search endpoint
+  /sprites/signaling_systems/:
+    get:
+      description: This endpoint returns the list of supported signaling systems
+      responses:
+        '200':
+          content:
+            application/json:
+              example:
+              - BAL
+              - TVM
+              schema:
+                items:
+                  type: string
+                type: array
+          description: List of supported signaling systems
+      summary: This endpoint returns the list of supported signaling systems
+      tags:
+      - sprites
+  /sprites/{signaling_system}/{file_name}/:
+    get:
+      description: This endpoint is used by map libre to retrieve the atlas of each signaling system
+      parameters:
+      - description: Signaling system name
+        in: path
+        name: signaling_system
+        required: true
+        schema:
+          type: string
+      - description: File name (json, png or svg)
+        in: path
+        name: file_name
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Atlas image of config
+        '404':
+          description: Signaling system not found
+      summary: This endpoint is used by map libre to retrieve the atlas of each signaling system
+      tags:
+      - sprites
   /stdcm/:
     post:
       requestBody:

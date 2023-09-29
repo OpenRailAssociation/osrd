@@ -11,6 +11,7 @@ pub mod projects;
 pub mod rolling_stocks;
 pub mod scenario;
 pub mod search;
+pub mod sprites;
 pub mod stdcm;
 pub mod study;
 pub mod timetable;
@@ -41,6 +42,7 @@ fn routes_v2() -> Routes<impl HttpServiceFactory> {
         core_version,
         timetable::routes(),
         documents::routes(),
+        sprites::routes(),
     }
     routes()
 }
