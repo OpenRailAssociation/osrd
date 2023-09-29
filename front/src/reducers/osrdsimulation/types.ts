@@ -235,11 +235,6 @@ export interface OsrdSimulationState {
   redirectToGraph?: boolean;
   chart?: Chart;
   chartXGEV?: Chart['x'];
-  contextMenu?: {
-    id: unknown;
-    xPos: unknown;
-    yPos: unknown;
-  };
   isPlaying: boolean;
   isUpdating: boolean;
   reloadTimetable: boolean;
