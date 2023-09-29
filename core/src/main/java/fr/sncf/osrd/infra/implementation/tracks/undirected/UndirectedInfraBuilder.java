@@ -8,6 +8,7 @@ import static fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType.GA;
 import static fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType.GB;
 import static fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType.GB1;
 import static fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType.GC;
+import static fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType.GLOTT;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
@@ -393,6 +394,7 @@ public class UndirectedInfraBuilder {
             case GC -> Sets.union(Set.of(GC), getCompatibleGaugeTypes(GB1));
             case G2 -> Set.of(G1, G2, FR3_3_GB_G2);
             case FR3_3 -> Set.of(FR3_3, FR3_3_GB_G2);
+            case GLOTT -> Set.of(GLOTT);
             default -> {
                 diagnosticRecorder.register(new Warning("Invalid gauge type for track: " + trackType));
                 yield Sets.newHashSet(RJSLoadingGaugeType.values());

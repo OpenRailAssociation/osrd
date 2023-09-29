@@ -12,5 +12,6 @@ public enum RJSLoadingGaugeType {
     @Json(name = "FR3.3")
     FR3_3,
     @Json(name = "FR3.3/GB/G2")
-    FR3_3_GB_G2;
+    FR3_3_GB_G2,
+    GLOTT
 }
