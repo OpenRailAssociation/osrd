@@ -18,19 +18,20 @@ import fr.sncf.osrd.utils.units.OffsetList
 sealed interface Zone
 typealias ZoneId = StaticIdx<Zone>
 
+@Suppress("INAPPLICABLE_JVM_NAME")
 interface LocationInfra : TrackNetworkInfra, TrackInfra, TrackProperties {
     val zones: StaticIdxSpace<Zone>
     fun getMovableElements(zone: ZoneId): StaticIdxSortedSet<TrackNode>
     fun getZoneBounds(zone: ZoneId): List<DirDetectorId>
+    @JvmName("getZoneName")
+    fun getZoneName(zone: ZoneId): String
+    @JvmName("getZoneFromName")
+    fun getZoneFromName(name: String): ZoneId
 
     val detectors: StaticIdxSpace<Detector>
     fun getNextZone(dirDet: DirDetectorId): ZoneId?
     fun getPreviousZone(dirDet: DirDetectorId): ZoneId?
     fun getDetectorName(det: DetectorId): String?
-}
-
-fun LocationInfra.getZoneName(zone: ZoneId): String {
-    return "zone.${getZoneBounds(zone).map { "${getDetectorName(it.value)}:${it.direction}" }.minOf { it }}"
 }
 
 fun LocationInfra.isBufferStop(detector: StaticIdx<Detector>): Boolean {
@@ -60,6 +61,7 @@ interface ReservationInfra : LocationInfra {
     fun getZonePathChunks(zonePath: ZonePathId): DirStaticIdxList<TrackChunk>
 }
 
+@JvmName("getZonePathZone")
 fun ReservationInfra.getZonePathZone(zonePath: ZonePathId): ZoneId {
     return getNextZone(getZonePathEntry(zonePath))!!
 }

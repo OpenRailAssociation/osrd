@@ -28,7 +28,7 @@ public class GraphAdapter implements Graph<Integer, Integer> {
     /** Returns all the edges (blocks) that start at the given node (detector) */
     @Override
     public Collection<Integer> getAdjacentEdges(Integer detectorId) {
-        var neighborBlocks = blockInfra.getBlocksAtDetector(detectorId);
+        var neighborBlocks = blockInfra.getBlocksStartingAtDetector(detectorId);
         return KtToJavaConverter.toIntList(neighborBlocks);
     }
 }

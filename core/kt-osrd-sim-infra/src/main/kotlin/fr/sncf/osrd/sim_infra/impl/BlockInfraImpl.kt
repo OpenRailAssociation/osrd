@@ -41,19 +41,25 @@ class BlockInfraImpl(
     private val rawInfra: RawInfra,
 ) : BlockInfra {
     private val blockEntryDetectorMap = IdxMap<DirDetectorId, MutableStaticIdxList<Block>>()
+    private val blockExitDetectorMap = IdxMap<DirDetectorId, MutableStaticIdxList<Block>>()
     private val blockEntrySignalMap = IdxMap<LogicalSignalId, MutableStaticIdxList<Block>>()
     private val trackChunkToBlockMap = IdxMap<DirStaticIdx<TrackChunk>, MutableStaticIdxArraySet<Block>>()
     private val blockToTrackChunkMap = IdxMap<StaticIdx<Block>, MutableDirStaticIdxList<TrackChunk>>()
+    private val zoneToBlockMap = IdxMap<ZoneId, MutableStaticIdxList<Block>>()
 
     init {
         for (blockId in blockPool.space()) {
             val block = blockPool[blockId]
             val entryZonePath = block.path[0]
+            val exitZonePath = block.path[block.path.size - 1]
 
             // Update blockEntryDetectorMap
             val entryDirDet = rawInfra.getZonePathEntry(entryZonePath)
-            val detList = blockEntryDetectorMap.getOrPut(entryDirDet) { mutableStaticIdxArrayListOf() }
-            detList.add(blockId)
+            val exitDirDet = rawInfra.getZonePathExit(exitZonePath)
+            val entryDetList = blockEntryDetectorMap.getOrPut(entryDirDet) { mutableStaticIdxArrayListOf() }
+            val exitDetList = blockExitDetectorMap.getOrPut(exitDirDet) { mutableStaticIdxArrayListOf() }
+            entryDetList.add(blockId)
+            exitDetList.add(blockId)
 
             // Update blockEntrySignalMap
             if (!block.startAtBufferStop) {
@@ -62,7 +68,7 @@ class BlockInfraImpl(
                 sigList.add(blockId)
             }
 
-            // Update trackChunkToBlockMap and blockToTrackChunkMap
+            // Update trackChunkToBlockMap, blockToTrackChunkMap, and zoneToBlockMap
             for (zonePath in getBlockPath(blockId)) {
                 val trackChunks = rawInfra.getZonePathChunks(zonePath)
                 val blockTrackChunks = blockToTrackChunkMap.getOrPut(blockId) { mutableDirStaticIdxArrayListOf() }
@@ -71,6 +77,8 @@ class BlockInfraImpl(
                     val chunkBlocks = trackChunkToBlockMap.getOrPut(trackChunk) { mutableStaticIdxArraySetOf() }
                     chunkBlocks.add(blockId)
                 }
+                zoneToBlockMap.getOrPut(rawInfra.getZonePathZone(zonePath)) { mutableStaticIdxArrayListOf() }
+                    .add(blockId)
             }
         }
     }
@@ -80,6 +88,10 @@ class BlockInfraImpl(
 
     override fun getBlockPath(block: BlockId): StaticIdxList<ZonePath> {
         return blockPool[block].path
+    }
+
+    override fun getBlocksInZone(zone: ZoneId): StaticIdxList<Block> {
+        return zoneToBlockMap[zone]!!
     }
 
     override fun getBlockSignals(block: BlockId): StaticIdxList<LogicalSignal> {
@@ -98,8 +110,12 @@ class BlockInfraImpl(
         return loadedSignalInfra.getSignalingSystem(blockPool[block].signals[0])
     }
 
-    override fun getBlocksAtDetector(detector: DirDetectorId): StaticIdxList<Block> {
+    override fun getBlocksStartingAtDetector(detector: DirDetectorId): StaticIdxList<Block> {
         return blockEntryDetectorMap[detector] ?: mutableStaticIdxArrayListOf()
+    }
+
+    override fun getBlocksEndingAtDetector(detector: DirDetectorId): StaticIdxList<Block> {
+        return blockExitDetectorMap[detector] ?: mutableStaticIdxArrayListOf()
     }
 
     override fun getBlocksAtSignal(signal: LogicalSignalId): StaticIdxList<Block> {

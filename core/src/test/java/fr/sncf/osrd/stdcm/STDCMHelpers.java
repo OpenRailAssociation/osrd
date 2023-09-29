@@ -7,13 +7,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import fr.sncf.osrd.DriverBehaviour;
-import fr.sncf.osrd.api.FullInfra;
-import fr.sncf.osrd.api.stdcm.STDCMRequest;
+import fr.sncf.osrd.api.*;
 import fr.sncf.osrd.api.utils.PathPropUtils;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
 import fr.sncf.osrd.sim_infra.impl.ChunkPath;
 import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper;
 import fr.sncf.osrd.standalone_sim.StandaloneSim;
+import fr.sncf.osrd.standalone_sim.result.ResultTrain;
 import fr.sncf.osrd.stdcm.graph.STDCMSimulations;
 import fr.sncf.osrd.stdcm.preprocessing.implementation.UnavailableSpaceBuilder;
 import fr.sncf.osrd.train.RollingStock;
@@ -27,8 +27,10 @@ import java.util.List;
 import java.util.Set;
 
 public class STDCMHelpers {
-    /** Make the occupancy multimap of a train going from point A to B starting at departureTime */
-    public static Multimap<Integer, OccupancySegment> makeOccupancyFromPath(
+    /**
+     * Make the occupancy multimap of a train going from point A to B starting at departureTime
+     */
+    public static List<ResultTrain.SpacingRequirement> makeRequirementsFromPath(
             FullInfra infra,
             Set<Pathfinding.EdgeLocation<Integer>> startLocations,
             Set<Pathfinding.EdgeLocation<Integer>> endLocations,
@@ -55,19 +57,27 @@ public class STDCMHelpers {
                 2.,
                 new DriverBehaviour(0, 0)
         );
-        var rawOccupancies = result.baseSimulations.get(0).routeOccupancies;
-        var occupancies = new ArrayList<STDCMRequest.RouteOccupancy>();
-        for (var entry : rawOccupancies.entrySet()) {
-            occupancies.add(new STDCMRequest.RouteOccupancy(
-                    entry.getKey(),
-                    departureTime + entry.getValue().timeHeadOccupy,
-                    departureTime + entry.getValue().timeTailFree
+        var rawOccupancies = result.baseSimulations.get(0).spacingRequirements;
+        var requirements = new ArrayList<ResultTrain.SpacingRequirement>();
+        for (var entry : rawOccupancies) {
+            requirements.add(new ResultTrain.SpacingRequirement(
+                    entry.zone,
+                    departureTime + entry.beginTime,
+                    departureTime + entry.endTime
             ));
         }
+        return requirements;
+    }
+
+    /** Make the route occupancies from a spacing requirement list */
+    public static Multimap<Integer, OccupancySegment> makeOccupancyFromRequirements(
+            FullInfra infra,
+            List<ResultTrain.SpacingRequirement> requirements
+    ) {
         return UnavailableSpaceBuilder.computeUnavailableSpace(
                 infra.rawInfra(),
                 infra.blockInfra(),
-                occupancies,
+                requirements,
                 REALISTIC_FAST_TRAIN,
                 0,
                 0

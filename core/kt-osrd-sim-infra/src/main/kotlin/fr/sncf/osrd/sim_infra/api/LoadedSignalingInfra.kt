@@ -58,13 +58,17 @@ interface BlockInfra {
     val blocks: StaticIdxSpace<Block>
     @JvmName("getBlockPath")
     fun getBlockPath(block: BlockId): StaticIdxList<ZonePath>
+    @JvmName("getBlocksInZone")
+    fun getBlocksInZone(zone: ZoneId): StaticIdxList<Block>
     fun getBlockSignals(block: BlockId): StaticIdxList<LogicalSignal>
     fun blockStartAtBufferStop(block: BlockId): Boolean
     fun blockStopAtBufferStop(block: BlockId): Boolean
 
     fun getBlockSignalingSystem(block: BlockId): SignalingSystemId
-    @JvmName("getBlocksAtDetector")
-    fun getBlocksAtDetector(detector: DirDetectorId): StaticIdxList<Block>
+    @JvmName("getBlocksStartingAtDetector")
+    fun getBlocksStartingAtDetector(detector: DirDetectorId): StaticIdxList<Block>
+    @JvmName("getBlocksEndingAtDetector")
+    fun getBlocksEndingAtDetector(detector: DirDetectorId): StaticIdxList<Block>
     fun getBlocksAtSignal(signal: LogicalSignalId): StaticIdxList<Block>
     fun getSignalsPositions(block: BlockId): OffsetList<Block>
     @JvmName("getBlocksFromTrackChunk")

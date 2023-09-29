@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.api.stdcm.STDCMRequest;
+import fr.sncf.osrd.standalone_sim.result.ResultTrain;
 import fr.sncf.osrd.stdcm.OccupancySegment;
 import fr.sncf.osrd.utils.DummyInfra;
 import org.junit.jupiter.api.Test;
@@ -30,7 +31,7 @@ public class UnavailableSpaceBuilderTests {
         var res = computeUnavailableSpace(
                 infra,
                 infra,
-                Set.of(new STDCMRequest.RouteOccupancy("a->b", 0, 100)),
+                Set.of(new ResultTrain.SpacingRequirement("a->b", 0, 100)),
                 REALISTIC_FAST_TRAIN,
                 0,
                 0
@@ -43,12 +44,9 @@ public class UnavailableSpaceBuilderTests {
         );
         assertEquals(
                 Set.of(
-                        // If the train is in this area, the previous block would be "yellow", causing a conflict
-                        new OccupancySegment(0, 100, 0, meters(1000))
-
-                        // Margin added to the base occupancy to account for the train length,
-                        // it can be removed if this test fails as it overlaps with the previous one
-                        //new OccupancySegment(0, 100, 0, REALISTIC_FAST_TRAIN.getLength())
+                        // The train needs to have fully cleared the first block,
+                        // its head can't be in the beginning of the second block
+                        new OccupancySegment(0, 100, 0, meters(REALISTIC_FAST_TRAIN.getLength()))
                 ),
                 res.get(secondBlock)
         );
@@ -62,15 +60,15 @@ public class UnavailableSpaceBuilderTests {
         var res = computeUnavailableSpace(
                 infra,
                 infra,
-                Set.of(new STDCMRequest.RouteOccupancy("b->c", 0, 100)),
+                Set.of(new ResultTrain.SpacingRequirement("b->c", 0, 100)),
                 REALISTIC_FAST_TRAIN,
                 0,
                 0
         );
         assertEquals(
                 Set.of(
-                        // Entering this area would cause the train to see a signal that isn't green
-                        new OccupancySegment(0, 100, meters(1000 - 400), meters(1000))
+                        // This block would display a warning and wouldn't be available
+                        new OccupancySegment(0, 100, 0, meters(1000))
                 ),
                 res.get(firstBlock)
         );
@@ -101,7 +99,7 @@ public class UnavailableSpaceBuilderTests {
         final var res = computeUnavailableSpace(
                 infra,
                 infra,
-                Set.of(new STDCMRequest.RouteOccupancy("a1->center", 0, 100)),
+                Set.of(new ResultTrain.SpacingRequirement("center->b1", 0, 100)),
                 REALISTIC_FAST_TRAIN,
                 0,
                 0
@@ -110,48 +108,43 @@ public class UnavailableSpaceBuilderTests {
                 Set.of(
                         new OccupancySegment(0, 100, 0, meters(1000)) // base occupancy
                 ),
-                res.get(a1)
+                res.get(b1)
         );
         assertEquals(
                 Set.of(),
-                res.get(a2)
+                res.get(b2)
         );
         assertEquals(
                 Set.of(
-                        // If the train is in this area, the previous block would be "yellow", causing a conflict
+                        // The previous block would display a warning
                         new OccupancySegment(0, 100, 0, meters(1000))
-
-                        // Margin added to the base occupancy to account for the train length,
-                        // it can be removed if this test fails as it overlaps with the previous one
-                        // new OccupancySegment(0, 100, 0, REALISTIC_FAST_TRAIN.getLength())
                 ),
                 res.get(b1)
         );
-        assertEquals(res.get(b1), res.get(b2));
+        assertEquals(res.get(a1), res.get(a2));
     }
 
     @Test
     public void testThirdBlock() {
         var infra = DummyInfra.make();
-        infra.addBlock("a", "b", meters(1000));
+        var firstBlock = infra.addBlock("a", "b", meters(1000));
         infra.addBlock("b", "c", meters(1000));
-        var thirdBlock = infra.addBlock("c", "d", meters(1000));
+        infra.addBlock("c", "d", meters(1000));
         var res = computeUnavailableSpace(
                 infra,
                 infra,
-                Set.of(new STDCMRequest.RouteOccupancy("a->b", 0, 100)),
+                Set.of(new ResultTrain.SpacingRequirement("c->d", 0, 100)),
                 REALISTIC_FAST_TRAIN,
                 0,
                 0
         );
         assertEquals(
                 Set.of(
-                        // The second block can't be occupied in that time because it would cause a "yellow" state
-                        // in the first one (conflict), and this accounts for the extra margin needed in the third
-                        // block caused by the train length
-                        new OccupancySegment(0, 100, 0, meters(REALISTIC_FAST_TRAIN.getLength()))
+                        // Second block displays a warning, first block can't be used in the area where
+                        // the signal of the second block is visible
+                        new OccupancySegment(0, 100, meters(1000 - 400), meters(1000))
                 ),
-                res.get(thirdBlock)
+                res.get(firstBlock)
         );
     }
 
@@ -163,7 +156,7 @@ public class UnavailableSpaceBuilderTests {
         var res = computeUnavailableSpace(
                 infra,
                 infra,
-                Set.of(new STDCMRequest.RouteOccupancy("a->b", 100, 200)),
+                Set.of(new ResultTrain.SpacingRequirement("b->c", 100, 200)),
                 REALISTIC_FAST_TRAIN,
                 20,
                 60

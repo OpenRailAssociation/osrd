@@ -447,7 +447,7 @@ class RawInfraBuilderImpl : RawInfraBuilder {
             makeTrackNameMap(),
             makeRouteNameMap(),
             makeDetEntryToRouteMap(),
-            makeDetExitToRouteMap()
+            makeDetExitToRouteMap(),
         )
     }
 

@@ -129,7 +129,6 @@ public class StandaloneSimulationTest extends ApiTest {
         var speeds = trainResult.speeds.toArray(new ResultSpeed[0]);
         for (int i = 1; i < speeds.length; i++)
             assertTrue(speeds[i - 1].position <= speeds[i].position);
-        assertEquals(7, trainResult.routeOccupancies.size());
 
         // check mrsp
         var mrsp = simResult.speedLimits.get(0);

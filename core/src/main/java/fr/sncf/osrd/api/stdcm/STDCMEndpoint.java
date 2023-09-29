@@ -1,7 +1,5 @@
 package fr.sncf.osrd.api.stdcm;
 
-import static fr.sncf.osrd.utils.KtToJavaConverter.toIntList;
-
 import fr.sncf.osrd.api.ExceptionHandler;
 import fr.sncf.osrd.api.FullInfra;
 import fr.sncf.osrd.api.InfraManager;
@@ -14,8 +12,6 @@ import fr.sncf.osrd.railjson.parser.RJSStandaloneTrainScheduleParser;
 import fr.sncf.osrd.reporting.exceptions.ErrorType;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
-import fr.sncf.osrd.sim_infra.api.InterlockingInfraKt;
-import fr.sncf.osrd.sim_infra.api.RawSignalingInfra;
 import fr.sncf.osrd.standalone_sim.ScheduleMetadataExtractor;
 import fr.sncf.osrd.standalone_sim.result.ResultEnvelopePoint;
 import fr.sncf.osrd.standalone_sim.result.StandaloneSimResult;
@@ -35,8 +31,6 @@ import org.takes.rs.RsText;
 import org.takes.rs.RsWithBody;
 import org.takes.rs.RsWithStatus;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 
 public class STDCMEndpoint implements Take {
@@ -70,7 +64,6 @@ public class STDCMEndpoint implements Take {
             final var comfort = RJSRollingStockParser.parseComfort(request.comfort);
             final var steps = parseSteps(infra, request.steps);
             final String tag = request.speedLimitComposition;
-            var occupancies = request.routeOccupancies;
             AllowanceValue standardAllowance = null;
             if (request.standardAllowance != null)
                 standardAllowance = RJSStandaloneTrainScheduleParser.parseAllowanceValue(
@@ -81,11 +74,10 @@ public class STDCMEndpoint implements Take {
 
             // Build the unavailable space
             // temporary workaround, to remove with new signaling
-            occupancies = addWarningOccupancies(infra.rawInfra(), occupancies);
             var unavailableSpace = UnavailableSpaceBuilder.computeUnavailableSpace(
                     infra.rawInfra(),
                     infra.blockInfra(),
-                    occupancies,
+                    request.spacingRequirements,
                     rollingStock,
                     request.gridMarginAfterSTDCM,
                     request.gridMarginBeforeSTDCM
@@ -140,26 +132,8 @@ public class STDCMEndpoint implements Take {
                 .toList();
     }
 
-    /** The inputs only contains occupied blocks, we need to add the warning in the previous one (assuming BAL).
-     * To be removed with new signaling. */
-    private static Collection<STDCMRequest.RouteOccupancy> addWarningOccupancies(
-            RawSignalingInfra rawInfra,
-            Collection<STDCMRequest.RouteOccupancy> occupancies
-    ) {
-        var warningOccupancies = new HashSet<>(occupancies);
-        for (var occupancy : occupancies) {
-            var route = rawInfra.getRouteFromName(occupancy.id);
-            var previousRoutes = toIntList(rawInfra.getRoutesEndingAtDet(
-                    InterlockingInfraKt.getRouteEntry(rawInfra, route)));
-            for (var previousRoute : previousRoutes)
-                warningOccupancies.add(new STDCMRequest.RouteOccupancy(rawInfra.getRouteName(previousRoute),
-                        occupancy.startOccupancyTime, occupancy.endOccupancyTime));
-        }
-        return warningOccupancies;
-    }
-
     /** Generate a train schedule matching the envelope and rolling stock, with one stop at the end */
-    private static StandaloneTrainSchedule makeTrainSchedule(
+    public static StandaloneTrainSchedule makeTrainSchedule(
             double endPos,
             RollingStock rollingStock,
             RollingStock.Comfort comfort,
