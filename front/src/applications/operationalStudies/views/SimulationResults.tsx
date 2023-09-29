@@ -4,11 +4,14 @@ import { Rnd } from 'react-rnd';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 
+import { updateViewport, Viewport } from 'reducers/map';
 import {
   persistentRedoSimulation,
   persistentUndoSimulation,
 } from 'reducers/osrdsimulation/simulation';
+import { getTimetableID } from 'reducers/osrdconf/selectors';
 import {
+  getDisplaySimulation,
   getIsUpdating,
   getOsrdSimulation,
   getPresentSimulation,
@@ -20,6 +23,7 @@ import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
 
 import { updateSelectedProjection, updateSimulation } from 'reducers/osrdsimulation/actions';
 
+import getSimulationResults from 'applications/operationalStudies/components/Scenario/getSimulationResults';
 import SimulationResultsMap from 'modules/simulationResult/components/SimulationResultsMap';
 import SpaceCurvesSlopes from 'modules/simulationResult/components/SpaceCurvesSlopes';
 import SpaceTimeChartIsolated from 'modules/simulationResult/components/SpaceTimeChart/withOSRDData';
@@ -27,12 +31,9 @@ import SpeedSpaceChart from 'modules/simulationResult/components/SpeedSpaceChart
 import TimeButtons from 'modules/simulationResult/components/TimeButtons';
 import TimeLine from 'modules/simulationResult/components/TimeLine/TimeLine';
 import TrainDetails from 'modules/simulationResult/components/TrainDetails';
-import getSimulationResults from 'applications/operationalStudies/components/Scenario/getSimulationResults';
-
-import { updateViewport, Viewport } from 'reducers/map';
 import DriverTrainSchedule from 'modules/trainschedule/components/DriverTrainSchedule/DriverTrainSchedule';
-import { getTimetableID } from 'reducers/osrdconf/selectors';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+
+import { osrdEditoastApi, SimulationReport } from 'common/api/osrdEditoastApi';
 
 const MAP_MIN_HEIGHT = 450;
 
@@ -46,30 +47,27 @@ export default function SimulationResults({
   collapsedTimetable,
 }: SimulationResultsProps) {
   const { t } = useTranslation('operationalStudies/scenario');
+  const dispatch = useDispatch();
+
+  const { chart } = useSelector(getOsrdSimulation);
+  const displaySimulation = useSelector(getDisplaySimulation);
+  const selectedTrain = useSelector(getSelectedTrain);
+  const { timePosition } = useSelector(getOsrdSimulation);
+  const timetableID = useSelector(getTimetableID);
+  const selectedProjection = useSelector(getSelectedProjection);
+  const simulation = useSelector(getPresentSimulation);
+  const isUpdating = useSelector(getIsUpdating);
 
   const timeTableRef = useRef<HTMLDivElement | null>(null);
   const [extViewport, setExtViewport] = useState<Viewport | undefined>(undefined);
   const [showWarpedMap, setShowWarpedMap] = useState(false);
 
   const [heightOfSpaceTimeChart, setHeightOfSpaceTimeChart] = useState(600);
-
   const [heightOfSpeedSpaceChart, setHeightOfSpeedSpaceChart] = useState(250);
-
   const [heightOfSimulationMap] = useState(MAP_MIN_HEIGHT);
-
   const [heightOfSpaceCurvesSlopesChart, setHeightOfSpaceCurvesSlopesChart] = useState(150);
   const [initialHeightOfSpaceCurvesSlopesChart, setInitialHeightOfSpaceCurvesSlopesChart] =
     useState(heightOfSpaceCurvesSlopesChart);
-
-  const selectedTrain = useSelector(getSelectedTrain);
-  const selectedProjection = useSelector(getSelectedProjection);
-  const simulation = useSelector(getPresentSimulation);
-  const isUpdating = useSelector(getIsUpdating);
-
-  const { displaySimulation } = useSelector(getOsrdSimulation);
-  const timetableID = useSelector(getTimetableID);
-
-  const dispatch = useDispatch();
 
   const [getTimetable] = osrdEditoastApi.endpoints.getTimetableById.useLazyQuery();
 
@@ -139,7 +137,14 @@ export default function SimulationResults({
       </div>
 
       {/* SIMULATION : TIMELINE */}
-      <TimeLine />
+      {simulation.trains.length && chart && (
+        <TimeLine
+          chart={chart}
+          selectedTrainId={selectedTrain?.id || simulation.trains[0].id}
+          trains={simulation.trains as SimulationReport[]}
+          timePosition={timePosition}
+        />
+      )}
 
       {/* SIMULATION : SPACE TIME CHART */}
       <div className="simulation-warped-map d-flex flex-row align-items-stretch mb-2 bg-white">
@@ -228,33 +233,6 @@ export default function SimulationResults({
       <div ref={timeTableRef}>
         <div className="osrd-simulation-container mb-2">
           <div className="osrd-simulation-map" style={{ height: `${heightOfSimulationMap}px` }}>
-            {/* <Rnd
-                  className="map-resizer"
-                  default={{
-                    x: 0,
-                    y: 0,
-                    height: `${heightOfSimulationMap}px`,
-                    width: 'auto',
-                  }}
-                  minHeight={MAP_MIN_HEIGHT}
-                  maxHeight={mapMaxHeight}
-                  style={{
-                    paddingBottom: '12px',
-                  }}
-                  disableDragging
-                  enableResizing={{
-                    bottom: true,
-                  }}
-                  onResizeStart={() => setinitialHeightOfSimulationMap(heightOfSimulationMap)}
-                  onResize={(_e, _dir, _refToElement, delta) => {
-                    setHeightOfSimulationMap(initialHeightOfSimulationMap + delta.height);
-                  }}
-                  onResizeStop={() => {
-                    dispatch(updateMustRedraw(true));
-                  }}
-                >
-                  <Map setExtViewport={setExtViewport} />
-                </Rnd> */}
             <SimulationResultsMap setExtViewport={setExtViewport} />
           </div>
         </div>
