@@ -1,17 +1,9 @@
 import * as d3 from 'd3';
-import {
-  GradientPosition,
-  HeightPosition,
-  PositionSpeedTime,
-  RadiusPosition,
-} from 'reducers/osrdsimulation/types';
+import { GradientPosition, HeightPosition, RadiusPosition } from 'reducers/osrdsimulation/types';
 
-const calculateReferentialHeight = (
-  referential: PositionSpeedTime[],
-  nameOfReferential: keyof PositionSpeedTime
-) => {
-  const maxRef = d3.max(referential.map((step) => step[nameOfReferential]));
-  const minRef = d3.min(referential.map((step) => step[nameOfReferential]));
+const calculateReferentialHeight = (data: number[]) => {
+  const maxRef = d3.max(data);
+  const minRef = d3.min(data);
   let refHeight = 0;
   if (maxRef !== undefined && minRef !== undefined) {
     refHeight = maxRef - minRef;
@@ -19,12 +11,8 @@ const calculateReferentialHeight = (
   return refHeight;
 };
 
-export const createCurveCurve = (
-  curves: RadiusPosition[],
-  referential: PositionSpeedTime[],
-  nameOfReferential: keyof PositionSpeedTime
-): RadiusPosition[] => {
-  const referentialHeight = calculateReferentialHeight(referential, nameOfReferential);
+export const createCurveCurve = (curves: RadiusPosition[], data: number[]): RadiusPosition[] => {
+  const referentialHeight = calculateReferentialHeight(data);
   const maxRadius = d3.max(curves.map((step) => step.radius));
   const minRadius = d3.min(curves.map((step) => step.radius));
   let dataHeight = 0;
@@ -37,11 +25,7 @@ export const createCurveCurve = (
   }));
 };
 
-export const createSlopeCurve = (
-  slopes: GradientPosition[],
-  referential: PositionSpeedTime[],
-  nameOfReferential: keyof PositionSpeedTime
-): HeightPosition[] => {
+export const createSlopeCurve = (slopes: GradientPosition[], data: number[]): HeightPosition[] => {
   const slopesCurve: HeightPosition[] = [];
   slopes.forEach((step, idx) => {
     if (idx % 2 === 0 && slopes[idx + 1]) {
@@ -55,7 +39,7 @@ export const createSlopeCurve = (
       }
     }
   });
-  const referentialHeight = calculateReferentialHeight(referential, nameOfReferential);
+  const referentialHeight = calculateReferentialHeight(data);
   const maxRadius = d3.max(slopesCurve.map((step) => step.height));
   const minRadius = d3.min(slopesCurve.map((step) => step.height));
   let dataHeight = 0;

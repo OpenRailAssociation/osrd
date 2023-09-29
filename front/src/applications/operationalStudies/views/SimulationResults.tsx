@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useRef } from 'react';
 import cx from 'classnames';
+import React, { useEffect, useState, useRef } from 'react';
 import { Rnd } from 'react-rnd';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
@@ -18,10 +18,10 @@ import {
   getSelectedProjection,
   getSelectedTrain,
 } from 'reducers/osrdsimulation/selectors';
+import { updateSelectedProjection, updateSimulation } from 'reducers/osrdsimulation/actions';
 
 import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
-
-import { updateSelectedProjection, updateSimulation } from 'reducers/osrdsimulation/actions';
+import { osrdEditoastApi, SimulationReport } from 'common/api/osrdEditoastApi';
 
 import getSimulationResults from 'applications/operationalStudies/components/Scenario/getSimulationResults';
 import SimulationResultsMap from 'modules/simulationResult/components/SimulationResultsMap';
@@ -32,8 +32,6 @@ import TimeButtons from 'modules/simulationResult/components/TimeButtons';
 import TimeLine from 'modules/simulationResult/components/TimeLine/TimeLine';
 import TrainDetails from 'modules/simulationResult/components/TrainDetails';
 import DriverTrainSchedule from 'modules/trainschedule/components/DriverTrainSchedule/DriverTrainSchedule';
-
-import { osrdEditoastApi, SimulationReport } from 'common/api/osrdEditoastApi';
 
 const MAP_MIN_HEIGHT = 450;
 
@@ -52,7 +50,7 @@ export default function SimulationResults({
   const { chart } = useSelector(getOsrdSimulation);
   const displaySimulation = useSelector(getDisplaySimulation);
   const selectedTrain = useSelector(getSelectedTrain);
-  const { timePosition } = useSelector(getOsrdSimulation);
+  const { positionValues, timePosition } = useSelector(getOsrdSimulation);
   const timetableID = useSelector(getTimetableID);
   const selectedProjection = useSelector(getSelectedProjection);
   const simulation = useSelector(getPresentSimulation);
@@ -183,7 +181,9 @@ export default function SimulationResults({
             <SpeedSpaceChart
               initialHeight={heightOfSpeedSpaceChart}
               onSetChartBaseHeight={setHeightOfSpeedSpaceChart}
+              positionValues={positionValues}
               selectedTrain={selectedTrain}
+              timePosition={timePosition}
             />
           </div>
         </div>
@@ -195,7 +195,7 @@ export default function SimulationResults({
           className="spacecurvesslopes-container"
           style={{ height: `${heightOfSpaceCurvesSlopesChart}px` }}
         >
-          {displaySimulation && (
+          {selectedTrain && (
             <Rnd
               default={{
                 x: 0,
@@ -216,7 +216,12 @@ export default function SimulationResults({
                 );
               }}
             >
-              <SpaceCurvesSlopes height={heightOfSpaceCurvesSlopesChart} />
+              <SpaceCurvesSlopes
+                initialHeight={heightOfSpaceCurvesSlopesChart}
+                selectedTrain={selectedTrain}
+                timePosition={timePosition}
+                positionValues={positionValues}
+              />
             </Rnd>
           )}
         </div>

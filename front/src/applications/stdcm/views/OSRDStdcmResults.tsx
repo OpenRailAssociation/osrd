@@ -1,38 +1,48 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import SpaceTimeChart from 'modules/simulationResult/components/SpaceTimeChart/withOSRDData';
 import SpeedSpaceChart from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChart';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
-import { getPresentSimulation, getSelectedTrain } from 'reducers/osrdsimulation/selectors';
+import {
+  getOsrdSimulation,
+  getPresentSimulation,
+  getSelectedTrain,
+} from 'reducers/osrdsimulation/selectors';
 import { AllowancesSettings } from 'reducers/osrdsimulation/types';
 import { SimulationReport } from 'common/api/osrdEditoastApi';
 
 const OSRDStcdmResults = () => {
   const { t } = useTranslation(['translation', 'operationalStudies/manageTrainSchedule']);
-  const [showSpeedSpaceChart, setShowSpeedSpaceChart] = useState(false);
 
+  const { positionValues, timePosition } = useSelector(getOsrdSimulation);
+  const selectedTrain = useSelector(getSelectedTrain);
+  const simulation = useSelector(getPresentSimulation);
+
+  const [showSpeedSpaceChart, setShowSpeedSpaceChart] = useState(false);
   const [spaceTimeChartHeight, setSpaceTimeChartHeight] = useState(450);
   const [speedSpaceChartHeight, setSpeedSpaceChartHeight] = useState(450);
 
-  const selectedTrain = useSelector(getSelectedTrain);
-  const simulation = useSelector(getPresentSimulation);
   // by default, we show the ecoblocks for stdcm (if existing)
-  const allowancesSettings = (simulation.trains as SimulationReport[]).reduce((acc, train) => {
-    acc[train.id] = train.eco?.route_aspects
-      ? {
-          base: true,
-          baseBlocks: false,
-          eco: true,
-          ecoBlocks: true,
-        }
-      : {
-          base: true,
-          baseBlocks: true,
-          eco: false,
-          ecoBlocks: false,
-        };
-    return acc;
-  }, {} as AllowancesSettings);
+  const allowancesSettings = useMemo(
+    () =>
+      (simulation.trains as SimulationReport[]).reduce((acc, train) => {
+        acc[train.id] = train.eco?.route_aspects
+          ? {
+              base: true,
+              baseBlocks: false,
+              eco: true,
+              ecoBlocks: true,
+            }
+          : {
+              base: true,
+              baseBlocks: true,
+              eco: false,
+              ecoBlocks: false,
+            };
+        return acc;
+      }, {} as AllowancesSettings),
+    [simulation.trains]
+  );
 
   return (
     <main className="osrd-config-mastcontainer" style={{ height: '115vh' }}>
@@ -76,6 +86,8 @@ const OSRDStcdmResults = () => {
                   initialHeight={450}
                   onSetChartBaseHeight={setSpeedSpaceChartHeight}
                   selectedTrain={selectedTrain}
+                  positionValues={positionValues}
+                  timePosition={timePosition}
                 />
               </div>
             )}

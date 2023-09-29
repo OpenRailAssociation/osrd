@@ -1,8 +1,10 @@
 import { noop } from 'lodash';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { CgLoadbar } from 'react-icons/cg';
 import { GiResize } from 'react-icons/gi';
 import { Rnd } from 'react-rnd';
+
 import {
   isolatedEnableInteractivity,
   traceVerticalLine,
@@ -15,14 +17,13 @@ import {
   createChart,
   drawTrain,
 } from 'modules/simulationResult/components/SpeedSpaceChart/d3Helpers';
-import { SpeedSpaceChart, SpeedSpaceSettingsType, Train } from 'reducers/osrdsimulation/types';
-import { useDispatch, useSelector } from 'react-redux';
 import {
-  getIsPlaying,
-  getPositionValues,
-  getSpeedSpaceSettings,
-  getTimePosition,
-} from 'reducers/osrdsimulation/selectors';
+  PositionValues,
+  SpeedSpaceChart,
+  SpeedSpaceSettingsType,
+  Train,
+} from 'reducers/osrdsimulation/types';
+import { getIsPlaying, getSpeedSpaceSettings } from 'reducers/osrdsimulation/selectors';
 import {
   updateSpeedSpaceSettings,
   updateTimePositionValues,
@@ -38,7 +39,9 @@ const CHART_MIN_HEIGHT = 250;
 export type SpeedSpaceChartProps = {
   initialHeight: number;
   onSetChartBaseHeight: (chartBaseHeight: number) => void;
+  positionValues: PositionValues;
   selectedTrain: SimulationReport | Train;
+  timePosition: string;
 };
 
 /**
@@ -54,9 +57,9 @@ export default function SpeedSpaceChart({
   initialHeight,
   onSetChartBaseHeight,
   selectedTrain,
+  timePosition,
+  positionValues,
 }: SpeedSpaceChartProps) {
-  const timePosition = useSelector(getTimePosition);
-  const positionValues = useSelector(getPositionValues);
   const simulationIsPlaying = useSelector(getIsPlaying);
   const speedSpaceSettings = useSelector(getSpeedSpaceSettings);
 

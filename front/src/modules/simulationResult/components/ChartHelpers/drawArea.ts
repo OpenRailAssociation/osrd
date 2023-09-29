@@ -1,5 +1,4 @@
 import * as d3 from 'd3';
-import { isEmpty } from 'lodash';
 import { Chart } from 'reducers/osrdsimulation/types';
 import { AreaBlock } from 'modules/simulationResult/components/SpeedSpaceChart/prepareData';
 
@@ -19,7 +18,7 @@ const drawArea = (
         .area<AreaBlock>()
         .y((d) => chart.y(d.position))
         .x0((d) => chart.x(d.value0))
-        .x1((d) => chart.x(!isEmpty(d.value1) ? d.value1[0] : 0))
+        .x1((d) => chart.x(d.value1))
         .curve(d3[interpolation])
     : d3
         .area<AreaBlock>()
