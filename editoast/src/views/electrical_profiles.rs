@@ -1,4 +1,3 @@
-use crate::diesel::QueryDsl;
 use crate::error::Result;
 use crate::models::electrical_profile::{ElectricalProfileSet, LightElectricalProfileSet};
 use crate::models::{Create, Retrieve};
@@ -9,7 +8,6 @@ use crate::DieselJson;
 use actix_web::dev::HttpServiceFactory;
 use actix_web::web::{self, Data, Json, Path, Query};
 use actix_web::{get, post};
-use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
 use editoast_derive::EditoastError;
 use serde::Deserialize;
 use std::collections::HashMap;
@@ -80,14 +78,6 @@ async fn get_level_order(
             electrical_profile_set_id,
         })?;
     Ok(Json(ep_set.data.unwrap().0.level_order))
-}
-
-impl ElectricalProfileSet {
-    async fn list_light(conn: &mut PgConnection) -> Result<Vec<LightElectricalProfileSet>> {
-        use crate::tables::electrical_profile_set::dsl::*;
-        let result = electrical_profile_set.select((id, name)).load(conn).await?;
-        Ok(result)
-    }
 }
 
 #[derive(Debug, Error, EditoastError)]
