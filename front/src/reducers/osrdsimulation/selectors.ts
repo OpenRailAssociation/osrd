@@ -5,47 +5,20 @@ import { OsrdSimulationState, Train } from './types';
 
 export const getOsrdSimulation = (state: RootState) => state.osrdsimulation;
 
-export const getAllowancesSettings = makeSubSelector<OsrdSimulationState, 'allowancesSettings'>(
-  getOsrdSimulation,
-  'allowancesSettings'
-);
-export const getIsPlaying = makeSubSelector<OsrdSimulationState, 'isPlaying'>(
-  getOsrdSimulation,
-  'isPlaying'
-);
-export const getIsUpdating = makeSubSelector<OsrdSimulationState, 'isUpdating'>(
-  getOsrdSimulation,
-  'isUpdating'
-);
-export const getMustRedraw = makeSubSelector<OsrdSimulationState, 'mustRedraw'>(
-  getOsrdSimulation,
-  'mustRedraw'
-);
-export const getPositionValues = makeSubSelector<OsrdSimulationState, 'positionValues'>(
-  getOsrdSimulation,
-  'positionValues'
-);
-export const getReloadTimetable = makeSubSelector<OsrdSimulationState, 'reloadTimetable'>(
-  getOsrdSimulation,
-  'reloadTimetable'
-);
-export const getSelectedProjection = makeSubSelector<OsrdSimulationState, 'selectedProjection'>(
-  getOsrdSimulation,
-  'selectedProjection'
-);
-export const getSelectedTrainId = makeSubSelector<OsrdSimulationState, 'selectedTrainId'>(
-  getOsrdSimulation,
-  'selectedTrainId'
-);
+const makeOsrdSimulationSelector = makeSubSelector<OsrdSimulationState>(getOsrdSimulation);
 
-export const getTimePosition = makeSubSelector<OsrdSimulationState, 'timePosition'>(
-  getOsrdSimulation,
-  'timePosition'
-);
-export const getConsolidatedSimulation = makeSubSelector<
-  OsrdSimulationState,
-  'consolidatedSimulation'
->(getOsrdSimulation, 'consolidatedSimulation');
+export const getIsPlaying = makeOsrdSimulationSelector('isPlaying');
+export const getIsUpdating = makeOsrdSimulationSelector('isUpdating');
+export const getReloadTimetable = makeOsrdSimulationSelector('reloadTimetable');
+export const getAllowancesSettings = makeOsrdSimulationSelector('allowancesSettings');
+export const getMustRedraw = makeOsrdSimulationSelector('mustRedraw');
+export const getPositionValues = makeOsrdSimulationSelector('positionValues');
+export const getSelectedProjection = makeOsrdSimulationSelector('selectedProjection');
+export const getSelectedTrainId = makeOsrdSimulationSelector('selectedTrainId');
+export const getSpeedSpaceSettings = makeOsrdSimulationSelector('speedSpaceSettings');
+export const getTimePosition = makeOsrdSimulationSelector('timePosition');
+export const getConsolidatedSimulation = makeOsrdSimulationSelector('consolidatedSimulation');
+export const getDisplaySimulation = makeOsrdSimulationSelector('displaySimulation');
 
 export const getPresentSimulation = (state: RootState) => state.osrdsimulation.simulation.present;
 
@@ -57,11 +30,3 @@ export const getSelectedTrain = (state: RootState) => {
     (train) => train.id && train.id === selectedTrainId
   );
 };
-export const getDisplaySimulation = makeSubSelector<OsrdSimulationState, 'displaySimulation'>(
-  getOsrdSimulation,
-  'displaySimulation'
-);
-export const getSpeedSpaceSettings = makeSubSelector<OsrdSimulationState, 'speedSpaceSettings'>(
-  getOsrdSimulation,
-  'speedSpaceSettings'
-);
