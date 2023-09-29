@@ -12,7 +12,7 @@ import { createCurveCurve, createSlopeCurve } from './utils';
 export interface AreaBlock {
   position: number;
   value0: number;
-  value1: number[];
+  value1: number;
 }
 
 export interface GevPreparedata {
@@ -33,7 +33,7 @@ function buildAreaBlocks(speeds: PositionSpeedTime[]): AreaBlock[] {
   return speeds.map((step) => ({
     position: step.position,
     value0: step.speed,
-    value1: [0],
+    value1: 0,
   }));
 }
 
@@ -44,7 +44,7 @@ function buildAreaSlopesHistograms(
   return slopesHistogram.map((step) => ({
     position: step.position,
     value0: step.gradient,
-    value1: [zeroLineSlope],
+    value1: zeroLineSlope,
   }));
 }
 
@@ -91,7 +91,8 @@ function prepareData(trainSimulation: Train): GevPreparedata {
   const areaBlock = buildAreaBlocks(speed);
 
   // Slopes
-  const slopesCurve = createSlopeCurve(trainSimulation.slopes, speed, 'speed');
+  const speeds = speed.map((step) => step.speed);
+  const slopesCurve = createSlopeCurve(trainSimulation.slopes, speeds);
 
   const zeroLineSlope = slopesCurve[0].height as number; // Start height of histogram
 
@@ -103,7 +104,7 @@ function prepareData(trainSimulation: Train): GevPreparedata {
   const areaSlopesHistogram = buildAreaSlopesHistograms(slopesHistogram, zeroLineSlope);
 
   // Curves
-  const curvesHistogram = createCurveCurve(trainSimulation.curves, speed, 'speed');
+  const curvesHistogram = createCurveCurve(trainSimulation.curves, speeds);
 
   return {
     areaBlock,
