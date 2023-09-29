@@ -18,15 +18,8 @@ import {
   getSelectedTrain,
 } from 'reducers/osrdsimulation/selectors';
 import { persistentUpdateSimulation } from 'reducers/osrdsimulation/simulation';
-import {
-  time2sec,
-  datetime2time,
-  sec2datetime,
-  time2datetime,
-  datetime2Isostring,
-} from 'utils/timeManipulation';
+import { sec2datetime, datetime2sec } from 'utils/timeManipulation';
 import { Chart, Train, TrainsWithArrivalAndDepartureTimes } from 'reducers/osrdsimulation/types';
-import { TimeString } from 'common/types';
 import SpaceTimeChart, { SpaceTimeChartProps } from './SpaceTimeChart';
 import {
   DispatchUpdateChart,
@@ -60,16 +53,13 @@ function withOSRDData<T extends SpaceTimeChartProps>(
     const onOffsetTimeByDragging = (trains: Train[], offset: number) => {
       dispatch(persistentUpdateSimulation({ ...simulation, trains }));
       if (timePosition && offset) {
-        const newTimePositionSec: number =
-          time2sec(datetime2time(time2datetime(timePosition) as Date)) + offset;
-        dispatch(
-          updateTimePositionValues(datetime2Isostring(sec2datetime(newTimePositionSec) as Date))
-        );
+        const newTimePositionSec = datetime2sec(timePosition) + offset;
+        dispatch(updateTimePositionValues(sec2datetime(newTimePositionSec)));
       }
     };
 
     const dispatchUpdateTimePositionValues: DispatchUpdateTimePositionValues = (
-      newTimePositionValues: TimeString
+      newTimePositionValues: Date
     ) => {
       dispatch(updateTimePositionValues(newTimePositionValues));
     };

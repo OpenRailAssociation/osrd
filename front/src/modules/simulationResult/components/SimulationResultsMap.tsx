@@ -45,7 +45,6 @@ import TracksSchematic from 'common/Map/Layers/TracksSchematic';
 import TrainHoverPosition from 'modules/simulationResult/components/SimulationResultsMap/TrainHoverPosition';
 
 import colors from 'common/Map/Consts/colors';
-import { datetime2Isostring } from 'utils/timeManipulation';
 import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
 import {
   getDirection,
@@ -157,7 +156,7 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
           PositionSpeedTime
         >({ speed: train.speeds }, ['position', 'speed'] as const, positionLocal);
         if (timePositionLocal instanceof Date) {
-          dispatch(updateTimePositionValues(datetime2Isostring(timePositionLocal)));
+          dispatch(updateTimePositionValues(timePositionLocal));
         } else {
           throw new Error(
             'Map onFeatureHover, try to update TimePositionValue with incorrect imput'

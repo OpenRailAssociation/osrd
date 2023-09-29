@@ -2,7 +2,7 @@ import * as d3 from 'd3';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { sec2datetime, time2datetime } from 'utils/timeManipulation';
+import { sec2datetime } from 'utils/timeManipulation';
 import { updateChart } from 'reducers/osrdsimulation/actions';
 import { SimulationReport } from 'common/api/osrdEditoastApi';
 import { Chart, SimulationD3Scale } from 'reducers/osrdsimulation/types';
@@ -35,7 +35,7 @@ type TimeLineProps = {
   chart: Chart;
   selectedTrainId: number;
   trains: SimulationReport[];
-  timePosition: string;
+  timePosition: Date;
 };
 
 const TimeLine = ({ chart, selectedTrainId, trains, timePosition }: TimeLineProps) => {
@@ -77,13 +77,8 @@ const TimeLine = ({ chart, selectedTrainId, trains, timePosition }: TimeLineProp
       .scaleTime()
       .domain(dataRange)
       .range([dimensions.margin.left, dimensions.width - dimensions.margin.right]);
-    const timePostionDate = time2datetime(timePosition);
 
-    if (timePostionDate) {
-      svg
-        .select('#timePositionTimeLine')
-        .attr('transform', `translate(${xScale(timePostionDate)},0)`);
-    }
+    svg.select('#timePositionTimeLine').attr('transform', `translate(${xScale(timePosition)},0)`);
   };
 
   const drawChart = () => {
@@ -147,12 +142,7 @@ const TimeLine = ({ chart, selectedTrainId, trains, timePosition }: TimeLineProp
       .attr('d', d3.symbol().type(d3.symbolTriangle).size(40))
       .attr('transform', `translate(0,${dimensions.height + 8})`);
 
-    const timePositionDate = time2datetime(timePosition);
-    if (timePositionDate) {
-      svg
-        .select('#timePositionTimeLine')
-        .attr('transform', `translate(${xScale(timePositionDate)},0)`);
-    }
+    svg.select('#timePositionTimeLine').attr('transform', `translate(${xScale(timePosition)},0)`);
 
     // draw trains
     trains.map((train) => drawTrain(train, selectedTrainId, xScale, svg, dimensions.height));

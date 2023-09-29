@@ -99,7 +99,6 @@ export default function SimulationResults({
     return function cleanup() {
       dispatch(updateSimulation({ trains: [] }));
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedProjection, timetableID]);
 
   useEffect(() => {
@@ -110,7 +109,6 @@ export default function SimulationResults({
         })
       );
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [extViewport]);
 
   return simulation.trains.length === 0 && !isUpdating ? (
@@ -126,7 +124,12 @@ export default function SimulationResults({
       >
         <div className="row">
           <div className="col-xl-4">
-            <TimeButtons />
+            {selectedTrain && (
+              <TimeButtons
+                selectedTrain={selectedTrain as SimulationReport}
+                timePosition={timePosition}
+              />
+            )}
           </div>
           <div className="col-xl-8 d-flex justify-content-end mt-2 mt-xl-0">
             <TrainDetails />

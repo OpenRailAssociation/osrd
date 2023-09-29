@@ -85,8 +85,10 @@ export default function formatStdcmConf(
   }
 
   if (!error) {
-    const originDate = time2sec(osrdconf.originTime as string);
-    const destinationDate = time2sec(osrdconf.destinationTime as string);
+    const originDate = osrdconf.originTime ? time2sec(osrdconf.originTime) : undefined;
+    const destinationDate = osrdconf.destinationTime
+      ? time2sec(osrdconf.destinationTime)
+      : undefined;
     const maximumDepartureDelay =
       time2sec(osrdconf.originUpperBoundTime as string) - time2sec(osrdconf.originTime as string);
 
@@ -105,8 +107,8 @@ export default function formatStdcmConf(
         rolling_stock_id: osrdconf.rollingStockID as number,
         comfort: osrdconf.rollingStockComfort,
         timetable_id: osrdconf.timetableID as number,
-        start_time: originDate || undefined,
-        end_time: destinationDate || undefined,
+        start_time: originDate,
+        end_time: destinationDate,
         maximum_departure_delay: maximumDepartureDelay,
         speed_limit_tags: osrdconf.speedLimitByTag,
         margin_before: osrdconf.gridMarginBefore,

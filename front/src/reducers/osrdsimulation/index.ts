@@ -17,7 +17,7 @@ import {
   OsrdSimulationState,
   SimulationTrain,
 } from 'reducers/osrdsimulation/types';
-import { time2sec } from 'utils/timeManipulation';
+import { datetime2sec } from 'utils/timeManipulation';
 import { SimulationReport } from 'common/api/osrdEditoastApi';
 // TODO: Dependency cycle will be removed during the refactoring of store
 // eslint-disable-next-line import/no-cycle
@@ -81,7 +81,7 @@ export const initialState: OsrdSimulationState = {
     [SPEED_SPACE_SETTINGS_KEYS.POWER_RESTRICTION]: false,
   },
   signalBase: SIGNAL_BASE_DEFAULT,
-  timePosition: '',
+  timePosition: new Date(),
   consolidatedSimulation: [],
   departureArrivalTimes: [],
   displaySimulation: false,
@@ -136,7 +136,7 @@ export default function reducer(inputState: OsrdSimulationState | undefined, act
           currentTrainSimulation,
           ['time'],
           LIST_VALUES_NAME_SPACE_TIME,
-          time2sec(state.timePosition)
+          datetime2sec(state.timePosition)
         );
         break;
       case UPDATE_DEPARTURE_ARRIVAL_TIMES:

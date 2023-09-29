@@ -1,24 +1,28 @@
 import { FaBackward, FaPause, FaPlay, FaStop } from 'react-icons/fa';
 import React, { useState } from 'react';
 import { datetime2time, sec2datetime, time2datetime } from 'utils/timeManipulation';
-import { useDispatch, useSelector } from 'react-redux';
-import { getSelectedTrain } from 'reducers/osrdsimulation/selectors';
+import { useDispatch } from 'react-redux';
 import { updateIsPlaying, updateTimePositionValues } from 'reducers/osrdsimulation/actions';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import { SimulationReport } from 'common/api/osrdEditoastApi';
 
 // transform a speed ratio (X2 X10 X20, etc.) to interval time & step to bypass
-const factor2ms = (factor) => {
+const factor2ms = (factor: number) => {
   const ms = Math.round(1000 / factor);
   const steps = ms < 100 ? Math.round((1 / ms) * 100) : 1;
   return { ms, steps };
 };
 
-export default function TimeButtons() {
+type TimeButtonsProps = {
+  selectedTrain: SimulationReport;
+  timePosition: Date;
+};
+
+const TimeButtons = ({ selectedTrain, timePosition }: TimeButtonsProps) => {
   const dispatch = useDispatch();
-  const { timePosition } = useSelector((state) => state.osrdsimulation);
-  const selectedTrain = useSelector(getSelectedTrain);
-  const [playInterval, setPlayInterval] = useState(undefined);
+
+  const [playInterval, setPlayInterval] = useState<NodeJS.Timer | undefined>(undefined);
   const [playReverse, setPlayReverse] = useState(false);
   const [simulationSpeed, setSimulationSpeed] = useState(1);
 
@@ -26,16 +30,19 @@ export default function TimeButtons() {
     clearInterval(playInterval);
     setPlayInterval(undefined);
     if (selectedTrain) {
-      dispatch(updateTimePositionValues(sec2datetime(selectedTrain.base.stops[0].time)));
+      const finalDate = sec2datetime(selectedTrain.base.stops[0].time);
+      dispatch(updateTimePositionValues(finalDate));
     }
     dispatch(updateIsPlaying(false));
   };
+
   const pause = () => {
     clearInterval(playInterval);
     setPlayInterval(undefined);
     dispatch(updateIsPlaying(false));
   };
-  const play = (playReverseLocal, simulationSpeedLocal = simulationSpeed) => {
+
+  const play = (playReverseLocal: boolean, simulationSpeedLocal = simulationSpeed) => {
     clearInterval(playInterval); // Kill interval playing if concerned
     setPlayInterval(undefined);
     const factor = factor2ms(simulationSpeedLocal);
@@ -59,15 +66,18 @@ export default function TimeButtons() {
     }
   };
 
-  const changeSimulationSpeed = (speedFactor) => {
+  const changeSimulationSpeed = (speedFactor: number) => {
     setSimulationSpeed(speedFactor);
     if (playInterval) {
       play(playReverse, speedFactor);
     }
   };
 
-  const changeTimePosition = (e) => {
-    dispatch(updateTimePositionValues(time2datetime(e.target.value)));
+  const changeTimePosition = (newTimePosition: string) => {
+    const newTimePositionDate = time2datetime(newTimePosition);
+    if (newTimePositionDate) {
+      dispatch(updateTimePositionValues(newTimePositionDate));
+    }
   };
 
   return (
@@ -77,8 +87,8 @@ export default function TimeButtons() {
           noMargin
           type="time"
           id="simulation-time"
-          value={timePosition ? datetime2time(timePosition) : ''}
-          onChange={changeTimePosition}
+          value={datetime2time(timePosition)}
+          onChange={(e) => changeTimePosition(e.target.value)}
           sm
         />
       </span>
@@ -110,10 +120,11 @@ export default function TimeButtons() {
         type="number"
         id="simulation-speed"
         value={simulationSpeed}
-        onChange={(e) => changeSimulationSpeed(e.target.value)}
-        seconds
+        onChange={(e) => changeSimulationSpeed(Number(e.target.value))}
         sm
       />
     </div>
   );
-}
+};
+
+export default TimeButtons;

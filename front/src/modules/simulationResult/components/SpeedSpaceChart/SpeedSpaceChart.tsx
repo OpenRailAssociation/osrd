@@ -41,7 +41,7 @@ export type SpeedSpaceChartProps = {
   onSetChartBaseHeight: (chartBaseHeight: number) => void;
   positionValues: PositionValues;
   selectedTrain: SimulationReport | Train;
-  timePosition: string;
+  timePosition: Date;
 };
 
 /**
@@ -77,7 +77,7 @@ export default function SpeedSpaceChart({
 
   const dispatch = useDispatch();
 
-  const dispatchUpdateTimePositionValues = (newTimePositionValues: string) => {
+  const dispatchUpdateTimePositionValues = (newTimePositionValues: Date) => {
     dispatch(updateTimePositionValues(newTimePositionValues));
   };
 
