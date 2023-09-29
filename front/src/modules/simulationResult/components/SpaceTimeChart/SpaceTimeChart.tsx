@@ -14,7 +14,6 @@ import {
 } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
 import ORSD_GRAPH_SAMPLE_DATA from 'modules/simulationResult/components/SpeedSpaceChart/sampleData';
 import { CgLoadbar } from 'react-icons/cg';
-import ChartModal from 'modules/simulationResult/components/ChartModal';
 import { GiResize } from 'react-icons/gi';
 import {
   KEY_VALUES_FOR_SPACE_TIME_CHART,
@@ -31,6 +30,7 @@ import {
   SimulationSnapshot,
   Train,
 } from 'reducers/osrdsimulation/types';
+import ChartModal from 'modules/simulationResult/components/SpaceTimeChart/ChartModal';
 import {
   DispatchUpdateDepartureArrivalTimes,
   DispatchUpdateChart,
@@ -113,7 +113,7 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
   const [localTime, setLocalTime] = useState(new Date());
   const [, setLocalPosition] = useState(0);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const [showModal, setShowModal] = useState('');
+  const [showModal, setShowModal] = useState<'+' | '-' | ''>('');
   const [trainSimulations, setTrainSimulations] = useState<
     SimulationSnapshot['trains'] | undefined
   >(undefined);
@@ -128,7 +128,6 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
         onOffsetTimeByDragging(trains, offset);
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [trainSimulations, selectedTrain, onOffsetTimeByDragging]
   );
 
@@ -148,7 +147,6 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
    */
   useEffect(() => {
     setTrainSimulations(simulation.trains);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [simulation.trains]);
 
   useEffect(() => {
@@ -156,7 +154,6 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
     if (selectedTrain.id !== inputSelectedTrain.id) {
       setSelectedTrain(inputSelectedTrain);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [inputSelectedTrain.id]);
 
   /**
@@ -189,7 +186,6 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
         y: rotate ? chart.y(offsetLocalTime) : mousePos.y,
       });
     setLocalTime(offsetLocalTime);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dragOffset]);
 
   /*
@@ -225,7 +221,6 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
       );
       setResetChart(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resetChart, rotate, selectedTrain, trainSimulations, heightOfSpaceTimeChart]);
 
   /**
@@ -267,7 +262,6 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
 
     // Required to sync the camera in SimulationWarpedMap:
     dispatchUpdateChart(chart);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chart]);
 
   /**
@@ -286,7 +280,6 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
         timePosition
       );
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chart, positionValues, timePosition]);
 
   useEffect(() => {
@@ -295,7 +288,7 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
 
   const handleKey = ({ key }: KeyboardEvent) => {
     if (isDisplayed && ['+', '-'].includes(key)) {
-      setShowModal(key);
+      setShowModal(key as '+' | '-');
     }
   };
 
@@ -346,7 +339,7 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
       >
         {showModal !== '' ? (
           <ChartModal
-            type={showModal}
+            modificationKey={showModal}
             setShowModal={setShowModal}
             trainName={selectedTrain?.name}
             offsetTimeByDragging={dragShiftTrain}

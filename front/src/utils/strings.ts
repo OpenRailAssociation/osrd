@@ -42,3 +42,8 @@ export function getTranslationKey(translationList: string, item: string): string
 export function geti18nKeyForNull(str: string | null): string {
   return str || `N/C`;
 }
+
+/** Filter non digit characters */
+export function onlyDigit(str: string): string {
+  return str.replace(/\D/g, '');
+}
