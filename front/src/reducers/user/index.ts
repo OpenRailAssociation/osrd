@@ -67,7 +67,7 @@ export default function reducer(inputState: UserState | undefined, action: AnyAc
 }
 
 // Action Creators
-function loginSuccess(accessToken: string, username = undefined) {
+function loginSuccess(accessToken: string, username?: string) {
   return {
     type: LOGIN_SUCCESS,
     accessToken,
