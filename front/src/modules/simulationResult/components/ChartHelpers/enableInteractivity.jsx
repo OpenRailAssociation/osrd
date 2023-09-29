@@ -9,11 +9,7 @@ import {
   interpolateOnTime,
   isGET,
 } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
-import {
-  updateContextMenu,
-  updateMustRedraw,
-  updateTimePositionValues,
-} from 'reducers/osrdsimulation/actions';
+import { updateTimePositionValues } from 'reducers/osrdsimulation/actions';
 import { datetime2sec, sec2datetime } from 'utils/timeManipulation';
 import {
   LIST_VALUES_NAME_SPACE_TIME,
@@ -263,13 +259,7 @@ const enableInteractivity = (
     })
     .filter(
       (event) => (event.button === 0 || event.button === 1) && (event.ctrlKey || event.shiftKey)
-    )
-    .on('start', () => {
-      if (dispatch) dispatch(updateContextMenu(undefined));
-    })
-    .on('end', () => {
-      if (dispatch) dispatch(updateMustRedraw(true));
-    });
+    );
 
   let debounceTimeoutId;
 
