@@ -9,8 +9,8 @@ import {
   PositionValues,
   SimulationSnapshot,
 } from 'reducers/osrdsimulation/types';
-import { datetime2sec, timeString2datetime } from 'utils/timeManipulation';
 import { interpolateOnTime } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
+import { datetime2sec } from 'utils/timeManipulation';
 import { TrainPosition } from './types';
 
 export type InterpoledTrain = {
@@ -43,7 +43,7 @@ export function getRegimeKey(trainId: number, allowancesSettings?: AllowancesSet
 export function getSimulationHoverPositions(
   geojsonPath: Feature<LineString>,
   simulation: SimulationSnapshot,
-  timePosition: string,
+  timePosition: Date,
   positionValues: PositionValues,
   selectedTrainId?: number,
   allowancesSettings?: AllowancesSettings
@@ -89,14 +89,7 @@ export function getSimulationHoverPositions(
   }
 
   // Found trains including timePosition, and organize them with geojson collection of points
-  const timePositionDate = timeString2datetime(timePosition) || new Date(timePosition);
-  let actualTime = 0;
-  if (timePositionDate instanceof Date) {
-    actualTime = datetime2sec(timePositionDate);
-  } else {
-    console.warn('Try to create Other Train Point from unspecified current time Position');
-    return [];
-  }
+  const actualTime = datetime2sec(timePosition);
 
   // First find trains where actual time from position is between start & stop
   const concernedTrains: InterpoledTrain[] = [];

@@ -6,11 +6,6 @@ export function datetime2string(ts: string | number | Date): TimeString {
   return datetime.toLocaleString();
 }
 
-export function datetime2Isostring(ts: string | number | Date): TimeString {
-  const datetime = new Date(ts);
-  return datetime.toISOString();
-}
-
 export function datetime2time(datetime: Date) {
   const formatTime = d3.timeFormat('%H:%M:%S');
   return formatTime(datetime);
@@ -18,10 +13,6 @@ export function datetime2time(datetime: Date) {
 
 export function time2datetime(time: TimeString) {
   return d3.timeParse('%H:%M:%S')(time);
-}
-
-export function timeString2datetime(time: TimeString) {
-  return d3.timeParse('%Y-%m-%dT%H:%M:%S')(time);
 }
 
 export function sec2time(sec: number) {
@@ -32,8 +23,7 @@ export function sec2datetime(sec: number) {
   return d3.timeParse('%H:%M:%S')(sec2time(sec)) as Date; // We conder it's utc to avoid +0 delta
 }
 
-export function time2sec(time: TimeString) {
-  const timeString = String(time);
+export function time2sec(timeString: TimeString) {
   const timeArray = timeString.split(':');
   const seconds = timeArray[2] ? Number(timeArray[2]) : 0;
   return Number(timeArray[0]) * 3600 + Number(timeArray[1]) * 60 + seconds;

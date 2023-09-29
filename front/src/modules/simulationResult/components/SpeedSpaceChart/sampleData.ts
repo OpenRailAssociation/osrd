@@ -116,7 +116,7 @@ const ORSD_GRAPH_SAMPLE_DATA: OsrdSimulationState = {
     powerRestriction: false,
   },
   signalBase: 'BAL3',
-  timePosition: '',
+  timePosition: new Date(),
   consolidatedSimulation: [
     {
       id: 10,

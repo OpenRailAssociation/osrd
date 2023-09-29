@@ -72,7 +72,7 @@ type SpaceCurvesSlopesProps = {
   initialHeight: number;
   positionValues: PositionValues;
   selectedTrain: Train;
-  timePosition: string;
+  timePosition: Date;
 };
 
 const SpaceCurvesSlopes = ({
