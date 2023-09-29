@@ -12,6 +12,7 @@ export const addTagTypes = [
   'studies',
   'scenarios',
   'rolling_stock_livery',
+  'sprites',
   'stdcm',
   'timetable',
   'train_schedule',
@@ -563,6 +564,22 @@ const injectedRtkApi = api
           body: queryArg.body,
           params: { page_size: queryArg.pageSize },
         }),
+      }),
+      getSpritesSignalingSystems: build.query<
+        GetSpritesSignalingSystemsApiResponse,
+        GetSpritesSignalingSystemsApiArg
+      >({
+        query: () => ({ url: `/sprites/signaling_systems/` }),
+        providesTags: ['sprites'],
+      }),
+      getSpritesBySignalingSystemAndFileName: build.query<
+        GetSpritesBySignalingSystemAndFileNameApiResponse,
+        GetSpritesBySignalingSystemAndFileNameApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/sprites/${queryArg.signalingSystem}/${queryArg.fileName}/`,
+        }),
+        providesTags: ['sprites'],
       }),
       postStdcm: build.mutation<PostStdcmApiResponse, PostStdcmApiArg>({
         query: (queryArg) => ({ url: `/stdcm/`, method: 'POST', body: queryArg.body }),
@@ -1212,6 +1229,16 @@ export type PostSearchApiArg = {
     page_size?: number;
     query?: SearchQuery;
   };
+};
+export type GetSpritesSignalingSystemsApiResponse =
+  /** status 200 List of supported signaling systems */ string[];
+export type GetSpritesSignalingSystemsApiArg = void;
+export type GetSpritesBySignalingSystemAndFileNameApiResponse = unknown;
+export type GetSpritesBySignalingSystemAndFileNameApiArg = {
+  /** Signaling system name */
+  signalingSystem: string;
+  /** File name (json, png or svg) */
+  fileName: string;
 };
 export type PostStdcmApiResponse =
   /** status 200 Simulation result */

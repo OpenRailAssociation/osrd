@@ -12,6 +12,7 @@ pub mod rolling_stock;
 mod route;
 mod signal;
 mod speed_section;
+pub mod sprite_config;
 mod switch;
 mod switch_type;
 mod track_section;

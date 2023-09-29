@@ -1,0 +1,6 @@
+BAL:
+  default: "S VL"
+  sprites:
+    - conditions:
+        Nf: "true"
+      sprite: "CARRE"

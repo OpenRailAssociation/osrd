@@ -1,0 +1,79 @@
+{
+  "CARRE": {
+    "height": 256,
+    "pixelRatio": 2,
+    "width": 256,
+    "x": 0,
+    "y": 0
+  },
+  "CARRE A": {
+    "height": 256,
+    "pixelRatio": 2,
+    "width": 256,
+    "x": 256,
+    "y": 0
+  },
+  "CARRE A CLI": {
+    "height": 256,
+    "pixelRatio": 2,
+    "width": 256,
+    "x": 0,
+    "y": 256
+  },
+  "CARRE R30": {
+    "height": 256,
+    "pixelRatio": 2,
+    "width": 256,
+    "x": 256,
+    "y": 256
+  },
+  "CARRE R60": {
+    "height": 256,
+    "pixelRatio": 2,
+    "width": 256,
+    "x": 512,
+    "y": 0
+  },
+  "CARRE RR30": {
+    "height": 256,
+    "pixelRatio": 2,
+    "width": 256,
+    "x": 768,
+    "y": 0
+  },
+  "CARRE RR60": {
+    "height": 256,
+    "pixelRatio": 2,
+    "width": 256,
+    "x": 512,
+    "y": 256
+  },
+  "CARRE VL": {
+    "height": 256,
+    "pixelRatio": 2,
+    "width": 256,
+    "x": 768,
+    "y": 256
+  },
+  "S": {
+    "height": 256,
+    "pixelRatio": 2,
+    "width": 256,
+    "x": 0,
+    "y": 512
+  },
+  "S A": {
+    "height": 256,
+    "pixelRatio": 2,
+    "width": 256,
+    "x": 256,
+    "y": 512
+  },
+  "S VL": {
+    "height": 256,
+    "pixelRatio": 2,
+    "width": 256,
+    "x": 512,
+    "y": 512
+  }
+}
