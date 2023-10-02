@@ -13,18 +13,18 @@ members = [".", "editoast_derive"]
 [dependencies]
 async-trait = "0.1.73"
 chashmap = "2.2.2"
-clap = { version = "4.4.2", features = ["derive", "env"] }
+clap = { version = "4.4.6", features = ["derive", "env"] }
 colored = "2.0.4"
-chrono = { version = "0.4.30", features = ["serde"] }
+chrono = { version = "0.4.31", features = ["serde"] }
 derivative = "2.2.0"
 uuid = { version = "1.4.1", features = ["v4"] }
-diesel = { version = "2.1.1", features = [
+diesel = { version = "2.1.2", features = [
     "postgres",
     "serde_json",
     "chrono",
     "uuid",
 ] }
-diesel-async = { version = "0.3.1", features = ["postgres", "deadpool"] }
+diesel-async = { version = "0.4.1", features = ["postgres", "deadpool"] }
 tokio = "*"
 tokio-postgres = "*"
 postgres-openssl = "0.5.0"
@@ -32,8 +32,8 @@ openssl = "*"
 futures-util = "*"
 diesel_json = "0.2.1"
 image = "0.24"
-json-patch = "1.0.0"
-pathfinding = "4.3.1"
+json-patch = "1.1.0"
+pathfinding = "4.3.2"
 rand = "0.8.5"
 actix-web = "4.4.0"
 actix-http = "3.4.0"
@@ -46,25 +46,25 @@ redis = { version = "0.23.3", features = [
     "cluster-async",
     "tokio-native-tls-comp",
 ] }
-sentry = "0.31.6"
-sentry-actix = "0.31.6"
+sentry = "0.31.7"
+sentry-actix = "0.31.7"
 serde = "1.0.188"
 serde_derive = "1.0.188"
-serde_json = "1.0.105"
+serde_json = "1.0.107"
 serde_yaml = "0.9.25"
 strum = "0.25.0"
 strum_macros = "0.25.2"
-thiserror = "1.0.48"
-enum-map = "2.6.2"
+thiserror = "1.0.49"
+enum-map = "2.6.3"
 editoast_derive = { path = "./editoast_derive" }
 mvt = "0.8.1"
 pointy = "0.4.0"
 futures = "0.3.28"
 postgis_diesel = { version = "2.2.1", features = ["serde"] }
 geos = { version = "8.3.0", features = ["json"] }
-rangemap = "1.3.0"
+rangemap = "1.4.0"
 actix-multipart = "0.6.1"
-reqwest = { version = "0.11.20", features = ["json"] }
+reqwest = { version = "0.11.22", features = ["json"] }
 osm4routing = "0.5.8"
 osmpbfreader = "0.16.0"
 itertools = "0.11.0"
