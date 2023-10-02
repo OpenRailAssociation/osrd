@@ -37,7 +37,9 @@ use client::{
 use colored::*;
 use diesel::{ConnectionError, ConnectionResult};
 use diesel_async::pooled_connection::deadpool::Pool;
-use diesel_async::pooled_connection::AsyncDieselConnectionManager as ConnectionManager;
+use diesel_async::pooled_connection::{
+    AsyncDieselConnectionManager as ConnectionManager, ManagerConfig,
+};
 use diesel_async::AsyncPgConnection;
 use diesel_async::{AsyncConnection, AsyncPgConnection as PgConnection};
 use diesel_json::Json as DieselJson;
@@ -179,8 +181,10 @@ async fn runserver(
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     info!("Building server...");
     // Config databases
+    let mut manager_config = ManagerConfig::default();
+    manager_config.custom_setup = Box::new(establish_connection);
     let manager =
-        ConnectionManager::<PgConnection>::new_with_setup(pg_config.url(), establish_connection);
+        ConnectionManager::<PgConnection>::new_with_config(pg_config.url(), manager_config);
     let pool = Pool::builder(manager)
         .max_size(pg_config.pool_size)
         .build()
