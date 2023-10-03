@@ -493,6 +493,13 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['rolling_stock'],
       }),
+      getRollingStockPowerRestrictions: build.query<
+        GetRollingStockPowerRestrictionsApiResponse,
+        GetRollingStockPowerRestrictionsApiArg
+      >({
+        query: () => ({ url: `/rolling_stock/power_restrictions/` }),
+        providesTags: ['rolling_stock'],
+      }),
       deleteRollingStockById: build.mutation<
         DeleteRollingStockByIdApiResponse,
         DeleteRollingStockByIdApiArg
@@ -1131,6 +1138,9 @@ export type PostRollingStockApiArg = {
   locked?: boolean;
   rollingStockUpsertPayload: RollingStockUpsertPayload;
 };
+export type GetRollingStockPowerRestrictionsApiResponse =
+  /** status 200 power restrictions list */ string[];
+export type GetRollingStockPowerRestrictionsApiArg = void;
 export type DeleteRollingStockByIdApiResponse = /** status 204 No content */ undefined;
 export type DeleteRollingStockByIdApiArg = {
   /** rolling_stock id */
