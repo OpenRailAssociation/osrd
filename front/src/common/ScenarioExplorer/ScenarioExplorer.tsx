@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from 'react';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import infraIcon from 'assets/pictures/components/tracks.svg';
@@ -72,7 +71,6 @@ export default function ScenarioExplorer({
       dispatch(updateTimetableID(scenarioDetails.timetable_id));
       dispatch(updateInfraID(scenarioDetails.infra_id));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scenarioDetails]);
 
   useEffect(() => {
@@ -81,7 +79,6 @@ export default function ScenarioExplorer({
     } else {
       setImageUrl(undefined);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectDetails]);
 
   return (

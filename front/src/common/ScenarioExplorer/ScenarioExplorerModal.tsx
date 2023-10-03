@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import projectsLogo from 'assets/pictures/views/projects.svg';
 import scenarioExploratorLogo from 'assets/pictures/views/scenarioExplorator.svg';
 import scenariosLogo from 'assets/pictures/views/scenarios.svg';
@@ -28,6 +28,7 @@ export default function ScenarioExplorerModal({
   const [scenarioID, setScenarioID] = useState<number | undefined>(globalScenarioId);
   const [studiesList, setStudiesList] = useState<StudyResult[]>();
   const [scenariosList, setScenariosList] = useState<ScenarioListResult[]>();
+
   const {
     projectsList,
     isError: isProjectsError,
@@ -42,9 +43,9 @@ export default function ScenarioExplorerModal({
     }
   );
 
-  const [getStudiesList] = osrdEditoastApi.useLazyGetProjectsByProjectIdStudiesQuery();
+  const [getStudiesList] = osrdEditoastApi.endpoints.getProjectsByProjectIdStudies.useLazyQuery();
   const [getScenariosList] =
-    osrdEditoastApi.useLazyGetProjectsByProjectIdStudiesAndStudyIdScenariosQuery();
+    osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyIdScenarios.useLazyQuery();
 
   useEffect(() => {
     if (isProjectsError) {
@@ -65,8 +66,11 @@ export default function ScenarioExplorerModal({
         .then(({ results }) => setStudiesList(results))
         .catch((error) => console.error(error));
     }
-    setStudyID(undefined);
-    setScenariosList(undefined);
+    if (projectID !== globalProjectId || studyID !== globalStudyId) {
+      // if the component has already been initialized and projectID is updated
+      setStudyID(undefined);
+      setScenariosList([]);
+    }
   }, [projectID]);
 
   useEffect(() => {
@@ -105,19 +109,14 @@ export default function ScenarioExplorerModal({
                 )}
               </div>
               <div className="scenario-explorator-modal-part-itemslist">
-                {useMemo(
-                  () =>
-                    projectsList.length > 0 &&
-                    projectsList.map((project) => (
-                      <ProjectMiniCard
-                        project={project}
-                        setSelectedID={setProjectID}
-                        isSelected={project.id === projectID}
-                        key={`scenario-explorator-modal-${project.id}`}
-                      />
-                    )),
-                  [projectsList, projectID]
-                )}
+                {projectsList.map((project) => (
+                  <ProjectMiniCard
+                    project={project}
+                    setSelectedID={setProjectID}
+                    isSelected={project.id === projectID}
+                    key={`scenario-explorator-modal-${project.id}`}
+                  />
+                ))}
               </div>
               <div className="scenario-explorator-modal-part-arrow">
                 <MdArrowRight />
@@ -136,19 +135,15 @@ export default function ScenarioExplorerModal({
                 )}
               </div>
               <div className="scenario-explorator-modal-part-itemslist">
-                {useMemo(
-                  () =>
-                    studiesList &&
-                    studiesList.map((study) => (
-                      <StudyMiniCard
-                        study={study}
-                        setSelectedID={setStudyID}
-                        isSelected={study.id === studyID}
-                        key={`scenario-explorator-modal-${study.id}`}
-                      />
-                    )),
-                  [studiesList, studyID]
-                )}
+                {studiesList &&
+                  studiesList.map((study) => (
+                    <StudyMiniCard
+                      study={study}
+                      setSelectedID={setStudyID}
+                      isSelected={study.id === studyID}
+                      key={`scenario-explorator-modal-${study.id}`}
+                    />
+                  ))}
               </div>
               <div className="scenario-explorator-modal-part-arrow">
                 <MdArrowRight />
@@ -167,23 +162,19 @@ export default function ScenarioExplorerModal({
                 )}
               </div>
               <div className="scenario-explorator-modal-part-itemslist">
-                {useMemo(
-                  () =>
-                    projectID &&
-                    studyID &&
-                    scenariosList &&
-                    scenariosList.map((scenario) => (
-                      <ScenarioMiniCard
-                        scenario={scenario}
-                        setSelectedID={setScenarioID}
-                        isSelected={scenario.id === scenarioID}
-                        projectID={projectID}
-                        studyID={studyID}
-                        key={`scenario-explorator-modal-${scenario.id}`}
-                      />
-                    )),
-                  [scenariosList, scenarioID]
-                )}
+                {projectID &&
+                  studyID &&
+                  scenariosList &&
+                  scenariosList.map((scenario) => (
+                    <ScenarioMiniCard
+                      scenario={scenario}
+                      setSelectedID={setScenarioID}
+                      isSelected={scenario.id === scenarioID}
+                      projectID={projectID}
+                      studyID={studyID}
+                      key={`scenario-explorator-modal-${scenario.id}`}
+                    />
+                  ))}
               </div>
             </div>
           </div>

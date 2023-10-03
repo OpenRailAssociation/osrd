@@ -1,3 +1,4 @@
+import cx from 'classnames';
 import React, { useContext } from 'react';
 import { useDispatch } from 'react-redux';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
@@ -30,9 +31,9 @@ export default function ScenarioMiniCard({
   };
   return (
     <div
-      className={`scenario-explorator-modal-part-itemslist-minicard scenario ${
-        isSelected ? 'selected' : ''
-      }`}
+      className={cx('minicard', 'scenario', {
+        selected: isSelected,
+      })}
       role="button"
       tabIndex={0}
       onClick={selectScenario}

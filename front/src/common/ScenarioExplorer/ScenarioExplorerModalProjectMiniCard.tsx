@@ -1,3 +1,4 @@
+import cx from 'classnames';
 import React from 'react';
 import { MiniCardsProjectProps } from './ScenarioExplorerTypes';
 import Project2Image from './ScenarioExplorerProject2Image';
@@ -9,19 +10,19 @@ export default function ProjectMiniCard({
 }: MiniCardsProjectProps) {
   return (
     <div
-      className={`scenario-explorator-modal-part-itemslist-minicard project with-image ${
-        isSelected ? 'selected' : ''
-      } ${project.studies_count && project.studies_count > 0 ? '' : 'empty'}`}
+      className={cx('minicard', 'project', 'with-image', {
+        selected: isSelected,
+        empty: project.studies_count === 0,
+      })}
       role="button"
       tabIndex={0}
-      onClick={() =>
-        !isSelected &&
-        project.studies_count &&
-        project.studies_count > 0 &&
-        setSelectedID(project.id)
-      }
+      onClick={() => {
+        if (!isSelected && project.studies_count > 0) {
+          setSelectedID(project.id);
+        }
+      }}
     >
-      <div className="scenario-explorator-modal-part-itemslist-minicard-img">
+      <div className="minicard-img">
         <Project2Image project={project} />
       </div>
       <div>{project.name}</div>
