@@ -17,8 +17,8 @@ import Project from 'applications/operationalStudies/views/Project';
 import Study from 'applications/operationalStudies/views/Study';
 import Scenario from 'applications/operationalStudies/views/Scenario';
 import HomeRollingStockEditor from 'applications/rollingStockEditor/Home';
-import { getIsUserLogged } from 'applications/common/reducer/user/userSelectors';
-import { attemptLoginOnLaunch } from 'applications/common/reducer/user/userSlice';
+import { getIsUserLogged } from 'reducers/user/userSelectors';
+import { attemptLoginOnLaunch } from 'reducers/user';
 
 import('@sncf/bootstrap-sncf.metier.reseau/dist/css/bootstrap-sncf.min.css');
 export default function App() {

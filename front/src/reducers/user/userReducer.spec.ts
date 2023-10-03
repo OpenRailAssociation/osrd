@@ -8,7 +8,7 @@ import {
   serverError,
   updateAccount,
   UserState,
-} from 'applications/common/reducer/user/userSlice';
+} from 'reducers/user';
 
 const createStore = (initialStateExtra?: UserState) =>
   createStoreWithoutMiddleware({
@@ -24,7 +24,7 @@ describe('userReducer', () => {
 
   test('should handle loginSuccess', () => {
     const store = createStore(userInitialState);
-    const action = loginSuccess({ accessToken: '', username: 'Test userSlice' });
+    const action = loginSuccess({ accessToken: 'fake_token', username: 'Test userSlice' });
     store.dispatch(action);
     const userState = store.getState().user;
     expect(userState).toEqual({
@@ -33,7 +33,7 @@ describe('userReducer', () => {
       loginError: false,
       serverError: false,
       username: 'Test userSlice',
-      accessToken: '',
+      accessToken: 'fake_token',
       account: {},
     });
   });
@@ -61,7 +61,7 @@ describe('userReducer', () => {
       loginError: false,
       serverError: false,
       username: 'Test userSlice',
-      accessToken: '',
+      accessToken: 'fake_token',
       account: {},
     });
     const action = logoutUser();
