@@ -1,0 +1,6 @@
+# Explicitly mark end of line so Windows compilation is not blocked by prettier
+
+*.ts text eol=lf
+*.js text eol=lf
+*.tsx text eol=lf
+*.jsx text eol=lf
