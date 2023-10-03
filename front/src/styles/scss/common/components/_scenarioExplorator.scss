@@ -180,7 +180,7 @@
       height: 20vh;
       padding: 0.5rem 0 0;
       overflow: auto;
-      .scenario-explorator-modal-part-itemslist-minicard {
+      .minicard {
         display: flex;
         align-items: center;
         font-size: 0.8rem;
@@ -193,7 +193,7 @@
         margin: 0 0.5rem 0.5rem;
         border: 2px solid var(--white);
         border-left: none;
-        .scenario-explorator-modal-part-itemslist-minicard-img {
+        .minicard-img {
           position: absolute;
           overflow: hidden;
           border-radius: 4px 0 0 4px;

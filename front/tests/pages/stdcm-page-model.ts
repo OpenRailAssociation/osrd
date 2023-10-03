@@ -52,9 +52,7 @@ export class PlaywrightSTDCMPage {
     // Scenario Explorator
     this.getScenarioExplorator = page.getByTestId('scenario-explorator');
     this.getScenarioExploratorModal = page.locator('.scenario-explorator-modal');
-    this.getItemsScenarioExplorator = page.locator(
-      '.scenario-explorator-modal-part-itemslist-minicard'
-    );
+    this.getItemsScenarioExplorator = page.locator('.minicard');
 
     // Rollingstock
     this.getRollingstockModal = page.locator('.modal-dialog');
