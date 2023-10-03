@@ -20,8 +20,8 @@ pub struct LightRollingStock {
     pub locked: bool,
     #[diesel(sql_type = Jsonb)]
     pub effort_curves: DieselJson<LightEffortCurves>,
-    #[diesel(sql_type = Text)]
-    pub base_power_class: String,
+    #[diesel(sql_type = Nullable<Text>)]
+    pub base_power_class: Option<String>,
     #[diesel(sql_type = Double)]
     pub length: f64,
     #[diesel(sql_type = Double)]

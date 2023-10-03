@@ -14,7 +14,7 @@ pub const ROLLING_STOCK_RAILJSON_VERSION: &str = "3.2";
 pub struct RollingStockCommon {
     pub name: String,
     pub effort_curves: EffortCurves,
-    pub base_power_class: String,
+    pub base_power_class: Option<String>,
     pub length: f64,
     pub max_speed: f64,
     pub startup_time: f64,

@@ -1187,6 +1187,7 @@ components:
       properties:
         base_power_class:
           example: '5'
+          nullable: true
           type: string
         comfort_acceleration:
           format: float

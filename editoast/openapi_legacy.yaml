@@ -3062,6 +3062,7 @@ components:
             - "FR3.3/GB/G2"
             - "GLOTT"
         base_power_class:
+          nullable: true
           type: string
           example: "5"
         power_restrictions:

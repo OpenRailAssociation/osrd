@@ -1505,7 +1505,7 @@ export type EnergySource =
       energy_source_type: 'Battery';
     } & Battery);
 export type RollingStockBase = {
-  base_power_class: string;
+  base_power_class: string | null;
   comfort_acceleration: number;
   electrical_power_startup_time: number | null;
   energy_sources: EnergySource[];
