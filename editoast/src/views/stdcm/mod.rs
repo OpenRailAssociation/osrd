@@ -312,8 +312,10 @@ pub mod tests {
     use super::STDCMResponse;
     use crate::assert_status_and_read;
     use crate::core::mocking::MockingClient;
-    use crate::fixtures::tests::{fast_rolling_stock, small_infra, timetable, TestFixture};
-    use crate::models::{Infra, RollingStockModel, Timetable};
+    use crate::fixtures::tests::{
+        db_pool, fast_rolling_stock, small_infra, timetable, TestFixture,
+    };
+    use crate::models::{RollingStockModel, Timetable};
     use crate::views::tests::{create_test_service, create_test_service_with_core_client};
     use actix_http::StatusCode;
     use actix_web::test::{call_service, TestRequest};
@@ -323,11 +325,10 @@ pub mod tests {
     /// stdcm looks for a spot between 8:00 and 10:00
     #[rstest::rstest]
     async fn stdcm_should_return_path_and_simulation(
-        #[future] small_infra: TestFixture<Infra>,
         #[future] fast_rolling_stock: TestFixture<RollingStockModel>,
         #[future] timetable: TestFixture<Timetable>,
     ) {
-        let small_infra = small_infra.await;
+        let small_infra = small_infra(db_pool()).await;
         let fast_rolling_stock = fast_rolling_stock.await;
         let timetable = timetable.await;
         let mut payload: Value = from_str(include_str!(

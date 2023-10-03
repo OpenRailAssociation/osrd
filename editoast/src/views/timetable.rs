@@ -495,9 +495,7 @@ pub mod test {
 
     use crate::{
         assert_status_and_read,
-        fixtures::tests::{
-            train_with_simulation_output_fixture_set, TrainScheduleWithSimulationOutputFixtureSet,
-        },
+        fixtures::tests::{db_pool, train_with_simulation_output_fixture_set},
         models::{
             rolling_stock::tests::get_other_rolling_stock, train_schedule::TrainScheduleValidation,
             TimetableWithSchedulesDetails,
@@ -506,12 +504,11 @@ pub mod test {
     };
 
     #[rstest]
-    async fn newer_rolling_stock_version(
-        #[future] train_with_simulation_output_fixture_set: TrainScheduleWithSimulationOutputFixtureSet,
-    ) {
+    async fn newer_rolling_stock_version() {
         let app = create_test_service().await;
 
-        let train_with_simulation_output = train_with_simulation_output_fixture_set.await;
+        let train_with_simulation_output =
+            train_with_simulation_output_fixture_set(db_pool()).await;
 
         let rolling_stock_id = train_with_simulation_output
             .train_schedule
