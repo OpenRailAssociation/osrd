@@ -981,7 +981,7 @@
         "unit": ""
     },
     "energy_sources": [],
-    "power_restrictions": {},
+    "power_restrictions": {"C2":"2"},
     "electrical_power_startup_time": 5.0,
     "raise_pantograph_time": 15.0
 }

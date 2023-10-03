@@ -1178,6 +1178,25 @@ paths:
               schema:
                 $ref: "#/components/schemas/RollingStock"
 
+  /rolling_stock/power_restrictions:
+    get:
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                example:
+                  - "AAA"
+                  - "ABC"
+                  - "1AZE"
+                items:
+                  type: string
+                type: array
+          description: power restrictions list
+      summary: List all power restrictions
+      tags:
+        - rolling_stock
+
   /rolling_stock/{id}/:
     get:
       tags:

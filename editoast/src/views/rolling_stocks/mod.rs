@@ -57,7 +57,7 @@ pub enum RollingStockError {
 
 pub fn routes() -> impl HttpServiceFactory {
     scope("/rolling_stock")
-        .service((get, create, update, delete))
+        .service((get_power_restrictions, get, create, update, delete))
         .service(scope("/{rolling_stock_id}").service((
             create_livery,
             update_locked,
@@ -122,6 +122,35 @@ impl RollingStockForm {
             ..self.into()
         }
     }
+}
+
+#[derive(QueryableByName, Debug, Clone, Serialize, Deserialize)]
+struct PowerRestriction {
+    #[diesel(sql_type = SqlText)]
+    power_restriction: String,
+}
+
+/// Returns the set of power restrictions for all rolling_stocks modes.
+#[utoipa::path(tag = "rolling_stock",
+    responses(
+        (status = 200, description = "Retrieve the power restrictions list", body = Vec<String>)
+    )
+)]
+#[get("/power_restrictions")]
+async fn get_power_restrictions(db_pool: Data<DbPool>) -> Result<Json<Vec<String>>> {
+    let mut conn = db_pool.get().await?;
+    let power_restrictions: Vec<PowerRestriction> = sql_query(
+        "SELECT DISTINCT jsonb_object_keys(power_restrictions) AS power_restriction
+        FROM rolling_stock",
+    )
+    .load(&mut conn)
+    .await?;
+    Ok(Json(
+        power_restrictions
+            .into_iter()
+            .map(|pr| (pr.power_restriction))
+            .collect(),
+    ))
 }
 
 #[derive(Debug, Deserialize)]
@@ -462,7 +491,7 @@ pub mod tests {
     use crate::{assert_editoast_error_type, assert_status_and_read, DbPool};
     use actix_http::{Request, StatusCode};
     use actix_web::http::header::ContentType;
-    use actix_web::test::{call_service, TestRequest};
+    use actix_web::test::{call_service, read_body_json, TestRequest};
     use actix_web::web::Data;
     use rstest::rstest;
     use serde_json::json;
@@ -866,5 +895,30 @@ pub mod tests {
         .await;
 
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
+    }
+
+    #[rstest]
+    async fn get_power_restrictions_list(
+        #[future] fast_rolling_stock: TestFixture<RollingStockModel>,
+    ) {
+        let app = create_test_service().await;
+        let rolling_stock = fast_rolling_stock.await;
+        let response = call_service(
+            &app,
+            TestRequest::get()
+                .uri("/rolling_stock/power_restrictions")
+                .to_request(),
+        )
+        .await;
+
+        let power_restrictions = rolling_stock
+            .model
+            .power_restrictions
+            .clone()
+            .unwrap()
+            .unwrap();
+        assert!(power_restrictions.to_string().contains(&"C2".to_string()));
+        let response_body: Vec<String> = read_body_json(response).await;
+        assert!(response_body.contains(&"C2".to_string()));
     }
 }
