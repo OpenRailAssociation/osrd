@@ -157,12 +157,10 @@
         border-color: transparent;
         background-color: transparent;
         color: var(--secondary);
-        
           &.on {
             color: white;
             background-color: var(--secondary);
           }
-        
       }
       .multiselect-delete {
         width: 2rem;
@@ -506,17 +504,22 @@
               background-color: rgba(var(--orange-rgb), 0.1);
             }
             .conflict-trains {
-              width: 18%;
               text-align: left;
               font-size: 0.9rem;
               font-weight: 600;
+              margin: 0 0.5rem;
+              width: 25%;
+              .card-text {
+                text-overflow: ellipsis;
+                overflow: hidden;
+                white-space: nowrap;
+              }
             }
             .conflict-type {
-              width: 67%;
               text-align: left;
+              flex-grow: 1;
             }
             .conflict-times {
-              width: 15%;
               text-align: right;
               font-size: 0.8rem;
               .start-time {
