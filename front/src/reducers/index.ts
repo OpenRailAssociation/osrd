@@ -8,8 +8,11 @@ import { OsrdConfState, OsrdMultiConfState } from 'applications/operationalStudi
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 
+import userReducer, {
+  UserState,
+  userInitialState,
+} from 'applications/common/reducer/user/userSlice';
 import mainReducer, { MainState, MainActions, initialState as mainInitialState } from './main';
-import userReducer, { UserState, initialState as userInitialState } from './user';
 import mapReducer, { MapState, initialState as mapInitialState } from './map';
 import editorReducer, { EditorActions, initialState as editorInitialState } from './editor';
 import osrdconfReducer, { initialState as osrdconfInitialState } from './osrdconf';

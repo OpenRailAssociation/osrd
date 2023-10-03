@@ -8,16 +8,14 @@ import stdcmImg from 'assets/pictures/home/stdcm.svg';
 import operationalStudiesImg from 'assets/pictures/home/operationalStudies.svg';
 import logo from 'assets/logo_osrd_seul_blanc.svg';
 import osrdLogo from 'assets/pictures/osrd.png';
-import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
 export default function Home() {
-  const user = useSelector((state) => state.user);
   const { t } = useTranslation('home/home');
 
   return (
     <>
-      <NavBarSNCF appName="OSRD" username={user.username} logo={logo} />
+      <NavBarSNCF appName="OSRD" logo={logo} />
       <main className="mastcontainer mastcontainer-no-mastnav">
         <div className="application-title">
           <img src={osrdLogo} alt="OSRD logo" />

@@ -3,7 +3,8 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { Link } from 'react-router-dom';
 import React, { ReactElement } from 'react';
-import { logout } from 'reducers/user';
+import { logout } from 'applications/common/reducer/user/userSlice';
+import { getUserAccount } from 'applications/common/reducer/user/userSelectors';
 import { useTranslation } from 'react-i18next';
 import ReleaseInformations from 'common/ReleaseInformations/ReleaseInformations';
 import ChangeLanguageModal from 'common/ChangeLanguageModal';
@@ -23,7 +24,7 @@ type Props = {
 
 export default function LegacyNavBarSNCF({ appName, logo }: Props) {
   const { openModal } = useModal();
-  const user = useSelector((state: RootState) => state.user);
+  const userAccount = useSelector(getUserAccount);
   const { fullscreen, safeWord } = useSelector((state: RootState) => state.main);
   const dispatch = useDispatch();
   const { t } = useTranslation('home/navbar');
@@ -64,7 +65,7 @@ export default function LegacyNavBarSNCF({ appName, logo }: Props) {
                   aria-hidden="true"
                 />
                 <span className="d-none d-xl-block">
-                  {user.account.firstName} {user.account.lastName}
+                  {userAccount.firstName} {userAccount.lastName}
                 </span>
               </>
             }

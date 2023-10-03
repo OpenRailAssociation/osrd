@@ -1,9 +1,7 @@
 import React, { Suspense, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Route, Routes, unstable_HistoryRouter as HistoryRouter } from 'react-router-dom';
-
 import 'i18n';
-import { attemptLoginOnLaunch } from 'reducers/user';
 import { updateLastInterfaceVersion } from 'reducers/main';
 
 import HomeEditor from 'applications/editor/Home';
@@ -19,11 +17,13 @@ import Project from 'applications/operationalStudies/views/Project';
 import Study from 'applications/operationalStudies/views/Study';
 import Scenario from 'applications/operationalStudies/views/Scenario';
 import HomeRollingStockEditor from 'applications/rollingStockEditor/Home';
+import { getIsUserLogged } from 'applications/common/reducer/user/userSelectors';
+import { attemptLoginOnLaunch } from 'applications/common/reducer/user/userSlice';
 
+import('@sncf/bootstrap-sncf.metier.reseau/dist/css/bootstrap-sncf.min.css');
 export default function App() {
-  const user = useSelector((state) => state.user);
+  const isUserLogged = useSelector(getIsUserLogged);
 
-  const { darkmode } = useSelector((state) => state.main);
   const dispatch = useDispatch();
   const isLocalBackend = import.meta.env.OSRD_LOCAL_BACKEND.trim().toLowerCase() === 'true';
 
@@ -39,18 +39,9 @@ export default function App() {
     dispatch(updateLastInterfaceVersion(import.meta.env.OSRD_GIT_DESCRIBE));
   }, []);
 
-  // Conditionnal theming
-  useEffect(() => {
-    if (darkmode) {
-      import('@sncf/bootstrap-sncf.metier.reseau/dist/css/bootstrap-sncf.dark.min.css');
-    } else {
-      import('@sncf/bootstrap-sncf.metier.reseau/dist/css/bootstrap-sncf.min.css');
-    }
-  }, [darkmode]);
-
   return (
     <Suspense fallback={<Loader />}>
-      {(user.isLogged || isLocalBackend) && (
+      {(isUserLogged || isLocalBackend) && (
         <HistoryRouter history={history}>
           <ModalProvider>
             <NotificationsState />
@@ -70,7 +61,7 @@ export default function App() {
           </ModalProvider>
         </HistoryRouter>
       )}
-      {!user.isLogged && !isLocalBackend && <Loader />}
+      {!isUserLogged && !isLocalBackend && <Loader />}
     </Suspense>
   );
 }

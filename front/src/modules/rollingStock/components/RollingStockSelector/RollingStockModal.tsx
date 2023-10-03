@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next';
 
 import { LightRollingStock } from 'common/api/osrdEditoastApi';
 import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
-import { RootState } from 'reducers';
 import { getRollingStockID } from 'reducers/osrdconf/selectors';
 import Loader from 'common/Loader';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
@@ -19,16 +18,11 @@ interface RollingStockModal {
 
 function RollingStockModal({ ref2scroll }: RollingStockModal) {
   const dispatch = useDispatch();
-  const darkmode = useSelector((state: RootState) => state.main.darkmode);
   const rollingStockID = useSelector(getRollingStockID);
   const { t } = useTranslation(['translation', 'rollingstock']);
   const [isLoading, setIsLoading] = useState(true);
   const [openRollingStockCardId, setOpenRollingStockCardId] = useState(rollingStockID);
   const { closeModal } = useContext(ModalContext);
-
-  if (darkmode) {
-    import('./RollingStockDarkMode.scss');
-  }
 
   const {
     data: { results: rollingStocks } = { results: [] },
