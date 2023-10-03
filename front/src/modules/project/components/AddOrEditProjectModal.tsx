@@ -7,7 +7,6 @@ import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
-import { deleteRequest } from 'common/requests';
 import { useTranslation } from 'react-i18next';
 import { BiTargetLock } from 'react-icons/bi';
 import { FaPencilAlt, FaPlus, FaTrash } from 'react-icons/fa';
@@ -23,8 +22,9 @@ import { useDebounce } from 'utils/helpers';
 import { ProjectCreateRequest, ProjectResult, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { postDocument } from 'common/api/documentApi';
 import { RootState } from 'reducers';
-import { PROJECTS_URI } from 'applications/operationalStudies/components/operationalStudiesConsts';
 import PictureUploader from 'applications/operationalStudies/components/Project/PictureUploader';
+import { ApiError } from 'common/api/emptyApi';
+import { SerializedError } from '@reduxjs/toolkit';
 
 const emptyProject: ProjectCreateRequest = {
   budget: 0,
@@ -63,6 +63,7 @@ export default function AddOrEditProjectModal({
 
   const [postProject] = osrdEditoastApi.endpoints.postProjects.useMutation();
   const [patchProject] = osrdEditoastApi.endpoints.patchProjectsByProjectId.useMutation();
+  const [deleteProject] = osrdEditoastApi.endpoints.deleteProjectsByProjectId.useMutation();
 
   const removeTag = (idx: number) => {
     const newTags = Array.from(currentProject.tags);
@@ -156,22 +157,29 @@ export default function AddOrEditProjectModal({
     }
   };
 
-  const deleteProject = async () => {
+  const removeProject = async () => {
     if (project) {
-      try {
-        await deleteRequest(`${PROJECTS_URI}${project.id}/`);
-        dispatch(updateProjectID(undefined));
-        navigate('/operational-studies');
-        closeModal();
-        dispatch(
-          setSuccess({
-            title: t('projectDeleted'),
-            text: t('projectDeletedDetails', { name: project.name }),
-          })
-        );
-      } catch (error) {
-        console.error(error);
-      }
+      await deleteProject({ projectId: project.id })
+        .unwrap()
+        .then(() => {
+          dispatch(updateProjectID(undefined));
+          navigate('/operational-studies');
+          closeModal();
+          dispatch(
+            setSuccess({
+              title: t('projectDeleted'),
+              text: t('projectDeletedDetails', { name: project.name }),
+            })
+          );
+        })
+        .catch((e) => {
+          dispatch(
+            setFailure({
+              name: t('error.unableToDeleteProject'),
+              message: `${(e as ApiError)?.data?.message || (e as SerializedError)?.message}`,
+            })
+          );
+        });
     }
   };
 
@@ -337,7 +345,7 @@ export default function AddOrEditProjectModal({
             <button
               className="btn btn-outline-danger mr-auto"
               type="button"
-              onClick={deleteProject}
+              onClick={removeProject}
             >
               <span className="mr-2">
                 <FaTrash />

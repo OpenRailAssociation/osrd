@@ -5,6 +5,7 @@
   "createStudy": "Créer une étude",
   "description": "description",
   "error": {
+    "unableToDeleteProject": "Impossible de supprimer le projet",
     "unableToPostDocumentTitle": "Echec de l'upload de l'image",
     "unableToPostDocument": "Impossible de charger l'image"
   },
