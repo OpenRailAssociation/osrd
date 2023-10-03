@@ -5,6 +5,7 @@
   "createStudy": "Create a study",
   "description": "description",
   "error": {
+    "unableToDeleteProject": "Unable to delete project",
     "unableToPostDocumentTitle": "Failure to upload the picture",
     "unableToPostDocument": "Unable to load the picture"
   },
