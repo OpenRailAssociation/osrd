@@ -508,7 +508,6 @@ async fn del_pf(path: Path<i64>, db_pool: Data<DbPool>) -> Result<impl Responder
 mod test {
     use actix_http::StatusCode;
     use actix_web::test::{call_service, TestRequest};
-    use actix_web::web::Data;
     use serde_json::json;
 
     use crate::core::mocking::MockingClient;
@@ -518,7 +517,7 @@ mod test {
     use crate::models::{Infra, Pathfinding, Retrieve};
     use crate::views::pathfinding::{PathfindingError, Response};
     use crate::views::tests::create_test_service_with_core_client;
-    use crate::{assert_editoast_error_type, assert_status_and_read, DbPool};
+    use crate::{assert_editoast_error_type, assert_status_and_read};
     use crate::{models::RollingStockModel, views::tests::create_test_service};
 
     #[rstest::rstest]
@@ -563,14 +562,11 @@ mod test {
     }
 
     #[rstest::rstest]
-    async fn test_post_ok(
-        #[future] fast_rolling_stock: TestFixture<RollingStockModel>,
-        #[future] small_infra: TestFixture<Infra>,
-        db_pool: Data<DbPool>,
-    ) {
+    async fn test_post_ok(#[future] fast_rolling_stock: TestFixture<RollingStockModel>) {
         // Avoid `Drop`ping the fixture
         let rs = &fast_rolling_stock.await.model;
-        let infra = &small_infra.await.model;
+        let small_infra = small_infra(db_pool()).await;
+        let infra = &small_infra.model;
         let rs_id = rs.id.unwrap();
         let infra_id = infra.id.unwrap();
         let mut payload: serde_json::Value = serde_json::from_str(include_str!(
@@ -595,7 +591,7 @@ mod test {
             .to_request();
         let response = call_service(&app, req).await;
         let response: Response = assert_status_and_read!(response, StatusCode::OK);
-        assert!(Pathfinding::retrieve(db_pool, response.id).await.is_ok());
+        assert!(Pathfinding::retrieve(db_pool(), response.id).await.is_ok());
     }
 
     #[rstest::rstest]
