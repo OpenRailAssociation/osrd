@@ -1,0 +1,5 @@
+# shell scripts must not be converted to CRLF, otherwise the CR could be interpreted
+# as part of the program name if the script ever were to be interpreted under linux.
+# it's especially an issue for scripts copied to a docker container.
+# https://unix.stackexchange.com/questions/721844/linux-bash-shell-script-error-cannot-execute-required-file-not-found
+*.sh text eol=lf

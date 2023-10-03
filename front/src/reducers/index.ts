@@ -11,6 +11,7 @@ import {
 } from 'applications/operationalStudies/consts';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { osrdGatewayApi } from 'common/api/osrdGatewayApi';
 
 import userReducer, { UserState, userInitialState } from 'reducers/user';
 import mainReducer, { MainState, mainInitialState } from 'reducers/main';
@@ -90,6 +91,7 @@ export interface RootState {
   osrdconf: OsrdMultiConfState;
   osrdsimulation: OsrdSimulationState;
   [osrdEditoastApi.reducerPath]: ReturnType<typeof osrdEditoastApi.reducer>;
+  [osrdGatewayApi.reducerPath]: ReturnType<typeof osrdGatewayApi.reducer>;
   rsEditorCurvesParams: RsEditorCurvesState;
 }
 
@@ -103,6 +105,7 @@ export const rootInitialState: RootState = {
   osrdconf: osrdconfInitialState,
   osrdsimulation: osrdSimulationInitialState,
   [osrdEditoastApi.reducerPath]: {} as ReturnType<typeof osrdEditoastApi.reducer>,
+  [osrdGatewayApi.reducerPath]: {} as ReturnType<typeof osrdGatewayApi.reducer>,
   rsEditorCurvesParams: rsEditorCurvesInitialState,
 };
 
@@ -128,6 +131,7 @@ export const rootReducer: ReducersMapObject<RootState> = {
   >,
   osrdsimulation: osrdsimulationReducer,
   [osrdEditoastApi.reducerPath]: osrdEditoastApi.reducer,
+  [osrdGatewayApi.reducerPath]: osrdGatewayApi.reducer,
   rsEditorCurvesParams: rollingstockeditorReducer,
 };
 

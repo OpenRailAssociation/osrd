@@ -31,7 +31,7 @@ export default defineConfig(({ mode }) => {
       outDir: 'build',
     },
     server: {
-      open: true,
+      open: false,
       port: +env.OSRD_VITE_PORT || 3000,
     },
     test: {

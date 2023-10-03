@@ -11,7 +11,7 @@ const enhancedEditoastApi = osrdEditoastApi.enhanceEndpoints({
             results: sortBy(response?.results, ['metadata.reference', 'name']),
         }
       }
-    }
+    },
   }
 })
 

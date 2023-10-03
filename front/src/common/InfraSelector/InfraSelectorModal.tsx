@@ -10,7 +10,7 @@ import { MdEditNote, MdList } from 'react-icons/md';
 import { Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useDispatch } from 'react-redux';
 import { setFailure } from 'reducers/main';
-import { ApiError } from 'common/api/emptyApi';
+import { ApiError } from 'common/api/baseGeneratedApis';
 import { SerializedError } from '@reduxjs/toolkit';
 import InfraSelectorModalBodyEdition from './InfraSelectorModalBodyEdition';
 import InfraSelectorModalBodyStandard from './InfraSelectorModalBodyStandard';

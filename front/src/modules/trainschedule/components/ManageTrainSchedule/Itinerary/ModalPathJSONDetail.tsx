@@ -8,7 +8,7 @@ import { setFailure } from 'reducers/main';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { getPathfindingID } from 'reducers/osrdconf/selectors';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { ApiError } from 'common/api/emptyApi';
+import { ApiError } from 'common/api/baseGeneratedApis';
 import { SerializedError } from '@reduxjs/toolkit';
 
 export default function ModalPathJSONDetail() {

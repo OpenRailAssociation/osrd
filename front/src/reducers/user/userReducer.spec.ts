@@ -4,9 +4,7 @@ import {
   userInitialState,
   loginSuccess,
   loginError,
-  logoutUser,
-  serverError,
-  updateAccount,
+  logoutSuccess,
   UserState,
   updateUserPreferences,
 } from 'reducers/user';
@@ -25,15 +23,12 @@ describe('userReducer', () => {
 
   it('should handle loginSuccess', () => {
     const store = createStore(userInitialState);
-    store.dispatch(loginSuccess({ accessToken: 'fake_token', username: 'Test userSlice' }));
+    store.dispatch(loginSuccess({ username: 'Test userSlice' }));
     const userState = store.getState().user;
     expect(userState).toEqual({
       isLogged: true,
-      toLogin: false,
-      loginError: false,
-      serverError: false,
+      loginError: undefined,
       username: 'Test userSlice',
-      accessToken: 'fake_token',
       userPreferences: { safeWord: '' },
       account: {},
     });
@@ -41,15 +36,20 @@ describe('userReducer', () => {
 
   it('should handle loginError', () => {
     const store = createStore(userInitialState);
-    store.dispatch(loginError(true));
+    const error = {
+      data: {
+        type: 'error_type',
+        message: 'message',
+        context: {},
+      },
+      status: 502,
+    };
+    store.dispatch(loginError(error));
     const userState = store.getState().user;
     expect(userState).toEqual({
       isLogged: false,
-      toLogin: true,
-      loginError: true,
-      serverError: false,
+      loginError: error,
       username: '',
-      accessToken: undefined,
       userPreferences: { safeWord: '' },
       account: {},
     });
@@ -57,50 +57,14 @@ describe('userReducer', () => {
 
   it('should handle logoutUser', () => {
     const store = createStore({
+      ...userInitialState,
       isLogged: true,
-      toLogin: false,
-      loginError: false,
-      serverError: false,
       username: 'Test userSlice',
-      accessToken: 'fake_token',
       userPreferences: { safeWord: '' },
-      account: {},
     });
-    store.dispatch(logoutUser());
+    store.dispatch(logoutSuccess());
     const userState = store.getState().user;
     expect(userState).toEqual(userInitialState);
-  });
-
-  it('should handle serverError', () => {
-    const store = createStore(userInitialState);
-    store.dispatch(serverError());
-    const userState = store.getState().user;
-    expect(userState).toEqual({
-      isLogged: false,
-      toLogin: true,
-      loginError: false,
-      serverError: true,
-      username: '',
-      accessToken: undefined,
-      userPreferences: { safeWord: '' },
-      account: {},
-    });
-  });
-
-  it('should handle updateAccount', () => {
-    const store = createStore(userInitialState);
-    store.dispatch(updateAccount({ username: 'Test userSlice' }));
-    const userState = store.getState().user;
-    expect(userState).toEqual({
-      isLogged: false,
-      toLogin: true,
-      loginError: false,
-      serverError: false,
-      username: '',
-      accessToken: undefined,
-      userPreferences: { safeWord: '' },
-      account: { username: 'Test userSlice' },
-    });
   });
 
   it('should handle updateUserPreferences', () => {
@@ -110,11 +74,8 @@ describe('userReducer', () => {
     const userState = store.getState().user;
     expect(userState).toEqual({
       isLogged: false,
-      toLogin: true,
-      loginError: false,
-      serverError: false,
+      loginError: undefined,
       username: '',
-      accessToken: undefined,
       userPreferences: { safeWord: 'Test userSlice' },
       account: {},
     });

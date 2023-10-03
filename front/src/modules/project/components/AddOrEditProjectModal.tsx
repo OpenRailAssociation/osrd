@@ -22,7 +22,7 @@ import { useDebounce } from 'utils/helpers';
 import { ProjectCreateForm, ProjectWithStudies, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { postDocument } from 'common/api/documentApi';
 import PictureUploader from 'applications/operationalStudies/components/Project/PictureUploader';
-import { ApiError } from 'common/api/emptyApi';
+import type { ApiError } from 'common/api/baseGeneratedApis';
 import { SerializedError } from '@reduxjs/toolkit';
 import { getUserSafeWord } from 'reducers/user/userSelectors';
 

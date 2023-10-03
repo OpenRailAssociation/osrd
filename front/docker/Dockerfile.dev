@@ -1,0 +1,22 @@
+FROM alpine as exec_as_builder
+
+RUN apk add build-base
+COPY docker/exec-as.c .
+RUN gcc -std=c99 -static -o /exec-as exec-as.c
+
+
+FROM node:18
+
+# Install dependencies
+RUN apt-get update -yqq && \
+    apt-get install -yqq --no-install-recommends xdg-utils && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY --from=exec_as_builder /exec-as /
+
+WORKDIR /app
+
+# Start the app
+COPY docker/dev-entrypoint.sh /
+ENTRYPOINT ["/dev-entrypoint.sh"]
+CMD ["sh", "-c", "id && yarn install && exec yarn start-container"]

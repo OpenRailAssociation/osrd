@@ -1,5 +1,5 @@
 import { SerializedError } from '@reduxjs/toolkit';
-import { ApiError } from 'common/api/emptyApi';
+import { ApiError } from 'common/api/baseGeneratedApis';
 
 // eslint-disable-next-line import/prefer-default-export
 export const extractMessageFromError = (error: ApiError | SerializedError) =>

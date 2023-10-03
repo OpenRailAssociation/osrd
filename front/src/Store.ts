@@ -5,12 +5,15 @@ import { persistStore, getStoredState } from 'redux-persist';
 import { Config } from '@redux-devtools/extension';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { osrdGatewayApi } from 'common/api/osrdGatewayApi';
+
 import persistedReducer, {
   rootReducer,
   rootInitialState,
   RootState,
   persistConfig,
 } from 'reducers';
+import { listenerMiddleware } from 'listenerMiddleware';
 
 const reduxDevToolsOptions: Config = {
   serialize: {
@@ -20,14 +23,18 @@ const reduxDevToolsOptions: Config = {
   },
 };
 
-const middlewares: Middleware[] = [thunk, osrdEditoastApi.middleware];
+const middlewares: Middleware[] = [thunk, osrdEditoastApi.middleware, osrdGatewayApi.middleware];
 
 const store = configureStore({
   reducer: persistedReducer,
   devTools: reduxDevToolsOptions,
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware({ serializableCheck: false }).concat(...middlewares),
+    getDefaultMiddleware({ serializableCheck: false })
+      .prepend(listenerMiddleware.middleware)
+      .concat(...middlewares),
 });
+
+export type AppDispatch = typeof store.dispatch;
 
 const persistor = persistStore(store);
 

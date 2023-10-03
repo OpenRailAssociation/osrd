@@ -1,4 +1,4 @@
-import { baseEditoastApi as api } from './emptyApi';
+import { baseEditoastApi as api } from './baseGeneratedApis';
 
 export const addTagTypes = [
   'documents',

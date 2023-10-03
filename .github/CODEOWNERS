@@ -20,5 +20,8 @@
 /core                                                    @osrd-project/core-maintainers
 
 # --- CORE PHYSICS ---
-*Physics*.java                                           @osrd-project/physics
-*Integration*.java                                       @osrd-project/physics
+/core/*Physics*.java                                     @osrd-project/physics
+/core/*Integration*.java                                 @osrd-project/physics
+
+# --- GATEWAY ---
+/gateway                                                 @osrd-project/devops

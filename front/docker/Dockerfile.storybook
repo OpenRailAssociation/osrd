@@ -7,7 +7,7 @@ ENV PATH /app/node_modules/.bin:$PATH
 
 # build dependencies
 COPY package.json yarn.lock /app/
-RUN yarn
+RUN yarn install
 
 # build the storybook
 COPY . /app
@@ -16,11 +16,11 @@ RUN yarn build-storybook
 # Copy & serve app
 FROM nginx:alpine
 
-ARG NGINX_CONFIG=nginx.conf
-COPY --from=build /app/storybook-static /usr/share/nginx/html
+COPY --from=build /app/storybook-static /srv
 RUN rm /etc/nginx/conf.d/default.conf
-COPY nginx/$NGINX_CONFIG /etc/nginx/conf.d
+COPY docker/nginx.conf /etc/nginx/conf.d
 
-EXPOSE 80
+COPY docker/nginx-entrypoint.sh /entrypoint.sh
 
-ENTRYPOINT ["nginx", "-g", "daemon off;"]
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["nginx", "-g", "daemon off;"]

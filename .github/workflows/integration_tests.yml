@@ -50,7 +50,7 @@ jobs:
         with:
           load: true
           files: "docker-compose.yml"
-          targets: "editoast,core,front"
+          targets: "editoast,core,front,gateway"
           set: |
             editoast.cache-from=type=gha,scope=editoast
             editoast.cache-to=type=gha,mode=max,scope=editoast
@@ -58,9 +58,12 @@ jobs:
             core.cache-to=type=gha,mode=max,scope=core
             front.cache-from=type=gha,scope=front
             front.cache-to=type=gha,mode=max,scope=front
+            front.dockerfile=docker/Dockerfile.nginx
+            gateway.cache-from=type=gha,scope=gateway
+            gateway.cache-to=type=gha,mode=max,scope=gateway
 
       - name: Startup the test infrastructure
-        run: "docker-compose up --no-build -d editoast core front wait-healthy"
+        run: "OSRD_FRONT_MODE=nginx docker-compose up --no-build -d editoast core front gateway wait-healthy"
         env:
           DOCKER_BUILDKIT: 1
           COMPOSE_DOCKER_CLI_BUILD: 1

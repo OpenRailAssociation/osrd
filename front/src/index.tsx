@@ -4,6 +4,7 @@ import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import * as Sentry from '@sentry/react';
 import { BrowserTracing } from '@sentry/tracing';
+
 // Styles
 import 'maplibre-gl/dist/maplibre-gl.css';
 import 'styles/styles.scss';

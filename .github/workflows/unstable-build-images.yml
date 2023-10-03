@@ -1,0 +1,60 @@
+name: Build and push unstable images to ghcr.io
+
+on:
+  pull_request:
+  workflow_dispatch:
+  merge_group:
+  push:
+    branches:
+      - dev
+      - staging
+      - prod
+
+jobs:
+  docker_build_push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: '$' # special user for authenticating as a gh actions worker
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Decide which tags to apply
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            foobar
+          tags: |
+            type=ref,event=branch,enable=${{ github.ref_protected }}
+            type=ref,event=pr
+            type=sha,prefix=commit-,format=long
+
+      - name: Broadcast bake metadata to all images
+        run: |
+          # post process the output of docker/metadata-action to apply tags and labels to all images
+          # this script also configures buildx registry layer caching
+          .github/scripts/bake-metadata-actions.sh  - <<EOF > bake-metadata.json
+          ${{ steps.meta.outputs.json }}
+          EOF
+
+          echo ">> Output bake file"
+          cat bake-metadata.json
+
+      - name: Build and push
+        run: |
+          # Remove all cache mounts, as these seamingly break CI layer caching
+          # They're kept as it still improves local builds
+          shopt -s nullglob
+          sed -i 's/--mount=type=cache,[^[:space:]]*//g' */{docker/,}{Dockerfile{,.*},*.dockerfile}
+
+          export OSRD_GIT_DESCRIBE="${DOCKER_METADATA_OUTPUT_VERSION} $(git rev-parse --short ${{ github.sha }})"
+          docker buildx bake --file=docker/docker-bake.hcl --file=bake-metadata.json --push
