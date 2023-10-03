@@ -50,9 +50,10 @@ public record ElectrificationConstraints(
                 var voltageInterval = Range.open(section.getLower(), section.getUpper());
                 var blockingRanges = neutralSections.complement().subRangeSet(voltageInterval).asRanges();
 
-                for (var blockingRange : blockingRanges)
-                    if (blockingRange.lowerEndpoint() < blockingRange.upperEndpoint())
-                        res.add(new Pathfinding.Range(blockingRange.lowerEndpoint(), blockingRange.upperEndpoint()));
+                for (var blockingRange : blockingRanges) {
+                    assert blockingRange.lowerEndpoint() < blockingRange.upperEndpoint();
+                    res.add(new Pathfinding.Range(blockingRange.lowerEndpoint(), blockingRange.upperEndpoint()));
+                }
             }
         }
         return res;
@@ -61,7 +62,7 @@ public record ElectrificationConstraints(
     private static <T> RangeSet<Long> rangeSetFromMap(DistanceRangeMap<T> rangeMap) {
         return TreeRangeSet.create(
                 rangeMap.asList().stream()
-                        .map(entry -> Range.open(entry.getLower(), entry.getUpper()))
+                        .map(entry -> Range.closed(entry.getLower(), entry.getUpper()))
                         .collect(Collectors.toSet())
         );
     }
