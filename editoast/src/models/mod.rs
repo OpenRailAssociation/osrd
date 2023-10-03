@@ -1,5 +1,5 @@
 mod documents;
-pub mod electrical_profile;
+pub mod electrical_profiles;
 pub mod infra;
 pub mod infra_objects;
 pub mod pathfinding;
@@ -19,7 +19,7 @@ use diesel_async::AsyncPgConnection as PgConnection;
 
 pub use self::pathfinding::*;
 pub use documents::Document;
-pub use electrical_profile::ElectricalProfileSet;
+pub use electrical_profiles::ElectricalProfileSet;
 pub use infra::{Infra, RAILJSON_VERSION};
 pub use projects::{Ordering, Project, ProjectWithStudies};
 pub use rolling_stock::{

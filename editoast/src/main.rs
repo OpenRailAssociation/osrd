@@ -46,7 +46,7 @@ use futures_util::FutureExt;
 use infra_cache::InfraCache;
 use log::{error, info, warn};
 use map::MapLayers;
-use models::electrical_profile::ElectricalProfileSet;
+use models::electrical_profiles::ElectricalProfileSet;
 use models::{Retrieve, RollingStockModel};
 use openssl::ssl::{SslConnector, SslMethod, SslVerifyMode};
 use sentry::ClientInitGuard;
@@ -434,8 +434,7 @@ async fn electrical_profile_set_list(
     for electrical_profile_set in electrical_profile_sets {
         println!(
             "{:<2} - {}",
-            electrical_profile_set.id.unwrap(),
-            electrical_profile_set.name.unwrap()
+            electrical_profile_set.id, electrical_profile_set.name
         );
     }
     Ok(())

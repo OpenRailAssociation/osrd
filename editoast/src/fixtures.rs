@@ -9,13 +9,15 @@ pub mod tests {
         RollingStockLiveryModel, RollingStockModel, Scenario, SimulationOutput,
         SimulationOutputChangeset, Study, Timetable, TrainSchedule,
     };
-    use crate::schema::RailJson;
+    use crate::schema::electrical_profiles::{ElectricalProfile, ElectricalProfileSetData};
+    use crate::schema::{RailJson, TrackRange};
     use crate::views::infra::InfraForm;
     use crate::DbPool;
 
     use actix_web::web::Data;
     use chrono::Utc;
     use diesel_async::pooled_connection::AsyncDieselConnectionManager;
+    use diesel_json::Json as DieselJson;
     use futures::executor;
     use postgis_diesel::types::LineString;
     use rstest::*;
@@ -307,6 +309,26 @@ pub mod tests {
             db_pool,
         )
         .await
+    }
+
+    #[fixture]
+    pub async fn dummy_electrical_profile_set(
+        db_pool: Data<DbPool>,
+    ) -> TestFixture<ElectricalProfileSet> {
+        let ep_set_data = ElectricalProfileSetData {
+            levels: vec![ElectricalProfile {
+                value: "A".to_string(),
+                power_class: "1".to_string(),
+                track_ranges: vec![TrackRange::default()],
+            }],
+            level_order: Default::default(),
+        };
+        let ep_set = ElectricalProfileSet {
+            id: None,
+            name: Some("test".to_string()),
+            data: Some(DieselJson::new(ep_set_data.clone())),
+        };
+        TestFixture::create(ep_set, db_pool).await
     }
 
     #[fixture]
