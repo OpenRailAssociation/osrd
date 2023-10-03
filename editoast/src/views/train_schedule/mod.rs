@@ -32,7 +32,7 @@ use crate::core::simulation::{
 use simulation_report::SimulationReport;
 use thiserror::Error;
 
-use crate::models::electrical_profile::ElectricalProfileSet;
+use crate::models::electrical_profiles::ElectricalProfileSet;
 
 pub mod projection;
 pub mod simulation_report;
