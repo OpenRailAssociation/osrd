@@ -431,7 +431,7 @@ diesel::table! {
         gamma -> Jsonb,
         inertia_coefficient -> Float8,
         #[max_length = 255]
-        base_power_class -> Varchar,
+        base_power_class -> Nullable<Varchar>,
         features -> Array<Nullable<Text>>,
         mass -> Float8,
         rolling_resistance -> Jsonb,

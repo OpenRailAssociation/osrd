@@ -33,7 +33,7 @@ pub struct LightRollingStockModel {
     comfort_acceleration: f64,
     gamma: DieselJson<Gamma>,
     inertia_coefficient: f64,
-    base_power_class: String,
+    base_power_class: Option<String>,
     features: Vec<Option<String>>,
     mass: f64,
     rolling_resistance: DieselJson<RollingResistance>,

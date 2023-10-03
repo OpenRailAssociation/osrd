@@ -53,6 +53,9 @@ pub enum RollingStockError {
         rolling_stock_id: i64,
         usage: Vec<TrainScheduleScenarioStudyProject>,
     },
+    #[error("Base power class is an empty string")]
+    #[editoast_error(status = 400)]
+    BasePowerClassEmpty,
 }
 
 pub fn routes() -> impl HttpServiceFactory {
@@ -193,10 +196,13 @@ async fn update(
 
     let rolling_stock = rolling_stock
         .update(db_pool.clone(), rolling_stock_id)
-        .await?
-        .unwrap();
-    let rolling_stock_with_liveries = rolling_stock.with_liveries(db_pool).await?;
-    Ok(Json(rolling_stock_with_liveries))
+        .await?;
+    if let Some(rolling_stock) = rolling_stock {
+        let rolling_stock_with_liveries = rolling_stock.with_liveries(db_pool).await?;
+        Ok(Json(rolling_stock_with_liveries))
+    } else {
+        Err(RollingStockError::NotFound { rolling_stock_id }.into())
+    }
 }
 
 #[derive(Deserialize)]
@@ -490,6 +496,7 @@ pub mod tests {
     use crate::views::tests::create_test_service;
     use crate::{assert_editoast_error_type, assert_status_and_read, DbPool};
     use actix_http::{Request, StatusCode};
+    use actix_web::dev::ServiceResponse;
     use actix_web::http::header::ContentType;
     use actix_web::test::{call_service, read_body_json, TestRequest};
     use actix_web::web::Data;
@@ -548,6 +555,66 @@ pub mod tests {
         let get_request = rolling_stock_get_request(rolling_stock_id);
         let get_response = call_service(&app, get_request).await;
         assert_eq!(get_response.status(), StatusCode::NOT_FOUND);
+    }
+
+    async fn check_create_gave_400(db_pool: Data<DbPool>, response: ServiceResponse) {
+        if response.status() == StatusCode::OK {
+            let rolling_stock: RollingStock = read_body_json(response).await;
+            let rolling_stock_id = rolling_stock.id;
+            RollingStockModel::delete(db_pool.clone(), rolling_stock_id)
+                .await
+                .unwrap();
+            panic!("Rolling stock created but should not have been");
+        } else {
+            assert_eq!(
+                response.status(),
+                StatusCode::BAD_REQUEST,
+                "Here is the full response body {:?}",
+                response.into_body()
+            );
+        }
+    }
+
+    #[rstest]
+    async fn create_rolling_stock_with_base_power_class_empty(db_pool: Data<DbPool>) {
+        let app = create_test_service().await;
+        let mut rolling_stock: RollingStockModel = get_fast_rolling_stock();
+
+        rolling_stock.base_power_class = Some(Some("".to_string()));
+
+        let post_response = call_service(
+            &app,
+            TestRequest::post()
+                .uri("/rolling_stock")
+                .set_json(&rolling_stock)
+                .to_request(),
+        )
+        .await;
+
+        check_create_gave_400(db_pool, post_response).await;
+    }
+
+    #[rstest]
+    async fn create_rolling_stock_with_duplicate_name(
+        db_pool: Data<DbPool>,
+        #[future] fast_rolling_stock: TestFixture<RollingStockModel>,
+    ) {
+        let fast_rolling_stock = fast_rolling_stock.await;
+        let app = create_test_service().await;
+        let mut rolling_stock: RollingStockModel = get_fast_rolling_stock();
+
+        rolling_stock.name = fast_rolling_stock.model.name.clone();
+
+        let post_response = call_service(
+            &app,
+            TestRequest::post()
+                .uri("/rolling_stock")
+                .set_json(&rolling_stock)
+                .to_request(),
+        )
+        .await;
+
+        check_create_gave_400(db_pool, post_response).await;
     }
 
     #[rstest]

@@ -7,9 +7,9 @@ pub use light_rolling_stock::LightRollingStockModel;
 pub use rolling_stock_image::RollingStockSeparatedImageModel;
 pub use rolling_stock_livery::RollingStockLiveryModel;
 
-use crate::error::Result;
+use crate::error::{InternalError, Result};
 use crate::models::rolling_stock::rolling_stock_livery::RollingStockLiveryMetadata;
-use crate::models::{Identifiable, TextArray, Update};
+use crate::models::{Create, Identifiable, TextArray, Update};
 use crate::schema::rolling_stock::{
     EffortCurves, EnergySource, Gamma, RollingResistance, RollingStock, RollingStockCommon,
     RollingStockMetadata, RollingStockWithLiveries,
@@ -19,8 +19,8 @@ use crate::views::rolling_stocks::RollingStockError;
 use crate::DbPool;
 use actix_web::web::Data;
 use derivative::Derivative;
-use diesel::result::Error as DieselError;
-use diesel::{update, ExpressionMethods, QueryDsl, SelectableHelper};
+use diesel::result::{DatabaseErrorInformation, DatabaseErrorKind, Error as DieselError};
+use diesel::{insert_into, update, ExpressionMethods, QueryDsl, SelectableHelper};
 use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
 use diesel_json::Json as DieselJson;
 use editoast_derive::Model;
@@ -41,7 +41,7 @@ use serde_json::Value as JsonValue;
 )]
 #[derivative(Default, PartialEq)]
 #[model(table = "rolling_stock")]
-#[model(create, retrieve, delete)]
+#[model(retrieve, delete)]
 #[diesel(table_name = rolling_stock)]
 pub struct RollingStockModel {
     #[diesel(deserialize_as = i64)]
@@ -70,8 +70,8 @@ pub struct RollingStockModel {
     pub gamma: Option<DieselJson<Gamma>>,
     #[diesel(deserialize_as = f64)]
     pub inertia_coefficient: Option<f64>,
-    #[diesel(deserialize_as = String)]
-    pub base_power_class: Option<String>,
+    #[diesel(deserialize_as = Option<String>)]
+    pub base_power_class: Option<Option<String>>,
     #[diesel(deserialize_as = TextArray)]
     pub features: Option<Vec<String>>,
     #[diesel(deserialize_as = f64)]
@@ -136,6 +136,32 @@ impl RollingStockModel {
     }
 }
 
+fn is_given_constraint(
+    error_info: &(dyn DatabaseErrorInformation + Send + Sync),
+    column_name: &str,
+) -> bool {
+    error_info
+        .constraint_name()
+        .map(|name| name == column_name)
+        .unwrap_or(false)
+}
+
+fn map_diesel_error(e: DieselError, rs_name: String) -> InternalError {
+    match e {
+        DieselError::DatabaseError(DatabaseErrorKind::UniqueViolation, info)
+            if is_given_constraint(info.as_ref(), "rolling_stock_name_key") =>
+        {
+            RollingStockError::NameAlreadyUsed { name: rs_name }.into()
+        }
+        DieselError::DatabaseError(DatabaseErrorKind::CheckViolation, info)
+            if is_given_constraint(info.as_ref(), "base_power_class_null_or_non_empty") =>
+        {
+            RollingStockError::BasePowerClassEmpty.into()
+        }
+        e => e.into(),
+    }
+}
+
 #[async_trait]
 impl Update for RollingStockModel {
     async fn update_conn(
@@ -151,17 +177,23 @@ impl Update for RollingStockModel {
             .await
         {
             Ok(rs) => Ok(Some(rs)),
-            Err(DieselError::NotFound) => {
-                Err(RollingStockError::NotFound { rolling_stock_id }.into())
-            }
-            Err(DieselError::DatabaseError(
-                diesel::result::DatabaseErrorKind::UniqueViolation,
-                _,
-            )) => Err(RollingStockError::NameAlreadyUsed {
-                name: self.name.unwrap(),
-            }
-            .into()),
-            Err(e) => Err(e.into()),
+            Err(DieselError::NotFound) => Ok(None),
+            Err(e) => Err(map_diesel_error(e, self.name.unwrap())),
+        }
+    }
+}
+
+#[async_trait]
+impl Create for RollingStockModel {
+    async fn create_conn(self, conn: &mut PgConnection) -> Result<Self> {
+        use crate::tables::rolling_stock::dsl::*;
+        match insert_into(rolling_stock)
+            .values(&self)
+            .get_result(conn)
+            .await
+        {
+            Ok(rs) => Ok(rs),
+            Err(e) => Err(map_diesel_error(e, self.name.unwrap())),
         }
     }
 }
