@@ -3,6 +3,8 @@
 # This script should be compatible with MSYS, the compatibility layer used by
 # Git for Windows. Absolute paths which should not be converted to windows paths
 # have to start with //, see https://github.com/git-for-windows/git/issues/1387
+# On windows, docker cp does not like leading double / on the container path.
+# As a workaround, use relative paths: container:tmp/foo instead of container://tmp/foo
 
 set -e
 
@@ -31,5 +33,5 @@ echo "  size: ${SIZE}"
 DATE=$(date "+%G_%m_%d")
 
 FILE_PATH="${OUTPUT_DIR}/osrd_${DATE}_sha1_${SHA1}.backup"
-docker cp osrd-postgres://tmp/osrd.backup "${FILE_PATH}"
+docker cp osrd-postgres:tmp/osrd.backup "${FILE_PATH}"
 echo "Your backup is ready here: '${FILE_PATH}'"

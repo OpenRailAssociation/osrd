@@ -3,6 +3,8 @@
 # This script should be compatible with MSYS, the compatibility layer used by
 # Git for Windows. Absolute paths which should not be converted to windows paths
 # have to start with //, see https://github.com/git-for-windows/git/issues/1387
+# On windows, docker cp does not like leading double / on the container path.
+# As a workaround, use relative paths: container:tmp/foo instead of container://tmp/foo
 
 set -e
 
@@ -68,7 +70,7 @@ docker exec osrd-postgres sh -c 'cat /docker-entrypoint-initdb.d/init.sql | tail
 docker exec osrd-postgres psql -f //tmp/init.sql > /dev/null
 
 # Copy needed files to the container
-docker cp "$BACKUP_PATH" osrd-postgres://tmp/backup-osrd
+docker cp "$BACKUP_PATH" osrd-postgres:tmp/backup-osrd
 
 # restoring the backend can partialy fail, and that's sometimes ok
 echo "Restore backup..."
