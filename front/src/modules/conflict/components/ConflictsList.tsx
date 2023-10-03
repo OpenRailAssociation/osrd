@@ -18,15 +18,18 @@ function ConflictCard({ conflict }: { conflict: Conflict }) {
     <div className="conflict-card">
       <BsLightningFill color="red" />
       <div className="conflict-trains">
-        <div className="card-text">{conflict.train_names[0]}</div>
-        <div className="card-text">{conflict.train_names[1]}</div>
+        {conflict.train_names.map((train_name, index) => (
+          <div className="card-text" key={`train-${index}-${train_name}`}>
+            {train_name}
+          </div>
+        ))}
       </div>
       <div className="conflict-type">
-        <p className="card-text">{t(`${conflict.conflict_type}`)}</p>
+        <p>{t(`${conflict.conflict_type}`)}</p>
       </div>
       <div className="conflict-times">
-        <div className="card-text start-time">{sec2time(conflict.start_time)}</div>
-        <div className="card-text end-time">{sec2time(conflict.end_time)}</div>
+        <div className="start-time">{sec2time(conflict.start_time)}</div>
+        <div className="end-time">{sec2time(conflict.end_time)}</div>
       </div>
     </div>
   );
