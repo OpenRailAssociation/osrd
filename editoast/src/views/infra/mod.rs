@@ -725,14 +725,10 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn infra_get_all_voltages(
-        #[future] empty_infra: TestFixture<Infra>,
-        #[future] small_infra: TestFixture<Infra>,
-        #[future] other_rolling_stock: TestFixture<RollingStockModel>,
-    ) {
+    async fn infra_get_all_voltages(#[future] other_rolling_stock: TestFixture<RollingStockModel>) {
         let app = create_test_service().await;
-        let infra_1 = empty_infra.await;
-        let infra_2 = small_infra.await;
+        let infra_1 = empty_infra(db_pool()).await;
+        let infra_2 = small_infra(db_pool()).await;
 
         // Create catenaries
         let catenary_1 = Catenary {
