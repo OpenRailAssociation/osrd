@@ -977,7 +977,6 @@ pub mod tests {
                 .to_request(),
         )
         .await;
-
         let power_restrictions = rolling_stock
             .model
             .power_restrictions

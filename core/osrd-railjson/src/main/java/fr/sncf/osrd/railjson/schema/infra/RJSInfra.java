@@ -31,9 +31,6 @@ public class RJSInfra {
     @Json(name = "track_sections")
     public Collection<RJSTrackSection> trackSections;
 
-    @Json(name = "track_section_links")
-    public Collection<RJSTrackSectionLink> trackSectionLinks;
-
     /** Switches are at the ends of track sections, and link those together. */
     public Collection<RJSSwitch> switches;
 
@@ -65,4 +62,24 @@ public class RJSInfra {
 
     @Json(name = "neutral_sections")
     public List<RJSNeutralSection> neutralSections;
+    /** Create a new serialized RailJSON file */
+    public RJSInfra(
+            Collection<RJSTrackSection> trackSections,
+            Collection<RJSRoute> routes,
+            List<RJSSignal> signals,
+            List<RJSBufferStop> bufferStops,
+            List<RJSTrainDetector> detectors
+    ) {
+        this.trackSections = trackSections;
+        this.switches = new ArrayList<>();
+        this.operationalPoints = new ArrayList<>();
+        this.routes = routes;
+        this.switchTypes = new ArrayList<>();
+        this.signals = signals;
+        this.bufferStops = bufferStops;
+        this.detectors = detectors;
+        this.speedSections = new ArrayList<>();
+        this.catenaries = new ArrayList<>();
+        this.neutralSections = new ArrayList<>();
+    }
 }
