@@ -2741,6 +2741,20 @@ paths:
       tags:
       - electrical_profiles
   /electrical_profile_set/{id}/:
+    delete:
+      parameters:
+      - description: Electrical profile set ID
+        in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+      responses:
+        '204':
+          description: No content
+      summary: Delete the set of electrical profiles with the given id
+      tags:
+      - electrical_profiles
     get:
       parameters:
       - description: Electrical profile set ID

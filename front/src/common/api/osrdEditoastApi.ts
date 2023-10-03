@@ -55,6 +55,13 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['electrical_profiles'],
       }),
+      deleteElectricalProfileSetById: build.mutation<
+        DeleteElectricalProfileSetByIdApiResponse,
+        DeleteElectricalProfileSetByIdApiArg
+      >({
+        query: (queryArg) => ({ url: `/electrical_profile_set/${queryArg.id}/`, method: 'DELETE' }),
+        invalidatesTags: ['electrical_profiles'],
+      }),
       getElectricalProfileSetById: build.query<
         GetElectricalProfileSetByIdApiResponse,
         GetElectricalProfileSetByIdApiArg
@@ -655,6 +662,11 @@ export type PostElectricalProfileSetApiResponse =
   /** status 200 The list of ids and names of electrical profile sets available */ ElectricalProfile;
 export type PostElectricalProfileSetApiArg = {
   name: string;
+};
+export type DeleteElectricalProfileSetByIdApiResponse = unknown;
+export type DeleteElectricalProfileSetByIdApiArg = {
+  /** Electrical profile set ID */
+  id: number;
 };
 export type GetElectricalProfileSetByIdApiResponse =
   /** status 200 The list of electrical profiles in the set */ ElectricalProfile[];
