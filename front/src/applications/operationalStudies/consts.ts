@@ -14,6 +14,7 @@ import {
   PowerRestrictionRangeItem,
 } from 'common/api/osrdEditoastApi';
 import { LinearMetadataItem } from 'common/IntervalsDataViz/types';
+import { HeightPosition } from 'reducers/osrdsimulation/types';
 
 export const BLOCKTYPES = [
   {
@@ -217,7 +218,12 @@ interface Profile {
   isStriped: boolean;
 }
 
-interface ElectricalConditionSegment {
+/** Those keys are used to index objects of type HeightPosition but also to access properties ending by
+ * "_start" / "_middle" / "_end" in objects of type PowerRestrictionSegment in order to draw the linear graph. */
+export const DRAWING_KEYS: (keyof HeightPosition)[] = ['position', 'height'];
+export type DrawingKeys = typeof DRAWING_KEYS;
+
+export interface ElectricalConditionSegment {
   position_start: number;
   position_end: number;
   position_middle: number;
@@ -376,7 +382,7 @@ export const createProfileSegment = (
   return segment;
 };
 
-interface PowerRestrictionSegment {
+export interface PowerRestrictionSegment {
   position_start: number;
   position_end: number;
   position_middle: number;

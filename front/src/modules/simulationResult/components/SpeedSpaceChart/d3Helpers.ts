@@ -6,6 +6,7 @@ import * as d3 from 'd3';
 import {
   createProfileSegment,
   createPowerRestrictionSegment,
+  DRAWING_KEYS,
 } from 'applications/operationalStudies/consts';
 import { isEmpty } from 'lodash';
 import { Chart, SpeedSpaceChart, SpeedSpaceSettingsType } from 'reducers/osrdsimulation/types';
@@ -163,7 +164,7 @@ function drawTrain(
         dataSimulation.slopesCurve,
         'speedSpaceChart',
         'curveLinear',
-        ['position', 'height'],
+        DRAWING_KEYS,
         'slopes',
         rotate
       );
@@ -211,9 +212,7 @@ function drawTrain(
             `electricalProfiles_${index}`,
             segment,
             'speedSpaceChart',
-            'curveLinear',
             ['position', 'height'],
-            'electrical_profiles',
             rotate,
             segment.isStriped,
             segment.isIncompatibleElectricalProfile,
@@ -254,9 +253,7 @@ function drawTrain(
           `powerRestrictions_${index}`,
           source,
           'speedSpaceChart',
-          'curveLinear',
-          ['position', 'height'],
-          'power_restrictions',
+          DRAWING_KEYS,
           rotate,
           source.isStriped,
           source.isIncompatiblePowerRestriction,
