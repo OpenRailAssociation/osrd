@@ -63,6 +63,12 @@ export default function SelectorSNCF<T extends string | null, K extends string>(
                 onFocus={() => {
                   if (onItemHovered) onItemHovered(item);
                 }}
+                onMouseOut={() => {
+                  if (onItemHovered) onItemHovered(null);
+                }}
+                onBlur={() => {
+                  if (onItemHovered) onItemHovered(null);
+                }}
                 key={`selector-${title}-${index}`}
               >
                 <div className={`${mainClass}-item-name pt-1 pl-3`}>

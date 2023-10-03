@@ -143,7 +143,7 @@ export default function RollingStockEditorCurves({
             }
             return acc;
           }, [] as (string | null)[])
-        : [];
+        : [null];
 
     if (!rsComfortLevels.includes(selectedComfortLvl)) {
       dispatchComfortLvl(rsComfortLevels[0] || STANDARD_COMFORT_LEVEL);
