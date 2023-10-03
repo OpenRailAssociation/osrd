@@ -3,8 +3,8 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { Link } from 'react-router-dom';
 import React, { ReactElement } from 'react';
-import { logout } from 'applications/common/reducer/user/userSlice';
-import { getUserAccount } from 'applications/common/reducer/user/userSelectors';
+import { logout } from 'reducers/user';
+import { getUserAccount } from 'reducers/user/userSelectors';
 import { useTranslation } from 'react-i18next';
 import ReleaseInformations from 'common/ReleaseInformations/ReleaseInformations';
 import ChangeLanguageModal from 'common/ChangeLanguageModal';
