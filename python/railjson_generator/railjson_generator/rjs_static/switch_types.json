@@ -76,5 +76,20 @@
                 }
             ]
         }
+    },
+    {
+        "id": "track_section_link",
+        "ports": [
+            "start",
+            "end"
+        ],
+        "groups": {
+            "SRC_DST": [
+                {
+                    "src": "start",
+                    "dst": "end"
+                }
+            ]
+        }
     }
 ]

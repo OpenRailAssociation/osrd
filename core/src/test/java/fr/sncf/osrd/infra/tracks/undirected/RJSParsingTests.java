@@ -15,7 +15,6 @@ import fr.sncf.osrd.infra.implementation.tracks.undirected.UndirectedInfraBuilde
 import fr.sncf.osrd.railjson.schema.common.graph.ApplicableDirection;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeEndpoint;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackEndpoint;
-import fr.sncf.osrd.railjson.schema.infra.RJSTrackSectionLink;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSApplicableDirectionsTrackRange;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSection;
 import fr.sncf.osrd.reporting.exceptions.ErrorType;
@@ -56,23 +55,6 @@ public class RJSParsingTests {
     }
 
     @Test
-    public void testLinkOnSwitch() throws Exception {
-        var rjsInfra = Helpers.getExampleInfra("tiny_infra/infra.json");
-        var s = rjsInfra.switches.iterator().next();
-        var ports = new ArrayList<>(s.ports.values());
-        rjsInfra.trackSectionLinks.add(new RJSTrackSectionLink(
-                "broken",
-                ports.get(0),
-                new RJSTrackEndpoint("ne.micro.bar_a", EdgeEndpoint.END)
-        ));
-        var thrown = assertThrows(
-                OSRDError.class,
-                () -> UndirectedInfraBuilder.parseInfra(rjsInfra, new DiagnosticRecorderImpl(true))
-        );
-        assertEquals(thrown.osrdErrorType, ErrorType.InvalidInfraEndpointAlreadyLinked);
-    }
-
-    @Test
     public void testDuplicateDetector() throws Exception {
         var rjsInfra = Helpers.getExampleInfra("tiny_infra/infra.json");
         rjsInfra.detectors.add(rjsInfra.detectors.get(0));
@@ -81,15 +63,6 @@ public class RJSParsingTests {
                 () -> UndirectedInfraBuilder.parseInfra(rjsInfra, new DiagnosticRecorderImpl(true))
         );
         assertEquals(thrown.osrdErrorType, ErrorType.StrictWarningError);
-    }
-
-    @Test
-    public void testUnlabeledLinks() throws Exception {
-        var rjsInfra = Helpers.getExampleInfra("one_line/infra.json");
-        for (var link : rjsInfra.trackSectionLinks)
-            link.id = null;
-        // We check that no warning or assertion is raised when importing the infra
-        UndirectedInfraBuilder.parseInfra(rjsInfra, new DiagnosticRecorderImpl(true));
     }
 
     @Test

@@ -77,6 +77,15 @@ class Switch:
 
 
 @dataclass
+class TrackSectionLink(Switch):
+    start: TrackEndpoint = None
+    end: TrackEndpoint = None
+
+    PORT_NAMES = ["start", "end"]
+    SWITCH_TYPE = "track_section_link"
+
+
+@dataclass
 class PointSwitch(Switch):
     base: TrackEndpoint = None
     left: TrackEndpoint = None

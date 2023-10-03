@@ -13,6 +13,7 @@ from .schema.infra.switch import (
     DoubleCrossSwitch,
     PointSwitch,
     SwitchGroup,
+    TrackSectionLink
 )
 from .schema.infra.track_section import TrackSection
 from .utils import generate_routes
@@ -99,11 +100,11 @@ class InfraBuilder:
         self.infra.switches.append(switch)
         return switch
 
-    def add_link(self, *args, **kwargs):
-        link = Link(*args, **kwargs)
-        self.infra.links.append(link)
-        _register_connection(link.begin, link.end, None)
-        return link
+    def add_link(self, start: TrackEndpoint, end: TrackEndpoint, **kwargs):
+        switch = TrackSectionLink(start=start, end=end, **kwargs)
+        self.infra.switches.append(switch)
+        _register_connection(start, end, switch.group("SRC_DST"))
+        return switch
 
     def add_operational_point(self, *args, **kwargs):
         self.infra.operational_points.append(OperationalPoint(*args, **kwargs))

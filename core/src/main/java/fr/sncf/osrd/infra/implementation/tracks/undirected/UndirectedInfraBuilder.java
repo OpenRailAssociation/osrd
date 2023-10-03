@@ -162,8 +162,6 @@ public class UndirectedInfraBuilder {
             switches.put(s.id, parseSwitch(s, switchTypeMap));
         }
 
-        addRemainingLinks(infra);
-
         var trackSectionsByID = new HashMap<String, TrackSectionImpl>();
         for (var track : infra.trackSections) {
             var newTrack = makeTrackSection(track);
@@ -224,37 +222,6 @@ public class UndirectedInfraBuilder {
             var destMap =
                     announcement ? track.getNeutralSectionAnnouncements(dir) : track.getNeutralSections(dir);
             destMap.put(range, new NeutralSection(neutralSection.lowerPantograph));
-        }
-    }
-
-    /** Creates all the track section links that haven't already been created by switches */
-    private void addRemainingLinks(RJSInfra infra) {
-        int generatedID = 0;
-        for (var link : infra.trackSectionLinks) {
-            var srcID = link.src.track;
-            var dstID = link.dst.track;
-            var oldSrcNode = getNode(srcID, link.src.endpoint);
-            var oldDstNode = getNode(dstID, link.dst.endpoint);
-            if (oldSrcNode != null || oldDstNode != null) {
-                // At least one of the node already exists:
-                // either both are the same switch node, or there is an error in the infra
-                if (oldSrcNode instanceof SwitchPort srcSwitchPort
-                                && oldDstNode instanceof SwitchPort dstSwitchPort
-                                && srcSwitchPort.getSwitch().getID().equals(dstSwitchPort.getSwitch().getID()))
-                    continue;
-                throw newEndpointAlreadyLinkedError(
-                    link.id,
-                    oldSrcNode,
-                    oldDstNode
-                );
-            }
-            if (link.id == null || link.id.equals("")) {
-                // Forcing a unique ID avoids node equality troubles, and makes debugging easier
-                link.id = String.format("generated_%d", generatedID++);
-            }
-            var newNode = new TrackNodeImpl.Joint(link.id);
-            addNode(srcID, link.src.endpoint, newNode);
-            addNode(dstID, link.dst.endpoint, newNode);
         }
     }
 
