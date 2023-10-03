@@ -35,7 +35,7 @@ services:
       interval: 5s
 
   core:
-    image: osrd/core
+    image: ghcr.io/osrd-project/unstable/osrd-core:${TAG-latest}
     container_name: osrd-core
     build:
       context: core
@@ -51,26 +51,27 @@ services:
       interval: 5s
 
   front:
-    image: osrd/front
+    image: ghcr.io/osrd-project/unstable/osrd-front-dev:${TAG-latest}
     container_name: osrd-front
     build:
       context: front
-      dockerfile: Dockerfile
+      dockerfile: docker/Dockerfile.${OSRD_FRONT_MODE:-dev}
       args:
-        NGINX_CONFIG: "nginx-dev.conf"
         OSRD_GIT_DESCRIBE: ${OSRD_GIT_DESCRIBE}
     environment:
-      OSRD_LOCAL_BACKEND: "true"
-      OSRD_EDITOAST_URL: http://localhost:8090
+      FRONT_PORT: 3000  # only useful with the prod config
+      OSRD_EDITOAST_URL: /api
+    volumes:
+      - "./front:/app"
     restart: unless-stopped
-    ports: ["3000:80"]
+    ports: ["3000:3000"]
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost"]
       start_period: 4s
       interval: 5s
 
   editoast:
-    image: osrd/editoast
+    image: ghcr.io/osrd-project/unstable/osrd-editoast:${TAG-latest}
     container_name: osrd-editoast
     depends_on:
       postgres: {condition: service_healthy}
@@ -96,6 +97,19 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost/health"]
       start_period: 4s
       interval: 5s
+
+  gateway:
+    image: ghcr.io/osrd-project/unstable/osrd-gateway:${TAG-latest}
+    container_name: osrd-gateway
+    build:
+      context: gateway
+      dockerfile: Dockerfile
+      args:
+        OSRD_GIT_DESCRIBE: ${OSRD_GIT_DESCRIBE}
+    volumes:
+      - "./docker/gateway.dev.simple.toml:/gateway.toml"
+    restart: unless-stopped
+    ports: ["4000:4000"]
 
   wait-healthy:
     depends_on:

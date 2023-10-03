@@ -1,5 +1,5 @@
 import { SerializedError } from '@reduxjs/toolkit';
-import { ApiError } from 'common/api/emptyApi';
+import { ApiError } from 'common/api/baseGeneratedApis';
 import {
   SimulationReport,
   TrainSchedule,

@@ -69,7 +69,6 @@
     "js-sha256": "^0.9.0",
     "json-schema": "^0.4.0",
     "jwt-decode": "^3.1.2",
-    "keycloak-js": "^20.0.3",
     "license-checker-rseidelsohn": "~3.3.0",
     "localforage": "^1.10.0",
     "lodash": "^4.17.15",
@@ -181,7 +180,8 @@
   },
   "scripts": {
     "compile": "tsc -b",
-    "start": "import-meta-env-prepare -x .env.example && vite",
+    "start": "exec scripts/start-dev.sh",
+    "start-container": "import-meta-env-prepare -x .env.example && vite --host",
     "build": "vite build",
     "test": "import-meta-env-prepare -x .env.example && vitest",
     "lint": "eslint --ext .ts,.tsx,.js,.jsx src --max-warnings 0",

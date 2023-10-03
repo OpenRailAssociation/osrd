@@ -10,6 +10,10 @@ coverage:
         target: auto
         flags:
           - editoast
+      gateway:
+        target: auto
+        flags:
+          - gateway
       front:
         target: auto
         flags:
@@ -25,6 +29,10 @@ flags:
   editoast:
     paths:
       - editoast/
+    carryforward: true
+  gateway:
+    paths:
+      - gateway/
     carryforward: true
   front:
     paths:

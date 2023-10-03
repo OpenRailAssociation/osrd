@@ -22,17 +22,17 @@ jobs:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
-  build_push_front:
-    name: Front
+  build_push_gateway:
+    name: Gateway
     uses: osrd-project/osrd/.github/workflows/docker-build-push-template.yml@dev
     with:
-      context: front
-      image_name: osrd/front
-      cache_scope: front
-      build_args: |
-        NGINX_CONFIG=nginx-dev.conf
-        REACT_APP_LOCAL_BACKEND=True
-        REACT_APP_API_URL=http://localhost:8000
+      context: docker
+      dockerfile: gateway-embedded-front.dockerfile
+      image_name: osrd/gateway
+      cache_scope: gateway
+      build_contexts: |
+        gateway=./gateway
+        front=./front
     secrets:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}

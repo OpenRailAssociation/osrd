@@ -29,6 +29,12 @@ services:
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8090/health"]
 
+  gateway:
+    ports: []
+    network_mode: host
+    volumes:
+      - "./docker/gateway.dev.host.toml:/gateway.toml"
+
   wait-healthy:
     depends_on:
       editoast: {condition: service_healthy}

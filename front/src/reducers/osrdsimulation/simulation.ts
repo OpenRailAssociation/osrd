@@ -11,7 +11,7 @@ import { AnyAction, Dispatch, Reducer } from 'redux';
 // eslint-disable-next-line import/no-cycle
 import { RootState } from 'reducers';
 import { SimulationReport, osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { ApiError } from 'common/api/emptyApi';
+import { ApiError } from 'common/api/baseGeneratedApis';
 import { SerializedError } from '@reduxjs/toolkit';
 import { OsrdSimulationState, SimulationSnapshot } from './types';
 import {

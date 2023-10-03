@@ -7,11 +7,6 @@ on:
       - editoast/**
       - .github/workflows/editoast.yml
   merge_group:
-    # TODO: paths may not be relvant for merge_group
-    # https://docs.github.com/en/webhooks/webhook-events-and-payloads#merge_group
-    paths:
-      - editoast/**
-      - .github/workflows/editoast.yml
   push:
     branches:
       - dev

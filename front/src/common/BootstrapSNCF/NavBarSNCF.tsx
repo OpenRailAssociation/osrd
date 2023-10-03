@@ -1,18 +1,18 @@
-import { FaPowerOff, FaInfoCircle, FaCog } from 'react-icons/fa';
-import { useDispatch, useSelector } from 'react-redux';
-
-import { Link } from 'react-router-dom';
 import React, { ReactElement } from 'react';
-import { logout } from 'reducers/user';
-import { getUserAccount, getUserSafeWord } from 'reducers/user/userSelectors';
+import { useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
+import { FaPowerOff, FaInfoCircle, FaCog } from 'react-icons/fa';
+import { AiFillSafetyCertificate } from 'react-icons/ai';
 import { useTranslation } from 'react-i18next';
+import i18n from 'i18next';
+
+import useAuth from 'utils/hooks/OsrdAuth';
+import { getUserSafeWord } from 'reducers/user/userSelectors';
 import ReleaseInformations from 'common/ReleaseInformations/ReleaseInformations';
 import ChangeLanguageModal from 'common/ChangeLanguageModal';
 import UserSettings from 'common/UserSettings';
-import i18n from 'i18next';
 import getUnicodeFlagIcon from 'country-flag-icons/unicode';
 import { language2flag } from 'utils/strings';
-import { AiFillSafetyCertificate } from 'react-icons/ai';
 import DropdownSNCF, { DROPDOWN_STYLE_TYPES } from './DropdownSNCF';
 import { useModal } from './ModalSNCF';
 
@@ -23,14 +23,9 @@ type Props = {
 
 export default function LegacyNavBarSNCF({ appName, logo }: Props) {
   const { openModal } = useModal();
-  const userAccount = useSelector(getUserAccount);
   const safeWord = useSelector(getUserSafeWord);
-  const dispatch = useDispatch();
   const { t } = useTranslation('home/navbar');
-
-  const toLogout = () => {
-    dispatch(logout());
-  };
+  const { logout, username } = useAuth();
 
   return (
     <div className="mastheader">
@@ -63,9 +58,7 @@ export default function LegacyNavBarSNCF({ appName, logo }: Props) {
                   className="icons-menu-account icons-size-1x25 icons-md-size-1x5 mr-xl-2"
                   aria-hidden="true"
                 />
-                <span className="d-none d-xl-block">
-                  {userAccount.firstName} {userAccount.lastName}
-                </span>
+                <span className="d-none d-xl-block">{username}</span>
               </>
             }
             type={DROPDOWN_STYLE_TYPES.transparent}
@@ -104,7 +97,7 @@ export default function LegacyNavBarSNCF({ appName, logo }: Props) {
                 </span>
                 {t('userSettings')}
               </button>,
-              <button type="button" className="btn-link text-reset" onClick={toLogout} key="logout">
+              <button type="button" className="btn-link text-reset" onClick={logout} key="logout">
                 <span className="mr-2">
                   <FaPowerOff />
                 </span>

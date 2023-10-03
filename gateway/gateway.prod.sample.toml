@@ -1,0 +1,23 @@
+# This is an example production file. It's meant to be mounted inside the container at /gateway.toml
+
+listen_addr = "0.0.0.0"
+port = 80
+trusted_proxies = ["10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"]
+
+[static_files]
+root_folder = "/srv/front"
+redirect_404_to_index = true
+
+[[targets]]
+prefix = "/api"
+upstream = "%EDITOAST_INTERNAL_URL%"
+require_auth = true
+
+[[auth.providers]]
+type = "Oidc"
+provider_id = "example_provider"
+issuer_url = "https://%PROVIDER_URL%"
+post_login_url = "https://%POST_LOGIN_URL%"
+callback_url = "https://%APP_ROOT_URL%/auth/provider/example_provider/callback"
+client_id = "%CLIENT_ID%"
+client_secret = "%CLIENT_SECRET%"

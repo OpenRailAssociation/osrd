@@ -1,0 +1,67 @@
+[package]
+name = "osrd_gateway"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[workspace]
+members = [".", "actix_proxy", "actix_auth"]
+# used for cargo test, build, fix, package, bench, doc, tree
+default-members = [".", "actix_proxy", "actix_auth"]
+
+[workspace.dependencies]
+# common utils
+log = "0.4.20"
+env_logger = "0.10.0"
+either = "1.9.0"
+thiserror = "1.0.50"
+dyn-clone = "1.0.14"
+futures-util = "0.3.29"
+futures = "0.3.29"
+smallvec = "1.11.1"
+
+# main crate
+figment = "0.10"
+serde = { version = "1.0.189", features = ["derive"] }
+serde_json = "1.0.108"
+humantime = "2.1.0"
+humantime-serde = "1.1.1"
+actix-web = "4.4.0"
+actix-session = "0.8"
+actix-files = "0.6.2"
+base64ct = "1.6.0"
+
+# reverse proxy dependencies
+ipnet = "2.8"
+awc = { version = "3.2.0", features = ["rustls"] }  # the http / ws client
+actix = "0.13.1"
+actix-web-actors = "4.2.0"
+bytestring = "1.3.1"
+phf = "0.11.2"
+
+# actix_auth
+reqwest = { version = "0.11.22", default-features = false, features = ["rustls-tls-native-roots"] }
+openidconnect = { version = "3.4.0", default-features = false }
+url = "2.4.1"
+actix-web-httpauth = "0.8"
+
+
+[dependencies]
+log.workspace = true
+env_logger.workspace = true
+either.workspace = true
+
+# configuration parsing
+figment = { workspace = true, features = ["toml", "env"] }
+serde.workspace = true
+base64ct.workspace = true  # to parse the session secret key
+humantime.workspace = true
+humantime-serde.workspace = true
+
+# web server
+actix-web.workspace = true
+actix-files.workspace = true
+actix-session = { workspace = true, features = ["cookie-session"] }
+actix_auth = { path = "./actix_auth" }
+actix_proxy = { path = "./actix_proxy" }

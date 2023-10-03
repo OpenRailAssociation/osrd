@@ -1,0 +1,27 @@
+# This config file is copied into the host networking dev container
+
+# generate a production key with this command:
+# python3 -c "import secrets, base64; print(base64.standard_b64encode(secrets.token_bytes(64)).decode())"
+secret_key = "NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET"
+
+listen_addr = "0.0.0.0"
+
+[[targets]]
+prefix = "/api"
+upstream = "http://localhost:8090"
+require_auth = true
+
+[[targets]]
+upstream = "http://localhost:3000"
+require_auth = false
+
+
+[auth]
+default_provider = "mock"
+secure_cookies = false
+
+[[auth.providers]]
+type = "Mocked"
+provider_id = "mock"
+username = "Example User"
+require_login = false

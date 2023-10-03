@@ -11,7 +11,7 @@ import SwitchSNCF, { SWITCH_TYPES } from 'common/BootstrapSNCF/SwitchSNCF/Switch
 import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { ApiError } from 'common/api/emptyApi';
+import { ApiError } from 'common/api/baseGeneratedApis';
 import { setFailure } from 'reducers/main';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import { getMap } from 'reducers/map/selectors';

@@ -5,26 +5,7 @@ import mainConfig from 'config/config';
  * Given a path to query, returns the full url.
  */
 function formatPath(path: string): string {
-  let result = `${mainConfig.proxy}${path}`;
-  if (path.startsWith('/editoast')) {
-    result = `${mainConfig.proxy_editoast}${path.replace('/editoast/', '/')}`;
-  }
-  if (path.startsWith('/layers')) {
-    result = `${mainConfig.proxy_editoast}${path}`;
-  }
-  return result;
-}
-
-/**
- * Get the axios configuration for the authentification.
- */
-export function getAuthConfig(otherHeaders?: { [key: string]: unknown }): AxiosRequestConfig {
-  return {
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-    },
-    ...otherHeaders,
-  };
+  return `${mainConfig.proxy_editoast}${path}`;
 }
 
 /**
@@ -68,19 +49,10 @@ function handleAxiosError(e: unknown): Error {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function get<T = any>(
   path: string,
-  otherHeaders?: { [key: string]: string | number | boolean | unknown }
+  headers?: { [key: string]: string | number | boolean | unknown }
 ): Promise<T> {
-  const config = getAuthConfig(otherHeaders);
-
-  let newPath = '';
-  // ULGY HACK https://gateway.dev.dgexsol.fr/osrd
-  if (path.substr(0, 5) === '/gaia') {
-    newPath = `${mainConfig.proxy.replace('/osrd', '')}${path}`;
-  } else {
-    newPath = formatPath(path);
-  }
   try {
-    const res = await axios.get<T>(newPath, config);
+    const res = await axios.get<T>(formatPath(path), headers);
     return res.data;
   } catch (e) {
     throw handleAxiosError(e);
@@ -94,7 +66,7 @@ export async function post<P = any, R = any>(
   config: AxiosRequestConfig = {}
 ): Promise<R> {
   try {
-    const res = await axios.post<R>(formatPath(path), payload, { ...getAuthConfig(), ...config });
+    const res = await axios.post<R>(formatPath(path), payload, config);
     return res.data;
   } catch (err) {
     throw handleAxiosError(err);
@@ -108,10 +80,7 @@ export async function patch<P = any, T = any>(
   config: AxiosRequestConfig = {}
 ): Promise<T> {
   try {
-    const { data } = await axios.patch<T>(formatPath(path), payload, {
-      ...getAuthConfig(),
-      ...config,
-    });
+    const { data } = await axios.patch<T>(formatPath(path), payload, config);
     return data;
   } catch (err) {
     throw handleAxiosError(err);
@@ -132,7 +101,6 @@ export async function patchMultipart<T = any>(
   try {
     const { data } = await axios.patch(formatPath(path), formData, {
       headers: {
-        ...getAuthConfig().headers,
         'Content-Type': 'multipart/form-data',
       },
       ...config,
@@ -150,10 +118,7 @@ export async function put<P = any, T = any>(
   config: AxiosRequestConfig = {}
 ) {
   try {
-    const { data } = await axios.put<T>(formatPath(path), payload, {
-      ...getAuthConfig(),
-      ...config,
-    });
+    const { data } = await axios.put<T>(formatPath(path), payload, config);
     return data;
   } catch (err) {
     throw handleAxiosError(err);
@@ -162,10 +127,7 @@ export async function put<P = any, T = any>(
 
 export async function deleteRequest<T>(path: string, config: AxiosRequestConfig = {}): Promise<T> {
   try {
-    const { data } = await axios.delete<T>(formatPath(path), {
-      ...getAuthConfig(),
-      ...config,
-    });
+    const { data } = await axios.delete<T>(formatPath(path), config);
     return data;
   } catch (err) {
     throw handleAxiosError(err);

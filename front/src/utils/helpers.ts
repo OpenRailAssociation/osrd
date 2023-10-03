@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import 'moment/locale/fr';
-import { ResourceType } from 'maplibre-gl';
 
 /**
  * Debounce input fields
@@ -55,30 +54,4 @@ export function getVisibilityClass(isVisible: boolean): 'visible' | 'none' {
  */
 export function gpsRound(val: number) {
   return Math.round(val * 10000) / 10000;
-}
-
-/**
- * Add the authentication token to a request sent to fetch the map data (if needed)
- * @param url
- * @param resourceType - MapLibre resource type
- * @param mapUrl - url of the map
- * @returns the request with the authentication token if needed
- */
-export function transformMapRequest(
-  url: string,
-  resourceType: ResourceType | undefined,
-  mapUrl: string,
-  spritesUrl: string
-) {
-  if (
-    ((resourceType === 'Source' || resourceType === 'Tile') && url.startsWith(mapUrl)) ||
-    ((resourceType === 'SpriteImage' || resourceType === 'SpriteJSON') &&
-      url.startsWith(spritesUrl))
-  ) {
-    return {
-      url,
-      headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
-    };
-  }
-  return { url };
 }

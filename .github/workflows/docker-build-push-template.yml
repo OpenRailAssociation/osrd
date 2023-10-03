@@ -21,6 +21,10 @@ on:
         type: string
         required: false
         default: ""
+      build_contexts:
+        type: string
+        required: false
+        default: null
     secrets:
       DOCKERHUB_TOKEN:
         required: true
@@ -62,6 +66,7 @@ jobs:
           build-args: |
             OSRD_GIT_DESCRIBE=${{ github.sha }}
             ${{ inputs.build_args }}
+          build-contexts: ${{ inputs.build_contexts }}
           push: true
           tags: |
             ${{ inputs.image_name }}

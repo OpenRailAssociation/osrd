@@ -10,6 +10,16 @@ updates:
     labels:
       - "dependencies"
       - "area:editoast"
+  - package-ecosystem: "cargo"
+    directory: "/gateway/"
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "gateway:"
+    open-pull-requests-limit: 100
+    labels:
+      - "dependencies"
+      - "area:gateway"
   - package-ecosystem: "npm"
     directory: "/front/"
     schedule:

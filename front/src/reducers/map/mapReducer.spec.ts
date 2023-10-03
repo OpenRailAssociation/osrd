@@ -4,7 +4,6 @@ import {
   updateViewportAction,
   updateMapStyle,
   Viewport,
-  transformMapRequest,
   updateMapSearchMarker,
   updateLineSearchCode,
   updateShowIGNBDORTHO,
@@ -15,7 +14,6 @@ import {
   updateFeatureInfoClick,
   updateLayersSettings,
   updateTerrain3DExaggeration,
-  updateTransformRequest,
 } from 'reducers/map';
 import { createStoreWithoutMiddleware } from 'Store';
 
@@ -44,7 +42,6 @@ describe('mapReducer', () => {
       padding: { top: 0, left: 0, bottom: 0, right: 0 },
       width: 0,
       height: 0,
-      transformRequest: transformMapRequest,
     } as Partial<Viewport>;
     store.dispatch(updateViewportAction(viewport));
     const mapState = store.getState().map;
@@ -56,16 +53,6 @@ describe('mapReducer', () => {
     store.dispatch(updateMapStyle('dark'));
     const mapState = store.getState().map;
     expect(mapState).toEqual({ ...mapInitialState, mapStyle: 'dark' });
-  });
-
-  it('should handle updateTransformRequest', () => {
-    const store = createStore();
-    store.dispatch(updateTransformRequest(transformMapRequest));
-    const mapState = store.getState().map;
-    expect(mapState).toEqual({
-      ...mapState,
-      viewport: { ...mapState.viewport, transformRequest: transformMapRequest },
-    });
   });
 
   it('should handle updateMapSearchMarker', () => {

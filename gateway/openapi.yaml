@@ -1,0 +1,137 @@
+openapi: 3.0.3
+info:
+  title: OSRD Gateway
+  description: |-
+    The OSRD Gateway is a flexible authenticating reverse proxy designed
+    to be used alongside OSRD. This OpenAPI file describes the authentication
+    endpoints used by the front-end to authenticate with the gateway.
+  license:
+    name: LGPL3
+    url: https://www.gnu.org/licenses/lgpl-3.0.en.html
+  version: "1.0"
+tags:
+  - name: authentication
+    description: Authentication endpoints
+paths:
+  /auth/login:
+    post:
+      tags:
+        - authentication
+      summary: Initiate login with the default authentication session provider.
+      description: ''
+      operationId: login
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+  /auth/logout:
+    post:
+      tags:
+        - authentication
+      summary: Logs out current logged in user session
+      description: ''
+      operationId: logout
+      parameters: []
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogoutResponse'
+  /auth/providers:
+    get:
+      tags:
+        - authentication
+      summary: Enumerate available authentication providers
+      description: ''
+      operationId: getProviders
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Provider'
+  /auth/provider/{provider}/login:
+    post:
+      tags:
+        - authentication
+      summary: Get user by user name
+      description: ''
+      operationId: providerLogin
+      parameters:
+        - name: provider
+          in: path
+          description: 'The authentication session provider identifier'
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+
+components:
+  schemas:
+    LoginResponse:
+      oneOf:
+        - $ref: "#/components/schemas/LoginSuccess"
+        - $ref: "#/components/schemas/LoginRedirect"
+      discriminator:
+        propertyName: type
+
+    LoginSuccess:
+      type: object
+      required:
+       - type
+       - username
+      properties:
+        type:
+          type: string
+          enum: ["success"]
+        username:
+          type: string
+          example: "George Abitbol"
+    LoginRedirect:
+      type: object
+      required:
+       - type
+       - url
+      properties:
+        type:
+          type: string
+          enum: ["redirect"]
+        url:
+          type: string
+          example: "https://auth.com/oidc/login?callback=https%3A%2F%2Fexample.com%2Fauth%2Fprovider%2Foidc%2Fcallback"
+
+    LogoutResponse:
+      type: object
+      required:
+       - type
+      properties:
+        type:
+          type: string
+          enum: ["success"]
+
+    Provider:
+      type: object
+      required:
+        - backend
+        - provider_id
+      properties:
+        backend:
+          type: string
+          example: oidc
+        provider_id:
+          type: string
+          example: mycompany

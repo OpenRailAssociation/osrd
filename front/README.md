@@ -87,7 +87,6 @@ components requiring a specific design.
 | `env.ts`      | Backend urls                                                                                      |
 | `i18n.js`     | Translation configuration ([see below](#translation-publiclocales))                               |
 | `index.tsx`   | Obvious, no ?                                                                                     |
-| keycloak/     | Config files for SNCF FID authentication                                                          |
 | main/         | Landing & home pages                                                                              |
 | reducers/     | Redux store                                                                                       |
 | `Store.ts`    | Redux store config                                                                                |

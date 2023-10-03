@@ -1,12 +1,10 @@
 import axios, { ResponseType } from 'axios';
+
 import mainConfig from 'config/config';
 
 
 export const getDocument = async (documentKey: number): Promise<Blob> => {
     const config = {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-        },
         responseType: 'blob' as ResponseType,
       };
     const path = `${mainConfig.proxy_editoast}/documents/${documentKey}`;
@@ -17,7 +15,6 @@ export const getDocument = async (documentKey: number): Promise<Blob> => {
 export const postDocument = async (image: Blob) => {
   const config = {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
         "Content-Type": "multipart/form-data",
       },
     };

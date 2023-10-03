@@ -4991,7 +4991,7 @@ balanced-match@^1.0.0:
   resolved "https://registry.yarnpkg.com/balanced-match/-/balanced-match-1.0.2.tgz#e83e3a7e3f300b34cb9d87f615fa0cbf357690ee"
   integrity sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==
 
-base64-js@^1.3.1, base64-js@^1.5.1:
+base64-js@^1.3.1:
   version "1.5.1"
   resolved "https://registry.yarnpkg.com/base64-js/-/base64-js-1.5.1.tgz#1b1b440160a5bf7ad40b650f095963481903930a"
   integrity sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==
@@ -8980,14 +8980,6 @@ kdbush@^4.0.2:
   version "4.0.2"
   resolved "https://registry.yarnpkg.com/kdbush/-/kdbush-4.0.2.tgz#2f7b7246328b4657dd122b6c7f025fbc2c868e39"
   integrity sha512-WbCVYJ27Sz8zi9Q7Q0xHC+05iwkm3Znipc2XTlrnJbsHMYktW4hPhXUE8Ys1engBrvffoSCqbil1JQAa7clRpA==
-
-keycloak-js@^20.0.3:
-  version "20.0.5"
-  resolved "https://registry.yarnpkg.com/keycloak-js/-/keycloak-js-20.0.5.tgz#8dd94d2c813170db5381dabfbe3a3327ce5ed6db"
-  integrity sha512-7+M5Uni4oNlAmbjM/lDJzFHu2+PGqU6/bvmTBuQssE1fJ7ZyNeCRHgFoaVfFpIU3m6aAFwPUko4lVcn4kPXP5Q==
-  dependencies:
-    base64-js "^1.5.1"
-    js-sha256 "^0.9.0"
 
 keyv@3.0.0:
   version "3.0.0"

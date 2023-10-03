@@ -1,0 +1,27 @@
+[package]
+name = "actix_auth"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+
+[dependencies]
+
+# common dependencies
+log.workspace = true
+actix-web.workspace = true
+actix-session.workspace = true
+serde.workspace = true
+thiserror.workspace = true
+dyn-clone.workspace = true
+futures-util.workspace = true
+
+# oidc
+reqwest = { workspace = true, features = ["json"] }
+openidconnect = { workspace = true, features = ["reqwest", "jwk-alg"] }
+url.workspace = true
+
+# bearer
+actix-web-httpauth.workspace = true # only used to parse Bearer auth headers

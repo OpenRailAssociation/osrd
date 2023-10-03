@@ -1,16 +1,12 @@
-import { MAP_URL, SPRITES_URL } from 'common/Map/const';
-import { MapProps, ViewState } from 'react-map-gl/maplibre';
+import { MAP_URL } from 'common/Map/const';
+import { ViewState } from 'react-map-gl/maplibre';
 import { Position } from '@turf/helpers';
-import { transformMapRequest as helperTransformRequest, gpsRound } from 'utils/helpers';
+import { gpsRound } from 'utils/helpers';
 import { createSlice, Dispatch, PayloadAction } from '@reduxjs/toolkit';
 import history from 'main/history';
 import { InfraErrorType } from 'applications/editor/components/InfraErrors/types';
 
-export const transformMapRequest: MapProps['transformRequest'] = (url, resourceType) =>
-  helperTransformRequest(url, resourceType, MAP_URL, SPRITES_URL);
-
 export type Viewport = ViewState & {
-  transformRequest: MapProps['transformRequest'];
   width: number;
   height: number;
 };
@@ -71,7 +67,6 @@ export const mapInitialState: MapState = {
     padding: { top: 0, left: 0, bottom: 0, right: 0 },
     width: 0,
     height: 0,
-    transformRequest: transformMapRequest,
   },
   featureInfoClickID: undefined,
   layersSettings: {
@@ -99,9 +94,6 @@ const mapSlice = createSlice({
   reducers: {
     updateViewportAction: (state, action: PayloadAction<Partial<Viewport>>) => {
       state.viewport = { ...state.viewport, ...action.payload };
-    },
-    updateTransformRequest: (state, action: PayloadAction<Viewport['transformRequest']>) => {
-      state.viewport.transformRequest = action.payload;
     },
     updateMapStyle: (state, action: PayloadAction<MapState['mapStyle']>) => {
       state.mapStyle = action.payload;
@@ -184,7 +176,6 @@ export const {
   updateShowOSM,
   updateShowOSMtracksections,
   updateTerrain3DExaggeration,
-  updateTransformRequest,
   updateViewportAction,
   updateIssuesSettings,
 } = mapSliceActions;
