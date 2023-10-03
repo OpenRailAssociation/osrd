@@ -944,6 +944,21 @@ paths:
                 items:
                   $ref: "#/components/schemas/ElectricalProfile"
 
+    delete:
+      tags:
+        - electrical_profiles
+      summary: Delete the set of electrical profiles with the given id
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: Electrical profile set ID
+          required: true
+      responses:
+        204:
+          description: No content
+
   /electrical_profile_set/{id}/level_order/:
     get:
       tags:

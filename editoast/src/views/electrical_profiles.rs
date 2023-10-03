@@ -1,13 +1,13 @@
 use crate::error::Result;
 use crate::models::electrical_profiles::{ElectricalProfileSet, LightElectricalProfileSet};
-use crate::models::{Create, Retrieve};
+use crate::models::{Create, Delete, Retrieve};
 use crate::schema::electrical_profiles::ElectricalProfileSetData;
 use crate::DbPool;
 use crate::DieselJson;
 
 use actix_web::dev::HttpServiceFactory;
 use actix_web::web::{self, Data, Json, Path, Query};
-use actix_web::{get, post};
+use actix_web::{delete, get, post, HttpResponse};
 use editoast_derive::EditoastError;
 use serde::Deserialize;
 use std::collections::HashMap;
@@ -16,6 +16,7 @@ use thiserror::Error;
 /// Returns `/electrical_profile_set` routes
 pub fn routes() -> impl HttpServiceFactory {
     web::scope("/electrical_profile_set").service((
+        delete,
         list,
         get,
         get_level_order,
@@ -58,6 +59,18 @@ async fn get_level_order(
             electrical_profile_set_id,
         })?;
     Ok(Json(ep_set.data.unwrap().0.level_order))
+}
+
+/// Delete an electrical profile set
+#[delete("/{electrical_profile_set}")]
+async fn delete(db_pool: Data<DbPool>, electrical_profile_set: Path<i64>) -> Result<HttpResponse> {
+    let electrical_profile_set_id = electrical_profile_set.into_inner();
+    let deleted = ElectricalProfileSet::delete(db_pool, electrical_profile_set_id).await?;
+    if deleted {
+        Ok(HttpResponse::NoContent().finish())
+    } else {
+        Ok(HttpResponse::NotFound().finish())
+    }
 }
 
 #[derive(Deserialize)]
@@ -182,6 +195,34 @@ mod tests {
             level_order.get("25000").unwrap(),
             &vec!["25000", "22500", "20000"]
         );
+    }
+
+    #[rstest]
+    async fn test_delete_none() {
+        let app = create_test_service().await;
+        let req = TestRequest::delete()
+            .uri("/electrical_profile_set/666")
+            .to_request();
+        let response = call_service(&app, req).await;
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+    }
+
+    #[rstest]
+    async fn test_delete_some(
+        #[future] dummy_electrical_profile_set: TestFixture<ElectricalProfileSet>,
+    ) {
+        let profile_set = dummy_electrical_profile_set.await;
+        let app = create_test_service().await;
+        let req = TestRequest::delete()
+            .uri(&format!("/electrical_profile_set/{}", profile_set.id()))
+            .to_request();
+        let response = call_service(&app, req).await;
+        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+
+        assert!(ElectricalProfileSet::retrieve(db_pool(), profile_set.id())
+            .await
+            .unwrap()
+            .is_none());
     }
 
     #[rstest]
