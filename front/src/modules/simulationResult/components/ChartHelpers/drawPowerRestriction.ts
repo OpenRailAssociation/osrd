@@ -1,45 +1,37 @@
+import { PowerRestrictionSegment, DrawingKeys } from 'applications/operationalStudies/consts';
 import { pointer } from 'd3-selection';
 import i18n from 'i18n';
+import { Chart } from 'reducers/osrdsimulation/types';
+import getAxisValues from 'modules/simulationResult/components/ChartHelpers/drawHelpers';
 
 const drawPowerRestriction = (
-  chart,
-  classes,
-  dataSimulation,
-  groupID,
-  interpolation,
-  keyValues,
-  name,
-  rotate,
-  isStripe,
-  isIncompatible,
-  isRestriction,
-  // TODO : when migrated id should be reverted with null by default and moved in last parameter like it was before
-  id,
+  chart: Chart,
+  classes: string,
+  powerRestrictionSegment: PowerRestrictionSegment,
+  groupID: string,
+  keyValues: DrawingKeys,
+  rotate: boolean,
+  isStripe: boolean,
+  isIncompatible: boolean,
+  isRestriction: boolean,
+  id: string,
   isElectricalSettings = false
 ) => {
-  // TODO : remove line when parameter fixed
-  if (id === undefined) id = null;
+  // Get the different axis values based on rotation
+  // x
+  const xValues = getAxisValues(powerRestrictionSegment, keyValues, rotate ? 1 : 0);
+  // y
+  const yValues = getAxisValues(powerRestrictionSegment, keyValues, rotate ? 0 : 1);
 
-  const width = rotate
-    ? chart.x(dataSimulation[`${keyValues[1]}_end`]) -
-      chart.x(dataSimulation[`${keyValues[1]}_start`])
-    : chart.x(dataSimulation[`${keyValues[0]}_end`]) -
-      chart.x(dataSimulation[`${keyValues[0]}_start`]);
+  const width = chart.x(xValues.end) - chart.x(xValues.start);
+  const height = chart.y(yValues.end) - chart.y(yValues.start);
 
-  const height = rotate
-    ? chart.y(dataSimulation[`${keyValues[0]}_end`]) -
-      chart.y(dataSimulation[`${keyValues[0]}_start`])
-    : chart.y(dataSimulation[`${keyValues[1]}_end`]) -
-      chart.y(dataSimulation[`${keyValues[1]}_start`]);
-
-  let margin = 0;
-  if (isElectricalSettings) margin = 26;
+  const margin = isElectricalSettings ? 26 : 0;
 
   // prepare stripe pattern
   if (isStripe) {
     const stripe = chart.drawZone.select(`#${groupID}`);
     stripe
-
       .append('pattern')
       .attr('id', `${id}`)
       .attr('patternUnits', 'userSpaceOnUse')
@@ -53,32 +45,16 @@ const drawPowerRestriction = (
 
   const drawZone = chart.drawZone.select(`#${groupID}`);
 
+  // add main rect for profile displayed
   drawZone
-
-    // add main rect for profile displayed
     .append('rect')
     .attr('id', id)
     .attr('class', `rect main ${classes}`)
-    .datum(dataSimulation)
+    .datum(powerRestrictionSegment)
     .attr('fill', isStripe ? `url(#${id})` : '#333')
     .attr('stroke-width', 1)
-    .attr(
-      'x',
-      chart.x(
-        rotate
-          ? dataSimulation[`${keyValues[1]}_start`] + margin
-          : dataSimulation[`${keyValues[0]}_start`] + margin
-      )
-    )
-    .attr(
-      'y',
-      chart.y(
-        rotate
-          ? dataSimulation[`${keyValues[0]}_start`] + margin
-          : dataSimulation[`${keyValues[1]}_start`] + margin
-      ) -
-        height * -1
-    )
+    .attr('x', chart.x(xValues.start + margin))
+    .attr('y', chart.y(yValues.start + margin) + height)
     .attr('width', width)
     .attr('height', height * -1);
 
@@ -95,31 +71,8 @@ const drawPowerRestriction = (
         .attr('transform', rotate ? 'translate(-20, -10)' : 'translate(-25, -5.5)')
         .attr('rx', 2)
         .attr('ry', 2)
-        .attr(
-          'x',
-          chart.x(
-            rotate
-              ? dataSimulation[`${keyValues[1]}_middle`] + margin
-              : dataSimulation[`${keyValues[0]}_middle`] + margin
-          )
-        )
-        .attr(
-          'y',
-          chart.y(
-            rotate
-              ? dataSimulation[`${keyValues[0]}_start`] +
-                  margin -
-                  (dataSimulation[`${keyValues[0]}_end`] +
-                    margin -
-                    dataSimulation[`${keyValues[0]}_middle`] -
-                    margin)
-              : dataSimulation[`${keyValues[1]}_start`] -
-                  (dataSimulation[`${keyValues[1]}_end`] -
-                    dataSimulation[`${keyValues[1]}_middle`] -
-                    margin)
-          ) -
-            height * -1
-        )
+        .attr('x', chart.x(xValues.middle + margin))
+        .attr('y', chart.y(yValues.start - (yValues.end - yValues.middle - margin)) + height)
         .attr('width', rotate ? 40 : '3.2em')
         .attr('height', rotate ? 20 : '0.6em');
 
@@ -129,7 +82,7 @@ const drawPowerRestriction = (
         .attr('class', `electricalProfileText ${classes}`)
         .attr('dominant-baseline', 'middle')
         .attr('text-anchor', 'middle')
-        .text(dataSimulation.seenRestriction)
+        .text(powerRestrictionSegment.seenRestriction)
         .attr('fill', '#333')
         .attr('font-size', 8)
         .attr('font-weight', 'bold')
@@ -137,28 +90,11 @@ const drawPowerRestriction = (
           'x',
           chart.x(
             rotate
-              ? dataSimulation[`${keyValues[1]}_start`] +
-                  (dataSimulation[`${keyValues[1]}_end`] -
-                    dataSimulation[`${keyValues[1]}_middle`] +
-                    margin)
-              : dataSimulation[`${keyValues[0]}_middle`] + margin
+              ? xValues.start + (xValues.end - xValues.middle + margin)
+              : xValues.middle + margin
           )
         )
-        .attr(
-          'y',
-          chart.y(
-            rotate
-              ? dataSimulation[`${keyValues[0]}_start`] -
-                  (dataSimulation[`${keyValues[0]}_end`] -
-                    dataSimulation[`${keyValues[0]}_middle`] -
-                    margin)
-              : dataSimulation[`${keyValues[1]}_start`] -
-                  (dataSimulation[`${keyValues[1]}_end`] -
-                    dataSimulation[`${keyValues[1]}_middle`] -
-                    margin)
-          ) -
-            height * -1
-        );
+        .attr('y', chart.y(yValues.start - (yValues.end - yValues.middle - margin)) + height);
     }
   };
 
@@ -168,7 +104,7 @@ const drawPowerRestriction = (
   drawZone
     .selectAll(`.${classes}`)
     .on('mouseover', (event) => {
-      const lastPosition = chart.x(dataSimulation.lastPosition);
+      const lastPosition = chart.x(powerRestrictionSegment.lastPosition);
       const pointerPositionX = pointer(event, event.currentTarget)[0];
       const pointerPositionY = pointer(event, event.currentTarget)[1];
       let popUpWidth;
@@ -204,12 +140,7 @@ const drawPowerRestriction = (
         .attr('ry', 4)
         .attr('transform', rotate ? 'translate(80, 0)' : `translate(${0 - popUpPosition}, -45)`)
         .attr('x', pointerPositionX)
-        .attr(
-          'y',
-          rotate
-            ? pointerPositionY + margin
-            : chart.y(dataSimulation[`${keyValues[1]}_start`] + margin) - height * -1
-        )
+        .attr('y', rotate ? pointerPositionY + margin : chart.y(yValues.start + margin) + height)
         .attr('width', popUpWidth)
         .attr('height', 35);
 
@@ -217,7 +148,7 @@ const drawPowerRestriction = (
       let text;
 
       if (isRestriction) {
-        text = `${dataSimulation.seenRestriction} ${i18n.t('powerRestriction.used', {
+        text = `${powerRestrictionSegment.seenRestriction} ${i18n.t('powerRestriction.used', {
           ns: 'simulation',
         })}`;
       } else {
@@ -233,15 +164,10 @@ const drawPowerRestriction = (
         .text(text)
         .attr('transform', rotate ? `translate(88, 19)` : `translate(${8 - popUpPosition}, -27)`)
         .attr('x', pointerPositionX)
-        .attr(
-          'y',
-          rotate
-            ? pointerPositionY + margin
-            : chart.y(dataSimulation[`${keyValues[1]}_start`] + margin) - height * -1
-        );
+        .attr('y', rotate ? pointerPositionY + margin : chart.y(yValues.start + margin) + height);
     })
+    // add mouse-out interraction to remove pop-up
     .on('mouseout', () => {
-      // add mouse-out interraction to remove pop-up
       drawZone
         .select(`.${classes} `)
         .attr('transform', 'translate(0, 0)')

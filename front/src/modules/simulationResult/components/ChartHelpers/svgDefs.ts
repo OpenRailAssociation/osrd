@@ -1,4 +1,4 @@
-const svgDefs = (defs) => {
+const svgDefs = (defs: d3.Selection<SVGDefsElement, unknown, null, undefined>) => {
   const hatchSize = 4;
   const rotation = 45;
 

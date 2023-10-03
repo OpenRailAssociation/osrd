@@ -48,12 +48,14 @@ const drawAxisTitle = (chart: Chart) => {
     .text('m');
 };
 
-const drawSpaceCurvesSlopesChartCurve = (
+const drawSpaceCurvesSlopesChartCurve = <
+  T extends GradientPosition | RadiusPosition | HeightPosition
+>(
   chartLocal: Chart,
   classes: string,
-  data: GradientPosition[] | RadiusPosition[] | HeightPosition[],
+  data: T[],
   interpolation: 'curveLinear' | 'curveMonotoneX',
-  yAxisValue: string,
+  yAxisValue: keyof T,
   curveName: string
 ) => {
   drawCurve(
