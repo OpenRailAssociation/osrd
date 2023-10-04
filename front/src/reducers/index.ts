@@ -9,7 +9,7 @@ import { OsrdConfState, OsrdMultiConfState } from 'applications/operationalStudi
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 
 import userReducer, { UserState, userInitialState } from 'reducers/user';
-import mainReducer, { MainState, MainActions, initialState as mainInitialState } from './main';
+import mainReducer, { MainState, mainInitialState } from 'reducers/main';
 import mapReducer, { MapState, mapInitialState } from './map';
 import editorReducer, { EditorActions, initialState as editorInitialState } from './editor';
 import osrdconfReducer, { initialState as osrdconfInitialState } from './osrdconf';
@@ -41,9 +41,9 @@ const mapWhiteList = [
   'terrain3DExaggeration',
 ];
 
-const userWhiteList = ['account'];
+const userWhiteList = ['account', 'userPreferences'];
 
-const mainWhiteList = ['fullscreen', 'darkmode', 'lastInterfaceVersion', 'safeWord'];
+const mainWhiteList = ['lastInterfaceVersion'];
 
 const simulationWhiteList = ['marginsSettings'];
 
@@ -70,7 +70,7 @@ export const persistConfig = {
   whitelist: ['user', 'map', 'main', 'simulation'],
 };
 
-type AllActions = EditorActions | MainActions | Action;
+type AllActions = EditorActions | Action;
 
 export interface RootState {
   user: UserState;

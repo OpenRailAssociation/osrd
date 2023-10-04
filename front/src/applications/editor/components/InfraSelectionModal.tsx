@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router';
 import { useModal, Modal } from 'common/BootstrapSNCF/ModalSNCF';
 import { Spinner } from 'common/Loader';
 import { get } from '../../../common/requests';
-import { addNotification, setFailure } from '../../../reducers/main';
+import { addNotification, setFailure } from 'reducers/main';
 
 const infraURL = '/infra/';
 type InfrasList = {

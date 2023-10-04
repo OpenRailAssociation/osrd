@@ -49,7 +49,6 @@ function Map() {
   const terrain3DExaggeration = useSelector(getTerrain3DExaggeration);
   const mapRef = useRef<MapRef | null>(null);
   const { urlLat, urlLon, urlZoom, urlBearing, urlPitch } = useParams();
-  const { fullscreen } = useSelector((state: RootState) => state.main);
   const dispatch = useDispatch();
   const updateViewportChange = useCallback(
     (value: Partial<Viewport>, updateRouter = false) => {
@@ -97,7 +96,7 @@ function Map() {
   }, []);
 
   return (
-    <main className={`mastcontainer mastcontainer-map${fullscreen ? ' fullscreen' : ''}`}>
+    <main className="mastcontainer mastcontainer-map">
       <MapButtons
         map={mapRef.current ?? undefined}
         resetPitchBearing={resetPitchBearing}
