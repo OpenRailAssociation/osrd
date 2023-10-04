@@ -3,9 +3,10 @@ import { Feature } from 'geojson';
 import { omit, clone } from 'lodash';
 
 import { JSONSchema7, JSONSchema7Definition } from 'json-schema';
+import { Dispatch } from '@reduxjs/toolkit';
+import { setLoading, setSuccess, setFailure } from 'reducers/main';
 import { osrdEditoastApi } from '../common/api/osrdEditoastApi';
 import { ThunkAction, EditorSchema, EditorEntity } from '../types';
-import { setLoading, setSuccess, setFailure } from './main';
 import { EditorState, LayerType } from '../applications/editor/tools/types';
 import {
   entityToCreateOperation,
@@ -59,7 +60,7 @@ type ActionLoadDataModel = {
   schema: EditorSchema;
 };
 export function loadDataModel(): ThunkAction<ActionLoadDataModel> {
-  return async (dispatch, getState) => {
+  return async (dispatch: Dispatch, getState) => {
     // check if we need to load the model
     if (!Object.keys(getState().editor.editorSchema).length) {
       dispatch(setLoading());
@@ -124,7 +125,7 @@ export function save(operations: {
   update?: Array<{ source: EditorEntity; target: EditorEntity }>;
   delete?: Array<EditorEntity>;
 }): ThunkAction<ActionSave> {
-  return async (dispatch, getState) => {
+  return async (dispatch: Dispatch, getState) => {
     const state = getState();
     dispatch(setLoading());
     try {

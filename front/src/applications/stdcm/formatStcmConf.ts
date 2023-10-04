@@ -7,13 +7,11 @@ import { STDCM_MODES, OsrdStdcmConfState } from 'applications/operationalStudies
 import { time2sec } from 'utils/timeManipulation';
 import { makeEnumBooleans } from 'utils/constants';
 
-import { ActionFailure } from 'reducers/main';
-import { ThunkAction } from 'types';
+import { setFailure } from 'reducers/main';
 import { getPathfindingQuery } from 'common/Pathfinding/Pathfinding';
 
 export default function formatStdcmConf(
   dispatch: Dispatch,
-  setFailure: (e: Error) => ThunkAction<ActionFailure>,
   t: TFunction,
   osrdconf: OsrdStdcmConfState
 ): PostStdcmApiArg | undefined {

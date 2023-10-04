@@ -57,7 +57,7 @@ export default function StdcmRequestModal(props: StdcmRequestModalProps) {
   const timetableId = osrdconf.timetableID;
 
   useEffect(() => {
-    const payload = formatStdcmConf(dispatch, setFailure, t, osrdconf as OsrdStdcmConfState);
+    const payload = formatStdcmConf(dispatch, t, osrdconf as OsrdStdcmConfState);
     if (payload && currentStdcmRequestStatus === STDCM_REQUEST_STATUS.pending && timetableId) {
       postStdcm(payload)
         .unwrap()

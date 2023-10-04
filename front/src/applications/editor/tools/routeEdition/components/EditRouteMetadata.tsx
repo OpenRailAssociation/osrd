@@ -21,8 +21,8 @@ import { getEditRouteState, getEmptyCreateRouteState, getRouteGeometryByRouteId 
 import EditorContext from '../../../context';
 import { getMixedEntities } from '../../../data/api';
 import { EditorEntity, WayPointEntity } from '../../../../../types';
+import { addNotification } from 'reducers/main';
 import { LoaderFill } from '../../../../../common/Loader';
-import { addNotification } from '../../../../../reducers/main';
 import { ConfirmModal } from '../../../../../common/BootstrapSNCF/ModalSNCF/ConfirmModal';
 import { save } from '../../../../../reducers/editor';
 import { DisplayEndpoints } from './Endpoints';
