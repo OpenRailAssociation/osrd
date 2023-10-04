@@ -31,7 +31,7 @@
     "calculatingTrainScheduleCompleteAll_one": "All running time calculations completed: {{successfulTrainsCount}}/{{trainsCount}} train created.",
     "calculatingTrainScheduleCompleteAll_other": "All running time calculations completed: {{successfulTrainsCount}}/{{trainsCount}} trains created.",
     "calculatingTrainScheduleCompleteAllFailure": "All running time calculations have failed.",
-    "complete": "27\n{{uicNumber}}/{{uicTotalCount}} position {{uicName}}",
+    "complete": "{{uicNumber}}/{{uicTotalCount}} position {{uicName}}",
     "missingRollingStock": "You must choose a default rolling stock",
     "noImportationPossible": "Import is currently not available:",
     "pathComplete": "All route searches have been completed",
