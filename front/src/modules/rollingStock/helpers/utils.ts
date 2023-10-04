@@ -160,7 +160,7 @@ export const rollingStockEditorQueryArg = (
     unit: data.unit,
   },
   effort_curves: currentRsEffortCurve,
-  base_power_class: data.basePowerClass || '5',
+  base_power_class: data.basePowerClass || null,
 });
 
 export const createEmptyCurve = (

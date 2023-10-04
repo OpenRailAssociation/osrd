@@ -108,7 +108,7 @@ const RollingStockEditorParameterFormColumn = ({
         if (property.enum) {
           return (
             <div
-              className="d-flex align-items-center justify-content-between rollingstock-editor-select"
+              className="d-flex align-items-center justify-content-between rollingstock-editor-select mb-4"
               key={index}
             >
               <SelectSNCF
@@ -187,9 +187,10 @@ const RollingStockEditorParameterFormColumn = ({
             min={property.min}
             max={property.max}
             isInvalid={
-              Number.isNaN(rollingStockValues[property.title]) ||
-              (rollingStockValues[property.title] as number) < (property.min as number) ||
-              (rollingStockValues[property.title] as number) > (property.max as number)
+              property.type === 'number' &&
+              (Number.isNaN(rollingStockValues[property.title]) ||
+                (rollingStockValues[property.title] as number) < (property.min as number) ||
+                (rollingStockValues[property.title] as number) > (property.max as number))
             }
             errorMsg={
               property.max
@@ -202,11 +203,16 @@ const RollingStockEditorParameterFormColumn = ({
                   })
             }
             unit={property.unit}
-            value={rollingStockValues[property.title] as number}
+            value={
+              property.title !== 'basePowerClass'
+                ? (rollingStockValues[property.title] as number)
+                : (rollingStockValues[property.title] as string)
+            }
             onChange={(e) =>
               setRollingStockValues({
                 ...rollingStockValues,
-                [property.title]: parseFloat(e.target.value),
+                [property.title]:
+                  property.title !== 'basePowerClass' ? +e.target.value : e.target.value,
               })
             }
             sm

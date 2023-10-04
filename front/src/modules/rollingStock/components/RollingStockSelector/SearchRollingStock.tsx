@@ -111,7 +111,7 @@ const SearchRollingStock = ({
   mustResetFilters,
   setMustResetFilters,
 }: SearchRollingStockProps) => {
-  const { t } = useTranslation('rollingStockEditor');
+  const { t } = useTranslation('rollingstock');
 
   const [filters, setFilters] = useState<Filters>({
     text: '',
@@ -206,7 +206,7 @@ const SearchRollingStock = ({
                 <span className="text-primary mr-1">
                   <BsLightningFill />
                 </span>
-                {t('rollingstock:electric')}
+                {t('electric')}
               </span>
             }
             type="checkbox"
@@ -223,7 +223,7 @@ const SearchRollingStock = ({
                 <span className="text-pink mr-1">
                   <MdLocalGasStation />
                 </span>
-                {t('rollingstock:thermal')}
+                {t('thermal')}
               </span>
             }
             type="checkbox"
@@ -240,7 +240,7 @@ const SearchRollingStock = ({
                 <span className="text-black mr-1">
                   <BiLockAlt />
                 </span>
-                {t('rollingstock:locked')}
+                {t('locked')}
               </span>
             }
             type="checkbox"
@@ -257,7 +257,7 @@ const SearchRollingStock = ({
                 <span className="text-black mr-1">
                   <BiLockOpenAlt />
                 </span>
-                {t('rollingstock:notLocked')}
+                {t('notLocked')}
               </span>
             }
             type="checkbox"
@@ -268,8 +268,8 @@ const SearchRollingStock = ({
       <div className="col-md-2 mt-1 ml-auto">
         <small className="">
           {filteredRollingStockList.length > 0
-            ? `${filteredRollingStockList.length} ${t('rollingstock:resultsFound')}`
-            : t('rollingstock:noResultFound')}
+            ? `${filteredRollingStockList.length} ${t('resultsFound')}`
+            : t('noResultFound')}
         </small>
       </div>
     </div>
