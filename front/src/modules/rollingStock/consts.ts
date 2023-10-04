@@ -76,6 +76,7 @@ export type RollingStockParametersValues = {
   gammaValue: number;
   inertiaCoefficient: number;
   loadingGauge: 'G1' | 'G2' | 'GA' | 'GB' | 'GB1' | 'GC' | 'FR3.3' | 'FR3.3/GB/G2' | 'GLOTT';
+  basePowerClass: string | null;
   rollingResistanceA: number;
   rollingResistanceB: number;
   rollingResistanceC: number;
@@ -83,7 +84,6 @@ export type RollingStockParametersValues = {
   raisePantographTime: number | null;
   defaultMode: string | null;
   effortCurves: EffortCurves;
-  basePowerClass: string | null;
 };
 
 export type SchemaProperty = {
@@ -121,6 +121,7 @@ export enum RollingStockEditorParameter {
   gammaValue = 'gammaValue',
   inertiaCoefficient = 'inertiaCoefficient',
   loadingGauge = 'loadingGauge',
+  basePowerClass = 'basePowerClass',
   rollingResistanceA = 'rollingResistanceA',
   rollingResistanceB = 'rollingResistanceB',
   rollingResistanceC = 'rollingResistanceC',
@@ -241,6 +242,11 @@ export const RollingStockSchemaProperties: SchemaProperty[] = [
     title: 'loadingGauge',
     type: 'string',
     enum: ['G1', 'G2', 'GA', 'GB', 'GB1', 'GC', 'FR3.3', 'FR3.3/GB/G2', 'GLOTT'],
+    side: 'middle',
+  },
+  {
+    title: 'basePowerClass',
+    type: 'string',
     side: 'middle',
   },
   {

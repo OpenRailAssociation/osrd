@@ -1,6 +1,7 @@
 {
   "addNewRollingStock": "Nouveau matériel roulant",
   "addNewTractionMode": "Ajouter un nouveau mode de traction",
+  "basePowerClass": "Classe de puissance",
   "cancelAction": "Souhaitez-vous annuler cette action ?",
   "cancelUpdateRollingStock": "Annuler la mise à jour du matériel roulant?",
   "chooseRollingStock": "Sélectionnez un matériel roulant pour en afficher les informations.",

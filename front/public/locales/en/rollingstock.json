@@ -1,6 +1,7 @@
 {
   "addNewRollingStock": "New rolling stock",
   "addNewTractionMode": "Add a new traction mode",
+  "basePowerClass": "Power class",
   "cancelAction": "Would you like to cancel this action?",
   "cancelUpdateRollingStock": "Do you really want to cancel your changes?",
   "chooseRollingStock": "Select a rolling stock to display informations",

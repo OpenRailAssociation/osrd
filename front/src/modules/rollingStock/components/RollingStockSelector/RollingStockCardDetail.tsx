@@ -104,6 +104,10 @@ export default function RollingStockCardDetail({
                 <td className="text-primary">{t('loadingGauge')}</td>
                 <td>{rollingStock.loading_gauge}</td>
               </tr>
+              <tr>
+                <td className="text-primary">{t('basePowerClass')}</td>
+                <td>{rollingStock.base_power_class}</td>
+              </tr>
             </tbody>
           </table>
         </div>
