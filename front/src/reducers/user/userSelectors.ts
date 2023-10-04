@@ -4,6 +4,9 @@ import { UserState } from 'reducers/user';
 
 export const getUser = (state: RootState) => state.user;
 const makeUserSelector = makeSubSelector<UserState>(getUser);
+export const getUserPreferences = makeUserSelector('userPreferences');
+const makeUserPreferencesSelector =
+  makeSubSelector<UserState['userPreferences']>(getUserPreferences);
 
 export const getIsUserLogged = makeUserSelector('isLogged');
 export const getUsername = makeUserSelector('username');
@@ -12,4 +15,4 @@ export const getUserAccount = makeUserSelector('account');
 export const getLoginError = makeUserSelector('loginError');
 export const getServerError = makeUserSelector('serverError');
 export const getToLogin = makeUserSelector('toLogin');
-export const getUserPreferences = makeUserSelector('userPreferences');
+export const getUserSafeWord = makeUserPreferencesSelector('safeWord');

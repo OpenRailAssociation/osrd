@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import React, { ReactElement } from 'react';
 import { logout } from 'reducers/user';
-import { getUserAccount, getUserPreferences } from 'reducers/user/userSelectors';
+import { getUserAccount, getUserSafeWord } from 'reducers/user/userSelectors';
 import { useTranslation } from 'react-i18next';
 import ReleaseInformations from 'common/ReleaseInformations/ReleaseInformations';
 import ChangeLanguageModal from 'common/ChangeLanguageModal';
@@ -12,7 +12,6 @@ import UserSettings from 'common/UserSettings';
 import i18n from 'i18next';
 import getUnicodeFlagIcon from 'country-flag-icons/unicode';
 import { language2flag } from 'utils/strings';
-import { RootState } from 'reducers';
 import { AiFillSafetyCertificate } from 'react-icons/ai';
 import DropdownSNCF, { DROPDOWN_STYLE_TYPES } from './DropdownSNCF';
 import { useModal } from './ModalSNCF';
@@ -25,7 +24,7 @@ type Props = {
 export default function LegacyNavBarSNCF({ appName, logo }: Props) {
   const { openModal } = useModal();
   const userAccount = useSelector(getUserAccount);
-  const { safeWord } = useSelector(getUserPreferences);
+  const safeWord = useSelector(getUserSafeWord);
   const dispatch = useDispatch();
   const { t } = useTranslation('home/navbar');
 

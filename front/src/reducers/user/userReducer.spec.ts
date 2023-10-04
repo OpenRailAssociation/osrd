@@ -103,7 +103,7 @@ describe('userReducer', () => {
     });
   });
 
-  test('should handle updateUserPreferences', () => {
+  it('should handle updateUserPreferences', () => {
     const store = createStore(userInitialState);
     const action = updateUserPreferences({ safeWord: 'Test userSlice' });
     store.dispatch(action);

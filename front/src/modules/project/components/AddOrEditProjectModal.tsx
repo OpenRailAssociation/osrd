@@ -21,11 +21,10 @@ import remarkGfm from 'remark-gfm';
 import { useDebounce } from 'utils/helpers';
 import { ProjectCreateRequest, ProjectResult, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { postDocument } from 'common/api/documentApi';
-import { RootState } from 'reducers';
 import PictureUploader from 'applications/operationalStudies/components/Project/PictureUploader';
 import { ApiError } from 'common/api/emptyApi';
 import { SerializedError } from '@reduxjs/toolkit';
-import { getUserPreferences } from 'reducers/user/userSelectors';
+import { getUserSafeWord } from 'reducers/user/userSelectors';
 
 const emptyProject: ProjectCreateRequest = {
   budget: 0,
@@ -60,7 +59,7 @@ export default function AddOrEditProjectModal({
   const [displayErrors, setDisplayErrors] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { safeWord } = useSelector(getUserPreferences);
+  const safeWord = useSelector(getUserSafeWord);
 
   const [postProject] = osrdEditoastApi.endpoints.postProjects.useMutation();
   const [patchProject] = osrdEditoastApi.endpoints.patchProjectsByProjectId.useMutation();

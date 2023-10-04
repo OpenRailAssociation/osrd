@@ -15,8 +15,7 @@ import logoGhibli from 'assets/pictures/misc/ghibli.svg';
 import logoSNCF from 'assets/pictures/misc/sncf.svg';
 import { getDocument } from 'common/api/documentApi';
 import { useSelector } from 'react-redux';
-import { RootState } from 'reducers';
-import { getUserPreferences } from 'reducers/user/userSelectors';
+import { getUserSafeWord } from 'reducers/user/userSelectors';
 
 type PropsPlaceholder = {
   image?: number | null;
@@ -182,7 +181,7 @@ function PicturePlaceholderButtons({ setTempProjectImage, safeWord }: PropsButto
 
 export default function PictureUploader({ image, setTempProjectImage, tempProjectImage }: Props) {
   const [isValid, setIsValid] = useState<boolean>(true);
-  const { safeWord } = useSelector(getUserPreferences);
+  const safeWord = useSelector(getUserSafeWord);
   const handleUpload = async (file?: File) => {
     if (file && file.type.startsWith('image/')) {
       setTempProjectImage(file);

@@ -4,7 +4,7 @@ import { omit, clone } from 'lodash';
 
 import { JSONSchema7, JSONSchema7Definition } from 'json-schema';
 import { Dispatch } from '@reduxjs/toolkit';
-import { setLoading, setSuccess, setFailure } from 'reducers/main';
+import { setLoading, setSuccess, setFailure, setSuccessWithoutMessage } from 'reducers/main';
 import { osrdEditoastApi } from '../common/api/osrdEditoastApi';
 import { ThunkAction, EditorSchema, EditorEntity } from '../types';
 import { EditorState, LayerType } from '../applications/editor/tools/types';
@@ -54,11 +54,12 @@ export function selectLayers(
 // Verify if the data model definition is already loaded.
 // If not we do it and store it in the state
 //
-const LOAD_DATA_MODEL = 'editor/LOAD_DATA_MODEL';
+export const LOAD_DATA_MODEL = 'editor/LOAD_DATA_MODEL';
 type ActionLoadDataModel = {
   type: typeof LOAD_DATA_MODEL;
   schema: EditorSchema;
 };
+
 export function loadDataModel(): ThunkAction<ActionLoadDataModel> {
   return async (dispatch: Dispatch, getState) => {
     // check if we need to load the model
@@ -95,7 +96,7 @@ export function loadDataModel(): ThunkAction<ActionLoadDataModel> {
               },
             } as EditorSchema[0];
           });
-        dispatch(setSuccess());
+        dispatch(setSuccessWithoutMessage());
         dispatch({
           type: LOAD_DATA_MODEL,
           schema,

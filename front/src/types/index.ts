@@ -17,7 +17,7 @@ export interface Notification {
   title?: string;
   text: string;
   date?: Date;
-  type?: 'success' | 'error' | 'warning' | 'info';
+  type: 'success' | 'error' | 'warning';
 }
 
 //
