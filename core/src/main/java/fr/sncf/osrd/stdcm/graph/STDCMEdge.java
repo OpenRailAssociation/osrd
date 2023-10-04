@@ -54,7 +54,7 @@ public record STDCMEdge(
 
     @Override
     public int hashCode() {
-        return Objects.hash(block, timeNextOccupancy);
+        return Objects.hash(block, minuteTimeStart);
     }
 
     /** Returns the node at the end of this edge */
