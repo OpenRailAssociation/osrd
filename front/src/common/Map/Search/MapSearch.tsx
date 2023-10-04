@@ -95,12 +95,6 @@ const MapSearch: FC<MapSearchProps> = ({ map, closeMapSearchPopUp }) => {
               />
             ),
           },
-          /* For future implementation
-          {
-            label: t('map-search:signalbox'),
-            content: <MapSearchSignalBox updateExtViewport={updateViewportChange} />,
-          },
-          */
         ]}
       />
     </div>

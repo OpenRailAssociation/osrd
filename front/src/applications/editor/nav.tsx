@@ -159,14 +159,15 @@ const NavButtons: NavButton[][] = [
       id: 'infra-errors',
       icon: BsFillExclamationOctagonFill,
       labelTranslationKey: 'Editor.nav.infra-errors',
-      async onClick({ openModal, closeModal, setViewport }, { switchTool }) {
+      async onClick({ openModal, closeModal, setViewport, dispatch }, { switchTool }) {
         openModal(
           <InfraErrorsModal
             onErrorClick={async (infraID: number, item: InfraError) => {
               const entity = await getEntity(
                 infraID,
                 item.information.obj_id,
-                item.information.obj_type
+                item.information.obj_type,
+                dispatch
               );
               // select the item in the editor scope
               if (entity.objType === 'Route') {

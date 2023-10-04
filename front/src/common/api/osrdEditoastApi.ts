@@ -829,11 +829,11 @@ export type PostInfraByIdObjectsAndObjectTypeApiArg = {
 };
 export type PostInfraByIdPathfindingApiResponse =
   /** status 200 Paths, containing track ranges, detectors and switches with their directions. If no path is found, an empty list is returned. */ {
-    detectors?: string[];
-    switches_directions?: {
+    detectors: string[];
+    switches_directions: {
       [key: string]: string;
     };
-    track_ranges?: DirectionalTrackRange[];
+    track_ranges: DirectionalTrackRange[];
   }[];
 export type PostInfraByIdPathfindingApiArg = {
   /** Infra ID */
@@ -863,12 +863,12 @@ export type GetInfraByIdRoutesTrackRangesApiResponse =
 export type GetInfraByIdRoutesTrackRangesApiArg = {
   /** Infra ID */
   id: number;
-  routes: string;
+  routes: string[];
 };
 export type GetInfraByIdRoutesAndWaypointTypeWaypointIdApiResponse =
   /** status 200 All routes that starting and ending by the given waypoint */ {
-    ending?: string[];
-    starting?: string[];
+    ending: string[];
+    starting: string[];
   };
 export type GetInfraByIdRoutesAndWaypointTypeWaypointIdApiArg = {
   /** Infra ID */

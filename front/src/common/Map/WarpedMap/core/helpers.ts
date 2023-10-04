@@ -11,6 +11,7 @@ import { EditoastType, LAYER_TO_EDITOAST_DICT, LayerType } from 'applications/ed
 import { getMixedEntities } from 'applications/editor/data/api';
 import { flattenEntity } from 'applications/editor/data/utils';
 import vec, { Vec2 } from 'common/Map/WarpedMap/core/vec-lib';
+import { Dispatch } from 'redux';
 
 /*
  * Useful types:
@@ -127,8 +128,9 @@ export function getPointInTriangle(
  */
 const OSRD_BATCH_SIZE = 500;
 export async function getImprovedOSRDData(
-  infra: number | string,
-  data: Partial<Record<LayerType, FeatureCollection>>
+  infra: number,
+  data: Partial<Record<LayerType, FeatureCollection>>,
+  dispatch: Dispatch
 ): Promise<Record<string, Feature>> {
   const queries = _(data)
     .flatMap((collection: FeatureCollection, layerType: LayerType) => {
@@ -149,7 +151,7 @@ export async function getImprovedOSRDData(
 
   if (!queries.length) return {};
 
-  return mapValues(await getMixedEntities(infra, queries), (e) =>
+  return mapValues(await getMixedEntities(infra, queries, dispatch), (e) =>
     flattenEntity({
       ...e,
       properties: {

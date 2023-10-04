@@ -1,6 +1,6 @@
 import React, { FC, useCallback, useContext, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import chroma from 'chroma-js';
 import { Layer, LineLayer, Popup, Source } from 'react-map-gl/maplibre';
 import { featureCollection } from '@turf/helpers';
@@ -12,14 +12,14 @@ import { FiSearch } from 'react-icons/fi';
 
 import { EditRoutePathState, OptionsStateType, RouteEditionState } from '../types';
 import EditorContext from '../../../context';
-import { getCompatibleRoutes, getEntity } from '../../../data/api';
+import { getEntity } from '../../../data/api';
 import { EditorEntity, OmitLayer, RouteEntity, WayPointEntity } from '../../../../../types';
 import { LoaderFill } from '../../../../../common/Loader';
 import { getRoutesLineLayerProps } from '../../../../../common/Map/Layers/Routes';
 import colors from '../../../../../common/Map/Consts/colors';
 import { osrdEditoastApi } from '../../../../../common/api/osrdEditoastApi';
 import { nestEntity, entityToCreateOperation } from '../../../data/utils';
-import { getEditRouteState, getRouteGeometries } from '../utils';
+import { getCompatibleRoutesPayload, getEditRouteState, getRouteGeometries } from '../utils';
 import EntitySumUp from '../../../components/EntitySumUp';
 import { EditEndpoints } from './Endpoints';
 import { getInfraID } from '../../../../../reducers/osrdconf/selectors';
@@ -27,6 +27,7 @@ import { getMapStyle } from '../../../../../reducers/map/selectors';
 import { ExtendedEditorContextType } from '../../editorContextTypes';
 
 export const EditRoutePathLeftPanel: FC<{ state: EditRoutePathState }> = ({ state }) => {
+  const dispatch = useDispatch();
   const { t } = useTranslation();
   const [editorSave] = osrdEditoastApi.endpoints.postInfraById.useMutation({});
   const { setState } = useContext(EditorContext) as ExtendedEditorContextType<RouteEditionState>;
@@ -34,6 +35,8 @@ export const EditRoutePathLeftPanel: FC<{ state: EditRoutePathState }> = ({ stat
   const [isSaving, setIsSaving] = useState(false);
   const [includeReleaseDetectors, setIncludeReleaseDetectors] = useState(true);
   const { entryPoint, exitPoint, entryPointDirection } = state.routeState;
+
+  const [postPathfinding] = osrdEditoastApi.endpoints.postInfraByIdPathfinding.useMutation();
 
   const searchCandidates = useCallback(async () => {
     if (!entryPoint || !exitPoint || !entryPointDirection || state.optionsState.type === 'loading')
@@ -43,19 +46,28 @@ export const EditRoutePathLeftPanel: FC<{ state: EditRoutePathState }> = ({ stat
       optionsState: { type: 'loading' },
     });
 
-    const candidates = await getCompatibleRoutes(
+    const payload = await getCompatibleRoutesPayload(
       infraID as number,
       entryPoint,
       entryPointDirection,
-      exitPoint
+      exitPoint,
+      dispatch
     );
+    const candidates = await postPathfinding({ id: infraID as number, body: payload }).unwrap();
+
     const candidateColors = chroma
       .scale(['#321BF7CC', '#37B5F0CC', '#F0901FCC', '#F7311BCC', '#D124E0CC'])
       .mode('lch')
       .colors(candidates.length)
       .map((str) => chroma(str).css());
 
-    const features = await getRouteGeometries(infraID as number, entryPoint, exitPoint, candidates);
+    const features = await getRouteGeometries(
+      infraID as number,
+      entryPoint,
+      exitPoint,
+      candidates,
+      dispatch
+    );
 
     setState({
       optionsState: {
@@ -219,8 +231,8 @@ export const EditRoutePathLeftPanel: FC<{ state: EditRoutePathState }> = ({ stat
                   if (typeof newRouteId !== 'string')
                     throw new Error('Cannot find ID of newly created route.');
 
-                  getEntity<RouteEntity>(`${infraID}`, newRouteId, 'Route').then((route) =>
-                    setState(getEditRouteState(route))
+                  getEntity<RouteEntity>(infraID as number, newRouteId, 'Route', dispatch).then(
+                    (route) => setState(getEditRouteState(route))
                   );
                 }}
               >

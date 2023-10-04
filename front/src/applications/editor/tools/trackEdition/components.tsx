@@ -6,6 +6,7 @@ import { last } from 'lodash';
 import { Position } from 'geojson';
 import { BsBoxArrowInRight } from 'react-icons/bs';
 
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import EditorContext from '../../context';
 import GeoJSONs from '../../../../common/Map/Layers/GeoJSONs';
 import colors from '../../../../common/Map/Consts/colors';
@@ -22,7 +23,7 @@ import { injectGeometry } from './utils';
 import { NEW_ENTITY_ID } from '../../data/utils';
 import { getMap } from '../../../../reducers/map/selectors';
 import { getInfraID } from '../../../../reducers/osrdconf/selectors';
-import { getAttachedItems, getEntities } from '../../data/api';
+import { getEntities } from '../../data/api';
 import { Spinner } from '../../../../common/Loader';
 import EntitySumUp from '../../components/EntitySumUp';
 import { getEditCatenaryState, getEditSpeedSectionState } from '../rangeEdition/utils';
@@ -43,6 +44,7 @@ export const AttachedRangesItemsList: FC<{ id: string; itemType: 'SpeedSection' 
   id,
   itemType,
 }) => {
+  const dispatch = useDispatch();
   const { t } = useTranslation();
   const infraID = useSelector(getInfraID);
   const [itemsState, setItemsState] = useState<
@@ -54,13 +56,17 @@ export const AttachedRangesItemsList: FC<{ id: string; itemType: 'SpeedSection' 
   const { switchTool } = useContext(EditorContext) as ExtendedEditorContextType<unknown>;
   const [showAll, setShowAll] = useState(false);
 
+  const [getAttachedItems] =
+    osrdEditoastApi.endpoints.getInfraByIdAttachedAndTrackId.useLazyQuery();
+
   useEffect(() => {
-    if (itemsState.type === 'idle') {
+    if (itemsState.type === 'idle' && infraID) {
       setItemsState({ type: 'loading' });
-      getAttachedItems(`${infraID}`, id)
+      getAttachedItems({ id: infraID, trackId: id })
+        .unwrap()
         .then((res: { [key: string]: string[] }) => {
           if (res[itemType]?.length) {
-            getEntities(`${infraID}`, res[itemType], itemType)
+            getEntities(infraID, res[itemType], itemType, dispatch)
               .then((entities) => {
                 if (itemType === 'SpeedSection') {
                   setItemsState({

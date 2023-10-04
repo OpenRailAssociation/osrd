@@ -3344,6 +3344,10 @@ paths:
                         $ref: '#/components/schemas/DirectionalTrackRange'
                       minItems: 1
                       type: array
+                  required:
+                  - track_ranges
+                  - detectors
+                  - switches_directions
                   type: object
                 type: array
           description: Paths, containing track ranges, detectors and switches with their directions. If no path is found, an empty list is returned.
@@ -3385,7 +3389,9 @@ paths:
         schema:
           description: A list of routes seperated by comma
           example: route1,route2,route3
-          type: string
+          items:
+            type: string
+          type: array
       responses:
         '200':
           content:
@@ -3446,6 +3452,9 @@ paths:
                     items:
                       type: string
                     type: array
+                required:
+                - starting
+                - ending
                 type: object
           description: All routes that starting and ending by the given waypoint
       summary: Retrieve all routes that starting and ending by the given waypoint (detector or buffer stop)

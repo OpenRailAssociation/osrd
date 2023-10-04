@@ -245,7 +245,7 @@ const SelectionTool: Tool<SelectionState> = {
       selection,
     });
   },
-  onClickMap(e, { setState, state, infraID }) {
+  onClickMap(e, { setState, state, infraID, dispatch }) {
     const position = e.lngLat;
     const map = e.target;
 
@@ -278,7 +278,8 @@ const SelectionTool: Tool<SelectionState> = {
                     },
                   ]
                 : []
-            )
+            ),
+            dispatch
           ).then((entities) => {
             setState({
               isLoading: false,
@@ -334,7 +335,8 @@ const SelectionTool: Tool<SelectionState> = {
                     },
                   ]
                 : []
-            )
+            ),
+            dispatch
           ).then((entities) => {
             setState({
               isLoading: false,

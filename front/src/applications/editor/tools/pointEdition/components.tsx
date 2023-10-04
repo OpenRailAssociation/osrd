@@ -21,13 +21,14 @@ import {
   RouteEntity,
 } from 'types';
 import { SIGNALS_TO_SYMBOLS } from 'common/Map/Consts/SignalsNames';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { PointEditionState } from './types';
 import EditorForm from '../../components/EditorForm';
 import { cleanSymbolType, flattenEntity, NEW_ENTITY_ID } from '../../data/utils';
 import { EditoastType } from '../types';
 import EditorContext from '../../context';
 import EntitySumUp from '../../components/EntitySumUp';
-import { getEntities, getEntity, getRoutesFromWaypoint } from '../../data/api';
+import { getEntities, getEntity } from '../../data/api';
 import { Spinner } from '../../../../common/Loader';
 import { getEditRouteState } from '../routeEdition/utils';
 import { getMap } from '../../../../reducers/map/selectors';
@@ -40,6 +41,7 @@ export const POINT_LAYER_ID = 'pointEditionTool/new-entity';
  * Generic component to show routes starting or ending from the edited waypoint:
  */
 export const RoutesList: FC<{ type: EditoastType; id: string }> = ({ type, id }) => {
+  const dispatch = useDispatch();
   const { t } = useTranslation();
   const infraID = useSelector(getInfraID);
   const [routesState, setRoutesState] = useState<
@@ -49,34 +51,38 @@ export const RoutesList: FC<{ type: EditoastType; id: string }> = ({ type, id })
     | { type: 'error'; message: string }
   >({ type: 'idle' });
   const { switchTool } = useContext(EditorContext) as ExtendedEditorContextType<unknown>;
+  const [getRoutesFromWaypoint] =
+    osrdEditoastApi.endpoints.getInfraByIdRoutesAndWaypointTypeWaypointId.useLazyQuery();
 
   useEffect(() => {
-    if (routesState.type === 'idle') {
-      setRoutesState({ type: 'loading' });
-      getRoutesFromWaypoint(`${infraID}`, type, id)
-        .then((res) => {
-          const starting = res.starting || [];
-          const ending = res.ending || [];
-
-          if (starting.length || ending.length) {
-            getEntities<RouteEntity>(`${infraID}`, [...starting, ...ending], 'Route')
-              .then((entities) => {
-                setRoutesState({
-                  type: 'ready',
-                  starting: starting.map((routeId) => entities[routeId]),
-                  ending: ending.map((routeId) => entities[routeId]),
+    if (routesState.type === 'idle' && infraID) {
+      if (type !== 'BufferStop' && type !== 'Detector') {
+        setRoutesState({ type: 'error', message: `${type} elements are not valid waypoints.` });
+      } else {
+        setRoutesState({ type: 'loading' });
+        getRoutesFromWaypoint({ id: infraID, waypointType: type, waypointId: id })
+          .unwrap()
+          .then(({ starting = [], ending = [] }) => {
+            if (starting.length || ending.length) {
+              getEntities<RouteEntity>(infraID, [...starting, ...ending], 'Route', dispatch)
+                .then((entities) => {
+                  setRoutesState({
+                    type: 'ready',
+                    starting: starting.map((routeId) => entities[routeId]),
+                    ending: ending.map((routeId) => entities[routeId]),
+                  });
+                })
+                .catch((err) => {
+                  setRoutesState({ type: 'error', message: err.message });
                 });
-              })
-              .catch((err) => {
-                setRoutesState({ type: 'error', message: err.message });
-              });
-          } else {
-            setRoutesState({ type: 'ready', starting: [], ending: [] });
-          }
-        })
-        .catch((err) => {
-          setRoutesState({ type: 'error', message: err.message });
-        });
+            } else {
+              setRoutesState({ type: 'ready', starting: [], ending: [] });
+            }
+          })
+          .catch((err) => {
+            setRoutesState({ type: 'error', message: err.message });
+          });
+      }
     }
   }, [routesState]);
 
@@ -198,16 +204,18 @@ export const PointEditionLeftPanel: FC<{ type: EditoastType }> = <Entity extends
 
     if (trackId && trackState.id !== trackId) {
       setTrackState({ type: 'isLoading', id: trackId });
-      getEntity<TrackSectionEntity>(infraID as number, trackId, 'TrackSection').then((track) => {
-        setTrackState({ type: 'ready', id: trackId, track });
+      getEntity<TrackSectionEntity>(infraID as number, trackId, 'TrackSection', dispatch).then(
+        (track) => {
+          setTrackState({ type: 'ready', id: trackId, track });
 
-        if (!firstLoading) {
-          const { position } = state.entity.properties;
-          const point = along(track, position, { units: 'meters' });
+          if (!firstLoading) {
+            const { position } = state.entity.properties;
+            const point = along(track, position, { units: 'meters' });
 
-          setState({ ...state, entity: { ...state.entity, geometry: point.geometry } });
+            setState({ ...state, entity: { ...state.entity, geometry: point.geometry } });
+          }
         }
-      });
+      );
     }
   }, [infraID, setState, state, state.entity.properties.track, trackState.id, trackState.type]);
 
