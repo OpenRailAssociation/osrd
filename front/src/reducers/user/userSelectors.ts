@@ -12,3 +12,4 @@ export const getUserAccount = makeUserSelector('account');
 export const getLoginError = makeUserSelector('loginError');
 export const getServerError = makeUserSelector('serverError');
 export const getToLogin = makeUserSelector('toLogin');
+export const getUserPreferences = makeUserSelector('userPreferences');

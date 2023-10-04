@@ -10,6 +10,7 @@ export interface UserState {
   serverError: boolean;
   username: string;
   accessToken?: string;
+  userPreferences: { safeWord: string };
   account: Record<string, string>;
 }
 
@@ -20,6 +21,7 @@ export const userInitialState: UserState = {
   serverError: false,
   username: '',
   accessToken: undefined,
+  userPreferences: { safeWord: '' },
   account: {},
 };
 
@@ -48,11 +50,20 @@ const userSlice = createSlice({
     updateAccount(state, action: PayloadAction<Record<string, string>>) {
       state.account = action.payload;
     },
+    updateUserPreferences(state, action: PayloadAction<{ safeWord: string }>) {
+      state.userPreferences = action.payload;
+    },
   },
 });
 
-export const { loginSuccess, loginError, logoutUser, serverError, updateAccount } =
-  userSlice.actions;
+export const {
+  loginSuccess,
+  loginError,
+  logoutUser,
+  serverError,
+  updateAccount,
+  updateUserPreferences,
+} = userSlice.actions;
 
 export default userSlice.reducer;
 

@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import React, { ReactElement } from 'react';
 import { logout } from 'reducers/user';
-import { getUserAccount } from 'reducers/user/userSelectors';
+import { getUserAccount, getUserPreferences } from 'reducers/user/userSelectors';
 import { useTranslation } from 'react-i18next';
 import ReleaseInformations from 'common/ReleaseInformations/ReleaseInformations';
 import ChangeLanguageModal from 'common/ChangeLanguageModal';
@@ -25,7 +25,7 @@ type Props = {
 export default function LegacyNavBarSNCF({ appName, logo }: Props) {
   const { openModal } = useModal();
   const userAccount = useSelector(getUserAccount);
-  const { fullscreen, safeWord } = useSelector((state: RootState) => state.main);
+  const { safeWord } = useSelector(getUserPreferences);
   const dispatch = useDispatch();
   const { t } = useTranslation('home/navbar');
 
@@ -34,7 +34,7 @@ export default function LegacyNavBarSNCF({ appName, logo }: Props) {
   };
 
   return (
-    <div className={`mastheader${fullscreen ? ' fullscreen' : ''}`}>
+    <div className="mastheader">
       <div className="mastheader-logo flex-grow-0">
         <Link to="/">
           <img src={logo} width="70" alt="" />

@@ -8,6 +8,7 @@ import {
   serverError,
   updateAccount,
   UserState,
+  updateUserPreferences,
 } from 'reducers/user';
 
 const createStore = (initialStateExtra?: UserState) =>
@@ -33,6 +34,7 @@ describe('userReducer', () => {
       serverError: false,
       username: 'Test userSlice',
       accessToken: 'fake_token',
+      userPreferences: { safeWord: '' },
       account: {},
     });
   });
@@ -48,6 +50,7 @@ describe('userReducer', () => {
       serverError: false,
       username: '',
       accessToken: undefined,
+      userPreferences: { safeWord: '' },
       account: {},
     });
   });
@@ -60,6 +63,7 @@ describe('userReducer', () => {
       serverError: false,
       username: 'Test userSlice',
       accessToken: 'fake_token',
+      userPreferences: { safeWord: '' },
       account: {},
     });
     store.dispatch(logoutUser());
@@ -78,6 +82,7 @@ describe('userReducer', () => {
       serverError: true,
       username: '',
       accessToken: undefined,
+      userPreferences: { safeWord: '' },
       account: {},
     });
   });
@@ -93,7 +98,25 @@ describe('userReducer', () => {
       serverError: false,
       username: '',
       accessToken: undefined,
+      userPreferences: { safeWord: '' },
       account: { username: 'Test userSlice' },
+    });
+  });
+
+  test('should handle updateUserPreferences', () => {
+    const store = createStore(userInitialState);
+    const action = updateUserPreferences({ safeWord: 'Test userSlice' });
+    store.dispatch(action);
+    const userState = store.getState().user;
+    expect(userState).toEqual({
+      isLogged: false,
+      toLogin: true,
+      loginError: false,
+      serverError: false,
+      username: '',
+      accessToken: undefined,
+      userPreferences: { safeWord: 'Test userSlice' },
+      account: {},
     });
   });
 });

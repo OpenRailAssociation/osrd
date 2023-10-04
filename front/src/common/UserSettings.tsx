@@ -3,22 +3,22 @@ import { ModalBodySNCF, ModalHeaderSNCF } from 'common/BootstrapSNCF/ModalSNCF';
 import { FaCog } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from 'reducers';
-import { updateSafeWord } from 'reducers/main';
+import { updateUserPreferences } from 'reducers/user';
 import { AiFillSafetyCertificate } from 'react-icons/ai';
 import cx from 'classnames';
 import { useDebounce } from 'utils/helpers';
-import InputSNCF from './BootstrapSNCF/InputSNCF';
+import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import { getUserPreferences } from 'reducers/user/userSelectors';
 
 export default function UserSettings() {
-  const safeWord = useSelector((state: RootState) => state.main.safeWord);
-  const [safeWordText, setSafeWordText] = useState(safeWord);
+  const userPreferences = useSelector(getUserPreferences);
+  const [safeWordText, setSafeWordText] = useState(userPreferences.safeWord);
   const dispatch = useDispatch();
 
   const debouncedSafeWord = useDebounce(safeWordText, 500);
 
   useEffect(() => {
-    dispatch(updateSafeWord(debouncedSafeWord));
+    dispatch(updateUserPreferences({ ...userPreferences, safeWord: debouncedSafeWord }));
   }, [debouncedSafeWord]);
 
   const { t } = useTranslation('home/navbar');
@@ -36,7 +36,7 @@ export default function UserSettings() {
           label={t('safeWord')}
           clearButton
           onClear={() => {
-            dispatch(updateSafeWord(''));
+            dispatch(updateUserPreferences({ ...userPreferences, safeWord: '' }));
             setSafeWordText('');
           }}
           placeholder={t('yourSafeWord')}

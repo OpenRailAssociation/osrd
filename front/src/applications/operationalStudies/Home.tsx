@@ -16,7 +16,7 @@ import {
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
 import { useSelector } from 'react-redux';
-import { RootState } from 'reducers';
+import { getUserPreferences } from 'reducers/user/userSelectors';
 
 type SortOptions =
   | 'NameAsc'
@@ -28,7 +28,7 @@ type SortOptions =
 
 export default function Home() {
   const { t } = useTranslation('operationalStudies/home');
-  const safeWord = useSelector((state: RootState) => state.main.safeWord);
+  const { safeWord } = useSelector(getUserPreferences);
   const [sortOption, setSortOption] = useState<SortOptions>('LastModifiedDesc');
   const [projectsList, setProjectsList] = useState<Array<ProjectResult | SearchProjectResult>>([]);
   const [selectedProjectIds, setSelectedProjectIds] = useState<number[]>([]);
