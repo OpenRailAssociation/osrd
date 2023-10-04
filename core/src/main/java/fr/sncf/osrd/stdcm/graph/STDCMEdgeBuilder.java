@@ -4,7 +4,9 @@ import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.sim_infra.impl.BlockInfraImplKt;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 /** This class handles the creation of new edges, handling the many optional parameters. */
@@ -133,6 +135,33 @@ public class STDCMEdgeBuilder {
 
     /** Creates all edges that can be accessed on the given block, using all the parameters specified. */
     public Collection<STDCMEdge> makeAllEdges() {
+        if (getEnvelope() == null)
+            return List.of();
+        return getDelaysPerOpening().stream()
+                .map(this::makeSingleEdge)
+                .filter(Objects::nonNull)
+                .toList();
+    }
+
+    /** Creates all the edges in the given settings, then look for one that shares the given time of next occupancy.
+     * This is used to identify the "openings" between two occupancies,
+     * it is used to ensure we use the same one when re-building edges. */
+    STDCMEdge findEdgeSameNextOccupancy(double timeNextOccupancy) {
+        // We look for an edge that uses the same opening, identified by the next occupancy
+        if (getEnvelope() == null)
+            return null;
+        // We look for the last possible delay that would start before the expected time of next occupancy
+        var delay = getDelaysPerOpening().stream()
+                .filter(x -> startTime + x <= timeNextOccupancy)
+                .max(Double::compareTo);
+        return delay.map(this::makeSingleEdge).orElse(null);
+    }
+
+    // endregion BUILDERS
+
+    // region UTILITIES
+    /** Returns the envelope to be used for the new edges */
+    private Envelope getEnvelope() {
         if (envelope == null)
             envelope = STDCMSimulations.simulateBlock(
                     graph.rawInfra,
@@ -146,20 +175,16 @@ public class STDCMEdgeBuilder {
                     STDCMUtils.getStopOnBlock(graph, blockId, startOffset, waypointIndex),
                     graph.tag
             );
-        if (envelope == null)
-            return List.of();
-        var res = new ArrayList<STDCMEdge>();
-        Set<Double> delaysPerOpening;
+        return envelope;
+    }
+
+    /** Returns the set of delays to use to reach each opening.
+     * If the flag `forceMaxDelay` is set, returns the maximum delay that can be used without allowance. */
+    private Set<Double> getDelaysPerOpening() {
         if (forceMaxDelay)
-            delaysPerOpening = findMaxDelay();
+            return findMaxDelay();
         else
-            delaysPerOpening = graph.delayManager.minimumDelaysPerOpening(blockId, startTime, envelope, startOffset);
-        for (var delayNeeded : delaysPerOpening) {
-            var newEdge = makeSingleEdge(delayNeeded);
-            if (newEdge != null)
-                res.add(newEdge);
-        }
-        return res;
+            return graph.delayManager.minimumDelaysPerOpening(blockId, startTime, envelope, startOffset);
     }
 
     /** Finds the maximum amount of delay that can be added by simply shifting the departure time
@@ -214,20 +239,5 @@ public class STDCMEdgeBuilder {
             return null;
         return res;
     }
-
-    /** Creates all the edges in the given settings, then look for one that shares the given time of next occupancy.
-     * This is used to identify the "openings" between two occupancies,
-     * it is used to ensure we use the same one when re-building edges. */
-    STDCMEdge findEdgeSameNextOccupancy(double timeNextOccupancy) {
-        var newEdges = makeAllEdges();
-        // We look for an edge that uses the same opening, identified by the next occupancy
-        for (var newEdge : newEdges) {
-            // The time of next occupancy is always copied from the same place, we can use float equality
-            if (newEdge.timeNextOccupancy() == timeNextOccupancy)
-                return newEdge;
-        }
-        return null; // No result was found
-    }
-
-    // endregion BUILDERS
+    // endregion UTILITIES
 }
