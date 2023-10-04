@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { useSelector } from 'react-redux';
 import React, { FC, useEffect, useMemo, useState } from 'react';
 import { groupBy, map, omit } from 'lodash';
@@ -21,7 +20,7 @@ import { EditorSource, SourcesDefinitionsIndex } from 'common/Map/Layers/GeoJSON
 import OrderedLayer, { OrderedLayerProps } from 'common/Map/Layers/OrderedLayer';
 import { genOSMLayerProps } from 'common/Map/Layers/OSM';
 import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
-import { Viewport } from 'reducers/map';
+import { transformMapRequest, Viewport } from 'reducers/map';
 import { getMap } from 'reducers/map/selectors';
 import { AllowancesSettings, Train } from 'reducers/osrdsimulation/types';
 
@@ -146,7 +145,7 @@ const WarpedMap: FC<{
       onMove={(e) => {
         setViewport({
           ...e.viewState,
-          transformMapRequest: undefined,
+          transformRequest: transformMapRequest,
           width: e.target.getContainer().offsetWidth,
           height: e.target.getContainer().offsetHeight,
         });
