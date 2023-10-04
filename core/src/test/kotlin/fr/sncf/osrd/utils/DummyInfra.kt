@@ -1,46 +1,14 @@
 package fr.sncf.osrd.utils
 
+import com.google.common.collect.BiMap
 import com.google.common.collect.HashBiMap
 import com.google.common.collect.HashMultimap
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.geom.LineString
-import fr.sncf.osrd.sim_infra.api.Block
-import fr.sncf.osrd.sim_infra.api.BlockId
-import fr.sncf.osrd.sim_infra.api.BlockInfra
-import fr.sncf.osrd.sim_infra.api.Detector
-import fr.sncf.osrd.sim_infra.api.DetectorId
-import fr.sncf.osrd.sim_infra.api.DirDetectorId
-import fr.sncf.osrd.sim_infra.api.DirTrackChunkId
-import fr.sncf.osrd.sim_infra.api.DirTrackSectionId
-import fr.sncf.osrd.sim_infra.api.EndpointTrackSectionId
-import fr.sncf.osrd.sim_infra.api.LoadingGaugeConstraint
-import fr.sncf.osrd.sim_infra.api.LogicalSignal
-import fr.sncf.osrd.sim_infra.api.LogicalSignalId
-import fr.sncf.osrd.sim_infra.api.OperationalPointPart
-import fr.sncf.osrd.sim_infra.api.OperationalPointPartId
-import fr.sncf.osrd.sim_infra.api.OptDirTrackSectionId
-import fr.sncf.osrd.sim_infra.api.PhysicalSignal
-import fr.sncf.osrd.sim_infra.api.PhysicalSignalId
-import fr.sncf.osrd.sim_infra.api.RawInfra
-import fr.sncf.osrd.sim_infra.api.Route
-import fr.sncf.osrd.sim_infra.api.RouteId
-import fr.sncf.osrd.sim_infra.api.SignalingSystemId
-import fr.sncf.osrd.sim_infra.api.SpeedLimit
-import fr.sncf.osrd.sim_infra.api.TrackChunk
-import fr.sncf.osrd.sim_infra.api.TrackChunkId
-import fr.sncf.osrd.sim_infra.api.TrackNode
-import fr.sncf.osrd.sim_infra.api.TrackNodeConfig
-import fr.sncf.osrd.sim_infra.api.TrackNodeConfigId
-import fr.sncf.osrd.sim_infra.api.TrackNodeId
-import fr.sncf.osrd.sim_infra.api.TrackNodePort
-import fr.sncf.osrd.sim_infra.api.TrackNodePortId
-import fr.sncf.osrd.sim_infra.api.TrackSection
-import fr.sncf.osrd.sim_infra.api.TrackSectionId
-import fr.sncf.osrd.sim_infra.api.Zone
-import fr.sncf.osrd.sim_infra.api.ZoneId
-import fr.sncf.osrd.sim_infra.api.ZonePath
-import fr.sncf.osrd.sim_infra.api.ZonePathId
+import fr.sncf.osrd.geom.Point
+import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.NeutralSection
+import fr.sncf.osrd.sim_infra.impl.getBlockEntry
 import fr.sncf.osrd.utils.indexing.DirStaticIdx
 import fr.sncf.osrd.utils.indexing.DirStaticIdxList
 import fr.sncf.osrd.utils.indexing.MutableDirStaticIdxArrayList
@@ -70,6 +38,7 @@ import kotlin.time.Duration
 class DummyInfra : RawInfra, BlockInfra {
 
     val blockPool = mutableListOf<DummyBlockDescriptor>() // A StaticPool (somehow) fails to link with java here
+    val detectorGeoPoint = HashMap<String, Point>()
     private val detectorMap = HashBiMap.create<String, DirDetectorId>()
     private val entryMap = HashMultimap.create<DirDetectorId, BlockId>()
     private val exitMap = HashMultimap.create<DirDetectorId, BlockId>()
@@ -216,6 +185,7 @@ class DummyInfra : RawInfra, BlockInfra {
         return Length(blockPool[route.index].length)
     }
 
+    @JvmName("getRouteFromName")
     override fun getRouteFromName(name: String): RouteId {
         for (i in 0 until blockPool.size) {
             if (blockPool[i].name == name)
@@ -313,7 +283,7 @@ class DummyInfra : RawInfra, BlockInfra {
     }
 
     override fun getDetectorName(det: DetectorId): String? {
-        TODO("Not yet implemented")
+        return detectorMap.inverse()[DirDetectorId(det, Direction.INCREASING)]
     }
 
     override fun getNextTrackSection(currentTrack: DirTrackSectionId, config: TrackNodeConfigId): OptDirTrackSectionId {
@@ -434,7 +404,11 @@ class DummyInfra : RawInfra, BlockInfra {
     }
 
     override fun getTrackChunkGeom(trackChunk: TrackChunkId): LineString {
-        return LineString.make(doubleArrayOf(0.0, 1.0), doubleArrayOf(0.0, 1.0))
+        val entryDetName = getDetectorName(getRouteEntry(RouteId(trackChunk.index)).value)
+        val exitDetName = getDetectorName(getRouteExit(RouteId(trackChunk.index)).value)
+        val entry = detectorGeoPoint.getOrDefault(entryDetName, Point(0.0, 0.0))
+        val exit = detectorGeoPoint.getOrDefault(exitDetName, Point(1.0, 1.0))
+        return LineString.make(entry, exit)
     }
 
     override fun getTrackChunkOperationalPointParts(trackChunk: TrackChunkId): StaticIdxList<OperationalPointPart> {

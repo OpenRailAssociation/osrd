@@ -48,6 +48,13 @@ public class LineString {
         return new LineString(bufferX, bufferY, cumulativeLengths);
     }
 
+    /**
+     * Create a LineString from two points
+     */
+    public static LineString make(Point start, Point end) {
+        return make(new double[]{start.x(), end.x()}, new double[]{start.y(), end.y()});
+    }
+
     public double getLength() {
         return cumulativeLengths[cumulativeLengths.length - 1];
     }
