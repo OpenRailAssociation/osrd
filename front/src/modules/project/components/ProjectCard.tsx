@@ -11,7 +11,7 @@ import { updateProjectID, updateScenarioID, updateStudyID } from 'reducers/osrdc
 import { ProjectResult, SearchProjectResult } from 'common/api/osrdEditoastApi';
 import { getDocument } from 'common/api/documentApi';
 import cx from 'classnames';
-import { getUserPreferences } from 'reducers/user/userSelectors';
+import { getUserSafeWord } from 'reducers/user/userSelectors';
 
 type Props = {
   setFilterChips: (filterChips: string) => void;
@@ -25,7 +25,7 @@ export default function ProjectCard({ setFilterChips, project, isSelected, toggl
   const [imageUrl, setImageUrl] = useState<string>();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { safeWord } = useSelector(getUserPreferences);
+  const safeWord = useSelector(getUserSafeWord);
 
   const openProject = () => {
     dispatch(updateProjectID(project.id));

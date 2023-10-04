@@ -9,6 +9,8 @@ import { FaFlagCheckered } from 'react-icons/fa';
 import { BsArrowBarRight } from 'react-icons/bs';
 import { MdDelete, MdSave } from 'react-icons/md';
 import { FiSearch } from 'react-icons/fi';
+import { EditorEntity, WayPointEntity } from 'types/editor';
+import { addFailureNotification, addSuccessNotification } from 'reducers/main';
 
 import { EditRoutePathState, EditRouteMetadataState, RouteEditionState } from '../types';
 import {
@@ -20,8 +22,6 @@ import colors from '../../../../../common/Map/Consts/colors';
 import { getEditRouteState, getEmptyCreateRouteState, getRouteGeometryByRouteId } from '../utils';
 import EditorContext from '../../../context';
 import { getMixedEntities } from '../../../data/api';
-import { EditorEntity, WayPointEntity } from '../../../../../types';
-import { addNotification } from 'reducers/main';
 import { LoaderFill } from '../../../../../common/Loader';
 import { ConfirmModal } from '../../../../../common/BootstrapSNCF/ModalSNCF/ConfirmModal';
 import { save } from '../../../../../reducers/editor';
@@ -99,8 +99,8 @@ export const EditRouteMetadataPanel: FC<{ state: EditRouteMetadataState }> = ({ 
                   setIsLoading(true);
                   await dispatch(save({ delete: [initialRouteEntity] as EditorEntity[] }));
                   setIsLoading(false);
-                  addNotification({
-                    type: 'success',
+                  addSuccessNotification({
+                    title: '',
                     text: t('Editor.tools.routes-edition.delete-route-success'),
                   });
                   setState(getEmptyCreateRouteState());
@@ -166,8 +166,8 @@ export const EditRouteMetadataPanel: FC<{ state: EditRouteMetadataState }> = ({ 
               })
             );
             setIsLoading(false);
-            addNotification({
-              type: 'success',
+            addSuccessNotification({
+              title: '',
               text: t('Editor.tools.routes-edition.save-route-success'),
             });
             setState(getEditRouteState(routeEntity));
@@ -234,9 +234,10 @@ export const EditRouteMetadataLayers: FC<{ state: EditRouteMetadataState }> = ({
           });
         })
         .catch((e) => {
-          addNotification({
-            type: 'error',
-            text: e instanceof Error ? e.message : t('Editor.tools.routes-edition.unknown-error'),
+          addFailureNotification({
+            name: '',
+            message:
+              e instanceof Error ? e.message : t('Editor.tools.routes-edition.unknown-error'),
           });
 
           const { entry_point, exit_point } = state.routeEntity.properties;

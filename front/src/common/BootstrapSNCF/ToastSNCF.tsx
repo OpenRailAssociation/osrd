@@ -43,7 +43,7 @@ const typeToIcon = {
 /**
  * Toast for notification object.
  */
-const ToastSNCF: FC<Notification> = ({ title, date, type = 'info', text }) => {
+const ToastSNCF: FC<Notification> = ({ title, date, type, text }) => {
   const [open, setOpen] = useState<boolean>(true);
 
   return (

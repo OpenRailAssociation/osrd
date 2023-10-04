@@ -19,44 +19,55 @@ const mainSlice = createSlice({
   name: 'main',
   initialState: mainInitialState,
   reducers: {
+    // TODO rename setLoading, setSucess with more meaningful names like pushLoadingNotification, pushSucessNotification, ...
     setLoading(state) {
       state.loading += 1;
     },
-    setSuccess(state, action: PayloadAction<Notification | undefined>) {
+    setSuccess(state, action: PayloadAction<{ title: string; text: string }>) {
       state.loading = state.loading > 0 ? state.loading - 1 : 0;
-      if (action.payload) {
-        state.notifications.push({
-          type: action?.payload.type || 'success',
-          title: action?.payload.title,
-          text: action?.payload.text,
-          date: action?.payload.date || new Date(),
-        });
-      }
+      state.notifications.push({
+        type: 'success',
+        title: action.payload.title,
+        text: action.payload.text,
+        date: new Date(),
+      });
     },
-    setWarning(state, action: PayloadAction<Notification | undefined>) {
+    setSuccessWithoutMessage(state) {
       state.loading = state.loading > 0 ? state.loading - 1 : 0;
-      if (action.payload) {
-        state.notifications.push({
-          type: action.payload.type || 'warning',
-          title: action.payload.title,
-          text: action.payload.text,
-          date: action.payload.date || new Date(),
-        });
-      }
     },
-    setFailure(state, action: PayloadAction<Error | undefined>) {
+    setWarning(state, action: PayloadAction<{ title: string; text: string }>) {
       state.loading = state.loading > 0 ? state.loading - 1 : 0;
-      if (action.payload) {
-        state.notifications.push({
-          type: 'error',
-          title: action.payload.name,
-          text: action.payload.message,
-          date: new Date(),
-        });
-      }
+      state.notifications.push({
+        type: 'warning',
+        title: action.payload.title,
+        text: action.payload.text,
+        date: new Date(),
+      });
     },
-    addNotification(state, action: PayloadAction<Notification>) {
-      state.notifications.push({ date: new Date(), ...action.payload });
+    setFailure(state, action: PayloadAction<Error>) {
+      state.loading = state.loading > 0 ? state.loading - 1 : 0;
+      state.notifications.push({
+        type: 'error',
+        title: action.payload.name,
+        text: action.payload.message,
+        date: new Date(),
+      });
+    },
+    addSuccessNotification(state, action: PayloadAction<{ title: string; text: string }>) {
+      state.notifications.push({
+        type: 'success',
+        title: action.payload.title,
+        text: action.payload.text,
+        date: new Date(),
+      });
+    },
+    addFailureNotification(state, action: PayloadAction<{ name: string; message: string }>) {
+      state.notifications.push({
+        type: 'error',
+        title: action.payload.name,
+        text: action.payload.message,
+        date: new Date(),
+      });
     },
     deleteNotification(state, action: PayloadAction<Notification>) {
       state.notifications = state.notifications.filter(
@@ -78,9 +89,11 @@ const mainSlice = createSlice({
 export const {
   setLoading,
   setSuccess,
+  setSuccessWithoutMessage,
   setWarning,
   setFailure,
-  addNotification,
+  addSuccessNotification,
+  addFailureNotification,
   deleteNotification,
   updateLastInterfaceVersion,
 } = mainSlice.actions;
