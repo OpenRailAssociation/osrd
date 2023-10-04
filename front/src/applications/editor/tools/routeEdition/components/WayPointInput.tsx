@@ -1,6 +1,6 @@
 import React, { FC, useCallback, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { FaMapMarkedAlt, FaTimesCircle } from 'react-icons/fa';
 import { Position } from 'geojson';
 
@@ -18,6 +18,7 @@ const WayPointInput: FC<{
   wayPoint: WayPoint | null;
   onChange: (newWayPoint: WayPoint & { position: Position }) => void;
 }> = ({ endPoint, wayPoint, onChange }) => {
+  const dispatch = useDispatch();
   const { state, setState } = useContext(
     EditorContext
   ) as ExtendedEditorContextType<EditRoutePathState>;
@@ -68,8 +69,8 @@ const WayPointInput: FC<{
     ) {
       if (wayPoint) {
         setEntityState({ type: 'loading' });
-        getEntity<WayPointEntity>(infraID as number, wayPoint.id, wayPoint.type).then((entity) =>
-          setEntityState({ type: 'data', entity })
+        getEntity<WayPointEntity>(infraID as number, wayPoint.id, wayPoint.type, dispatch).then(
+          (entity) => setEntityState({ type: 'data', entity })
         );
       } else {
         setEntityState({ type: 'empty' });

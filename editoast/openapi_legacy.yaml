@@ -703,6 +703,7 @@ paths:
                     items:
                       type: string
                     example: ["route3", "route4"]
+                required: [starting, ending]
 
   /infra/{id}/routes/track_ranges/:
     get:
@@ -720,7 +721,9 @@ paths:
         - in: query
           name: routes
           schema:
-            type: string
+            type: array
+            items:
+              type: string
             description: A list of routes seperated by comma
             example: "route1,route2,route3"
           required: true
@@ -800,6 +803,7 @@ paths:
                       example: { "switch1": "left", "switch2": "right" }
                       additionalProperties:
                         type: string
+                  required: [track_ranges, detectors, switches_directions]
 
   /infra/{id}/objects/{object_type}/:
     post:

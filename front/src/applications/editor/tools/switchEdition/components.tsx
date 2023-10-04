@@ -55,6 +55,7 @@ export const TrackSectionEndpointSelector: FC<FieldProps> = ({
   onChange,
   name,
 }) => {
+  const dispatch = useDispatch();
   const { state, setState } = useContext(
     EditorContext
   ) as ExtendedEditorContextType<SwitchEditionState>;
@@ -101,11 +102,14 @@ export const TrackSectionEndpointSelector: FC<FieldProps> = ({
 
   useEffect(() => {
     if (typeof formData?.track === 'string') {
-      getEntity<TrackSectionEntity>(infraID as number, formData.track, 'TrackSection').then(
-        (track) => {
-          setTrackSection(track);
-        }
-      );
+      getEntity<TrackSectionEntity>(
+        infraID as number,
+        formData.track,
+        'TrackSection',
+        dispatch
+      ).then((track) => {
+        setTrackSection(track);
+      });
     } else {
       setTrackSection(null);
     }
@@ -300,6 +304,7 @@ export const SwitchEditionLeftPanel: FC = () => {
 };
 
 export const SwitchEditionLayers: FC = () => {
+  const dispatch = useDispatch();
   const { t } = useTranslation();
   const switchTypes = useSelector(getSwitchTypes);
   const infraID = useSelector(getInfraID);
@@ -348,7 +353,7 @@ export const SwitchEditionLayers: FC = () => {
       (trackStatus.type === 'loaded' && trackStatus.trackSection.properties.id !== hoveredTrackId)
     ) {
       setTrackStatus({ type: 'loading', trackSectionID: hoveredTrackId });
-      getEntity<TrackSectionEntity>(infraID as number, hoveredTrackId, 'TrackSection')
+      getEntity<TrackSectionEntity>(infraID as number, hoveredTrackId, 'TrackSection', dispatch)
         .then((trackSection) => {
           setTrackStatus({ type: 'loaded', trackSection });
         })
@@ -410,25 +415,27 @@ export const SwitchEditionLayers: FC = () => {
       setGeometryState({ type: 'ready' });
     } else {
       setGeometryState({ type: 'loading' });
-      getEntity<TrackSectionEntity>(infraID as number, port.track, 'TrackSection').then((track) => {
-        if (!track || !track.geometry.coordinates.length) setGeometryState({ type: 'ready' });
+      getEntity<TrackSectionEntity>(infraID as number, port.track, 'TrackSection', dispatch).then(
+        (track) => {
+          if (!track || !track.geometry.coordinates.length) setGeometryState({ type: 'ready' });
 
-        const coordinates =
-          port.endpoint === 'BEGIN'
-            ? first(track.geometry.coordinates)
-            : last(track.geometry.coordinates);
-        setGeometryState({
-          type: 'ready',
-          entity: {
-            ...(entity as SwitchEntity),
-            type: 'Feature',
-            geometry: {
-              type: 'Point',
-              coordinates: coordinates as [number, number],
+          const coordinates =
+            port.endpoint === 'BEGIN'
+              ? first(track.geometry.coordinates)
+              : last(track.geometry.coordinates);
+          setGeometryState({
+            type: 'ready',
+            entity: {
+              ...(entity as SwitchEntity),
+              type: 'Feature',
+              geometry: {
+                type: 'Point',
+                coordinates: coordinates as [number, number],
+              },
             },
-          },
-        });
-      });
+          });
+        }
+      );
     }
   }, [entity?.properties?.ports, infraID]);
 

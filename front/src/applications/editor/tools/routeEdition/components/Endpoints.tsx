@@ -4,7 +4,7 @@ import { BsArrowBarRight, BsBoxArrowInRight } from 'react-icons/bs';
 import { HiSwitchVertical } from 'react-icons/hi';
 import { FaFlagCheckered } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import WayPointInput from './WayPointInput';
@@ -96,6 +96,7 @@ export const EditEndpoints: FC<{ state: RouteState; onChange: (newState: RouteSt
 };
 
 const ExtremityDisplay: FC<WayPoint> = ({ type, id }) => {
+  const dispatch = useDispatch();
   const { t } = useTranslation();
   const { switchTool } = useContext(EditorContext);
   const infraID = useSelector(getInfraID);
@@ -108,7 +109,7 @@ const ExtremityDisplay: FC<WayPoint> = ({ type, id }) => {
           className="btn btn-primary btn-sm"
           title={t('common.open')}
           onClick={() => {
-            getEntity<WayPointEntity>(infraID as number, id, type).then((entity) => {
+            getEntity<WayPointEntity>(infraID as number, id, type, dispatch).then((entity) => {
               if (type === 'Detector') {
                 switchTool({
                   toolType: TOOL_TYPES.DETECTOR_EDITION,

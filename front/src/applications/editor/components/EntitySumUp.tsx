@@ -1,7 +1,8 @@
 import React, { FC, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { flatMap, forEach, isNumber, uniq } from 'lodash';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { Dispatch } from 'redux';
 import { TFunction } from 'i18next';
 import cx from 'classnames';
 
@@ -46,7 +47,8 @@ const DEFAULT_CLASSES = {
 
 async function getAdditionalEntities(
   infra: number,
-  entity: EditorEntity
+  entity: EditorEntity,
+  dispatch: Dispatch
 ): Promise<Record<string, EditorEntity>> {
   switch (entity.objType) {
     case 'Signal':
@@ -55,7 +57,7 @@ async function getAdditionalEntities(
       const trackId = (entity as SignalEntity).properties.track;
       if (trackId) {
         try {
-          return { [trackId]: await getEntity(infra, trackId, 'TrackSection') };
+          return { [trackId]: await getEntity(infra, trackId, 'TrackSection', dispatch) };
         } catch (e) {
           return {};
         }
@@ -66,19 +68,21 @@ async function getAdditionalEntities(
       const trackIDs = flatMap((entity as SwitchEntity).properties.ports, (port) =>
         port.track ? [port.track] : []
       );
-      return getEntities<TrackSectionEntity>(infra, trackIDs, 'TrackSection');
+      return getEntities<TrackSectionEntity>(infra, trackIDs, 'TrackSection', dispatch);
     }
     case 'Route': {
       const route = entity as RouteEntity;
       const entryPoint = await getEntity(
         infra,
         route.properties.entry_point.id,
-        route.properties.entry_point.type
+        route.properties.entry_point.type,
+        dispatch
       );
       const exitPoint = await getEntity(
         infra,
         route.properties.exit_point.id,
-        route.properties.exit_point.type
+        route.properties.exit_point.type,
+        dispatch
       );
       return { entryPoint, exitPoint };
     }
@@ -282,6 +286,7 @@ const EntitySumUp: FC<
     | { id: string; objType: EditoastType; entity?: undefined }
   )
 > = ({ entity, id, objType, classes, status }) => {
+  const dispatch = useDispatch();
   const { t } = useTranslation();
   const infraID = useSelector(getInfraID);
   const [state, setState] = useState<
@@ -296,7 +301,7 @@ const EntitySumUp: FC<
       setState({ type: 'loading' });
 
       if (entity) {
-        getAdditionalEntities(infraID as number, entity).then((additionalEntities) => {
+        getAdditionalEntities(infraID as number, entity, dispatch).then((additionalEntities) => {
           setState({
             type: 'ready',
             entity,
@@ -304,15 +309,17 @@ const EntitySumUp: FC<
           });
         });
       } else {
-        getEntity(infraID as number, id as string, objType as EditoastType).then(
+        getEntity(infraID as number, id as string, objType as EditoastType, dispatch).then(
           (fetchedEntity) => {
-            getAdditionalEntities(infraID as number, fetchedEntity).then((additionalEntities) => {
-              setState({
-                type: 'ready',
-                entity: fetchedEntity,
-                additionalEntities,
-              });
-            });
+            getAdditionalEntities(infraID as number, fetchedEntity, dispatch).then(
+              (additionalEntities) => {
+                setState({
+                  type: 'ready',
+                  entity: fetchedEntity,
+                  additionalEntities,
+                });
+              }
+            );
           }
         );
       }

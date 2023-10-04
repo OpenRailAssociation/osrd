@@ -83,7 +83,7 @@ function getPointEditionTool<T extends EditorPoint>({
     ],
 
     // Interactions:
-    onClickMap(_e, { setState, state, infraID }) {
+    onClickMap(_e, { setState, state, infraID, dispatch }) {
       const { isHoveringTarget, entity, nearestPoint } = state;
       if (entity.geometry && !isEqual(entity.geometry, NULL_GEOMETRY) && isHoveringTarget) {
         setState({
@@ -104,19 +104,21 @@ function getPointEditionTool<T extends EditorPoint>({
 
         // retrieve the track section to be sure that the computation of the distance will be good
         // we can't trust maplibre, because the stored gemetry is not necessary the real one
-        getEntity(infraID as number, newEntity.properties.track, 'TrackSection').then((track) => {
-          newEntity.properties.position = nearestPointOnLine(
-            (track as Feature<LineString>).geometry,
-            newEntity.geometry as Point,
-            { units: 'meters' }
-          ).properties?.location;
+        getEntity(infraID as number, newEntity.properties.track, 'TrackSection', dispatch).then(
+          (track) => {
+            newEntity.properties.position = nearestPointOnLine(
+              (track as Feature<LineString>).geometry,
+              newEntity.geometry as Point,
+              { units: 'meters' }
+            ).properties?.location;
 
-          setState({
-            ...state,
-            entity: newEntity,
-            nearestPoint: null,
-          });
-        });
+            setState({
+              ...state,
+              entity: newEntity,
+              nearestPoint: null,
+            });
+          }
+        );
       }
     },
     onMove(e, { setState, state }) {
@@ -176,12 +178,12 @@ function getPointEditionTool<T extends EditorPoint>({
     },
 
     // Lifecycle:
-    onMount({ state: { entity }, infraID }) {
+    onMount({ state: { entity }, infraID, dispatch }) {
       const trackId = entity.properties?.track;
 
       if (typeof trackId !== 'string') return;
 
-      getEntity(infraID as number, trackId, 'TrackSection').then((track) => {
+      getEntity(infraID as number, trackId, 'TrackSection', dispatch).then((track) => {
         const dbPosition = entity.properties.position;
         const computedPosition = nearestPointOnLine(
           (track as Feature<LineString>).geometry,

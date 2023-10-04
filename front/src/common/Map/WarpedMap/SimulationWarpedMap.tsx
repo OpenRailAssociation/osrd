@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import React, { FC, useEffect, useMemo, useState } from 'react';
 import { clamp, first, isEmpty, isNil, keyBy, last, mapValues, omitBy } from 'lodash';
 import { PiLinkBold, PiLinkBreakBold } from 'react-icons/pi';
@@ -62,6 +62,7 @@ function transformDataStatePayload(
  * then mounts a WarpedMap with all that data:
  */
 const SimulationWarpedMap: FC<{ collapsed?: boolean }> = ({ collapsed }) => {
+  const dispatch = useDispatch();
   const infraID = useSelector(getInfraID);
   const [state, setState] = useState<
     | { type: 'idle' }
@@ -256,7 +257,7 @@ const SimulationWarpedMap: FC<{ collapsed?: boolean }> = ({ collapsed }) => {
   useEffect(() => {
     if (state.type !== 'dataLoaded') return;
 
-    getImprovedOSRDData(infraID as number, state.osrd).then((betterFeatures) => {
+    getImprovedOSRDData(infraID as number, state.osrd, dispatch).then((betterFeatures) => {
       if (!isEmpty(betterFeatures)) {
         const betterTransformedFeatures = mapValues(betterFeatures, state.transform);
         const newTransformedOSRDData = mapValues(state.osrd, (collection: FeatureCollection) => ({

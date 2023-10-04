@@ -121,30 +121,32 @@ export const EditRouteMetadataPanel: FC<{ state: EditRouteMetadataState }> = ({ 
             const baseState = getEmptyCreateRouteState() as EditRoutePathState;
 
             setIsLoading(true);
-            getMixedEntities<WayPointEntity>(infraID as number, [entry_point, exit_point]).then(
-              (entities) => {
-                const entryPointEntity = entities[entry_point.id];
-                const exitPointEntity = entities[exit_point.id];
-                setIsLoading(false);
-                setState({
-                  ...baseState,
-                  routeState: {
-                    ...baseState.routeState,
-                    entryPoint: {
-                      id: entry_point.id,
-                      type: entry_point.type,
-                      position: entryPointEntity.geometry.coordinates,
-                    },
-                    entryPointDirection: entry_point_direction,
-                    exitPoint: {
-                      id: exit_point.id,
-                      type: exit_point.type,
-                      position: exitPointEntity.geometry.coordinates,
-                    },
+            getMixedEntities<WayPointEntity>(
+              infraID as number,
+              [entry_point, exit_point],
+              dispatch
+            ).then((entities) => {
+              const entryPointEntity = entities[entry_point.id];
+              const exitPointEntity = entities[exit_point.id];
+              setIsLoading(false);
+              setState({
+                ...baseState,
+                routeState: {
+                  ...baseState.routeState,
+                  entryPoint: {
+                    id: entry_point.id,
+                    type: entry_point.type,
+                    position: entryPointEntity.geometry.coordinates,
                   },
-                });
-              }
-            );
+                  entryPointDirection: entry_point_direction,
+                  exitPoint: {
+                    id: exit_point.id,
+                    type: exit_point.type,
+                    position: exitPointEntity.geometry.coordinates,
+                  },
+                },
+              });
+            });
           }}
         >
           <FiSearch /> {t('Editor.tools.routes-edition.alternative-routes')}
@@ -183,6 +185,7 @@ export const EditRouteMetadataPanel: FC<{ state: EditRouteMetadataState }> = ({ 
 };
 
 export const EditRouteMetadataLayers: FC<{ state: EditRouteMetadataState }> = ({ state }) => {
+  const dispatch = useDispatch();
   const { t } = useTranslation();
   const infraID = useSelector(getInfraID);
   const mapStyle = useSelector(getMapStyle);
@@ -226,7 +229,7 @@ export const EditRouteMetadataLayers: FC<{ state: EditRouteMetadataState }> = ({
 
     if (geometryState.type === 'ready' && geometryState.feature?.properties.id !== id) {
       setGeometryState({ type: 'loading' });
-      getRouteGeometryByRouteId(infraID as number, id)
+      getRouteGeometryByRouteId(infraID as number, id, dispatch)
         .then((feature) => {
           setGeometryState({
             type: 'ready',
@@ -241,19 +244,21 @@ export const EditRouteMetadataLayers: FC<{ state: EditRouteMetadataState }> = ({
           });
 
           const { entry_point, exit_point } = state.routeEntity.properties;
-          getMixedEntities<WayPointEntity>(infraID as number, [entry_point, exit_point]).then(
-            (entities) => {
-              const entryPointEntity = entities[entry_point.id];
-              const exitPointEntity = entities[exit_point.id];
-              setGeometryState({
-                type: 'ready',
-                feature: lineString(
-                  [entryPointEntity.geometry.coordinates, exitPointEntity.geometry.coordinates],
-                  { id }
-                ),
-              });
-            }
-          );
+          getMixedEntities<WayPointEntity>(
+            infraID as number,
+            [entry_point, exit_point],
+            dispatch
+          ).then((entities) => {
+            const entryPointEntity = entities[entry_point.id];
+            const exitPointEntity = entities[exit_point.id];
+            setGeometryState({
+              type: 'ready',
+              feature: lineString(
+                [entryPointEntity.geometry.coordinates, exitPointEntity.geometry.coordinates],
+                { id }
+              ),
+            });
+          });
         });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

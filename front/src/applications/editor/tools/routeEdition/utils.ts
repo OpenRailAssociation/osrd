@@ -3,17 +3,20 @@ import { Feature, LineString, Position } from 'geojson';
 import { lineString, point } from '@turf/helpers';
 import lineSlice from '@turf/line-slice';
 
-import { RouteCandidate, RouteEditionState } from './types';
+import { Dispatch } from 'redux';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { getEntities, getEntity, getMixedEntities } from 'applications/editor/data/api';
+import { DEFAULT_COMMON_TOOL_STATE } from 'applications/editor/tools/commonToolState';
+import { RouteCandidate, RouteEditionState } from 'applications/editor/tools/routeEdition/types';
 import {
+  Direction,
   PartialButFor,
   RouteEntity,
   TrackRange,
   TrackSectionEntity,
   WayPoint,
   WayPointEntity,
-} from '../../../../types';
-import { getEntities, getEntity, getMixedEntities, getRouteTrackRanges } from '../../data/api';
-import { DEFAULT_COMMON_TOOL_STATE } from '../commonToolState';
+} from 'types';
 
 export function getEmptyCreateRouteState(): RouteEditionState {
   return {
@@ -118,37 +121,48 @@ export function computeRouteGeometry(
 }
 
 export async function getRouteGeometry(
-  infra: string | number,
+  infra: number,
   entryPoint: WayPointEntity,
   exitPoint: WayPointEntity,
-  trackRanges: TrackRange[]
+  trackRanges: TrackRange[],
+  dispatch: Dispatch
 ): Promise<Feature<LineString, { id: string }>> {
   if (!trackRanges.length) return lineString([]);
 
   const tracks = await getEntities<TrackSectionEntity>(
     infra,
     trackRanges.map((trackRange) => trackRange.track),
-    'TrackSection'
+    'TrackSection',
+    dispatch
   );
 
   return computeRouteGeometry(tracks, entryPoint, exitPoint, trackRanges);
 }
 
-export async function getRouteGeometryByRoute(
-  infra: string | number,
-  route: RouteEntity
+async function getRouteGeometryByRoute(
+  infra: number,
+  route: RouteEntity,
+  dispatch: Dispatch
 ): Promise<Feature<LineString, { id: string }>> {
-  const trackRanges = (await getRouteTrackRanges(infra, [route.properties.id]))[
-    route.properties.id
-  ];
-  const extremities = await getMixedEntities<WayPointEntity>(infra, [
-    route.properties.entry_point,
-    route.properties.exit_point,
-  ]);
+  const trackRangesResult = await dispatch(
+    osrdEditoastApi.endpoints.getInfraByIdRoutesTrackRanges.initiate({
+      id: infra as number,
+      routes: [route.properties.id],
+    })
+  ).unwrap();
+  if (trackRangesResult.length === 0 || trackRangesResult[0].type !== 'Computed') {
+    throw new Error('Some track ranges could not be computed yet.');
+  }
+  const trackRanges = trackRangesResult[0].track_ranges;
+
+  const extremities = await getMixedEntities<WayPointEntity>(
+    infra,
+    [route.properties.entry_point, route.properties.exit_point],
+    dispatch
+  );
   const entryPoint = extremities[route.properties.entry_point.id];
   const exitPoint = extremities[route.properties.exit_point.id];
 
-  if (!trackRanges) throw new Error('Some track ranges could not be computed yet.');
   if (!entryPoint)
     throw new Error(
       `Entry point ${route.properties.entry_point.id} (${route.properties.entry_point.type}) for route ${route.properties.id} not found`
@@ -158,25 +172,31 @@ export async function getRouteGeometryByRoute(
       `Exit point ${route.properties.exit_point.id} (${route.properties.exit_point.type}) for route ${route.properties.id} not found`
     );
 
-  return getRouteGeometry(infra, entryPoint, exitPoint, trackRanges);
+  return getRouteGeometry(infra, entryPoint, exitPoint, trackRanges, dispatch);
 }
 
 export async function getRouteGeometryByRouteId(
-  infra: string | number,
-  routeId: string
+  infra: number,
+  routeId: string,
+  dispatch: Dispatch
 ): Promise<Feature<LineString, { id: string }>> {
-  const route = await getEntity<RouteEntity>(infra, routeId, 'Route');
+  const route = await getEntity<RouteEntity>(infra, routeId, 'Route', dispatch);
 
-  return getRouteGeometryByRoute(infra, route);
+  return getRouteGeometryByRoute(infra, route, dispatch);
 }
 
 export async function getRouteGeometries(
-  infra: string | number,
+  infra: number,
   entryPoint: WayPoint,
   exitPoint: WayPoint,
-  candidates: RouteCandidate[]
+  candidates: RouteCandidate[],
+  dispatch: Dispatch
 ): Promise<Feature<LineString, { id: string }>[]> {
-  const extremities = await getMixedEntities<WayPointEntity>(infra, [entryPoint, exitPoint]);
+  const extremities = await getMixedEntities<WayPointEntity>(
+    infra,
+    [entryPoint, exitPoint],
+    dispatch
+  );
   const entryPointEntity = extremities[entryPoint.id];
   const exitPointEntity = extremities[exitPoint.id];
 
@@ -190,8 +210,41 @@ export async function getRouteGeometries(
         infra,
         entryPointEntity,
         exitPointEntity,
-        candidate.track_ranges as TrackRange[]
+        candidate.track_ranges as TrackRange[],
+        dispatch
       )
     )
   );
+}
+
+export async function getCompatibleRoutesPayload(
+  infra: number,
+  entryPoint: WayPoint,
+  entryPointDirection: Direction,
+  exitPoint: WayPoint,
+  dispatch: Dispatch
+) {
+  const extremities = await getMixedEntities<WayPointEntity>(
+    infra,
+    [entryPoint, exitPoint],
+    dispatch
+  );
+  const entryPointEntity = extremities[entryPoint.id];
+  const exitPointEntity = extremities[exitPoint.id];
+
+  if (!entryPointEntity)
+    throw new Error(`Entry point ${entryPoint.id} (${entryPoint.type}) not found`);
+  if (!exitPointEntity) throw new Error(`Exit point ${exitPoint.id} (${exitPoint.type}) not found`);
+
+  return {
+    starting: {
+      track: entryPointEntity.properties.track as string,
+      position: entryPointEntity.properties.position as number,
+      direction: entryPointDirection,
+    },
+    ending: {
+      track: exitPointEntity.properties.track as string,
+      position: exitPointEntity.properties.position as number,
+    },
+  };
 }

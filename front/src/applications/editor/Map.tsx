@@ -211,20 +211,23 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
               : e;
             if (toolState.hovered && activeTool.onClickEntity) {
               if (toolState.hovered.type) {
-                getEntity(infraID as number, toolState.hovered.id, toolState.hovered.type).then(
-                  (entity) => {
-                    if (activeTool.onClickEntity) {
-                      // Those features lack a proper "geometry", and have a "_geometry"
-                      // instead. This fixes it:
-                      entity = {
-                        ...entity,
-                        // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/no-explicit-any
-                        geometry: entity.geometry || (entity as any)._geometry,
-                      };
-                      activeTool.onClickEntity(entity, eventWithFeature, extendedContext);
-                    }
+                getEntity(
+                  infraID as number,
+                  toolState.hovered.id,
+                  toolState.hovered.type,
+                  dispatch
+                ).then((entity) => {
+                  if (activeTool.onClickEntity) {
+                    // Those features lack a proper "geometry", and have a "_geometry"
+                    // instead. This fixes it:
+                    entity = {
+                      ...entity,
+                      // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/no-explicit-any
+                      geometry: entity.geometry || (entity as any)._geometry,
+                    };
+                    activeTool.onClickEntity(entity, eventWithFeature, extendedContext);
                   }
-                );
+                });
               }
             }
             if (activeTool.onClickMap) {

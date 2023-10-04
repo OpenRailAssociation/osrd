@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import React, { FC, useContext, useEffect, useMemo } from 'react';
 import { getMap } from 'reducers/map/selectors';
 import EditorContext from 'applications/editor/context';
@@ -20,6 +20,7 @@ import EntitySumUp from '../../../components/EntitySumUp';
 import { LayerType } from '../../types';
 
 export const CatenaryEditionLayers: FC = () => {
+  const dispatch = useDispatch();
   const { t } = useTranslation();
   const {
     renderingFingerprint,
@@ -90,17 +91,20 @@ export const CatenaryEditionLayers: FC = () => {
         ),
       }));
 
-      getEntities<TrackSectionEntity>(infraId as number, missingTrackIDs, 'TrackSection').then(
-        (res) => {
-          setState((s) => ({
-            ...s,
-            trackSectionsCache: {
-              ...s.trackSectionsCache,
-              ...mapValues(res, (track) => ({ type: 'success', track } as TrackState)),
-            },
-          }));
-        }
-      );
+      getEntities<TrackSectionEntity>(
+        infraId as number,
+        missingTrackIDs,
+        'TrackSection',
+        dispatch
+      ).then((res) => {
+        setState((s) => ({
+          ...s,
+          trackSectionsCache: {
+            ...s.trackSectionsCache,
+            ...mapValues(res, (track) => ({ type: 'success', track } as TrackState)),
+          },
+        }));
+      });
     }
   }, [entity.properties?.track_ranges]);
 
@@ -115,17 +119,20 @@ export const CatenaryEditionLayers: FC = () => {
         },
       }));
 
-      getEntity<TrackSectionEntity>(infraId as number, hoveredItem.id, 'TrackSection').then(
-        (track) => {
-          setState((s) => ({
-            ...s,
-            trackSectionsCache: {
-              ...s.trackSectionsCache,
-              [hoveredItem.id]: { type: 'success', track },
-            },
-          }));
-        }
-      );
+      getEntity<TrackSectionEntity>(
+        infraId as number,
+        hoveredItem.id,
+        'TrackSection',
+        dispatch
+      ).then((track) => {
+        setState((s) => ({
+          ...s,
+          trackSectionsCache: {
+            ...s.trackSectionsCache,
+            [hoveredItem.id]: { type: 'success', track },
+          },
+        }));
+      });
     }
   }, [hoveredItem]);
 
