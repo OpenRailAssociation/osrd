@@ -1,28 +1,9 @@
-/* eslint-disable default-case */
-import { AnyAction, Dispatch } from 'redux';
-import { MapProps, ViewState } from 'react-map-gl/maplibre';
-import produce from 'immer';
-import { transformMapRequest as helperTransformRequest, gpsRound } from 'utils/helpers';
-import history from 'main/history';
 import { MAP_URL } from 'common/Map/const';
+import { MapProps, ViewState } from 'react-map-gl/maplibre';
 import { Position } from '@turf/helpers';
-
-// Action Types
-export const UPDATE_VIEWPORT = 'map/UPDATE_VIEWPORT';
-export const UPDATE_TRANSFORM_REQUEST = 'map/UPDATE_TRANSFORM_REQUEST';
-export const UPDATE_MAPSTYLE = 'map/UPDATE_MAPSTYLE';
-export const UPDATE_MAP_SEARCH_MARKER = 'map/UPDATE_MAP_SEARCH_MARKER';
-export const UPDATE_LINE_SEARCH_CODE = 'map/UPDATE_LINE_SEARCH_CODE';
-export const UPDATE_SHOW_IGN_BD_ORTHO = 'map/UPDATE_SHOW_IGN_BD_ORTHO';
-export const UPDATE_SHOW_IGN_SCAN25 = 'map/UPDATE_SHOW_IGN_SCAN25';
-export const UPDATE_SHOW_IGN_CADASTRE = 'map/UPDATE_SHOW_IGN_CADASTRE';
-export const UPDATE_SHOW_OSM = 'map/UPDATE_SHOW_OSM';
-export const UPDATE_SHOW_OSM_TRACKSECTIONS = 'map/UPDATE_SHOW_OSM_TRACKSECTIONS';
-export const UPDATE_FEATURE_INFO_HOVER = 'map/UPDATE_FEATURE_INFO_HOVER';
-export const UPDATE_FEATURE_INFO_CLICK = 'map/UPDATE_FEATURE_INFO_CLICK';
-export const UPDATE_LAYERS_SETTINGS = 'osrdconf/UPDATE_LAYERS_SETTINGS';
-export const UPDATE_SIGNALS_SETTINGS = 'osrdconf/UPDATE_SIGNALS_SETTINGS';
-export const UPDATE_TERRAIN_3D_EXAGGERATION = 'osrdconf/UPDATE_TERRAIN_3D_EXAGGERATION';
+import { transformMapRequest as helperTransformRequest, gpsRound } from 'utils/helpers';
+import { createSlice, Dispatch, PayloadAction } from '@reduxjs/toolkit';
+import history from 'main/history';
 
 export const transformMapRequest: MapProps['transformRequest'] = (url, resourceType) =>
   helperTransformRequest(url, resourceType, MAP_URL);
@@ -48,9 +29,7 @@ export interface MapState {
   showOSMtracksections: boolean;
   terrain3DExaggeration: number;
   viewport: Viewport;
-  featureInfoHoverID: unknown;
-  featureInfoClickID: unknown;
-  featureSource: unknown;
+  featureInfoClickID?: number;
   signalsSettings: {
     all: boolean;
     stops: boolean;
@@ -76,7 +55,7 @@ export interface MapState {
   lineSearchCode?: number;
 }
 
-export const initialState: MapState = {
+export const mapInitialState: MapState = {
   url: MAP_URL,
   mapStyle: 'normal',
   showIGNBDORTHO: false,
@@ -96,9 +75,7 @@ export const initialState: MapState = {
     height: 0,
     transformRequest: transformMapRequest,
   },
-  featureInfoHoverID: undefined,
   featureInfoClickID: undefined,
-  featureSource: undefined,
   signalsSettings: {
     all: false,
     stops: true,
@@ -124,69 +101,62 @@ export const initialState: MapState = {
   lineSearchCode: undefined,
 };
 
-// Reducer
-export default function reducer(inputState: MapState | undefined, action: AnyAction) {
-  const state = inputState || initialState;
-  return produce(state, (draft) => {
-    switch (action.type) {
-      case UPDATE_VIEWPORT:
-        draft.viewport = { ...draft.viewport, ...action.viewport };
-        break;
-      case UPDATE_TRANSFORM_REQUEST:
-        draft.viewport.transformRequest = transformMapRequest;
-        break;
-      case UPDATE_MAPSTYLE:
-        draft.mapStyle = action.mapStyle;
-        break;
-      case UPDATE_MAP_SEARCH_MARKER:
-        draft.mapSearchMarker = action.mapSearchMarker;
-        break;
-      case UPDATE_LINE_SEARCH_CODE:
-        draft.lineSearchCode = action.lineSearchCode;
-        break;
-      case UPDATE_SHOW_IGN_BD_ORTHO:
-        draft.showIGNBDORTHO = action.showIGNBDORTHO;
-        break;
-      case UPDATE_SHOW_IGN_SCAN25:
-        draft.showIGNSCAN25 = action.showIGNSCAN25;
-        break;
-      case UPDATE_SHOW_IGN_CADASTRE:
-        draft.showIGNCadastre = action.showIGNCadastre;
-        break;
-      case UPDATE_SHOW_OSM:
-        draft.showOSM = action.showOSM;
-        break;
-      case UPDATE_SHOW_OSM_TRACKSECTIONS:
-        draft.showOSMtracksections = action.showOSMtracksections;
-        break;
-      case UPDATE_FEATURE_INFO_HOVER:
-        draft.featureSource = action.featureSource;
-        draft.featureInfoHoverID = action.featureInfoHoverID;
-        break;
-      case UPDATE_FEATURE_INFO_CLICK:
-        draft.featureInfoClickID = action.featureInfoClickID;
-        break;
-      case UPDATE_LAYERS_SETTINGS:
-        draft.layersSettings = action.layersSettings;
-        break;
-      case UPDATE_SIGNALS_SETTINGS:
-        draft.signalsSettings = action.signalsSettings;
-        break;
-      case UPDATE_TERRAIN_3D_EXAGGERATION:
-        draft.terrain3DExaggeration = action.terrain3DExaggeration;
-        break;
-    }
-  });
-}
+const mapSlice = createSlice({
+  name: 'map',
+  initialState: mapInitialState,
+  reducers: {
+    updateViewportAction: (state, action: PayloadAction<Partial<Viewport>>) => {
+      state.viewport = { ...state.viewport, ...action.payload };
+    },
+    updateTransformRequest: (state, action: PayloadAction<Viewport['transformRequest']>) => {
+      state.viewport.transformRequest = action.payload;
+    },
+    updateMapStyle: (state, action: PayloadAction<MapState['mapStyle']>) => {
+      state.mapStyle = action.payload;
+    },
+    updateMapSearchMarker: (state, action: PayloadAction<MapState['mapSearchMarker']>) => {
+      state.mapSearchMarker = action.payload;
+    },
+    updateLineSearchCode: (state, action: PayloadAction<MapState['lineSearchCode']>) => {
+      state.lineSearchCode = action.payload;
+    },
+    updateShowIGNBDORTHO: (state, action: PayloadAction<MapState['showIGNBDORTHO']>) => {
+      state.showIGNBDORTHO = action.payload;
+    },
+    updateShowIGNSCAN25: (state, action: PayloadAction<MapState['showIGNSCAN25']>) => {
+      state.showIGNSCAN25 = action.payload;
+    },
+    updateShowIGNCadastre: (state, action: PayloadAction<MapState['showIGNCadastre']>) => {
+      state.showIGNCadastre = action.payload;
+    },
+    updateShowOSM: (state, action: PayloadAction<MapState['showOSM']>) => {
+      state.showOSM = action.payload;
+    },
+    updateShowOSMtracksections: (
+      state,
+      action: PayloadAction<MapState['showOSMtracksections']>
+    ) => {
+      state.showOSMtracksections = action.payload;
+    },
+    updateFeatureInfoClick: (state, action: PayloadAction<MapState['featureInfoClickID']>) => {
+      state.featureInfoClickID = action.payload;
+    },
+    updateLayersSettings: (state, action: PayloadAction<MapState['layersSettings']>) => {
+      state.layersSettings = action.payload;
+    },
+    updateSignalsSettings: (state, action: PayloadAction<MapState['signalsSettings']>) => {
+      state.signalsSettings = action.payload;
+    },
+    updateTerrain3DExaggeration: (
+      state,
+      action: PayloadAction<MapState['terrain3DExaggeration']>
+    ) => {
+      state.terrain3DExaggeration = action.payload;
+    },
+  },
+});
 
-// Action Creators
-function updateViewportAction(viewport: Partial<Viewport>) {
-  return {
-    type: UPDATE_VIEWPORT,
-    viewport,
-  };
-}
-
+// TODO Need this with routing ?
 // Functions
 export function updateViewport(
   viewport: Partial<Viewport>,
@@ -194,134 +164,37 @@ export function updateViewport(
   updateRouter = false
 ) {
   return (dispatch: Dispatch, getState: () => { map: MapState }) => {
-    dispatch(updateViewportAction(viewport));
+    dispatch(mapSlice.actions.updateViewportAction(viewport));
     if (baseUrl !== undefined && updateRouter) {
       const { map } = getState();
-      history.push(
-        `${baseUrl}/${gpsRound(viewport.latitude || map.viewport.latitude)}/${gpsRound(
-          viewport.longitude || map.viewport.longitude
-        )}/${gpsRound(viewport.zoom || map.viewport.zoom)}/${gpsRound(
-          viewport.bearing || map.viewport.bearing
-        )}/${gpsRound(viewport.pitch || map.viewport.pitch)}`
-      );
+      const latitude = gpsRound(viewport.latitude || map.viewport.latitude);
+      const longitude = gpsRound(viewport.longitude || map.viewport.longitude);
+      const zoom = gpsRound(viewport.zoom || map.viewport.zoom);
+      const bearing = gpsRound(viewport.bearing || map.viewport.bearing);
+      const pitch = gpsRound(viewport.pitch || map.viewport.pitch);
+
+      history.push(`${baseUrl}/${latitude}/${longitude}/${zoom}/${bearing}/${pitch}`);
     }
   };
 }
 
-export function updateMapStyle(mapStyle: MapState['mapStyle']) {
-  return (dispatch: Dispatch) => {
-    dispatch({
-      type: UPDATE_MAPSTYLE,
-      mapStyle,
-    });
-  };
-}
+export const mapSliceActions = mapSlice.actions;
 
-export function updateMapSearchMarker(mapSearchMarker: MapState['mapSearchMarker']) {
-  return {
-    type: UPDATE_MAP_SEARCH_MARKER,
-    mapSearchMarker,
-  };
-}
+export const {
+  updateFeatureInfoClick,
+  updateLayersSettings,
+  updateLineSearchCode,
+  updateMapSearchMarker,
+  updateMapStyle,
+  updateShowIGNBDORTHO,
+  updateShowIGNCadastre,
+  updateShowIGNSCAN25,
+  updateShowOSM,
+  updateShowOSMtracksections,
+  updateSignalsSettings,
+  updateTerrain3DExaggeration,
+  updateTransformRequest,
+  updateViewportAction,
+} = mapSliceActions;
 
-export function updateShowIGNBDORTHO(showIGNBDORTHO: MapState['showIGNBDORTHO']) {
-  return (dispatch: Dispatch) => {
-    dispatch({
-      type: UPDATE_SHOW_IGN_BD_ORTHO,
-      showIGNBDORTHO,
-    });
-  };
-}
-
-export function updateShowIGNSCAN25(showIGNSCAN25: MapState['showIGNSCAN25']) {
-  return (dispatch: Dispatch) => {
-    dispatch({
-      type: UPDATE_SHOW_IGN_SCAN25,
-      showIGNSCAN25,
-    });
-  };
-}
-
-export function updateShowIGNCadastre(showIGNCadastre: MapState['showIGNCadastre']) {
-  return (dispatch: Dispatch) => {
-    dispatch({
-      type: UPDATE_SHOW_IGN_CADASTRE,
-      showIGNCadastre,
-    });
-  };
-}
-
-export function updateShowOSM(showOSM: MapState['showOSM']) {
-  return (dispatch: Dispatch) => {
-    dispatch({
-      type: UPDATE_SHOW_OSM,
-      showOSM,
-    });
-  };
-}
-
-export function updateShowOSMtracksections(showOSMtracksections: MapState['showOSMtracksections']) {
-  return (dispatch: Dispatch) => {
-    dispatch({
-      type: UPDATE_SHOW_OSM_TRACKSECTIONS,
-      showOSMtracksections,
-    });
-  };
-}
-
-export function updateTerrain3DExaggeration(
-  terrain3DExaggeration: MapState['terrain3DExaggeration']
-) {
-  return (dispatch: Dispatch) => {
-    dispatch({
-      type: UPDATE_TERRAIN_3D_EXAGGERATION,
-      terrain3DExaggeration,
-    });
-  };
-}
-
-export function updateFeatureInfoHover(featureInfoHoverID: unknown, featureSource: unknown) {
-  return (dispatch: Dispatch) => {
-    dispatch({
-      type: UPDATE_FEATURE_INFO_HOVER,
-      featureInfoHoverID,
-      featureSource,
-    });
-  };
-}
-
-export function updateFeatureInfoClick(featureInfoClickID: unknown) {
-  return (dispatch: Dispatch) => {
-    dispatch({
-      type: UPDATE_FEATURE_INFO_CLICK,
-      featureInfoClickID,
-    });
-  };
-}
-
-export function updateLayersSettings(layersSettings: MapState['layersSettings']) {
-  return (dispatch: Dispatch) => {
-    dispatch({
-      type: UPDATE_LAYERS_SETTINGS,
-      layersSettings,
-    });
-  };
-}
-
-export function updateSignalsSettings(signalsSettings: MapState['signalsSettings']) {
-  return (dispatch: Dispatch) => {
-    dispatch({
-      type: UPDATE_SIGNALS_SETTINGS,
-      signalsSettings,
-    });
-  };
-}
-
-export function updateLineSearchCode(lineSearchCode: MapState['lineSearchCode']) {
-  return (dispatch: Dispatch) => {
-    dispatch({
-      type: UPDATE_LINE_SEARCH_CODE,
-      lineSearchCode,
-    });
-  };
-}
+export default mapSlice.reducer;

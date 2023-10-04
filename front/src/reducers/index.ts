@@ -10,7 +10,7 @@ import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 
 import userReducer, { UserState, userInitialState } from 'reducers/user';
 import mainReducer, { MainState, MainActions, initialState as mainInitialState } from './main';
-import mapReducer, { MapState, initialState as mapInitialState } from './map';
+import mapReducer, { MapState, mapInitialState } from './map';
 import editorReducer, { EditorActions, initialState as editorInitialState } from './editor';
 import osrdconfReducer, { initialState as osrdconfInitialState } from './osrdconf';
 // Dependency cycle will be removed during the refactoring of store
