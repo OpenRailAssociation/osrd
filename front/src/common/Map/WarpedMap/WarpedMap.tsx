@@ -20,7 +20,7 @@ import { EditorSource, SourcesDefinitionsIndex } from 'common/Map/Layers/GeoJSON
 import OrderedLayer, { OrderedLayerProps } from 'common/Map/Layers/OrderedLayer';
 import { genOSMLayerProps } from 'common/Map/Layers/OSM';
 import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
-import { transformMapRequest, Viewport } from 'reducers/map';
+import { Viewport } from 'reducers/map';
 import { getMap } from 'reducers/map/selectors';
 import { AllowancesSettings, Train } from 'reducers/osrdsimulation/types';
 
@@ -145,7 +145,7 @@ const WarpedMap: FC<{
       onMove={(e) => {
         setViewport({
           ...e.viewState,
-          transformRequest: transformMapRequest,
+          transformRequest: undefined,
           width: e.target.getContainer().offsetWidth,
           height: e.target.getContainer().offsetHeight,
         });
