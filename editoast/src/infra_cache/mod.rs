@@ -356,7 +356,7 @@ impl InfraCache {
 
         // Load signal tracks references
         sql_query(
-            "SELECT obj_id, data->>'track' AS track, (data->>'position')::float AS position FROM infra_object_signal WHERE infra_id = $1")
+            "SELECT obj_id, data->>'track' AS track, (data->>'position')::float AS position, data->'logical_signals' as logical_signals FROM infra_object_signal WHERE infra_id = $1")
         .bind::<BigInt, _>(infra_id)
         .load::<SignalCache>(conn).await?.into_iter().for_each(|signal|
             infra_cache.add(signal)
@@ -758,6 +758,7 @@ pub mod tests {
             obj_id: obj_id.as_ref().into(),
             track: track.as_ref().into(),
             position,
+            logical_signals: Default::default(),
         }
     }
 

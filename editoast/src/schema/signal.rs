@@ -12,7 +12,8 @@ use super::Side;
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
 use derivative::Derivative;
-use diesel::sql_types::{Double, Text};
+use diesel::sql_types::{Double, Jsonb, Text};
+use diesel_json::Json as DieselJson;
 
 use editoast_derive::InfraModel;
 use serde::{Deserialize, Serialize};
@@ -91,6 +92,9 @@ pub struct SignalCache {
     #[derivative(Hash = "ignore", PartialEq = "ignore")]
     #[diesel(sql_type = Double)]
     pub position: f64,
+    #[derivative(Hash = "ignore", PartialEq = "ignore")]
+    #[diesel(sql_type = Jsonb)]
+    pub logical_signals: DieselJson<Vec<LogicalSignal>>,
 }
 
 impl OSRDTyped for SignalCache {
@@ -116,18 +120,24 @@ impl Cache for SignalCache {
 }
 
 impl SignalCache {
-    pub fn new(obj_id: String, track: String, position: f64) -> Self {
+    pub fn new(
+        obj_id: String,
+        track: String,
+        position: f64,
+        logical_signals: Vec<LogicalSignal>,
+    ) -> Self {
         Self {
             obj_id,
             track,
             position,
+            logical_signals: DieselJson(logical_signals),
         }
     }
 }
 
 impl From<Signal> for SignalCache {
     fn from(sig: Signal) -> Self {
-        Self::new(sig.id.0, sig.track.0, sig.position)
+        Self::new(sig.id.0, sig.track.0, sig.position, sig.logical_signals)
     }
 }
 

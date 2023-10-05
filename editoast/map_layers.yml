@@ -25,13 +25,13 @@ layers:
       geo:
         on_field: geographic
         cache_duration: 3600
-        data_expr: signal.data || jsonb_build_object('angle', layer.angle_geo)
+        data_expr: signal.data - 'logical_signals' || jsonb_build_object('angle', layer.angle_geo, 'signaling_system', layer.signaling_system, 'sprite', layer.sprite)
         joins:
           - inner join infra_object_signal signal on signal.obj_id = layer.obj_id and signal.infra_id = layer.infra_id
       sch:
         on_field: schematic
         cache_duration: 3600
-        data_expr: signal.data || jsonb_build_object('angle', layer.angle_sch)
+        data_expr: signal.data - 'logical_signals' || jsonb_build_object('angle', layer.angle_sch, 'signaling_system', layer.signaling_system, 'sprite', layer.sprite)
         joins:
           - inner join infra_object_signal signal on signal.obj_id = layer.obj_id and signal.infra_id = layer.infra_id
 

@@ -157,6 +157,10 @@ diesel::table! {
         infra_id -> Int8,
         angle_geo -> Float8,
         angle_sch -> Float8,
+        #[max_length = 255]
+        signaling_system -> Nullable<Varchar>,
+        #[max_length = 255]
+        sprite -> Nullable<Varchar>,
     }
 }
 
