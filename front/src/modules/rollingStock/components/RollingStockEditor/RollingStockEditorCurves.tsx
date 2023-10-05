@@ -53,17 +53,23 @@ const EMPTY_PARAMS = {
   powerRestrictions: [],
 };
 
+type RollingStockEditorCurvesProps = {
+  data?: RollingStock;
+  currentRsEffortCurve: RollingStock['effort_curves'] | null;
+  setCurrentRsEffortCurve: Dispatch<SetStateAction<RollingStock['effort_curves'] | null>>;
+  selectedTractionMode: string | null;
+  powerRestrictionsClass: RollingStock['power_restrictions'];
+  setPowerRestrictionsClass: (data: RollingStock['power_restrictions']) => void;
+};
+
 export default function RollingStockEditorCurves({
   data,
   currentRsEffortCurve,
   setCurrentRsEffortCurve,
   selectedTractionMode,
-}: {
-  data?: RollingStock;
-  currentRsEffortCurve: RollingStock['effort_curves'] | null;
-  setCurrentRsEffortCurve: Dispatch<SetStateAction<RollingStock['effort_curves'] | null>>;
-  selectedTractionMode: string | null;
-}) {
+  powerRestrictionsClass,
+  setPowerRestrictionsClass,
+}: RollingStockEditorCurvesProps) {
   const { t } = useTranslation('rollingstock');
   const dispatch = useDispatch();
   const { openModal } = useModal();
@@ -424,19 +430,18 @@ export default function RollingStockEditorCurves({
     setCurrentRsEffortCurve(updatedCurrentRsEffortCurve);
   };
 
-  const removeAnotherRsParam = <K extends keyof RollingStockSelectorParam>(
-    value: RollingStockSelectorParam[K],
+  const removeAnotherRsParam = <K extends keyof EffortCurveCondKeys>(
+    value: EffortCurveCondKeys[K],
     title: K
   ) => {
     if (!currentRsEffortCurve) return;
+    const rsEffortCurveCondKey = effortCurveCondKeys[title as keyof EffortCurveCondKeys];
     const updatedModesCurves = Object.keys(currentRsEffortCurve.modes).reduce((acc, key) => {
-      const cleanedList = currentRsEffortCurve.modes[key].curves.filter((curve) => {
-        const rsEffortCurveCondKey = effortCurveCondKeys[title as keyof EffortCurveCondKeys];
-        return (
+      const cleanedList = currentRsEffortCurve.modes[key].curves.filter(
+        (curve) =>
           curve.cond &&
           curve.cond[rsEffortCurveCondKey as keyof ConditionalEffortCurve['cond']] !== value
-        );
-      });
+      );
 
       if (isEmpty(cleanedList)) return acc;
 
@@ -467,7 +472,7 @@ export default function RollingStockEditorCurves({
         request={() =>
           isTractionModeRemoved
             ? removeTractionMode(value as string)
-            : removeAnotherRsParam(value, title)
+            : removeAnotherRsParam(value as string, title)
         }
         buttonText={t('translation:common.confirm')}
       />
@@ -488,6 +493,16 @@ export default function RollingStockEditorCurves({
     selectedElectricalProfile,
     selectedPowerRestriction,
   ]);
+
+  const extraColumnData = useMemo(
+    () =>
+      data && {
+        defaultValue: data.base_power_class ?? '',
+        data: powerRestrictionsClass,
+        updateData: setPowerRestrictionsClass,
+      },
+    [data, powerRestrictionsClass]
+  );
 
   const { data: availableModes } = osrdEditoastApi.endpoints.getInfraVoltages.useQuery();
 
@@ -577,6 +592,7 @@ export default function RollingStockEditorCurves({
                     onItemHovered={setHoveredRollingstockParam}
                     onItemRemoved={confirmRsParamRemoval}
                     translationFile="rollingstock"
+                    extraColumn={extraColumnData}
                   />
                 </div>
               )}

@@ -33,6 +33,7 @@ const newRollingStockValues = {
   electricalPowerStartupTime: null,
   raisePantographTime: null,
   basePowerClass: null,
+  powerRestrictions: {},
 };
 
 export const getDefaultRollingStockMode = (
@@ -112,6 +113,7 @@ const getRollingStockEditorDefaultValues = (
         defaultMode: rollingStockData.effort_curves.default_mode,
         effortCurves,
         basePowerClass: rollingStockData.base_power_class,
+        powerRestrictions: rollingStockData.power_restrictions,
       }
     : {
         ...newRollingStockValues,
@@ -144,7 +146,7 @@ export const rollingStockEditorQueryArg = (
     type: 'davis',
   },
   loading_gauge: data.loadingGauge,
-  power_restrictions: {},
+  power_restrictions: data.powerRestrictions,
   energy_sources: [],
   electrical_power_startup_time: data.electricalPowerStartupTime,
   raise_pantograph_time: data.raisePantographTime,

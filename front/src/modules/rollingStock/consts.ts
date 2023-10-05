@@ -1,4 +1,9 @@
-import { Comfort, ConditionalEffortCurve, EffortCurve } from 'common/api/osrdEditoastApi';
+import {
+  Comfort,
+  ConditionalEffortCurve,
+  EffortCurve,
+  RollingStockBase,
+} from 'common/api/osrdEditoastApi';
 
 export const THERMAL_TRACTION_IDENTIFIER = 'thermal';
 export const STANDARD_COMFORT_LEVEL: Comfort = 'STANDARD';
@@ -55,7 +60,8 @@ export const effortCurveCondKeys: EffortCurveCondKeys = {
 };
 
 export type RollingStockParametersValues = {
-  [key: string]: string | number | null | EffortCurves;
+  // TODO: remove this line in the type
+  [key: string]: string | number | null | EffortCurves | RollingStockBase['power_restrictions'];
   railjsonVersion: string;
   name: string;
   detail: string;
@@ -76,7 +82,6 @@ export type RollingStockParametersValues = {
   gammaValue: number;
   inertiaCoefficient: number;
   loadingGauge: 'G1' | 'G2' | 'GA' | 'GB' | 'GB1' | 'GC' | 'FR3.3' | 'FR3.3/GB/G2' | 'GLOTT';
-  basePowerClass: string | null;
   rollingResistanceA: number;
   rollingResistanceB: number;
   rollingResistanceC: number;
@@ -84,6 +89,8 @@ export type RollingStockParametersValues = {
   raisePantographTime: number | null;
   defaultMode: string | null;
   effortCurves: EffortCurves;
+  basePowerClass: string | null;
+  powerRestrictions: RollingStockBase['power_restrictions'];
 };
 
 export type SchemaProperty = {

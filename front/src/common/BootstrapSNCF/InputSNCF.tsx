@@ -38,6 +38,7 @@ export type InputSNCFProps = {
   isFlex?: boolean;
   condensed?: boolean;
   textRight?: boolean;
+  disabled?: boolean;
 };
 
 const InputSNCF = ({
@@ -73,6 +74,7 @@ const InputSNCF = ({
   isFlex = false,
   condensed = false,
   textRight = false,
+  disabled = false,
 }: InputSNCFProps): JSX.Element => {
   // Build custom classes
   const formSize = sm ? 'form-control-sm' : '';
@@ -152,6 +154,7 @@ const InputSNCF = ({
               ref={(input) => (focus ? input && input.focus() : null)}
               min={min}
               max={max}
+              disabled={disabled}
               {...inputProps}
               step={step}
               onFocus={(e) => selectAllOnFocus && e.target.select()}
