@@ -264,8 +264,12 @@
 
   .selector-SNCF {
     width: 13rem;
+    &-with-extra-column {
+      width: 18rem;
+    }
     &-title {
       width: 90%;
+      white-space: nowrap;
     }
     &-itemslist {
       z-index: 1;
@@ -274,6 +278,16 @@
       border-radius: 0.3rem 0.3rem 0 0;
       height: 10.5rem;
       width: 90%;
+      .extra-column {
+        width: 4rem;
+
+        &.disabled {
+          input {
+            outline: solid 2px var(--coolgray3);
+            background-color: var(--coolgray1) !important;
+          }
+        }
+      }
     }
     &-trash-icon {
       visibility: hidden;
@@ -283,6 +297,9 @@
       background-color: var(--white);
       border-radius: 0.3rem;
       justify-content: space-between;
+      &.with-extra-column {
+        width: 11rem;
+      }
       &.selected {
         &.selector-blue {
           outline: 0.13rem solid var(--blue);

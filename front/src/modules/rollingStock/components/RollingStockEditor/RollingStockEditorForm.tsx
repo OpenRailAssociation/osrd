@@ -71,6 +71,10 @@ const RollingStockEditorForm = ({
 
   const [rollingStockValues, setRollingStockValues] = useState(defaultValues);
 
+  const [powerRestrictionsClass, setPowerRestrictionsClass] = useState<
+    RollingStock['power_restrictions']
+  >(defaultValues.powerRestrictions);
+
   const addNewRollingstock = (payload: RollingStockUpsertPayload) => () => {
     postRollingstock({
       locked: false,
@@ -203,6 +207,10 @@ const RollingStockEditorForm = ({
     }
   }, [rollingStockData]);
 
+  useEffect(() => {
+    setRollingStockValues({ ...rollingStockValues, powerRestrictions: powerRestrictionsClass });
+  }, [powerRestrictionsClass]);
+
   const tabRollingStockDetails: TabProps = {
     title: t('tabs.rollingStockDetails'),
     withWarning: false,
@@ -234,6 +242,8 @@ const RollingStockEditorForm = ({
         currentRsEffortCurve={currentRsEffortCurve}
         setCurrentRsEffortCurve={setCurrentRsEffortCurve}
         selectedTractionMode={selectedTractionMode}
+        powerRestrictionsClass={powerRestrictionsClass}
+        setPowerRestrictionsClass={setPowerRestrictionsClass}
       />
     ),
   };

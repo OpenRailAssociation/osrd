@@ -206,7 +206,7 @@ const RollingStockEditorParameterFormColumn = ({
             value={
               property.title !== 'basePowerClass'
                 ? (rollingStockValues[property.title] as number)
-                : (rollingStockValues[property.title] as string)
+                : rollingStockValues[property.title] ?? ''
             }
             onChange={(e) =>
               setRollingStockValues({

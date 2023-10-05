@@ -55,8 +55,8 @@ export default function RollingStockCardDetail({
     if (error) {
       dispatch(
         setFailure({
-          name: t('rollingstock:errorMessages.unableToRetrieveRollingStockMessage'),
-          message: t('rollingstock:errorMessages.unableToRetrieveRollingStock'),
+          name: t('errorMessages.unableToRetrieveRollingStockMessage'),
+          message: t('errorMessages.unableToRetrieveRollingStock'),
         })
       );
     }
@@ -124,7 +124,7 @@ export default function RollingStockCardDetail({
                 <tbody>
                   <tr>
                     <td className="text-primary text-nowrap pr-1">
-                      {t('powerRestrictions', {
+                      {t('powerRestrictionsInfos', {
                         count: Object.keys(rollingStock.power_restrictions).length,
                       })}
                     </td>
