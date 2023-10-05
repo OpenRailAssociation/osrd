@@ -18,6 +18,7 @@ import { getMap } from 'reducers/map/selectors';
 import { OSM_URL } from 'common/Map/const';
 import { simplifyFeature } from 'common/Map/WarpedMap/core/helpers';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
+import { transformMapRequest } from 'reducers/map';
 
 const TIME_LABEL = 'Loading OSRD and OSM data around warped path';
 
@@ -141,6 +142,7 @@ const DataLoader: FC<{
             ref={setMapRef}
             mapStyle={osmBlankStyle}
             style={{ width: '100%', height: '100%' }}
+            transformRequest={transformMapRequest}
           >
             {state === 'render' && (
               <>
