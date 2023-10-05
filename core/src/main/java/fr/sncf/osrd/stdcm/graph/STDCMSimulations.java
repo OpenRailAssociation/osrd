@@ -15,7 +15,7 @@ import fr.sncf.osrd.envelope.part.constraints.EnvelopeConstraint;
 import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint;
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
-import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;
+import fr.sncf.osrd.envelope_sim.allowances.LinearAllowance;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration;
@@ -130,7 +130,7 @@ public class STDCMSimulations {
         );
         var capacitySpeedLimit = 1; // We set a minimum because generating curves at very low speed can cause issues
         // TODO: add a parameter and set a higher default value once we can handle proper stops
-        var allowance = new MarecoAllowance(0, oldEnvelope.getEndPos(), capacitySpeedLimit, ranges);
+        var allowance = new LinearAllowance(0, oldEnvelope.getEndPos(), capacitySpeedLimit, ranges);
         try {
             return allowance.apply(oldEnvelope, context);
         } catch (OSRDError e) {
