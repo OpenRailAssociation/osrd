@@ -35,7 +35,7 @@ def _schedule_with_payload(editoast_url, payload, accept_400):
         if r.status_code // 100 == 4 and accept_400:
             return None
         raise RuntimeError(f"Schedule error {r.status_code}: {r.content}")
-    return r.json()["ids"][0]
+    return r.json()[0]
 
 
 def _stdcm_with_payload(editoast_url: str, payload):
@@ -57,7 +57,7 @@ def _reproduce_test(path_to_json: Path, scenario: Scenario, rolling_stock_id: in
     stop_after_pathfinding = fuzzer_output["error_type"] == "PATHFINDING"
     stop_after_schedule = fuzzer_output["error_type"] == "SCHEDULE"
 
-    assert "small_infra" == fuzzer_output["infra_name"]
+    assert fuzzer_output["infra_name"] in ["small_infra", "Small Infra"]
     timetable = scenario.timetable
     path_id = _pathfinding_with_payload(
         EDITOAST_URL, fuzzer_output["path_payload"], scenario.infra, stop_after_pathfinding

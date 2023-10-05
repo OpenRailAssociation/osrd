@@ -148,7 +148,7 @@ def test_new_train(
             schedule_payload=schedule_payload,
         )
 
-    schedule_id = r.json()["ids"][0]
+    schedule_id = r.json()[0]
     r = get_with_timeout(f"{editoast_url}train_schedule/{schedule_id}/result/")
     if r.status_code // 100 != 2:
         make_error(
@@ -551,7 +551,7 @@ def make_payload_schedule(scenario: Scenario, path: int, rolling_stock: int, pat
                 "departure_time": random.randint(0, 3600 * 24),
                 "allowances": make_random_allowances(path_length),
                 "initial_speed": 0,
-                "rolling_stock": rolling_stock,
+                "rolling_stock_id": rolling_stock,
                 "speed_limit_category": "foo",
             }
         ],
