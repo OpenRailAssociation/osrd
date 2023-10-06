@@ -104,7 +104,12 @@ public class PathPropUtils {
             for (var chunk : chunksOnTrack)
                 chunks.add(DirStaticIdxKt.from(chunk, dir));
         }
-        var startOffset = fromMeters(trackRanges.get(0).begin);
+        var firstRange = trackRanges.get(0);
+        var startOffset = fromMeters(firstRange.begin);
+        if (firstRange.direction == EdgeDirection.STOP_TO_START) {
+            var firstTrackId = getTrackSectionFromNameOrThrow(trackRanges.get(0).trackSectionID, rawInfra);
+            startOffset = rawInfra.getTrackSectionLength(firstTrackId) - fromMeters(firstRange.end);
+        }
         var endOffset = startOffset + fromMeters(
                 trackRanges.stream()
                         .mapToDouble(r -> r.end - r.begin)
