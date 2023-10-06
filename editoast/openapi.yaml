@@ -4788,6 +4788,7 @@ paths:
       summary: Create a batch of train schedule and run simulations accordingly
       tags:
       - train_schedule
+      - timetable
   /train_schedule/{id}/:
     delete:
       parameters:

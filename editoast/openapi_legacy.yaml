@@ -2094,6 +2094,7 @@ paths:
     post:
       tags:
         - train_schedule
+        - timetable
       summary: Create a batch of train schedule and run simulations accordingly
       requestBody:
         description: The list of train schedules to simulate
