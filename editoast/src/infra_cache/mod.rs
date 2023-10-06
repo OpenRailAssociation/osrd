@@ -265,9 +265,10 @@ pub struct OperationalPointQueryable {
 
 impl From<OperationalPointQueryable> for OperationalPointCache {
     fn from(op: OperationalPointQueryable) -> Self {
+        let parts: Vec<OperationalPointPart> = serde_json::from_str(&op.parts).unwrap();
         Self {
             obj_id: op.obj_id,
-            parts: serde_json::from_str(&op.parts).unwrap(),
+            parts: parts.into_iter().map(|p| p.into()).collect(),
         }
     }
 }
@@ -564,7 +565,7 @@ pub mod tests {
     use crate::schema::utils::{Identifier, NonBlankString};
     use crate::schema::{
         ApplicableDirections, ApplicableDirectionsTrackRange, Catenary, Direction, Endpoint,
-        OSRDIdentified, OperationalPoint, OperationalPointPart, Route, SpeedSection, Switch,
+        OSRDIdentified, OperationalPoint, OperationalPointPartCache, Route, SpeedSection, Switch,
         SwitchPortConnection, SwitchType, TrackEndpoint, TrackSectionLink, Waypoint,
     };
     use actix_web::test as actix_test;
@@ -832,7 +833,7 @@ pub mod tests {
     ) -> OperationalPointCache {
         OperationalPointCache {
             obj_id: obj_id.as_ref().into(),
-            parts: vec![OperationalPointPart {
+            parts: vec![OperationalPointPartCache {
                 track: track.as_ref().into(),
                 position,
             }],

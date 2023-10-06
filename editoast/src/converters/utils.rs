@@ -442,6 +442,7 @@ pub fn detector(signal: &Signal) -> Detector {
         } else {
             ApplicableDirections::StopToStart
         },
+        extensions: Default::default(),
     }
 }
 
@@ -454,6 +455,7 @@ pub fn edge_to_buffer(node: &NodeId, edge: &Edge, count: i64) -> BufferStop {
         } else {
             edge.length()
         },
+        extensions: Default::default(),
     }
 }
 
@@ -498,7 +500,7 @@ pub fn operational_points(
                 .flat_map(|node| {
                     nodes_to_tracks
                         .track_and_position(node)
-                        .map(|(track, position)| OperationalPointPart { track, position })
+                        .map(|(track, position)| OperationalPointPart { track, position, extensions: Default::default() })
                 })
                 .collect();
             // Parts can be empty when the stop_area references stops that are not railway (e.g. bus station)

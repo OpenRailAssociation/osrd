@@ -65,6 +65,7 @@ pub struct SignalSncfExtension {
     pub support_type: String,
     pub type_code: String,
     pub value: String,
+    pub kp: String,
 }
 
 impl OSRDTyped for Signal {

@@ -16,6 +16,8 @@ pub struct BufferStop {
     #[derivative(Default(value = r#""InvalidRef".into()"#))]
     pub track: Identifier,
     pub position: f64,
+    #[serde(default)]
+    pub extensions: BufferStopExtension,
 }
 
 impl OSRDTyped for BufferStop {
@@ -79,6 +81,18 @@ impl From<BufferStop> for BufferStopCache {
     fn from(stop: BufferStop) -> Self {
         Self::new(stop.id.0, stop.track.0, stop.position)
     }
+}
+
+#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
+pub struct BufferStopExtension {
+    pub sncf: Option<BufferStopSncfExtension>,
+}
+
+#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
+pub struct BufferStopSncfExtension {
+    pub kp: String,
 }
 
 #[cfg(test)]
