@@ -8,7 +8,7 @@ from pydantic.fields import FieldInfo
 
 ALL_OBJECT_TYPES = []
 
-RAILJSON_INFRA_VERSION_TYPE = Literal["3.4.2"]
+RAILJSON_INFRA_VERSION_TYPE = Literal["3.4.3"]
 RAILJSON_INFRA_VERSION = get_args(RAILJSON_INFRA_VERSION_TYPE)[0]
 
 # Traits
@@ -435,6 +435,7 @@ class Sign(TrackLocationTrait):
     value: Optional[NonBlankStr] = Field(
         description="If the sign is an announcement, precise the value(s)", default=None
     )
+    kp: NonBlankStr = Field(description="Kilometric point of the sign")
 
 
 class NeutralSection(BaseObjectTrait):
@@ -547,6 +548,11 @@ class OperationalPointSncfExtension(BaseModel):
     trigram: str = Field(description="Unique SNCF trigram of the operational point", min_length=1, max_length=3)
 
 
+@register_extension(object=OperationalPointPart, name="sncf")
+class OperationalPointPartSncfExtension(BaseModel):
+    kp: str = Field(description="Kilometric point of the operational point part")
+
+
 @register_extension(object=OperationalPoint, name="identifier")
 class OperationalPointIdentifierExtension(BaseModel):
     name: NonBlankStr = Field(description="Name of the operational point")
@@ -572,6 +578,7 @@ class SignalSncfExtension(BaseModel):
     support_type: str
     type_code: str
     value: str
+    kp: str = Field(description="Kilometric point of the signal")
 
 
 @register_extension(object=SpeedSection, name="psl_sncf")
@@ -579,6 +586,16 @@ class SpeedSectionPslSncfExtension(BaseModel):
     announcement: List[Sign] = Field(description="Precise the value(s) of the speed")
     z: Sign = Field(description="Beginning of the psl speed section")
     r: List[Sign] = Field(description="End of the psl speed section")
+
+
+@register_extension(object=BufferStop, name="sncf")
+class BufferStopSncfExtension(BaseModel):
+    kp: str = Field(description="Kilometric point of the buffer stop")
+
+
+@register_extension(object=Detector, name="sncf")
+class DetectorSncfExtension(BaseModel):
+    kp: str = Field(description="Kilometric point of the detector")
 
 
 # Rebuild all classes to integrate extensions in schema

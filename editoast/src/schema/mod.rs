@@ -28,7 +28,7 @@ pub use geo_json::GeoJson;
 pub use neutral_section::NeutralSection;
 pub use operational_point::{
     OperationalPoint, OperationalPointCache, OperationalPointExtensions,
-    OperationalPointIdentifierExtension, OperationalPointPart,
+    OperationalPointIdentifierExtension, OperationalPointPart, OperationalPointPartCache,
 };
 pub use railjson::{find_objects, RailJson, RailjsonError};
 pub use route::Route;
@@ -341,6 +341,7 @@ pub struct Sign {
     #[serde(rename = "type")]
     pub sign_type: NonBlankString,
     pub value: Option<NonBlankString>,
+    pub kp: Option<NonBlankString>,
 }
 
 #[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq)]

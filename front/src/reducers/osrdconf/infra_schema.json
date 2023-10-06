@@ -113,6 +113,14 @@
         "BufferStop": {
             "description": "This class defines the buffer stop object.\n    A buffer stop is a device placed at the end of a dead-end road\n    to stop any drifting trains from continuing off the road.\n    A buffer stop is characterized by its id and its corresponding track.\n    ",
             "properties": {
+                "extensions": {
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/BufferStopExtensions"
+                        }
+                    ],
+                    "default": null
+                },
                 "id": {
                     "description": "Unique identifier of the object",
                     "maxLength": 255,
@@ -142,6 +150,20 @@
             "title": "BufferStop",
             "type": "object"
         },
+        "BufferStopExtensions": {
+            "properties": {
+                "sncf": {
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/BufferStopSncfExtension"
+                        }
+                    ],
+                    "default": null
+                }
+            },
+            "title": "BufferStopExtensions",
+            "type": "object"
+        },
         "BufferStopReference": {
             "properties": {
                 "id": {
@@ -161,6 +183,20 @@
                 "id"
             ],
             "title": "BufferStopReference",
+            "type": "object"
+        },
+        "BufferStopSncfExtension": {
+            "properties": {
+                "kp": {
+                    "description": "Kilometric point of the buffer stop",
+                    "title": "Kp",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "kp"
+            ],
+            "title": "BufferStopSncfExtension",
             "type": "object"
         },
         "Catenary": {
@@ -236,6 +272,14 @@
                     ],
                     "description": "Direction of the application of the detector"
                 },
+                "extensions": {
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/DetectorExtensions"
+                        }
+                    ],
+                    "default": null
+                },
                 "id": {
                     "description": "Unique identifier of the object",
                     "maxLength": 255,
@@ -266,6 +310,20 @@
             "title": "Detector",
             "type": "object"
         },
+        "DetectorExtensions": {
+            "properties": {
+                "sncf": {
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/DetectorSncfExtension"
+                        }
+                    ],
+                    "default": null
+                }
+            },
+            "title": "DetectorExtensions",
+            "type": "object"
+        },
         "DetectorReference": {
             "properties": {
                 "id": {
@@ -285,6 +343,20 @@
                 "id"
             ],
             "title": "DetectorReference",
+            "type": "object"
+        },
+        "DetectorSncfExtension": {
+            "properties": {
+                "kp": {
+                    "description": "Kilometric point of the detector",
+                    "title": "Kp",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "kp"
+            ],
+            "title": "DetectorSncfExtension",
             "type": "object"
         },
         "Direction": {
@@ -845,7 +917,7 @@
             "type": "string"
         },
         "Sign": {
-            "description": "This class is used to define signs.\n    This is a physical, ponctual, cosmetic object.\n    ",
+            "description": "This class is used to define signs.\n    This is a physical, punctual, cosmetic object.\n    ",
             "properties": {
                 "angle_geo": {
                     "default": 0,
@@ -858,6 +930,12 @@
                     "description": "Schematic angle in degrees",
                     "title": "Angle Sch",
                     "type": "number"
+                },
+                "kp": {
+                    "description": "Kilometric point of the sign",
+                    "minLength": 1,
+                    "title": "Kp",
+                    "type": "string"
                 },
                 "position": {
                     "description": "Offset of the point in meters to the beginning of the track section",
@@ -905,7 +983,8 @@
             "required": [
                 "track",
                 "position",
-                "type"
+                "type",
+                "kp"
             ],
             "title": "Sign",
             "type": "object"
@@ -1040,6 +1119,11 @@
                     "title": "Is Operational",
                     "type": "boolean"
                 },
+                "kp": {
+                    "description": "Kilometric point of the signal",
+                    "title": "Kp",
+                    "type": "string"
+                },
                 "label": {
                     "title": "Label",
                     "type": "string"
@@ -1077,7 +1161,8 @@
                 "label",
                 "support_type",
                 "type_code",
-                "value"
+                "value",
+                "kp"
             ],
             "title": "SignalSncfExtension",
             "type": "object"
@@ -1746,8 +1831,8 @@
             "type": "array"
         },
         "version": {
-            "const": "3.4.2",
-            "default": "3.4.2",
+            "const": "3.4.3",
+            "default": "3.4.3",
             "description": "Version of the schema",
             "title": "Version"
         }

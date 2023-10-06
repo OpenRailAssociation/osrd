@@ -70,6 +70,7 @@ class Signal:
                     "support_type": "",
                     "type_code": "",
                     "value": "",
+                    "kp": "",
                 }
             },
         )

@@ -340,11 +340,13 @@ mod tests {
             id: "buffer_begin".into(),
             position: 0.,
             track: "track".into(),
+            extensions: Default::default(),
         };
         let buffer_end = BufferStop {
             id: "buffer_end".into(),
             position: 1.,
             track: "track".into(),
+            extensions: Default::default(),
         };
 
         RailJson {

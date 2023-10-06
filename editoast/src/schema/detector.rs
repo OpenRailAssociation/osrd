@@ -24,6 +24,8 @@ pub struct Detector {
     pub track: Identifier,
     pub position: f64,
     pub applicable_directions: ApplicableDirections,
+    #[serde(default)]
+    pub extensions: DetectorExtension,
 }
 
 impl OSRDTyped for Detector {
@@ -87,6 +89,18 @@ impl Cache for DetectorCache {
     fn get_object_cache(&self) -> ObjectCache {
         ObjectCache::Detector(self.clone())
     }
+}
+
+#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
+pub struct DetectorExtension {
+    pub sncf: DetectorSncfExtension,
+}
+
+#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
+pub struct DetectorSncfExtension {
+    pub kp: String,
 }
 
 #[cfg(test)]
