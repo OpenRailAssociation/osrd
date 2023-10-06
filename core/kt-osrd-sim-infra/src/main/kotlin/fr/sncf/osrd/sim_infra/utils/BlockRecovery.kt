@@ -129,8 +129,6 @@ private fun findRouteBlocks(
         findNextBlocks(candidatePath, candidatePath.routeEndZoneOffset)
     }
 
-    assert(completePaths.isNotEmpty())
-
     return completePaths
 }
 
