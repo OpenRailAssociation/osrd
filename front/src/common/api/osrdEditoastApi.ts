@@ -609,7 +609,7 @@ const injectedRtkApi = api
           method: 'POST',
           body: queryArg.body,
         }),
-        invalidatesTags: ['train_schedule'],
+        invalidatesTags: ['train_schedule', 'timetable'],
       }),
       deleteTrainScheduleById: build.mutation<
         DeleteTrainScheduleByIdApiResponse,

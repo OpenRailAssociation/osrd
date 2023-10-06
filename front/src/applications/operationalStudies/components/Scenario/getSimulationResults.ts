@@ -20,7 +20,6 @@ import { SerializedError } from '@reduxjs/toolkit';
 /**
  * Recover the time table for all the trains
  */
-
 export default async function getSimulationResults(
   timetable: TimetableWithSchedulesDetails,
   selectedTrainId?: number
@@ -29,7 +28,7 @@ export default async function getSimulationResults(
   store.dispatch(updateIsUpdating(true));
   const trainSchedulesIDs = timetable.train_schedule_summaries.map((train) => train.id);
 
-  if (trainSchedulesIDs && trainSchedulesIDs.length > 0) {
+  if (trainSchedulesIDs.length > 0) {
     if (!selectedTrainId || !trainSchedulesIDs.includes(selectedTrainId)) {
       store.dispatch(updateSelectedTrainId(trainSchedulesIDs[0]));
     }

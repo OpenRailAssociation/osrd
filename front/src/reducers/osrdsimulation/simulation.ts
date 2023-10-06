@@ -33,23 +33,25 @@ const apiSyncOnDiff = (
   nextPresent: SimulationSnapshot,
   dispatch = noop
 ) => {
-  // If there is not mod don't do anything
+  // if there is no modification, don't do anything
   if (simulationEquals(present, nextPresent)) return;
-  // test missing trains and apply delete api
 
-  for (let i = 0; i < present.trains?.length; i += 1) {
-    const presentTrain = present.trains[i];
+  present.trains.forEach((presentTrain) => {
+    const { id } = presentTrain;
+
+    // if train is stdcm, it is not persisted in the backend
+    // so it should not be fetched/updated in the backend too
+    if (id === 1500) return;
+
     const apiDetailsForPresentTrain = JSON.stringify(getTrainDetailsForAPI(presentTrain));
-    const { id } = present.trains[i];
 
     const nextTrain = (nextPresent.trains as SimulationReport[]).find((train) => train.id === id);
     const apiDetailsForNextTrain = nextTrain
       ? JSON.stringify(getTrainDetailsForAPI(nextTrain))
       : undefined;
 
-    // This trains is absent from the future simulation state.
+    // the train is absent from the future simulation state, so remove it
     if (!nextTrain) {
-      // Call delete API (await)
       try {
         dispatch(osrdEditoastApi.endpoints.deleteTrainScheduleById.initiate({ id }));
       } catch (deleteTrainScheduleError) {
@@ -65,10 +67,10 @@ const apiSyncOnDiff = (
     } else if (
       JSON.stringify(apiDetailsForNextTrain) !== JSON.stringify(apiDetailsForPresentTrain)
     ) {
-      // train exists, but is different. Patch this train
+      // the train exists but has been modified. Patch this train
       changeTrain(getTrainDetailsForAPI(nextTrain), nextTrain.id)(dispatch);
     }
-  }
+  });
 };
 
 // THUNKS
@@ -104,7 +106,7 @@ export const persistentUpdateSimulation = (simulation: SimulationSnapshot) =>
     apiSyncOnDiff(present, nextPresent, dispatch);
 
     // do the undo:
-    updateSimulation(simulation);
+    dispatch(updateSimulation(simulation));
   };
 
 const undoable = (simulationReducer: Reducer<SimulationSnapshot, AnyAction>) => {

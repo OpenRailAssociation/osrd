@@ -4,11 +4,10 @@ import cx from 'classnames';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import Map from 'modules/trainschedule/components/ImportTrainSchedule/Map';
 import { useTranslation } from 'react-i18next';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { getRollingStockID } from 'reducers/osrdconf/selectors';
 import generatePathfindingPayload from 'modules/trainschedule/components/ImportTrainSchedule/generatePathfindingPayload';
 import generateTrainSchedulesPayload from 'modules/trainschedule/components/ImportTrainSchedule/generateTrainSchedulesPayload';
-import getSimulationResults from 'applications/operationalStudies/components/Scenario/getSimulationResults';
 import {
   initialViewport,
   initialStatus,
@@ -20,7 +19,6 @@ import {
   TrainScheduleBatchItem,
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
-import { updateReloadTimetable } from 'reducers/osrdsimulation/actions';
 import { compact } from 'lodash';
 import Spacer from 'common/Spacer';
 import {
@@ -55,14 +53,11 @@ const ImportTrainScheduleModal = ({
   trains,
 }: ImportTrainScheduleModalProps) => {
   const { t } = useTranslation(['operationalStudies/importTrainSchedule']);
-  const dispatch = useDispatch();
   const rollingStockID = useSelector(getRollingStockID);
 
   const [postPathFinding] = osrdEditoastApi.endpoints.postPathfinding.useMutation();
   const [postTrainSchedule] =
     osrdEditoastApi.endpoints.postTrainScheduleStandaloneSimulation.useMutation();
-  const [getTimetableWithTrainSchedulesDetails] =
-    osrdEditoastApi.endpoints.getTimetableById.useLazyQuery();
 
   const [trainsWithPathRef, setTrainsWithPathRef] = useState<TrainScheduleWithPathRef[]>([]);
   const [trainsWithPath, setTrainsWithPath] = useState<TrainScheduleWithPath[]>([]);
@@ -226,16 +221,6 @@ const ImportTrainScheduleModal = ({
       await postTrainSchedule({ body: payload }).unwrap();
     } catch (error) {
       return false;
-    }
-
-    try {
-      const timetable = await getTimetableWithTrainSchedulesDetails({
-        id: timetableId,
-      }).unwrap();
-      await Promise.resolve(dispatch(updateReloadTimetable(false)));
-      getSimulationResults(timetable);
-    } catch (error) {
-      console.error(error);
     }
     return true;
   }

@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { FaDownload, FaPlus, FaTrash } from 'react-icons/fa';
@@ -8,7 +8,6 @@ import cx from 'classnames';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useDebounce } from 'utils/helpers';
 import {
-  updateMustRedraw,
   updateReloadTimetable,
   updateSelectedProjection,
   updateSelectedTrainId,
@@ -20,12 +19,7 @@ import { getTimetableID, getTrainScheduleIDsToModify } from 'reducers/osrdconf/s
 import { OsrdSimulationState, ScheduledTrain } from 'reducers/osrdsimulation/types';
 import { updateTrainScheduleIDsToModify } from 'reducers/osrdconf';
 import { valueToInterval } from 'utils/numbers';
-import {
-  Conflict,
-  GetTimetableByIdApiResponse,
-  Infra,
-  osrdEditoastApi,
-} from 'common/api/osrdEditoastApi';
+import { Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { durationInSeconds } from 'utils/timeManipulation';
 import {
   getReloadTimetable,
@@ -38,7 +32,7 @@ import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import ConflictsList from 'modules/conflict/components/ConflictsList';
 import findTrainsDurationsIntervals from 'modules/trainschedule/components/ManageTrainSchedule/helpers/trainsDurationsIntervals';
-import getSimulationResults from '../../../../applications/operationalStudies/components/Scenario/getSimulationResults';
+import getSimulationResults from 'applications/operationalStudies/components/Scenario/getSimulationResults';
 import TimetableTrainCard from './TimetableTrainCard';
 
 type Props = {
@@ -57,12 +51,9 @@ export default function Timetable({
   const timetableID = useSelector(getTimetableID);
   const trainScheduleIDsToModify = useSelector(getTrainScheduleIDsToModify);
   const reloadTimetable = useSelector(getReloadTimetable);
+
   const [filter, setFilter] = useState('');
-  const [trainsList, setTrainsList] = useState<ScheduledTrain[]>();
-  const [trainsDurationsIntervals, setTrainsDurationsIntervals] = useState<number[]>();
   const [conflictsListExpanded, setConflictsListExpanded] = useState(false);
-  const [timetable, setTimetable] = useState<GetTimetableByIdApiResponse>();
-  const [conflicts, setConflicts] = useState<Conflict[]>([]);
   const [multiselectOn, setMultiselectOn] = useState<boolean>(false);
   const [selectedTrainIds, setSelectedTrainIds] = useState<number[]>([]);
   const { openModal } = useContext(ModalContext);
@@ -78,28 +69,63 @@ export default function Timetable({
   const [deleteTrainScheduleById] = osrdEditoastApi.endpoints.deleteTrainScheduleById.useMutation();
   const [deleteTrainSchedules] = osrdEditoastApi.endpoints.deleteTrainSchedule.useMutation();
 
-  const [getTimetableWithTrainSchedulesDetails] = osrdEditoastApi.useLazyGetTimetableByIdQuery();
-  const [getTimetableConflicts] = osrdEditoastApi.useLazyGetTimetableByIdConflictsQuery();
+  const { data: timetable, refetch: refetchTimetable } =
+    osrdEditoastApi.endpoints.getTimetableById.useQuery(
+      { id: timetableID as number },
+      { skip: !timetableID || infraState !== 'CACHED' }
+    );
+
+  const { data: conflicts = [], refetch: refetchConflicts } =
+    osrdEditoastApi.endpoints.getTimetableByIdConflicts.useQuery(
+      { id: timetableID as number },
+      { skip: !timetableID }
+    );
+
+  useEffect(() => {
+    if (timetable) {
+      getSimulationResults(timetable);
+      refetchConflicts();
+    }
+  }, [timetable]);
+
+  const trainsDurationsIntervals = useMemo(
+    () =>
+      timetable?.train_schedule_summaries
+        ? findTrainsDurationsIntervals(timetable.train_schedule_summaries)
+        : [],
+    [timetable]
+  );
+
+  const isTrainFiltered = (train: ScheduledTrain, debounce?: string): boolean => {
+    if (debounce) {
+      return (
+        !train.train_name.toLowerCase().includes(debouncedTerm.toLowerCase()) &&
+        !train.labels.join('').toLowerCase().includes(debouncedTerm.toLowerCase())
+      );
+    }
+    return false;
+  };
+
+  const trainsList = useMemo(() => {
+    if (timetable) {
+      return timetable.train_schedule_summaries.map((train) => ({
+        ...train,
+        isFiltered: isTrainFiltered(train, debouncedTerm),
+        duration: durationInSeconds(train.departure_time, train.arrival_time),
+      }));
+    }
+    return [];
+  }, [timetable, trainsDurationsIntervals, debouncedTerm]);
 
   const changeSelectedTrainId = (trainId: number) => {
     dispatch(updateSelectedTrainId(trainId));
-    dispatch(updateMustRedraw(true));
-  };
-
-  const refreshTimeTable = async () => {
-    dispatch(updateReloadTimetable(true));
-    const currentTimetable = await getTimetableWithTrainSchedulesDetails({
-      id: timetableID as number,
-    }).unwrap();
-    getSimulationResults(currentTimetable);
-    dispatch(updateReloadTimetable(false));
   };
 
   const deleteSingleTrain = async (train: ScheduledTrain) => {
     deleteTrainScheduleById({ id: train.id })
       .unwrap()
       .then(() => {
-        refreshTimeTable();
+        refetchTimetable();
         setMultiselectOn(false);
         dispatch(
           setSuccess({
@@ -158,7 +184,7 @@ export default function Timetable({
       })
         .unwrap()
         .then(() => {
-          refreshTimeTable();
+          refetchTimetable();
           dispatch(
             setSuccess({
               title: t('timetable.trainAdded'),
@@ -197,16 +223,6 @@ export default function Timetable({
     setConflictsListExpanded(!conflictsListExpanded);
   };
 
-  const isTrainFiltered = (train: ScheduledTrain, debounce?: string): boolean => {
-    if (debounce) {
-      return (
-        !train.train_name.toLowerCase().includes(debouncedTerm.toLowerCase()) &&
-        !train.labels.join('').toLowerCase().includes(debouncedTerm.toLowerCase())
-      );
-    }
-    return false;
-  };
-
   const isProjectionPathUsed = (
     infraStateStatus: Infra['state'],
     trainId: number,
@@ -239,14 +255,13 @@ export default function Timetable({
 
   const selectAllTrains = () => {
     if (
-      trainsList &&
       trainsList.filter((train: ScheduledTrain) => !train.isFiltered).length ===
-        selectedTrainIds.length
+      selectedTrainIds.length
     ) {
       setSelectedTrainIds([]);
     } else {
       const trainIds =
-        trainsList?.filter((train: ScheduledTrain) => !train.isFiltered).map((train) => train.id) ||
+        trainsList.filter((train: ScheduledTrain) => !train.isFiltered).map((train) => train.id) ||
         [];
       setSelectedTrainIds(trainIds);
     }
@@ -257,7 +272,7 @@ export default function Timetable({
     await deleteTrainSchedules({ body: { ids: selectedTrainIds } })
       .unwrap()
       .then(() => {
-        refreshTimeTable();
+        refetchTimetable();
         setMultiselectOn(false);
         dispatch(
           setSuccess({
@@ -284,52 +299,8 @@ export default function Timetable({
   }, [multiselectOn]);
 
   useEffect(() => {
-    if (timetable && timetable.train_schedule_summaries) {
-      const scheduledTrains = timetable.train_schedule_summaries;
-
-      const trainsListWithFilterAndDuration = scheduledTrains.map((train: ScheduledTrain) => ({
-        ...train,
-        isFiltered: isTrainFiltered(train, debouncedTerm),
-        duration: durationInSeconds(train.departure_time, train.arrival_time),
-      }));
-      setTrainsList(trainsListWithFilterAndDuration);
-    }
-  }, [trainsDurationsIntervals, debouncedTerm]);
-
-  useEffect(() => {
-    if (infraState === 'CACHED' && timetableID) {
-      getTimetableWithTrainSchedulesDetails({ id: timetableID })
-        .unwrap()
-        .then((timetableWithTrainSchedules) => {
-          setTimetable(timetableWithTrainSchedules);
-          setTrainsDurationsIntervals(
-            findTrainsDurationsIntervals(timetableWithTrainSchedules.train_schedule_summaries)
-          );
-          if (!isEmpty(timetableWithTrainSchedules.train_schedule_summaries)) {
-            getSimulationResults(timetableWithTrainSchedules, selectedTrainId);
-          }
-        });
-    }
-  }, [infraState]);
-
-  useEffect(() => {
     if (timetableID && !reloadTimetable) {
-      getTimetableWithTrainSchedulesDetails({ id: timetableID })
-        .unwrap()
-        .then((result) => {
-          setTimetable(result);
-          if (result.train_schedule_summaries) {
-            setTrainsDurationsIntervals(
-              findTrainsDurationsIntervals(result.train_schedule_summaries)
-            );
-          }
-        });
-
-      getTimetableConflicts({ id: timetableID })
-        .unwrap()
-        .then((data) => {
-          setConflicts(data as Conflict[]);
-        });
+      refetchTimetable();
     }
   }, [reloadTimetable]);
 
@@ -373,9 +344,8 @@ export default function Timetable({
             type="checkbox"
             className="mr-2"
             checked={
-              trainsList &&
               selectedTrainIds.length ===
-                trainsList.filter((train: ScheduledTrain) => !train.isFiltered).length
+              trainsList.filter((train: ScheduledTrain) => !train.isFiltered).length
             }
             onChange={() => selectAllTrains()}
           />
@@ -383,9 +353,7 @@ export default function Timetable({
         <div className="small">
           {multiselectOn && <span>{selectedTrainIds.length} / </span>}
           {t('trainCount', {
-            count: trainsList
-              ? trainsList.filter((train: ScheduledTrain) => !train.isFiltered).length
-              : 0,
+            count: trainsList.filter((train: ScheduledTrain) => !train.isFiltered).length,
           })}
         </div>
         <div className="flex-grow-1">
@@ -440,8 +408,7 @@ export default function Timetable({
           conflictsListExpanded && 'expanded'
         )}
       >
-        {trainsList &&
-          trainsDurationsIntervals &&
+        {trainsDurationsIntervals &&
           trainsList
             .sort((trainA, trainB) => trainA.departure_time - trainB.departure_time)
             .map(
