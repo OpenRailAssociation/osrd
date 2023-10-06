@@ -32,7 +32,8 @@ use clap::Parser;
 use client::{
     ClearArgs, Client, Color, Commands, DeleteProfileSetArgs, ElectricalProfilesCommands,
     GenerateArgs, ImportProfileSetArgs, ImportRailjsonArgs, ImportRollingStockArgs,
-    ListProfileSetArgs, PostgresConfig, RedisConfig, RunserverArgs,
+    ListProfileSetArgs, MakeMigrationArgs, PostgresConfig, RedisConfig, RunserverArgs,
+    SearchCommands,
 };
 use colored::*;
 use diesel::{ConnectionError, ConnectionResult};
@@ -52,12 +53,13 @@ use models::electrical_profiles::ElectricalProfileSet;
 use models::{Retrieve, RollingStockModel};
 use openssl::ssl::{SslConnector, SslMethod, SslVerifyMode};
 use sentry::ClientInitGuard;
-use std::env;
 use std::error::Error;
 use std::fs::File;
 use std::io::{BufReader, IsTerminal};
 use std::process::exit;
+use std::{env, fs};
 use views::infra::InfraApiError;
+use views::search::{SearchConfig, SearchConfigFinder, SearchConfigStore};
 
 type DbPool = Pool<PgConnection>;
 
@@ -110,6 +112,14 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
                 electrical_profile_set_delete(args, pg_config).await
             }
         },
+        Commands::Search(SearchCommands::List) => {
+            list_search_objects();
+            Ok(())
+        }
+        Commands::Search(SearchCommands::MakeMigration(args)) => {
+            make_search_migration(args);
+            Ok(())
+        }
     }
 }
 
@@ -523,6 +533,76 @@ async fn clear(
 fn generate_openapi() {
     let openapi = OpenApiRoot::build_openapi();
     println!("{}", serde_yaml::to_string(&openapi).unwrap());
+}
+
+fn list_search_objects() {
+    SearchConfigFinder::all()
+        .into_iter()
+        .for_each(|SearchConfig { name, .. }| {
+            println!("{name}");
+        });
+}
+
+fn make_search_migration(args: MakeMigrationArgs) {
+    let MakeMigrationArgs {
+        object,
+        migration,
+        force,
+    } = args;
+    let Some(search_config) = SearchConfigFinder::find(&object) else {
+        eprintln!("❌ No search object found for {object}");
+        return;
+    };
+    if !search_config.has_migration() {
+        eprintln!("❌ No migration defined for {object}");
+        return;
+    }
+    if !migration.is_dir() {
+        eprintln!(
+            "❌ {} is not a directory",
+            migration.to_str().unwrap_or("<unprintable path>")
+        );
+        return;
+    }
+    let up_path = migration.join("up.sql");
+    let down_path = migration.join("down.sql");
+    let up_path_str = up_path.to_str().unwrap_or("<unprintable path>").to_owned();
+    let down_path_str = down_path
+        .to_str()
+        .unwrap_or("<unprintable path>")
+        .to_owned();
+    if !force
+        && (up_path.exists() && fs::read(up_path.clone()).is_ok_and(|v| !v.is_empty())
+            || down_path.exists() && fs::read(down_path.clone()).is_ok_and(|v| !v.is_empty()))
+    {
+        eprintln!(
+            "❌ Migration {} already has content\nCowardly refusing to overwrite it\nUse {} at your own risk",
+            migration.to_str().unwrap_or("<unprintable path>"),
+            "--force".bold()
+        );
+        return;
+    }
+    println!(
+        "🤖 Generating migration {}",
+        migration.to_str().unwrap_or("<unprintable path>")
+    );
+    let (up, down) = search_config.make_up_down();
+    if let Err(err) = fs::write(up_path, up) {
+        eprintln!("❌ Failed to write to {up_path_str}: {err}");
+        return;
+    }
+    println!("➡️  Wrote to {up_path_str}");
+    if let Err(err) = fs::write(down_path, down) {
+        eprintln!("❌ Failed to write to {down_path_str}: {err}");
+        return;
+    }
+    println!("➡️  Wrote to {down_path_str}");
+    println!(
+        "✅ Migration {} generated!\n🚨 Don't forget to run {} or {} to apply it",
+        migration.to_str().unwrap_or("<unprintable path>"),
+        "diesel migration run".bold(),
+        "diesel migration redo".bold(),
+    );
 }
 
 #[cfg(test)]
