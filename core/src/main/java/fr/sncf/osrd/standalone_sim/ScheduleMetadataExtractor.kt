@@ -503,11 +503,13 @@ fun trainPathBlockOffset(infra: RawInfra, blockInfra: BlockInfra,
                          blockPath: MutableStaticIdxArrayList<Block>, trainPath: PathProperties): Distance {
     val firstChunk = trainPath.chunks[0]
     var prevChunksLength = 0.meters
-    for (zonePath in blockInfra.getBlockPath(blockPath[0])) {
-        for (dirChunk in infra.getZonePathChunks(zonePath)) {
-            if (dirChunk == firstChunk)
-                return prevChunksLength + trainPath.beginOffset
-            prevChunksLength += infra.getTrackChunkLength(dirChunk.value).distance
+    for (block in blockPath) {
+        for (zonePath in blockInfra.getBlockPath(block)) {
+            for (dirChunk in infra.getZonePathChunks(zonePath)) {
+                if (dirChunk == firstChunk)
+                    return prevChunksLength + trainPath.beginOffset
+                prevChunksLength += infra.getTrackChunkLength(dirChunk.value).distance
+            }
         }
     }
     throw RuntimeException("Couldn't find first chunk on the block path")
