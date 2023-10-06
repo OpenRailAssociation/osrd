@@ -138,6 +138,7 @@ public class Helpers {
                 routes,
                 getSignalingSystems(infra)
         );
+        assert !candidates.isEmpty();
         for (var candidate : candidates)
             res.addAll(toList(candidate).stream().map(BlockPathElement::getBlock).toList());
         return res;
