@@ -41,7 +41,7 @@ use diesel_async::pooled_connection::{
     AsyncDieselConnectionManager as ConnectionManager, ManagerConfig,
 };
 use diesel_async::AsyncPgConnection;
-use diesel_async::{AsyncConnection, AsyncPgConnection as PgConnection};
+use diesel_async::AsyncPgConnection as PgConnection;
 use diesel_json::Json as DieselJson;
 use futures_util::future::BoxFuture;
 use futures_util::FutureExt;
@@ -173,6 +173,16 @@ fn establish_connection(config: &str) -> BoxFuture<ConnectionResult<AsyncPgConne
     fut.boxed()
 }
 
+fn get_pool(url: String, max_size: usize) -> DbPool {
+    let mut manager_config = ManagerConfig::default();
+    manager_config.custom_setup = Box::new(establish_connection);
+    let manager = ConnectionManager::new_with_config(url, manager_config);
+    Pool::builder(manager)
+        .max_size(max_size)
+        .build()
+        .expect("Failed to create pool.")
+}
+
 /// Create and run the server
 async fn runserver(
     args: RunserverArgs,
@@ -181,14 +191,7 @@ async fn runserver(
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     info!("Building server...");
     // Config databases
-    let mut manager_config = ManagerConfig::default();
-    manager_config.custom_setup = Box::new(establish_connection);
-    let manager =
-        ConnectionManager::<PgConnection>::new_with_config(pg_config.url(), manager_config);
-    let pool = Pool::builder(manager)
-        .max_size(pg_config.pool_size)
-        .build()
-        .expect("Failed to create pool.");
+    let pool = get_pool(pg_config.url(), pg_config.pool_size);
 
     let redis = RedisClient::new(redis_config);
 
@@ -276,14 +279,8 @@ async fn generate(
     pg_config: PostgresConfig,
     redis_config: RedisConfig,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let mut conn = PgConnection::establish(&pg_config.url()).await?;
-    let manager = ConnectionManager::<PgConnection>::new(pg_config.url());
-    let pool = Data::new(
-        Pool::builder(manager)
-            .max_size(pg_config.pool_size)
-            .build()
-            .expect("Failed to create pool."),
-    );
+    let pool = Data::new(get_pool(pg_config.url(), pg_config.pool_size));
+    let mut conn = pool.get().await?;
     let mut infras = vec![];
     if args.infra_ids.is_empty() {
         // Retrieve all available infra
@@ -340,8 +337,7 @@ async fn import_rolling_stock(
     args: ImportRollingStockArgs,
     pg_config: PostgresConfig,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let manager = ConnectionManager::<PgConnection>::new(pg_config.url());
-    let pool = Data::new(Pool::builder(manager).build().unwrap());
+    let pool = Data::new(get_pool(pg_config.url(), pg_config.pool_size));
     for rolling_stock_path in args.rolling_stock_path {
         let rolling_stock_file = File::open(rolling_stock_path)?;
         let mut rolling_stock: RollingStockModel =
@@ -367,8 +363,7 @@ async fn import_railjson(
     pg_config: PostgresConfig,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     let railjson_file = File::open(args.railjson_path)?;
-    let manager = ConnectionManager::<PgConnection>::new(pg_config.url());
-    let pool = Data::new(Pool::builder(manager).build().unwrap());
+    let pool = Data::new(get_pool(pg_config.url(), pg_config.pool_size));
 
     let infra: Infra = InfraForm {
         name: args.infra_name,
@@ -408,8 +403,6 @@ async fn electrical_profile_set_import(
     args: ImportProfileSetArgs,
     pg_config: PostgresConfig,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let manager = ConnectionManager::<PgConnection>::new(pg_config.url());
-    let pool = Data::new(Pool::builder(manager).max_size(1).build().unwrap());
     let electrical_profile_set_file = File::open(args.electrical_profile_set_path)?;
 
     let electrical_profile_set_data: ElectricalProfileSetData =
@@ -420,7 +413,8 @@ async fn electrical_profile_set_import(
         data: Some(DieselJson(electrical_profile_set_data)),
     };
 
-    let created_ep_set = ep_set.create(pool).await.unwrap();
+    let mut conn = establish_connection(pg_config.url().as_str()).await?;
+    let created_ep_set = ep_set.create_conn(&mut conn).await.unwrap();
     let ep_set_id = created_ep_set.id.unwrap();
     info!("✅ Electrical profile set {ep_set_id} created");
     Ok(())
@@ -430,7 +424,7 @@ async fn electrical_profile_set_list(
     args: ListProfileSetArgs,
     pg_config: PostgresConfig,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let mut conn = PgConnection::establish(&pg_config.url()).await?;
+    let mut conn = establish_connection(pg_config.url().as_str()).await?;
     let electrical_profile_sets = ElectricalProfileSet::list_light(&mut conn).await.unwrap();
     if !args.quiet {
         println!("Electrical profile sets:\nID - Name");
@@ -448,8 +442,7 @@ async fn electrical_profile_set_delete(
     args: DeleteProfileSetArgs,
     pg_config: PostgresConfig,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let manager = ConnectionManager::<PgConnection>::new(pg_config.url());
-    let pool = Data::new(Pool::builder(manager).max_size(1).build().unwrap());
+    let pool = Data::new(get_pool(pg_config.url(), pg_config.pool_size));
     for profile_set_id in args.profile_set_ids {
         let deleted = ElectricalProfileSet::delete(pool.clone(), profile_set_id)
             .await
@@ -470,16 +463,8 @@ async fn clear(
     pg_config: PostgresConfig,
     redis_config: RedisConfig,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let mut conn = PgConnection::establish(&pg_config.url())
-        .await
-        .expect("Error while connecting DB");
-    let manager = ConnectionManager::<PgConnection>::new(pg_config.url());
-    let pool = Data::new(
-        Pool::builder(manager)
-            .max_size(pg_config.pool_size)
-            .build()
-            .expect("Failed to create pool."),
-    );
+    let pool = Data::new(get_pool(pg_config.url(), pg_config.pool_size));
+    let mut conn = pool.get().await?;
     let mut infras = vec![];
     if args.infra_ids.is_empty() {
         // Retrieve all available infra
@@ -533,7 +518,7 @@ mod tests {
     use actix_web::test as actix_test;
     use diesel::sql_query;
     use diesel::sql_types::Text;
-    use diesel_async::RunQueryDsl;
+    use diesel_async::{AsyncConnection, RunQueryDsl};
     use rand::distributions::Alphanumeric;
     use rand::{thread_rng, Rng};
     use rstest::rstest;
