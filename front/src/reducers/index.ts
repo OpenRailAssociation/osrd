@@ -34,8 +34,6 @@ const mapWhiteList = [
   'mapStyle',
   'showOrthoPhoto',
   'showOSM',
-  'mapTrackSources',
-  'trackSource',
   'layers',
   'layersSettings',
   'userPreference',

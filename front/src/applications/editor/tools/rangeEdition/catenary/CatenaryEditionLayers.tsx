@@ -7,7 +7,7 @@ import { Feature, FeatureCollection, LineString, Point } from 'geojson';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import { flattenEntity } from 'applications/editor/data/utils';
 import { featureCollection } from '@turf/helpers';
-import { CatenaryEntity, SourceLayer, TrackSectionEntity } from 'types';
+import { CatenaryEntity, TrackSectionEntity } from 'types';
 import colors from 'common/Map/Consts/colors';
 import GeoJSONs, { SourcesDefinitionsIndex } from 'common/Map/Layers/GeoJSONs';
 import { getEntities, getEntity } from 'applications/editor/data/api';
@@ -63,7 +63,6 @@ export const CatenaryEditionLayers: FC = () => {
 
   const layersProps = useMemo(() => {
     const context = {
-      sourceLayer: 'geo' as SourceLayer,
       prefix: mapStyle === 'blueprint' ? 'SCHB ' : '',
       colors: colors[mapStyle],
       signalsList: [],

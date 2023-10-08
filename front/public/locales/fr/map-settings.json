@@ -30,10 +30,6 @@
   "tags": "Compositions",
   "tivs": "Limites de vitesse",
   "terrain3DExaggeration": "Échelle du relief en 3D",
-  "tracksources": {
-    "geographic": "Géographique",
-    "schematic": "Schématique"
-  },
   "tvds": "Circuits de voie",
   "zone": "Zone"
 }

@@ -11,7 +11,6 @@ import { Position } from '@turf/helpers';
 export const UPDATE_VIEWPORT = 'map/UPDATE_VIEWPORT';
 export const UPDATE_TRANSFORM_REQUEST = 'map/UPDATE_TRANSFORM_REQUEST';
 export const UPDATE_MAPSTYLE = 'map/UPDATE_MAPSTYLE';
-export const UPDATE_MAP_TRACK_SOURCES = 'map/UPDATE_MAP_TRACK_SOURCES';
 export const UPDATE_MAP_SEARCH_MARKER = 'map/UPDATE_MAP_SEARCH_MARKER';
 export const UPDATE_LINE_SEARCH_CODE = 'map/UPDATE_LINE_SEARCH_CODE';
 export const UPDATE_SHOW_IGN_BD_ORTHO = 'map/UPDATE_SHOW_IGN_BD_ORTHO';
@@ -42,7 +41,6 @@ export interface MapSearchMarker {
 export interface MapState {
   url: typeof MAP_URL;
   mapStyle: 'normal' | 'dark' | 'blueprint';
-  mapTrackSources: 'geographic' | 'schematic';
   showIGNBDORTHO: boolean;
   showIGNSCAN25: boolean;
   showIGNCadastre: boolean;
@@ -81,7 +79,6 @@ export interface MapState {
 export const initialState: MapState = {
   url: MAP_URL,
   mapStyle: 'normal',
-  mapTrackSources: 'geographic',
   showIGNBDORTHO: false,
   showIGNSCAN25: false,
   showIGNCadastre: false,
@@ -140,9 +137,6 @@ export default function reducer(inputState: MapState | undefined, action: AnyAct
         break;
       case UPDATE_MAPSTYLE:
         draft.mapStyle = action.mapStyle;
-        break;
-      case UPDATE_MAP_TRACK_SOURCES:
-        draft.mapTrackSources = action.mapTrackSources;
         break;
       case UPDATE_MAP_SEARCH_MARKER:
         draft.mapSearchMarker = action.mapSearchMarker;
@@ -219,15 +213,6 @@ export function updateMapStyle(mapStyle: MapState['mapStyle']) {
     dispatch({
       type: UPDATE_MAPSTYLE,
       mapStyle,
-    });
-  };
-}
-
-export function updateMapTrackSources(mapTrackSources: MapState['mapTrackSources']) {
-  return (dispatch: Dispatch) => {
-    dispatch({
-      type: UPDATE_MAP_TRACK_SOURCES,
-      mapTrackSources,
     });
   };
 }

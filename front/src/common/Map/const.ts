@@ -20,7 +20,6 @@ export const CUSTOM_ATTRIBUTION = '© SNCF Réseau';
 // 'track_sections' value elsewhere, which explains the new MAP_TRACK_SOURCE:
 export const MAP_TRACK_SOURCE = 'track_sections';
 export const MAP_TRACK_SOURCES = {
-  schematic: MAP_TRACK_SOURCE,
   geographic: MAP_TRACK_SOURCE,
 };
 

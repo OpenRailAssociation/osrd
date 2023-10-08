@@ -11,14 +11,13 @@ import { getInfraID } from 'reducers/osrdconf/selectors';
 
 interface PlatformProps {
   colors: Theme;
-  geomType: string;
   layerOrder: number;
 }
 
 export default function OperationalPoints(props: PlatformProps) {
   const { layersSettings } = useSelector((state: RootState) => state.map);
   const infraID = useSelector(getInfraID);
-  const { geomType, colors, layerOrder } = props;
+  const { colors, layerOrder } = props;
   const layerPoint: LayerProps = {
     type: 'circle',
     'source-layer': 'operational_points',
@@ -101,23 +100,23 @@ export default function OperationalPoints(props: PlatformProps) {
   if (layersSettings.operationalpoints) {
     return (
       <Source
-        id={`osrd_operational_point_${geomType}`}
+        id="osrd_operational_point_geo"
         type="vector"
-        url={`${MAP_URL}/layer/operational_points/mvt/${geomType}/?infra=${infraID}`}
+        url={`${MAP_URL}/layer/operational_points/mvt/geo/?infra=${infraID}`}
       >
         <OrderedLayer
           {...layerPoint}
-          id={`chartis/osrd_operational_point/${geomType}`}
+          id="chartis/osrd_operational_point/geo"
           layerOrder={layerOrder}
         />
         <OrderedLayer
           {...layerNameShort}
-          id={`chartis/osrd_operational_point_name_short/${geomType}`}
+          id="chartis/osrd_operational_point_name_short/geo"
           layerOrder={layerOrder}
         />
         <OrderedLayer
           {...layerName}
-          id={`chartis/osrd_operational_point_name/${geomType}`}
+          id="chartis/osrd_operational_point_name/geo"
           layerOrder={layerOrder}
         />
       </Source>

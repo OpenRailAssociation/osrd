@@ -6,7 +6,6 @@ import { useTranslation } from 'react-i18next';
 import { compact, isEqual } from 'lodash';
 import { BiCheckCircle, BiXCircle, BiErrorCircle } from 'react-icons/bi';
 
-import { getMapTrackSources } from 'reducers/map/selectors';
 import { setFailure } from 'reducers/main';
 
 import { ArrayElement } from 'utils/types';
@@ -151,19 +150,17 @@ export function reducer(state: PathfindingState, action: Action): PathfindingSta
 function init({
   pathfindingID,
   geojson,
-  mapTrackSources,
   origin,
   destination,
   rollingStockID,
 }: {
   pathfindingID?: number;
   geojson?: Path;
-  mapTrackSources: 'geographic' | 'schematic';
   origin?: PointOnMap;
   destination?: PointOnMap;
   rollingStockID?: number;
 }): PathfindingState {
-  if (!pathfindingID || !geojson?.[mapTrackSources]) {
+  if (!pathfindingID || !geojson?.geographic) {
     return {
       ...initialState,
       mustBeLaunched: Boolean(origin) && Boolean(destination) && Boolean(rollingStockID),
@@ -273,11 +270,9 @@ function Pathfinding({ mustUpdate = true, zoomToFeature }: PathfindingProps) {
   const rollingStockID = useSelector(getRollingStockID, isEqual);
   const pathfindingID = useSelector(getPathfindingID, isEqual);
   const geojson = useSelector(getGeojson, isEqual);
-  const mapTrackSources = useSelector(getMapTrackSources, isEqual);
   const initializerArgs = {
     pathfindingID,
     geojson,
-    mapTrackSources,
     origin,
     destination,
     rollingStockID,
@@ -362,9 +357,8 @@ function Pathfinding({ mustUpdate = true, zoomToFeature }: PathfindingProps) {
 
   const transformVias = ({ steps }: Path) => {
     if (steps && steps.length >= 2) {
-      const mapTrackSourcesType = mapTrackSources.substring(0, 3) as 'geo' | 'sch';
       const newVias = steps.slice(1, -1).flatMap((step: ArrayElement<Path['steps']>) => {
-        const viaCoordinates = step[mapTrackSourcesType]?.coordinates;
+        const viaCoordinates = step.geo?.coordinates;
         if (!step.suggestion && viaCoordinates) {
           return [{ ...step, coordinates: viaCoordinates }];
         }
@@ -402,7 +396,7 @@ function Pathfinding({ mustUpdate = true, zoomToFeature }: PathfindingProps) {
           transformVias(itineraryCreated);
           dispatch(updateItinerary(itineraryCreated));
           dispatch(updatePathfindingID(itineraryCreated.id));
-          if (zoom) zoomToFeature(bbox(itineraryCreated[mapTrackSources]));
+          if (zoom) zoomToFeature(bbox(itineraryCreated.geographic));
           pathfindingDispatch({ type: 'PATHFINDING_FINISHED' });
         })
         .catch((e) => {
@@ -426,8 +420,8 @@ function Pathfinding({ mustUpdate = true, zoomToFeature }: PathfindingProps) {
   };
 
   useEffect(() => {
-    if (geojson?.[mapTrackSources]) {
-      zoomToFeature(bbox(geojson[mapTrackSources]));
+    if (geojson?.geographic) {
+      zoomToFeature(bbox(geojson.geographic));
     }
   }, []);
 

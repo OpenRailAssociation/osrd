@@ -86,8 +86,7 @@ const MapSearchLine: React.FC<MapSearchLineProps> = ({
     };
   };
 
-  const coordinates = (search: Zone) =>
-    map.mapTrackSources === 'schematic' ? search.sch : search.geo;
+  const coordinates = (search: Zone) => search.geo;
 
   const onResultClick = async (searchResultItem: SearchTrackResult) => {
     if (map.mapSearchMarker) {

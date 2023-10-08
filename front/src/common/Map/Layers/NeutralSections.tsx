@@ -11,7 +11,6 @@ import { getMapStyle } from 'reducers/map/selectors';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 
 interface NeutralSectionsProps {
-  geomType: string;
   layerOrder: number;
 }
 
@@ -19,7 +18,7 @@ export default function NeutralSections(props: NeutralSectionsProps) {
   const { layersSettings } = useSelector((state: RootState) => state.map);
   const infraID = useSelector(getInfraID);
   const mapStyle = useSelector(getMapStyle);
-  const { geomType, layerOrder } = props;
+  const { layerOrder } = props;
   const neutralSectionsParams: LayerProps = {
     type: 'line',
     'source-layer': 'neutral_sections',
@@ -45,13 +44,13 @@ export default function NeutralSections(props: NeutralSectionsProps) {
   if (layersSettings.neutral_sections) {
     return (
       <Source
-        id={`neutral_sections_${geomType}`}
+        id="neutral_sections_geo"
         type="vector"
-        url={`${MAP_URL}/layer/neutral_sections/mvt/${geomType}/?infra=${infraID}`}
+        url={`${MAP_URL}/layer/neutral_sections/mvt/geo/?infra=${infraID}`}
       >
         <OrderedLayer
           {...neutralSectionsParams}
-          id={`chartis/neutral_sections/${geomType}`}
+          id="chartis/neutral_sections/geo"
           layerOrder={layerOrder}
         />
       </Source>

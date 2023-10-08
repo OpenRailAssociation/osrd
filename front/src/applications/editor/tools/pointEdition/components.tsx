@@ -347,7 +347,6 @@ export const BasePointEditionLayers: FC<{
           colors: colors[mapStyle],
           signalsList: [type],
           symbolsList: SIGNALS_TO_SYMBOLS[type] || [],
-          sourceLayer: 'geo',
           isEmphasized: true,
           showIGNBDORTHO: false,
           layersSettings,
