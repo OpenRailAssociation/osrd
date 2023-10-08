@@ -56,11 +56,10 @@ export function getDetectorsNameLayerProps(params: {
 
 interface DetectorsProps {
   colors: Theme;
-  geomType: string;
   layerOrder: number;
 }
 
-const Detectors: FC<DetectorsProps> = ({ geomType, colors, layerOrder }) => {
+const Detectors: FC<DetectorsProps> = ({ colors, layerOrder }) => {
   const infraID = useSelector(getInfraID);
   const { layersSettings } = useSelector((state: RootState) => state.map);
 
@@ -69,20 +68,12 @@ const Detectors: FC<DetectorsProps> = ({ geomType, colors, layerOrder }) => {
 
   return layersSettings.detectors ? (
     <Source
-      id={`osrd_detectors_${geomType}`}
+      id="osrd_detectors_geo"
       type="vector"
-      url={`${MAP_URL}/layer/detectors/mvt/${geomType}/?infra=${infraID}`}
+      url={`${MAP_URL}/layer/detectors/mvt/geo/?infra=${infraID}`}
     >
-      <OrderedLayer
-        {...layerPoint}
-        id={`chartis/osrd_detectors/${geomType}`}
-        layerOrder={layerOrder}
-      />
-      <OrderedLayer
-        {...layerName}
-        id={`chartis/osrd_detectors_name/${geomType}`}
-        layerOrder={layerOrder}
-      />
+      <OrderedLayer {...layerPoint} id="chartis/osrd_detectors/geo" layerOrder={layerOrder} />
+      <OrderedLayer {...layerName} id="chartis/osrd_detectors_name/geo" layerOrder={layerOrder} />
     </Source>
   ) : null;
 };

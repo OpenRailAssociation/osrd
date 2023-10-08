@@ -4,7 +4,7 @@ import { Source, MapRef } from 'react-map-gl/maplibre';
 import { get, isNil } from 'lodash';
 
 import { RootState } from 'reducers';
-import { Theme, SourceLayer } from 'types';
+import { Theme } from 'types';
 
 import { MAP_URL } from 'common/Map/const';
 import {
@@ -26,7 +26,6 @@ import {
 interface PlatformProps {
   colors: Theme;
   sourceTable: string;
-  sourceLayer: SourceLayer;
   hovered?: { id: string; layer: string };
   mapRef?: React.RefObject<MapRef>;
   layerOrder: number;
@@ -40,22 +39,17 @@ function Signals(props: PlatformProps) {
     (state: RootState) => state.osrdsimulation.consolidatedSimulation
   );
   const infraID = useSelector(getInfraID);
-  const { colors, sourceTable, sourceLayer, hovered, mapRef, layerOrder } = props;
+  const { colors, sourceTable, hovered, mapRef, layerOrder } = props;
 
-  let prefix;
-  if (mapStyle === 'blueprint') {
-    prefix = 'SCHB ';
-  } else {
-    prefix = sourceLayer === 'sch' ? 'SCH ' : '';
-  }
+  const prefix = mapStyle === 'blueprint' ? 'SCHB ' : '';
 
   const [redSignalIds, setRedSignalsIds] = useState<string[]>([]);
   const [yellowSignalIds, setYellowSignalsIds] = useState<string[]>([]);
   const [greenSignalsIds, setGreenSignalsIds] = useState<string[]>([]);
 
-  const dynamicLayersIds = LIGHT_SIGNALS.map(
-    (sign) => `chartis/signal/${sourceLayer}/${sign}`
-  ).filter((dynamicLayerId) => mapRef?.current?.getMap().getLayer(dynamicLayerId)); // We need the layers concerned by eventual changes of signals
+  const dynamicLayersIds = LIGHT_SIGNALS.map((sign) => `chartis/signal/geo/${sign}`).filter(
+    (dynamicLayerId) => mapRef?.current?.getMap().getLayer(dynamicLayerId)
+  ); // We need the layers concerned by eventual changes of signals
 
   /* EveryTime the viewPort change or the timePosition or the simulation change,
   visible signals are used to fill a list of special aspects (red, yellow).
@@ -139,7 +133,6 @@ function Signals(props: PlatformProps) {
     prefix,
     colors,
     signalsList,
-    sourceLayer,
     sourceTable,
   };
 
@@ -153,7 +146,7 @@ function Signals(props: PlatformProps) {
     <Source
       promoteId="id"
       type="vector"
-      url={`${MAP_URL}/layer/${sourceTable}/mvt/${sourceLayer}/?infra=${infraID}`}
+      url={`${MAP_URL}/layer/${sourceTable}/mvt/geo/?infra=${infraID}`}
     >
       <OrderedLayer
         {...getSignalMatLayerProps(context)}
@@ -167,7 +160,7 @@ function Signals(props: PlatformProps) {
       />
 
       {signalsList.map((sig) => {
-        const layerId = `chartis/signal/${sourceLayer}/${sig}`;
+        const layerId = `chartis/signal/geo/${sig}`;
         const isHovered = hovered && hovered.layer === layerId;
         const signalDef = getSignalLayerProps(context, sig, changeSignalsContext);
         const opacity = get(signalDef.paint, 'icon-opacity', 1) as number;

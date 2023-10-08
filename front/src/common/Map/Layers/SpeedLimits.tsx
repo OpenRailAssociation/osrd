@@ -12,7 +12,6 @@ import { getInfraID } from 'reducers/osrdconf/selectors';
 import { MapState } from '../../../reducers/map';
 
 interface SpeedLimitsProps {
-  geomType: string;
   colors: Theme;
   layerOrder: number;
 }
@@ -173,7 +172,7 @@ export function getSpeedSectionsTextLayerProps({
 export default function SpeedLimits(props: SpeedLimitsProps) {
   const { layersSettings } = useSelector((state: RootState) => state.map);
   const infraID = useSelector(getInfraID);
-  const { geomType, colors, layerOrder } = props;
+  const { colors, layerOrder } = props;
 
   const filter = getSpeedSectionsFilter(layersSettings);
   const lineProps = {
@@ -204,23 +203,23 @@ export default function SpeedLimits(props: SpeedLimitsProps) {
   if (layersSettings.speedlimits) {
     return (
       <Source
-        id={`osrd_speed_limit_${geomType}`}
+        id="osrd_speed_limit_geo"
         type="vector"
-        url={`${MAP_URL}/layer/speed_sections/mvt/${geomType}/?infra=${infraID}`}
+        url={`${MAP_URL}/layer/speed_sections/mvt/geo/?infra=${infraID}`}
       >
         <OrderedLayer
           {...lineProps}
-          id={`chartis/osrd_speed_limit_colors/${geomType}`}
+          id="chartis/osrd_speed_limit_colors/geo"
           layerOrder={layerOrder}
         />
         <OrderedLayer
           {...pointProps}
-          id={`chartis/osrd_speed_limit_points/${geomType}`}
+          id="chartis/osrd_speed_limit_points/geo"
           layerOrder={layerOrder}
         />
         <OrderedLayer
           {...textProps}
-          id={`chartis/osrd_speed_limit_value/${geomType}`}
+          id="chartis/osrd_speed_limit_value/geo"
           layerOrder={layerOrder}
         />
       </Source>

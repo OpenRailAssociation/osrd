@@ -13,11 +13,10 @@ import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import { MapState } from 'reducers/map';
 import { getSpeedSectionsTag, getSpeedSectionsName } from '../../SpeedLimits';
-import { Theme, SourceLayer, OmitLayer } from '../../../../../types';
+import { Theme, OmitLayer } from '../../../../../types';
 import SNCF_PSL_Signs from './SNCF_PSL_SIGNS';
 
 interface SNCF_PSLProps {
-  geomType: SourceLayer;
   colors: Theme;
   layerOrder?: number;
 }
@@ -157,7 +156,7 @@ export default function SNCF_PSL(props: SNCF_PSLProps) {
   const { t } = useTranslation('map-settings');
   const { layersSettings } = useSelector((state: RootState) => state.map);
   const infraID = useSelector(getInfraID);
-  const { geomType, colors, layerOrder } = props;
+  const { colors, layerOrder } = props;
 
   const speedSectionFilter = getPSLFilter(layersSettings);
 
@@ -193,27 +192,27 @@ export default function SNCF_PSL(props: SNCF_PSLProps) {
     return (
       <>
         <Source
-          id={`osrd_sncf_psl_${geomType}`}
+          id="osrd_sncf_psl_geo"
           type="vector"
-          url={`${MAP_URL}/layer/psl/mvt/${geomType}/?infra=${infraID}`}
+          url={`${MAP_URL}/layer/psl/mvt/geo/?infra=${infraID}`}
         >
           <OrderedLayer
             {...speedValueParams}
-            id={`chartis/osrd_sncf_psl_value/${geomType}`}
+            id="chartis/osrd_sncf_psl_value/geo"
             layerOrder={layerOrder}
           />
           <OrderedLayer
             {...speedLineBGParams}
-            id={`chartis/osrd_sncf_psl_colors_bg/${geomType}`}
+            id="chartis/osrd_sncf_psl_colors_bg/geo"
             layerOrder={layerOrder}
           />
           <OrderedLayer
             {...speedLineParams}
-            id={`chartis/osrd_sncf_psl_colors/${geomType}`}
+            id="chartis/osrd_sncf_psl_colors/geo"
             layerOrder={layerOrder}
           />
         </Source>
-        <SNCF_PSL_Signs geomType={geomType} layerOrder={layerOrder} />
+        <SNCF_PSL_Signs layerOrder={layerOrder} />
       </>
     );
   }

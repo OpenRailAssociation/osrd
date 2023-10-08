@@ -40,7 +40,6 @@ import Switches from 'common/Map/Layers/Switches';
 /* Objects & various */
 import TracksGeographic from 'common/Map/Layers/TracksGeographic';
 import TracksOSM from 'common/Map/Layers/TracksOSM';
-import TracksSchematic from 'common/Map/Layers/TracksSchematic';
 /* Interactions */
 import TrainHoverPosition from 'modules/simulationResult/components/SimulationResultsMap/TrainHoverPosition';
 
@@ -69,7 +68,7 @@ interface MapProps {
 
 const Map: FC<MapProps> = ({ setExtViewport }) => {
   const [mapLoaded, setMapLoaded] = useState(false);
-  const { viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM } = useSelector(
+  const { viewport, mapSearchMarker, mapStyle, showOSM } = useSelector(
     (state: RootState) => state.map
   );
   const { isPlaying, positionValues, timePosition, allowancesSettings } = useSelector(
@@ -82,7 +81,6 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
   const [geojsonPath, setGeojsonPath] = useState<Feature<LineString>>();
   const [selectedTrainHoverPosition, setTrainHoverPosition] = useState<TrainPosition>();
   const [otherTrainsHoverPosition, setOtherTrainsHoverPosition] = useState<TrainPosition[]>([]);
-  const [idHover, setIdHover] = useState<string | undefined>(undefined);
   const { urlLat = '', urlLon = '', urlZoom = '', urlBearing = '', urlPitch = '' } = useParams();
   const [getPath] = osrdEditoastApi.useLazyGetPathfindingByIdQuery();
   const dispatch = useDispatch();
@@ -164,11 +162,6 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
         }
       }
     }
-    if (e?.features?.[0] && e.features[0].properties) {
-      setIdHover(e.features[0].properties.id);
-    } else {
-      setIdHover(undefined);
-    }
   };
 
   function defineInteractiveLayers() {
@@ -247,7 +240,6 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
         onMove={(e) => updateViewportChange(e.viewState)}
         attributionControl={false} // Defined below
         onMouseEnter={onFeatureHover}
-        onMouseLeave={() => setIdHover(undefined)}
         onResize={(e) => {
           updateViewportChange({
             width: e.target.getContainer().offsetWidth,
@@ -285,140 +277,58 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
           </>
         )}
 
-        {/* Have to duplicate objects with sourceLayer to avoid cache problems */}
-        {mapTrackSources === 'geographic' ? (
-          <>
-            <Platforms
-              colors={colors[mapStyle]}
-              layerOrder={LAYER_GROUPS_ORDER[LAYERS.PLATFORMS.GROUP]}
-            />
+        <Platforms
+          colors={colors[mapStyle]}
+          layerOrder={LAYER_GROUPS_ORDER[LAYERS.PLATFORMS.GROUP]}
+        />
 
-            <TracksGeographic
-              colors={colors[mapStyle]}
-              layerOrder={LAYER_GROUPS_ORDER[LAYERS.TRACKS_GEOGRAPHIC.GROUP]}
-            />
-            <TracksOSM
-              colors={colors[mapStyle]}
-              layerOrder={LAYER_GROUPS_ORDER[LAYERS.TRACKS_OSM.GROUP]}
-            />
+        <TracksGeographic
+          colors={colors[mapStyle]}
+          layerOrder={LAYER_GROUPS_ORDER[LAYERS.TRACKS_GEOGRAPHIC.GROUP]}
+        />
+        <TracksOSM
+          colors={colors[mapStyle]}
+          layerOrder={LAYER_GROUPS_ORDER[LAYERS.TRACKS_OSM.GROUP]}
+        />
 
-            <Routes
-              geomType="geo"
-              colors={colors[mapStyle]}
-              layerOrder={LAYER_GROUPS_ORDER[LAYERS.ROUTES.GROUP]}
-            />
-            <OperationalPoints
-              geomType="geo"
-              colors={colors[mapStyle]}
-              layerOrder={LAYER_GROUPS_ORDER[LAYERS.OPERATIONAL_POINTS.GROUP]}
-            />
-            <Catenaries
-              geomType="geo"
-              colors={colors[mapStyle]}
-              layerOrder={LAYER_GROUPS_ORDER[LAYERS.CATENARIES.GROUP]}
-            />
-            <NeutralSections
-              geomType="geo"
-              layerOrder={LAYER_GROUPS_ORDER[LAYERS.DEAD_SECTIONS.GROUP]}
-            />
-            <BufferStops
-              geomType="geo"
-              colors={colors[mapStyle]}
-              layerOrder={LAYER_GROUPS_ORDER[LAYERS.BUFFER_STOPS.GROUP]}
-            />
-            <Detectors
-              geomType="geo"
-              colors={colors[mapStyle]}
-              layerOrder={LAYER_GROUPS_ORDER[LAYERS.DETECTORS.GROUP]}
-            />
-            <Switches
-              geomType="geo"
-              colors={colors[mapStyle]}
-              layerOrder={LAYER_GROUPS_ORDER[LAYERS.SWITCHES.GROUP]}
-            />
+        <Routes colors={colors[mapStyle]} layerOrder={LAYER_GROUPS_ORDER[LAYERS.ROUTES.GROUP]} />
+        <OperationalPoints
+          colors={colors[mapStyle]}
+          layerOrder={LAYER_GROUPS_ORDER[LAYERS.OPERATIONAL_POINTS.GROUP]}
+        />
+        <Catenaries
+          colors={colors[mapStyle]}
+          layerOrder={LAYER_GROUPS_ORDER[LAYERS.CATENARIES.GROUP]}
+        />
+        <NeutralSections layerOrder={LAYER_GROUPS_ORDER[LAYERS.DEAD_SECTIONS.GROUP]} />
+        <BufferStops
+          colors={colors[mapStyle]}
+          layerOrder={LAYER_GROUPS_ORDER[LAYERS.BUFFER_STOPS.GROUP]}
+        />
+        <Detectors
+          colors={colors[mapStyle]}
+          layerOrder={LAYER_GROUPS_ORDER[LAYERS.DETECTORS.GROUP]}
+        />
+        <Switches
+          colors={colors[mapStyle]}
+          layerOrder={LAYER_GROUPS_ORDER[LAYERS.SWITCHES.GROUP]}
+        />
 
-            <SpeedLimits
-              geomType="geo"
-              colors={colors[mapStyle]}
-              layerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS.GROUP]}
-            />
-            <SNCF_PSL
-              geomType="geo"
-              colors={colors[mapStyle]}
-              layerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS.GROUP]}
-            />
+        <SpeedLimits
+          colors={colors[mapStyle]}
+          layerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS.GROUP]}
+        />
+        <SNCF_PSL
+          colors={colors[mapStyle]}
+          layerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS.GROUP]}
+        />
 
-            <Signals
-              mapRef={mapRef}
-              sourceTable="signals"
-              colors={colors[mapStyle]}
-              sourceLayer="geo"
-              layerOrder={LAYER_GROUPS_ORDER[LAYERS.SIGNALS.GROUP]}
-            />
-          </>
-        ) : (
-          <>
-            <TracksSchematic
-              colors={colors[mapStyle]}
-              idHover={idHover}
-              layerOrder={LAYER_GROUPS_ORDER[LAYERS.TRACKS_SCHEMATIC.GROUP]}
-            />
-
-            <Routes
-              geomType="sch"
-              colors={colors[mapStyle]}
-              layerOrder={LAYER_GROUPS_ORDER[LAYERS.ROUTES.GROUP]}
-            />
-            <OperationalPoints
-              geomType="sch"
-              colors={colors[mapStyle]}
-              layerOrder={LAYER_GROUPS_ORDER[LAYERS.OPERATIONAL_POINTS.GROUP]}
-            />
-            <Catenaries
-              geomType="sch"
-              colors={colors[mapStyle]}
-              layerOrder={LAYER_GROUPS_ORDER[LAYERS.CATENARIES.GROUP]}
-            />
-            <NeutralSections
-              geomType="sch"
-              layerOrder={LAYER_GROUPS_ORDER[LAYERS.DEAD_SECTIONS.GROUP]}
-            />
-            <BufferStops
-              geomType="sch"
-              colors={colors[mapStyle]}
-              layerOrder={LAYER_GROUPS_ORDER[LAYERS.BUFFER_STOPS.GROUP]}
-            />
-            <Detectors
-              geomType="sch"
-              colors={colors[mapStyle]}
-              layerOrder={LAYER_GROUPS_ORDER[LAYERS.DETECTORS.GROUP]}
-            />
-            <Switches
-              geomType="sch"
-              colors={colors[mapStyle]}
-              layerOrder={LAYER_GROUPS_ORDER[LAYERS.SWITCHES.GROUP]}
-            />
-
-            <SpeedLimits
-              geomType="sch"
-              colors={colors[mapStyle]}
-              layerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS.GROUP]}
-            />
-            <SNCF_PSL
-              geomType="sch"
-              colors={colors[mapStyle]}
-              layerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS.GROUP]}
-            />
-
-            <Signals
-              mapRef={mapRef}
-              sourceTable="signals"
-              colors={colors[mapStyle]}
-              sourceLayer="sch"
-              layerOrder={LAYER_GROUPS_ORDER[LAYERS.SIGNALS.GROUP]}
-            />
-          </>
-        )}
+        <Signals
+          mapRef={mapRef}
+          sourceTable="signals"
+          colors={colors[mapStyle]}
+          layerOrder={LAYER_GROUPS_ORDER[LAYERS.SIGNALS.GROUP]}
+        />
 
         {mapSearchMarker !== undefined ? (
           <SearchMarker data={mapSearchMarker} colors={colors[mapStyle]} />

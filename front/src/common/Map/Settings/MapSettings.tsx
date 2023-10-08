@@ -4,7 +4,6 @@ import MapSettingsMapStyle from 'common/Map/Settings/MapSettingsMapStyle';
 import MapSettingsBackgroundSwitches from 'common/Map/Settings/MapSettingsBackgroundSwitches';
 import MapSettingsSignals from 'common/Map/Settings/MapSettingsSignals';
 import MapSettingsSpeedLimits from 'common/Map/Settings/MapSettingsSpeedLimits';
-import MapSettingsTrackSources from 'common/Map/Settings/MapSettingsTrackSources';
 import { useTranslation } from 'react-i18next';
 import HearderPopUp from '../HeaderPopUp';
 
@@ -20,7 +19,6 @@ const MapSettings: FC<MapSettingsProps> = ({ closeMapSettingsPopUp }) => {
   return (
     <div className="map-modal">
       <HearderPopUp onClick={closeMapSettingsPopUp} title={t('map-settings:mapSettings')} />
-      <MapSettingsTrackSources />
       <div className="my-1" />
       <MapSettingsMapStyle />
       <div className="my-1" />

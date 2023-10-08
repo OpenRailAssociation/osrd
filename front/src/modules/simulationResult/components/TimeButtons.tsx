@@ -22,7 +22,7 @@ type TimeButtonsProps = {
 const TimeButtons = ({ selectedTrain, timePosition }: TimeButtonsProps) => {
   const dispatch = useDispatch();
 
-  const [playInterval, setPlayInterval] = useState<NodeJS.Timer | undefined>(undefined);
+  const [playInterval, setPlayInterval] = useState<NodeJS.Timeout | undefined>(undefined);
   const [playReverse, setPlayReverse] = useState(false);
   const [simulationSpeed, setSimulationSpeed] = useState(1);
 

@@ -12,7 +12,6 @@ import { isNil } from 'lodash';
 
 interface CatenariesProps {
   colors: Theme;
-  geomType: string;
   layerOrder: number;
 }
 
@@ -125,7 +124,7 @@ export function getCatenariesTextParams({
 export default function Catenaries(props: CatenariesProps) {
   const { layersSettings } = useSelector((state: RootState) => state.map);
   const infraID = useSelector(getInfraID);
-  const { geomType, colors, layerOrder } = props;
+  const { colors, layerOrder } = props;
   const catenariesParams: LayerProps = getCatenariesProps({ colors, sourceTable: 'catenaries' });
   const catenariesTextParams: LayerProps = getCatenariesTextParams({
     colors,
@@ -135,20 +134,20 @@ export default function Catenaries(props: CatenariesProps) {
   if (layersSettings.catenaries) {
     return (
       <Source
-        id={`catenaries_${geomType}`}
+        id="catenaries_geo"
         type="vector"
-        url={`${MAP_URL}/layer/catenaries/mvt/${geomType}/?infra=${infraID}`}
+        url={`${MAP_URL}/layer/catenaries/mvt/geo/?infra=${infraID}`}
       >
         <OrderedLayer
           {...catenariesParams}
-          // beforeId={`chartis/tracks-${geomType}/main`}
-          id={`chartis/catenaries/${geomType}`}
+          // beforeId={`chartis/tracks-geo/main`}
+          id="chartis/catenaries/geo"
           layerOrder={layerOrder}
         />
         <OrderedLayer
           {...catenariesTextParams}
-          // beforeId={`chartis/tracks-${geomType}/main`}
-          id={`chartis/catenaries_names/${geomType}`}
+          // beforeId={`chartis/tracks-geo/main`}
+          id="chartis/catenaries_names/geo"
           layerOrder={layerOrder}
         />
       </Source>

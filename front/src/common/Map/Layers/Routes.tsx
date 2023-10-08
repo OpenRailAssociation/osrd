@@ -10,7 +10,6 @@ import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 
 interface RoutesProps {
   colors: Theme;
-  geomType: string;
   layerOrder: number;
 }
 
@@ -89,7 +88,7 @@ export function getRoutesTextLayerProps(params: {
 }
 
 export default function Routes(props: RoutesProps) {
-  const { geomType, colors, layerOrder } = props;
+  const { colors, layerOrder } = props;
   const { layersSettings } = useSelector((state: RootState) => state.map);
   const infraID = useSelector(getInfraID);
 
@@ -99,25 +98,13 @@ export default function Routes(props: RoutesProps) {
 
   return layersSettings.routes ? (
     <Source
-      id={`osrd_routes_${geomType}`}
+      id="osrd_routes_geo"
       type="vector"
-      url={`${MAP_URL}/layer/routes/mvt/${geomType}/?infra=${infraID}`}
+      url={`${MAP_URL}/layer/routes/mvt/geo/?infra=${infraID}`}
     >
-      <OrderedLayer
-        {...lineProps}
-        id={`chartis/osrd_routes_line/${geomType}`}
-        layerOrder={layerOrder}
-      />
-      <OrderedLayer
-        {...pointProps}
-        id={`chartis/osrd_routes_point/${geomType}`}
-        layerOrder={layerOrder}
-      />
-      <OrderedLayer
-        {...textProps}
-        id={`chartis/osrd_routes_text/${geomType}`}
-        layerOrder={layerOrder}
-      />
+      <OrderedLayer {...lineProps} id="chartis/osrd_routes_line/geo" layerOrder={layerOrder} />
+      <OrderedLayer {...pointProps} id="chartis/osrd_routes_point/geo" layerOrder={layerOrder} />
+      <OrderedLayer {...textProps} id="chartis/osrd_routes_text/geo" layerOrder={layerOrder} />
     </Source>
   ) : null;
 }

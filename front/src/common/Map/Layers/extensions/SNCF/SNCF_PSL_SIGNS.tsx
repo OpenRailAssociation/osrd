@@ -3,23 +3,20 @@ import { MAP_URL } from 'common/Map/const';
 import { LayerProps, Source, SymbolLayer } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
 import { getInfraID } from 'reducers/osrdconf/selectors';
-import { SourceLayer, OmitLayer } from 'types';
+import { OmitLayer } from 'types';
 import { isNil } from 'lodash';
 import { getMap } from 'reducers/map/selectors';
 import OrderedLayer from '../../OrderedLayer';
 import { LayerContext } from '../../types';
 
 interface SNCF_PSL_SignsProps {
-  geomType: SourceLayer;
   layerOrder?: number;
 }
 
 export function getPSLSignsLayerProps({
   sourceTable,
   prefix,
-  sourceLayer,
-}: Pick<LayerContext, 'sourceTable' | 'prefix' | 'sourceLayer'>): Omit<SymbolLayer, 'source'> {
-  const angleName = sourceLayer === 'sch' ? 'angle_sch' : 'angle_geo';
+}: Pick<LayerContext, 'sourceTable' | 'prefix'>): Omit<SymbolLayer, 'source'> {
   const res: Omit<SymbolLayer, 'source'> = {
     id: 'signParams',
     type: 'symbol',
@@ -54,7 +51,7 @@ export function getPSLSignsLayerProps({
         ],
       ],
       'icon-rotation-alignment': 'map',
-      'icon-rotate': ['get', angleName],
+      'icon-rotate': ['get', 'angle_geo'],
       'icon-allow-overlap': true,
       'icon-ignore-placement': false,
     },
@@ -67,10 +64,7 @@ export function getPSLSignsLayerProps({
 
 export function getPSLSignsMastLayerProps({
   sourceTable,
-  sourceLayer,
-}: Pick<LayerContext, 'sourceTable' | 'sourceLayer'>): OmitLayer<SymbolLayer> {
-  const angleName = sourceLayer === 'sch' ? 'angle_sch' : 'angle_geo';
-
+}: Pick<LayerContext, 'sourceTable'>): OmitLayer<SymbolLayer> {
   const res: OmitLayer<SymbolLayer> = {
     type: 'symbol',
     minzoom: 13,
@@ -87,7 +81,7 @@ export function getPSLSignsMastLayerProps({
       'icon-size': 0.7,
       'icon-rotation-alignment': 'map',
       'icon-pitch-alignment': 'map',
-      'icon-rotate': ['get', angleName],
+      'icon-rotate': ['get', 'angle_geo'],
       'icon-allow-overlap': true,
       'icon-ignore-placement': true,
     },
@@ -100,32 +94,25 @@ export function getPSLSignsMastLayerProps({
 
 export default function SNCF_PSL_Signs(props: SNCF_PSL_SignsProps) {
   const infraID = useSelector(getInfraID);
-  const { geomType, layerOrder } = props;
+  const { layerOrder } = props;
 
   const { mapStyle } = useSelector(getMap);
-  let prefix: string;
-  if (mapStyle === 'blueprint') {
-    prefix = 'SCHB ';
-  } else {
-    prefix = geomType === 'sch' ? 'SCH ' : '';
-  }
+  const prefix = mapStyle === 'blueprint' ? 'SCHB ' : '';
 
   const signsParams: LayerProps = getPSLSignsLayerProps({
     sourceTable: 'psl_signs',
-    sourceLayer: geomType,
     prefix,
   });
 
   const mastsParams: LayerProps = getPSLSignsMastLayerProps({
     sourceTable: 'psl_signs',
-    sourceLayer: geomType,
   });
 
   return (
     <Source
-      id={`osrd_sncf_psl_signs_${geomType}`}
+      id="osrd_sncf_psl_signs_geo"
       type="vector"
-      url={`${MAP_URL}/layer/psl_signs/mvt/${geomType}/?infra=${infraID}`}
+      url={`${MAP_URL}/layer/psl_signs/mvt/geo/?infra=${infraID}`}
     >
       <OrderedLayer {...mastsParams} layerOrder={layerOrder} />
       <OrderedLayer {...signsParams} layerOrder={layerOrder} />

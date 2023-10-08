@@ -126,7 +126,6 @@ const Map = ({ viewport, setViewport, setClickedFeatureId }: MapProps) => {
         layerOrder={LAYER_GROUPS_ORDER[LAYERS.TRACKS_GEOGRAPHIC.GROUP]}
       />
       <OperationalPoints
-        geomType="geo"
         colors={colors[mapStyle]}
         layerOrder={LAYER_GROUPS_ORDER[LAYERS.OPERATIONAL_POINTS.GROUP]}
       />

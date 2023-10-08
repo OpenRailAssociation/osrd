@@ -4,10 +4,8 @@ import { AnyAction, Dispatch } from 'redux';
 import { SearchOperationalPointResult, SearchSignalResult } from 'common/api/osrdEditoastApi';
 import { MapState, Viewport, updateMapSearchMarker } from '../../reducers/map/index';
 
-export const getCoordinates = (
-  result: SearchSignalResult | SearchOperationalPointResult,
-  map: MapState
-) => (map.mapTrackSources === 'schematic' ? result.schematic : result.geographic);
+export const getCoordinates = (result: SearchSignalResult | SearchOperationalPointResult) =>
+  result.geographic;
 
 type OnResultSearchClickType = {
   result: SearchSignalResult | SearchOperationalPointResult;
@@ -27,7 +25,7 @@ export const onResultSearchClick = ({
   title,
 }: OnResultSearchClickType) => {
   if (setSearch) setSearch(title);
-  const coordinates = getCoordinates(result, map);
+  const coordinates = getCoordinates(result);
 
   const center = turfCenter(coordinates as AllGeoJSON);
 

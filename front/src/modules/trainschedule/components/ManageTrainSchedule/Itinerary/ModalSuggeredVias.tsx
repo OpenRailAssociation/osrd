@@ -5,7 +5,6 @@ import { FaLongArrowAltUp, FaLongArrowAltDown, FaTrash, FaMinus } from 'react-ic
 
 import { replaceVias, updateShouldRunPathfinding } from 'reducers/osrdconf';
 import { getSuggeredVias, getVias } from 'reducers/osrdconf/selectors';
-import { getMapTrackSources } from 'reducers/map/selectors';
 
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
@@ -33,7 +32,6 @@ export default function ModalSugerredVias({
   const dispatch = useDispatch();
   const suggeredVias = useSelector(getSuggeredVias);
   const vias = useSelector(getVias);
-  const mapTrackSources = useSelector(getMapTrackSources);
 
   const { t } = useTranslation('operationalStudies/manageTrainSchedule');
   const nbVias = suggeredVias ? suggeredVias.length - 1 : 0;
@@ -54,11 +52,10 @@ export default function ModalSugerredVias({
   };
 
   const convertPathfindingVias = (steps: Path['steps'], idxToAdd: number) => {
-    const mapTrackSourcesType = mapTrackSources.substring(0, 3) as 'geo' | 'sch';
     if (steps) {
       const newVias = steps.slice(1, -1).flatMap((step, idx) => {
         if (!step.suggestion || idxToAdd === idx) {
-          const viaCoordinates = step[mapTrackSourcesType]?.coordinates;
+          const viaCoordinates = step.geo?.coordinates;
           return [{ ...step, coordinates: viaCoordinates }];
         }
         return [];

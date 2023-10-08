@@ -382,7 +382,6 @@ const GeoJSONs: FC<{
       colors,
       signalsList: ALL_SIGNAL_LAYERS,
       symbolsList: ALL_SIGNAL_LAYERS,
-      sourceLayer: 'geo',
       prefix: mapStyle === 'blueprint' ? 'SCHB ' : '',
       isEmphasized,
       showIGNBDORTHO,

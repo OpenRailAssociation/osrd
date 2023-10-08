@@ -8,7 +8,6 @@ const makeMapStateSelector = makeSubSelector<MapState>(getMap);
 
 export const getUrl = makeMapStateSelector('url');
 export const getMapStyle = makeMapStateSelector('mapStyle');
-export const getMapTrackSources = makeMapStateSelector('mapTrackSources');
 export const getShowIGNBDORTHO = makeMapStateSelector('showIGNBDORTHO');
 export const getShowIGNSCAN25 = makeMapStateSelector('showIGNSCAN25');
 export const getShowIGNCadastre = makeMapStateSelector('showIGNCadastre');

@@ -39,23 +39,22 @@ export function getBufferStopsLayerProps(params: { sourceTable?: string }): Omit
 
 interface BufferStopsProps {
   colors: Theme;
-  geomType: string;
   layerOrder: number;
 }
 
-const BufferStops: FC<BufferStopsProps> = ({ geomType, layerOrder }) => {
+const BufferStops: FC<BufferStopsProps> = ({ layerOrder }) => {
   const infraID = useSelector(getInfraID);
   const { layersSettings } = useSelector((state: RootState) => state.map);
 
   return layersSettings.bufferstops ? (
     <Source
-      id={`osrd_bufferstoplayer_${geomType}`}
+      id="osrd_bufferstoplayer_geo"
       type="vector"
-      url={`${MAP_URL}/layer/buffer_stops/mvt/${geomType}/?infra=${infraID}`}
+      url={`${MAP_URL}/layer/buffer_stops/mvt/geo/?infra=${infraID}`}
     >
       <OrderedLayer
         {...getBufferStopsLayerProps({ sourceTable: 'buffer_stops' })}
-        id={`chartis/osrd_bufferstoplayer/${geomType}`}
+        id="chartis/osrd_bufferstoplayer/geo"
         layerOrder={layerOrder}
       />
     </Source>

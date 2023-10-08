@@ -7,7 +7,7 @@ import {
   SIGNS_STOPS,
 } from 'common/Map/Consts/SignalsNames';
 import { SIGNALS_SIGNS } from 'common/Map/const';
-import { SourceLayer, Theme, OmitLayer } from '../../../types';
+import { Theme, OmitLayer } from '../../../types';
 
 const signalTextOffsetX = 5;
 const signalTextOffsetY = -1;
@@ -22,7 +22,6 @@ export interface SignalsSettings {
 
 export interface SignalContext {
   prefix: string;
-  sourceLayer: SourceLayer;
   sourceTable?: string;
   colors: Theme;
   signalsList: string[];
@@ -400,8 +399,7 @@ export function getSignalLayerProps(
   type: string,
   changeSignalContext: ChangeSignalContext = defaultChangeSignalsIds
 ): OmitLayer<SymbolLayer> {
-  const { sourceTable, sourceLayer, prefix, colors } = context;
-  const angleName = sourceLayer === 'sch' ? 'angle_sch' : 'angle_geo';
+  const { sourceTable, prefix, colors } = context;
   let size = 0.4;
   let offsetY = -105;
   let iconOffsetX = 45;
@@ -496,8 +494,8 @@ export function getSignalLayerProps(
       'icon-rotation-alignment': 'map',
       'icon-pitch-alignment': 'map',
       'text-rotation-alignment': 'map',
-      'icon-rotate': ['get', angleName],
-      'text-rotate': ['get', angleName],
+      'icon-rotate': ['get', 'angle_geo'],
+      'text-rotate': ['get', 'angle_geo'],
       'icon-allow-overlap': true,
       'icon-ignore-placement': true,
       'text-allow-overlap': true,
