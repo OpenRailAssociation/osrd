@@ -154,6 +154,7 @@ export default function Scenario() {
                     <div className="scenario-details-name">
                       <span className="flex-grow-1 scenario-name">{scenario.name}</span>
                       <button
+                        data-testid="editScenario"
                         className="scenario-details-modify-button"
                         type="button"
                         onClick={() =>
@@ -165,6 +166,7 @@ export default function Scenario() {
                             />
                           )
                         }
+                        title={t('editScenario')}
                       >
                         <FaPencilAlt />
                       </button>

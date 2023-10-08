@@ -12,8 +12,14 @@ const pathfindingDistance = VARIABLES.stdcm
   ? VARIABLES.stdcm.pathfindingDistance
   : VARIABLES.pathfindingDistance;
 
-const rollingStockTestID = VARIABLES.stdcm.rollingstockTestID
-  ? VARIABLES.stdcm.rollingstockTestID
+// TODO: find out how we manage VARIABLES.rollingstockTestID with the new setup excluding infra France
+//
+// const rollingStockTestID = VARIABLES.stdcm.rollingstockTestID
+//   ? VARIABLES.stdcm.rollingstockTestID
+//   : VARIABLES.rollingstockTestID;
+
+const rollingStockTestID = VARIABLES.rollingstockTestID
+  ? VARIABLES.rollingstockTestID
   : VARIABLES.rollingstockTestID;
 
 const originSearch = PATH_VARIABLES.stdcm

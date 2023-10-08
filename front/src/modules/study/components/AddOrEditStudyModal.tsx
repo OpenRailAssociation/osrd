@@ -376,7 +376,12 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
       <ModalFooterSNCF>
         <div className="d-flex justify-content-end w-100">
           {editionMode && (
-            <button className="btn btn-outline-danger mr-auto" type="button" onClick={deleteStudy}>
+            <button
+              data-testid="deleteStudy"
+              className="btn btn-outline-danger mr-auto"
+              type="button"
+              onClick={deleteStudy}
+            >
               <span className="mr-2">
                 <FaTrash />
               </span>
@@ -387,14 +392,24 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
             {t('studyCancel')}
           </button>
           {editionMode ? (
-            <button className="btn btn-warning" type="button" onClick={updateStudy}>
+            <button
+              data-testid="updateStudy"
+              className="btn btn-warning"
+              type="button"
+              onClick={updateStudy}
+            >
               <span className="mr-2">
                 <FaPencilAlt />
               </span>
               {t('studyModifyButton')}
             </button>
           ) : (
-            <button className="btn btn-primary" type="button" onClick={createStudy}>
+            <button
+              data-testid="createStudy"
+              className="btn btn-primary"
+              type="button"
+              onClick={createStudy}
+            >
               <span className="mr-2">
                 <FaPlus />
               </span>

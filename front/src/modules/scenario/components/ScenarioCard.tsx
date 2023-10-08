@@ -36,7 +36,12 @@ export default function StudyCard({ setFilterChips, scenario }: Props) {
           <RiFolderChartLine />
         </span>
         {scenario.name}
-        <button className="btn btn-sm" type="button" onClick={handleClick}>
+        <button
+          data-testid="openScenario"
+          className="btn btn-sm"
+          type="button"
+          onClick={handleClick}
+        >
           <span className="mr-2">{t('openScenario')}</span>
           <AiFillFolderOpen />
         </button>

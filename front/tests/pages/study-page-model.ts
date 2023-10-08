@@ -7,6 +7,8 @@ export class StudyPage {
   readonly page: Page;
 
   // Page informations
+  readonly getStudyUpdateBtn: Locator;
+
   readonly getStudyName: Locator;
 
   readonly getStudyDescription: Locator;
@@ -26,6 +28,8 @@ export class StudyPage {
   readonly translation: typeof study;
 
   readonly getAddStudyBtn: Locator;
+
+  readonly getStudyUpdateConfirmBtn: Locator;
 
   readonly getStudyInputName: Locator;
 
@@ -47,6 +51,8 @@ export class StudyPage {
 
   readonly getStudyBudgetInput: Locator;
 
+  readonly getStudyDeleteConfirmBtn: Locator;
+
   constructor(page: Page) {
     this.page = page;
     // Initialize locators using roles and text content
@@ -61,7 +67,8 @@ export class StudyPage {
     this.getStudyTags = page.locator('.study-details-tags');
     this.getBackToProject = page.getByRole('heading', { name: 'Test e2e projet' });
     this.translation = study;
-    this.getAddStudyBtn = page.getByRole('button', { name: 'Créer une étude' });
+    this.getAddStudyBtn = page.getByTestId('addStudy');
+    this.getStudyUpdateBtn = page.locator('.study-details-modify-button');
     this.getStudyInputName = page.locator('#studyInputName');
     this.getStudyTypeSelect = page.locator('.input-group').first();
     this.getStudyStatusSelect = page.locator(
@@ -74,6 +81,8 @@ export class StudyPage {
     this.getStudyServiceCodeInput = page.getByLabel('Code service');
     this.getStudyBusinessCodeInput = page.getByLabel('Code business');
     this.getStudyBudgetInput = page.getByLabel('Budget');
+    this.getStudyUpdateConfirmBtn = page.locator('#modal-content').getByTestId('updateStudy');
+    this.getStudyDeleteConfirmBtn = page.locator('#modal-content').getByTestId('deleteStudy');
   }
 
   // Assert that the breadcrumb project link is displayed on the page
@@ -85,12 +94,16 @@ export class StudyPage {
     return this.translation[key];
   }
 
+  getStudyByName(name: string) {
+    return this.page.locator(`text=${name}`);
+  }
+
+  async openStudyModalUpdate() {
+    await this.getStudyUpdateBtn.click();
+  }
+
   async openStudyByTestId(studyTestId: string | RegExp) {
-    await this.page
-      .getByTestId(studyTestId)
-      .getByRole('button', { name: 'Ouvrir' })
-      .first()
-      .click();
+    await this.page.getByTestId(studyTestId).getByTestId('openStudy').first().click();
   }
 
   async openStudyCreationModal() {
@@ -108,7 +121,7 @@ export class StudyPage {
 
   async setStudyStatusByText(status: string) {
     await this.getStudyStatusSelect.click();
-    await this.page.getByText(status).click();
+    await this.page.locator('#-selecttoggle').getByText(status).click();
   }
 
   async setStudyDescription(description: string) {
@@ -137,5 +150,13 @@ export class StudyPage {
 
   async setStudyBudget(code: string) {
     await this.getStudyBudgetInput.fill(code);
+  }
+
+  async clickStudyUpdateConfirmBtn() {
+    await this.getStudyUpdateConfirmBtn.click();
+  }
+
+  async clickStudyDeleteConfirmBtn() {
+    await this.getStudyDeleteConfirmBtn.click();
   }
 }

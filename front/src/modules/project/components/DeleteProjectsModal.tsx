@@ -24,6 +24,7 @@ export default function DeleteProjectsModal({
             {t('translation:common.cancel')}
           </button>
           <button
+            data-testid="deleteProject"
             className="btn btn-danger flex-grow-1 ml-1"
             type="button"
             onClick={() => {
