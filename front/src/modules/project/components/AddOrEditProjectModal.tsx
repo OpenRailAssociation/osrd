@@ -361,14 +361,24 @@ export default function AddOrEditProjectModal({
             {t('projectCancel')}
           </button>
           {editionMode ? (
-            <button className="btn btn-warning" type="button" onClick={updateProject}>
+            <button
+              data-testid="updateProject"
+              className="btn btn-warning"
+              type="button"
+              onClick={updateProject}
+            >
               <span className="mr-2">
                 <FaPencilAlt />
               </span>
               {t('projectModifyButton')}
             </button>
           ) : (
-            <button className="btn btn-primary" type="button" onClick={createProject}>
+            <button
+              data-testid="createProject"
+              className="btn btn-primary"
+              type="button"
+              onClick={createProject}
+            >
               <span className="mr-2">
                 <FaPlus />
               </span>

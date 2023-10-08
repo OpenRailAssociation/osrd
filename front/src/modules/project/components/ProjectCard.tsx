@@ -66,7 +66,12 @@ export default function ProjectCard({ setFilterChips, project, isSelected, toggl
       <div className="projects-list-project-card-img">
         <LazyLoadImage src={imageUrl} alt="project logo" />
         <div className="buttons">
-          <button className="btn btn-primary btn-sm ml-auto" onClick={openProject} type="button">
+          <button
+            data-testid="openProject"
+            className="btn btn-primary btn-sm ml-auto"
+            onClick={openProject}
+            type="button"
+          >
             <span className="mr-2">{t('openProject')}</span>
             <AiFillFolderOpen />
           </button>

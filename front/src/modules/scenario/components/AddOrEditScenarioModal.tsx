@@ -295,6 +295,7 @@ export default function AddOrEditScenarioModal({
         <div className="d-flex justify-content-end w-100 mt-3">
           {editionMode && (
             <button
+              data-testid="deleteScenario"
               className="btn btn-sm btn-outline-danger mr-auto"
               type="button"
               onClick={removeScenario}
@@ -309,14 +310,24 @@ export default function AddOrEditScenarioModal({
             {t('scenarioCancel')}
           </button>
           {editionMode ? (
-            <button className="btn btn-sm btn-warning" type="button" onClick={updateScenario}>
+            <button
+              data-testid="updateScenario"
+              className="btn btn-sm btn-warning"
+              type="button"
+              onClick={updateScenario}
+            >
               <span className="mr-2">
                 <FaPencilAlt />
               </span>
               {t('scenarioModifyButton')}
             </button>
           ) : (
-            <button className="btn btn-sm btn-primary" type="button" onClick={createScenario}>
+            <button
+              data-testid="createScenario"
+              className="btn btn-sm btn-primary"
+              type="button"
+              onClick={createScenario}
+            >
               <span className="mr-2">
                 <FaPlus />
               </span>

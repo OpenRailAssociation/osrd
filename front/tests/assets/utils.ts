@@ -1,8 +1,8 @@
-import { expect, Page } from '@playwright/test';
+import { expect, Page, request } from '@playwright/test';
 import { PlaywrightHomePage } from '../pages/home-page-model';
 import PlaywrightRollingstockModalPage from '../pages/rollingstock-modal-model';
 import PlaywrightMap, { selectPointOnMapProps } from '../pages/map-model';
-import VARIABLES from './operationStudies/testVariables';
+import VARIABLES, { BASE_URL } from './operationStudies/testVariables';
 import PlaywrightScenarioPage from '../pages/scenario-page-model';
 import { ProjectPage } from '../pages/project-page-model';
 import { StudyPage } from '../pages/study-page-model';
@@ -77,3 +77,28 @@ export default async function createCompleteScenario(
   await scenarioPage.checkToastSNCFTitle('Train ajouté');
   await scenarioPage.returnSimulationResult();
 }
+
+// API requests
+
+const getApiContext = async () =>
+  request.newContext({
+    baseURL: BASE_URL || 'http://localhost:8090',
+  });
+
+export const getApiRequest = async (url: string) => {
+  const apiContext = await getApiContext();
+  const response = await apiContext.get(url);
+  return response.json();
+};
+
+export const postApiRequest = async <T>(url: string, data: T) => {
+  const apiContext = await getApiContext();
+  const newProject = await apiContext.post(url, { data });
+  return newProject.json();
+};
+
+export const deleteApiRequest = async (url: string) => {
+  const apiContext = await getApiContext();
+  const deleteProject = apiContext.delete(url);
+  return deleteProject;
+};

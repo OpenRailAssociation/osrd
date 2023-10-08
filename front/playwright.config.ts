@@ -23,13 +23,13 @@ const config: PlaywrightTestConfig = {
     timeout: 5000,
   },
   /* Run tests in files in parallel */
-  fullyParallel: false,
+  fullyParallel: true,
+  /* Opt out of parallel tests on CI based on cpu capacity */
+  workers: process.env.CI ? '100%' : '50%',
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: 1,
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Maximum time each action such as `click()` can take. Defaults to 0 (no limit). */
@@ -52,22 +52,17 @@ const config: PlaywrightTestConfig = {
       },
     },
 
-    // Temporary removal, map loading takes too long on the CI
-
-    // {
-    //   name: 'firefox',
-    //   use: {
-    //     ...devices['Desktop Firefox'],
-    //   },
-    // },
-
     {
-      name: 'webkit',
+      name: 'firefox',
       use: {
-        ...devices['Desktop Safari'],
+        ...devices['Desktop Firefox'],
       },
     },
   ],
+
+  /* select tags to run specific tests */
+  // TODO: remove grep when every tests are refactored
+  grep: [/home/, /project/, /study/, /scenario/],
 };
 
 export default config;

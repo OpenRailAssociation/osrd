@@ -53,6 +53,7 @@ export default function ProjectSelectionToolbar({
             <span className="ml-2">{t('unselectAllProjects')}</span>
           </button>
           <button
+            data-testid="deleteProjects"
             className="btn btn-sm btn-danger"
             type="button"
             onClick={() =>

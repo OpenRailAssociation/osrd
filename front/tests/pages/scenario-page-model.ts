@@ -1,6 +1,12 @@
 import { Locator, Page, expect } from '@playwright/test';
 
 class PlaywrightScenarioPage {
+  readonly getScenarioUpdateBtn: Locator;
+
+  readonly getScenarioDeleteConfirmBtn: Locator;
+
+  readonly getScenarioTags: Locator;
+
   readonly getRollingStockSelector: Locator;
 
   readonly getSpeedLimitSelector: Locator;
@@ -20,6 +26,8 @@ class PlaywrightScenarioPage {
   readonly getSettingSimulationBtn: Locator;
 
   readonly getAddScenarioBtn: Locator;
+
+  readonly getScenarioUpdateConfirmBtn: Locator;
 
   readonly getScenarioNameInput: Locator;
 
@@ -79,6 +87,11 @@ class PlaywrightScenarioPage {
 
   constructor(readonly page: Page) {
     this.getRollingStockSelector = page.getByTestId('rollingstock-selector-minicard');
+    this.getScenarioUpdateBtn = page.getByTitle('Modifier le scénario');
+    this.getScenarioDeleteConfirmBtn = page
+      .locator('#modal-content')
+      .getByText('Supprimer', { exact: true });
+    this.getScenarioTags = page.locator('.scenarios-list-card-tags');
     this.getSpeedLimitSelector = page.getByTestId('speed-limit-by-tag-selector');
     this.getItineraryModule = page.getByTestId('itinerary');
     this.getItineraryOrigin = this.getItineraryModule
@@ -93,7 +106,7 @@ class PlaywrightScenarioPage {
     this.getTrainLabels = page.getByTestId('add-train-labels');
     this.getMapModule = page.getByTestId('map');
     this.getSettingSimulationBtn = page.locator('span', { hasText: 'Paramètres de simulation' });
-    this.getAddScenarioBtn = page.getByRole('button', { name: 'Créer un scénario' });
+    this.getAddScenarioBtn = page.getByTestId('addScenario');
     this.getScenarioNameInput = page.locator('#scenarioInputName');
     this.getScenarioDescriptionInput = page.locator('#scenarioDescription');
     this.getScenarioInfraList = page.getByTestId('infraslist');
@@ -132,18 +145,19 @@ class PlaywrightScenarioPage {
       .filter({ hasText: /^●Linéaire●Mareco s%min\/100kms$/ })
       .getByRole('button')
       .nth(1);
+    this.getScenarioUpdateConfirmBtn = page.locator('#modal-content').getByTestId('updateScenario');
   }
 
   async openTabByText(text: string) {
     await this.page.locator('span', { hasText: text }).click();
   }
 
+  getScenarioByName(name: string) {
+    return this.page.locator(`text=${name}`);
+  }
+
   async openScenarioByTestId(scenarioTestId: string) {
-    await this.page
-      .getByTestId(scenarioTestId)
-      .getByRole('button', { name: 'Ouvrir' })
-      .first()
-      .click();
+    await this.page.getByTestId(scenarioTestId).getByTestId('openScenario').first().click();
   }
 
   async openScenarioCreationModal() {
@@ -152,6 +166,10 @@ class PlaywrightScenarioPage {
 
   async setScenarioName(name: string) {
     await this.getScenarioNameInput.fill(name);
+  }
+
+  async openScenarioModalUpdate() {
+    await this.getScenarioUpdateBtn.click();
   }
 
   async setScenarioDescription(description: string) {
@@ -275,6 +293,14 @@ class PlaywrightScenarioPage {
 
   async clickSuccessBtn() {
     await this.getSuccessBtn.click();
+  }
+
+  async clickScenarioUpdateConfirmBtn() {
+    await this.getScenarioUpdateConfirmBtn.click();
+  }
+
+  async clickScenarioDeleteConfirmBtn() {
+    await this.getScenarioDeleteConfirmBtn.click();
   }
 }
 

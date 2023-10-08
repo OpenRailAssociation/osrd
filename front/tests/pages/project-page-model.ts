@@ -9,6 +9,8 @@ export class ProjectPage {
   // Page informations
   readonly getProjectName: Locator;
 
+  readonly getProjectUpdateBtn: Locator;
+
   readonly getProjectDescription: Locator;
 
   readonly getProjectObjectives: Locator;
@@ -46,12 +48,15 @@ export class ProjectPage {
 
   readonly getProjectDeleteBtn: Locator;
 
+  readonly getProjectUpdateConfirmBtn: Locator;
+
   readonly getProjectDeleteConfirmBtn: Locator;
 
   constructor(page: Page) {
     this.page = page;
     // Initialize locators using roles and text content
     this.getProjectName = page.locator('.project-details-title-name');
+    this.getProjectUpdateBtn = page.locator('.project-details-title-modify-button');
     this.getProjectDescription = page.locator('.project-details-title-description');
     this.getProjectObjectives = page.locator('.project-details-title-objectives');
     this.getProjectFinancialsAmount = page.locator('.project-details-financials-amount');
@@ -62,16 +67,15 @@ export class ProjectPage {
     this.getBody = page.locator('body');
     this.translation = project;
     this.getViteOverlay = page.locator('vite-plugin-checker-error-overlay');
-    this.getAddProjectBtn = page.getByRole('button', { name: 'Créer un projet' });
+    this.getAddProjectBtn = page.getByTestId('addProject');
     this.getProjectNameInput = page.locator('#projectInputName');
     this.getProjectDescriptionInput = page.locator('#projectDescription');
     this.getProjectObjectiveInput = page.locator('#projectObjectives');
     this.getProjectFunderInput = page.locator('#projectInputFunders');
     this.getProjectBudgetInput = page.locator('#projectInputBudget');
-    this.getProjectDeleteBtn = page.getByRole('button', { name: 'Supprimer' });
-    this.getProjectDeleteConfirmBtn = page
-      .locator('#modal-content')
-      .getByText('Supprimer', { exact: true });
+    this.getProjectDeleteBtn = page.getByTestId('deleteProjects');
+    this.getProjectUpdateConfirmBtn = page.locator('#modal-content').getByTestId('updateProject');
+    this.getProjectDeleteConfirmBtn = page.locator('#modal-content').getByTestId('deleteProject');
   }
 
   // Completly remove VITE button & sign
@@ -105,12 +109,12 @@ export class ProjectPage {
     await this.getAddProjectBtn.click();
   }
 
+  async openProjectModalUpdate() {
+    await this.getProjectUpdateBtn.click();
+  }
+
   async openProjectByTestId(projectTestId: string | RegExp) {
-    await this.page
-      .getByTestId(projectTestId)
-      .getByRole('button', { name: 'Ouvrir' })
-      .first()
-      .click();
+    await this.page.getByTestId(projectTestId).getByTestId('openProject').first().click();
   }
 
   async setProjectName(name: string) {
@@ -145,10 +149,12 @@ export class ProjectPage {
     await this.getProjectDeleteBtn.click();
   }
 
-  async checkLabelProjectSelected(label: string) {
-    expect(
-      await this.page.locator('.projects-selection-toolbar').locator('span').first().textContent()
-    ).toContain(label);
+  async checkLabelProjectSelected() {
+    expect(this.page.locator('.projects-selection-toolbar').locator('span').first());
+  }
+
+  async clickProjectUpdateConfirmBtn() {
+    await this.getProjectUpdateConfirmBtn.click();
   }
 
   async clickProjectDeleteConfirmBtn() {

@@ -35,7 +35,12 @@ export default function StudyCard({ setFilterChips, study }: Props) {
           <img src={studyLogo} alt="study logo" height="24" />
         </span>
         {study.name}
-        <button className="btn btn-primary btn-sm" onClick={handleClick} type="button">
+        <button
+          data-testid="openStudy"
+          className="btn btn-primary btn-sm"
+          onClick={handleClick}
+          type="button"
+        >
           <span className="mr-2">{t('openStudy')}</span>
           <AiFillFolderOpen />
         </button>
