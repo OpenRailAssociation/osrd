@@ -27,7 +27,7 @@
   "startTime": "DÉBUT",
   "status": {
     "calculatingTrainSchedule": "Calculs de marches en cours…",
-    "calculatingTrainScheduleComplete": "Calcul de marche terminé (path {{pathId}}) {{trainIndex}}/{{trainsCount}}",
+    "calculatingTrainScheduleComplete": "Calcul de marche terminé (path {{pathId}}) {{createdTrainsCount}}/{{trainsCount}}",
     "calculatingTrainScheduleCompleteAll_one": "Tous les calculs de marches sont terminés: {{successfulTrainsCount}}/{{trainsCount}} train créé.",
     "calculatingTrainScheduleCompleteAll_other": "Tous les calculs de marches sont terminés: {{successfulTrainsCount}}/{{trainsCount}} trains créés.",
     "calculatingTrainScheduleCompleteAllFailure": "Tous les calculs de marche ont échoué.",

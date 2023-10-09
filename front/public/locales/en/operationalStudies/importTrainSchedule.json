@@ -27,7 +27,7 @@
   "startTime": "START",
   "status": {
     "calculatingTrainSchedule": "Calculating train schedules...",
-    "calculatingTrainScheduleComplete": "Calculating train schedules is over (path {{pathId}}) {{trainIndex}}/{{trainsCount}}",
+    "calculatingTrainScheduleComplete": "Calculating train schedules is over (path {{pathId}}) {{createdTrainsCount}}/{{trainsCount}}",
     "calculatingTrainScheduleCompleteAll_one": "All train schedules have been calculated : {{successfulTrainsCount}}/{{trainsCount}} train created.",
     "calculatingTrainScheduleCompleteAll_other": "All train schedules have been calculated : {{successfulTrainsCount}}/{{trainsCount}} trains created.",
     "calculatingTrainScheduleCompleteAllFailure": "All train schedule creations failed.",
