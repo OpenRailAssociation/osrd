@@ -1899,15 +1899,16 @@ export type SearchOperationalPointResult = {
   uic?: number;
 };
 export type SearchSignalResult = {
-  aspects?: string[];
   geographic: Point;
-  infra_id?: number;
+  infra_id: number;
   label: string;
-  line_code: number;
+  line_code: string;
   line_name: string;
   schematic: Point;
-  systems?: string[];
-  type?: string;
+  settings: string[];
+  signaling_systems: string[];
+  sprite?: string | null;
+  sprite_signaling_system?: string | null;
 };
 export type SearchStudyResult = {
   description?: string;

@@ -1811,10 +1811,6 @@ components:
       - timetable_id
     SearchSignalResult:
       properties:
-        aspects:
-          items:
-            type: string
-          type: array
         geographic:
           $ref: '#/components/schemas/Point'
         infra_id:
@@ -1822,23 +1818,34 @@ components:
         label:
           type: string
         line_code:
-          type: integer
+          type: string
         line_name:
           type: string
         schematic:
           $ref: '#/components/schemas/Point'
-        systems:
+        settings:
           items:
             type: string
           type: array
-        type:
+        signaling_systems:
+          items:
+            type: string
+          type: array
+        sprite:
+          nullable: true
+          type: string
+        sprite_signaling_system:
+          nullable: true
           type: string
       required:
+      - infra_id
       - label
-      - geographic
-      - schematic
+      - signaling_systems
+      - settings
       - line_code
       - line_name
+      - geographic
+      - schematic
     SearchStudyResult:
       properties:
         description:
