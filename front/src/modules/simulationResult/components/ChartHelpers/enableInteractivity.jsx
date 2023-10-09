@@ -358,9 +358,6 @@ export const isolatedEnableInteractivity = (
   listValues,
   rotate,
   setChart,
-  setLocalTime,
-  setLocalPosition,
-  setMousePos,
   simulationIsPlaying,
   dispatchUpdateMustRedraw,
   dispatchUpdateTimePositionValues
@@ -401,38 +398,27 @@ export const isolatedEnableInteractivity = (
   const mousemove = (event, _value) => {
     // If not playing
     if (!simulationIsPlaying) {
+      let immediatePositionsValuesForPointer;
+      let timePositionLocal;
       if (isGET(keyValues)) {
         // GET
-        const timePositionLocal = rotate
+        timePositionLocal = rotate
           ? chart.y.invert(pointer(event, event.currentTarget)[1])
           : chart.x.invert(pointer(event, event.currentTarget)[0]);
 
-        const positionLocal = rotate
-          ? chart.x.invert(pointer(event, event.currentTarget)[0])
-          : chart.y.invert(pointer(event, event.currentTarget)[1]);
-
-        setLocalTime(timePositionLocal);
-        setLocalPosition(positionLocal);
-
-        debounceUpdateTimePositionValues(timePositionLocal, 15);
-        const immediatePositionsValuesForPointer = interpolateOnTime(
+        immediatePositionsValuesForPointer = interpolateOnTime(
           selectedTrainData,
           keyValues,
           LIST_VALUES_NAME_SPACE_TIME,
           timePositionLocal
         );
-        updatePointers(chart, keyValues, listValues, immediatePositionsValuesForPointer, rotate);
       } else {
         // GEV
         const positionLocal = rotate
           ? chart.y.invert(pointer(event, event.currentTarget)[1])
           : chart.x.invert(pointer(event, event.currentTarget)[0]);
-        const timePositionLocal = interpolateOnPosition(
-          selectedTrainData,
-          keyValues,
-          positionLocal
-        );
-        const immediatePositionsValuesForPointer = interpolateOnTime(
+        timePositionLocal = interpolateOnPosition(selectedTrainData, keyValues, positionLocal);
+        immediatePositionsValuesForPointer = interpolateOnTime(
           selectedTrainData,
           keyValues,
           LIST_VALUES_NAME_SPEED_SPACE,
@@ -452,30 +438,18 @@ export const isolatedEnableInteractivity = (
             );
           }
         });
-
-        if (timePositionLocal) {
-          debounceUpdateTimePositionValues(timePositionLocal, 15);
-        }
-
-        if (chart?.svg) {
-          const verticalMark = pointer(event, event.currentTarget)[0];
-          const horizontalMark = pointer(event, event.currentTarget)[1];
-          chart.svg.selectAll('#vertical-line').attr('x1', verticalMark).attr('x2', verticalMark);
-          chart.svg
-            .selectAll('#horizontal-line')
-            .attr('y1', horizontalMark)
-            .attr('y2', horizontalMark);
-          updatePointers(chart, keyValues, listValues, immediatePositionsValuesForPointer, rotate);
-        }
       }
 
-      // Update guideLines
-
-      // USE THAT TO RESTORE THE STUFF ON REACREACTION on component via setMousePointers !
-      setMousePos({
-        x: pointer(event, event.currentTarget)[0],
-        y: pointer(event, event.currentTarget)[1],
-      });
+      debounceUpdateTimePositionValues(timePositionLocal, 15);
+      if (chart?.svg) {
+        const verticalMark = pointer(event, event.currentTarget)[0];
+        const horizontalMark = pointer(event, event.currentTarget)[1];
+        chart.svg.selectAll('#vertical-line').attr('x1', verticalMark).attr('x2', verticalMark);
+        chart.svg
+          .selectAll('#horizontal-line')
+          .attr('y1', horizontalMark)
+          .attr('y2', horizontalMark);
+      }
     }
   };
 

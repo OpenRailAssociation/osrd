@@ -172,9 +172,6 @@ export default function SpeedSpaceChart({
       LIST_VALUES_NAME_SPEED_SPACE,
       rotate,
       setChart,
-      noop,
-      noop,
-      noop,
       simulationIsPlaying,
       noop,
       dispatchUpdateTimePositionValues
