@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::models::RollingStockModel;
+use crate::models::{RollingStockModel, SpacingRequirement};
 
 use crate::core::{pathfinding::Waypoint, simulation::SimulationResponse};
 use crate::schema::rolling_stock::RollingStockComfortType;
@@ -15,7 +15,7 @@ pub struct STDCMCoreRequest {
     pub expected_version: String,
     pub rolling_stock: RollingStockModel,
     pub comfort: RollingStockComfortType,
-    pub route_occupancies: Vec<STDCMCoreRouteOccupancy>,
+    pub spacing_requirements: Vec<SpacingRequirement>,
     pub steps: Vec<STDCMCoreStep>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub start_time: Option<f64>,
@@ -41,13 +41,6 @@ pub struct STDCMCoreStep {
     pub stop_duration: f64,
     pub stop: bool,
     pub waypoints: Vec<Waypoint>,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct STDCMCoreRouteOccupancy {
-    pub id: String,
-    pub start_occupancy_time: f64,
-    pub end_occupancy_time: f64,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

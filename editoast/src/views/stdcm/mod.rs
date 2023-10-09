@@ -1,12 +1,9 @@
-use crate::core::stdcm::{
-    STDCMCoreRequest, STDCMCoreResponse, STDCMCoreRouteOccupancy, STDCMCoreStep,
-};
+use crate::core::stdcm::{STDCMCoreRequest, STDCMCoreResponse, STDCMCoreStep};
 use crate::core::{AsCoreRequest, CoreClient};
-use crate::diesel::BelongingToDsl;
+
 use crate::error::Result;
-use crate::models::train_schedule::filter_invalid_trains;
 pub use crate::models::train_schedule::AllowanceValue;
-use crate::models::{Create, SimulationOutput};
+use crate::models::{Create, SpacingRequirement};
 use crate::models::{
     CurveGraph, Infra, PathWaypoint, Pathfinding, PathfindingChangeset, PathfindingPayload,
     Retrieve, SlopeGraph, TrainSchedule,
@@ -16,7 +13,7 @@ use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
 use actix_web::web::{self, Data, Json};
 use actix_web::{post, HttpResponse, Responder};
-use diesel_async::RunQueryDsl;
+
 use editoast_derive::EditoastError;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -24,6 +21,7 @@ use thiserror::Error;
 use super::pathfinding::{
     fetch_pathfinding_payload_track_map, parse_pathfinding_payload_waypoints, StepPayload,
 };
+use super::timetable::get_simulated_schedules_from_timetable;
 use super::train_schedule::process_simulation_response;
 use super::train_schedule::projection::Projection;
 use super::train_schedule::simulation_report::{create_simulation_report, SimulationReport};
@@ -153,15 +151,14 @@ async fn call_core_stdcm(
     let infra_version = infra.clone().version.unwrap();
     let rolling_stock = retrieve_existing_rolling_stock(&db_pool, data.rolling_stock_id).await?;
     let steps = parse_stdcm_steps(db_pool.clone(), data, &infra).await?;
-    let route_occupancies =
-        make_route_occupancies(infra_version.clone(), db_pool, data.timetable_id).await?;
+    let spacing_requirements = make_spacing_requirements(db_pool, data.timetable_id).await?;
     STDCMCoreRequest {
         infra: infra.id.unwrap().to_string(),
         expected_version: infra_version,
         rolling_stock,
         comfort: data.comfort.clone(),
         steps,
-        route_occupancies,
+        spacing_requirements,
         // end_time is not used by backend currently
         // but at least one must be defined
         start_time: data.start_time,
@@ -207,47 +204,33 @@ async fn parse_stdcm_steps(
 
 /// Create route occupancies, adjusted by simulation departure time.
 /// uses base_simulation by default, or eco_simulation if given
-async fn make_route_occupancies(
-    infra_version: String,
+async fn make_spacing_requirements(
     db_pool: Data<DbPool>,
     timetable_id: i64,
-) -> Result<Vec<STDCMCoreRouteOccupancy>> {
-    let schedules = filter_invalid_trains(db_pool.clone(), timetable_id, infra_version).await?;
-    let mut conn = db_pool.get().await?;
-    let (simulations, schedules): (Vec<SimulationOutput>, Vec<TrainSchedule>) = (
-        SimulationOutput::belonging_to(&schedules)
-            .load::<SimulationOutput>(&mut conn)
-            .await?,
-        schedules,
-    );
-    Ok(simulations
-        .iter()
-        .filter_map(|simulation| {
-            if let Some(schedule) = schedules
-                .iter()
-                .find(|s| s.id == simulation.train_schedule_id)
-            {
-                let sim = simulation
-                    .eco_simulation
-                    .as_ref()
-                    .unwrap_or(&simulation.base_simulation);
-                Some(
-                    sim.route_occupancies
-                        .iter()
-                        .map(|(route_id, occupancy)| STDCMCoreRouteOccupancy {
-                            id: route_id.to_string(),
-                            start_occupancy_time: occupancy.time_head_occupy
-                                + schedule.departure_time,
-                            end_occupancy_time: occupancy.time_tail_free + schedule.departure_time,
-                        })
-                        .collect::<Vec<_>>(),
-                )
-            } else {
-                None
-            }
+) -> Result<Vec<SpacingRequirement>> {
+    let (schedules, simulations) =
+        get_simulated_schedules_from_timetable(timetable_id, db_pool).await?;
+
+    let res = simulations
+        .into_iter()
+        .zip(schedules)
+        .flat_map(|(simulation, schedule)| {
+            let sim = simulation
+                .eco_simulation
+                .map(|sim| sim.0)
+                .unwrap_or(simulation.base_simulation.0);
+
+            sim.spacing_requirements
+                .into_iter()
+                .map(|req| SpacingRequirement {
+                    zone: req.zone,
+                    begin_time: req.begin_time + schedule.departure_time,
+                    end_time: req.end_time + schedule.departure_time,
+                })
+                .collect::<Vec<_>>()
         })
-        .flatten()
-        .collect())
+        .collect();
+    Ok(res)
 }
 
 /// Creates a Pathfinding using the same function used with core /pathfinding response
