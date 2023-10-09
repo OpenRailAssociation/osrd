@@ -491,8 +491,6 @@ for t in BaseObjectTrait.__subclasses__():
 
 # Extensions
 
-EXTENDED_CLASSES = []
-
 
 def register_extension(object: BaseModel, name):
     """
@@ -511,11 +509,11 @@ def register_extension(object: BaseModel, name):
 
     if "extensions" not in object.model_fields:
         extensions_type = create_model(object.__name__ + "Extensions")
+        extensions_type.__pydantic_parent_namespace__ = object.__pydantic_parent_namespace__
         object.model_fields["extensions"] = FieldInfo(
             annotation=extensions_type,
             default=None,
         )
-        EXTENDED_CLASSES.append(object)
 
     def register_extension(extension):
         extensions_field = object.model_fields["extensions"]
@@ -598,13 +596,21 @@ class DetectorSncfExtension(BaseModel):
     kp: str = Field(description="Kilometric point of the detector")
 
 
-# Rebuild all classes to integrate extensions in schema
-for t in EXTENDED_CLASSES:
-    extensions_type = t.model_fields["extensions"].annotation
-    extensions_type.__pydantic_parent_namespace__ = t.__pydantic_parent_namespace__
-    extensions_type.model_rebuild(force=True)
-    t.model_rebuild(force=True)
-RailJsonInfra.model_rebuild(force=True)
+def recursively_rebuild(model: BaseModel):
+    for field in model.model_fields.values():
+        if field.annotation is None:
+            continue
+        try:
+            child_model = get_args(field.annotation)[0]
+        except (TypeError, IndexError):
+            child_model = field.annotation
+        if isinstance(child_model, type) and issubclass(child_model, BaseModel):
+            recursively_rebuild(child_model)
+    model.model_rebuild(force=True)
+
+
+# Needed since we dynamically created classes
+recursively_rebuild(RailJsonInfra)
 
 
 if __name__ == "__main__":
