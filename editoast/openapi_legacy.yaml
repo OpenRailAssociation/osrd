@@ -3311,34 +3311,41 @@ components:
 
     SearchSignalResult:
       required:
+        - infra_id
         - label
-        - geographic
-        - schematic
+        - signaling_systems
+        - settings
         - line_code
         - line_name
+        - geographic
+        - schematic
       properties:
-        label:
-          type: string
         infra_id:
           type: integer
-        aspects:
-          type: array
-          items:
-            type: string
-        systems:
-          type: array
-          items:
-            type: string
-        type:
+        label:
           type: string
+        signaling_systems:
+          type: array
+          items:
+            type: string
+        settings:
+          type: array
+          items:
+            type: string
         line_code:
-          type: integer
+          type: string
         line_name:
           type: string
         geographic:
           $ref: "#/components/schemas/Point"
         schematic:
           $ref: "#/components/schemas/Point"
+        sprite_signaling_system:
+          type: string
+          nullable: true
+        sprite:
+          type: string
+          nullable: true
 
     SearchProjectResult:
       required:
