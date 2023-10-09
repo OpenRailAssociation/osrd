@@ -7,11 +7,7 @@ import cx from 'classnames';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useDebounce } from 'utils/helpers';
-import {
-  updateReloadTimetable,
-  updateSelectedProjection,
-  updateSelectedTrainId,
-} from 'reducers/osrdsimulation/actions';
+import { updateSelectedProjection, updateSelectedTrainId } from 'reducers/osrdsimulation/actions';
 import { setFailure, setSuccess } from 'reducers/main';
 import trainNameWithNum from 'modules/trainschedule/components/ManageTrainSchedule/helpers/trainNameHelper';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
@@ -83,7 +79,7 @@ export default function Timetable({
 
   useEffect(() => {
     if (timetable) {
-      getSimulationResults(timetable);
+      getSimulationResults(timetable, selectedTrainId);
       refetchConflicts();
     }
   }, [timetable]);

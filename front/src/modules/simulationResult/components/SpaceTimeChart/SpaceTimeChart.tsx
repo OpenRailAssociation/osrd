@@ -3,15 +3,10 @@ import { noop } from 'lodash';
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import {
   isolatedEnableInteractivity,
-  updatePointers,
-  displayGuide,
   traceVerticalLine,
 } from 'modules/simulationResult/components/ChartHelpers/enableInteractivity';
 import { Rnd } from 'react-rnd';
-import {
-  timeShiftTrain,
-  interpolateOnTime,
-} from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
+import { timeShiftTrain } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
 import ORSD_GRAPH_SAMPLE_DATA from 'modules/simulationResult/components/SpeedSpaceChart/sampleData';
 import { CgLoadbar } from 'react-icons/cg';
 import { GiResize } from 'react-icons/gi';
@@ -110,9 +105,6 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
   const [resetChart, setResetChart] = useState(false);
   const [rotate, setRotate] = useState(false);
   const [selectedTrain, setSelectedTrain] = useState(inputSelectedTrain);
-  const [localTime, setLocalTime] = useState(new Date());
-  const [, setLocalPosition] = useState(0);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [showModal, setShowModal] = useState<'+' | '-' | ''>('');
   const [trainSimulations, setTrainSimulations] = useState<
     SimulationSnapshot['trains'] | undefined
@@ -130,15 +122,6 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
     },
     [trainSimulations, selectedTrain, onOffsetTimeByDragging]
   );
-
-  const moveGridLinesOnMouseMove = useCallback(() => {
-    if (chart?.svg) {
-      const verticalMark = mousePos.x;
-      const horizontalMark = mousePos.y;
-      chart.svg.selectAll('#vertical-line').attr('x1', verticalMark).attr('x2', verticalMark);
-      chart.svg.selectAll('#horizontal-line').attr('y1', horizontalMark).attr('y2', horizontalMark);
-    }
-  }, [chart, rotate, mousePos]);
 
   /**
    * INPUT UPDATES
@@ -175,17 +158,6 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
    */
   useEffect(() => {
     dragShiftTrain(dragOffset);
-    const offsetLocalTime = new Date(1900, localTime.getMonth(), localTime.getDay());
-    offsetLocalTime.setHours(localTime.getHours());
-    offsetLocalTime.setMinutes(localTime.getMinutes());
-    offsetLocalTime.setSeconds(localTime.getSeconds() + dragOffset);
-    if (chart)
-      setMousePos({
-        ...mousePos,
-        x: rotate ? mousePos.x : chart.x(offsetLocalTime),
-        y: rotate ? chart.y(offsetLocalTime) : mousePos.y,
-      });
-    setLocalTime(offsetLocalTime);
   }, [dragOffset]);
 
   /*
@@ -236,28 +208,10 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
         LIST_VALUES_NAME_SPACE_TIME,
         rotate,
         setChart,
-        setLocalTime,
-        setLocalPosition,
-        setMousePos,
         simulationIsPlaying,
         dispatchUpdateMustRedraw,
         dispatchUpdateTimePositionValues
       );
-      const immediatePositionsValuesForPointer = interpolateOnTime(
-        dataSimulation,
-        KEY_VALUES_FOR_SPACE_TIME_CHART,
-        LIST_VALUES_NAME_SPACE_TIME,
-        localTime
-      );
-      displayGuide(chart, 1);
-      updatePointers(
-        chart,
-        KEY_VALUES_FOR_SPACE_TIME_CHART,
-        LIST_VALUES_NAME_SPACE_TIME,
-        immediatePositionsValuesForPointer,
-        rotate
-      );
-      moveGridLinesOnMouseMove();
     }
 
     // Required to sync the camera in SimulationWarpedMap:
@@ -281,10 +235,6 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
       );
     }
   }, [chart, positionValues, timePosition]);
-
-  useEffect(() => {
-    moveGridLinesOnMouseMove();
-  }, [mousePos]);
 
   const handleKey = ({ key }: KeyboardEvent) => {
     if (isDisplayed && ['+', '-'].includes(key)) {
