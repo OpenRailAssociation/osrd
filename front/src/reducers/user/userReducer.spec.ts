@@ -1,4 +1,4 @@
-import { expect, test } from 'vitest';
+import { expect, it } from 'vitest';
 import { createStoreWithoutMiddleware } from 'Store';
 import {
   userInitialState,
@@ -16,16 +16,15 @@ const createStore = (initialStateExtra?: UserState) =>
   });
 
 describe('userReducer', () => {
-  test('should return the initial state', () => {
+  it('should return the initial state', () => {
     const store = createStore(userInitialState);
     const userState = store.getState().user;
     expect(userState).toEqual(userInitialState);
   });
 
-  test('should handle loginSuccess', () => {
+  it('should handle loginSuccess', () => {
     const store = createStore(userInitialState);
-    const action = loginSuccess({ accessToken: 'fake_token', username: 'Test userSlice' });
-    store.dispatch(action);
+    store.dispatch(loginSuccess({ accessToken: 'fake_token', username: 'Test userSlice' }));
     const userState = store.getState().user;
     expect(userState).toEqual({
       isLogged: true,
@@ -38,10 +37,9 @@ describe('userReducer', () => {
     });
   });
 
-  test('should handle loginError', () => {
+  it('should handle loginError', () => {
     const store = createStore(userInitialState);
-    const action = loginError(true);
-    store.dispatch(action);
+    store.dispatch(loginError(true));
     const userState = store.getState().user;
     expect(userState).toEqual({
       isLogged: false,
@@ -54,7 +52,7 @@ describe('userReducer', () => {
     });
   });
 
-  test('should handle logoutUser', () => {
+  it('should handle logoutUser', () => {
     const store = createStore({
       isLogged: true,
       toLogin: false,
@@ -64,16 +62,14 @@ describe('userReducer', () => {
       accessToken: 'fake_token',
       account: {},
     });
-    const action = logoutUser();
-    store.dispatch(action);
+    store.dispatch(logoutUser());
     const userState = store.getState().user;
     expect(userState).toEqual(userInitialState);
   });
 
-  test('should handle serverError', () => {
+  it('should handle serverError', () => {
     const store = createStore(userInitialState);
-    const action = serverError();
-    store.dispatch(action);
+    store.dispatch(serverError());
     const userState = store.getState().user;
     expect(userState).toEqual({
       isLogged: false,
@@ -86,10 +82,9 @@ describe('userReducer', () => {
     });
   });
 
-  test('should handle updateAccount', () => {
+  it('should handle updateAccount', () => {
     const store = createStore(userInitialState);
-    const action = updateAccount({ username: 'Test userSlice' });
-    store.dispatch(action);
+    store.dispatch(updateAccount({ username: 'Test userSlice' }));
     const userState = store.getState().user;
     expect(userState).toEqual({
       isLogged: false,

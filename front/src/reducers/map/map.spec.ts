@@ -48,68 +48,82 @@ describe('mapReducer', () => {
       transformRequest: transformMapRequest,
     } as Partial<Viewport>;
     store.dispatch(updateViewportAction(viewport));
-    expect(store.getState().map.viewport).toEqual(viewport);
+    const mapState = store.getState().map;
+    expect(mapState).toEqual({ ...mapInitialState, viewport });
   });
 
   it('should handle updateMapStyle', () => {
     const store = createStore();
     store.dispatch(updateMapStyle('dark'));
-    expect(store.getState().map.mapStyle).toEqual('dark');
+    const mapState = store.getState().map;
+    expect(mapState).toEqual({ ...mapInitialState, mapStyle: 'dark' });
   });
 
   it('should handle updateTransformRequest', () => {
     const store = createStore();
     store.dispatch(updateTransformRequest(transformMapRequest));
-    expect(store.getState().map.viewport.transformRequest).toEqual(transformMapRequest);
+    const mapState = store.getState().map;
+    expect(mapState).toEqual({
+      ...mapState,
+      viewport: { ...mapState.viewport, transformRequest: transformMapRequest },
+    });
   });
 
   it('should handle updateMapSearchMarker', () => {
     const store = createStore();
     const searchMarker = { title: 'test', lonlat: [1, 2] };
     store.dispatch(updateMapSearchMarker(searchMarker));
-    expect(store.getState().map.mapSearchMarker).toEqual(searchMarker);
+    const mapState = store.getState().map;
+    expect(mapState).toEqual({ ...mapState, mapSearchMarker: searchMarker });
   });
 
   it('should handle updateLineSearchCode', () => {
     const store = createStore();
     store.dispatch(updateLineSearchCode(0));
-    expect(store.getState().map.lineSearchCode).toEqual(0);
+    const mapState = store.getState().map;
+    expect(mapState).toEqual({ ...mapState, lineSearchCode: 0 });
   });
 
   it('should handle updateShowIGNBDORTHO', () => {
     const store = createStore();
     store.dispatch(updateShowIGNBDORTHO(true));
-    expect(store.getState().map.showIGNBDORTHO).toEqual(true);
+    const mapState = store.getState().map;
+    expect(mapState).toEqual({ ...mapState, showIGNBDORTHO: true });
   });
 
   it('should handle updateShowIGNSCAN25', () => {
     const store = createStore();
     store.dispatch(updateShowIGNSCAN25(true));
-    expect(store.getState().map.showIGNSCAN25).toEqual(true);
+    const mapState = store.getState().map;
+    expect(mapState).toEqual({ ...mapState, showIGNSCAN25: true });
   });
 
   it('should handle updateShowIGNCadastre', () => {
     const store = createStore();
     store.dispatch(updateShowIGNCadastre(true));
-    expect(store.getState().map.showIGNCadastre).toEqual(true);
+    const mapState = store.getState().map;
+    expect(mapState).toEqual({ ...mapState, showIGNCadastre: true });
   });
 
   it('should handle updateShowOSM', () => {
     const store = createStore();
     store.dispatch(updateShowOSM(true));
-    expect(store.getState().map.showOSM).toEqual(true);
+    const mapState = store.getState().map;
+    expect(mapState).toEqual({ ...mapState, showOSM: true });
   });
 
   it('should handle updateShowOSMtracksections', () => {
     const store = createStore();
     store.dispatch(updateShowOSMtracksections(true));
-    expect(store.getState().map.showOSMtracksections).toEqual(true);
+    const mapState = store.getState().map;
+    expect(mapState).toEqual({ ...mapState, showOSMtracksections: true });
   });
 
   it('should handle updateFeatureInfoClick', () => {
     const store = createStore();
     store.dispatch(updateFeatureInfoClick(1));
-    expect(store.getState().map.featureInfoClickID).toEqual(1);
+    const mapState = store.getState().map;
+    expect(mapState).toEqual({ ...mapState, featureInfoClickID: 1 });
   });
 
   it('should handle updateLayersSettings', () => {
@@ -130,7 +144,8 @@ describe('mapReducer', () => {
       errors: true,
     };
     store.dispatch(updateLayersSettings(layersSettings));
-    expect(store.getState().map.layersSettings).toEqual(layersSettings);
+    const mapState = store.getState().map;
+    expect(mapState).toEqual({ ...mapState, layersSettings });
   });
 
   it('should handle updateSignalsSettings', () => {
@@ -142,12 +157,14 @@ describe('mapReducer', () => {
       tivs: true,
     };
     store.dispatch(updateSignalsSettings(signalsSettings));
-    expect(store.getState().map.signalsSettings).toEqual(signalsSettings);
+    const mapState = store.getState().map;
+    expect(mapState).toEqual({ ...mapState, signalsSettings });
   });
 
   it('should handle updateTerrain3DExaggeration', () => {
     const store = createStore();
     store.dispatch(updateTerrain3DExaggeration(10));
-    expect(store.getState().map.terrain3DExaggeration).toEqual(10);
+    const mapState = store.getState().map;
+    expect(mapState).toEqual({ ...mapState, terrain3DExaggeration: 10 });
   });
 });
