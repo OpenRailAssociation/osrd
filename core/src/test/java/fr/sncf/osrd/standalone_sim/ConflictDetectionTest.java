@@ -1,10 +1,11 @@
 package fr.sncf.osrd.standalone_sim;
 
 import static fr.sncf.osrd.Helpers.fullInfraFromRJS;
-import static fr.sncf.osrd.Helpers.pathFromRoutes;
+import static fr.sncf.osrd.Helpers.chunkPathFromRoutes;
 import static fr.sncf.osrd.api.ConflictDetectionEndpoint.ConflictDetectionResult.Conflict.ConflictType.ROUTING;
 import static fr.sncf.osrd.api.ConflictDetectionEndpoint.ConflictDetectionResult.Conflict.ConflictType.SPACING;
 import static fr.sncf.osrd.envelope_sim.TestMRSPBuilder.makeSimpleMRSP;
+import static fr.sncf.osrd.sim_infra.api.PathPropertiesKt.makePathProperties;
 import static fr.sncf.osrd.sim_infra.api.PathPropertiesKt.makeTrackLocation;
 import static fr.sncf.osrd.sim_infra.api.TrackInfraKt.getTrackSectionFromNameOrThrow;
 import static fr.sncf.osrd.utils.units.Distance.fromMeters;
@@ -22,6 +23,7 @@ import fr.sncf.osrd.envelope_sim.SimpleContextBuilder;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope;
 import fr.sncf.osrd.sim_infra.api.PathProperties;
+import fr.sncf.osrd.sim_infra.impl.ChunkPath;
 import fr.sncf.osrd.standalone_sim.result.ResultTrain;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.StandaloneTrainSchedule;
@@ -50,11 +52,12 @@ public class ConflictDetectionTest {
         var rawInfra = fullInfra.rawInfra();
 
         // A path from the center track of south-west station to the center-top track of mid west station
-        var path = pathFromRoutes(rawInfra, List.of("rt.buffer_stop.1->DA0", "rt.DA0->DA5", "rt.DA5->DC5"),
+        var chunkPath = chunkPathFromRoutes(rawInfra, List.of("rt.buffer_stop.1->DA0", "rt.DA0->DA5", "rt.DA5->DC5"),
                 makeTrackLocation(getTrackSectionFromNameOrThrow("TA1", rawInfra), fromMeters(146.6269028126681)),
                 makeTrackLocation(getTrackSectionFromNameOrThrow("TC1", rawInfra), fromMeters(444.738508351214)));
+        var pathProps = makePathProperties(rawInfra, chunkPath);
 
-        var simResult = simpleSim(fullInfra, path, 0, Double.POSITIVE_INFINITY);
+        var simResult = simpleSim(fullInfra, pathProps, chunkPath, 0, Double.POSITIVE_INFINITY);
         var spacingRequirements = simResult.train.spacingRequirements;
 
         // ensure spacing requirements span the entire trip duration
@@ -102,13 +105,15 @@ public class ConflictDetectionTest {
         // these paths are fairly distant from each other, but require passing a signal which protects
         // a very long route. As the routes for pathA and pathB are incompatible with each other,
         // a conflict should occur.
-        var pathA = pathFromRoutes(rawInfra, List.of("rt.buffer_stop.0->DA2", "rt.DA2->DA5"),
+        var chunkPathA = chunkPathFromRoutes(rawInfra, List.of("rt.buffer_stop.0->DA2", "rt.DA2->DA5"),
                 makeTrackLocation(ta0, fromMeters(1795)), makeTrackLocation(ta0, fromMeters(1825)));
-        var pathB = pathFromRoutes(rawInfra, List.of("rt.DD0->DC0", "rt.DC0->DA3"),
+        var pathPropsA = makePathProperties(rawInfra, chunkPathA);
+        var chunkPathB = chunkPathFromRoutes(rawInfra, List.of("rt.DD0->DC0", "rt.DC0->DA3"),
                 makeTrackLocation(tc0, fromMeters(205)), makeTrackLocation(tc0, fromMeters(175)));
+        var pathPropsB = makePathProperties(rawInfra, chunkPathB);
 
-        var simResultA = simpleSim(fullInfra, pathA, 0, Double.POSITIVE_INFINITY);
-        var simResultB = simpleSim(fullInfra, pathB, 0, Double.POSITIVE_INFINITY);
+        var simResultA = simpleSim(fullInfra, pathPropsA, chunkPathA, 0, Double.POSITIVE_INFINITY);
+        var simResultB = simpleSim(fullInfra, pathPropsB, chunkPathB, 0, Double.POSITIVE_INFINITY);
 
         // if both trains runs at the same time, there should be a conflict
         {
@@ -147,14 +152,18 @@ public class ConflictDetectionTest {
         var td0 = getTrackSectionFromNameOrThrow("TD0", rawInfra);
 
         // path that stops in station
-        var pathA = pathFromRoutes(rawInfra, List.of("rt.DA2->DA5", "rt.DA5->DC4"),
+        var chunkPathA = chunkPathFromRoutes(rawInfra, List.of("rt.DA2->DA5", "rt.DA5->DC4"),
                 makeTrackLocation(ta6, 0), makeTrackLocation(tc0, fromMeters(600)));
+        var pathPropsA = makePathProperties(rawInfra, chunkPathA);
         // path that continues on
-        var pathB = pathFromRoutes(rawInfra, List.of("rt.DA2->DA5", "rt.DA5->DC5", "rt.DC5->DD2"),
+        var chunkPathB = chunkPathFromRoutes(rawInfra, List.of("rt.DA2->DA5", "rt.DA5->DC5", "rt.DC5->DD2"),
                 makeTrackLocation(ta6, 0), makeTrackLocation(td0, fromMeters(8500)));
+        var pathPropsB = makePathProperties(rawInfra, chunkPathB);
 
-        var simResultA = simpleSim(fullInfra, pathA, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY);
-        var simResultB = simpleSim(fullInfra, pathB, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY);
+        var simResultA = simpleSim(fullInfra, pathPropsA, chunkPathA, Double.POSITIVE_INFINITY,
+                Double.POSITIVE_INFINITY);
+        var simResultB = simpleSim(fullInfra, pathPropsB, chunkPathB, Double.POSITIVE_INFINITY,
+                Double.POSITIVE_INFINITY);
 
         record ConflictStatus(boolean spacing, boolean routing) {}
 
@@ -212,7 +221,8 @@ public class ConflictDetectionTest {
         return new TrainRequirements(trainId, spacingRequirements, routingRequirements);
     }
 
-    private static SimResult simpleSim(FullInfra fullInfra, PathProperties path, double initialSpeed, double maxSpeed) {
+    private static SimResult simpleSim(FullInfra fullInfra, PathProperties path, ChunkPath chunkPath,
+                                       double initialSpeed, double maxSpeed) {
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
         if (maxSpeed > testRollingStock.maxSpeed)
             maxSpeed = testRollingStock.maxSpeed;
@@ -232,7 +242,7 @@ public class ConflictDetectionTest {
                 testRollingStock, initialSpeed, List.of(), List.of(), List.of(),
                 "test", RollingStock.Comfort.STANDARD, null, null
         );
-        return new SimResult(ScheduleMetadataExtractor.run(envelope, path, schedule, fullInfra), envelope);
+        return new SimResult(ScheduleMetadataExtractor.run(envelope, path, chunkPath, schedule, fullInfra), envelope);
     }
 
     private static double getLastZoneReleaseTime(ResultTrain.RoutingRequirement requirement) {

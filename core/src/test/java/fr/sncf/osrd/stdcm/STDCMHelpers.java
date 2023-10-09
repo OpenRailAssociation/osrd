@@ -1,16 +1,17 @@
 package fr.sncf.osrd.stdcm;
 
+import static fr.sncf.osrd.sim_infra.api.PathPropertiesKt.makePathProperties;
 import static fr.sncf.osrd.train.TestTrains.REALISTIC_FAST_TRAIN;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
-import fr.sncf.osrd.api.FullInfra;
-import fr.sncf.osrd.api.utils.PathPropUtils;
-import fr.sncf.osrd.api.stdcm.STDCMRequest;
 import fr.sncf.osrd.DriverBehaviour;
+import fr.sncf.osrd.api.FullInfra;
+import fr.sncf.osrd.api.stdcm.STDCMRequest;
+import fr.sncf.osrd.api.utils.PathPropUtils;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
-import fr.sncf.osrd.sim_infra.api.PathProperties;
+import fr.sncf.osrd.sim_infra.impl.ChunkPath;
 import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper;
 import fr.sncf.osrd.standalone_sim.StandaloneSim;
 import fr.sncf.osrd.stdcm.graph.STDCMSimulations;
@@ -33,10 +34,12 @@ public class STDCMHelpers {
             Set<Pathfinding.EdgeLocation<Integer>> endLocations,
             double departureTime
     ) {
-        var trainPath = makeTrainPath(infra, startLocations, endLocations);
+        var chunkPath = makeChunkPath(infra, startLocations, endLocations);
+        var trainPath = makePathProperties(infra.rawInfra(), chunkPath);
         var result = StandaloneSim.run(
                 infra,
                 trainPath,
+                chunkPath,
                 EnvelopeTrainPath.from(infra.rawInfra(), trainPath),
                 List.of(new StandaloneTrainSchedule(
                         REALISTIC_FAST_TRAIN,
@@ -71,8 +74,8 @@ public class STDCMHelpers {
         );
     }
 
-    /** Creates a train path object from start and end locations */
-    private static PathProperties makeTrainPath(
+    /** Creates a chunk path object from start and end locations */
+    private static ChunkPath makeChunkPath(
             FullInfra infra,
             Set<Pathfinding.EdgeLocation<Integer>> startLocations,
             Set<Pathfinding.EdgeLocation<Integer>> endLocations
@@ -80,7 +83,7 @@ public class STDCMHelpers {
         var path = new Pathfinding<>(new GraphAdapter(infra.blockInfra(), infra.rawInfra()))
                 .setEdgeToLength(block -> infra.blockInfra().getBlockLength(block))
                 .runPathfinding(List.of(startLocations, endLocations));
-        return PathPropUtils.makePathProps(infra.rawInfra(), infra.blockInfra(), path.ranges());
+        return PathPropUtils.makeChunkPath(infra.rawInfra(), infra.blockInfra(), path.ranges());
     }
 
     /** Returns how long the longest occupancy segment lasts, which is the minimum delay we need to add

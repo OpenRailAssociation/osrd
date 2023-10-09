@@ -1,11 +1,12 @@
 package fr.sncf.osrd.stdcm.graph;
 
+import static fr.sncf.osrd.sim_infra.api.PathPropertiesKt.makePathProperties;
 import static fr.sncf.osrd.utils.units.Distance.toMeters;
 
-import fr.sncf.osrd.sim_infra.api.RawSignalingInfra;
-import fr.sncf.osrd.stdcm.STDCMResult;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
+import fr.sncf.osrd.sim_infra.api.RawSignalingInfra;
+import fr.sncf.osrd.stdcm.STDCMResult;
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.TrainStop;
@@ -40,7 +41,8 @@ public class STDCMPostProcessing {
         var ranges = makeEdgeRange(path);
         var blockRanges = makeBlockRanges(ranges);
         var blockWaypoints = makeBlockWaypoints(path);
-        var trainPath = STDCMUtils.makePathFromRanges(graph, ranges);
+        var chunkPath = STDCMUtils.makeChunkPathFromRanges(graph, ranges);
+        var trainPath = makePathProperties(infra, chunkPath);
         var physicsPath = EnvelopeTrainPath.from(infra, trainPath);
         var mergedEnvelopes = STDCMUtils.mergeEnvelopeRanges(ranges);
         var departureTime = computeDepartureTime(ranges, startTime);
@@ -62,6 +64,7 @@ public class STDCMPostProcessing {
                 new Pathfinding.Result<>(blockRanges, blockWaypoints),
                 withAllowance,
                 trainPath,
+                chunkPath,
                 physicsPath,
                 departureTime,
                 stops

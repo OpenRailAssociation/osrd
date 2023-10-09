@@ -1,18 +1,16 @@
 package fr.sncf.osrd.stdcm.graph;
 
 import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.POSITION_EPSILON;
-import static fr.sncf.osrd.sim_infra.api.PathPropertiesKt.buildPathPropertiesFrom;
+import static fr.sncf.osrd.sim_infra.impl.PathPropertiesImplKt.buildChunkPath;
 import static fr.sncf.osrd.utils.KtToJavaConverter.toIntList;
 import static fr.sncf.osrd.utils.units.Distance.toMeters;
 
-import fr.sncf.osrd.api.utils.PathPropUtils;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
-import fr.sncf.osrd.sim_infra.api.PathProperties;
 import fr.sncf.osrd.sim_infra.api.TrackChunk;
+import fr.sncf.osrd.sim_infra.impl.ChunkPath;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import fr.sncf.osrd.utils.indexing.MutableDirStaticIdxArrayList;
-import fr.sncf.osrd.utils.units.Distance;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -77,7 +75,7 @@ public class STDCMUtils {
     }
 
     /** Create a TrainPath instance from a list of edge ranges */
-    static PathProperties makePathFromRanges(STDCMGraph graph, List<Pathfinding.EdgeRange<STDCMEdge>> ranges) {
+    static ChunkPath makeChunkPathFromRanges(STDCMGraph graph, List<Pathfinding.EdgeRange<STDCMEdge>> ranges) {
         var blocks = ranges.stream()
                 .map(range -> range.edge().block())
                 .distinct()
@@ -91,6 +89,6 @@ public class STDCMUtils {
         blocks.stream()
                 .flatMap(block -> toIntList(graph.blockInfra.getTrackChunksFromBlock(block)).stream())
                 .forEach(chunks::add);
-        return buildPathPropertiesFrom(graph.rawInfra, chunks, firstOffset, lastOffset);
+        return buildChunkPath(graph.rawInfra, chunks, firstOffset, lastOffset);
     }
 }

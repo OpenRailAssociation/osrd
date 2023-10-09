@@ -1,6 +1,7 @@
 package fr.sncf.osrd;
 
 import static fr.sncf.osrd.api.SignalingSimulatorKt.makeSignalingSimulator;
+import static fr.sncf.osrd.sim_infra.impl.PathPropertiesImplKt.buildChunkPath;
 import static fr.sncf.osrd.sim_infra.utils.BlockRecoveryKt.recoverBlocks;
 import static fr.sncf.osrd.sim_infra.utils.BlockRecoveryKt.toList;
 import static fr.sncf.osrd.utils.KtToJavaConverter.toIntList;
@@ -15,13 +16,8 @@ import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
-import fr.sncf.osrd.sim_infra.api.PathProperties;
-import fr.sncf.osrd.sim_infra.api.PathPropertiesKt;
-import fr.sncf.osrd.sim_infra.api.RawSignalingInfra;
-import fr.sncf.osrd.sim_infra.api.Route;
-import fr.sncf.osrd.sim_infra.api.SignalingSystem;
-import fr.sncf.osrd.sim_infra.api.TrackChunk;
-import fr.sncf.osrd.sim_infra.api.TrackLocation;
+import fr.sncf.osrd.sim_infra.api.*;
+import fr.sncf.osrd.sim_infra.impl.ChunkPath;
 import fr.sncf.osrd.sim_infra.impl.PathPropertiesImplKt;
 import fr.sncf.osrd.sim_infra.utils.BlockPathElement;
 import fr.sncf.osrd.utils.graph.Pathfinding;
@@ -169,7 +165,7 @@ public class Helpers {
     }
 
     /** Creates a path from a list of route names and start/end locations */
-    public static PathProperties pathFromRoutes(
+    public static ChunkPath chunkPathFromRoutes(
             RawSignalingInfra infra,
             List<String> routeNames,
             TrackLocation start,
@@ -183,6 +179,6 @@ public class Helpers {
         }
         long startOffset = PathPropertiesImplKt.getOffsetOfTrackLocationOnChunksOrThrow(infra, start, chunks);
         long endOffset = PathPropertiesImplKt.getOffsetOfTrackLocationOnChunksOrThrow(infra, end, chunks);
-        return PathPropertiesKt.buildPathPropertiesFrom(infra, chunks, startOffset, endOffset);
+        return buildChunkPath(infra, chunks, startOffset, endOffset);
     }
 }

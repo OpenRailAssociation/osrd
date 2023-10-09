@@ -2,6 +2,7 @@ package fr.sncf.osrd.standalone_sim;
 
 import static fr.sncf.osrd.Helpers.fullInfraFromRJS;
 import static fr.sncf.osrd.envelope_sim.MaxEffortEnvelopeBuilder.makeSimpleMaxEffortEnvelope;
+import static fr.sncf.osrd.sim_infra.api.PathPropertiesKt.makePathProperties;
 import static fr.sncf.osrd.sim_infra.api.PathPropertiesKt.makeTrackLocation;
 
 import fr.sncf.osrd.Helpers;
@@ -10,6 +11,7 @@ import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.SimpleContextBuilder;
 import fr.sncf.osrd.sim_infra.api.PathProperties;
 import fr.sncf.osrd.sim_infra.api.TrackInfraKt;
+import fr.sncf.osrd.sim_infra.impl.ChunkPath;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.StandaloneTrainSchedule;
 import fr.sncf.osrd.train.TestTrains;
@@ -26,7 +28,7 @@ public class ScheduleMetadataExtractorTests {
         var infra = fullInfraFromRJS(rjsInfra);
         var barA = TrackInfraKt.getTrackSectionFromNameOrThrow("ne.micro.bar_a", infra.rawInfra());
         var fooA = TrackInfraKt.getTrackSectionFromNameOrThrow("ne.micro.foo_a", infra.rawInfra());
-        var path = Helpers.pathFromRoutes(
+        var chunkPath = Helpers.chunkPathFromRoutes(
                 infra.rawInfra(),
                 List.of(
                         "rt.buffer_stop_c->tde.track-bar",
@@ -36,13 +38,14 @@ public class ScheduleMetadataExtractorTests {
                 makeTrackLocation(barA, 200),
                 makeTrackLocation(fooA, 0)
         );
-        var testContext = SimpleContextBuilder.makeSimpleContext(Distance.toMeters(path.getLength()), 0);
+        var pathProps = makePathProperties(infra.rawInfra(), chunkPath);
+        var testContext = SimpleContextBuilder.makeSimpleContext(Distance.toMeters(pathProps.getLength()), 0);
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
         var envelope = makeSimpleMaxEffortEnvelope(
                 testContext,
                 testRollingStock.maxSpeed, new double[]{}
         );
-        makeRouteOccupancy(infra, path, testRollingStock, envelope);
+        makeRouteOccupancy(infra, pathProps, chunkPath, testRollingStock, envelope);
     }
 
     @Test
@@ -51,7 +54,7 @@ public class ScheduleMetadataExtractorTests {
         var infra = fullInfraFromRJS(rjsInfra);
         var barA = TrackInfraKt.getTrackSectionFromNameOrThrow("ne.micro.bar_a", infra.rawInfra());
         var fooA = TrackInfraKt.getTrackSectionFromNameOrThrow("ne.micro.foo_a", infra.rawInfra());
-        var path = Helpers.pathFromRoutes(
+        var chunkPath = Helpers.chunkPathFromRoutes(
                 infra.rawInfra(),
                 List.of(
                         "rt.buffer_stop_c->tde.track-bar",
@@ -61,14 +64,15 @@ public class ScheduleMetadataExtractorTests {
                 makeTrackLocation(barA, 100),
                 makeTrackLocation(fooA, 100)
         );
-        var testContext = SimpleContextBuilder.makeSimpleContext(Distance.toMeters(path.getLength()), 0);
+        var pathProps = makePathProperties(infra.rawInfra(), chunkPath);
+        var testContext = SimpleContextBuilder.makeSimpleContext(Distance.toMeters(pathProps.getLength()), 0);
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
         var envelope = makeSimpleMaxEffortEnvelope(
                 testContext,
                 testRollingStock.maxSpeed, new double[]{}
         );
         // We only check that no assertion is thrown in the validation
-        makeRouteOccupancy(infra, path, testRollingStock, envelope);
+        makeRouteOccupancy(infra, pathProps, chunkPath, testRollingStock, envelope);
     }
 
     @Test
@@ -77,7 +81,7 @@ public class ScheduleMetadataExtractorTests {
         var infra = fullInfraFromRJS(rjsInfra);
         var barA = TrackInfraKt.getTrackSectionFromNameOrThrow("ne.micro.bar_a", infra.rawInfra());
         var fooA = TrackInfraKt.getTrackSectionFromNameOrThrow("ne.micro.foo_a", infra.rawInfra());
-        var path = Helpers.pathFromRoutes(
+        var chunkPath = Helpers.chunkPathFromRoutes(
                 infra.rawInfra(),
                 List.of(
                         "rt.buffer_stop_c->tde.track-bar",
@@ -87,14 +91,15 @@ public class ScheduleMetadataExtractorTests {
                 makeTrackLocation(barA, 100),
                 makeTrackLocation(fooA, 100)
         );
-        var testContext = SimpleContextBuilder.makeSimpleContext(Distance.toMeters(path.getLength()), 0);
+        var pathProps = makePathProperties(infra.rawInfra(), chunkPath);
+        var testContext = SimpleContextBuilder.makeSimpleContext(Distance.toMeters(pathProps.getLength()), 0);
         var testRollingStock = TestTrains.VERY_LONG_FAST_TRAIN;
         var envelope = makeSimpleMaxEffortEnvelope(
                 testContext,
                 testRollingStock.maxSpeed, new double[]{}
         );
         // We only check that no assertion is thrown in the validation
-        makeRouteOccupancy(infra, path, testRollingStock, envelope);
+        makeRouteOccupancy(infra, pathProps, chunkPath, testRollingStock, envelope);
     }
 
     @Test
@@ -106,20 +111,21 @@ public class ScheduleMetadataExtractorTests {
         for (int i = 0; i < 9; i++)
             routes.add(String.format("rt.detector.%d->detector.%d", i, i + 1));
         routes.add("rt.detector.9->buffer_stop.1");
-        var path = Helpers.pathFromRoutes(
+        var chunkPath = Helpers.chunkPathFromRoutes(
                 infra.rawInfra(),
                 routes,
                 makeTrackLocation(TrackInfraKt.getTrackSectionFromNameOrThrow("track.0", infra.rawInfra()), 0),
                 makeTrackLocation(TrackInfraKt.getTrackSectionFromNameOrThrow("track.9", infra.rawInfra()), 0)
         );
-        var testContext = SimpleContextBuilder.makeSimpleContext(Distance.toMeters(path.getLength()), 0);
+        var pathProps = makePathProperties(infra.rawInfra(), chunkPath);
+        var testContext = SimpleContextBuilder.makeSimpleContext(Distance.toMeters(pathProps.getLength()), 0);
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
         var envelope = makeSimpleMaxEffortEnvelope(
                 testContext,
                 testRollingStock.maxSpeed, new double[]{}
         );
         // We only check that no assertion is thrown in the validation
-        makeRouteOccupancy(infra, path, testRollingStock, envelope);
+        makeRouteOccupancy(infra, pathProps, chunkPath, testRollingStock, envelope);
     }
 
     @Test
@@ -127,31 +133,29 @@ public class ScheduleMetadataExtractorTests {
         var rjsInfra = Helpers.getExampleInfra("one_line/infra.json");
         var infra = fullInfraFromRJS(rjsInfra);
         var routes = List.of("rt.buffer_stop.0->detector.0");
-        var path = Helpers.pathFromRoutes(
+        var chunkPath = Helpers.chunkPathFromRoutes(
                 infra.rawInfra(),
                 routes,
                 makeTrackLocation(TrackInfraKt.getTrackSectionFromNameOrThrow("track.0", infra.rawInfra()), 0),
                 makeTrackLocation(TrackInfraKt.getTrackSectionFromNameOrThrow("track.0", infra.rawInfra()), 10)
         );
-        var testContext = SimpleContextBuilder.makeSimpleContext(Distance.toMeters(path.getLength()), 0);
+        var pathProps = makePathProperties(infra.rawInfra(), chunkPath);
+        var testContext = SimpleContextBuilder.makeSimpleContext(Distance.toMeters(pathProps.getLength()), 0);
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
         var envelope = makeSimpleMaxEffortEnvelope(
                 testContext,
                 testRollingStock.maxSpeed, new double[]{}
         );
         // We only check that no assertion is thrown in the validation
-        makeRouteOccupancy(infra, path, testRollingStock, envelope);
+        makeRouteOccupancy(infra, pathProps, chunkPath, testRollingStock, envelope);
     }
 
-
-    private static void makeRouteOccupancy(
-            FullInfra fullInfra,
-            PathProperties path, RollingStock testRollingStock, Envelope envelope
-    ) {
+    private static void makeRouteOccupancy(FullInfra fullInfra, PathProperties path, ChunkPath chunkPath,
+                                           RollingStock testRollingStock, Envelope envelope) {
         var schedule = new StandaloneTrainSchedule(
                 testRollingStock, 0, new ArrayList<>(), List.of(), List.of(),
                 "test", RollingStock.Comfort.STANDARD, null, null
         );
-        ScheduleMetadataExtractor.run(envelope, path, schedule, fullInfra);
+        ScheduleMetadataExtractor.run(envelope, path, chunkPath, schedule, fullInfra);
     }
 }
