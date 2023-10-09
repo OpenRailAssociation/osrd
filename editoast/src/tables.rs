@@ -544,8 +544,8 @@ diesel::table! {
         infra_id -> Nullable<Int4>,
         #[max_length = 255]
         obj_id -> Nullable<Varchar>,
-        aspects -> Nullable<Array<Nullable<Text>>>,
-        systems -> Nullable<Array<Nullable<Text>>>,
+        signaling_systems -> Nullable<Array<Nullable<Text>>>,
+        settings -> Nullable<Array<Nullable<Text>>>,
         line_code -> Nullable<Int4>,
     }
 }

@@ -69,15 +69,54 @@ struct OperationalPointTrackSections {
 #[derive(Search)]
 #[search(
     table = "search_signal",
+    migration(
+        src_table = "infra_object_signal",
+        query_joins = "
+            INNER JOIN infra_object_track_section AS track_section
+            ON track_section.infra_id = infra_object_signal.infra_id 
+                AND track_section.obj_id = infra_object_signal.data->>'track'"
+    ),
+    column(
+        name = "label",
+        data_type = "text",
+        sql = "infra_object_signal.data->'extensions'->'sncf'->>'label'",
+        textual_search
+    ),
+    column(
+        name = "line_name",
+        data_type = "text",
+        sql = "track_section.data->'extensions'->'sncf'->>'line_name'",
+        textual_search
+    ),
+    column(
+        name = "infra_id",
+        data_type = "integer",
+        sql = "infra_object_signal.infra_id"
+    ),
+    column(
+        name = "obj_id",
+        data_type = "VARCHAR(255)",
+        sql = "infra_object_signal.obj_id"
+    ),
+    column(
+        name = "signaling_systems",
+        data_type = "TEXT[]",
+        sql = "ARRAY(SELECT jsonb_path_query(infra_object_signal.data, '$.logical_signals[*].signaling_system')->>0)"
+    ),
+    column(
+        name = "settings",
+        data_type = "TEXT[]",
+        sql = "ARRAY(SELECT jsonb_path_query(infra_object_signal.data, '$.logical_signals[*].settings.keyvalue().key')->>0)"
+    ),
+    column(
+        name = "line_code",
+        data_type = "integer",
+        sql = "(track_section.data->'extensions'->'sncf'->>'line_code')::integer"
+    ),
     joins = "
         INNER JOIN infra_object_signal AS sig ON sig.id = search_signal.id
-        INNER JOIN infra_object_track_section AS ts ON ts.obj_id = sig.data->>'track' AND ts.infra_id = sig.infra_id
-        INNER JOIN infra_layer_signal AS lay ON lay.infra_id = sig.infra_id AND lay.obj_id = sig.obj_id",
-    column(name = "infra_id", data_type = "integer"),
-    column(name = "line_name", data_type = "string"),
-    column(name = "line_code", data_type = "integer"),
-    column(name = "label", data_type = "string"),
-    column(name = "aspects", data_type = "ARRAY(TEXT)")
+        INNER JOIN infra_object_track_section AS track_section ON track_section.obj_id = sig.data->>'track' AND track_section.infra_id = sig.infra_id
+        INNER JOIN infra_layer_signal AS lay ON lay.infra_id = sig.infra_id AND lay.obj_id = sig.obj_id"
 )]
 #[allow(unused)]
 struct Signal {
@@ -85,18 +124,13 @@ struct Signal {
     infra_id: String,
     #[search(sql = "sig.data->'extensions'->'sncf'->>'label'")]
     label: String,
-    #[search(sql = "search_signal.aspects")]
-    aspects: Vec<String>,
-    #[search(sql = "search_signal.systems")]
-    systems: String,
-    #[search(
-        sql = "sig.data->'extensions'->'sncf'->>'installation_type'",
-        rename = "type"
-    )]
-    installation_type: String,
+    #[search(sql = "search_signal.signaling_systems")]
+    signaling_systems: Vec<String>,
+    #[search(sql = "search_signal.settings")]
+    settings: Vec<String>,
     #[search(sql = "search_signal.line_code")]
     line_code: String,
-    #[search(sql = "ts.data->'extensions'->'sncf'->>'line_name'")]
+    #[search(sql = "track_section.data->'extensions'->'sncf'->>'line_name'")]
     line_name: String,
     #[search(sql = "ST_AsGeoJSON(ST_Transform(lay.geographic, 4326))::json")]
     geographic: String,
@@ -203,4 +237,4 @@ struct Scenario {
 
 /// See [crate::views::search::SearchConfigStore::find]
 #[derive(SearchConfigStore)]
-pub(super) struct SearchConfigFinder;
+pub struct SearchConfigFinder;
