@@ -1,6 +1,6 @@
 package fr.sncf.osrd.api;
 
-import static fr.sncf.osrd.api.utils.PathPropUtils.makePathProps;
+import static fr.sncf.osrd.api.utils.PathPropUtils.makeChunkPath;
 
 import com.squareup.moshi.Json;
 import com.squareup.moshi.JsonAdapter;
@@ -13,7 +13,8 @@ import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPath;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import fr.sncf.osrd.reporting.warnings.Warning;
 import fr.sncf.osrd.standalone_sim.SignalProjectionKt;
-import fr.sncf.osrd.standalone_sim.result.*;
+import fr.sncf.osrd.standalone_sim.result.ResultTrain;
+import fr.sncf.osrd.standalone_sim.result.SignalUpdate;
 import org.takes.Request;
 import org.takes.Response;
 import org.takes.Take;
@@ -57,11 +58,11 @@ public class SignalProjectionEndpoint implements Take {
             var infra = infraManager.getInfra(request.infra, request.expectedVersion, recorder);
 
             // Parse trainPath
-            var trainPath = makePathProps(infra.rawInfra(), request.trainPath);
+            var chunkPath = makeChunkPath(infra.rawInfra(), request.trainPath);
             var routePath = request.trainPath.routePath.stream()
                     .map(rjsRoutePath -> infra.rawInfra().getRouteFromName(rjsRoutePath.route))
                     .toList();
-            var result = SignalProjectionKt.project(infra, trainPath, routePath, request.signalSightings,
+            var result = SignalProjectionKt.project(infra, chunkPath, routePath, request.signalSightings,
                     request.zoneUpdates);
 
             result.warnings = recorder.warnings;

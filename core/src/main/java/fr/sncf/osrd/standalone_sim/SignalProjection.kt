@@ -5,12 +5,8 @@ import fr.sncf.osrd.api.SignalProjectionEndpoint.SignalProjectionResult
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.signaling.SignalingSimulator
 import fr.sncf.osrd.signaling.ZoneStatus
-import fr.sncf.osrd.sim_infra.api.Block
-import fr.sncf.osrd.sim_infra.api.BlockInfra
-import fr.sncf.osrd.sim_infra.api.LoadedSignalInfra
-import fr.sncf.osrd.sim_infra.api.LogicalSignalId
-import fr.sncf.osrd.sim_infra.api.PathProperties
-import fr.sncf.osrd.sim_infra.api.getZoneName
+import fr.sncf.osrd.sim_infra.api.*
+import fr.sncf.osrd.sim_infra.impl.ChunkPath
 import fr.sncf.osrd.sim_infra.utils.recoverBlocks
 import fr.sncf.osrd.sim_infra_adapter.SimInfraAdapter
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SignalSighting
@@ -25,7 +21,7 @@ data class SignalAspectChangeEvent(val newAspect: String, val time: Long)
 
 fun project(
     fullInfra: FullInfra,
-    trainPath: PathProperties,
+    chunkPath: ChunkPath,
     routePathIds: List<Int>,
     signalSightings: List<SignalSighting>,
     zoneUpdates: List<ZoneUpdate>
@@ -65,7 +61,7 @@ fun project(
     }
 
     // Compute signal updates
-    val startOffset = trainPathBlockOffset(fullInfra.rawInfra, fullInfra.blockInfra, blockPath, trainPath)
+    val startOffset = trainPathBlockOffset(fullInfra.rawInfra, fullInfra.blockInfra, blockPath, chunkPath)
     val pathSignals = pathSignals(startOffset, blockPath, blockInfra)
 
     val signalAspectChangeEvents = computeSignalAspectChangeEvents(

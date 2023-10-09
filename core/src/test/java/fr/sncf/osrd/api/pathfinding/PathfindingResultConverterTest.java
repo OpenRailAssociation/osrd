@@ -1,16 +1,19 @@
 package fr.sncf.osrd.api.pathfinding;
 
 import static fr.sncf.osrd.Helpers.getBlocksOnRoutes;
-import static fr.sncf.osrd.api.pathfinding.PathfindingResultConverter.*;
+import static fr.sncf.osrd.api.pathfinding.PathfindingResultConverter.makePathWaypoint;
 import static fr.sncf.osrd.utils.KtToJavaConverter.toIntList;
 import static fr.sncf.osrd.utils.indexing.DirStaticIdxKt.toDirection;
 import static fr.sncf.osrd.utils.indexing.DirStaticIdxKt.toValue;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.api.FullInfra;
-import fr.sncf.osrd.sim_infra.impl.PathPropertiesImpl;
 import fr.sncf.osrd.api.utils.PathPropUtils;
+import fr.sncf.osrd.sim_infra.impl.ChunkPath;
 import fr.sncf.osrd.utils.Direction;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import org.junit.jupiter.api.Test;
@@ -33,13 +36,12 @@ public class PathfindingResultConverterTest {
             ranges.add(new Pathfinding.EdgeRange<>(block, 0,
                     infra.blockInfra().getBlockLength(block)));
         }
-        var path = PathPropUtils.makePathProps(infra.rawInfra(), infra.blockInfra(), ranges);
-        var pathImpl = (PathPropertiesImpl) path;
+        var chunkPath = PathPropUtils.makeChunkPath(infra.rawInfra(), infra.blockInfra(), ranges);
 
         var expectedLength = 10_000_000 + 1_000_000; // length of route 1 + 2
-        assertEquals(0, pathImpl.getBeginOffset());
-        assertEquals(expectedLength, pathImpl.getEndOffset());
-        checkBlocks(infra, pathImpl, Set.of("TA0", "TA6", "TC1"), Direction.INCREASING, expectedLength);
+        assertEquals(0, chunkPath.getBeginOffset());
+        assertEquals(expectedLength, chunkPath.getEndOffset());
+        checkBlocks(infra, chunkPath, Set.of("TA0", "TA6", "TC1"), Direction.INCREASING, expectedLength);
     }
 
     /** Convert block ranges into a path, with the chunks going backward and partial ranges */
@@ -61,13 +63,12 @@ public class PathfindingResultConverterTest {
                 new Pathfinding.EdgeRange<>(blocks.get(3), 0,
                         infra.blockInfra().getBlockLength(blocks.get(3)) - 10_000)
         );
-        var path = PathPropUtils.makePathProps(infra.rawInfra(), infra.blockInfra(), ranges);
-        var pathImpl = (PathPropertiesImpl) path;
+        var chunkPath = PathPropUtils.makeChunkPath(infra.rawInfra(), infra.blockInfra(), ranges);
 
         var expectedBlockLength = 1_050_000 + 10_000_000; // length of route 1 + 2
-        assertEquals(10_000, pathImpl.getBeginOffset());
-        assertEquals(expectedBlockLength - 10_000, pathImpl.getEndOffset());
-        checkBlocks(infra, pathImpl, Set.of("TC0", "TD0", "TA6"), Direction.DECREASING, expectedBlockLength);
+        assertEquals(10_000, chunkPath.getBeginOffset());
+        assertEquals(expectedBlockLength - 10_000, chunkPath.getEndOffset());
+        checkBlocks(infra, chunkPath, Set.of("TC0", "TD0", "TA6"), Direction.DECREASING, expectedBlockLength);
     }
 
     /** Tests the waypoint result on a path that has one user-defined waypoint and one operational point */
@@ -138,7 +139,7 @@ public class PathfindingResultConverterTest {
 
     private static void checkBlocks(
             FullInfra infra,
-            PathPropertiesImpl path,
+            ChunkPath path,
             Set<String> allowedTracks,
             Direction direction,
             long length

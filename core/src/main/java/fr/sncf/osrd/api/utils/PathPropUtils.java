@@ -1,7 +1,9 @@
 package fr.sncf.osrd.api.utils;
 
 import static fr.sncf.osrd.sim_infra.api.PathPropertiesKt.buildPathPropertiesFrom;
+import static fr.sncf.osrd.sim_infra.api.PathPropertiesKt.makePathProperties;
 import static fr.sncf.osrd.sim_infra.api.TrackInfraKt.getTrackSectionFromNameOrThrow;
+import static fr.sncf.osrd.sim_infra.impl.PathPropertiesImplKt.buildChunkPath;
 import static fr.sncf.osrd.utils.KtToJavaConverter.toIntList;
 import static fr.sncf.osrd.utils.units.Distance.fromMeters;
 
@@ -10,8 +12,10 @@ import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSDirectionalTrackRange;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPath;
 import fr.sncf.osrd.sim_infra.api.BlockInfra;
+import fr.sncf.osrd.sim_infra.api.PathProperties;
 import fr.sncf.osrd.sim_infra.api.RawSignalingInfra;
-import fr.sncf.osrd.sim_infra.api.*;
+import fr.sncf.osrd.sim_infra.api.TrackChunk;
+import fr.sncf.osrd.sim_infra.impl.ChunkPath;
 import fr.sncf.osrd.utils.Direction;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import fr.sncf.osrd.utils.indexing.DirStaticIdxKt;
@@ -58,6 +62,19 @@ public class PathPropUtils {
     /** Creates a `Path` instance from a list of block ranges */
     public static PathProperties makePathProps(RawSignalingInfra rawInfra, BlockInfra blockInfra,
                                                List<Pathfinding.EdgeRange<Integer>> blockRanges) {
+        var chunkPath = makeChunkPath(rawInfra, blockInfra, blockRanges);
+        return makePathProperties(rawInfra, chunkPath);
+    }
+
+    /** Builds a PathProperties from an RJSTrainPath */
+    public static PathProperties makePathProps(RawSignalingInfra rawInfra, RJSTrainPath rjsPath) {
+        var chunkPath = makeChunkPath(rawInfra, rjsPath);
+        return makePathProperties(rawInfra, chunkPath);
+    }
+
+    /** Creates a ChunkPath from a list of block ranges */
+    public static ChunkPath makeChunkPath(RawSignalingInfra rawInfra, BlockInfra blockInfra,
+                                          List<Pathfinding.EdgeRange<Integer>> blockRanges) {
         assert !blockRanges.isEmpty();
         long totalBlockPathLength = 0;
         var chunks = new MutableDirStaticIdxArrayList<TrackChunk>();
@@ -73,11 +90,11 @@ public class PathPropUtils {
         var lastRange = blockRanges.get(blockRanges.size() - 1);
         var lastBlockLength = blockInfra.getBlockLength(lastRange.edge());
         var endOffset = totalBlockPathLength - lastBlockLength + lastRange.end();
-        return buildPathPropertiesFrom(rawInfra, chunks, startOffset, endOffset);
+        return buildChunkPath(rawInfra, chunks, startOffset, endOffset);
     }
 
-    /** Builds a PathProperties from an RJSTrainPath */
-    public static PathProperties makePathProps(RawSignalingInfra rawInfra, RJSTrainPath rjsPath) {
+    /** Builds a ChunkPath from an RJSTrainPath */
+    public static ChunkPath makeChunkPath(RawSignalingInfra rawInfra, RJSTrainPath rjsPath) {
         var trackRanges = new ArrayList<RJSDirectionalTrackRange>();
         for (var routePath : rjsPath.routePath) {
             for (var trackRange : routePath.trackSections) {
@@ -115,6 +132,6 @@ public class PathPropUtils {
                         .mapToDouble(r -> r.end - r.begin)
                         .sum()
         );
-        return buildPathPropertiesFrom(rawInfra, chunks, startOffset, endOffset);
+        return buildChunkPath(rawInfra, chunks, startOffset, endOffset);
     }
 }

@@ -1,18 +1,16 @@
 package fr.sncf.osrd.sim_infra.api
 
 import fr.sncf.osrd.geom.LineString
-import fr.sncf.osrd.reporting.exceptions.ErrorType
-import fr.sncf.osrd.reporting.exceptions.OSRDError
+import fr.sncf.osrd.sim_infra.impl.ChunkPath
 import fr.sncf.osrd.sim_infra.impl.NeutralSection
 import fr.sncf.osrd.sim_infra.impl.PathPropertiesImpl
+import fr.sncf.osrd.sim_infra.impl.buildChunkPath
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.indexing.DirStaticIdxList
 import fr.sncf.osrd.utils.indexing.StaticIdx
-import fr.sncf.osrd.utils.indexing.mutableDirStaticIdxArrayListOf
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.Speed
-import fr.sncf.osrd.utils.units.meters
 
 data class IdxWithOffset<T>(
     @get:JvmName("getValue")
@@ -49,10 +47,6 @@ interface PathProperties {
     @JvmName("getTrackLocationOffset")
     fun getTrackLocationOffset(location: TrackLocation): Distance?
     fun <T> getRangeMapFromUndirected(getData: (chunkId: TrackChunkId) -> DistanceRangeMap<T>): DistanceRangeMap<T>
-
-    val chunks: DirStaticIdxList<TrackChunk>
-    /** Returns the offset where the train starts (must be located on the first chunk) */
-    val beginOffset: Distance
 }
 
 /** Build a Path from chunks and offsets, filtering the chunks outside the offsets */
@@ -63,27 +57,13 @@ fun buildPathPropertiesFrom(
     pathBeginOffset: Distance,
     pathEndOffset: Distance,
 ): PathProperties {
-    val filteredChunks = mutableDirStaticIdxArrayListOf<TrackChunk>()
-    var totalLength = 0.meters
-    var mutBeginOffset = pathBeginOffset
-    var mutEndOffset = pathEndOffset
-    for (dirChunkId in chunks) {
-        if (totalLength >= pathEndOffset)
-            break
-        val length = infra.getTrackChunkLength(dirChunkId.value)
-        val blockEndOffset = totalLength + length.distance
+    val chunkPath = buildChunkPath(infra, chunks, pathBeginOffset, pathEndOffset)
+    return makePathProperties(infra, chunkPath)
+}
 
-        // if the block ends before the path starts, it can be safely skipped
-        // If a block ends where the path starts, it can be skipped too
-        if (pathBeginOffset >= blockEndOffset) {
-            mutBeginOffset -= length.distance
-            mutEndOffset -= length.distance
-        } else {
-            filteredChunks.add(dirChunkId)
-        }
-        totalLength += length.distance
-    }
-    return PathPropertiesImpl(infra, filteredChunks, mutBeginOffset, mutEndOffset)
+@JvmName("makePathProperties")
+fun makePathProperties(infra: TrackProperties, chunkPath: ChunkPath): PathProperties {
+    return PathPropertiesImpl(infra, chunkPath)
 }
 
 /** For java interoperability purpose */

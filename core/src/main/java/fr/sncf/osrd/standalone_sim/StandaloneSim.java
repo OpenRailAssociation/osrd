@@ -1,8 +1,10 @@
 package fr.sncf.osrd.standalone_sim;
 
+import static fr.sncf.osrd.api.utils.PathPropUtils.makeChunkPath;
+import static fr.sncf.osrd.sim_infra.api.PathPropertiesKt.makePathProperties;
+
 import fr.sncf.osrd.DriverBehaviour;
 import fr.sncf.osrd.api.FullInfra;
-import fr.sncf.osrd.api.utils.PathPropUtils;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimPath;
@@ -21,11 +23,8 @@ import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPath;
 import fr.sncf.osrd.reporting.ErrorContext;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.sim_infra.api.PathProperties;
-import fr.sncf.osrd.standalone_sim.result.ElectrificationRange;
-import fr.sncf.osrd.standalone_sim.result.PowerRestrictionRange;
-import fr.sncf.osrd.standalone_sim.result.ResultEnvelopePoint;
-import fr.sncf.osrd.standalone_sim.result.ResultTrain;
-import fr.sncf.osrd.standalone_sim.result.StandaloneSimResult;
+import fr.sncf.osrd.sim_infra.impl.ChunkPath;
+import fr.sncf.osrd.standalone_sim.result.*;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.ScheduledPoint;
 import fr.sncf.osrd.train.StandaloneTrainSchedule;
@@ -44,6 +43,7 @@ public class StandaloneSim {
     public static StandaloneSimResult run(
             FullInfra infra,
             PathProperties trainPath,
+            ChunkPath chunkPath,
             EnvelopeSimPath envelopeSimPath,
             List<StandaloneTrainSchedule> schedules,
             double timeStep,
@@ -94,6 +94,7 @@ public class StandaloneSim {
                 var simResultTrain = ScheduleMetadataExtractor.run(
                         envelope,
                         trainPath,
+                        chunkPath,
                         trainSchedule,
                         infra
                 );
@@ -107,6 +108,7 @@ public class StandaloneSim {
                     var simEcoResultTrain = ScheduleMetadataExtractor.run(
                             ecoEnvelope,
                             trainPath,
+                            chunkPath,
                             trainSchedule,
                             infra);
                     cacheEco.put(trainSchedule, simEcoResultTrain);
@@ -132,7 +134,8 @@ public class StandaloneSim {
             double timeStep
     ) {
         // Parse trainPath
-        var trainPath = PathPropUtils.makePathProps(infra.rawInfra(), rjsTrainPath);
+        var chunkPath = makeChunkPath(infra.rawInfra(), rjsTrainPath);
+        var trainPath = makePathProperties(infra.rawInfra(), chunkPath);
         var envelopePath = EnvelopeTrainPath.from(infra.rawInfra(), trainPath, electricalProfileMap);
 
         // Parse train schedules
@@ -145,6 +148,7 @@ public class StandaloneSim {
         return StandaloneSim.run(
                 infra,
                 trainPath,
+                chunkPath,
                 envelopePath,
                 trainSchedules,
                 timeStep,
