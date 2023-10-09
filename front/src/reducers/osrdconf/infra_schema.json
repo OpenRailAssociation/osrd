@@ -755,6 +755,14 @@
         "OperationalPointPart": {
             "description": "\n    Operational point part is a single point on the infrastructure. It's linked to an operational point.\n    ",
             "properties": {
+                "extensions": {
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/OperationalPointPartExtensions"
+                        }
+                    ],
+                    "default": null
+                },
                 "position": {
                     "description": "Offset of the point in meters to the beginning of the track section",
                     "minimum": 0,
@@ -774,6 +782,34 @@
                 "position"
             ],
             "title": "OperationalPointPart",
+            "type": "object"
+        },
+        "OperationalPointPartExtensions": {
+            "properties": {
+                "sncf": {
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/OperationalPointPartSncfExtension"
+                        }
+                    ],
+                    "default": null
+                }
+            },
+            "title": "OperationalPointPartExtensions",
+            "type": "object"
+        },
+        "OperationalPointPartSncfExtension": {
+            "properties": {
+                "kp": {
+                    "description": "Kilometric point of the operational point part",
+                    "title": "Kp",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "kp"
+            ],
+            "title": "OperationalPointPartSncfExtension",
             "type": "object"
         },
         "OperationalPointSncfExtension": {
