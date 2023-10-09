@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import cx from 'classnames';
 
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
@@ -39,6 +39,25 @@ import { Point } from './types';
  *
  */
 
+enum IMPORT_STATUS {
+  READY = 'ready',
+  COMPLETING_POINTS = 'completing-points',
+  ALL_POINTS_COMPLETED = 'all-points-completed',
+  MISSING_ROLLING_STOCK = 'missing-rolling-stock',
+  PATHFINDINGS_RUNNING = 'pathfindings-running',
+  PATHFINDINGS_COMPLETED = 'pathfindings-completed',
+  PATHFINDINGS_FAILED = 'pathfindings-failed',
+  CREATING_TRAINS = 'creating-trains',
+  CREATING_TRAINS_COMPLETED = 'creating-trains-completed',
+  CREATING_TRAINS_FAILED = 'creating-trains-failed',
+}
+
+const IMPORT_STATUS_ERROR = [
+  IMPORT_STATUS.MISSING_ROLLING_STOCK,
+  IMPORT_STATUS.PATHFINDINGS_FAILED,
+  IMPORT_STATUS.CREATING_TRAINS_FAILED,
+];
+
 interface ImportTrainScheduleModalProps {
   infraId: number;
   rollingStocks: LightRollingStock[];
@@ -72,20 +91,51 @@ const ImportTrainScheduleModal = ({
     { trainNumber: string; pathString: string }[]
   >([]);
 
-  const [importStatus, setImportStatus] = useState(<span>{t('status.ready')}</span>);
-
   const [viewport, setViewport] = useState(initialViewport);
   const [status, setStatus] = useState(initialStatus);
 
+  const [importStatus, setImportStatus] = useState<IMPORT_STATUS>(IMPORT_STATUS.READY);
+  const [message, setMessage] = useState('');
+
+  const updateImportStatus = (newStatus: IMPORT_STATUS, newMessage = '') => {
+    if (newStatus !== importStatus) setImportStatus(newStatus);
+    if (newMessage !== '') {
+      setMessage(newMessage);
+    } else {
+      switch (newStatus) {
+        case IMPORT_STATUS.MISSING_ROLLING_STOCK:
+          setMessage(
+            [t('status.noImportationPossible'), t('status.missingRollingStock')].join('\n')
+          );
+          break;
+        case IMPORT_STATUS.ALL_POINTS_COMPLETED:
+          setMessage(t('status.uicComplete'));
+          break;
+        case IMPORT_STATUS.PATHFINDINGS_COMPLETED:
+          setMessage(t('status.pathComplete'));
+          break;
+        case IMPORT_STATUS.PATHFINDINGS_FAILED:
+          setMessage(t('status.pathsFailed'));
+          break;
+        case IMPORT_STATUS.CREATING_TRAINS_FAILED:
+          setMessage(t('status.calculatingTrainScheduleCompleteAllFailure'));
+          break;
+        default:
+          setMessage('');
+      }
+    }
+  };
+
+  const importStatusIsError = useMemo(
+    () => IMPORT_STATUS_ERROR.includes(importStatus),
+    [importStatus]
+  );
+
   function testMissingInfos() {
     if (!rollingStockID) {
-      setImportStatus(
-        <span className="text-danger">
-          {[t('status.noImportationPossible'), t('status.missingRollingStock')].join('\n')}
-        </span>
-      );
+      updateImportStatus(IMPORT_STATUS.MISSING_ROLLING_STOCK);
     } else {
-      setImportStatus(t('status.ready'));
+      updateImportStatus(IMPORT_STATUS.READY);
     }
   }
 
@@ -112,7 +162,8 @@ const ImportTrainScheduleModal = ({
       setUicNumberToComplete(uicNumberToCompleteLocal);
       const pointToComplete = pointsDictionnary[uic2complete[uicNumberToCompleteLocal]];
       getTrackSectionID(pointToComplete.latitude, pointToComplete.longitude);
-      setImportStatus(
+      updateImportStatus(
+        IMPORT_STATUS.COMPLETING_POINTS,
         t('status.complete', {
           uicNumber: uicNumberToCompleteLocal,
           uicTotalCount: uic2complete.length,
@@ -120,7 +171,7 @@ const ImportTrainScheduleModal = ({
         })
       );
     } else {
-      setImportStatus(t('status.uicComplete'));
+      updateImportStatus(IMPORT_STATUS.ALL_POINTS_COMPLETED);
       setUicNumberToComplete(undefined);
       setStatus({ ...status, uicComplete: true });
     }
@@ -132,10 +183,10 @@ const ImportTrainScheduleModal = ({
 
   function endGeneratePaths(newTrainsWithPath: TrainScheduleWithPath[]) {
     if (newTrainsWithPath.length > 0) {
-      setImportStatus(t('status.pathComplete'));
-    } else setImportStatus(<span className="text-danger">{t('status.pathsFailed')}</span>);
+      updateImportStatus(IMPORT_STATUS.PATHFINDINGS_COMPLETED);
+    } else updateImportStatus(IMPORT_STATUS.PATHFINDINGS_FAILED);
     setTrainsWithPath(newTrainsWithPath);
-    setStatus({ ...status, uicComplete: true, pathFindingDone: true });
+    setStatus({ ...status, pathFindingDone: true });
   }
 
   /**
@@ -163,7 +214,8 @@ const ImportTrainScheduleModal = ({
         autocomplete,
         pointsDictionnary
       );
-      setImportStatus(
+      updateImportStatus(
+        IMPORT_STATUS.PATHFINDINGS_RUNNING,
         t('status.searchingPath', {
           pathFindingsDoneCount,
           pathFindingsCount,
@@ -227,34 +279,33 @@ const ImportTrainScheduleModal = ({
 
   async function generateTrainSchedules() {
     const payloads = generateTrainSchedulesPayload(trainsWithPath, timetableId);
-    const trainsCount = payloads.length;
-    setImportStatus(t('status.calculatingTrainSchedule'));
+    const trainsCount = payloads.reduce((result, payload) => result + payload.schedules.length, 0);
+    updateImportStatus(IMPORT_STATUS.CREATING_TRAINS, t('status.calculatingTrainSchedule'));
     const messages = [];
     let successfulTrainsCount = 0;
-    let idx = 0;
     // eslint-disable-next-line no-restricted-syntax
     for await (const payload of payloads) {
       const success = await launchTrainSchedules(payload);
-      const message = `${t(
-        !success
+      if (success) {
+        successfulTrainsCount += payload.schedules.length;
+      }
+      const msg = `${t(
+        success
           ? 'status.calculatingTrainScheduleComplete'
           : 'errorMessages.unableToCreateTrainSchedule',
         {
           pathId: payload.path,
-          trainIndex: idx,
-          trainsCount: payloads.length,
+          createdTrainsCount: successfulTrainsCount,
+          trainsCount,
         }
       )}`;
-      messages.push(message);
-      if (success) {
-        successfulTrainsCount += 1;
-      }
-      setImportStatus(<>{messages.join('\n')}</>);
-      idx += 1;
+      messages.push(msg);
+      updateImportStatus(IMPORT_STATUS.CREATING_TRAINS, messages.join('\n'));
     }
     if (successfulTrainsCount > 0) {
       setStatus({ ...status, trainSchedulesDone: true, success: true });
-      setImportStatus(
+      updateImportStatus(
+        IMPORT_STATUS.CREATING_TRAINS_COMPLETED,
         t('status.calculatingTrainScheduleCompleteAll', {
           count: successfulTrainsCount,
           successfulTrainsCount,
@@ -263,11 +314,7 @@ const ImportTrainScheduleModal = ({
       );
     } else {
       setStatus({ ...status, trainSchedulesDone: true });
-      setImportStatus(
-        <span className="text-danger">
-          {t('status.calculatingTrainScheduleCompleteAllFailure')}
-        </span>
-      );
+      updateImportStatus(IMPORT_STATUS.CREATING_TRAINS_FAILED);
     }
   }
 
@@ -304,9 +351,11 @@ const ImportTrainScheduleModal = ({
           {!infraId || !timetableId || !rollingStockID ? null : (
             <>
               <button
-                className={`btn btn-sm btn-block d-flex justify-content-between ${
-                  status.uicComplete ? 'btn-outline-success' : 'btn-primary'
-                }`}
+                className={cx('btn', 'btn-sm', 'btn-block', 'd-flex', 'justify-content-between', {
+                  'btn-primary': !status.uicComplete && !status.pathFindingDone,
+                  'btn-outline-success': status.uicComplete,
+                  'btn-outline-secondary': !status.uicComplete && status.pathFindingDone,
+                })}
                 type="button"
                 onClick={() => completePaths(true)}
               >
@@ -314,9 +363,15 @@ const ImportTrainScheduleModal = ({
                 <span>{Object.keys(pointsDictionnary).length}</span>
               </button>
               <button
-                className={`btn btn-sm btn-block d-flex justify-content-between ${
-                  status.pathFindingDone ? 'btn-outline-success' : 'btn-primary'
-                }`}
+                className={cx('btn', 'btn-sm', 'btn-block', 'd-flex', 'justify-content-between', {
+                  'btn-primary': !status.pathFindingDone,
+                  'btn-outline-danger':
+                    status.uicComplete && importStatus === IMPORT_STATUS.PATHFINDINGS_FAILED,
+                  'btn-outline-success':
+                    status.uicComplete &&
+                    status.pathFindingDone &&
+                    importStatus !== IMPORT_STATUS.PATHFINDINGS_FAILED,
+                })}
                 disabled={!status.uicComplete}
                 type="button"
                 onClick={() => generatePaths()}
@@ -327,12 +382,21 @@ const ImportTrainScheduleModal = ({
               <div className="my-1 text-center">{t('or')}</div>
               <button
                 className={cx(
-                  'btn btn-sm btn-block d-flex justify-content-between text-wrap text-left',
-                  !status.pathFindingDone && 'btn-primary',
-                  status.pathFindingDone && trainsWithPath.length && 'btn-outline-success',
-                  status.pathFindingDone && !trainsWithPath.length && 'btn-outline-danger'
+                  'btn',
+                  'btn-sm',
+                  'btn-block',
+                  'd-flex',
+                  'justify-content-between',
+                  'text-wrap',
+                  'text-left',
+                  {
+                    'btn-primary': !status.pathFindingDone,
+                    'btn-outline-success': status.pathFindingDone && !status.uicComplete,
+                    'btn-outline-danger': status.pathFindingDone && !trainsWithPath.length,
+                  }
                 )}
                 type="button"
+                disabled={status.pathFindingDone && status.uicComplete}
                 onClick={generateAutocompletePaths}
               >
                 <span>1/2 — {t('generatePathsAuto')}</span>
@@ -340,12 +404,11 @@ const ImportTrainScheduleModal = ({
               </button>
               <Spacer height={50} />
               <button
-                className={cx(
-                  'btn btn-sm btn-block d-flex justify-content-between',
-                  !status.trainSchedulesDone && 'btn-primary',
-                  status.trainSchedulesDone && !status.success && 'btn-outline-danger',
-                  status.trainSchedulesDone && status.success && 'btn-outline-success'
-                )}
+                className={cx('btn', 'btn-sm', 'btn-block', 'd-flex', 'justify-content-between', {
+                  'btn-primary': !status.trainSchedulesDone,
+                  'btn-outline-danger': importStatus === IMPORT_STATUS.CREATING_TRAINS_FAILED,
+                  'btn-outline-success': importStatus === IMPORT_STATUS.CREATING_TRAINS_COMPLETED,
+                })}
                 disabled={!status.pathFindingDone || trainsWithPath.length === 0}
                 type="button"
                 onClick={generateTrainSchedules}
@@ -358,7 +421,7 @@ const ImportTrainScheduleModal = ({
             </>
           )}
 
-          <pre>{importStatus}</pre>
+          <p className={cx({ 'text-danger': importStatusIsError })}>{message}</p>
 
           {uicNumberToComplete !== undefined && (
             <div className="automated-map">
