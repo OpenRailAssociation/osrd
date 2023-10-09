@@ -265,7 +265,6 @@ pub struct ResultTrain {
     pub speeds: Vec<ResultSpeed>,
     pub head_positions: Vec<ResultPosition>,
     pub stops: Vec<ResultStops>,
-    pub route_occupancies: HashMap<String, ResultOccupancyTiming>,
     pub mechanical_energy_consumed: f64,
     pub signal_sightings: Vec<SignalSighting>,
     pub zone_updates: Vec<ZoneUpdate>,

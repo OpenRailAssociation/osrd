@@ -95,6 +95,40 @@ struct Conflict {
     conflict_type: ConflictType,
 }
 
+pub async fn get_simulated_schedules_from_timetable(
+    timetable_id: i64,
+    db_pool: Data<DbPool>,
+) -> Result<(Vec<TrainSchedule>, Vec<SimulationOutput>)> {
+    let mut conn = db_pool.get().await?;
+    use crate::tables::train_schedule;
+    use diesel::{BelongingToDsl, ExpressionMethods, GroupedBy, QueryDsl};
+    use diesel_async::RunQueryDsl;
+
+    let train_schedules = train_schedule::table
+        .filter(train_schedule::timetable_id.eq(timetable_id))
+        .load::<TrainSchedule>(&mut conn)
+        .await?;
+
+    SimulationOutput::belonging_to(&train_schedules)
+        .load::<SimulationOutput>(&mut conn)
+        .await?
+        .grouped_by(&train_schedules)
+        .into_iter()
+        .zip(train_schedules)
+        .map(|(mut sim_output, train_schedule)| {
+            if sim_output.is_empty() {
+                return Err(TrainScheduleError::UnsimulatedTrainSchedule {
+                    train_schedule_id: train_schedule.id.expect("TrainSchedule should have an id"),
+                }
+                .into());
+            }
+            assert!(sim_output.len() == 1);
+            Ok((train_schedule, sim_output.remove(0)))
+        })
+        .collect::<Result<Vec<(TrainSchedule, SimulationOutput)>>>()
+        .map(|v| v.into_iter().unzip())
+}
+
 /// Compute spacing conflicts for a given timetable
 /// TODO: This should compute itinary conflicts too
 #[utoipa::path(
@@ -114,38 +148,8 @@ async fn get_conflicts(
 ) -> Result<Json<Vec<Conflict>>> {
     let timetable_id = timetable_id.into_inner();
 
-    let (schedules, simulations): (Vec<TrainSchedule>, Vec<SimulationOutput>) = {
-        let mut conn = db_pool.get().await?;
-        use crate::tables::train_schedule;
-        use diesel::{BelongingToDsl, ExpressionMethods, GroupedBy, QueryDsl};
-        use diesel_async::RunQueryDsl;
-
-        let train_schedules = train_schedule::table
-            .filter(train_schedule::timetable_id.eq(timetable_id))
-            .load::<TrainSchedule>(&mut conn)
-            .await?;
-
-        SimulationOutput::belonging_to(&train_schedules)
-            .load::<SimulationOutput>(&mut conn)
-            .await?
-            .grouped_by(&train_schedules)
-            .into_iter()
-            .zip(train_schedules)
-            .map(|(mut sim_output, train_schedule)| {
-                if sim_output.is_empty() {
-                    return Err(TrainScheduleError::UnsimulatedTrainSchedule {
-                        train_schedule_id: train_schedule
-                            .id
-                            .expect("TrainSchedule should have an id"),
-                    }
-                    .into());
-                }
-                assert!(sim_output.len() == 1);
-                Ok((train_schedule, sim_output.remove(0)))
-            })
-            .collect::<Result<Vec<(TrainSchedule, SimulationOutput)>>>()
-            .map(|v| v.into_iter().unzip())
-    }?;
+    let (schedules, simulations) =
+        get_simulated_schedules_from_timetable(timetable_id, db_pool).await?;
 
     let mut id_to_name = HashMap::new();
     let mut trains_requirements = Vec::new();
