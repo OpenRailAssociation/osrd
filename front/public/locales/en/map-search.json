@@ -19,7 +19,14 @@
   "reset": "Reset",
   "aspects": "States",
   "noAspectSelected": "No state selected",
+  "signalSystem": "Signaling system",
   "errorMessages": {
     "unableToSearchSignal": "Signal search impossible"
+  },
+  "all": "All",
+  "signalSettings": {
+    "Nf": "Blocking",
+    "distant": "Distant",
+    "is_430": "430"
   }
 }

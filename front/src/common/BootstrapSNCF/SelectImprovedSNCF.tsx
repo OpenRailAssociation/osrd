@@ -1,5 +1,6 @@
 import React, { useState, useEffect, ReactNode, useCallback, useMemo } from 'react';
 import { isObject, isNil } from 'lodash';
+import cx from 'classnames';
 
 import { SelectOptionObject, getOptionLabel, getOptionValue } from './SelectSNCF';
 import './SelectImprovedSNCF.scss';
@@ -11,6 +12,7 @@ interface SelectProps<T> {
   value?: T;
   onChange: (value?: T) => void;
   sm?: boolean;
+  blockMenu?: boolean; // if false, the menu will cover the elements below the select
   withSearch?: boolean;
   withNewValueInput?: boolean;
   addButtonTitle?: string;
@@ -32,6 +34,7 @@ function SelectImproved<T extends string | SelectOptionObject>({
   addButtonTitle = 'Add',
   bgWhite,
   dataTestId,
+  blockMenu = false,
   isOpened = false,
   setSelectVisibility,
 }: SelectProps<T>) {
@@ -153,7 +156,7 @@ function SelectImproved<T extends string | SelectOptionObject>({
               </button>
             </div>
           </div>
-          <div className="select-menu" id="-selecttoggle">
+          <div className={cx('select-menu', { 'position-relative': blockMenu })} id="-selecttoggle">
             <div className="d-flex flex-column">
               {withSearch && (
                 <div className="form-control-container w-100 has-left-icon mb-3">
