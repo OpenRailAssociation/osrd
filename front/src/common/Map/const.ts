@@ -107,51 +107,14 @@ export type searchPayloadType = {
   query: SearchQuery;
 };
 
-export const signalAspects = [
-  {
-    label: 'BAL',
-    signals: [
-      'Avertissement',
-      'Carré',
-      'Carré Violet',
-      'Croix Blanche Lumineuse',
-      'Disque',
-      'Feu Blanc',
-      'Feu Blanc Clignotant',
-      'Feu Jaune Clignotant',
-      'Feu Rouge Clignotant',
-      'Feu Vert',
-      'Feu Vert Clignotant',
-      'R Blanc',
-      'Ralentissement 30',
-      'Ralentissement 60',
-      'Rappel 30',
-      'Rappel 60',
-      'Sémaphore',
-    ],
-  },
-  {
-    label: 'LGV',
-    signals: [
-      '80',
-      '60',
-      '130',
-      '160',
-      '170',
-      '200',
-      '220',
-      '230',
-      '270',
-      '300',
-      '320',
-      'Bande Blanche Vertical',
-      'Bande bl/jau Vertical',
-      'Feu blanc franchissement',
-    ],
-  },
-  {
-    label: 'Signaux "Ex"',
-    signals: ['Bande Jaune Inclinee', 'Bande Rouge Horizontal', 'Bande Verte Vertical'],
-  },
-  { label: 'Signaux "ID"', signals: ['1 Feu', '2 Feux', '3 Feux', '4 Feux', '5 Feux'] },
-];
+export enum searchSignalSystem {
+  BAL = 'BAL',
+  BAPR = 'BAPR',
+  TVM = 'TVM',
+}
+
+export const searchSignalSettings = {
+  [searchSignalSystem.BAL]: ['Nf'],
+  [searchSignalSystem.BAPR]: ['Nf', 'distant'],
+  [searchSignalSystem.TVM]: ['is_430'],
+};

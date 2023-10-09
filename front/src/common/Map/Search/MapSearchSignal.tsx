@@ -11,7 +11,8 @@ import { getMap } from 'reducers/map/selectors';
 import { SearchSignalResult, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import { setFailure } from 'reducers/main';
-import { searchPayloadType, signalAspects } from '../const';
+import SelectImproved from 'common/BootstrapSNCF/SelectImprovedSNCF';
+import { searchPayloadType, searchSignalSystem, searchSignalSettings } from '../const';
 import SignalCard from './SignalCard';
 import { onResultSearchClick } from '../utils';
 
@@ -25,15 +26,15 @@ export type SortType = {
   asc: boolean;
 };
 
-const SIGNAL_ASPECTS = signalAspects;
-
 const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSignalProps) => {
   const map = useSelector(getMap);
   const infraID = useSelector(getInfraID);
 
   const [searchState, setSearch] = useState('');
   const [searchLineState, setSearchLine] = useState('');
-  const [aspects, setAspects] = useState<string[]>([]);
+  const [trackSystem, setTrackSystem] = useState(searchSignalSystem.BAL);
+  const [signalSettings, setSignalSettings] = useState<string[]>([]);
+  const [selectedSettings, setSelectedSettings] = useState<string[]>([]);
   const [searchResults, setSearchResults] = useState<SearchSignalResult[]>([]);
   const [autocompleteLineNames, setAutocompleteLineNames] = useState<string[]>([]);
   const [searchSignalWidth, setSearchSignalWidth] = useState<number>(0);
@@ -50,7 +51,9 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
   const getPayload = (
     lineSearch: string,
     signalName: string,
-    infraIDPayload: number
+    infraIDPayload: number,
+    trackSystems: string[],
+    settings: string[]
   ): searchPayloadType => {
     const payloadQuery = !Number.isNaN(Number(lineSearch))
       ? ['=', ['line_code'], Number(lineSearch)]
@@ -62,14 +65,21 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
         'and',
         ['=', ['infra_id'], infraIDPayload],
         !lineSearch || payloadQuery,
-        !aspects.length || ['contains', ['list', ...aspects], ['aspects']],
+        !trackSystems.length || ['contains', ['list', ...trackSystems], ['signaling_systems']],
+        !settings.length || ['contains', ['list', ...settings], ['settings']],
         ['search', ['label'], signalName],
       ],
     };
   };
 
   const updateSearch = async (infraIDPayload: number) => {
-    const payload: searchPayloadType = getPayload(searchLineState, searchState, infraIDPayload);
+    const payload: searchPayloadType = getPayload(
+      searchLineState,
+      searchState,
+      infraIDPayload,
+      [trackSystem],
+      selectedSettings
+    );
     await postSearch({
       body: payload,
     })
@@ -98,7 +108,7 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
     } else {
       setSearchResults([]);
     }
-  }, [debouncedSearchTerm, debouncedSearchLine, aspects]);
+  }, [debouncedSearchTerm, debouncedSearchLine, trackSystem, selectedSettings]);
 
   const onResultClick = (result: SearchSignalResult) => {
     onResultSearchClick({
@@ -125,6 +135,11 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
     const lineNames = searchResults.map((result) => result.line_name);
     setAutocompleteLineNames([...new Set(lineNames)]);
   }, [searchLineState]);
+
+  useEffect(() => {
+    setSignalSettings(searchSignalSettings[trackSystem]);
+    setSelectedSettings([]);
+  }, [trackSystem]);
 
   const formatSearchResults = () => (
     <div className="search-results">
@@ -219,12 +234,24 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
           </datalist>
         </div>
         <div className={`${classLargeCol} ${searchSignalWidth < 470 ? 'col-md-12' : 'col-md-6'}`}>
+          <SelectImproved
+            label={t('map-search:track-system')}
+            onChange={(e) => {
+              if (e !== undefined) setTrackSystem(e);
+            }}
+            value={trackSystem}
+            sm
+            blockMenu
+            options={Object.values(searchSignalSystem)}
+          />
+        </div>
+        <div className={`${classLargeCol} ${searchSignalWidth < 470 ? 'col-md-12' : 'col-md-6'}`}>
           <MultiSelectSNCF
-            multiSelectTitle={t('map-search:aspects')}
-            multiSelectPlaceholder={t('map-search:noAspectSelected')}
-            options={SIGNAL_ASPECTS}
-            onChange={setAspects}
-            selectedValues={aspects}
+            multiSelectTitle={t('map-search:settings')}
+            multiSelectPlaceholder={t('map-search:noSettingSelected')}
+            options={[{ options: signalSettings }]}
+            onChange={setSelectedSettings}
+            selectedValues={selectedSettings}
           />
         </div>
       </div>

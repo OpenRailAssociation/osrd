@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 type MultiSelectSNCFProps = {
   multiSelectTitle: string;
   multiSelectPlaceholder: string;
-  options: { label: string; signals: string[] }[];
+  options: { group?: string; options: string[] }[];
 
   onChange: React.Dispatch<React.SetStateAction<string[]>>;
   selectedValues: string[];
@@ -20,7 +20,7 @@ const MultiSelectSNCF = ({
 }: MultiSelectSNCFProps) => {
   const [multiSelectToggle, setMultiselectToggle] = useState<boolean>(false);
   const [selectAll, setSelectAll] = useState<boolean>(false);
-  const multiSelectOptions = options.map((optionGroup) => optionGroup.signals).flat();
+  const multiSelectOptions = options.map((optionGroup) => optionGroup.options).flat();
 
   const renderSelectToggles = useCallback(
     (selectOptions: string[]) =>
@@ -88,7 +88,7 @@ const MultiSelectSNCF = ({
         data-component="select-multiple"
       >
         <div className="select-control">
-          <div className="input-group" data-role="select-toggle">
+          <div className="input-group input-group-sm" data-role="select-toggle">
             <div className="form-control form-control-sm is-placeholder">
               {allowSelectAll ? (
                 <div className="custom-control custom-checkbox">
@@ -126,22 +126,22 @@ const MultiSelectSNCF = ({
 
           <div id="multiselecttoggle" className="select-menu position-relative" data-role="menu">
             {options.map((selectOption) =>
-              selectOption.label ? (
+              selectOption.group !== undefined ? (
                 <div
                   role="listitem"
                   className="select-group"
-                  key={`multiSelect-selectOption-${selectOption.label}`}
+                  key={`multiSelect-selectOption-${selectOption.group}`}
                 >
                   <div className="select-group-head">
-                    <span className="select-group-title text-uppercase">{selectOption.label}</span>
+                    <span className="select-group-title text-uppercase">{selectOption.group}</span>
                   </div>
                   <div className="select-group-content" data-role="group" data-id="0" role="list">
-                    {renderSelectToggles(selectOption.signals)}
+                    {renderSelectToggles(selectOption.options)}
                   </div>
                 </div>
               ) : (
-                <div className="select-group-content" data-role="group" data-id="0" role="list">
-                  {renderSelectToggles(selectOption.signals)}
+                <div data-role="group" data-id="0" role="list">
+                  {renderSelectToggles(selectOption.options)}
                 </div>
               )
             )}
