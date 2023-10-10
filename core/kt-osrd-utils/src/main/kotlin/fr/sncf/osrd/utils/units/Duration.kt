@@ -41,5 +41,5 @@ value class Duration(val milliseconds: Long) : Comparable<Duration> {
     }
 }
  
-val Double.seconds: Duration get() = Duration((this * 1000).toLong())
+val Double.seconds: Duration get() = Duration(Math.round(this * 1000))
 val Int.seconds: Duration get() = Duration(this.toLong() * 1000)

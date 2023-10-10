@@ -1,5 +1,7 @@
 package fr.sncf.osrd.infra.implementation.tracks.directed;
 
+import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.POSITION_EPSILON;
+
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableRangeMap;
 import com.google.common.collect.Range;
@@ -10,7 +12,6 @@ import fr.sncf.osrd.infra.api.tracks.directed.DiTrackEdge;
 import fr.sncf.osrd.infra.api.tracks.undirected.NeutralSection;
 import fr.sncf.osrd.infra.api.tracks.undirected.Detector;
 import fr.sncf.osrd.sim_infra.api.LoadingGaugeConstraint;
-import fr.sncf.osrd.infra.api.tracks.undirected.OperationalPoint;
 import fr.sncf.osrd.infra.api.tracks.undirected.SpeedLimits;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackLocation;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackSection;
@@ -38,14 +39,18 @@ public class TrackRangeView {
 
     /** Constructor */
     public TrackRangeView(double begin, double end, DiTrackEdge track) {
-        if (begin < end) {
-            this.begin = begin;
-            this.end = end;
-        } else {
-            this.begin = end;
-            this.end = begin;
+        if (begin > end) {
+            var tmp = begin;
+            begin = end;
+            end = tmp;
         }
-        assert end <= track.getEdge().getLength();
+        var trackLength = track.getEdge().getLength();
+        if (end > trackLength) {
+            assert Math.abs(end - trackLength) < POSITION_EPSILON;
+            end = trackLength;
+        }
+        this.begin = begin;
+        this.end = end;
         assert begin >= 0;
         this.track = track;
     }

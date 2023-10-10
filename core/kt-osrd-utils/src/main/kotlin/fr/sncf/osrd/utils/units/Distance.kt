@@ -36,7 +36,7 @@ value class Distance(val millimeters: Long) : Comparable<Distance> {
         val ZERO = Distance(millimeters = 0L)
         @JvmStatic
         @JvmName("fromMeters")
-        fun fromMeters(meters: Double) = Distance(millimeters = (meters * 1_000.0).toLong())
+        fun fromMeters(meters: Double) = Distance(millimeters = (Math.round(meters * 1_000.0)))
         @JvmStatic
         @JvmName("toMeters")
         fun toMeters(distance: Distance) = distance.meters
@@ -61,7 +61,7 @@ value class Distance(val millimeters: Long) : Comparable<Distance> {
     }
 }
 
-val Double.meters: Distance get() = Distance((this * 1000).toLong())
+val Double.meters: Distance get() = Distance.fromMeters(this)
 val Int.meters: Distance get() = Distance(this.toLong() * 1000)
 
 
