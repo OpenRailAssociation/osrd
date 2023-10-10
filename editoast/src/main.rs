@@ -209,10 +209,19 @@ async fn runserver(
 
     let server = HttpServer::new(move || {
         // Build CORS
-        let cors = Cors::default()
-            .allow_any_origin()
-            .allow_any_method()
-            .allow_any_header();
+        let cors = {
+            let allowed_origin = env::var("OSRD_ALLOWED_ORIGIN").ok();
+            match allowed_origin {
+                Some(origin) => Cors::default()
+                    .allowed_origin(origin.as_str())
+                    .allow_any_method()
+                    .allow_any_header(),
+                None => Cors::default()
+                    .allow_any_origin()
+                    .allow_any_method()
+                    .allow_any_header(),
+            }
+        };
 
         // Build Core client
         let core_client = CoreClient::new_direct(
