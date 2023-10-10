@@ -233,4 +233,6 @@ class RollingStock(BaseModel, extra=Extra.forbid):
 
 
 if __name__ == "__main__":
-    print(RollingStock.model_json_schema())
+    from json import dumps
+
+    print(dumps(RollingStock.model_json_schema(), indent=4, sort_keys=True))
