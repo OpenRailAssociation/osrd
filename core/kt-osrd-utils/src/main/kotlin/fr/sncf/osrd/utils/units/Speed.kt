@@ -18,7 +18,7 @@ value class Speed(val millimetersPerSecond: ULong) {
     companion object {
         @JvmStatic
         fun fromMetersPerSecond(metersPerSecond: Double): Speed {
-            return Speed(millimetersPerSecond = (metersPerSecond * multiplier).toULong())
+            return Speed(millimetersPerSecond = Math.round(metersPerSecond * multiplier).toULong())
         }
 
         @JvmStatic
@@ -29,4 +29,4 @@ value class Speed(val millimetersPerSecond: ULong) {
     }
 }
 
-val Double.metersPerSecond: Distance get() = Distance((this * multiplier).toLong())
+val Double.metersPerSecond: Distance get() = Distance(Math.round(this * multiplier))

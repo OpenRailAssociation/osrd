@@ -112,7 +112,7 @@ private fun computeSignalAspectChangeEvents(
             val signal = pathSignal.signal
             val aspect = simulatedAspects[signal] ?: continue
             if (signalAspects[signal]!! == aspect) continue
-            signalAspectChangeEvents[pathSignal]!!.add(SignalAspectChangeEvent(aspect, (event.time * 1000).toLong()))
+            signalAspectChangeEvents[pathSignal]!!.add(SignalAspectChangeEvent(aspect, Math.round(event.time * 1000)))
             signalAspects[signal] = aspect
         }
     }
