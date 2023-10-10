@@ -31,7 +31,7 @@
     "noTrainStep": "The increment step of the train must be greater than zero",
     "noTrainStepInput": "Must be > 0",
     "softErrorInfra": "The application is unavailable, a server error has occurred, please try again later.",
-    "stdcmError": "Calculation error for last minute train path",
+    "stdcmError": "Calculation error for last minute train path: incompatibility with other train paths",
     "TOO_MUCH_TIME": "Impossible to run slowly enough to meet the required allowance",
     "The requested train couldn't reach its destination": "The train cannot reach its destination",
     "trainScheduleTitle": "An error has occurred",
