@@ -414,7 +414,7 @@ mod tests {
             Direction::StartToStop,
             Waypoint::new_detector("D1"),
             vec!["D2".into()],
-            Default::default(),
+            [("tracklink".into(), "LINK".into())].into(),
         );
         infra_cache.add(route.clone());
         let graph = Graph::load(&infra_cache);
@@ -435,7 +435,11 @@ mod tests {
             Direction::StartToStop,
             Waypoint::new_detector("D1"),
             vec![],
-            [("switch".into(), "RIGHT".into())].into(),
+            [
+                ("tracklink".into(), "LINK".into()),
+                ("switch".into(), "RIGHT".into()),
+            ]
+            .into(),
         );
         infra_cache.add(route.clone());
         let graph = Graph::load(&infra_cache);

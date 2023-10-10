@@ -6,7 +6,6 @@ from osrd_schemas import infra
 
 from railjson_generator.rjs_static import SWITCH_TYPES
 from railjson_generator.schema.infra.catenary import Catenary
-from railjson_generator.schema.infra.link import Link
 from railjson_generator.schema.infra.neutral_section import NeutralSection
 from railjson_generator.schema.infra.operational_point import OperationalPoint
 from railjson_generator.schema.infra.route import Route
@@ -20,14 +19,13 @@ from railjson_generator.schema.infra.waypoint import BufferStop, Detector
 class Infra:
     track_sections: List[TrackSection] = field(default_factory=list)
     switches: List[Switch] = field(default_factory=list)
-    links: List[Link] = field(default_factory=list)
     operational_points: List[OperationalPoint] = field(default_factory=list)
     routes: List[Route] = field(default_factory=list)
     speed_sections: List[SpeedSection] = field(default_factory=list)
     catenaries: List[Catenary] = field(default_factory=list)
     neutral_sections: List[NeutralSection] = field(default_factory=list)
 
-    VERSION = "3.4.3"
+    VERSION = "3.4.4"
 
     def add_route(self, *args, **kwargs):
         self.routes.append(Route(*args, **kwargs))
@@ -38,7 +36,6 @@ class Infra:
             version=self.VERSION,
             track_sections=[track.to_rjs() for track in self.track_sections],
             switches=[switch.to_rjs() for switch in self.switches],
-            track_section_links=[link.to_rjs() for link in self.links],
             routes=[route.to_rjs() for route in self.routes],
             signals=self.make_rjs_signals(),
             buffer_stops=self.make_rjs_buffer_stops(),
@@ -104,7 +101,6 @@ class Infra:
         for instance_list in [
             self.track_sections,
             self.switches,
-            self.links,
             self.operational_points,
             self.routes,
             self.speed_sections,

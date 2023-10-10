@@ -7,7 +7,6 @@ pub mod signals;
 pub mod speed_sections;
 pub mod switch_types;
 pub mod switches;
-pub mod track_section_links;
 pub mod track_sections;
 
 use std::collections::HashMap;
@@ -153,7 +152,6 @@ fn get_insert_errors_query(obj_type: ObjectType) -> &'static str {
         ObjectType::NeutralSection => include_str!("sql/neutral_sections_insert_errors.sql"),
         ObjectType::SpeedSection => include_str!("sql/speed_sections_insert_errors.sql"),
         ObjectType::Detector => include_str!("sql/detectors_insert_errors.sql"),
-        ObjectType::TrackSectionLink => include_str!("sql/track_section_links_insert_errors.sql"),
         ObjectType::Switch => include_str!("sql/switches_insert_errors.sql"),
         ObjectType::SwitchType => include_str!("sql/switch_types_insert_errors.sql"),
         ObjectType::BufferStop => include_str!("sql/buffer_stops_insert_errors.sql"),
@@ -266,14 +264,6 @@ impl GeneratedData for ErrorLayer {
         ));
 
         infra_errors.extend(generate_errors(
-            ObjectType::TrackSectionLink,
-            infra_cache,
-            &graph,
-            &track_section_links::OBJECT_GENERATORS,
-            &track_section_links::GLOBAL_GENERATORS,
-        ));
-
-        infra_errors.extend(generate_errors(
             ObjectType::Switch,
             infra_cache,
             &graph,
@@ -311,7 +301,7 @@ impl GeneratedData for ErrorLayer {
 mod test {
     use super::{
         buffer_stops, catenaries, detectors, generate_errors, operational_points, routes, signals,
-        speed_sections, switch_types, switches, track_section_links, track_sections, Graph,
+        speed_sections, switch_types, switches, track_sections, Graph,
     };
 
     use crate::infra_cache::tests::{create_buffer_stop_cache, create_small_infra_cache};
@@ -387,14 +377,6 @@ mod test {
             &graph,
             &operational_points::OBJECT_GENERATORS,
             &[],
-        )
-        .is_empty());
-        assert!(generate_errors(
-            ObjectType::TrackSectionLink,
-            &small_infra_cache,
-            &graph,
-            &[],
-            &track_section_links::GLOBAL_GENERATORS,
         )
         .is_empty());
         assert!(generate_errors(

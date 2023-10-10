@@ -78,11 +78,11 @@ class Switch:
 
 @dataclass
 class TrackSectionLink(Switch):
-    start: TrackEndpoint = None
-    end: TrackEndpoint = None
+    source: TrackEndpoint = None
+    destination: TrackEndpoint = None
 
-    PORT_NAMES = ["start", "end"]
-    SWITCH_TYPE = "track_section_link"
+    PORT_NAMES = ["source", "destination"]
+    SWITCH_TYPE = "link"
 
 
 @dataclass

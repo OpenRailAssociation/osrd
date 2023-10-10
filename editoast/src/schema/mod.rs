@@ -16,7 +16,6 @@ mod switch;
 mod switch_type;
 mod track_section;
 
-mod track_section_link;
 pub mod utils;
 pub use buffer_stop::{BufferStop, BufferStopCache};
 pub use catenary::Catenary;
@@ -40,7 +39,6 @@ use strum_macros::EnumIter;
 pub use switch::{Switch, SwitchCache};
 pub use switch_type::{SwitchPortConnection, SwitchType};
 pub use track_section::{Curve, Slope, TrackSection, TrackSectionCache};
-pub use track_section_link::TrackSectionLink;
 
 use self::utils::{Identifier, NonBlankString};
 
@@ -79,7 +77,6 @@ pub enum ObjectType {
     SpeedSection,
     Detector,
     NeutralSection,
-    TrackSectionLink,
     Switch,
     SwitchType,
     BufferStop,
@@ -96,7 +93,6 @@ impl ObjectType {
             ObjectType::NeutralSection => "infra_object_neutral_section",
             ObjectType::SpeedSection => "infra_object_speed_section",
             ObjectType::Detector => "infra_object_detector",
-            ObjectType::TrackSectionLink => "infra_object_track_section_link",
             ObjectType::Switch => "infra_object_switch",
             ObjectType::SwitchType => "infra_object_switch_type",
             ObjectType::BufferStop => "infra_object_buffer_stop",
@@ -114,7 +110,6 @@ impl ObjectType {
             ObjectType::Signal => Some("infra_layer_signal"),
             ObjectType::SpeedSection => Some("infra_layer_speed_section"),
             ObjectType::Detector => Some("infra_layer_detector"),
-            ObjectType::TrackSectionLink => Some("infra_layer_track_section_link"),
             ObjectType::Switch => Some("infra_layer_switch"),
             ObjectType::BufferStop => Some("infra_layer_buffer_stop"),
             ObjectType::OperationalPoint => Some("infra_layer_operational_point"),

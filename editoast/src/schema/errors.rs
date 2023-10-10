@@ -52,9 +52,6 @@ pub enum InfraErrorType {
     OverlappingSwitches {
         reference: ObjectRef,
     },
-    OverlappingTrackLinks {
-        reference: ObjectRef,
-    },
     UnknownPortName {
         port_name: String,
     },
@@ -278,16 +275,6 @@ impl InfraError {
             field: Default::default(),
             is_warning: false,
             sub_type: InfraErrorType::OverlappingSwitches { reference },
-        }
-    }
-
-    pub fn new_overlapping_track_links<O: OSRDObject>(obj: &O, reference: ObjectRef) -> Self {
-        Self {
-            obj_id: obj.get_id().clone(),
-            obj_type: obj.get_type(),
-            field: Default::default(),
-            is_warning: true,
-            sub_type: InfraErrorType::OverlappingTrackLinks { reference },
         }
     }
 }

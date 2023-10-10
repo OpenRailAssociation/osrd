@@ -132,17 +132,13 @@ impl Route {
             if !graph.has_neighbour(&endpoint) {
                 return None;
             }
-            let switch = graph.get_switch(&endpoint);
-            let next_endpoint = match switch {
-                None => graph.get_neighbour(&endpoint, None),
-                Some(switch) => {
-                    let switch_id = switch.get_id();
-                    // Check we found the switch in the route
-                    let group = self.switches_directions.get(&switch_id.clone().into())?;
-                    used_switches.insert(switch_id.clone().into(), group.clone());
-                    graph.get_neighbour(&endpoint, Some(group))
-                }
-            }?;
+
+            let switch = graph.get_switch(&endpoint)?;
+            let switch_id = switch.get_id();
+            // Check we found the switch in the route
+            let group = self.switches_directions.get(&switch_id.clone().into())?;
+            used_switches.insert(switch_id.clone().into(), group.clone());
+            let next_endpoint = graph.get_neighbour(&endpoint, group)?;
 
             // Update current track section, offset and direction
             cur_track = infra_cache
@@ -200,7 +196,8 @@ mod test {
         assert_eq!(path.track_ranges[1].track, "B".into());
         assert_eq!(path.track_ranges[1].begin, 0.);
         assert_eq!(path.track_ranges[1].end, 250.);
-        assert_eq!(path.switches_directions.len(), 0);
+        assert_eq!(path.switches_directions.len(), 1);
+        assert!(path.switches_directions.contains_key(&"tracklink".into()));
     }
 
     #[test]

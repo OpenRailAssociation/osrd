@@ -1,6 +1,6 @@
 use super::{
     BufferStop, Catenary, Detector, NeutralSection, OSRDTyped, OperationalPoint, Route, Signal,
-    SpeedSection, Switch, SwitchType, TrackSection, TrackSectionLink,
+    SpeedSection, Switch, SwitchType, TrackSection,
 };
 use crate::models::RAILJSON_VERSION;
 
@@ -25,7 +25,6 @@ pub struct RailJson {
     pub routes: Vec<Route>,
     pub switch_types: Vec<SwitchType>,
     pub switches: Vec<Switch>,
-    pub track_section_links: Vec<TrackSectionLink>,
     pub track_sections: Vec<TrackSection>,
     pub speed_sections: Vec<SpeedSection>,
     pub neutral_sections: Vec<NeutralSection>,
@@ -120,7 +119,6 @@ pub mod test {
             routes: (0..10).map(|_| Default::default()).collect(),
             switch_types: (0..10).map(|_| Default::default()).collect(),
             switches: (0..10).map(|_| Default::default()).collect(),
-            track_section_links: (0..10).map(|_| Default::default()).collect(),
             track_sections: (0..10).map(|_| Default::default()).collect(),
             speed_sections: (0..10).map(|_| Default::default()).collect(),
             neutral_sections: (0..10).map(|_| Default::default()).collect(),
@@ -156,10 +154,6 @@ pub mod test {
             &railjson.switch_types
         ));
         assert!(check_objects_eq(&s_railjson.switches, &railjson.switches));
-        assert!(check_objects_eq(
-            &s_railjson.track_section_links,
-            &railjson.track_section_links
-        ));
         assert!(check_objects_eq(
             &s_railjson.track_sections,
             &railjson.track_sections
@@ -203,7 +197,6 @@ pub mod test {
             routes: find_objects(conn, infra.id.unwrap()).await,
             switch_types: find_objects(conn, infra.id.unwrap()).await,
             switches: find_objects(conn, infra.id.unwrap()).await,
-            track_section_links: find_objects(conn, infra.id.unwrap()).await,
             track_sections: find_objects(conn, infra.id.unwrap()).await,
             speed_sections: find_objects(conn, infra.id.unwrap()).await,
             neutral_sections: find_objects(conn, infra.id.unwrap()).await,

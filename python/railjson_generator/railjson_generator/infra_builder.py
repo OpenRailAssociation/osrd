@@ -1,9 +1,8 @@
 from dataclasses import dataclass, field
-from typing import Iterable, Optional
+from typing import Iterable
 
 from .schema.infra.endpoint import TrackEndpoint
 from .schema.infra.infra import Infra
-from .schema.infra.link import Link
 from .schema.infra.neutral_section import NeutralSection
 from .schema.infra.operational_point import OperationalPoint
 from .schema.infra.route import Route
@@ -13,28 +12,20 @@ from .schema.infra.switch import (
     DoubleCrossSwitch,
     PointSwitch,
     SwitchGroup,
-    TrackSectionLink
+    TrackSectionLink,
 )
 from .schema.infra.track_section import TrackSection
 from .utils import generate_routes
 
 
 def _check_connections(endpoint, connections):
-    links = []
     switches = []
     for connected_endpoint, switch_group in connections:
         if connected_endpoint == endpoint:
             raise RuntimeError("endpoint connected to itself")
-        category = links if switch_group is None else switches
-        category.append(switch_group)
+        switches.append(switch_group)
 
-    if not links and not switches:
-        return
-    if links and switches:
-        raise RuntimeError("endpoint connected to both links and switches")
-    if links and not switches:
-        if len(links) != 1:
-            raise RuntimeError("endpoint connected to multiple track links")
+    if not switches:
         return
 
     switch = switches[0].switch
@@ -47,7 +38,7 @@ def _check_connections(endpoint, connections):
         groups.add(switch_group.group)
 
 
-def _register_connection(endpoint_a: TrackEndpoint, endpoint_b: TrackEndpoint, switch_group: Optional[SwitchGroup]):
+def _register_connection(endpoint_a: TrackEndpoint, endpoint_b: TrackEndpoint, switch_group: SwitchGroup):
     """Connect two track endpoints together"""
     a_neighbors = endpoint_a.get_neighbors()
     b_neighbors = endpoint_b.get_neighbors()
@@ -100,10 +91,10 @@ class InfraBuilder:
         self.infra.switches.append(switch)
         return switch
 
-    def add_link(self, start: TrackEndpoint, end: TrackEndpoint, **kwargs):
-        switch = TrackSectionLink(start=start, end=end, **kwargs)
+    def add_link(self, source: TrackEndpoint, destination: TrackEndpoint, **kwargs):
+        switch = TrackSectionLink(source=source, destination=destination, **kwargs)
         self.infra.switches.append(switch)
-        _register_connection(start, end, switch.group("SRC_DST"))
+        _register_connection(source, destination, switch.group("LINK"))
         return switch
 
     def add_operational_point(self, *args, **kwargs):

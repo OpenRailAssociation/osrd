@@ -159,17 +159,6 @@ impl Zone {
                         Self::merge_bbox(&mut geo, &mut sch, infra_cache, track_id);
                     }
                 }
-                OperationResult::Update(RailjsonObject::TrackSectionLink { railjson })
-                | OperationResult::Create(RailjsonObject::TrackSectionLink { railjson }) => {
-                    if let Some(ObjectCache::TrackSectionLink(link)) = infra_cache
-                        .track_section_links()
-                        .get::<String>(&railjson.id)
-                    {
-                        Self::merge_bbox(&mut geo, &mut sch, infra_cache, &link.src.track);
-                    };
-                    let track_id = &railjson.src.track;
-                    Self::merge_bbox(&mut geo, &mut sch, infra_cache, track_id);
-                }
                 OperationResult::Update(RailjsonObject::Switch { railjson })
                 | OperationResult::Create(RailjsonObject::Switch { railjson }) => {
                     if let Some(ObjectCache::Switch(switch)) =
@@ -258,16 +247,6 @@ impl Zone {
                         for track_id in op.parts.iter().map(|r| &r.track) {
                             Self::merge_bbox(&mut geo, &mut sch, infra_cache, track_id);
                         }
-                    }
-                }
-                OperationResult::Delete(ObjectRef {
-                    obj_type: ObjectType::TrackSectionLink,
-                    obj_id,
-                }) => {
-                    if let Some(ObjectCache::TrackSectionLink(link)) =
-                        infra_cache.track_section_links().get(obj_id)
-                    {
-                        Self::merge_bbox(&mut geo, &mut sch, infra_cache, &link.src.track);
                     }
                 }
                 OperationResult::Delete(ObjectRef {

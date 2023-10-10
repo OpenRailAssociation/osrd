@@ -59,7 +59,7 @@ impl From<ObjectRef> for DeleteOperation {
 mod tests {
     use crate::models::infra::tests::test_infra_transaction;
     use crate::schema::operation::create::tests::{
-        create_buffer_stop, create_catenary, create_detector, create_link, create_op, create_route,
+        create_buffer_stop, create_catenary, create_detector, create_op, create_route,
         create_signal, create_speed, create_switch, create_track,
     };
     use crate::schema::operation::delete::DeleteOperation;
@@ -128,26 +128,6 @@ mod tests {
             let res_del = sql_query(format!(
                 "SELECT COUNT (*) AS nb FROM infra_object_speed_section WHERE obj_id = '{}' AND infra_id = {}",
                 speed.get_id(),
-                infra.id.unwrap()
-            ))
-            .get_result::<Count>(conn).await.unwrap();
-
-            assert_eq!(res_del.nb, 0);
-        }.scope_boxed()).await;
-    }
-
-    #[actix_test]
-    async fn delete_link() {
-        test_infra_transaction(|conn, infra| async  move {
-            let link = create_link(conn, infra.id.unwrap(), Default::default()).await;
-
-            let link_deletion: DeleteOperation = link.get_ref().into();
-
-            assert!(link_deletion.apply(infra.id.unwrap(), conn).await.is_ok());
-
-            let res_del = sql_query(format!(
-                "SELECT COUNT (*) AS nb FROM infra_object_track_section_link WHERE obj_id = '{}' AND infra_id = {}",
-                link.get_id(),
                 infra.id.unwrap()
             ))
             .get_result::<Count>(conn).await.unwrap();

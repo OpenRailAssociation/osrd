@@ -294,9 +294,6 @@ def make_graph(editoast_url: str, infra: int) -> InfraGraph:
     for track in infra["track_sections"]:
         graph.tracks[track["id"]] = track
 
-    for link in infra["track_section_links"]:
-        graph.link(TrackEndpoint.from_dict(link["src"]), TrackEndpoint.from_dict(link["dst"]))
-
     switch_types = dict()
     for switch_type in infra["switch_types"]:
         switch_types[switch_type["id"]] = switch_type

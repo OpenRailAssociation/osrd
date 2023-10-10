@@ -9,7 +9,7 @@
 - `add_point_switch(self, base, left, right, label="switch.X", delay=0) -> Switch`: Add a point.
 - `add_cross_switch(self, north, south, east, west, label="switch.X", delay=0) -> Switch`: Add a cross switch.
 - `add_double_cross_switch(self, north_1, north_2, south_1, south_2, label="switch.X", delay=0) -> Switch`: Add a double cross switch.
-- `add_link(self, begin, end) -> Link`: Add a link.
+- `add_link(self, source, destination) -> Switch`: Add a link switch.
 - `add_operational_point(self, label) -> OperationPoint`: Add an operation point.
 - `generate_routes(self, progressive_release=True) -> Iterable[Route]`: Automatically generate routes, which must then be registered manually. When progressive_release is true, release points are added for all intermediate zones.
 - `register_route(self, route: Route)`: Register a route
@@ -26,7 +26,7 @@
 
 - `add_logical_signal(self, signaling_system: str, next_signaling_systems: List[str], settings: List[str]) -> LogicalSignal`: Add a logical signal to a signal.
 
-### Switch / Link / TrackEndpoint
+### Switch / TrackEndpoint
 
 - `set_coords(self, x, y)`: Set a geometry coordinates of the point
 
