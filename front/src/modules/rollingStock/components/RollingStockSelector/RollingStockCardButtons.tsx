@@ -9,7 +9,6 @@ import {
   updatePowerRestrictionRanges,
   updateRollingStockComfort,
   updateRollingStockID,
-  updateShouldRunPathfinding,
 } from 'reducers/osrdconf';
 import { getRollingStockComfort } from 'reducers/osrdconf/selectors';
 import { comfort2pictogram } from './RollingStockHelpers';
@@ -35,7 +34,6 @@ const RollingStockCardButtons = ({
   const selectRollingStock = () => {
     setOpenedRollingStockCardId(undefined);
     dispatch(updateRollingStockComfort(comfort));
-    dispatch(updateShouldRunPathfinding(true));
     dispatch(updateRollingStockID(id));
     dispatch(updatePowerRestrictionRanges([]));
     dispatch(updatePathfindingID(undefined));

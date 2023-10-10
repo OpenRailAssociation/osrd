@@ -1,12 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { useSelector, useDispatch } from 'react-redux';
-import {
-  deleteVias,
-  permuteVias,
-  updateShouldRunPathfinding,
-  updateViaStopTime,
-} from 'reducers/osrdconf';
+import { deleteVias, permuteVias, updateViaStopTime } from 'reducers/osrdconf';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useDebounce } from 'utils/helpers';
 import { getConf, getVias } from 'reducers/osrdconf/selectors';
@@ -63,7 +58,6 @@ export default function DisplayVias({ zoomToFeaturePoint }: DisplayViasProps) {
   const [indexSelected, setIndexSelected] = useState<number | undefined>(undefined);
 
   const dispatchAndRun = (action: ThunkAction<void, RootState, null, AnyAction>) => {
-    dispatch(updateShouldRunPathfinding(true));
     dispatch(action);
   };
 

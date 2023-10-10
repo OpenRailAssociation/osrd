@@ -36,7 +36,6 @@ export const getScenarioID = (state: RootState) => getSection(state).scenarioID;
 export const getInfraID = (state: RootState) => getSection(state).infraID;
 export const getSwitchTypes = (state: RootState) => getSection(state).switchTypes;
 export const getPathfindingID = (state: RootState) => getSection(state).pathfindingID;
-export const getShouldRunPathfinding = (state: RootState) => getSection(state).shouldRunPathfinding;
 export const getTimetableID = (state: RootState) => getSection(state).timetableID;
 export const getRollingStockID = (state: RootState) => getSection(state).rollingStockID;
 export const getRollingStockComfort = (state: RootState) => getSection(state).rollingStockComfort;

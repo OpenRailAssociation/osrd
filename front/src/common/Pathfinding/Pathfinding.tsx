@@ -65,6 +65,7 @@ interface Action {
     destination?: Partial<PointOnMap>;
     rollingStockID?: number;
     vias?: Partial<PointOnMap>[];
+    pathfindingId?: number;
   };
 }
 
@@ -122,7 +123,11 @@ export function reducer(state: PathfindingState, action: Action): PathfindingSta
     case 'PATHFINDING_PARAM_CHANGED':
     case 'VIAS_CHANGED':
     case 'INFRA_CHANGED': {
-      if (!action.params || state.running) {
+      if (
+        !action.params ||
+        state.running ||
+        (action.type === 'INFRA_CHANGED' && action.params.pathfindingId)
+      ) {
         return state;
       }
       const { origin, destination, rollingStockID } = action.params;
@@ -170,7 +175,6 @@ function init({
 }
 
 interface PathfindingProps {
-  mustUpdate?: boolean;
   zoomToFeature: (lngLat: Position, id?: undefined, source?: undefined) => void;
 }
 
@@ -257,7 +261,7 @@ export function getPathfindingQuery({
   return null;
 }
 
-function Pathfinding({ mustUpdate = true, zoomToFeature }: PathfindingProps) {
+function Pathfinding({ zoomToFeature }: PathfindingProps) {
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const [pathfindingRequest, setPathfindingRequest] =
     useState<ReturnType<typeof postPathfinding>>();
@@ -281,8 +285,12 @@ function Pathfinding({ mustUpdate = true, zoomToFeature }: PathfindingProps) {
   const [isInfraLoaded, setIsInfraLoaded] = useState(false);
   const [reloadCount, setReloadCount] = useState(1);
   const [isInfraError, setIsInfraError] = useState(false);
-  const [postPathfinding] = osrdEditoastApi.usePostPathfindingMutation();
-  const { data: infra } = osrdEditoastApi.useGetInfraByIdQuery(
+
+  const [isPathfindingInitialized, setIsPathfindingInitialized] = useState(false);
+
+  const [postPathfinding] = osrdEditoastApi.endpoints.postPathfinding.useMutation();
+
+  const { data: infra } = osrdEditoastApi.endpoints.getInfraById.useQuery(
     { id: infraID as number },
     {
       refetchOnMountOrArgChange: true,
@@ -323,6 +331,7 @@ function Pathfinding({ mustUpdate = true, zoomToFeature }: PathfindingProps) {
               origin,
               destination,
               rollingStockID,
+              pathfindingId: pathfindingID,
             },
           });
           break;
@@ -426,7 +435,7 @@ function Pathfinding({ mustUpdate = true, zoomToFeature }: PathfindingProps) {
   }, []);
 
   useEffect(() => {
-    if (mustUpdate) {
+    if (isPathfindingInitialized) {
       pathfindingDispatch({
         type: 'VIAS_CHANGED',
         params: {
@@ -437,7 +446,7 @@ function Pathfinding({ mustUpdate = true, zoomToFeature }: PathfindingProps) {
         },
       });
     }
-  }, [mustUpdate, vias]);
+  }, [vias]);
 
   useEffect(() => {
     if (isInfraError) {
@@ -453,7 +462,7 @@ function Pathfinding({ mustUpdate = true, zoomToFeature }: PathfindingProps) {
   }, [pathfindingState.mustBeLaunched, infra]);
 
   useEffect(() => {
-    if (mustUpdate) {
+    if (isPathfindingInitialized) {
       pathfindingDispatch({
         type: 'PATHFINDING_PARAM_CHANGED',
         params: {
@@ -463,7 +472,7 @@ function Pathfinding({ mustUpdate = true, zoomToFeature }: PathfindingProps) {
         },
       });
     }
-  }, [mustUpdate, origin, destination, rollingStockID]);
+  }, [origin, destination, rollingStockID]);
 
   const pathDetailsToggleButton = (
     <button
@@ -506,6 +515,8 @@ function Pathfinding({ mustUpdate = true, zoomToFeature }: PathfindingProps) {
   const isPathFindingActive = Object.values(pathfindingState).every(
     (state) => state === false || state === ''
   );
+
+  useEffect(() => setIsPathfindingInitialized(true), []);
 
   return (
     <div className="pathfinding-state-main-container">

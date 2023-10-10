@@ -12,11 +12,7 @@ import { getOrigin, getDestination, getVias } from 'reducers/osrdconf/selectors'
 import { getMap } from 'reducers/map/selectors';
 import Pathfinding from 'common/Pathfinding/Pathfinding';
 
-type Props = {
-  mustUpdate?: boolean;
-};
-
-function Itinerary({ mustUpdate }: Props) {
+function Itinerary() {
   const origin = useSelector(getOrigin);
   const destination = useSelector(getDestination);
   const vias = useSelector(getVias);
@@ -95,7 +91,7 @@ function Itinerary({ mustUpdate }: Props) {
   return (
     <div className="osrd-config-item">
       <div className="mb-2">
-        <Pathfinding mustUpdate={mustUpdate} zoomToFeature={zoomToFeature} />
+        <Pathfinding zoomToFeature={zoomToFeature} />
       </div>
       <div className="osrd-config-item-container pathfinding-details" data-testid="itinerary">
         <DisplayItinerary
