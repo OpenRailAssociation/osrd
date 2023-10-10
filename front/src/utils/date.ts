@@ -14,3 +14,8 @@ export function formatIsoDate(date: Date) {
 export function dateTimeFrenchFormatting(date: Date) {
   return dayjs.utc(date).tz(dayjs.tz.guess()).format('D MMM YYYY HH:mm').replace(/\./gi, '');
 }
+
+/** check whether a date is included in the range or not */
+export function dateIsInRange(date: Date, range: [Date, Date]) {
+  return date > range[0] && date < range[1];
+}

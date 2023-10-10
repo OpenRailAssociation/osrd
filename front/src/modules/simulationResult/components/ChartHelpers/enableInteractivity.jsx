@@ -17,6 +17,7 @@ import {
 } from 'modules/simulationResult/components/simulationResultsConsts';
 import drawGuideLines from 'modules/simulationResult/components/ChartHelpers/drawGuideLines';
 import { store } from 'Store';
+import { dateIsInRange } from 'utils/date';
 
 export const displayGuide = (chart, opacity) => {
   if (chart.svg) {
@@ -162,11 +163,9 @@ const updateChart = (chart, keyValues, rotate, event) => {
 // Factorizes func to update VerticalLine on 3 charts: SpaceTime, SpeedSpaceChart, SpaceCurvesSlopes
 export const traceVerticalLine = (
   chart,
-  dataSimulation, // not used
   keyValues,
   listValues,
   positionValues,
-  refValueName, // not used
   rotate,
   timePosition
 ) => {
@@ -296,7 +295,7 @@ const enableInteractivity = (
         const positionLocal = rotate
           ? chart.y.invert(pointer(event, event.currentTarget)[1])
           : chart.x.invert(pointer(event, event.currentTarget)[0]);
-        const timePositionLocal = interpolateOnPosition(dataSimulation, keyValues, positionLocal);
+        const timePositionLocal = interpolateOnPosition(dataSimulation, positionLocal);
         const immediatePositionsValuesForPointer = interpolateOnTime(
           dataSimulation,
           keyValues,
@@ -359,8 +358,8 @@ export const isolatedEnableInteractivity = (
   rotate,
   setChart,
   simulationIsPlaying,
-  dispatchUpdateMustRedraw,
-  dispatchUpdateTimePositionValues
+  dispatchUpdateTimePositionValues,
+  chartDimensions
 ) => {
   if (!chart) return;
 
@@ -381,10 +380,7 @@ export const isolatedEnableInteractivity = (
     })
     .filter(
       (event) => (event.button === 0 || event.button === 1) && (event.ctrlKey || event.shiftKey)
-    )
-    .on('end', () => {
-      dispatchUpdateMustRedraw(true);
-    });
+    );
 
   let debounceTimeoutId;
 
@@ -417,7 +413,7 @@ export const isolatedEnableInteractivity = (
         const positionLocal = rotate
           ? chart.y.invert(pointer(event, event.currentTarget)[1])
           : chart.x.invert(pointer(event, event.currentTarget)[0]);
-        timePositionLocal = interpolateOnPosition(selectedTrainData, keyValues, positionLocal);
+        timePositionLocal = interpolateOnPosition(selectedTrainData, positionLocal);
         immediatePositionsValuesForPointer = interpolateOnTime(
           selectedTrainData,
           keyValues,
@@ -441,7 +437,7 @@ export const isolatedEnableInteractivity = (
       }
 
       debounceUpdateTimePositionValues(timePositionLocal, 15);
-      if (chart?.svg) {
+      if (chart?.svg && dateIsInRange(timePositionLocal, chartDimensions)) {
         const verticalMark = pointer(event, event.currentTarget)[0];
         const horizontalMark = pointer(event, event.currentTarget)[1];
         chart.svg.selectAll('#vertical-line').attr('x1', verticalMark).attr('x2', verticalMark);

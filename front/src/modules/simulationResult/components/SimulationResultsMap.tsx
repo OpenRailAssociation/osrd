@@ -13,7 +13,7 @@ import { keyBy } from 'lodash';
 
 import { updateTimePositionValues } from 'reducers/osrdsimulation/actions';
 import { getPresentSimulation, getSelectedTrain } from 'reducers/osrdsimulation/selectors';
-import { PositionSpeedTime, Train } from 'reducers/osrdsimulation/types';
+import { Train } from 'reducers/osrdsimulation/types';
 import { updateViewport, Viewport } from 'reducers/map';
 import { RootState } from 'reducers';
 import { TrainPosition } from 'modules/simulationResult/components/SimulationResultsMap/types';
@@ -150,11 +150,7 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
         const start = point(startCoordinates);
         const sliced = lineSlice(start, cursorPoint, line);
         const positionLocal = lineLength(sliced, { units: 'kilometers' }) * 1000;
-        const keyValues = ['position', 'speed'] as const;
-        const timePositionLocal = interpolateOnPosition<
-          (typeof keyValues)[number],
-          PositionSpeedTime
-        >({ speed: train.speeds }, ['position', 'speed'] as const, positionLocal);
+        const timePositionLocal = interpolateOnPosition({ speed: train.speeds }, positionLocal);
         if (timePositionLocal instanceof Date) {
           dispatch(updateTimePositionValues(timePositionLocal));
         } else {

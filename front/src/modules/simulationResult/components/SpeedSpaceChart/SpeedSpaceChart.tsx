@@ -1,4 +1,3 @@
-import { noop } from 'lodash';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { CgLoadbar } from 'react-icons/cg';
@@ -29,9 +28,11 @@ import {
   updateTimePositionValues,
 } from 'reducers/osrdsimulation/actions';
 import { SimulationReport } from 'common/api/osrdEditoastApi';
+import { dateIsInRange } from 'utils/date';
 import ElectricalProfilesLegend from './ElectricalProfilesLegend';
 import prepareData from './prepareData';
 import SpeedSpaceSettings from './SpeedSpaceSettings';
+import { interpolateOnPosition } from '../ChartHelpers/ChartHelpers';
 
 const CHART_ID = 'SpeedSpaceChart';
 const CHART_MIN_HEIGHT = 250;
@@ -91,6 +92,16 @@ export default function SpeedSpaceChart({
   };
 
   const trainSimulation = useMemo(() => prepareData(selectedTrain), [selectedTrain]);
+
+  const timeScaleRange: [Date, Date] = useMemo(() => {
+    if (chart) {
+      const spaceScaleRange = rotate ? chart.y.domain() : chart.x.domain();
+      return spaceScaleRange.map((position) =>
+        interpolateOnPosition(trainSimulation, position)
+      ) as [Date, Date];
+    }
+    return [new Date(), new Date()];
+  }, [chart]);
 
   /**
    * DRAW AND REDRAW TRAIN
@@ -173,8 +184,8 @@ export default function SpeedSpaceChart({
       rotate,
       setChart,
       simulationIsPlaying,
-      noop,
-      dispatchUpdateTimePositionValues
+      dispatchUpdateTimePositionValues,
+      timeScaleRange
     );
   }, [chart]);
 
@@ -185,16 +196,16 @@ export default function SpeedSpaceChart({
    * the guidelines and pointers are updated on the SpeedSpaceChart too
    */
   useEffect(() => {
-    traceVerticalLine(
-      chart,
-      trainSimulation,
-      SPEED_SPACE_CHART_KEY_VALUES,
-      LIST_VALUES_NAME_SPEED_SPACE,
-      positionValues,
-      'speed',
-      rotate,
-      timePosition
-    );
+    if (dateIsInRange(timePosition, timeScaleRange)) {
+      traceVerticalLine(
+        chart,
+        SPEED_SPACE_CHART_KEY_VALUES,
+        LIST_VALUES_NAME_SPEED_SPACE,
+        positionValues,
+        rotate,
+        timePosition
+      );
+    }
   }, [chart, positionValues, timePosition]);
 
   /**
