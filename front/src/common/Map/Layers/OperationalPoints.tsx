@@ -7,6 +7,7 @@ import { Theme } from 'types';
 import { MAP_URL } from 'common/Map/const';
 
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
+import configRKLabelLayer from 'common/Map/Layers/configRKLabelLayer';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 
 interface PlatformProps {
@@ -54,7 +55,6 @@ export default function OperationalPoints(props: PlatformProps) {
       'text-ignore-placement': false,
       'text-offset': [0.75, 0.1],
       'text-max-width': 32,
-      visibility: 'visible',
     },
     paint: {
       'text-color': colors.op.text,
@@ -79,7 +79,6 @@ export default function OperationalPoints(props: PlatformProps) {
       'text-ignore-placement': true,
       'text-offset': [0.85, 1.1],
       'text-max-width': 32,
-      visibility: 'visible',
     },
     paint: {
       'text-color': colors.op.minitext,
@@ -112,7 +111,6 @@ export default function OperationalPoints(props: PlatformProps) {
       'text-allow-overlap': true,
       'text-ignore-placement': false,
       'text-offset': [0.75, 0.1],
-      visibility: 'visible',
     },
     paint: {
       'text-color': colors.op.text,
@@ -143,6 +141,15 @@ export default function OperationalPoints(props: PlatformProps) {
         <OrderedLayer
           {...yardName}
           id="chartis/osrd_operational_point_yardname/geo"
+          layerOrder={layerOrder}
+        />
+        <OrderedLayer
+          {...configRKLabelLayer({
+            colors,
+            minzoom: 9.5,
+            sourceLayer: 'operational_points',
+          })}
+          id={`chartis/osrd_operational_point_rk/${geomType}`}
           layerOrder={layerOrder}
         />
       </Source>

@@ -6,6 +6,7 @@ import { RootState } from 'reducers';
 import { Theme, OmitLayer } from 'types';
 import { MAP_URL } from 'common/Map/const';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
+import configRKLabelLayer from './configRKLabelLayer';
 
 export function getBufferStopsLayerProps(params: { sourceTable?: string }): OmitLayer<SymbolLayer> {
   const res: OmitLayer<SymbolLayer> = {
@@ -23,7 +24,6 @@ export function getBufferStopsLayerProps(params: { sourceTable?: string }): Omit
       'icon-allow-overlap': false,
       'icon-ignore-placement': false,
       'text-allow-overlap': false,
-      visibility: 'visible',
     },
     paint: {
       'text-color': '#555',
@@ -42,19 +42,28 @@ interface BufferStopsProps {
   layerOrder: number;
 }
 
-const BufferStops: FC<BufferStopsProps> = ({ layerOrder }) => {
+const BufferStops: FC<BufferStopsProps> = ({ colors, layerOrder }) => {
   const infraID = useSelector(getInfraID);
   const { layersSettings } = useSelector((state: RootState) => state.map);
 
   return layersSettings.bufferstops ? (
     <Source
-      id="osrd_bufferstoplayer_geo"
+      id="osrd_bufferstop_geo"
       type="vector"
       url={`${MAP_URL}/layer/buffer_stops/mvt/geo/?infra=${infraID}`}
     >
       <OrderedLayer
         {...getBufferStopsLayerProps({ sourceTable: 'buffer_stops' })}
-        id="chartis/osrd_bufferstoplayer/geo"
+        id="chartis/osrd_bufferstop/geo"
+        layerOrder={layerOrder}
+      />
+      <OrderedLayer
+        {...configRKLabelLayer({
+          colors,
+          minzoom: 12,
+          sourceLayer: 'buffer_stops',
+        })}
+        id="chartis/osrd_bufferstop_rk/geo"
         layerOrder={layerOrder}
       />
     </Source>

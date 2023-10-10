@@ -36,31 +36,19 @@ const colors: Record<string, Theme> = {
       text: '#555555',
       halo: '#eee',
     },
-    psl: {
-      pointtext: '#5b5b5b',
-      pointhalo: '#ffffff',
-      detailtext: '#555555',
-      detailhalo: '#ffffff',
-      text: '#4d4f53',
-      halo: '#ffffff',
-    },
     mapmarker: {
       text: '#0088ce',
       circle: '#0088ce',
+    },
+    neutral_sections: {
+      lower_pantograph: '#ff0000',
+      switch_off: '#000000',
     },
     op: {
       circle: '#82be00',
       text: '#202258',
       minitext: '#333',
       halo: '#eee',
-    },
-    sign: {
-      text: '#333333',
-      halo: '#ffffff',
-    },
-    pk: {
-      circle: '#162873',
-      text: '#142c90',
     },
     platform: {
       fill: '#e05206',
@@ -81,9 +69,13 @@ const colors: Record<string, Theme> = {
       color750V: '#86cf00',
       colorOther: '#000000',
     },
-    neutral_sections: {
-      lower_pantograph: '#ff0000',
-      switch_off: '#000000',
+    psl: {
+      pointtext: '#5b5b5b',
+      pointhalo: '#ffffff',
+      detailtext: '#555555',
+      detailhalo: '#ffffff',
+      text: '#4d4f53',
+      halo: '#ffffff',
     },
     radio: {
       text: '#5596c8',
@@ -101,6 +93,15 @@ const colors: Record<string, Theme> = {
     },
     routes: {
       text: '#e05206',
+      halo: '#ffffff',
+    },
+    rk: {
+      circle: '#162873',
+      text: '#4d4f53',
+      halo: '#ffffff',
+    },
+    sign: {
+      text: '#333333',
       halo: '#ffffff',
     },
     signal: {
@@ -187,31 +188,19 @@ const colors: Record<string, Theme> = {
       text: '#4895ef',
       halo: '#0b011d',
     },
-    psl: {
-      pointtext: '#eeeeee',
-      pointhalo: '#3a86ff',
-      detailtext: '#3a86ff',
-      detailhalo: '#0b011d',
-      text: '#3a86ff',
-      halo: '#000000',
-    },
     mapmarker: {
       text: '#ffaa39',
       circle: '#ffaa39',
+    },
+    neutral_sections: {
+      lower_pantograph: '#ff0000',
+      switch_off: '#000000',
     },
     op: {
       circle: '#82be00',
       text: '#4895ef',
       minitext: '#4895ef',
       halo: '#0b011d',
-    },
-    sign: {
-      text: '#eeeeee',
-      halo: '#333333',
-    },
-    pk: {
-      circle: '#8338ec',
-      text: '#8338ec',
     },
     platform: {
       fill: '#f1c453',
@@ -232,9 +221,13 @@ const colors: Record<string, Theme> = {
       color750V: '#86cf00',
       colorOther: '#FFFFFF',
     },
-    neutral_sections: {
-      lower_pantograph: '#ff0000',
-      switch_off: '#000000',
+    psl: {
+      pointtext: '#eeeeee',
+      pointhalo: '#3a86ff',
+      detailtext: '#3a86ff',
+      detailhalo: '#0b011d',
+      text: '#3a86ff',
+      halo: '#000000',
     },
     radio: {
       text: '#5596c8',
@@ -250,9 +243,18 @@ const colors: Record<string, Theme> = {
     railyard: {
       text: '#8095c3',
     },
+    rk: {
+      circle: '#8338ec',
+      text: '#8338ec',
+      halo: '#8338ec',
+    },
     routes: {
       text: '#e05206',
       halo: '#ffffff',
+    },
+    sign: {
+      text: '#eeeeee',
+      halo: '#333333',
     },
     signal: {
       text: '#eeeeee',
@@ -330,31 +332,19 @@ const colors: Record<string, Theme> = {
       text: bpLight,
       halo: bpBg,
     },
-    psl: {
-      pointtext: bpLight,
-      pointhalo: bpBg,
-      detailtext: bpLight,
-      detailhalo: bpBg,
-      text: bpLight,
-      halo: bpBg,
-    },
     mapmarker: {
       text: bpMedium,
       circle: bpLight,
+    },
+    neutral_sections: {
+      lower_pantograph: '#ff0000',
+      switch_off: '#000000',
     },
     op: {
       circle: bpLight,
       text: bpLight,
       minitext: bpLight,
       halo: bpBg,
-    },
-    sign: {
-      text: bpLight,
-      halo: bpBg,
-    },
-    pk: {
-      circle: bpLight,
-      text: bpLight,
     },
     platform: {
       fill: bpMedium,
@@ -375,9 +365,13 @@ const colors: Record<string, Theme> = {
       color750V: bpLight,
       colorOther: bpLight,
     },
-    neutral_sections: {
-      lower_pantograph: '#ff0000',
-      switch_off: '#000000',
+    psl: {
+      pointtext: bpLight,
+      pointhalo: bpBg,
+      detailtext: bpLight,
+      detailhalo: bpBg,
+      text: bpLight,
+      halo: bpBg,
     },
     radio: {
       text: bpMedium,
@@ -393,7 +387,16 @@ const colors: Record<string, Theme> = {
     railyard: {
       text: bpLight,
     },
+    rk: {
+      circle: bpLight,
+      text: bpLight,
+      halo: bpLight,
+    },
     routes: {
+      text: bpLight,
+      halo: bpBg,
+    },
+    sign: {
       text: bpLight,
       halo: bpBg,
     },
