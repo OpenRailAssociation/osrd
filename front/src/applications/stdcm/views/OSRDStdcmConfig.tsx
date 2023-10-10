@@ -107,7 +107,6 @@ export default function OSRDConfig({
                   disabled={disabledApplyButton}
                   onClick={() => {
                     setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.pending);
-                    setShowMap(false);
                   }}
                 >
                   {t('operationalStudies/manageTrainSchedule:apply')}
