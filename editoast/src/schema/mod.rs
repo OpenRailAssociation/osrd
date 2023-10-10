@@ -340,8 +340,8 @@ pub struct Sign {
     pub side: Side,
     #[serde(rename = "type")]
     pub sign_type: NonBlankString,
-    pub value: Option<NonBlankString>,
-    pub kp: Option<NonBlankString>,
+    pub value: String,
+    pub kp: String,
 }
 
 #[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq)]

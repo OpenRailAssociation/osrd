@@ -968,8 +968,8 @@
                     "type": "number"
                 },
                 "kp": {
+                    "default": "",
                     "description": "Kilometric point of the sign",
-                    "minLength": 1,
                     "title": "Kp",
                     "type": "string"
                 },
@@ -1002,25 +1002,16 @@
                     "type": "string"
                 },
                 "value": {
-                    "anyOf": [
-                        {
-                            "minLength": 1,
-                            "type": "string"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "default": null,
+                    "default": "",
                     "description": "If the sign is an announcement, precise the value(s)",
-                    "title": "Value"
+                    "title": "Value",
+                    "type": "string"
                 }
             },
             "required": [
                 "track",
                 "position",
-                "type",
-                "kp"
+                "type"
             ],
             "title": "Sign",
             "type": "object"
