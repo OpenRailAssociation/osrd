@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { FaLongArrowAltUp, FaLongArrowAltDown, FaTrash, FaMinus } from 'react-icons/fa';
 
-import { replaceVias, updateShouldRunPathfinding } from 'reducers/osrdconf';
+import { replaceVias } from 'reducers/osrdconf';
 import { getSuggeredVias, getVias } from 'reducers/osrdconf/selectors';
 
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
@@ -39,7 +39,6 @@ export default function ModalSugerredVias({
   const { closeModal } = useContext(ModalContext);
 
   const removeViaFromPath = (step: ArrayElement<Path['steps']>) => {
-    dispatch(updateShouldRunPathfinding(true));
     dispatch(
       replaceVias(
         vias.filter(
@@ -60,7 +59,6 @@ export default function ModalSugerredVias({
         }
         return [];
       });
-      dispatch(updateShouldRunPathfinding(true));
       dispatch(replaceVias(newVias));
     }
   };

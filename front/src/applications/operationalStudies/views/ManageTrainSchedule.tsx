@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -13,10 +13,8 @@ import Allowances from 'modules/trainschedule/components/ManageTrainSchedule/All
 import {
   getPathfindingID,
   getRollingStockID,
-  getShouldRunPathfinding,
   getTrainScheduleIDsToModify,
 } from 'reducers/osrdconf/selectors';
-import { updateShouldRunPathfinding } from 'reducers/osrdconf';
 import {
   RollingStock2Img,
   RollingStockSelector,
@@ -32,8 +30,6 @@ import { isElectric } from 'modules/rollingStock/helpers/utils';
 
 export default function ManageTrainSchedule() {
   const dispatch = useDispatch();
-  const shouldRunPathfinding = useSelector(getShouldRunPathfinding);
-  const [mustUpdatePathfinding, setMustUpdatePathfinding] = useState<boolean>(false);
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const rollingStockID = useSelector(getRollingStockID);
   const pathFindingID = useSelector(getPathfindingID);
@@ -110,7 +106,7 @@ export default function ManageTrainSchedule() {
     content: (
       <div className="osrd-config-item-container-map" data-testid="map">
         <span className="floating-itinerary">
-          <Itinerary mustUpdate={mustUpdatePathfinding} />
+          <Itinerary />
         </span>
         <Map />
       </div>
@@ -169,17 +165,6 @@ export default function ManageTrainSchedule() {
           }
         });
   }, [trainScheduleIDsToModify]);
-
-  useEffect(() => {
-    setMustUpdatePathfinding(false);
-    dispatch(updateShouldRunPathfinding(false));
-  }, []);
-
-  useEffect(() => {
-    if (shouldRunPathfinding && mustUpdatePathfinding === false) {
-      setMustUpdatePathfinding(true);
-    }
-  }, [shouldRunPathfinding]);
 
   return (
     <>

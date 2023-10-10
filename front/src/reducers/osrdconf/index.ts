@@ -37,7 +37,6 @@ export const UPDATE_SCENARIO_ID = 'osrdconf/UPDATE_SCENARIO_ID';
 export const UPDATE_INFRA_ID = 'osrdconf/UPDATE_INFRA_ID';
 export const UPDATE_SWITCH_TYPES = 'osrdconf/UPDATE_SWITCH_TYPES';
 export const UPDATE_PATHFINDING_ID = 'osrdconf/UPDATE_PATHFINDING_ID';
-export const UPDATE_SHOULD_RUN_PATHFINDING = 'osrdconf/UPDATE_SHOULD_RUN_PATHFINDING';
 export const UPDATE_TIMETABLE_ID = 'osrdconf/UPDATE_TIMETABLE_ID';
 export const UPDATE_ROLLINGSTOCK_ID = 'osrdconf/UPDATE_ROLLINGSTOCK_ID';
 export const UPDATE_ROLLINGSTOCK_COMFORT = 'osrdconf/UPDATE_ROLLINGSTOCK_COMFORT';
@@ -92,7 +91,6 @@ const defaultCommonConf = {
   origin: undefined,
   initialSpeed: 0,
   departureTime: '08:00:00',
-  shouldRunPathfinding: true,
   originDate: formatIsoDate(new Date()),
   originTime: '08:00:00',
   originUpperBoundDate: formatIsoDate(new Date()),
@@ -186,9 +184,6 @@ export default function reducer(inputState: OsrdMultiConfState | undefined, acti
         draft[section].pathfindingID = action.pathfindingID;
         // reset power restriction ranges
         draft[section].powerRestrictionRanges = [];
-        break;
-      case UPDATE_SHOULD_RUN_PATHFINDING:
-        draft[section].shouldRunPathfinding = action.shouldRunPathfinding;
         break;
       case UPDATE_TIMETABLE_ID:
         draft[section].timetableID = action.timetableID;
@@ -457,14 +452,6 @@ export function updatePathfindingID(pathfindingID?: number) {
     dispatch({
       type: UPDATE_PATHFINDING_ID,
       pathfindingID,
-    });
-  };
-}
-export function updateShouldRunPathfinding(shouldRunPathfinding: boolean) {
-  return (dispatch: Dispatch) => {
-    dispatch({
-      type: UPDATE_SHOULD_RUN_PATHFINDING,
-      shouldRunPathfinding,
     });
   };
 }
