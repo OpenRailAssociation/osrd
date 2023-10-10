@@ -11,7 +11,6 @@ mod signal;
 mod speed_section;
 mod switch;
 mod track_section;
-mod track_section_link;
 
 use async_trait::async_trait;
 use buffer_stop::BufferStopLayer;
@@ -25,7 +24,6 @@ use signal::SignalLayer;
 use speed_section::SpeedSectionLayer;
 use switch::SwitchLayer;
 use track_section::TrackSectionLayer;
-use track_section_link::TrackSectionLinkLayer;
 
 use crate::error::Result;
 use crate::infra_cache::InfraCache;
@@ -99,7 +97,6 @@ pub async fn refresh_all(
         CatenaryLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
         DetectorLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
         OperationalPointLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
-        TrackSectionLinkLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
         PSLSignLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
         NeutralSectionLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
     )?;
@@ -120,7 +117,6 @@ pub async fn clear_all(conn: &mut PgConnection, infra: i64) -> Result<()> {
     CatenaryLayer::clear(conn, infra).await?;
     DetectorLayer::clear(conn, infra).await?;
     OperationalPointLayer::clear(conn, infra).await?;
-    TrackSectionLinkLayer::clear(conn, infra).await?;
     PSLSignLayer::clear(conn, infra).await?;
     ErrorLayer::clear(conn, infra).await?;
     NeutralSectionLayer::clear(conn, infra).await?;
@@ -142,7 +138,6 @@ pub async fn update_all(
     CatenaryLayer::update(conn, infra, operations, infra_cache).await?;
     DetectorLayer::update(conn, infra, operations, infra_cache).await?;
     OperationalPointLayer::update(conn, infra, operations, infra_cache).await?;
-    TrackSectionLinkLayer::update(conn, infra, operations, infra_cache).await?;
     PSLSignLayer::update(conn, infra, operations, infra_cache).await?;
     ErrorLayer::update(conn, infra, operations, infra_cache).await?;
     NeutralSectionLayer::update(conn, infra, operations, infra_cache).await?;

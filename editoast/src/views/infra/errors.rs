@@ -135,7 +135,7 @@ mod tests {
     async fn list_errors_get(#[future] empty_infra: TestFixture<Infra>) {
         let empty_infra = empty_infra.await;
 
-        let error_type = "overlapping_track_links";
+        let error_type = "overlapping_catenaries";
         let level = "warnings";
 
         let app = create_test_service().await;

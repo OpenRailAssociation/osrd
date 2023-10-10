@@ -205,20 +205,6 @@ diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
 
-    infra_layer_track_section_link (id) {
-        id -> Int8,
-        #[max_length = 255]
-        obj_id -> Varchar,
-        geographic -> Geometry,
-        schematic -> Geometry,
-        infra_id -> Int8,
-    }
-}
-
-diesel::table! {
-    use diesel::sql_types::*;
-    use postgis_diesel::sql_types::*;
-
     infra_object_buffer_stop (id) {
         id -> Int8,
         #[max_length = 255]
@@ -350,19 +336,6 @@ diesel::table! {
     use postgis_diesel::sql_types::*;
 
     infra_object_track_section (id) {
-        id -> Int8,
-        #[max_length = 255]
-        obj_id -> Varchar,
-        data -> Jsonb,
-        infra_id -> Int8,
-    }
-}
-
-diesel::table! {
-    use diesel::sql_types::*;
-    use postgis_diesel::sql_types::*;
-
-    infra_object_track_section_link (id) {
         id -> Int8,
         #[max_length = 255]
         obj_id -> Varchar,
@@ -670,7 +643,6 @@ diesel::joinable!(infra_layer_signal -> infra (infra_id));
 diesel::joinable!(infra_layer_speed_section -> infra (infra_id));
 diesel::joinable!(infra_layer_switch -> infra (infra_id));
 diesel::joinable!(infra_layer_track_section -> infra (infra_id));
-diesel::joinable!(infra_layer_track_section_link -> infra (infra_id));
 diesel::joinable!(infra_object_buffer_stop -> infra (infra_id));
 diesel::joinable!(infra_object_catenary -> infra (infra_id));
 diesel::joinable!(infra_object_detector -> infra (infra_id));
@@ -682,7 +654,6 @@ diesel::joinable!(infra_object_speed_section -> infra (infra_id));
 diesel::joinable!(infra_object_switch -> infra (infra_id));
 diesel::joinable!(infra_object_switch_type -> infra (infra_id));
 diesel::joinable!(infra_object_track_section -> infra (infra_id));
-diesel::joinable!(infra_object_track_section_link -> infra (infra_id));
 diesel::joinable!(pathfinding -> infra (infra_id));
 diesel::joinable!(project -> document (image_id));
 diesel::joinable!(rolling_stock_livery -> document (compound_image_id));
@@ -719,7 +690,6 @@ diesel::allow_tables_to_appear_in_same_query!(
     infra_layer_speed_section,
     infra_layer_switch,
     infra_layer_track_section,
-    infra_layer_track_section_link,
     infra_object_buffer_stop,
     infra_object_catenary,
     infra_object_detector,
@@ -731,7 +701,6 @@ diesel::allow_tables_to_appear_in_same_query!(
     infra_object_switch,
     infra_object_switch_type,
     infra_object_track_section,
-    infra_object_track_section_link,
     pathfinding,
     project,
     rolling_stock,

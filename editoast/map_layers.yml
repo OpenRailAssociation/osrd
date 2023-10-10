@@ -77,23 +77,6 @@ layers:
         where:
           - speed_section.data @? '$.extensions.psl_sncf.z'
 
-  track_section_links:
-    table_name: infra_layer_track_section_link
-    id_field: id
-    views:
-      geo:
-        on_field: geographic
-        cache_duration: 3600
-        data_expr: track_section_link.data
-        joins:
-          - inner join infra_object_track_section_link track_section_link on track_section_link.obj_id = layer.obj_id and track_section_link.infra_id = layer.infra_id
-      sch:
-        on_field: schematic
-        cache_duration: 3600
-        data_expr: track_section_link.data
-        joins:
-          - inner join infra_object_track_section_link track_section_link on track_section_link.obj_id = layer.obj_id and track_section_link.infra_id = layer.infra_id
-
   switches:
     table_name: infra_layer_switch
     id_field: id

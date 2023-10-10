@@ -78,16 +78,16 @@
         }
     },
     {
-        "id": "track_section_link",
+        "id": "link",
         "ports": [
-            "start",
-            "end"
+            "source",
+            "destination"
         ],
         "groups": {
-            "SRC_DST": [
+            "LINK": [
                 {
-                    "src": "start",
-                    "dst": "end"
+                    "src": "source",
+                    "dst": "destination"
                 }
             ]
         }

@@ -72,7 +72,6 @@
         "out_of_range": "Valeur invalide (hors intervalle)",
         "overlapping_speed_sections": "Superposition de limites de vitesse",
         "overlapping_switches": "Superposition d'aiguilles",
-        "overlapping_track_links": "Superposition des liens",
         "unknown_port_name": "Nom de port inconnu",
         "unused_port": "Port non utilisé"
       },

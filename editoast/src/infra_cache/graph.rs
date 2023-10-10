@@ -9,20 +9,14 @@ pub struct Graph<'a> {
     /// The graph of links between `TrackEndpoint`.
     /// The first key is the source `TrackEndpoint`.
     /// The second key is the group of the link.
-    ///   If its a simple track section link then the group is `None`.
-    ///   If its a switch then the group is the group of the switch.
-    links: HashMap<&'a TrackEndpoint, HashMap<Option<&'a Identifier>, &'a TrackEndpoint>>,
+    /// The group is the group of the switch.
+    links: HashMap<&'a TrackEndpoint, HashMap<&'a Identifier, &'a TrackEndpoint>>,
     switches: HashMap<&'a TrackEndpoint, &'a SwitchCache>,
 }
 
 impl<'a> Graph<'a> {
     /// Add a new link to the graph given two `TrackEndpoint`.
-    fn link(
-        &mut self,
-        group: Option<&'a Identifier>,
-        src: &'a TrackEndpoint,
-        dst: &'a TrackEndpoint,
-    ) {
+    fn link(&mut self, group: &'a Identifier, src: &'a TrackEndpoint, dst: &'a TrackEndpoint) {
         self.links.entry(src).or_default().insert(group, dst);
     }
 
@@ -44,19 +38,11 @@ impl<'a> Graph<'a> {
                     let Some(dst) = switch.ports.get::<String>(&connection.dst) else {
                         continue;
                     };
-                    graph.link(Some(group), src, dst);
-                    graph.link(Some(group), dst, src);
+                    graph.link(group, src, dst);
+                    graph.link(group, dst, src);
                     graph.switches.insert(src, switch);
                     graph.switches.insert(dst, switch);
                 }
-            }
-        }
-
-        for link in infra_cache.track_section_links().values() {
-            let link = link.unwrap_track_section_link();
-            if !graph.links.contains_key(&link.src) && !graph.links.contains_key(&link.dst) {
-                graph.link(None, &link.src, &link.dst);
-                graph.link(None, &link.dst, &link.src);
             }
         }
 
@@ -74,11 +60,10 @@ impl<'a> Graph<'a> {
     }
 
     /// Given an endpoint and a group retrieve the neighbour endpoint.
-    /// If group is `None` then the searched neighbour endpoint is the one linked by a simple track section link.
     pub fn get_neighbour(
         &'a self,
         track_endpoint: &TrackEndpoint,
-        group: Option<&Identifier>,
+        group: &Identifier,
     ) -> Option<&'a TrackEndpoint> {
         self.links
             .get(&track_endpoint)
@@ -87,15 +72,14 @@ impl<'a> Graph<'a> {
 
     /// Given an endpoint return a list of groups.
     /// If the endpoint has no neightbours return an empty `Vec`.
-    /// If the endpoint has as simple track section link return a `Vec` with a single `None` element.
     /// Otherwise returns a `Vec` with all the switch groups.
     pub fn get_neighbour_groups(
         &'a self,
         track_endpoint: &'a TrackEndpoint,
-    ) -> Vec<Option<&'a Identifier>> {
+    ) -> Vec<&'a Identifier> {
         self.links
             .get(&track_endpoint)
-            .map(|groups| groups.keys().map(|g| g.as_deref()).collect())
+            .map(|groups| groups.keys().cloned().collect())
             .unwrap_or_default()
     }
 }
@@ -133,21 +117,22 @@ mod tests {
         let track_c_begin = create_track_endpoint(Endpoint::Begin, "C");
         let track_d_begin = create_track_endpoint(Endpoint::Begin, "D");
 
+        let link: Identifier = "LINK".into();
         let left: Identifier = "LEFT".into();
         let right: Identifier = "RIGHT".into();
 
         let res = HashMap::from([
-            ((&track_a_end, None), &track_b_begin),
-            ((&track_b_begin, None), &track_a_end),
-            ((&track_b_end, Some(&left)), &track_c_begin),
-            ((&track_b_end, Some(&right)), &track_d_begin),
-            ((&track_c_begin, Some(&left)), &track_b_end),
-            ((&track_d_begin, Some(&right)), &track_b_end),
+            ((&track_a_end, &link), &track_b_begin),
+            ((&track_b_begin, &link), &track_a_end),
+            ((&track_b_end, &left), &track_c_begin),
+            ((&track_b_end, &right), &track_d_begin),
+            ((&track_c_begin, &left), &track_b_end),
+            ((&track_d_begin, &right), &track_b_end),
         ]);
 
         for track in 'A'..='D' {
             for endpoint in [Endpoint::Begin, Endpoint::End] {
-                for group in [None, Some(&left), Some(&right)] {
+                for group in [&link, &left, &right] {
                     let track_endpoint = create_track_endpoint(endpoint, track.to_string());
                     let branch = graph.get_neighbour(&track_endpoint, group);
                     let expected_branch = res.get(&(&track_endpoint, group)).cloned();
@@ -170,7 +155,8 @@ mod tests {
         assert!(graph.get_switch(&track_a_begin).is_none());
 
         let track_a_end = create_track_endpoint(Endpoint::End, "A");
-        assert!(graph.get_switch(&track_a_end).is_none());
+        let link = graph.get_switch(&track_a_end).unwrap();
+        assert_eq!(link.obj_id, "tracklink".to_string());
     }
 
     #[test]
@@ -181,8 +167,8 @@ mod tests {
         let track_b_end = create_track_endpoint(Endpoint::End, "B");
         let groups = graph.get_neighbour_groups(&track_b_end);
         assert_eq!(groups.len(), 2);
-        assert!(groups.contains(&Some(&"LEFT".into())));
-        assert!(groups.contains(&Some(&"RIGHT".into())));
+        assert!(groups.contains(&&"LEFT".into()));
+        assert!(groups.contains(&&"RIGHT".into()));
 
         let track_a_begin = create_track_endpoint(Endpoint::Begin, "A");
         let groups = graph.get_neighbour_groups(&track_a_begin);
@@ -191,6 +177,6 @@ mod tests {
         let track_a_end = create_track_endpoint(Endpoint::End, "A");
         let groups = graph.get_neighbour_groups(&track_a_end);
         assert_eq!(groups.len(), 1);
-        assert!(groups.contains(&None));
+        assert!(groups.contains(&&"LINK".into()));
     }
 }

@@ -8,7 +8,7 @@ from pydantic.fields import FieldInfo
 
 ALL_OBJECT_TYPES = []
 
-RAILJSON_INFRA_VERSION_TYPE = Literal["3.4.3"]
+RAILJSON_INFRA_VERSION_TYPE = Literal["3.4.4"]
 RAILJSON_INFRA_VERSION = get_args(RAILJSON_INFRA_VERSION_TYPE)[0]
 
 # Traits
@@ -259,20 +259,6 @@ class Switch(BaseObjectTrait):
     )
 
 
-class TrackSectionLink(BaseObjectTrait):
-    """
-    Track section links is used to connect and link two track sections.
-    A track section link is characterized by its identifier.
-    """
-
-    src: TrackEndpoint = Field(
-        description="Starting track section, relative position in track section is defined by its end point"
-    )
-    dst: TrackEndpoint = Field(
-        description="Finish track section, relative position in track section is defined by its end point"
-    )
-
-
 class SpeedSection(BaseObjectTrait):
     """
     Speed sections are recognized by their identifiers and are in meters per second.
@@ -474,7 +460,6 @@ class RailJsonInfra(BaseModel):
     routes: List[Route] = Field(description="Routes of the infra")
     switch_types: List[SwitchType] = Field(description="Switch types of the infra")
     switches: List[Switch] = Field(description="Switches of the infra")
-    track_section_links: List[TrackSectionLink] = Field(description="Track section links of the infra")
     track_sections: List[TrackSection] = Field(description="Track sections of the infra")
     speed_sections: List[SpeedSection] = Field(description="Speed sections of the infra")
     catenaries: List[Catenary] = Field(description="Catenaries of the infra")

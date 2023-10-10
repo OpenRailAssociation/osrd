@@ -39,7 +39,7 @@ Launches end to end tests.
 
 It requires:
 
-- Backend containers to be up: `docker compose build core redis api editoast postgres`
+- Backend containers to be up: `docker compose build core redis editoast postgres`
 - Running front
 - [`poetry`](https://python-poetry.org/docs/#installation) to be installed
 

@@ -22,7 +22,7 @@ public class RJSInfra {
             .build()
             .adapter(RJSInfra.class);
 
-    public static final transient String CURRENT_VERSION = "3.4.3";
+    public static final transient String CURRENT_VERSION = "3.4.4";
 
     /** The version of the infra format used */
     public String version;
@@ -62,24 +62,4 @@ public class RJSInfra {
 
     @Json(name = "neutral_sections")
     public List<RJSNeutralSection> neutralSections;
-    /** Create a new serialized RailJSON file */
-    public RJSInfra(
-            Collection<RJSTrackSection> trackSections,
-            Collection<RJSRoute> routes,
-            List<RJSSignal> signals,
-            List<RJSBufferStop> bufferStops,
-            List<RJSTrainDetector> detectors
-    ) {
-        this.trackSections = trackSections;
-        this.switches = new ArrayList<>();
-        this.operationalPoints = new ArrayList<>();
-        this.routes = routes;
-        this.switchTypes = new ArrayList<>();
-        this.signals = signals;
-        this.bufferStops = bufferStops;
-        this.detectors = detectors;
-        this.speedSections = new ArrayList<>();
-        this.catenaries = new ArrayList<>();
-        this.neutralSections = new ArrayList<>();
-    }
 }

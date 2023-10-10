@@ -26,13 +26,12 @@ impl Node {
 }
 
 /// An edge connects two nodes
-/// This connection can be between two tracks (switch and section link)
+/// This connection can be between two tracks (switch)
 /// Or traversing a whole track
 /// Or along a track (detector and buffer stops)
 #[derive(Clone, Debug)]
 enum EdgeType {
     Switch { id: Identifier, port: Identifier },
-    SectionLink,
     Track,
     Buffer(Direction),
     ToDetector,
@@ -49,10 +48,9 @@ struct Graph {
 }
 
 impl Graph {
-    /* Part 2: build the graph from track sections, track sections links, switches, buffers and detectors */
+    /* Part 2: build the graph from track sections, switches, buffers and detectors */
     fn load(&mut self, railjson: &RailJson) {
         self.edges_from_track_sections(railjson);
-        self.edges_from_track_sections_links(railjson);
         self.edges_from_switches(railjson);
     }
 
@@ -136,14 +134,6 @@ impl Graph {
             if !bwd_detectors.contains_key(&track.id) {
                 self.add_directed_edge(v.clone(), u.clone(), EdgeType::Track);
             }
-        }
-    }
-
-    fn edges_from_track_sections_links(&mut self, railjson: &RailJson) {
-        for link in &railjson.track_section_links {
-            let u = Node::TrackEndpoint(link.src.clone());
-            let v = Node::TrackEndpoint(link.dst.clone());
-            self.add_symmetrical_edge(u, v, EdgeType::SectionLink);
         }
     }
 

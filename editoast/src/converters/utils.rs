@@ -8,6 +8,15 @@ use osmpbfreader::Node;
 use std::str::FromStr;
 
 pub fn default_switch_types() -> Vec<SwitchType> {
+    let mut link_group = std::collections::HashMap::new();
+    link_group.insert(
+        "LINK".into(),
+        vec![SwitchPortConnection {
+            src: "SOURCE".into(),
+            dst: "DESTINATION".into(),
+        }],
+    );
+
     let mut point_groups = std::collections::HashMap::new();
     point_groups.insert(
         "LEFT".into(),
@@ -70,6 +79,11 @@ pub fn default_switch_types() -> Vec<SwitchType> {
     );
 
     vec![
+        SwitchType {
+            id: "link".into(),
+            ports: vec!["SOURCE".into(), "DESTINATION".into()],
+            groups: link_group,
+        },
         SwitchType {
             id: "point".into(),
             ports: vec!["BASE".into(), "LEFT".into(), "RIGHT".into()],
@@ -158,12 +172,25 @@ fn track_section(n: NodeId, edge: &Edge) -> TrackEndpoint {
 }
 
 // When building the network topology, most things happen around a Node (in the OpenStreetMap sense)
-// That’s where buffer stops, section links and switches happen
+// That’s where buffer stops, and switches happen
 // To do that, we count how many edges are adjacent to that node and how many branches go through that node
 #[derive(Default)]
 pub struct NodeAdjacencies<'a> {
     pub edges: Vec<&'a Edge>,
     pub branches: Vec<Branch>,
+}
+
+pub fn link_switch(node: NodeId, branches: &[Branch]) -> Switch {
+    let mut ports = HashMap::new();
+    ports.insert("SOURCE".into(), branches[0].0.clone());
+    ports.insert("DESTINATION".into(), branches[0].1.clone());
+    Switch {
+        id: node.0.to_string().into(),
+        switch_type: "link".into(),
+        ports,
+        group_change_delay: 0.,
+        ..Default::default()
+    }
 }
 
 pub fn point_switch(node: NodeId, branches: &[Branch]) -> Switch {
