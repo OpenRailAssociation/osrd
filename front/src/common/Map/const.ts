@@ -106,15 +106,3 @@ export type searchPayloadType = {
   object: string;
   query: SearchQuery;
 };
-
-export enum searchSignalSystem {
-  BAL = 'BAL',
-  BAPR = 'BAPR',
-  TVM = 'TVM',
-}
-
-export const searchSignalSettings = {
-  [searchSignalSystem.BAL]: ['Nf'],
-  [searchSignalSystem.BAPR]: ['Nf', 'distant'],
-  [searchSignalSystem.TVM]: ['is_430'],
-};

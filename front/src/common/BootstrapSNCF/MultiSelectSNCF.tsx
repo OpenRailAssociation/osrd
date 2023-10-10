@@ -4,10 +4,10 @@ type MultiSelectSNCFProps = {
   multiSelectTitle: string;
   multiSelectPlaceholder: string;
   options: { group?: string; options: string[] }[];
-
   onChange: React.Dispatch<React.SetStateAction<string[]>>;
   selectedValues: string[];
   allowSelectAll?: boolean;
+  disable?: boolean;
 };
 
 const MultiSelectSNCF = ({
@@ -17,6 +17,7 @@ const MultiSelectSNCF = ({
   onChange,
   selectedValues,
   allowSelectAll,
+  disable = false,
 }: MultiSelectSNCFProps) => {
   const [multiSelectToggle, setMultiselectToggle] = useState<boolean>(false);
   const [selectAll, setSelectAll] = useState<boolean>(false);
@@ -55,6 +56,10 @@ const MultiSelectSNCF = ({
       }),
     [selectedValues]
   );
+
+  useEffect(() => {
+    if (disable) setMultiselectToggle(false);
+  }, [disable]);
 
   useEffect(() => {
     const isAllSelected = multiSelectOptions?.length === selectedValues.length;
@@ -117,6 +122,9 @@ const MultiSelectSNCF = ({
                 type="button"
                 aria-expanded="false"
                 aria-controls="multiselecttoggle"
+                disabled={disable}
+                aria-disabled={disable}
+                tabIndex={disable ? -1 : 0}
                 onClick={() => setMultiselectToggle((prevState) => !prevState)}
               >
                 <i className="icons-arrow-down icons-size-x75" aria-hidden="true" />

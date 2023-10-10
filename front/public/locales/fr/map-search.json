@@ -19,6 +19,7 @@
   "reset": "Réinitialiser",
   "aspects": "Aspects",
   "noAspectSelected": "Aucun aspect sélectionné",
+  "signalSystem": "Système de signalisation",
   "errorMessages": {
     "unableToSearchSignal": "Recherche du signal impossible"
   }

@@ -12,7 +12,7 @@ import { SearchSignalResult, osrdEditoastApi } from 'common/api/osrdEditoastApi'
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import { setFailure } from 'reducers/main';
 import SelectImproved from 'common/BootstrapSNCF/SelectImprovedSNCF';
-import { searchPayloadType, searchSignalSystem, searchSignalSettings } from '../const';
+import { searchPayloadType } from '../const';
 import SignalCard from './SignalCard';
 import { onResultSearchClick } from '../utils';
 
@@ -29,10 +29,25 @@ export type SortType = {
 const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSignalProps) => {
   const map = useSelector(getMap);
   const infraID = useSelector(getInfraID);
+  const { t } = useTranslation(['translation', 'map-search', 'common']);
+
+  const signalSystems = {
+    ALL: t('common:all'),
+    BAL: 'BAL',
+    BAPR: 'BAPR',
+    TVM: 'TVM',
+  };
+
+  const signalSettingsMap = {
+    [signalSystems.ALL]: [],
+    [signalSystems.BAL]: ['Nf'],
+    [signalSystems.BAPR]: ['Nf', 'distant'],
+    [signalSystems.TVM]: ['is_430'],
+  };
 
   const [searchState, setSearch] = useState('');
   const [searchLineState, setSearchLine] = useState('');
-  const [trackSystem, setTrackSystem] = useState(searchSignalSystem.BAL);
+  const [signalSystem, setSignalSystem] = useState(signalSystems.ALL);
   const [signalSettings, setSignalSettings] = useState<string[]>([]);
   const [selectedSettings, setSelectedSettings] = useState<string[]>([]);
   const [searchResults, setSearchResults] = useState<SearchSignalResult[]>([]);
@@ -46,7 +61,6 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
   });
   const dispatch = useDispatch();
   const [postSearch] = osrdEditoastApi.usePostSearchMutation();
-  const { t } = useTranslation(['translation', 'map-search']);
 
   const getPayload = (
     lineSearch: string,
@@ -77,7 +91,7 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
       searchLineState,
       searchState,
       infraIDPayload,
-      [trackSystem],
+      [signalSystem],
       selectedSettings
     );
     await postSearch({
@@ -108,7 +122,7 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
     } else {
       setSearchResults([]);
     }
-  }, [debouncedSearchTerm, debouncedSearchLine, trackSystem, selectedSettings]);
+  }, [debouncedSearchTerm, debouncedSearchLine, signalSystem, selectedSettings]);
 
   const onResultClick = (result: SearchSignalResult) => {
     onResultSearchClick({
@@ -137,9 +151,9 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
   }, [searchLineState]);
 
   useEffect(() => {
-    setSignalSettings(searchSignalSettings[trackSystem]);
     setSelectedSettings([]);
-  }, [trackSystem]);
+    setSignalSettings(signalSettingsMap[signalSystem]);
+  }, [signalSystem]);
 
   const formatSearchResults = () => (
     <div className="search-results">
@@ -235,23 +249,24 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
         </div>
         <div className={`${classLargeCol} ${searchSignalWidth < 470 ? 'col-md-12' : 'col-md-6'}`}>
           <SelectImproved
-            label={t('map-search:track-system')}
+            label={t('map-search:signalSystem')}
             onChange={(e) => {
-              if (e !== undefined) setTrackSystem(e);
+              if (e !== undefined) setSignalSystem(e);
             }}
-            value={trackSystem}
+            value={signalSystem}
             sm
             blockMenu
-            options={Object.values(searchSignalSystem)}
+            options={Object.values(signalSystems)}
           />
         </div>
         <div className={`${classLargeCol} ${searchSignalWidth < 470 ? 'col-md-12' : 'col-md-6'}`}>
           <MultiSelectSNCF
-            multiSelectTitle={t('map-search:settings')}
-            multiSelectPlaceholder={t('map-search:noSettingSelected')}
+            multiSelectTitle={t('map-search:aspects')}
+            multiSelectPlaceholder={t('map-search:noAspectSelected')}
             options={[{ options: signalSettings }]}
             onChange={setSelectedSettings}
             selectedValues={selectedSettings}
+            disable={signalSystem === signalSystems.ALL}
           />
         </div>
       </div>
