@@ -105,9 +105,15 @@ pub fn model(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 /// #[derive(Search)]
 /// #[search(
 ///     table = "search_track",
-///     column(name = "infra_id", data_type = "INT"),
-///     column(name = "line_code", data_type = "INT"),
-///     column(name = "line_name", data_type = "TEXT")
+///     migration(src_table = "infra_object_track")]
+///     column(name = "infra_id", data_type = "INT", sql = "infra_object_track.infra_id"),
+///     column(name = "line_code", data_type = "INT", sql = "infra_object_track.line_code", index = false),
+///     column(
+///         name = "line_name",
+///         data_type = "TEXT",
+///         sql = "infra_object_track.line_name",
+///         textual_search
+///     )
 /// )]
 /// struct Track {
 ///     #[search(sql = "search_track.infra_id")]
@@ -123,11 +129,24 @@ pub fn model(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 /// ### The `search()` derive macro
 ///
 /// - **table** (required): the search table name in the database
+/// - **migration** (optional): the migration to perform to build the search table
+///     - **src_table** (required): the source table name in the database
+///     - **src_primary_key** (optional): the source table primary key name in the database, `"id"` by default
+///     - **query_joins** (optional): the joins to perform to build the search table
+///     - **prepend_sql** (optional): the SQL to prepend to the query
+///         - **up** (required): the SQL to prepend to the query when migrating up
+///         - **down** (required): the SQL to prepend to the query when migrating down
+///     - **append_sql** (optional): the SQL to append to the query
+///         - **up** (required): the SQL to append to the query when migrating up
+///         - **down** (required): the SQL to append to the query when migrating down
 /// - **joins** (optional): the joins to perform to build the response
 /// - **name** (optional): the name of the search object (defaults to the struct name lowercase-d)
 /// - **column** (0-*): a description of each search table column
 ///     - **name** (required): the column name in the database
-///     - **data_type** (required): the column data type in the database
+///     - **data_type** (required): the SQL column type in the database
+///     - **sql** (optional, required if **migration** is provided): the SQL query to perform to retrieve the data for the column in the search table
+///     - **index** (optional): whether to create an index for the column in the search table (defaults to `true`)
+///     - **textual_search** (optional): whether to create a textual search index for the column in the search table (defaults to `false`)
 ///
 /// ### The `search()` attribute macro
 ///
