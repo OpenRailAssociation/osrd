@@ -18,15 +18,16 @@ les panneaux des psl
 les operational point parts
 */
 
-export default function configRKLabelLayer(props: PlatformProps) {
-  const { colors, leftOffset = -1, maxzoom = 32, minzoom = 7, sourceLayer } = props;
+export default function configKPLabelLayer(props: PlatformProps) {
+  const { colors, leftOffset = -1, maxzoom = 24, minzoom = 7, sourceLayer } = props;
   const rkValue: LayerProps = {
     type: 'symbol',
     'source-layer': sourceLayer,
+    filter: ['!=', '', ['get', 'extensions_sncf_kp']],
     maxzoom,
     minzoom,
     layout: {
-      'text-field': '{extensions_sncf_rk}',
+      'text-field': ['concat', 'PK ', ['get', 'extensions_sncf_kp']],
       'text-font': ['Roboto Medium'],
       'text-size': 9,
       'text-anchor': 'right',

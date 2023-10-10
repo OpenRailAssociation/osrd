@@ -6,7 +6,7 @@ import { RootState } from 'reducers';
 import { Theme, OmitLayer } from 'types';
 import { MAP_URL } from 'common/Map/const';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
-import configRKLabelLayer from './configRKLabelLayer';
+import configKPLabelLayer from './configKPLabelLayer';
 
 export function getBufferStopsLayerProps(params: { sourceTable?: string }): OmitLayer<SymbolLayer> {
   const res: OmitLayer<SymbolLayer> = {
@@ -58,12 +58,12 @@ const BufferStops: FC<BufferStopsProps> = ({ colors, layerOrder }) => {
         layerOrder={layerOrder}
       />
       <OrderedLayer
-        {...configRKLabelLayer({
+        {...configKPLabelLayer({
           colors,
           minzoom: 12,
           sourceLayer: 'buffer_stops',
         })}
-        id="chartis/osrd_bufferstop_rk/geo"
+        id="chartis/osrd_bufferstop_kp/geo"
         layerOrder={layerOrder}
       />
     </Source>

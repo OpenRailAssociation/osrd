@@ -8,6 +8,7 @@ import { MAP_URL } from 'common/Map/const';
 
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import { getInfraID } from 'reducers/osrdconf/selectors';
+import configKPLabelLayer from './configKPLabelLayer';
 
 export function getDetectorsLayerProps(params: {
   colors: Theme;
@@ -74,6 +75,15 @@ const Detectors: FC<DetectorsProps> = ({ colors, layerOrder }) => {
     >
       <OrderedLayer {...layerPoint} id="chartis/osrd_detectors/geo" layerOrder={layerOrder} />
       <OrderedLayer {...layerName} id="chartis/osrd_detectors_name/geo" layerOrder={layerOrder} />
+      <OrderedLayer
+        {...configKPLabelLayer({
+          colors,
+          minzoom: 10,
+          sourceLayer: 'detectors',
+        })}
+        id="chartis/osrd_detectors_kp/geo"
+        layerOrder={layerOrder}
+      />
     </Source>
   ) : null;
 };
