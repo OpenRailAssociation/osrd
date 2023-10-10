@@ -1341,7 +1341,6 @@ export type RailjsonFile = {
   speed_sections?: any;
   switch_types?: any;
   switches?: any;
-  track_section_links?: any;
   track_sections?: any;
   version?: string;
 };
@@ -1350,7 +1349,6 @@ export type ObjectType =
   | 'Signal'
   | 'SpeedSection'
   | 'Detector'
-  | 'TrackSectionLink'
   | 'Switch'
   | 'SwitchType'
   | 'BufferStop'
@@ -1431,7 +1429,6 @@ export type InfraErrorType =
   | 'out_of_range'
   | 'overlapping_speed_sections'
   | 'overlapping_switches'
-  | 'overlapping_track_links'
   | 'overlapping_catenaries'
   | 'unknown_port_name'
   | 'unused_port';

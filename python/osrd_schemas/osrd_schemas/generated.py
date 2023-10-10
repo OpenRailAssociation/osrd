@@ -98,11 +98,6 @@ class OverlappingSpeedSections(InfraWarningTrait):
     reference: ObjectReference
 
 
-class OverlappingTrackLinks(InfraWarningTrait):
-    error_type: Literal["overlapping_track_links"] = Field(default="overlapping_track_links")
-    reference: ObjectReference
-
-
 class OverlappingCatenaries(InfraWarningTrait):
     error_type: Literal["overlapping_catenaries"] = Field(default="overlapping_catenaries")
     reference: ObjectReference
@@ -124,7 +119,6 @@ InfraError = Annotated[
         OverlappingCatenaries,
         OverlappingSpeedSections,
         OverlappingSwitches,
-        OverlappingTrackLinks,
         UnknownPortName,
         UnusedPort,
     ],

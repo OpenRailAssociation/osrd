@@ -1330,6 +1330,21 @@
     ],
     "switch_types": [
         {
+            "id": "link",
+            "ports": [
+                "source",
+                "destination"
+            ],
+            "groups": {
+                "LINK": [
+                    {
+                        "src": "source",
+                        "dst": "destination"
+                    }
+                ]
+            }
+        },
+        {
             "id": "point",
             "ports": [
                 "base",
@@ -1830,7 +1845,6 @@
             }
         }
     ],
-    "track_section_links": [],
     "track_sections": [
         {
             "geo": {

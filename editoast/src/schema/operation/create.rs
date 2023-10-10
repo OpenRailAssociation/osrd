@@ -2,7 +2,6 @@ use crate::error::Result;
 use crate::schema::{
     BufferStop, Catenary, Detector, NeutralSection, OSRDIdentified, OSRDObject, ObjectType,
     OperationalPoint, Route, Signal, SpeedSection, Switch, SwitchType, TrackSection,
-    TrackSectionLink,
 };
 use diesel::sql_query;
 use diesel::sql_types::{BigInt, Json, Text};
@@ -19,7 +18,6 @@ pub enum RailjsonObject {
     Signal { railjson: Signal },
     NeutralSection { railjson: NeutralSection },
     SpeedSection { railjson: SpeedSection },
-    TrackSectionLink { railjson: TrackSectionLink },
     Switch { railjson: Switch },
     SwitchType { railjson: SwitchType },
     Detector { railjson: Detector },
@@ -68,7 +66,6 @@ impl RailjsonObject {
             RailjsonObject::Signal { railjson: obj } => obj,
             RailjsonObject::NeutralSection { railjson: obj } => obj,
             RailjsonObject::SpeedSection { railjson: obj } => obj,
-            RailjsonObject::TrackSectionLink { railjson: obj } => obj,
             RailjsonObject::Switch { railjson: obj } => obj,
             RailjsonObject::SwitchType { railjson: obj } => obj,
             RailjsonObject::Detector { railjson: obj } => obj,
@@ -85,7 +82,6 @@ impl RailjsonObject {
             RailjsonObject::Signal { railjson: obj } => serde_json::to_value(obj),
             RailjsonObject::SpeedSection { railjson: obj } => serde_json::to_value(obj),
             RailjsonObject::NeutralSection { railjson: obj } => serde_json::to_value(obj),
-            RailjsonObject::TrackSectionLink { railjson: obj } => serde_json::to_value(obj),
             RailjsonObject::Switch { railjson: obj } => serde_json::to_value(obj),
             RailjsonObject::SwitchType { railjson: obj } => serde_json::to_value(obj),
             RailjsonObject::Detector { railjson: obj } => serde_json::to_value(obj),
@@ -120,14 +116,6 @@ impl From<SpeedSection> for RailjsonObject {
     fn from(speedsection: SpeedSection) -> Self {
         RailjsonObject::SpeedSection {
             railjson: speedsection,
-        }
-    }
-}
-
-impl From<TrackSectionLink> for RailjsonObject {
-    fn from(tracksectionlink: TrackSectionLink) -> Self {
-        RailjsonObject::TrackSectionLink {
-            railjson: tracksectionlink,
         }
     }
 }
@@ -184,7 +172,7 @@ pub mod tests {
     use crate::schema::operation::create::{apply_create_operation, RailjsonObject};
     use crate::schema::{
         BufferStop, Catenary, Detector, OperationalPoint, Route, Signal, SpeedSection, Switch,
-        SwitchType, TrackSection, TrackSectionLink,
+        SwitchType, TrackSection,
     };
 
     pub async fn create_track(
@@ -213,16 +201,6 @@ pub mod tests {
         speed: SpeedSection,
     ) -> RailjsonObject {
         let obj = RailjsonObject::SpeedSection { railjson: speed };
-        assert!(apply_create_operation(&obj, infra_id, conn).await.is_ok());
-        obj
-    }
-
-    pub async fn create_link(
-        conn: &mut PgConnection,
-        infra_id: i64,
-        link: TrackSectionLink,
-    ) -> RailjsonObject {
-        let obj = RailjsonObject::TrackSectionLink { railjson: link };
         assert!(apply_create_operation(&obj, infra_id, conn).await.is_ok());
         obj
     }
@@ -326,17 +304,6 @@ pub mod tests {
         test_infra_transaction(|conn, infra| {
             async move {
                 create_speed(conn, infra.id.unwrap(), Default::default()).await;
-            }
-            .scope_boxed()
-        })
-        .await;
-    }
-
-    #[actix_test]
-    async fn create_link_test() {
-        test_infra_transaction(|conn, infra| {
-            async move {
-                create_link(conn, infra.id.unwrap(), Default::default()).await;
             }
             .scope_boxed()
         })

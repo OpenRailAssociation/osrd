@@ -39,7 +39,6 @@ pub enum ObjectCache {
     TrackSection(TrackSectionCache),
     Signal(SignalCache),
     SpeedSection(SpeedSection),
-    TrackSectionLink(TrackSectionLink),
     Switch(SwitchCache),
     Detector(DetectorCache),
     BufferStop(BufferStopCache),
@@ -61,7 +60,6 @@ impl OSRDIdentified for ObjectCache {
             ObjectCache::TrackSection(obj) => obj.get_id(),
             ObjectCache::Signal(obj) => obj.get_id(),
             ObjectCache::SpeedSection(obj) => obj.get_id(),
-            ObjectCache::TrackSectionLink(obj) => obj.get_id(),
             ObjectCache::Switch(obj) => obj.get_id(),
             ObjectCache::Detector(obj) => obj.get_id(),
             ObjectCache::BufferStop(obj) => obj.get_id(),
@@ -79,7 +77,6 @@ impl OSRDObject for ObjectCache {
             ObjectCache::TrackSection(_) => ObjectType::TrackSection,
             ObjectCache::Signal(_) => ObjectType::Signal,
             ObjectCache::SpeedSection(_) => ObjectType::SpeedSection,
-            ObjectCache::TrackSectionLink(_) => ObjectType::TrackSectionLink,
             ObjectCache::Switch(_) => ObjectType::Switch,
             ObjectCache::Detector(_) => ObjectType::Detector,
             ObjectCache::BufferStop(_) => ObjectType::BufferStop,
@@ -97,7 +94,6 @@ impl ObjectCache {
             ObjectCache::TrackSection(track) => track.get_track_referenced_id(),
             ObjectCache::Signal(signal) => signal.get_track_referenced_id(),
             ObjectCache::SpeedSection(speed) => speed.get_track_referenced_id(),
-            ObjectCache::TrackSectionLink(link) => link.get_track_referenced_id(),
             ObjectCache::Switch(switch) => switch.get_track_referenced_id(),
             ObjectCache::Detector(detector) => detector.get_track_referenced_id(),
             ObjectCache::BufferStop(buffer_stop) => buffer_stop.get_track_referenced_id(),
@@ -129,14 +125,6 @@ impl ObjectCache {
         match self {
             ObjectCache::SpeedSection(speed) => speed,
             _ => panic!("ObjectCache is not a SpeedSection"),
-        }
-    }
-
-    /// Unwrap a track section link from the object cache
-    pub fn unwrap_track_section_link(&self) -> &TrackSectionLink {
-        match self {
-            ObjectCache::TrackSectionLink(link) => link,
-            _ => panic!("ObjectCache is not a TrackSectionLink"),
         }
     }
 
@@ -319,11 +307,6 @@ impl InfraCache {
         &self.objects[ObjectType::Route]
     }
 
-    /// Retrieve the cache of track section links
-    pub fn track_section_links(&self) -> &HashMap<String, ObjectCache> {
-        &self.objects[ObjectType::TrackSectionLink]
-    }
-
     /// Retrieve the cache of switches
     pub fn switches(&self) -> &HashMap<String, ObjectCache> {
         &self.objects[ObjectType::Switch]
@@ -398,12 +381,6 @@ impl InfraCache {
         .load::<OperationalPointQueryable>(conn).await?.into_iter().for_each(|op|
             infra_cache.add::<OperationalPointCache>(op.into())
         );
-
-        // Load track section links tracks references
-        find_objects(conn, infra_id)
-            .await
-            .into_iter()
-            .for_each(|link| infra_cache.add::<TrackSectionLink>(link));
 
         // Load switch tracks references
         sql_query(
@@ -520,9 +497,6 @@ impl InfraCache {
             RailjsonObject::NeutralSection { railjson: _ } => {
                 // TODO
             }
-            RailjsonObject::TrackSectionLink { railjson } => {
-                self.add::<TrackSectionLink>(railjson.clone())
-            }
             RailjsonObject::Switch { railjson } => self.add::<SwitchCache>(railjson.clone().into()),
             RailjsonObject::SwitchType { railjson } => self.add::<SwitchType>(railjson.clone()),
             RailjsonObject::Detector { railjson } => {
@@ -559,14 +533,14 @@ pub mod tests {
     use crate::map::BoundingBox;
     use crate::models::infra::tests::test_infra_transaction;
     use crate::schema::operation::create::tests::{
-        create_buffer_stop, create_catenary, create_detector, create_link, create_op, create_route,
+        create_buffer_stop, create_catenary, create_detector, create_op, create_route,
         create_signal, create_speed, create_switch, create_switch_type, create_track,
     };
     use crate::schema::utils::{Identifier, NonBlankString};
     use crate::schema::{
         ApplicableDirections, ApplicableDirectionsTrackRange, Catenary, Direction, Endpoint,
         OSRDIdentified, OperationalPoint, OperationalPointPartCache, Route, SpeedSection, Switch,
-        SwitchPortConnection, SwitchType, TrackEndpoint, TrackSectionLink, Waypoint,
+        SwitchPortConnection, SwitchType, TrackEndpoint, Waypoint,
     };
     use actix_web::test as actix_test;
     use chashmap::CHashMap;
@@ -662,21 +636,6 @@ pub mod tests {
                 assert!(infra_cache.operational_points().contains_key(op.get_id()));
                 let refs = infra_cache.track_sections_refs;
                 assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
-            }
-            .scope_boxed()
-        })
-        .await;
-    }
-
-    #[actix_test]
-    async fn load_track_section_link() {
-        test_infra_transaction(|conn, infra| {
-            async move {
-                let link = create_link(conn, infra.id.unwrap(), Default::default()).await;
-                let infra_cache = InfraCache::load(conn, &infra).await.unwrap();
-                assert!(infra_cache
-                    .track_section_links()
-                    .contains_key(link.get_id()));
             }
             .scope_boxed()
         })
@@ -897,18 +856,6 @@ pub mod tests {
         }
     }
 
-    pub fn create_track_link_cache<T: AsRef<str>>(
-        id: T,
-        src: TrackEndpoint,
-        dst: TrackEndpoint,
-    ) -> TrackSectionLink {
-        TrackSectionLink {
-            id: id.as_ref().into(),
-            src,
-            dst,
-        }
-    }
-
     pub fn create_switch_connection<T: AsRef<str>>(src: T, dst: T) -> SwitchPortConnection {
         SwitchPortConnection {
             src: src.as_ref().into(),
@@ -936,6 +883,22 @@ pub mod tests {
         switch_type: String,
     ) -> SwitchCache {
         let ports_list = [base, left, right];
+        let ports: HashMap<String, TrackEndpoint> =
+            ports_list.into_iter().map(|(s, t)| (s.into(), t)).collect();
+        SwitchCache {
+            obj_id,
+            switch_type,
+            ports,
+        }
+    }
+
+    pub fn create_switch_cache_link(
+        obj_id: String,
+        source: (&str, TrackEndpoint),
+        destination: (&str, TrackEndpoint),
+        switch_type: String,
+    ) -> SwitchCache {
+        let ports_list = [source, destination];
         let ports: HashMap<String, TrackEndpoint> =
             ports_list.into_iter().map(|(s, t)| (s.into(), t)).collect();
         SwitchCache {
@@ -975,7 +938,7 @@ pub mod tests {
             Direction::StartToStop,
             Waypoint::new_detector("D1"),
             vec![],
-            Default::default(),
+            [("tracklink".into(), "LINK".into())].into(),
         ));
         infra_cache.add(create_route_cache(
             "R2",
@@ -994,10 +957,20 @@ pub mod tests {
             [("switch".into(), "RIGHT".into())].into(),
         ));
 
-        let link = create_track_link_cache(
-            "tracklink",
-            create_track_endpoint(Endpoint::End, "A"),
-            create_track_endpoint(Endpoint::Begin, "B"),
+        infra_cache.add(create_switch_type_cache(
+            "link",
+            vec!["SOURCE".into(), "DESTINATION".into()],
+            HashMap::from([(
+                "LINK".into(),
+                vec![create_switch_connection("SOURCE", "DESTINATION")],
+            )]),
+        ));
+
+        let link = create_switch_cache_link(
+            "tracklink".into(),
+            ("SOURCE", create_track_endpoint(Endpoint::End, "A")),
+            ("DESTINATION", create_track_endpoint(Endpoint::Begin, "B")),
+            "link".into(),
         );
         infra_cache.add(link);
 

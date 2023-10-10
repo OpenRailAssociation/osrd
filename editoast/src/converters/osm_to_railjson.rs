@@ -104,11 +104,7 @@ pub fn parse_osm(osm_pbf_in: PathBuf) -> Result<RailJson, Box<dyn Error + Send +
                     .buffer_stops
                     .push(edge_to_buffer(&node, adj.edges[1], 1));
             }
-            (2, 1) => railjson.track_section_links.push(TrackSectionLink {
-                id: node.0.to_string().into(),
-                src: adj.branches[0].0.clone(),
-                dst: adj.branches[0].1.clone(),
-            }),
+            (2, 1) => railjson.switches.push(link_switch(node, &adj.branches)),
             (3, 2) => railjson.switches.push(point_switch(node, &adj.branches)),
             (4, 2) => railjson.switches.push(cross_switch(node, &adj.branches)),
             (4, 4) => railjson
@@ -148,12 +144,14 @@ mod tests {
 
     #[test]
     fn parse_switches() {
+        /// Need changes because of links turning into switches
+
         fn port_eq(ports: &HashMap<Identifier, TrackEndpoint>, name: &str, expected: &str) -> bool {
             ports.get(&name.into()).unwrap().track.0 == expected
         }
         let mut railjson = parse_osm("src/tests/switches.osm.pbf".into()).unwrap();
-        assert_eq!(3, railjson.switch_types.len());
-        assert_eq!(3, railjson.switches.len());
+        assert_eq!(4, railjson.switch_types.len());
+        assert_eq!(4, railjson.switches.len());
         assert_eq!(18, railjson.buffer_stops.len());
 
         // Switches can be in a random order, we sort them to be sure to extract the expected ones
@@ -162,6 +160,10 @@ mod tests {
             .sort_by(|a, b| a.switch_type.as_str().cmp(b.switch_type.as_str()));
 
         let switch = &railjson.switches[2];
+        assert_eq!("link", switch.switch_type.as_str());
+        assert_eq!(2, switch.ports.len());
+
+        let switch = &railjson.switches[3];
         assert_eq!("point", switch.switch_type.as_str());
         assert_eq!(3, switch.ports.len());
         assert!(port_eq(&switch.ports, "BASE", "-103478-0"));

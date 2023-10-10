@@ -241,7 +241,7 @@ fn compute_path(
                         neighbour_track.obj_id.clone(),
                         pos,
                         dir,
-                        switch.map(|s| (s.obj_id.clone().into(), neighbour_group.unwrap().clone())),
+                        switch.map(|s| (s.obj_id.clone().into(), neighbour_group.clone())),
                         false,
                         step.clone(),
                     ),
@@ -377,7 +377,10 @@ mod tests {
         assert_eq!(path.detectors, vec!["D1".into()]);
         assert_eq!(
             path.switches_directions,
-            HashMap::from([("switch".into(), "LEFT".into())])
+            HashMap::from([
+                ("tracklink".into(), "LINK".into()),
+                ("switch".into(), "LEFT".into())
+            ])
         );
     }
 }

@@ -2484,7 +2484,6 @@ components:
         - Signal
         - SpeedSection
         - Detector
-        - TrackSectionLink
         - Switch
         - SwitchType
         - BufferStop
@@ -2503,8 +2502,6 @@ components:
         switch_types:
           type: array
         switches:
-          type: array
-        track_section_links:
           type: array
         track_sections:
           type: array
@@ -2708,7 +2705,6 @@ components:
         - out_of_range
         - overlapping_speed_sections
         - overlapping_switches
-        - overlapping_track_links
         - overlapping_catenaries
         - unknown_port_name
         - unused_port
