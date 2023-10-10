@@ -44,7 +44,7 @@ BEGIN
     RETURN NEW;
 END;
 $$;
-CREATE TRIGGER search_signal__ins_trig
+CREATE OR REPLACE TRIGGER search_signal__ins_trig
 AFTER INSERT ON "infra_object_signal"
 FOR EACH ROW EXECUTE FUNCTION search_signal__ins_trig_fun();
 
@@ -71,7 +71,7 @@ BEGIN
     RETURN NEW;
 END;
 $$;
-CREATE TRIGGER search_signal__upd_trig
+CREATE OR REPLACE TRIGGER search_signal__upd_trig
 AFTER UPDATE ON "infra_object_signal"
 FOR EACH ROW EXECUTE FUNCTION search_signal__upd_trig_fun();
 
