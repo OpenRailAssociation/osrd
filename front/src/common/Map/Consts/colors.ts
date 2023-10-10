@@ -49,7 +49,9 @@ const colors: Record<string, Theme> = {
       circle: '#0088ce',
     },
     op: {
+      circle: '#82be00',
       text: '#202258',
+      minitext: '#333',
       halo: '#eee',
     },
     sign: {
@@ -198,7 +200,9 @@ const colors: Record<string, Theme> = {
       circle: '#ffaa39',
     },
     op: {
+      circle: '#82be00',
       text: '#4895ef',
+      minitext: '#4895ef',
       halo: '#0b011d',
     },
     sign: {
@@ -339,7 +343,9 @@ const colors: Record<string, Theme> = {
       circle: bpLight,
     },
     op: {
+      circle: bpLight,
       text: bpLight,
+      minitext: bpLight,
       halo: bpBg,
     },
     sign: {
