@@ -6,7 +6,7 @@ import { MODES } from 'applications/operationalStudies/consts';
 import STDCM_REQUEST_STATUS from 'applications/stdcm/consts';
 import { StdcmRequestStatus } from 'applications/stdcm/types';
 import { updateMode } from 'reducers/osrdconf';
-import OSRDStdcmConfig from './OSRDCStdcmConfig';
+import OSRDStdcmConfig from './OSRDStdcmConfig';
 import StdcmRequestModal from './StdcmRequestModal';
 
 export default function OSRDSTDCM() {

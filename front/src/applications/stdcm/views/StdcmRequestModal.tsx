@@ -28,6 +28,7 @@ import { Spinner } from 'common/Loader';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { Train } from 'reducers/osrdsimulation/types';
 import { StdcmRequestStatus } from 'applications/stdcm/types';
+import { extractMessageFromError, extractStatusFromError } from 'utils/error';
 
 type StdcmRequestModalProps = {
   setCurrentStdcmRequestStatus: (currentStdcmRequestStatus: StdcmRequestStatus) => void;
@@ -121,13 +122,15 @@ export default function StdcmRequestModal(props: StdcmRequestModalProps) {
           }
         })
         .catch((e) => {
-          // Update simu in redux with data;
+          const errorMessage = extractMessageFromError(e);
           setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.rejected);
-
           dispatch(
             setFailure({
               name: t('operationalStudies/manageTrainSchedule:errorMessages.stdcmError'),
-              message: e?.response?.data?.message, // axios error, def is ok
+              message:
+                extractStatusFromError(e) === 400 && errorMessage === 'No path could be found'
+                  ? t('operationalStudies/manageTrainSchedule:errorMessages.stdcmErrorNoPaths')
+                  : errorMessage,
             })
           );
         });
