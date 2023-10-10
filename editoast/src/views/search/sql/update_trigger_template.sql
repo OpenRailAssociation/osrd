@@ -11,6 +11,6 @@ BEGIN
     RETURN NEW;
 END;
 $$;
-CREATE TRIGGER {trigger}
+CREATE OR REPLACE TRIGGER {trigger}
 AFTER UPDATE ON "{source_table}"
 FOR EACH ROW EXECUTE FUNCTION {trigger}_fun();
