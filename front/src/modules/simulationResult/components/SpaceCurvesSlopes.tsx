@@ -3,12 +3,14 @@ import * as d3 from 'd3';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   defineLinear,
+  interpolateOnPosition,
   mergeDatasAreaConstant,
 } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
-import enableInteractivity, {
+import {
   traceVerticalLine,
+  isolatedEnableInteractivity as enableInteractivity,
 } from 'modules/simulationResult/components/ChartHelpers/enableInteractivity';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { CgLoadbar } from 'react-icons/cg';
 import {
   createCurveCurve,
@@ -23,8 +25,12 @@ import {
   HeightPosition,
   PositionValues,
   RadiusPosition,
+  SpeedSpaceChart,
   Train,
 } from 'reducers/osrdsimulation/types';
+import { dateIsInRange } from 'utils/date';
+import { updateTimePositionValues } from 'reducers/osrdsimulation/actions';
+import { getIsPlaying } from 'reducers/osrdsimulation/selectors';
 
 const CHART_ID = 'SpaceCurvesSlopes';
 
@@ -51,7 +57,7 @@ const drawAxisTitle = (chart: Chart) => {
 const drawSpaceCurvesSlopesChartCurve = <
   T extends GradientPosition | RadiusPosition | HeightPosition
 >(
-  chartLocal: Chart,
+  chartLocal: SpeedSpaceChart,
   classes: string,
   data: T[],
   interpolation: 'curveLinear' | 'curveMonotoneX',
@@ -84,15 +90,18 @@ const SpaceCurvesSlopes = ({
   timePosition,
 }: SpaceCurvesSlopesProps) => {
   const dispatch = useDispatch();
+  const simulationIsPlaying = useSelector(getIsPlaying);
 
-  const [chart, setChart] = useState<Chart | undefined>(undefined);
+  const [chart, setChart] = useState<SpeedSpaceChart | undefined>(undefined);
   const [height, setHeight] = useState(initialHeight);
-  const [zoomLevel, setZoomLevel] = useState(1);
-  const [yPosition, setYPosition] = useState(0);
 
   const ref = useRef<HTMLDivElement>(null);
   const keyValues = ['position', 'gradient'];
   const rotate = false;
+
+  const dispatchUpdateTimePositionValues = (newTimePositionValue: Date) => {
+    dispatch(updateTimePositionValues(newTimePositionValue));
+  };
 
   const trainData = useMemo(() => {
     // speeds (needed for enableInteractivity)
@@ -115,6 +124,7 @@ const SpaceCurvesSlopes = ({
     const curvesHistogram = createCurveCurve(selectedTrain.curves, gradients);
 
     return {
+      gradients,
       speed,
       slopesHistogram,
       areaSlopesHistogram,
@@ -123,7 +133,18 @@ const SpaceCurvesSlopes = ({
     };
   }, [selectedTrain]);
 
-  const createChart = (): Chart => {
+  const timeScaleRange: [Date, Date] = useMemo(() => {
+    if (chart) {
+      const spaceScaleRange = chart.x.domain();
+      return spaceScaleRange.map((position) => interpolateOnPosition(trainData, position)) as [
+        Date,
+        Date
+      ];
+    }
+    return [new Date(), new Date()];
+  }, [chart]);
+
+  const createChart = (): SpeedSpaceChart => {
     d3.select(`#${CHART_ID}`).remove();
 
     const xMax = d3.max(trainData.slopesHistogram, (d) => d.position + 100) || 0;
@@ -143,7 +164,7 @@ const SpaceCurvesSlopes = ({
       false,
       ['position', 'gradient'],
       CHART_ID
-    );
+    ) as SpeedSpaceChart;
   };
 
   const drawOPs = (chartLocal: Chart) => {
@@ -217,16 +238,13 @@ const SpaceCurvesSlopes = ({
     enableInteractivity(
       chartLocal,
       trainData,
-      dispatch,
       ['position', 'gradient'],
       ['slopesCurve'],
-      positionValues,
       rotate,
       setChart,
-      setYPosition,
-      setZoomLevel,
-      yPosition,
-      zoomLevel
+      simulationIsPlaying,
+      dispatchUpdateTimePositionValues,
+      timeScaleRange
     );
     setChart(chartLocal);
   };
@@ -241,19 +259,10 @@ const SpaceCurvesSlopes = ({
   useEffect(() => setHeight(initialHeight), [initialHeight]);
 
   useEffect(() => {
-    if (trainData) {
-      traceVerticalLine(
-        chart,
-        trainData,
-        keyValues,
-        ['slopesCurve'],
-        positionValues,
-        'slopesCurve',
-        rotate,
-        timePosition
-      );
+    if (dateIsInRange(timePosition, timeScaleRange)) {
+      traceVerticalLine(chart, keyValues, ['slopesCurve'], positionValues, rotate, timePosition);
     }
-  }, [positionValues, timePosition, trainData]);
+  }, [positionValues, timePosition]);
 
   useEffect(() => {
     window.addEventListener('resize', windowResize);

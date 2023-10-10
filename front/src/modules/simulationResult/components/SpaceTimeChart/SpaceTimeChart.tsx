@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
 import { noop } from 'lodash';
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import {
   isolatedEnableInteractivity,
   traceVerticalLine,
@@ -26,6 +26,7 @@ import {
   Train,
 } from 'reducers/osrdsimulation/types';
 import ChartModal from 'modules/simulationResult/components/SpaceTimeChart/ChartModal';
+import { dateIsInRange } from 'utils/date';
 import {
   DispatchUpdateDepartureArrivalTimes,
   DispatchUpdateChart,
@@ -109,6 +110,11 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
   const [trainSimulations, setTrainSimulations] = useState<
     SimulationSnapshot['trains'] | undefined
   >(undefined);
+
+  const timeScaleRange: [Date, Date] = useMemo(() => {
+    if (chart) return (rotate ? chart.y.domain() : chart.x.domain()) as [Date, Date];
+    return [new Date(), new Date()];
+  }, [chart]);
 
   const dragShiftTrain = useCallback(
     (offset: number) => {
@@ -209,8 +215,8 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
         rotate,
         setChart,
         simulationIsPlaying,
-        dispatchUpdateMustRedraw,
-        dispatchUpdateTimePositionValues
+        dispatchUpdateTimePositionValues,
+        timeScaleRange
       );
     }
 
@@ -222,14 +228,12 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
    * coordinates the vertical cursors with other graphs (GEV for instance)
    */
   useEffect(() => {
-    if (trainSimulations) {
+    if (dateIsInRange(timePosition, timeScaleRange)) {
       traceVerticalLine(
         chart,
-        selectedTrain,
         KEY_VALUES_FOR_SPACE_TIME_CHART,
         LIST_VALUES_NAME_SPACE_TIME,
         positionValues,
-        'headPosition',
         rotate,
         timePosition
       );

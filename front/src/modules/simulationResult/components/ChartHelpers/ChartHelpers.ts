@@ -254,15 +254,11 @@ export const gridY = (axisScale: SimulationD3Scale, width: number) =>
 
 // Interpolation of cursor based on space position
 // ['position', 'speed']
-export const interpolateOnPosition = <
-  Keys extends string,
-  SpeedObject extends Record<Keys, number> & { position: number; time: number }
->(
-  dataSimulation: { speed: SpeedObject[] },
-  keyValues: readonly Keys[],
+export const interpolateOnPosition = (
+  dataSimulation: { speed: PositionSpeedTime[] },
   positionLocal: number
 ) => {
-  const bisect = d3.bisector<SpeedObject, number>((d) => d[keyValues[0]]).left;
+  const bisect = d3.bisector<PositionSpeedTime, number>((d) => d.position).left;
   const index = bisect(dataSimulation.speed, positionLocal, 1);
   const bisection = [dataSimulation.speed[index - 1], dataSimulation.speed[index]];
   if (bisection[1]) {
