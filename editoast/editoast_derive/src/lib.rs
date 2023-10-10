@@ -105,7 +105,7 @@ pub fn model(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 /// #[derive(Search)]
 /// #[search(
 ///     table = "search_track",
-///     migration(src_table = "infra_object_track")]
+///     migration(src_table = "infra_object_track"),
 ///     column(name = "infra_id", data_type = "INT", sql = "infra_object_track.infra_id"),
 ///     column(name = "line_code", data_type = "INT", sql = "infra_object_track.line_code", index = false),
 ///     column(
