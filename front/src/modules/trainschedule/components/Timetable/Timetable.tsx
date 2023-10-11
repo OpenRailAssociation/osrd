@@ -65,11 +65,14 @@ export default function Timetable({
   const [deleteTrainScheduleById] = osrdEditoastApi.endpoints.deleteTrainScheduleById.useMutation();
   const [deleteTrainSchedules] = osrdEditoastApi.endpoints.deleteTrainSchedule.useMutation();
 
-  const { data: timetable, refetch: refetchTimetable } =
-    osrdEditoastApi.endpoints.getTimetableById.useQuery(
-      { id: timetableID as number },
-      { skip: !timetableID || infraState !== 'CACHED' }
-    );
+  const {
+    data: timetable,
+    refetch: refetchTimetable,
+    isUninitialized: isTimetableUnintialized,
+  } = osrdEditoastApi.endpoints.getTimetableById.useQuery(
+    { id: timetableID as number },
+    { skip: !timetableID || infraState !== 'CACHED' }
+  );
 
   const { data: conflicts = [], refetch: refetchConflicts } =
     osrdEditoastApi.endpoints.getTimetableByIdConflicts.useQuery(
@@ -295,7 +298,7 @@ export default function Timetable({
   }, [multiselectOn]);
 
   useEffect(() => {
-    if (timetableID && !reloadTimetable) {
+    if (timetableID && !reloadTimetable && !isTimetableUnintialized) {
       refetchTimetable();
     }
   }, [reloadTimetable]);
