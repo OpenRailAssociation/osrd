@@ -3,7 +3,8 @@ WITH ops AS (
         (
             jsonb_array_elements(data->'parts')->'position'
         )::float AS position,
-        jsonb_array_elements(data->'parts')->>'track' AS track_id
+        jsonb_array_elements(data->'parts')->>'track' AS track_id,
+        jsonb_array_elements(data->'parts')->'extensions'->'sncf'->>'kp' AS kp
     FROM infra_object_operational_point
     WHERE infra_id = $1
         AND obj_id = ANY($2)
@@ -29,17 +30,19 @@ collect AS (
                 ),
                 1.
             )
-        ) AS sch
+        ) AS sch,
+        ops.kp AS kp
     FROM ops
         INNER JOIN infra_object_track_section AS tracks ON tracks.obj_id = ops.track_id
         AND tracks.infra_id = $1
         INNER JOIN infra_layer_track_section AS tracks_layer ON tracks.obj_id = tracks_layer.obj_id
         AND tracks.infra_id = tracks_layer.infra_id
 )
-INSERT INTO infra_layer_operational_point (obj_id, infra_id, geographic, schematic)
+INSERT INTO infra_layer_operational_point (obj_id, infra_id, geographic, schematic, kp)
 SELECT op_id,
     $1,
-    St_Collect(geo),
-    St_Collect(sch)
+    geo,
+    sch,
+    kp
 FROM collect
 GROUP BY op_id

@@ -1,0 +1,2 @@
+ALTER TABLE infra_layer_operational_point ADD COLUMN kp text;
+ALTER TABLE infra_layer_operational_point DROP CONSTRAINT infra_layer_operational_point_infra_id_obj_id_key;
