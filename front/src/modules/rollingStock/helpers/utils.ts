@@ -1,5 +1,5 @@
 import { Comfort, RollingStock, RollingStockUpsertPayload } from 'common/api/osrdEditoastApi';
-import { isNull } from 'lodash';
+import { isNull, some } from 'lodash';
 import {
   EffortCurves,
   RollingStockParametersValues,
@@ -64,7 +64,7 @@ export const getDefaultRollingStockMode = (
   },
 });
 
-const getRollingStockEditorDefaultValues = (
+export const getRollingStockEditorDefaultValues = (
   selectedMode: string | null,
   rollingStockData?: RollingStock
 ): RollingStockParametersValues => {
@@ -185,4 +185,5 @@ export const orderSelectorList = (list: (string | null)[]) => {
     : list.sort();
 };
 
-export default getRollingStockEditorDefaultValues;
+export const isElectric = (rollingStock: RollingStock) =>
+  some(Object.values(rollingStock.effort_curves.modes), (effortCurve) => effortCurve.is_electric);

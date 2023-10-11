@@ -76,6 +76,7 @@
   "pleaseWait": "Please wait…",
   "powerRestriction": "Power restriction code",
   "powerRestrictionExplanationText": "By default, the simulation will use the nominal power.",
+  "powerRestrictionEmptyExplanationText": "The selected rolling stock does not have any power restrictions. You can edit it in the rolling stock editor.",
   "restartPathfinding": "Restart search",
   "rollingstock": "Rolling stock",
   "simulation": "Simulation",
