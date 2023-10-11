@@ -182,18 +182,24 @@ const PowerRestrictionsSelector = ({
       <div className="osrd-config-item-container text-muted">
         <img width="32px" className="mr-2" src={icon} alt="PowerRestrictionIcon" />
         <span>{t('powerRestriction')}</span>
-        <p className="mb-1 mt-1">{t('powerRestrictionExplanationText')}</p>
-        <IntervalsEditor
-          additionalData={formattedPathCatenaryRanges}
-          intervalType={INTERVAL_TYPES.SELECT}
-          data={powerRestrictionRanges}
-          defaultValue={NO_POWER_RESTRICTION}
-          emptyValue={NO_POWER_RESTRICTION}
-          operationalPoints={electrificationChangePoints}
-          selectOptions={powerRestrictionOptions}
-          setData={editPowerRestrictionRanges}
-          totalLength={pathLength}
-        />
+        {!isEmpty(rollingStockPowerRestrictions) ? (
+          <>
+            <p className="mb-1 mt-1">{t('powerRestrictionExplanationText')}</p>
+            <IntervalsEditor
+              additionalData={formattedPathCatenaryRanges}
+              intervalType={INTERVAL_TYPES.SELECT}
+              data={powerRestrictionRanges}
+              defaultValue={NO_POWER_RESTRICTION}
+              emptyValue={NO_POWER_RESTRICTION}
+              operationalPoints={electrificationChangePoints}
+              selectOptions={powerRestrictionOptions}
+              setData={editPowerRestrictionRanges}
+              totalLength={pathLength}
+            />
+          </>
+        ) : (
+          <p className="pt-1">{t('powerRestrictionEmptyExplanationText')}</p>
+        )}
       </div>
     </div>
   );

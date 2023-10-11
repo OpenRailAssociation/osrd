@@ -1,4 +1,3 @@
-import { isEmpty } from 'lodash';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
@@ -29,6 +28,7 @@ import pahtFindingPic from 'assets/pictures/components/pathfinding.svg';
 import allowancesPic from 'assets/pictures/components/allowances.svg';
 import simulationSettings from 'assets/pictures/components/simulationSettings.svg';
 import MemoRollingStock2Img from 'modules/rollingStock/components/RollingStockSelector/RollingStock2Img';
+import { isElectric } from 'modules/rollingStock/helpers/utils';
 
 export default function ManageTrainSchedule() {
   const dispatch = useDispatch();
@@ -144,7 +144,7 @@ export default function ManageTrainSchedule() {
             <SpeedLimitByTagSelector />
           </div>
         </div>
-        {rollingStock && !isEmpty(rollingStock.power_restrictions) && (
+        {rollingStock && isElectric(rollingStock) && (
           <PowerRestrictionsSelector
             rollingStockModes={rollingStock.effort_curves.modes}
             rollingStockPowerRestrictions={rollingStock.power_restrictions}

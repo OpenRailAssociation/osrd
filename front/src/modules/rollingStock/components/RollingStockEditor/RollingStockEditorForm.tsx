@@ -10,7 +10,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { setFailure, setSuccess } from 'reducers/main';
 import Tabs, { TabProps } from 'common/Tabs';
 import RollingStockEditorFormModal from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorFormModal';
-import getRollingStockEditorDefaultValues, {
+import {
+  getRollingStockEditorDefaultValues,
   getDefaultRollingStockMode,
   rollingStockEditorQueryArg,
 } from 'modules/rollingStock/helpers/utils';
