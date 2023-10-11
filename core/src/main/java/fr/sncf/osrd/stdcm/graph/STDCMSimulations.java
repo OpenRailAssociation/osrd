@@ -28,11 +28,19 @@ import fr.sncf.osrd.sim_infra.api.RawSignalingInfra;
 import fr.sncf.osrd.stdcm.BacktrackingEnvelopeAttr;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.utils.units.Distance;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /** This class contains all the methods used to simulate the train behavior. */
 public class STDCMSimulations {
+
+    HashMap<BlockSimulationParameters, Envelope> simulatedEnvelopes;
+
+    public STDCMSimulations() {
+        this.simulatedEnvelopes = new HashMap<>();
+    }
+
     /** Create an EnvelopeSimContext instance from the blocks and extra parameters.
      * offsetFirstBlock is in millimeters. */
     static EnvelopeSimContext makeSimContext(
@@ -47,6 +55,37 @@ public class STDCMSimulations {
         var path = makePathProps(rawInfra, blockInfra, blocks, offsetFirstBlock);
         var envelopePath = EnvelopeTrainPath.from(rawInfra, path);
         return EnvelopeSimContextBuilder.build(rollingStock, envelopePath, timeStep, comfort);
+    }
+
+    /** Returns the corresponding envelope if the block's envelope has already been computed in simulatedEnvelopes,
+     * otherwise computes the matching envelope and adds it to the STDCMGraph. **/
+    public Envelope simulateBlock(
+            RawSignalingInfra rawInfra,
+            BlockInfra blockInfra,
+            RollingStock rollingStock,
+            RollingStock.Comfort comfort,
+            double timeStep,
+            String trainTag,
+            BlockSimulationParameters blockParams
+    ) {
+        if (simulatedEnvelopes.containsKey(blockParams)) {
+            return simulatedEnvelopes.get(blockParams);
+        } else {
+            var simulatedEnvelope = simulateBlock(
+                    rawInfra,
+                    blockInfra,
+                    blockParams.blockId(),
+                    blockParams.initialSpeed(),
+                    blockParams.start(),
+                    rollingStock,
+                    comfort,
+                    timeStep,
+                    blockParams.stop(),
+                    trainTag
+            );
+            simulatedEnvelopes.put(blockParams, simulatedEnvelope);
+            return simulatedEnvelope;
+        }
     }
 
     /**

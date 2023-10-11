@@ -29,6 +29,7 @@ public class STDCMGraph implements Graph<STDCMNode, STDCMEdge> {
     public final RollingStock rollingStock;
     public final RollingStock.Comfort comfort;
     public final double timeStep;
+    STDCMSimulations stdcmSimulations;
     final List<STDCMStep> steps;
     final DelayManager delayManager;
     final AllowanceManager allowanceManager;
@@ -55,6 +56,7 @@ public class STDCMGraph implements Graph<STDCMNode, STDCMEdge> {
         this.rollingStock = rollingStock;
         this.comfort = comfort;
         this.timeStep = timeStep;
+        this.stdcmSimulations = new STDCMSimulations();
         this.steps = steps;
         this.delayManager = new DelayManager(minScheduleTimeStart, maxRunTime, blockAvailability, this);
         this.allowanceManager = new AllowanceManager(this);

@@ -2,9 +2,7 @@ package fr.sncf.osrd.stdcm.graph;
 
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.sim_infra.impl.BlockInfraImplKt;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -163,17 +161,15 @@ public class STDCMEdgeBuilder {
     /** Returns the envelope to be used for the new edges */
     private Envelope getEnvelope() {
         if (envelope == null)
-            envelope = STDCMSimulations.simulateBlock(
+            envelope = graph.stdcmSimulations.simulateBlock(
                     graph.rawInfra,
                     graph.blockInfra,
-                    blockId,
-                    startSpeed,
-                    startOffset,
                     graph.rollingStock,
                     graph.comfort,
                     graph.timeStep,
-                    STDCMUtils.getStopOnBlock(graph, blockId, startOffset, waypointIndex),
-                    graph.tag
+                    graph.tag,
+                    new BlockSimulationParameters(blockId, startSpeed, startOffset,
+                            STDCMUtils.getStopOnBlock(graph, blockId, startOffset, waypointIndex))
             );
         return envelope;
     }
