@@ -82,8 +82,6 @@ pub fn check_match_ports_type(
     }
 }
 
-// TODO : check overlapping switch link and classical switch ?
-
 /// Check if the switch ports are not already used by another switch
 fn check_overlapping(
     switch: &ObjectCache,
