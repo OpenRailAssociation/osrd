@@ -20,7 +20,7 @@ public class BlockAvailabilityLegacyAdapter implements BlockAvailabilityInterfac
 
     /** Simple record used to group together a block and the offset of its start on the given path */
     private record BlockWithOffset(
-            Integer blockID,
+            Integer blockId,
             Long pathOffset
     ){}
 
@@ -73,7 +73,7 @@ public class BlockAvailabilityLegacyAdapter implements BlockAvailabilityInterfac
         double minimumDelay = 0;
         long conflictOffset = 0;
         for (var blockWithOffset : getBlocksInRange(blocks, startOffset, endOffset)) {
-            for (var unavailableSegment : unavailableSpace.get(blockWithOffset.blockID)) {
+            for (var unavailableSegment : unavailableSpace.get(blockWithOffset.blockId)) {
                 var trainInBlock = getTimeTrainInBlock(
                         unavailableSegment,
                         blockWithOffset,
@@ -109,7 +109,7 @@ public class BlockAvailabilityLegacyAdapter implements BlockAvailabilityInterfac
                 minimumDelay += recursiveDelay.duration;
         }
         var pathLength = blocks.stream()
-                .mapToLong(block -> blockInfra.getBlockLength(block.blockID))
+                .mapToLong(block -> blockInfra.getBlockLength(block.blockId))
                 .sum();
         conflictOffset = Math.max(0, Math.min(pathLength, conflictOffset));
         return new Unavailable(minimumDelay, conflictOffset);
@@ -127,7 +127,7 @@ public class BlockAvailabilityLegacyAdapter implements BlockAvailabilityInterfac
         double maximumDelay = Double.POSITIVE_INFINITY;
         double timeOfNextOccupancy = Double.POSITIVE_INFINITY;
         for (var blockWithOffset : getBlocksInRange(blocks, startOffset, endOffset)) {
-            for (var block : unavailableSpace.get(blockWithOffset.blockID)) {
+            for (var block : unavailableSpace.get(blockWithOffset.blockId)) {
                 var timeTrainInBlock = getTimeTrainInBlock(
                         block,
                         blockWithOffset,
@@ -157,7 +157,7 @@ public class BlockAvailabilityLegacyAdapter implements BlockAvailabilityInterfac
         return blocks.stream()
                 .filter(r -> r.pathOffset() < end)
                 .filter(r ->
-                        r.pathOffset() + blockInfra.getBlockLength(r.blockID) > start)
+                        r.pathOffset() + blockInfra.getBlockLength(r.blockId) > start)
                 .toList();
     }
 
