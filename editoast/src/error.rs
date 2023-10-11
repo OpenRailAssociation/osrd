@@ -44,6 +44,10 @@ impl InternalError {
         self.status
     }
 
+    pub fn set_status(&mut self, status: StatusCode) {
+        self.status = status;
+    }
+
     pub fn get_context(&self) -> &HashMap<String, Value> {
         &self.context
     }

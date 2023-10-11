@@ -11,7 +11,7 @@ pub mod version;
 
 use std::marker::PhantomData;
 
-use crate::error::Result;
+use crate::error::{InternalError, Result};
 use async_trait::async_trait;
 use colored::{ColoredString, Colorize};
 use editoast_derive::EditoastError;
@@ -107,23 +107,28 @@ impl CoreClient {
                 }
 
                 log::error!(target: "editoast::coreclient", "{method_s} {path} {status}", status = status.to_string().bold().red());
+
+                // We try to deserialize the response as an InternalError in order to retain the context of the core error
+                if let Ok(mut internal_error) = <Json<InternalError>>::from_bytes(bytes.as_ref()) {
+                    internal_error.set_status(status);
+                    return Err(internal_error);
+                }
+
                 // We try to deserialize the response as the standard Core error format
                 // If that fails we try to return a generic error containing the raw error
-                let core_error = <Json<CoreErrorPayload> as CoreResponse>::from_bytes(
-                    bytes.as_ref(),
-                )
-                .map_err(|err| {
-                    if let Ok(utf8_raw_error) = String::from_utf8(bytes.as_ref().to_vec()) {
-                        CoreError::GenericCoreError {
-                            status: Some(status.as_u16()),
-                            url: url.clone(),
-                            raw_error: utf8_raw_error,
+                let core_error =
+                    <Json<CoreErrorPayload>>::from_bytes(bytes.as_ref()).map_err(|err| {
+                        if let Ok(utf8_raw_error) = String::from_utf8(bytes.as_ref().to_vec()) {
+                            CoreError::GenericCoreError {
+                                status: Some(status.as_u16()),
+                                url: url.clone(),
+                                raw_error: utf8_raw_error,
+                            }
+                            .into()
+                        } else {
+                            err
                         }
-                        .into()
-                    } else {
-                        err
-                    }
-                })?;
+                    })?;
                 Err(CoreError::Forward {
                     status: status.as_u16(),
                     core_error,
