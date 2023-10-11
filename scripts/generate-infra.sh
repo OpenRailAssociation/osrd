@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 
 # This script should be compatible with MSYS, the compatibility layer used by
 # Git for Windows. Absolute paths which should not be converted to windows paths
