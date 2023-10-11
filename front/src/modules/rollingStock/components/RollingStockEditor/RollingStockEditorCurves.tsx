@@ -582,7 +582,7 @@ export default function RollingStockEditorCurves({
                   listName="electricalProfiles"
                 />
               </div>
-              {rollingstockParams.powerRestrictions.length > 1 && (
+              {selectedTractionMode && (
                 <div className="selector-container">
                   <SelectorSNCF
                     key="power-restriction-selector"

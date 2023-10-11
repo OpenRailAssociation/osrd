@@ -1,0 +1,31 @@
+.grid-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+
+  .grid-item {
+    width: 77px;
+    max-width: 77px;
+    padding: 10px 7px;
+    border-bottom: solid 1px gray;
+    list-style-type: none;
+    cursor: pointer;
+
+    &:hover {
+      background-color: var(--primary);
+      color: var(--white);
+    }
+
+    .grid-name {
+      // This font allows items to be perfectly aligned as each letters have the same width
+      font-family: monospace;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .filtered {
+      opacity: 0.2;
+    }
+  }
+}
