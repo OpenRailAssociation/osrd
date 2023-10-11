@@ -125,6 +125,7 @@ diesel::table! {
         geographic -> Geometry,
         schematic -> Geometry,
         infra_id -> Int8,
+        kp -> Nullable<Text>,
     }
 }
 
