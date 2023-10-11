@@ -1815,8 +1815,8 @@
             "type": "array"
         },
         "version": {
-            "const": "3.4.3",
-            "default": "3.4.3",
+            "const": "3.4.4",
+            "default": "3.4.4",
             "description": "Version of the schema",
             "title": "Version"
         }
