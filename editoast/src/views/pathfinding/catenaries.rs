@@ -2,8 +2,8 @@ use crate::error::{InternalError, Result};
 use crate::infra_cache::InfraCache;
 use crate::models::{pathfinding::Pathfinding, Infra, Retrieve};
 use crate::schema::ObjectType;
+use crate::views::pathfinding::rangemap_utils::{make_path_range_map, Float, RangedValue};
 use crate::views::pathfinding::PathfindingError;
-use crate::views::pathfinding::rangemap_utils::{Float, RangedValue, make_path_range_map};
 use crate::DbPool;
 use actix_web::{
     dev::HttpServiceFactory,
@@ -69,7 +69,6 @@ fn map_catenary_modes(
     (res, warnings)
 }
 
-
 #[derive(Debug, Serialize, Deserialize)]
 struct CatenariesOnPathResponse {
     catenary_ranges: Vec<RangedValue>,
@@ -112,8 +111,8 @@ pub mod tests {
     use crate::{
         fixtures::tests::{db_pool, empty_infra, TestFixture},
         models::{
-            infra_objects::catenary::Catenary, pathfinding::tests::simple_pathfinding,
-            pathfinding::PathfindingChangeset, Create,
+            infra_objects::catenary::Catenary, pathfinding::tests::simple_pathfinding_fixture,
+            Create,
         },
         range_map,
         schema::{
@@ -125,7 +124,6 @@ pub mod tests {
     use actix_web::test::{call_service, read_body_json, TestRequest};
     use rstest::*;
     use serde_json::from_value;
-
 
     #[fixture]
     fn simple_mode_map() -> HashMap<String, RangeMap<Float, String>> {
@@ -303,17 +301,8 @@ pub mod tests {
         #[future] infra_with_catenaries: TestFixture<Infra>,
     ) {
         let infra_with_catenaries = infra_with_catenaries.await;
-        let pathfinding = simple_pathfinding(infra_with_catenaries.id());
-        let pathfinding: Pathfinding = PathfindingChangeset::from(pathfinding)
-            .create(db_pool.clone())
-            .await
-            .unwrap()
-            .into();
-        let pathfinding = TestFixture {
-            model: pathfinding,
-            db_pool,
-            infra: None,
-        };
+        let pathfinding =
+            simple_pathfinding_fixture(infra_with_catenaries.id(), db_pool.clone()).await;
 
         let app = create_test_service().await;
         let req = TestRequest::get()

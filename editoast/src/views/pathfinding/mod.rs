@@ -1,4 +1,5 @@
 mod catenaries;
+mod electrical_profiles;
 mod rangemap_utils;
 
 use std::collections::{HashMap, HashSet};
@@ -21,7 +22,6 @@ use geos::Geom;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-use crate::schema::OperationalPoint;
 use crate::{
     core::{
         pathfinding::{PathfindingRequest, PathfindingResponse, PathfindingWaypoints, Waypoint},
@@ -35,11 +35,10 @@ use crate::{
         Create, CurveGraph, Delete, Infra, PathWaypoint, Pathfinding, PathfindingChangeset,
         PathfindingPayload, Retrieve, RollingStockModel, SlopeGraph, Update,
     },
-    schema::ApplicableDirectionsTrackRange,
     schema::{
         rolling_stock::RollingStock,
         utils::geometry::{diesel_linestring_to_geojson, geojson_to_diesel_linestring},
-        TrackSection,
+        ApplicableDirectionsTrackRange, OperationalPoint, TrackRange, TrackSection,
     },
     tables, DbPool,
 };
@@ -51,12 +50,15 @@ enum PathfindingError {
     #[error("Pathfinding {pathfinding_id} does not exist")]
     #[editoast_error(status = 404)]
     NotFound { pathfinding_id: i64 },
-    #[error("Catenary {catenary_id} overlaps with other catenaries on the same track")]
+    #[error("Catenary {catenary_id} overlaps with other catenaries")]
     #[editoast_error(status = 500)]
     CatenaryOverlap {
         catenary_id: String,
         overlapping_ranges: Vec<ApplicableDirectionsTrackRange>,
     },
+    #[error("Electrical Profile overlaps with others")]
+    #[editoast_error(status = 500)]
+    ElectricalProfilesOverlap { overlapping_ranges: Vec<TrackRange> },
     #[error("Infra {infra_id} does not exist")]
     #[editoast_error(status = 404)]
     InfraNotFound { infra_id: i64 },
@@ -73,7 +75,14 @@ enum PathfindingError {
 
 /// Returns `/pathfinding` routes
 pub fn routes() -> impl HttpServiceFactory {
-    web::scope("/pathfinding").service((get_pf, del_pf, create_pf, update_pf, catenaries::routes()))
+    web::scope("/pathfinding").service((
+        get_pf,
+        del_pf,
+        create_pf,
+        update_pf,
+        catenaries::routes(),
+        electrical_profiles::routes(),
+    ))
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

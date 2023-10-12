@@ -220,6 +220,11 @@ impl Identifiable for Pathfinding {
 
 #[cfg(test)]
 pub mod tests {
+    use crate::fixtures::tests::TestFixture;
+    use crate::models::Create;
+    use crate::DbPool;
+    use actix_web::web::Data;
+
     use super::*;
 
     pub fn simple_pathfinding(infra_id: i64) -> Pathfinding {
@@ -311,6 +316,21 @@ pub mod tests {
             }),
             ..Default::default()
         }
+    }
+
+    pub async fn simple_pathfinding_fixture(
+        infra_id: i64,
+        db_pool: Data<DbPool>,
+    ) -> TestFixture<Pathfinding> {
+        let pathfinding = simple_pathfinding(infra_id);
+
+        let pathfinding: Pathfinding = PathfindingChangeset::from(pathfinding)
+            .create(db_pool.clone())
+            .await
+            .unwrap()
+            .into();
+
+        TestFixture::new(pathfinding, db_pool)
     }
 
     #[test]

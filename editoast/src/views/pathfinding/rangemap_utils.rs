@@ -7,7 +7,6 @@ use std::collections::HashMap;
 use std::fmt::Debug;
 use std::ops::Range;
 
-
 #[macro_export]
 macro_rules! range_map {
     ($( $begin: expr , $end: expr => $value: expr ),*) => {{
@@ -203,9 +202,15 @@ mod tests {
         let pathfinding = simple_pathfinding(0);
         let value_maps_by_track: HashMap<String, RangeMap<Float, String>> = [
             ("track_1".into(), range_map!(0.0, 10.0 => "A")),
-            ("track_2".into(), range_map!(0.0, 5.0 => "B", 5.0, 10.0 => "A")),
+            (
+                "track_2".into(),
+                range_map!(0.0, 5.0 => "B", 5.0, 10.0 => "A"),
+            ),
             ("track_3".into(), range_map!(0.0, 10.0 => "B")),
-        ].iter().cloned().collect();
+        ]
+        .iter()
+        .cloned()
+        .collect();
 
         let path_range_map = make_path_range_map(&value_maps_by_track, &pathfinding);
         assert_eq!(
