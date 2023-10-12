@@ -5,14 +5,13 @@ import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { setFailure, setSuccess } from 'reducers/main';
 import { time2sec, sec2time } from 'utils/timeManipulation';
-import getSimulationResults from 'applications/operationalStudies/components/Scenario/getSimulationResults';
 import formatConf from 'modules/trainschedule/components/ManageTrainSchedule/helpers/formatConf';
 import trainNameWithNum from 'modules/trainschedule/components/ManageTrainSchedule/helpers/trainNameHelper';
 import { Infra, TrainScheduleBatchItem, osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { updateReloadTimetable } from 'reducers/osrdsimulation/actions';
 
 type Props = {
   infraState?: Infra['state'];
+  refetchTimetable: () => void;
   setIsWorking: (isWorking: boolean) => void;
 };
 
@@ -27,13 +26,15 @@ type error400 = {
   };
 };
 
-export default function SubmitConfAddTrainSchedule({ infraState, setIsWorking }: Props) {
+export default function SubmitConfAddTrainSchedule({
+  infraState,
+  refetchTimetable,
+  setIsWorking,
+}: Props) {
   const [postTrainSchedule] =
     osrdEditoastApi.endpoints.postTrainScheduleStandaloneSimulation.useMutation();
   const dispatch = useDispatch();
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
-  const [getTimetableWithTrainSchedulesDetails] =
-    osrdEditoastApi.endpoints.getTimetableById.useLazyQuery();
 
   async function submitConfAddTrainSchedules() {
     const { osrdconf } = store.getState();
@@ -83,7 +84,6 @@ export default function SubmitConfAddTrainSchedule({ infraState, setIsWorking }:
             timetable: osrdconf.simulationConf.timetableID,
           },
         }).unwrap();
-        dispatch(updateReloadTimetable(true));
 
         dispatch(
           setSuccess({
@@ -92,11 +92,7 @@ export default function SubmitConfAddTrainSchedule({ infraState, setIsWorking }:
           })
         );
         setIsWorking(false);
-        const timetable = await getTimetableWithTrainSchedulesDetails({
-          id: osrdconf.simulationConf.timetableID as number,
-        }).unwrap();
-        dispatch(updateReloadTimetable(false));
-        getSimulationResults(timetable);
+        refetchTimetable();
       } catch (e: unknown) {
         setIsWorking(false);
         if (e instanceof Error) {

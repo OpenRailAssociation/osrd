@@ -79,7 +79,6 @@ const ORSD_GRAPH_SAMPLE_DATA: OsrdSimulationState = {
   },
   isPlaying: false,
   isUpdating: false,
-  reloadTimetable: false,
   allowancesSettings: {
     '10': {
       base: true,

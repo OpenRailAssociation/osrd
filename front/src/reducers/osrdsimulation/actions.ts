@@ -56,14 +56,6 @@ export function updateIsUpdating(isUpdating: OsrdSimulationState['isUpdating']) 
     });
   };
 }
-export function updateReloadTimetable(reloadTimetable: OsrdSimulationState['reloadTimetable']) {
-  return (dispatch: Dispatch) => {
-    dispatch({
-      type: UPDATE_RELOAD_TIMETABLE,
-      reloadTimetable,
-    });
-  };
-}
 export function updateAllowancesSettings(
   allowancesSettings: OsrdSimulationState['allowancesSettings']
 ) {

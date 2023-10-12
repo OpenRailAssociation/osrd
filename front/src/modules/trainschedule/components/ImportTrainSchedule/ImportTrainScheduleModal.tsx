@@ -74,6 +74,8 @@ const ImportTrainScheduleModal = ({
   const { t } = useTranslation(['operationalStudies/importTrainSchedule']);
   const rollingStockID = useSelector(getRollingStockID);
 
+  const { refetch: refetchTimetable } =
+    osrdEditoastApi.endpoints.getTimetableById.useQuerySubscription({ id: timetableId });
   const [postPathFinding] = osrdEditoastApi.endpoints.postPathfinding.useMutation();
   const [postTrainSchedule] =
     osrdEditoastApi.endpoints.postTrainScheduleStandaloneSimulation.useMutation();
@@ -312,6 +314,7 @@ const ImportTrainScheduleModal = ({
           trainsCount,
         })
       );
+      refetchTimetable();
     } else {
       setStatus({ ...status, trainSchedulesDone: true });
       updateImportStatus(IMPORT_STATUS.CREATING_TRAINS_FAILED);

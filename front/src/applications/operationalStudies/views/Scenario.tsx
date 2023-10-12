@@ -19,12 +19,12 @@ import {
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { FaEye, FaEyeSlash, FaPencilAlt } from 'react-icons/fa';
 import { GiElectric } from 'react-icons/gi';
-import { setSuccess } from 'reducers/main';
 import { useNavigate } from 'react-router-dom';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import AddAndEditScenarioModal from 'modules/scenario/components/AddOrEditScenarioModal';
 import ScenarioLoaderMessage from 'modules/scenario/components/ScenarioLoaderMessage';
 import { RootState } from 'reducers';
+import { updateSimulation } from 'reducers/osrdsimulation/actions';
 import ImportTrainSchedule from './ImportTrainSchedule';
 import ManageTrainSchedule from './ManageTrainSchedule';
 import SimulationResults from './SimulationResults';
@@ -50,14 +50,35 @@ export default function Scenario() {
   const infraId = useSelector(getInfraID);
   const timetableId = useSelector(getTimetableID);
 
-  const [getProject, { data: project }] =
-    osrdEditoastApi.endpoints.getProjectsByProjectId.useLazyQuery({});
-  const [getStudy, { data: study }] =
-    osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyId.useLazyQuery({});
-  const [getScenario, { data: scenario }] =
-    osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId.useLazyQuery(
-      {}
+  const { data: project } = osrdEditoastApi.endpoints.getProjectsByProjectId.useQuery(
+    {
+      projectId: projectId as number,
+    },
+    { skip: !projectId }
+  );
+  const { data: study } =
+    osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyId.useQuery(
+      { projectId: projectId as number, studyId: studyId as number },
+      {
+        skip: !projectId || !studyId,
+      }
     );
+  const { data: scenario } =
+    osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId.useQuery(
+      {
+        projectId: projectId as number,
+        studyId: studyId as number,
+        scenarioId: scenarioId as number,
+      },
+      { skip: !projectId || !studyId || !scenarioId }
+    );
+
+  useEffect(() => {
+    if (scenario) {
+      dispatch(updateTimetableID(scenario.timetable_id));
+      dispatch(updateInfraID(scenario.infra_id));
+    }
+  }, [scenario]);
 
   const { data: infra } = osrdEditoastApi.useGetInfraByIdQuery(
     { id: infraId as number },
@@ -97,39 +118,28 @@ export default function Scenario() {
     }
   }, [infraId]);
 
-  const getScenarioTimetable = async (withNotification = false) => {
-    if (projectId && studyId && scenarioId) {
-      getScenario({ projectId, studyId, scenarioId })
-        .unwrap()
-        .then((result) => {
-          dispatch(updateTimetableID(result.timetable_id));
-          dispatch(updateInfraID(result.infra_id));
-          if (withNotification) {
-            dispatch(
-              setSuccess({
-                title: t('scenarioUpdated'),
-                text: t('scenarioUpdatedDetails', { name: result.name }),
-              })
-            );
-          }
-        });
-    }
-  };
+  /*
+   * Timetable is refetched automatically if a train schedule is updated or deleted
+   * but not if one is created (in importTrainScheduleModal, we don't want to refetch
+   * the timetable each time a train is created), that is why the refetch is needed here
+   */
+  const { data: timetable, refetch: refetchTimetable } =
+    osrdEditoastApi.endpoints.getTimetableById.useQuery(
+      { id: timetableId as number },
+      { skip: !timetableId }
+    );
 
   useEffect(() => {
     if (!scenarioId || !studyId || !projectId) {
       navigate('/operational-studies/study');
     } else {
-      getProject({ projectId });
-      getStudy({ projectId, studyId });
-      getScenarioTimetable();
       dispatch(updateMode(MODES.simulation));
     }
     return () => {
       dispatch(updateTimetableID(undefined));
       dispatch(updateInfraID(undefined));
+      dispatch(updateSimulation({ trains: [] }));
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return scenario && infraId && timetableId ? (
@@ -158,13 +168,7 @@ export default function Scenario() {
                         className="scenario-details-modify-button"
                         type="button"
                         onClick={() =>
-                          openModal(
-                            <AddAndEditScenarioModal
-                              editionMode
-                              scenario={scenario}
-                              getScenarioTimetable={getScenarioTimetable}
-                            />
-                          )
+                          openModal(<AddAndEditScenarioModal editionMode scenario={scenario} />)
                         }
                         title={t('editScenario')}
                       >
@@ -230,6 +234,7 @@ export default function Scenario() {
                     displayTrainScheduleManagement={displayTrainScheduleManagement}
                     setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
                     infraState={infra.state}
+                    refetchTimetable={refetchTimetable}
                   />
                 )}
                 {infra && (
@@ -237,6 +242,8 @@ export default function Scenario() {
                     setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
                     trainsWithDetails={trainsWithDetails}
                     infraState={infra.state}
+                    timetable={timetable}
+                    refetchTimetable={refetchTimetable}
                   />
                 )}
               </div>

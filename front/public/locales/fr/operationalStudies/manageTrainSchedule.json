@@ -36,6 +36,8 @@
     "TOO_MUCH_TIME": "Impossible d'aller suffisamment lentement afin de respecter les marges demandées",
     "The requested train couldn't reach its destination": "Le train ne peut pas atteindre sa destination",
     "trainScheduleTitle": "Une erreur est survenue",
+    "unableToDeleteTrain": "Impossible de supprimer le train",
+    "unableToDuplicateTrain": "Impossible de dupliquer le train",
     "unableToLoadInfra": "Erreur de chargement, nouvelle tentative en cours ({{reloadCount}})",
     "unableToRetrievePath": "Impossible de récupérer un itinéraire",
     "unableToRetrievePathfinding": "Impossible de tracer un itinéraire",

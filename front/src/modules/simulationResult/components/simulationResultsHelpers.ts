@@ -7,7 +7,6 @@ import {
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
 import { setFailure } from 'reducers/main';
-import { updateReloadTimetable } from 'reducers/osrdsimulation/actions';
 import { Train } from 'reducers/osrdsimulation/types';
 import { Dispatch } from 'redux';
 import i18next from 'i18next';
@@ -54,11 +53,9 @@ export const changeTrain =
         rolling_stock_id: details.rolling_stock_id || trainDetails?.rolling_stock_id,
         train_name: details.train_name || trainDetails?.train_name,
       };
-      dispatch(updateReloadTimetable(true));
       const response = await dispatch(
         osrdEditoastApi.endpoints.patchTrainSchedule.initiate({ body: [trainSchedule] })
       );
-      dispatch(updateReloadTimetable(false));
       if ('error' in response) {
         dispatch(
           setFailure({

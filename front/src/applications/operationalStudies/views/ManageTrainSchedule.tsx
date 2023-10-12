@@ -30,7 +30,7 @@ export default function ManageTrainSchedule() {
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const rollingStockID = useSelector(getRollingStockID);
   const pathFindingID = useSelector(getPathfindingID);
-  const trainScheduleIDsToModify: undefined | number[] = useSelector(getTrainScheduleIDsToModify);
+  const trainScheduleIDsToModify = useSelector(getTrainScheduleIDsToModify);
   const [getTrainScheduleById] = osrdEditoastApi.endpoints.getTrainScheduleById.useLazyQuery({});
   const [getPathfindingById] = osrdEditoastApi.endpoints.getPathfindingById.useLazyQuery({});
 
@@ -149,7 +149,7 @@ export default function ManageTrainSchedule() {
   };
 
   useEffect(() => {
-    if (trainScheduleIDsToModify && trainScheduleIDsToModify.length > 0)
+    if (trainScheduleIDsToModify.length > 0)
       getTrainScheduleById({ id: trainScheduleIDsToModify[0] })
         .unwrap()
         .then((trainSchedule) => {

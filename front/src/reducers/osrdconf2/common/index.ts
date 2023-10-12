@@ -44,7 +44,7 @@ export const defaultCommonConf: OsrdConfState = {
   featureInfoClick: { displayPopup: false },
   gridMarginBefore: 0,
   gridMarginAfter: 0,
-  trainScheduleIDsToModify: undefined,
+  trainScheduleIDsToModify: [],
 };
 
 type CommonConfReducersType<S extends OsrdConfState> = {

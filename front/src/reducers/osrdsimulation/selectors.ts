@@ -9,7 +9,6 @@ const makeOsrdSimulationSelector = makeSubSelector<OsrdSimulationState>(getOsrdS
 
 export const getIsPlaying = makeOsrdSimulationSelector('isPlaying');
 export const getIsUpdating = makeOsrdSimulationSelector('isUpdating');
-export const getReloadTimetable = makeOsrdSimulationSelector('reloadTimetable');
 export const getAllowancesSettings = makeOsrdSimulationSelector('allowancesSettings');
 export const getMustRedraw = makeOsrdSimulationSelector('mustRedraw');
 export const getPositionValues = makeOsrdSimulationSelector('positionValues');

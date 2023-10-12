@@ -106,7 +106,7 @@ const defaultCommonConf = {
   featureInfoClick: { displayPopup: false },
   gridMarginBefore: 0,
   gridMarginAfter: 0,
-  trainScheduleIDsToModify: undefined,
+  trainScheduleIDsToModify: [],
 };
 
 export const initialState: OsrdMultiConfState = {
@@ -688,7 +688,7 @@ export function updatePowerRestrictionRanges(powerRestrictionRanges: PowerRestri
     });
   };
 }
-export function updateTrainScheduleIDsToModify(trainScheduleIDsToModify?: number[]) {
+export function updateTrainScheduleIDsToModify(trainScheduleIDsToModify: number[]) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_TRAIN_SCHEDULE_IDS_TO_MODIFY,

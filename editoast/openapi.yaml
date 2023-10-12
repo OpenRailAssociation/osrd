@@ -5043,6 +5043,7 @@ paths:
           description: No content
       summary: Delete multiple train schedule
       tags:
+      - timetable
       - train_schedule
     patch:
       requestBody:
@@ -5060,6 +5061,7 @@ paths:
           description: The train schedule was updated successfully
       summary: Update train schedules and run a simulation accordingly
       tags:
+      - timetable
       - train_schedule
   /train_schedule/results/:
     get:
@@ -5125,7 +5127,6 @@ paths:
       summary: Create a batch of train schedule and run simulations accordingly
       tags:
       - train_schedule
-      - timetable
   /train_schedule/{id}/:
     delete:
       parameters:
@@ -5141,6 +5142,7 @@ paths:
       summary: Delete a train schedule and its result
       tags:
       - train_schedule
+      - timetable
     get:
       parameters:
       - description: Train schedule ID

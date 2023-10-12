@@ -31,13 +31,11 @@ const scenarioTypesDefaults = {
 type AddOrEditScenarioModalProps = {
   editionMode?: boolean;
   scenario?: ScenarioListResult;
-  getScenarioTimetable?: (v: boolean) => void;
 };
 
 export default function AddOrEditScenarioModal({
   editionMode = false,
   scenario,
-  getScenarioTimetable,
 }: AddOrEditScenarioModalProps) {
   const { t } = useTranslation('operationalStudies/scenario');
   const { closeModal } = useContext(ModalContext);
@@ -147,7 +145,12 @@ export default function AddOrEditScenarioModal({
       })
         .unwrap()
         .then(() => {
-          if (getScenarioTimetable) getScenarioTimetable(true);
+          dispatch(
+            setSuccess({
+              title: t('scenarioUpdated'),
+              text: t('scenarioUpdatedDetails', { name: currentScenario.name }),
+            })
+          );
           closeModal();
         })
         .catch((error) => {

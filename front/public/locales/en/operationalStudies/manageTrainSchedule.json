@@ -36,6 +36,8 @@
     "TOO_MUCH_TIME": "Impossible to run slowly enough to meet the required allowance",
     "The requested train couldn't reach its destination": "The train cannot reach its destination",
     "trainScheduleTitle": "An error has occurred",
+    "unableToDeleteTrain": "Impossible to delete the train",
+    "unableToDuplicateTrain": "Impossible to duplicate the train",
     "unableToLoadInfra": "Loading error, retry in progress ({{reloadCount}})",
     "unableToRetrievePath": "Impossible to fetch pathfinding",
     "unableToRetrievePathfinding": "Impossible to find a path",

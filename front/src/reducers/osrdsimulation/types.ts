@@ -119,7 +119,6 @@ export type MechanicalEnergyConsumedBaseEco = {
 
 export type ScheduledTrain = TrainScheduleSummary & {
   duration?: number;
-  isFiltered?: boolean;
 };
 
 export interface GradientPosition {
@@ -236,7 +235,6 @@ export interface OsrdSimulationState {
   chartXGEV?: Chart['x'];
   isPlaying: boolean;
   isUpdating: boolean;
-  reloadTimetable: boolean;
   allowancesSettings?: AllowancesSettings;
   mustRedraw: boolean;
   positionValues: PositionValues;
