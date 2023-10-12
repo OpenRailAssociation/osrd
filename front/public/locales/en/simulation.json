@@ -1,5 +1,5 @@
 {
-  "allowances": "Margins",
+  "allowances": "Allowances",
   "departureTime": "Departure",
   "errorMessages": {
     "unableToRetrieveTrainSchedule": "Impossible to compute running time",
