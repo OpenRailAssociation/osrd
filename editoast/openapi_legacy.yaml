@@ -1761,6 +1761,7 @@ paths:
     delete:
       tags:
         - train_schedule
+        - timetable
       summary: Delete a train schedule and its result
       parameters:
         - in: path
@@ -1802,6 +1803,7 @@ paths:
   /train_schedule/:
     delete:
       tags:
+        - timetable
         - train_schedule
       summary: Delete multiple train schedule
       requestBody:
@@ -1823,6 +1825,7 @@ paths:
 
     patch:
       tags:
+        - timetable
         - train_schedule
       summary: Update train schedules and run a simulation accordingly
       requestBody:
@@ -1871,7 +1874,6 @@ paths:
     post:
       tags:
         - train_schedule
-        - timetable
       summary: Create a batch of train schedule and run simulations accordingly
       requestBody:
         description: The list of train schedules to simulate

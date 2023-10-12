@@ -629,11 +629,11 @@ const injectedRtkApi = api
         DeleteTrainScheduleApiArg
       >({
         query: (queryArg) => ({ url: `/train_schedule/`, method: 'DELETE', body: queryArg.body }),
-        invalidatesTags: ['train_schedule'],
+        invalidatesTags: ['timetable', 'train_schedule'],
       }),
       patchTrainSchedule: build.mutation<PatchTrainScheduleApiResponse, PatchTrainScheduleApiArg>({
         query: (queryArg) => ({ url: `/train_schedule/`, method: 'PATCH', body: queryArg.body }),
-        invalidatesTags: ['train_schedule'],
+        invalidatesTags: ['timetable', 'train_schedule'],
       }),
       getTrainScheduleResults: build.query<
         GetTrainScheduleResultsApiResponse,
@@ -654,14 +654,14 @@ const injectedRtkApi = api
           method: 'POST',
           body: queryArg.body,
         }),
-        invalidatesTags: ['train_schedule', 'timetable'],
+        invalidatesTags: ['train_schedule'],
       }),
       deleteTrainScheduleById: build.mutation<
         DeleteTrainScheduleByIdApiResponse,
         DeleteTrainScheduleByIdApiArg
       >({
         query: (queryArg) => ({ url: `/train_schedule/${queryArg.id}/`, method: 'DELETE' }),
-        invalidatesTags: ['train_schedule'],
+        invalidatesTags: ['train_schedule', 'timetable'],
       }),
       getTrainScheduleById: build.query<
         GetTrainScheduleByIdApiResponse,

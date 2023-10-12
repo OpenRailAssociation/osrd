@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { FaTrash, FaPencilAlt } from 'react-icons/fa';
 import { GiPathDistance } from 'react-icons/gi';
@@ -16,6 +16,9 @@ import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import { updateTrainScheduleIDsToModify } from 'reducers/osrdconf';
 import { useDispatch } from 'react-redux';
 import { jouleToKwh, mToKmOneDecimal } from 'utils/physics';
+import { setFailure, setSuccess } from 'reducers/main';
+import { updateSelectedProjection, updateSelectedTrainId } from 'reducers/osrdsimulation/actions';
+import trainNameWithNum from '../ManageTrainSchedule/helpers/trainNameHelper';
 
 const invalidTrainValues: {
   [key in InvalidTrainValues]: InvalidTrainValues;
@@ -33,11 +36,8 @@ type Props = {
   isModified?: boolean;
   projectionPathIsUsed: boolean;
   idx: number;
-  changeSelectedTrainId: (trainId: number) => void;
+  refetchTimetable: () => void;
   toggleTrainSelection: (trainId: number) => void;
-  deleteTrain: (train: ScheduledTrain) => void;
-  selectPathProjection: (train: ScheduledTrain) => void;
-  duplicateTrain: (train: ScheduledTrain) => void;
   setDisplayTrainScheduleManagement: (arg0: string) => void;
 };
 
@@ -50,34 +50,115 @@ function TimetableTrainCard({
   isModified,
   projectionPathIsUsed,
   idx,
-  changeSelectedTrainId,
-  deleteTrain,
-  selectPathProjection,
-  duplicateTrain,
+  refetchTimetable,
   setDisplayTrainScheduleManagement,
   toggleTrainSelection,
 }: Props) {
-  const [getTrainSchedule] = osrdEditoastApi.endpoints.getTrainScheduleById.useLazyQuery({});
-  const [getRollingStock, { data: rollingStock }] =
-    osrdEditoastApi.endpoints.getLightRollingStockById.useLazyQuery({});
+  const { data: rollingStock } = osrdEditoastApi.endpoints.getLightRollingStockById.useQuery({
+    id: train.rolling_stock_id,
+  });
   const { t } = useTranslation(['operationalStudies/scenario']);
   const dispatch = useDispatch();
+
+  const [postTrainSchedule] =
+    osrdEditoastApi.endpoints.postTrainScheduleStandaloneSimulation.useMutation();
+  const [getTrainScheduleById] = osrdEditoastApi.endpoints.getTrainScheduleById.useLazyQuery();
+  const [deleteTrainScheduleById] = osrdEditoastApi.endpoints.deleteTrainScheduleById.useMutation();
+
+  const changeSelectedTrainId = (trainId: number) => {
+    dispatch(updateSelectedTrainId(trainId));
+  };
 
   const editTrainSchedule = () => {
     dispatch(updateTrainScheduleIDsToModify([train.id]));
     setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.edit);
   };
 
-  useEffect(() => {
-    if (train.id) {
-      getTrainSchedule({ id: train.id })
+  const deleteTrain = async () => {
+    deleteTrainScheduleById({ id: train.id })
+      .unwrap()
+      .then(() => {
+        dispatch(
+          setSuccess({
+            title: t('timetable.trainDeleted', { name: train.train_name }),
+            text: '',
+          })
+        );
+      })
+      .catch((e: unknown) => {
+        console.error(e);
+        dispatch(
+          setFailure({
+            name: t('errorMessages.error'),
+            message: t('errorMessages.unableToDeleteTrain'),
+          })
+        );
+      });
+  };
+
+  const duplicateTrain = async () => {
+    // Static for now, will be dynamic when UI will be ready
+    const trainName = `${train.train_name} (${t('timetable.copy')})`;
+    const trainDelta = 5;
+    const trainCount = 1;
+    const actualTrainCount = 1;
+
+    const trainDetail = await getTrainScheduleById({ id: train.id })
+      .unwrap()
+      .catch(() => {
+        dispatch(
+          setFailure({
+            name: t('errorMessages.error'),
+            message: t('errorMessages.unableToRetrieveTrain'),
+          })
+        );
+      });
+
+    if (trainDetail) {
+      const newTrain = {
+        ...trainDetail,
+        rolling_stock: trainDetail.rolling_stock_id,
+        timetable: trainDetail.timetable_id,
+        departure_time: train.departure_time + 60 * trainDelta,
+        train_name: trainNameWithNum(trainName, actualTrainCount, trainCount),
+      };
+      await postTrainSchedule({
+        body: {
+          timetable: trainDetail.timetable_id,
+          path: trainDetail.path_id,
+          schedules: [newTrain],
+        },
+      })
         .unwrap()
-        .then((trainSchedule) => {
-          if (trainSchedule.rolling_stock_id)
-            getRollingStock({ id: trainSchedule.rolling_stock_id });
+        .then(() => {
+          refetchTimetable();
+          dispatch(
+            setSuccess({
+              title: t('timetable.trainAdded'),
+              text: `${trainName}`,
+            })
+          );
+        })
+        .catch((e) => {
+          console.error(e);
+          dispatch(
+            setFailure({
+              name: t('errorMessages.error'),
+              message: t('errorMessages.unableToDuplicateATrain'),
+            })
+          );
         });
     }
-  }, [train.rolling_stock_id]);
+  };
+
+  const selectPathProjection = async () => {
+    dispatch(
+      updateSelectedProjection({
+        id: train.id,
+        path: train.path_id,
+      })
+    );
+  };
 
   return (
     <div className="scenario-timetable-train-with-right-bar">
@@ -189,7 +270,7 @@ function TimetableTrainCard({
                 className="scenario-timetable-train-buttons-selectprojection"
                 type="button"
                 title={t('timetable.choosePath')}
-                onClick={() => selectPathProjection(train)}
+                onClick={selectPathProjection}
               >
                 <GiPathDistance />
               </button>
@@ -197,7 +278,7 @@ function TimetableTrainCard({
                 className="scenario-timetable-train-buttons-duplicate"
                 type="button"
                 title={t('timetable.duplicate')}
-                onClick={() => duplicateTrain(train)}
+                onClick={duplicateTrain}
               >
                 <MdContentCopy />
               </button>
@@ -214,7 +295,7 @@ function TimetableTrainCard({
           <button
             className="scenario-timetable-train-buttons-delete"
             type="button"
-            onClick={() => deleteTrain(train)}
+            onClick={deleteTrain}
             title={t('timetable.delete')}
           >
             <FaTrash />

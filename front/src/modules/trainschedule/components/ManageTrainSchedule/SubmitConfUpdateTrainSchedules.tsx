@@ -2,16 +2,13 @@ import React from 'react';
 import formatConf from 'modules/trainschedule/components/ManageTrainSchedule/helpers/formatConf';
 import { setFailure, setSuccess } from 'reducers/main';
 import { store } from 'Store';
-import getSimulationResults from 'applications/operationalStudies/components/Scenario/getSimulationResults';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import { updateTrainScheduleIDsToModify } from 'reducers/osrdconf';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useDispatch, useSelector } from 'react-redux';
 import { getTrainScheduleIDsToModify } from 'reducers/osrdconf/selectors';
-import { updateReloadTimetable } from 'reducers/osrdsimulation/actions';
 import { useTranslation } from 'react-i18next';
 import { FaPen } from 'react-icons/fa';
-import { getSelectedTrainId } from 'reducers/osrdsimulation/selectors';
 
 type SubmitConfUpdateTrainSchedulesProps = {
   setIsWorking: (isWorking: boolean) => void;
@@ -26,9 +23,7 @@ export default function SubmitConfUpdateTrainSchedules({
 }: SubmitConfUpdateTrainSchedulesProps) {
   const dispatch = useDispatch();
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
-  const selectedTrainId = useSelector(getSelectedTrainId);
-  const trainScheduleIDsToModify: undefined | number[] = useSelector(getTrainScheduleIDsToModify);
-  const [getTimetable] = osrdEditoastApi.endpoints.getTimetableById.useLazyQuery();
+  const trainScheduleIDsToModify = useSelector(getTrainScheduleIDsToModify);
   const [patchTrainSchedules] = osrdEditoastApi.endpoints.patchTrainSchedule.useMutation();
 
   async function submitConfUpdateTrainSchedules() {
@@ -45,8 +40,8 @@ export default function SubmitConfUpdateTrainSchedules({
       );
     } else if (
       simulationConf &&
-      trainScheduleIDsToModify &&
-      osrdconf.simulationConf.pathfindingID
+      osrdconf.simulationConf.pathfindingID &&
+      trainScheduleIDsToModify.length > 0
     ) {
       setIsWorking(true);
       try {
@@ -63,7 +58,6 @@ export default function SubmitConfUpdateTrainSchedules({
             }).unwrap();
           })
         );
-        dispatch(updateReloadTimetable(true));
         dispatch(
           setSuccess({
             title: t('trainUpdated'),
@@ -72,15 +66,9 @@ export default function SubmitConfUpdateTrainSchedules({
         );
         setIsWorking(false);
         setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.none);
-        dispatch(updateTrainScheduleIDsToModify(undefined));
-        const timetable = await getTimetable({
-          id: osrdconf.simulationConf.timetableID as number,
-        }).unwrap();
-        dispatch(updateReloadTimetable(false));
-        getSimulationResults(timetable, selectedTrainId);
+        dispatch(updateTrainScheduleIDsToModify([]));
       } catch (e: unknown) {
         setIsWorking(false);
-        dispatch(updateReloadTimetable(false));
         if (e instanceof Error) {
           dispatch(
             setFailure({

@@ -15,12 +15,14 @@ type Props = {
   displayTrainScheduleManagement: string;
   setDisplayTrainScheduleManagement: (type: string) => void;
   infraState?: Infra['state'];
+  refetchTimetable: () => void;
 };
 
 export default function TimetableManageTrainSchedule({
   displayTrainScheduleManagement,
   setDisplayTrainScheduleManagement,
   infraState,
+  refetchTimetable,
 }: Props) {
   const { t } = useTranslation('operationalStudies/manageTrainSchedule');
   const dispatch = useDispatch();
@@ -28,7 +30,7 @@ export default function TimetableManageTrainSchedule({
 
   const leaveManageTrainSchedule = () => {
     setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.none);
-    dispatch(updateTrainScheduleIDsToModify(undefined));
+    dispatch(updateTrainScheduleIDsToModify([]));
   };
 
   return (
@@ -48,7 +50,11 @@ export default function TimetableManageTrainSchedule({
                 <DotsLoader />
               </button>
             ) : (
-              <SubmitConfAddTrainSchedule infraState={infraState} setIsWorking={setIsWorking} />
+              <SubmitConfAddTrainSchedule
+                infraState={infraState}
+                refetchTimetable={refetchTimetable}
+                setIsWorking={setIsWorking}
+              />
             )}
             <TrainAddingSettings />
           </>

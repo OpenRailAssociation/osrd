@@ -1,29 +1,23 @@
+import cx from 'classnames';
+import { isEmpty } from 'lodash';
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { BsFillExclamationTriangleFill } from 'react-icons/bs';
 import { useTranslation } from 'react-i18next';
 import { FaDownload, FaPlus, FaTrash } from 'react-icons/fa';
 import { BiSelectMultiple } from 'react-icons/bi';
-import cx from 'classnames';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useDebounce } from 'utils/helpers';
-import { updateSelectedProjection, updateSelectedTrainId } from 'reducers/osrdsimulation/actions';
 import { setFailure, setSuccess } from 'reducers/main';
-import trainNameWithNum from 'modules/trainschedule/components/ManageTrainSchedule/helpers/trainNameHelper';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
-import { getTimetableID, getTrainScheduleIDsToModify } from 'reducers/osrdconf/selectors';
-import { OsrdSimulationState, ScheduledTrain } from 'reducers/osrdsimulation/types';
+import { getTrainScheduleIDsToModify } from 'reducers/osrdconf/selectors';
+import { ScheduledTrain } from 'reducers/osrdsimulation/types';
 import { updateTrainScheduleIDsToModify } from 'reducers/osrdconf';
 import { valueToInterval } from 'utils/numbers';
-import { Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { Infra, TimetableWithSchedulesDetails, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { durationInSeconds } from 'utils/timeManipulation';
-import {
-  getReloadTimetable,
-  getSelectedProjection,
-  getSelectedTrainId,
-} from 'reducers/osrdsimulation/selectors';
-import { isEmpty } from 'lodash';
-import { BsFillExclamationTriangleFill } from 'react-icons/bs';
+import { getSelectedProjection, getSelectedTrainId } from 'reducers/osrdsimulation/selectors';
 import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import ConflictsList from 'modules/conflict/components/ConflictsList';
@@ -35,22 +29,24 @@ type Props = {
   setDisplayTrainScheduleManagement: (mode: string) => void;
   trainsWithDetails: boolean;
   infraState: Infra['state'];
+  timetable: TimetableWithSchedulesDetails | undefined;
+  refetchTimetable: () => void;
 };
 
 export default function Timetable({
   setDisplayTrainScheduleManagement,
   trainsWithDetails,
   infraState,
+  timetable,
+  refetchTimetable,
 }: Props) {
   const selectedProjection = useSelector(getSelectedProjection);
   const selectedTrainId = useSelector(getSelectedTrainId);
-  const timetableID = useSelector(getTimetableID);
   const trainScheduleIDsToModify = useSelector(getTrainScheduleIDsToModify);
-  const reloadTimetable = useSelector(getReloadTimetable);
 
   const [filter, setFilter] = useState('');
   const [conflictsListExpanded, setConflictsListExpanded] = useState(false);
-  const [multiselectOn, setMultiselectOn] = useState<boolean>(false);
+  const [multiselectOn, setMultiselectOn] = useState(false);
   const [selectedTrainIds, setSelectedTrainIds] = useState<number[]>([]);
   const { openModal } = useContext(ModalContext);
 
@@ -59,33 +55,19 @@ export default function Timetable({
 
   const debouncedTerm = useDebounce(filter, 500) as string;
 
-  const [postTrainSchedule] =
-    osrdEditoastApi.endpoints.postTrainScheduleStandaloneSimulation.useMutation();
-  const [getTrainScheduleById] = osrdEditoastApi.endpoints.getTrainScheduleById.useLazyQuery();
-  const [deleteTrainScheduleById] = osrdEditoastApi.endpoints.deleteTrainScheduleById.useMutation();
   const [deleteTrainSchedules] = osrdEditoastApi.endpoints.deleteTrainSchedule.useMutation();
 
-  const {
-    data: timetable,
-    refetch: refetchTimetable,
-    isUninitialized: isTimetableUnintialized,
-  } = osrdEditoastApi.endpoints.getTimetableById.useQuery(
-    { id: timetableID as number },
-    { skip: !timetableID || infraState !== 'CACHED' }
+  const { data: conflicts = [] } = osrdEditoastApi.endpoints.getTimetableByIdConflicts.useQuery(
+    { id: timetable?.id as number },
+    { skip: !timetable }
   );
 
-  const { data: conflicts = [], refetch: refetchConflicts } =
-    osrdEditoastApi.endpoints.getTimetableByIdConflicts.useQuery(
-      { id: timetableID as number },
-      { skip: !timetableID }
-    );
-
   useEffect(() => {
-    if (timetable) {
+    if (timetable && infraState === 'CACHED') {
       getSimulationResults(timetable, selectedTrainId);
-      refetchConflicts();
     }
-  }, [timetable]);
+    setMultiselectOn(false);
+  }, [timetable, infraState]);
 
   const trainsDurationsIntervals = useMemo(
     () =>
@@ -95,148 +77,37 @@ export default function Timetable({
     [timetable]
   );
 
-  const isTrainFiltered = (train: ScheduledTrain, debounce?: string): boolean => {
-    if (debounce) {
-      return (
-        !train.train_name.toLowerCase().includes(debouncedTerm.toLowerCase()) &&
-        !train.labels.join('').toLowerCase().includes(debouncedTerm.toLowerCase())
-      );
+  const keepTrain = (train: ScheduledTrain, searchString: string): boolean => {
+    if (searchString) {
+      const searchStringInName = train.train_name
+        .toLowerCase()
+        .includes(searchString.toLowerCase());
+      const searchStringInTags = train.labels
+        .join('')
+        .toLowerCase()
+        .includes(searchString.toLowerCase());
+      return searchStringInName || searchStringInTags;
     }
-    return false;
+    return true;
   };
 
   const trainsList = useMemo(() => {
     if (timetable) {
-      return timetable.train_schedule_summaries.map((train) => ({
-        ...train,
-        isFiltered: isTrainFiltered(train, debouncedTerm),
-        duration: durationInSeconds(train.departure_time, train.arrival_time),
-      }));
+      return timetable.train_schedule_summaries
+        .filter((train) => keepTrain(train, debouncedTerm))
+        .map((train) => ({
+          ...train,
+          duration: durationInSeconds(train.departure_time, train.arrival_time),
+        }));
     }
     return [];
   }, [timetable, trainsDurationsIntervals, debouncedTerm]);
 
-  const changeSelectedTrainId = (trainId: number) => {
-    dispatch(updateSelectedTrainId(trainId));
-  };
-
-  const deleteSingleTrain = async (train: ScheduledTrain) => {
-    deleteTrainScheduleById({ id: train.id })
-      .unwrap()
-      .then(() => {
-        refetchTimetable();
-        setMultiselectOn(false);
-        dispatch(
-          setSuccess({
-            title: t('timetable.trainDeleted', { name: train.train_name }),
-            text: '',
-          })
-        );
-      })
-      .catch((e: unknown) => {
-        console.error(e);
-        if (e instanceof Error) {
-          dispatch(
-            setFailure({
-              name: e.name,
-              message: e.message,
-            })
-          );
-        }
-      });
-  };
-
-  const duplicateTrain = async (train: ScheduledTrain) => {
-    // Static for now, will be dynamic when UI will be ready
-    const trainName = `${train.train_name} (${t('timetable.copy')})`;
-    const trainDelta = 5;
-    const trainCount = 1;
-    const actualTrainCount = 1;
-
-    const trainDetail = await getTrainScheduleById({ id: train.id })
-      .unwrap()
-      .catch((e: unknown) => {
-        if (e instanceof Error) {
-          dispatch(
-            setFailure({
-              name: e.name,
-              message: e.message,
-            })
-          );
-        }
-      });
-
-    if (trainDetail) {
-      const newTrain = {
-        ...trainDetail,
-        rolling_stock: trainDetail.rolling_stock_id,
-        timetable: trainDetail.timetable_id,
-        departure_time: train.departure_time + 60 * trainDelta,
-        train_name: trainNameWithNum(trainName, actualTrainCount, trainCount),
-      };
-      await postTrainSchedule({
-        body: {
-          timetable: trainDetail.timetable_id,
-          path: trainDetail.path_id,
-          schedules: [newTrain],
-        },
-      })
-        .unwrap()
-        .then(() => {
-          refetchTimetable();
-          dispatch(
-            setSuccess({
-              title: t('timetable.trainAdded'),
-              text: `${trainName}`,
-            })
-          );
-        })
-        .catch((e: unknown) => {
-          console.error(e);
-          const error =
-            e instanceof Error
-              ? {
-                  name: e.name,
-                  message: e.message,
-                }
-              : {
-                  name: t('errorMessages.error'),
-                  message: t('errorMessages.unableToDuplicateATrain'),
-                };
-          dispatch(setFailure(error));
-        });
-    }
-  };
-
-  const selectPathProjection = async (train: ScheduledTrain) => {
-    if (train) {
-      dispatch(
-        updateSelectedProjection({
-          id: train.id,
-          path: train.path_id,
-        })
-      );
-    }
-  };
   const toggleConflictsListExpanded = () => {
     setConflictsListExpanded(!conflictsListExpanded);
   };
 
-  const isProjectionPathUsed = (
-    infraStateStatus: Infra['state'],
-    trainId: number,
-    projection?: OsrdSimulationState['selectedProjection']
-  ): boolean => {
-    if (infraStateStatus !== 'CACHED' && !projection) {
-      return false;
-    }
-    if (infraStateStatus === 'CACHED' && projection) {
-      return projection.id === trainId;
-    }
-    return false;
-  };
-
-  const timeTableHasInvalidTrain = (trains: ScheduledTrain[]) =>
+  const timetableHasInvalidTrain = (trains: ScheduledTrain[]) =>
     trains.some((train) => train.invalid_reasons && train.invalid_reasons.length > 0);
 
   const toggleTrainSelection = (id: number) => {
@@ -253,15 +124,10 @@ export default function Timetable({
   };
 
   const selectAllTrains = () => {
-    if (
-      trainsList.filter((train: ScheduledTrain) => !train.isFiltered).length ===
-      selectedTrainIds.length
-    ) {
+    if (trainsList.length === selectedTrainIds.length) {
       setSelectedTrainIds([]);
     } else {
-      const trainIds =
-        trainsList.filter((train: ScheduledTrain) => !train.isFiltered).map((train) => train.id) ||
-        [];
+      const trainIds = trainsList.map((train) => train.id);
       setSelectedTrainIds(trainIds);
     }
   };
@@ -271,8 +137,6 @@ export default function Timetable({
     await deleteTrainSchedules({ body: { ids: selectedTrainIds } })
       .unwrap()
       .then(() => {
-        refetchTimetable();
-        setMultiselectOn(false);
         dispatch(
           setSuccess({
             title: t('timetable.trainsSelectionDeletedCount', { count: trainsCount }),
@@ -297,15 +161,9 @@ export default function Timetable({
     if (!multiselectOn) setSelectedTrainIds([]);
   }, [multiselectOn]);
 
-  useEffect(() => {
-    if (timetableID && !reloadTimetable && !isTimetableUnintialized) {
-      refetchTimetable();
-    }
-  }, [reloadTimetable]);
-
   // Avoid keeping this on refresh
   useEffect(() => {
-    dispatch(updateTrainScheduleIDsToModify());
+    dispatch(updateTrainScheduleIDsToModify([]));
   }, []);
 
   return (
@@ -328,7 +186,7 @@ export default function Timetable({
           data-testid="scenarios-add-train-schedule-button"
           onClick={() => {
             setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.add);
-            dispatch(updateTrainScheduleIDsToModify(undefined));
+            dispatch(updateTrainScheduleIDsToModify([]));
           }}
         >
           <span className="mr-2">
@@ -342,17 +200,14 @@ export default function Timetable({
           <input
             type="checkbox"
             className="mr-2"
-            checked={
-              selectedTrainIds.length ===
-              trainsList.filter((train: ScheduledTrain) => !train.isFiltered).length
-            }
+            checked={selectedTrainIds.length === trainsList.length}
             onChange={() => selectAllTrains()}
           />
         )}
         <div className="small">
           {multiselectOn && <span>{selectedTrainIds.length} / </span>}
           {t('trainCount', {
-            count: trainsList.filter((train: ScheduledTrain) => !train.isFiltered).length,
+            count: trainsList.length,
           })}
         </div>
         <div className="flex-grow-1">
@@ -373,7 +228,7 @@ export default function Timetable({
         {!isEmpty(trainsList) && (
           <button
             type="button"
-            className={cx('multiselect-toggle', multiselectOn ? 'on' : '')}
+            className={cx('multiselect-toggle', { on: multiselectOn })}
             onClick={() => setMultiselectOn(!multiselectOn)}
           >
             <BiSelectMultiple />
@@ -383,7 +238,7 @@ export default function Timetable({
         {multiselectOn && (
           <button
             disabled={!selectedTrainIds.length}
-            className={cx('multiselect-delete', !selectedTrainIds.length && 'disabled')}
+            className={cx('multiselect-delete', { disabled: !selectedTrainIds.length })}
             type="button"
             onClick={() =>
               openModal(
@@ -401,44 +256,37 @@ export default function Timetable({
       </div>
 
       <div
-        className={cx(
-          'scenario-timetable-trains',
-          trainsWithDetails && 'with-details',
-          conflictsListExpanded && 'expanded'
-        )}
+        className={cx('scenario-timetable-trains', {
+          expanded: conflictsListExpanded,
+          'with-details': trainsWithDetails,
+        })}
       >
         {trainsDurationsIntervals &&
           trainsList
             .sort((trainA, trainB) => trainA.departure_time - trainB.departure_time)
-            .map(
-              (train: ScheduledTrain, idx: number) =>
-                !train.isFiltered && (
-                  <TimetableTrainCard
-                    isSelectable={multiselectOn}
-                    isInSelection={selectedTrainIds.includes(train.id)}
-                    toggleTrainSelection={toggleTrainSelection}
-                    train={train}
-                    intervalPosition={valueToInterval(train.duration, trainsDurationsIntervals)}
-                    key={`timetable-train-card-${train.id}-${train.path_id}`}
-                    isSelected={infraState !== 'CACHED' ? false : selectedTrainId === train.id}
-                    isModified={trainScheduleIDsToModify?.includes(train.id)}
-                    projectionPathIsUsed={isProjectionPathUsed(
-                      infraState,
-                      train.id,
-                      selectedProjection
-                    )}
-                    idx={idx}
-                    changeSelectedTrainId={changeSelectedTrainId}
-                    deleteTrain={deleteSingleTrain}
-                    duplicateTrain={duplicateTrain}
-                    selectPathProjection={selectPathProjection}
-                    setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-                  />
-                )
-            )}
+            .map((train: ScheduledTrain, idx: number) => (
+              <TimetableTrainCard
+                idx={idx}
+                isSelectable={multiselectOn}
+                isInSelection={selectedTrainIds.includes(train.id)}
+                toggleTrainSelection={toggleTrainSelection}
+                train={train}
+                intervalPosition={valueToInterval(train.duration, trainsDurationsIntervals)}
+                key={`timetable-train-card-${train.id}-${train.path_id}`}
+                isSelected={infraState === 'CACHED' && selectedTrainId === train.id}
+                isModified={trainScheduleIDsToModify.includes(train.id)}
+                projectionPathIsUsed={
+                  infraState === 'CACHED' &&
+                  !!selectedProjection &&
+                  selectedProjection.id === train.id
+                }
+                refetchTimetable={refetchTimetable}
+                setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
+              />
+            ))}
       </div>
       <div className="scenario-timetable-warnings">
-        {trainsList && timeTableHasInvalidTrain(trainsList) && (
+        {timetableHasInvalidTrain(trainsList) && (
           <div className="invalid-trains">
             <BsFillExclamationTriangleFill size="1.5em" />
             <span className="flex-grow-1">{t('timetable.invalidTrains')}</span>
