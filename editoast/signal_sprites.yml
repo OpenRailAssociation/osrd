@@ -14,3 +14,5 @@ BAPR:
     - conditions:
         distant: "true"
       sprite: "DISQUE VL"
+TVM:
+  default: "REP TGV"
