@@ -29,10 +29,10 @@ export type SortType = {
 const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSignalProps) => {
   const map = useSelector(getMap);
   const infraID = useSelector(getInfraID);
-  const { t } = useTranslation(['translation', 'map-search', 'common']);
+  const { t } = useTranslation(['translation', 'map-search']);
 
   const signalSystems = {
-    ALL: t('common:all'),
+    ALL: t('map-search:all'),
     BAL: 'BAL',
     BAPR: 'BAPR',
     TVM: 'TVM',
@@ -44,6 +44,20 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
     [signalSystems.BAPR]: ['Nf', 'distant'],
     [signalSystems.TVM]: ['is_430'],
   };
+
+  const signalSettingsDisplay: { [key: string]: string } = {
+    Nf: t('map-search:signalSettings.Nf'),
+    distant: t('map-search:signalSettings.distant'),
+    is_430: t('map-search:signalSettings.is_430'),
+  };
+
+  const reversedSignalSettingsDisplay = Object.entries(signalSettingsDisplay).reduce(
+    (acc, [key, value]) => {
+      acc[value] = key;
+      return acc;
+    },
+    {} as { [key: string]: string }
+  );
 
   const [searchState, setSearch] = useState('');
   const [searchLineState, setSearchLine] = useState('');
@@ -87,12 +101,13 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
   };
 
   const updateSearch = async (infraIDPayload: number) => {
+    const settings = selectedSettings.map((setting) => reversedSignalSettingsDisplay[setting]);
     const payload: searchPayloadType = getPayload(
       searchLineState,
       searchState,
       infraIDPayload,
       [signalSystem],
-      selectedSettings
+      settings
     );
     await postSearch({
       body: payload,
@@ -152,7 +167,10 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
 
   useEffect(() => {
     setSelectedSettings([]);
-    setSignalSettings(signalSettingsMap[signalSystem]);
+    const displayed = signalSettingsMap[signalSystem].map(
+      (signal) => signalSettingsDisplay[signal]
+    );
+    setSignalSettings(displayed);
   }, [signalSystem]);
 
   const formatSearchResults = () => (

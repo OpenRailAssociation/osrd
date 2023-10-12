@@ -11,6 +11,5 @@
     "deleteSelectionCount": "Confirmez-vous la suppression de {{items}}?"
   },
   "begin": "Début",
-  "end": "Fin",
-  "all": "Tous"
+  "end": "Fin"
 }
