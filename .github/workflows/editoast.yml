@@ -83,7 +83,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Init database
-        run: psql postgresql://postgres:password@localhost -f init_db.sql
+        run: psql postgresql://postgres:password@localhost -f ./docker/init_db.sql
 
       - name: Install lib posgresql & geos
         run: |
