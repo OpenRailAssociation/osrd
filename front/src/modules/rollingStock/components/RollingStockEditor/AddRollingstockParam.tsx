@@ -6,6 +6,8 @@ import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { RiAddFill } from 'react-icons/ri';
 import { compact } from 'lodash';
+import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
+import PowerRestrictionGridModal from './PowerRestrictionGridModal';
 
 export default function AddRollingstockParam({
   listName,
@@ -22,8 +24,11 @@ export default function AddRollingstockParam({
 }) {
   const COMFORT_LEVELS_KEY: keyof RollingStockSelectorParams = 'comfortLevels';
   const TRACTION_MODES_KEY: keyof RollingStockSelectorParams = 'tractionModes';
+  const POWER_RESTRICTIONS_KEY: keyof RollingStockSelectorParams = 'powerRestrictions';
 
   const { t } = useTranslation('rollingstock');
+  const { openModal } = useModal();
+
   const [isSelectVisible, setIsSelectVisible] = useState(false);
   const isTractionModes = listName === TRACTION_MODES_KEY;
 
@@ -45,7 +50,7 @@ export default function AddRollingstockParam({
       };
     });
 
-  return (
+  return listName !== POWER_RESTRICTIONS_KEY ? (
     <div>
       <button
         type="button"
@@ -72,9 +77,27 @@ export default function AddRollingstockParam({
             bgWhite
             isOpened
             setSelectVisibility={setIsSelectVisible}
+            noTogglingHeader
           />
         </div>
       )}
     </div>
+  ) : (
+    <button
+      type="button"
+      className="rollingstock-selector-buttons mb-2"
+      onClick={() =>
+        openModal(
+          <PowerRestrictionGridModal
+            powerRestrictionsList={allOptionsList as string[]}
+            updatePowerRestrictions={updateDisplayedLists}
+            currentPowerRestrictions={displayedLists.powerRestrictions}
+          />,
+          'lg'
+        )
+      }
+    >
+      <RiAddFill />
+    </button>
   );
 }

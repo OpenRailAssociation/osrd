@@ -1,3 +1,9 @@
 .d-flex .select-improved {
-  flex-grow:4
+  flex-grow: 4;
+}
+
+.add-border-top {
+  border-top: var(--coolgray3) solid 1px;
+  border-top-right-radius: 0.4375rem;
+  border-top-left-radius: 0.4375rem;
 }
