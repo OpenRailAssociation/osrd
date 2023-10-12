@@ -1901,7 +1901,7 @@ paths:
                   catenary_ranges:
                     type: array
                     items:
-                      $ref: "#/components/schemas/CatenaryRange"
+                      $ref: "#/components/schemas/RangedValue"
                   warnings:
                     type: array
                     items:
@@ -3219,7 +3219,7 @@ components:
           items:
             $ref: "#/components/schemas/TrackRange"
 
-    CatenaryRange:
+    RangedValue:
       type: object
       properties:
         begin:
@@ -3230,10 +3230,10 @@ components:
           type: number
           format: float
           example: 100.0
-        mode:
+        value:
           type: string
           example: "25000"
-      required: [begin, end, mode]
+      required: [begin, end, value]
 
     SearchQuery:
       type: array

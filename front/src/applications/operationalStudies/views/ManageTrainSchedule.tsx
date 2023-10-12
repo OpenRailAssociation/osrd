@@ -19,7 +19,7 @@ import {
   RollingStock2Img,
   RollingStockSelector,
 } from 'modules/rollingStock/components/RollingStockSelector';
-import { osrdEditoastApi, CatenaryRange } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, RangedValue } from 'common/api/osrdEditoastApi';
 import Tabs from 'common/Tabs';
 import rollingStockPic from 'assets/pictures/components/train.svg';
 import pahtFindingPic from 'assets/pictures/components/pathfinding.svg';
@@ -54,7 +54,7 @@ export default function ManageTrainSchedule() {
     }
   );
 
-  const { data: pathWithCatenaries = { catenary_ranges: [] as CatenaryRange[] } } =
+  const { data: pathWithCatenaries = { catenary_ranges: [] as RangedValue[] } } =
     osrdEditoastApi.endpoints.getPathfindingByPathIdCatenaries.useQuery(
       { pathId: pathFindingID as number },
       { skip: !pathFindingID }

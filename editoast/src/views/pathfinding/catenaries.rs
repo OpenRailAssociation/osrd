@@ -1,8 +1,9 @@
 use crate::error::{InternalError, Result};
 use crate::infra_cache::InfraCache;
 use crate::models::{pathfinding::Pathfinding, Infra, Retrieve};
-use crate::schema::{Direction, ObjectType};
+use crate::schema::ObjectType;
 use crate::views::pathfinding::PathfindingError;
+use crate::views::pathfinding::rangemap_utils::{Float, RangedValue, make_path_range_map};
 use crate::DbPool;
 use actix_web::{
     dev::HttpServiceFactory,
@@ -14,42 +15,10 @@ use rangemap::RangeMap;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::fmt::Debug;
-use std::ops::Range;
 
 pub fn routes() -> impl HttpServiceFactory {
     services![catenaries_on_path,]
 }
-
-/// A struct to make f64 Ord, to use in RangeMap
-#[derive(Debug, PartialEq, Copy, Clone, Serialize)]
-struct Float(f64);
-
-impl Float {
-    fn new(f: f64) -> Self {
-        assert!(f.is_finite());
-        Self(f)
-    }
-}
-
-impl From<f64> for Float {
-    fn from(f: f64) -> Self {
-        Self::new(f)
-    }
-}
-
-impl Ord for Float {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.0.partial_cmp(&other.0).unwrap()
-    }
-}
-
-impl PartialOrd for Float {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
-impl Eq for Float {}
 
 /// Build a rangemap for each track section, giving the voltage for each range
 fn map_catenary_modes(
@@ -100,96 +69,10 @@ fn map_catenary_modes(
     (res, warnings)
 }
 
-fn clip_range_map(
-    range_map: &RangeMap<Float, String>,
-    clip_range: Range<Float>,
-) -> RangeMap<Float, String> {
-    let mut res = RangeMap::new();
-    for (range, value) in range_map.overlapping(&clip_range) {
-        let range = range.start.max(clip_range.start)..range.end.min(clip_range.end);
-        res.insert(range, value.clone());
-    }
-    res
-}
-
-/// Extend the pathfinding range map with the other one, as though entering from `range_entry` in the
-/// given direction.
-fn extend_path_range_map(
-    path_range_map: &mut RangeMap<Float, String>,
-    other_range_map: &RangeMap<Float, String>,
-    range_entry: f64,
-    offset: f64,
-    direction: Direction,
-) {
-    for (range, value) in other_range_map.iter() {
-        let (start, end) = match direction {
-            Direction::StartToStop => (range.start.0, range.end.0),
-            Direction::StopToStart => (range.end.0, range.start.0),
-        };
-
-        let range = ((start - range_entry).abs() + offset).into()
-            ..((end - range_entry).abs() + offset).into();
-        assert!(!path_range_map.overlaps(&range), "range overlap");
-        path_range_map.insert(range, value.clone());
-    }
-}
-
-fn make_path_range_map(
-    catenary_mode_map: &HashMap<String, RangeMap<Float, String>>,
-    pathfinding: &Pathfinding,
-) -> RangeMap<Float, String> {
-    let mut res = RangeMap::new();
-    let mut offset = 0.;
-
-    for track_range in pathfinding.merged_track_ranges() {
-        let mode_range_map_option = catenary_mode_map.get(&track_range.track as &str);
-        if let Some(mode_range_map) = mode_range_map_option {
-            let mode_range_map = clip_range_map(
-                mode_range_map,
-                track_range.begin.into()..track_range.end.into(),
-            );
-            let range_entry = match track_range.direction {
-                Direction::StartToStop => track_range.begin,
-                Direction::StopToStart => track_range.end,
-            };
-            extend_path_range_map(
-                &mut res,
-                &mode_range_map,
-                range_entry,
-                offset,
-                track_range.direction,
-            );
-        }
-        offset += track_range.end - track_range.begin;
-    }
-
-    res
-}
-
-/// A struct used for the result of the catenaries_on_path endpoint
-#[derive(Debug, Deserialize, PartialEq, Serialize)]
-struct CatenaryRange {
-    begin: f64,
-    end: f64,
-    mode: String,
-}
-
-impl CatenaryRange {
-    fn list_from_range_map(range_map: &RangeMap<Float, String>) -> Vec<CatenaryRange> {
-        range_map
-            .iter()
-            .map(|(range, mode)| CatenaryRange {
-                begin: range.start.0,
-                end: range.end.0,
-                mode: mode.to_string(),
-            })
-            .collect()
-    }
-}
 
 #[derive(Debug, Serialize, Deserialize)]
 struct CatenariesOnPathResponse {
-    catenary_ranges: Vec<CatenaryRange>,
+    catenary_ranges: Vec<RangedValue>,
     warnings: Vec<InternalError>,
 }
 
@@ -218,19 +101,21 @@ async fn catenaries_on_path(
 
     let res = make_path_range_map(&catenary_mode_map, &pathfinding);
     Ok(Json(CatenariesOnPathResponse {
-        catenary_ranges: CatenaryRange::list_from_range_map(&res),
+        catenary_ranges: RangedValue::list_from_range_map(&res),
         warnings,
     }))
 }
 
 #[cfg(test)]
 pub mod tests {
+    use super::*;
     use crate::{
         fixtures::tests::{db_pool, empty_infra, TestFixture},
         models::{
             infra_objects::catenary::Catenary, pathfinding::tests::simple_pathfinding,
             pathfinding::PathfindingChangeset, Create,
         },
+        range_map,
         schema::{
             ApplicableDirections, ApplicableDirectionsTrackRange, Catenary as CatenarySchema,
         },
@@ -241,15 +126,6 @@ pub mod tests {
     use rstest::*;
     use serde_json::from_value;
 
-    use super::*;
-
-    macro_rules! range_map {
-        ($( $begin: expr , $end: expr => $value: expr ),*) => {{
-             let mut map: RangeMap<Float, String> = ::rangemap::RangeMap::new();
-             $( map.insert(($begin.into()..$end.into()), $value.into()); )*
-             map
-        }}
-    }
 
     #[fixture]
     fn simple_mode_map() -> HashMap<String, RangeMap<Float, String>> {
@@ -342,14 +218,6 @@ pub mod tests {
         infra
     }
 
-    #[test]
-    fn test_clip_range_map() {
-        let range_map = range_map!(0.0, 10.0 => "a", 10.0, 20.0 => "b", 20.0, 30.0 => "c");
-
-        let clipped = clip_range_map(&range_map, 5.0.into()..20.0.into());
-        assert_eq!(clipped, range_map!(5.0, 10.0 => "a", 10.0, 20.0 => "b"));
-    }
-
     #[rstest]
     async fn test_map_catenary_modes(
         db_pool: Data<DbPool>,
@@ -429,83 +297,6 @@ pub mod tests {
         );
     }
 
-    #[test]
-    fn test_extend_path_range_map_reversed() {
-        let mut path_range_map = range_map!(0.0, 10.0 => "A");
-
-        let mode_range_map = range_map!(10.0, 20.0 => "B", 20.0, 30.0 => "C");
-
-        extend_path_range_map(
-            &mut path_range_map,
-            &mode_range_map,
-            40.0,
-            20.0,
-            Direction::StopToStart,
-        );
-
-        let expected_range_map = range_map!(
-            0.0, 10.0 => "A",
-            30.0, 40.0 => "C",
-            40.0, 50.0 => "B"
-        );
-        assert_eq!(path_range_map, expected_range_map);
-    }
-
-    #[test]
-    fn test_extend_path_range_map_close() {
-        let mut path_range_map = range_map!(0.0, 10.0 => "A");
-
-        let mode_range_map = range_map!(10.0, 20.0 => "A", 20.0, 30.0 => "B");
-
-        extend_path_range_map(
-            &mut path_range_map,
-            &mode_range_map,
-            10.0,
-            10.0,
-            Direction::StartToStop,
-        );
-
-        let expected_range_map = range_map!(0.0, 20.0 => "A", 20.0, 30.0 => "B");
-        assert_eq!(path_range_map, expected_range_map);
-    }
-
-    #[test]
-    fn test_extend_path_range_map_from_the_beginning() {
-        let mut path_range_map = range_map!(0.0, 10.0 => "A");
-
-        let mode_range_map = range_map!(10.0, 20.0 => "A", 20.0, 30.0 => "B");
-
-        extend_path_range_map(
-            &mut path_range_map,
-            &mode_range_map,
-            0.0,
-            10.0,
-            Direction::StartToStop,
-        );
-
-        let expected_range_map = range_map!(
-            0.0, 10.0 => "A",
-            20.0, 30.0 => "A",
-            30.0, 40.0 => "B"
-        );
-        assert_eq!(path_range_map, expected_range_map);
-    }
-
-    #[rstest]
-    fn test_make_path_range_map(simple_mode_map: HashMap<String, RangeMap<Float, String>>) {
-        let pathfinding = simple_pathfinding(0);
-
-        let path_range_map = make_path_range_map(&simple_mode_map, &pathfinding);
-        assert_eq!(
-            path_range_map,
-            range_map!(
-                0.0, 25.0 => "25kV",
-                25.0, 30.0 => "1.5kV",
-                40.0, 48.0 => "1.5kV"
-            )
-        );
-    }
-
     #[rstest]
     async fn test_view_catenaries_on_path(
         db_pool: Data<DbPool>,
@@ -537,26 +328,26 @@ pub mod tests {
         assert_eq!(response.catenary_ranges.len(), 3);
         assert_eq!(
             response.catenary_ranges[0],
-            CatenaryRange {
+            RangedValue {
                 begin: 0.0,
                 end: 25.0,
-                mode: "25kV".into(),
+                value: "25kV".into(),
             }
         );
         assert_eq!(
             response.catenary_ranges[1],
-            CatenaryRange {
+            RangedValue {
                 begin: 25.0,
                 end: 30.0,
-                mode: "1.5kV".into(),
+                value: "1.5kV".into(),
             }
         );
         assert_eq!(
             response.catenary_ranges[2],
-            CatenaryRange {
+            RangedValue {
                 begin: 40.0,
                 end: 48.0,
-                mode: "1.5kV".into(),
+                value: "1.5kV".into(),
             }
         );
     }

@@ -108,24 +108,6 @@ components:
       - max_output_power
       - efficiency
       type: object
-    CatenaryRange:
-      properties:
-        begin:
-          example: 0.0
-          format: float
-          type: number
-        end:
-          example: 100.0
-          format: float
-          type: number
-        mode:
-          example: '25000'
-          type: string
-      required:
-      - begin
-      - end
-      - mode
-      type: object
     Comfort:
       default: STANDARD
       description: Train comfort that will be used for the simulation
@@ -1189,6 +1171,24 @@ components:
       - begin_position
       - end_position
       - value
+    RangedValue:
+      properties:
+        begin:
+          example: 0.0
+          format: float
+          type: number
+        end:
+          example: 100.0
+          format: float
+          type: number
+        value:
+          example: '25000'
+          type: string
+      required:
+      - begin
+      - end
+      - value
+      type: object
     RollingStock:
       allOf:
       - $ref: '#/components/schemas/RollingStockUpsertPayload'
@@ -3856,7 +3856,7 @@ paths:
                 properties:
                   catenary_ranges:
                     items:
-                      $ref: '#/components/schemas/CatenaryRange'
+                      $ref: '#/components/schemas/RangedValue'
                     type: array
                   warnings:
                     items:
