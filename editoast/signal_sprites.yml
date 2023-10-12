@@ -4,3 +4,13 @@ BAL:
     - conditions:
         Nf: "true"
       sprite: "CARRE"
+BAPR:
+  default: "S VL"
+  sprites:
+    - conditions:
+        Nf: "true"
+        distant: "false"
+      sprite: "CARRE"
+    - conditions:
+        distant: "true"
+      sprite: "DISQUE VL"
