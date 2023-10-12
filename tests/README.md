@@ -2,7 +2,7 @@
 
 ### Run the tests
 
-To run tests `poetry run pytest` after starting docker containers(`docker-compose up` at the root of the project).
+To run tests `poetry run pytest` after starting docker containers (`docker-compose up` at the root of the project) and installing dependencies (`poetry install`, see [poetry doc](https://python-poetry.org/docs/)).
 
 To run a list of specific tests, run `poetry run pytest -k test_name_1 test_name_2 ...`.
 
