@@ -368,7 +368,12 @@ public class PathfindingResultConverter {
             int startIndex,
             boolean routeMustIncludeStart
     ) {
-        for (var routeId : toIntList(infra.getRoutesOnTrackChunk(chunks.get(startIndex))))
+        var routes = toIntList(infra.getRoutesOnTrackChunk(chunks.get(startIndex)));
+
+        // We need to evaluate the longest route first, in case one route covers a subset of another
+        routes.sort(Comparator.comparingInt(r -> -infra.getChunksOnRoute(r).getSize()));
+
+        for (var routeId : routes)
             if (routeMatchPath(infra, chunks, startIndex, routeMustIncludeStart, routeId))
                 return routeId;
         throw new RuntimeException("Couldn't find a route matching the given chunk list");
