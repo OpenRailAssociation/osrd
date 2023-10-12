@@ -133,6 +133,8 @@ public class STDCMEdgeBuilder {
 
     /** Creates all edges that can be accessed on the given block, using all the parameters specified. */
     public Collection<STDCMEdge> makeAllEdges() {
+        if (hasDuplicateBlocks())
+            return List.of();
         if (getEnvelope() == null)
             return List.of();
         return getDelaysPerOpening().stream()
@@ -234,6 +236,18 @@ public class STDCMEdgeBuilder {
         if (res == null || graph.delayManager.isRunTimeTooLong(res))
             return null;
         return res;
+    }
+
+    /** Returns true if the current block is already present in the path to this edge */
+    private boolean hasDuplicateBlocks() {
+        var node = prevNode;
+        while (node != null) {
+            var edge = node.previousEdge();
+            if (!edge.endAtStop() && edge.block() == blockId)
+                return true;
+            node = edge.previousNode();
+        }
+        return false;
     }
     // endregion UTILITIES
 }

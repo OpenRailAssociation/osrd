@@ -440,5 +440,29 @@ public class STDCMPathfindingTests {
         STDCMHelpers.occupancyTest(res, occupancyGraph);
         assertTrue(res.departureTime() < 300);
     }
-  
+
+    /** Tests that we can give a negative result when the infra contains a loop */
+    @Test
+    public void infraWithLoop() {
+        /*
+        a --> b --> c       x --> y
+        ^           v
+        +-----------+
+
+        The blocks are very long, to test that it works even with large time differences
+
+         */
+        var infra = DummyInfra.make();
+        infra.addBlock("a", "b", meters(10_000));
+        infra.addBlock("b", "c", meters(10_000));
+        infra.addBlock("c", "a", meters(10_000));
+        infra.addBlock("x", "y");
+        var res = new STDCMPathfindingBuilder()
+                .setInfra(infra.fullInfra())
+                .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(infra.getRouteFromName("a->b"), 0)))
+                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(infra.getRouteFromName("x->y"), 0)))
+                .run();
+        assertNull(res);
+    }
+
 }
