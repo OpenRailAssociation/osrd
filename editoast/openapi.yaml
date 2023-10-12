@@ -3885,6 +3885,62 @@ paths:
       summary: Retrieve the modes of catenaries along a path
       tags:
       - infra
+  /pathfinding/{path_id}/electrical_profiles/:
+    get:
+      parameters:
+      - description: The path's id
+        in: path
+        name: path_id
+        required: true
+        schema:
+          type: integer
+      - description: The electrical profile set's id
+        in: query
+        name: electrical_profile_set_id
+        required: true
+        schema:
+          type: integer
+      - description: The id of the rolling stock you want to use
+        in: query
+        name: rolling stock id
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  electrical_profile_ranges:
+                    items:
+                      $ref: '#/components/schemas/RangedValue'
+                    type: array
+                  warnings:
+                    items:
+                      properties:
+                        overlapping_ranges:
+                          items:
+                            $ref: '#/components/schemas/TrackRange'
+                          type: array
+                        type:
+                          enum:
+                          - ElectricalProfilesOverlap
+                          type: string
+                      required:
+                      - type
+                      - overlapping_ranges
+                      type: object
+                    type: array
+                required:
+                - electrical_profile_ranges
+                - warnings
+                type: object
+          description: A list of ranges associated to catenary modes. When a catenary overlapping another is found, a warning is added to the list.
+      summary: Retrieve the electrical profiles along a path, as seen by the rolling stock specified
+      tags:
+      - infra
+      - electrical_profiles
   /projects/:
     get:
       parameters:

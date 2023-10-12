@@ -333,6 +333,19 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/pathfinding/${queryArg.pathId}/catenaries/` }),
         providesTags: ['infra'],
       }),
+      getPathfindingByPathIdElectricalProfiles: build.query<
+        GetPathfindingByPathIdElectricalProfilesApiResponse,
+        GetPathfindingByPathIdElectricalProfilesApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/pathfinding/${queryArg.pathId}/electrical_profiles/`,
+          params: {
+            electrical_profile_set_id: queryArg.electricalProfileSetId,
+            'rolling stock id': queryArg['rolling stock id'],
+          },
+        }),
+        providesTags: ['infra', 'electrical_profiles'],
+      }),
       getProjects: build.query<GetProjectsApiResponse, GetProjectsApiArg>({
         query: (queryArg) => ({
           url: `/projects/`,
@@ -998,6 +1011,22 @@ export type GetPathfindingByPathIdCatenariesApiResponse =
 export type GetPathfindingByPathIdCatenariesApiArg = {
   /** The path's id */
   pathId: number;
+};
+export type GetPathfindingByPathIdElectricalProfilesApiResponse =
+  /** status 200 A list of ranges associated to catenary modes. When a catenary overlapping another is found, a warning is added to the list. */ {
+    electrical_profile_ranges: RangedValue[];
+    warnings: {
+      overlapping_ranges: TrackRange[];
+      type: 'ElectricalProfilesOverlap';
+    }[];
+  };
+export type GetPathfindingByPathIdElectricalProfilesApiArg = {
+  /** The path's id */
+  pathId: number;
+  /** The electrical profile set's id */
+  electricalProfileSetId: number;
+  /** The id of the rolling stock you want to use */
+  'rolling stock id': number;
 };
 export type GetProjectsApiResponse = /** status 200 the project list */ {
   count?: number;
