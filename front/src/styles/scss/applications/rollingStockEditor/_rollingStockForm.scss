@@ -298,6 +298,12 @@
       background-color: var(--white);
       border-radius: 0.3rem;
       justify-content: space-between;
+      overflow: hidden;
+      &-name {
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
       &.with-extra-column {
         width: 11rem;
       }

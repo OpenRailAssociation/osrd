@@ -20,6 +20,7 @@ interface SelectProps<T> {
   dataTestId?: string;
   isOpened?: boolean;
   setSelectVisibility?: (arg: boolean) => void;
+  noTogglingHeader?: boolean;
 }
 
 function SelectImproved<T extends string | SelectOptionObject>({
@@ -37,6 +38,7 @@ function SelectImproved<T extends string | SelectOptionObject>({
   blockMenu = false,
   isOpened = false,
   setSelectVisibility,
+  noTogglingHeader = false,
 }: SelectProps<T>) {
   const [isOpen, setIsOpen] = useState(isOpened);
   const [selectedItem, setSelectedItem] = useState<T | undefined>(value);
@@ -127,36 +129,44 @@ function SelectImproved<T extends string | SelectOptionObject>({
       )}
       <div className={`select-improved ${isOpen ? 'active' : ''}`}>
         <div className="select-control">
-          <div
-            className={`input-group ${sm ? 'input-group-sm' : ''}`}
-            tabIndex={0}
-            role="button"
-            onClick={() => setIsOpen(!isOpen)}
-          >
-            <p
-              className={`form-control is-placeholder d-flex align-items-center ${
-                bgWhite ? 'bg-white' : ''
-              }`}
-              style={sm ? { minHeight: '1.813rem' } : undefined}
+          {!noTogglingHeader && (
+            <div
+              className={`input-group ${sm ? 'input-group-sm' : ''}`}
+              tabIndex={0}
+              role="button"
+              onClick={() => setIsOpen(!isOpen)}
             >
-              {renderSelectedItem()}
-            </p>
-            <div className="input-group-append input-group-last">
-              <button
-                className="btn btn-primary btn-only-icon"
+              <p
+                className={`form-control is-placeholder d-flex align-items-center ${
+                  bgWhite ? 'bg-white' : ''
+                }`}
                 style={sm ? { minHeight: '1.813rem' } : undefined}
-                type="button"
-                aria-expanded="false"
-                aria-controls="selecttoggle"
               >
-                <i
-                  className={`${isOpen ? 'icons-arrow-up' : 'icons-arrow-down'} icons-size-x75`}
-                  aria-hidden="true"
-                />
-              </button>
+                {renderSelectedItem()}
+              </p>
+              <div className="input-group-append input-group-last">
+                <button
+                  className="btn btn-primary btn-only-icon"
+                  style={sm ? { minHeight: '1.813rem' } : undefined}
+                  type="button"
+                  aria-expanded="false"
+                  aria-controls="selecttoggle"
+                >
+                  <i
+                    className={`${isOpen ? 'icons-arrow-up' : 'icons-arrow-down'} icons-size-x75`}
+                    aria-hidden="true"
+                  />
+                </button>
+              </div>
             </div>
-          </div>
-          <div className={cx('select-menu', { 'position-relative': blockMenu })} id="-selecttoggle">
+          )}
+          <div
+            id="-selecttoggle"
+            className={cx('select-menu', {
+              'add-border-top': noTogglingHeader,
+              'position-relative': blockMenu,
+            })}
+          >
             <div className="d-flex flex-column">
               {withSearch && (
                 <div className="form-control-container w-100 has-left-icon mb-3">

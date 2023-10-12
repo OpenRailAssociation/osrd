@@ -10,7 +10,7 @@ import {
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
 import { isEmpty, isNull } from 'lodash';
-import React, { Dispatch, SetStateAction, useEffect, useState, useCallback, useMemo } from 'react';
+import React, { Dispatch, SetStateAction, useEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import Spreadsheet, { CellBase, Matrix, createEmptyMatrix } from 'react-spreadsheet';
 import { emptyStringRegex } from 'utils/strings';
@@ -39,9 +39,14 @@ import {
   effortCurveCondKeys,
   EffortCurveCondKeys,
   RollingStockSelectorParam,
+  RollingStockParametersValues,
 } from 'modules/rollingStock/consts';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
-import { createEmptyCurve, orderSelectorList } from 'modules/rollingStock/helpers/utils';
+import {
+  createEmptyCurve,
+  createEmptyCurves,
+  orderSelectorList,
+} from 'modules/rollingStock/helpers/utils';
 import AddRollingstockParam from './AddRollingstockParam';
 import RollingStockEditorFormModal from './RollingStockEditorFormModal';
 
@@ -60,6 +65,7 @@ type RollingStockEditorCurvesProps = {
   selectedTractionMode: string | null;
   powerRestrictionsClass: RollingStock['power_restrictions'];
   setPowerRestrictionsClass: (data: RollingStock['power_restrictions']) => void;
+  rollingStockValues: RollingStockParametersValues;
 };
 
 export default function RollingStockEditorCurves({
@@ -69,6 +75,7 @@ export default function RollingStockEditorCurves({
   selectedTractionMode,
   powerRestrictionsClass,
   setPowerRestrictionsClass,
+  rollingStockValues,
 }: RollingStockEditorCurvesProps) {
   const { t } = useTranslation('rollingstock');
   const dispatch = useDispatch();
@@ -77,6 +84,11 @@ export default function RollingStockEditorCurves({
   const selectedComfortLvl = useSelector(getComfortLevel);
   const selectedElectricalProfile = useSelector(getElectricalProfile);
   const selectedPowerRestriction = useSelector(getPowerRestriction);
+
+  const { data: availableModes } = osrdEditoastApi.endpoints.getInfraVoltages.useQuery();
+
+  const { data: powerRestrictionCodes } =
+    osrdEditoastApi.endpoints.getRollingStockPowerRestrictions.useQuery();
 
   const EmptySelectedCurves: SelectedCurves = useMemo(
     () =>
@@ -91,15 +103,22 @@ export default function RollingStockEditorCurves({
     [selectedTractionMode]
   );
 
+  const extraColumnData = useMemo(
+    () => ({
+      defaultValue: rollingStockValues.basePowerClass ?? '',
+      data: powerRestrictionsClass,
+      updateData: setPowerRestrictionsClass,
+    }),
+    [data, powerRestrictionsClass]
+  );
+
   const [rollingstockParams, setRollingstockParams] =
     useState<RollingStockSelectorParams>(EMPTY_PARAMS);
 
-  /** given a tractionMode and a list of comfort, return empty EffortCurves */
-  const createEmptyCurves = (tractionMode: string, comforts: Comfort[]) => ({
-    curves: comforts.map((comfort) => createEmptyCurve(comfort)),
-    default_curve: { speeds: [0], max_efforts: [0] },
-    is_electric: tractionMode !== THERMAL_TRACTION_IDENTIFIER,
-  });
+  const [powerRestrictionList, setPowerRestrictionList] = useState<string[]>(
+    powerRestrictionCodes || []
+  );
+
   const [hoveredRollingstockParam, setHoveredRollingstockParam] = useState<string | null>();
   const [hoveredRollingstockTractionParam, setHoveredRollingstockTractionParam] = useState<
     string | null
@@ -120,10 +139,10 @@ export default function RollingStockEditorCurves({
   };
 
   /**
-   * We get a list of all existing comfort levels, modes & profiles in
+   * We get a list of all existing comfort levels, modes, profiles and power restrictions in
    * the selected rollingstock to fill the selectors lists
    */
-  const updateRollingstockParams = useCallback(() => {
+  const updateRollingstockParams = () => {
     if (!currentRsEffortCurve) return EMPTY_PARAMS;
 
     const rsComfortLevels = listCurvesComfort(currentRsEffortCurve);
@@ -166,6 +185,7 @@ export default function RollingStockEditorCurves({
     if (!powerRestrictions.includes(selectedPowerRestriction)) {
       dispatchPowerRestriction(powerRestrictions[0] || null);
     }
+
     const rollingstockParamsLists = {
       comfortLevels: [...new Set(rsComfortLevels)],
       tractionModes: [...new Set(tractionModes)],
@@ -175,10 +195,10 @@ export default function RollingStockEditorCurves({
 
     setRollingstockParams(rollingstockParamsLists);
     return rollingstockParamsLists;
-  }, [selectedComfortLvl, currentRsEffortCurve, selectedTractionMode, selectedElectricalProfile]);
+  };
 
   /** Filter all the curves to find a list of curves matching the selected comfort and traction mode */
-  const selectMatchingCurves = useCallback((): SelectedCurves => {
+  const selectMatchingCurves = (): SelectedCurves => {
     if (!selectedTractionMode || !currentRsEffortCurve) return {};
     const selectedTractionModeCurves = currentRsEffortCurve.modes[selectedTractionMode];
     if (!selectedTractionModeCurves) {
@@ -201,7 +221,7 @@ export default function RollingStockEditorCurves({
             : curvesList,
       },
     };
-  }, [selectedTractionMode, selectedElectricalProfile, selectedComfortLvl, rollingstockParams]);
+  };
 
   /** Select the curve to display in the spreadsheet and format it to match the Spreadsheet component type */
   const selectAndFormatCurveForSpreadsheet = (
@@ -421,6 +441,35 @@ export default function RollingStockEditorCurves({
     dispatchElectricalProfil(value);
   };
 
+  const updatePowerRestrictionList = (newPowerRestriction: string) => {
+    if (!selectedTractionMode || !currentRsEffortCurve) return;
+    const selectedModeCurves = currentRsEffortCurve.modes[selectedTractionMode];
+    const newEmptyCurve = createEmptyCurve(
+      selectedComfortLvl,
+      selectedElectricalProfile,
+      newPowerRestriction
+    );
+
+    const updatedCurrentRsEffortCurve = {
+      ...currentRsEffortCurve,
+      modes: {
+        ...currentRsEffortCurve.modes,
+        [selectedTractionMode]: {
+          ...selectedModeCurves,
+          curves: [...selectedModeCurves.curves, newEmptyCurve],
+        },
+      },
+    };
+
+    if (!powerRestrictionList.includes(newPowerRestriction)) {
+      setPowerRestrictionList([...powerRestrictionList, newPowerRestriction]);
+    }
+
+    setPowerRestrictionsClass({ ...powerRestrictionsClass, [newPowerRestriction]: '' });
+    setCurrentRsEffortCurve(updatedCurrentRsEffortCurve);
+    dispatchPowerRestriction(newPowerRestriction);
+  };
+
   const removeTractionMode = (value: string) => {
     if (!currentRsEffortCurve) return;
     const filteredModesList = Object.fromEntries(
@@ -457,6 +506,12 @@ export default function RollingStockEditorCurves({
       };
     }, {});
 
+    if (title === 'powerRestrictions') {
+      const updatedPowerRestrictionsClass = { ...powerRestrictionsClass };
+      delete updatedPowerRestrictionsClass[value];
+      setPowerRestrictionsClass(updatedPowerRestrictionsClass);
+    }
+
     const updatedCurrentRsEffortCurve = {
       ...currentRsEffortCurve,
       modes: updatedModesCurves,
@@ -484,7 +539,7 @@ export default function RollingStockEditorCurves({
 
   useEffect(() => {
     updateRollingstockParams();
-  }, [selectedTractionMode, selectedComfortLvl, selectedElectricalProfile, currentRsEffortCurve]);
+  }, [currentRsEffortCurve]);
 
   useEffect(() => {
     const newSelectedCurves = selectMatchingCurves();
@@ -497,17 +552,11 @@ export default function RollingStockEditorCurves({
     selectedPowerRestriction,
   ]);
 
-  const extraColumnData = useMemo(
-    () =>
-      data && {
-        defaultValue: data.base_power_class ?? '',
-        data: powerRestrictionsClass,
-        updateData: setPowerRestrictionsClass,
-      },
-    [data, powerRestrictionsClass]
-  );
-
-  const { data: availableModes } = osrdEditoastApi.endpoints.getInfraVoltages.useQuery();
+  useEffect(() => {
+    if (powerRestrictionCodes) {
+      setPowerRestrictionList(powerRestrictionCodes);
+    }
+  }, [powerRestrictionCodes]);
 
   return (
     <>
@@ -582,23 +631,27 @@ export default function RollingStockEditorCurves({
                   listName="electricalProfiles"
                 />
               </div>
-              {selectedTractionMode && (
-                <div className="selector-container">
-                  <SelectorSNCF
-                    key="power-restriction-selector"
-                    borderClass="selector-pink"
-                    title="powerRestrictions"
-                    itemsList={[...rollingstockParams.powerRestrictions]}
-                    selectedItem={selectedPowerRestriction}
-                    hoveredItem={hoveredRollingstockParam}
-                    onItemSelected={dispatchPowerRestriction}
-                    onItemHovered={setHoveredRollingstockParam}
-                    onItemRemoved={confirmRsParamRemoval}
-                    translationFile="rollingstock"
-                    extraColumn={extraColumnData}
-                  />
-                </div>
-              )}
+              <div className="selector-container">
+                <SelectorSNCF
+                  key="power-restriction-selector"
+                  borderClass="selector-pink"
+                  title="powerRestrictions"
+                  itemsList={[...rollingstockParams.powerRestrictions]}
+                  selectedItem={selectedPowerRestriction}
+                  hoveredItem={hoveredRollingstockParam}
+                  onItemSelected={dispatchPowerRestriction}
+                  onItemHovered={setHoveredRollingstockParam}
+                  onItemRemoved={confirmRsParamRemoval}
+                  translationFile="rollingstock"
+                  extraColumn={extraColumnData}
+                />
+                <AddRollingstockParam
+                  displayedLists={rollingstockParams}
+                  updateDisplayedLists={updatePowerRestrictionList}
+                  allOptionsList={powerRestrictionList}
+                  listName="powerRestrictions"
+                />
+              </div>
             </>
           )}
         </div>

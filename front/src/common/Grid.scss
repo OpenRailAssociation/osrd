@@ -5,27 +5,39 @@
 
   .grid-item {
     width: 77px;
-    max-width: 77px;
-    padding: 10px 7px;
-    border-bottom: solid 1px gray;
-    list-style-type: none;
-    cursor: pointer;
+    padding-inline: 11px 7px;
+    padding-block: 10px;
+    border: none;
+    border-bottom: solid 1px var(--coolgray11);
+    // This font allows items to be perfectly aligned as each letters have the same width
+    font-family: monospace;
+    color: var(--coolgray11);
+    background-color: transparent;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: left;
+    white-space: nowrap;
 
-    &:hover {
+    &.filtered {
+      opacity: 0.2;
+    }
+
+    &:hover,
+    &:focus {
       background-color: var(--primary);
       color: var(--white);
+      // to remove browser style on focus
+      outline: none;
     }
 
-    .grid-name {
-      // This font allows items to be perfectly aligned as each letters have the same width
-      font-family: monospace;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+    &.present:focus,
+    &.present:hover {
+      background-color: transparent;
     }
 
-    .filtered {
-      opacity: 0.2;
+    span.present {
+      opacity: 0.7;
+      color: var(--green);
     }
   }
 }
