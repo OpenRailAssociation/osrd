@@ -58,9 +58,9 @@
   "messages": {
     "success": "Group",
     "failure": "Operation failed",
-    "invalidForm": "Invalid form",
-    "missingName": "Please fill the name of the new rolling stock",
-    "missingEffortCurves": "Please fill in at least one effort-speed curve",
+    "invalidForm": "Incomplete form",
+    "missingName": "Please fill out a name",
+    "missingEffortCurves": "Please enter a speed-effort curve",
     "missingInformationAutomaticallyFilled_one": "The following filed was initialized by default: {{invalidFields}}.",
     "missingInformationAutomaticallyFilled_other": "The following fileds were initialized by default: {{invalidFields}}.",
     "rollingStockAdded": "Rolling stock added",
