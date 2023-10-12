@@ -11,6 +11,7 @@ import requests
 from requests import Response, Timeout
 
 TIMEOUT = 15
+# TODO: since infra ids are not stable, we may want to change to an infra name
 INFRA_ID = 1
 EDITOAST_URL = "http://127.0.0.1:8090/"
 
@@ -24,8 +25,12 @@ class FailedTest(Exception):
     pass
 
 
+# TODO: this is duplicated in tests/scenario.py
 @dataclass
 class Scenario:
+    project: int
+    op_study: int
+    scenario: int
     infra: int
     timetable: int
 
@@ -223,6 +228,7 @@ def make_stdcm_payload(scenario: Scenario, path: List[Tuple[str, float]], rollin
 def run(
     editoast_url: str,
     scenario: Scenario,
+    scenario_ttl: int = 20,
     n_test: int = 1000,
     log_folder: Path = None,
     infra_name: str = None,
@@ -232,10 +238,13 @@ def run(
     Runs every test
     :param editoast_url: url to reach the editoast api
     :param scenario: scenario to use for the tests
+    :param scenario_ttl: number of tests to run before a scenario reset
     :param n_test: number of tests to run
     :param log_folder: (optional) path to a folder to log errors in
     :param infra_name: name of the infra, for better reporting
     :param seed: first seed, incremented by 1 for each individual test
+
+    Note that this is called from tests/tests/test_with_fuzzer.py
     """
     infra_graph = make_graph(editoast_url, scenario.infra)
     requests.post(editoast_url + f"infra/{scenario.infra}/load").raise_for_status()
@@ -255,6 +264,11 @@ def run(
                 log_folder.mkdir(exist_ok=True)
                 with open(str(log_folder / f"{i}.json"), "w") as f:
                     print(json.dumps(e.args[0], indent=4), file=f)
+
+        # Let's reset the scenario (empty timetable) so we can keep a
+        # manageable/reproducible state.
+        if seed % scenario_ttl == 0:
+            scenario = reset_scenario(editoast_url, scenario)
 
 
 def get_random_rolling_stock(editoast_url: str) -> int:
@@ -461,7 +475,30 @@ def create_scenario(editoast_url: str, infra_id: int) -> Scenario:
     r = post_with_timeout(editoast_url + f"{study_url}/scenarios/", json=scenario_payload)
     r.raise_for_status()
     timetable_id = r.json()["timetable_id"]
-    return Scenario(infra_id, timetable_id)
+    id = r.json()["id"]
+    return Scenario(project_id, study_id, id, infra_id, timetable_id)
+
+
+def reset_scenario(editoast_url: str, scenario: Scenario) -> Scenario:
+    """Deletes the current scenario and creates a new one."""
+    print("scenario reset")
+    project_id, study_id, infra_id = scenario.project, scenario.op_study, scenario.infra
+
+    # Delete the current scenario
+    study_url = f"projects/{project_id}/studies/{study_id}"
+    r = delete_with_timeout(editoast_url + study_url + f"/scenarios/{scenario.scenario}")
+    r.raise_for_status()
+
+    # Create a new scenario
+    new_scenario_payload = {
+        "name": "fuzzer_scenario",
+        "infra_id": infra_id,
+    }
+    r = post_with_timeout(editoast_url + f"{study_url}/scenarios", json=new_scenario_payload)
+    r.raise_for_status()
+    new_timetable_id = r.json()["timetable_id"]
+    new_id = r.json()["id"]
+    return Scenario(project_id, study_id, new_id, infra_id, new_timetable_id)
 
 
 def make_random_allowance_value(allowance_length) -> Dict:
@@ -555,6 +592,10 @@ def make_payload_schedule(scenario: Scenario, path: int, rolling_stock: int, pat
     }
 
 
+def delete_with_timeout(*args, **kwargs) -> Response:
+    return request_with_timeout("delete", *args, **kwargs)
+
+
 def post_with_timeout(*args, **kwargs) -> Response:
     return request_with_timeout("post", *args, **kwargs)
 
@@ -572,6 +613,8 @@ def request_with_timeout(request_type: str, *args, **kwargs) -> Response:
             return requests.post(*args, timeout=TIMEOUT, **kwargs)
         elif request_type == "get":
             return requests.get(*args, timeout=TIMEOUT, **kwargs)
+        elif request_type == "delete":
+            return requests.delete(*args, timeout=TIMEOUT, **kwargs)
     except Timeout:
         res = Response()
         res.status_code = 500
@@ -588,7 +631,8 @@ if __name__ == "__main__":
     run(
         EDITOAST_URL,
         new_scenario,
-        10000,
-        Path(__file__).parent / "errors",
+        scenario_ttl=20,
+        n_test=10000,
+        log_folder=Path(__file__).parent / "errors",
         infra_name=get_infra_name(EDITOAST_URL, INFRA_ID),
     )
