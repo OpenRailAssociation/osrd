@@ -91,7 +91,14 @@ export default function SelectorSNCF<
                   }}
                   key={`selector-${title}-${index}`}
                 >
-                  <div className={`${mainClass}-item-name pt-1 pl-3`}>
+                  <div
+                    className={`${mainClass}-item-name pt-1 pl-3`}
+                    title={
+                      !isNull(item)
+                        ? t(getTranslationKey(translationList, String(item)))
+                        : t('unspecified')
+                    }
+                  >
                     {!isNull(item)
                       ? t(getTranslationKey(translationList, String(item)))
                       : t('unspecified')}

@@ -245,6 +245,7 @@ const RollingStockEditorForm = ({
         selectedTractionMode={selectedTractionMode}
         powerRestrictionsClass={powerRestrictionsClass}
         setPowerRestrictionsClass={setPowerRestrictionsClass}
+        rollingStockValues={rollingStockValues}
       />
     ),
   };
