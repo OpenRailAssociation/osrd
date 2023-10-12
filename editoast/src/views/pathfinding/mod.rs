@@ -1,4 +1,6 @@
 mod catenaries;
+mod rangemap_utils;
+
 use std::collections::{HashMap, HashSet};
 
 use actix_web::{

@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 import icon from 'assets/pictures/components/power_restrictions.svg';
 import { PowerRestrictionRange } from 'applications/operationalStudies/consts';
-import { CatenaryRange, RollingStock } from 'common/api/osrdEditoastApi';
+import { RangedValue, RollingStock } from 'common/api/osrdEditoastApi';
 import { INTERVAL_TYPES, IntervalItem } from 'common/IntervalsEditor/types';
 import IntervalsEditor from 'common/IntervalsEditor/IntervalsEditor';
 import { updatePowerRestrictionRanges } from 'reducers/osrdconf';
@@ -17,7 +17,7 @@ export const NO_POWER_RESTRICTION = 'NO_POWER_RESTRICTION';
 const DEFAULT_SEGMENT_LENGTH = 1000;
 
 interface PowerRestrictionsSelectorProps {
-  pathCatenaryRanges: CatenaryRange[];
+  pathCatenaryRanges: RangedValue[];
   rollingStockPowerRestrictions: RollingStock['power_restrictions'];
   rollingStockModes: RollingStock['effort_curves']['modes'];
 }
@@ -79,7 +79,7 @@ const PowerRestrictionsSelector = ({
       pathCatenaryRanges.map((catenaryRange) => ({
         begin: catenaryRange.begin,
         end: catenaryRange.end,
-        value: `${catenaryRange.mode}V`,
+        value: `${catenaryRange.value}V`,
       })),
     [pathCatenaryRanges]
   );
@@ -140,7 +140,7 @@ const PowerRestrictionsSelector = ({
           )
             return;
           // check restriction is compatible with the path range's electrification mode
-          const isInvalid = !powerRestrictionsByMode[pathCatenaryRange.mode].includes(
+          const isInvalid = !powerRestrictionsByMode[pathCatenaryRange.value].includes(
             powerRestrictionRange.value
           );
           if (isInvalid) {
@@ -165,7 +165,7 @@ const PowerRestrictionsSelector = ({
                       })
                     : t('warningMessages.powerRestrictionInvalidCombination', {
                         powerRestrictionCode: powerRestrictionRange.value,
-                        electrification: pathCatenaryRange.mode,
+                        electrification: pathCatenaryRange.value,
                         begin: invalidZoneBegin,
                         end: invalidZoneEnd,
                       }),
