@@ -1,0 +1,93 @@
+{
+  "CARRE": {
+    "height": 128,
+    "pixelRatio": 1,
+    "width": 128,
+    "x": 0,
+    "y": 0
+  },
+  "CARRE A": {
+    "height": 128,
+    "pixelRatio": 1,
+    "width": 128,
+    "x": 128,
+    "y": 0
+  },
+  "CARRE A CLI": {
+    "height": 128,
+    "pixelRatio": 1,
+    "width": 128,
+    "x": 0,
+    "y": 128
+  },
+  "CARRE R30": {
+    "height": 128,
+    "pixelRatio": 1,
+    "width": 128,
+    "x": 128,
+    "y": 128
+  },
+  "CARRE R60": {
+    "height": 128,
+    "pixelRatio": 1,
+    "width": 128,
+    "x": 256,
+    "y": 0
+  },
+  "CARRE RR30": {
+    "height": 128,
+    "pixelRatio": 1,
+    "width": 128,
+    "x": 384,
+    "y": 0
+  },
+  "CARRE RR60": {
+    "height": 128,
+    "pixelRatio": 1,
+    "width": 128,
+    "x": 256,
+    "y": 128
+  },
+  "CARRE VL": {
+    "height": 128,
+    "pixelRatio": 1,
+    "width": 128,
+    "x": 384,
+    "y": 128
+  },
+  "DISQUE A": {
+    "height": 128,
+    "pixelRatio": 1,
+    "width": 128,
+    "x": 0,
+    "y": 256
+  },
+  "DISQUE VL": {
+    "height": 128,
+    "pixelRatio": 1,
+    "width": 128,
+    "x": 128,
+    "y": 256
+  },
+  "S": {
+    "height": 128,
+    "pixelRatio": 1,
+    "width": 128,
+    "x": 256,
+    "y": 256
+  },
+  "S A": {
+    "height": 128,
+    "pixelRatio": 1,
+    "width": 128,
+    "x": 384,
+    "y": 256
+  },
+  "S VL": {
+    "height": 128,
+    "pixelRatio": 1,
+    "width": 128,
+    "x": 0,
+    "y": 384
+  }
+}
