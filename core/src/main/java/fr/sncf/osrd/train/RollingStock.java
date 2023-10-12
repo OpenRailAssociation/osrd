@@ -298,10 +298,10 @@ public class RollingStock implements PhysicsRollingStock {
     }
 
     /**
-     * Return whether this rolling stock's default mode is thermal
+     * Return whether this rolling stock can only use electrified tracks
      */
-    public boolean isThermal() {
-        return !modes.get(defaultMode).isElectric();
+    public boolean isElectricOnly() {
+        return modes.values().stream().allMatch(mode -> mode.isElectric);
     }
 
     /**

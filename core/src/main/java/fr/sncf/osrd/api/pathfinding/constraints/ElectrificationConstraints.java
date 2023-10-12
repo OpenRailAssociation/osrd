@@ -37,7 +37,7 @@ public record ElectrificationConstraints(
      * because it needs electrified tracks and isn't compatible with the catenaries in some range
      */
     private static Set<Pathfinding.Range> getBlockedRanges(RollingStock stock, PathProperties path) {
-        if (stock.isThermal())
+        if (!stock.isElectricOnly())
             return Set.of();
 
         var res = new HashSet<Pathfinding.Range>();
