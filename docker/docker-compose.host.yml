@@ -1,0 +1,37 @@
+version: '3'
+
+services:
+  postgres:
+    ports: []
+    network_mode: host
+    healthcheck:
+      test: ["CMD", "pg_isready", "-d", "postgres://osrd:password@localhost:5432/osrd"]
+
+  redis:
+    ports: []
+    network_mode: host
+
+  core:
+    ports: []
+    network_mode: host
+    environment:
+      MIDDLEWARE_BASE_URL: "http://localhost:8090"
+
+  editoast:
+    ports: []
+    network_mode: host
+    environment:
+      PSQL_HOST: "localhost"
+      EDITOAST_PORT: 8090
+      OSRD_BACKEND_URL: "http://localhost:8080"
+      REDIS_URL: "redis://localhost"
+      DATABASE_URL: "postgres://osrd:password@localhost:5432/osrd"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8090/health"]
+
+  wait-healthy:
+    depends_on:
+      editoast: {condition: service_healthy}
+    restart: "no"
+    image: alpine:latest
+    command: "true"
