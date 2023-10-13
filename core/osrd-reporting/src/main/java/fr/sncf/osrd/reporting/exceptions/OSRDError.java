@@ -196,41 +196,6 @@ public final class OSRDError extends RuntimeException {
     }
 
     /**
-     * Creates a new OSRDError for an invalid schedule error with a track section.
-     *
-     * @param errorType     the error type
-     * @param trackSection  the track section associated with the error
-     * @return a new OSRDError instance
-     */
-    public static OSRDError newInvalidScheduleError(
-            ErrorType errorType,
-            String trackSection
-    ) {
-        var error = new OSRDError(errorType);
-        error.context.put("track_section", trackSection);
-        return error;
-    }
-
-    /**
-     * Creates a new OSRDError for an invalid schedule error with a route and route signaling type.
-     *
-     * @param errorType           the error type
-     * @param route               the route associated with the error
-     * @param routeSignalingType  the route signaling type
-     * @return a new OSRDError instance
-     */
-    public static OSRDError newInvalidScheduleError(
-            ErrorType errorType,
-            String route,
-            String routeSignalingType
-    ) {
-        var error = new OSRDError(errorType);
-        error.context.put("route", route);
-        error.context.put("route_signaling_type", routeSignalingType);
-        return error;
-    }
-
-    /**
      * Creates a new OSRDError for an invalid track range error with an offset.
      *
      * @param offset the track section offset associated with the error
@@ -241,23 +206,6 @@ public final class OSRDError extends RuntimeException {
     ) {
         var error = new OSRDError(ErrorType.InvalidTrackRangeInvalidTrackSectionOffset);
         error.context.put("offset", offset);
-        return error;
-    }
-
-    /**
-     * Creates a new OSRDError for an invalid path error with previous and current detectors.
-     *
-     * @param previousDetector the previous detector
-     * @param detector         the current detector
-     * @return a new OSRDError instance
-     */
-    public static OSRDError newInvalidPathError(
-            Object previousDetector,
-            Object detector
-    ) {
-        var error = new OSRDError(ErrorType.InvalidPathError);
-        error.context.put("previous_detector", previousDetector);
-        error.context.put("detector", detector);
         return error;
     }
 

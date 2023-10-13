@@ -58,17 +58,17 @@ public enum ErrorType {
     InfraLoadingCacheException(
             "infra_loading:cache_exception",
             "cached exception",
-            ErrorCause.USER
+            ErrorCause.INTERNAL
     ),
     InfraLoadingInvalidStatusException(
             "infra_loading:invalid_status",
             "Status doesn’t exist",
-            ErrorCause.USER
+            ErrorCause.INTERNAL
     ),
     InfraInvalidStatusWhileWaitingStable(
             "infra_loading:invalid_status_waiting_stable",
             "invalid status after waitUntilStable",
-            ErrorCause.USER
+            ErrorCause.INTERNAL
     ),
     InfraNotLoadedException(
             "infra:not_loaded",
@@ -103,11 +103,6 @@ public enum ErrorType {
     InvalidInfraMissingDetectorsRoute(
             "invalid_infra:missing_detectors",
             "Missing detectors on route (expected at least 2)",
-            ErrorCause.USER
-    ),
-    InvalidInfraEndpointAlreadyLinked(
-            "invalid_infra:endpoint_already_linked",
-            "Error in track link: at least one endpoint is already linked",
             ErrorCause.USER
     ),
     InvalidInfraTrackSlopeWithInvalidRange(
@@ -236,18 +231,6 @@ public enum ErrorType {
             "Offset %s is not contained in the track ranges view",
             ErrorCause.USER
     ),
-
-    InvalidRouteNoOffset(
-            "invalid_route",
-            "Couldn't find offset on route",
-            ErrorCause.USER
-    ),
-
-    InvalidPathError(
-            "invalid_path",
-            "Detector offsets must be strictly increasing",
-            ErrorCause.USER
-    ),
     UnknownRollingStock(
             "unknown_stock",
             "unknown rolling stock",
@@ -296,7 +279,7 @@ public enum ErrorType {
     EnvelopePartsNotContiguous(
             "envelope_error",
             "invalid envelope, envelope parts are not contiguous",
-            ErrorCause.USER
+            ErrorCause.INTERNAL
     ),
     SignalingError(
             "signaling_error",
@@ -313,16 +296,15 @@ public enum ErrorType {
             "unknown sig schema field",
             ErrorCause.USER
     ),
-
     InvalidSTDCMDelayError(
             "invalid_stdcm",
             "STDCM lookahead isn't supported yet",
-            ErrorCause.USER
+            ErrorCause.INTERNAL
     ),
     InvalidSTDCMUnspecifiedStartTime(
             "invalid_stdcm",
             "STDCM requests with unspecified start time are not supported yet",
-            ErrorCause.USER
+            ErrorCause.INTERNAL
     ),
     InvalidSTDCMUnspecifiedStartAndEndTime(
             "invalid_stdcm",
