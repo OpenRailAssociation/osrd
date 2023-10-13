@@ -298,11 +298,6 @@ public enum ErrorType {
             "invalid envelope, envelope parts are not contiguous",
             ErrorCause.USER
     ),
-    NoCompatibleEnvelopeFound(
-            "no_compatible_envelope",
-            "Couldn't find an envelope that wouldn't cause a conflict",
-            ErrorCause.USER
-    ),
     SignalingError(
             "signaling_error",
             "Unknown signaling system: $sigSystem",
