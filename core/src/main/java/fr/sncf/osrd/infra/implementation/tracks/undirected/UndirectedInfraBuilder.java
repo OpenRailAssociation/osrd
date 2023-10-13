@@ -96,26 +96,6 @@ public class UndirectedInfraBuilder {
     }
 
     /**
-     * Creates a new OSRDError for an invalid infrastructure error with a link ID and source/destination nodes.
-     *
-     * @param linkID             the link ID associated with the error
-     * @param sourceNode         the source node
-     * @param destinationNode    the destination node
-     * @return a new OSRDError instance
-     */
-    public static OSRDError newEndpointAlreadyLinkedError(
-            String linkID,
-            Object sourceNode,
-            Object destinationNode
-    ) {
-        var error = new OSRDError(ErrorType.InvalidInfraEndpointAlreadyLinked);
-        error.context.put("link_id", linkID);
-        error.context.put("source_node", sourceNode);
-        error.context.put("destination_node", destinationNode);
-        return error;
-    }
-
-    /**
      * Creates a new OSRDError for an invalid infrastructure error with an RJS switch ID, switch type, and switch ports.
      *
      * @param rjsSwitchID         the RJS switch ID associated with the error
