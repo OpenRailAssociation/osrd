@@ -12,7 +12,7 @@ import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { Spinner } from 'common/Loader';
 import { ArrayElement } from 'utils/types';
-import { Path } from 'common/api/osrdEditoastApi';
+import { Path, PathStep } from 'common/api/osrdEditoastApi';
 
 type Props = {
   inverseOD: () => void;
@@ -30,7 +30,7 @@ export default function ModalSugerredVias({
   pathfindingInProgress,
 }: Props) {
   const dispatch = useDispatch();
-  const suggeredVias = useSelector(getSuggeredVias);
+  const suggeredVias = useSelector(getSuggeredVias) as PathStep[];
   const vias = useSelector(getVias);
 
   const { t } = useTranslation('operationalStudies/manageTrainSchedule');

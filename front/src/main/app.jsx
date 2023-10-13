@@ -19,6 +19,9 @@ import Scenario from 'applications/operationalStudies/views/Scenario';
 import HomeRollingStockEditor from 'applications/rollingStockEditor/Home';
 import { getIsUserLogged } from 'reducers/user/userSelectors';
 import { attemptLoginOnLaunch } from 'reducers/user';
+import { OsrdConfContextLayout } from 'common/osrdConfContext';
+import { simulationConfSlice } from 'reducers/osrdconf2/simulationConf';
+import { stdcmConfSlice } from 'reducers/osrdconf2/stdcmConf';
 
 import('@sncf/bootstrap-sncf.metier.reseau/dist/css/bootstrap-sncf.min.css');
 export default function App() {
@@ -46,7 +49,10 @@ export default function App() {
           <ModalProvider>
             <NotificationsState />
             <Routes>
-              <Route path="/operational-studies">
+              <Route
+                path="/operational-studies"
+                element={<OsrdConfContextLayout osrdConfSlice={simulationConfSlice} />}
+              >
                 <Route path="/operational-studies" element={<HomeOperationalStudies />} />
                 <Route path="/operational-studies/project" element={<Project />} />
                 <Route path="/operational-studies/study" element={<Study />} />
@@ -55,7 +61,9 @@ export default function App() {
               <Route path="/map/*" element={<HomeMap />} />
               <Route path="/editor/*" element={<HomeEditor />} />
               <Route path="/rolling-stock-editor/*" element={<HomeRollingStockEditor />} />
-              <Route path="/stdcm/*" element={<HomeStdcm />} />
+              <Route element={<OsrdConfContextLayout osrdConfSlice={stdcmConfSlice} />}>
+                <Route path="/stdcm/*" element={<HomeStdcm />} />
+              </Route>
               <Route path="/*" element={<Home />} />
             </Routes>
           </ModalProvider>

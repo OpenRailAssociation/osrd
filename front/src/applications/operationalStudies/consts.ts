@@ -180,7 +180,7 @@ export interface OsrdConfState {
   departureTime: string;
   destination?: PointOnMap;
   vias: PointOnMap[];
-  suggeredVias: Path['steps'];
+  suggeredVias: Path['steps'] | PointOnMap[];
   trainCompo: undefined;
   geojson?: Path;
   originDate?: string;

@@ -1,5 +1,5 @@
 import { legacy_createStore as createStore, combineReducers } from 'redux';
-import { configureStore, Middleware } from '@reduxjs/toolkit';
+import { configureStore, createListenerMiddleware, Middleware } from '@reduxjs/toolkit';
 import thunk from 'redux-thunk';
 import { persistStore, getStoredState } from 'redux-persist';
 import { Config } from '@redux-devtools/extension';
@@ -11,6 +11,8 @@ import persistedReducer, {
   RootState,
   persistConfig,
 } from 'reducers';
+import { registerSimulationUpdateInfraIDListeners } from 'reducers/osrdconf2/simulationConf';
+import { registerStdcmUpdateInfraIDListeners } from 'reducers/osrdconf2/stdcmConf';
 
 const reduxDevToolsOptions: Config = {
   serialize: {
@@ -20,13 +22,25 @@ const reduxDevToolsOptions: Config = {
   },
 };
 
+const buildListenerMiddleware = () => {
+  const listener = createListenerMiddleware();
+  registerSimulationUpdateInfraIDListeners(listener);
+  registerStdcmUpdateInfraIDListeners(listener);
+
+  return listener;
+};
+
 const middlewares: Middleware[] = [thunk, osrdEditoastApi.middleware];
 
 const store = configureStore({
   reducer: persistedReducer,
   devTools: reduxDevToolsOptions,
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware({ serializableCheck: false }).concat(...middlewares),
+    getDefaultMiddleware({ serializableCheck: false })
+      // As mentionned in the Doc(https://redux-toolkit.js.org/api/createListenerMiddleware), Since this can receive actions with functions inside,
+      // listenerMiddleware should go before the serializability check middleware
+      .prepend(buildListenerMiddleware().middleware)
+      .concat(...middlewares),
 });
 
 const persistor = persistStore(store);
