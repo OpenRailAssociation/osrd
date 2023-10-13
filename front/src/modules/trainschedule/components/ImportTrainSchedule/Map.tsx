@@ -25,6 +25,7 @@ import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
 import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
 import { getMapStyle } from 'reducers/map/selectors';
 import { LineString } from 'geojson';
+import { transformMapRequest } from 'reducers/map';
 
 interface MapProps {
   viewport: { latitude: number; longitude: number };
@@ -106,6 +107,7 @@ const Map = ({ viewport, setViewport, setClickedFeatureId }: MapProps) => {
       onClick={onFeatureClick}
       interactiveLayerIds={['chartis/tracks-geo/main']}
       touchZoomRotate
+      transformRequest={transformMapRequest}
     >
       <VirtualLayers />
       <AttributionControl position="bottom-right" customAttribution={CUSTOM_ATTRIBUTION} />
