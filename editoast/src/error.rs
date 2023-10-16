@@ -11,6 +11,11 @@ use std::{
     error::Error,
     fmt::{Display, Formatter},
 };
+use utoipa::ToSchema;
+
+crate::schemas! {
+    InternalError,
+}
 
 pub type Result<T> = StdResult<T, InternalError>;
 
@@ -18,26 +23,37 @@ pub type Result<T> = StdResult<T, InternalError>;
 pub trait EditoastError: Error + Send + Sync {
     fn get_status(&self) -> StatusCode;
 
-    fn get_type(&self) -> &'static str;
+    fn get_type(&self) -> &str;
 
     fn context(&self) -> HashMap<String, Value> {
         Default::default()
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
+#[serde(remote = "StatusCode")]
+struct StatusCodeRemoteDef(#[serde(getter = "StatusCode::as_u16")] u16);
+
+impl From<StatusCodeRemoteDef> for StatusCode {
+    fn from(def: StatusCodeRemoteDef) -> Self {
+        StatusCode::from_u16(def.0).unwrap()
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
 pub struct InternalError {
-    #[serde(skip)]
+    #[serde(with = "StatusCodeRemoteDef")]
+    #[schema(value_type = u16, minimum = 100, maximum = 599)]
     status: StatusCode,
-    #[serde(rename = "type", skip_deserializing)]
-    error_type: &'static str,
+    #[serde(rename = "type")]
+    error_type: String,
     context: HashMap<String, Value>,
     message: String,
 }
 
 impl InternalError {
-    pub fn get_type(&self) -> &'static str {
-        self.error_type
+    pub fn get_type(&self) -> &str {
+        &self.error_type
     }
 
     pub fn get_status(&self) -> StatusCode {
@@ -70,7 +86,7 @@ impl<T: EditoastError> From<T> for InternalError {
     fn from(err: T) -> Self {
         InternalError {
             status: err.get_status(),
-            error_type: err.get_type(),
+            error_type: err.get_type().to_owned(),
             context: err.context(),
             message: err.to_string(),
         }
@@ -99,7 +115,7 @@ impl EditoastError for DieselError {
         StatusCode::INTERNAL_SERVER_ERROR
     }
 
-    fn get_type(&self) -> &'static str {
+    fn get_type(&self) -> &str {
         "editoast:DieselError"
     }
 }
@@ -110,7 +126,7 @@ impl EditoastError for RedisError {
         StatusCode::INTERNAL_SERVER_ERROR
     }
 
-    fn get_type(&self) -> &'static str {
+    fn get_type(&self) -> &str {
         "editoast:RedisError"
     }
 }
@@ -121,7 +137,7 @@ impl EditoastError for JsonPayloadError {
         StatusCode::BAD_REQUEST
     }
 
-    fn get_type(&self) -> &'static str {
+    fn get_type(&self) -> &str {
         "editoast:JsonError"
     }
 
@@ -136,7 +152,7 @@ impl EditoastError for diesel_async::pooled_connection::deadpool::PoolError {
         StatusCode::INTERNAL_SERVER_ERROR
     }
 
-    fn get_type(&self) -> &'static str {
+    fn get_type(&self) -> &str {
         "editoast:DatabePoolError"
     }
 }
@@ -146,7 +162,7 @@ impl EditoastError for reqwest::Error {
         StatusCode::INTERNAL_SERVER_ERROR
     }
 
-    fn get_type(&self) -> &'static str {
+    fn get_type(&self) -> &str {
         "editoast:ReqwestError"
     }
 }

@@ -20,7 +20,7 @@ use self::openapi::{merge_path_items, remove_discriminator, OpenApiMerger, Route
 use crate::client::get_app_version;
 use crate::core::version::CoreVersionRequest;
 use crate::core::{AsCoreRequest, CoreClient};
-use crate::error::Result;
+use crate::error::{self, Result};
 use crate::map::redis_utils::RedisClient;
 use crate::{schemas, DbPool};
 use actix_web::dev::HttpServiceFactory;
@@ -40,6 +40,7 @@ fn routes_v2() -> Routes<impl HttpServiceFactory> {
         version,
         core_version,
         timetable::routes(),
+        documents::routes(),
     }
     routes()
 }
@@ -60,17 +61,14 @@ pub fn routes() -> impl HttpServiceFactory {
 }
 
 schemas! {
+    error::schemas(),
     Version,
     timetable::schemas(),
+    documents::schemas(),
 }
 
 pub fn study_routes() -> impl HttpServiceFactory {
-    services![
-        projects::routes(),
-        study::routes(),
-        scenario::routes(),
-        documents::routes(),
-    ]
+    services![projects::routes(), study::routes(), scenario::routes(),]
 }
 
 #[derive(OpenApi)]

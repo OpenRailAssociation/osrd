@@ -986,53 +986,6 @@ paths:
                   "1500": ["A", "B", "C"]
                   "25000": ["25000", "22500", "20000"]
 
-  /documents/{key}/:
-    get:
-      tags:
-        - documents
-      summary: Retrieve a document binary content
-      parameters:
-        - in: path
-          name: key
-          schema:
-            type: integer
-          description: A key identifying the document
-          required: true
-      responses:
-        200:
-          description: A document of any type (can be an image, a pdf...)
-    delete:
-      tags:
-        - documents
-      summary: Delete a document
-      parameters:
-        - in: path
-          name: key
-          schema:
-            type: integer
-          description: A key identifying the document
-          required: true
-      responses:
-        204:
-          description: No content
-
-  /documents/:
-    post:
-      tags:
-        - documents
-      summary: Add a document
-      responses:
-        201:
-          description: The key of the added document
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  document_key:
-                    type: integer
-                    example: 42
-
   /light_rolling_stock/:
     get:
       tags:

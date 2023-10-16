@@ -2,16 +2,24 @@ use crate::error::Result;
 use crate::models::{Create, Delete, Document, Retrieve};
 use crate::DbPool;
 use actix_http::StatusCode;
-use actix_web::dev::HttpServiceFactory;
 use actix_web::http::header::ContentType;
-use actix_web::web::{scope, Bytes, Data, Header, Path};
+use actix_web::web::{Bytes, Data, Header, Path};
 use actix_web::{delete, get, post, HttpResponse};
 use editoast_derive::EditoastError;
-use serde_json::json;
+use serde_derive::Serialize;
 use thiserror::Error;
+use utoipa::ToSchema;
 
-pub fn routes() -> impl HttpServiceFactory {
-    scope("/documents").service((get, post, delete))
+crate::routes! {
+    "/documents" => {
+        get,
+        post,
+        delete,
+    }
+}
+
+crate::schemas! {
+    NewDocumentResponse,
 }
 
 #[derive(Error, Debug, EditoastError)]
@@ -22,6 +30,17 @@ pub enum DocumentErrors {
     NotFound { document_key: i64 },
 }
 
+/// Returns a document of any type
+#[utoipa::path(
+    tag = "documents",
+    params(
+        ("document_key" = i64, Path, description = "The document's key"),
+    ),
+    responses(
+        (status = 200, description = "The document's binary content", body = [u8]),
+        (status = 404, description = "Document not found", body = InternalError),
+    )
+)]
 #[get("/{document_key}")]
 async fn get(db_pool: Data<DbPool>, document_key: Path<i64>) -> Result<HttpResponse> {
     let document_key = document_key.into_inner();
@@ -34,6 +53,22 @@ async fn get(db_pool: Data<DbPool>, document_key: Path<i64>) -> Result<HttpRespo
         .body(doc.data.unwrap()))
 }
 
+#[derive(Serialize, ToSchema)]
+struct NewDocumentResponse {
+    document_key: i64,
+}
+
+/// Post a new document (content_type by header + binary data)
+#[utoipa::path(
+    tag = "documents",
+    params(
+        ("content_type" = String, Header, description = "The document's content type"),
+    ),
+    request_body = [u8],
+    responses(
+        (status = 201, description = "The document was created", body = NewDocumentResponse),
+    )
+)]
 #[post("")]
 async fn post(
     db_pool: Data<DbPool>,
@@ -49,18 +84,29 @@ async fn post(
         .await?;
 
     // Response
-    Ok(HttpResponse::build(StatusCode::CREATED).json(json!( {
-        "document_key": doc.id.unwrap(),
-    })))
+    Ok(HttpResponse::Created().json(NewDocumentResponse {
+        document_key: doc.id.unwrap(),
+    }))
 }
 
+/// Delete an existing document
+#[utoipa::path(
+    tag = "documents",
+    params(
+        ("document_key" = i64, Path, description = "The document's key"),
+    ),
+    responses(
+        (status = 204, description = "The document was deleted"),
+        (status = 404, description = "Document not found", body = InternalError),
+    )
+)]
 #[delete("/{document_key}")]
 async fn delete(db_pool: Data<DbPool>, document_key: Path<i64>) -> Result<HttpResponse> {
     let document_key = document_key.into_inner();
     if !Document::delete(db_pool, document_key).await? {
         return Err(DocumentErrors::NotFound { document_key }.into());
     }
-    Ok(HttpResponse::build(StatusCode::NO_CONTENT).body(""))
+    Ok(HttpResponse::NoContent().finish())
 }
 
 #[cfg(test)]

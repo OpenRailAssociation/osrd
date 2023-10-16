@@ -23,18 +23,26 @@ const injectedRtkApi = api
   .injectEndpoints({
     endpoints: (build) => ({
       postDocuments: build.mutation<PostDocumentsApiResponse, PostDocumentsApiArg>({
-        query: () => ({ url: `/documents/`, method: 'POST' }),
+        query: (queryArg) => ({
+          url: `/documents/`,
+          method: 'POST',
+          body: queryArg.body,
+          headers: { content_type: queryArg.contentType },
+        }),
         invalidatesTags: ['documents'],
       }),
-      deleteDocumentsByKey: build.mutation<
-        DeleteDocumentsByKeyApiResponse,
-        DeleteDocumentsByKeyApiArg
+      deleteDocumentsByDocumentKey: build.mutation<
+        DeleteDocumentsByDocumentKeyApiResponse,
+        DeleteDocumentsByDocumentKeyApiArg
       >({
-        query: (queryArg) => ({ url: `/documents/${queryArg.key}/`, method: 'DELETE' }),
+        query: (queryArg) => ({ url: `/documents/${queryArg.documentKey}/`, method: 'DELETE' }),
         invalidatesTags: ['documents'],
       }),
-      getDocumentsByKey: build.query<GetDocumentsByKeyApiResponse, GetDocumentsByKeyApiArg>({
-        query: (queryArg) => ({ url: `/documents/${queryArg.key}/` }),
+      getDocumentsByDocumentKey: build.query<
+        GetDocumentsByDocumentKeyApiResponse,
+        GetDocumentsByDocumentKeyApiArg
+      >({
+        query: (queryArg) => ({ url: `/documents/${queryArg.documentKey}/` }),
         providesTags: ['documents'],
       }),
       getElectricalProfileSet: build.query<
@@ -645,19 +653,24 @@ const injectedRtkApi = api
     overrideExisting: false,
   });
 export { injectedRtkApi as osrdEditoastApi };
-export type PostDocumentsApiResponse = /** status 201 The key of the added document */ {
-  document_key?: number;
+export type PostDocumentsApiResponse =
+  /** status 201 The document was created */ NewDocumentResponse;
+export type PostDocumentsApiArg = {
+  /** The document's content type */
+  contentType: string;
+  body: Blob;
 };
-export type PostDocumentsApiArg = void;
-export type DeleteDocumentsByKeyApiResponse = unknown;
-export type DeleteDocumentsByKeyApiArg = {
-  /** A key identifying the document */
-  key: number;
+export type DeleteDocumentsByDocumentKeyApiResponse =
+  /** status 204 The document was deleted */ undefined;
+export type DeleteDocumentsByDocumentKeyApiArg = {
+  /** The document's key */
+  documentKey: number;
 };
-export type GetDocumentsByKeyApiResponse = unknown;
-export type GetDocumentsByKeyApiArg = {
-  /** A key identifying the document */
-  key: number;
+export type GetDocumentsByDocumentKeyApiResponse =
+  /** status 200 The document's binary content */ Blob;
+export type GetDocumentsByDocumentKeyApiArg = {
+  /** The document's key */
+  documentKey: number;
 };
 export type GetElectricalProfileSetApiResponse =
   /** status 200 The list of ids and names of electrical profile sets available */ {
@@ -1299,6 +1312,17 @@ export type GetVersionApiResponse = /** status 200 Return the service version */
 export type GetVersionApiArg = void;
 export type GetVersionCoreApiResponse = /** status 200 Return the core service version */ Version;
 export type GetVersionCoreApiArg = void;
+export type NewDocumentResponse = {
+  document_key: number;
+};
+export type InternalError = {
+  context: {
+    [key: string]: any;
+  };
+  message: string;
+  status: number;
+  type: string;
+};
 export type TrackRange = {
   begin?: number;
   end?: number;
