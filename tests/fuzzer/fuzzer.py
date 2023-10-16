@@ -94,20 +94,21 @@ def make_error(
     )
 
 
-def run_test(infra: InfraGraph, editoast_url: str, scenario: Scenario, infra_name: str):
+def run_test(infra: InfraGraph, editoast_url: str, scenario: Scenario, infra_name: str, prelude: List):
     """
     Runs a single random test
     :param infra: infra graph
     :param editoast_url: Api url
     :param scenario: Scenario to use for the test
     :param infra_name: name of the infra, for better reporting
+    :param prelude: path/schedule requests sent so far
     """
     rolling_stock = get_random_rolling_stock(editoast_url)
     path, path_length = make_valid_path(infra)
     if random.randint(0, 1) == 0:
-        test_new_train(editoast_url, scenario, rolling_stock, path_length, infra_name, path)
+        test_new_train(editoast_url, scenario, rolling_stock, path_length, infra_name, path, prelude)
     else:
-        test_stdcm(editoast_url, scenario, rolling_stock, infra_name, path)
+        test_stdcm(editoast_url, scenario, rolling_stock, infra_name, path, prelude)
 
 
 def test_new_train(
@@ -117,6 +118,7 @@ def test_new_train(
     path_length: float,
     infra_name: str,
     path: List[Tuple[str, float]],
+    prelude: List,
 ):
     """
     Try to run a pathfinding, then create a train using the given path.
@@ -153,6 +155,8 @@ def test_new_train(
             schedule_payload=schedule_payload,
         )
 
+    prelude.append({"path_payload": path_payload, "schedule_payload": schedule_payload})
+
     schedule_id = r.json()[0]
     r = get_with_timeout(f"{editoast_url}train_schedule/{schedule_id}/result/")
     if r.status_code // 100 != 2:
@@ -177,6 +181,7 @@ def test_stdcm(
     rolling_stock: int,
     infra_name: str,
     path: List[Tuple[str, float]],
+    prelude: List,
 ):
     """
     Try to run an STDCM search on the given path.
@@ -189,13 +194,7 @@ def test_stdcm(
         if r.status_code // 100 == 4 and "no_path_found" in r.content.decode("utf-8"):
             print("ignore: no path found")
             return
-        make_error(
-            ErrorType.STDCM,
-            r,
-            infra_name,
-            {},
-            stdcm_payload=stdcm_payload,
-        )
+        make_error(ErrorType.STDCM, r, infra_name, {}, stdcm_payload=stdcm_payload, prelude=prelude)
     print("test PASSED")
 
 
@@ -245,9 +244,13 @@ def run(
     :param seed: first seed, incremented by 1 for each individual test
 
     Note that this is called from tests/tests/test_with_fuzzer.py
+    TODO: we may want to clarify the interface, e.g. by using underscores elsewhere
     """
     infra_graph = make_graph(editoast_url, scenario.infra)
     requests.post(editoast_url + f"infra/{scenario.infra}/load").raise_for_status()
+    # The prelude allows us to keep track of path/schedule requests sent so far,
+    # so we can easily reproduce the current state.
+    prelude = []
     for i in range(n_test):
         seed += 1
         print("seed:", seed)
@@ -255,7 +258,7 @@ def run(
         time.sleep(0.1)
 
         try:
-            run_test(infra_graph, editoast_url, scenario, infra_name)
+            run_test(infra_graph, editoast_url, scenario, infra_name, prelude)
         except Exception as e:
             if log_folder is None:
                 raise e
@@ -269,6 +272,7 @@ def run(
         # manageable/reproducible state.
         if seed % scenario_ttl == 0:
             scenario = reset_scenario(editoast_url, scenario)
+            prelude = []
 
 
 def get_random_rolling_stock(editoast_url: str) -> int:
