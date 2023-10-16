@@ -69,7 +69,6 @@ function Origin(props: OriginProps) {
       type="radio"
       id="stdcmMode"
       name="stdcmMode"
-      // className="custom-control-input"
       checked={isByOrigin}
       onChange={() => dispatch(updateStdcmMode(STDCM_MODES.byOrigin))}
     />
@@ -96,7 +95,7 @@ function Origin(props: OriginProps) {
     <div className="mb-2 place" data-testid="itinerary-origin">
       {origin !== undefined ? (
         <>
-          <div className="pl-1 hover w-100 origin-name-and-time-container">
+          <div className="hover origin-name-and-time-container">
             <span className="text-success mr-2">
               <RiMapPin2Fill />
             </span>

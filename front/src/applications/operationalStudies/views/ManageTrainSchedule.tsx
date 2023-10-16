@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 
 import TrainSettings from 'modules/trainschedule/components/ManageTrainSchedule/TrainSettings';
-import Itinerary from 'modules/trainschedule/components/ManageTrainSchedule/Itinerary';
+import Itinerary from 'modules/trainschedule/components/ManageTrainSchedule/Itinerary/Itinerary';
 import Map from 'modules/trainschedule/components/ManageTrainSchedule/Map';
 import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector/SpeedLimitByTagSelector';
 import PowerRestrictionsSelector from 'modules/trainschedule/components/ManageTrainSchedule/PowerRestrictionsSelector';

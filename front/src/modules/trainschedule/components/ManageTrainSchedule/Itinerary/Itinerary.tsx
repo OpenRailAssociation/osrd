@@ -85,11 +85,10 @@ function Itinerary() {
         })
       );
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [extViewport]);
 
   return (
-    <div className="osrd-config-item">
+    <div className="itinerary">
       <div className="mb-2">
         <Pathfinding zoomToFeature={zoomToFeature} />
       </div>
