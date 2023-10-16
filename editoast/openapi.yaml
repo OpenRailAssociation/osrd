@@ -539,7 +539,6 @@ components:
         type:
           type: string
       required:
-      - status
       - type
       - context
       - message

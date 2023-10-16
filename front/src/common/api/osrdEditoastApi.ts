@@ -1342,7 +1342,7 @@ export type InternalError = {
     [key: string]: any;
   };
   message: string;
-  status: number;
+  status?: number;
   type: string;
 };
 export type TrackRange = {

@@ -9,9 +9,10 @@ pub mod simulation;
 pub mod stdcm;
 pub mod version;
 
-use std::marker::PhantomData;
+use std::{collections::HashMap, fmt::Display, marker::PhantomData};
 
 use crate::error::{InternalError, Result};
+use actix_http::StatusCode;
 use async_trait::async_trait;
 use colored::{ColoredString, Colorize};
 use editoast_derive::EditoastError;
@@ -19,6 +20,8 @@ pub use http_client::{HttpClient, HttpClientBuilder};
 use log::info;
 use reqwest::Url;
 use serde::{de::DeserializeOwned, Serialize};
+use serde_derive::Deserialize;
+use serde_json::Value;
 use thiserror::Error;
 
 #[cfg(test)]
@@ -68,20 +71,12 @@ impl CoreClient {
         status: reqwest::StatusCode,
         url: String,
     ) -> InternalError {
-        // We try to deserialize the response as an InternalError in order to retain the context of the core error
-        if let Ok(mut core_error) = <Json<InternalError>>::from_bytes(bytes) {
-            core_error.set_status(status);
-            return CoreError::Forward { core_error, url }.into();
-        }
-
-        // If that fails we try to return a generic error containing the raw error
-        if let Ok(utf8_raw_error) = String::from_utf8(bytes.as_ref().to_vec()) {
-            return CoreError::GenericCoreError {
-                status: Some(status.as_u16()),
-                url: url.clone(),
-                raw_error: utf8_raw_error,
-            }
-            .into();
+        // We try to deserialize the response as an StandardCoreError in order to retain the context of the core error
+        if let Ok(mut core_error) = <Json<StandardCoreError>>::from_bytes(bytes) {
+            core_error.context.insert("url".to_owned(), url.into());
+            let mut internal_error: InternalError = core_error.into();
+            internal_error.set_status(status);
+            return internal_error;
         }
 
         CoreError::UnparsableErrorOutput.into()
@@ -287,12 +282,6 @@ enum CoreError {
     #[error("Cannot parse Core response: {msg}")]
     #[editoast_error(status = 500)]
     CoreResponseFormatError { msg: String },
-    #[error("{}", core_error.message)]
-    #[editoast_error(status = 500)]
-    Forward {
-        core_error: InternalError,
-        url: String,
-    },
     /// A fallback error variant for when no meaningful error could be parsed
     /// from core's output.
     #[error("Core error {}: {raw_error}", status.unwrap_or(500))]
@@ -302,7 +291,7 @@ enum CoreError {
         url: String,
         raw_error: String,
     },
-    #[error("Cannot convert core error to a UTF-8 string")]
+    #[error("Core returned an error in an unknown format")]
     UnparsableErrorOutput,
 
     #[error("Core connection closed before message completed. Should retry.")]
@@ -311,6 +300,38 @@ enum CoreError {
     #[cfg(test)]
     #[error("The mocked response had no body configured - check out StubResponseBuilder::body if this is unexpected")]
     NoResponseContent,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct StandardCoreError {
+    #[serde(skip)]
+    status: StatusCode,
+    #[serde(rename = "type")]
+    error_type: String,
+    context: HashMap<String, Value>,
+    message: String,
+}
+
+impl crate::error::EditoastError for StandardCoreError {
+    fn get_type(&self) -> &str {
+        &self.error_type
+    }
+
+    fn get_status(&self) -> StatusCode {
+        self.status
+    }
+
+    fn context(&self) -> HashMap<String, Value> {
+        self.context.clone()
+    }
+}
+
+impl std::error::Error for StandardCoreError {}
+
+impl Display for StandardCoreError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.message)
+    }
 }
 
 impl From<reqwest::Error> for CoreError {
@@ -344,7 +365,7 @@ mod test {
     use serde_json::json;
 
     use crate::{
-        core::{mocking::MockingClient, AsCoreRequest, Bytes, CoreError},
+        core::{mocking::MockingClient, AsCoreRequest, Bytes},
         error::InternalError,
     };
 
@@ -398,10 +419,11 @@ mod test {
                     "ThreadPoolExecutor.java:635",
                     "Thread.java:833"
                 ],
-                "message": "conflict offset is already on a range transition"
+                "message": "conflict offset is already on a range transition",
+                "url": "/test"
             },
             "message": "assert check failed",
-            "type": "assert_error"
+            "type": "assert_error",
         });
         let mut core = MockingClient::default();
         core.stub("/test")
@@ -412,11 +434,7 @@ mod test {
         let mut error_with_status: InternalError = serde_json::from_value(error).unwrap();
         error_with_status.set_status(StatusCode::NOT_FOUND);
         let result = Req.fetch(&core.into()).await;
-        let expected_err: InternalError = CoreError::Forward {
-            core_error: error_with_status,
-            url: "/test".to_owned(),
-        }
-        .into();
+        let expected_err: InternalError = error_with_status;
         assert_eq!(result, Err(expected_err));
     }
 }
