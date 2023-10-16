@@ -4133,13 +4133,6 @@
   dependencies:
     "@types/react" "*"
 
-"@types/react-modal@^3.16.0":
-  version "3.16.1"
-  resolved "https://registry.yarnpkg.com/@types/react-modal/-/react-modal-3.16.1.tgz#0d65e078b1290acfef8083b8cd92b7692e899720"
-  integrity sha512-HsH2E3luJ2hdVOAovq93x/r+CmWqbhwT8hXW05KMp3zzbSEZsBn4egnMGU/VLwScwlCRPTyZgIEPqLycaz5EOw==
-  dependencies:
-    "@types/react" "*"
-
 "@types/react-redux@^7.1.20":
   version "7.1.27"
   resolved "https://registry.yarnpkg.com/@types/react-redux/-/react-redux-7.1.27.tgz#1afb31f7354bf787e162c10ff3fa19bafa9e6b57"
@@ -12976,9 +12969,9 @@ unbzip2-stream@^1.0.9:
     through "^2.3.8"
 
 undici@^5.4.0:
-  version "5.25.4"
-  resolved "https://registry.yarnpkg.com/undici/-/undici-5.25.4.tgz#7d8ef81d94f84cd384986271e5e5599b6dff4296"
-  integrity sha512-450yJxT29qKMf3aoudzFpIciqpx6Pji3hEWaXqXmanbXF58LTAGCKxcJjxMXWu3iG+Mudgo3ZUfDB6YDFd/dAw==
+  version "5.26.3"
+  resolved "https://registry.yarnpkg.com/undici/-/undici-5.26.3.tgz#ab3527b3d5bb25b12f898dfd22165d472dd71b79"
+  integrity sha512-H7n2zmKEWgOllKkIUkLvFmsJQj062lSm3uA4EYApG8gLuiOM0/go9bIoC3HVaSnfg4xunowDE2i9p8drkXuvDw==
   dependencies:
     "@fastify/busboy" "^2.0.0"
 
