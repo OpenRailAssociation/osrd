@@ -28,7 +28,7 @@ Available fixtures are defined in `conftest.py`.
 # Fuzzer
 
 The fuzzer is a script that generates random tests and logs any error that occurred.
-Run `python3 fuzzer/fuzzer.py`, any error will be reported in `fuzzer/errors` in a json.
+Run `poetry run python3 fuzzer/fuzzer.py`, any error will be reported in `fuzzer/errors` in a json.
 
 Note: you need a docker running locally _with at least one infra imported_.
 It can be a generated infra, or it can be imported from some other DB.
