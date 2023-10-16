@@ -96,7 +96,7 @@ export default function ModalSugerredVias({
 
   let idxTrueVia = 0;
   return (
-    <>
+    <div className="manage-vias-modal">
       <ModalHeaderSNCF>
         <h1>{`${t('manageVias')} ${vias.length > 0 ? `(${vias.length})` : ''}`}</h1>
         <button className="btn btn-only-icon close" type="button" onClick={closeModal}>
@@ -137,6 +137,6 @@ export default function ModalSugerredVias({
           </div>
         </div>
       </ModalFooterSNCF>
-    </>
+    </div>
   );
 }

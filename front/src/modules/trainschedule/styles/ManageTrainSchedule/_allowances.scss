@@ -2,21 +2,21 @@
   --mareco-color: var(--teal);
   --linear-color: var(--yellow);
   display: flex;
-  justify-content: space-between;
   gap: 0.5rem;
-  position: relative;
   height: 100%;
+
   @media (max-width: 1279px) {
     flex-direction: column;
   }
+
   .allowances-container {
     display: flex;
-    position: relative;
     flex-direction: column;
     flex-grow: 1;
     background-color: var(--white);
     border-radius: var(--border-radius);
     padding: 0.5rem;
+
     .subtitle {
       all: unset;
       cursor: pointer;
@@ -27,6 +27,7 @@
       font-weight: 500;
       border-bottom: 1px solid var(--coolgray3);
     }
+
     .allowances-actions {
       display: flex;
       flex-direction: column;
@@ -76,6 +77,7 @@
         color: var(--mareco-color);
       }
     }
+
     .outside-container {
       position: relative;
       background-color: var(--coolgray1);
@@ -88,7 +90,7 @@
         gap: 0.1rem;
         width: 100%;
         height: 1.5rem;
-        color: var(--secondary); 
+        color: var(--secondary);
         background-color: var(--coolgray3);
         background-image: repeating-linear-gradient(-45deg, transparent, transparent 3px, var(--coolgray1) 3px, var(--coolgray1) 6px);
         .range-no-allowance {
@@ -145,12 +147,15 @@
         }
       }
     }
+
     .allowances-list {
       display: flex;
       flex-direction: column;
       gap: 0.1rem;
       overflow: auto;
       flex-grow: 1;
+      margin-top: 0.5rem;
+
       .allowance {
         all: unset;
         display: flex;

@@ -24,7 +24,7 @@ export default function DriverTrainSchedule({ train }: { train: Train }) {
   }, [train]);
 
   return rollingStock ? (
-    <div className="container-drivertrainschedule">
+    <div className="simulation-driver-train-schedule">
       <DriverTrainScheduleHeader
         train={train}
         rollingStock={rollingStock}

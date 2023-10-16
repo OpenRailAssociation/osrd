@@ -47,7 +47,7 @@ export default function AllowancesList({
 
   if (type === AllowancesTypes.standard) {
     return (
-      <div className="allowances-list mt-2">
+      <div className="allowances-list">
         {allowances &&
           allowances.map((allowance: RangeAllowance, idx) => (
             <AllowancesListItem
@@ -64,7 +64,7 @@ export default function AllowancesList({
   }
   if (type === AllowancesTypes.engineering) {
     return (
-      <div className="allowances-list mt-2">
+      <div className="allowances-list">
         {allowances &&
           allowances.map((allowance, idx) => (
             <AllowancesListItem

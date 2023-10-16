@@ -1,0 +1,37 @@
+.simulation-driver-train-schedule {
+  .driver-train-schedule-table-container {
+    max-height: 50vh;
+    overflow: auto;
+
+    .table-drivertrainschedule {
+      .drivertrainschedule-stop {
+        font-weight: bold;
+        small {
+          font-weight: bold;
+        }
+      }
+
+      thead {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+      }
+
+      th {
+        padding-right: 10px;
+      }
+
+      .stoptime-container {
+        .box-cell {
+          display: table-cell;
+          width: calc(100% / 3);
+          position: relative;
+          .box-cell::after {
+            content: '+';
+            position: absolute;
+          }
+        }
+      }
+    }
+  }
+}

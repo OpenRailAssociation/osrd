@@ -18,7 +18,7 @@ export default function DriverTrainScheduleStopList({ train, baseOrEco }: Props)
       <div className="small text-right text-muted mt-1">
         {t('numberoflines')} :<span className="font-weight-bold"> {trainRegime.stops.length}</span>
       </div>
-      <div className="simulation-drivertrainschedule ml-auto mr-auto">
+      <div className="driver-train-schedule-table-container">
         <table className="table-drivertrainschedule table-hover">
           <thead className="bg-light text-primary">
             <tr>

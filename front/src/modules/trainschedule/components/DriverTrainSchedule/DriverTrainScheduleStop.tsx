@@ -1,4 +1,6 @@
+import cx from 'classnames';
 import React from 'react';
+
 import { Stop, Train } from 'reducers/osrdsimulation/types';
 import {
   getActualSpeed,
@@ -36,11 +38,10 @@ export default function DriverTrainScheduleStop({ stop, idx, train }: Props) {
   return (
     <tr
       key={`drivertrainschedule-stop-${stop.position}`}
-      className={`${
-        stop.duration > 0 || idx === 0 || idx === train.base.stops.length - 1
-          ? 'drivertrainschedule-stop'
-          : ''
-      }`}
+      className={cx({
+        'drivertrainschedule-stop':
+          stop.duration > 0 || idx === 0 || idx === train.base.stops.length - 1,
+      })}
     >
       <td className="text-center">
         <small>{idx + 1}</small>
@@ -49,7 +50,7 @@ export default function DriverTrainScheduleStop({ stop, idx, train }: Props) {
       <td className="text-center">{actualSpeed !== 0 ? actualSpeed : null}</td>
       <td className="text-center">{averageSpeed}</td>
       <td className="d-flex justify-content-center">
-        <div className="drivertrainschedule-pk">{Number.isInteger(pk) ? `${pk}.0` : pk}</div>
+        <div>{Number.isInteger(pk) ? `${pk}.0` : pk}</div>
       </td>
       <td>{stop.name || 'Unknown'}</td>
       <td className="stoptime-container">

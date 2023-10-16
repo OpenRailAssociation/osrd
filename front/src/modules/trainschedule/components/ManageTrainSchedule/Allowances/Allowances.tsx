@@ -21,11 +21,7 @@ import getAllowanceValue from './helpers';
 
 const MissingPathFindingMessage = () => {
   const { t } = useTranslation('operationalStudies/allowances');
-  return (
-    <div className="operational-studies-allowances">
-      <div className="missing-pathfinding">{t('missingPathFinding')}</div>
-    </div>
-  );
+  return <div className="missing-pathfinding">{t('missingPathFinding')}</div>;
 };
 
 const ResetButton = ({ resetFunction }: { resetFunction: () => void }) => {
@@ -141,111 +137,117 @@ export default function Allowances() {
     }
   }, [standardAllowance, engineeringAllowances]);
 
-  return pathFindingID && pathLength && pathLength > 0 ? (
+  return (
     <div className="operational-studies-allowances">
-      <div className="allowances-container">
-        <h2 className="text-uppercase text-muted mb-3 mt-1 d-flex align-items-center">
-          {t('standardAllowance')}
-          <ResetButton resetFunction={() => resetFunction(AllowancesTypes.standard)} />
-        </h2>
-        <AllowancesStandardSettings
-          distribution={standardAllowance.distribution}
-          valueAndUnit={standardAllowance.default_value}
-          setDistribution={setStandardDistribution}
-          setValueAndUnit={setStandardValueAndUnit}
-        />
-        {getAllowanceValue(standardAllowance.default_value) !== 0 && (
-          <>
-            <button
-              className="subtitle mb-1 mt-2"
-              type="button"
-              onClick={() => setCollapsedStandardAllowanceRanges(!collapsedStandardAllowanceRanges)}
-            >
-              <AiOutlineDash />
-              <span className="ml-1">{t('standardAllowanceIntervals')}</span>
-              <span className={cx('ml-auto', standardAllowance.ranges.length > 0 && 'd-none')}>
-                {collapsedStandardAllowanceRanges ? (
-                  <i className="icons-arrow-down" />
-                ) : (
-                  <i className="icons-arrow-up" />
-                )}
-              </span>
-            </button>
-            {(!collapsedStandardAllowanceRanges || standardAllowance.ranges.length > 0) && (
+      {pathFindingID && pathLength > 0 ? (
+        <>
+          <div className="allowances-container">
+            <h2 className="text-uppercase text-muted mb-3 mt-1 d-flex align-items-center">
+              {t('standardAllowance')}
+              <ResetButton resetFunction={() => resetFunction(AllowancesTypes.standard)} />
+            </h2>
+            <AllowancesStandardSettings
+              distribution={standardAllowance.distribution}
+              valueAndUnit={standardAllowance.default_value}
+              setDistribution={setStandardDistribution}
+              setValueAndUnit={setStandardValueAndUnit}
+            />
+            {getAllowanceValue(standardAllowance.default_value) !== 0 && (
               <>
-                <AllowancesActions
-                  allowances={standardAllowance.ranges}
-                  pathLength={pathLength}
-                  manageAllowance={manageAllowance}
-                  type={AllowancesTypes.standard}
-                  allowanceSelectedIndex={standardAllowanceSelectedIndex}
-                  setAllowanceSelectedIndex={setStandardAllowanceSelectedIndex}
-                  setOverlapAllowancesIndexes={setOverlapAllowancesIndexes}
-                  pathFindingSteps={pathFinding?.steps}
-                />
-                <AllowancesLinearView
-                  allowances={standardAllowance.ranges}
-                  pathLength={pathLength}
-                  allowanceSelectedIndex={standardAllowanceSelectedIndex}
-                  setAllowanceSelectedIndex={toggleStandardAllowanceSelectedIndex}
-                  globalDistribution={standardAllowance.distribution}
-                />
-                <AllowancesList
-                  allowances={standardAllowance.ranges}
-                  type={AllowancesTypes.standard}
-                  allowanceSelectedIndex={standardAllowanceSelectedIndex}
-                  setAllowanceSelectedIndex={toggleStandardAllowanceSelectedIndex}
-                  overlapAllowancesIndexes={overlapAllowancesIndexes}
-                />
+                <button
+                  className="subtitle mb-1 mt-2"
+                  type="button"
+                  onClick={() =>
+                    setCollapsedStandardAllowanceRanges(!collapsedStandardAllowanceRanges)
+                  }
+                >
+                  <AiOutlineDash />
+                  <span className="ml-1">{t('standardAllowanceIntervals')}</span>
+                  <span className={cx('ml-auto', standardAllowance.ranges.length > 0 && 'd-none')}>
+                    {collapsedStandardAllowanceRanges ? (
+                      <i className="icons-arrow-down" />
+                    ) : (
+                      <i className="icons-arrow-up" />
+                    )}
+                  </span>
+                </button>
+                {(!collapsedStandardAllowanceRanges || standardAllowance.ranges.length > 0) && (
+                  <>
+                    <AllowancesActions
+                      allowances={standardAllowance.ranges}
+                      pathLength={pathLength}
+                      manageAllowance={manageAllowance}
+                      type={AllowancesTypes.standard}
+                      allowanceSelectedIndex={standardAllowanceSelectedIndex}
+                      setAllowanceSelectedIndex={setStandardAllowanceSelectedIndex}
+                      setOverlapAllowancesIndexes={setOverlapAllowancesIndexes}
+                      pathFindingSteps={pathFinding?.steps}
+                    />
+                    <AllowancesLinearView
+                      allowances={standardAllowance.ranges}
+                      pathLength={pathLength}
+                      allowanceSelectedIndex={standardAllowanceSelectedIndex}
+                      setAllowanceSelectedIndex={toggleStandardAllowanceSelectedIndex}
+                      globalDistribution={standardAllowance.distribution}
+                    />
+                    <AllowancesList
+                      allowances={standardAllowance.ranges}
+                      type={AllowancesTypes.standard}
+                      allowanceSelectedIndex={standardAllowanceSelectedIndex}
+                      setAllowanceSelectedIndex={toggleStandardAllowanceSelectedIndex}
+                      overlapAllowancesIndexes={overlapAllowancesIndexes}
+                    />
+                  </>
+                )}
               </>
             )}
-          </>
-        )}
-      </div>
-      <div className="allowances-container">
-        <h2 className="text-uppercase text-muted mb-3 mt-1 d-flex align-items-center">
-          {t('engineeringAllowances')}
-          <small className="ml-2">
-            {t('allowancesCount', {
-              count: engineeringAllowances ? engineeringAllowances.length : 0,
-            })}
-          </small>
-          <button
-            className="btn btn-link ml-auto"
-            type="button"
-            onClick={() => setEngineeringAllowances([])}
-          >
-            {t('reset')}
-          </button>
-        </h2>
-        <AllowancesActions
-          allowances={engineeringAllowances}
-          pathLength={pathLength}
-          manageAllowance={manageAllowance}
-          type={AllowancesTypes.engineering}
-          allowanceSelectedIndex={EngineeringAllowanceSelectedIndex}
-          setAllowanceSelectedIndex={setEngineeringAllowanceSelectedIndex}
-          pathFindingSteps={pathFinding?.steps}
-        />
-        {/*
-          * Temporary desactivated until new version with overlap
-          *
-          <AllowancesLinearView
-            allowances={engineeringAllowances}
-            pathLength={pathLength}
-            allowanceSelectedIndex={EngineeringAllowanceSelectedIndex}
-            setAllowanceSelectedIndex={toggleEngineeringAllowanceSelectedIndex}
-          />
-        */}
-        <AllowancesList
-          allowances={engineeringAllowances}
-          type={AllowancesTypes.engineering}
-          allowanceSelectedIndex={EngineeringAllowanceSelectedIndex}
-          setAllowanceSelectedIndex={toggleEngineeringAllowanceSelectedIndex}
-        />
-      </div>
+          </div>
+          <div className="allowances-container">
+            <h2 className="text-uppercase text-muted mb-3 mt-1 d-flex align-items-center">
+              {t('engineeringAllowances')}
+              <small className="ml-2">
+                {t('allowancesCount', {
+                  count: engineeringAllowances ? engineeringAllowances.length : 0,
+                })}
+              </small>
+              <button
+                className="btn btn-link ml-auto"
+                type="button"
+                onClick={() => setEngineeringAllowances([])}
+              >
+                {t('reset')}
+              </button>
+            </h2>
+            <AllowancesActions
+              allowances={engineeringAllowances}
+              pathLength={pathLength}
+              manageAllowance={manageAllowance}
+              type={AllowancesTypes.engineering}
+              allowanceSelectedIndex={EngineeringAllowanceSelectedIndex}
+              setAllowanceSelectedIndex={setEngineeringAllowanceSelectedIndex}
+              pathFindingSteps={pathFinding?.steps}
+            />
+            {/*
+              * Temporary desactivated until new version with overlap
+              *
+              <AllowancesLinearView
+                allowances={engineeringAllowances}
+                pathLength={pathLength}
+                allowanceSelectedIndex={EngineeringAllowanceSelectedIndex}
+                setAllowanceSelectedIndex={toggleEngineeringAllowanceSelectedIndex}
+              />
+              */}
+            <AllowancesList
+              allowances={engineeringAllowances}
+              type={AllowancesTypes.engineering}
+              allowanceSelectedIndex={EngineeringAllowanceSelectedIndex}
+              setAllowanceSelectedIndex={toggleEngineeringAllowanceSelectedIndex}
+            />
+          </div>
+        </>
+      ) : (
+        <MissingPathFindingMessage />
+      )}
     </div>
-  ) : (
-    <MissingPathFindingMessage />
   );
 }
