@@ -525,6 +525,26 @@ components:
       - unknown_port_name
       - unused_port
       type: string
+    InternalError:
+      properties:
+        context:
+          additionalProperties: {}
+          type: object
+        message:
+          type: string
+        status:
+          format: int32
+          maximum: 599
+          minimum: 100
+          type: integer
+        type:
+          type: string
+      required:
+      - status
+      - type
+      - context
+      - message
+      type: object
     InvalidTrainValues:
       enum:
       - NewerRollingStock
@@ -643,6 +663,14 @@ components:
       required:
       - lower_pantograph
       - object_type
+    NewDocumentResponse:
+      properties:
+        document_key:
+          format: int64
+          type: integer
+      required:
+      - document_key
+      type: object
     NonElectrified:
       properties:
         object_type:
@@ -2654,47 +2682,79 @@ openapi: 3.0.2
 paths:
   /documents/:
     post:
+      description: Post a new document (content_type by header + binary data)
+      parameters:
+      - description: The document's content type
+        in: header
+        name: content_type
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/octet-stream:
+            schema:
+              format: binary
+              type: string
+        required: true
       responses:
         '201':
           content:
             application/json:
               schema:
-                properties:
-                  document_key:
-                    example: 42
-                    type: integer
-                type: object
-          description: The key of the added document
-      summary: Add a document
+                $ref: '#/components/schemas/NewDocumentResponse'
+          description: The document was created
+      summary: Post a new document (content_type by header + binary data)
       tags:
       - documents
-  /documents/{key}/:
+  /documents/{document_key}/:
     delete:
+      description: Delete an existing document
       parameters:
-      - description: A key identifying the document
+      - description: The document's key
         in: path
-        name: key
+        name: document_key
         required: true
         schema:
+          format: int64
           type: integer
       responses:
         '204':
-          description: No content
-      summary: Delete a document
+          description: The document was deleted
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalError'
+          description: Document not found
+      summary: Delete an existing document
       tags:
       - documents
     get:
+      description: Returns a document of any type
       parameters:
-      - description: A key identifying the document
+      - description: The document's key
         in: path
-        name: key
+        name: document_key
         required: true
         schema:
+          format: int64
           type: integer
       responses:
         '200':
-          description: A document of any type (can be an image, a pdf...)
-      summary: Retrieve a document binary content
+          content:
+            application/octet-stream:
+              schema:
+                format: binary
+                type: string
+          description: The document's binary content
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalError'
+          description: Document not found
+      summary: Returns a document of any type
       tags:
       - documents
   /electrical_profile_set/:
