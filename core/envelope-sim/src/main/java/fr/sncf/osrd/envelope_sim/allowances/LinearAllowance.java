@@ -1,5 +1,7 @@
 package fr.sncf.osrd.envelope_sim.allowances;
 
+import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.POSITION_EPSILON;
+
 import fr.sncf.osrd.envelope.*;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
@@ -50,19 +52,26 @@ public class LinearAllowance extends AbstractAllowanceWithRanges {
 
     /** Scale a single part, new speed = old speed * ratio */
     private static EnvelopePart scalePart(EnvelopePart part, double ratio) {
-        var positions = part.clonePositions();
-        var speeds = part.cloneSpeeds();
-        var scaledSpeeds = Arrays.stream(speeds)
-                .map(x -> x * ratio)
-                .toArray();
+        var positions = new ArrayList<Double>();
+        var speeds = new ArrayList<Double>();
+        for (int i = 0; i < part.pointCount(); i++) {
+            if (i > 0 && Math.abs(positions.get(i - 1) - part.getPointPos(i)) < POSITION_EPSILON) {
+                // Remove points that are too close to one another, could cause problems with scaling down
+                // The first one is removed to keep the same values at the end of the envelope
+                positions.remove(positions.size() - 1);
+                speeds.remove(speeds.size() - 1);
+            }
+            positions.add(part.getPointPos(i));
+            speeds.add(part.getPointSpeed(i) * ratio);
+        }
         var attr = part.getAttr(EnvelopeProfile.class);
         var attrs = List.<EnvelopeAttr>of();
         if (attr != null)
             attrs = List.of(attr);
         return EnvelopePart.generateTimes(
                 attrs,
-                positions,
-                scaledSpeeds
+                positions.stream().mapToDouble(x -> x).toArray(),
+                speeds.stream().mapToDouble(x -> x).toArray()
         );
     }
 }
