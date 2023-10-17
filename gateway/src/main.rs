@@ -44,7 +44,7 @@ struct ProxySettings {
 
 fn is_hop_by_hop(header: &str) -> bool {
     // TODO: parse connection header, which contains a comma
-    // separated list of additional hop-by-hop headerss
+    // separated list of additional hop-by-hop headers
     match header {
         "keep-alive" => true,
         "transfer-encoding" => true,
@@ -54,6 +54,10 @@ fn is_hop_by_hop(header: &str) -> bool {
         "upgrade" => true,
         "proxy-authorization" => true,
         "proxy-authenticate" => true,
+        "sec-websocket-key" => true,
+        "sec-websocket-extensions" => true,
+        "sec-websocket-version" => true,
+        "sec-websocket-accept" => true,
         _ => false,
     }
 }
@@ -77,16 +81,19 @@ async fn proxy(
             log::info!("WS: connecting to {back_uri}");
             // open a websocket connection to the backend
             let mut back_request = settings.client.ws(back_uri);
-            back_request = back_request.set_header(header::SEC_WEBSOCKET_PROTOCOL, "vite-hmr");
+            for header in request.headers() {
+                if ! is_hop_by_hop(header.0.as_str()) {
+                    back_request = back_request.header(header.0, header.1);
+                }
+            }
             let (back_response, back_ws) = back_request.connect().await.unwrap();
             log::info!("WS: connection complete");
 
-            // TODO: forward back_response headers?
-
             let mut res = ws::handshake(&request)?;
-            // the protocol must for forwarded for chrome to complete the handshake
-            if let Some(proto) = back_response.headers().get(header::SEC_WEBSOCKET_PROTOCOL) {
-                res.append_header((header::SEC_WEBSOCKET_PROTOCOL, proto));
+            for header in back_response.headers() {
+                if ! is_hop_by_hop(header.0.as_str()) {
+                    res.append_header(header);
+                }
             }
             let (back_tx, back_rx) = back_ws.split();
             Ok(res.streaming(ws::WebsocketContext::create(
@@ -97,9 +104,9 @@ async fn proxy(
         _ => {
             log::info!("HTTP: connecting to {back_uri}");
             let mut back_request = settings.client.request(request.method().clone(), back_uri);
-            for req_header in request.headers() {
-                if !is_hop_by_hop(req_header.0.as_str()) {
-                    back_request = back_request.append_header(req_header);
+            for header in request.headers() {
+                if !is_hop_by_hop(header.0.as_str()) {
+                    back_request = back_request.append_header(header);
                 }
             }
 
