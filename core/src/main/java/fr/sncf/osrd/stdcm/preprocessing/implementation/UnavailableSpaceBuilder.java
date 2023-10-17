@@ -67,7 +67,7 @@ public class UnavailableSpaceBuilder {
                         var secPreBlockLength = blockInfra.getBlockLength(secondPredecessorBlock);
                         unavailableSpace.put(secondPredecessorBlock, new OccupancySegment(
                                 timeRange.lowerEndpoint(), timeRange.upperEndpoint(),
-                                Math.max(0, secPreBlockLength - SIGHT_DISTANCE), preBlockLength
+                                Math.max(0, secPreBlockLength - SIGHT_DISTANCE), secPreBlockLength
                         ));
                     }
                 }
@@ -82,6 +82,14 @@ public class UnavailableSpaceBuilder {
                     ));
                 }
             }
+        }
+        // validation
+        for (var entry : unavailableSpace.entries()) {
+            assert entry.getValue().distanceStart() <= entry.getValue().distanceEnd();
+            assert entry.getValue().timeStart() <= entry.getValue().timeEnd();
+            assert entry.getValue().distanceEnd() <= blockInfra.getBlockLength(entry.getKey());
+            assert 0 <= entry.getValue().distanceStart();
+            assert 0 <= entry.getValue().timeEnd();
         }
         return unavailableSpace;
     }
