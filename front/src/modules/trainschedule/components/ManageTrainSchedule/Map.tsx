@@ -34,7 +34,7 @@ import TracksOSM from 'common/Map/Layers/TracksOSM';
 /* Objects & various */
 import TracksGeographic from 'common/Map/Layers/TracksGeographic';
 import colors from 'common/Map/Consts/colors';
-import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
+import { useMapBlankStyle } from 'common/Map/Layers/blankStyle';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import 'common/Map/Map.scss';
 import SNCF_PSL from 'common/Map/Layers/extensions/SNCF/SNCF_PSL';
@@ -52,6 +52,7 @@ function Map() {
     (state: RootState) => state.map
   );
   const terrain3DExaggeration = useSelector(getTerrain3DExaggeration);
+  const mapBlankStyle = useMapBlankStyle();
   const [snappedPoint, setSnappedPoint] = useState<NearestPointOnLine>();
   const { urlLat = '', urlLon = '', urlZoom = '', urlBearing = '', urlPitch = '' } = useParams();
   const dispatch = useDispatch();
@@ -156,7 +157,7 @@ function Map() {
         {...viewport}
         style={{ width: '100%', height: '100%' }}
         cursor="pointer"
-        mapStyle={osmBlankStyle}
+        mapStyle={mapBlankStyle}
         onMove={(e) => updateViewportChange(e.viewState)}
         onMouseMove={(e) => onMoveGetFeature(e)}
         attributionControl={false} // Defined below

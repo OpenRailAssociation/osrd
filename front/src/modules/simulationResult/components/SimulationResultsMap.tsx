@@ -44,7 +44,7 @@ import TracksOSM from 'common/Map/Layers/TracksOSM';
 import TrainHoverPosition from 'modules/simulationResult/components/SimulationResultsMap/TrainHoverPosition';
 
 import colors from 'common/Map/Consts/colors';
-import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
+import { useMapBlankStyle } from 'common/Map/Layers/blankStyle';
 import {
   getDirection,
   interpolateOnPosition,
@@ -67,6 +67,7 @@ interface MapProps {
 }
 
 const Map: FC<MapProps> = ({ setExtViewport }) => {
+  const mapBlankStyle = useMapBlankStyle();
   const [mapLoaded, setMapLoaded] = useState(false);
   const { viewport, mapSearchMarker, mapStyle, showOSM } = useSelector(
     (state: RootState) => state.map
@@ -78,6 +79,7 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
   const trains = useMemo(() => keyBy(simulation.trains, 'id'), [simulation.trains]);
   const selectedTrain = useSelector(getSelectedTrain);
   const terrain3DExaggeration = useSelector(getTerrain3DExaggeration);
+
   const [geojsonPath, setGeojsonPath] = useState<Feature<LineString>>();
   const [selectedTrainHoverPosition, setTrainHoverPosition] = useState<TrainPosition>();
   const [otherTrainsHoverPosition, setOtherTrainsHoverPosition] = useState<TrainPosition[]>([]);
@@ -232,7 +234,7 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
         cursor="pointer"
         ref={mapRef}
         style={{ width: '100%', height: '100%' }}
-        mapStyle={osmBlankStyle}
+        mapStyle={mapBlankStyle}
         onMove={(e) => updateViewportChange(e.viewState)}
         attributionControl={false} // Defined below
         onMouseEnter={onFeatureHover}
