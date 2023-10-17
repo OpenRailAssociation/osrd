@@ -1,3 +1,4 @@
+import cx from 'classnames';
 import React, { useState } from 'react';
 import nextId from 'react-id-generator';
 import { seconds2hhmmss } from 'modules/trainschedule/components/ImportTrainSchedule/ImportTrainScheduleHelpers';
@@ -35,9 +36,9 @@ export default function ImportTrainScheduleTrainDetail({ trainData, idx, rolling
       onClick={openCard}
     >
       <div
-        className={`import-train-schedule-traindetail-main ${
-          trainData.steps.length > 2 ? 'import-train-schedule-traindetail-with-hover' : null
-        }`}
+        className={cx('import-train-schedule-traindetail-main', {
+          'import-train-schedule-traindetail-with-hover': trainData.steps.length > 2,
+        })}
       >
         <span className="import-train-schedule-traindetail-idx">{idx + 1}</span>
         <span className="import-train-schedule-traindetail-num">
@@ -77,7 +78,7 @@ export default function ImportTrainScheduleTrainDetail({ trainData, idx, rolling
           {trainData.steps.length - 2}
         </span>
       </div>
-      <div className={`import-train-schedule-traindetail-steps ${isOpened ? 'opened' : ''}`}>
+      <div className={cx('import-train-schedule-traindetail-steps', { opened: isOpened })}>
         {trainData.steps.map(
           (step, stepIdx) =>
             // Remove origin & destination
