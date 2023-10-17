@@ -11,7 +11,7 @@ import { map, sum, uniqBy } from 'lodash';
 
 import mapStyleJson from 'assets/mapstyles/OSMStyle.json';
 import { LayerType } from 'applications/editor/tools/types';
-import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
+import { useMapBlankStyle } from 'common/Map/Layers/blankStyle';
 import GeoJSONs from 'common/Map/Layers/GeoJSONs';
 import colors from 'common/Map/Consts/colors';
 import { getMap } from 'reducers/map/selectors';
@@ -40,6 +40,7 @@ const DataLoader: FC<{
   ) => void;
   layers: Set<LayerType>;
 }> = ({ bbox, getGeoJSONs, layers }) => {
+  const mapBlankStyle = useMapBlankStyle();
   const { mapStyle, layersSettings } = useSelector(getMap);
   const [mapRef, setMapRef] = useState<MapRef | null>(null);
   const [state, setState] = useState<'idle' | 'render' | 'loaded'>('idle');
@@ -140,7 +141,7 @@ const DataLoader: FC<{
         >
           <ReactMapGL
             ref={setMapRef}
-            mapStyle={osmBlankStyle}
+            mapStyle={mapBlankStyle}
             style={{ width: '100%', height: '100%' }}
             transformRequest={transformMapRequest}
           >

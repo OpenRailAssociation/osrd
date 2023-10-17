@@ -20,7 +20,7 @@ import Background from '../../common/Map/Layers/Background';
 import OSM from '../../common/Map/Layers/OSM';
 import Hillshade from '../../common/Map/Layers/Hillshade';
 import Platforms from '../../common/Map/Layers/Platforms';
-import osmBlankStyle from '../../common/Map/Layers/osmBlankStyle';
+import { useMapBlankStyle } from '../../common/Map/Layers/blankStyle';
 import IGN_BD_ORTHO from '../../common/Map/Layers/IGN_BD_ORTHO';
 import { Viewport } from '../../reducers/map';
 import { getMapMouseEventNearestFeature } from '../../utils/mapHelper';
@@ -58,6 +58,7 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
   children,
 }) => {
   const dispatch = useDispatch();
+  const mapBlankStyle = useMapBlankStyle();
   const mapRef = useRef<MapRef>(null);
   const [mapState, setMapState] = useState<MapState>({
     isLoaded: true,
@@ -70,6 +71,7 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
   const editorState = useSelector((state: { editor: EditorState }) => state.editor);
   const showOSM = useSelector(getShowOSM);
   const terrain3DExaggeration = useSelector(getTerrain3DExaggeration);
+
   const extendedContext = useMemo<ExtendedEditorContextType<CommonToolState>>(
     () => ({
       ...context,
@@ -109,7 +111,7 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
           {...viewport}
           ref={mapRef}
           style={{ width: '100%', height: '100%' }}
-          mapStyle={osmBlankStyle}
+          mapStyle={mapBlankStyle}
           onMove={(e) => setViewport(e.viewState)}
           onMoveStart={() => setMapState((prev) => ({ ...prev, isDragging: true }))}
           onMoveEnd={() => {
@@ -282,7 +284,7 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
           )}
         </ReactMapGL>
       </div>
-      {children}
+      ;{children}
     </>
   );
 };

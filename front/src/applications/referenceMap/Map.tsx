@@ -36,13 +36,15 @@ import Switches from 'common/Map/Layers/Switches';
 import TracksGeographic from 'common/Map/Layers/TracksGeographic';
 import TracksOSM from 'common/Map/Layers/TracksOSM';
 import colors from 'common/Map/Consts/colors';
-import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
+import { useMapBlankStyle } from 'common/Map/Layers/blankStyle';
 import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
 import LineSearchLayer from 'common/Map/Layers/LineSearchLayer';
 
 import 'common/Map/Map.scss';
 
 function Map() {
+  const mapBlankStyle = useMapBlankStyle();
+
   const { viewport, mapSearchMarker, mapStyle, showOSM, layersSettings } = useSelector(
     (state: RootState) => state.map
   );
@@ -108,7 +110,7 @@ function Map() {
         ref={mapRef}
         cursor="normal"
         style={{ width: '100%', height: '100%' }}
-        mapStyle={osmBlankStyle}
+        mapStyle={mapBlankStyle}
         onMove={(e) => updateViewportChange(e.viewState)}
         onMoveEnd={(e) => updateViewportChange(e.viewState, true)}
         attributionControl={false} // Defined below

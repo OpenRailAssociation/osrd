@@ -15,7 +15,7 @@ import SnappedMarker from 'common/Map/Layers/SnappedMarker';
 /* Objects & various */
 import TracksGeographic from 'common/Map/Layers/TracksGeographic';
 import colors from 'common/Map/Consts/colors';
-import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
+import { useMapBlankStyle } from 'common/Map/Layers/blankStyle';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 
 import 'common/Map/Map.scss';
@@ -46,7 +46,9 @@ const viewportExtraSettings = {
 };
 
 const Map = ({ viewport, setViewport, setClickedFeatureId }: MapProps) => {
+  const mapBlankStyle = useMapBlankStyle();
   const mapStyle = useSelector(getMapStyle);
+
   const [lngLatHover, setLngLatHover] = useState<number[] | undefined>();
   const [trackSectionGeoJSON, setTrackSectionGeoJSON] = useState<LineString | undefined>();
   const [snappedPoint, setSnappedPoint] = useState<NearestPointOnLine | undefined>();
@@ -100,7 +102,7 @@ const Map = ({ viewport, setViewport, setClickedFeatureId }: MapProps) => {
       {...viewportExtraSettings}
       {...viewport}
       style={{ cursor: 'pointer', width: '100%', height: '100%' }}
-      mapStyle={osmBlankStyle}
+      mapStyle={mapBlankStyle}
       onMove={(e) => setViewport(e.viewState)}
       onMouseMove={(e) => onMoveGetFeature(e)}
       attributionControl={false} // Defined below

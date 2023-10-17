@@ -19,7 +19,7 @@ import { LayerContext } from 'common/Map/Layers/types';
 import { EditorSource, SourcesDefinitionsIndex } from 'common/Map/Layers/GeoJSONs';
 import OrderedLayer, { OrderedLayerProps } from 'common/Map/Layers/OrderedLayer';
 import { genOSMLayerProps } from 'common/Map/Layers/OSM';
-import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
+import { useMapBlankStyle } from 'common/Map/Layers/blankStyle';
 import { Viewport } from 'reducers/map';
 import { getMap } from 'reducers/map/selectors';
 import { AllowancesSettings, Train } from 'reducers/osrdsimulation/types';
@@ -63,6 +63,8 @@ const WarpedMap: FC<{
   boundingBox,
   allowancesSettings,
 }) => {
+  const mapBlankStyle = useMapBlankStyle();
+
   const prefix = 'warped/';
   const [mapRef, setMapRef] = useState<MapRef | null>(null);
   const { mapStyle, layersSettings, showIGNBDORTHO } = useSelector(getMap);
@@ -140,7 +142,7 @@ const WarpedMap: FC<{
   return (
     <ReactMapGL
       ref={setMapRef}
-      mapStyle={osmBlankStyle}
+      mapStyle={mapBlankStyle}
       style={{ width: '100%', height: '100%' }}
       onMove={(e) => {
         setViewport({

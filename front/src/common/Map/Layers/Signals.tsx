@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useSelector } from 'react-redux';
 import { Source, MapRef } from 'react-map-gl/maplibre';
-import { get, isNil } from 'lodash';
+import { get } from 'lodash';
 
 import { RootState } from 'reducers';
 import { Theme } from 'types';
@@ -32,83 +32,11 @@ interface PlatformProps {
 }
 
 function Signals(props: PlatformProps) {
-  const { mapStyle, signalsSettings, viewport } = useSelector((state: RootState) => state.map);
-  const timePosition = useSelector((state: RootState) => state.osrdsimulation.timePosition);
-  const selectedTrainId = useSelector((state: RootState) => state.osrdsimulation.selectedTrainId);
-  const consolidatedSimulation = useSelector(
-    (state: RootState) => state.osrdsimulation.consolidatedSimulation
-  );
+  const { mapStyle, signalsSettings } = useSelector((state: RootState) => state.map);
   const infraID = useSelector(getInfraID);
-  const { colors, sourceTable, hovered, mapRef, layerOrder } = props;
+  const { colors, sourceTable, hovered, layerOrder } = props;
 
   const prefix = mapStyle === 'blueprint' ? 'SCHB ' : '';
-
-  const [redSignalIds, setRedSignalsIds] = useState<string[]>([]);
-  const [yellowSignalIds, setYellowSignalsIds] = useState<string[]>([]);
-  const [greenSignalsIds, setGreenSignalsIds] = useState<string[]>([]);
-
-  const dynamicLayersIds = LIGHT_SIGNALS.map((sign) => `chartis/signal/geo/${sign}`).filter(
-    (dynamicLayerId) => mapRef?.current?.getMap().getLayer(dynamicLayerId)
-  ); // We need the layers concerned by eventual changes of signals
-
-  /* EveryTime the viewPort change or the timePosition or the simulation change,
-  visible signals are used to fill a list of special aspects (red, yellow).
-   Default is green. Special Default are to be managed by beck office
-   note: featureState is unfortunatly useless here for know so we setState
-  */
-  useEffect(() => {
-    const selectedTrainConsolidatedSimulation = consolidatedSimulation.find(
-      (train) => train.id === selectedTrainId
-    );
-    if (mapRef && mapRef.current && selectedTrainConsolidatedSimulation) {
-      const renderedDynamicStopsFeatures = mapRef.current.queryRenderedFeatures(
-        mapRef.current.getBounds().toArray() as [[number, number], [number, number]],
-        { layers: dynamicLayersIds }
-      ); // can' be memoïzed :(
-
-      const tmpRedIds: string[] = [];
-      const tmpYellowIds: string[] = [];
-      const tmpGreenIds: string[] = [];
-
-      renderedDynamicStopsFeatures.forEach((renderedDynamicStopsFeature) => {
-        // find the info in simulation aspects
-        const matchingSignalAspect = selectedTrainConsolidatedSimulation.signalAspects.find(
-          (signalAspect) =>
-            signalAspect.signal_id === renderedDynamicStopsFeature.id &&
-            !isNil(signalAspect.time_start) &&
-            signalAspect.time_start <= new Date(timePosition) &&
-            !isNil(signalAspect.time_end) &&
-            signalAspect.time_end >= new Date(timePosition)
-        );
-
-        if (matchingSignalAspect) {
-          switch (matchingSignalAspect.color) {
-            case 'rgba(255, 0, 0, 255)':
-              if (tmpRedIds.indexOf(matchingSignalAspect.signal_id) === -1) {
-                tmpRedIds.push(matchingSignalAspect.signal_id);
-              }
-              break;
-            case 'rgba(255, 255, 0, 255)':
-              if (tmpYellowIds.indexOf(matchingSignalAspect.signal_id) === -1) {
-                tmpYellowIds.push(matchingSignalAspect.signal_id);
-              }
-              break;
-            case 'rgba(0, 255, 0, 255)':
-              if (tmpGreenIds.indexOf(matchingSignalAspect.signal_id) === -1) {
-                tmpGreenIds.push(matchingSignalAspect.signal_id);
-              }
-              break;
-            default:
-              break;
-          }
-        }
-      });
-
-      setRedSignalsIds(tmpRedIds);
-      setYellowSignalsIds(tmpYellowIds);
-      setGreenSignalsIds(tmpRedIds);
-    }
-  }, [timePosition, consolidatedSimulation, viewport, selectedTrainId]);
 
   const getSignalsList = () => {
     let signalsList: Array<string> = [];
@@ -136,12 +64,6 @@ function Signals(props: PlatformProps) {
     sourceTable,
   };
 
-  const changeSignalsContext = {
-    greenSignalsIds,
-    yellowSignalIds,
-    redSignalIds,
-  };
-
   return (
     <Source
       promoteId="id"
@@ -162,7 +84,7 @@ function Signals(props: PlatformProps) {
       {signalsList.map((sig) => {
         const layerId = `chartis/signal/geo/${sig}`;
         const isHovered = hovered && hovered.layer === layerId;
-        const signalDef = getSignalLayerProps(context, sig, changeSignalsContext);
+        const signalDef = getSignalLayerProps(context, sig);
         const opacity = get(signalDef.paint, 'icon-opacity', 1) as number;
 
         return (
