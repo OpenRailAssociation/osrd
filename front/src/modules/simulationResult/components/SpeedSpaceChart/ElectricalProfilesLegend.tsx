@@ -11,7 +11,7 @@ const ElectricalProfilesLegend = ({ isActive, setIsActive }: ElecProfileProps) =
   const { t } = useTranslation('simulation');
 
   return (
-    <div className="elecProf-modal elecProf-modal-dark">
+    <div className="electrical-profile-legend-modal">
       <div className="d-flex justify-content-between align-items-start">
         <span className="h2 text-light">{t('electricalProfiles.legend')}</span>
         <button type="button" className="close" onClick={() => setIsActive(!isActive)}>

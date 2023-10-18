@@ -91,6 +91,6 @@ test.skip('Testing if stdcm between two trains works well', () => {
     const originTime = '081500';
     await playwrightSTDCMPage.setOriginTime(originTime);
     await scenarioPage.clickBtnByName('Appliquer');
-    await scenarioPage.page.waitForSelector('.spacetimechart-container');
+    await scenarioPage.page.waitForSelector('.chart-container');
   });
 });

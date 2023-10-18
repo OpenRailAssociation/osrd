@@ -288,7 +288,7 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
     >
       <div
         id={`container-${CHART_ID}`}
-        className="spacetime-chart w-100"
+        className="spacetime-chart chart"
         style={{ height: `100%` }}
       >
         {showModal !== '' ? (

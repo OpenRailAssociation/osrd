@@ -117,10 +117,9 @@ export default function SimulationResults({
     <div className="simulation-results">
       {/* SIMULATION : STICKY BAR */}
       <div
-        className={cx(
-          'osrd-simulation-sticky-bar',
-          collapsedTimetable && 'with-collapsed-timetable'
-        )}
+        className={cx('osrd-simulation-sticky-bar', {
+          'with-collapsed-timetable': collapsedTimetable,
+        })}
       >
         <div className="row">
           <div className="col-xl-4">
@@ -159,10 +158,7 @@ export default function SimulationResults({
         <SimulationWarpedMap collapsed={!showWarpedMap} />
 
         <div className="osrd-simulation-container d-flex flex-grow-1 flex-shrink-1">
-          <div
-            className="spacetimechart-container"
-            style={{ height: `${heightOfSpaceTimeChart}px` }}
-          >
+          <div className="chart-container" style={{ height: `${heightOfSpaceTimeChart}px` }}>
             {displaySimulation && (
               <SpaceTimeChartIsolated
                 initialHeightOfSpaceTimeChart={heightOfSpaceTimeChart}
@@ -177,10 +173,7 @@ export default function SimulationResults({
       {/* TRAIN : SPACE SPEED CHART */}
       {selectedTrain && (
         <div className="osrd-simulation-container d-flex mb-2">
-          <div
-            className="speedspacechart-container"
-            style={{ height: `${heightOfSpeedSpaceChart}px` }}
-          >
+          <div className="chart-container" style={{ height: `${heightOfSpeedSpaceChart}px` }}>
             <SpeedSpaceChart
               initialHeight={heightOfSpeedSpaceChart}
               onSetChartBaseHeight={setHeightOfSpeedSpaceChart}
@@ -194,10 +187,7 @@ export default function SimulationResults({
 
       {/* TRAIN : CURVES & SLOPES */}
       <div className="osrd-simulation-container d-flex mb-2">
-        <div
-          className="spacecurvesslopes-container"
-          style={{ height: `${heightOfSpaceCurvesSlopesChart}px` }}
-        >
+        <div className="chart-container" style={{ height: `${heightOfSpaceCurvesSlopesChart}px` }}>
           {selectedTrain && (
             <Rnd
               default={{

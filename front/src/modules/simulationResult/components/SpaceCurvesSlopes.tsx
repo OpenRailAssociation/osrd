@@ -274,7 +274,7 @@ const SpaceCurvesSlopes = ({
   return (
     <div
       id={`container-${CHART_ID}`}
-      className="spacecurvesslopes-chart w-100"
+      className="spacecurvesslopes-chart chart"
       style={{ height: `${height}px` }}
     >
       <div ref={ref} />

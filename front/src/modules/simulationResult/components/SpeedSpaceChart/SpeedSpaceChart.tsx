@@ -249,7 +249,7 @@ export default function SpeedSpaceChart({
     >
       <div
         id={`container-${CHART_ID}`}
-        className="speedspace-chart w-100"
+        className="speedspace-chart chart"
         style={{ height: `${chartHeight}px` }}
       >
         <button

@@ -21,7 +21,7 @@ export default {
 const Template: StoryFn<SpeedSpaceChartProps & { heightOfSpeedSpaceChart: number }> = (args) => (
   <Provider store={store}>
     <div className="simulation-results">
-      <div className="speedspacechart-container">
+      <div className="chart-container">
         <SpeedSpaceChart {...args} />
       </div>
     </div>

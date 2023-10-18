@@ -1719,96 +1719,13 @@ select.sm {
   /* TABLE OVERRIDE */
   /* TIMELINE */
 }
-.simulation-results .osrd-simulation-sticky-bar {
-  position: sticky;
-  border-radius: 4px;
-  width: 100%;
-  background: var(--secondary);
-  z-index: 1;
-  top: 0;
-  left: 0;
-  padding: 0.5rem;
-  margin-bottom: 0.5rem;
-}
-.simulation-results .osrd-simulation-sticky-bar input {
-  padding: 0.125rem 0.5rem;
-}
-.simulation-results .osrd-simulation-sticky-bar .train-detail {
-  min-width: 4.5rem;
-  max-height: 2rem;
-  padding: 0.1rem;
-  line-height: 0.8rem;
-}
-.simulation-results .osrd-simulation-sticky-bar .rounded,
-.simulation-results .osrd-simulation-sticky-bar .form-control,
-.simulation-results .osrd-simulation-sticky-bar .btn {
-  border-radius: 4px !important;
-}
-.simulation-results .osrd-simulation-sticky-bar .rounded,
-.simulation-results .osrd-simulation-sticky-bar .form-control,
-.simulation-results .osrd-simulation-sticky-bar .btn {
-  border-radius: 4px !important;
-}
-.simulation-results .osrd-simulation-sticky-bar.with-collapsed-timetable {
-  top: 3rem;
-}
-.simulation-results .osrd-simulation-container {
-  position: relative;
-  background-color: white;
-  padding: 1rem;
-  border-radius: 4px;
-}
-.simulation-results .osrd-simulation-elecProfK {
-  position: relative;
-  width: 100%;
-  height: 50vh;
-}
-.simulation-results .osrd-simulation-elecProfK .btn-elecProfKcontainer {
-  top: 1.5rem;
-  right: 1.5rem;
-}
-.simulation-results .osrd-simulation-elecProfK .elecProfKmodal {
-  top: 0.5rem;
-  max-height: 40vh;
-}
-.simulation-results .osrd-simulation-elecProfK .elecProfKresizer {
-  min-width: calc(100% - 2rem);
-}
-.simulation-results .osrd-simulation-elecProfK .elecProfKresizer .handle-tab-resize {
-  width: 100%;
-  text-align: center;
-  position: absolute;
-  bottom: -1.25rem;
-  font-size: 2rem;
-  transition: 0.2s;
-  color: var(--coolgray3);
-}
-.simulation-results .osrd-simulation-elecProfK .elecProfKresizer .handle-tab-resize:hover {
-  color: var(--coolgray9);
-}
-.simulation-results .spacetimechart-container {
+.simulation-results .chart-container {
   display: block;
   position: relative;
   width: 100%;
   transition: 0.2s;
 }
-.simulation-results .spacetimechart-container .dropdown .dropdown-menu:not(.dropdown-menu-right)::before {
-  border-right-color: #d7d7d7;
-  left: -0.625rem;
-  top: 0;
-}
-.simulation-results .spacetimechart-container .dropdown .dropdown-menu:not(.dropdown-menu-right)::after {
-  border-right-color: #fff;
-  left: -0.525rem;
-  top: 0;
-}
-.simulation-results .spacetimechart-container .get-context-menu .dropdown-menu {
-  padding: 1rem;
-}
-.simulation-results .spacetimechart-container .get-context-menu input.form-control {
-  min-width: 7rem;
-}
-.simulation-results .spacetimechart-container .handle-tab-resize {
+.simulation-results .chart-container .handle-tab-resize {
   width: 100%;
   text-align: center;
   position: absolute;
@@ -1817,7 +1734,7 @@ select.sm {
   transition: 0.2s;
   color: var(--coolgray3);
 }
-.simulation-results .spacetimechart-container .handle-tab-resize:hover {
+.simulation-results .chart-container .handle-tab-resize:hover {
   color: var(--coolgray9);
 }
 .simulation-results .grid .tick {
@@ -1982,34 +1899,7 @@ select.sm {
 .simulation-results .route-aspect.selected.eco {
   opacity: 1;
 }
-.simulation-results .mareco {
-  z-index: 2;
-}
-.simulation-results .allowance-line {
-  padding: 0.25rem;
-  border-radius: 4px;
-  transition: 0.2s;
-}
-.simulation-results .allowance-line:hover {
-  background-color: var(--coolgray1);
-}
-.simulation-results .allowances-updating-loader {
-  position: absolute;
-  text-align: center;
-  background-color: rgba(255, 255, 255, 0.75);
-  width: calc(100% - 2rem);
-  height: 100%;
-  z-index: 3;
-  top: 0;
-  font-size: 4rem;
-}
-.simulation-results .speedspacechart-container {
-  display: block;
-  position: relative;
-  width: 100%;
-  transition: 0.2s;
-}
-.simulation-results .speedspacechart-container .showSettingsButton {
+.simulation-results .chart-container .showSettingsButton {
   position: absolute;
   border: none;
   background: none;
@@ -2017,69 +1907,57 @@ select.sm {
   height: 100%;
   color: var(--coolgray7);
 }
-.simulation-results .speedspacechart-container .speedspace-chart {
+.simulation-results .chart-container .speedspace-chart {
   display: flex;
   background-color: white;
   border-radius: 4px;
   position: relative;
 }
-.simulation-results .speedspacechart-container .speedspace-chart .showSettings {
+.simulation-results .chart-container .speedspace-chart .showSettings {
   overflow: hidden;
   transition: 0.3s;
 }
-.simulation-results .speedspacechart-container .speedspace-chart .btn-rotate {
+.simulation-results .chart-container .speedspace-chart .btn-rotate {
   position: absolute;
   right: 2rem;
   top: 1rem;
 }
-.simulation-results .speedspacechart-container .speedspace-chart .area.speed {
+.simulation-results .chart-container .speedspace-chart .area.speed {
   fill: rgba(48, 51, 131, 0.2);
 }
-.simulation-results .speedspacechart-container .speedspace-chart .area.slopes {
+.simulation-results .chart-container .speedspace-chart .area.slopes {
   fill: var(--cyan);
 }
-.simulation-results .speedspacechart-container .speedspace-chart .speed {
+.simulation-results .chart-container .speedspace-chart .speed {
   stroke: var(--blue);
   stroke-width: 1;
 }
-.simulation-results .speedspacechart-container .speedspace-chart .speed.pointer {
+.simulation-results .chart-container .speedspace-chart .speed.pointer {
   fill: var(--blue);
 }
-.simulation-results .speedspacechart-container .speedspace-chart .speed.pointer.allowances {
+.simulation-results .chart-container .speedspace-chart .speed.pointer.allowances {
   fill: var(--orange);
 }
-.simulation-results .speedspacechart-container .speedspace-chart .speed.pointer.eco {
+.simulation-results .chart-container .speedspace-chart .speed.pointer.eco {
   fill: var(--green);
 }
-.simulation-results .speedspacechart-container .speedspace-chart .speed.allowances {
+.simulation-results .chart-container .speedspace-chart .speed.allowances {
   stroke: var(--orange);
 }
-.simulation-results .speedspacechart-container .speedspace-chart .speed.eco {
+.simulation-results .chart-container .speedspace-chart .speed.eco {
   stroke: var(--green);
 }
-.simulation-results .speedspacechart-container .speedspace-chart .speed.vmax {
+.simulation-results .chart-container .speedspace-chart .speed.vmax {
   stroke-width: 2;
   stroke: var(--purple);
 }
-.simulation-results .speedspacechart-container .speedspace-chart .speed.slopes {
+.simulation-results .chart-container .speedspace-chart .speed.slopes {
   stroke-width: 2;
   stroke: var(--orange);
 }
-.simulation-results .speedspacechart-container .speedspace-chart .speed.slopesHistogram {
+.simulation-results .chart-container .speedspace-chart .speed.slopesHistogram {
   stroke-width: 1;
   stroke: var(--cyan);
-}
-.simulation-results .speedspacechart-container .handle-tab-resize {
-  width: 100%;
-  text-align: center;
-  position: absolute;
-  bottom: -1.25rem;
-  font-size: 2rem;
-  transition: 0.2s;
-  color: var(--coolgray3);
-}
-.simulation-results .speedspacechart-container .handle-tab-resize:hover {
-  color: var(--coolgray9);
 }
 .simulation-results .elecProf-modal {
   position: absolute;
@@ -2184,47 +2062,6 @@ select.sm {
     font-size: 0.8em;
   }
 }
-.simulation-results .spacecurvesslopes-container {
-  display: block;
-  position: relative;
-  width: 100%;
-  transition: 0.2s;
-}
-.simulation-results .spacecurvesslopes-container .spacecurvesslopes-chart {
-  background-color: white;
-  border-radius: 4px;
-  position: relative;
-}
-.simulation-results .spacecurvesslopes-container .spacecurvesslopes-chart .area.speed {
-  fill: rgba(48, 51, 131, 0.2);
-}
-.simulation-results .spacecurvesslopes-container .spacecurvesslopes-chart .area.slopes {
-  fill: var(--cyan);
-}
-.simulation-results .spacecurvesslopes-container .spacecurvesslopes-chart .speed {
-  stroke: var(--blue);
-  stroke-width: 1;
-}
-.simulation-results .spacecurvesslopes-container .spacecurvesslopes-chart .speed.slopes {
-  stroke-width: 2;
-  stroke: var(--orange);
-}
-.simulation-results .spacecurvesslopes-container .spacecurvesslopes-chart .speed.slopesHistogram {
-  stroke-width: 1;
-  stroke: var(--cyan);
-}
-.simulation-results .spacecurvesslopes-container .handle-tab-resize {
-  width: 100%;
-  text-align: center;
-  position: absolute;
-  bottom: -1.25rem;
-  font-size: 2rem;
-  transition: 0.2s;
-  color: var(--coolgray3);
-}
-.simulation-results .spacecurvesslopes-container .handle-tab-resize:hover {
-  color: var(--coolgray9);
-}
 .simulation-results .op-line {
   stroke: var(--coolgray7);
   stroke-width: 1;
@@ -2246,48 +2083,6 @@ select.sm {
 .simulation-results .table td.td-button .cell-inner-button {
   padding: 0.5rem 1.25rem;
   cursor: pointer;
-}
-.simulation-results .timeline {
-  background-color: var(--secondary);
-  padding: 0.5rem;
-  border-radius: 4px;
-  margin-bottom: 0.5rem;
-}
-.simulation-results .timeline .tick {
-  color: var(--coolgray1);
-}
-.simulation-results .timeline .domain {
-  opacity: 0.5;
-  stroke: var(--coolgray3);
-}
-.simulation-results .timeline .grid .tick line {
-  stroke: var(--coolgray1);
-}
-.simulation-results .timeline .timeline-train {
-  stroke: var(--coolgray1);
-}
-.simulation-results .timeline .timeline-train.selected {
-  stroke-width: 2;
-  stroke: var(--teal);
-}
-.simulation-results .timeline #rectZoomTimeLine {
-  cursor: move;
-  transition: 0.2s;
-  stroke: var(--coolgray5);
-  fill: rgba(255, 255, 255, 0.05);
-}
-.simulation-results .timeline #rectZoomTimeLine:hover {
-  stroke: var(--green);
-  fill: rgba(130, 190, 0, 0.05);
-}
-.simulation-results .timeline .timeline-cursor line {
-  stroke: var(--coolgray3);
-  stroke-width: 2;
-  stroke-dasharray: 2, 1;
-}
-.simulation-results .timeline .timeline-cursor path {
-  stroke: var(--coolgray3);
-  fill: var(--coolgray3);
 }
 
 
