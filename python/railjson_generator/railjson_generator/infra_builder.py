@@ -8,11 +8,11 @@ from .schema.infra.operational_point import OperationalPoint
 from .schema.infra.route import Route
 from .schema.infra.speed_section import SpeedSection
 from .schema.infra.switch import (
-    CrossSwitch,
-    DoubleCrossSwitch,
+    Crossing,
+    DoubleSlipSwitch,
     PointSwitch,
     SwitchGroup,
-    TrackSectionLink,
+    Link,
 )
 from .schema.infra.track_section import TrackSection
 from .utils import generate_routes
@@ -62,25 +62,25 @@ class InfraBuilder:
         return track
 
     def add_point_switch(self, base: TrackEndpoint, left: TrackEndpoint, right: TrackEndpoint, **kwargs):
-        switch = PointSwitch(base=base, left=left, right=right, **kwargs)
+        switch = PointSwitch(a=base, b_1=left, b_2=right, **kwargs)
         _register_connection(base, left, switch.group("LEFT"))
         _register_connection(base, right, switch.group("RIGHT"))
         self.infra.switches.append(switch)
         return switch
 
-    def add_cross_switch(
+    def add_crossing(
         self, north: TrackEndpoint, south: TrackEndpoint, east: TrackEndpoint, west: TrackEndpoint, **kwargs
     ):
-        switch = CrossSwitch(north=north, south=south, east=east, west=west, **kwargs)
+        switch = Crossing(a_1=north, b_1=south, b_2=east, a_2=west, **kwargs)
         _register_connection(north, south, switch.group("static"))
         _register_connection(east, west, switch.group("static"))
         self.infra.switches.append(switch)
         return switch
 
-    def add_double_cross_switch(
+    def add_double_slip_switch(
         self, north_1: TrackEndpoint, north_2: TrackEndpoint, south_1: TrackEndpoint, south_2: TrackEndpoint, **kwargs
     ):
-        switch = DoubleCrossSwitch(north_1=north_1, north_2=north_2, south_1=south_1, south_2=south_2, **kwargs)
+        switch = DoubleSlipSwitch(a_1=north_1, a_2=north_2, b_1=south_1, b_2=south_2, **kwargs)
         for (src, dst), group_name in [
             ((north_1, south_1), "N1_S1"),
             ((north_1, south_2), "N1_S2"),
@@ -92,9 +92,9 @@ class InfraBuilder:
         return switch
 
     def add_link(self, source: TrackEndpoint, destination: TrackEndpoint, **kwargs):
-        switch = TrackSectionLink(source=source, destination=destination, **kwargs)
+        switch = Link(a=source, b=destination, **kwargs)
         self.infra.switches.append(switch)
-        _register_connection(source, destination, switch.group("LINK"))
+        _register_connection(source, destination, switch.group("static"))
         return switch
 
     def add_operational_point(self, *args, **kwargs):

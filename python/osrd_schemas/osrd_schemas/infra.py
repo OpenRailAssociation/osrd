@@ -455,7 +455,7 @@ class RailJsonInfra(BaseModel):
         description="List of operational points of the corresponding infra"
     )
     routes: List[Route] = Field(description="Routes of the infra")
-    switch_types: List[SwitchType] = Field(description="Switch types of the infra")
+    extend_switch_types: List[SwitchType] = Field(description="Switch types of the infra that can be added by the user")
     switches: List[Switch] = Field(description="Switches of the infra")
     track_sections: List[TrackSection] = Field(description="Track sections of the infra")
     speed_sections: List[SpeedSection] = Field(description="Speed sections of the infra")
