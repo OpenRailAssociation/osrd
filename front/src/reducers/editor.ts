@@ -1,6 +1,6 @@
 import produce from 'immer';
 import { Feature } from 'geojson';
-import { omit, clone } from 'lodash';
+import { omit, clone, isNil } from 'lodash';
 
 import { JSONSchema7, JSONSchema7Definition } from 'json-schema';
 import { Dispatch } from '@reduxjs/toolkit';
@@ -121,13 +121,15 @@ export type ActionSave = {
     delete?: Array<Feature>;
   };
 };
-export function save(operations: {
-  create?: Array<EditorEntity>;
-  update?: Array<{ source: EditorEntity; target: EditorEntity }>;
-  delete?: Array<EditorEntity>;
-}): ThunkAction<ActionSave> {
-  return async (dispatch: Dispatch, getState) => {
-    const state = getState();
+export function save(
+  infraID: number | undefined,
+  operations: {
+    create?: Array<EditorEntity>;
+    update?: Array<{ source: EditorEntity; target: EditorEntity }>;
+    delete?: Array<EditorEntity>;
+  }
+): ThunkAction<ActionSave> {
+  return async (dispatch: Dispatch) => {
     dispatch(setLoading());
     try {
       const payload = [
@@ -135,10 +137,10 @@ export function save(operations: {
         ...(operations.update || []).map((e) => entityToUpdateOperation(e.target, e.source)),
         ...(operations.delete || []).map((e) => entityToDeleteOperation(e)),
       ];
-
+      if (isNil(infraID)) throw new Error('No infrastructure');
       const response = await dispatch(
         osrdEditoastApi.endpoints.postInfraById.initiate({
-          id: state.osrdconf.simulationConf.infraID,
+          id: infraID,
           body: payload,
         })
       );

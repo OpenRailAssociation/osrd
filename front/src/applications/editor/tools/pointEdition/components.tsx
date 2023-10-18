@@ -234,6 +234,7 @@ export const PointEditionLeftPanel: FC<{ type: EditoastType }> = <Entity extends
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const res: any = await dispatch(
             save(
+              infraID,
               state.entity.properties.id !== NEW_ENTITY_ID
                 ? {
                     update: [

@@ -179,6 +179,7 @@ export const CustomSchemaField: FC<FieldProps> = (props) => {
 export const SwitchEditionLeftPanel: FC = () => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
+  const infraID = useSelector(getInfraID);
   const { state, setState, editorState } = useContext(
     EditorContext
   ) as ExtendedEditorContextType<SwitchEditionState>;
@@ -252,6 +253,7 @@ export const SwitchEditionLeftPanel: FC = () => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const res: any = await dispatch(
             save(
+              infraID,
               !isNew
                 ? {
                     update: [

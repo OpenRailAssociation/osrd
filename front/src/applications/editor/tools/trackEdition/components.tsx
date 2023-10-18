@@ -348,6 +348,7 @@ export const TrackEditionLayers: FC = () => {
 export const TrackEditionLeftPanel: FC = () => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
+  const infraID = useSelector(getInfraID);
   const { state, setState } = useContext(
     EditorContext
   ) as ExtendedEditorContextType<TrackEditionState>;
@@ -362,6 +363,7 @@ export const TrackEditionLeftPanel: FC = () => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const res: any = await dispatch(
             save(
+              infraID,
               track.properties.id !== NEW_ENTITY_ID
                 ? {
                     update: [
