@@ -29,8 +29,11 @@ import rollingstockeditorReducer, {
   RsEditorCurvesState,
   initialState as rsEditorCurvesInitialState,
 } from './rollingstockEditor';
-import stdcmConfReducer, { stdcmConfInitialState } from './osrdconf2/stdcmConf';
-import simulationConfReducer, { simulationConfInitialState } from './osrdconf2/simulationConf';
+import stdcmConfReducer, { stdcmConfInitialState, stdcmConfSlice } from './osrdconf2/stdcmConf';
+import simulationConfReducer, {
+  simulationConfInitialState,
+  simulationConfSlice,
+} from './osrdconf2/simulationConf';
 
 const compressor = createCompressor({
   whitelist: ['rollingstock'],
@@ -82,8 +85,8 @@ export interface RootState {
   map: MapState;
   editor: EditorState;
   main: MainState;
-  stdcmconf: OsrdStdcmConfState;
-  simulationconf: OsrdConfState;
+  [stdcmConfSlice.name]: OsrdStdcmConfState;
+  [simulationConfSlice.name]: OsrdConfState;
   osrdconf: OsrdMultiConfState;
   osrdsimulation: OsrdSimulationState;
   [osrdEditoastApi.reducerPath]: ReturnType<typeof osrdEditoastApi.reducer>;
@@ -95,8 +98,8 @@ export const rootInitialState: RootState = {
   map: mapInitialState,
   editor: editorInitialState,
   main: mainInitialState,
-  stdcmconf: stdcmConfInitialState,
-  simulationconf: simulationConfInitialState,
+  [stdcmConfSlice.name]: stdcmConfInitialState,
+  [simulationConfSlice.name]: simulationConfInitialState,
   osrdconf: osrdconfInitialState,
   osrdsimulation: osrdSimulationInitialState,
   [osrdEditoastApi.reducerPath]: {} as ReturnType<typeof osrdEditoastApi.reducer>,
@@ -117,8 +120,8 @@ export const rootReducer: ReducersMapObject<RootState> = {
   map: mapReducer,
   editor: editorReducer,
   main: mainReducer,
-  stdcmconf: stdcmConfReducer,
-  simulationconf: simulationConfReducer,
+  [stdcmConfSlice.name]: stdcmConfReducer,
+  [simulationConfSlice.name]: simulationConfReducer,
   osrdconf: persistReducer(osrdconfPersistConfig, osrdconfReducer) as unknown as Reducer<
     OsrdMultiConfState,
     AnyAction

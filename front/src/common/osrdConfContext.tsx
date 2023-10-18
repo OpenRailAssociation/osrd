@@ -1,10 +1,14 @@
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useContext, useMemo } from 'react';
 import { Outlet } from 'react-router-dom';
 import { simulationConfSliceType } from 'reducers/osrdconf2/simulationConf';
+import { simulationConfSelectorsType } from 'reducers/osrdconf2/simulationConf/selectors';
 import { stdcmConfSliceType } from 'reducers/osrdconf2/stdcmConf';
+import { stdcmConfSelectorsType } from 'reducers/osrdconf2/stdcmConf/selectors';
 
-export type OsrdConfType = simulationConfSliceType | stdcmConfSliceType | null;
-type Props = { osrdConfSlice: OsrdConfType };
+export type OsrdConfType = {
+  slice: simulationConfSliceType | stdcmConfSliceType;
+  selectors: simulationConfSelectorsType | stdcmConfSelectorsType;
+} | null;
 
 const OsrdConfContext = createContext<OsrdConfType>(null);
 
@@ -16,10 +20,17 @@ export const useOsrdConfContext = () => {
   return context;
 };
 
-export const OsrdConfContextLayout = ({ osrdConfSlice }: Props) => (
-  <OsrdConfContext.Provider value={osrdConfSlice}>
-    <Outlet />
-  </OsrdConfContext.Provider>
-);
+type Props = {
+  slice: NonNullable<OsrdConfType>['slice'];
+  selectors: NonNullable<OsrdConfType>['selectors'];
+};
+export const OsrdConfContextLayout = ({ slice, selectors }: Props) => {
+  const value = useMemo(() => ({ slice, selectors }), [slice, selectors]);
+  return (
+    <OsrdConfContext.Provider value={value}>
+      <Outlet />
+    </OsrdConfContext.Provider>
+  );
+};
 
 export default OsrdConfContext;

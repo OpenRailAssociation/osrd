@@ -1,15 +1,11 @@
-import {
-  OsrdConfState,
-  PointOnMap,
-  PowerRestrictionRange,
-} from 'applications/operationalStudies/consts';
-import { Allowance, Path } from 'common/api/osrdEditoastApi';
+import { OsrdConfState, PointOnMap } from 'applications/operationalStudies/consts';
+import { Allowance } from 'common/api/osrdEditoastApi';
 import { omit } from 'lodash';
 import { createStoreWithoutMiddleware } from 'Store';
-import { SwitchType } from 'types';
-import { defaultCommonConf } from '.';
-import { simulationConfSliceType } from '../simulationConf';
-import { stdcmConfSliceType } from '../stdcmConf';
+import { defaultCommonConf } from '..';
+import { simulationConfSliceType } from '../../simulationConf';
+import { stdcmConfSliceType } from '../../stdcmConf';
+import commonConfBuilder from './commonConfBuilder';
 
 function createStore(
   slice: simulationConfSliceType | stdcmConfSliceType,
@@ -20,122 +16,8 @@ function createStore(
   });
 }
 
-function osrdCommonConfTestDataBuilder() {
-  return {
-    buildEngineeringAllowance: (): Allowance => ({
-      allowance_type: 'engineering',
-      capacity_speed_limit: 5,
-      distribution: 'MARECO',
-      begin_position: 2,
-      end_position: 4,
-      value: {
-        value_type: 'time_per_distance',
-        minutes: 3,
-      },
-    }),
-    buildStandardAllowance: (): Allowance => ({
-      allowance_type: 'standard',
-      capacity_speed_limit: 5,
-      distribution: 'LINEAR',
-      ranges: [
-        {
-          begin_position: 1,
-          end_position: 2,
-          value: {
-            value_type: 'time',
-            seconds: 10,
-          },
-        },
-      ],
-      default_value: {
-        value_type: 'time_per_distance',
-        minutes: 3,
-      },
-    }),
-    buildWitchTypes: (): SwitchType => ({
-      id: 'test-id',
-      ports: ['A', 'B', 'C'],
-      groups: {
-        A: [
-          {
-            src: 'source',
-            dst: 'destination',
-            bidirectionnal: false,
-          },
-        ],
-      },
-    }),
-    buildPointOnMap: (fields?: Partial<PointOnMap>): PointOnMap => ({
-      id: 'test',
-      name: 'point',
-      ...fields,
-    }),
-    buildGeoJson: (): Path => ({
-      created: '10/10/2023',
-      curves: [{ position: 10, radius: 2 }],
-      geographic: {
-        coordinates: [
-          [1, 2],
-          [3, 4],
-        ],
-        type: 'type-test',
-      },
-      id: 1,
-      length: 10,
-      owner: 'test',
-      schematic: {
-        coordinates: [
-          [1, 2],
-          [3, 4],
-        ],
-        type: 'type-test',
-      },
-      slopes: [
-        {
-          gradient: 5,
-          position: 2,
-        },
-      ],
-      steps: [
-        {
-          duration: 2,
-          geo: {
-            coordinates: [1, 2],
-            type: 'type-test',
-          },
-          id: 'toto',
-          location: {
-            offset: 12,
-            track_section: 'iti',
-          },
-          name: 'test',
-          path_offset: 42,
-          sch: {
-            coordinates: [1, 2],
-            type: 'type-test',
-          },
-          suggestion: true,
-        },
-      ],
-    }),
-    buildFeatureInfoClick: (
-      featureInfoClickFields?: Partial<OsrdConfState['featureInfoClick']>
-    ): OsrdConfState['featureInfoClick'] => ({
-      displayPopup: true,
-      ...featureInfoClickFields,
-    }),
-    buildPowerRestrictionRanges: (): PowerRestrictionRange[] => [
-      {
-        value: 'test',
-        begin: 1,
-        end: 2,
-      },
-    ],
-  };
-}
-
-const testCommonReducers = (slice: simulationConfSliceType | stdcmConfSliceType) => {
-  const testDataBuilder = osrdCommonConfTestDataBuilder();
+const testCommonConfReducers = (slice: simulationConfSliceType | stdcmConfSliceType) => {
+  const testDataBuilder = commonConfBuilder();
 
   it('should handle updateName', () => {
     const store = createStore(slice);
@@ -239,14 +121,6 @@ const testCommonReducers = (slice: simulationConfSliceType | stdcmConfSliceType)
     });
   });
 
-  it('should handle updateSwitchTypes', () => {
-    const store = createStore(slice);
-    const newSwitchTypes: SwitchType[] = [testDataBuilder.buildWitchTypes()];
-    store.dispatch(slice.actions.updateSwitchTypes(newSwitchTypes));
-    const state = store.getState()[slice.name];
-    expect(state.switchTypes).toBe(newSwitchTypes);
-  });
-
   it('should handle updatePathfindingID', () => {
     const store = createStore(slice);
     const newPathfindingID = 1;
@@ -254,14 +128,6 @@ const testCommonReducers = (slice: simulationConfSliceType | stdcmConfSliceType)
     const state = store.getState()[slice.name];
     expect(state.pathfindingID).toBe(newPathfindingID);
     expect(state.powerRestrictionRanges).toStrictEqual([]);
-  });
-
-  it('should handle updateShouldRunPathfinding', () => {
-    const store = createStore(slice);
-    const newShouldRunPathfinding = false;
-    store.dispatch(slice.actions.updateShouldRunPathfinding(newShouldRunPathfinding));
-    const state = store.getState()[slice.name];
-    expect(state.shouldRunPathfinding).toBe(newShouldRunPathfinding);
   });
 
   it('should handle updateTimetableID', () => {
@@ -622,19 +488,14 @@ const testCommonReducers = (slice: simulationConfSliceType | stdcmConfSliceType)
   });
 
   it('should handle updateFeatureInfoClickOSRD', () => {
-    const initialFeatureInfoClick = testDataBuilder.buildFeatureInfoClick({
-      displayPopup: true,
-    });
-    const store = createStore(slice, {
-      featureInfoClick: initialFeatureInfoClick,
-    });
-    const newfeatureClick = testDataBuilder.buildFeatureInfoClick({
-      displayPopup: false,
-      feature: omit(initialFeatureInfoClick.feature, ['_vectorTileFeature']),
-    });
-    store.dispatch(slice.actions.updateFeatureInfoClickOSRD(newfeatureClick));
+    const store = createStore(slice);
+    const newFeatureClick = testDataBuilder.buildFeatureInfoClick();
+    store.dispatch(slice.actions.updateFeatureInfoClickOSRD(newFeatureClick));
     const state = store.getState()[slice.name];
-    expect(state.featureInfoClick).toStrictEqual(newfeatureClick);
+    expect(state.featureInfoClick).toStrictEqual({
+      ...newFeatureClick,
+      feature: omit(newFeatureClick.feature, ['_vectorTileFeature']),
+    });
   });
 
   it('should handle updateGridMarginBefore', () => {
@@ -670,4 +531,4 @@ const testCommonReducers = (slice: simulationConfSliceType | stdcmConfSliceType)
   });
 };
 
-export default testCommonReducers;
+export default testCommonConfReducers;

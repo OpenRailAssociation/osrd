@@ -11,6 +11,7 @@ import { updateInfraID, updateTimetableID } from 'reducers/osrdconf';
 import { TrainScheduleSummary, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { getDocument } from 'common/api/documentApi';
 import { getTimetableID } from 'reducers/osrdconf/selectors';
+import { useOsrdConfContext } from 'common/osrdConfContext';
 import ScenarioExplorerModal from './ScenarioExplorerModal';
 import { ScenarioExplorerProps } from './ScenarioExplorerTypes';
 
@@ -24,6 +25,9 @@ export default function ScenarioExplorer({
   const { openModal } = useModal();
   const timetableID = useSelector(getTimetableID);
   const [imageUrl, setImageUrl] = useState<string>();
+  const {
+    slice: { actions: osrdConfActions },
+  } = useOsrdConfContext();
 
   const { data: projectDetails } = osrdEditoastApi.useGetProjectsByProjectIdQuery(
     { projectId: globalProjectId as number },
@@ -70,6 +74,8 @@ export default function ScenarioExplorer({
     if (scenarioDetails?.timetable_id) {
       dispatch(updateTimetableID(scenarioDetails.timetable_id));
       dispatch(updateInfraID(scenarioDetails.infra_id));
+      // TODO remove when completely separate simulationconf and stdcmconf
+      dispatch(osrdConfActions.updateInfraID(scenarioDetails.infra_id));
     }
   }, [scenarioDetails]);
 
