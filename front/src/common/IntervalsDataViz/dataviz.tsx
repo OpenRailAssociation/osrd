@@ -63,14 +63,14 @@ export interface LinearMetadataDatavizProps<T> extends IntervalItemBaseProps<T> 
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
-  additionalData = [],
+  additionalData,
   creating = false,
-  data = [],
+  data,
   emptyValue = undefined,
   field = 'value',
-  highlighted = [],
+  highlighted,
   intervalType,
-  operationalPoints = [],
+  operationalPoints,
   options = { resizingScale: false, fullHeightItem: false, showValues: false },
   viewBox,
   onClick,
@@ -139,11 +139,11 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
     const nData = cropForDatavizViewbox(data, viewBox);
     const nFullLength = (last(nData)?.end || 0) - (head(nData)?.begin || 0);
     const croppedAdditionalData = cropForDatavizViewbox(
-      additionalData,
+      additionalData || [],
       viewBox
     ) as LinearMetadataItem[] as AdditionalDataItem[];
     const nOperationalPoints = cropOperationPointsForDatavizViewbox(
-      operationalPoints,
+      operationalPoints || [],
       viewBox,
       wrapper,
       nFullLength
@@ -161,7 +161,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
   useEffect(() => {
     if (fullLength > 0) {
       const nOperationalPoints = cropOperationPointsForDatavizViewbox(
-        operationalPoints,
+        operationalPoints || [],
         viewBox,
         wrapper,
         fullLength
@@ -180,7 +180,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
       clearTimeout(debounceTimeoutId);
       debounceTimeoutId = setTimeout(() => {
         const nOperationalPoints = cropOperationPointsForDatavizViewbox(
-          operationalPoints,
+          operationalPoints || [],
           viewBox,
           wrapper,
           fullLength
@@ -199,7 +199,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
    * => we recompute the additionalData4viz
    */
   useEffect(() => {
-    if (fullLength > 0 && additionalData.length > 0) {
+    if (fullLength > 0 && additionalData && additionalData.length > 0) {
       const croppedAdditionalData = cropForDatavizViewbox(
         additionalData,
         viewBox
