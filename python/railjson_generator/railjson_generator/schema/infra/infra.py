@@ -4,7 +4,6 @@ from typing import List
 
 from osrd_schemas import infra
 
-from railjson_generator.rjs_static import SWITCH_TYPES
 from railjson_generator.schema.infra.catenary import Catenary
 from railjson_generator.schema.infra.neutral_section import NeutralSection
 from railjson_generator.schema.infra.operational_point import OperationalPoint
@@ -41,7 +40,7 @@ class Infra:
             buffer_stops=self.make_rjs_buffer_stops(),
             detectors=self.make_rjs_detectors(),
             operational_points=self.make_rjs_operational_points(),
-            switch_types=SWITCH_TYPES,
+            extend_switch_types=[],
             speed_sections=[speed_section.to_rjs() for speed_section in self.speed_sections],
             catenaries=[catenary.to_rjs() for catenary in self.catenaries],
             neutral_sections=[neutral_section.to_rjs() for neutral_section in self.neutral_sections],

@@ -77,41 +77,52 @@ class Switch:
 
 
 @dataclass
-class TrackSectionLink(Switch):
-    source: TrackEndpoint = None
-    destination: TrackEndpoint = None
+class Link(Switch):
+    a: TrackEndpoint = None
+    b: TrackEndpoint = None
 
-    PORT_NAMES = ["source", "destination"]
+    PORT_NAMES = ["a", "b"]
     SWITCH_TYPE = "link"
 
 
 @dataclass
 class PointSwitch(Switch):
-    base: TrackEndpoint = None
-    left: TrackEndpoint = None
-    right: TrackEndpoint = None
+    a: TrackEndpoint = None
+    b_1: TrackEndpoint = None
+    b_2: TrackEndpoint = None
 
-    PORT_NAMES = ["base", "left", "right"]
-    SWITCH_TYPE = "point"
-
-
-@dataclass
-class CrossSwitch(Switch):
-    north: TrackEndpoint = None
-    south: TrackEndpoint = None
-    east: TrackEndpoint = None
-    west: TrackEndpoint = None
-
-    PORT_NAMES = ["north", "south", "east", "west"]
-    SWITCH_TYPE = "cross"
+    PORT_NAMES = ["a", "b_1", "b_2"]
+    SWITCH_TYPE = "point_switch"
 
 
 @dataclass
-class DoubleCrossSwitch(Switch):
-    north_1: TrackEndpoint = None
-    north_2: TrackEndpoint = None
-    south_1: TrackEndpoint = None
-    south_2: TrackEndpoint = None
+class Crossing(Switch):
+    a_1: TrackEndpoint = None
+    b_1: TrackEndpoint = None
+    a_2: TrackEndpoint = None
+    b_2: TrackEndpoint = None
 
-    PORT_NAMES = ["north_1", "north_2", "south_1", "south_2"]
-    SWITCH_TYPE = "double_cross"
+    PORT_NAMES = ["a_1", "b_1", "a_2", "b_2"]
+    SWITCH_TYPE = "crossing"
+
+
+@dataclass
+class DoubleSlipSwitch(Switch):
+    a_1: TrackEndpoint = None
+    a_2: TrackEndpoint = None
+    b_1: TrackEndpoint = None
+    b_2: TrackEndpoint = None
+
+    PORT_NAMES = ["a_1", "a_2", "b_1", "b_2"]
+    SWITCH_TYPE = "double_slip_switch"
+
+
+@dataclass
+class SingleSlipSwitch(Switch):
+    a_1: TrackEndpoint = None
+    a_2: TrackEndpoint = None
+    b_1: TrackEndpoint = None
+    b_2: TrackEndpoint = None
+
+    PORT_NAMES = ["a_1", "a_2", "b_1", "b_2"]
+    SWITCH_TYPE = "single_slip_switch"
