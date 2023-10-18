@@ -3,19 +3,19 @@ import { createStoreWithoutMiddleware } from 'Store';
 
 import { describe, expect } from 'vitest';
 import { simulationConfInitialState, simulationConfSlice } from '.';
-import testCommonReducers from '../common/testUtils';
+import testCommonConfReducers from '../common/tests/utils';
 
 const createStore = (initialStateExtra?: OsrdConfState) =>
   createStoreWithoutMiddleware({
-    simulationconf: initialStateExtra,
+    [simulationConfSlice.name]: initialStateExtra,
   });
 
 describe('simulationConfReducer', () => {
   it('should return initial state', () => {
     const store = createStore();
-    const state = store.getState().simulationconf;
+    const state = store.getState()[simulationConfSlice.name];
     expect(state).toEqual(simulationConfInitialState);
   });
 
-  testCommonReducers(simulationConfSlice);
+  testCommonConfReducers(simulationConfSlice);
 });

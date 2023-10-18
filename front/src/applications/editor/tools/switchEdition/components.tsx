@@ -23,7 +23,7 @@ import {
 } from '../../../../types';
 import colors from '../../../../common/Map/Consts/colors';
 import GeoJSONs from '../../../../common/Map/Layers/GeoJSONs';
-import { PortEndPointCandidate, SwitchEditionState } from './types';
+import { PortEndPointCandidate, SwitchEditionState, useSwitchTypes } from './types';
 import EditorForm from '../../components/EditorForm';
 import { save } from '../../../../reducers/editor';
 import {
@@ -42,7 +42,7 @@ import {
 import { flattenEntity, NEW_ENTITY_ID } from '../../data/utils';
 import EntitySumUp from '../../components/EntitySumUp';
 import { getEntity } from '../../data/api';
-import { getInfraID, getSwitchTypes } from '../../../../reducers/osrdconf/selectors';
+import { getInfraID } from '../../../../reducers/osrdconf/selectors';
 import { getMap } from '../../../../reducers/map/selectors';
 import { ExtendedEditorContextType } from '../editorContextTypes';
 
@@ -187,7 +187,7 @@ export const SwitchEditionLeftPanel: FC = () => {
   // Retrieve base JSON schema:
   const baseSchema = editorState.editorSchema.find((e) => e.objType === 'Switch')?.schema;
   // Retrieve proper data
-  const switchTypes = useSelector(getSwitchTypes);
+  const switchTypes = useSwitchTypes();
   const switchTypesDict = useMemo(() => keyBy(switchTypes, 'id'), [switchTypes]);
   const switchTypeOptions = useMemo(
     () =>
@@ -308,7 +308,7 @@ export const SwitchEditionLeftPanel: FC = () => {
 export const SwitchEditionLayers: FC = () => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
-  const switchTypes = useSelector(getSwitchTypes);
+  const switchTypes = useSwitchTypes();
   const infraID = useSelector(getInfraID);
   const {
     renderingFingerprint,

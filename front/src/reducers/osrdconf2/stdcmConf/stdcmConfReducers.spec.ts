@@ -7,11 +7,11 @@ import { createStoreWithoutMiddleware } from 'Store';
 
 import { describe, expect } from 'vitest';
 import { stdcmConfInitialState, stdcmConfSlice, stdcmConfSliceActions } from '.';
-import testCommonReducers from '../common/testUtils';
+import testCommonConfReducers from '../common/tests/utils';
 
 const createStore = (initialStateExtra?: Partial<OsrdStdcmConfState>) =>
   createStoreWithoutMiddleware({
-    simulationconf: {
+    [stdcmConfSlice.name]: {
       ...stdcmConfInitialState,
       ...initialStateExtra,
     },
@@ -35,7 +35,7 @@ describe('stdcmConfReducers', () => {
 
   it('should return initial state', () => {
     const store = createStore();
-    const state = store.getState().stdcmconf;
+    const state = store.getState()[stdcmConfSlice.name];
     expect(state).toEqual(stdcmConfInitialState);
   });
 
@@ -44,7 +44,7 @@ describe('stdcmConfReducers', () => {
     const newMaximumRunTime = 10;
     store.dispatch(stdcmConfSliceActions.updateMaximumRunTime(newMaximumRunTime));
 
-    const state = store.getState().stdcmconf;
+    const state = store.getState()[stdcmConfSlice.name];
     expect(state.maximumRunTime).toBe(newMaximumRunTime);
   });
 
@@ -52,23 +52,32 @@ describe('stdcmConfReducers', () => {
     const store = createStore({
       stdcmMode: STDCM_MODES.byDestination,
     });
+
+    const stateBefore = store.getState()[stdcmConfSlice.name];
+    expect(stateBefore.stdcmMode).toBe(STDCM_MODES.byDestination);
+
     const newStdcmMode = STDCM_MODES.byOrigin;
     store.dispatch(stdcmConfSliceActions.updateStdcmMode(newStdcmMode));
 
-    const state = store.getState().stdcmconf;
-    expect(state.stdcmMode).toBe(newStdcmMode);
+    const stateAfter = store.getState()[stdcmConfSlice.name];
+    expect(stateAfter.stdcmMode).toBe(newStdcmMode);
   });
 
   it('should handle updateStdcmStandardAllowance', () => {
+    const initialTimeStandardAllowance = testDataBuilder.buildTimeStandardAllowance(10);
     const store = createStore({
-      standardStdcmAllowance: testDataBuilder.buildTimeStandardAllowance(10),
+      standardStdcmAllowance: initialTimeStandardAllowance,
     });
-    const newStdcmMode = testDataBuilder.buildPercentageStandardAllowance(5);
-    store.dispatch(stdcmConfSliceActions.updateStdcmStandardAllowance(newStdcmMode));
 
-    const state = store.getState().stdcmconf;
-    expect(state.standardStdcmAllowance).toBe(newStdcmMode);
+    const stateBefore = store.getState()[stdcmConfSlice.name];
+    expect(stateBefore.standardStdcmAllowance).toBe(initialTimeStandardAllowance);
+
+    const newStandardAllowance = testDataBuilder.buildPercentageStandardAllowance(5);
+    store.dispatch(stdcmConfSliceActions.updateStdcmStandardAllowance(newStandardAllowance));
+
+    const stateAfter = store.getState()[stdcmConfSlice.name];
+    expect(stateAfter.standardStdcmAllowance).toBe(newStandardAllowance);
   });
 
-  testCommonReducers(stdcmConfSlice);
+  testCommonConfReducers(stdcmConfSlice);
 });

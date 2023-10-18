@@ -27,10 +27,11 @@ import { getMapMouseEventNearestFeature } from '../../utils/mapHelper';
 import EditorContext from './context';
 import { EditorState, LAYER_TO_EDITOAST_DICT, LAYERS_SET, LayerType } from './tools/types';
 import { getEntity } from './data/api';
-import { getInfraID, getSwitchTypes } from '../../reducers/osrdconf/selectors';
+import { getInfraID } from '../../reducers/osrdconf/selectors';
 import { getShowOSM, getTerrain3DExaggeration } from '../../reducers/map/selectors';
 import { CommonToolState } from './tools/commonToolState';
 import { EditorContextType, ExtendedEditorContextType, Tool } from './tools/editorContextTypes';
+import { useSwitchTypes } from './tools/switchEdition/types';
 
 interface MapProps<S extends CommonToolState = CommonToolState> {
   t: TFunction;
@@ -67,7 +68,7 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
   });
   const context = useContext(EditorContext) as EditorContextType<CommonToolState>;
   const infraID = useSelector(getInfraID);
-  const switchTypes = useSelector(getSwitchTypes);
+  const switchTypes = useSwitchTypes();
   const editorState = useSelector((state: { editor: EditorState }) => state.editor);
   const showOSM = useSelector(getShowOSM);
   const terrain3DExaggeration = useSelector(getTerrain3DExaggeration);

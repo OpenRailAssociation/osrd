@@ -1,12 +1,7 @@
-import { createSlice, ListenerMiddlewareInstance, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { DEFAULT_STDCM_MODE, OsrdStdcmConfState } from 'applications/operationalStudies/consts';
 import { Draft } from 'immer';
-import {
-  defaultCommonConf,
-  buildCommonOsrdConfReducers,
-  registerUpdateInfraIDListener,
-  addCommonOsrdConfMatchers,
-} from '../common';
+import { defaultCommonConf, buildCommonConfReducers } from '../common';
 
 export const stdcmConfInitialState: OsrdStdcmConfState = {
   maximumRunTime: 43200,
@@ -16,10 +11,10 @@ export const stdcmConfInitialState: OsrdStdcmConfState = {
 };
 
 export const stdcmConfSlice = createSlice({
-  name: 'stdcmconf',
+  name: 'stdcmConf',
   initialState: stdcmConfInitialState,
   reducers: {
-    ...buildCommonOsrdConfReducers<OsrdStdcmConfState>(),
+    ...buildCommonConfReducers<OsrdStdcmConfState>(),
     updateMaximumRunTime(
       state: Draft<OsrdStdcmConfState>,
       action: PayloadAction<OsrdStdcmConfState['maximumRunTime']>
@@ -39,16 +34,9 @@ export const stdcmConfSlice = createSlice({
       state.standardStdcmAllowance = action.payload;
     },
   },
-  extraReducers: (builder) => {
-    addCommonOsrdConfMatchers(builder);
-  },
 });
 
 export const stdcmConfSliceActions = stdcmConfSlice.actions;
-
-export function registerStdcmUpdateInfraIDListeners(listener: ListenerMiddlewareInstance) {
-  registerUpdateInfraIDListener(listener, stdcmConfSliceActions.updateInfraID);
-}
 
 export type stdcmConfSliceType = typeof stdcmConfSlice;
 

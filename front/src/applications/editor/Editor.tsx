@@ -17,7 +17,7 @@ import Map from './Map';
 import NavButtons from './nav';
 import EditorContext from './context';
 import TOOLS from './tools/tools';
-import { getInfraID, getSwitchTypes } from '../../reducers/osrdconf/selectors';
+import { getInfraID } from '../../reducers/osrdconf/selectors';
 import TOOL_TYPES from './tools/toolTypes';
 import { EditorState } from './tools/types';
 import {
@@ -29,6 +29,7 @@ import {
 } from './tools/editorContextTypes';
 import { switchProps } from './tools/switchProps';
 import { CommonToolState } from './tools/commonToolState';
+import { useSwitchTypes } from './tools/switchEdition/types';
 
 const Editor: FC = () => {
   const { t } = useTranslation();
@@ -37,8 +38,8 @@ const Editor: FC = () => {
   const { openModal, closeModal } = useModal();
   const { urlInfra } = useParams();
   const infraID = useSelector(getInfraID);
-  const switchTypes = useSelector(getSwitchTypes);
   const editorState = useSelector((state: { editor: EditorState }) => state.editor);
+  const switchTypes = useSwitchTypes();
   /* eslint-disable @typescript-eslint/no-explicit-any */
   const [toolAndState, setToolAndState] = useState<FullTool<any>>({
     tool: TOOLS[TOOL_TYPES.SELECTION],

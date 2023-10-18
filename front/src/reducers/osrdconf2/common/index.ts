@@ -1,18 +1,9 @@
-import {
-  ActionReducerMapBuilder,
-  CaseReducer,
-  ListenerMiddlewareInstance,
-  PayloadAction,
-  PrepareAction,
-} from '@reduxjs/toolkit';
+import { CaseReducer, PayloadAction, PrepareAction } from '@reduxjs/toolkit';
 import { OsrdConfState, PointOnMap } from 'applications/operationalStudies/consts';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { Draft } from 'immer';
 import { omit } from 'lodash';
 import { formatIsoDate } from 'utils/date';
 import { sec2time, time2sec } from 'utils/timeManipulation';
-import type { simulationConfSliceActionsType } from '../simulationConf';
-import type { stdcmConfSliceActionsType } from '../stdcmConf';
 
 const ORIGIN_TIME_BOUND_DEFAULT_DIFFERENCE = 7200;
 
@@ -38,7 +29,6 @@ export const defaultCommonConf: OsrdConfState = {
   origin: undefined,
   initialSpeed: 0,
   departureTime: '08:00:00',
-  shouldRunPathfinding: true,
   originDate: formatIsoDate(new Date()),
   originTime: '08:00:00',
   originUpperBoundDate: formatIsoDate(new Date()),
@@ -57,7 +47,7 @@ export const defaultCommonConf: OsrdConfState = {
   trainScheduleIDsToModify: undefined,
 };
 
-type CommonOsrdConfReducersType<S extends OsrdConfState> = {
+type CommonConfReducersType<S extends OsrdConfState> = {
   ['updateName']: CaseReducer<S, PayloadAction<S['name']>>;
   ['updateTrainCount']: CaseReducer<S, PayloadAction<S['trainCount']>>;
   ['updateTrainDelta']: CaseReducer<S, PayloadAction<OsrdConfState['trainDelta']>>;
@@ -69,9 +59,7 @@ type CommonOsrdConfReducersType<S extends OsrdConfState> = {
   ['updateStudyID']: CaseReducer<S, PayloadAction<S['studyID']>>;
   ['updateScenarioID']: CaseReducer<S, PayloadAction<S['scenarioID']>>;
   ['updateInfraID']: CaseReducer<S, PayloadAction<S['infraID']>>;
-  ['updateSwitchTypes']: CaseReducer<S, PayloadAction<S['switchTypes']>>;
   ['updatePathfindingID']: CaseReducer<S, PayloadAction<S['pathfindingID']>>;
-  ['updateShouldRunPathfinding']: CaseReducer<S, PayloadAction<S['shouldRunPathfinding']>>;
   ['updateTimetableID']: CaseReducer<S, PayloadAction<S['timetableID']>>;
   ['updateRollingStockID']: CaseReducer<S, PayloadAction<S['rollingStockID']>>;
   ['updateRollingStockComfort']: CaseReducer<S, PayloadAction<S['rollingStockComfort']>>;
@@ -111,9 +99,7 @@ type CommonOsrdConfReducersType<S extends OsrdConfState> = {
   ['updateTrainScheduleIDsToModify']: CaseReducer<S, PayloadAction<S['trainScheduleIDsToModify']>>;
 };
 
-export function buildCommonOsrdConfReducers<
-  S extends OsrdConfState
->(): CommonOsrdConfReducersType<S> {
+export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfReducersType<S> {
   return {
     updateName(state: Draft<S>, action: PayloadAction<S['name']>) {
       state.name = action.payload;
@@ -145,20 +131,12 @@ export function buildCommonOsrdConfReducers<
     updateScenarioID(state: Draft<S>, action: PayloadAction<S['scenarioID']>) {
       state.scenarioID = action.payload;
     },
-    // TODO REWORK use listener or createThunk ?
     updateInfraID(state: Draft<S>, action: PayloadAction<S['infraID']>) {
       state.infraID = action.payload;
     },
-    updateSwitchTypes(state: Draft<S>, action: PayloadAction<S['switchTypes']>) {
-      state.switchTypes = action.payload;
-    },
     updatePathfindingID(state: Draft<S>, action: PayloadAction<S['pathfindingID']>) {
       state.pathfindingID = action.payload;
-      // TODO, move it to rtk listener
       state.powerRestrictionRanges = [];
-    },
-    updateShouldRunPathfinding(state: Draft<S>, action: PayloadAction<S['shouldRunPathfinding']>) {
-      state.shouldRunPathfinding = action.payload;
     },
     updateTimetableID(state: Draft<S>, action: PayloadAction<S['timetableID']>) {
       state.timetableID = action.payload;
@@ -181,7 +159,6 @@ export function buildCommonOsrdConfReducers<
     updateDepartureTime(state: Draft<S>, action: PayloadAction<S['departureTime']>) {
       state.departureTime = action.payload;
     },
-    // TODO TEST undefined value
     updateOriginTime(state: Draft<S>, action: PayloadAction<S['originTime']>) {
       if (action.payload) {
         const newOriginTimeSeconds = time2sec(action.payload);
@@ -203,7 +180,6 @@ export function buildCommonOsrdConfReducers<
         }
       }
     },
-    // TODO TEST undefined value
     updateOriginUpperBoundTime(state: Draft<S>, action: PayloadAction<S['originUpperBoundTime']>) {
       if (action.payload) {
         const newOriginUpperBoundTimeSeconds = time2sec(action.payload);
@@ -233,10 +209,10 @@ export function buildCommonOsrdConfReducers<
     replaceVias(state: Draft<S>, action: PayloadAction<S['vias']>) {
       state.vias = action.payload;
     },
+    // TODO rename updateVias -> addVias
     updateVias(state: Draft<S>, action: PayloadAction<PointOnMap>) {
       state.vias.push(action.payload);
     },
-    // TODO TEST prepare
     updateViaStopTime: {
       reducer: (state: Draft<S>, action: PayloadAction<S['vias']>) => {
         state.vias = action.payload;
@@ -247,7 +223,6 @@ export function buildCommonOsrdConfReducers<
         return { payload: newVias };
       },
     },
-    // TODO TEST prepare
     permuteVias: {
       reducer: (state: Draft<S>, action: PayloadAction<S['vias']>) => {
         state.vias = action.payload;
@@ -316,44 +291,4 @@ export function buildCommonOsrdConfReducers<
       state.trainScheduleIDsToModify = action.payload;
     },
   };
-}
-
-/**
- *
- */
-export function addCommonOsrdConfMatchers<S extends OsrdConfState>(
-  builder: ActionReducerMapBuilder<S>
-) {
-  return builder
-    .addMatcher(
-      osrdEditoastApi.endpoints.getInfraByIdSwitchTypes.matchPending,
-      (state: Draft<S>) => {
-        state.switchTypes = [];
-      }
-    )
-    .addMatcher(
-      osrdEditoastApi.endpoints.getInfraByIdSwitchTypes.matchFulfilled,
-      (state: Draft<S>, action) => {
-        state.switchTypes = action.payload as S['switchTypes'];
-      }
-    );
-}
-
-export function registerUpdateInfraIDListener(
-  listener: ListenerMiddlewareInstance,
-  updateInfraID:
-    | simulationConfSliceActionsType['updateInfraID']
-    | stdcmConfSliceActionsType['updateInfraID']
-) {
-  listener.startListening({
-    actionCreator: updateInfraID,
-    effect: (action, listenerApi) => {
-      const infraID = action.payload;
-      if (infraID) {
-        listenerApi.dispatch(
-          osrdEditoastApi.endpoints.getInfraByIdSwitchTypes.initiate({ id: infraID })
-        );
-      }
-    },
-  });
 }
