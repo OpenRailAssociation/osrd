@@ -2,6 +2,7 @@ import json
 import random
 import time
 from collections import defaultdict
+from collections.abc import Iterator
 from dataclasses import dataclass, field
 from enum import Enum, IntEnum
 from functools import cache
@@ -245,8 +246,8 @@ def run(
     scenario: Scenario,
     scenario_ttl: int = 20,
     n_test: int = 1000,
-    log_folder: Path = None,
-    infra_name: str = None,
+    log_folder: Optional[Path] = None,
+    infra_name: Optional[str] = None,
     seed: int = 0,
     rolling_stock_name: Optional[str] = None,
 ):
@@ -564,7 +565,7 @@ def make_random_allowance_value(allowance_length) -> Dict:
     }
 
 
-def make_random_ranges(path_length: float) -> List[Dict]:
+def make_random_ranges(path_length: float) -> Iterator[Dict]:
     if random.randint(0, 1) == 0:
         return []
     n_transitions = 1 + 2 * random.randint(0, 3)
@@ -661,6 +662,8 @@ def request_with_timeout(request_type: str, *args, **kwargs) -> Response:
             return requests.get(*args, timeout=TIMEOUT, **kwargs)
         elif request_type == "delete":
             return requests.delete(*args, timeout=TIMEOUT, **kwargs)
+        else:
+            raise ValueError(f"Unsupported requst type {request_type}")
     except Timeout:
         res = Response()
         res.status_code = 500
