@@ -1,0 +1,6 @@
+default_target = "http://localhost:3000"
+
+[[targets]]
+prefix = "/api"
+upstream = "http://localhost:8090"
+remove_prefix = true

@@ -1,13 +1,16 @@
-use actix_web::http::{header, StatusCode};
-use actix_web::{web, App, HttpRequest, HttpResponse, HttpServer, ResponseError};
+use actix_web::http::{header, StatusCode, Uri};
+use actix_web::{
+    middleware::Logger, web, App, HttpRequest, HttpResponse, HttpServer, ResponseError,
+};
 
 use actix_web_actors::ws;
 use awc::error::{ConnectError, SendRequestError as AwcSendRequestError};
 use awc::Client;
 use futures_util::StreamExt;
-
+use log::{debug, error, info, warn};
 use std::fmt;
 
+mod proxy_config;
 mod websocket_proxy;
 
 #[derive(Debug)]
@@ -37,11 +40,6 @@ impl ResponseError for SendRequestError {
     }
 }
 
-struct ProxySettings {
-    client: Client,
-    target: String,
-}
-
 fn is_hop_by_hop(header: &str) -> bool {
     // TODO: parse connection header, which contains a comma
     // separated list of additional hop-by-hop headers
@@ -62,36 +60,57 @@ fn is_hop_by_hop(header: &str) -> bool {
     }
 }
 
+fn rebase_uri(target: &RunTarget, incoming_uri: &Uri, new_protocol: Option<&str>) -> Uri {
+    let scheme = new_protocol.unwrap_or(target.upstream.scheme_str().unwrap());
+    let authority = target.upstream.authority().unwrap().clone();
+
+    let path_and_query = if target.remove_prefix && !target.is_default() {
+        target.strip_prefix(incoming_uri.path_and_query().unwrap().as_str())
+    } else {
+        incoming_uri.path_and_query().unwrap().as_str()
+    };
+
+    Uri::builder()
+        .scheme(scheme)
+        .authority(authority)
+        .path_and_query(path_and_query)
+        .build()
+        .unwrap()
+}
+
 async fn proxy(
     request: HttpRequest,
     stream: web::Payload,
-    settings: web::Data<ProxySettings>,
-    path: web::Path<String>,
+    state: web::Data<ProxyState>,
 ) -> Result<HttpResponse, actix_web::Error> {
-    // let back_uri = rebase_uri(request.uri(), "/api", &http::Uri::from_static());
-    let mut back_uri = if let Some(query) = request.uri().query() {
-        format!("{0}/{path}?{query}", settings.target)
-    } else {
-        format!("{0}/{path}", settings.target)
-    };
+    // First, we search for the target to apply, if none is found we go to the default one unless
+    // we do not have, then we just return a basic 404 Not Found error.
+    let target = state
+        .targets
+        .iter()
+        .find(|&potential_target| potential_target.path_matches_prefix(request.path()))
+        .or(state.default_target.as_ref());
+    if target.is_none() {
+        return Ok(HttpResponse::NotFound().body("404 Not Found"));
+    }
 
     match request.headers().get(&header::UPGRADE) {
         Some(header) if header.as_bytes() == b"websocket" => {
-            back_uri.replace_range(0..4, "ws");
-            log::info!("WS: connecting to {back_uri}");
+            let back_uri = rebase_uri(target.unwrap(), request.uri(), Some("ws"));
+
+            debug!("proxy: websocket - received request forwarded to {back_uri}");
             // open a websocket connection to the backend
-            let mut back_request = settings.client.ws(back_uri);
+            let mut back_request = state.client.ws(back_uri);
             for header in request.headers() {
-                if ! is_hop_by_hop(header.0.as_str()) {
+                if !is_hop_by_hop(header.0.as_str()) {
                     back_request = back_request.header(header.0, header.1);
                 }
             }
             let (back_response, back_ws) = back_request.connect().await.unwrap();
-            log::info!("WS: connection complete");
 
             let mut res = ws::handshake(&request)?;
             for header in back_response.headers() {
-                if ! is_hop_by_hop(header.0.as_str()) {
+                if !is_hop_by_hop(header.0.as_str()) {
                     res.append_header(header);
                 }
             }
@@ -102,8 +121,10 @@ async fn proxy(
             )))
         }
         _ => {
-            log::info!("HTTP: connecting to {back_uri}");
-            let mut back_request = settings.client.request(request.method().clone(), back_uri);
+            let back_uri = rebase_uri(target.unwrap(), request.uri(), None);
+
+            debug!("proxy: http - received request forwarded to {back_uri}");
+            let mut back_request = state.client.request(request.method().clone(), back_uri);
             for header in request.headers() {
                 if !is_hop_by_hop(header.0.as_str()) {
                     back_request = back_request.append_header(header);
@@ -127,20 +148,118 @@ async fn proxy(
     }
 }
 
+struct ProxyState {
+    client: Client,
+    targets: Vec<RunTarget>,
+    default_target: Option<RunTarget>,
+}
+
+#[derive(Clone)]
+pub struct RunTarget {
+    pub prefix: Option<String>,
+    pub upstream: Uri,
+    pub remove_prefix: bool,
+}
+
+#[derive(Debug)]
+pub enum UriParseError {
+    SchemeOrAuthorityMissing,
+    InvalidUri(actix_web::http::uri::InvalidUri),
+}
+
+fn parse_and_check_uri(s: &str) -> Result<Uri, UriParseError> {
+    let parsed_uri = actix_web::http::Uri::try_from(s).map_err(|e| UriParseError::InvalidUri(e))?;
+
+    if parsed_uri.scheme().is_none() || parsed_uri.authority().is_none() {
+        return Err(UriParseError::SchemeOrAuthorityMissing);
+    }
+
+    Ok(parsed_uri)
+}
+
+impl RunTarget {
+    fn is_default(&self) -> bool {
+        self.prefix.is_none()
+    }
+
+    fn path_matches_prefix(&self, path: &str) -> bool {
+        if let Some(prefix) = &self.prefix {
+            path.starts_with(prefix)
+        } else {
+            false
+        }
+    }
+
+    fn strip_prefix<'a>(&self, path: &'a str) -> &'a str {
+        if let Some(prefix) = &self.prefix {
+            path.strip_prefix(prefix).unwrap_or(path)
+        } else {
+            path
+        }
+    }
+}
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    env_logger::init();
+    env_logger::init_from_env(env_logger::Env::new().default_filter_or("debug"));
 
-    HttpServer::new(|| {
-        App::new()
-            .app_data(web::Data::new(ProxySettings {
+    // Process configuration
+    let config = proxy_config::load().unwrap_or_else(|e| {
+        error!("Cannot load configuration: {}", e);
+        std::process::exit(1);
+    });
+    let listen_addr = config.listen_addr.clone();
+    let port = config.port;
+    let default_target = config.default_target.clone();
+
+    // Build targets
+    let targets = config
+        .targets
+        .iter()
+        .map(|target| RunTarget {
+            prefix: Some(target.prefix.clone()),
+            upstream: parse_and_check_uri(target.upstream.as_str()).unwrap(),
+            remove_prefix: target.remove_prefix.unwrap_or(false),
+        })
+        .collect::<Vec<RunTarget>>();
+    let default_target = {
+        if let Some(default_target) = &default_target {
+            Some(RunTarget {
+                prefix: None,
+                upstream: parse_and_check_uri(default_target.as_str()).unwrap(),
+                remove_prefix: false,
+            })
+        } else {
+            None
+        }
+    };
+
+    // Start server
+    HttpServer::new(move || {
+        let mut app = App::new()
+            .wrap(Logger::default())
+            .app_data(web::Data::new(ProxyState {
                 client: awc::Client::new(),
-                target: "http://localhost:3000".to_owned(),
-            }))
-            .route("/{path:.*}", web::route().to(proxy))
-        //.service(actix_files::Files::new("/", "static").index_file("index.html"))
+                targets: targets.clone(),
+                default_target: default_target.clone(),
+            }));
+
+        if let Some(ref static_folder) = config.static_folder {
+            info!(
+                "Serving default route with static file from {}",
+                static_folder
+            );
+            if config.default_target.is_some() {
+                warn!("The value set in default_target will be ignored")
+            }
+            app = app.service(actix_files::Files::new("/", static_folder).index_file("index.html"))
+        } else {
+            info!("Using default upstream route");
+        }
+
+        app.default_service(web::route().to(proxy))
     })
-    .bind(("127.0.0.1", 8080))?
+    .bind((listen_addr, port))?
     .run()
     .await
 }

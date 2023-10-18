@@ -19,7 +19,9 @@ impl<T: AsyncRead + AsyncWrite> ClientProxyActor<T> {
         tx: SplitSink<Framed<T, Codec>, ws::Message>,
     ) -> Self {
         Self {
-            back_tx: Some(tx), tx_buffer: None, back_rx: Some(rx)
+            back_tx: Some(tx),
+            tx_buffer: None,
+            back_rx: Some(rx),
         }
     }
 }
@@ -50,7 +52,9 @@ where
 {
     fn handle(&mut self, msg: Result<ws::Message, ws::ProtocolError>, _: &mut Self::Context) {
         log::info!("received client message: {msg:?}");
-        self.tx_buffer.as_mut().map(|s| s.write(msg.unwrap()).unwrap());
+        self.tx_buffer
+            .as_mut()
+            .map(|s| s.write(msg.unwrap()).unwrap());
     }
 
     fn started(&mut self, _ctx: &mut Self::Context) {

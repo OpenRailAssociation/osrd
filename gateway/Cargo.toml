@@ -19,3 +19,5 @@ log = "*"
 actix-codec = "*"
 bytestring = "*"
 env_logger = "*"
+figment = { version = "0.10", features = ["toml", "env"] }
+serde = { version = "1.0.189", features = ["derive"] }
