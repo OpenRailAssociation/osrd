@@ -672,8 +672,21 @@ def get_infra_name(editoast_url: str, infra_id: int):
     return r.json()["name"]
 
 
+# TODO: duplicated in tests/conftest.py
+def create_fast_rolling_stock():
+    path = Path(__file__).parents[2] / "editoast" / "src" / "tests" / "example_rolling_stock_1.json"
+    payload = json.loads(path.read_text())
+    response = requests.post(f"{EDITOAST_URL}rolling_stock/", json=payload).json()
+    assert "id" in response, f"Failed to create rolling stock: {response}"
+
+
 if __name__ == "__main__":
     new_scenario = create_scenario(EDITOAST_URL, INFRA_ID)
+    if ROLLING_STOCK_NAME == "fast_rolling_stock":
+        try:
+            get_rolling_stock(EDITOAST_URL, ROLLING_STOCK_NAME)
+        except ValueError:
+            create_fast_rolling_stock()
     run(
         EDITOAST_URL,
         new_scenario,
