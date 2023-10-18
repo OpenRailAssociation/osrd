@@ -126,7 +126,7 @@ public class STDCMStandardAllowance {
         var allowance = new MarecoAllowance(
                 0,
                 envelope.getEndPos(),
-                1,
+                0,
                 makeAllowanceRanges(standardAllowance, envelope.getEndPos(), rangeTransitions)
         );
         return allowance.apply(envelope, context);
