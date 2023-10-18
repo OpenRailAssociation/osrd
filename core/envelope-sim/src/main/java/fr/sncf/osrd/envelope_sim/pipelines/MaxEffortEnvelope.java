@@ -74,8 +74,13 @@ public class MaxEffortEnvelope {
                     EnvelopeAcceleration.accelerate(context, startPosition, startSpeed, overlayBuilder, 1);
                     cursor.findPosition(overlayBuilder.getLastPos());
 
+                    if (overlayBuilder.lastIntersection == 0) {
+                        // Train stopped while trying to catch up
+                        throw new OSRDError(ErrorType.ImpossibleSimulationError);
+                    }
+
                     // check that the train was actually slowed down by the ramp
-                    if (partBuilder.stepCount() > 1)
+                    if (partBuilder.stepCount() > 0)
                         // if the part has more than one point, add it
                         builder.addPart(partBuilder.build());
                     else {
