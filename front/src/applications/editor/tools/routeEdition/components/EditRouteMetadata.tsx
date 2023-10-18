@@ -97,7 +97,7 @@ export const EditRouteMetadataPanel: FC<{ state: EditRouteMetadataState }> = ({ 
                 title={t('Editor.tools.routes-edition.delete-route')}
                 onConfirm={async () => {
                   setIsLoading(true);
-                  await dispatch(save({ delete: [initialRouteEntity] as EditorEntity[] }));
+                  await dispatch(save(infraID, { delete: [initialRouteEntity] as EditorEntity[] }));
                   setIsLoading(false);
                   addSuccessNotification({
                     title: '',
@@ -158,7 +158,7 @@ export const EditRouteMetadataPanel: FC<{ state: EditRouteMetadataState }> = ({ 
           onClick={async () => {
             setIsLoading(true);
             await dispatch(
-              save({
+              save(infraID, {
                 update: [
                   {
                     source: initialRouteEntity,
