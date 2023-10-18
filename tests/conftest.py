@@ -84,6 +84,7 @@ def _create_fast_rolling_stocks(test_rolling_stocks: List[TestRollingStock] = No
     if test_rolling_stocks is None:
         payload = json.loads(FAST_ROLLING_STOCK_JSON_PATH.read_text())
         response = requests.post(f"{EDITOAST_URL}rolling_stock/", json=payload).json()
+        # TODO: if the fast_rolling_stock already exists, we should probably fetch it
         assert "id" in response, f"Failed to create rolling stock: {response}"
         return [response["id"]]
     ids = []
