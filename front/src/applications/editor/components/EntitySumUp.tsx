@@ -7,7 +7,6 @@ import { TFunction } from 'i18next';
 import cx from 'classnames';
 
 import { Spinner } from 'common/Loader';
-import { NEW_ENTITY_ID } from '../data/utils';
 import {
   BufferStopEntity,
   CatenaryEntity,
@@ -17,11 +16,15 @@ import {
   SpeedSectionEntity,
   SwitchEntity,
   TrackSectionEntity,
-} from '../../../types';
+} from 'types';
+import { getSpeedSectionsNameString } from 'common/Map/Layers/SpeedLimits';
+import { getInfraID } from 'reducers/osrdconf/selectors';
 import { EditoastType } from '../tools/types';
+import { NEW_ENTITY_ID } from '../data/utils';
 import { getEntities, getEntity } from '../data/api';
-import { getInfraID } from '../../../reducers/osrdconf/selectors';
-import { getSpeedSectionsNameString } from '../../../common/Map/Layers/SpeedLimits';
+import { InfraError } from './InfraErrors/types';
+import InfraErrorIcon from './InfraErrors/InfraErrorIcon';
+import InfraErrorTypeLabel from './InfraErrors/InfraErrorTypeLabel';
 
 function prettifyStringsArray(strings: string[], finalSeparator: string): string {
   switch (strings.length) {
@@ -281,11 +284,12 @@ const EntitySumUp: FC<
   {
     classes?: Partial<typeof DEFAULT_CLASSES>;
     status?: string;
+    error?: InfraError['information'];
   } & (
     | { entity: EditorEntity; id?: undefined; objType?: undefined }
     | { id: string; objType: EditoastType; entity?: undefined }
   )
-> = ({ entity, id, objType, classes, status }) => {
+> = ({ entity, id, objType, classes, status, error }) => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const infraID = useSelector(getInfraID);
@@ -335,7 +339,17 @@ const EntitySumUp: FC<
       </div>
     );
 
-  return getSumUpContent(entity || state.entity, state.additionalEntities, t, classes, status);
+  return (
+    <>
+      {getSumUpContent(entity || state.entity, state.additionalEntities, t, classes, status)}
+      {error && (
+        <>
+          <InfraErrorIcon className="mr-1" error={error} />
+          <InfraErrorTypeLabel error={error} />
+        </>
+      )}
+    </>
+  );
 };
 
 export default EntitySumUp;

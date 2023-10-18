@@ -29,6 +29,7 @@ import EntitySumUp from '../../components/EntitySumUp';
 import { getEditCatenaryState, getEditSpeedSectionState } from '../rangeEdition/utils';
 import TOOL_TYPES from '../toolTypes';
 import { ExtendedEditorContextType } from '../editorContextTypes';
+import EntityError from '../../components/EntityError';
 
 export const TRACK_LAYER_ID = 'trackEditionTool/new-track-path';
 export const POINTS_LAYER_ID = 'trackEditionTool/new-track-points';
@@ -190,7 +191,7 @@ export const TrackEditionLayers: FC = () => {
     renderingFingerprint,
     editorState: { editorLayers },
   } = useContext(EditorContext) as ExtendedEditorContextType<TrackEditionState>;
-  const { mapStyle, layersSettings } = useSelector(getMap);
+  const { mapStyle, layersSettings, issuesSettings } = useSelector(getMap);
 
   const isAddingPointOnExistingSection =
     typeof state.nearestPoint?.properties?.sectionIndex === 'number';
@@ -238,6 +239,7 @@ export const TrackEditionLayers: FC = () => {
         layers={editorLayers}
         fingerprint={renderingFingerprint}
         layersSettings={layersSettings}
+        issuesSettings={issuesSettings}
       />
 
       {/* Track path */}
@@ -403,6 +405,7 @@ export const TrackEditionLeftPanel: FC = () => {
       <div className="border-bottom" />
       {!isNew && (
         <>
+          {!isNew && <EntityError className="border-bottom mb-1" entity={track} />}
           <h3>{t('Editor.tools.track-edition.attached-speed-sections')}</h3>
           <AttachedRangesItemsList id={track.properties.id} itemType="SpeedSection" />
           <div className="border-bottom" />

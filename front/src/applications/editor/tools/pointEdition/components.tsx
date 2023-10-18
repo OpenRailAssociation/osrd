@@ -28,6 +28,7 @@ import { cleanSymbolType, flattenEntity, NEW_ENTITY_ID } from '../../data/utils'
 import { EditoastType } from '../types';
 import EditorContext from '../../context';
 import EntitySumUp from '../../components/EntitySumUp';
+import EntityError from '../../components/EntityError';
 import { getEntities, getEntity } from '../../data/api';
 import { Spinner } from '../../../../common/Loader';
 import { getEditRouteState } from '../routeEdition/utils';
@@ -340,6 +341,8 @@ export const PointEditionLeftPanel: FC<{ type: EditoastType }> = <Entity extends
           </button>
         </div>
       </EditorForm>
+
+      {!isNew && <EntityError className="mt-1" entity={state.entity} />}
     </>
   );
 };
@@ -363,7 +366,7 @@ export const BasePointEditionLayers: FC<{
     state: { nearestPoint, mousePosition, entity, objType },
     editorState: { editorLayers },
   } = useContext(EditorContext) as ExtendedEditorContextType<PointEditionState<EditorEntity>>;
-  const { mapStyle, layersSettings } = useSelector(getMap);
+  const { mapStyle, layersSettings, issuesSettings } = useSelector(getMap);
 
   const [showPopup, setShowPopup] = useState(true);
 
@@ -403,6 +406,7 @@ export const BasePointEditionLayers: FC<{
           isEmphasized: true,
           showIGNBDORTHO: false,
           layersSettings,
+          issuesSettings,
         },
         `editor/${objType}/`
       ).map((layer) =>
@@ -411,7 +415,7 @@ export const BasePointEditionLayers: FC<{
           ? { ...layer, id: POINT_LAYER_ID }
           : layer
       ),
-    [interactiveLayerIDRegex, mapStyle, objType, type]
+    [interactiveLayerIDRegex, mapStyle, objType, type, layersSettings, issuesSettings]
   );
 
   return (
@@ -423,6 +427,7 @@ export const BasePointEditionLayers: FC<{
         layers={editorLayers}
         fingerprint={renderingFingerprint}
         layersSettings={layersSettings}
+        issuesSettings={issuesSettings}
       />
 
       {/* Edited entity */}

@@ -1,4 +1,4 @@
-import React, { FC, PropsWithChildren, useContext, useMemo, useRef, useState } from 'react';
+import React, { FC, PropsWithChildren, useContext, useMemo, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import ReactMapGL, { AttributionControl, MapRef, ScaleControl } from 'react-map-gl/maplibre';
 import { withTranslation } from 'react-i18next';
@@ -16,19 +16,21 @@ import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import TracksOSM from 'common/Map/Layers/TracksOSM';
 import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
 import Terrain from 'common/Map/Layers/Terrain';
-import Background from '../../common/Map/Layers/Background';
-import OSM from '../../common/Map/Layers/OSM';
-import Hillshade from '../../common/Map/Layers/Hillshade';
-import Platforms from '../../common/Map/Layers/Platforms';
-import { useMapBlankStyle } from '../../common/Map/Layers/blankStyle';
-import IGN_BD_ORTHO from '../../common/Map/Layers/IGN_BD_ORTHO';
-import { Viewport } from '../../reducers/map';
-import { getMapMouseEventNearestFeature } from '../../utils/mapHelper';
+
+import Background from 'common/Map/Layers/Background';
+import OSM from 'common/Map/Layers/OSM';
+import Hillshade from 'common/Map/Layers/Hillshade';
+import Platforms from 'common/Map/Layers/Platforms';
+import { useMapBlankStyle } from 'common/Map/Layers/blankStyle';
+import IGN_BD_ORTHO from 'common/Map/Layers/IGN_BD_ORTHO';
+import { getInfraID } from 'reducers/osrdconf/selectors';
+import { getShowOSM, getTerrain3DExaggeration } from 'reducers/map/selectors';
+import { Viewport } from 'reducers/map';
+import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
+import { InfraError } from './components/InfraErrors/types';
 import EditorContext from './context';
 import { EditorState, LAYER_TO_EDITOAST_DICT, LAYERS_SET, LayerType } from './tools/types';
 import { getEntity } from './data/api';
-import { getInfraID } from '../../reducers/osrdconf/selectors';
-import { getShowOSM, getTerrain3DExaggeration } from '../../reducers/map/selectors';
 import { CommonToolState } from './tools/commonToolState';
 import { EditorContextType, ExtendedEditorContextType, Tool } from './tools/editorContextTypes';
 import { useSwitchTypes } from './tools/switchEdition/types';
@@ -41,6 +43,7 @@ interface MapProps<S extends CommonToolState = CommonToolState> {
   mapStyle: string;
   viewport: Viewport;
   setViewport: (newViewport: Partial<Viewport>, updateRouter?: boolean) => void;
+  mapRef: React.RefObject<MapRef>;
 }
 
 interface MapState {
@@ -50,6 +53,7 @@ interface MapState {
 }
 
 const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
+  mapRef,
   toolState,
   setToolState,
   activeTool,
@@ -60,7 +64,6 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
 }) => {
   const dispatch = useDispatch();
   const mapBlankStyle = useMapBlankStyle();
-  const mapRef = useRef<MapRef>(null);
   const [mapState, setMapState] = useState<MapState>({
     isLoaded: true,
     isDragging: false,
@@ -155,6 +158,13 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
                   id: feature.properties?.id as string,
                   type: LAYER_TO_EDITOAST_DICT[feature.sourceLayer as LayerType],
                   renderedEntity: feature,
+                };
+              } else if (feature.sourceLayer === 'errors') {
+                partialToolState.hovered = {
+                  id: feature.properties?.obj_id as string,
+                  type: feature.properties?.obj_type,
+                  renderedEntity: feature,
+                  error: feature.properties as InfraError['information'],
                 };
               }
             } else {

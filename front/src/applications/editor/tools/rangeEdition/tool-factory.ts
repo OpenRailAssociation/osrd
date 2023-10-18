@@ -197,7 +197,6 @@ function getRangeEditionTool<T extends EditorRange>({
       if (interactionState.type === 'moveRangeExtremity') return;
 
       const feature = (e.features || [])[0];
-
       if (!feature) {
         if (hoveredItem) setState({ hoveredItem: null });
         return;

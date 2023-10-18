@@ -22,6 +22,7 @@ import {
 import { NEW_ENTITY_ID } from '../../data/utils';
 import { LoaderFill } from '../../../../common/Loader';
 import EntitySumUp from '../../components/EntitySumUp';
+import EntityError from '../../components/EntityError';
 import { save } from '../../../../reducers/editor';
 import EditPSLSection from './speedSection/EditPSLSection';
 import { ExtendedEditorContextType, PartialOrReducer } from '../editorContextTypes';
@@ -355,6 +356,8 @@ export const RangeEditionLeftPanel: FC = () => {
         </>
       )}
       <TrackRangesList />
+
+      {!isNew && <EntityError className="mt-1" entity={entity} />}
     </div>
   );
 };

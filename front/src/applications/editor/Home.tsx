@@ -33,8 +33,12 @@ export default function HomeEditorUnplugged() {
             {t('editor')}
             {infra ? (
               <span className="ml-2 text-muted">
-                {t('referenceMap:infrastructure', { name: infra.name })}
-                <span className="ml-2">{infra.locked && <FaLock />}</span>
+                <span>{t('referenceMap:infrastructure', { name: infra.name })}</span>
+                {infra.locked && (
+                  <span className="ml-2">
+                    <FaLock />
+                  </span>
+                )}
               </span>
             ) : (
               <span className="ml-2 text-orange">{t('referenceMap:mapNoInfraSelected')}</span>

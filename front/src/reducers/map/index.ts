@@ -4,6 +4,7 @@ import { Position } from '@turf/helpers';
 import { transformMapRequest as helperTransformRequest, gpsRound } from 'utils/helpers';
 import { createSlice, Dispatch, PayloadAction } from '@reduxjs/toolkit';
 import history from 'main/history';
+import { InfraErrorType } from 'applications/editor/components/InfraErrors/types';
 
 export const transformMapRequest: MapProps['transformRequest'] = (url, resourceType) =>
   helperTransformRequest(url, resourceType, MAP_URL, SPRITES_URL);
@@ -44,7 +45,9 @@ export interface MapState {
     speedlimits: boolean;
     switches: boolean;
     tvds: boolean;
-    errors: boolean;
+  };
+  issuesSettings?: {
+    types: Array<InfraErrorType>;
   };
   mapSearchMarker?: MapSearchMarker;
   lineSearchCode?: number;
@@ -85,7 +88,6 @@ export const mapInitialState: MapState = {
     speedlimits: false,
     switches: false,
     tvds: false,
-    errors: false,
   },
   mapSearchMarker: undefined,
   lineSearchCode: undefined,
@@ -134,6 +136,9 @@ const mapSlice = createSlice({
     updateLayersSettings: (state, action: PayloadAction<MapState['layersSettings']>) => {
       state.layersSettings = action.payload;
     },
+    updateIssuesSettings: (state, action: PayloadAction<MapState['issuesSettings']>) => {
+      state.issuesSettings = action.payload;
+    },
     updateTerrain3DExaggeration: (
       state,
       action: PayloadAction<MapState['terrain3DExaggeration']>
@@ -181,6 +186,7 @@ export const {
   updateTerrain3DExaggeration,
   updateTransformRequest,
   updateViewportAction,
+  updateIssuesSettings,
 } = mapSliceActions;
 
 export default mapSlice.reducer;

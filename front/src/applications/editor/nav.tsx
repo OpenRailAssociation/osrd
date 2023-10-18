@@ -6,22 +6,18 @@ import { BsFillExclamationOctagonFill } from 'react-icons/bs';
 import { FiLayers, FiZoomIn, FiZoomOut } from 'react-icons/fi';
 import { FaCompass } from 'react-icons/fa';
 import { GiRailway } from 'react-icons/gi';
-import turfCenter from '@turf/center';
 import { isNil } from 'lodash';
 import { NavigateFunction } from 'react-router-dom';
+import { MapRef } from 'react-map-gl/maplibre';
 
 import { Viewport } from 'reducers/map';
-import { ModalContextType } from '../../common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import { selectLayers } from 'reducers/editor';
+import { Shortcut } from 'utils/hooks/useKeyboardShortcuts';
+import { ModalContextType } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import InfraSelectorModal from 'common/InfraSelector/InfraSelectorModal';
 import { EditorState, EDITOAST_TO_LAYER_DICT, EditoastType } from './tools/types';
-import InfraSelectorModal from '../../common/InfraSelector/InfraSelectorModal';
-import InfraErrorsModal from './components/InfraErrors/InfraErrorsModal';
 import LayersModal from './components/LayersModal';
 import { SelectionState } from './tools/selection/types';
-import { RouteEntity } from '../../types';
-import { getEditRouteState } from './tools/routeEdition/utils';
-import { getEntity } from './data/api';
-import { InfraError } from './components/InfraErrors/types';
-import TOOL_TYPES from './tools/toolTypes';
 import { EditorContextType, Tool } from './tools/editorContextTypes';
 
 const ZOOM_DEFAULT = 5;
@@ -38,6 +34,7 @@ export interface NavButton {
   id: string;
   icon: IconType;
   labelTranslationKey: string;
+  shortcut?: Omit<Shortcut, 'handler'>;
 
   // Tool appearance:
   isActive?: (editorState: EditorState) => boolean;
@@ -55,6 +52,7 @@ export interface NavButton {
       setViewport: (newViewport: Partial<Viewport>) => void;
       openModal: ModalContextType['openModal'];
       closeModal: ModalContextType['closeModal'];
+      mapRef: MapRef;
     },
     toolContext: {
       activeTool: Tool<S>;
@@ -118,6 +116,7 @@ const NavButtons: NavButton[][] = [
       id: 'layers',
       icon: FiLayers,
       labelTranslationKey: 'Editor.nav.toggle-layers',
+      shortcut: { code: 'KeyL', optionalKeys: { ctrlKey: true, shiftKey: true } },
       onClick({ openModal, editorState }, { activeTool, toolState, setToolState }) {
         openModal(
           <LayersModal
@@ -150,6 +149,7 @@ const NavButtons: NavButton[][] = [
       id: 'infras',
       icon: GiRailway,
       labelTranslationKey: 'Editor.nav.select-infra',
+      shortcut: { code: 'KeyI', optionalKeys: { ctrlKey: true, shiftKey: true } },
       isBlink: (_editorState, infraId) => isNil(infraId),
       async onClick({ navigate, openModal }) {
         openModal(<InfraSelectorModal onInfraChange={(id) => navigate(`/editor/${id}`)} />, 'lg');
@@ -158,42 +158,14 @@ const NavButtons: NavButton[][] = [
     {
       id: 'infra-errors',
       icon: BsFillExclamationOctagonFill,
-      labelTranslationKey: 'Editor.nav.infra-errors',
-      async onClick({ openModal, closeModal, setViewport, dispatch }, { switchTool }) {
-        openModal(
-          <InfraErrorsModal
-            onErrorClick={async (infraID: number, item: InfraError) => {
-              const entity = await getEntity(
-                infraID,
-                item.information.obj_id,
-                item.information.obj_type,
-                dispatch
-              );
-              // select the item in the editor scope
-              if (entity.objType === 'Route') {
-                switchTool({
-                  toolType: TOOL_TYPES.ROUTE_EDITION,
-                  toolState: getEditRouteState(entity as RouteEntity),
-                });
-              } else {
-                switchTool({ toolType: TOOL_TYPES.SELECTION, toolState: { selection: [entity] } });
-
-                // center the map on the object
-                if (item.geographic) {
-                  const geoCenter = turfCenter(item.geographic);
-                  setViewport({
-                    longitude: geoCenter.geometry.coordinates[0],
-                    latitude: geoCenter.geometry.coordinates[1],
-                    zoom: 20,
-                  });
-                }
-              }
-              // closing the modal
-              closeModal();
-            }}
-          />,
-          'lg'
-        );
+      labelTranslationKey: 'Editor.nav.infra-errors-map',
+      shortcut: { code: 'KeyE', optionalKeys: { ctrlKey: true, shiftKey: true } },
+      isActive: (state) => state.editorLayers.has('errors'),
+      onClick({ dispatch, editorState }) {
+        const newSet = new Set(editorState.editorLayers);
+        if (newSet.has('errors')) newSet.delete('errors');
+        else newSet.add('errors');
+        dispatch(selectLayers(newSet));
       },
     },
   ],

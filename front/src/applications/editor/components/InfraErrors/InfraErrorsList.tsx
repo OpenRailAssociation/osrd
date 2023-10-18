@@ -1,16 +1,24 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import InfiniteScroll from 'react-infinite-scroll-component';
+import { isNil, sortBy, uniqueId } from 'lodash';
+import { FaDiamondTurnRight } from 'react-icons/fa6';
+import { useDispatch, useSelector } from 'react-redux';
 
-import { LoaderFill, Spinner } from '../../../../common/Loader';
-import { osrdEditoastApi } from '../../../../common/api/osrdEditoastApi';
-import InfraErrorComponent from './InfraError';
+import { getEditorIssue } from 'reducers/editor/selectors';
+import { updateFiltersIssue } from 'reducers/editor';
+import { LoaderFill, Spinner } from 'common/Loader';
+import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { EDITOAST_TYPES } from '../../tools/types';
+import { InfraErrorBox } from './InfraError';
 import {
   InfraError,
   InfraErrorLevel,
   InfraErrorType,
   InfraErrorLevelList,
-  InfraErrorTypeList,
+  allInfraErrorTypes,
+  infraErrorTypeList,
 } from './types';
 
 interface InfraErrorsListProps {
@@ -20,81 +28,101 @@ interface InfraErrorsListProps {
 
 const InfraErrorsList: React.FC<InfraErrorsListProps> = ({ infraID, onErrorClick }) => {
   const { t } = useTranslation();
+  const dispatch = useDispatch();
   const [total, setTotal] = useState<number | null>(null);
   const [next, setNext] = useState<number | null>(null);
-  const [errors, setErrors] = useState<Array<InfraError>>([]);
-  const [filterErrorLevel, setFilterErrorLevel] = useState<InfraErrorLevel>('all');
-  const [filterErrorType, setFilterErrorType] = useState<InfraErrorType | undefined>(undefined);
-  const [getInfraErrors, { isLoading, error }] =
-    osrdEditoastApi.endpoints.getInfraByIdErrors.useLazyQuery({});
+  const { filterLevel, filterType } = useSelector(getEditorIssue);
+  const [loading, setLoading] = useState<boolean>(false);
 
+  // list of issues
+  const [errors, setErrors] = useState<Array<InfraError>>([]);
+  // Error types filtered in correlatino with error level
+  const [errorTypeList, setErrorTypeList] = useState<InfraErrorType[]>(allInfraErrorTypes);
+
+  // Query to retrieve the issue with the API
+  const [getInfraErrors] = osrdEditoastApi.endpoints.getInfraByIdErrors.useLazyQuery({});
   const fetch = useCallback(
-    async (id: number, page: number, errorType: InfraErrorType, level: InfraErrorLevel) => {
-      const response = await getInfraErrors({
-        id,
-        page,
-        errorType,
-        level,
-      });
-      setErrors((prev) => {
-        const apiErrors = response.data ? response.data.results || [] : [];
-        return page === 1 ? apiErrors : [...prev, ...apiErrors];
-      });
-      setTotal(response.data ? response.data.count || 0 : null);
-      setNext(response.data ? response.data.next ?? null : null);
+    async (id: number, page: number, level: InfraErrorLevel, errorType?: InfraErrorType) => {
+      setLoading(true);
+      try {
+        const response = await getInfraErrors({
+          id,
+          page,
+          errorType,
+          level,
+        });
+        setErrors((prev) => {
+          const apiErrors = response.data ? response.data.results || [] : [];
+          return page === 1 ? apiErrors : [...prev, ...apiErrors];
+        });
+        setTotal(response.data ? response.data.count || 0 : null);
+        setNext(response.data ? response.data.next ?? null : null);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
     },
     [getInfraErrors]
   );
+
+  /**
+   * When error level changed
+   * => set the error type list accordly
+   */
+  useEffect(() => {
+    const types =
+      isNil(filterLevel) || filterLevel === 'all'
+        ? allInfraErrorTypes
+        : [...infraErrorTypeList[filterLevel]];
+    const sortedTypes = sortBy(types, (type) => t(`Editor.infra-errors.error-type.${type}.name`));
+    setErrorTypeList(sortedTypes);
+  }, [filterLevel]);
 
   /**
    * When the infra or type or level changed
    * => fetch data of the first page
    */
   useEffect(() => {
-    fetch(infraID, 1, filterErrorType, filterErrorLevel);
-  }, [infraID, fetch, filterErrorType, filterErrorLevel]);
+    fetch(infraID, 1, filterLevel, filterType ?? undefined);
+  }, [infraID, fetch, filterType, filterLevel]);
 
   return (
     <div>
-      <div className="rounded bg-light py-1 mt-3">
-        <div className="form-group row align-items-center rounded bg-white p-2 m-3">
-          <label htmlFor="filterLevel" className="col-sm-4 col-form-label">
-            {t('Editor.infra-errors.list.filter-level')}
-          </label>
-          <div className="col-sm-8">
+      <div className="rounded bg-light d-flex justify-content-between align-items-center p-3 mt-3">
+        <OptionsSNCF
+          name="filterLevel"
+          options={InfraErrorLevelList.map((item) => ({
+            value: item || '',
+            label: t(`Editor.infra-errors.error-level.${item}`),
+          }))}
+          selectedValue={filterLevel || 'all'}
+          onChange={(e) => {
+            dispatch(
+              updateFiltersIssue(infraID, { filterLevel: e.target.value as InfraErrorLevel })
+            );
+          }}
+        />
+        <div className="ml-3 row flex-grow-1 d-flex align-items-center rounded bg-white p-2 m-1">
+          <div className="flex-grow-1 ml-2">
             <select
-              id="filterLevel"
-              className="form-control"
-              value={filterErrorLevel}
-              onChange={(e) => setFilterErrorLevel(e.target.value as InfraErrorLevel)}
-            >
-              {InfraErrorLevelList.map((item) => (
-                <option key={item} value={item}>
-                  {t(`Editor.infra-errors.error-level.${item}`)}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-        <div className="form-group row align-items-center rounded bg-white p-2 m-3">
-          <label htmlFor="filterType" className="col-sm-4 col-form-label">
-            {t('Editor.infra-errors.list.filter-type')}
-          </label>
-          <div className="col-sm-8">
-            <select
+              aria-label={t('Editor.infra-errors.list.filter-type')}
               id="filterType"
               className="form-control"
-              value={filterErrorType}
-              onChange={(e) =>
-                setFilterErrorType(
-                  e.target.value !== 'all' ? (e.target.value as InfraErrorType) : undefined
-                )
-              }
+              value={filterType || 'all'}
+              onChange={(e) => {
+                dispatch(
+                  updateFiltersIssue(infraID, {
+                    filterType:
+                      e.target.value !== 'all' ? (e.target.value as InfraErrorType) : null,
+                  })
+                );
+              }}
             >
               <option value="all">{t(`Editor.infra-errors.error-type.all`)}</option>
-              {InfraErrorTypeList.map((item, i) => (
+              {errorTypeList.map((item, i) => (
                 <option value={item} key={i}>
-                  {t(`Editor.infra-errors.error-type.${item}`)}
+                  {t(`Editor.infra-errors.error-type.${item}.name`)}
                 </option>
               ))}
             </select>
@@ -102,13 +130,10 @@ const InfraErrorsList: React.FC<InfraErrorsListProps> = ({ infraID, onErrorClick
         </div>
       </div>
 
-      {!isLoading && (
+      {!loading && (
         <p className="text-center text-info my-3">
           {t('Editor.infra-errors.list.total-error', { count: total || 0 })}
         </p>
-      )}
-      {error && (
-        <p className="text-danger text-center my-3">{t('Editor.infra-errors.list.error')}</p>
       )}
       <InfiniteScroll
         loader={<Spinner className="text-center p-3" />}
@@ -116,34 +141,33 @@ const InfraErrorsList: React.FC<InfraErrorsListProps> = ({ infraID, onErrorClick
         dataLength={errors.length}
         hasMore={next !== null}
         scrollableTarget="modal-body"
-        next={() => fetch(infraID, next ?? 1, filterErrorType, filterErrorLevel)}
+        next={() => fetch(infraID, next ?? 1, filterLevel, filterType ?? undefined)}
       >
         {errors && (
           <ul className="list-group">
             {errors.map((item, index) => (
-              <li key={index} className="list-group-item management-item">
-                <InfraErrorComponent error={item} index={index + 1}>
-                  <ul className="list-unstyled">
-                    <li>
-                      <button
-                        className="dropdown-item no-close-modal"
-                        type="button"
-                        onClick={() => {
-                          onErrorClick(infraID, item);
-                        }}
-                      >
-                        Sélectionner sur la carte
-                      </button>
-                    </li>
-                  </ul>
-                </InfraErrorComponent>
+              <li key={uniqueId()} className="list-group-item management-item">
+                <InfraErrorBox error={item.information} index={index + 1}>
+                  {EDITOAST_TYPES.includes(item.information.obj_type) && (
+                    <button
+                      className="dropdown-item no-close-modal"
+                      type="button"
+                      title={t('Editor.infra-errors.list.goto-error')}
+                      onClick={() => {
+                        onErrorClick(infraID, item);
+                      }}
+                    >
+                      <FaDiamondTurnRight size={30} />
+                    </button>
+                  )}
+                </InfraErrorBox>
               </li>
             ))}
           </ul>
         )}
       </InfiniteScroll>
 
-      {isLoading && <LoaderFill />}
+      {loading && <LoaderFill />}
     </div>
   );
 };

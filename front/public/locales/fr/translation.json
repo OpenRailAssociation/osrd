@@ -38,7 +38,8 @@
   "Editor": {
     "entities": {
       "track_section": "Track section",
-      "track_section-length": "Taille"
+      "track_section-length": "Taille",
+      "errors-linked" : "Anomalies liées"
     },
     "directions": {
       "START_TO_STOP": "Départ vers arrivée",
@@ -53,6 +54,14 @@
       "technical": "Une erreur technique est survenue : {{msg}}"
     },
     "infra-errors": {
+      "label": {
+        "title_other": "{{count}} anomalies",
+        "title_zero": "Aucune anomalie",
+        "title_one": "{{count}} anomalie",
+        "title-with-filter_other": "{{count}} anomalies sur {{total}}",
+        "title-with-filter_zero": "aucune anomalie sur {{total}}",
+        "title-with-filter_one": "{{count}} anomalie sur {{total}}"
+      },
       "error-level": {
         "all": "Tout",
         "errors": "Erreurs",
@@ -60,32 +69,82 @@
       },
       "error-type": {
         "all": "Tout",
-        "duplicated_group": "Duplication de groupe",
-        "empty_object": "Object vide",
-        "invalid_group": "Position de l'aiguille invalide",
-        "invalid_reference": "Référence invalide",
-        "invalid_route": "Itinéraire invalide",
-        "invalid_switch_ports": "Ports de l'aiguille invalides",
-        "missing_route": "Route manquante",
-        "missing_buffer_stop": "Heurtoir manquant",
-        "object_out_of_path": "Objet en dehors de l'itinéraire",
-        "odd_buffer_stop_location": "Position de heurtoir étrange",
-        "out_of_range": "Valeur invalide (hors intervalle)",
-        "overlapping_speed_sections": "Superposition de limites de vitesse",
-        "overlapping_switches": "Superposition d'aiguilles",
-        "unknown_port_name": "Nom de port inconnu",
-        "unused_port": "Port non utilisé"
+        "duplicated_group": {
+          "name": "Duplication configuration d’aiguille",
+          "description": "Le type d’aiguille « {{obj_id}} » contient un doublon de configuration « {{original_group_path}} »"
+        },
+        "empty_object": {
+          "name": "Object vide", 
+          "description": "L’objet « {{obj_id}} » a le champ « {{field}} » vide"
+        },
+        "invalid_group": {
+          "name": "Position de l'aiguille invalide", 
+          "description": "L’aiguille « {{obj_id}} » de la route « {{group}} » est dans la configuration « {{switch_type}} » qui n’existe pas"
+        },
+        "invalid_reference":{
+          "name": "Référence invalide", 
+          "description": "L’object « {{obj_id}} » référence l’objet « {{reference.obj_id}} » qui n’existe pas"
+        },
+        "invalid_route":{
+          "name": "Itinéraire invalide", 
+          "description": "La route « {{obj_id}} » est invalide, le chemin demandé n’est pas consistant"
+        },
+        "invalid_switch_ports": {
+          "name": "Branche d’aiguille ou de nœud invalide", 
+          "description": "L’aiguille/le nœud « {{obj_id}} » présente une branche qui n’est pas compatible avec son type d’aiguille/nœud (qui n’existe pas dans son type d’aiguille/nœud)"
+        },
+        "missing_route": {
+          "name": "Itinéraire manquant", 
+          "description": "La voie « {{obj_id}} » n’a aucun itinéraire associé"
+        },
+        "missing_buffer_stop": {
+          "name": "Heurtoir manquant", 
+          "description":"L'extrémité « {{endpoint}} » de la voie « {{obj_id}} » n'a pas de heurtoir"
+        },
+        "object_out_of_path": {
+          "name": "Objet en dehors de l'itinéraire", 
+          "description": "L’aiguille/le nœud ou le détecteur « {{obj_id}} » de l’itineraire « {{reference.obj_id}} » n’est pas contenu/contenue dans le chemin correspondant"
+        },
+        "odd_buffer_stop_location": {
+          "name": "Position d'heurtoir étrange", 
+          "description": "L'heurtoir « {{obj_id}} » se trouve à une position étrange"
+        },
+        "out_of_range":{
+          "name": "Valeur invalide", 
+          "description": "L’objet « {{obj_id}} » a le champ « {{field}} » avec une valeur invalide. La valeur doit être comprise dans l'intervalle {{expected_range}}."
+        },
+        "overlapping_speed_sections": { 
+          "name": "Superposition de limites de vitesse", 
+          "description": "La limite « {{obj_id}} » se superpose à la limite « {{reference.obj_id}} »"
+        },
+        "overlapping_switches": {
+          "name": "Superposition d’aiguilles/nœuds", 
+          "description": "L’aiguille/le noeud « {{obj_id}} » et l’aiguille/le noeud « {{reference.obj_id}} » connectent les mêmes extrémités des voies"
+        },
+        "overlapping_catenaries": {
+          "name": "Superposition de catenaires", 
+          "description": "La catenaire « {{obj_id}} » se superpose à la catenaire « {{reference.obj_id}} »"
+        },
+        "unknown_port_name": {
+          "name": "Nom de branche inconnu", 
+          "description": "L’aiguille/le noeud « {{obj_id}} » présente la branche « {{port_name}} » qui n’est pas existante"
+        },
+        "unused_port": {
+          "name": "Branche non utilisée", 
+          "description": "La branche « {{port_name}} » déclarée dans le type d’aiguille/nœud « {{obj_id}} » n’est pas utilisée dans les configurations de ce type"
+        }
       },
       "list": {
         "error": "Une erreur est survenue lors du chargement des données",
-        "filter-level": "Niveau d'erreur",
-        "filter-type": "Type d'erreur",
-        "total-error": "{{count}} erreurs trouvées",
-        "total-error_one": "Une erreur trouvée",
-        "total-error_zero": "Aucune erreur trouvée"
+        "filter-level": "Niveau",
+        "filter-type": "Type d'anomalie",
+        "total-error": "{{count}} anomalies trouvées",
+        "total-error_one": "Une anomalie trouvée",
+        "total-error_zero": "Aucune anomalie trouvée",
+        "goto-error": "Sélectionner et viualiser sur la carte"
       },
       "modal": {
-        "title": "Liste des erreurs de l'infrastructure {{id}}"
+        "title": "Anomalies de l'infrastructure {{id}}"
       }
     },
     "item-statuses": {
@@ -121,7 +180,8 @@
     },
     "nav": {
       "infra-changed": "Vous éditez maintenant l'infra \"{{label}}\" (id \"{{id}}\").",
-      "infra-errors": "Afficher les erreurs de l'infrastructure courante",
+      "infra-errors-map": "Afficher/Masquer les anomalies d'infrastructure",
+      "infra-errors-list": "Gestion et affichage des anomalies",
       "recenter": "Recentrer la carte",
       "select-infra": "Choisir l'infrastructure à éditer",
       "toggle-layers": "Choisir les types d'éléments à afficher",
@@ -140,6 +200,7 @@
       "SpeedSection": "Vitesse limite"
     },
     "title": "Éditeur",
+    "title-issue": "({{nbIssue}} anomalies)",
     "tool-help": "Voir la description de l'outil actif",
     "tools": {
       "buffer-stop-edition": {

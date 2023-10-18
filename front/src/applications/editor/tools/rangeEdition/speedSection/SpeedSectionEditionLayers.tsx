@@ -33,7 +33,7 @@ export const SpeedSectionEditionLayers: FC = () => {
     setState,
   } = useContext(EditorContext) as ExtendedEditorContextType<RangeEditionState<SpeedSectionEntity>>;
   const isPSL = speedSectionIsPsl(entity);
-  const { mapStyle, layersSettings, showIGNBDORTHO } = useSelector(getMap);
+  const { mapStyle, layersSettings, issuesSettings, showIGNBDORTHO } = useSelector(getMap);
   const infraId = useSelector(getInfraID);
   const selection = useMemo(() => {
     // Dragging an extremity:
@@ -84,6 +84,7 @@ export const SpeedSectionEditionLayers: FC = () => {
       isEmphasized: true,
       showIGNBDORTHO,
       layersSettings,
+      issuesSettings,
     };
     if (!isPSL) {
       return SourcesDefinitionsIndex.speed_sections(context, 'speedSectionsEditor/speedSection/');
@@ -94,7 +95,7 @@ export const SpeedSectionEditionLayers: FC = () => {
       'speedSectionsEditor/psl_signs/'
     );
     return [...pslLayers, ...pslSignLayers];
-  }, [isPSL, mapStyle, showIGNBDORTHO, layersSettings]);
+  }, [isPSL, mapStyle, showIGNBDORTHO, layersSettings, issuesSettings]);
 
   const layers = useMemo(() => new Set(['track_sections']) as Set<LayerType>, []);
 
@@ -220,6 +221,7 @@ export const SpeedSectionEditionLayers: FC = () => {
         selection={selection}
         fingerprint={renderingFingerprint}
         layersSettings={layersSettings}
+        issuesSettings={issuesSettings}
         isEmphasized={false}
       />
       <Source type="geojson" data={speedSectionsFeature} key={isPSL ? 'psl' : 'speed-section'}>

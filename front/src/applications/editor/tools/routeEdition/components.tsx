@@ -31,7 +31,7 @@ export const RouteEditionLayers: FC = () => {
     renderingFingerprint,
     editorState: { editorLayers },
   } = useContext(EditorContext) as ExtendedEditorContextType<RouteEditionState>;
-  const { mapStyle, layersSettings } = useSelector(getMap);
+  const { mapStyle, layersSettings, issuesSettings } = useSelector(getMap);
 
   return (
     <>
@@ -42,6 +42,7 @@ export const RouteEditionLayers: FC = () => {
         layers={editorLayers}
         fingerprint={renderingFingerprint}
         layersSettings={layersSettings}
+        issuesSettings={issuesSettings}
       />
       {state.type === 'editRoutePath' ? (
         <EditRoutePathEditionLayers key="editRoutePath" state={state} />

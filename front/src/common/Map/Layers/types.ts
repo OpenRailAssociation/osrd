@@ -6,4 +6,5 @@ export interface LayerContext extends SignalContext {
   isEmphasized: boolean;
   showIGNBDORTHO: boolean;
   layersSettings: MapState['layersSettings'];
+  issuesSettings?: MapState['issuesSettings'];
 }
