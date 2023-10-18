@@ -15,17 +15,14 @@ import {
   getRollingStockID,
   getTrainScheduleIDsToModify,
 } from 'reducers/osrdconf/selectors';
-import {
-  RollingStock2Img,
-  RollingStockSelector,
-} from 'modules/rollingStock/components/RollingStockSelector';
 import { osrdEditoastApi, RangedValue } from 'common/api/osrdEditoastApi';
+import { RollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector';
 import Tabs from 'common/Tabs';
 import rollingStockPic from 'assets/pictures/components/train.svg';
 import pahtFindingPic from 'assets/pictures/components/pathfinding.svg';
 import allowancesPic from 'assets/pictures/components/allowances.svg';
 import simulationSettings from 'assets/pictures/components/simulationSettings.svg';
-import MemoRollingStock2Img from 'modules/rollingStock/components/RollingStockSelector/RollingStock2Img';
+import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import { isElectric } from 'modules/rollingStock/helpers/utils';
 
 export default function ManageTrainSchedule() {
@@ -64,7 +61,7 @@ export default function ManageTrainSchedule() {
     title: rollingStock ? (
       <div className="managetrainschedule-tab">
         <span className="rolling-stock">
-          <MemoRollingStock2Img rollingStock={rollingStock} />
+          <RollingStock2Img rollingStock={rollingStock} />
         </span>
         <span className="ml-2">{rollingStock.name}</span>
       </div>

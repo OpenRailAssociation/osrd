@@ -4,10 +4,8 @@ import RollingStockCardDetail, {
   listCurvesComfort,
 } from 'modules/rollingStock/components/RollingStockSelector/RollingStockCardDetail';
 import { RollingStockInfo } from 'modules/rollingStock/components/RollingStockSelector/RollingStockHelpers';
-import {
-  RollingStockCurve,
-  RollingStock2Img,
-} from 'modules/rollingStock/components/RollingStockSelector';
+import RollingStockCurve from 'modules/rollingStock/components/RollingStockCurve';
+import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 
 type RollingStockEditorCardProps = {
   id: number;

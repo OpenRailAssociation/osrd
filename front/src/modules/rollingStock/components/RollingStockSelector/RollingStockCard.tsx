@@ -9,8 +9,8 @@ import { FaWeightHanging } from 'react-icons/fa';
 import { AiOutlineColumnWidth } from 'react-icons/ai';
 
 import { Comfort, LightRollingStock } from 'common/api/osrdEditoastApi';
+import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import RollingStockCardDetail from './RollingStockCardDetail';
-import RollingStock2Img from './RollingStock2Img';
 import { RollingStockInfo } from './RollingStockHelpers';
 import RollingStockCardButtons from './RollingStockCardButtons';
 

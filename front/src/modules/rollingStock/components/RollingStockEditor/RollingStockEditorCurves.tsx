@@ -1,7 +1,3 @@
-import {
-  RollingStock2Img,
-  RollingStockCurve,
-} from 'modules/rollingStock/components/RollingStockSelector';
 import { listCurvesComfort } from 'modules/rollingStock/components/RollingStockSelector/RollingStockCardDetail';
 import {
   Comfort,
@@ -47,6 +43,8 @@ import {
   createEmptyCurves,
   orderSelectorList,
 } from 'modules/rollingStock/helpers/utils';
+import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
+import RollingStockCurve from 'modules/rollingStock/components/RollingStockCurve';
 import AddRollingstockParam from './AddRollingstockParam';
 import RollingStockEditorFormModal from './RollingStockEditorFormModal';
 

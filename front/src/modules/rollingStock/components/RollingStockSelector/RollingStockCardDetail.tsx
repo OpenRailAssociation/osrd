@@ -6,8 +6,8 @@ import { useDispatch } from 'react-redux';
 import { Comfort, RollingStock, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import Loader from 'common/Loader';
 import { setFailure } from 'reducers/main';
-import RollingStock2Img from './RollingStock2Img';
-import RollingStockCurves from './RollingStockCurve';
+import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
+import RollingStockCurves from '../RollingStockCurve';
 
 type RollingStockCardDetailProps = {
   id: number;

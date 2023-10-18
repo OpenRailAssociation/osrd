@@ -3,8 +3,8 @@ import { useSelector } from 'react-redux';
 import { getRollingStockID, getRollingStockComfort } from 'reducers/osrdconf/selectors';
 import { RollingStock, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useTranslation } from 'react-i18next';
+import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import RollingStockSelector from './RollingStockSelector';
-import RollingStock2Img from './RollingStock2Img';
 
 const WithRollingStockSelector =
   <T extends object>(Component: ComponentType<T>) =>
