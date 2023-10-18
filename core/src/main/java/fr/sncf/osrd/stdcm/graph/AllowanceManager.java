@@ -1,6 +1,7 @@
 package fr.sncf.osrd.stdcm.graph;
 
 import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.POSITION_EPSILON;
+import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.arePositionsEqual;
 import static fr.sncf.osrd.utils.units.Distance.toMeters;
 
 import fr.sncf.osrd.envelope.Envelope;
@@ -61,12 +62,13 @@ public class AllowanceManager {
 
     /** Re-create the edges in order, following the given envelope. */
     private STDCMEdge makeNewEdges(List<STDCMEdge> edges, Envelope totalEnvelope) {
-        long previousEnd = 0;
+        double previousEnd = 0;
         STDCMEdge prevEdge = null;
         if (edges.get(0).previousNode() != null)
             prevEdge = edges.get(0).previousNode().previousEdge();
         for (var edge : edges) {
-            var end = previousEnd + Distance.fromMeters(edge.envelope().getEndPos());
+            double end = previousEnd + edge.envelope().getEndPos();
+            end = findClosestPartTransition(end, totalEnvelope);
             var node = prevEdge == null ? null : prevEdge.getEdgeEnd(graph);
             var maxAddedDelayAfter = edge.maximumAddedDelayAfter() + edge.addedDelay();
             if (node != null)
@@ -78,7 +80,7 @@ public class AllowanceManager {
                     .setPrevMaximumAddedDelay(maxAddedDelayAfter)
                     .setPrevAddedDelay(node == null ? 0 : node.totalPrevAddedDelay())
                     .setPrevNode(node)
-                    .setEnvelope(extractEnvelopeSection(totalEnvelope, toMeters(previousEnd), toMeters(end)))
+                    .setEnvelope(extractEnvelopeSection(totalEnvelope, previousEnd, end))
                     .setForceMaxDelay(true)
                     .setWaypointIndex(edge.waypointIndex())
                     .findEdgeSameNextOccupancy(edge.timeNextOccupancy());
@@ -86,8 +88,20 @@ public class AllowanceManager {
                 return null;
             previousEnd = end;
         }
-        assert Math.abs(toMeters(previousEnd) - totalEnvelope.getEndPos()) < POSITION_EPSILON;
+        assert arePositionsEqual(previousEnd, totalEnvelope.getEndPos());
         return prevEdge;
+    }
+
+    /** The position can be an epsilon away from a range transition, which would create an epsilon-length envelope
+     * part, which may eventually cause further issues */
+    private double findClosestPartTransition(double offset, Envelope envelope) {
+        for (var part : envelope) {
+            if (arePositionsEqual(offset, part.getBeginPos()))
+                return part.getBeginPos();
+            if (arePositionsEqual(offset, part.getEndPos()))
+                return part.getEndPos();
+        }
+        return offset;
     }
 
     /** Returns a new envelope with the content of the base envelope from start to end, with 0 as first position */

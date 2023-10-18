@@ -14,7 +14,7 @@ public final class TrainPhysicsIntegrator {
     // we need the tolerance to be higher than this
     public static final double POSITION_EPSILON = 1E-2;
     // A speed lower than this value will be considered zero
-    public static final double SPEED_EPSILON = 1E-6;
+    public static final double SPEED_EPSILON = 1E-5;
 
     private final PhysicsRollingStock rollingStock;
     private final PhysicsPath path;
@@ -170,5 +170,15 @@ public final class TrainPhysicsIntegrator {
                 currentSpeed, newSpeed,
                 acceleration, directionSign
         );
+    }
+
+    /** Returns true if the positions are less than an epsilon away */
+    public static boolean arePositionsEqual(double a, double b) {
+        return Math.abs(a - b) < POSITION_EPSILON;
+    }
+
+    /** Returns true if the positions are closer than an epsilon */
+    public static boolean areSpeedsEqual(double a, double b) {
+        return Math.abs(a - b) < SPEED_EPSILON;
     }
 }
