@@ -1,0 +1,51 @@
+.timeline {
+  background-color: var(--white);
+  padding: 0.5rem;
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+
+  /* GRID TICKS */
+  .grid .tick {
+    opacity: 0.2;
+    line {
+      stroke: #333;
+      stroke-dasharray: 2, 2;
+    }
+  }
+
+  .domain {
+    opacity: 0.5;
+    stroke: var(--coolgray9);
+  }
+  .grid .tick line {
+    stroke: var(--coolgray9);
+  }
+  .timeline-train {
+    stroke: var(--coolgray11);
+    &.selected {
+      stroke-width: 2;
+      stroke: var(--green);
+    }
+  }
+  #rectZoomTimeLine {
+    cursor: move;
+    transition: 0.2s;
+    stroke: var(--coolgray5);
+    fill: rgba(0, 0, 0, 0.1);
+    &:hover {
+      stroke: var(--green);
+      fill: rgba(#82be00, 0.05);
+    }
+  }
+  .timeline-cursor {
+    line {
+      stroke: var(--coolgray3);
+      stroke-width: 2;
+      stroke-dasharray: 2, 1;
+    }
+    path {
+      stroke: var(--coolgray3);
+      fill: var(--coolgray3);
+    }
+  }
+}

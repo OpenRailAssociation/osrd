@@ -52,10 +52,7 @@ const OSRDStcdmResults = () => {
             <p className="mt-2 mb-3 ml-4 font-weight-bold">
               {t('operationalStudies/manageTrainSchedule:spaceTimeGraphic')}
             </p>
-            <div
-              className="spacetimechart-container mt-2"
-              style={{ height: `${spaceTimeChartHeight}px` }}
-            >
+            <div className="chart-container mt-2" style={{ height: `${spaceTimeChartHeight}px` }}>
               <SpaceTimeChart
                 allowancesSettings={allowancesSettings}
                 initialHeightOfSpaceTimeChart={450}
@@ -79,7 +76,7 @@ const OSRDStcdmResults = () => {
             </div>
             {showSpeedSpaceChart && selectedTrain && (
               <div
-                className="speedspacechart-container"
+                className="chart-container"
                 style={{ height: `${speedSpaceChartHeight}px`, marginBottom: '50px' }}
               >
                 <SpeedSpaceChart

@@ -1,0 +1,54 @@
+@use './spaceCurvesSlopes';
+@use './spaceTimeChart';
+@use './speedSpaceChart';
+@use './timeline';
+
+.chart-container {
+  display: block;
+  position: relative;
+  width: 100%;
+  transition: 0.2s;
+}
+
+// utiliser un mixin ?
+.chart {
+  .handle-tab-resize {
+    width: 100%;
+    text-align: center;
+    position: absolute;
+    bottom: -1.25rem;
+    font-size: 2rem;
+    transition: 0.2s;
+    color: var(--coolgray3);
+    &:hover {
+      color: var(--coolgray9);
+    }
+  }
+
+  .guideLines {
+    stroke: var(--primary);
+    stroke-width: 0.5;
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  /* GRID TICKS */
+  .grid .tick {
+    opacity: 0.2;
+    line {
+      stroke: #333;
+      stroke-dasharray: 2, 2;
+    }
+  }
+
+  /* OPERATIONAL POINTS */
+  .op-line {
+    stroke: var(--coolgray7);
+    stroke-width: 1;
+    stroke-dasharray: 4, 4;
+  }
+  .op-text {
+    fill: var(--coolgray11);
+    font-size: 0.65rem;
+  }
+}

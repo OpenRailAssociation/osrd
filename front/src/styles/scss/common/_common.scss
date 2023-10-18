@@ -159,3 +159,17 @@
 .shadow {
   box-shadow:  0 .5rem 1rem rgba(#000, .15);
 }
+
+svg text {
+  font-family: Avenir, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
+    Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+}
+
+select.sm {
+  min-height: auto;
+  padding: 0.2rem 1.25rem;
+}
+
+.toast {
+  z-index: 3;
+}
