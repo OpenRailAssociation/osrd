@@ -97,7 +97,14 @@ def make_error(
     )
 
 
-def run_test(infra: InfraGraph, editoast_url: str, scenario: Scenario, infra_name: str, prelude: List, rolling_stock_name: str | None):
+def run_test(
+    infra: InfraGraph,
+    editoast_url: str,
+    scenario: Scenario,
+    infra_name: str,
+    prelude: List,
+    rolling_stock_name: str | None,
+):
     """
     Runs a single random test
     :param infra: infra graph
@@ -107,7 +114,11 @@ def run_test(infra: InfraGraph, editoast_url: str, scenario: Scenario, infra_nam
     :param prelude: path/schedule requests sent so far
     :param rolling_stock_name: rolling stock to use, random if None
     """
-    rolling_stock = get_random_rolling_stock(editoast_url) if rolling_stock_name is None else get_rolling_stock(editoast_url, rolling_stock_name)
+    rolling_stock = (
+        get_random_rolling_stock(editoast_url)
+        if rolling_stock_name is None
+        else get_rolling_stock(editoast_url, rolling_stock_name)
+    )
     path, path_length = make_valid_path(infra)
     if random.randint(0, 1) == 0:
         test_new_train(editoast_url, scenario, rolling_stock, path_length, infra_name, path, prelude)
@@ -671,5 +682,5 @@ if __name__ == "__main__":
         log_folder=Path(__file__).parent / "errors",
         infra_name=get_infra_name(EDITOAST_URL, INFRA_ID),
         seed=0,
-        rolling_stock_name=ROLLING_STOCK_NAME
+        rolling_stock_name=ROLLING_STOCK_NAME,
     )
