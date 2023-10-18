@@ -4,6 +4,7 @@ import time
 from collections import defaultdict
 from dataclasses import dataclass, field
 from enum import Enum, IntEnum
+from functools import cache
 from pathlib import Path
 from typing import Dict, Iterable, List, Set, Tuple
 
@@ -13,6 +14,8 @@ from requests import Response, Timeout
 TIMEOUT = 15
 # TODO: since infra ids are not stable, we may want to change to an infra name
 INFRA_ID = 1
+# Consistent rolling stock is useful for regression testing, otherwise set None for randomness.
+ROLLING_STOCK_NAME = "fast_rolling_stock"
 EDITOAST_URL = "http://127.0.0.1:8090/"
 
 
@@ -94,7 +97,7 @@ def make_error(
     )
 
 
-def run_test(infra: InfraGraph, editoast_url: str, scenario: Scenario, infra_name: str, prelude: List):
+def run_test(infra: InfraGraph, editoast_url: str, scenario: Scenario, infra_name: str, prelude: List, rolling_stock_name: str | None):
     """
     Runs a single random test
     :param infra: infra graph
@@ -102,8 +105,9 @@ def run_test(infra: InfraGraph, editoast_url: str, scenario: Scenario, infra_nam
     :param scenario: Scenario to use for the test
     :param infra_name: name of the infra, for better reporting
     :param prelude: path/schedule requests sent so far
+    :param rolling_stock_name: rolling stock to use, random if None
     """
-    rolling_stock = get_random_rolling_stock(editoast_url)
+    rolling_stock = get_random_rolling_stock(editoast_url) if rolling_stock_name is None else get_rolling_stock(editoast_url, rolling_stock_name)
     path, path_length = make_valid_path(infra)
     if random.randint(0, 1) == 0:
         test_new_train(editoast_url, scenario, rolling_stock, path_length, infra_name, path, prelude)
@@ -191,7 +195,8 @@ def test_stdcm(
     stdcm_payload = make_stdcm_payload(scenario, path, rolling_stock)
     r = post_with_timeout(editoast_url + "stdcm/", json=stdcm_payload)
     if r.status_code // 100 != 2:
-        if r.status_code // 100 == 4 and "no_path_found" in r.content.decode("utf-8"):
+        content = r.content.decode("utf-8")
+        if r.status_code // 100 == 4 and ("no_path_found" in content or "No path could be found" in content):
             print("ignore: no path found")
             return
         make_error(ErrorType.STDCM, r, infra_name, {}, stdcm_payload=stdcm_payload, prelude=prelude)
@@ -232,6 +237,7 @@ def run(
     log_folder: Path = None,
     infra_name: str = None,
     seed: int = 0,
+    rolling_stock_name: str | None = None,
 ):
     """
     Runs every test
@@ -242,10 +248,12 @@ def run(
     :param log_folder: (optional) path to a folder to log errors in
     :param infra_name: name of the infra, for better reporting
     :param seed: first seed, incremented by 1 for each individual test
+    :param rolling_stock_name: rolling stock to use, random if None
 
     Note that this is called from tests/tests/test_with_fuzzer.py
     TODO: we may want to clarify the interface, e.g. by using underscores elsewhere
     """
+    print("loading infra")
     infra_graph = make_graph(editoast_url, scenario.infra)
     requests.post(editoast_url + f"infra/{scenario.infra}/load").raise_for_status()
     # The prelude allows us to keep track of path/schedule requests sent so far,
@@ -258,7 +266,7 @@ def run(
         time.sleep(0.1)
 
         try:
-            run_test(infra_graph, editoast_url, scenario, infra_name, prelude)
+            run_test(infra_graph, editoast_url, scenario, infra_name, prelude, rolling_stock_name)
         except Exception as e:
             if log_folder is None:
                 raise e
@@ -275,12 +283,35 @@ def run(
             prelude = []
 
 
+@cache
+def get_rolling_stock(editoast_url: str, rolling_stock_name: str) -> int:
+    """
+    Returns the ID corresponding to the rolling stock name, if available.
+    :param editoast_url: Api url
+    :param rolling_stock_name: name of the rolling stock
+    :return: ID the rolling stock
+    """
+    page = 1
+    while page is not None:
+        # TODO: feel free to reduce page_size when https://github.com/osrd-project/osrd/issues/5350 is fixed
+        r = get_with_timeout(editoast_url + "light_rolling_stock/", params={"page": page, "page_size": 1_000})
+        if r.status_code // 100 != 2:
+            raise RuntimeError(f"Rolling stock error {r.status_code}: {r.content}")
+        rjson = r.json()
+        for rolling_stock in rjson["results"]:
+            if rolling_stock["name"] == rolling_stock_name:
+                return rolling_stock["id"]
+        page = rjson.get("next")
+    raise ValueError(f"Unable to find rolling stock {rolling_stock_name}")
+
+
 def get_random_rolling_stock(editoast_url: str) -> int:
     """
     Returns a random rolling stock ID
     :param editoast_url: Api url
     :return: ID of a valid rolling stock
     """
+    # TODO: we may want to check more pages, for more randomness
     r = get_with_timeout(editoast_url + "light_rolling_stock/")
     if r.status_code // 100 != 2:
         raise RuntimeError(f"Rolling stock error {r.status_code}: {r.content}")
@@ -639,4 +670,6 @@ if __name__ == "__main__":
         n_test=10000,
         log_folder=Path(__file__).parent / "errors",
         infra_name=get_infra_name(EDITOAST_URL, INFRA_ID),
+        seed=0,
+        rolling_stock_name=ROLLING_STOCK_NAME
     )
