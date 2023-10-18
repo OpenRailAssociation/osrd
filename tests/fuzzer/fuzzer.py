@@ -207,7 +207,7 @@ def test_stdcm(
     r = post_with_timeout(editoast_url + "stdcm/", json=stdcm_payload)
     if r.status_code // 100 != 2:
         content = r.content.decode("utf-8")
-        if r.status_code // 100 == 4 and ("no_path_found" in content or "No path could be found" in content):
+        if r.status_code // 100 == 4 and "No path could be found" in content:
             print("ignore: no path found")
             return
         make_error(ErrorType.STDCM, r, infra_name, {}, stdcm_payload=stdcm_payload, prelude=prelude)
