@@ -172,7 +172,7 @@ public final class EnvelopePart implements SearchableEnvelope {
         assert checkNaNFree(timeDeltas) : "NaNs in timeDeltas";
         assert checkPositive(speeds) : "negative speeds";
         assert checkPositive(timeDeltas) : "negative timeDeltas";
-        assert checkNonZero(timeDeltas) : "zero timeDeltas";
+        assert checkStrictlyMonotonicIncreasing(positions) : "positions aren't strictly increasing";
     }
 
     private static boolean checkNaNFree(double[] values) {
@@ -185,13 +185,6 @@ public final class EnvelopePart implements SearchableEnvelope {
     private static boolean checkPositive(double[] values) {
         for (var val : values)
             if (val < 0)
-                return false;
-        return true;
-    }
-
-    private static boolean checkNonZero(double[] values) {
-        for (var val : values)
-            if (val == 0.0)
                 return false;
         return true;
     }
