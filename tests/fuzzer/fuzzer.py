@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 from enum import Enum, IntEnum
 from functools import cache
 from pathlib import Path
-from typing import Dict, Iterable, List, Set, Tuple
+from typing import Dict, Iterable, List, Optional, Set, Tuple
 
 import requests
 from requests import Response, Timeout
@@ -103,7 +103,7 @@ def run_test(
     scenario: Scenario,
     infra_name: str,
     prelude: List,
-    rolling_stock_name: str | None,
+    rolling_stock_name: Optional[str],
 ):
     """
     Runs a single random test
@@ -248,7 +248,7 @@ def run(
     log_folder: Path = None,
     infra_name: str = None,
     seed: int = 0,
-    rolling_stock_name: str | None = None,
+    rolling_stock_name: Optional[str] = None,
 ):
     """
     Runs every test
