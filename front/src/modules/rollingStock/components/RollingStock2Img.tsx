@@ -44,5 +44,4 @@ const RollingStock2Img: React.FC<{ rollingStock: RollingStock | LightRollingStoc
   return <LazyLoadImage src={imageUrl || ''} alt={rollingStock?.name || 'defaultImg'} />;
 };
 
-const MemoRollingStock2Img = React.memo(RollingStock2Img);
-export default MemoRollingStock2Img;
+export default React.memo(RollingStock2Img);

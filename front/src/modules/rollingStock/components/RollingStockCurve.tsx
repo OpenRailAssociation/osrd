@@ -6,8 +6,8 @@ import { useSelector } from 'react-redux';
 import { getElectricalProfile, getPowerRestriction } from 'reducers/rollingstockEditor/selectors';
 import { STANDARD_COMFORT_LEVEL, THERMAL_TRACTION_IDENTIFIER } from 'modules/rollingStock/consts';
 import { geti18nKeyForNull } from 'utils/strings';
-import { COLORS } from './consts/consts';
-import { comfort2pictogram } from './RollingStockHelpers';
+import { COLORS } from './RollingStockSelector/consts/consts';
+import { comfort2pictogram } from './RollingStockSelector/RollingStockHelpers';
 
 type EffortCurvesModes = RollingStock['effort_curves']['modes'];
 type TransformedCurves = {
