@@ -1,32 +1,120 @@
 import {
   GetInfraByIdErrorsApiArg,
   InfraError as InfraErrorApiType,
+  InfraErrorType,
 } from '../../../../common/api/osrdEditoastApi';
 
 // Error level
 export type InfraErrorLevel = GetInfraByIdErrorsApiArg['level'];
-export const InfraErrorLevelList: Array<InfraErrorLevel> = ['all', 'errors', 'warnings'];
-
-// Error type
-export type InfraErrorType = GetInfraByIdErrorsApiArg['errorType'];
-export const InfraErrorTypeList: Array<InfraErrorType> = [
-  'duplicated_group',
-  'empty_object',
-  'invalid_group',
-  'invalid_reference',
-  'invalid_route',
-  'invalid_switch_ports',
-  'missing_route',
-  'missing_buffer_stop',
-  'object_out_of_path',
-  'odd_buffer_stop_location',
-  'out_of_range',
-  'overlapping_speed_sections',
-  'overlapping_switches',
-  'unknown_port_name',
-  'unused_port',
+export const InfraErrorLevelList: Array<NonNullable<InfraErrorLevel>> = [
+  'all',
+  'errors',
+  'warnings',
 ];
 
+// Error type
+export type { InfraErrorType };
+export const infraErrorTypeList: Record<'errors' | 'warnings', Set<InfraErrorType>> = {
+  errors: new Set([
+    'invalid_group',
+    'invalid_reference',
+    'invalid_route',
+    'invalid_switch_ports',
+    'object_out_of_path',
+    'out_of_range',
+    'unknown_port_name',
+  ]),
+  warnings: new Set([
+    'duplicated_group',
+    'empty_object',
+    'missing_route',
+    'missing_buffer_stop',
+    'odd_buffer_stop_location',
+    'overlapping_speed_sections',
+    'overlapping_switches',
+    'overlapping_catenaries',
+    'unused_port',
+  ]),
+};
+export const allInfraErrorTypes = [...infraErrorTypeList.warnings, ...infraErrorTypeList.errors];
+
+interface ObjectRef {
+  obj_id: string;
+  type: string;
+}
+type InfraErrorInformation = Omit<InfraErrorApiType['information'], 'error_type'>;
+type InfraErrorDuplicatedGroup = InfraErrorInformation & {
+  error_type: 'duplicated_group';
+  original_group_path: string;
+};
+type InfraErrorEmptyObject = InfraErrorInformation & { error_type: 'empty_object' };
+type InfraErrorInvalidGroup = InfraErrorInformation & {
+  error_type: 'invalid_group';
+  group: string;
+  switch_type: string;
+};
+type InfraErrorInvalidReference = InfraErrorInformation & {
+  error_type: 'invalid_reference';
+  reference: ObjectRef;
+};
+type InfraErrorInvalidRoute = InfraErrorInformation & { error_type: 'invalid_route' };
+type InfraErrorInvalidSwitchPorts = InfraErrorInformation & { error_type: 'invalid_switch_ports' };
+type InfraErrorMissingRoute = InfraErrorInformation & { error_type: 'missing_route' };
+type InfraErrorMissingBufferStop = InfraErrorInformation & {
+  error_type: 'missing_buffer_stop';
+  endpoint: string;
+};
+type InfraErrorObjectOutOfPath = InfraErrorInformation & {
+  error_type: 'object_out_of_path';
+  reference: ObjectRef;
+};
+type InfraErrorOddBufferStopLocation = InfraErrorInformation & {
+  error_type: 'odd_buffer_stop_location';
+};
+type InfraErrorOutOfRange = InfraErrorInformation & {
+  error_type: 'out_of_range';
+  position: number;
+  expected_range: [number, number];
+};
+type InfraErrorOverlappingSpeedSections = InfraErrorInformation & {
+  error_type: 'overlapping_speed_sections';
+  reference: ObjectRef;
+};
+type InfraErrorOverlappingSwitches = InfraErrorInformation & {
+  error_type: 'overlapping_switches';
+  reference: ObjectRef;
+};
+type InfraErrorOverlappingCatenaries = InfraErrorInformation & {
+  error_type: 'overlapping_catenaries';
+  reference: ObjectRef;
+};
+type InfraErrorUnknownPortName = InfraErrorInformation & {
+  error_type: 'unknown_port_name';
+  port_name: string;
+};
+type InfraErrorUnusedPort = InfraErrorInformation & {
+  error_type: 'unused_port';
+  port_name: string;
+};
+
 // Type of an error
-// We replace the geographic prop type by geojson
-export type InfraError = InfraErrorApiType;
+export type InfraError = Omit<InfraErrorApiType, 'informations'> & {
+  information:
+    | InfraErrorInformation
+    | InfraErrorInvalidGroup
+    | InfraErrorInvalidReference
+    | InfraErrorInvalidRoute
+    | InfraErrorInvalidSwitchPorts
+    | InfraErrorObjectOutOfPath
+    | InfraErrorOutOfRange
+    | InfraErrorUnknownPortName
+    | InfraErrorDuplicatedGroup
+    | InfraErrorEmptyObject
+    | InfraErrorMissingRoute
+    | InfraErrorMissingBufferStop
+    | InfraErrorOddBufferStopLocation
+    | InfraErrorOverlappingSpeedSections
+    | InfraErrorOverlappingSwitches
+    | InfraErrorOverlappingCatenaries
+    | InfraErrorUnusedPort;
+};

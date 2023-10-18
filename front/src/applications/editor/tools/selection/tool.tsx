@@ -11,20 +11,11 @@ import { LAYER_TO_EDITOAST_DICT, LayerType } from '../types';
 import { save } from '../../../../reducers/editor';
 import { SelectionState } from './types';
 import { SelectionLayers, SelectionMessages, SelectionLeftPanel } from './components';
-import {
-  BufferStopEntity,
-  CatenaryEntity,
-  DetectorEntity,
-  SignalEntity,
-  SpeedSectionEntity,
-  SwitchEntity,
-  TrackSectionEntity,
-} from '../../../../types';
 import { getMixedEntities } from '../../data/api';
 import { selectInZone } from '../../../../utils/mapHelper';
-import TOOL_TYPES from '../toolTypes';
 import { DEFAULT_COMMON_TOOL_STATE } from '../commonToolState';
 import { Tool } from '../editorContextTypes';
+import { openEntityEditionPanel } from '../utils';
 
 const SelectionTool: Tool<SelectionState> = {
   id: 'select-items',
@@ -94,77 +85,7 @@ const SelectionTool: Tool<SelectionState> = {
         onClick({ state, switchTool }) {
           if (state.selection.length === 1) {
             const selectedElement = state.selection[0];
-            switch (selectedElement.objType) {
-              case 'TrackSection':
-                switchTool({
-                  // be careful with type here
-                  toolType: TOOL_TYPES.TRACK_EDITION,
-                  toolState: {
-                    initialTrack: selectedElement as TrackSectionEntity,
-                    track: selectedElement as TrackSectionEntity,
-                    editionState: {
-                      type: 'movePoint',
-                    },
-                  },
-                });
-                break;
-              case 'Signal':
-                switchTool({
-                  toolType: TOOL_TYPES.SIGNAL_EDITION,
-                  toolState: {
-                    initialEntity: selectedElement as SignalEntity,
-                    entity: selectedElement as SignalEntity,
-                  },
-                });
-                break;
-              case 'BufferStop':
-                switchTool({
-                  toolType: TOOL_TYPES.BUFFER_STOP_EDITION,
-                  toolState: {
-                    initialEntity: selectedElement as BufferStopEntity,
-                    entity: selectedElement as BufferStopEntity,
-                  },
-                });
-                break;
-              case 'Detector':
-                switchTool({
-                  toolType: TOOL_TYPES.DETECTOR_EDITION,
-                  toolState: {
-                    initialEntity: selectedElement as DetectorEntity,
-                    entity: selectedElement as DetectorEntity,
-                  },
-                });
-                break;
-              case 'Switch':
-                switchTool({
-                  toolType: TOOL_TYPES.SWITCH_EDITION,
-                  toolState: {
-                    initialEntity: selectedElement as SwitchEntity,
-                    entity: selectedElement as SwitchEntity,
-                  },
-                });
-                break;
-              case 'SpeedSection':
-                switchTool({
-                  toolType: TOOL_TYPES.SPEED_SECTION_EDITION,
-                  toolState: {
-                    initialEntity: selectedElement as SpeedSectionEntity,
-                    entity: selectedElement as SpeedSectionEntity,
-                  },
-                });
-                break;
-              case 'Catenary':
-                switchTool({
-                  toolType: TOOL_TYPES.CATENARY_EDITION,
-                  toolState: {
-                    initialEntity: selectedElement as CatenaryEntity,
-                    entity: selectedElement as CatenaryEntity,
-                  },
-                });
-                break;
-              default:
-                break;
-            }
+            openEntityEditionPanel(selectedElement, { switchTool });
           }
         },
       },

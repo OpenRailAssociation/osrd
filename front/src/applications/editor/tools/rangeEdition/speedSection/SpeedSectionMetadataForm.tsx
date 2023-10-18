@@ -74,7 +74,7 @@ const SpeedSectionMetadataForm: FC = () => {
           </div>
         )}
         {map(entity.properties.speed_limit_by_tag || {}, (value, key) => (
-          <div className="form-group field field-string">
+          <div key={key} className="form-group field field-string">
             <div className="d-flex flex-row align-items-center">
               <input
                 className="form-control flex-grow-2 flex-shrink-1 mr-2 px-2"

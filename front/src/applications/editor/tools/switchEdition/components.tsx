@@ -41,6 +41,7 @@ import {
 } from '../../../../common/Map/Layers/Switches';
 import { flattenEntity, NEW_ENTITY_ID } from '../../data/utils';
 import EntitySumUp from '../../components/EntitySumUp';
+import EntityError from '../../components/EntityError';
 import { getEntity } from '../../data/api';
 import { getInfraID } from '../../../../reducers/osrdconf/selectors';
 import { getMap } from '../../../../reducers/map/selectors';
@@ -301,6 +302,7 @@ export const SwitchEditionLeftPanel: FC = () => {
           </button>
         </div>
       </EditorForm>
+      {!isNew && <EntityError className="mt-1" entity={switchEntity} />}
     </div>
   );
 };
@@ -322,7 +324,7 @@ export const SwitchEditionLayers: FC = () => {
     () => (entity.properties?.switch_type ? switchTypesDict[entity.properties.switch_type] : null),
     [entity.properties?.switch_type, switchTypesDict]
   );
-  const { mapStyle, layersSettings } = useSelector(getMap);
+  const { mapStyle, layersSettings, issuesSettings } = useSelector(getMap);
   const layerProps = useMemo(
     () =>
       getSwitchesLayerProps({
@@ -450,6 +452,7 @@ export const SwitchEditionLayers: FC = () => {
         layers={editorLayers}
         fingerprint={renderingFingerprint}
         layersSettings={layersSettings}
+        issuesSettings={issuesSettings}
       />
 
       {/* Edited switch */}

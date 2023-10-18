@@ -28,7 +28,7 @@ export const CatenaryEditionLayers: FC = () => {
     setState,
   } = useContext(EditorContext) as ExtendedEditorContextType<RangeEditionState<CatenaryEntity>>;
 
-  const { mapStyle, layersSettings, showIGNBDORTHO } = useSelector(getMap);
+  const { mapStyle, layersSettings, issuesSettings, showIGNBDORTHO } = useSelector(getMap);
   const infraId = useSelector(getInfraID);
   const selection = useMemo(() => {
     // Dragging an extremity:
@@ -71,9 +71,10 @@ export const CatenaryEditionLayers: FC = () => {
       isEmphasized: true,
       showIGNBDORTHO,
       layersSettings,
+      issuesSettings,
     };
     return SourcesDefinitionsIndex.catenaries(context, 'rangeEditors/catenaries/');
-  }, [mapStyle, showIGNBDORTHO, layersSettings]);
+  }, [mapStyle, showIGNBDORTHO, layersSettings, issuesSettings]);
 
   const layers = useMemo(() => new Set(['track_sections']) as Set<LayerType>, []);
 
@@ -188,6 +189,7 @@ export const CatenaryEditionLayers: FC = () => {
         selection={selection}
         fingerprint={renderingFingerprint}
         layersSettings={layersSettings}
+        issuesSettings={issuesSettings}
         isEmphasized={false}
       />
       <Source type="geojson" data={catenariesFeature} key="catenaries">

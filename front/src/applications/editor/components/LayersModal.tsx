@@ -1,8 +1,7 @@
-import React, { FC, useMemo, useState } from 'react';
+import React, { FC, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { groupBy, mapKeys, mapValues, sum, isString, isArray, uniq } from 'lodash';
 import { useTranslation } from 'react-i18next';
-import { BsFillExclamationOctagonFill } from 'react-icons/bs';
 import { MdSpeed } from 'react-icons/md';
 
 import bufferStopIcon from 'assets/pictures/layersicons/bufferstop.svg';
@@ -24,7 +23,7 @@ import { getInfraID } from '../../../reducers/osrdconf/selectors';
 import { osrdEditoastApi } from '../../../common/api/osrdEditoastApi';
 import { updateLayersSettings } from '../../../reducers/map';
 
-const LAYERS: Array<{ layers: LayerType[]; icon: string | JSX.Element }> = [
+export const LAYERS: Array<{ layers: LayerType[]; icon: string | JSX.Element }> = [
   { layers: ['track_sections'], icon: trackSectionsIcon },
   { layers: ['signals'], icon: signalsIcon },
   { layers: ['buffer_stops'], icon: bufferStopIcon },
@@ -33,10 +32,6 @@ const LAYERS: Array<{ layers: LayerType[]; icon: string | JSX.Element }> = [
   { layers: ['speed_sections'], icon: <MdSpeed style={{ width: '20px' }} className="mx-2" /> },
   { layers: ['psl', 'psl_signs'], icon: pslsIcon },
   { layers: ['catenaries'], icon: <GiElectric style={{ width: '20px' }} className="mx-2" /> },
-  {
-    layers: ['errors'],
-    icon: <BsFillExclamationOctagonFill style={{ width: '20px' }} className="mx-2 text-danger" />,
-  },
 ];
 
 const NO_SPEED_LIMIT_TAG = 'undefined';
@@ -77,6 +72,31 @@ const LayersModal: FC<LayersModalProps> = ({
         : {},
     [selection]
   );
+
+  /**
+   * When selection changed, we check that all needed layers are enabled.
+   * This is mainly used for the error modal
+   */
+  useEffect(() => {
+    // compute the set of layer needed by the selection
+    const layersMustBeEnabled = (selection || []).reduce((acc, curr) => {
+      const layerTypes = EDITOAST_TO_LAYER_DICT[curr.objType as EditoastType] || [];
+      layerTypes.forEach((layerType) => {
+        if (layerType && !acc.has(layerType)) acc.add(layerType);
+      });
+      return acc;
+    }, new Set<LayerType>());
+
+    // enable all the layers
+    setSelectedLayers((set) => {
+      const newSet = new Set(set);
+      layersMustBeEnabled.forEach((id) => {
+        if (!newSet.has(id)) newSet.add(id);
+      });
+      return newSet;
+    });
+  }, [selection]);
+
   const unselectCount = useMemo(
     () =>
       sum(
@@ -104,7 +124,7 @@ const LayersModal: FC<LayersModalProps> = ({
             const count = sum(layers.map((id) => selectionCounts[id] || 0));
             const disabled = frozenLayers && layers.some((id) => frozenLayers.has(id));
             return (
-              <div className="col-lg-6" key={layerKey}>
+              <div className="col-lg-6" key={`${layerKey}-${count}-${disabled}`}>
                 <div className="d-flex align-items-center mt-2">
                   <SwitchSNCF
                     type="switch"

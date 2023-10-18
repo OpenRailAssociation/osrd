@@ -1,23 +1,26 @@
-import React, { FC, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import cx from 'classnames';
 import { isNil, toInteger } from 'lodash';
-import 'common/Map/Map.scss';
-import './Editor.scss';
+import { MapRef } from 'react-map-gl/maplibre';
 
-import { useModal } from '../../common/BootstrapSNCF/ModalSNCF';
-import { LoaderState } from '../../common/Loader';
-import { loadDataModel, reset } from '../../reducers/editor';
-import { updateInfraID } from '../../reducers/osrdconf';
-import { updateViewport, Viewport } from '../../reducers/map';
+import './Editor.scss';
+import 'common/Map/Map.scss';
+
+import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
+import { LoaderState } from 'common/Loader';
+import { loadDataModel, updateTotalsIssue } from 'reducers/editor';
+import { updateInfraID } from 'reducers/osrdconf';
+import { updateViewport, Viewport } from 'reducers/map';
+import { getInfraID } from 'reducers/osrdconf/selectors';
+import useKeyboardShortcuts from 'utils/hooks/useKeyboardShortcuts';
 import Tipped from './components/Tipped';
 import Map from './Map';
 import NavButtons from './nav';
 import EditorContext from './context';
 import TOOLS from './tools/tools';
-import { getInfraID } from '../../reducers/osrdconf/selectors';
 import TOOL_TYPES from './tools/toolTypes';
 import { EditorState } from './tools/types';
 import {
@@ -30,16 +33,19 @@ import {
 import { switchProps } from './tools/switchProps';
 import { CommonToolState } from './tools/commonToolState';
 import { useSwitchTypes } from './tools/switchEdition/types';
+import InfraErrorMapControl from './components/InfraErrors/InfraErrorMapControl';
 
 const Editor: FC = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { openModal, closeModal } = useModal();
+  const mapRef = useRef<MapRef>(null);
   const { urlInfra } = useParams();
   const infraID = useSelector(getInfraID);
   const editorState = useSelector((state: { editor: EditorState }) => state.editor);
   const switchTypes = useSwitchTypes(infraID);
+  const { register } = useKeyboardShortcuts();
   /* eslint-disable @typescript-eslint/no-explicit-any */
   const [toolAndState, setToolAndState] = useState<FullTool<any>>({
     tool: TOOLS[TOOL_TYPES.SELECTION],
@@ -77,9 +83,8 @@ const Editor: FC = () => {
 
   const resetState = useCallback(() => {
     switchTool({ toolType: TOOL_TYPES.SELECTION, toolState: {} });
-    dispatch(reset());
     forceRender();
-  }, [dispatch, switchTool, forceRender]);
+  }, [switchTool, forceRender]);
 
   const { mapStyle, viewport } = useSelector(
     (state: { map: { mapStyle: string; viewport: Viewport } }) => state.map
@@ -161,7 +166,9 @@ const Editor: FC = () => {
   useEffect(() => {
     resetState();
     if (!isNil(urlInfra)) {
-      dispatch(updateInfraID(toInteger(urlInfra)));
+      const infradID = toInteger(urlInfra);
+      dispatch(updateInfraID(infradID));
+      dispatch(updateTotalsIssue(infradID));
     }
   }, [urlInfra]);
 
@@ -264,6 +271,7 @@ const Editor: FC = () => {
             <div className="map">
               <Map
                 {...{
+                  mapRef,
                   mapStyle,
                   viewport,
                   setViewport,
@@ -280,47 +288,51 @@ const Editor: FC = () => {
                       id,
                       icon: IconComponent,
                       labelTranslationKey,
+                      shortcut,
                       isDisabled,
                       isActive,
                       isBlink,
                       onClick,
                     } = navButton;
                     const label = t(labelTranslationKey);
-
+                    const clickFunction = () => {
+                      if (onClick && mapRef.current !== null) {
+                        onClick(
+                          {
+                            navigate,
+                            dispatch,
+                            setViewport,
+                            viewport,
+                            openModal,
+                            closeModal,
+                            editorState,
+                            mapRef: mapRef.current,
+                          },
+                          {
+                            activeTool: toolAndState.tool,
+                            toolState: toolAndState.state,
+                            setToolState,
+                            switchTool,
+                          }
+                        );
+                      }
+                    };
+                    if (shortcut) register({ ...shortcut, handler: clickFunction });
                     return (
                       <Tipped key={id} mode="left">
                         <button
-                          key={id}
+                          id={id}
                           type="button"
                           className={cx(
                             'editor-btn',
                             'btn-rounded',
+                            'shadow',
                             isActive && isActive(editorState) ? 'active' : '',
                             isBlink && isBlink(editorState, infraID)
                               ? 'btn-map-infras-blinking'
                               : ''
                           )}
-                          onClick={() => {
-                            if (onClick) {
-                              onClick(
-                                {
-                                  navigate,
-                                  dispatch,
-                                  setViewport,
-                                  viewport,
-                                  openModal,
-                                  closeModal,
-                                  editorState,
-                                },
-                                {
-                                  activeTool: toolAndState.tool,
-                                  toolState: toolAndState.state,
-                                  setToolState,
-                                  switchTool,
-                                }
-                              );
-                            }
-                          }}
+                          onClick={clickFunction}
                           disabled={isDisabled && isDisabled(editorState)}
                         >
                           <span className="sr-only">{label}</span>
@@ -336,6 +348,12 @@ const Editor: FC = () => {
                   return buttons;
                 })}
               </div>
+
+              {mapRef.current && editorState.editorLayers.has('errors') && (
+                <div className="error-box">
+                  <InfraErrorMapControl mapRef={mapRef.current} switchTool={switchTool} />
+                </div>
+              )}
             </div>
             <div className="messages-bar border-left">
               <div className="px-1">

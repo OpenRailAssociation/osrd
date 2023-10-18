@@ -1,10 +1,17 @@
 import { flatMap } from 'lodash';
 
 import { EditorSchema } from '../../../types';
+import { InfraErrorLevel, InfraErrorType } from '../components/InfraErrors/types';
 
 export interface EditorState {
   editorSchema: EditorSchema;
   editorLayers: Set<LayerType>;
+  issues: {
+    total: number;
+    filterTotal: number;
+    filterLevel: NonNullable<InfraErrorLevel>;
+    filterType: InfraErrorType | null;
+  };
 }
 
 export const LAYERS = [

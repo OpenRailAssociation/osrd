@@ -1,102 +1,99 @@
 import { CircleLayer, LineLayer, SymbolLayer } from 'react-map-gl/maplibre';
 
-import { Theme, OmitLayer } from 'types';
+import { allInfraErrorTypes } from 'applications/editor/components/InfraErrors/types';
+import { OmitLayer } from 'types';
+import { LayerContext } from './types';
 
-export function getLineErrorsLayerProps(params: {
-  colors: Theme;
-  sourceTable?: string;
-}): OmitLayer<LineLayer> {
+const LINE_OBJECT = ['TrackSection', 'Catenary', 'SpeedSection'];
+export function getLineErrorsLayerProps(context: LayerContext): OmitLayer<LineLayer> {
+  const enableErrorTypes = context.issuesSettings?.types || allInfraErrorTypes;
   const res: OmitLayer<LineLayer> = {
     type: 'line',
-    filter: ['==', 'obj_type', 'TrackSection'],
+    filter: ['all', ['in', 'obj_type', ...LINE_OBJECT], ['in', 'error_type', ...enableErrorTypes]],
     paint: {
       'line-color': [
         'case',
-        ['==', ['get', 'is_warning'], 1],
-        params.colors.warning.color,
-        params.colors.error.color,
+        ['==', ['get', 'is_warning'], true],
+        context.colors.warning.color,
+        context.colors.error.color,
       ],
       'line-width': 2,
       'line-opacity': 1,
     },
   };
 
-  if (typeof params.sourceTable === 'string') res['source-layer'] = params.sourceTable;
+  if (typeof context.sourceTable === 'string') res['source-layer'] = context.sourceTable;
   return res;
 }
 
-export function getLineTextErrorsLayerProps(params: {
-  colors: Theme;
-  sourceTable?: string;
-}): OmitLayer<SymbolLayer> {
+export function getLineTextErrorsLayerProps(context: LayerContext): OmitLayer<SymbolLayer> {
+  const enableErrorTypes = context.issuesSettings?.types || allInfraErrorTypes;
   const res: OmitLayer<SymbolLayer> = {
     type: 'symbol',
+    filter: ['all', ['in', 'obj_type', ...LINE_OBJECT], ['in', 'error_type', ...enableErrorTypes]],
     layout: {
       'symbol-placement': 'line',
       'text-font': ['Roboto Condensed'],
-      'text-size': 10,
+      'text-size': 12,
       'text-offset': [0, -0.75],
       'text-field': '{error_type}',
     },
     paint: {
       'text-color': [
         'case',
-        ['==', ['get', 'is_warning'], 1],
-        params.colors.warning.text,
-        params.colors.error.text,
+        ['==', ['get', 'is_warning'], true],
+        context.colors.warning.text,
+        context.colors.error.text,
       ],
     },
   };
 
-  if (typeof params.sourceTable === 'string') res['source-layer'] = params.sourceTable;
+  if (typeof context.sourceTable === 'string') res['source-layer'] = context.sourceTable;
   return res;
 }
 
-export function getPointErrorsLayerProps(params: {
-  colors: Theme;
-  sourceTable?: string;
-}): OmitLayer<CircleLayer> {
+export function getPointErrorsLayerProps(context: LayerContext): OmitLayer<CircleLayer> {
+  const enableErrorTypes = context.issuesSettings?.types || allInfraErrorTypes;
   const res: OmitLayer<CircleLayer> = {
     type: 'circle',
-    filter: ['!=', 'obj_type', 'TrackSection'],
+    filter: ['all', ['!in', 'obj_type', ...LINE_OBJECT], ['in', 'error_type', ...enableErrorTypes]],
     paint: {
       'circle-color': [
         'case',
-        ['==', ['get', 'is_warning'], 1],
-        params.colors.warning.color,
-        params.colors.error.color,
+        ['==', ['get', 'is_warning'], true],
+        context.colors.warning.color,
+        context.colors.error.color,
       ],
       'circle-radius': 2,
     },
   };
 
-  if (typeof params.sourceTable === 'string') res['source-layer'] = params.sourceTable;
+  if (typeof context.sourceTable === 'string') res['source-layer'] = context.sourceTable;
   return res;
 }
 
-export function getPointTextErrorsLayerProps(params: {
-  colors: Theme;
-  sourceTable?: string;
-}): OmitLayer<SymbolLayer> {
+export function getPointTextErrorsLayerProps(context: LayerContext): OmitLayer<SymbolLayer> {
+  const enableErrorTypes = context.issuesSettings?.types || allInfraErrorTypes;
   const res: OmitLayer<SymbolLayer> = {
     type: 'symbol',
+    filter: ['all', ['!in', 'obj_type', ...LINE_OBJECT], ['in', 'error_type', ...enableErrorTypes]],
     layout: {
       'symbol-placement': 'point',
       'text-font': ['Roboto Condensed'],
       'text-field': '{error_type}',
-      'text-size': 10,
+      'text-size': 12,
       'text-offset': [0, -0.75],
     },
     paint: {
       'text-color': [
         'case',
-        ['==', ['get', 'is_warning'], 1],
-        params.colors.warning.text,
-        params.colors.error.text,
+        ['==', ['get', 'is_warning'], true],
+        context.colors.warning.text,
+        context.colors.error.text,
       ],
     },
   };
 
-  if (typeof params.sourceTable === 'string') res['source-layer'] = params.sourceTable;
+  if (typeof context.sourceTable === 'string') res['source-layer'] = context.sourceTable;
   return res;
 }

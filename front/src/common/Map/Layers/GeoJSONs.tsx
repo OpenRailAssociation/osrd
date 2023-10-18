@@ -21,8 +21,8 @@ import { getDetectorsLayerProps, getDetectorsNameLayerProps } from './Detectors'
 import { getSwitchesLayerProps, getSwitchesNameLayerProps } from './Switches';
 import {
   getLineErrorsLayerProps,
-  getPointErrorsLayerProps,
   getLineTextErrorsLayerProps,
+  getPointErrorsLayerProps,
   getPointTextErrorsLayerProps,
 } from './Errors';
 import { LayerType } from '../../../applications/editor/tools/types';
@@ -47,6 +47,13 @@ import configKPLabelLayer from './configKPLabelLayer';
 import OrderedLayer from './OrderedLayer';
 
 const POINT_ENTITIES_MIN_ZOOM = 12;
+
+const ERROR_LAYERS_ID_SUFFIX = [
+  'geo/errors-line',
+  'geo/errors-line-label',
+  'geo/errors-point',
+  'geo/errors-point-label',
+];
 
 /**
  * Helper to recursively transform all colors of a given theme:
@@ -77,8 +84,12 @@ function adaptFilter(
     : { ...layer };
   const conditions: FilterSpecification[] = layer.filter ? [layer.filter] : [];
 
-  if (whiteList.length) conditions.push(['in', 'id', ...whiteList]);
-  if (blackList.length) conditions.push(['!in', 'id', ...blackList]);
+  // Get the field name of the id field. Default is 'id', but for example on error layers it's obj_id
+  let fieldId = 'id';
+  if (layer.id && ERROR_LAYERS_ID_SUFFIX.some((suffix) => layer.id?.endsWith(suffix)))
+    fieldId = 'obj_id';
+  if (whiteList.length) conditions.push(['in', fieldId, ...whiteList]);
+  if (blackList.length) conditions.push(['!in', fieldId, ...blackList]);
 
   switch (conditions.length) {
     case 0:
@@ -348,6 +359,7 @@ export const EditorSource: FC<{
 const GeoJSONs: FC<{
   colors: Theme;
   layersSettings: MapState['layersSettings'];
+  issuesSettings?: MapState['issuesSettings'];
   hidden?: string[];
   selection?: string[];
   prefix?: string;
@@ -360,6 +372,7 @@ const GeoJSONs: FC<{
 }> = ({
   colors,
   layersSettings,
+  issuesSettings,
   hidden,
   selection,
   layers,
@@ -396,8 +409,9 @@ const GeoJSONs: FC<{
       isEmphasized,
       showIGNBDORTHO,
       layersSettings,
+      issuesSettings,
     }),
-    [colors, mapStyle, showIGNBDORTHO, layersSettings]
+    [colors, mapStyle, showIGNBDORTHO, layersSettings, issuesSettings]
   );
   const hiddenLayerContext: LayerContext = useMemo(
     () => ({
@@ -453,8 +467,14 @@ const GeoJSONs: FC<{
     <>
       {sources.map((source) => (
         <Source key={source.id} promoteId="id" type="vector" url={source.url} id={source.id}>
-          {source.layers.map((layer) => (
-            <Layer source-layer={MAP_TRACK_SOURCE} key={layer.id} {...layer} beforeId={beforeId} />
+          {source.layers.map((layer, index) => (
+            <OrderedLayer
+              source-layer={MAP_TRACK_SOURCE}
+              key={`${layer.id}-${index}`}
+              {...layer}
+              beforeId={beforeId}
+              layerOrder={index}
+            />
           ))}
         </Source>
       ))}

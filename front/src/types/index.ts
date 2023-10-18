@@ -1,4 +1,4 @@
-import { Action } from 'redux';
+import { AnyAction } from 'redux';
 import { ThunkAction as ReduxThunkAction } from 'redux-thunk';
 // Next line because: https://github.com/reduxjs/redux-thunk/issues/333#issuecomment-1107532912
 import type {} from 'redux-thunk/extend-redux';
@@ -10,7 +10,7 @@ export * from './editor';
 //
 //  Redux types
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type ThunkAction<T extends Action, R = void> = ReduxThunkAction<R, any, unknown, T>;
+export type ThunkAction<T extends AnyAction, R = void> = ReduxThunkAction<R, any, unknown, T>;
 
 // Notification type
 export interface Notification {

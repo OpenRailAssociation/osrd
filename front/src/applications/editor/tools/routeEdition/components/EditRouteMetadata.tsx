@@ -29,6 +29,8 @@ import { DisplayEndpoints } from './Endpoints';
 import { getInfraID } from '../../../../../reducers/osrdconf/selectors';
 import { getMapStyle } from '../../../../../reducers/map/selectors';
 import { ExtendedEditorContextType } from '../../editorContextTypes';
+import EntityError from '../../../components/EntityError';
+import { NEW_ENTITY_ID } from '../../../data/utils';
 
 export const EditRouteMetadataPanel: FC<{ state: EditRouteMetadataState }> = ({ state }) => {
   const dispatch = useDispatch();
@@ -43,6 +45,8 @@ export const EditRouteMetadataPanel: FC<{ state: EditRouteMetadataState }> = ({ 
 
   const isReleaseDetectorsEditionLocked =
     initialRouteEntity.properties.release_detectors.length === 0;
+
+  const isNew = routeEntity.properties.id === NEW_ENTITY_ID;
 
   return (
     <div className="position-relative">
@@ -86,6 +90,8 @@ export const EditRouteMetadataPanel: FC<{ state: EditRouteMetadataState }> = ({ 
       )}
 
       <hr />
+
+      {!isNew && <EntityError className="my-2" entity={routeEntity} />}
 
       <div className="d-flex flex-column align-items-stretch">
         <button

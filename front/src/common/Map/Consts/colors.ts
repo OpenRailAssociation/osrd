@@ -144,12 +144,12 @@ const colors: Record<string, Theme> = {
       text: '#164721',
     },
     error: {
-      color: '#dc3545',
-      text: '#dc3545',
+      color: '#ff0000',
+      text: '#ff0000',
     },
     warning: {
-      color: '#ffda6a',
-      text: '#ffda6a',
+      color: '#FF8C00',
+      text: '#FF8C00',
     },
   },
   /* ***************************************************************************

@@ -37,7 +37,7 @@ export const SelectionLayers: FC = () => {
     editorState: { editorLayers },
     renderingFingerprint,
   } = useContext(EditorContext) as ExtendedEditorContextType<SelectionState>;
-  const { mapStyle, layersSettings } = useSelector(getMap);
+  const { mapStyle, layersSettings, issuesSettings } = useSelector(getMap);
 
   let selectionZone: Zone | undefined;
 
@@ -66,6 +66,7 @@ export const SelectionLayers: FC = () => {
         layers={editorLayers}
         fingerprint={renderingFingerprint}
         layersSettings={layersSettings}
+        issuesSettings={issuesSettings}
       />
       <SelectionZone newZone={selectionZone} />
       {state.mousePosition && state.selectionState.type === 'single' && state.hovered && (
@@ -80,6 +81,7 @@ export const SelectionLayers: FC = () => {
             key={state.hovered.id}
             id={state.hovered.id}
             objType={state.hovered.type}
+            error={state.hovered.error}
             status={
               state.selection.find(
                 (item) => item.properties.id === (state.hovered?.id as string)
