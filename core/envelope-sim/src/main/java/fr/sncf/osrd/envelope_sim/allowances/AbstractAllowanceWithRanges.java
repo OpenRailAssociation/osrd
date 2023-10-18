@@ -2,6 +2,7 @@ package fr.sncf.osrd.envelope_sim.allowances;
 
 import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.CEILING;
 import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.FLOOR;
+import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.areSpeedsEqual;
 import static java.lang.Double.NaN;
 import static java.lang.Math.abs;
 
@@ -351,11 +352,11 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
         if (leftPart != null) {
             builder.addPart(leftPart);
             leftPartEndSpeed = leftPart.getEndSpeed();
-            assert abs(coreEnvelope.interpolateSpeed(leftPartEndPos) - leftPartEndSpeed) < 1e-6;
+            assert areSpeedsEqual(coreEnvelope.interpolateSpeed(leftPartEndPos), leftPartEndSpeed);
         }
         if (rightPart != null) {
             rightPartBeginSpeed = rightPart.getBeginSpeed();
-            assert abs(coreEnvelope.interpolateSpeed(rightPartBeginPos) - rightPartBeginSpeed) < 1e-6;
+            assert areSpeedsEqual(coreEnvelope.interpolateSpeed(rightPartBeginPos), rightPartBeginSpeed);
         }
 
         // We force the left part end speed and right part begin speed, to avoid epsilon differences
