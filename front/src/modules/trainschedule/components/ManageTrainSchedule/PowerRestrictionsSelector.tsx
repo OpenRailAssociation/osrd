@@ -129,7 +129,11 @@ const PowerRestrictionsSelector = ({
 
   /** Check the compatibility between the powerRestrictionRanges and the catenaries */
   useEffect(() => {
-    if (!isEmpty(pathCatenaryRanges) && !isEmpty(powerRestrictionRanges)) {
+    if (
+      !isEmpty(rollingStockPowerRestrictions) &&
+      !isEmpty(pathCatenaryRanges) &&
+      !isEmpty(powerRestrictionRanges)
+    ) {
       powerRestrictionRanges.forEach((powerRestrictionRange) => {
         // find path ranges crossed or included in the power restriction range
         pathCatenaryRanges.forEach((pathCatenaryRange) => {
