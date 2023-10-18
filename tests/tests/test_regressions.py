@@ -42,7 +42,13 @@ def _schedule_with_payload(editoast_url: str, payload, accept_400):
 def _update_schedule_payload(payload, path_id, timetable, rolling_stock_id: int):
     payload["path"] = path_id
     payload["timetable"] = timetable
-    payload["schedules"][0]["rolling_stock"] = rolling_stock_id
+    payload["schedules"][0]["rolling_stock_id"] = rolling_stock_id
+
+
+def _update_stdcm_payload(payload, infra_id, timetable, rolling_stock_id: int):
+    payload["infra_id"] = infra_id
+    payload["timetable_id"] = timetable
+    payload["rolling_stock_id"] = rolling_stock_id
 
 
 def _check_result(editoast_url: str, schedule_id):
@@ -81,7 +87,9 @@ def _reproduce_test(path_to_json: Path, scenario: Scenario, rolling_stock_id: in
 
     if fuzzer_output["error_type"] == "STDCM":
         _apply_prelude(fuzzer_output.get("prelude", []), EDITOAST_URL, scenario.infra, timetable, rolling_stock_id)
-        _stdcm_with_payload(EDITOAST_URL, fuzzer_output["stdcm_payload"])
+        payload = fuzzer_output["stdcm_payload"]
+        _update_stdcm_payload(payload, scenario.infra, timetable, rolling_stock_id)
+        _stdcm_with_payload(EDITOAST_URL, payload)
         return
 
     stop_after_pathfinding = fuzzer_output["error_type"] == "PATHFINDING"
