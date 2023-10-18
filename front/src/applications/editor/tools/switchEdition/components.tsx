@@ -3,7 +3,7 @@ import { FieldProps } from '@rjsf/core';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import Select from 'react-select';
-import { first, last, keyBy } from 'lodash';
+import { first, last, keyBy, debounce } from 'lodash';
 import { FaTimesCircle, FaMapMarkedAlt } from 'react-icons/fa';
 import SchemaField from '@rjsf/core/lib/components/fields/SchemaField';
 import { Layer, Popup, Source } from 'react-map-gl/maplibre';
@@ -275,7 +275,7 @@ export const SwitchEditionLeftPanel: FC = () => {
               entity: { ...entityToSave, properties: { ...entityToSave.properties, id: `${id}` } },
             });
         }}
-        onChange={(entity) => {
+        onChange={debounce((entity) => {
           const flatSwitch = entity as FlatSwitchEntity;
           setState({
             ...state,
@@ -285,7 +285,7 @@ export const SwitchEditionLeftPanel: FC = () => {
               geometry: flatSwitch.geometry,
             },
           });
-        }}
+        }, 200)}
       >
         <div className="text-right">
           <button
@@ -460,8 +460,11 @@ export const SwitchEditionLayers: FC = () => {
         <Layer {...layerProps} />
         <Layer {...nameLayerProps} />
       </Source>
+
+      {/* Map popin of the edited switch */}
       {geometryState.entity && (
         <Popup
+          focusAfterOpen={false}
           className="popup py-2"
           anchor="bottom"
           longitude={geometryState.entity.geometry.coordinates[0]}
