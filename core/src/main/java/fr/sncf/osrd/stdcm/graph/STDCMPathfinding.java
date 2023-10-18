@@ -34,7 +34,8 @@ public class STDCMPathfinding {
             double maxDepartureDelay,
             double maxRunTime,
             String tag,
-            AllowanceValue standardAllowance
+            AllowanceValue standardAllowance,
+            double pathfindingTimeout
     ) {
         assert steps.size() >= 2 : "Not enough steps have been set to find a path";
         var graph = new STDCMGraph(
@@ -70,6 +71,7 @@ public class STDCMPathfinding {
                 .addBlockedRangeOnEdges(edge -> loadingGaugeConstraints.apply(edge.block()))
                 .addBlockedRangeOnEdges(edge -> electrificationConstraints.apply(edge.block()))
                 .setTotalCostUntilEdgeLocation(range -> totalCostUntilEdgeLocation(range, maxDepartureDelay))
+                .setTimeout(pathfindingTimeout)
                 .runPathfinding(
                         convertLocations(graph, steps.get(0).locations(), startTime, maxDepartureDelay),
                         makeObjectiveFunction(steps)

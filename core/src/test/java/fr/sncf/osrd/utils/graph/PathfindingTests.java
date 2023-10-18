@@ -1,10 +1,16 @@
 package fr.sncf.osrd.utils.graph;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.google.common.graph.ImmutableNetwork;
 import com.google.common.graph.NetworkBuilder;
+import fr.sncf.osrd.reporting.exceptions.ErrorType;
+import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -621,6 +627,29 @@ public class PathfindingTests {
                 ),
                 resIDs
         );
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "0, true", "10, false"})
+    public void pathfindingTimesOut(long timeout, boolean timesOut) {
+        var builder = new SimpleGraphBuilder();
+        builder.makeNodes(2);
+        builder.makeEdge(0, 1, 100);
+        var g = builder.build();
+        var pathfinding = new Pathfinding<>(g)
+                .setEdgeToLength(edge -> edge.length)
+                .setTimeout(timeout);
+        if (!timesOut) {
+            var res = pathfinding.runPathfindingEdgesOnly(List.of(List.of(builder.getEdgeLocation("0-1"))));
+            assertNotNull(res);
+        } else {
+            assertThatThrownBy(() ->
+                    pathfinding.runPathfindingEdgesOnly(List.of(List.of(builder.getEdgeLocation("0-1")))))
+                    .isExactlyInstanceOf(OSRDError.class)
+                    .satisfies(exception ->
+                            assertThat(((OSRDError) exception).osrdErrorType)
+                                    .isEqualTo(ErrorType.PathfindingTimeoutError));
+        }
     }
 
     private static List<SimpleRange> convertRes(Pathfinding.Result<SimpleGraphBuilder.Edge> res) {

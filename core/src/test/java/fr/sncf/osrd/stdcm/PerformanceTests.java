@@ -143,6 +143,8 @@ public class PerformanceTests {
                 .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(Iterables.getLast(blocks), 0)))
                 .setUnavailableTimes(occupancyGraph)
                 .setTimeStep(timeStep)
+                //TODO: remove this once the test runs in less than Pathfinding.TIMEOUT
+                .setPathfindingTimeout(Double.POSITIVE_INFINITY)
                 .run();
 
         assertNotNull(res);

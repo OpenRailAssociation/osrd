@@ -32,6 +32,7 @@ public class STDCMPathfindingBuilder {
     private RollingStock rollingStock = TestTrains.REALISTIC_FAST_TRAIN;
     private double startTime = 0;
     private RollingStock.Comfort comfort = RollingStock.Comfort.STANDARD;
+    private double pathfindingTimeout = Pathfinding.TIMEOUT;
     Multimap<Integer, OccupancySegment> unavailableTimes = ImmutableMultimap.of();
     double timeStep = 2.;
     double maxDepartureDelay = 3600 * 2;
@@ -121,6 +122,12 @@ public class STDCMPathfindingBuilder {
         return this;
     }
 
+    /** Sets the pathfinding timeout. Default to Pathfinding.TIMEOUT. */
+    public STDCMPathfindingBuilder setPathfindingTimeout(double pathfindingTimeout) {
+        this.pathfindingTimeout = pathfindingTimeout;
+        return this;
+    }
+
     // endregion SETTERS
 
     /** Runs the pathfinding request with the given parameters */
@@ -140,7 +147,8 @@ public class STDCMPathfindingBuilder {
                 maxDepartureDelay,
                 maxRunTime,
                 tag,
-                standardAllowance
+                standardAllowance,
+                pathfindingTimeout
         );
     }
 }
