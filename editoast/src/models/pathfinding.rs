@@ -230,88 +230,48 @@ pub mod tests {
     pub fn simple_pathfinding(infra_id: i64) -> Pathfinding {
         //    T1       T2        T3       T4      T5
         // |------> < ------| |------> |------> |------>
+        let route_paths = vec![
+            RoutePath {
+                route: "route_1".into(),
+                track_ranges: vec![
+                    DirectionalTrackRange::new("track_1", 0.0, 10.0, Direction::StartToStop),
+                    DirectionalTrackRange::new("track_2", 7.0, 10.0, Direction::StopToStart),
+                    DirectionalTrackRange::new("track_2", 7.0, 7.0, Direction::StartToStop),
+                ],
+                signaling_type: "BAL3".into(),
+            },
+            RoutePath {
+                route: "route_2".into(),
+                track_ranges: vec![DirectionalTrackRange::new(
+                    "track_2",
+                    3.0,
+                    7.0,
+                    Direction::StopToStart,
+                )],
+                signaling_type: "BAL3".into(),
+            },
+            RoutePath {
+                route: "route_3".into(),
+                track_ranges: vec![
+                    DirectionalTrackRange::new("track_2", 0.0, 3.0, Direction::StopToStart),
+                    DirectionalTrackRange::new("track_3", 0.0, 10.0, Direction::StartToStop),
+                    DirectionalTrackRange::new("track_4", 0.0, 2.0, Direction::StartToStop),
+                ],
+                signaling_type: "BAL3".into(),
+            },
+            RoutePath {
+                route: "route_4".into(),
+                track_ranges: vec![
+                    DirectionalTrackRange::new("track_4", 2.0, 10.0, Direction::StartToStop),
+                    DirectionalTrackRange::new("track_5", 0.0, 8.0, Direction::StartToStop),
+                ],
+                signaling_type: "BAL3".into(),
+            },
+        ];
         Pathfinding {
             infra_id,
             payload: diesel_json::Json(PathfindingPayload {
-                route_paths: vec![
-                    RoutePath {
-                        route: "route_1".into(),
-                        track_ranges: vec![
-                            DirectionalTrackRange {
-                                track: "track_1".into(),
-                                begin: 0.0,
-                                end: 10.0,
-                                direction: Direction::StartToStop,
-                            },
-                            DirectionalTrackRange {
-                                track: "track_2".into(),
-                                begin: 7.0,
-                                end: 10.0,
-                                direction: Direction::StopToStart,
-                            },
-                            DirectionalTrackRange {
-                                // This case happens I swear
-                                track: "track_2".into(),
-                                begin: 7.0,
-                                end: 7.0,
-                                direction: Direction::StartToStop,
-                            },
-                        ],
-                        signaling_type: "BAL3".into(),
-                    },
-                    RoutePath {
-                        route: "route_2".into(),
-                        track_ranges: vec![DirectionalTrackRange {
-                            track: "track_2".into(),
-                            begin: 3.0,
-                            end: 7.0,
-                            direction: Direction::StopToStart,
-                        }],
-                        signaling_type: "BAL3".into(),
-                    },
-                    RoutePath {
-                        route: "route_3".into(),
-                        track_ranges: vec![
-                            DirectionalTrackRange {
-                                track: "track_2".into(),
-                                begin: 0.0,
-                                end: 3.0,
-                                direction: Direction::StopToStart,
-                            },
-                            DirectionalTrackRange {
-                                track: "track_3".into(),
-                                begin: 0.0,
-                                end: 10.0,
-                                direction: Direction::StartToStop,
-                            },
-                            DirectionalTrackRange {
-                                track: "track_4".into(),
-                                begin: 0.0,
-                                end: 2.0,
-                                direction: Direction::StartToStop,
-                            },
-                        ],
-                        signaling_type: "BAL3".into(),
-                    },
-                    RoutePath {
-                        route: "route_4".into(),
-                        track_ranges: vec![
-                            DirectionalTrackRange {
-                                track: "track_4".into(),
-                                begin: 2.0,
-                                end: 10.0,
-                                direction: Direction::StartToStop,
-                            },
-                            DirectionalTrackRange {
-                                track: "track_5".into(),
-                                begin: 0.0,
-                                end: 8.0,
-                                direction: Direction::StartToStop,
-                            },
-                        ],
-                        signaling_type: "BAL3".into(),
-                    },
-                ],
+                route_paths,
                 ..Default::default()
             }),
             ..Default::default()
@@ -353,36 +313,11 @@ pub mod tests {
         assert_eq!(
             merged_track_ranges,
             vec![
-                DirectionalTrackRange {
-                    track: "track_1".into(),
-                    begin: 0.0,
-                    end: 10.0,
-                    direction: Direction::StartToStop,
-                },
-                DirectionalTrackRange {
-                    track: "track_2".into(),
-                    begin: 0.0,
-                    end: 10.0,
-                    direction: Direction::StopToStart,
-                },
-                DirectionalTrackRange {
-                    track: "track_3".into(),
-                    begin: 0.0,
-                    end: 10.0,
-                    direction: Direction::StartToStop,
-                },
-                DirectionalTrackRange {
-                    track: "track_4".into(),
-                    begin: 0.0,
-                    end: 10.0,
-                    direction: Direction::StartToStop,
-                },
-                DirectionalTrackRange {
-                    track: "track_5".into(),
-                    begin: 0.0,
-                    end: 8.0,
-                    direction: Direction::StartToStop,
-                },
+                DirectionalTrackRange::new("track_1", 0.0, 10.0, Direction::StartToStop),
+                DirectionalTrackRange::new("track_2", 0.0, 10.0, Direction::StopToStart),
+                DirectionalTrackRange::new("track_3", 0.0, 10.0, Direction::StartToStop),
+                DirectionalTrackRange::new("track_4", 0.0, 10.0, Direction::StartToStop),
+                DirectionalTrackRange::new("track_5", 0.0, 8.0, Direction::StartToStop),
             ]
         );
     }

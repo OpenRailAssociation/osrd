@@ -806,12 +806,12 @@ pub mod tests {
     ) -> SpeedSection {
         let mut track_ranges = vec![];
         for (obj_id, begin, end) in range_list {
-            track_ranges.push(ApplicableDirectionsTrackRange {
-                track: obj_id.as_ref().into(),
+            track_ranges.push(ApplicableDirectionsTrackRange::new(
+                obj_id,
                 begin,
                 end,
-                applicable_directions: ApplicableDirections::Both,
-            });
+                ApplicableDirections::Both,
+            ));
         }
         SpeedSection {
             id: id.as_ref().into(),
@@ -825,12 +825,12 @@ pub mod tests {
     pub fn create_catenary_cache<T: AsRef<str>>(id: T, range_list: Vec<(T, f64, f64)>) -> Catenary {
         let mut track_ranges = vec![];
         for (obj_id, begin, end) in range_list {
-            track_ranges.push(ApplicableDirectionsTrackRange {
-                track: obj_id.as_ref().into(),
+            track_ranges.push(ApplicableDirectionsTrackRange::new(
+                obj_id,
                 begin,
                 end,
-                applicable_directions: ApplicableDirections::Both,
-            });
+                ApplicableDirections::Both,
+            ));
         }
         Catenary {
             id: id.as_ref().into(),

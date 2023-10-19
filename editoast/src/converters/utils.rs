@@ -409,12 +409,12 @@ fn speed_section(edge: &Edge, limit: &String, dir: ApplicableDirections) -> Spee
     SpeedSection {
         id,
         speed_limit,
-        track_ranges: vec![ApplicableDirectionsTrackRange {
-            track: edge.id.clone().into(),
-            begin: 0.,
-            end: edge.length(),
-            applicable_directions: dir,
-        }],
+        track_ranges: vec![ApplicableDirectionsTrackRange::new(
+            edge.id.clone(),
+            0.,
+            edge.length(),
+            dir,
+        )],
         ..Default::default()
     }
 }
@@ -490,12 +490,12 @@ pub fn catenaries(edge: &Edge) -> Option<Catenary> {
     edge.tags.get("voltage").map(|voltage| Catenary {
         id: edge.id.clone().into(),
         voltage: voltage.clone().into(),
-        track_ranges: vec![ApplicableDirectionsTrackRange {
-            track: edge.id.clone().into(),
-            begin: 0.,
-            end: edge.length(),
-            applicable_directions: ApplicableDirections::Both,
-        }],
+        track_ranges: vec![ApplicableDirectionsTrackRange::new(
+            edge.id.clone(),
+            0.,
+            edge.length(),
+            ApplicableDirections::Both,
+        )],
     })
 }
 

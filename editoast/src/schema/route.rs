@@ -109,12 +109,12 @@ impl Route {
             } else {
                 0.
             };
-            track_ranges.push(DirectionalTrackRange {
-                track: cur_track_id.clone().into(),
-                begin: cur_offset.min(end_offset),
-                end: cur_offset.max(end_offset),
-                direction: cur_dir,
-            });
+            track_ranges.push(DirectionalTrackRange::new(
+                cur_track_id.clone(),
+                cur_offset.min(end_offset),
+                cur_offset.max(end_offset),
+                cur_dir,
+            ));
 
             // Search for the exit_point
             if cur_track_id == exit_track {

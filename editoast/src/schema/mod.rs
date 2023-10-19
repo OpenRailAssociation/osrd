@@ -208,6 +208,16 @@ pub struct TrackRange {
     pub end: f64,
 }
 
+impl TrackRange {
+    pub fn new<T: AsRef<str>>(track: T, begin: f64, end: f64) -> Self {
+        Self {
+            track: track.as_ref().into(),
+            begin,
+            end,
+        }
+    }
+}
+
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 #[derivative(Default)]
@@ -244,6 +254,15 @@ impl DirectionalTrackRange {
             self.begin
         }
     }
+
+    pub fn new<T: AsRef<str>>(track: T, begin: f64, end: f64, direction: Direction) -> Self {
+        Self {
+            track: track.as_ref().into(),
+            begin,
+            end,
+            direction,
+        }
+    }
 }
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
@@ -256,6 +275,22 @@ pub struct ApplicableDirectionsTrackRange {
     #[derivative(Default(value = "100."))]
     pub end: f64,
     pub applicable_directions: ApplicableDirections,
+}
+
+impl ApplicableDirectionsTrackRange {
+    pub fn new<T: AsRef<str>>(
+        track: T,
+        begin: f64,
+        end: f64,
+        applicable_directions: ApplicableDirections,
+    ) -> Self {
+        Self {
+            track: track.as_ref().into(),
+            begin,
+            end,
+            applicable_directions,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq, Hash)]
