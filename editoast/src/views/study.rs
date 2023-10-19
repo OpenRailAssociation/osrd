@@ -25,11 +25,13 @@ use thiserror::Error;
 
 /// Returns `/projects/{project}/studies` routes
 pub fn routes() -> impl HttpServiceFactory {
-    web::scope("/studies").service((create, list)).service(
-        web::scope("/{study}")
-            .service((delete, get, patch))
-            .service(scenario::routes()),
-    )
+    web::scope("/projects/{project_id}/studies")
+        .service((create, list))
+        .service(
+            web::scope("/{study}")
+                .service((delete, get, patch))
+                .service(scenario::routes()),
+        )
 }
 
 #[derive(Debug, Error, EditoastError)]
