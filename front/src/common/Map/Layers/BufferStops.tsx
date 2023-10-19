@@ -60,9 +60,9 @@ const BufferStops: FC<BufferStopsProps> = ({ colors, layerOrder }) => {
       <OrderedLayer
         {...configKPLabelLayer({
           colors,
+          fieldName: 'extensions_sncf_kp',
           minzoom: 12,
           sourceLayer: 'buffer_stops',
-          fieldName: 'extensions_sncf_kp',
         })}
         id="chartis/osrd_bufferstop_kp/geo"
         layerOrder={layerOrder}

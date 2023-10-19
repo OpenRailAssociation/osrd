@@ -146,9 +146,9 @@ export default function OperationalPoints(props: Props) {
         <OrderedLayer
           {...configKPLabelLayer({
             colors,
+            fieldName: 'extensions_sncf_kp',
             minzoom: 9.5,
             sourceLayer: 'operational_points',
-            fieldName: 'extensions_sncf_kp',
           })}
           id="chartis/osrd_operational_point_kp/geo"
           layerOrder={layerOrder}

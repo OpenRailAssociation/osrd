@@ -122,8 +122,8 @@ export default function SNCF_PSL_Signs(props: SNCF_PSL_SignsProps) {
         {...configKPLabelLayer({
           colors,
           minzoom: 9.5,
+          isSignalisation: true,
           sourceLayer: 'psl_signs',
-          rotation: 'map',
         })}
         id="chartis/osrd_psl_signs_kp/geo"
         layerOrder={layerOrder}

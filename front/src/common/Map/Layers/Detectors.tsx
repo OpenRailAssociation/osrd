@@ -38,9 +38,9 @@ export function getDetectorsNameLayerProps(params: {
       'text-font': ['Roboto Condensed'],
       'text-size': 10,
       'text-anchor': 'left',
-      'text-allow-overlap': false,
+      'text-allow-overlap': true,
       'text-ignore-placement': false,
-      'text-offset': [0.75, 0.1],
+      'text-offset': [1, 0.2],
       visibility: 'visible',
     },
     paint: {
@@ -78,9 +78,9 @@ const Detectors: FC<DetectorsProps> = ({ colors, layerOrder }) => {
       <OrderedLayer
         {...configKPLabelLayer({
           colors,
+          fieldName: 'extensions_sncf_kp',
           minzoom: 10,
           sourceLayer: 'detectors',
-          fieldName: 'extensions_sncf_kp',
         })}
         id="chartis/osrd_detectors_kp/geo"
         layerOrder={layerOrder}
