@@ -14,8 +14,15 @@ use diesel::{delete, sql_query, update, ExpressionMethods, QueryDsl};
 use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
 use editoast_derive::Model;
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 
 use super::{List, Update};
+
+crate::schemas! {
+    Ordering,
+    ProjectWithStudies,
+    Project,
+}
 
 #[derive(
     Clone,
@@ -29,6 +36,7 @@ use super::{List, Update};
     Identifiable,
     AsChangeset,
     Model,
+    ToSchema,
 )]
 #[derivative(Default)]
 #[model(table = "project")]
@@ -36,30 +44,49 @@ use super::{List, Update};
 #[diesel(table_name = project)]
 pub struct Project {
     #[diesel(deserialize_as = i64)]
+    #[schema(value_type = i64)]
     pub id: Option<i64>,
+
     #[diesel(deserialize_as = String)]
+    #[schema(value_type = String)]
     pub name: Option<String>,
+
     #[diesel(deserialize_as = String)]
     #[derivative(Default(value = "Some(String::new())"))]
+    #[schema(value_type = String)]
     pub objectives: Option<String>,
+
     #[diesel(deserialize_as = String)]
     #[derivative(Default(value = "Some(String::new())"))]
+    #[schema(value_type = String)]
     pub description: Option<String>,
+
     #[diesel(deserialize_as = String)]
     #[derivative(Default(value = "Some(String::new())"))]
+    #[schema(value_type = String)]
     pub funders: Option<String>,
+
     #[diesel(deserialize_as = i32)]
     #[derivative(Default(value = "Some(0)"))]
+    #[schema(value_type = i32)]
     pub budget: Option<i32>,
+
     #[diesel(deserialize_as = NaiveDateTime)]
+    #[schema(value_type = NaiveDateTime)]
     pub creation_date: Option<NaiveDateTime>,
+
     #[derivative(Default(value = "Utc::now().naive_utc()"))]
+    #[diesel(deserialize_as = NaiveDateTime)]
     pub last_modification: NaiveDateTime,
+
     #[diesel(deserialize_as = TextArray)]
     #[derivative(Default(value = "Some(Vec::new())"))]
+    #[schema(value_type = Vec<String>)]
     pub tags: Option<Vec<String>>,
+
     #[diesel(deserialize_as = Option<i64>)]
     #[diesel(column_name = "image_id")]
+    #[schema(value_type = Option<i64>)]
     pub image: Option<Option<i64>>,
 }
 
@@ -68,7 +95,7 @@ impl Identifiable for Project {
         self.id.expect("Project id not found")
     }
 }
-#[derive(Debug, Clone, Serialize, QueryableByName)]
+#[derive(Debug, Clone, Serialize, QueryableByName, ToSchema)]
 pub struct ProjectWithStudies {
     #[serde(flatten)]
     #[diesel(embed)]
@@ -77,7 +104,7 @@ pub struct ProjectWithStudies {
     pub studies_count: i64,
 }
 
-#[derive(Debug, Clone, Deserialize, Default)]
+#[derive(Debug, Clone, Deserialize, Default, ToSchema)]
 pub enum Ordering {
     NameAsc,
     NameDesc,

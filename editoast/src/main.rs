@@ -254,11 +254,7 @@ async fn runserver(
             .app_data(Data::new(MapLayers::parse()))
             .app_data(Data::new(args.map_layers_config.clone()))
             .app_data(Data::new(core_client))
-            .service(
-                scope(&args.root_path)
-                    .service(views::routes())
-                    .service(views::study_routes()),
-            )
+            .service(scope(&args.root_path).service(views::routes()))
     });
 
     // Run server

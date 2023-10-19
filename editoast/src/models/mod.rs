@@ -40,6 +40,10 @@ pub use train_schedule::{
     ZoneUpdate,
 };
 
+crate::schemas! {
+    projects::schemas(),
+}
+
 pub trait Identifiable {
     fn get_id(&self) -> i64;
 }

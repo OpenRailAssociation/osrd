@@ -23,6 +23,7 @@ use crate::core::version::CoreVersionRequest;
 use crate::core::{AsCoreRequest, CoreClient};
 use crate::error::{self, Result};
 use crate::map::redis_utils::RedisClient;
+use crate::models;
 use crate::{schemas, DbPool};
 use actix_web::dev::HttpServiceFactory;
 use actix_web::web::{Data, Json};
@@ -44,12 +45,14 @@ fn routes_v2() -> Routes<impl HttpServiceFactory> {
         documents::routes(),
         sprites::routes(),
         pathfinding::routes(),
+        projects::routes(),
     }
     routes()
 }
 
 pub fn routes() -> impl HttpServiceFactory {
     services![
+        study::routes(),
         routes_v2(),
         search::search,
         infra::routes(),
@@ -65,14 +68,12 @@ pub fn routes() -> impl HttpServiceFactory {
 
 schemas! {
     error::schemas(),
+    models::schemas(),
     Version,
     timetable::schemas(),
     documents::schemas(),
     pathfinding::schemas(),
-}
-
-pub fn study_routes() -> impl HttpServiceFactory {
-    services![projects::routes(), study::routes(), scenario::routes(),]
+    projects::schemas(),
 }
 
 #[derive(OpenApi)]
@@ -213,7 +214,7 @@ mod tests {
     use crate::map::redis_utils::RedisClient;
     use crate::map::MapLayers;
 
-    use super::{routes, study_routes, OpenApiRoot};
+    use super::{routes, OpenApiRoot};
     use actix_http::body::BoxBody;
     use actix_http::{Request, StatusCode};
     use actix_web::dev::{Service, ServiceResponse};
@@ -297,7 +298,7 @@ mod tests {
             .app_data(Data::new(MapLayers::parse()))
             .app_data(Data::new(MapLayersConfig::default()))
             .app_data(Data::new(core))
-            .service((routes(), study_routes()));
+            .service(routes());
         init_service(app).await
     }
 
