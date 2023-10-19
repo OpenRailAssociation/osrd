@@ -302,8 +302,12 @@ pub fn parse_pathfinding_payload_waypoints(
 ) -> Result<PathfindingWaypoints> {
     let waypoints = steps
         .iter()
-        .flat_map(|step| &step.waypoints)
-        .map(|wp| wp.compute_waypoints(track_map))
+        .map(|step| {
+            step.waypoints
+                .iter()
+                .flat_map(|wp| wp.compute_waypoints(track_map))
+                .collect()
+        })
         .collect();
     Ok(waypoints)
 }
@@ -588,6 +592,41 @@ mod test {
         let infra_id = infra.id.unwrap();
         let mut payload: serde_json::Value = serde_json::from_str(include_str!(
             "../../tests/small_infra/pathfinding_post_payload.json"
+        ))
+        .unwrap();
+        *payload.get_mut("infra").unwrap() = json!(infra_id);
+        *payload.get_mut("rolling_stocks").unwrap() = json!([rs_id]);
+
+        let mut core = MockingClient::new();
+        core.stub("/pathfinding/routes")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .body(include_str!(
+                "../../tests/small_infra/pathfinding_core_response.json"
+            ))
+            .finish();
+        let app = create_test_service_with_core_client(core).await;
+        let req = TestRequest::post()
+            .uri("/pathfinding")
+            .set_json(payload)
+            .to_request();
+        let response = call_service(&app, req).await;
+        let response: Response = assert_status_and_read!(response, StatusCode::OK);
+        assert!(Pathfinding::retrieve(db_pool(), response.id).await.is_ok());
+    }
+
+    #[rstest::rstest]
+    async fn test_multiple_waypoints_ok(
+        #[future] fast_rolling_stock: TestFixture<RollingStockModel>,
+    ) {
+        // Avoid `Drop`ping the fixture
+        let rs = &fast_rolling_stock.await.model;
+        let small_infra = small_infra(db_pool()).await;
+        let infra = &small_infra.model;
+        let rs_id = rs.id.unwrap();
+        let infra_id = infra.id.unwrap();
+        let mut payload: serde_json::Value = serde_json::from_str(include_str!(
+            "../../tests/small_infra/pathfinding_post_multiple_waypoints_payload.json"
         ))
         .unwrap();
         *payload.get_mut("infra").unwrap() = json!(infra_id);
