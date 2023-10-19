@@ -11,7 +11,7 @@ import Loader from 'common/Loader';
 import { useTranslation } from 'react-i18next';
 import {
   PostSearchApiArg,
-  ProjectResult,
+  ProjectWithStudies,
   SearchProjectResult,
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
@@ -30,7 +30,9 @@ export default function Home() {
   const { t } = useTranslation('operationalStudies/home');
   const safeWord = useSelector(getUserSafeWord);
   const [sortOption, setSortOption] = useState<SortOptions>('LastModifiedDesc');
-  const [projectsList, setProjectsList] = useState<Array<ProjectResult | SearchProjectResult>>([]);
+  const [projectsList, setProjectsList] = useState<Array<ProjectWithStudies | SearchProjectResult>>(
+    []
+  );
   const [selectedProjectIds, setSelectedProjectIds] = useState<number[]>([]);
   const [filter, setFilter] = useState('');
   const [filterChips, setFilterChips] = useState('');

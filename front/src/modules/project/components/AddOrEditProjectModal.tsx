@@ -19,14 +19,14 @@ import { setFailure, setSuccess } from 'reducers/main';
 import { updateProjectID } from 'reducers/osrdconf';
 import remarkGfm from 'remark-gfm';
 import { useDebounce } from 'utils/helpers';
-import { ProjectCreateRequest, ProjectResult, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { ProjectCreateForm, ProjectWithStudies, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { postDocument } from 'common/api/documentApi';
 import PictureUploader from 'applications/operationalStudies/components/Project/PictureUploader';
 import { ApiError } from 'common/api/emptyApi';
 import { SerializedError } from '@reduxjs/toolkit';
 import { getUserSafeWord } from 'reducers/user/userSelectors';
 
-const emptyProject: ProjectCreateRequest = {
+const emptyProject: ProjectCreateForm = {
   budget: 0,
   description: '',
   funders: '',
@@ -36,13 +36,13 @@ const emptyProject: ProjectCreateRequest = {
   tags: [],
 };
 
-interface ProjectForm extends ProjectCreateRequest {
+interface ProjectForm extends ProjectCreateForm {
   id?: number;
 }
 
 type AddOrEditProjectModalProps = {
   editionMode?: boolean;
-  project?: ProjectResult;
+  project?: ProjectWithStudies;
   getProject?: (v: boolean) => void;
 };
 
@@ -66,12 +66,14 @@ export default function AddOrEditProjectModal({
   const [deleteProject] = osrdEditoastApi.endpoints.deleteProjectsByProjectId.useMutation();
 
   const removeTag = (idx: number) => {
+    if (!currentProject.tags) return;
     const newTags = Array.from(currentProject.tags);
     newTags.splice(idx, 1);
     setCurrentProject({ ...currentProject, tags: newTags });
   };
 
   const addTag = (tag: string) => {
+    if (!currentProject.tags) return;
     const newTags = Array.from(currentProject.tags);
     newTags.push(tag);
     if (currentProject) setCurrentProject({ ...currentProject, tags: newTags });
@@ -104,7 +106,7 @@ export default function AddOrEditProjectModal({
           if (imageId) currentProject.image = imageId;
         }
         const request = postProject({
-          projectCreateRequest: currentProject,
+          projectCreateForm: currentProject,
         });
         request
           .unwrap()
@@ -142,7 +144,7 @@ export default function AddOrEditProjectModal({
         setCurrentProject(editedProject);
         const request = patchProject({
           projectId: currentProject.id,
-          projectPatchRequest: editedProject,
+          projectPatchForm: editedProject,
         });
         request
           .unwrap()
@@ -280,7 +282,9 @@ export default function AddOrEditProjectModal({
               </label>
               <div className="project-edition-modal-objectives-md-render">
                 <div id="debouncedObjectives">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{debouncedObjectives}</ReactMarkdown>
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {debouncedObjectives || ''}
+                  </ReactMarkdown>
                 </div>
               </div>
             </div>
