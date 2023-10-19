@@ -1,14 +1,10 @@
-import sys
-from pathlib import Path
-
 import pytest
+
+# TODO: we should clean up the package and imports structure
+from fuzzer import fuzzer
 
 from .scenario import Scenario
 from .services import EDITOAST_URL
-
-sys.path.append(str(Path(__file__).parents[1] / "fuzzer"))
-
-import fuzzer  # noqa
 
 
 @pytest.mark.usefixtures("fast_rolling_stock")
