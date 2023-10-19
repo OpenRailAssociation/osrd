@@ -1,0 +1,34 @@
+{
+    "infra": -42,
+    "steps": [
+        {
+            "duration": 0,
+            "waypoints": [
+                {
+                    "track_section": "TA0",
+                    "offset": 100
+                },
+                {
+                    "track_section": "TA1",
+                    "offset": 200
+
+                }
+            ]
+        },
+        {
+            "duration": 1,
+            "waypoints": [
+                {
+                    "track_section": "TH1",
+                    "geo_coordinate": [
+                        -0.09378430969788597,
+                        49.484018467466484
+                    ]
+                }
+            ]
+        }
+    ],
+    "rolling_stocks": [
+        -42
+    ]
+}
