@@ -90,7 +90,7 @@
   "tabs": {
     "rollingStock": "Rolling stock",
     "pathFinding": "Route",
-    "allowances": "Margins",
+    "allowances": "Allowances",
     "simulationSettings": "Simulation settings",
     "addingSettings": "Adding settings"
   },
