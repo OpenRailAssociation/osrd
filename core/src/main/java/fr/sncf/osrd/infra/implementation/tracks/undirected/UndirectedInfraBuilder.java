@@ -9,6 +9,11 @@ import static fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType.GB;
 import static fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType.GB1;
 import static fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType.GC;
 import static fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType.GLOTT;
+import static fr.sncf.osrd.railjson.schema.infra.RJSSwitchType.CLASSIC_TYPE;
+import static fr.sncf.osrd.railjson.schema.infra.RJSSwitchType.LINK;
+import static fr.sncf.osrd.railjson.schema.infra.RJSSwitchType.CROSSING;
+import static fr.sncf.osrd.railjson.schema.infra.RJSSwitchType.SIMPLE_SLIP_SWITCH;
+import static fr.sncf.osrd.railjson.schema.infra.RJSSwitchType.DOUBLE_SLIP_SWITCH;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;

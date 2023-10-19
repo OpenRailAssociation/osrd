@@ -125,7 +125,11 @@ impl Infra {
             Signal::persist_batch_pool(&railjson.signals, infra_id, db_pool.clone()),
             Switch::persist_batch_pool(&railjson.switches, infra_id, db_pool.clone()),
             SpeedSection::persist_batch_pool(&railjson.speed_sections, infra_id, db_pool.clone()),
-            SwitchType::persist_batch_pool(&railjson.switch_types, infra_id, db_pool.clone()),
+            SwitchType::persist_batch_pool(
+                &railjson.extend_switch_types,
+                infra_id,
+                db_pool.clone()
+            ),
             NeutralSection::persist_batch_pool(
                 &railjson.neutral_sections,
                 infra_id,
