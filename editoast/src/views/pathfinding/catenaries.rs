@@ -125,6 +125,7 @@ pub mod tests {
     use osrd_containers::range_map;
     use rstest::*;
     use serde_json::from_value;
+    use ApplicableDirections::*;
 
     #[fixture]
     fn simple_mode_map() -> TrackMap<String> {
@@ -155,54 +156,24 @@ pub mod tests {
         let catenary_schemas = vec![
             CatenarySchema {
                 track_ranges: vec![
-                    ApplicableDirectionsTrackRange {
-                        track: "track_1".into(),
-                        begin: 0.0,
-                        end: 10.0,
-                        applicable_directions: ApplicableDirections::Both,
-                    },
-                    ApplicableDirectionsTrackRange {
-                        track: "track_2".into(),
-                        begin: 5.0,
-                        end: 10.0,
-                        applicable_directions: ApplicableDirections::Both,
-                    },
+                    ApplicableDirectionsTrackRange::new("track_1", 0.0, 10.0, Both),
+                    ApplicableDirectionsTrackRange::new("track_2", 5.0, 10.0, Both),
                 ],
                 voltage: "25kV".into(),
                 id: "catenary_1".into(),
             },
             CatenarySchema {
                 track_ranges: vec![
-                    ApplicableDirectionsTrackRange {
-                        track: "track_2".into(),
-                        begin: 0.0,
-                        end: 5.0,
-                        applicable_directions: ApplicableDirections::Both,
-                    },
-                    ApplicableDirectionsTrackRange {
-                        track: "track_3".into(),
-                        begin: 0.0,
-                        end: 5.0,
-                        applicable_directions: ApplicableDirections::Both,
-                    },
+                    ApplicableDirectionsTrackRange::new("track_2", 0.0, 5.0, Both),
+                    ApplicableDirectionsTrackRange::new("track_3", 0.0, 5.0, Both),
                 ],
                 voltage: "25kV".into(),
                 ..Default::default()
             },
             CatenarySchema {
                 track_ranges: vec![
-                    ApplicableDirectionsTrackRange {
-                        track: "track_3".into(),
-                        begin: 5.0,
-                        end: 10.0,
-                        applicable_directions: ApplicableDirections::Both,
-                    },
-                    ApplicableDirectionsTrackRange {
-                        track: "track_5".into(),
-                        begin: 0.0,
-                        end: 10.0,
-                        applicable_directions: ApplicableDirections::Both,
-                    },
+                    ApplicableDirectionsTrackRange::new("track_3", 5.0, 10.0, Both),
+                    ApplicableDirectionsTrackRange::new("track_5", 0.0, 10.0, Both),
                 ],
                 voltage: "1.5kV".into(),
                 ..Default::default()
@@ -250,12 +221,9 @@ pub mod tests {
             .await
             .expect("Could not load infra_cache");
         infra_cache.add(CatenarySchema {
-            track_ranges: vec![ApplicableDirectionsTrackRange {
-                track: "track_1".into(),
-                begin: 0.0,
-                end: 10.0,
-                applicable_directions: ApplicableDirections::Both,
-            }],
+            track_ranges: vec![ApplicableDirectionsTrackRange::new(
+                "track_1", 0.0, 10.0, Both,
+            )],
             voltage: "25kV".into(),
             id: "catenary_that_overlaps".into(),
         });
@@ -287,12 +255,7 @@ pub mod tests {
         assert_eq!(overlapping_ranges.len(), 1);
         assert_eq!(
             overlapping_ranges[0],
-            ApplicableDirectionsTrackRange {
-                track: "track_1".into(),
-                begin: 0.0,
-                end: 10.0,
-                applicable_directions: ApplicableDirections::Both,
-            }
+            ApplicableDirectionsTrackRange::new("track_1", 0.0, 10.0, Both)
         );
     }
 

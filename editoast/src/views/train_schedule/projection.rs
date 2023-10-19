@@ -189,46 +189,31 @@ pub mod tests {
             route_paths: vec![
                 RoutePath {
                     route: "rt.buffer_stop.1->DA0".to_string(),
-                    track_ranges: vec![DirectionalTrackRange {
-                        track: Identifier("TA1".to_string()),
-                        begin: 865.693344452354,
-                        end: 1770.0,
-                        direction: Direction::StartToStop,
-                    }],
+                    track_ranges: vec![DirectionalTrackRange::new(
+                        "TA1",
+                        865.693344452354,
+                        1770.0,
+                        Direction::StartToStop,
+                    )],
                     signaling_type: "BAL3".to_string(),
                 },
                 RoutePath {
                     route: "rt.DA0->DA6_1".to_string(),
                     track_ranges: vec![
-                        DirectionalTrackRange {
-                            track: Identifier("TA1".to_string()),
-                            begin: 1770.0,
-                            end: 1950.0,
-                            direction: Direction::StartToStop,
-                        },
-                        DirectionalTrackRange {
-                            track: Identifier("TA3".to_string()),
-                            begin: 0.0,
-                            end: 50.0,
-                            direction: Direction::StartToStop,
-                        },
-                        DirectionalTrackRange {
-                            track: Identifier("TA6".to_string()),
-                            begin: 0.0,
-                            end: 1800.0,
-                            direction: Direction::StartToStop,
-                        },
+                        DirectionalTrackRange::new("TA1", 1770.0, 1950.0, Direction::StartToStop),
+                        DirectionalTrackRange::new("TA3", 0.0, 50.0, Direction::StartToStop),
+                        DirectionalTrackRange::new("TA6", 0.0, 1800.0, Direction::StartToStop),
                     ],
                     signaling_type: "BAL3".to_string(),
                 },
                 RoutePath {
                     route: "rt.DA6_1->DA6_2".to_string(),
-                    track_ranges: vec![DirectionalTrackRange {
-                        track: Identifier("TA6".to_string()),
-                        begin: 1800.0,
-                        end: 2364.644651419894,
-                        direction: Direction::StartToStop,
-                    }],
+                    track_ranges: vec![DirectionalTrackRange::new(
+                        "TA6",
+                        1800.0,
+                        2364.644651419894,
+                        Direction::StartToStop,
+                    )],
                     signaling_type: "BAL3".to_string(),
                 },
             ],
@@ -272,18 +257,8 @@ pub mod tests {
         RoutePath {
             route: "route_1".to_string(),
             track_ranges: vec![
-                DirectionalTrackRange {
-                    track: Identifier("track_1".to_string()),
-                    begin: 100.0,
-                    end: 1000.0,
-                    direction: Direction::StartToStop,
-                },
-                DirectionalTrackRange {
-                    track: Identifier("track_2".to_string()),
-                    begin: 0.0,
-                    end: 500.0,
-                    direction: Direction::StartToStop,
-                },
+                DirectionalTrackRange::new("track_1", 100.0, 1000.0, Direction::StartToStop),
+                DirectionalTrackRange::new("track_2", 0.0, 500.0, Direction::StartToStop),
             ],
             signaling_type: "BAL3".to_string(),
         }
@@ -294,24 +269,9 @@ pub mod tests {
         RoutePath {
             route: "route_2".to_string(),
             track_ranges: vec![
-                DirectionalTrackRange {
-                    track: Identifier("track_2".to_string()),
-                    begin: 500.0,
-                    end: 1000.0,
-                    direction: Direction::StartToStop,
-                },
-                DirectionalTrackRange {
-                    track: Identifier("track_3".to_string()),
-                    begin: 500.0,
-                    end: 1000.0,
-                    direction: Direction::StopToStart,
-                },
-                DirectionalTrackRange {
-                    track: Identifier("track_3".to_string()),
-                    begin: 0.0,
-                    end: 500.0,
-                    direction: Direction::StopToStart,
-                },
+                DirectionalTrackRange::new("track_2", 500.0, 1000.0, Direction::StartToStop),
+                DirectionalTrackRange::new("track_3", 500.0, 1000.0, Direction::StopToStart),
+                DirectionalTrackRange::new("track_3", 0.0, 500.0, Direction::StopToStart),
             ],
             signaling_type: "BAL3".to_string(),
         }
@@ -322,18 +282,8 @@ pub mod tests {
         RoutePath {
             route: "route_2".to_string(),
             track_ranges: vec![
-                DirectionalTrackRange {
-                    track: Identifier("track_3".to_string()),
-                    begin: 500.0,
-                    end: 1000.0,
-                    direction: Direction::StopToStart,
-                },
-                DirectionalTrackRange {
-                    track: Identifier("track_3".to_string()),
-                    begin: 0.0,
-                    end: 500.0,
-                    direction: Direction::StopToStart,
-                },
+                DirectionalTrackRange::new("track_3", 500.0, 1000.0, Direction::StopToStart),
+                DirectionalTrackRange::new("track_3", 0.0, 500.0, Direction::StopToStart),
             ],
             signaling_type: "BAL3".to_string(),
         }

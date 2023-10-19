@@ -137,87 +137,43 @@ mod tests {
                     value: "A".into(),
                     power_class: "1".into(),
                     track_ranges: vec![
-                        TrackRange {
-                            track: "track_1".into(),
-                            begin: 0.0,
-                            end: 10.0,
-                        },
-                        TrackRange {
-                            track: "track_2".into(),
-                            begin: 5.0,
-                            end: 10.0,
-                        },
+                        TrackRange::new("track_1", 0.0, 10.0),
+                        TrackRange::new("track_2", 5.0, 10.0),
                     ],
                 },
                 ElectricalProfile {
                     value: "B".into(),
                     power_class: "1".into(),
                     track_ranges: vec![
-                        TrackRange {
-                            track: "track_2".into(),
-                            begin: 0.0,
-                            end: 5.0,
-                        },
-                        TrackRange {
-                            track: "track_4".into(),
-                            begin: 0.0,
-                            end: 5.0,
-                        },
-                        TrackRange {
-                            track: "track_5".into(),
-                            begin: 5.0,
-                            end: 10.0,
-                        },
+                        TrackRange::new("track_2", 0.0, 5.0),
+                        TrackRange::new("track_4", 0.0, 5.0),
+                        TrackRange::new("track_5", 5.0, 10.0),
                     ],
                 },
                 ElectricalProfile {
                     value: "B".into(),
                     power_class: "1".into(),
-                    track_ranges: vec![TrackRange {
-                        track: "track_4".into(),
-                        begin: 5.0,
-                        end: 10.0,
-                    }],
+                    track_ranges: vec![TrackRange::new("track_4", 5.0, 10.0)],
                 },
                 ElectricalProfile {
                     value: "C".into(),
                     power_class: "1".into(),
-                    track_ranges: vec![TrackRange {
-                        track: "track_3".into(),
-                        begin: 0.0,
-                        end: 10.0,
-                    }],
+                    track_ranges: vec![TrackRange::new("track_3", 0.0, 10.0)],
                 },
                 ElectricalProfile {
                     value: "A".into(),
                     power_class: "2".into(),
                     track_ranges: vec![
-                        TrackRange {
-                            track: "track_1".into(),
-                            begin: 0.0,
-                            end: 10.0,
-                        },
-                        TrackRange {
-                            track: "track_3".into(),
-                            begin: 0.0,
-                            end: 10.0,
-                        },
+                        TrackRange::new("track_1", 0.0, 10.0),
+                        TrackRange::new("track_3", 0.0, 10.0),
                     ],
                 },
                 ElectricalProfile {
                     value: "B".into(),
                     power_class: "2".into(),
                     track_ranges: vec![
-                        TrackRange {
-                            track: "track_2".into(),
-                            begin: 0.0,
-                            end: 10.0,
-                        },
-                        TrackRange {
-                            track: "track_4".into(),
-                            begin: 0.0,
-                            end: 10.0,
-                        },
+                        TrackRange::new("track_2", 0.0, 10.0),
+                        TrackRange::new("track_4", 0.0, 10.0),
                     ],
                 },
             ],

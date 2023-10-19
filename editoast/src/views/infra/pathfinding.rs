@@ -272,22 +272,21 @@ fn build_path_output(path: &Vec<PathfindingStep>, infra_cache: &InfraCache) -> P
         } else {
             0.0
         };
-        track_ranges.push(DirectionalTrackRange {
-            track: path[i].track.clone().into(),
-            begin: path[i].position.min(end),
-            end: path[i].position.max(end),
-            direction: path[i].direction,
-        });
+        track_ranges.push(DirectionalTrackRange::new(
+            path[i].track.clone(),
+            path[i].position.min(end),
+            path[i].position.max(end),
+            path[i].direction,
+        ));
     });
     let last = &path[path.len() - 1];
     let before_last = &path[path.len() - 2];
-    track_ranges.push(DirectionalTrackRange {
-        track: last.track.clone().into(),
-        begin: last.position.min(before_last.position),
-        end: last.position.max(before_last.position),
-        direction: last.direction,
-    });
-
+    track_ranges.push(DirectionalTrackRange::new(
+        last.track.clone(),
+        last.position.min(before_last.position),
+        last.position.max(before_last.position),
+        last.direction,
+    ));
     // Fill switches directions
     let switches_directions = path
         .iter()
@@ -354,24 +353,9 @@ mod tests {
         assert_eq!(
             path.track_ranges,
             vec![
-                DirectionalTrackRange {
-                    track: "A".into(),
-                    begin: 30.,
-                    end: 500.,
-                    direction: Direction::StartToStop
-                },
-                DirectionalTrackRange {
-                    track: "B".into(),
-                    begin: 0.,
-                    end: 500.,
-                    direction: Direction::StartToStop
-                },
-                DirectionalTrackRange {
-                    track: "C".into(),
-                    begin: 0.,
-                    end: 470.,
-                    direction: Direction::StartToStop
-                }
+                DirectionalTrackRange::new("A", 30., 500., Direction::StartToStop),
+                DirectionalTrackRange::new("B", 0., 500., Direction::StartToStop),
+                DirectionalTrackRange::new("C", 0., 470., Direction::StartToStop),
             ]
         );
         assert_eq!(path.detectors, vec!["D1".into()]);
