@@ -9,11 +9,7 @@ import static fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType.GB;
 import static fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType.GB1;
 import static fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType.GC;
 import static fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType.GLOTT;
-import static fr.sncf.osrd.railjson.schema.infra.RJSSwitchType.CLASSIC_TYPE;
-import static fr.sncf.osrd.railjson.schema.infra.RJSSwitchType.LINK;
-import static fr.sncf.osrd.railjson.schema.infra.RJSSwitchType.CROSSING;
-import static fr.sncf.osrd.railjson.schema.infra.RJSSwitchType.SIMPLE_SLIP_SWITCH;
-import static fr.sncf.osrd.railjson.schema.infra.RJSSwitchType.DOUBLE_SLIP_SWITCH;
+import static fr.sncf.osrd.railjson.schema.infra.RJSSwitchType.BUILTIN_NODE_TYPES_LIST;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
@@ -128,6 +124,17 @@ public class UndirectedInfraBuilder {
         return new UndirectedInfraBuilder(diagnosticRecorder).parse(infra);
     }
 
+    /** Retrieve all the switchTypes */
+    public static List<RJSSwitchType> getswitchTypes(List<RJSSwitchType> switchTypeList) {
+        if (switchTypeList == null) {
+            return BUILTIN_NODE_TYPES_LIST;
+        }
+
+        switchTypeList.addAll(BUILTIN_NODE_TYPES_LIST);
+
+        return switchTypeList;
+    }
+
     /** Parse the railjson to build an infra */
     private TrackInfra parse(RJSInfra infra) {
         // Loads operational points
@@ -140,7 +147,7 @@ public class UndirectedInfraBuilder {
 
         // Creates switches
         var switchTypeMap = new HashMap<String, RJSSwitchType>();
-        for (var rjsSwitchType : infra.switchTypes)
+        for (var rjsSwitchType : getswitchTypes(infra.switchTypes))
             switchTypeMap.put(rjsSwitchType.id, rjsSwitchType);
         var switches = new ImmutableMap.Builder<String, Switch>();
         for (var s : infra.switches) {

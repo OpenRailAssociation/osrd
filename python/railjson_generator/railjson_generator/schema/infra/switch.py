@@ -1,6 +1,13 @@
 from dataclasses import dataclass, field
 
 from osrd_schemas import infra
+from osrd_schemas.switch_type import (
+    CROSSING,
+    DOUBLE_SLIP_SWITCH,
+    LINK,
+    POINT_SWITCH,
+    SINGLE_SLIP_SWITCH,
+)
 
 from railjson_generator.schema.infra.direction import Direction
 from railjson_generator.schema.infra.endpoint import Endpoint, TrackEndpoint
@@ -78,51 +85,51 @@ class Switch:
 
 @dataclass
 class Link(Switch):
-    a: TrackEndpoint = None
-    b: TrackEndpoint = None
+    A: TrackEndpoint = None
+    B: TrackEndpoint = None
 
-    PORT_NAMES = ["a", "b"]
-    SWITCH_TYPE = "link"
+    PORT_NAMES = LINK.ports
+    SWITCH_TYPE = LINK.id
 
 
 @dataclass
 class PointSwitch(Switch):
-    a: TrackEndpoint = None
-    b_1: TrackEndpoint = None
-    b_2: TrackEndpoint = None
+    A: TrackEndpoint = None
+    B1: TrackEndpoint = None
+    B2: TrackEndpoint = None
 
-    PORT_NAMES = ["a", "b_1", "b_2"]
-    SWITCH_TYPE = "point_switch"
+    PORT_NAMES = POINT_SWITCH.ports
+    SWITCH_TYPE = POINT_SWITCH.id
 
 
 @dataclass
 class Crossing(Switch):
-    a_1: TrackEndpoint = None
-    b_1: TrackEndpoint = None
-    a_2: TrackEndpoint = None
-    b_2: TrackEndpoint = None
+    A1: TrackEndpoint = None
+    B1: TrackEndpoint = None
+    A2: TrackEndpoint = None
+    B2: TrackEndpoint = None
 
-    PORT_NAMES = ["a_1", "b_1", "a_2", "b_2"]
-    SWITCH_TYPE = "crossing"
+    PORT_NAMES = CROSSING.ports
+    SWITCH_TYPE = CROSSING.id
 
 
 @dataclass
 class DoubleSlipSwitch(Switch):
-    a_1: TrackEndpoint = None
-    a_2: TrackEndpoint = None
-    b_1: TrackEndpoint = None
-    b_2: TrackEndpoint = None
+    A1: TrackEndpoint = None
+    A2: TrackEndpoint = None
+    B1: TrackEndpoint = None
+    B2: TrackEndpoint = None
 
-    PORT_NAMES = ["a_1", "a_2", "b_1", "b_2"]
-    SWITCH_TYPE = "double_slip_switch"
+    PORT_NAMES = DOUBLE_SLIP_SWITCH.ports
+    SWITCH_TYPE = DOUBLE_SLIP_SWITCH.id
 
 
 @dataclass
 class SingleSlipSwitch(Switch):
-    a_1: TrackEndpoint = None
-    a_2: TrackEndpoint = None
-    b_1: TrackEndpoint = None
-    b_2: TrackEndpoint = None
+    A1: TrackEndpoint = None
+    A2: TrackEndpoint = None
+    B1: TrackEndpoint = None
+    B2: TrackEndpoint = None
 
-    PORT_NAMES = ["a_1", "a_2", "b_1", "b_2"]
-    SWITCH_TYPE = "single_slip_switch"
+    PORT_NAMES = SINGLE_SLIP_SWITCH.ports
+    SWITCH_TYPE = SINGLE_SLIP_SWITCH.id

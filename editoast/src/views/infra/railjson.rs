@@ -87,7 +87,7 @@ async fn get_railjson(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<impl Re
             "speed_sections": {speed_sections},
             "detectors": {detectors},
             "switches": {switches},
-            "extend_switch_types": {switch_types},
+            "extended_switch_types": {switch_types},
             "buffer_stops": {buffer_stops},
             "routes": {routes},
             "operational_points": {operational_points},
@@ -191,7 +191,7 @@ mod tests {
         assert_eq!(response.status(), StatusCode::OK);
         let railjson: RailJson = read_body_json(response).await;
         assert_eq!(railjson.version, crate::models::infra::RAILJSON_VERSION);
-        assert_eq!(railjson.extend_switch_types.len(), 1);
+        assert_eq!(railjson.extended_switch_types.len(), 1);
     }
 
     #[rstest]
@@ -201,7 +201,7 @@ mod tests {
         let railjson = RailJson {
             buffer_stops: (0..10).map(|_| Default::default()).collect(),
             routes: (0..10).map(|_| Default::default()).collect(),
-            extend_switch_types: (0..10).map(|_| Default::default()).collect(),
+            extended_switch_types: (0..10).map(|_| Default::default()).collect(),
             switches: (0..10).map(|_| Default::default()).collect(),
             track_sections: (0..10).map(|_| Default::default()).collect(),
             speed_sections: (0..10).map(|_| Default::default()).collect(),
@@ -217,7 +217,6 @@ mod tests {
             .set_json(&railjson)
             .to_request();
         let response = call_service(&app, req).await;
-        dbg!(&response.response());
         assert_eq!(response.status(), StatusCode::OK);
         let infra: PostRailjsonResponse = read_body_json(response).await;
 

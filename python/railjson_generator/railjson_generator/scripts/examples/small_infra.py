@@ -135,7 +135,7 @@ pa0 = builder.add_point_switch(
     left=ta3.begin(),
     right=ta4.begin(),
 )
-add_signal_on_ports(pa0, {"a": ("DA0", "SA0")})
+add_signal_on_ports(pa0, {"A": ("DA0", "SA0")})
 pa0.set_coords(-0.37, LAT_1)
 pa1 = builder.add_point_switch(
     label="PA1",
@@ -143,7 +143,7 @@ pa1 = builder.add_point_switch(
     left=tb0.end(),
     right=ta2.end(),
 )
-add_signal_on_ports(pa1, {"b_1": ("DB0", "SB0"), "b_2": ("DA1", "SA1")})
+add_signal_on_ports(pa1, {"B1": ("DB0", "SB0"), "B2": ("DA1", "SA1")})
 pa1.set_coords(-0.37, LAT_1 - LAT_LINE_SPACE)
 pa2 = builder.add_point_switch(
     label="PA2",
@@ -151,7 +151,7 @@ pa2 = builder.add_point_switch(
     left=ta3.end(),
     right=ta0.end(),
 )
-add_signal_on_ports(pa2, {"a": ("DA3", "SA3"), "b_2": ("DA2", "SA2")})
+add_signal_on_ports(pa2, {"A": ("DA3", "SA3"), "B2": ("DA2", "SA2")})
 pa2.set_coords(-0.365, LAT_0)
 pa3 = builder.add_point_switch(
     label="PA3",
@@ -159,7 +159,7 @@ pa3 = builder.add_point_switch(
     left=ta5.end(),
     right=ta4.end(),
 )
-add_signal_on_ports(pa3, {"a": ("DA4", "SA4")})
+add_signal_on_ports(pa3, {"A": ("DA4", "SA4")})
 pa3.set_coords(-0.365, LAT_1)
 
 ta0.set_remaining_coords([[-0.4, LAT_0]])
@@ -230,9 +230,9 @@ pc0 = builder.add_point_switch(
 add_signal_on_ports(
     pc0,
     {
-        "a": ("DA5", "SA5"),
-        "b_1": ("DC0", "SC0"),
-        "b_2": ("DC1", "SC1"),
+        "A": ("DA5", "SA5"),
+        "B1": ("DC0", "SC0"),
+        "B2": ("DC1", "SC1"),
     },
 )
 
@@ -246,9 +246,9 @@ pc1 = builder.add_point_switch(
 add_signal_on_ports(
     pc1,
     {
-        "a": ("DA6", "SA6"),
-        "b_1": ("DC2", "SC2"),
-        "b_2": ("DC3", "SC3"),
+        "A": ("DA6", "SA6"),
+        "B1": ("DC2", "SC2"),
+        "B2": ("DC3", "SC3"),
     },
 )
 
@@ -262,9 +262,9 @@ pc2 = builder.add_point_switch(
 add_signal_on_ports(
     pc2,
     {
-        "a": ("DD0", "SD0"),
-        "b_1": ("DC5", "SC5"),
-        "b_2": ("DC4", "SC4"),
+        "A": ("DD0", "SD0"),
+        "B1": ("DC5", "SC5"),
+        "B2": ("DC4", "SC4"),
     },
 )
 pc2.set_coords(-0.296, LAT_0)
@@ -277,9 +277,9 @@ pc3 = builder.add_point_switch(
 add_signal_on_ports(
     pc3,
     {
-        "a": ("DD1", "SD1"),
-        "b_1": ("DC7", "SC7"),
-        "b_2": ("DC6", "SC6"),
+        "A": ("DD1", "SD1"),
+        "B1": ("DC7", "SC7"),
+        "B2": ("DC6", "SC6"),
     },
 )
 pc3.set_coords(-0.296, LAT_1)
@@ -317,9 +317,9 @@ pd0 = builder.add_crossing(
 add_signal_on_ports(
     pd0,
     {
-        "a_1": ("DE0", "SE0"),
-        "b_2": ("DD4", "SD4"),
-        "a_2": ("DD2", "SD2"),
+        "A1": ("DE0", "SE0"),
+        "B2": ("DD4", "SD4"),
+        "A2": ("DD2", "SD2"),
     },
 )
 pd0.set_coords(-0.172, LAT_0)
@@ -333,9 +333,9 @@ pd1 = builder.add_crossing(
 add_signal_on_ports(
     pd1,
     {
-        "b_2": ("DF0", "SF0"),
-        "b_1": ("DD5", "SD5"),
-        "a_2": ("DD3", "SD3"),
+        "B2": ("DF0", "SF0"),
+        "B1": ("DD5", "SD5"),
+        "A2": ("DD3", "SD3"),
     },
 )
 pd1.set_coords(-0.172, LAT_1)
@@ -383,9 +383,9 @@ pe0 = builder.add_point_switch(
 add_signal_on_ports(
     pe0,
     {
-        "a": ("DE1", "SE1"),
-        "b_1": ("DE2", "SE2"),
-        "b_2": ("DE3", "SE3"),
+        "A": ("DE1", "SE1"),
+        "B1": ("DE2", "SE2"),
+        "B2": ("DE3", "SE3"),
     },
 )
 pe0.set_coords(-0.165, LAT_3)
@@ -398,9 +398,9 @@ pe1 = builder.add_point_switch(
 add_signal_on_ports(
     pe1,
     {
-        "a": ("DE6", "SE6"),
-        "b_1": ("DE5", "SE5"),
-        "b_2": ("DE4", "SE4"),
+        "A": ("DE6", "SE6"),
+        "B1": ("DE5", "SE5"),
+        "B2": ("DE4", "SE4"),
     },
 )
 pe1.set_coords(-0.15, LAT_3)
@@ -413,9 +413,9 @@ pe2 = builder.add_point_switch(
 add_signal_on_ports(
     pe2,
     {
-        "a": ("DD6", "SD6"),
-        "b_1": ("DE7", "SE7"),
-        "b_2": ("DD7", "SD7"),
+        "A": ("DD6", "SD6"),
+        "B1": ("DE7", "SE7"),
+        "B2": ("DD7", "SD7"),
     },
 )
 pe2.set_coords(-0.15, LAT_0)
@@ -476,7 +476,7 @@ pg0 = builder.add_point_switch(
     left=tg4.begin(),
     right=tg3.begin(),
 )
-add_signal_on_ports(pg0, {"a": ("DG3", "SG3"), "b_1": ("DG5", "SG5")})
+add_signal_on_ports(pg0, {"A": ("DG3", "SG3"), "B1": ("DG5", "SG5")})
 pg0.set_coords(-0.1082, LAT_4)
 pg1 = builder.add_point_switch(
     label="PG1",
@@ -484,7 +484,7 @@ pg1 = builder.add_point_switch(
     left=tg2.end(),
     right=tg3.end(),
 )
-add_signal_on_ports(pg1, {"a": ("DG6", "SG6"), "b_1": ("DG4", "SG4")})
+add_signal_on_ports(pg1, {"A": ("DG6", "SG6"), "B1": ("DG4", "SG4")})
 pg1.set_coords(-0.108, LAT_4 - LAT_LINE_SPACE)
 
 tg4.set_remaining_coords([[-0.09, LAT_4]])
@@ -518,10 +518,10 @@ ph0 = builder.add_double_slip_switch(
 add_signal_on_ports(
     ph0,
     {
-        "a_1": ("DG1", "SG1"),
-        "a_2": ("DH1", "SH1"),
-        "b_1": ("DG0", "SG0"),
-        "b_2": ("DH0", "SH0"),
+        "A1": ("DG1", "SG1"),
+        "A2": ("DH1", "SH1"),
+        "B1": ("DG0", "SG0"),
+        "B2": ("DH0", "SH0"),
     },
 )
 ph0.set_coords(-0.135, LAT_0 - LAT_LINE_SPACE / 2)
@@ -534,9 +534,9 @@ ph1 = builder.add_point_switch(
 add_signal_on_ports(
     ph1,
     {
-        "a": ("DH2", "SH2"),
-        "b_1": ("DG2", "SG2"),
-        "b_2": ("DH3", "SH3"),
+        "A": ("DH2", "SH2"),
+        "B1": ("DG2", "SG2"),
+        "B2": ("DH3", "SH3"),
     },
 )
 ph1.set_coords(-0.12, LAT_1)

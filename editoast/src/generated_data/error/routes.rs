@@ -287,7 +287,7 @@ mod tests {
             Direction::StartToStop,
             Waypoint::new_detector("D1"),
             vec![],
-            [("no_switch".into(), "LEFT".into())].into(),
+            [("no_switch".into(), "A_B1".into())].into(),
         );
         infra_cache.add(route.clone());
         let graph = Graph::load(&infra_cache);
@@ -318,7 +318,7 @@ mod tests {
             &route,
             "switches_directions.switch",
             "NO_GROUP",
-            "point",
+            "point_switch",
         );
         assert_eq!(infra_error, errors[0]);
     }
@@ -332,7 +332,7 @@ mod tests {
             Direction::StartToStop,
             Waypoint::new_buffer_stop("BF3"),
             vec![],
-            [("switch".into(), "LEFT".into())].into(), // Wrong direction
+            [("switch".into(), "A_B1".into())].into(), // Wrong direction
         );
         infra_cache.add(route.clone());
         let graph = Graph::load(&infra_cache);
@@ -352,7 +352,7 @@ mod tests {
             Direction::StopToStart, // Wrong direction
             Waypoint::new_buffer_stop("BF3"),
             vec![],
-            [("switch".into(), "RIGHT".into())].into(),
+            [("switch".into(), "A_B2".into())].into(),
         );
         infra_cache.add(route.clone());
         let graph = Graph::load(&infra_cache);
@@ -372,7 +372,7 @@ mod tests {
             Direction::StartToStop,
             Waypoint::new_buffer_stop("BF2"), // Wrong exit point
             vec![],
-            [("switch".into(), "RIGHT".into())].into(),
+            [("switch".into(), "A_B2".into())].into(),
         );
         infra_cache.add(route.clone());
         let graph = Graph::load(&infra_cache);
@@ -414,7 +414,7 @@ mod tests {
             Direction::StartToStop,
             Waypoint::new_detector("D1"),
             vec!["D2".into()],
-            [("tracklink".into(), "LINK".into())].into(),
+            [("link".into(), "LINK".into())].into(),
         );
         infra_cache.add(route.clone());
         let graph = Graph::load(&infra_cache);
@@ -436,8 +436,8 @@ mod tests {
             Waypoint::new_detector("D1"),
             vec![],
             [
-                ("tracklink".into(), "LINK".into()),
-                ("switch".into(), "RIGHT".into()),
+                ("link".into(), "LINK".into()),
+                ("switch".into(), "A_B2".into()),
             ]
             .into(),
         );

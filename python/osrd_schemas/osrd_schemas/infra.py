@@ -8,7 +8,7 @@ from pydantic.fields import FieldInfo
 
 ALL_OBJECT_TYPES = []
 
-RAILJSON_INFRA_VERSION_TYPE = Literal["3.4.5"]
+RAILJSON_INFRA_VERSION_TYPE = Literal["3.4.6"]
 RAILJSON_INFRA_VERSION = get_args(RAILJSON_INFRA_VERSION_TYPE)[0]
 
 # Traits
@@ -244,6 +244,20 @@ class SwitchType(BaseObjectTrait):
         description="Connection between and according ports"
     )
 
+    @classmethod
+    def new(cls, id: Identifier, ports: List[Identifier], groups: Mapping[Identifier, List[SwitchPortConnection]]):
+        return cls(id=id, ports=ports, groups=groups)
+
+    def to_dict(self):
+        groups_dict = {}
+        for group_id, group_connections in self.groups.items():
+            connections_list = []
+            for connection in group_connections:
+                connections_list.append({"src": connection.src, "dst": connection.dst})
+            groups_dict[group_id] = connections_list
+
+        return {self.id: {"ports": self.ports, "groups": groups_dict}}
+
 
 class Switch(BaseObjectTrait):
     """
@@ -455,7 +469,9 @@ class RailJsonInfra(BaseModel):
         description="List of operational points of the corresponding infra"
     )
     routes: List[Route] = Field(description="Routes of the infra")
-    extend_switch_types: List[SwitchType] = Field(description="Switch types of the infra that can be added by the user")
+    extended_switch_types: List[SwitchType] = Field(
+        default=[], description="Switch types of the infra that can be added by the user"
+    )
     switches: List[Switch] = Field(description="Switches of the infra")
     track_sections: List[TrackSection] = Field(description="Track sections of the infra")
     speed_sections: List[SpeedSection] = Field(description="Speed sections of the infra")

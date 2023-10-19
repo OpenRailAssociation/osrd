@@ -23,7 +23,7 @@ use crate::models::infra::INFRA_VERSION;
 use crate::models::{
     Create, Delete, Infra, List as ModelList, NoParams, Retrieve, Update, RAILJSON_VERSION,
 };
-use crate::schema::{default_node_types, ObjectType, SwitchType};
+use crate::schema::{ObjectType, SwitchType};
 use crate::views::pagination::{PaginatedResponse, PaginationQueryParam};
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
@@ -382,16 +382,14 @@ async fn get_switch_types(
 
     let mut conn = db_pool.get().await?;
     let infra = InfraCache::get_or_load(&mut conn, &infra_caches, &infra).await?;
-    let mut node_types = default_node_types();
-    node_types.append(
-        &mut infra
+    Ok(Json(
+        infra
             .switch_types()
             .values()
             .map(ObjectCache::unwrap_switch_type)
             .cloned()
             .collect(),
-    );
-    Ok(Json(node_types))
+    ))
 }
 
 /// Returns the set of speed limit tags for a given infra
@@ -816,19 +814,13 @@ pub mod tests {
         let empty_infra = empty_infra.await;
         let app = create_test_service().await;
 
-        let switch_type = SwitchType::default();
-        let switch_type_id = switch_type.id.clone();
-        let req = create_object_request(empty_infra.id(), switch_type.into());
-        assert_eq!(call_service(&app, req).await.status(), StatusCode::OK);
-
         let req = TestRequest::get()
             .uri(format!("/infra/{}/switch_types/", empty_infra.id()).as_str())
             .to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
         let switch_types: Vec<SwitchType> = read_body_json(response).await;
-        assert_eq!(switch_types.len(), 6);
-        assert_eq!(switch_types[0].id, switch_type_id);
+        assert_eq!(switch_types.len(), 5);
     }
 
     #[rstest]

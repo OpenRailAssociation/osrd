@@ -197,7 +197,7 @@ mod test {
         assert_eq!(path.track_ranges[1].begin, 0.);
         assert_eq!(path.track_ranges[1].end, 250.);
         assert_eq!(path.switches_directions.len(), 1);
-        assert!(path.switches_directions.contains_key(&"tracklink".into()));
+        assert!(path.switches_directions.contains_key(&"link".into()));
     }
 
     #[test]

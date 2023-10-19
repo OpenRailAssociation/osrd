@@ -139,8 +139,8 @@ impl Graph {
 
     fn edges_from_switches(&mut self, railjson: &RailJson) {
         for switch in &railjson.switches {
-            let switch_type = railjson
-                .extend_switch_types
+            let builtin_node_types = builtin_node_types_list();
+            let switch_type = builtin_node_types
                 .iter()
                 .find(|t| t.id == switch.switch_type)
                 .expect("Switch must have associated type");

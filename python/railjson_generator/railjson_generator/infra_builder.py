@@ -62,39 +62,39 @@ class InfraBuilder:
         return track
 
     def add_point_switch(self, base: TrackEndpoint, left: TrackEndpoint, right: TrackEndpoint, **kwargs):
-        switch = PointSwitch(a=base, b_1=left, b_2=right, **kwargs)
-        _register_connection(base, left, switch.group("LEFT"))
-        _register_connection(base, right, switch.group("RIGHT"))
+        switch = PointSwitch(A=base, B1=left, B2=right, **kwargs)
+        _register_connection(base, left, switch.group("A_B1"))
+        _register_connection(base, right, switch.group("A_B2"))
         self.infra.switches.append(switch)
         return switch
 
     def add_crossing(
         self, north: TrackEndpoint, south: TrackEndpoint, east: TrackEndpoint, west: TrackEndpoint, **kwargs
     ):
-        switch = Crossing(a_1=north, b_1=south, b_2=east, a_2=west, **kwargs)
-        _register_connection(north, south, switch.group("static"))
-        _register_connection(east, west, switch.group("static"))
+        switch = Crossing(A1=north, B1=south, B2=east, A2=west, **kwargs)
+        _register_connection(north, south, switch.group("STATIC"))
+        _register_connection(east, west, switch.group("STATIC"))
         self.infra.switches.append(switch)
         return switch
 
     def add_double_slip_switch(
         self, north_1: TrackEndpoint, north_2: TrackEndpoint, south_1: TrackEndpoint, south_2: TrackEndpoint, **kwargs
     ):
-        switch = DoubleSlipSwitch(a_1=north_1, a_2=north_2, b_1=south_1, b_2=south_2, **kwargs)
+        switch = DoubleSlipSwitch(A1=north_1, A2=north_2, B1=south_1, B2=south_2, **kwargs)
         for (src, dst), group_name in [
-            ((north_1, south_1), "N1_S1"),
-            ((north_1, south_2), "N1_S2"),
-            ((north_2, south_1), "N2_S1"),
-            ((north_2, south_2), "N2_S2"),
+            ((north_1, south_1), "A1_B1"),
+            ((north_1, south_2), "A1_B2"),
+            ((north_2, south_1), "A2_B1"),
+            ((north_2, south_2), "A2_B2"),
         ]:
             _register_connection(src, dst, switch.group(group_name))
         self.infra.switches.append(switch)
         return switch
 
     def add_link(self, source: TrackEndpoint, destination: TrackEndpoint, **kwargs):
-        switch = Link(a=source, b=destination, **kwargs)
+        switch = Link(A=source, B=destination, **kwargs)
         self.infra.switches.append(switch)
-        _register_connection(source, destination, switch.group("static"))
+        _register_connection(source, destination, switch.group("STATIC"))
         return switch
 
     def add_operational_point(self, *args, **kwargs):

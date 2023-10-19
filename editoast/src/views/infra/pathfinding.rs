@@ -362,8 +362,8 @@ mod tests {
         assert_eq!(
             path.switches_directions,
             HashMap::from([
-                ("tracklink".into(), "LINK".into()),
-                ("switch".into(), "LEFT".into())
+                ("link".into(), "LINK".into()),
+                ("switch".into(), "A_B1".into())
             ])
         );
     }
