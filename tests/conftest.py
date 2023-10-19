@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Any, Iterable, List, Optional
+from typing import Any, Dict, Iterable, Iterator, List, Optional
 
 import pytest
 import requests
@@ -24,14 +24,14 @@ def _load_generated_infra(name: str) -> int:
 
 
 @pytest.fixture(scope="session")
-def tiny_infra() -> Infra:
+def tiny_infra() -> Iterator[Infra]:
     infra_id = _load_generated_infra("tiny_infra")
     yield Infra(infra_id, "tiny_infra")
     requests.delete(EDITOAST_URL + f"infra/{infra_id}/")
 
 
 @pytest.fixture(scope="session")
-def small_infra() -> Infra:
+def small_infra() -> Iterator[Infra]:
     """small_infra screenshot in `tests/README.md`"""
     infra_id = _load_generated_infra("small_infra")
     yield Infra(infra_id, "small_infra")
@@ -39,7 +39,7 @@ def small_infra() -> Infra:
 
 
 @pytest.fixture
-def foo_project_id() -> int:
+def foo_project_id() -> Iterator[int]:
     response = requests.post(
         EDITOAST_URL + "projects/",
         json={
@@ -57,7 +57,7 @@ def foo_project_id() -> int:
 
 
 @pytest.fixture
-def foo_study_id(foo_project_id: int) -> int:
+def foo_study_id(foo_project_id: int) -> Iterator[int]:
     payload = {
         "name": "_@Test integration study",
         "service_code": "AAA",
@@ -69,13 +69,13 @@ def foo_study_id(foo_project_id: int) -> int:
 
 
 @pytest.fixture
-def tiny_scenario(tiny_infra: Infra, foo_project_id: int, foo_study_id: int) -> Scenario:
+def tiny_scenario(tiny_infra: Infra, foo_project_id: int, foo_study_id: int) -> Iterator[Scenario]:
     scenario_id, timetable_id = create_scenario(EDITOAST_URL, tiny_infra.id, foo_project_id, foo_study_id)
     yield Scenario(foo_project_id, foo_study_id, scenario_id, tiny_infra.id, timetable_id)
 
 
 @pytest.fixture
-def small_scenario(small_infra: Infra, foo_project_id: int, foo_study_id: int) -> Scenario:
+def small_scenario(small_infra: Infra, foo_project_id: int, foo_study_id: int) -> Iterator[Scenario]:
     scenario_id, timetable_id = create_scenario(EDITOAST_URL, small_infra.id, foo_project_id, foo_study_id)
     yield Scenario(foo_project_id, foo_study_id, scenario_id, small_infra.id, timetable_id)
 
@@ -120,7 +120,7 @@ def create_fast_rolling_stocks(test_rolling_stocks: Optional[List[TestRollingSto
 
 
 @pytest.fixture
-def fast_rolling_stocks(request: Any) -> Iterable[int]:
+def fast_rolling_stocks(request: Any) -> Iterator[Iterable[int]]:
     ids = create_fast_rolling_stocks(request.node.get_closest_marker("names_and_metadata").args[0])
     yield ids
     for id in ids:
@@ -128,14 +128,14 @@ def fast_rolling_stocks(request: Any) -> Iterable[int]:
 
 
 @pytest.fixture
-def fast_rolling_stock() -> int:
+def fast_rolling_stock() -> Iterator[int]:
     id = create_fast_rolling_stocks()[0]
     yield id
     requests.delete(f"{EDITOAST_URL}rolling_stock/{id}?force=true")
 
 
 @pytest.fixture
-def west_to_south_east_path(small_infra: Infra, fast_rolling_stock: int) -> TrainPath:
+def west_to_south_east_path(small_infra: Infra, fast_rolling_stock: int) -> Iterator[TrainPath]:
     """west_to_south_east_path screenshot in `tests/README.md`"""
     requests.post(f"{EDITOAST_URL}infra/{small_infra.id}/load").raise_for_status()
     response = requests.post(
@@ -173,7 +173,7 @@ def west_to_south_east_simulation(
     small_scenario: Scenario,
     west_to_south_east_path: TrainPath,
     fast_rolling_stock: int,
-) -> List[int]:
+) -> Iterator[Dict]:
     response = requests.post(
         f"{EDITOAST_URL}train_schedule/standalone_simulation/",
         json={
@@ -200,7 +200,7 @@ def west_to_south_east_simulations(
     small_scenario: Scenario,
     west_to_south_east_path: TrainPath,
     fast_rolling_stock: int,
-) -> List[int]:
+) -> Iterator[Dict]:
     base = {
         "train_name": "foo",
         "labels": [],
