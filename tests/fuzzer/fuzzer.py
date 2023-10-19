@@ -663,7 +663,7 @@ def request_with_timeout(request_type: str, *args, **kwargs) -> Response:
         elif request_type == "delete":
             return requests.delete(*args, timeout=TIMEOUT, **kwargs)
         else:
-            raise ValueError(f"Unsupported requst type {request_type}")
+            raise ValueError(f"Unsupported request type {request_type}")
     except Timeout:
         res = Response()
         res.status_code = 500
