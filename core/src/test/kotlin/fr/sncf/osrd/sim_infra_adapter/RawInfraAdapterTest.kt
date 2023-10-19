@@ -105,7 +105,7 @@ class RawInfraAdapterTest {
             EdgeDirection.START_TO_STOP,
             RJSWaypointRef("det_end_new_route", RJSWaypointRef.RJSWaypointType.DETECTOR),
         )
-        newRoute.switchesDirections["PA0"] = "LEFT"
+        newRoute.switchesDirections["PA0"] = "A_B1"
         rjsInfra.routes = listOf(newRoute)
         val oldInfra = Helpers.infraFromRJS(rjsInfra)
         adaptRawInfra(oldInfra)

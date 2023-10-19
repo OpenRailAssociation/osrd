@@ -249,7 +249,7 @@ diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
 
-    infra_object_extend_switch_type (id) {
+    infra_object_extended_switch_type (id) {
         id -> Int8,
         #[max_length = 255]
         obj_id -> Varchar,
@@ -653,7 +653,7 @@ diesel::joinable!(infra_layer_track_section -> infra (infra_id));
 diesel::joinable!(infra_object_buffer_stop -> infra (infra_id));
 diesel::joinable!(infra_object_catenary -> infra (infra_id));
 diesel::joinable!(infra_object_detector -> infra (infra_id));
-diesel::joinable!(infra_object_extend_switch_type -> infra (infra_id));
+diesel::joinable!(infra_object_extended_switch_type -> infra (infra_id));
 diesel::joinable!(infra_object_neutral_section -> infra (infra_id));
 diesel::joinable!(infra_object_operational_point -> infra (infra_id));
 diesel::joinable!(infra_object_route -> infra (infra_id));
@@ -700,7 +700,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     infra_object_buffer_stop,
     infra_object_catenary,
     infra_object_detector,
-    infra_object_extend_switch_type,
+    infra_object_extended_switch_type,
     infra_object_neutral_section,
     infra_object_operational_point,
     infra_object_route,

@@ -22,7 +22,7 @@ public class RJSInfra {
             .build()
             .adapter(RJSInfra.class);
 
-    public static final transient String CURRENT_VERSION = "3.4.5";
+    public static final transient String CURRENT_VERSION = "3.4.6";
 
     /** The version of the infra format used */
     public String version;
@@ -45,7 +45,7 @@ public class RJSInfra {
     public Collection<RJSRoute> routes;
 
     /** The map of switch types */
-    @Json(name = "extend_switch_types")
+    @Json(name = "extended_switch_types")
     public List<RJSSwitchType> switchTypes;
 
     public List<RJSSignal> signals;

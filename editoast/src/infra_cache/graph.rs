@@ -45,7 +45,6 @@ impl<'a> Graph<'a> {
                 }
             }
         }
-
         graph
     }
 
@@ -118,8 +117,8 @@ mod tests {
         let track_d_begin = create_track_endpoint(Endpoint::Begin, "D");
 
         let link: Identifier = "LINK".into();
-        let left: Identifier = "LEFT".into();
-        let right: Identifier = "RIGHT".into();
+        let left: Identifier = "A_B1".into();
+        let right: Identifier = "A_B2".into();
 
         let res = HashMap::from([
             ((&track_a_end, &link), &track_b_begin),
@@ -156,7 +155,7 @@ mod tests {
 
         let track_a_end = create_track_endpoint(Endpoint::End, "A");
         let link = graph.get_switch(&track_a_end).unwrap();
-        assert_eq!(link.obj_id, "tracklink".to_string());
+        assert_eq!(link.obj_id, "link".to_string());
     }
 
     #[test]
@@ -167,8 +166,8 @@ mod tests {
         let track_b_end = create_track_endpoint(Endpoint::End, "B");
         let groups = graph.get_neighbour_groups(&track_b_end);
         assert_eq!(groups.len(), 2);
-        assert!(groups.contains(&&"LEFT".into()));
-        assert!(groups.contains(&&"RIGHT".into()));
+        assert!(groups.contains(&&"A_B1".into()));
+        assert!(groups.contains(&&"A_B2".into()));
 
         let track_a_begin = create_track_endpoint(Endpoint::Begin, "A");
         let groups = graph.get_neighbour_groups(&track_a_begin);

@@ -396,6 +396,13 @@ impl InfraCache {
             .into_iter()
             .for_each(|switch_type| infra_cache.add::<SwitchType>(switch_type));
 
+        // Add builtin switch nodes
+        infra_cache.add::<SwitchType>(Link.into());
+        infra_cache.add::<SwitchType>(PointSwitch.into());
+        infra_cache.add::<SwitchType>(Crossing.into());
+        infra_cache.add::<SwitchType>(SingleSlipSwitch.into());
+        infra_cache.add::<SwitchType>(DoubleSlipSwitch.into());
+
         // Load detector tracks references
         sql_query(
             "SELECT obj_id, data->>'track' AS track, (data->>'position')::float AS position FROM infra_object_detector WHERE infra_id = $1")
@@ -939,7 +946,7 @@ pub mod tests {
             Direction::StartToStop,
             Waypoint::new_detector("D1"),
             vec![],
-            [("tracklink".into(), "LINK".into())].into(),
+            [("link".into(), "LINK".into())].into(),
         ));
         infra_cache.add(create_route_cache(
             "R2",
@@ -947,7 +954,7 @@ pub mod tests {
             Direction::StartToStop,
             Waypoint::new_buffer_stop("BF2"),
             vec![],
-            [("switch".into(), "LEFT".into())].into(),
+            [("switch".into(), "A_B1".into())].into(),
         ));
         infra_cache.add(create_route_cache(
             "R3",
@@ -955,47 +962,38 @@ pub mod tests {
             Direction::StartToStop,
             Waypoint::new_buffer_stop("BF3"),
             vec![],
-            [("switch".into(), "RIGHT".into())].into(),
+            [("switch".into(), "A_B2".into())].into(),
         ));
 
         infra_cache.add(create_switch_type_cache(
             "link",
-            vec!["SOURCE".into(), "DESTINATION".into()],
-            HashMap::from([(
-                "LINK".into(),
-                vec![create_switch_connection("SOURCE", "DESTINATION")],
-            )]),
+            vec!["A".into(), "B".into()],
+            HashMap::from([("LINK".into(), vec![create_switch_connection("A", "B")])]),
         ));
 
         let link = create_switch_cache_link(
-            "tracklink".into(),
-            ("SOURCE", create_track_endpoint(Endpoint::End, "A")),
-            ("DESTINATION", create_track_endpoint(Endpoint::Begin, "B")),
+            "link".into(),
+            ("A", create_track_endpoint(Endpoint::End, "A")),
+            ("B", create_track_endpoint(Endpoint::Begin, "B")),
             "link".into(),
         );
         infra_cache.add(link);
 
         infra_cache.add(create_switch_type_cache(
-            "point",
-            vec!["BASE".into(), "LEFT".into(), "RIGHT".into()],
+            "point_switch",
+            vec!["A".into(), "B1".into(), "B2".into()],
             HashMap::from([
-                (
-                    "LEFT".into(),
-                    vec![create_switch_connection("BASE", "LEFT")],
-                ),
-                (
-                    "RIGHT".into(),
-                    vec![create_switch_connection("BASE", "RIGHT")],
-                ),
+                ("A_B1".into(), vec![create_switch_connection("A", "B1")]),
+                ("A_B2".into(), vec![create_switch_connection("A", "B2")]),
             ]),
         ));
 
         let switch = create_switch_cache_point(
             "switch".into(),
-            ("BASE", create_track_endpoint(Endpoint::End, "B")),
-            ("LEFT", create_track_endpoint(Endpoint::Begin, "C")),
-            ("RIGHT", create_track_endpoint(Endpoint::Begin, "D")),
-            "point".into(),
+            ("A", create_track_endpoint(Endpoint::End, "B")),
+            ("B1", create_track_endpoint(Endpoint::Begin, "C")),
+            ("B2", create_track_endpoint(Endpoint::Begin, "D")),
+            "point_switch".into(),
         );
         infra_cache.add(switch);
 

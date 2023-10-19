@@ -23,7 +23,7 @@ pub struct RailJson {
     pub version: String,
     pub operational_points: Vec<OperationalPoint>,
     pub routes: Vec<Route>,
-    pub extend_switch_types: Vec<SwitchType>,
+    pub extended_switch_types: Vec<SwitchType>,
     pub switches: Vec<Switch>,
     pub track_sections: Vec<TrackSection>,
     pub speed_sections: Vec<SpeedSection>,
@@ -117,7 +117,7 @@ pub mod test {
         let railjson = RailJson {
             buffer_stops: (0..10).map(|_| Default::default()).collect(),
             routes: (0..10).map(|_| Default::default()).collect(),
-            extend_switch_types: (0..10).map(|_| Default::default()).collect(),
+            extended_switch_types: (0..10).map(|_| Default::default()).collect(),
             switches: (0..10).map(|_| Default::default()).collect(),
             track_sections: (0..10).map(|_| Default::default()).collect(),
             speed_sections: (0..10).map(|_| Default::default()).collect(),
@@ -150,8 +150,8 @@ pub mod test {
         ));
         assert!(check_objects_eq(&s_railjson.routes, &railjson.routes));
         assert!(check_objects_eq(
-            &s_railjson.extend_switch_types,
-            &railjson.extend_switch_types
+            &s_railjson.extended_switch_types,
+            &railjson.extended_switch_types
         ));
         assert!(check_objects_eq(&s_railjson.switches, &railjson.switches));
         assert!(check_objects_eq(
@@ -195,7 +195,7 @@ pub mod test {
             version: infra.clone().railjson_version.unwrap(),
             operational_points: find_objects(conn, infra.id.unwrap()).await,
             routes: find_objects(conn, infra.id.unwrap()).await,
-            extend_switch_types: find_objects(conn, infra.id.unwrap()).await,
+            extended_switch_types: find_objects(conn, infra.id.unwrap()).await,
             switches: find_objects(conn, infra.id.unwrap()).await,
             track_sections: find_objects(conn, infra.id.unwrap()).await,
             speed_sections: find_objects(conn, infra.id.unwrap()).await,

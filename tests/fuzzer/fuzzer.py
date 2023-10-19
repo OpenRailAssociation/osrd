@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Set, Tuple
 
 import requests
+from osrd_schemas.switch_type import builtin_node_types
 from requests import Response, Timeout
 
 # TODO: we may want to use more qualified imports
@@ -338,12 +339,8 @@ def make_graph(editoast_url: str, infra: int) -> InfraGraph:
     for track in infra["track_sections"]:
         graph.tracks[track["id"]] = track
 
-    switch_types = dict()
-    for switch_type in infra["switch_types"]:
-        switch_types[switch_type["id"]] = switch_type
-
     for switch in infra["switches"]:
-        switch_type = switch_types[switch["switch_type"]]
+        switch_type = builtin_node_types()[switch["switch_type"]]
         for group in switch_type["groups"].values():
             for pair in group:
                 src = TrackEndpoint.from_dict(switch["ports"][pair["src"]])

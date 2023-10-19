@@ -67,16 +67,10 @@ mod tests {
     fn unknown_port_name() {
         let switch_type = create_switch_type_cache(
             "ST_error",
-            vec!["BASE".into(), "LEFT".into(), "RIGHT".into()],
+            vec!["A".into(), "B1".into(), "B2".into()],
             HashMap::from([
-                (
-                    "LEFT".into(),
-                    vec![create_switch_connection("WRONG", "LEFT")],
-                ),
-                (
-                    "RIGHT".into(),
-                    vec![create_switch_connection("BASE", "RIGHT")],
-                ),
+                ("A_B1".into(), vec![create_switch_connection("WRONG", "B1")]),
+                ("A_B2".into(), vec![create_switch_connection("A", "B2")]),
             ]),
         )
         .into();
@@ -86,7 +80,7 @@ mod tests {
             &Graph::load(&infra_cache::tests::create_small_infra_cache()),
         );
         assert_eq!(1, errors.len());
-        let infra_error = InfraError::new_unknown_port_name(&switch_type, "groups.LEFT.0", "WRONG");
+        let infra_error = InfraError::new_unknown_port_name(&switch_type, "groups.A_B1.0", "WRONG");
         assert_eq!(infra_error, errors[0]);
     }
 
@@ -94,20 +88,11 @@ mod tests {
     fn duplicated_group() {
         let switch_type = create_switch_type_cache(
             "ST_error",
-            vec!["BASE".into(), "LEFT".into(), "RIGHT".into()],
+            vec!["A".into(), "B1".into(), "B2".into()],
             HashMap::from([
-                (
-                    "LEFT".into(),
-                    vec![create_switch_connection("BASE", "LEFT")],
-                ),
-                (
-                    "ERROR".into(),
-                    vec![create_switch_connection("BASE", "LEFT")],
-                ),
-                (
-                    "RIGHT".into(),
-                    vec![create_switch_connection("BASE", "RIGHT")],
-                ),
+                ("A_B1".into(), vec![create_switch_connection("A", "B1")]),
+                ("ERROR".into(), vec![create_switch_connection("A", "B1")]),
+                ("A_B2".into(), vec![create_switch_connection("A", "B2")]),
             ]),
         )
         .into();
@@ -123,17 +108,14 @@ mod tests {
     fn unused_port() {
         let switch_type = create_switch_type_cache(
             "ST_error",
-            vec!["BASE".into(), "LEFT".into(), "RIGHT".into()],
-            HashMap::from([(
-                "LEFT".into(),
-                vec![create_switch_connection("BASE", "LEFT")],
-            )]),
+            vec!["A".into(), "B1".into(), "B2".into()],
+            HashMap::from([("A_B1".into(), vec![create_switch_connection("A", "B1")])]),
         )
         .into();
         let infra_cache = infra_cache::tests::create_small_infra_cache();
         let errors = check_switch_types(&switch_type, &infra_cache, &Graph::load(&infra_cache));
         assert_eq!(1, errors.len());
-        let infra_error = InfraError::new_unused_port(&switch_type, "ports.2", "RIGHT");
+        let infra_error = InfraError::new_unused_port(&switch_type, "ports.2", "B2");
         assert_eq!(infra_error, errors[0]);
     }
 }

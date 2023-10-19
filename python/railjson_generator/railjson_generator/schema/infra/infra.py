@@ -24,7 +24,7 @@ class Infra:
     catenaries: List[Catenary] = field(default_factory=list)
     neutral_sections: List[NeutralSection] = field(default_factory=list)
 
-    VERSION = "3.4.5"
+    VERSION = "3.4.6"
 
     def add_route(self, *args, **kwargs):
         self.routes.append(Route(*args, **kwargs))
@@ -40,7 +40,7 @@ class Infra:
             buffer_stops=self.make_rjs_buffer_stops(),
             detectors=self.make_rjs_detectors(),
             operational_points=self.make_rjs_operational_points(),
-            extend_switch_types=[],
+            extended_switch_types=[],
             speed_sections=[speed_section.to_rjs() for speed_section in self.speed_sections],
             catenaries=[catenary.to_rjs() for catenary in self.catenaries],
             neutral_sections=[neutral_section.to_rjs() for neutral_section in self.neutral_sections],

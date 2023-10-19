@@ -7,106 +7,6 @@ use osm4routing::{Coord, Edge, NodeId};
 use osmpbfreader::Node;
 use std::str::FromStr;
 
-pub fn default_switch_types() -> Vec<SwitchType> {
-    let mut link_group = std::collections::HashMap::new();
-    link_group.insert(
-        "LINK".into(),
-        vec![SwitchPortConnection {
-            src: "SOURCE".into(),
-            dst: "DESTINATION".into(),
-        }],
-    );
-
-    let mut point_groups = std::collections::HashMap::new();
-    point_groups.insert(
-        "LEFT".into(),
-        vec![SwitchPortConnection {
-            src: "BASE".into(),
-            dst: "LEFT".into(),
-        }],
-    );
-    point_groups.insert(
-        "RIGHT".into(),
-        vec![SwitchPortConnection {
-            src: "BASE".into(),
-            dst: "RIGHT".into(),
-        }],
-    );
-
-    let mut cross_groups = std::collections::HashMap::new();
-    cross_groups.insert(
-        "DEFAULT".into(),
-        vec![
-            SwitchPortConnection {
-                src: "NORTH".into(),
-                dst: "SOUTH".into(),
-            },
-            SwitchPortConnection {
-                src: "EAST".into(),
-                dst: "WEST".into(),
-            },
-        ],
-    );
-
-    let mut double_cross_groups = std::collections::HashMap::new();
-    double_cross_groups.insert(
-        "N1-S1".into(),
-        vec![SwitchPortConnection {
-            src: "NORTH-1".into(),
-            dst: "SOUTH-1".into(),
-        }],
-    );
-    double_cross_groups.insert(
-        "N2-S1".into(),
-        vec![SwitchPortConnection {
-            src: "NORTH-1".into(),
-            dst: "SOUTH-2".into(),
-        }],
-    );
-    double_cross_groups.insert(
-        "N1-S2".into(),
-        vec![SwitchPortConnection {
-            src: "NORTH-2".into(),
-            dst: "SOUTH-1".into(),
-        }],
-    );
-    double_cross_groups.insert(
-        "N2-S2".into(),
-        vec![SwitchPortConnection {
-            src: "NORTH-2".into(),
-            dst: "SOUTH-2".into(),
-        }],
-    );
-
-    vec![
-        SwitchType {
-            id: "link".into(),
-            ports: vec!["SOURCE".into(), "DESTINATION".into()],
-            groups: link_group,
-        },
-        SwitchType {
-            id: "point".into(),
-            ports: vec!["BASE".into(), "LEFT".into(), "RIGHT".into()],
-            groups: point_groups,
-        },
-        SwitchType {
-            id: "cross_over".into(),
-            ports: vec!["NORTH".into(), "SOUTH".into(), "EAST".into(), "WEST".into()],
-            groups: cross_groups,
-        },
-        SwitchType {
-            id: "double_slip".into(),
-            ports: vec![
-                "SOUTH-1".into(),
-                "SOUTH-2".into(),
-                "NORTH-1".into(),
-                "NORTH-2".into(),
-            ],
-            groups: double_cross_groups,
-        },
-    ]
-}
-
 // Given an edge and a coordinate, returns the coordinates used to compute the angle
 // It uses the nearest OpenStreetMap node, and the other as the the rails might do a loop
 // that would result in a bad angle
@@ -182,8 +82,8 @@ pub struct NodeAdjacencies<'a> {
 
 pub fn link_switch(node: NodeId, branches: &[Branch]) -> Switch {
     let mut ports = HashMap::new();
-    ports.insert("SOURCE".into(), branches[0].0.clone());
-    ports.insert("DESTINATION".into(), branches[0].1.clone());
+    ports.insert("A".into(), branches[0].0.clone());
+    ports.insert("B".into(), branches[0].1.clone());
     Switch {
         id: node.0.to_string().into(),
         switch_type: "link".into(),
@@ -203,13 +103,13 @@ pub fn point_switch(node: NodeId, branches: &[Branch]) -> Switch {
     let mut sorted_endpoint: Vec<(&TrackEndpoint, u64)> = endpoint_count.into_iter().collect();
     sorted_endpoint.sort_by(|(_, count_a), (_, count_b)| count_b.cmp(count_a));
     let mut ports = HashMap::new();
-    ports.insert("BASE".into(), sorted_endpoint[0].0.clone());
-    ports.insert("LEFT".into(), sorted_endpoint[1].0.clone());
-    ports.insert("RIGHT".into(), sorted_endpoint[2].0.clone());
+    ports.insert("A".into(), sorted_endpoint[0].0.clone());
+    ports.insert("B1".into(), sorted_endpoint[1].0.clone());
+    ports.insert("B2".into(), sorted_endpoint[2].0.clone());
 
     Switch {
         id: node.0.to_string().into(),
-        switch_type: "point".into(),
+        switch_type: "point_switch".into(),
         ports,
         group_change_delay: 4.,
         ..Default::default()
@@ -218,14 +118,14 @@ pub fn point_switch(node: NodeId, branches: &[Branch]) -> Switch {
 
 pub fn cross_switch(node: NodeId, branches: &[Branch]) -> Switch {
     let mut ports = HashMap::new();
-    ports.insert("NORTH".into(), branches[0].0.clone());
-    ports.insert("SOUTH".into(), branches[0].1.clone());
-    ports.insert("EAST".into(), branches[1].0.clone());
-    ports.insert("WEST".into(), branches[1].1.clone());
+    ports.insert("A1".into(), branches[0].0.clone());
+    ports.insert("B1".into(), branches[0].1.clone());
+    ports.insert("B2".into(), branches[1].0.clone());
+    ports.insert("A2".into(), branches[1].1.clone());
 
     Switch {
         id: node.0.to_string().into(),
-        switch_type: "cross_over".into(),
+        switch_type: "crossing".into(),
         ports,
         group_change_delay: 4.,
         ..Default::default()
@@ -244,14 +144,14 @@ pub fn double_slip_switch(node: NodeId, branches: &[Branch]) -> Switch {
         .expect("Double slips must have two different branches");
 
     let mut ports = HashMap::new();
-    ports.insert("NORTH-1".into(), north1.clone());
-    ports.insert("SOUTH-1".into(), south1.clone());
-    ports.insert("NORTH-2".into(), north2.clone());
-    ports.insert("SOUTH-2".into(), south2.clone());
+    ports.insert("A1".into(), north1.clone());
+    ports.insert("B1".into(), south1.clone());
+    ports.insert("A2".into(), north2.clone());
+    ports.insert("B2".into(), south2.clone());
 
     Switch {
         id: node.0.to_string().into(),
-        switch_type: "double_slip".into(),
+        switch_type: "double_slip_switch".into(),
         ports,
         group_change_delay: 4.,
         ..Default::default()

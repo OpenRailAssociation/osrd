@@ -49,8 +49,12 @@ pub fn check_invalid_ref_switch_type(
     _: &Graph,
 ) -> Vec<InfraError> {
     let switch = switch.unwrap_switch();
-    if !infra_cache.switch_types().contains_key(&switch.switch_type) {
-        let obj_ref = ObjectRef::new(ObjectType::SwitchType, switch.switch_type.clone());
+    let switch_type = switch.switch_type.clone();
+    if !infra_cache
+        .switch_types()
+        .contains_key(&switch_type.clone())
+    {
+        let obj_ref = ObjectRef::new(ObjectType::SwitchType, switch_type.clone());
         vec![InfraError::new_invalid_reference(
             switch,
             "switch_type",
@@ -127,17 +131,17 @@ mod tests {
         let mut infra_cache = create_small_infra_cache();
         let switch = create_switch_cache_point(
             "SW_error".into(),
-            ("BASE", create_track_endpoint(Endpoint::End, "E")),
-            ("LEFT", create_track_endpoint(Endpoint::Begin, "C")),
-            ("RIGHT", create_track_endpoint(Endpoint::Begin, "D")),
-            "point".into(),
+            ("A", create_track_endpoint(Endpoint::End, "E")),
+            ("B1", create_track_endpoint(Endpoint::Begin, "C")),
+            ("B2", create_track_endpoint(Endpoint::Begin, "D")),
+            "point_switch".into(),
         );
         infra_cache.add(switch.clone());
         let errors =
             check_invalid_ref_ports(&switch.clone().into(), &infra_cache, &Default::default());
         assert_eq!(1, errors.len());
         let obj_ref = ObjectRef::new(ObjectType::TrackSection, "E");
-        let infra_error = InfraError::new_invalid_reference(&switch, "ports.BASE.track", obj_ref);
+        let infra_error = InfraError::new_invalid_reference(&switch, "ports.A.track", obj_ref);
         assert_eq!(infra_error, errors[0]);
     }
 
@@ -146,9 +150,9 @@ mod tests {
         let mut infra_cache = create_small_infra_cache();
         let switch = create_switch_cache_point(
             "SW_error".into(),
-            ("BASE", create_track_endpoint(Endpoint::End, "B")),
-            ("LEFT", create_track_endpoint(Endpoint::Begin, "C")),
-            ("RIGHT", create_track_endpoint(Endpoint::Begin, "D")),
+            ("A", create_track_endpoint(Endpoint::End, "B")),
+            ("B1", create_track_endpoint(Endpoint::Begin, "C")),
+            ("B2", create_track_endpoint(Endpoint::Begin, "D")),
             "non_existing_switch_type".into(),
         );
         infra_cache.add(switch.clone());
@@ -169,9 +173,9 @@ mod tests {
         let switch = create_switch_cache_point(
             "SW_error".into(),
             ("WRONG", create_track_endpoint(Endpoint::End, "B")),
-            ("LEFT", create_track_endpoint(Endpoint::Begin, "C")),
-            ("RIGHT", create_track_endpoint(Endpoint::Begin, "D")),
-            "point".into(),
+            ("B1", create_track_endpoint(Endpoint::Begin, "C")),
+            ("B2", create_track_endpoint(Endpoint::Begin, "D")),
+            "point_switch".into(),
         );
         infra_cache.add(switch.clone());
         let errors =
@@ -187,9 +191,9 @@ mod tests {
         let mut context = Context::default();
         let switch = create_switch_cache_point(
             "SW_error".into(),
-            ("BASE", create_track_endpoint(Endpoint::End, "B")),
-            ("LEFT", create_track_endpoint(Endpoint::Begin, "C")),
-            ("RIGHT", create_track_endpoint(Endpoint::Begin, "D")),
+            ("A", create_track_endpoint(Endpoint::End, "B")),
+            ("B1", create_track_endpoint(Endpoint::Begin, "C")),
+            ("B2", create_track_endpoint(Endpoint::Begin, "D")),
             "point".into(),
         );
         infra_cache.add(switch.clone());

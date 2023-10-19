@@ -23,7 +23,7 @@ use log::{debug, error};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-pub const RAILJSON_VERSION: &str = "3.4.5";
+pub const RAILJSON_VERSION: &str = "3.4.6";
 pub const INFRA_VERSION: &str = "0";
 
 #[derive(
@@ -126,7 +126,7 @@ impl Infra {
             Switch::persist_batch_pool(&railjson.switches, infra_id, db_pool.clone()),
             SpeedSection::persist_batch_pool(&railjson.speed_sections, infra_id, db_pool.clone()),
             SwitchType::persist_batch_pool(
-                &railjson.extend_switch_types,
+                &railjson.extended_switch_types,
                 infra_id,
                 db_pool.clone()
             ),
