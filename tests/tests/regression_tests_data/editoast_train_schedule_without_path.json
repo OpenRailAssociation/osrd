@@ -1,0 +1,88 @@
+{
+    "error_type": "STDCM",
+    "code": 500,
+    "error": "Exception when sending request",
+    "infra_name": "small_infra",
+    "path_payload": {},
+    "stdcm_payload": {
+        "infra_id": 2,
+        "rolling_stock_id": 449,
+        "timetable_id": 521,
+        "start_time": 30057,
+        "maximum_departure_delay": 2913,
+        "maximum_run_time": 35149,
+        "margin_before": 294,
+        "margin_after": 421,
+        "steps": [
+            {
+                "duration": 48.648136026284035,
+                "waypoints": [
+                    {
+                        "track_section": "TE1",
+                        "offset": 838.5930810537419
+                    }
+                ]
+            },
+            {
+                "duration": 0,
+                "waypoints": [
+                    {
+                        "track_section": "TE1",
+                        "offset": 15.748883274496084
+                    }
+                ]
+            },
+            {
+                "duration": 267.9715169542677,
+                "waypoints": [
+                    {
+                        "track_section": "TE3",
+                        "offset": 1712.9552574284496
+                    }
+                ]
+            },
+            {
+                "duration": 84.2127627405046,
+                "waypoints": [
+                    {
+                        "track_section": "TD0",
+                        "offset": 8978.797959594705
+                    }
+                ]
+            },
+            {
+                "duration": 0,
+                "waypoints": [
+                    {
+                        "track_section": "TA6",
+                        "offset": 4068.5080018903773
+                    }
+                ]
+            },
+            {
+                "duration": 0,
+                "waypoints": [
+                    {
+                        "track_section": "TA3",
+                        "offset": 26.283670627125844
+                    }
+                ]
+            },
+            {
+                "duration": 976.99396980496,
+                "waypoints": [
+                    {
+                        "track_section": "TA1",
+                        "offset": 1008.8658024850915
+                    }
+                ]
+            }
+        ],
+        "comfort": "STANDARD",
+        "standard_allowance": {
+            "value_type": "percentage",
+            "percentage": 0
+        }
+    },
+    "prelude": []
+}
