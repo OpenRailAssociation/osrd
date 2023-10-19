@@ -1,20 +1,7 @@
-use crate::models::pathfinding::Pathfinding;
-use crate::schema::Direction;
-
 use rangemap::RangeMap;
-use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use serde_derive::{Deserialize, Serialize};
 use std::fmt::Debug;
 use std::ops::Range;
-
-#[macro_export]
-macro_rules! range_map {
-    ($( $begin: expr , $end: expr => $value: expr ),*) => {{
-         let mut map: RangeMap<Float, String> = ::rangemap::RangeMap::new();
-         $( map.insert(($begin.into()..$end.into()), $value.into()); )*
-         map
-    }}
-}
 
 /// A struct to make f64 Ord, to use in RangeMap
 #[derive(Debug, PartialEq, Copy, Clone, Serialize)]
@@ -47,10 +34,19 @@ impl PartialOrd for Float {
 
 impl Eq for Float {}
 
-fn clip_range_map(
-    range_map: &RangeMap<Float, String>,
+#[macro_export]
+macro_rules! range_map {
+    ($( $begin: expr , $end: expr => $value: expr ),*) => {{
+         let mut map: RangeMap<$crate::rangemap_utils::Float, String> = ::rangemap::RangeMap::new();
+         $( map.insert(($begin.into()..$end.into()), $value.into()); )*
+         map
+    }}
+}
+
+pub fn clip_range_map<T: Eq + Clone>(
+    range_map: &RangeMap<Float, T>,
     clip_range: Range<Float>,
-) -> RangeMap<Float, String> {
+) -> RangeMap<Float, T> {
     let mut res = RangeMap::new();
     for (range, value) in range_map.overlapping(&clip_range) {
         let range = range.start.max(clip_range.start)..range.end.min(clip_range.end);
@@ -59,17 +55,22 @@ fn clip_range_map(
     res
 }
 
+pub enum TravelDir {
+    StartToStop,
+    StopToStart,
+}
+
 // Transforms a range map as though it was traveled from point `entry` in the given direction.
-fn travel_range_map(
-    track_range_map: &RangeMap<Float, String>,
+pub fn travel_range_map<T: Eq + Clone>(
+    track_range_map: &RangeMap<Float, T>,
     entry: f64,
-    direction: Direction,
-) -> RangeMap<Float, String> {
+    direction: TravelDir,
+) -> RangeMap<Float, T> {
     let mut res = RangeMap::new();
     for (range, value) in track_range_map.iter() {
         let (start, end) = match direction {
-            Direction::StartToStop => (range.start.0, range.end.0),
-            Direction::StopToStart => (range.end.0, range.start.0),
+            TravelDir::StartToStop => (range.start.0, range.end.0),
+            TravelDir::StopToStart => (range.end.0, range.start.0),
         };
 
         let range = (start - entry).abs().into()..(end - entry).abs().into();
@@ -79,9 +80,9 @@ fn travel_range_map(
 }
 
 /// Insert a range map in another, at the given offset.
-fn extend_range_map(
-    dest_range_map: &mut RangeMap<Float, String>,
-    origin_range_map: RangeMap<Float, String>,
+pub fn extend_range_map<T: Eq + Clone>(
+    dest_range_map: &mut RangeMap<Float, T>,
+    origin_range_map: RangeMap<Float, T>,
     offset: f64,
 ) {
     for (range, value) in origin_range_map.iter() {
@@ -89,31 +90,6 @@ fn extend_range_map(
         assert!(!dest_range_map.overlaps(&range), "range overlap");
         dest_range_map.insert(range, value.clone());
     }
-}
-
-pub fn make_path_range_map(
-    value_maps_by_track: &HashMap<String, RangeMap<Float, String>>,
-    pathfinding: &Pathfinding,
-) -> RangeMap<Float, String> {
-    let mut res = RangeMap::new();
-    let mut offset = 0.;
-
-    for track_range in pathfinding.merged_track_ranges() {
-        let value_map = value_maps_by_track.get(&track_range.track as &str);
-        if let Some(value_map) = value_map {
-            let value_map =
-                clip_range_map(value_map, track_range.begin.into()..track_range.end.into());
-            let range_entry = match track_range.direction {
-                Direction::StartToStop => track_range.begin,
-                Direction::StopToStart => track_range.end,
-            };
-            let value_map = travel_range_map(&value_map, range_entry, track_range.direction);
-            extend_range_map(&mut res, value_map, offset);
-        }
-        offset += track_range.end - track_range.begin;
-    }
-
-    res
 }
 
 /// A struct to represent range maps in responses
@@ -140,7 +116,6 @@ impl RangedValue {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::models::pathfinding::tests::simple_pathfinding;
 
     #[test]
     fn test_clip_range_map() {
@@ -154,7 +129,7 @@ mod tests {
     fn test_travel_range_map_start_to_stop() {
         let range_map = range_map!(5.0, 10.0 => "a", 10.0, 20.0 => "b", 20.0, 30.0 => "c");
 
-        let traveled = travel_range_map(&range_map, 5.0, Direction::StartToStop);
+        let traveled = travel_range_map(&range_map, 5.0, TravelDir::StartToStop);
         assert_eq!(
             traveled,
             range_map!(0.0, 5.0 => "a", 5.0, 15.0 => "b", 15.0, 25.0 => "c")
@@ -165,7 +140,7 @@ mod tests {
     fn test_travel_range_map_stop_to_start() {
         let range_map = range_map!(0.0, 10.0 => "a", 10.0, 22.0 => "b", 22.0, 25.0 => "c");
 
-        let traveled = travel_range_map(&range_map, 25.0, Direction::StopToStart);
+        let traveled = travel_range_map(&range_map, 25.0, TravelDir::StopToStart);
         assert_eq!(
             traveled,
             range_map!(0.0, 3.0 => "c", 3.0, 15.0 => "b", 15.0, 25.0 => "a")
@@ -198,27 +173,27 @@ mod tests {
     }
 
     #[test]
-    fn test_make_path_range_map() {
-        let pathfinding = simple_pathfinding(0);
-        let value_maps_by_track: HashMap<String, RangeMap<Float, String>> = [
-            ("track_1".into(), range_map!(0.0, 10.0 => "A")),
-            (
-                "track_2".into(),
-                range_map!(0.0, 5.0 => "B", 5.0, 10.0 => "A"),
-            ),
-            ("track_3".into(), range_map!(0.0, 10.0 => "B")),
-        ]
-        .iter()
-        .cloned()
-        .collect();
+    fn test_ranged_value_list_from_range_map() {
+        let range_map = range_map!(0.0, 10.0 => "a", 10.0, 20.0 => "b", 30.0, 40.0 => "c");
 
-        let path_range_map = make_path_range_map(&value_maps_by_track, &pathfinding);
-        assert_eq!(
-            path_range_map,
-            range_map!(
-                0.0, 15.0 => "A",
-                15.0, 30.0 => "B"
-            )
-        );
+        let expected = vec![
+            RangedValue {
+                begin: 0.0,
+                end: 10.0,
+                value: "a".to_string(),
+            },
+            RangedValue {
+                begin: 10.0,
+                end: 20.0,
+                value: "b".to_string(),
+            },
+            RangedValue {
+                begin: 30.0,
+                end: 40.0,
+                value: "c".to_string(),
+            },
+        ];
+
+        assert_eq!(RangedValue::list_from_range_map(&range_map), expected);
     }
 }

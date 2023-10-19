@@ -5,7 +5,7 @@ use crate::models::{
 use crate::schema::electrical_profiles::ElectricalProfileSetData;
 use crate::views::electrical_profiles::ElectricalProfilesError;
 use crate::views::pathfinding::{
-    rangemap_utils::{make_path_range_map, Float, RangedValue},
+    path_rangemap::{make_path_range_map, TrackMap},
     PathfindingError,
 };
 use crate::DbPool;
@@ -14,6 +14,7 @@ use actix_web::{
     get, services,
     web::{Data, Json, Path, Query},
 };
+use osrd_containers::rangemap_utils::RangedValue;
 use rangemap::RangeMap;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
@@ -28,7 +29,7 @@ fn map_electrical_profiles(
     electrical_profile_set: ElectricalProfileSetData,
     power_class: String,
     track_ids: HashSet<String>,
-) -> (HashMap<String, RangeMap<Float, String>>, Vec<InternalError>) {
+) -> (TrackMap<String>, Vec<InternalError>) {
     let mut warnings = Vec::new();
 
     let mut res = HashMap::new();
@@ -120,12 +121,12 @@ mod tests {
     use super::*;
     use crate::fixtures::tests::{db_pool, empty_infra, fast_rolling_stock, TestFixture};
     use crate::models::{pathfinding::tests::simple_pathfinding_fixture, Infra, RollingStockModel};
-    use crate::range_map;
     use crate::schema::{electrical_profiles::ElectricalProfile, TrackRange};
     use crate::views::tests::create_test_service;
     use crate::DieselJson;
     use actix_http::StatusCode;
     use actix_web::test::{call_service, read_body_json, TestRequest};
+    use osrd_containers::range_map;
     use rstest::*;
 
     #[fixture]
@@ -248,7 +249,7 @@ mod tests {
 
         assert_eq!(warnings.len(), 0);
 
-        let expected_maps_by_track: HashMap<String, RangeMap<Float, String>> = [
+        let expected_maps_by_track: TrackMap<String> = [
             ("track_1".into(), range_map!(0.0, 10.0 => "A")),
             (
                 "track_2".into(),

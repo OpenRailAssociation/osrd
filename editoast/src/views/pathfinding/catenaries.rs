@@ -2,7 +2,7 @@ use crate::error::{InternalError, Result};
 use crate::infra_cache::InfraCache;
 use crate::models::{pathfinding::Pathfinding, Infra, Retrieve};
 use crate::schema::ObjectType;
-use crate::views::pathfinding::rangemap_utils::{make_path_range_map, Float, RangedValue};
+use crate::views::pathfinding::path_rangemap::{make_path_range_map, TrackMap};
 use crate::views::pathfinding::PathfindingError;
 use crate::DbPool;
 use actix_web::{
@@ -11,6 +11,7 @@ use actix_web::{
     web::{Data, Json, Path},
 };
 use chashmap::CHashMap;
+use osrd_containers::rangemap_utils::RangedValue;
 use rangemap::RangeMap;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
@@ -24,7 +25,7 @@ pub fn routes() -> impl HttpServiceFactory {
 fn map_catenary_modes(
     infra_cache: &InfraCache,
     track_ids: HashSet<String>,
-) -> (HashMap<String, RangeMap<Float, String>>, Vec<InternalError>) {
+) -> (TrackMap<String>, Vec<InternalError>) {
     let mut warnings = Vec::new();
     let unique_catenary_ids = track_ids
         .iter()
@@ -114,7 +115,6 @@ pub mod tests {
             infra_objects::catenary::Catenary, pathfinding::tests::simple_pathfinding_fixture,
             Create,
         },
-        range_map,
         schema::{
             ApplicableDirections, ApplicableDirectionsTrackRange, Catenary as CatenarySchema,
         },
@@ -122,11 +122,12 @@ pub mod tests {
     };
     use actix_http::StatusCode;
     use actix_web::test::{call_service, read_body_json, TestRequest};
+    use osrd_containers::range_map;
     use rstest::*;
     use serde_json::from_value;
 
     #[fixture]
-    fn simple_mode_map() -> HashMap<String, RangeMap<Float, String>> {
+    fn simple_mode_map() -> TrackMap<String> {
         // The mode map associated to the following catenaries
         let mut mode_map = [
             ("track_1", "25kV"),
@@ -220,7 +221,7 @@ pub mod tests {
     async fn test_map_catenary_modes(
         db_pool: Data<DbPool>,
         #[future] infra_with_catenaries: TestFixture<Infra>,
-        simple_mode_map: HashMap<String, RangeMap<Float, String>>,
+        simple_mode_map: TrackMap<String>,
     ) {
         let mut conn = db_pool.get().await.unwrap();
         let infra_with_catenaries = infra_with_catenaries.await;

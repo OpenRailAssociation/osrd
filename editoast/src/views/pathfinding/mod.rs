@@ -1,6 +1,6 @@
 mod catenaries;
 mod electrical_profiles;
-mod rangemap_utils;
+mod path_rangemap;
 
 use std::collections::{HashMap, HashSet};
 
