@@ -38,7 +38,7 @@ pub use speed_section::SpeedSection;
 use strum_macros::Display;
 use strum_macros::EnumIter;
 pub use switch::{Switch, SwitchCache};
-pub use switch_type::{SwitchPortConnection, SwitchType};
+pub use switch_type::{default_node_types, SwitchPortConnection, SwitchType};
 pub use track_section::{Curve, Slope, TrackSection, TrackSectionCache};
 
 use self::utils::{Identifier, NonBlankString};
@@ -95,7 +95,7 @@ impl ObjectType {
             ObjectType::SpeedSection => "infra_object_speed_section",
             ObjectType::Detector => "infra_object_detector",
             ObjectType::Switch => "infra_object_switch",
-            ObjectType::SwitchType => "infra_object_switch_type",
+            ObjectType::SwitchType => "infra_object_extend_switch_type",
             ObjectType::BufferStop => "infra_object_buffer_stop",
             ObjectType::Route => "infra_object_route",
             ObjectType::OperationalPoint => "infra_object_operational_point",

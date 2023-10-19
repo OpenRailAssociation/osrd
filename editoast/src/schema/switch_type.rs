@@ -15,7 +15,7 @@ use std::collections::HashMap;
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq, InfraModel)]
 #[serde(deny_unknown_fields)]
-#[infra_model(table = "crate::tables::infra_object_switch_type")]
+#[infra_model(table = "crate::tables::infra_object_extend_switch_type")]
 #[derivative(Default)]
 pub struct SwitchType {
     pub id: Identifier,
@@ -51,6 +51,128 @@ impl Cache for SwitchType {
     fn get_object_cache(&self) -> ObjectCache {
         ObjectCache::SwitchType(self.clone())
     }
+}
+
+pub fn default_node_types() -> Vec<SwitchType> {
+    let mut link_group = std::collections::HashMap::new();
+    link_group.insert(
+        "LINK".into(),
+        vec![SwitchPortConnection {
+            src: "A".into(),
+            dst: "B".into(),
+        }],
+    );
+
+    let mut point_groups = std::collections::HashMap::new();
+    point_groups.insert(
+        "B1".into(),
+        vec![SwitchPortConnection {
+            src: "A".into(),
+            dst: "B2".into(),
+        }],
+    );
+    point_groups.insert(
+        "B1".into(),
+        vec![SwitchPortConnection {
+            src: "A".into(),
+            dst: "B1".into(),
+        }],
+    );
+
+    let mut cross_groups = std::collections::HashMap::new();
+    cross_groups.insert(
+        "DEFAULT".into(),
+        vec![
+            SwitchPortConnection {
+                src: "A1".into(),
+                dst: "B1".into(),
+            },
+            SwitchPortConnection {
+                src: "A2".into(),
+                dst: "B2".into(),
+            },
+        ],
+    );
+
+    let mut simple_cross_groups = std::collections::HashMap::new();
+    simple_cross_groups.insert(
+        "DEFAULT_2".into(),
+        vec![
+            SwitchPortConnection {
+                src: "A1".into(),
+                dst: "B1".into(),
+            },
+            SwitchPortConnection {
+                src: "A2".into(),
+                dst: "B2".into(),
+            },
+        ],
+    );
+    simple_cross_groups.insert(
+        "A1-B2".into(),
+        vec![SwitchPortConnection {
+            src: "A1".into(),
+            dst: "B2".into(),
+        }],
+    );
+
+    let mut double_cross_groups = std::collections::HashMap::new();
+    double_cross_groups.insert(
+        "A1-B1".into(),
+        vec![SwitchPortConnection {
+            src: "A1".into(),
+            dst: "B1".into(),
+        }],
+    );
+    double_cross_groups.insert(
+        "A1-B2".into(),
+        vec![SwitchPortConnection {
+            src: "A1".into(),
+            dst: "B2".into(),
+        }],
+    );
+    double_cross_groups.insert(
+        "A2-B1".into(),
+        vec![SwitchPortConnection {
+            src: "A2".into(),
+            dst: "B1".into(),
+        }],
+    );
+    double_cross_groups.insert(
+        "A2-B2".into(),
+        vec![SwitchPortConnection {
+            src: "A2".into(),
+            dst: "B2".into(),
+        }],
+    );
+
+    vec![
+        SwitchType {
+            id: "link".into(),
+            ports: vec!["A".into(), "B".into()],
+            groups: link_group,
+        },
+        SwitchType {
+            id: "point_switch".into(),
+            ports: vec!["A".into(), "A1".into(), "A2".into()],
+            groups: point_groups,
+        },
+        SwitchType {
+            id: "crossing".into(),
+            ports: vec!["A1".into(), "B1".into(), "A2".into(), "B2".into()],
+            groups: cross_groups,
+        },
+        SwitchType {
+            id: "single_slip_switch".into(),
+            ports: vec!["B1".into(), "B2".into(), "A1".into(), "A2".into()],
+            groups: simple_cross_groups,
+        },
+        SwitchType {
+            id: "double_slip_switch".into(),
+            ports: vec!["A1".into(), "A2".into(), "B1".into(), "B2".into()],
+            groups: double_cross_groups,
+        },
+    ]
 }
 
 #[cfg(test)]

@@ -52,7 +52,7 @@ pub fn parse_osm(osm_pbf_in: PathBuf) -> Result<RailJson, Box<dyn Error + Send +
     let nodes_tracks = NodeToTrack::from_edges(&edges);
     let signals = signals(&osm_pbf_in, &nodes_tracks, &adjacencies);
     let mut railjson = RailJson {
-        switch_types: default_switch_types(),
+        extend_switch_types: default_switch_types(),
         detectors: signals.iter().map(detector).collect(),
         signals,
         speed_sections: rail_edges.clone().flat_map(speed_sections).collect(),
@@ -148,7 +148,7 @@ mod tests {
             ports.get(&name.into()).unwrap().track.0 == expected
         }
         let mut railjson = parse_osm("src/tests/switches.osm.pbf".into()).unwrap();
-        assert_eq!(4, railjson.switch_types.len());
+        assert_eq!(4, railjson.extend_switch_types.len());
         assert_eq!(4, railjson.switches.len());
         assert_eq!(18, railjson.buffer_stops.len());
 

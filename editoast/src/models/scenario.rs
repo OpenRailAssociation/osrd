@@ -174,7 +174,6 @@ impl List<(i64, Ordering)> for ScenarioWithCountTrains {
     ) -> Result<PaginatedResponse<Self>> {
         let study_id = params.0;
         let ordering = params.1.to_sql();
-        dbg!("ok");
         sql_query(format!("SELECT t.*,COUNT(train_schedule.id) as trains_count FROM scenario as t
             LEFT JOIN train_schedule ON t.timetable_id = train_schedule.timetable_id WHERE t.study_id = $1
             GROUP BY t.id ORDER BY {ordering}"))

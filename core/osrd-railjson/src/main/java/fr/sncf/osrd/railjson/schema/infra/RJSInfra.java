@@ -45,7 +45,7 @@ public class RJSInfra {
     public Collection<RJSRoute> routes;
 
     /** The map of switch types */
-    @Json(name = "switch_types")
+    @Json(name = "extend_switch_types")
     public List<RJSSwitchType> switchTypes;
 
     public List<RJSSignal> signals;

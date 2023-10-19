@@ -23,7 +23,7 @@ use crate::models::infra::INFRA_VERSION;
 use crate::models::{
     Create, Delete, Infra, List as ModelList, NoParams, Retrieve, Update, RAILJSON_VERSION,
 };
-use crate::schema::{ObjectType, SwitchType};
+use crate::schema::{default_node_types, ObjectType, SwitchType};
 use crate::views::pagination::{PaginatedResponse, PaginationQueryParam};
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
@@ -65,9 +65,9 @@ pub fn routes() -> impl HttpServiceFactory {
                     rename,
                     lock,
                     unlock,
-                    get_switch_types,
                     get_speed_limit_tags,
                     get_voltages,
+                    get_switch_types,
                 ))
                 .service((
                     errors::routes(),
@@ -382,14 +382,16 @@ async fn get_switch_types(
 
     let mut conn = db_pool.get().await?;
     let infra = InfraCache::get_or_load(&mut conn, &infra_caches, &infra).await?;
-    Ok(Json(
-        infra
+    let mut node_types = default_node_types();
+    node_types.append(
+        &mut infra
             .switch_types()
             .values()
             .map(ObjectCache::unwrap_switch_type)
             .cloned()
             .collect(),
-    ))
+    );
+    Ok(Json(node_types))
 }
 
 /// Returns the set of speed limit tags for a given infra
@@ -551,7 +553,7 @@ pub mod tests {
     };
     use crate::models::RollingStockModel;
     use crate::schema::operation::{Operation, RailjsonObject};
-    use crate::schema::{Catenary, SpeedSection};
+    use crate::schema::{Catenary, SpeedSection, SwitchType};
     use crate::views::tests::{create_test_service, create_test_service_with_core_client};
     use actix_http::Request;
     use actix_web::http::StatusCode;
@@ -825,7 +827,7 @@ pub mod tests {
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
         let switch_types: Vec<SwitchType> = read_body_json(response).await;
-        assert_eq!(switch_types.len(), 1);
+        assert_eq!(switch_types.len(), 6);
         assert_eq!(switch_types[0].id, switch_type_id);
     }
 

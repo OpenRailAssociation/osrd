@@ -10,9 +10,9 @@ from .schema.infra.speed_section import SpeedSection
 from .schema.infra.switch import (
     Crossing,
     DoubleSlipSwitch,
+    Link,
     PointSwitch,
     SwitchGroup,
-    Link,
 )
 from .schema.infra.track_section import TrackSection
 from .utils import generate_routes
