@@ -1,4 +1,4 @@
-import { listCurvesComfort } from 'modules/rollingStock/components/RollingStockSelector/RollingStockCardDetail';
+import { listCurvesComfort } from 'modules/rollingStock/components/RollingStockCard/RollingStockCardDetail';
 import {
   Comfort,
   ConditionalEffortCurve,
@@ -670,7 +670,7 @@ export default function RollingStockEditorCurves({
               columnLabels={[t('speed'), t('effort')]}
             />
           </div>
-          <div className="rollingstock-body">
+          <div className="rollingstock-card-body">
             {!isEmpty(selectedCurves[selectedTractionMode]?.curves) && rollingstockParams && (
               <RollingStockCurve
                 curvesComfortList={[selectedComfortLvl]}

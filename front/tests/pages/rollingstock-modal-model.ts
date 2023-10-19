@@ -25,7 +25,7 @@ class PlaywrightRollingstockModalPage {
   constructor(page: Page) {
     this.page = page;
     this.playwrightCommonPage = new PlaywrightCommonPage(page);
-    this.getRollingStockSelector = page.getByTestId('rollingstock-selector');
+    this.getRollingStockSelector = page.getByTestId('rollingstock-selector-minicard');
     this.getRollingstockModal = page.locator('.modal-dialog');
     this.getResultsFound = page.locator('.modal-dialog').locator('small').first();
     this.getRollingStockSearch = this.getRollingstockModal.locator('#searchfilter');

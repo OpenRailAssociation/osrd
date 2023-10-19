@@ -78,7 +78,7 @@ class PlaywrightScenarioPage {
   readonly getSuccessBtn: Locator;
 
   constructor(readonly page: Page) {
-    this.getRollingStockSelector = page.getByTestId('rollingstock-selector');
+    this.getRollingStockSelector = page.getByTestId('rollingstock-selector-minicard');
     this.getSpeedLimitSelector = page.getByTestId('speed-limit-by-tag-selector');
     this.getItineraryModule = page.getByTestId('itinerary');
     this.getItineraryOrigin = this.getItineraryModule

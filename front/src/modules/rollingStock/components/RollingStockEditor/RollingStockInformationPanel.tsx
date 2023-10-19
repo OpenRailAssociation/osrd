@@ -1,29 +1,30 @@
+import cx from 'classnames';
 import React, { useState } from 'react';
 import { Comfort, RollingStock } from 'common/api/osrdEditoastApi';
 import RollingStockCardDetail, {
   listCurvesComfort,
-} from 'modules/rollingStock/components/RollingStockSelector/RollingStockCardDetail';
+} from 'modules/rollingStock/components/RollingStockCard/RollingStockCardDetail';
 import { RollingStockInfo } from 'modules/rollingStock/components/RollingStockSelector/RollingStockHelpers';
 import RollingStockCurve from 'modules/rollingStock/components/RollingStockCurve';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 
-type RollingStockEditorCardProps = {
+type RollingStockInformationPanelProps = {
   id: number;
   isEditing: boolean;
   rollingStock: RollingStock;
 };
 
-export default function RollingStockEditorCard({
+export default function RollingStockInformationPanel({
   id,
   isEditing,
   rollingStock,
-}: RollingStockEditorCardProps) {
+}: RollingStockInformationPanelProps) {
   const [curvesComfortList, setCurvesComfortList] = useState<Comfort[]>([]);
 
   return (
-    <div className={`rollingstock-editor-form ${!isEditing ? 'borders' : ''} w-100`}>
+    <div className={cx('rollingstock-editor-form', { borders: !isEditing })}>
       <div>
-        <div className="rollingstock-header">
+        <div className="rollingstock-card-header">
           <div className="rollingstock-title">
             <RollingStockInfo rollingStock={rollingStock} />
           </div>
@@ -35,7 +36,7 @@ export default function RollingStockEditorCard({
           curvesComfortList={curvesComfortList}
           setCurvesComfortList={setCurvesComfortList}
         />
-        <div className="rollingstock-body border-0">
+        <div className="rollingstock-card-body border-0">
           <RollingStockCurve
             curvesComfortList={listCurvesComfort(rollingStock.effort_curves)}
             data={rollingStock.effort_curves.modes}

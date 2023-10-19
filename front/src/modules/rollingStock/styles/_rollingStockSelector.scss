@@ -1,0 +1,128 @@
+.rollingstock-selector-minicard{
+  .rollingstock-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    .rollingstock-info-begin {
+      display: flex;
+      align-items: center;
+      flex-grow: 1;
+      background-color: var(--coolgray1);
+      border-radius: 4px;
+      padding: 0.25rem 0.5rem;
+      position: relative;
+      min-height: 1.5rem;
+      .rollingstock-info-series {
+        position: relative;
+        font-weight: bold;
+      }
+      .rollingstock-info-unit {
+        position: relative;
+        &.UM2 {
+          color: #6e1e78;
+        }
+        &.UM3 {
+          color: #a1006b;
+        }
+        font-weight: bold;
+        margin-left: 0.25rem;
+        font-size: 0.7rem;
+      }
+      .rollingstock-info-subseries {
+        position: relative;
+        margin-left: 0.25rem;
+        text-transform: uppercase;
+        vertical-align: text-bottom;
+        font-size: 0.7rem;
+      }
+    }
+  }
+  .rollingstock-container-img {
+    overflow: hidden;
+    .rollingstock-img {
+      height: 2rem;
+      white-space: nowrap;
+      transform: scale(
+        0.4
+      ); // Have to scale whole <img> because electric trains with pantograph have taller pictures
+      transform-origin: left;
+      img {
+        display: inline-block;
+        position: relative;
+        vertical-align: baseline;
+        max-height: 4rem;
+      }
+    }
+  }
+  .rollingstock-minicard-end {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.5rem;
+    gap: 0.5rem;
+    .rollingstock-info-comfort {
+      display: flex;
+      align-items: center;
+      background-color: var(--coolgray1);
+      height: 1.5rem;
+      margin-left: auto;
+      padding: 0rem 0.5rem;
+      border-radius: 4px;
+    }
+    .comfort-AC,
+    .comfort-HEATING {
+      display: flex;
+    }
+    .rollingstock-info-end {
+      display: flex;
+      align-items: center;
+      height: 1.5rem;
+      position: relative;
+      border: 1px solid var(--coolgray3);
+      color: var(--coolgray9);
+      border-radius: 4px;
+      padding: 0 0.5rem;
+      font-size: 0.8rem;
+    }
+  }
+}
+
+.rollingstock-selector {
+  display: flex;
+  flex-direction: column;
+  height: 80vh;
+
+  .rollingstock-search-filters {
+    display: block;
+    position: relative;
+    background-color: #fff;
+    border-radius: 4px;
+  }
+
+  .rollingstock-search-list {
+    overflow: auto;
+    flex-grow: 1;
+    .loader {
+      margin-top: 1rem;
+      transform: none;
+    }
+    .rollingstock-empty {
+      display: flex;
+      position: relative;
+      margin-top: 2rem;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      span {
+        z-index: 1;
+        font-size: 4rem;
+        color: #a0a0a0;
+      }
+      img {
+        position: absolute;
+        width: 7rem;
+        filter: blur(2px);
+        opacity: 0.2;
+      }
+    }
+  }
+}

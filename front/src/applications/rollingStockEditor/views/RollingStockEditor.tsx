@@ -1,15 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-import {
-  RollingStockCard,
-  SearchRollingStock,
-} from 'modules/rollingStock/components/RollingStockSelector';
+import { SearchRollingStock } from 'modules/rollingStock/components/RollingStockSelector';
+import { RollingStockCard } from 'modules/rollingStock/components/RollingStockCard';
 import { useDispatch } from 'react-redux';
 import Loader from 'common/Loader';
 import { useTranslation } from 'react-i18next';
 import { LightRollingStock, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import RollingStockEditorButtons from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorButtons';
-import RollingStockEditorCard from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorCard';
+import RollingStockInformationPanel from 'modules/rollingStock/components/RollingStockEditor/RollingStockInformationPanel';
 import RollingStockEditorForm from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorForm';
 import { STANDARD_COMFORT_LEVEL } from 'modules/rollingStock/consts';
 import {
@@ -97,7 +95,7 @@ export default function RollingStockEditor({ rollingStocks }: RollingStockEditor
             <div className="d-flex flex-column pl-0 rollingstock-editor-form-container mb-3">
               {(selectedRollingStock || isEditing) &&
                 ((selectedRollingStock && !isEditing && (
-                  <RollingStockEditorCard
+                  <RollingStockInformationPanel
                     id={openedRollingStockCardId}
                     isEditing={isEditing}
                     rollingStock={selectedRollingStock}

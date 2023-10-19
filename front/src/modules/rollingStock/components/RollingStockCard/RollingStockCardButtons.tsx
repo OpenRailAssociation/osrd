@@ -11,7 +11,7 @@ import {
   updateRollingStockID,
 } from 'reducers/osrdconf';
 import { getRollingStockComfort } from 'reducers/osrdconf/selectors';
-import { comfort2pictogram } from './RollingStockHelpers';
+import { comfort2pictogram } from '../RollingStockSelector/RollingStockHelpers';
 
 interface RollingStockCardButtonsProps {
   id: number;

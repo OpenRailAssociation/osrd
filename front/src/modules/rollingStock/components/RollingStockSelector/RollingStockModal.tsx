@@ -9,7 +9,7 @@ import { getRollingStockID } from 'reducers/osrdconf/selectors';
 import Loader from 'common/Loader';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import RollingStockCard from './RollingStockCard';
+import RollingStockCard from 'modules/rollingStock/components/RollingStockCard/RollingStockCard';
 import SearchRollingStock from './SearchRollingStock';
 
 interface RollingStockModal {
@@ -80,7 +80,7 @@ function RollingStockModal({ ref2scroll }: RollingStockModal) {
 
   return (
     <ModalBodySNCF style={{ paddingBottom: 0 }}>
-      <div className="rollingstock-search p-2">
+      <div className="rollingstock-selector p-2">
         <div className="rollingstock-search-filters">
           <button type="button" className="close" aria-label="Close" onClick={closeModal}>
             <span aria-hidden="true">&times;</span>

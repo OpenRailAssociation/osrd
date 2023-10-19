@@ -3,21 +3,21 @@
 }
 .rollingstock-container {
   &:hover {
-    .rollingstock-header, .rollingstock-body, .rollingstock-footer {
+    .rollingstock-card-header, .rollingstock-card-body, .rollingstock-footer {
       border-color: var(--coolgray3);
     }
   }
   &.active {
-    .rollingstock-header, .rollingstock-body, .rollingstock-footer {
+    .rollingstock-card-header, .rollingstock-card-body, .rollingstock-footer {
       border-color: var(--blue);
     }
   }
 }
-.rollingstock-header {
+.rollingstock-card-header {
   background-color: var(--gray);
   border-color: var(--gray);
 }
 
-.rollingstock-body, .rollingstock-footer {
+.rollingstock-card-body, .rollingstock-footer {
   border-color: var(--gray);
 }
