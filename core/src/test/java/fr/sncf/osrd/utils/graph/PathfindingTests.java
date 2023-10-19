@@ -264,6 +264,28 @@ public class PathfindingTests {
     }
 
     @Test
+    public void noPathTestSameEdge() {
+        /* No possible path without going backwards, with several steps on the last edge
+
+        0 -> B -> 1 -> 2 -> E2 -> E1 -> 3
+         */
+        var builder = new SimpleGraphBuilder();
+        builder.makeNodes(4);
+        builder.makeEdge(0, 1, 100);
+        builder.makeEdge(1, 2, 100);
+        builder.makeEdge(2, 3, 100);
+        var g = builder.build();
+        var res = new Pathfinding<>(g)
+                .setEdgeToLength(edge -> edge.length)
+                .runPathfindingEdgesOnly(List.of(
+                        List.of(builder.getEdgeLocation("0-1")),
+                        List.of(builder.getEdgeLocation("2-3", 20)),
+                        List.of(builder.getEdgeLocation("2-3", 10))
+                ));
+        assertNull(res);
+    }
+
+    @Test
     public void sameEdgeNoPathTest() {
         /* The end is on the same edge but at a smaller offset that the start: no path
 

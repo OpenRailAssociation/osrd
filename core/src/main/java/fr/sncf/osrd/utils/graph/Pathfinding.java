@@ -169,28 +169,29 @@ public class Pathfinding<NodeT, EdgeT> {
             seen.put(step.range, step.nReachedTargets);
             if (hasReachedEnd(targetsOnEdges.size(), step))
                 return buildResult(step);
-            // Check if the next target is reached in this step
-            for (var target : targetsOnEdges.get(step.nReachedTargets).apply(step.range.edge))
-                if (step.range.start <= target.offset) {
-                    // Adds a new step precisely on the stop location. This ensures that we don't ignore the
-                    // distance between the start of the edge and the stop location
-                    var newRange = new EdgeRange<>(target.edge, step.range.start, target.offset);
-                    newRange = filterRange(newRange);
-                    assert newRange != null;
-                    if (newRange.end != target.offset) {
-                        // The target location is blocked by a blocked range, it can't be accessed from here
-                        continue;
+            // Check if the next target is reached in this step, only if the step doesn't already reach a step
+            if (step.prev == null || step.nReachedTargets == step.prev.nReachedTargets)
+                for (var target : targetsOnEdges.get(step.nReachedTargets).apply(step.range.edge))
+                    if (step.range.start <= target.offset) {
+                        // Adds a new step precisely on the stop location. This ensures that we don't ignore the
+                        // distance between the start of the edge and the stop location
+                        var newRange = new EdgeRange<>(target.edge, step.range.start, target.offset);
+                        newRange = filterRange(newRange);
+                        assert newRange != null;
+                        if (newRange.end != target.offset) {
+                            // The target location is blocked by a blocked range, it can't be accessed from here
+                            continue;
+                        }
+                        var stepTargets = new ArrayList<>(step.targets);
+                        stepTargets.add(target);
+                        registerStep(
+                                newRange,
+                                step.prev,
+                                step.totalDistance,
+                                step.nReachedTargets + 1,
+                                stepTargets
+                        );
                     }
-                    var stepTargets = new ArrayList<>(step.targets);
-                    stepTargets.add(target);
-                    registerStep(
-                            newRange,
-                            step.prev,
-                            step.totalDistance,
-                            step.nReachedTargets + 1,
-                            stepTargets
-                    );
-                }
             var edgeLength = edgeToLength.apply(step.range.edge);
             if (step.range.end == edgeLength) {
                 // We reach the end of the edge: we visit neighbors
