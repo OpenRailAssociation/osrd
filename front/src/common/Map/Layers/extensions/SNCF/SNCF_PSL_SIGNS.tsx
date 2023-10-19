@@ -3,13 +3,15 @@ import { MAP_URL } from 'common/Map/const';
 import { LayerProps, Source, SymbolLayer } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
 import { getInfraID } from 'reducers/osrdconf/selectors';
-import { OmitLayer } from 'types';
+import { Theme, OmitLayer } from 'types';
 import { isNil } from 'lodash';
 import { getMap } from 'reducers/map/selectors';
 import OrderedLayer from '../../OrderedLayer';
 import { LayerContext } from '../../types';
+import configKPLabelLayer from '../../configKPLabelLayer';
 
 interface SNCF_PSL_SignsProps {
+  colors: Theme;
   layerOrder?: number;
 }
 
@@ -94,7 +96,7 @@ export function getPSLSignsMastLayerProps({
 
 export default function SNCF_PSL_Signs(props: SNCF_PSL_SignsProps) {
   const infraID = useSelector(getInfraID);
-  const { layerOrder } = props;
+  const { colors, layerOrder } = props;
 
   const { mapStyle } = useSelector(getMap);
   const prefix = mapStyle === 'blueprint' ? 'SCHB ' : '';
@@ -116,6 +118,16 @@ export default function SNCF_PSL_Signs(props: SNCF_PSL_SignsProps) {
     >
       <OrderedLayer {...mastsParams} layerOrder={layerOrder} />
       <OrderedLayer {...signsParams} layerOrder={layerOrder} />
+      <OrderedLayer
+        {...configKPLabelLayer({
+          colors,
+          minzoom: 9.5,
+          sourceLayer: 'psl_signs',
+          rotation: 'map',
+        })}
+        id="chartis/osrd_psl_signs_kp/geo"
+        layerOrder={layerOrder}
+      />
     </Source>
   );
 }
