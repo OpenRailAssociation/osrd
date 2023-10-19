@@ -10,12 +10,12 @@ import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import configKPLabelLayer from 'common/Map/Layers/configKPLabelLayer';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 
-interface PlatformProps {
+interface Props {
   colors: Theme;
   layerOrder: number;
 }
 
-export default function OperationalPoints(props: PlatformProps) {
+export default function OperationalPoints(props: Props) {
   const { layersSettings } = useSelector((state: RootState) => state.map);
   const infraID = useSelector(getInfraID);
   const { colors, layerOrder } = props;
@@ -148,6 +148,7 @@ export default function OperationalPoints(props: PlatformProps) {
             colors,
             minzoom: 9.5,
             sourceLayer: 'operational_points',
+            fieldName: 'extensions_sncf_kp',
           })}
           id="chartis/osrd_operational_point_kp/geo"
           layerOrder={layerOrder}

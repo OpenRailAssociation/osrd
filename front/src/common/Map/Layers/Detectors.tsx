@@ -80,6 +80,7 @@ const Detectors: FC<DetectorsProps> = ({ colors, layerOrder }) => {
           colors,
           minzoom: 10,
           sourceLayer: 'detectors',
+          fieldName: 'extensions_sncf_kp',
         })}
         id="chartis/osrd_detectors_kp/geo"
         layerOrder={layerOrder}

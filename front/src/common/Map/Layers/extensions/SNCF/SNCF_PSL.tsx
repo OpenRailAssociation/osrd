@@ -212,7 +212,7 @@ export default function SNCF_PSL(props: SNCF_PSLProps) {
             layerOrder={layerOrder}
           />
         </Source>
-        <SNCF_PSL_Signs layerOrder={layerOrder} />
+        <SNCF_PSL_Signs colors={colors} layerOrder={layerOrder} />
       </>
     );
   }

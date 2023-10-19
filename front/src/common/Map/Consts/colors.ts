@@ -23,6 +23,11 @@ const colors: Record<string, Theme> = {
     electricbox: {
       text: '#b42222',
     },
+    kp: {
+      circle: '#162873',
+      text: '#4d4f53',
+      halo: '#ffffff',
+    },
     kvb: {
       color: '#ffc700',
     },
@@ -93,11 +98,6 @@ const colors: Record<string, Theme> = {
     },
     routes: {
       text: '#e05206',
-      halo: '#ffffff',
-    },
-    rk: {
-      circle: '#162873',
-      text: '#4d4f53',
       halo: '#ffffff',
     },
     sign: {
@@ -175,6 +175,11 @@ const colors: Record<string, Theme> = {
     electricbox: {
       text: '#b42222',
     },
+    kp: {
+      circle: '#8338ec',
+      text: '#8338ec',
+      halo: '#8338ec',
+    },
     kvb: {
       color: '#ffc700',
     },
@@ -242,11 +247,6 @@ const colors: Record<string, Theme> = {
     },
     railyard: {
       text: '#8095c3',
-    },
-    rk: {
-      circle: '#8338ec',
-      text: '#8338ec',
-      halo: '#8338ec',
     },
     routes: {
       text: '#e05206',
@@ -319,6 +319,11 @@ const colors: Record<string, Theme> = {
     electricbox: {
       text: bpLight,
     },
+    kp: {
+      circle: bpLight,
+      text: bpLight,
+      halo: bpLight,
+    },
     kvb: {
       color: bpLight,
     },
@@ -386,11 +391,6 @@ const colors: Record<string, Theme> = {
     },
     railyard: {
       text: bpLight,
-    },
-    rk: {
-      circle: bpLight,
-      text: bpLight,
-      halo: bpLight,
     },
     routes: {
       text: bpLight,
