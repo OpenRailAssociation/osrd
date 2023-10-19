@@ -1,4 +1,4 @@
-import { ProjectResult, ScenarioListResult, StudyResult } from 'common/api/osrdEditoastApi';
+import { ProjectWithStudies, ScenarioListResult, StudyResult } from 'common/api/osrdEditoastApi';
 
 export type ScenarioExplorerProps = {
   globalProjectId?: number;
@@ -12,7 +12,7 @@ type MiniCardsProps = {
 };
 
 export interface MiniCardsProjectProps extends MiniCardsProps {
-  project: ProjectResult;
+  project: ProjectWithStudies;
 }
 export interface MiniCardsStudyProps extends MiniCardsProps {
   study: StudyResult;
@@ -24,5 +24,5 @@ export interface MiniCardsScenarioProps extends MiniCardsProps {
 }
 
 export type MiniCardsImageProps = {
-  project: ProjectResult;
+  project: ProjectWithStudies;
 };

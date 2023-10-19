@@ -1,6 +1,10 @@
 import React from 'react';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
-import { ProjectResult, SearchProjectResult, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import {
+  ProjectWithStudies,
+  SearchProjectResult,
+  osrdEditoastApi,
+} from 'common/api/osrdEditoastApi';
 import { useTranslation } from 'react-i18next';
 import { AiFillCheckCircle } from 'react-icons/ai';
 import { FaTrash } from 'react-icons/fa';
@@ -10,8 +14,8 @@ import DeleteProjectsModal from './DeleteProjectsModal';
 type Props = {
   selectedProjectIds: number[];
   setSelectedProjectIds: (ids: number[]) => void;
-  projectsList: Array<ProjectResult | SearchProjectResult>;
-  setProjectsList: (list: Array<ProjectResult | SearchProjectResult>) => void;
+  projectsList: Array<ProjectWithStudies | SearchProjectResult>;
+  setProjectsList: (list: Array<ProjectWithStudies | SearchProjectResult>) => void;
 };
 
 export default function ProjectSelectionToolbar({
