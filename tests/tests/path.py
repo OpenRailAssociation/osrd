@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Any, Iterable
 
@@ -10,6 +11,6 @@ class Path:
     length: float
     slopes: Iterable[Any]
     curves: Iterable[Any]
-    steps: Iterable[Any]
+    steps: Sequence[Any]
     geographic: Any
     schematic: Any

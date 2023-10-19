@@ -1,5 +1,6 @@
+from collections.abc import Sequence
 from itertools import chain
-from typing import Any, Iterable
+from typing import Any
 
 import pytest
 
@@ -215,7 +216,7 @@ def assert_points_are_equals(geometry, expected_geometry):
     assert geometry["coordinates"] == pytest.approx(expected_geometry["coordinates"])
 
 
-def assert_steps_are_equals(steps: Iterable[Any], expected_steps: Iterable[Any]):
+def assert_steps_are_equals(steps: Sequence[Any], expected_steps: Sequence[Any]):
     assert len(steps) == len(expected_steps)
 
     for i in range(len(steps)):

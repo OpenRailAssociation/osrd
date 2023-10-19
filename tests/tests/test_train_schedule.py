@@ -1,5 +1,5 @@
 import json
-from typing import Iterable
+from collections.abc import Sequence
 
 import requests
 
@@ -28,7 +28,7 @@ def _update_simulation_with_mareco_allowances(editoast_url, train_Schedule_id):
     return body
 
 
-def test_get_and_update_schedule_result(west_to_south_east_simulation: Iterable[int]):
+def test_get_and_update_schedule_result(west_to_south_east_simulation: Sequence[int]):
     schedule_id = west_to_south_east_simulation[0]
     response = requests.get(f"{EDITOAST_URL}train_schedule/{schedule_id}/result/")
     if response.status_code // 100 != 2:
@@ -46,7 +46,7 @@ def test_get_and_update_schedule_result(west_to_south_east_simulation: Iterable[
     assert "eco" in simulation_report
 
 
-def test_editoast_get_and_update_schedule_result(west_to_south_east_simulation: Iterable[int]):
+def test_editoast_get_and_update_schedule_result(west_to_south_east_simulation: Sequence[int]):
     schedule_id = west_to_south_east_simulation[0]
     response = requests.get(f"{EDITOAST_URL}train_schedule/{schedule_id}/result/")
     if response.status_code // 100 != 2:
@@ -64,7 +64,7 @@ def test_editoast_get_and_update_schedule_result(west_to_south_east_simulation: 
     assert "eco" in simulation_report
 
 
-def test_api_bulk_delete(small_scenario, west_to_south_east_simulations: Iterable[int]):
+def test_api_bulk_delete(small_scenario, west_to_south_east_simulations: Sequence[int]):
     ids = west_to_south_east_simulations[0:2]
     schedules = requests.get(f"{EDITOAST_URL}train_schedule/results/?timetable_id={small_scenario.timetable}").json()
     old_len = len(schedules)
@@ -75,7 +75,7 @@ def test_api_bulk_delete(small_scenario, west_to_south_east_simulations: Iterabl
     assert len(schedules) == old_len - 2
 
 
-def test_editoast_bulk_delete(small_scenario, west_to_south_east_simulations: Iterable[int]):
+def test_editoast_bulk_delete(small_scenario, west_to_south_east_simulations: Sequence[int]):
     ids = west_to_south_east_simulations[0:2]
     schedules = requests.get(f"{EDITOAST_URL}train_schedule/results/?timetable_id={small_scenario.timetable}").json()
     old_len = len(schedules)
