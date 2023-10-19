@@ -74,6 +74,7 @@ def _two_train_simulation_payload(path_id: int, timetable_id: int, rolling_stock
                 "type": "editoast:timetable:NotFound",
                 "context": {"timetable_id": -1},
                 "message": "Timetable '-1', could not be found",
+                "status": 404,
             },
         ),
     ],
