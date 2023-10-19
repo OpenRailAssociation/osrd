@@ -14,6 +14,7 @@ from requests import Response, Timeout
 
 # TODO: we may want to use more qualified imports
 import conftest
+from tests.scenario import Scenario
 
 TIMEOUT = 15
 # TODO: since infra ids are not stable, we may want to change to an infra name
@@ -30,16 +31,6 @@ Generates random tests, running pathfinding + simulations on random paths.
 
 class FailedTest(Exception):
     pass
-
-
-# TODO: this is duplicated in tests/scenario.py
-@dataclass
-class Scenario:
-    project: int
-    op_study: int
-    scenario: int
-    infra: int
-    timetable: int
 
 
 class ErrorType(str, Enum):
