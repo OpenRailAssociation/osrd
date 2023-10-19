@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Any, Iterable, List
+from typing import Any, Iterable, List, Optional
 
 import pytest
 import requests
@@ -80,13 +80,36 @@ def small_scenario(small_infra: Infra, foo_project_id: int, foo_study_id: int) -
     yield Scenario(foo_project_id, foo_study_id, scenario_id, small_infra.id, timetable_id)
 
 
-def _create_fast_rolling_stocks(test_rolling_stocks: List[TestRollingStock] = None):
+def get_rolling_stock(editoast_url: str, rolling_stock_name: str) -> int:
+    """
+    Returns the ID corresponding to the rolling stock name, if available.
+    :param editoast_url: Api url
+    :param rolling_stock_name: name of the rolling stock
+    :return: ID the rolling stock
+    """
+    page = 1
+    while page is not None:
+        # TODO: feel free to reduce page_size when https://github.com/osrd-project/osrd/issues/5350 is fixed
+        r = requests.get(editoast_url + "light_rolling_stock/", params={"page": page, "page_size": 1_000})
+        if r.status_code // 100 != 2:
+            raise RuntimeError(f"Rolling stock error {r.status_code}: {r.content}")
+        rjson = r.json()
+        for rolling_stock in rjson["results"]:
+            if rolling_stock["name"] == rolling_stock_name:
+                return rolling_stock["id"]
+        page = rjson.get("next")
+    raise ValueError(f"Unable to find rolling stock {rolling_stock_name}")
+
+
+def create_fast_rolling_stocks(test_rolling_stocks: Optional[List[TestRollingStock]] = None):
     if test_rolling_stocks is None:
         payload = json.loads(FAST_ROLLING_STOCK_JSON_PATH.read_text())
-        response = requests.post(f"{EDITOAST_URL}rolling_stock/", json=payload).json()
-        # TODO: if the fast_rolling_stock already exists, we should probably fetch it
-        assert "id" in response, f"Failed to create rolling stock: {response}"
-        return [response["id"]]
+        response = requests.post(f"{EDITOAST_URL}rolling_stock/", json=payload)
+        rjson = response.json()
+        if response.status_code // 100 == 4 and "NameAlreadyUsed" in rjson["type"]:
+            return [get_rolling_stock(EDITOAST_URL, rjson["context"]["name"])]
+        assert "id" in rjson, f"Failed to create rolling stock: {rjson}"
+        return [rjson["id"]]
     ids = []
     for rs in test_rolling_stocks:
         payload = json.loads(rs.base_path.read_text())
@@ -98,7 +121,7 @@ def _create_fast_rolling_stocks(test_rolling_stocks: List[TestRollingStock] = No
 
 @pytest.fixture
 def fast_rolling_stocks(request: Any) -> Iterable[int]:
-    ids = _create_fast_rolling_stocks(request.node.get_closest_marker("names_and_metadata").args[0])
+    ids = create_fast_rolling_stocks(request.node.get_closest_marker("names_and_metadata").args[0])
     yield ids
     for id in ids:
         requests.delete(f"{EDITOAST_URL}rolling_stock/{id}?force=true")
@@ -106,7 +129,7 @@ def fast_rolling_stocks(request: Any) -> Iterable[int]:
 
 @pytest.fixture
 def fast_rolling_stock() -> int:
-    id = _create_fast_rolling_stocks()[0]
+    id = create_fast_rolling_stocks()[0]
     yield id
     requests.delete(f"{EDITOAST_URL}rolling_stock/{id}?force=true")
 
