@@ -323,9 +323,12 @@ public class PathfindingBlocksEndpoint implements Take {
         while (i < tracksOnPath.size()) {
             var track = tracksOnPath.get(i);
             var trackName = track.trackSectionID;
-            var fullTrack = new ArrayList<>(tracksOnPath.stream()
-                    .filter(trackOnPath -> Objects.equals(trackOnPath.trackSectionID, track.trackSectionID))
-                    .toList());
+            var fullTrack = new ArrayList<RJSDirectionalTrackRange>();
+            for (int j = i; j < tracksOnPath.size(); j++) {
+                if (!trackName.equals(tracksOnPath.get(j).trackSectionID))
+                    break;
+                fullTrack.add(tracksOnPath.get(j));
+            }
             var fullTrackLength =
                     toMeters(rawInfra.getTrackSectionLength(getTrackSectionFromNameOrThrow(trackName, rawInfra)));
 
