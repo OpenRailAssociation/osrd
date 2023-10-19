@@ -67,18 +67,18 @@ export function comfort2pictogram(comfort: Comfort | undefined) {
   switch (comfort) {
     case 'AC':
       return (
-        <span className={`comfort-${comfort}`}>
+        <span className="comfort-AC">
           <IoIosSnow />
         </span>
       );
     case 'HEATING':
       return (
-        <span className={`comfort-${comfort}`}>
+        <span className="comfort-HEATING">
           <ImFire />
         </span>
       );
     case 'STANDARD':
-      return <span className={`comfort-${comfort}`}>S</span>;
+      return <span className="comfort-STANDARD">S</span>;
     default:
       return null;
   }

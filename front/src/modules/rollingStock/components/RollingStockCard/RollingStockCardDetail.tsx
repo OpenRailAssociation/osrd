@@ -63,7 +63,7 @@ export default function RollingStockCardDetail({
   }, [error]);
 
   return rollingStock && !isEmpty(curvesComfortList) ? (
-    <div className={`${form ? 'px-4' : 'rollingstock-body'}`}>
+    <div className={form ? 'px-4' : 'rollingstock-card-body'}>
       <div className={`row pt-2  ${form}`}>
         <div className="col-sm-6">
           <table className="rollingstock-details-table">
@@ -196,7 +196,7 @@ export default function RollingStockCardDetail({
       )}
     </div>
   ) : (
-    <div className="rollingstock-body">
+    <div className="rollingstock-card-body">
       <Loader />
     </div>
   );

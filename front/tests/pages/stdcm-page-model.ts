@@ -56,8 +56,8 @@ export class PlaywrightSTDCMPage {
 
     // Rollingstock
     this.getRollingstockModal = page.locator('.modal-dialog');
-    this.getRollingStockSelector = page.getByTestId('rollingstock-selector');
-    this.getRollingStockSearch = page.locator('.rollingstock-search');
+    this.getRollingStockSelector = page.getByTestId('rollingstock-selector-minicard');
+    this.getRollingStockSearch = page.locator('.rollingstock-selector');
     this.getRollingStockSearchFilter = page.locator('.rollingstock-search-filters');
     this.getRollingStockSearchList = page.locator('.rollingstock-search-list');
     this.getRollingStockListItem = page.locator('.rollingstock-container');

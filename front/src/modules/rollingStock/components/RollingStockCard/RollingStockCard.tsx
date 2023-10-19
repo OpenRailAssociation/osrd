@@ -11,7 +11,7 @@ import { AiOutlineColumnWidth } from 'react-icons/ai';
 import { Comfort, LightRollingStock } from 'common/api/osrdEditoastApi';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import RollingStockCardDetail from './RollingStockCardDetail';
-import { RollingStockInfo } from './RollingStockHelpers';
+import { RollingStockInfo } from '../RollingStockSelector/RollingStockHelpers';
 import RollingStockCardButtons from './RollingStockCardButtons';
 
 interface RollingStockCardProps {
@@ -62,11 +62,11 @@ const RollingStockCard = ({
 
   return (
     <div
-      className={cx(
-        'rollingstock-container mb-3',
-        isOpen ? 'active' : 'inactive',
-        noCardSelected && 'solid'
-      )}
+      className={cx('rollingstock-card', {
+        active: isOpen,
+        inactive: !isOpen,
+        solid: noCardSelected,
+      })}
       role="button"
       onClick={displayCardDetail}
       tabIndex={0}
@@ -74,8 +74,10 @@ const RollingStockCard = ({
       data-testid={`rollingstock-${rollingStock.name}`}
     >
       <div
-        className="rollingstock-header"
-        onClick={() => (isOpen ? setOpenedRollingStockCardId(undefined) : {})}
+        className="rollingstock-card-header"
+        onClick={() => {
+          if (isOpen) setOpenedRollingStockCardId(undefined);
+        }}
         role="button"
         tabIndex={0}
         ref={isOpen && !isOnEditMode ? ref2scrollWhenOpened : undefined}
@@ -97,10 +99,9 @@ const RollingStockCard = ({
       ) : (
         <LazyLoadComponent>
           <div
-            className={cx(
-              'rollingstock-body-container-img',
-              isOpen ? 'opened-rollingstock-body' : 'closed-rollingstock-body'
-            )}
+            className={cx('rollingstock-body-container-img', {
+              'opened-rollingstock-card-body': isOpen,
+            })}
           >
             <div className="rollingstock-body-img">
               <RollingStock2Img rollingStock={rollingStock} />

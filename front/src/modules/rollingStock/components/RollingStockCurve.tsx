@@ -295,8 +295,8 @@ export default function RollingStockCurve({
   }, [transformedData, ready]);
 
   return curves[0] !== undefined && curvesState && curvesToDisplay && comfortsStates ? (
-    <div className="curves-container pt-1 pb-3">
-      <div className="curves-chart-legend mr-2 mb-1">
+    <div className="rollingstock-curves">
+      <div className="curves-chart-legend">
         <LegendComfortSwitches
           curvesComfortList={isOnEditionMode ? [curvesComfortList[0]] : curvesComfortList}
           comfortsStates={comfortsStates}
