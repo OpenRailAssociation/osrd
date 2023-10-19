@@ -6,7 +6,12 @@ authors = ["Florian Amsallem <florian.amsallem@epita.fr>"]
 license = "LGPL-3.0"
 
 [workspace]
-members = [".", "editoast_derive"]
+members = [".", "editoast_derive", "osrd_containers"]
+
+[workspace.dependencies]
+rangemap = "1.4.0"
+serde = "1.0.188"
+serde_derive = "1.0.188"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -49,8 +54,8 @@ redis = { version = "0.23.3", features = [
 ] }
 sentry = "0.31.7"
 sentry-actix = "0.31.7"
-serde = "1.0.188"
-serde_derive = "1.0.188"
+serde.workspace = true
+serde_derive.workspace = true
 serde_json = "1.0.107"
 serde_yaml = "0.9.25"
 strum = "0.25.0"
@@ -58,12 +63,13 @@ strum_macros = "0.25.2"
 thiserror = "1.0.49"
 enum-map = "2.6.3"
 editoast_derive = { path = "./editoast_derive" }
+osrd_containers = { path = "./osrd_containers" }
 mvt = "0.8.1"
 pointy = "0.4.0"
 futures = "0.3.28"
 postgis_diesel = { version = "2.2.1", features = ["serde"] }
 geos = { version = "8.3.0", features = ["json"] }
-rangemap = "1.4.0"
+rangemap.workspace = true
 actix-multipart = "0.6.1"
 reqwest = { version = "0.11.22", features = ["json"] }
 osm4routing = "0.5.8"
