@@ -16,8 +16,8 @@ from requests import Response, Timeout
 import conftest
 
 TIMEOUT = 15
-# TODO: since infra ids are not stable, we may want to change to an infra name
-INFRA_ID = 1
+# Note that regression tests expect small_infra.
+INFRA_NAME = "small_infra"
 # Consistent rolling stock is useful for regression testing, otherwise set None for randomness.
 ROLLING_STOCK_NAME = "fast_rolling_stock"
 EDITOAST_URL = "http://127.0.0.1:8090/"
@@ -662,13 +662,30 @@ def request_with_timeout(request_type: str, *args, **kwargs) -> Response:
         return res
 
 
-def get_infra_name(editoast_url: str, infra_id: int):
-    r = get_with_timeout(editoast_url + f"infra/{infra_id}/")
-    return r.json()["name"]
+def get_infra(editoast_url: str, infra_name: str) -> int:
+    """
+    Returns the ID corresponding to the infra name, if available.
+    :param editoast_url: Api url
+    :param infra_name: name of the infra
+    :return: ID the infra
+    """
+    # TODO: we may want a generic pages handler, if we keep adding queries
+    page = 1
+    while page is not None:
+        r = requests.get(editoast_url + "infra/", params={"page": page})
+        if r.status_code // 100 != 2:
+            raise RuntimeError(f"Infra error {r.status_code}: {r.content}")
+        rjson = r.json()
+        for infra in rjson["results"]:
+            if infra["name"] == infra_name:
+                return infra["id"]
+        page = rjson.get("next")
+    raise ValueError(f"Unable to find infra {infra_name}")
 
 
 if __name__ == "__main__":
-    new_scenario = create_scenario(EDITOAST_URL, INFRA_ID)
+    infra_id = get_infra(EDITOAST_URL, INFRA_NAME)
+    new_scenario = create_scenario(EDITOAST_URL, infra_id)
     if ROLLING_STOCK_NAME == "fast_rolling_stock":
         try:
             get_rolling_stock(EDITOAST_URL, ROLLING_STOCK_NAME)
@@ -680,7 +697,7 @@ if __name__ == "__main__":
         scenario_ttl=20,
         n_test=10000,
         log_folder=Path(__file__).parent / "errors",
-        infra_name=get_infra_name(EDITOAST_URL, INFRA_ID),
+        infra_name=INFRA_NAME,
         seed=0,
         rolling_stock_name=ROLLING_STOCK_NAME,
     )
