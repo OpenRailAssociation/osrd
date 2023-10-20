@@ -10,8 +10,7 @@ use crate::views::pathfinding::{
 };
 use crate::DbPool;
 use actix_web::{
-    dev::HttpServiceFactory,
-    get, services,
+    get,
     web::{Data, Json, Path, Query},
 };
 use osrd_containers::rangemap_utils::RangedValue;
@@ -19,9 +18,14 @@ use rangemap::RangeMap;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::fmt::Debug;
+use utoipa::{IntoParams, ToSchema};
 
-pub fn routes() -> impl HttpServiceFactory {
-    services![electrical_profiles_on_path,]
+crate::routes! {
+    electrical_profiles_on_path
+}
+
+crate::schemas! {
+    ProfilesOnPathResponse,
 }
 
 /// Build a rangemap for each track section, giving the electrical profile for each range
@@ -59,19 +63,32 @@ fn map_electrical_profiles(
     (res, warnings)
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, IntoParams)]
 struct ProfilesOnPathQuery {
     rolling_stock_id: i64,
     electrical_profile_set_id: i64,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
+/// A list of ranges associated to electrical profile values. When a profile overlapping another is found,
+/// a warning is added to the list
 struct ProfilesOnPathResponse {
     electrical_profile_ranges: Vec<RangedValue>,
     warnings: Vec<InternalError>,
 }
 
-#[get("/{path_id}/electrical_profiles")]
+#[utoipa::path(
+    tag = "electrical_profiles",
+    params(
+        ("path_id" = i64, Path, description = "The path's id"),
+        ProfilesOnPathQuery,
+    ),
+    responses(
+        (status = 200, body = ProfilesOnPathResponse),
+    )
+)]
+#[get("/pathfinding/{path_id}/electrical_profiles")]
+/// Retrieve the electrical profiles along a path, as seen by the rolling stock specified
 async fn electrical_profiles_on_path(
     pathfinding_id: Path<i64>,
     request: Query<ProfilesOnPathQuery>,
