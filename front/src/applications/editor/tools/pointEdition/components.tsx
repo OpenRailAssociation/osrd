@@ -22,6 +22,7 @@ import {
 } from 'types';
 import { SIGNALS_TO_SYMBOLS } from 'common/Map/Consts/SignalsNames';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { CustomFlagSignalCheckbox } from './CustomFlagSignalCheckbox';
 import { PointEditionState } from './types';
 import EditorForm from '../../components/EditorForm';
 import { cleanSymbolType, flattenEntity, NEW_ENTITY_ID } from '../../data/utils';
@@ -230,7 +231,53 @@ export const PointEditionLeftPanel: FC<{ type: EditoastType }> = <Entity extends
       )}
       <EditorForm
         data={state.entity as Entity}
+        overrideUiSchema={{
+          logical_signals: {
+            items: {
+              signaling_system: {
+                'ui:widget': 'hidden',
+              },
+              settings: {
+                'ui:description': ' ',
+                Nf: {
+                  'ui:description': ' ',
+                  'ui:widget': CustomFlagSignalCheckbox,
+                },
+                distant: {
+                  'ui:description': ' ',
+                  'ui:widget': CustomFlagSignalCheckbox,
+                },
+                is_430: {
+                  'ui:description': ' ',
+                  'ui:widget': CustomFlagSignalCheckbox,
+                },
+              },
+            },
+          },
+        }}
         onSubmit={async (savedEntity) => {
+          /** Checks if the property 'signaling_system' is defined when we have a logical_signal given
+           * in the formData since it's undefined on 1st render if the __onChange__ event isn't triggered */
+          const checkedSavedEntity = () => {
+            if (
+              savedEntity.properties.logical_signals &&
+              !savedEntity.properties.logical_signals[0].signaling_system
+            ) {
+              return {
+                ...savedEntity,
+                properties: {
+                  ...savedEntity.properties,
+                  logical_signals: [
+                    {
+                      ...savedEntity.properties.logical_signals[0],
+                      signaling_system: 'BAL',
+                    },
+                  ],
+                },
+              };
+            }
+            return savedEntity;
+          };
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const res: any = await dispatch(
             save(
@@ -240,11 +287,11 @@ export const PointEditionLeftPanel: FC<{ type: EditoastType }> = <Entity extends
                     update: [
                       {
                         source: state.initialEntity,
-                        target: savedEntity,
+                        target: checkedSavedEntity(),
                       },
                     ],
                   }
-                : { create: [savedEntity] }
+                : { create: [checkedSavedEntity()] }
             )
           );
           const operation = res[0] as EntityObjectOperationResult;

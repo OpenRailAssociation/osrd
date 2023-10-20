@@ -6,10 +6,13 @@ import { JSONSchema7 } from 'json-schema';
 import { isNil, omitBy } from 'lodash';
 
 import './EditorForm.scss';
+import { useTranslation } from 'react-i18next';
+import i18n from 'i18n';
 import { EditorEntity } from '../../../types';
 import { FormComponent, FormLineStringLength } from './LinearMetadata';
 import { getJsonSchemaForLayer, getLayerForObjectType, NEW_ENTITY_ID } from '../data/utils';
 import { EditorState } from '../tools/types';
+import { translateSchema } from '../tools/translationTools';
 
 const fields = {
   ArrayField: FormComponent,
@@ -41,6 +44,7 @@ function EditorForm<T extends Omit<EditorEntity, 'objType'> & { objType: string 
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<GeoJsonProperties>(data.properties);
   const [submited, setSubmited] = useState<boolean>(false);
+  const { t } = useTranslation('infraEditor');
 
   const editorState = useSelector((state: { editor: EditorState }) => state.editor);
   const layer = useMemo(
@@ -52,6 +56,11 @@ function EditorForm<T extends Omit<EditorEntity, 'objType'> & { objType: string 
     [editorState.editorSchema, layer, overrideSchema]
   );
   if (!schema) throw new Error(`Missing data type for ${layer}`);
+
+  const isFrench = i18n.language === 'fr';
+  const isI18nLoaded = i18n.hasLoadedNamespace('infraEditor');
+
+  const translatedSchema = useMemo(() => translateSchema(schema, t), [schema, isI18nLoaded]);
 
   /**
    * When data or schema change
@@ -84,7 +93,7 @@ function EditorForm<T extends Omit<EditorEntity, 'objType'> & { objType: string 
         action={undefined}
         noHtml5Validate
         method={undefined}
-        schema={schema}
+        schema={isFrench ? translatedSchema : schema}
         uiSchema={{
           length: {
             'ui:widget': FormLineStringLength,
