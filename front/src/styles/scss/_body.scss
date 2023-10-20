@@ -172,6 +172,11 @@ body {
   }
 }
 
+.modal.show {
+  // mastheader is at 1056 
+  z-index:1057;
+}
+
 @media (min-width: 576px) {
   .modal-dialog.modal-lg,
   .modal-dialog.modal-xl {
