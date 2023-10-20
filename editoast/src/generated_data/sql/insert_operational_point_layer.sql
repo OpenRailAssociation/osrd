@@ -45,4 +45,3 @@ SELECT op_id,
     sch,
     kp
 FROM collect
-GROUP BY op_id

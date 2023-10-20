@@ -1868,11 +1868,11 @@ export type SearchTrackResult = {
 };
 export type SearchOperationalPointResult = {
   ch: string;
-  geographic: MultiPoint;
+  geographic: Point;
   infra_id?: string;
   name: string;
   obj_id: string;
-  schematic: MultiPoint;
+  schematic: Point;
   track_sections: {
     position: number;
     track: string;
