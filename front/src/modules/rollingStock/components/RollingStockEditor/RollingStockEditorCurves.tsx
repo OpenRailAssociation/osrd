@@ -101,6 +101,9 @@ export default function RollingStockEditorCurves({
     is_electric: tractionMode !== THERMAL_TRACTION_IDENTIFIER,
   });
   const [hoveredRollingstockParam, setHoveredRollingstockParam] = useState<string | null>();
+  const [hoveredRollingstockTractionParam, setHoveredRollingstockTractionParam] = useState<
+    string | null
+  >();
   const [selectedCurves, setSelectedCurves] = useState(EmptySelectedCurves);
 
   const dispatchComfortLvl = (value: string) => {
@@ -540,9 +543,9 @@ export default function RollingStockEditorCurves({
               title="tractionModes"
               itemsList={rollingstockParams.tractionModes}
               selectedItem={selectedTractionMode || undefined}
-              hoveredItem={hoveredRollingstockParam}
+              hoveredItem={hoveredRollingstockTractionParam}
               onItemSelected={dispatchTractionMode}
-              onItemHovered={setHoveredRollingstockParam}
+              onItemHovered={setHoveredRollingstockTractionParam}
               onItemRemoved={confirmRsParamRemoval}
               translationFile="rollingstock"
             />
