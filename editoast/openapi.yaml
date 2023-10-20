@@ -1608,7 +1608,7 @@ components:
         ch:
           type: string
         geographic:
-          $ref: '#/components/schemas/MultiPoint'
+          $ref: '#/components/schemas/Point'
         infra_id:
           type: string
         name:
@@ -1616,7 +1616,7 @@ components:
         obj_id:
           type: string
         schematic:
-          $ref: '#/components/schemas/MultiPoint'
+          $ref: '#/components/schemas/Point'
         track_sections:
           items:
             properties:

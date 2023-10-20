@@ -135,13 +135,13 @@ layers:
       geo:
         on_field: geographic
         cache_duration: 3600
-        data_expr: operational_point.data
+        data_expr: operational_point.data - 'parts' || jsonb_build_object('kp', layer.kp)
         joins:
           - inner join infra_object_operational_point operational_point on operational_point.obj_id = layer.obj_id and operational_point.infra_id = layer.infra_id
       sch:
         on_field: schematic
         cache_duration: 3600
-        data_expr: operational_point.data
+        data_expr: operational_point.data - 'parts' || jsonb_build_object('kp', layer.kp)
         joins:
           - inner join infra_object_operational_point operational_point on operational_point.obj_id = layer.obj_id and operational_point.infra_id = layer.infra_id
 

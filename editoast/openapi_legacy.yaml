@@ -3292,9 +3292,9 @@ components:
               position:
                 type: integer
         geographic:
-          $ref: "#/components/schemas/MultiPoint"
+          $ref: "#/components/schemas/Point"
         schematic:
-          $ref: "#/components/schemas/MultiPoint"
+          $ref: "#/components/schemas/Point"
 
     SearchTrackResult:
       required:
