@@ -43,6 +43,10 @@ jobs:
         run: |
           cd tests
           poetry run isort . --check
+      - name: Pytype
+        run: |
+          cd tests
+          poetry run pytype -j auto
 
       - name: Setup Node
         uses: actions/setup-node@v3
