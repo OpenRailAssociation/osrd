@@ -1878,100 +1878,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/ScenarioResult"
 
-  /pathfinding/{path_id}/catenaries/:
-    get:
-      tags:
-        - infra
-      summary: Retrieve the modes of catenaries along a path
-      parameters:
-        - in: path
-          name: path_id
-          schema:
-            type: integer
-          description: The path's id
-          required: true
-      responses:
-        200:
-          description: A list of ranges associated to catenary modes. When a catenary overlapping another is found, a warning is added to the list.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  catenary_ranges:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/RangedValue"
-                  warnings:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                          enum: ["CatenaryOverlap"]
-                        catenary_id:
-                          type: string
-                        overlapping_ranges:
-                          type: array
-                          items:
-                            $ref: "#/components/schemas/TrackRange"
-                      required: [type, catenary_id, overlapping_ranges]
-                required: [catenary_ranges, warnings]
-
-
-  /pathfinding/{path_id}/electrical_profiles/:
-    get:
-      tags:
-        - infra
-        - electrical_profiles
-      summary: Retrieve the electrical profiles along a path, as seen by the rolling stock specified
-      parameters:
-        - in: path
-          name: path_id
-          schema:
-            type: integer
-          description: The path's id
-          required: true
-        - in: query
-          name: electrical_profile_set_id
-          schema:
-            type: integer
-          description: The electrical profile set's id
-          required: true
-        - in: query
-          name: rolling stock id
-          schema:
-            type: integer
-          description: The id of the rolling stock you want to use
-          required: true
-      responses:
-        200:
-          description: A list of ranges associated to catenary modes. When a catenary overlapping another is found, a warning is added to the list.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  electrical_profile_ranges:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/RangedValue"
-                  warnings:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                          enum: ["ElectricalProfilesOverlap"]
-                        overlapping_ranges:
-                          type: array
-                          items:
-                            $ref: "#/components/schemas/TrackRange"
-                      required: [type, overlapping_ranges]
-                required: [electrical_profile_ranges, warnings]
-
   /train_schedule/{id}/:
     get:
       tags:
@@ -3271,22 +3177,6 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/TrackRange"
-
-    RangedValue:
-      type: object
-      properties:
-        begin:
-          type: number
-          format: float
-          example: 0.0
-        end:
-          type: number
-          format: float
-          example: 100.0
-        value:
-          type: string
-          example: "25000"
-      required: [begin, end, value]
 
     SearchQuery:
       type: array

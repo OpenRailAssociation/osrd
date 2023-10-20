@@ -86,6 +86,23 @@ components:
       maxItems: 2
       minItems: 2
       type: array
+    CatenariesOnPathResponse:
+      description: |-
+        A list of ranges associated to catenary modes. When a profile overlapping another is found,
+        a warning is added to the list
+      properties:
+        catenary_ranges:
+          items:
+            $ref: '#/components/schemas/RangedValue'
+          type: array
+        warnings:
+          items:
+            $ref: '#/components/schemas/InternalError'
+          type: array
+      required:
+      - catenary_ranges
+      - warnings
+      type: object
     Catenary:
       description: energy source for a rolling stock representing a catenary
       properties:
@@ -983,6 +1000,23 @@ components:
       - stop
       - code
       - handled
+    ProfilesOnPathResponse:
+      description: |-
+        A list of ranges associated to electrical profile values. When a profile overlapping another is found,
+        a warning is added to the list
+      properties:
+        electrical_profile_ranges:
+          items:
+            $ref: '#/components/schemas/RangedValue'
+          type: array
+        warnings:
+          items:
+            $ref: '#/components/schemas/InternalError'
+          type: array
+      required:
+      - electrical_profile_ranges
+      - warnings
+      type: object
     ProjectCreateRequest:
       properties:
         budget:
@@ -1172,14 +1206,15 @@ components:
       - end_position
       - value
     RangedValue:
+      description: A struct to represent range maps in responses
       properties:
         begin:
           example: 0.0
-          format: float
+          format: double
           type: number
         end:
-          example: 100.0
-          format: float
+          example: 10.0
+          format: double
           type: number
         value:
           example: '25000'
@@ -3841,105 +3876,57 @@ paths:
       - pathfinding
   /pathfinding/{path_id}/catenaries/:
     get:
+      description: Retrieve the catenary modes along a path, as seen by the rolling stock specified
       parameters:
       - description: The path's id
         in: path
         name: path_id
         required: true
         schema:
+          format: int64
           type: integer
       responses:
         '200':
           content:
             application/json:
               schema:
-                properties:
-                  catenary_ranges:
-                    items:
-                      $ref: '#/components/schemas/RangedValue'
-                    type: array
-                  warnings:
-                    items:
-                      properties:
-                        catenary_id:
-                          type: string
-                        overlapping_ranges:
-                          items:
-                            $ref: '#/components/schemas/TrackRange'
-                          type: array
-                        type:
-                          enum:
-                          - CatenaryOverlap
-                          type: string
-                      required:
-                      - type
-                      - catenary_id
-                      - overlapping_ranges
-                      type: object
-                    type: array
-                required:
-                - catenary_ranges
-                - warnings
-                type: object
-          description: A list of ranges associated to catenary modes. When a catenary overlapping another is found, a warning is added to the list.
-      summary: Retrieve the modes of catenaries along a path
+                $ref: '#/components/schemas/CatenariesOnPathResponse'
+          description: ''
+      summary: Retrieve the catenary modes along a path, as seen by the rolling stock specified
       tags:
       - infra
   /pathfinding/{path_id}/electrical_profiles/:
     get:
+      description: Retrieve the electrical profiles along a path, as seen by the rolling stock specified
       parameters:
       - description: The path's id
         in: path
         name: path_id
         required: true
         schema:
+          format: int64
           type: integer
-      - description: The electrical profile set's id
-        in: query
+      - in: query
+        name: rolling_stock_id
+        required: true
+        schema:
+          format: int64
+          type: integer
+      - in: query
         name: electrical_profile_set_id
         required: true
         schema:
-          type: integer
-      - description: The id of the rolling stock you want to use
-        in: query
-        name: rolling stock id
-        required: true
-        schema:
+          format: int64
           type: integer
       responses:
         '200':
           content:
             application/json:
               schema:
-                properties:
-                  electrical_profile_ranges:
-                    items:
-                      $ref: '#/components/schemas/RangedValue'
-                    type: array
-                  warnings:
-                    items:
-                      properties:
-                        overlapping_ranges:
-                          items:
-                            $ref: '#/components/schemas/TrackRange'
-                          type: array
-                        type:
-                          enum:
-                          - ElectricalProfilesOverlap
-                          type: string
-                      required:
-                      - type
-                      - overlapping_ranges
-                      type: object
-                    type: array
-                required:
-                - electrical_profile_ranges
-                - warnings
-                type: object
-          description: A list of ranges associated to catenary modes. When a catenary overlapping another is found, a warning is added to the list.
+                $ref: '#/components/schemas/ProfilesOnPathResponse'
+          description: ''
       summary: Retrieve the electrical profiles along a path, as seen by the rolling stock specified
       tags:
-      - infra
       - electrical_profiles
   /projects/:
     get:

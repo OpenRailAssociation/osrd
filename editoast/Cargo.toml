@@ -12,6 +12,8 @@ members = [".", "editoast_derive", "osrd_containers"]
 rangemap = "1.4.0"
 serde = "1.0.188"
 serde_derive = "1.0.188"
+serde_json = "1.0.107"
+utoipa = { version = "3.5.0", features = ["actix_extras", "chrono", "uuid"] }
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -56,7 +58,7 @@ sentry = "0.31.7"
 sentry-actix = "0.31.7"
 serde.workspace = true
 serde_derive.workspace = true
-serde_json = "1.0.107"
+serde_json.workspace = true
 serde_yaml = "0.9.25"
 strum = "0.25.0"
 strum_macros = "0.25.2"
@@ -75,7 +77,7 @@ reqwest = { version = "0.11.22", features = ["json"] }
 osm4routing = "0.5.8"
 osmpbfreader = "0.16.0"
 itertools = "0.11.0"
-utoipa = { version = "3.5.0", features = ["actix_extras", "chrono", "uuid"] }
+utoipa.workspace = true
 paste = "1.0.14"
 
 [dev-dependencies]

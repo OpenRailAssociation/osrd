@@ -73,16 +73,22 @@ enum PathfindingError {
     RollingStockNotFound { rolling_stock_id: i64 },
 }
 
+// FIXME: The following routes include "pathfinding" directly in their path, as to not conflict with the
+// other routes. When the routes in mod.rs are moved to utoipa, the paths can be fixed.
+crate::routes! {
+    catenaries::routes(),
+    electrical_profiles::routes(),
+}
+
+crate::schemas! {
+    catenaries::schemas(),
+    electrical_profiles::schemas(),
+}
+
 /// Returns `/pathfinding` routes
-pub fn routes() -> impl HttpServiceFactory {
-    web::scope("/pathfinding").service((
-        get_pf,
-        del_pf,
-        create_pf,
-        update_pf,
-        catenaries::routes(),
-        electrical_profiles::routes(),
-    ))
+/// TODO: This is not called `routes` because it should be integrated in the `routes!` macro
+pub fn routes_v1() -> impl HttpServiceFactory {
+    web::scope("/pathfinding").service((get_pf, del_pf, create_pf, update_pf))
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

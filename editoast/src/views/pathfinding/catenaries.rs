@@ -6,8 +6,7 @@ use crate::views::pathfinding::path_rangemap::{make_path_range_map, TrackMap};
 use crate::views::pathfinding::PathfindingError;
 use crate::DbPool;
 use actix_web::{
-    dev::HttpServiceFactory,
-    get, services,
+    get,
     web::{Data, Json, Path},
 };
 use chashmap::CHashMap;
@@ -16,9 +15,15 @@ use rangemap::RangeMap;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::fmt::Debug;
+use utoipa::ToSchema;
 
-pub fn routes() -> impl HttpServiceFactory {
-    services![catenaries_on_path,]
+crate::routes! {
+    catenaries_on_path,
+}
+
+crate::schemas! {
+    CatenariesOnPathResponse,
+    &osrd_containers::rangemap_utils::RangedValue,
 }
 
 /// Build a rangemap for each track section, giving the voltage for each range
@@ -70,13 +75,25 @@ fn map_catenary_modes(
     (res, warnings)
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
+/// A list of ranges associated to catenary modes. When a profile overlapping another is found,
+/// a warning is added to the list
 struct CatenariesOnPathResponse {
     catenary_ranges: Vec<RangedValue>,
     warnings: Vec<InternalError>,
 }
 
-#[get("/{path_id}/catenaries")]
+#[utoipa::path(
+    tag = "infra",
+    params(
+        ("path_id" = i64, Path, description = "The path's id"),
+    ),
+    responses(
+        (status = 200, body = CatenariesOnPathResponse),
+    )
+)]
+#[get("/pathfinding/{path_id}/catenaries")]
+/// Retrieve the catenary modes along a path, as seen by the rolling stock specified
 async fn catenaries_on_path(
     pathfinding_id: Path<i64>,
     db_pool: Data<DbPool>,

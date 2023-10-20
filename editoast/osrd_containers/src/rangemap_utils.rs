@@ -2,6 +2,7 @@ use rangemap::RangeMap;
 use serde_derive::{Deserialize, Serialize};
 use std::fmt::Debug;
 use std::ops::Range;
+use utoipa::ToSchema;
 
 /// A struct to make f64 Ord, to use in RangeMap
 #[derive(Debug, PartialEq, Copy, Clone, Serialize)]
@@ -93,10 +94,13 @@ pub fn extend_range_map<T: Eq + Clone>(
 }
 
 /// A struct to represent range maps in responses
-#[derive(Debug, Deserialize, PartialEq, Serialize)]
+#[derive(Debug, Deserialize, PartialEq, Serialize, ToSchema)]
 pub struct RangedValue {
+    #[schema(example = 0.0)]
     pub begin: f64,
+    #[schema(example = 10.0)]
     pub end: f64,
+    #[schema(example = "25000")]
     pub value: String,
 }
 

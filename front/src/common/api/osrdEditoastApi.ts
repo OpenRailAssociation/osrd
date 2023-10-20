@@ -340,11 +340,11 @@ const injectedRtkApi = api
         query: (queryArg) => ({
           url: `/pathfinding/${queryArg.pathId}/electrical_profiles/`,
           params: {
+            rolling_stock_id: queryArg.rollingStockId,
             electrical_profile_set_id: queryArg.electricalProfileSetId,
-            'rolling stock id': queryArg['rolling stock id'],
           },
         }),
-        providesTags: ['infra', 'electrical_profiles'],
+        providesTags: ['electrical_profiles'],
       }),
       getProjects: build.query<GetProjectsApiResponse, GetProjectsApiArg>({
         query: (queryArg) => ({
@@ -1000,33 +1000,18 @@ export type PutPathfindingByIdApiArg = {
   pathQuery: PathQuery;
 };
 export type GetPathfindingByPathIdCatenariesApiResponse =
-  /** status 200 A list of ranges associated to catenary modes. When a catenary overlapping another is found, a warning is added to the list. */ {
-    catenary_ranges: RangedValue[];
-    warnings: {
-      catenary_id: string;
-      overlapping_ranges: TrackRange[];
-      type: 'CatenaryOverlap';
-    }[];
-  };
+  /** status 200  */ CatenariesOnPathResponse;
 export type GetPathfindingByPathIdCatenariesApiArg = {
   /** The path's id */
   pathId: number;
 };
 export type GetPathfindingByPathIdElectricalProfilesApiResponse =
-  /** status 200 A list of ranges associated to catenary modes. When a catenary overlapping another is found, a warning is added to the list. */ {
-    electrical_profile_ranges: RangedValue[];
-    warnings: {
-      overlapping_ranges: TrackRange[];
-      type: 'ElectricalProfilesOverlap';
-    }[];
-  };
+  /** status 200  */ ProfilesOnPathResponse;
 export type GetPathfindingByPathIdElectricalProfilesApiArg = {
   /** The path's id */
   pathId: number;
-  /** The electrical profile set's id */
+  rollingStockId: number;
   electricalProfileSetId: number;
-  /** The id of the rolling stock you want to use */
-  'rolling stock id': number;
 };
 export type GetProjectsApiResponse = /** status 200 the project list */ {
   count?: number;
@@ -1718,6 +1703,14 @@ export type RangedValue = {
   begin: number;
   end: number;
   value: string;
+};
+export type CatenariesOnPathResponse = {
+  catenary_ranges: RangedValue[];
+  warnings: InternalError[];
+};
+export type ProfilesOnPathResponse = {
+  electrical_profile_ranges: RangedValue[];
+  warnings: InternalError[];
 };
 export type ProjectResult = {
   budget: number;

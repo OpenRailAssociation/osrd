@@ -43,6 +43,7 @@ fn routes_v2() -> Routes<impl HttpServiceFactory> {
         timetable::routes(),
         documents::routes(),
         sprites::routes(),
+        pathfinding::routes(),
     }
     routes()
 }
@@ -56,7 +57,7 @@ pub fn routes() -> impl HttpServiceFactory {
         electrical_profiles::routes(),
         rolling_stocks::routes(),
         light_rolling_stocks::routes(),
-        pathfinding::routes(),
+        pathfinding::routes_v1(),
         train_schedule::routes(),
         stdcm::routes(),
     ]
@@ -67,6 +68,7 @@ schemas! {
     Version,
     timetable::schemas(),
     documents::schemas(),
+    pathfinding::schemas(),
 }
 
 pub fn study_routes() -> impl HttpServiceFactory {
@@ -230,18 +232,25 @@ mod tests {
     #[macro_export]
     macro_rules! assert_status_and_read {
         ($response: ident, $status: expr) => {{
-            let (status, body): (_, serde_json::Value) = (
+            let (status, body): (_, std::result::Result<serde_json::Value, _>) = (
                 $response.status(),
-                actix_web::test::read_body_json($response).await,
+                actix_web::test::try_read_body_json($response).await,
             );
-            let fmt_body = format!("{}", body);
-            assert_eq!(status, $status, "unexpected error response: {}", fmt_body);
-            match serde_json::from_value(body) {
-                Ok(response) => response,
-                Err(err) => panic!(
-                    "cannot deserialize response because '{}': {}",
-                    err, fmt_body
-                ),
+            if let std::result::Result::Ok(body) = body {
+                let fmt_body = format!("{}", body);
+                assert_eq!(status, $status, "unexpected error response: {}", fmt_body);
+                match serde_json::from_value(body) {
+                    Ok(response) => response,
+                    Err(err) => panic!(
+                        "cannot deserialize response because '{}': {}",
+                        err, fmt_body
+                    ),
+                }
+            } else {
+                panic!(
+                    "Cannot read response body: {:?}\nGot status code {}",
+                    body, status
+                )
             }
         }};
     }
@@ -254,7 +263,9 @@ mod tests {
     macro_rules! assert_editoast_error_type {
         ($response: ident, $error: expr) => {{
             let expected_error: $crate::error::InternalError = $error.into();
-            let payload: serde_json::Value = actix_web::test::read_body_json($response).await;
+            let payload: serde_json::Value = actix_web::test::try_read_body_json($response)
+                .await
+                .expect("cannot read response body");
             let error_type = payload.get("type").expect("invalid error format");
             assert_eq!(error_type, expected_error.get_type(), "error type mismatch");
         }};
