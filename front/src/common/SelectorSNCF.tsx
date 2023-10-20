@@ -98,9 +98,14 @@ export default function SelectorSNCF<
                   </div>
                   {((permanentItems && !permanentItems.includes(item)) || !permanentItems) &&
                     onItemRemoved && (
-                      <div className={`${mainClass}-trash-icon`}>
-                        <FaTrash onClick={() => onItemRemoved(item, title)} />
-                      </div>
+                      <button
+                        type="button"
+                        tabIndex={0}
+                        onClick={() => onItemRemoved(item, title)}
+                        className={`${mainClass}-trash-icon `}
+                      >
+                        <FaTrash />
+                      </button>
                     )}
                 </div>
                 {extraColumn && (

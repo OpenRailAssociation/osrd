@@ -291,6 +291,7 @@
     }
     &-trash-icon {
       visibility: hidden;
+      padding: 0;
     }
     &-item {
       color: var(--coolgray11);
@@ -317,6 +318,8 @@
           color: var(--red);
           visibility: visible;
           width: 2.5rem;
+          border: none;
+          background-color: transparent;
           border-radius: 0 0.3rem 0.3rem 0;
           text-align: center;
           padding-top: 0.1rem;
