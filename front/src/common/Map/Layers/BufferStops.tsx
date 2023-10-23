@@ -6,14 +6,13 @@ import { RootState } from 'reducers';
 import { Theme, OmitLayer } from 'types';
 import { MAP_URL } from 'common/Map/const';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
-import configKPLabelLayer from './configKPLabelLayer';
 
 export function getBufferStopsLayerProps(params: { sourceTable?: string }): OmitLayer<SymbolLayer> {
   const res: OmitLayer<SymbolLayer> = {
     type: 'symbol',
     minzoom: 12,
     layout: {
-      'text-field': ['slice', ['get', 'id'], 11],
+      'text-field': '{extensions_sncf_kp}',
       'text-font': ['Roboto Condensed'],
       'text-size': 10,
       'text-offset': [0, 1.2],
@@ -42,7 +41,7 @@ interface BufferStopsProps {
   layerOrder: number;
 }
 
-const BufferStops: FC<BufferStopsProps> = ({ colors, layerOrder }) => {
+const BufferStops: FC<BufferStopsProps> = ({ layerOrder }) => {
   const infraID = useSelector(getInfraID);
   const { layersSettings } = useSelector((state: RootState) => state.map);
 
@@ -55,16 +54,6 @@ const BufferStops: FC<BufferStopsProps> = ({ colors, layerOrder }) => {
       <OrderedLayer
         {...getBufferStopsLayerProps({ sourceTable: 'buffer_stops' })}
         id="chartis/osrd_bufferstop/geo"
-        layerOrder={layerOrder}
-      />
-      <OrderedLayer
-        {...configKPLabelLayer({
-          colors,
-          fieldName: 'extensions_sncf_kp',
-          minzoom: 12,
-          sourceLayer: 'buffer_stops',
-        })}
-        id="chartis/osrd_bufferstop_kp/geo"
         layerOrder={layerOrder}
       />
     </Source>
