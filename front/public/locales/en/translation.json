@@ -72,6 +72,7 @@
         "out_of_range": "Invalid value (out of range)",
         "overlapping_speed_sections": "Speed limit superposition",
         "overlapping_switches": "Overlapping switches",
+        "overlapping_catenaries": "Overlapping catenaries",
         "unknown_port_name": "Unknown port name",
         "unused_port": "Unused port"
       },

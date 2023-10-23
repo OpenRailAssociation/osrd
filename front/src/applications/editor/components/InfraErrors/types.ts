@@ -23,6 +23,7 @@ export const InfraErrorTypeList: Array<InfraErrorType> = [
   'out_of_range',
   'overlapping_speed_sections',
   'overlapping_switches',
+  'overlapping_catenaries',
   'unknown_port_name',
   'unused_port',
 ];
