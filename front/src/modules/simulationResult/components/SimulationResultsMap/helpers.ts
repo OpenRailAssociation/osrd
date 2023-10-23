@@ -97,7 +97,11 @@ export function getSimulationHoverPositions(
   simulation.trains.forEach((train, idx: number) => {
     const baseOrEco = getRegimeKey(train.id);
     const trainRegime = train[baseOrEco];
-    if (trainRegime && trainRegime.head_positions[0]) {
+    if (
+      trainRegime &&
+      trainRegime.head_positions.length > 0 &&
+      trainRegime.head_positions[0].length > 0
+    ) {
       const trainTime = trainRegime.head_positions[0][0].time;
       const train2ndTime = last(last(trainRegime.head_positions))?.time as number;
       if (actualTime >= trainTime && actualTime <= train2ndTime && train.id !== selectedTrainId) {

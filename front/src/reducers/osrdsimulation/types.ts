@@ -54,6 +54,10 @@ export interface AllowancesSetting {
 }
 
 export type AllowancesSettings = Record<string | number, AllowancesSetting>;
+export type Projection = {
+  id: number;
+  path: number;
+};
 
 export interface Position<Time = number> {
   time: Time;
@@ -240,10 +244,7 @@ export interface OsrdSimulationState {
   allowancesSettings?: AllowancesSettings;
   mustRedraw: boolean;
   positionValues: PositionsSpeedTimes<Date>;
-  selectedProjection?: {
-    id: number;
-    path: number;
-  };
+  selectedProjection?: Projection;
   selectedTrainId?: number;
   speedSpaceSettings: {
     [key in SpeedSpaceSettingKey]: boolean;
