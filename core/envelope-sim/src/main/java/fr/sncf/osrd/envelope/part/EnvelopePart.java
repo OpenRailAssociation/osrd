@@ -2,6 +2,7 @@ package fr.sncf.osrd.envelope.part;
 
 import static fr.sncf.osrd.envelope.EnvelopePhysics.intersectStepWithSpeed;
 
+import com.carrotsearch.hppc.DoubleArrayList;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope.EnvelopeAttr;
 import fr.sncf.osrd.envelope.EnvelopePhysics;
@@ -638,10 +639,26 @@ public final class EnvelopePart implements SearchableEnvelope {
 
     /** Returns a new EnvelopePart, where all positions are shifted by positionDelta */
     public EnvelopePart copyAndShift(double positionDelta) {
-        var newPositions = new double[positions.length];
-        for (int i = 0; i < positions.length; i++)
-            newPositions[i] = positions[i] + positionDelta;
-        return new EnvelopePart(new HashMap<>(attrs), newPositions, speeds, timeDeltas);
+        var newPositions = new DoubleArrayList();
+        var newSpeeds = new DoubleArrayList();
+        var newTimeDeltas = new DoubleArrayList();
+        newPositions.add(positions[0] + positionDelta);
+        newSpeeds.add(speeds[0]);
+        for (int i = 1; i < positions.length; i++) {
+            var p = positions[i] + positionDelta;
+            if (newPositions.get(newPositions.size() - 1) != p) {
+                // Positions that are an epsilon away may be overlapping after the shift, we only add the distinct ones
+                newPositions.add(p);
+                newSpeeds.add(speeds[i]);
+                newTimeDeltas.add(timeDeltas[i - 1]);
+            }
+        }
+        return new EnvelopePart(
+                new HashMap<>(attrs),
+                newPositions.toArray(),
+                newSpeeds.toArray(),
+                newTimeDeltas.toArray()
+        );
     }
 
     // endregion
