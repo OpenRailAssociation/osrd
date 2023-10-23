@@ -83,6 +83,7 @@ function Signals(props: PlatformProps) {
       />
       <OrderedLayer
         {...configKPLabelLayer({
+          bottomOffset: 6.5,
           colors,
           fieldName: 'extensions_sncf_kp',
           minzoom: 12,

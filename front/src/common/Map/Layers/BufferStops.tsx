@@ -15,20 +15,17 @@ export function getBufferStopsLayerProps(params: { sourceTable?: string }): Omit
       'text-field': '{extensions_sncf_kp}',
       'text-font': ['Roboto Condensed'],
       'text-size': 10,
-      'text-offset': [0, 1.2],
+      'text-offset': [1, 0.2],
       'icon-image': 'HEURTOIR',
       'icon-size': 0.2,
-      'text-anchor': 'center',
+      'text-anchor': 'left',
       'icon-rotation-alignment': 'viewport',
       'icon-allow-overlap': false,
       'icon-ignore-placement': false,
       'text-allow-overlap': false,
     },
     paint: {
-      'text-color': '#555',
-      'text-halo-width': 2,
-      'text-halo-color': 'rgba(255,255,255,0.75)',
-      'text-halo-blur': 1,
+      'text-color': '#333',
     },
   };
 
