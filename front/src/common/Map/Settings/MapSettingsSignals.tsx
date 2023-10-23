@@ -11,7 +11,7 @@ import { getMap } from 'reducers/map/selectors';
 import { RootState } from 'reducers';
 
 type SettingsSignals = RootState['map']['signalsSettings'];
-const SIGNAL_SETTINGS: Array<keyof SettingsSignals> = ['all', 'stops', 'lights'];
+const SIGNAL_SETTINGS: Array<keyof SettingsSignals> = ['lights']; // 'all', 'stops' temporarely desactivated
 const CONSTS_SVG: Partial<Record<keyof SettingsSignals, string>> = {
   stops: stopsIcon,
   lights: lightsIcon,
@@ -76,10 +76,10 @@ const MapSettingsSignals: FC<unknown> = () => {
             ) : (
               <>
                 <img
-                  className="mx-2"
+                  className="mx-1"
                   src={CONSTS_SVG[setting]}
                   alt={`${setting} Icon`}
-                  height="20"
+                  height="16"
                 />
                 <small>{t(setting)}</small>
               </>
