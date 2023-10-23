@@ -149,6 +149,7 @@ function getSignalLayers(context: LayerContext, prefix: string): LayerProps[] {
     { ...getPointLayerProps(context), id: `${prefix}geo/signal-point` },
     {
       ...configKPLabelLayer({
+        bottomOffset: 6.5,
         colors: context.colors,
         fieldName: 'extensions_sncf_kp',
         minzoom: 12,

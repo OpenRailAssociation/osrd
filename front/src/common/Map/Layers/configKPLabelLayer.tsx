@@ -4,6 +4,7 @@ import { LayerProps } from 'react-map-gl/maplibre';
 import { Theme } from 'types';
 
 interface PlatformProps {
+  bottomOffset?: number;
   colors: Theme;
   fieldName?: string;
   maxzoom?: number;
@@ -14,6 +15,7 @@ interface PlatformProps {
 
 export default function configKPLabelLayer(props: PlatformProps) {
   const {
+    bottomOffset = 2.5,
     colors,
     fieldName = 'kp',
     maxzoom = 24,
@@ -48,7 +50,7 @@ export default function configKPLabelLayer(props: PlatformProps) {
           ['literal', [-2.75, 0.2]],
           testSideExpression('RIGHT') as ExpressionFilterSpecification,
           ['literal', [2.75, 0.2]],
-          ['literal', [0, 2.5]],
+          ['literal', [0, bottomOffset]],
         ],
       }
     : {
@@ -62,7 +64,7 @@ export default function configKPLabelLayer(props: PlatformProps) {
     maxzoom,
     minzoom,
     layout: {
-      'text-field': ['concat', 'PK ', ['get', fieldName]],
+      'text-field': ['get', fieldName],
       'text-font': ['Roboto Medium'],
       'text-size': 9,
       'text-anchor': 'right',

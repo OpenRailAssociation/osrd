@@ -146,7 +146,7 @@ export default function OperationalPoints(props: Props) {
         <OrderedLayer
           {...configKPLabelLayer({
             colors,
-            fieldName: 'extensions_sncf_kp',
+            fieldName: 'kp',
             minzoom: 9.5,
             sourceLayer: 'operational_points',
           })}
