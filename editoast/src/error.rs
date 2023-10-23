@@ -40,15 +40,19 @@ impl From<StatusCodeRemoteDef> for StatusCode {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, ToSchema)]
+fn default_status_code() -> StatusCode {
+    StatusCode::INTERNAL_SERVER_ERROR
+}
+
+#[derive(Debug, Serialize, Deserialize, ToSchema, PartialEq)]
 pub struct InternalError {
-    #[serde(with = "StatusCodeRemoteDef")]
+    #[serde(with = "StatusCodeRemoteDef", default = "default_status_code")]
     #[schema(value_type = u16, minimum = 100, maximum = 599)]
-    status: StatusCode,
+    pub status: StatusCode,
     #[serde(rename = "type")]
-    error_type: String,
-    context: HashMap<String, Value>,
-    message: String,
+    pub error_type: String,
+    pub context: HashMap<String, Value>,
+    pub message: String,
 }
 
 impl InternalError {
