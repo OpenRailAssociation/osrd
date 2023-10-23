@@ -44,6 +44,7 @@ import {
 import { getPSLSignsLayerProps, getPSLSignsMastLayerProps } from './extensions/SNCF/SNCF_PSL_SIGNS';
 import { LayerContext } from './types';
 import { getCatenariesProps, getCatenariesTextParams } from './Catenaries';
+import configKPLabelLayer from './configKPLabelLayer';
 import OrderedLayer from './OrderedLayer';
 
 const SIGNAL_TYPE_KEY = 'extensions_sncf_installation_type';
@@ -146,6 +147,17 @@ function getSignalLayers(context: LayerContext, prefix: string): LayerProps[] {
   return [
     { ...getSignalMatLayerProps(context), id: `${prefix}geo/signal-mat` },
     { ...getPointLayerProps(context), id: `${prefix}geo/signal-point` },
+    {
+      ...configKPLabelLayer({
+        colors: context.colors,
+        fieldName: 'extensions_sncf_kp',
+        minzoom: 12,
+        isSignalisation: true,
+        sourceLayer: context.sourceTable || '',
+      }),
+      id: `${prefix}geo/signal-kp`,
+      filter: ['in', 'extensions_sncf_installation_type', ...context.symbolsList],
+    } as LayerProps,
   ].concat(
     context.symbolsList.map((symbol) => {
       const props = getSignalLayerProps(context, symbol);
@@ -211,6 +223,15 @@ function getPSLSignsLayers(context: LayerContext, prefix: string): LayerProps[] 
       ...getPSLSignsMastLayerProps(context),
       id: `${prefix}geo/psl-signs-mast`,
       minzoom: POINT_ENTITIES_MIN_ZOOM,
+    },
+    {
+      ...configKPLabelLayer({
+        colors: context.colors,
+        minzoom: 9.5,
+        isSignalisation: true,
+        sourceLayer: 'psl_signs',
+      }),
+      id: `${prefix}geo/psl-signs-kp`,
     },
   ];
 }
