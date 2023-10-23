@@ -30,10 +30,12 @@ export default function OSRDSTDCM() {
         currentStdcmRequestStatus={currentStdcmRequestStatus}
         setCurrentStdcmRequestStatus={setCurrentStdcmRequestStatus}
       />
-      <StdcmRequestModal
-        setCurrentStdcmRequestStatus={setCurrentStdcmRequestStatus}
-        currentStdcmRequestStatus={currentStdcmRequestStatus}
-      />
+      {currentStdcmRequestStatus === STDCM_REQUEST_STATUS.pending && (
+        <StdcmRequestModal
+          setCurrentStdcmRequestStatus={setCurrentStdcmRequestStatus}
+          currentStdcmRequestStatus={currentStdcmRequestStatus}
+        />
+      )}
     </>
   );
 }
