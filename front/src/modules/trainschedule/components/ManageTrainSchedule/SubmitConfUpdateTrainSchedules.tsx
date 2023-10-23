@@ -9,6 +9,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { getTrainScheduleIDsToModify } from 'reducers/osrdconf/selectors';
 import { useTranslation } from 'react-i18next';
 import { FaPen } from 'react-icons/fa';
+import { updateSelectedProjection, updateSelectedTrainId } from 'reducers/osrdsimulation/actions';
 
 type SubmitConfUpdateTrainSchedulesProps = {
   setIsWorking: (isWorking: boolean) => void;
@@ -62,6 +63,13 @@ export default function SubmitConfUpdateTrainSchedules({
           setSuccess({
             title: t('trainUpdated'),
             text: `${osrdconf.simulationConf.name}: ${osrdconf.simulationConf.departureTime}`,
+          })
+        );
+        dispatch(updateSelectedTrainId(trainScheduleIDsToModify[0]));
+        dispatch(
+          updateSelectedProjection({
+            id: trainScheduleIDsToModify[0],
+            path: osrdconf.simulationConf.pathfindingID,
           })
         );
         setIsWorking(false);

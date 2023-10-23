@@ -17,12 +17,11 @@ import { updateTrainScheduleIDsToModify } from 'reducers/osrdconf';
 import { valueToInterval } from 'utils/numbers';
 import { Infra, TimetableWithSchedulesDetails, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { durationInSeconds } from 'utils/timeManipulation';
-import { getSelectedProjection, getSelectedTrainId } from 'reducers/osrdsimulation/selectors';
+import { getSelectedProjection } from 'reducers/osrdsimulation/selectors';
 import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import ConflictsList from 'modules/conflict/components/ConflictsList';
 import findTrainsDurationsIntervals from 'modules/trainschedule/components/ManageTrainSchedule/helpers/trainsDurationsIntervals';
-import getSimulationResults from 'applications/operationalStudies/components/Scenario/getSimulationResults';
 import TimetableTrainCard from './TimetableTrainCard';
 
 type Props = {
@@ -30,6 +29,7 @@ type Props = {
   trainsWithDetails: boolean;
   infraState: Infra['state'];
   timetable: TimetableWithSchedulesDetails | undefined;
+  selectedTrainId?: number;
   refetchTimetable: () => void;
 };
 
@@ -38,10 +38,10 @@ export default function Timetable({
   trainsWithDetails,
   infraState,
   timetable,
+  selectedTrainId,
   refetchTimetable,
 }: Props) {
   const selectedProjection = useSelector(getSelectedProjection);
-  const selectedTrainId = useSelector(getSelectedTrainId);
   const trainScheduleIDsToModify = useSelector(getTrainScheduleIDsToModify);
 
   const [filter, setFilter] = useState('');
@@ -63,9 +63,6 @@ export default function Timetable({
   );
 
   useEffect(() => {
-    if (timetable && infraState === 'CACHED') {
-      getSimulationResults(timetable, selectedTrainId);
-    }
     setMultiselectOn(false);
   }, [timetable, infraState]);
 

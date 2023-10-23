@@ -9,21 +9,18 @@ import {
   persistentRedoSimulation,
   persistentUndoSimulation,
 } from 'reducers/osrdsimulation/simulation';
-import { getTimetableID } from 'reducers/osrdconf/selectors';
 import {
   getDisplaySimulation,
   getIsUpdating,
   getOsrdSimulation,
   getPresentSimulation,
-  getSelectedProjection,
   getSelectedTrain,
 } from 'reducers/osrdsimulation/selectors';
 import { updateSelectedProjection, updateSimulation } from 'reducers/osrdsimulation/actions';
 
 import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
-import { osrdEditoastApi, SimulationReport } from 'common/api/osrdEditoastApi';
+import { SimulationReport } from 'common/api/osrdEditoastApi';
 
-import getSimulationResults from 'applications/operationalStudies/components/Scenario/getSimulationResults';
 import SimulationResultsMap from 'modules/simulationResult/components/SimulationResultsMap';
 import SpaceCurvesSlopes from 'modules/simulationResult/components/SpaceCurvesSlopes';
 import SpaceTimeChartIsolated from 'modules/simulationResult/components/SpaceTimeChart/withOSRDData';
@@ -51,8 +48,6 @@ export default function SimulationResults({
   const displaySimulation = useSelector(getDisplaySimulation);
   const selectedTrain = useSelector(getSelectedTrain);
   const { positionValues, timePosition } = useSelector(getOsrdSimulation);
-  const timetableID = useSelector(getTimetableID);
-  const selectedProjection = useSelector(getSelectedProjection);
   const simulation = useSelector(getPresentSimulation);
   const isUpdating = useSelector(getIsUpdating);
 
@@ -66,8 +61,6 @@ export default function SimulationResults({
   const [heightOfSpaceCurvesSlopesChart, setHeightOfSpaceCurvesSlopesChart] = useState(150);
   const [initialHeightOfSpaceCurvesSlopesChart, setInitialHeightOfSpaceCurvesSlopesChart] =
     useState(heightOfSpaceCurvesSlopesChart);
-
-  const [getTimetable] = osrdEditoastApi.endpoints.getTimetableById.useLazyQuery();
 
   const handleKey = (e: KeyboardEvent) => {
     if (e.key === 'z' && e.metaKey) {
@@ -87,19 +80,6 @@ export default function SimulationResults({
       dispatch(updateSimulation({ trains: [] }));
     };
   }, []);
-
-  useEffect(() => {
-    if (timetableID && selectedProjection) {
-      getTimetable({ id: timetableID })
-        .unwrap()
-        .then((result) => {
-          getSimulationResults(result);
-        });
-    }
-    return function cleanup() {
-      dispatch(updateSimulation({ trains: [] }));
-    };
-  }, [selectedProjection, timetableID]);
 
   useEffect(() => {
     if (extViewport !== undefined) {

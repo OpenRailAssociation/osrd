@@ -18,11 +18,19 @@ import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import AddAndEditScenarioModal from 'modules/scenario/components/AddOrEditScenarioModal';
 import ScenarioLoaderMessage from 'modules/scenario/components/ScenarioLoaderMessage';
 import { RootState } from 'reducers';
-import { updateSimulation } from 'reducers/osrdsimulation/actions';
+import { updateSelectedProjection, updateSimulation } from 'reducers/osrdsimulation/actions';
+import {
+  getAllowancesSettings,
+  getSelectedProjection,
+  getSelectedTrainId,
+} from 'reducers/osrdsimulation/selectors';
 import ImportTrainSchedule from './ImportTrainSchedule';
 import ManageTrainSchedule from './ManageTrainSchedule';
 import SimulationResults from './SimulationResults';
 import InfraLoadingState from '../components/Scenario/InfraLoadingState';
+import getSimulationResults, {
+  selectProjection,
+} from '../components/Scenario/getSimulationResults';
 
 type SimulationParams = {
   projectId: string;
@@ -47,6 +55,9 @@ export default function Scenario() {
   const { projectId, studyId, scenarioId } = useParams() as SimulationParams;
   const infraId = useSelector(getInfraID);
   const timetableId = useSelector(getTimetableID);
+  const selectedTrainId = useSelector(getSelectedTrainId);
+  const selectedProjection = useSelector(getSelectedProjection);
+  const allowancesSettings = useSelector(getAllowancesSettings);
 
   const { data: project } = osrdEditoastApi.endpoints.getProjectsByProjectId.useQuery(
     {
@@ -136,13 +147,16 @@ export default function Scenario() {
     );
 
   useEffect(() => {
-    if (!projectId || !studyId || !scenarioId) navigate('/operational-studies/projects');
-    // redirect if projectId or studyId is not a number
-    if (projectId && Number.isNaN(+projectId)) navigate('/operational-studies/projects');
-    if (studyId && Number.isNaN(+studyId)) navigate(`/operational-studies/projects/${projectId}`);
-    if (scenarioId && Number.isNaN(+scenarioId))
-      navigate(`/operational-studies/projects/${projectId}/studies/${studyId}`);
-  }, [projectId, studyId, scenarioId]);
+    if (timetable && infra?.state === 'CACHED' && timetable.train_schedule_summaries.length > 0) {
+      selectProjection(timetable.train_schedule_summaries, selectedProjection, selectedTrainId);
+    }
+  }, [timetable, infra]);
+
+  useEffect(() => {
+    if (timetable && infra?.state === 'CACHED' && selectedProjection) {
+      getSimulationResults(timetable, selectedProjection, allowancesSettings);
+    }
+  }, [timetable, infra, selectedProjection]);
 
   useEffect(() => {
     if (!scenarioId || !studyId || !projectId) {
@@ -154,8 +168,18 @@ export default function Scenario() {
       dispatch(updateTimetableID(undefined));
       dispatch(updateInfraID(undefined));
       dispatch(updateSimulation({ trains: [] }));
+      dispatch(updateSelectedProjection(undefined));
     };
   }, []);
+
+  useEffect(() => {
+    if (!projectId || !studyId || !scenarioId) navigate('/operational-studies/projects');
+    // redirect if projectId or studyId is not a number
+    if (projectId && Number.isNaN(+projectId)) navigate('/operational-studies/projects');
+    if (studyId && Number.isNaN(+studyId)) navigate(`/operational-studies/projects/${projectId}`);
+    if (scenarioId && Number.isNaN(+scenarioId))
+      navigate(`/operational-studies/projects/${projectId}/studies/${studyId}`);
+  }, [projectId, studyId, scenarioId]);
 
   return scenario && infraId && timetableId ? (
     <>
@@ -252,6 +276,7 @@ export default function Scenario() {
                     trainsWithDetails={trainsWithDetails}
                     infraState={infra.state}
                     timetable={timetable}
+                    selectedTrainId={selectedTrainId}
                     refetchTimetable={refetchTimetable}
                   />
                 )}
