@@ -90,6 +90,7 @@ function Signals(props: PlatformProps) {
           sourceLayer: sourceTable,
         })}
         id="chartis/signal/kp"
+        filter={['in', 'extensions_sncf_installation_type', ...signalsList]}
         layerOrder={layerOrder}
       />
 

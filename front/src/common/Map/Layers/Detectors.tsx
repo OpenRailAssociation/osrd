@@ -8,7 +8,6 @@ import { MAP_URL } from 'common/Map/const';
 
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import { getInfraID } from 'reducers/osrdconf/selectors';
-import configKPLabelLayer from './configKPLabelLayer';
 
 export function getDetectorsLayerProps(params: {
   colors: Theme;
@@ -34,13 +33,13 @@ export function getDetectorsNameLayerProps(params: {
   const res: OmitLayer<SymbolLayer> = {
     type: 'symbol',
     layout: {
-      'text-field': ['slice', ['get', 'id'], 9],
+      'text-field': '{extensions_sncf_kp}',
       'text-font': ['Roboto Condensed'],
       'text-size': 10,
       'text-anchor': 'left',
-      'text-allow-overlap': true,
+      'text-allow-overlap': false,
       'text-ignore-placement': false,
-      'text-offset': [1, 0.2],
+      'text-offset': [0.5, 0.2],
       visibility: 'visible',
     },
     paint: {
@@ -75,16 +74,6 @@ const Detectors: FC<DetectorsProps> = ({ colors, layerOrder }) => {
     >
       <OrderedLayer {...layerPoint} id="chartis/osrd_detectors/geo" layerOrder={layerOrder} />
       <OrderedLayer {...layerName} id="chartis/osrd_detectors_name/geo" layerOrder={layerOrder} />
-      <OrderedLayer
-        {...configKPLabelLayer({
-          colors,
-          fieldName: 'extensions_sncf_kp',
-          minzoom: 10,
-          sourceLayer: 'detectors',
-        })}
-        id="chartis/osrd_detectors_kp/geo"
-        layerOrder={layerOrder}
-      />
     </Source>
   ) : null;
 };
