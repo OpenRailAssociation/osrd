@@ -436,7 +436,7 @@ class NeutralSection(BaseObjectTrait):
     )
     track_ranges: List[DirectionalTrackRange] = Field(
         description="List of locations where the train cannot pull power from catenaries",
-        min_items=1,
+        min_length=1,
     )
     lower_pantograph: bool = Field(description="Whether or not trains need to lower their pantograph in the section")
 
