@@ -15,7 +15,7 @@ services:
     ports: []
     network_mode: host
     environment:
-      MIDDLEWARE_BASE_URL: "http://localhost:8090"
+      CORE_EDITOAST_URL: "http://localhost:8090"
 
   editoast:
     ports: []
