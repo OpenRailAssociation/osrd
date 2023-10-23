@@ -19,6 +19,13 @@ impl From<MockingClient> for CoreClient {
     }
 }
 
+#[derive(Debug)]
+pub struct MockingError {
+    pub bytes: Vec<u8>,
+    pub status: StatusCode,
+    pub url: String,
+}
+
 impl MockingClient {
     pub fn new() -> Self {
         Default::default()
@@ -35,7 +42,7 @@ impl MockingClient {
         method: reqwest::Method,
         req_path: P,
         body: Option<&B>,
-    ) -> Option<R::Response> {
+    ) -> Result<Option<R::Response>, MockingError> {
         let req_path = req_path.as_ref().to_string();
         let stub = 'find_stub: {
             for stub in &self.stubs {
@@ -71,16 +78,33 @@ impl MockingClient {
             (None, Some(expected)) => panic!("missing request body: '{expected}'"),
             _ => (),
         }
-        stub.response
+        let response = stub
+            .response
             .as_ref()
             .and_then(|r| r.body.as_ref())
             .map(|b| {
+                b.as_bytes()
+                    .expect("mocked response body should not be empty when specified")
+            });
+        match stub.response {
+            None => Ok(None),
+            Some(StubResponse { code, .. }) if code.is_success() => Ok(Some(
                 R::from_bytes(
-                    b.as_bytes()
-                        .expect("mocked response body should not be empty when specified"),
+                    response.expect("mocked response body should not be empty when specified"),
                 )
-                .expect("mocked response body should deserialize faultlessly")
-            })
+                .expect("mocked response body should deserialize faultlessly"),
+            )),
+            Some(StubResponse { code, .. }) => {
+                let err = response
+                    .expect("mocked response body should not be empty when specified")
+                    .to_vec();
+                Err(MockingError {
+                    bytes: err,
+                    status: code,
+                    url: req_path,
+                })
+            }
+        }
     }
 }
 

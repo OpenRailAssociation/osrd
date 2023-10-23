@@ -19,8 +19,10 @@ pub use http_client::{HttpClient, HttpClientBuilder};
 use log::info;
 use reqwest::Url;
 use serde::{de::DeserializeOwned, Serialize};
-use serde_derive::Deserialize;
 use thiserror::Error;
+
+#[cfg(test)]
+use crate::core::mocking::MockingError;
 
 const MAX_RETRIES: u8 = 5;
 
@@ -58,6 +60,31 @@ impl CoreClient {
             })
             .build_base_url(base_url);
         Self::Direct(client)
+    }
+
+    fn handle_error(
+        &self,
+        bytes: &[u8],
+        status: reqwest::StatusCode,
+        url: String,
+    ) -> InternalError {
+        // We try to deserialize the response as an InternalError in order to retain the context of the core error
+        if let Ok(mut core_error) = <Json<InternalError>>::from_bytes(bytes) {
+            core_error.set_status(status);
+            return CoreError::Forward { core_error, url }.into();
+        }
+
+        // If that fails we try to return a generic error containing the raw error
+        if let Ok(utf8_raw_error) = String::from_utf8(bytes.as_ref().to_vec()) {
+            return CoreError::GenericCoreError {
+                status: Some(status.as_u16()),
+                url: url.clone(),
+                raw_error: utf8_raw_error,
+            }
+            .into();
+        }
+
+        CoreError::UnparsableErrorOutput.into()
     }
 
     async fn fetch<B: Serialize, R: CoreResponse>(
@@ -107,39 +134,18 @@ impl CoreClient {
                 }
 
                 log::error!(target: "editoast::coreclient", "{method_s} {path} {status}", status = status.to_string().bold().red());
-
-                // We try to deserialize the response as an InternalError in order to retain the context of the core error
-                if let Ok(mut internal_error) = <Json<InternalError>>::from_bytes(bytes.as_ref()) {
-                    internal_error.set_status(status);
-                    return Err(internal_error);
-                }
-
-                // We try to deserialize the response as the standard Core error format
-                // If that fails we try to return a generic error containing the raw error
-                let core_error =
-                    <Json<CoreErrorPayload>>::from_bytes(bytes.as_ref()).map_err(|err| {
-                        if let Ok(utf8_raw_error) = String::from_utf8(bytes.as_ref().to_vec()) {
-                            CoreError::GenericCoreError {
-                                status: Some(status.as_u16()),
-                                url: url.clone(),
-                                raw_error: utf8_raw_error,
-                            }
-                            .into()
-                        } else {
-                            err
-                        }
-                    })?;
-                Err(CoreError::Forward {
-                    status: status.as_u16(),
-                    core_error,
-                    url,
-                }
-                .into())
+                Err(self.handle_error(bytes.as_ref(), status, url))
             }
             #[cfg(test)]
-            CoreClient::Mocked(client) => client
-                .fetch_mocked::<_, B, R>(method, path, body)
-                .ok_or(CoreError::NoResponseContent.into()),
+            CoreClient::Mocked(client) => {
+                match client.fetch_mocked::<_, B, R>(method, path, body) {
+                    Ok(Some(response)) => Ok(response),
+                    Ok(None) => Err(CoreError::NoResponseContent.into()),
+                    Err(MockingError { bytes, status, url }) => {
+                        Err(self.handle_error(&bytes, status, url))
+                    }
+                }
+            }
         }
     }
 }
@@ -271,16 +277,6 @@ impl CoreResponse for () {
     }
 }
 
-/// The structure of a standard core error (cf. class OSRDError)
-#[derive(Debug, Serialize, Deserialize)]
-struct CoreErrorPayload {
-    #[serde(rename = "type")]
-    type_: String,
-    cause: Option<String>,
-    message: String,
-    trace: Option<serde_json::Value>,
-}
-
 #[allow(clippy::enum_variant_names)]
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "coreclient")]
@@ -291,11 +287,10 @@ enum CoreError {
     #[error("Cannot parse Core response: {msg}")]
     #[editoast_error(status = 500)]
     CoreResponseFormatError { msg: String },
-    /// A standard core error was found in the response, so it is forwarded
     #[error("{}", core_error.message)]
+    #[editoast_error(status = 500)]
     Forward {
-        status: u16,
-        core_error: CoreErrorPayload,
+        core_error: InternalError,
         url: String,
     },
     /// A fallback error variant for when no meaningful error could be parsed
@@ -307,6 +302,8 @@ enum CoreError {
         url: String,
         raw_error: String,
     },
+    #[error("Cannot convert core error to a UTF-8 string")]
+    UnparsableErrorOutput,
 
     #[error("Core connection closed before message completed. Should retry.")]
     #[editoast_error(status = 500)]
@@ -341,10 +338,15 @@ impl From<reqwest::Error> for CoreError {
 #[cfg(test)]
 mod test {
     use actix_http::StatusCode;
+    use pretty_assertions::assert_eq;
     use reqwest::Method;
     use serde_derive::Serialize;
+    use serde_json::json;
 
-    use crate::core::{mocking::MockingClient, AsCoreRequest, Bytes};
+    use crate::{
+        core::{mocking::MockingClient, AsCoreRequest, Bytes, CoreError},
+        error::InternalError,
+    };
 
     #[rstest::rstest]
     async fn test_expected_empty_response() {
@@ -380,5 +382,41 @@ mod test {
             .finish();
         let bytes = Req.fetch(&core.into()).await.unwrap();
         assert_eq!(&String::from_utf8(bytes).unwrap(), "not JSON :)");
+    }
+
+    #[rstest::rstest]
+    async fn test_core_osrd_error() {
+        #[derive(Serialize)]
+        struct Req;
+        impl AsCoreRequest<()> for Req {
+            const METHOD: Method = Method::GET;
+            const URL_PATH: &'static str = "/test";
+        }
+        let error = json!({
+            "context": {
+                "stack_trace": [
+                    "ThreadPoolExecutor.java:635",
+                    "Thread.java:833"
+                ],
+                "message": "conflict offset is already on a range transition"
+            },
+            "message": "assert check failed",
+            "type": "assert_error"
+        });
+        let mut core = MockingClient::default();
+        core.stub("/test")
+            .method(Method::GET)
+            .response(StatusCode::NOT_FOUND)
+            .body(error.to_string())
+            .finish();
+        let mut error_with_status: InternalError = serde_json::from_value(error).unwrap();
+        error_with_status.set_status(StatusCode::NOT_FOUND);
+        let result = Req.fetch(&core.into()).await;
+        let expected_err: InternalError = CoreError::Forward {
+            core_error: error_with_status,
+            url: "/test".to_owned(),
+        }
+        .into();
+        assert_eq!(result, Err(expected_err));
     }
 }
