@@ -2,10 +2,7 @@ package fr.sncf.osrd;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
-import fr.sncf.osrd.cli.ApiServerCommand;
-import fr.sncf.osrd.cli.CliCommand;
-import fr.sncf.osrd.cli.StandaloneSimulationCommand;
-import fr.sncf.osrd.cli.ValidateInfra;
+import fr.sncf.osrd.cli.*;
 import java.util.HashMap;
 
 public class App {
@@ -21,6 +18,7 @@ public class App {
 
         // prepare the command line parser
         var argsParserBuilder = JCommander.newBuilder();
+        argsParserBuilder.defaultProvider(new EnvProvider("CORE_"));
         for (var command : commands.entrySet())
             argsParserBuilder.addCommand(command.getKey(), command.getValue());
         var argsParser = argsParserBuilder.build();
