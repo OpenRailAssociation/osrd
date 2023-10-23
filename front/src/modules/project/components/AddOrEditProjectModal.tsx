@@ -111,7 +111,7 @@ export default function AddOrEditProjectModal({
           .unwrap()
           .then((projectCreated) => {
             dispatch(updateProjectID(projectCreated.id));
-            navigate('/operational-studies/project');
+            navigate(`/operational-studies/projects/${projectCreated.id}`);
             closeModal();
           })
           .catch((error) => console.error(error));

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { RiCalendarLine, RiFoldersLine } from 'react-icons/ri';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { AiFillFolderOpen, AiFillCheckCircle } from 'react-icons/ai';
 import nextId from 'react-id-generator';
 import { dateTimeFrenchFormatting } from 'utils/date';
@@ -20,7 +20,7 @@ type Props = {
   toggleSelect: (id?: number) => void;
 };
 
-export default function ProjectCard({ setFilterChips, project, isSelected, toggleSelect }: Props) {
+export default function ProjectCard({ setFilterChips, project, isSelected }: Props) {
   const { t } = useTranslation('operationalStudies/home');
   const [imageUrl, setImageUrl] = useState<string>();
   const dispatch = useDispatch();
@@ -31,7 +31,7 @@ export default function ProjectCard({ setFilterChips, project, isSelected, toggl
     dispatch(updateProjectID(project.id));
     dispatch(updateStudyID(undefined));
     dispatch(updateScenarioID(undefined));
-    navigate('/operational-studies/project');
+    navigate(`/operational-studies/projects/${project.id}`);
   };
 
   // as the image is stored in the database and can be fetched only through api (authentication needed),
@@ -56,7 +56,7 @@ export default function ProjectCard({ setFilterChips, project, isSelected, toggl
     <div
       className={cx('project-card', isSelected && 'selected')}
       data-testid={project.name}
-      onClick={() => toggleSelect(project.id)}
+      // onClick={() => toggleSelect(project.id)}
       role="button"
       tabIndex={0}
     >
@@ -66,15 +66,16 @@ export default function ProjectCard({ setFilterChips, project, isSelected, toggl
       <div className="project-card-img">
         <LazyLoadImage src={imageUrl} alt="project logo" />
         <div className="buttons">
-          <button
-            data-testid="openProject"
-            className="btn btn-primary btn-sm ml-auto"
-            onClick={openProject}
-            type="button"
-          >
-            <span className="mr-2">{t('openProject')}</span>
-            <AiFillFolderOpen />
-          </button>
+          <Link to={`/operational-studies/projects/${project.id}`}>
+            <button
+              data-testid="openProject"
+              className="btn btn-primary btn-sm ml-auto"
+              type="button"
+            >
+              <span className="mr-2">{t('openProject')}</span>
+              <AiFillFolderOpen />
+            </button>
+          </Link>
         </div>
       </div>
       <div className="project-card-studies">

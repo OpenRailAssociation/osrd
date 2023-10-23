@@ -8,6 +8,7 @@ import logo from 'assets/pictures/home/editor.svg';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { getInfraID } from 'reducers/osrdconf/selectors';
+import { ModalProvider } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import Editor from './Editor';
 
 export default function HomeEditorUnplugged() {
@@ -26,7 +27,7 @@ export default function HomeEditorUnplugged() {
   }, [infraID, getInfraById]);
 
   return (
-    <>
+    <ModalProvider>
       <NavBarSNCF
         appName={
           <>
@@ -53,6 +54,6 @@ export default function HomeEditorUnplugged() {
           <Route path="/:urlInfra" element={<Editor />} />
         </Routes>
       </div>
-    </>
+    </ModalProvider>
   );
 }

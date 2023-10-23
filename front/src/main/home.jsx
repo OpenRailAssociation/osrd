@@ -9,12 +9,13 @@ import operationalStudiesImg from 'assets/pictures/home/operationalStudies.svg';
 import logo from 'assets/logo_osrd_seul_blanc.svg';
 import osrdLogo from 'assets/pictures/osrd.png';
 import { useTranslation } from 'react-i18next';
+import { ModalProvider } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 
 export default function Home() {
   const { t } = useTranslation('home/home');
 
   return (
-    <>
+    <ModalProvider>
       <NavBarSNCF appName="OSRD" logo={logo} />
       <main className="mastcontainer mastcontainer-no-mastnav">
         <div className="application-title">
@@ -27,7 +28,7 @@ export default function Home() {
               <Card
                 img={operationalStudiesImg}
                 title={t('operationalStudies')}
-                link="/operational-studies"
+                link="/operational-studies/projects"
                 data-testid="operationalStudies"
               />
             </div>
@@ -50,6 +51,6 @@ export default function Home() {
           </div>
         </div>
       </main>
-    </>
+    </ModalProvider>
   );
 }

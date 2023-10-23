@@ -1,41 +1,44 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Project, StudyResult, ScenarioResult } from 'common/api/osrdEditoastApi';
 
 type Props = {
-  projectName?: string;
-  studyName?: string;
-  scenarioName?: string;
+  project?: Project;
+  study?: StudyResult;
+  scenario?: ScenarioResult;
 };
 
-export default function BreadCrumbs({ projectName, studyName, scenarioName }: Props) {
+export default function BreadCrumbs({ project, study, scenario }: Props) {
   const { t } = useTranslation('operationalStudies/project');
   return (
     <div className="navbar-breadcrumbs">
-      {!projectName && !studyName && !scenarioName ? (
+      {!project && !study && !scenario ? (
         t('projectsList')
       ) : (
         <>
-          <Link to="/operational-studies">{t('projectsList')}</Link>
+          <Link to="/operational-studies/projects">{t('projectsList')}</Link>
           <i className="icons-arrow-next icons-size-x75 text-muted" />
         </>
       )}
 
-      {projectName && !studyName && !scenarioName && projectName}
+      {project && !study && !scenario && project.name}
 
-      {projectName && studyName && (
+      {project && study && (
         <>
-          <Link to="/operational-studies/project">{projectName}</Link>
+          <Link to={`/operational-studies/projects/${project.id}`}>{project.name}</Link>
           <i className="icons-arrow-next icons-size-x75 text-muted" />
         </>
       )}
-      {projectName && studyName && !scenarioName && studyName}
+      {project && study && !scenario && study.name}
 
-      {projectName && studyName && scenarioName && (
+      {project && study && scenario && (
         <>
-          <Link to="/operational-studies/study">{studyName}</Link>
+          <Link to={`/operational-studies/projects/${project.id}/studies/${study.id}`}>
+            {study.name}
+          </Link>
           <i className="icons-arrow-next icons-size-x75 text-muted" />
-          {scenarioName}
+          {scenario.name}
         </>
       )}
     </div>

@@ -11,6 +11,7 @@ import {
   updateRollingStockID,
 } from 'reducers/osrdconf';
 import { getRollingStockComfort } from 'reducers/osrdconf/selectors';
+import { useOsrdConfContext } from 'common/osrdConfContext';
 import { comfort2pictogram } from '../RollingStockSelector/RollingStockHelpers';
 
 interface RollingStockCardButtonsProps {
@@ -27,13 +28,16 @@ const RollingStockCardButtons = ({
   const dispatch = useDispatch();
   const { t } = useTranslation(['rollingstock']);
   const { closeModal } = useContext(ModalContext);
-
+  const {
+    slice: { actions: osrdConfActions },
+  } = useOsrdConfContext();
   const rollingStockComfort = useSelector(getRollingStockComfort);
   const [comfort, setComfort] = useState('STANDARD');
 
   const selectRollingStock = () => {
     setOpenedRollingStockCardId(undefined);
     dispatch(updateRollingStockComfort(comfort));
+    dispatch(osrdConfActions.updateRollingStockID(id));
     dispatch(updateRollingStockID(id));
     dispatch(updatePowerRestrictionRanges([]));
     dispatch(updatePathfindingID(undefined));

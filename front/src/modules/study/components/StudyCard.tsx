@@ -25,7 +25,7 @@ export default function StudyCard({ setFilterChips, study }: Props) {
   const handleClick = () => {
     dispatch(updateStudyID(study.id));
     dispatch(updateScenarioID(undefined));
-    navigate('/operational-studies/study');
+    navigate(`studies/${study.id}`);
   };
 
   return (

@@ -4,6 +4,7 @@ import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
 
 import logo from 'assets/pictures/home/rollingstockeditor.svg';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
+import { ModalProvider } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import RollingStockEditor from './views/RollingStockEditor';
 
 const HomeRollingStockEditor: FC = () => {
@@ -15,10 +16,10 @@ const HomeRollingStockEditor: FC = () => {
     });
 
   return (
-    <>
+    <ModalProvider>
       <NavBarSNCF appName={<>{t('rollingStockEditor')}</>} logo={logo} />
       <RollingStockEditor rollingStocks={rollingStocks} />
-    </>
+    </ModalProvider>
   );
 };
 

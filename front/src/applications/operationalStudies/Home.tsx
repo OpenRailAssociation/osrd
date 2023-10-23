@@ -26,7 +26,7 @@ type SortOptions =
   | 'LastModifiedAsc'
   | 'LastModifiedDesc';
 
-export default function Home() {
+export default function HomeOperationalStudies() {
   const { t } = useTranslation('operationalStudies/home');
   const safeWord = useSelector(getUserSafeWord);
   const [sortOption, setSortOption] = useState<SortOptions>('LastModifiedDesc');
