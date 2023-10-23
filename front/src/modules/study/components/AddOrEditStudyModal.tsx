@@ -14,7 +14,7 @@ import { GoNote } from 'react-icons/go';
 import { MdBusinessCenter, MdTitle } from 'react-icons/md';
 import { RiCalendarLine, RiMoneyEuroCircleLine, RiQuestionLine } from 'react-icons/ri';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { setFailure, setSuccess } from 'reducers/main';
 import { updateStudyID } from 'reducers/osrdconf';
 import { getProjectID } from 'reducers/osrdconf/selectors';
@@ -36,6 +36,10 @@ type Props = {
   study?: StudyWithScenarios;
 };
 
+type StudyParams = {
+  projectId: string;
+};
+
 type OptionsList = StudyType[] | StudyState[];
 
 const emptyStudy: StudyForm = { name: '', tags: [] };
@@ -45,7 +49,7 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
   const { closeModal } = useContext(ModalContext);
   const [currentStudy, setCurrentStudy] = useState<StudyForm>((study as StudyForm) || emptyStudy);
   const [displayErrors, setDisplayErrors] = useState(false);
-  const projectID = useSelector(getProjectID);
+  const { projectId } = useParams() as StudyParams;
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -91,13 +95,13 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
       setDisplayErrors(true);
     } else {
       createStudies({
-        projectId: projectID as number,
+        projectId: +projectId,
         studyCreateForm: currentStudy,
       })
         .unwrap()
         .then((createdStudy) => {
           dispatch(updateStudyID(createdStudy.id));
-          navigate('/operational-studies/study');
+          navigate(`projects/${projectId}/studies/${createdStudy.id}`);
           closeModal();
         });
     }
@@ -106,9 +110,9 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
   const updateStudy = () => {
     if (!currentStudy?.name) {
       setDisplayErrors(true);
-    } else if (study?.id && projectID) {
+    } else if (study?.id && projectId) {
       patchStudies({
-        projectId: projectID,
+        projectId: +projectId,
         studyId: study.id,
         studyPatchForm: currentStudy,
       })
@@ -126,9 +130,9 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
   };
 
   const deleteStudy = () => {
-    if (study?.id && projectID) {
+    if (study?.id && projectId) {
       deleteStudies({
-        projectId: projectID,
+        projectId: +projectId,
         studyId: study.id,
       })
         .unwrap()

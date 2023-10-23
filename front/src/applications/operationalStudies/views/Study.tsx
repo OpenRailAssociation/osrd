@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import logo from 'assets/pictures/views/study.svg';
 import { useTranslation } from 'react-i18next';
@@ -13,8 +13,7 @@ import { VscLink, VscFile, VscFiles } from 'react-icons/vsc';
 import { FaPencilAlt } from 'react-icons/fa';
 import { budgetFormat } from 'utils/numbers';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
-import { useSelector, useDispatch } from 'react-redux';
-import { getProjectID, getStudyID } from 'reducers/osrdconf/selectors';
+import { useDispatch } from 'react-redux';
 import DateBox from 'applications/operationalStudies/components/Study/DateBox';
 import StateStep from 'applications/operationalStudies/components/Study/StateStep';
 import {
@@ -79,11 +78,10 @@ export default function Study() {
   const [sortOption, setSortOption] = useState<SortOptions>('LastModifiedDesc');
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const projectId = useSelector(getProjectID);
-  const studyId = useSelector(getStudyID);
+  const { projectId, studyId } = useParams();
 
   const { data: project, isError: isProjectError } = osrdEditoastApi.useGetProjectsByProjectIdQuery(
-    { projectId: projectId as number },
+    { projectId: Number(projectId) },
     {
       skip: !projectId,
     }
@@ -92,8 +90,8 @@ export default function Study() {
   const { data: study, isError: isCurrentStudyError } =
     osrdEditoastApi.useGetProjectsByProjectIdStudiesAndStudyIdQuery(
       {
-        projectId: projectId as number,
-        studyId: studyId as number,
+        projectId: Number(projectId),
+        studyId: Number(studyId),
       },
       {
         skip: !projectId || !studyId,
@@ -214,8 +212,8 @@ export default function Study() {
       } else {
         try {
           const { data } = await getScenarios({
-            projectId,
-            studyId,
+            projectId: +projectId,
+            studyId: +studyId,
             ordering: sortOption,
             pageSize: 1000,
           });
@@ -234,15 +232,7 @@ export default function Study() {
 
   return (
     <>
-      <NavBarSNCF
-        appName={
-          <BreadCrumbs
-            projectName={project?.name && project.name}
-            studyName={study?.name && study.name}
-          />
-        }
-        logo={logo}
-      />
+      <NavBarSNCF appName={<BreadCrumbs project={project} study={study} />} logo={logo} />
       <main className="mastcontainer mastcontainer-no-mastnav">
         <div className="p-3 study-view">
           {project && study ? (

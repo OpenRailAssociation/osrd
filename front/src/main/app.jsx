@@ -1,6 +1,6 @@
 import React, { Suspense, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Route, Routes, unstable_HistoryRouter as HistoryRouter } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import 'i18n';
 import { updateLastInterfaceVersion } from 'reducers/main';
 
@@ -8,9 +8,7 @@ import HomeEditor from 'applications/editor/Home';
 import HomeMap from 'applications/referenceMap/Home';
 import HomeOperationalStudies from 'applications/operationalStudies/Home';
 import HomeStdcm from 'applications/stdcm/Home';
-import { ModalProvider } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import Loader from 'common/Loader';
-import history from 'main/history';
 import Home from 'main/home';
 import { NotificationsState } from 'common/Notifications';
 import Project from 'applications/operationalStudies/views/Project';
@@ -24,6 +22,60 @@ import { simulationConfSlice, simulationConfSliceActions } from 'reducers/osrdco
 import { stdcmConfSlice, stdcmConfSliceActions } from 'reducers/osrdconf2/stdcmConf';
 
 import('@sncf/bootstrap-sncf.metier.reseau/dist/css/bootstrap-sncf.min.css');
+
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <Home />,
+  },
+  {
+    path: 'map/*',
+    element: <HomeMap />,
+  },
+  {
+    path: 'editor/*',
+    element: <HomeEditor />,
+  },
+  {
+    path: 'stdcm/*',
+    element: <OsrdConfContextLayout slice={stdcmConfSlice} selectors={stdcmConfSliceActions} />,
+    children: [
+      {
+        path: '*',
+        element: <HomeStdcm />,
+      },
+    ],
+  },
+  {
+    path: 'rolling-stock-editor/*',
+    element: <HomeRollingStockEditor />,
+  },
+  {
+    path: 'operational-studies/',
+    element: (
+      <OsrdConfContextLayout slice={simulationConfSlice} selectors={simulationConfSliceActions} />
+    ),
+    children: [
+      {
+        path: 'projects',
+        element: <HomeOperationalStudies />,
+      },
+      {
+        path: 'projects/:projectId',
+        element: <Project />,
+      },
+      {
+        path: 'projects/:projectId/studies/:studyId',
+        element: <Study />,
+      },
+      {
+        path: 'projects/:projectId/studies/:studyId/scenarios/:scenarioId',
+        element: <Scenario />,
+      },
+    ],
+  },
+]);
+
 export default function App() {
   const isUserLogged = useSelector(getIsUserLogged);
 
@@ -44,40 +96,8 @@ export default function App() {
 
   return (
     <Suspense fallback={<Loader />}>
-      {(isUserLogged || isLocalBackend) && (
-        <HistoryRouter history={history}>
-          <ModalProvider>
-            <NotificationsState />
-            <Routes>
-              <Route
-                path="/operational-studies"
-                element={
-                  <OsrdConfContextLayout
-                    slice={simulationConfSlice}
-                    selectors={simulationConfSliceActions}
-                  />
-                }
-              >
-                <Route path="/operational-studies" element={<HomeOperationalStudies />} />
-                <Route path="/operational-studies/project" element={<Project />} />
-                <Route path="/operational-studies/study" element={<Study />} />
-                <Route path="/operational-studies/scenario" element={<Scenario />} />
-              </Route>
-              <Route path="/map/*" element={<HomeMap />} />
-              <Route path="/editor/*" element={<HomeEditor />} />
-              <Route path="/rolling-stock-editor/*" element={<HomeRollingStockEditor />} />
-              <Route
-                element={
-                  <OsrdConfContextLayout slice={stdcmConfSlice} selectors={stdcmConfSliceActions} />
-                }
-              >
-                <Route path="/stdcm/*" element={<HomeStdcm />} />
-              </Route>
-              <Route path="/*" element={<Home />} />
-            </Routes>
-          </ModalProvider>
-        </HistoryRouter>
-      )}
+      <NotificationsState />
+      {(isUserLogged || isLocalBackend) && <RouterProvider router={router} />}
       {!isUserLogged && !isLocalBackend && <Loader />}
     </Suspense>
   );

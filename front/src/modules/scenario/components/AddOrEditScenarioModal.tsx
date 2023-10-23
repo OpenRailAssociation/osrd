@@ -117,7 +117,7 @@ export default function AddOrEditScenarioModal({
         .then(({ id }) => {
           dispatch(updateScenarioID(id));
           loadInfra({ id: infraID as number }).unwrap();
-          navigate('/operational-studies/scenario');
+          navigate(`projects/${projectID}/studies/${studyID}/scenarios/${id}`);
           closeModal();
         })
 

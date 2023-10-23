@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import logo from 'assets/pictures/views/studies.svg';
 import { useTranslation } from 'react-i18next';
@@ -14,8 +14,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { budgetFormat } from 'utils/numbers';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
-import { getProjectID } from 'reducers/osrdconf/selectors';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import FilterTextField from 'applications/operationalStudies/components/FilterTextField';
 import { PostSearchApiArg, StudyWithScenarios, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { setFailure } from 'reducers/main';
@@ -63,7 +62,7 @@ export default function Project() {
   const [imageUrl, setImageUrl] = useState('');
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const projectId = useSelector(getProjectID);
+  const { projectId } = useParams();
   const [postSearch] = osrdEditoastApi.usePostSearchMutation();
   const [getStudies] = osrdEditoastApi.useLazyGetProjectsByProjectIdStudiesQuery();
 
@@ -79,7 +78,7 @@ export default function Project() {
   ];
 
   const { data: project, isError: isProjectError } = osrdEditoastApi.useGetProjectsByProjectIdQuery(
-    { projectId: projectId as number },
+    { projectId: Number(projectId) },
     {
       skip: !projectId,
     }
@@ -135,7 +134,11 @@ export default function Project() {
         }
       } else {
         try {
-          const { data } = await getStudies({ projectId, ordering: sortOption, pageSize: 1000 });
+          const { data } = await getStudies({
+            projectId: Number(projectId),
+            ordering: sortOption,
+            pageSize: 1000,
+          });
           if (data?.results) setStudiesList(data.results);
         } catch (error) {
           console.error(error);
@@ -175,7 +178,7 @@ export default function Project() {
 
   return (
     <>
-      <NavBarSNCF appName={<BreadCrumbs projectName={project && project.name} />} logo={logo} />
+      <NavBarSNCF appName={<BreadCrumbs project={project} />} logo={logo} />
       <main className="mastcontainer mastcontainer-no-mastnav">
         <div className="p-3 project-view">
           {project ? (

@@ -26,7 +26,7 @@ export default function StudyCard({ setFilterChips, scenario }: Props) {
   const handleClick = () => {
     dispatch(updateScenarioID(scenario.id));
     dispatch(updateSelectedProjection(undefined));
-    navigate('/operational-studies/scenario');
+    navigate(`scenarios/${scenario.id}`);
   };
 
   return (

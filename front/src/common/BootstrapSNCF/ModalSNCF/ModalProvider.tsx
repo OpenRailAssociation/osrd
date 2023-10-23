@@ -10,7 +10,7 @@ import React, {
   useEffect,
   useRef,
 } from 'react';
-import { useLocation } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import cx from 'classnames';
 
 /**
@@ -160,6 +160,7 @@ export const ModalProvider: FC<PropsWithChildren<unknown>> = ({ children }) => {
         <div className={cx('modal-backdrop fade', modalContext.isOpen && 'show')} />
       )}
       <ModalSNCF />
+      <Outlet />
     </ModalContext.Provider>
   );
 };

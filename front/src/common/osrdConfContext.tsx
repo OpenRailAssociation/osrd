@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useMemo } from 'react';
-import { Outlet } from 'react-router-dom';
 import { simulationConfSliceType } from 'reducers/osrdconf2/simulationConf';
 import { simulationConfSelectorsType } from 'reducers/osrdconf2/simulationConf/selectors';
 import { stdcmConfSliceType } from 'reducers/osrdconf2/stdcmConf';
 import { stdcmConfSelectorsType } from 'reducers/osrdconf2/stdcmConf/selectors';
+import { ModalProvider } from './BootstrapSNCF/ModalSNCF/ModalProvider';
 
 export type OsrdConfType = {
   slice: simulationConfSliceType | stdcmConfSliceType;
@@ -28,7 +28,7 @@ export const OsrdConfContextLayout = ({ slice, selectors }: Props) => {
   const value = useMemo(() => ({ slice, selectors }), [slice, selectors]);
   return (
     <OsrdConfContext.Provider value={value}>
-      <Outlet />
+      <ModalProvider />
     </OsrdConfContext.Provider>
   );
 };

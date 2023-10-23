@@ -8,6 +8,7 @@ import logo from 'assets/pictures/home/map.svg';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { ModalProvider } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import Map from './Map';
 
 const HomeReferenceMap: FC = () => {
@@ -26,7 +27,7 @@ const HomeReferenceMap: FC = () => {
   }, [infraID, getInfraById]);
 
   return (
-    <>
+    <ModalProvider>
       <NavBarSNCF
         appName={
           <>
@@ -49,7 +50,7 @@ const HomeReferenceMap: FC = () => {
           <Route path="/:urlLat/:urlLon/:urlZoom/:urlBearing/:urlPitch" element={<Map />} />
         </Routes>
       </div>
-    </>
+    </ModalProvider>
   );
 };
 

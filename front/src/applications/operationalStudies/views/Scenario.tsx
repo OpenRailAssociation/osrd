@@ -9,17 +9,11 @@ import { MODES, MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStud
 import { updateInfraID, updateMode, updateTimetableID } from 'reducers/osrdconf';
 import TimetableManageTrainSchedule from 'modules/trainschedule/components/Timetable/TimetableManageTrainSchedule';
 import BreadCrumbs from 'applications/operationalStudies/components/BreadCrumbs';
-import {
-  getInfraID,
-  getProjectID,
-  getScenarioID,
-  getStudyID,
-  getTimetableID,
-} from 'reducers/osrdconf/selectors';
+import { getInfraID, getTimetableID } from 'reducers/osrdconf/selectors';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { FaEye, FaEyeSlash, FaPencilAlt } from 'react-icons/fa';
 import { GiElectric } from 'react-icons/gi';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import AddAndEditScenarioModal from 'modules/scenario/components/AddOrEditScenarioModal';
 import ScenarioLoaderMessage from 'modules/scenario/components/ScenarioLoaderMessage';
@@ -29,6 +23,12 @@ import ImportTrainSchedule from './ImportTrainSchedule';
 import ManageTrainSchedule from './ManageTrainSchedule';
 import SimulationResults from './SimulationResults';
 import InfraLoadingState from '../components/Scenario/InfraLoadingState';
+
+type SimulationParams = {
+  projectId: string;
+  studyId: string;
+  scenarioId: string;
+};
 
 export default function Scenario() {
   const dispatch = useDispatch();
@@ -44,21 +44,19 @@ export default function Scenario() {
 
   const { openModal } = useModal();
   const navigate = useNavigate();
-  const projectId = useSelector(getProjectID);
-  const studyId = useSelector(getStudyID);
-  const scenarioId = useSelector(getScenarioID);
+  const { projectId, studyId, scenarioId } = useParams() as SimulationParams;
   const infraId = useSelector(getInfraID);
   const timetableId = useSelector(getTimetableID);
 
   const { data: project } = osrdEditoastApi.endpoints.getProjectsByProjectId.useQuery(
     {
-      projectId: projectId as number,
+      projectId: +projectId,
     },
     { skip: !projectId }
   );
   const { data: study } =
     osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyId.useQuery(
-      { projectId: projectId as number, studyId: studyId as number },
+      { projectId: +projectId, studyId: +studyId },
       {
         skip: !projectId || !studyId,
       }
@@ -66,9 +64,9 @@ export default function Scenario() {
   const { data: scenario } =
     osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId.useQuery(
       {
-        projectId: projectId as number,
-        studyId: studyId as number,
-        scenarioId: scenarioId as number,
+        projectId: +projectId,
+        studyId: +studyId,
+        scenarioId: +scenarioId,
       },
       { skip: !projectId || !studyId || !scenarioId }
     );
@@ -145,13 +143,7 @@ export default function Scenario() {
   return scenario && infraId && timetableId ? (
     <>
       <NavBarSNCF
-        appName={
-          <BreadCrumbs
-            projectName={project?.name}
-            studyName={study?.name}
-            scenarioName={scenario.name}
-          />
-        }
+        appName={<BreadCrumbs project={project} study={study} scenario={scenario} />}
         logo={logo}
       />
       <main className="mastcontainer mastcontainer-no-mastnav">
