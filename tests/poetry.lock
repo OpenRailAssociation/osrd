@@ -882,7 +882,7 @@ files = [
 
 [[package]]
 name = "railjson-generator"
-version = "0.2.3"
+version = "0.2.6"
 description = ""
 optional = false
 python-versions = ">=3.9,<3.12"
@@ -999,4 +999,4 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.12"
-content-hash = "2ee2a39f1226c0519ac64f1ad5e1c12d8597b82d693e513020c9e938ba76e97e"
+content-hash = "a08c827a640a00a42a81673033ec26b34292239bd95bb8c869db724a8c753fda"
