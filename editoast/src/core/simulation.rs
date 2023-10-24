@@ -76,6 +76,12 @@ pub struct SimulationResponse {
     pub power_restriction_ranges: Vec<Vec<JsonValue>>,
 }
 
+impl SimulationResponse {
+    pub fn len(&self) -> usize {
+        self.base_simulations.len() // TODO: check on deserialization that all vecs in response have same length
+    }
+}
+
 #[derive(Debug, Serialize)]
 pub struct SignalProjectionRequest {
     pub infra: String,

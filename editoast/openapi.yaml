@@ -2119,6 +2119,116 @@ components:
       - route_aspects
       - signals
       - mechanical_energy_consumed
+    SingleSimulationRequest:
+      properties:
+        allowances:
+          default: []
+          items:
+            $ref: '#/components/schemas/Allowance'
+          type: array
+        comfort:
+          $ref: '#/components/schemas/Comfort'
+        electrical_profile_set_id:
+          type: integer
+        initial_speed:
+          default: 0
+          format: float
+          type: number
+        options:
+          allOf:
+          - $ref: '#/components/schemas/TrainScheduleOptions'
+          nullable: true
+        path_id:
+          type: integer
+        power_restriction_ranges:
+          description: A list of ranges along the train path where power restrictions apply.
+          items:
+            $ref: '#/components/schemas/PowerRestrictionRange'
+          nullable: true
+          type: array
+        rolling_stock_id:
+          type: integer
+        scheduled_points:
+          default: []
+          items:
+            properties:
+              path_offset:
+                description: Offset in meters from the start of the path at which the train must be.
+                format: float
+                type: number
+              time:
+                description: Time in seconds (elapsed since the train's departure) at which the train must be.
+                format: float
+                type: number
+            required:
+            - path_offset
+            - time
+            type: object
+          type: array
+        stops:
+          default: []
+          items:
+            properties:
+              duration:
+                format: float
+                type: number
+              location:
+                $ref: '#/components/schemas/TrackLocation'
+              position:
+                format: float
+                type: number
+            type: object
+          type: array
+        tag:
+          type: string
+      required:
+      - rolling_stock_id
+      - path_id
+      type: object
+    SingleSimulationResponse:
+      properties:
+        base_simulation:
+          $ref: '#/components/schemas/SimulationReportByTrain'
+        eco_simulation:
+          allOf:
+          - $ref: '#/components/schemas/SimulationReportByTrain'
+          nullable: true
+        electrification_ranges:
+          description: A list of ranges which should be contiguous and which describe the electrification on the path and if it is handled by the train
+          items:
+            $ref: '#/components/schemas/ElectrificationRange'
+          minItems: 1
+          type: array
+        power_restriction_ranges:
+          description: The list of ranges where power restrictions are applied
+          items:
+            $ref: '#/components/schemas/PowerRestrictionRangeItem'
+          type: array
+        speed_limits:
+          items:
+            properties:
+              position:
+                type: number
+              speed:
+                type: number
+            required:
+            - position
+            - speed
+            type: object
+          minItems: 2
+          type: array
+        warnings:
+          items:
+            type: string
+          type: array
+      required:
+      - base_simulation
+      - eco_simulation
+      - speed_limits
+      - warnings
+      - electrification_ranges
+      - power_restriction_ranges
+      type: object
     SpaceTimePosition:
       properties:
         position:
@@ -4676,6 +4786,23 @@ paths:
                 type: array
           description: Search results, the structure of the returned objects depend on their type
       summary: Generic search endpoint
+  /single_simulation/:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SingleSimulationRequest'
+        description: The details of the simulation
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SingleSimulationResponse'
+          description: Data about the simulation produced
+      summary: Runs a simulation with a single train, does not write anything to the database
   /sprites/signaling_systems/:
     get:
       description: This endpoint returns the list of supported signaling systems

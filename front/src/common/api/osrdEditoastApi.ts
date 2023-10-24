@@ -575,6 +575,16 @@ const injectedRtkApi = api
           params: { page_size: queryArg.pageSize },
         }),
       }),
+      postSingleSimulation: build.mutation<
+        PostSingleSimulationApiResponse,
+        PostSingleSimulationApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/single_simulation/`,
+          method: 'POST',
+          body: queryArg.singleSimulationRequest,
+        }),
+      }),
       getSpritesSignalingSystems: build.query<
         GetSpritesSignalingSystemsApiResponse,
         GetSpritesSignalingSystemsApiArg
@@ -1224,6 +1234,12 @@ export type PostSearchApiArg = {
     page_size?: number;
     query?: SearchQuery;
   };
+};
+export type PostSingleSimulationApiResponse =
+  /** status 201 Data about the simulation produced */ SingleSimulationResponse;
+export type PostSingleSimulationApiArg = {
+  /** The details of the simulation */
+  singleSimulationRequest: SingleSimulationRequest;
 };
 export type GetSpritesSignalingSystemsApiResponse =
   /** status 200 List of supported signaling systems */ string[];
@@ -2015,28 +2031,16 @@ export type PowerRestrictionRangeItem = {
   start: number;
   stop: number;
 };
-export type SimulationReport = {
-  base: SimulationReportByTrain;
-  curves: {
-    position: number;
-    radius: number;
-  }[];
-  eco?: SimulationReportByTrain;
+export type SingleSimulationResponse = {
+  base_simulation: SimulationReportByTrain;
+  eco_simulation: SimulationReportByTrain | null;
   electrification_ranges: ElectrificationRange[];
-  id: number;
-  labels: string[];
-  name: string;
-  path: number;
   power_restriction_ranges: PowerRestrictionRangeItem[];
-  slopes: {
-    gradient: number;
-    position: number;
-  }[];
-  speed_limit_tags?: string;
-  vmax: {
+  speed_limits: {
     position: number;
     speed: number;
   }[];
+  warnings: string[];
 };
 export type AllowanceTimePerDistanceValue = {
   minutes: number;
@@ -2060,10 +2064,6 @@ export type AllowanceValue =
   | ({
       value_type: 'percentage';
     } & AllowancePercentValue);
-export type Waypoint = {
-  geo_coordinate?: number[];
-  track_section?: string;
-}[];
 export type RangeAllowance = {
   begin_position: number;
   end_position: number;
@@ -2096,6 +2096,53 @@ export type PowerRestrictionRange = {
   end_position: number;
   power_restriction_code: string;
 };
+export type SingleSimulationRequest = {
+  allowances?: Allowance[];
+  comfort?: Comfort;
+  electrical_profile_set_id?: number;
+  initial_speed?: number;
+  options?: TrainScheduleOptions | null;
+  path_id: number;
+  power_restriction_ranges?: PowerRestrictionRange[] | null;
+  rolling_stock_id: number;
+  scheduled_points?: {
+    path_offset: number;
+    time: number;
+  }[];
+  stops?: {
+    duration?: number;
+    location?: TrackLocation;
+    position?: number;
+  }[];
+  tag?: string;
+};
+export type SimulationReport = {
+  base: SimulationReportByTrain;
+  curves: {
+    position: number;
+    radius: number;
+  }[];
+  eco?: SimulationReportByTrain;
+  electrification_ranges: ElectrificationRange[];
+  id: number;
+  labels: string[];
+  name: string;
+  path: number;
+  power_restriction_ranges: PowerRestrictionRangeItem[];
+  slopes: {
+    gradient: number;
+    position: number;
+  }[];
+  speed_limit_tags?: string;
+  vmax: {
+    position: number;
+    speed: number;
+  }[];
+};
+export type Waypoint = {
+  geo_coordinate?: number[];
+  track_section?: string;
+}[];
 export type TrainSchedule = {
   allowances: Allowance[];
   comfort: Comfort;
