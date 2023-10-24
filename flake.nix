@@ -65,6 +65,17 @@
           nodejs = fixedNode;
         };
 
+        rustChan = pkgs.rust-bin.stable."1.73.0".rust.override {
+          targets = [];
+          extensions = [
+            "clippy"
+            "rust-src"
+            "rustc-dev"
+            "rustfmt"
+            "rust-analyzer"
+          ];
+        };
+
         scriptFiles = builtins.attrNames (builtins.readDir ./scripts);
         scriptBins =
           map (
@@ -79,28 +90,26 @@
       in
         with pkgs; {
           devShells.default = mkShell {
+            nativeBuildInputs = [rustChan];
             buildInputs =
               [
+                # Tools & Libs
+                cargo-watch
+                cargo-tarpaulin
+                osmium-tool
+                geos
+                openssl
+                pkg-config
+                postgresql
+
                 # API
                 (python310.withPackages pythonPackages)
                 poetry
 
-                # EDITOAST
-                osmium-tool
-                geos
-                postgresql
-                openssl
-                pkg-config
-                rustPackages.clippy
-                cargo-watch
-                cargo-tarpaulin
-                rust-analyzer
-                rust-bin.stable.latest.default
-
-                # CORE
+                # Core
                 jdk17
 
-                # FRONT
+                # Front
                 fixedNodePackages.create-react-app
                 fixedNodePackages.eslint
                 fixedNodePackages.yarn
