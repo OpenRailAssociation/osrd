@@ -1,5 +1,7 @@
 name: Run integration tests
 
+# TODO: check if we can run code quality checks only when the code changes
+# https://docs.github.com/en/actions/using-jobs/using-conditions-to-control-job-execution
 on:
   workflow_dispatch:
   pull_request:
@@ -11,8 +13,8 @@ on:
       - prod
 
 jobs:
-  integration_tests:
-    name: Integration tests
+  integration_tests_quality:
+    name: Integration tests quality
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -48,6 +50,28 @@ jobs:
           cd tests
           poetry run pytype -j auto
 
+  integration_tests:
+    name: Integration tests
+    runs-on: ubuntu-latest
+    steps:
+      # TODO: check if we can deduplicate the base steps
+      # https://www.jameskerr.blog/posts/sharing-steps-in-github-action-workflows/
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # run the CI on the actual latest commit of the PR, not the attempted merge
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Install poetry
+        run: pipx install poetry
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+          cache: "poetry"
+      - name: Install dependencies
+        run: |
+          cd tests
+          poetry install
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
