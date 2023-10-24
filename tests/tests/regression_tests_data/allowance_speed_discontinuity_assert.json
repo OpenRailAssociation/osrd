@@ -46,7 +46,7 @@
         "departure_time": 15934,
         "allowances": [
           {
-            "allowance_type": "standard",
+            "allowance_type": "performance",
             "default_value": {
               "value_type": "time_per_distance",
               "minutes": 7.939374137431228

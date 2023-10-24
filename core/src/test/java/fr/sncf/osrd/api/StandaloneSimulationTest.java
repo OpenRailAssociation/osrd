@@ -209,7 +209,7 @@ public class StandaloneSimulationTest extends ApiTest {
 
         // build the simulation request
         var stops = new RJSTrainStop[]{RJSTrainStop.lastStop(0.1)};
-        var allowance = new RJSAllowance[]{new RJSAllowance.StandardAllowance(
+        var allowance = new RJSAllowance[]{new RJSAllowance.PerformanceAllowance(
                 RJSAllowanceDistribution.MARECO, new RJSAllowanceValue.Percent(5)
         )
         };
@@ -249,7 +249,7 @@ public class StandaloneSimulationTest extends ApiTest {
         var stops = new RJSTrainStop[]{RJSTrainStop.lastStop(0.1)};
         var rangeEndPos = 5000;
         var allowance = new RJSAllowance[]{
-                new RJSAllowance.StandardAllowance(
+                new RJSAllowance.PerformanceAllowance(
                         RJSAllowanceDistribution.MARECO,
                         new RJSAllowanceValue.TimePerDistance(4.5),
                         new RJSAllowanceRange[]{
@@ -375,7 +375,7 @@ public class StandaloneSimulationTest extends ApiTest {
 
         // build the simulation request
         var stops = new RJSTrainStop[]{RJSTrainStop.lastStop(0.1)};
-        var allowance = new RJSAllowance[]{new RJSAllowance.StandardAllowance(
+        var allowance = new RJSAllowance[]{new RJSAllowance.PerformanceAllowance(
                 RJSAllowanceDistribution.LINEAR, new RJSAllowanceValue.Percent(5)
         )
         };
@@ -415,7 +415,7 @@ public class StandaloneSimulationTest extends ApiTest {
         // TODO : build a method to get the path length in @{RJSTrainPath} and use it here and in the final asserts
         var rangeEndPos = 5000;
         var allowance = new RJSAllowance[]{
-                new RJSAllowance.StandardAllowance(
+                new RJSAllowance.PerformanceAllowance(
                         RJSAllowanceDistribution.LINEAR,
                         new RJSAllowanceValue.TimePerDistance(4.5),
                         new RJSAllowanceRange[]{

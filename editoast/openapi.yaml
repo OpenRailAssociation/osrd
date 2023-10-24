@@ -5,7 +5,7 @@ components:
         propertyName: allowance_type
       oneOf:
       - $ref: '#/components/schemas/EngineeringAllowance'
-      - $ref: '#/components/schemas/StandardAllowance'
+      - $ref: '#/components/schemas/PerformanceAllowance'
     AllowancePercentValue:
       properties:
         percentage:
@@ -2090,11 +2090,11 @@ components:
       - speeds
       - powers
       type: object
-    StandardAllowance:
+    PerformanceAllowance:
       properties:
         allowance_type:
           enum:
-          - standard
+          - performance
           type: string
         capacity_speed_limit:
           default: -1
@@ -4703,7 +4703,7 @@ paths:
                 speed_limit_tags:
                   description: Train category for speed limits
                   type: string
-                standard_allowance:
+                performance_allowance:
                   $ref: '#/components/schemas/AllowanceValue'
                 start_time:
                   format: double
@@ -4732,7 +4732,7 @@ paths:
               - rolling_stocks
               - rolling_stock_id
               - comfort
-              - standard_allowance
+              - performance_allowance
               type: object
       responses:
         '200':

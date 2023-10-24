@@ -111,11 +111,11 @@ public final class STDCMRequest {
     @Json(name = "margin_after")
     public double gridMarginAfterSTDCM = 0;
 
-    /** Standard allowance to use when adding the new train. If unspecified (null), no allowance is added.
+    /** Performance allowance to use when adding the new train. If unspecified (null), no allowance is added.
      * This is only one part of the usual allowance object, because we can't define ranges nor specify
      * the allowance type (mareco / linear). */
-    @Json(name = "standard_allowance")
-    public RJSAllowanceValue standardAllowance = null;
+    @Json(name = "performance_allowance")
+    public RJSAllowanceValue performanceAllowance = null;
 
     /**
      * Create a default STDCMRequest

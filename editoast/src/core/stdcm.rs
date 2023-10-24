@@ -28,7 +28,7 @@ pub struct STDCMCoreRequest {
     pub speed_limit_tags: Option<String>,
     pub margin_before: f64,
     pub margin_after: f64,
-    pub standard_allowance: AllowanceValue,
+    pub performance_allowance: AllowanceValue,
 }
 
 impl AsCoreRequest<Json<STDCMCoreResponse>> for STDCMCoreRequest {

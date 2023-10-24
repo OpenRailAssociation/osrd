@@ -34,7 +34,7 @@ public class STDCMPathfinding {
             double maxDepartureDelay,
             double maxRunTime,
             String tag,
-            AllowanceValue standardAllowance
+            AllowanceValue performanceAllowance
     ) {
         assert steps.size() >= 2 : "Not enough steps have been set to find a path";
         var graph = new STDCMGraph(
@@ -48,7 +48,7 @@ public class STDCMPathfinding {
                 startTime,
                 steps,
                 tag,
-                standardAllowance
+                performanceAllowance
         );
 
         // Initializes the constraints
@@ -80,7 +80,7 @@ public class STDCMPathfinding {
                 fullInfra.rawInfra(),
                 path,
                 startTime,
-                graph.standardAllowance,
+                graph.performanceAllowance,
                 rollingStock,
                 timeStep,
                 comfort,
@@ -134,7 +134,7 @@ public class STDCMPathfinding {
                 range.edge().envelopeStartOffset(),
                 range.offset(),
                 range.edge().timeStart(),
-                range.edge().standardAllowanceSpeedFactor()
+                range.edge().performanceAllowanceSpeedFactor()
         );
         var pathDuration = timeEnd - range.edge().totalDepartureTimeShift();
         return pathDuration * searchTimeRange + range.edge().totalDepartureTimeShift();

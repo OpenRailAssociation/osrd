@@ -12,7 +12,7 @@ def _update_simulation_with_mareco_allowances(editoast_url, train_Schedule_id):
     train_schedule = response.json()
     train_schedule["allowances"] = [
         {
-            "allowance_type": "standard",
+            "allowance_type": "performance",
             "distribution": "MARECO",
             "default_value": {"value_type": "percentage", "percentage": 3},
             "ranges": [],

@@ -165,7 +165,7 @@
   "speed_limit_tags": null,
   "margin_before": 0,
   "margin_after": 0,
-  "standard_allowance": {
+  "performance_allowance": {
     "value_type": "percentage",
     "percentage": 0
   }

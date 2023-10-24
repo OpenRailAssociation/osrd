@@ -107,10 +107,10 @@ public class RJSStandaloneTrainScheduleParser {
             beginPos = engineeringAllowance.beginPosition;
             endPos = Math.min(envelopeSimPath.length, engineeringAllowance.endPosition);
             ranges = List.of(new AllowanceRange(beginPos, endPos, parseAllowanceValue(engineeringAllowance.value)));
-        } else if (rjsAllowance instanceof RJSAllowance.StandardAllowance standardAllowance) {
+        } else if (rjsAllowance instanceof RJSAllowance.PerformanceAllowance performanceAllowance) {
             beginPos = 0;
             endPos = envelopeSimPath.getLength();
-            ranges = parseAllowanceRanges(envelopeSimPath, standardAllowance.defaultValue, standardAllowance.ranges);
+            ranges = parseAllowanceRanges(envelopeSimPath, performanceAllowance.defaultValue, performanceAllowance.ranges);
         } else {
             throw new OSRDError(ErrorType.UnknownAllowanceType);
         }

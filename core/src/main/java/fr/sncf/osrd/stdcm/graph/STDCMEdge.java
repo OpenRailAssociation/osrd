@@ -29,9 +29,9 @@ public record STDCMEdge(
         // Time at which the train enters the block, discretized by only considering the minutes.
         // Used to identify visited edges
         int minuteTimeStart,
-        // Speed factor used to account for standard allowance.
-        // e.g. if we have a 5% standard allowance, this value is 1/1.05
-        double standardAllowanceSpeedFactor,
+        // Speed factor used to account for performance allowance.
+        // e.g. if we have a 5% performance allowance, this value is 1/1.05
+        double performanceAllowanceSpeedFactor,
         // Index of the last waypoint passed by this train
         int waypointIndex,
         // True if the edge end is a stop
@@ -92,9 +92,9 @@ public record STDCMEdge(
         }
     }
 
-    /** Returns how long it takes to go from the start to the end of the block, accounting standard allowance. */
+    /** Returns how long it takes to go from the start to the end of the block, accounting performance allowance. */
     public double getTotalTime() {
-        return envelope.getTotalTime() / standardAllowanceSpeedFactor;
+        return envelope.getTotalTime() / performanceAllowanceSpeedFactor;
     }
 
     /** Returns the length of the edge */

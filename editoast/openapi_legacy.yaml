@@ -2060,7 +2060,7 @@ paths:
                   rolling_stocks,
                   rolling_stock_id,
                   comfort,
-                  standard_allowance,
+                  performance_allowance,
                 ]
               properties:
                 infra_id:
@@ -2119,7 +2119,7 @@ paths:
                   description: |
                     Margin of y seconds after the train passage, which means that the path used by the train should
                     be free and available at least y seconds after its passage.
-                standard_allowance:
+                performance_allowance:
                   $ref: "#/components/schemas/AllowanceValue"
       responses:
         200:
@@ -4139,15 +4139,15 @@ components:
     Allowance:
       oneOf:
         - $ref: "#/components/schemas/EngineeringAllowance"
-        - $ref: "#/components/schemas/StandardAllowance"
+        - $ref: "#/components/schemas/PerformanceAllowance"
       discriminator:
         propertyName: allowance_type
 
-    StandardAllowance:
+    PerformanceAllowance:
       properties:
         allowance_type:
           type: string
-          enum: ["standard"]
+          enum: ["performance"]
         default_value:
           $ref: "#/components/schemas/AllowanceValue"
         ranges:

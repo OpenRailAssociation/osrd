@@ -3,8 +3,8 @@ package fr.sncf.osrd.stdcm;
 import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.SPEED_EPSILON;
 import static fr.sncf.osrd.stdcm.STDCMHelpers.meters;
 import static fr.sncf.osrd.stdcm.STDCMHelpers.occupancyTest;
-import static fr.sncf.osrd.stdcm.StandardAllowanceTests.checkAllowanceResult;
-import static fr.sncf.osrd.stdcm.StandardAllowanceTests.runWithAndWithoutAllowance;
+import static fr.sncf.osrd.stdcm.PerformanceAllowanceTests.checkAllowanceResult;
+import static fr.sncf.osrd.stdcm.PerformanceAllowanceTests.runWithAndWithoutAllowance;
 import static java.lang.Double.POSITIVE_INFINITY;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -241,9 +241,9 @@ public class StopTests {
         occupancyTest(res, occupancy, 2 * timeStep);
     }
 
-    /** Checks that we can handle a standard allowance with a stop */
+    /** Checks that we can handle a performance allowance with a stop */
     @Test
-    public void standardAllowanceWithStops() {
+    public void performanceAllowanceWithStops() {
         /*
         a --> b --> c --> d
 
@@ -278,7 +278,7 @@ public class StopTests {
                 .setInfra(infra.fullInfra())
                 .setUnavailableTimes(occupancy)
                 .setTimeStep(timeStep)
-                .setStandardAllowance(allowance)
+                .setPerformanceAllowance(allowance)
                 .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(0), 0)), 0, true))
                 .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(1), meters(50))), 1_000, true))
                 .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(3), meters(1))), 0, true))
@@ -294,9 +294,9 @@ public class StopTests {
         checkAllowanceResult(res, allowance, 4 * timeStep);
     }
 
-    /** Checks that we can handle both a standard and engineering allowance with a stop */
+    /** Checks that we can handle both a performance and engineering allowance with a stop */
     @Test
-    public void standardAndEngineeringAllowanceWithStops() {
+    public void performanceAndEngineeringAllowanceWithStops() {
         /*
         a --> b --> c --> d
 
@@ -334,7 +334,7 @@ public class StopTests {
                 .setInfra(infra.fullInfra())
                 .setUnavailableTimes(occupancy)
                 .setTimeStep(timeStep)
-                .setStandardAllowance(allowance)
+                .setPerformanceAllowance(allowance)
                 .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(0), 0)), 0, true))
                 .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(1), meters(50))), 1_000, true))
                 .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(3), meters(1))), 0, true))

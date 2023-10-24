@@ -5,7 +5,7 @@
   "initial_speed": 0,
   "allowances": [
     {
-      "allowance_type": "standard",
+      "allowance_type": "performance",
       "distribution": "LINEAR",
       "default_value": {
         "value_type": "time",

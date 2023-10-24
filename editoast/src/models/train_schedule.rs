@@ -402,7 +402,7 @@ pub struct EngineeringAllowance {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct StandardAllowance {
+pub struct PerformanceAllowance {
     default_value: AllowanceValue,
     ranges: Vec<RangeAllowance>,
     distribution: AllowanceDistribution,
@@ -418,7 +418,7 @@ fn default_capacity_speed_limit() -> f64 {
 #[serde(tag = "allowance_type", rename_all = "lowercase")]
 pub enum Allowance {
     Engineering(EngineeringAllowance),
-    Standard(StandardAllowance),
+    Performance(PerformanceAllowance),
 }
 
 #[derive(Debug, Clone, Derivative, Serialize, Deserialize, PartialEq)]

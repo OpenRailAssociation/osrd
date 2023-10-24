@@ -8,7 +8,7 @@ from osrd_schemas.train_schedule import (
     AllowanceTimePerDistanceValue,
     AllowanceTimeValue,
     EngineeringAllowance,
-    StandardAllowance,
+    PerformanceAllowance,
 )
 
 from railjson_generator.schema.location import DirectedLocation
@@ -43,11 +43,11 @@ class TrainSchedule:
         if engineering:
             allowance = EngineeringAllowance(*args, **kwargs)
         else:
-            allowance = StandardAllowance(*args, **kwargs)
+            allowance = PerformanceAllowance(*args, **kwargs)
         self.allowances.append(allowance)
 
-    def add_standard_single_value_allowance(self, value_type: str, value: float, distribution: str = "LINEAR"):
-        """Add a standard allowance with a single value. For more information on allowances, see
+    def add_performance_single_value_allowance(self, value_type: str, value: float, distribution: str = "LINEAR"):
+        """Add a performance allowance with a single value. For more information on allowances, see
         the documentation of the Allowance class in osrd_schemas."""
         if value_type == "time":
             value = AllowanceTimeValue(seconds=value)

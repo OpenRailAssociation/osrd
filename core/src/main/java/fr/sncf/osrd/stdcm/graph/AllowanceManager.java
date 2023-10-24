@@ -54,10 +54,10 @@ public class AllowanceManager {
         assert neededDelay > 0;
         var targetRunTime = oldEdge.getTotalTime() + neededDelay;
 
-        // As the standard allowance is first applied as a linear allowance over the whole path,
+        // As the performance allowance is first applied as a linear allowance over the whole path,
         // we need to compensate it by going faster here
-        var targetRunTimePreStandardAllowance = targetRunTime * oldEdge.standardAllowanceSpeedFactor();
-        return targetRunTimePreStandardAllowance - oldEdge.envelope().getTotalTime();
+        var targetRunTimePrePerformanceAllowance = targetRunTime * oldEdge.performanceAllowanceSpeedFactor();
+        return targetRunTimePrePerformanceAllowance - oldEdge.envelope().getTotalTime();
     }
 
     /** Re-create the edges in order, following the given envelope. */
