@@ -11,6 +11,7 @@ pub mod projects;
 pub mod rolling_stocks;
 pub mod scenario;
 pub mod search;
+mod single_simulation;
 pub mod sprites;
 pub mod stdcm;
 pub mod study;
@@ -63,6 +64,7 @@ pub fn routes() -> impl HttpServiceFactory {
         pathfinding::routes_v1(),
         train_schedule::routes(),
         stdcm::routes(),
+        single_simulation::routes(),
     ]
 }
 
@@ -210,6 +212,7 @@ mod tests {
     use crate::client::{MapLayersConfig, PostgresConfig, RedisConfig};
     use crate::core::mocking::MockingClient;
     use crate::core::CoreClient;
+    use crate::error::InternalError;
     use crate::infra_cache::InfraCache;
     use crate::map::redis_utils::RedisClient;
     use crate::map::MapLayers;
@@ -250,7 +253,8 @@ mod tests {
             } else {
                 panic!(
                     "Cannot read response body: {:?}\nGot status code {}",
-                    body, status
+                    body.unwrap_err(),
+                    status
                 )
             }
         }};
@@ -286,7 +290,7 @@ mod tests {
         // Custom Json extractor configuration
         let json_cfg = JsonConfig::default()
             .limit(250 * 1024 * 1024) // 250MB
-            .error_handler(|err, _| err.into());
+            .error_handler(|err, _| InternalError::from(err).into());
 
         let core: CoreClient = core.into();
         let app = App::new()

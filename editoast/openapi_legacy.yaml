@@ -2020,6 +2020,24 @@ paths:
                 required:
                   - git_describe
 
+  /single_simulation/:
+    post:
+      summary: Runs a simulation with a single train, does not write anything to the database
+      requestBody: 
+        description: The details of the simulation
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SingleSimulationRequest"
+        required: true
+      responses:
+        201:
+          description: Data about the simulation produced
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SingleSimulationResponse"
+
 components:
   schemas:
     Battery:
@@ -4385,3 +4403,102 @@ components:
         - uic
         - type
       type: object
+
+    SingleSimulationRequest:
+      type: object
+      required: [rolling_stock_id, path_id]
+      properties:
+        rolling_stock_id:
+          type: integer
+        path_id:
+          type: integer
+        electrical_profile_set_id:
+          type: integer
+        initial_speed:
+          type: number
+          format: float
+          default: 0
+        scheduled_points:
+          default: []
+          type: array
+          items:
+            type: object
+            required: [path_offset, time]
+            properties:
+              path_offset:
+                type: number
+                format: float
+                description: Offset in meters from the start of the path at which the train must be.
+              time:
+                type: number
+                format: float
+                description: Time in seconds (elapsed since the train's departure) at which the train must be.
+        allowances:
+          default: []
+          type: array
+          items:
+            $ref: "#/components/schemas/Allowance"
+        stops:
+          default: []
+          type: array
+          items:
+            type: object
+            properties:
+              position:
+                type: number
+                format: float
+              location:
+                $ref: "#/components/schemas/TrackLocation"
+              duration:
+                type: number
+                format: float
+        tag:
+          type: string
+        comfort:
+          $ref: "#/components/schemas/Comfort"
+        power_restriction_ranges:
+          description: A list of ranges along the train path where power restrictions apply.
+          type: array
+          items:
+            $ref: "#/components/schemas/PowerRestrictionRange"
+          nullable: true
+        options:
+          allOf:
+            - $ref: "#/components/schemas/TrainScheduleOptions"
+          nullable: true
+
+    SingleSimulationResponse:
+      type: object
+      required: [base_simulation, eco_simulation, speed_limits, warnings, electrification_ranges, power_restriction_ranges]
+      properties:
+        base_simulation:
+          $ref: "#/components/schemas/SimulationReportByTrain"
+        eco_simulation:
+          allOf:
+            - $ref: "#/components/schemas/SimulationReportByTrain"
+          nullable: true
+        speed_limits:
+          type: array
+          minItems: 2
+          items:
+            type: object
+            properties:
+              position: { type: number }
+              speed: { type: number }
+            required: [position, speed]
+        warnings:
+          type: array
+          items:
+            type: string
+        electrification_ranges:
+          description: A list of ranges which should be contiguous and which describe the electrification on the path and if it is handled by the train
+          type: array
+          items:
+            $ref: "#/components/schemas/ElectrificationRange"
+          minItems: 1
+        power_restriction_ranges:
+          description: The list of ranges where power restrictions are applied
+          type: array
+          items:
+            $ref: "#/components/schemas/PowerRestrictionRangeItem"
+
