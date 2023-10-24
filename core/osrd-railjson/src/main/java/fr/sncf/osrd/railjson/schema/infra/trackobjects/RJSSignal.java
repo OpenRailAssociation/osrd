@@ -19,10 +19,6 @@ public class RJSSignal extends RJSTrackObject implements Identified {
     @Json(name = "sight_distance")
     public double sightDistance;
 
-    /** Detector linked with the signal, may be empty if the signal doesn't directly protect a zone */
-    @Json(name = "linked_detector")
-    public String linkedDetector;
-
     /** Each logical signal can be of a different type, and simulated independently */
     @Json(name = "logical_signals")
     public List<LogicalSignal> logicalSignals;
@@ -41,7 +37,6 @@ public class RJSSignal extends RJSTrackObject implements Identified {
         this.id = id;
         this.direction = direction;
         this.sightDistance = sightDistance;
-        this.linkedDetector = linkedDetector;
     }
 
     @Override
