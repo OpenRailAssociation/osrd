@@ -717,28 +717,27 @@ mod tests {
     async fn test_electrical_profile_set_delete(
         #[future] electrical_profile_set: TestFixture<ElectricalProfileSet>,
     ) {
+        // GIVEN
         let pg_config = PostgresConfig::default();
         let electrical_profile_set = electrical_profile_set.await;
-
-        let mut conn = PgConnection::establish(&pg_config.url()).await.unwrap();
-        let previous_length = ElectricalProfileSet::list_light(&mut conn)
-            .await
-            .unwrap()
-            .len();
 
         let args = DeleteProfileSetArgs {
             profile_set_ids: vec![electrical_profile_set.id()],
         };
+
+        // WHEN
         electrical_profile_set_delete(args, pg_config.clone())
             .await
             .unwrap();
 
+        // THEN
         let mut conn = PgConnection::establish(&pg_config.url()).await.unwrap();
-        let new_length = ElectricalProfileSet::list_light(&mut conn)
+        let empty = !ElectricalProfileSet::list_light(&mut conn)
             .await
             .unwrap()
-            .len();
-        assert_eq!(new_length, previous_length - 1);
+            .iter()
+            .any(|eps| eps.id == electrical_profile_set.id());
+        assert!(empty);
     }
 
     #[rstest]

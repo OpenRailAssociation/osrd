@@ -32,7 +32,7 @@ $ cargo run -- runserver
 
 ## Tests
 
-In order to run tests, you need to have a postgresql database running.
+In order to run tests, you need to have a postgresql database and redis running.
 
 To avoid thread conflicts while accessing the database, use the `--test-threads=1` option.
 
