@@ -35,7 +35,6 @@ pub struct CoreTrainSchedule {
     pub train_name: String,
     pub rolling_stock: String,
     pub initial_speed: f64,
-    pub departure_time: f64,
     pub scheduled_points: Vec<ScheduledPoint>,
     pub allowances: Vec<Allowance>,
     pub stops: Vec<TrainStop>,
@@ -46,7 +45,7 @@ pub struct CoreTrainSchedule {
 }
 
 /// One must be specified between `position` and `location`.
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct TrainStop {
     pub position: Option<f64>,
     pub location: Option<TrackLocation>,
@@ -71,10 +70,10 @@ impl AsCoreRequest<Json<SimulationResponse>> for SimulationRequest {
 pub struct SimulationResponse {
     pub base_simulations: Vec<ResultTrain>,
     pub eco_simulations: Vec<Option<ResultTrain>>,
-    pub speed_limits: Vec<JsonValue>,
+    pub speed_limits: Vec<Vec<JsonValue>>,
     pub warnings: Vec<String>, // TODO
-    pub electrification_ranges: Vec<JsonValue>,
-    pub power_restriction_ranges: Vec<JsonValue>,
+    pub electrification_ranges: Vec<Vec<JsonValue>>,
+    pub power_restriction_ranges: Vec<Vec<JsonValue>>,
 }
 
 #[derive(Debug, Serialize)]

@@ -1,21 +1,26 @@
-use std::collections::{HashMap, HashSet};
+pub mod projection;
+pub mod simulation_report;
 
+use self::projection::Projection;
+use super::electrical_profiles::ElectricalProfilesError;
+use crate::core::simulation::{
+    CoreTrainSchedule, SimulationRequest, SimulationResponse, TrainStop,
+};
 use crate::core::{AsCoreRequest, CoreClient};
 use crate::error::{InternalError, Result};
+use crate::models::electrical_profiles::ElectricalProfileSet;
 use crate::models::train_schedule::{filter_invalid_trains, Allowance, ScheduledPoint};
 use crate::models::{
     Create, Delete, Infra, LightRollingStockModel, Pathfinding, Retrieve, RollingStockModel,
     Scenario, SimulationOutputChangeset, TrainScheduleChangeset, Update,
 };
 use crate::models::{Timetable, TrainSchedule};
-
 use crate::schema::rolling_stock::RollingStockComfortType;
 use crate::views::train_schedule::simulation_report::fetch_simulation_output;
-use crate::DieselJson;
-
 use crate::DbPool;
+use crate::DieselJson;
 use actix_web::dev::HttpServiceFactory;
-use actix_web::web::{self, scope, Data, Json, Path, Query};
+use actix_web::web::{scope, Data, Json, Path, Query};
 use actix_web::{delete, get, patch, post, HttpResponse};
 use diesel::{ExpressionMethods, QueryDsl};
 use diesel_async::scoped_futures::ScopedFutureExt;
@@ -23,22 +28,10 @@ use diesel_async::{AsyncConnection, RunQueryDsl};
 use editoast_derive::EditoastError;
 use itertools::izip;
 use serde_derive::Deserialize;
-use serde_json::Value as JsonValue;
-
-use crate::core::simulation::{
-    CoreTrainSchedule, SimulationRequest, SimulationResponse, TrainStop,
-};
-
+use serde_json::{to_value, Value as JsonValue};
 use simulation_report::SimulationReport;
+use std::collections::{HashMap, HashSet};
 use thiserror::Error;
-
-use crate::models::electrical_profiles::ElectricalProfileSet;
-
-pub mod projection;
-pub mod simulation_report;
-use self::projection::Projection;
-
-use super::electrical_profiles::ElectricalProfilesError;
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "train_schedule")]
@@ -73,7 +66,7 @@ pub enum TrainScheduleError {
 }
 
 pub fn routes() -> impl HttpServiceFactory {
-    web::scope("/train_schedule")
+    scope("/train_schedule")
         .service((
             get_results,
             standalone_simulation,
@@ -574,7 +567,6 @@ async fn create_backend_request_payload(
                 .unwrap()
                 .to_owned(),
             initial_speed: ts.initial_speed,
-            departure_time: ts.departure_time,
             scheduled_points: ts.scheduled_points.0.to_owned(),
             allowances: ts.allowances.0.to_owned(),
             stops: stops.clone(),
@@ -644,11 +636,11 @@ pub fn process_simulation_response(
         };
         let simulation_output = SimulationOutputChangeset {
             id: None,
-            mrsp: Some(speed_limits),
+            mrsp: Some(to_value(speed_limits).unwrap()),
             base_simulation: Some(DieselJson(base_simulation)),
             eco_simulation,
-            electrification_ranges,
-            power_restriction_ranges,
+            electrification_ranges: electrification_ranges.map(|er| to_value(er).unwrap()),
+            power_restriction_ranges: power_restriction_ranges.map(|prr| to_value(prr).unwrap()),
             train_schedule_id: Some(None), // To be filled once the train schedule is inserted
         };
         simulation_outputs.push(simulation_output);
