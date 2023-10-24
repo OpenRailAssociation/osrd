@@ -31,7 +31,6 @@ pub struct Signal {
     pub direction: Direction,
     #[derivative(Default(value = "400."))]
     pub sight_distance: f64,
-    pub linked_detector: Option<String>,
     #[serde(default)]
     pub logical_signals: Vec<LogicalSignal>,
     #[serde(default)]
@@ -54,18 +53,8 @@ pub struct SignalExtensions {
 #[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct SignalSncfExtension {
-    pub aspects: Vec<String>,
-    pub comment: String,
-    pub default_aspect: String,
-    pub installation_type: String,
-    pub is_in_service: bool,
-    pub is_lightable: bool,
-    pub is_operational: bool,
     pub label: String,
     pub side: Side,
-    pub support_type: String,
-    pub type_code: String,
-    pub value: String,
     pub kp: String,
 }
 

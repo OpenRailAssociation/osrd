@@ -207,10 +207,6 @@ mod tests {
         let railjson = parse_osm("src/tests/signals.osm.pbf".into()).unwrap();
         assert_eq!(1, railjson.signals.len());
         assert_eq!(1, railjson.detectors.len());
-        assert_eq!(
-            railjson.signals[0].linked_detector,
-            Some(railjson.detectors[0].id.to_string())
-        )
     }
 
     #[test]

@@ -347,7 +347,6 @@ pub fn signals(
                         settings,
                         ..Default::default()
                     }],
-                    linked_detector: Some(node.id.0.to_string()),
                     extensions: SignalExtensions {
                         sncf: Some(sncf_extensions(&node)),
                     },
@@ -440,18 +439,6 @@ fn sncf_extensions(node: &Node) -> SignalSncfExtension {
         })
         .unwrap_or_default();
     SignalSncfExtension {
-        aspects: vec![
-            "Carré".to_string(),
-            "Feu Rouge Clignotant".to_string(),
-            "Sémaphore".to_string(),
-            "Avertissement".to_string(),
-            "Feu Vert".to_string(),
-        ],
-        default_aspect: "CARRE".to_string(),
-        installation_type: "CARRE".to_string(),
-        is_in_service: true,
-        is_lightable: true,
-        is_operational: true,
         label,
         side,
         ..Default::default()
