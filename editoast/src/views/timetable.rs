@@ -435,7 +435,6 @@ async fn post_timetable(
                 train_name: train.name.clone(),
                 rolling_stock: import_item.rolling_stock.clone(),
                 initial_speed: 0.,
-                departure_time,
                 scheduled_points,
                 allowances: vec![],
                 stops,
