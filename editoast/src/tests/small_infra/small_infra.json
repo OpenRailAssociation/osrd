@@ -1,5 +1,5 @@
 {
-    "version": "3.4.4",
+    "version": "3.4.5",
     "operational_points": [
         {
             "id": "South_West_station",
@@ -1330,21 +1330,6 @@
     ],
     "switch_types": [
         {
-            "id": "link",
-            "ports": [
-                "source",
-                "destination"
-            ],
-            "groups": {
-                "LINK": [
-                    {
-                        "src": "source",
-                        "dst": "destination"
-                    }
-                ]
-            }
-        },
-        {
             "id": "point",
             "ports": [
                 "base",
@@ -1418,6 +1403,21 @@
                     {
                         "src": "north_2",
                         "dst": "south_2"
+                    }
+                ]
+            }
+        },
+        {
+            "id": "link",
+            "ports": [
+                "source",
+                "destination"
+            ],
+            "groups": {
+                "LINK": [
+                    {
+                        "src": "source",
+                        "dst": "destination"
                     }
                 ]
             }
@@ -3723,123 +3723,9 @@
             "voltage": "25000",
             "track_ranges": [
                 {
-                    "track": "TE0",
+                    "track": "TH1",
                     "begin": 0.0,
-                    "end": 1500.0,
-                    "applicable_directions": "BOTH"
-                },
-                {
-                    "track": "TC0",
-                    "begin": 0.0,
-                    "end": 1050.0,
-                    "applicable_directions": "BOTH"
-                },
-                {
-                    "track": "TF0",
-                    "begin": 0.0,
-                    "end": 3.0,
-                    "applicable_directions": "BOTH"
-                },
-                {
-                    "track": "TG4",
-                    "begin": 0.0,
-                    "end": 2000.0,
-                    "applicable_directions": "BOTH"
-                },
-                {
-                    "track": "TG5",
-                    "begin": 0.0,
-                    "end": 2000.0,
-                    "applicable_directions": "BOTH"
-                },
-                {
-                    "track": "TE1",
-                    "begin": 0.0,
-                    "end": 2000.0,
-                    "applicable_directions": "BOTH"
-                },
-                {
-                    "track": "TA3",
-                    "begin": 0.0,
-                    "end": 50.0,
-                    "applicable_directions": "BOTH"
-                },
-                {
-                    "track": "TC3",
-                    "begin": 0.0,
-                    "end": 1050.0,
-                    "applicable_directions": "BOTH"
-                },
-                {
-                    "track": "TD3",
-                    "begin": 0.0,
-                    "end": 3000.0,
-                    "applicable_directions": "BOTH"
-                },
-                {
-                    "track": "TA4",
-                    "begin": 0.0,
-                    "end": 50.0,
-                    "applicable_directions": "BOTH"
-                },
-                {
-                    "track": "TC2",
-                    "begin": 0.0,
-                    "end": 1000.0,
-                    "applicable_directions": "BOTH"
-                },
-                {
-                    "track": "TF1",
-                    "begin": 0.0,
-                    "end": 6500.0,
-                    "applicable_directions": "BOTH"
-                },
-                {
-                    "track": "TH0",
-                    "begin": 0.0,
-                    "end": 1000.0,
-                    "applicable_directions": "BOTH"
-                },
-                {
-                    "track": "TA7",
-                    "begin": 0.0,
-                    "end": 10000.0,
-                    "applicable_directions": "BOTH"
-                },
-                {
-                    "track": "TB0",
-                    "begin": 0.0,
-                    "end": 3000.0,
-                    "applicable_directions": "BOTH"
-                },
-                {
-                    "track": "TC1",
-                    "begin": 0.0,
-                    "end": 1000.0,
-                    "applicable_directions": "BOTH"
-                },
-                {
-                    "track": "TA2",
-                    "begin": 0.0,
-                    "end": 1950.0,
-                    "applicable_directions": "BOTH"
-                },
-                {
-                    "track": "TA1",
-                    "begin": 0.0,
-                    "end": 1950.0,
-                    "applicable_directions": "BOTH"
-                },
-                {
-                    "track": "TG0",
-                    "begin": 0.0,
-                    "end": 1000.0,
-                    "applicable_directions": "BOTH"
-                },
-                {
-                    "track": "TG2",
-                    "begin": 0.0,
-                    "end": 3000.0,
+                    "end": 5000.0,
                     "applicable_directions": "BOTH"
                 },
                 {
@@ -3849,9 +3735,15 @@
                     "applicable_directions": "BOTH"
                 },
                 {
-                    "track": "TG3",
+                    "track": "TD3",
                     "begin": 0.0,
-                    "end": 50.0,
+                    "end": 3000.0,
+                    "applicable_directions": "BOTH"
+                },
+                {
+                    "track": "TA6",
+                    "begin": 0.0,
+                    "end": 10000.0,
                     "applicable_directions": "BOTH"
                 },
                 {
@@ -3867,21 +3759,87 @@
                     "applicable_directions": "BOTH"
                 },
                 {
-                    "track": "TA6",
+                    "track": "TA7",
                     "begin": 0.0,
                     "end": 10000.0,
                     "applicable_directions": "BOTH"
                 },
                 {
-                    "track": "TE2",
+                    "track": "TF1",
                     "begin": 0.0,
-                    "end": 2050.0,
+                    "end": 6500.0,
                     "applicable_directions": "BOTH"
                 },
                 {
-                    "track": "TH1",
+                    "track": "TD0",
                     "begin": 0.0,
-                    "end": 5000.0,
+                    "end": 25000.0,
+                    "applicable_directions": "BOTH"
+                },
+                {
+                    "track": "TA1",
+                    "begin": 0.0,
+                    "end": 1950.0,
+                    "applicable_directions": "BOTH"
+                },
+                {
+                    "track": "TC0",
+                    "begin": 0.0,
+                    "end": 1050.0,
+                    "applicable_directions": "BOTH"
+                },
+                {
+                    "track": "TF0",
+                    "begin": 0.0,
+                    "end": 3.0,
+                    "applicable_directions": "BOTH"
+                },
+                {
+                    "track": "TB0",
+                    "begin": 0.0,
+                    "end": 3000.0,
+                    "applicable_directions": "BOTH"
+                },
+                {
+                    "track": "TA3",
+                    "begin": 0.0,
+                    "end": 50.0,
+                    "applicable_directions": "BOTH"
+                },
+                {
+                    "track": "TE0",
+                    "begin": 0.0,
+                    "end": 1500.0,
+                    "applicable_directions": "BOTH"
+                },
+                {
+                    "track": "TG5",
+                    "begin": 0.0,
+                    "end": 2000.0,
+                    "applicable_directions": "BOTH"
+                },
+                {
+                    "track": "TG2",
+                    "begin": 0.0,
+                    "end": 3000.0,
+                    "applicable_directions": "BOTH"
+                },
+                {
+                    "track": "TA4",
+                    "begin": 0.0,
+                    "end": 50.0,
+                    "applicable_directions": "BOTH"
+                },
+                {
+                    "track": "TG3",
+                    "begin": 0.0,
+                    "end": 50.0,
+                    "applicable_directions": "BOTH"
+                },
+                {
+                    "track": "TA2",
+                    "begin": 0.0,
+                    "end": 1950.0,
                     "applicable_directions": "BOTH"
                 },
                 {
@@ -3891,9 +3849,51 @@
                     "applicable_directions": "BOTH"
                 },
                 {
-                    "track": "TD0",
+                    "track": "TH0",
                     "begin": 0.0,
-                    "end": 25000.0,
+                    "end": 1000.0,
+                    "applicable_directions": "BOTH"
+                },
+                {
+                    "track": "TC2",
+                    "begin": 0.0,
+                    "end": 1000.0,
+                    "applicable_directions": "BOTH"
+                },
+                {
+                    "track": "TG0",
+                    "begin": 0.0,
+                    "end": 1000.0,
+                    "applicable_directions": "BOTH"
+                },
+                {
+                    "track": "TC3",
+                    "begin": 0.0,
+                    "end": 1050.0,
+                    "applicable_directions": "BOTH"
+                },
+                {
+                    "track": "TE1",
+                    "begin": 0.0,
+                    "end": 2000.0,
+                    "applicable_directions": "BOTH"
+                },
+                {
+                    "track": "TC1",
+                    "begin": 0.0,
+                    "end": 1000.0,
+                    "applicable_directions": "BOTH"
+                },
+                {
+                    "track": "TE2",
+                    "begin": 0.0,
+                    "end": 2050.0,
+                    "applicable_directions": "BOTH"
+                },
+                {
+                    "track": "TG4",
+                    "begin": 0.0,
+                    "end": 2000.0,
                     "applicable_directions": "BOTH"
                 }
             ]
@@ -3918,7 +3918,6 @@
             "id": "SA2",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -3930,18 +3929,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "CARRE",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SA2",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -3952,7 +3941,6 @@
             "id": "SA0",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -3964,18 +3952,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "CARRE",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SA0",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -3986,7 +3964,6 @@
             "id": "SA1",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -3998,18 +3975,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "CARRE",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SA1",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -4020,7 +3987,6 @@
             "id": "SA3",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -4032,18 +3998,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "CARRE",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SA3",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -4054,7 +4010,6 @@
             "id": "SA6_1",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -4066,18 +4021,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SA6_1",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -4088,7 +4033,6 @@
             "id": "SA6_2",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -4100,18 +4044,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SA6_2",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -4122,7 +4056,6 @@
             "id": "SA6_2r",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -4134,18 +4067,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SA6_2r",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -4156,7 +4079,6 @@
             "id": "SA6_3",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -4168,18 +4090,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SA6_3",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -4190,7 +4102,6 @@
             "id": "SA6_4",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -4202,18 +4113,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SA6_4",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -4224,7 +4125,6 @@
             "id": "SA6_5",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -4236,18 +4136,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SA6_5",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -4258,7 +4148,6 @@
             "id": "SA6_5r",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -4270,18 +4159,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SA6_5r",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -4292,7 +4171,6 @@
             "id": "SA5",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -4304,18 +4182,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "CARRE",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SA5",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -4326,7 +4194,6 @@
             "id": "SA4",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -4338,18 +4205,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "CARRE",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SA4",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -4360,7 +4217,6 @@
             "id": "SA7_1",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -4372,18 +4228,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SA7_1",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -4394,7 +4240,6 @@
             "id": "SA7_2r",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -4406,18 +4251,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SA7_2r",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -4428,7 +4263,6 @@
             "id": "SA7_2",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -4440,18 +4274,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SA7_2",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -4462,7 +4286,6 @@
             "id": "SA7_3",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -4474,18 +4297,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SA7_3",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -4496,7 +4309,6 @@
             "id": "SA7_4",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -4508,18 +4320,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SA7_4",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -4530,7 +4332,6 @@
             "id": "SA7_5r",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -4542,18 +4343,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SA7_5r",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -4564,7 +4355,6 @@
             "id": "SA7_5",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -4576,18 +4366,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SA7_5",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -4598,7 +4378,6 @@
             "id": "SA6",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -4610,18 +4389,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "CARRE",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SA6",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -4632,7 +4401,6 @@
             "id": "SB0",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -4644,18 +4412,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "CARRE",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SB0",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -4666,7 +4424,6 @@
             "id": "SC0",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -4678,18 +4435,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "CARRE",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SC0",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -4700,7 +4447,6 @@
             "id": "SC4",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -4712,18 +4458,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "CARRE",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SC4",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -4734,7 +4470,6 @@
             "id": "SC1",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -4746,18 +4481,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "CARRE",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SC1",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -4768,7 +4493,6 @@
             "id": "SC5",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -4780,18 +4504,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "CARRE",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SC5",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -4802,7 +4516,6 @@
             "id": "SC2",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -4814,18 +4527,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "CARRE",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SC2",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -4836,7 +4539,6 @@
             "id": "SC6",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -4848,18 +4550,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "CARRE",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SC6",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -4870,7 +4562,6 @@
             "id": "SC3",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -4882,18 +4573,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "CARRE",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SC3",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -4904,7 +4585,6 @@
             "id": "SC7",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -4916,18 +4596,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "CARRE",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SC7",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -4938,7 +4608,6 @@
             "id": "SD0",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -4950,18 +4619,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "CARRE",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SD0",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -4972,7 +4631,6 @@
             "id": "SD0_1",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -4984,18 +4642,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SD0_1",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -5006,7 +4654,6 @@
             "id": "SD0_2",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -5018,18 +4665,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SD0_2",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -5040,7 +4677,6 @@
             "id": "SD0_2r",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -5052,18 +4688,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SD0_2r",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -5074,7 +4700,6 @@
             "id": "SD0_3",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -5086,18 +4711,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SD0_3",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -5108,7 +4723,6 @@
             "id": "SD0_4",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -5120,18 +4734,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SD0_4",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -5142,7 +4746,6 @@
             "id": "SD0_5",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -5154,18 +4757,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SD0_5",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -5176,7 +4769,6 @@
             "id": "SD0_5r",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -5188,18 +4780,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SD0_5r",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -5210,7 +4792,6 @@
             "id": "SD0_6",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -5222,18 +4803,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SD0_6",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -5244,7 +4815,6 @@
             "id": "SD0_7",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -5256,18 +4826,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SD0_7",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -5278,7 +4838,6 @@
             "id": "SD0_8",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -5290,18 +4849,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SD0_8",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -5312,7 +4861,6 @@
             "id": "SD0_8r",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -5324,18 +4872,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SD0_8r",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -5346,7 +4884,6 @@
             "id": "SD0_9",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -5358,18 +4895,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SD0_9",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -5380,7 +4907,6 @@
             "id": "SD0_10",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -5392,18 +4918,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SD0_10",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -5414,7 +4930,6 @@
             "id": "SD0_11",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -5426,18 +4941,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SD0_11",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -5448,7 +4953,6 @@
             "id": "SD0_11r",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -5460,18 +4964,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SD0_11r",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -5482,7 +4976,6 @@
             "id": "SD0_12",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -5494,18 +4987,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SD0_12",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -5516,7 +4999,6 @@
             "id": "SD0_13",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -5528,18 +5010,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SD0_13",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -5550,7 +5022,6 @@
             "id": "SD0_14",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -5562,18 +5033,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SD0_14",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -5584,7 +5045,6 @@
             "id": "SD0_14r",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -5596,18 +5056,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SD0_14r",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -5618,7 +5068,6 @@
             "id": "SD0_15",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -5630,18 +5079,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SD0_15",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -5652,7 +5091,6 @@
             "id": "SD2",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -5664,18 +5102,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "CARRE",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SD2",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -5686,7 +5114,6 @@
             "id": "SD1",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -5698,18 +5125,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "CARRE",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SD1",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -5720,7 +5137,6 @@
             "id": "SD1_1",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -5732,18 +5148,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SD1_1",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -5754,7 +5160,6 @@
             "id": "SD1_2r",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -5766,18 +5171,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SD1_2r",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -5788,7 +5183,6 @@
             "id": "SD1_2",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -5800,18 +5194,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SD1_2",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -5822,7 +5206,6 @@
             "id": "SD1_3",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -5834,18 +5217,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SD1_3",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -5856,7 +5229,6 @@
             "id": "SD1_4",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -5868,18 +5240,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SD1_4",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -5890,7 +5252,6 @@
             "id": "SD1_5r",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -5902,18 +5263,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SD1_5r",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -5924,7 +5275,6 @@
             "id": "SD1_5",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -5936,18 +5286,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SD1_5",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -5958,7 +5298,6 @@
             "id": "SD1_6",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -5970,18 +5309,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SD1_6",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -5992,7 +5321,6 @@
             "id": "SD1_7",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -6004,18 +5332,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SD1_7",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -6026,7 +5344,6 @@
             "id": "SD1_8r",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -6038,18 +5355,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SD1_8r",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -6060,7 +5367,6 @@
             "id": "SD1_8",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -6072,18 +5378,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SD1_8",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -6094,7 +5390,6 @@
             "id": "SD1_9",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -6106,18 +5401,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SD1_9",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -6128,7 +5413,6 @@
             "id": "SD1_10",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -6140,18 +5424,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SD1_10",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -6162,7 +5436,6 @@
             "id": "SD1_11r",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -6174,18 +5447,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SD1_11r",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -6196,7 +5459,6 @@
             "id": "SD1_11",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -6208,18 +5470,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SD1_11",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -6230,7 +5482,6 @@
             "id": "SD1_12",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -6242,18 +5493,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SD1_12",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -6264,7 +5505,6 @@
             "id": "SD1_13",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -6276,18 +5516,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SD1_13",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -6298,7 +5528,6 @@
             "id": "SD1_14r",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -6310,18 +5539,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SD1_14r",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -6332,7 +5551,6 @@
             "id": "SD1_14",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -6344,18 +5562,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SD1_14",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -6366,7 +5574,6 @@
             "id": "SD1_15",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -6378,18 +5585,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SD1_15",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -6400,7 +5597,6 @@
             "id": "SD3",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -6412,18 +5608,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "CARRE",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SD3",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -6434,7 +5620,6 @@
             "id": "SD4",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -6446,18 +5631,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "CARRE",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SD4",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -6468,7 +5643,6 @@
             "id": "SD6",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -6480,18 +5654,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "CARRE",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SD6",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -6502,7 +5666,6 @@
             "id": "SD5",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -6514,18 +5677,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "CARRE",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SD5",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -6536,7 +5689,6 @@
             "id": "SH0",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -6548,18 +5700,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "CARRE",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SH0",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -6570,7 +5712,6 @@
             "id": "SE1",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -6582,18 +5723,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "CARRE",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SE1",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -6604,7 +5735,6 @@
             "id": "SE0",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -6616,18 +5746,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "CARRE",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SE0",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -6638,7 +5758,6 @@
             "id": "SF0",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -6650,18 +5769,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "CARRE",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SF0",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -6672,7 +5781,6 @@
             "id": "SF1_1",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -6684,18 +5792,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SF1_1",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -6706,7 +5804,6 @@
             "id": "SF1_1r",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -6718,18 +5815,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SF1_1r",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -6740,7 +5827,6 @@
             "id": "SE4",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -6752,18 +5838,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "CARRE",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SE4",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -6774,7 +5850,6 @@
             "id": "SE2",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -6786,18 +5861,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "CARRE",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SE2",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -6808,7 +5873,6 @@
             "id": "SE5",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -6820,18 +5884,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "CARRE",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SE5",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -6842,7 +5896,6 @@
             "id": "SE3",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -6854,18 +5907,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "CARRE",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SE3",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -6876,7 +5919,6 @@
             "id": "SE7",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -6888,18 +5930,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "CARRE",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SE7",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -6910,7 +5942,6 @@
             "id": "SE6",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -6922,18 +5953,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "CARRE",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SE6",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -6944,7 +5965,6 @@
             "id": "SD7",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -6956,18 +5976,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "CARRE",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SD7",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -6978,7 +5988,6 @@
             "id": "SG0",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -6990,18 +5999,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "CARRE",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SG0",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -7012,7 +6011,6 @@
             "id": "SG1",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -7024,18 +6022,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "CARRE",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SG1",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -7046,7 +6034,6 @@
             "id": "SG1_1",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -7058,18 +6045,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SG1_1",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -7080,7 +6057,6 @@
             "id": "SG1_1r",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -7092,18 +6068,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SG1_1r",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -7114,7 +6080,6 @@
             "id": "SG3",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -7126,18 +6091,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "CARRE",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SG3",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -7148,7 +6103,6 @@
             "id": "SG2",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -7160,18 +6114,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "CARRE",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SG2",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -7182,7 +6126,6 @@
             "id": "SG4",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -7194,18 +6137,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "CARRE",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SG4",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -7216,7 +6149,6 @@
             "id": "SG5",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -7228,18 +6160,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "CARRE",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SG5",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -7250,7 +6172,6 @@
             "id": "SG6",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -7262,18 +6183,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "CARRE",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SG6",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -7284,7 +6195,6 @@
             "id": "SH1",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -7296,18 +6206,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "CARRE",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SH1",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -7318,7 +6218,6 @@
             "id": "SH2",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -7330,18 +6229,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "CARRE",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SH2",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -7352,7 +6241,6 @@
             "id": "SH3",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -7364,18 +6252,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "CARRE",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SH3",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -7386,7 +6264,6 @@
             "id": "SH1_1",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -7398,18 +6275,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SH1_1",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -7420,7 +6287,6 @@
             "id": "SH1_1r",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -7432,18 +6298,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SH1_1r",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -7454,7 +6310,6 @@
             "id": "SH1_2",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -7466,18 +6321,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SH1_2",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
@@ -7488,7 +6333,6 @@
             "id": "SH1_2r",
             "direction": "STOP_TO_START",
             "sight_distance": 400.0,
-            "linked_detector": null,
             "logical_signals": [
                 {
                     "signaling_system": "BAL",
@@ -7500,18 +6344,8 @@
             ],
             "extensions": {
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": "S",
-                    "is_in_service": false,
-                    "is_lightable": false,
-                    "is_operational": false,
                     "label": "SH1_2r",
                     "side": "LEFT",
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": ""
                 }
             }
