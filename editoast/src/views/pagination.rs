@@ -142,6 +142,7 @@ impl<T> Paginated<T> {
             }
         }
 
+        #[allow(clippy::get_first)]
         let count = results.get(0).unwrap().count;
         let previous = if page > 1 { Some(page - 1) } else { None };
         let next = if count > page * page_size {

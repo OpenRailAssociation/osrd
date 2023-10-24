@@ -141,6 +141,7 @@ impl OpenApiRoot {
                 // By default utoipa adds a tag "crate" to operations that don't have
                 // any. That causes problems with RTK tag management.
                 match &operation.tags {
+                    #[allow(clippy::get_first)]
                     Some(tags) if tags.len() == 1 && tags.get(0).unwrap() == "crate" => {
                         operation.tags = None;
                     }

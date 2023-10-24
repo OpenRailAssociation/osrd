@@ -50,6 +50,7 @@ async fn generate_signaling_system_and_sprite<'a, T: Iterator<Item = &'a String>
             .signals()
             .get(signal_id)
             .expect("Cache out of sync");
+        #[allow(clippy::get_first)]
         let logical_signal = match signal.unwrap_signal().logical_signals.get(0) {
             Some(logical_signal) => logical_signal,
             None => continue,
