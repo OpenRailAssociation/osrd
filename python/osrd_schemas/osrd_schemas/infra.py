@@ -8,7 +8,7 @@ from pydantic.fields import FieldInfo
 
 ALL_OBJECT_TYPES = []
 
-RAILJSON_INFRA_VERSION_TYPE = Literal["3.4.4"]
+RAILJSON_INFRA_VERSION_TYPE = Literal["3.4.5"]
 RAILJSON_INFRA_VERSION = get_args(RAILJSON_INFRA_VERSION_TYPE)[0]
 
 # Traits
@@ -377,9 +377,6 @@ class Signal(BaseObjectTrait, TrackLocationTrait):
 
     direction: Direction = Field(description="Direction of use of the signal")
     sight_distance: float = Field(description="Visibility distance of the signal in meters", gt=0)
-    linked_detector: Optional[Identifier] = Field(
-        description="Identifier of the detector linked to the signal", default=None
-    )
     logical_signals: List[LogicalSignal] = Field(
         description="Logical signals bundled into this physical signal", default_factory=list
     )
@@ -547,18 +544,8 @@ class SwitchSncfExtension(BaseModel):
 
 @register_extension(object=Signal, name="sncf")
 class SignalSncfExtension(BaseModel):
-    aspects: List[str]
-    comment: str
-    default_aspect: str = Field(description="Aspect displayed when no train is around")
-    installation_type: str
-    is_in_service: bool = Field(description="Precise if the signal is in service")
-    is_lightable: bool = Field(description="Precise if the signal is lightable")
-    is_operational: bool = Field(description="Precise if the signal is operational")
     label: str
     side: Side = Field(Side.CENTER, description="Side of the signal on the track")
-    support_type: str
-    type_code: str
-    value: str
     kp: str = Field(description="Kilometric point of the signal")
 
 

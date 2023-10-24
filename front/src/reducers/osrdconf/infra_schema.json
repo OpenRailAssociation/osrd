@@ -1042,21 +1042,6 @@
                     "title": "Id",
                     "type": "string"
                 },
-                "linked_detector": {
-                    "anyOf": [
-                        {
-                            "maxLength": 255,
-                            "minLength": 1,
-                            "type": "string"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "default": null,
-                    "description": "Identifier of the detector linked to the signal",
-                    "title": "Linked Detector"
-                },
                 "logical_signals": {
                     "description": "Logical signals bundled into this physical signal",
                     "items": {
@@ -1111,41 +1096,6 @@
         },
         "SignalSncfExtension": {
             "properties": {
-                "aspects": {
-                    "items": {
-                        "type": "string"
-                    },
-                    "title": "Aspects",
-                    "type": "array"
-                },
-                "comment": {
-                    "title": "Comment",
-                    "type": "string"
-                },
-                "default_aspect": {
-                    "description": "Aspect displayed when no train is around",
-                    "title": "Default Aspect",
-                    "type": "string"
-                },
-                "installation_type": {
-                    "title": "Installation Type",
-                    "type": "string"
-                },
-                "is_in_service": {
-                    "description": "Precise if the signal is in service",
-                    "title": "Is In Service",
-                    "type": "boolean"
-                },
-                "is_lightable": {
-                    "description": "Precise if the signal is lightable",
-                    "title": "Is Lightable",
-                    "type": "boolean"
-                },
-                "is_operational": {
-                    "description": "Precise if the signal is operational",
-                    "title": "Is Operational",
-                    "type": "boolean"
-                },
                 "kp": {
                     "description": "Kilometric point of the signal",
                     "title": "Kp",
@@ -1163,32 +1113,10 @@
                     ],
                     "default": "CENTER",
                     "description": "Side of the signal on the track"
-                },
-                "support_type": {
-                    "title": "Support Type",
-                    "type": "string"
-                },
-                "type_code": {
-                    "title": "Type Code",
-                    "type": "string"
-                },
-                "value": {
-                    "title": "Value",
-                    "type": "string"
                 }
             },
             "required": [
-                "aspects",
-                "comment",
-                "default_aspect",
-                "installation_type",
-                "is_in_service",
-                "is_lightable",
-                "is_operational",
                 "label",
-                "support_type",
-                "type_code",
-                "value",
                 "kp"
             ],
             "title": "SignalSncfExtension",
@@ -1815,8 +1743,8 @@
             "type": "array"
         },
         "version": {
-            "const": "3.4.4",
-            "default": "3.4.4",
+            "const": "3.4.5",
+            "default": "3.4.5",
             "description": "Version of the schema",
             "title": "Version"
         }

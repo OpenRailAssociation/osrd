@@ -55,21 +55,10 @@ class Signal:
             direction=infra.Direction[self.direction.name],
             sight_distance=self.sight_distance,
             logical_signals=[sig.to_rjs() for sig in self.logical_signals],
-            linked_detector=None,
             extensions={
                 "sncf": {
-                    "aspects": [],
-                    "comment": "",
-                    "default_aspect": "",
-                    "installation_type": self.installation_type,
-                    "is_in_service": False,
-                    "is_lightable": False,
-                    "is_operational": False,
                     "label": self.label,
                     "side": self.side,
-                    "support_type": "",
-                    "type_code": "",
-                    "value": "",
                     "kp": "",
                 }
             },
