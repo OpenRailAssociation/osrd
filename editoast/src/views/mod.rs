@@ -47,6 +47,7 @@ fn routes_v2() -> Routes<impl HttpServiceFactory> {
         sprites::routes(),
         pathfinding::routes(),
         projects::routes(),
+        search::routes(),
     }
     routes()
 }
@@ -55,7 +56,6 @@ pub fn routes() -> impl HttpServiceFactory {
     services![
         study::routes(),
         routes_v2(),
-        search::search,
         infra::routes(),
         layers::routes(),
         electrical_profiles::routes(),
@@ -76,6 +76,8 @@ schemas! {
     documents::schemas(),
     pathfinding::schemas(),
     projects::schemas(),
+    search::schemas(),
+    crate::schema::utils::geometry::schemas(),
 }
 
 #[derive(OpenApi)]

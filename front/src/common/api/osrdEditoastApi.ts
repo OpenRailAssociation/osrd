@@ -12,6 +12,7 @@ export const addTagTypes = [
   'studies',
   'scenarios',
   'rolling_stock_livery',
+  'search',
   'sprites',
   'stdcm',
   'timetable',
@@ -571,9 +572,10 @@ const injectedRtkApi = api
         query: (queryArg) => ({
           url: `/search/`,
           method: 'POST',
-          body: queryArg.body,
-          params: { page_size: queryArg.pageSize },
+          body: queryArg.searchPayload,
+          params: { page: queryArg.page, page_size: queryArg.pageSize },
         }),
+        invalidatesTags: ['search'],
       }),
       postSingleSimulation: build.mutation<
         PostSingleSimulationApiResponse,
@@ -1215,25 +1217,11 @@ export type PatchRollingStockByIdLockedApiArg = {
     locked?: boolean;
   };
 };
-export type PostSearchApiResponse =
-  /** status 200 Search results, the structure of the returned objects depend on their type */ (
-    | SearchTrackResult
-    | SearchOperationalPointResult
-    | SearchSignalResult
-    | SearchStudyResult
-    | SearchProjectResult
-    | SearchScenarioResult
-  )[];
+export type PostSearchApiResponse = /** status 200 The search results */ SearchResultItem[];
 export type PostSearchApiArg = {
-  /** number of results */
-  pageSize?: number;
-  /** Search query */
-  body: {
-    object?: string;
-    page?: number;
-    page_size?: number;
-    query?: SearchQuery;
-  };
+  page?: number;
+  pageSize?: number | null;
+  searchPayload: SearchPayload;
 };
 export type PostSingleSimulationApiResponse =
   /** status 201 Data about the simulation produced */ SingleSimulationResponse;
@@ -1895,68 +1883,85 @@ export type RollingStockUsage = {
     train_schedule_id: number;
   };
 };
-export type SearchTrackResult = {
+export type SearchResultItemTrack = {
   infra_id: number;
   line_code: number;
   line_name: string;
 };
-export type SearchOperationalPointResult = {
+export type GeoJsonPointValue = number[];
+export type GeoJsonPoint = {
+  coordinates: GeoJsonPointValue;
+  type: 'Point';
+};
+export type SearchResultItemOperationalPoint = {
   ch: string;
-  geographic: Point;
-  infra_id?: string;
+  geographic: GeoJsonPoint;
+  infra_id: number;
   name: string;
   obj_id: string;
-  schematic: Point;
+  schematic: GeoJsonPoint;
   track_sections: {
     position: number;
     track: string;
   }[];
   trigram: string;
-  uic?: number;
+  uic: number;
 };
-export type SearchSignalResult = {
-  geographic: Point;
+export type SearchResultItemSignal = {
+  geographic: GeoJsonPoint;
   infra_id: number;
   label: string;
-  line_code: string;
+  line_code: number;
   line_name: string;
-  schematic: Point;
+  schematic: GeoJsonPoint;
   settings: string[];
   signaling_systems: string[];
   sprite?: string | null;
   sprite_signaling_system?: string | null;
 };
-export type SearchStudyResult = {
-  description?: string;
+export type SearchResultItemProject = {
+  description: string;
+  id: number;
+  image: number | null;
+  last_modification: string;
+  name: string;
+  studies_count: number;
+  tags: string[];
+};
+export type SearchResultItemStudy = {
+  description: string;
   id: number;
   last_modification: string;
   name: string;
   project_id: number;
-  scenarios_count?: number;
-  tags?: string[];
-};
-export type SearchProjectResult = {
-  description: string;
-  id: number;
-  image?: number;
-  last_modification: string;
-  name: string;
-  studies_count?: number;
+  scenarios_count: number;
   tags: string[];
 };
-export type SearchScenarioResult = {
-  description?: string;
-  electrical_profile_set_id?: number;
+export type SearchResultItemScenario = {
+  description: string;
+  electrical_profile_set_id: number | null;
   id: number;
   infra_id: number;
-  infra_name?: string;
+  infra_name: string;
   last_modification: string;
   name: string;
   study_id: number;
-  tags?: string[];
-  trains_count?: number;
+  tags: string[];
+  trains_count: number;
 };
-export type SearchQuery = (boolean | number | number | string | SearchQuery)[] | null;
+export type SearchResultItem =
+  | SearchResultItemTrack
+  | SearchResultItemOperationalPoint
+  | SearchResultItemSignal
+  | SearchResultItemProject
+  | SearchResultItemStudy
+  | SearchResultItemScenario;
+export type SearchQuery = boolean | number | number | string | (SearchQuery | null)[];
+export type SearchPayload = {
+  dry?: boolean;
+  object: string;
+  query: SearchQuery;
+};
 export type SpaceTimePosition = {
   position: number;
   time: number;

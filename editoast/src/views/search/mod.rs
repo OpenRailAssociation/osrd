@@ -193,6 +193,8 @@
 //! The resulting table of the request will then be converted to a JSON array of
 //! mappings that constitutes the payload of the HTTP response.
 
+// TODO: the documentation of this file needs to be updated (no more search.yml)
+
 pub mod context;
 pub mod dsl;
 mod objects;
@@ -204,6 +206,7 @@ pub mod typing;
 
 pub use self::search_object::*;
 pub use objects::SearchConfigFinder;
+use utoipa::ToSchema;
 
 use crate::error::Result;
 use crate::views::pagination::PaginationQueryParam;
@@ -224,6 +227,16 @@ use self::context::{QueryContext, TypedAst};
 use self::process::create_processing_context;
 use self::searchast::SearchAst;
 use self::typing::{AstType, TypeSpec};
+
+crate::routes! {
+    search
+}
+
+crate::schemas! {
+    SearchPayload,
+    SearchQuery,
+    objects::SearchResultItem::schemas(),
+}
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "search")]
@@ -259,10 +272,32 @@ impl SearchConfig {
     }
 }
 
-#[derive(Debug, Clone, Deserialize)]
+/// A search query
+#[derive(ToSchema, Serialize)]
+#[schema(example = json!(["and", ["=", ["infra_id"], 2], ["search", ["name"], "plop"]]))]
+#[serde(untagged)]
+#[allow(unused)] // only used as an OpenAPI schema
+enum SearchQuery {
+    Boolean(bool),
+    Number(f64),
+    Int(i64),
+    String(String),
+    Array(Vec<Option<SearchQuery>>),
+}
+
+/// The payload of a search request
+#[derive(Debug, Clone, Deserialize, ToSchema)]
+#[schema(example = json!({
+    "object": "operationalpoint",
+    "query": ["and", ["=", ["infra_id"], 2], ["search", ["name"], "plop"]]
+}))]
 pub struct SearchPayload {
+    /// The object kind to query - run `editoast search list` to get all possible values
     object: String,
+    /// The query to run
+    #[schema(value_type = SearchQuery)]
     query: JsonValue,
+    /// Whether to return the SQL query instead of executing it
     #[serde(default)]
     dry: bool,
 }
@@ -350,6 +385,14 @@ struct SearchDBResult {
 ///   `["and", ["search", ["name"], "Paris"], ["not", ["=", ["trigram"], "pno"]]]`
 ///
 /// See [SearchAst] for a more detailed view of the query language.
+#[utoipa::path(
+    tag = "search",
+    params(PaginationQueryParam),
+    request_body = SearchPayload,
+    responses(
+        (status = 200, body = Vec<SearchResultItem>, description = "The search results"),
+    )
+)]
 #[post("/search")]
 pub async fn search(
     query_params: Query<PaginationQueryParam>,

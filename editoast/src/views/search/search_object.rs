@@ -1,3 +1,5 @@
+use utoipa::ToSchema;
+
 use super::typing::TypeSpec;
 
 pub struct Criteria {
@@ -47,7 +49,7 @@ pub enum SearchType {
     Textual,
 }
 
-pub trait SearchObject {
+pub trait SearchObject: ToSchema<'static> {
     fn search_config() -> SearchConfig;
 }
 
