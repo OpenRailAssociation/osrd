@@ -17,12 +17,7 @@ import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { getProjectID } from 'reducers/osrdconf/selectors';
 import { useDispatch, useSelector } from 'react-redux';
 import FilterTextField from 'applications/operationalStudies/components/FilterTextField';
-import {
-  PostSearchApiArg,
-  SearchResultItemStudy,
-  StudyResult,
-  osrdEditoastApi,
-} from 'common/api/osrdEditoastApi';
+import { PostSearchApiArg, StudyWithScenarios, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { setFailure } from 'reducers/main';
 import { getDocument } from 'common/api/documentApi';
 import AddOrEditProjectModal from '../../../modules/project/components/AddOrEditProjectModal';
@@ -37,7 +32,7 @@ type SortOptions =
   | 'LastModifiedDesc';
 
 function displayStudiesList(
-  studiesList: StudyResult[],
+  studiesList: StudyWithScenarios[],
   setFilterChips: (filterchips: string) => void
 ) {
   return studiesList ? (
@@ -61,7 +56,7 @@ function displayStudiesList(
 export default function Project() {
   const { t } = useTranslation('operationalStudies/project');
   const { openModal } = useModal();
-  const [studiesList, setStudiesList] = useState<StudyResult[]>([]);
+  const [studiesList, setStudiesList] = useState<StudyWithScenarios[]>([]);
   const [filter, setFilter] = useState('');
   const [filterChips, setFilterChips] = useState('');
   const [sortOption, setSortOption] = useState<SortOptions>('LastModifiedDesc');
@@ -117,7 +112,8 @@ export default function Project() {
           },
         };
         try {
-          let filteredStudies = (await postSearch(payload).unwrap()) as SearchResultItemStudy[];
+          const filteredData = await postSearch(payload).unwrap();
+          let filteredStudies = [...filteredData] as StudyWithScenarios[];
           if (sortOption === 'LastModifiedDesc') {
             filteredStudies = filteredStudies.sort((a, b) => {
               if (a.last_modification && b.last_modification) {
@@ -133,7 +129,7 @@ export default function Project() {
               return 0;
             });
           }
-          setStudiesList(filteredStudies as StudyResult[]);
+          setStudiesList(filteredStudies as StudyWithScenarios[]);
         } catch (error) {
           console.error(error);
         }

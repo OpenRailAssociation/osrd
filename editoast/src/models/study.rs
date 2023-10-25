@@ -18,6 +18,7 @@ use diesel::QueryDsl;
 use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
 use editoast_derive::Model;
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 
 use super::projects::Ordering;
 use super::List;
@@ -34,6 +35,7 @@ use super::List;
     AsChangeset,
     Associations,
     Model,
+    ToSchema,
 )]
 #[derivative(Default)]
 #[diesel(belongs_to(Project))]
@@ -42,42 +44,56 @@ use super::List;
 #[diesel(table_name = study)]
 pub struct Study {
     #[diesel(deserialize_as = i64)]
+    #[schema(value_type = i64)]
     pub id: Option<i64>,
     #[diesel(deserialize_as = String)]
     #[derivative(Default(value = "Some(String::new())"))]
+    #[schema(value_type = String)]
     pub name: Option<String>,
     #[diesel(deserialize_as = String)]
     #[derivative(Default(value = "Some(String::new())"))]
+    #[schema(value_type = String)]
     pub description: Option<String>,
     #[diesel(deserialize_as = String)]
     #[derivative(Default(value = "Some(String::new())"))]
+    #[schema(value_type = String)]
     pub business_code: Option<String>,
     #[diesel(deserialize_as = String)]
     #[derivative(Default(value = "Some(String::new())"))]
+    #[schema(value_type = String)]
     pub service_code: Option<String>,
     #[diesel(deserialize_as = NaiveDateTime)]
+    #[schema(value_type = NaiveDateTime)]
     pub creation_date: Option<NaiveDateTime>,
     #[derivative(Default(value = "Utc::now().naive_utc()"))]
     pub last_modification: NaiveDateTime,
     #[diesel(deserialize_as = Option<NaiveDate>)]
+    #[schema(value_type = Option<NaiveDate>)]
     pub start_date: Option<Option<NaiveDate>>,
     #[diesel(deserialize_as = Option<NaiveDate>)]
+    #[schema(value_type = Option<NaiveDate>)]
     pub expected_end_date: Option<Option<NaiveDate>>,
     #[diesel(deserialize_as = Option<NaiveDate>)]
+    #[schema(value_type = Option<NaiveDate>)]
     pub actual_end_date: Option<Option<NaiveDate>>,
     #[diesel(deserialize_as = i32)]
     #[derivative(Default(value = "Some(0)"))]
+    #[schema(value_type = i32)]
     pub budget: Option<i32>,
     #[diesel(deserialize_as = TextArray)]
     #[derivative(Default(value = "Some(Vec::new())"))]
+    #[schema(value_type = Vec<String>)]
     pub tags: Option<Vec<String>>,
     #[diesel(deserialize_as = String)]
     #[derivative(Default(value = "Some(String::new())"))]
+    #[schema(value_type = String)]
     pub state: Option<String>,
     #[diesel(deserialize_as = String)]
     #[derivative(Default(value = "Some(String::new())"))]
+    #[schema(value_type = String)]
     pub study_type: Option<String>,
     #[diesel(deserialize_as = i64)]
+    #[schema(value_type = i64)]
     pub project_id: Option<i64>,
 }
 
@@ -87,7 +103,7 @@ impl Identifiable for Study {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, QueryableByName)]
+#[derive(Debug, Clone, Serialize, Deserialize, QueryableByName, ToSchema)]
 pub struct StudyWithScenarios {
     #[serde(flatten)]
     #[diesel(embed)]

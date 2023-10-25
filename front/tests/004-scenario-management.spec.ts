@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { Infra, Project, ScenarioResult, StudyResult } from 'common/api/osrdEditoastApi';
+import { Infra, Project, ScenarioResult, Study } from 'common/api/osrdEditoastApi';
 import { v4 as uuidv4 } from 'uuid';
 import { PlaywrightHomePage } from './pages/home-page-model';
 import project from './assets/operationStudies/project.json';
@@ -44,7 +44,7 @@ test.describe('Test if operationnal study : scenario creation workflow is workin
     const scenarioPage = new ScenarioPage(page);
     const commonPage = new PlaywrightCommonPage(page);
 
-    const newStudyData: StudyResult = await postApiRequest(
+    const newStudyData: Study = await postApiRequest(
       `/projects/${newProjectData.id}/studies`,
       {
         ...study,
@@ -86,7 +86,7 @@ test.describe('Test if operationnal study : scenario creation workflow is workin
   });
 
   test('Update a scenario', async ({ page }) => {
-    const newStudyData: StudyResult = await postApiRequest(
+    const newStudyData: Study = await postApiRequest(
       `/projects/${newProjectData.id}/studies`,
       {
         ...study,
@@ -146,7 +146,7 @@ test.describe('Test if operationnal study : scenario creation workflow is workin
   });
 
   test('Delete a scenario', async ({ page }) => {
-    const newStudyData: StudyResult = await postApiRequest(
+    const newStudyData: Study = await postApiRequest(
       `/projects/${newProjectData.id}/studies`,
       {
         ...study,

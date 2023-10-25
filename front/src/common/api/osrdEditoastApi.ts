@@ -398,12 +398,9 @@ const injectedRtkApi = api
         query: (queryArg) => ({
           url: `/projects/${queryArg.projectId}/studies/`,
           params: {
-            ordering: queryArg.ordering,
-            name: queryArg.name,
-            description: queryArg.description,
-            tags: queryArg.tags,
             page: queryArg.page,
             page_size: queryArg.pageSize,
+            ordering: queryArg.ordering,
           },
         }),
         providesTags: ['studies'],
@@ -415,7 +412,7 @@ const injectedRtkApi = api
         query: (queryArg) => ({
           url: `/projects/${queryArg.projectId}/studies/`,
           method: 'POST',
-          body: queryArg.studyUpsertRequest,
+          body: queryArg.studyCreateForm,
         }),
         invalidatesTags: ['studies'],
       }),
@@ -445,7 +442,7 @@ const injectedRtkApi = api
         query: (queryArg) => ({
           url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/`,
           method: 'PATCH',
-          body: queryArg.studyUpsertRequest,
+          body: queryArg.studyPatchForm,
         }),
         invalidatesTags: ['studies'],
       }),
@@ -1053,62 +1050,44 @@ export type PatchProjectsByProjectIdApiArg = {
   /** The fields to update */
   projectPatchForm: ProjectPatchForm;
 };
-export type GetProjectsByProjectIdStudiesApiResponse = /** status 200 the studies list */ {
-  count?: number;
-  next?: any;
-  previous?: any;
-  results?: StudyResult[];
-};
+export type GetProjectsByProjectIdStudiesApiResponse =
+  /** status 200 The list of studies */ PaginatedResponseOfStudyWithScenarios;
 export type GetProjectsByProjectIdStudiesApiArg = {
+  /** The id of a project */
   projectId: number;
-  ordering?:
-    | 'NameAsc'
-    | 'NameDesc'
-    | 'CreationDateAsc'
-    | 'CreationDateDesc'
-    | 'LastModifiedAsc'
-    | 'LastModifiedDesc';
-  /** Filter operational studies by name */
-  name?: string;
-  /** Filter operational studies by description */
-  description?: string;
-  /** Filter operational studies by tags */
-  tags?: string;
-  /** Page number */
   page?: number;
-  /** Number of elements by page */
-  pageSize?: number;
+  pageSize?: number | null;
+  ordering?: Ordering;
 };
 export type PostProjectsByProjectIdStudiesApiResponse =
-  /** status 201 The created operational study */ StudyResult;
+  /** status 201 The created study */ StudyWithScenarios;
 export type PostProjectsByProjectIdStudiesApiArg = {
+  /** The id of a project */
   projectId: number;
-  studyUpsertRequest: StudyUpsertRequest;
+  studyCreateForm: StudyCreateForm;
 };
-export type DeleteProjectsByProjectIdStudiesAndStudyIdApiResponse = unknown;
+export type DeleteProjectsByProjectIdStudiesAndStudyIdApiResponse =
+  /** status 204 The study was deleted successfully */ undefined;
 export type DeleteProjectsByProjectIdStudiesAndStudyIdApiArg = {
-  /** project id refered to the operational study */
+  /** The id of a project */
   projectId: number;
-  /** study id you want to delete */
   studyId: number;
 };
 export type GetProjectsByProjectIdStudiesAndStudyIdApiResponse =
-  /** status 200 The operational study info */ StudyResult;
+  /** status 200 The requested study */ StudyWithScenarios;
 export type GetProjectsByProjectIdStudiesAndStudyIdApiArg = {
-  /** project id refered to the operational study */
+  /** The id of a project */
   projectId: number;
-  /** study id you want to retrieve */
   studyId: number;
 };
 export type PatchProjectsByProjectIdStudiesAndStudyIdApiResponse =
-  /** status 200 The operational study updated */ StudyResult;
+  /** status 200 The updated study */ StudyWithScenarios;
 export type PatchProjectsByProjectIdStudiesAndStudyIdApiArg = {
-  /** project id refered to the study */
+  /** The id of a project */
   projectId: number;
-  /** study id you want to retrieve */
   studyId: number;
-  /** The fields you want to update */
-  studyUpsertRequest: StudyUpsertRequest;
+  /** The fields to update */
+  studyPatchForm: StudyPatchForm;
 };
 export type GetProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse =
   /** status 200 list of scenarios */ {
@@ -1743,34 +1722,33 @@ export type ProjectPatchForm = {
   objectives?: string | null;
   tags?: string[] | null;
 };
-export type StudyResult = {
-  actual_end_date: string | null;
+export type Study = {
+  actual_end_date?: string | null;
   budget: number;
   business_code: string;
   creation_date: string;
   description: string;
-  expected_end_date: string | null;
+  expected_end_date?: string | null;
   id: number;
   last_modification: string;
   name: string;
   project_id: number;
-  scenarios_count: number;
   service_code: string;
-  start_date: string | null;
-  state?: 'started' | 'inProgress' | 'finish';
-  study_type?:
-    | 'timeTables'
-    | 'flowRate'
-    | 'parkSizing'
-    | 'garageRequirement'
-    | 'operationOrSizing'
-    | 'operability'
-    | 'strategicPlanning'
-    | 'chartStability'
-    | 'disturbanceTests';
+  start_date?: string | null;
+  state: string;
+  study_type: string;
   tags: string[];
 };
-export type StudyUpsertRequest = {
+export type StudyWithScenarios = Study & {
+  scenarios_count: number;
+};
+export type PaginatedResponseOfStudyWithScenarios = {
+  count: number;
+  next: number | null;
+  previous: number | null;
+  results: StudyWithScenarios[];
+};
+export type StudyCreateForm = {
   actual_end_date?: string | null;
   budget?: number;
   business_code?: string;
@@ -1779,18 +1757,22 @@ export type StudyUpsertRequest = {
   name: string;
   service_code?: string;
   start_date?: string | null;
-  state?: 'started' | 'inProgress' | 'finish';
-  study_type?:
-    | 'timeTables'
-    | 'flowRate'
-    | 'parkSizing'
-    | 'garageRequirement'
-    | 'operationOrSizing'
-    | 'operability'
-    | 'strategicPlanning'
-    | 'chartStability'
-    | 'disturbanceTests';
-  tags: string[];
+  state?: string;
+  study_type?: string;
+  tags?: string[];
+};
+export type StudyPatchForm = {
+  actual_end_date?: string | null;
+  budget?: number | null;
+  business_code?: string | null;
+  description?: string | null;
+  expected_end_date?: string | null;
+  name?: string | null;
+  service_code?: string | null;
+  start_date?: string | null;
+  state?: string | null;
+  study_type?: string | null;
+  tags?: string[] | null;
 };
 export type ScenarioListResult = {
   creation_date?: string;

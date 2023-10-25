@@ -10,11 +10,11 @@ import { dateTimeFrenchFormatting } from 'utils/date';
 import { useDispatch } from 'react-redux';
 import { updateScenarioID, updateStudyID } from 'reducers/osrdconf';
 import { RiFolderChartLine } from 'react-icons/ri';
-import { StudyResult } from 'common/api/osrdEditoastApi';
+import { StudyWithScenarios } from 'common/api/osrdEditoastApi';
 
 type Props = {
   setFilterChips: (filterChips: string) => void;
-  study: StudyResult;
+  study: StudyWithScenarios;
 };
 
 export default function StudyCard({ setFilterChips, study }: Props) {
