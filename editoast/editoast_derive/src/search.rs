@@ -334,6 +334,21 @@ pub fn expand_store(input: &DeriveInput) -> Result<TokenStream> {
                 vec![#(< #ident as crate::views::search::SearchObject > :: search_config()),*]
             }
         }
+
+        #[derive(Serialize, ToSchema)]
+        #[serde(untagged)]
+        #[allow(unused, clippy::enum_variant_names)]
+        /// A search result item that depends on the query's `object`
+        pub(super) enum SearchResultItem {
+            #(#ident(#ident)),*
+        }
+
+        impl SearchResultItem {
+            crate::schemas! {
+                #(#ident),*,
+                SearchResultItem,
+            }
+        }
     })
 }
 

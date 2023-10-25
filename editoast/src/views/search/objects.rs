@@ -1,23 +1,31 @@
 use chrono::NaiveDateTime;
 use editoast_derive::{Search, SearchConfigStore};
+use serde_derive::Serialize;
+use utoipa::ToSchema;
 
-use crate::schema::GeoJson;
+use crate::schema::utils::geometry::GeoJsonPoint;
 
 // NOTE: every structure deriving `Search` here might have to `#[allow(unused)]`
 // because while the name and type information of the fields are read by the macro,
 // they might not be explicitly used in the code. (Their JSON representation extracted
 // from the DB query is direcly forwarded into the endpoint response, so these
 // structs are never deserialized, hence their "non-usage".)
+//
+// These structs also derive Serialize because utoipa reads some `#[serde(...)]`
+// annotations to alter the schema. That's not ideal since none of them are ever
+// serialized, but that's life.
 
-#[derive(Search)]
+#[derive(Search, Serialize, ToSchema)]
 #[search(
+    name = "track",
     table = "search_track",
     column(name = "infra_id", data_type = "INT"),
     column(name = "line_code", data_type = "INT"),
     column(name = "line_name", data_type = "TEXT")
 )]
 #[allow(unused)]
-struct Track {
+/// A search result item for a query with `object = "track"`
+pub(super) struct SearchResultItemTrack {
     #[search(sql = "search_track.infra_id")]
     infra_id: i64,
     #[search(sql = "search_track.unprocessed_line_name")]
@@ -26,8 +34,9 @@ struct Track {
     line_code: i64,
 }
 
-#[derive(Search)]
+#[derive(Search, Serialize, ToSchema)]
 #[search(
+    name = "operationalpoint",
     table = "search_operational_point",
     joins = "
         INNER JOIN infra_object_operational_point AS OP ON OP.id = search_operational_point.id
@@ -41,7 +50,8 @@ struct Track {
     column(name = "trigram", data_type = "string")
 )]
 #[allow(unused)]
-struct OperationalPoint {
+/// A search result item for a query with `object = "operationalpoint"`
+pub(super) struct SearchResultItemOperationalPoint {
     #[search(sql = "OP.obj_id")]
     obj_id: String,
     #[search(sql = "OP.infra_id")]
@@ -55,20 +65,23 @@ struct OperationalPoint {
     #[search(sql = "OP.data#>>'{extensions,sncf,ch}'")]
     ch: String,
     #[search(sql = "ST_AsGeoJSON(ST_Transform(lay.geographic, 4326))::json")]
-    geographic: GeoJson,
+    geographic: GeoJsonPoint,
     #[search(sql = "ST_AsGeoJSON(ST_Transform(lay.schematic, 4326))::json")]
-    schematic: GeoJson,
+    schematic: GeoJsonPoint,
     #[search(sql = "OP.data->'parts'")]
-    track_sections: Vec<OperationalPointTrackSections>,
+    #[schema(inline)]
+    track_sections: Vec<SearchResultItemOperationalPointTrackSections>,
 }
+#[derive(Serialize, ToSchema)]
 #[allow(unused)]
-struct OperationalPointTrackSections {
+pub(super) struct SearchResultItemOperationalPointTrackSections {
     track: String,
     position: f64,
 }
 
-#[derive(Search)]
+#[derive(Search, Serialize, ToSchema)]
 #[search(
+    name = "signal",
     table = "search_signal",
     migration(
         src_table = "infra_object_signal",
@@ -129,9 +142,10 @@ struct OperationalPointTrackSections {
         INNER JOIN infra_layer_signal AS lay ON lay.infra_id = sig.infra_id AND lay.obj_id = sig.obj_id"
 )]
 #[allow(unused)]
-struct Signal {
+/// A search result item for a query with `object = "signal"`
+pub(super) struct SearchResultItemSignal {
     #[search(sql = "sig.infra_id")]
-    infra_id: String,
+    infra_id: i64,
     #[search(sql = "sig.data->'extensions'->'sncf'->>'label'")]
     label: String,
     #[search(sql = "search_signal.signaling_systems")]
@@ -139,21 +153,22 @@ struct Signal {
     #[search(sql = "search_signal.settings")]
     settings: Vec<String>,
     #[search(sql = "search_signal.line_code")]
-    line_code: String,
+    line_code: u64,
     #[search(sql = "track_section.data->'extensions'->'sncf'->>'line_name'")]
     line_name: String,
     #[search(sql = "ST_AsGeoJSON(ST_Transform(lay.geographic, 4326))::json")]
-    geographic: String,
+    geographic: GeoJsonPoint,
     #[search(sql = "ST_AsGeoJSON(ST_Transform(lay.schematic, 4326))::json")]
-    schematic: String,
+    schematic: GeoJsonPoint,
     #[search(sql = "search_signal.sprite_signaling_system")]
     sprite_signaling_system: Option<String>,
     #[search(sql = "search_signal.sprite")]
     sprite: Option<String>,
 }
 
-#[derive(Search)]
+#[derive(Search, Serialize, ToSchema)]
 #[search(
+    name = "project",
     table = "search_project",
     joins = "INNER JOIN project ON project.id = search_project.id",
     column(name = "id", data_type = "integer"),
@@ -162,11 +177,13 @@ struct Signal {
     column(name = "tags", data_type = "string")
 )]
 #[allow(unused)]
-struct Project {
+/// A search result item for a query with `object = "project"`
+pub(super) struct SearchResultItemProject {
     #[search(sql = "project.id")]
     id: u64,
     #[search(sql = "project.image_id")]
-    image: u64,
+    #[schema(required)]
+    image: Option<u64>,
     #[search(sql = "project.name")]
     name: String,
     #[search(
@@ -181,8 +198,9 @@ struct Project {
     tags: Vec<String>,
 }
 
-#[derive(Search)]
+#[derive(Search, Serialize, ToSchema)]
 #[search(
+    name = "study",
     table = "search_study",
     joins = "INNER JOIN study ON study.id = search_study.id",
     column(name = "id", data_type = "integer"),
@@ -192,7 +210,8 @@ struct Project {
     column(name = "project_id", data_type = "integer")
 )]
 #[allow(unused)]
-struct Study {
+/// A search result item for a query with `object = "study"`
+pub(super) struct SearchResultItemStudy {
     #[search(sql = "study.id")]
     id: u64,
     #[search(sql = "study.project_id")]
@@ -211,8 +230,9 @@ struct Study {
     tags: Vec<String>,
 }
 
-#[derive(Search)]
+#[derive(Search, Serialize, ToSchema)]
 #[search(
+    name = "scenario",
     table = "search_scenario",
     joins = "
         INNER JOIN scenario ON scenario.id = search_scenario.id
@@ -224,7 +244,8 @@ struct Study {
     column(name = "study_id", data_type = "integer")
 )]
 #[allow(unused)]
-struct Scenario {
+/// A search result item for a query with `object = "scenario"`
+pub(super) struct SearchResultItemScenario {
     #[search(sql = "scenario.id")]
     id: u64,
     #[search(sql = "scenario.study_id")]
@@ -232,7 +253,8 @@ struct Scenario {
     #[search(sql = "scenario.name")]
     name: String,
     #[search(sql = "scenario.electrical_profile_set_id")]
-    electrical_profile_set_id: u64,
+    #[schema(required)]
+    electrical_profile_set_id: Option<u64>,
     #[search(sql = "scenario.infra_id")]
     infra_id: u64,
     #[search(sql = "infra.name")]

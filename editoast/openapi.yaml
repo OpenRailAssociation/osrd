@@ -375,6 +375,83 @@ components:
         - distribution
         type: object
       - $ref: '#/components/schemas/RangeAllowance'
+    GeoJson:
+      description: A GeoJSON geometry item
+      oneOf:
+      - $ref: '#/components/schemas/GeoJsonPoint'
+      - $ref: '#/components/schemas/GeoJsonMultiPoint'
+      - $ref: '#/components/schemas/GeoJsonLineString'
+      - $ref: '#/components/schemas/GeoJsonMultiLineString'
+      - $ref: '#/components/schemas/GeoJsonPolygon'
+      - $ref: '#/components/schemas/GeoJsonMultiPolygon'
+    GeoJsonLineString:
+      oneOf:
+      - properties:
+          coordinates:
+            $ref: '#/components/schemas/GeoJsonLineStringValue'
+          type:
+            enum:
+            - LineString
+            type: string
+        required:
+        - type
+        - coordinates
+        type: object
+    GeoJsonLineStringValue:
+      items:
+        $ref: '#/components/schemas/GeoJsonPointValue'
+      type: array
+    GeoJsonMultiLineString:
+      oneOf:
+      - properties:
+          coordinates:
+            $ref: '#/components/schemas/GeoJsonMultiLineStringValue'
+          type:
+            enum:
+            - MultiLineString
+            type: string
+        required:
+        - type
+        - coordinates
+        type: object
+    GeoJsonMultiLineStringValue:
+      items:
+        $ref: '#/components/schemas/GeoJsonLineStringValue'
+      type: array
+    GeoJsonMultiPoint:
+      oneOf:
+      - properties:
+          coordinates:
+            $ref: '#/components/schemas/GeoJsonMultiPointValue'
+          type:
+            enum:
+            - MultiPoint
+            type: string
+        required:
+        - type
+        - coordinates
+        type: object
+    GeoJsonMultiPointValue:
+      items:
+        $ref: '#/components/schemas/GeoJsonPointValue'
+      type: array
+    GeoJsonMultiPolygon:
+      oneOf:
+      - properties:
+          coordinates:
+            $ref: '#/components/schemas/GeoJsonMultiPolygonValue'
+          type:
+            enum:
+            - MultiPolygon
+            type: string
+        required:
+        - type
+        - coordinates
+        type: object
+    GeoJsonMultiPolygonValue:
+      items:
+        $ref: '#/components/schemas/GeoJsonPolygonValue'
+      type: array
     GeoJsonObject:
       description: GeoJson format
       properties:
@@ -391,6 +468,41 @@ components:
       - coordinates
       - type
       type: object
+    GeoJsonPoint:
+      oneOf:
+      - properties:
+          coordinates:
+            $ref: '#/components/schemas/GeoJsonPointValue'
+          type:
+            enum:
+            - Point
+            type: string
+        required:
+        - type
+        - coordinates
+        type: object
+    GeoJsonPointValue:
+      items:
+        format: double
+        type: number
+      type: array
+    GeoJsonPolygon:
+      oneOf:
+      - properties:
+          coordinates:
+            $ref: '#/components/schemas/GeoJsonPolygonValue'
+          type:
+            enum:
+            - Polygon
+            type: string
+        required:
+        - type
+        - coordinates
+        type: object
+    GeoJsonPolygonValue:
+      items:
+        $ref: '#/components/schemas/GeoJsonLineStringValue'
+      type: array
     GeoJsonPosition:
       properties:
         coordinates:
@@ -1690,25 +1802,84 @@ components:
                 type: integer
             type: object
           type: array
-    SearchOperationalPointResult:
+    SearchPayload:
+      description: The payload of a search request
+      example:
+        object: operationalpoint
+        query:
+        - and
+        - - =
+          - - infra_id
+          - 2
+        - - search
+          - - name
+          - plop
+      properties:
+        dry:
+          description: Whether to return the SQL query instead of executing it
+          type: boolean
+        object:
+          description: The object kind to query - run `editoast search list` to get all possible values
+          type: string
+        query:
+          $ref: '#/components/schemas/SearchQuery'
+      required:
+      - object
+      - query
+      type: object
+    SearchQuery:
+      description: A search query
+      example:
+      - and
+      - - =
+        - - infra_id
+        - 2
+      - - search
+        - - name
+        - plop
+      oneOf:
+      - type: boolean
+      - format: double
+        type: number
+      - format: int64
+        type: integer
+      - type: string
+      - items:
+          allOf:
+          - $ref: '#/components/schemas/SearchQuery'
+          nullable: true
+        type: array
+    SearchResultItem:
+      description: A search result item that depends on the query's `object`
+      oneOf:
+      - $ref: '#/components/schemas/SearchResultItemTrack'
+      - $ref: '#/components/schemas/SearchResultItemOperationalPoint'
+      - $ref: '#/components/schemas/SearchResultItemSignal'
+      - $ref: '#/components/schemas/SearchResultItemProject'
+      - $ref: '#/components/schemas/SearchResultItemStudy'
+      - $ref: '#/components/schemas/SearchResultItemScenario'
+    SearchResultItemOperationalPoint:
+      description: A search result item for a query with `object = "operationalpoint"`
       properties:
         ch:
           type: string
         geographic:
-          $ref: '#/components/schemas/Point'
+          $ref: '#/components/schemas/GeoJsonPoint'
         infra_id:
-          type: string
+          format: int64
+          type: integer
         name:
           type: string
         obj_id:
           type: string
         schematic:
-          $ref: '#/components/schemas/Point'
+          $ref: '#/components/schemas/GeoJsonPoint'
         track_sections:
           items:
             properties:
               position:
-                type: integer
+                format: double
+                type: number
               track:
                 type: string
             required:
@@ -1719,22 +1890,32 @@ components:
         trigram:
           type: string
         uic:
+          format: int64
           type: integer
       required:
       - obj_id
+      - infra_id
+      - uic
       - name
-      - geographic
-      - ch
-      - schematic
       - trigram
+      - ch
+      - geographic
+      - schematic
       - track_sections
-    SearchProjectResult:
+      type: object
+    SearchResultItemProject:
+      description: A search result item for a query with `object = "project"`
       properties:
         description:
           type: string
         id:
+          format: int64
+          minimum: 0
           type: integer
         image:
+          format: int64
+          minimum: 0
+          nullable: true
           type: integer
         last_modification:
           format: date-time
@@ -1742,6 +1923,8 @@ components:
         name:
           type: string
         studies_count:
+          format: int64
+          minimum: 0
           type: integer
         tags:
           items:
@@ -1749,42 +1932,30 @@ components:
           type: array
       required:
       - id
+      - image
       - name
+      - studies_count
       - description
       - last_modification
       - tags
-    SearchQuery:
-      example:
-      - and
-      - - or
-        - - search
-          - - name
-          - mich st
-        - - search
-          - - trigram
-          - null
-      - - =
-        - - infra_id
-        - 2
-      items:
-        oneOf:
-        - type: boolean
-        - type: number
-        - type: integer
-        - type: string
-        - $ref: '#/components/schemas/SearchQuery'
-      minItems: 1
-      nullable: true
-      type: array
-    SearchScenarioResult:
+      type: object
+    SearchResultItemScenario:
+      description: A search result item for a query with `object = "scenario"`
       properties:
         description:
           type: string
         electrical_profile_set_id:
+          format: int64
+          minimum: 0
+          nullable: true
           type: integer
         id:
+          format: int64
+          minimum: 0
           type: integer
         infra_id:
+          format: int64
+          minimum: 0
           type: integer
         infra_name:
           type: string
@@ -1794,34 +1965,47 @@ components:
         name:
           type: string
         study_id:
+          format: int64
+          minimum: 0
           type: integer
         tags:
           items:
             type: string
           type: array
         trains_count:
+          format: int64
+          minimum: 0
           type: integer
       required:
       - id
-      - name
       - study_id
-      - last_modification
+      - name
+      - electrical_profile_set_id
       - infra_id
-      - timetable_id
-    SearchSignalResult:
+      - infra_name
+      - trains_count
+      - description
+      - last_modification
+      - tags
+      type: object
+    SearchResultItemSignal:
+      description: A search result item for a query with `object = "signal"`
       properties:
         geographic:
-          $ref: '#/components/schemas/Point'
+          $ref: '#/components/schemas/GeoJsonPoint'
         infra_id:
+          format: int64
           type: integer
         label:
           type: string
         line_code:
-          type: string
+          format: int64
+          minimum: 0
+          type: integer
         line_name:
           type: string
         schematic:
-          $ref: '#/components/schemas/Point'
+          $ref: '#/components/schemas/GeoJsonPoint'
         settings:
           items:
             type: string
@@ -1845,11 +2029,15 @@ components:
       - line_name
       - geographic
       - schematic
-    SearchStudyResult:
+      type: object
+    SearchResultItemStudy:
+      description: A search result item for a query with `object = "study"`
       properties:
         description:
           type: string
         id:
+          format: int64
+          minimum: 0
           type: integer
         last_modification:
           format: date-time
@@ -1857,8 +2045,12 @@ components:
         name:
           type: string
         project_id:
+          format: int64
+          minimum: 0
           type: integer
         scenarios_count:
+          format: int64
+          minimum: 0
           type: integer
         tags:
           items:
@@ -1866,21 +2058,29 @@ components:
           type: array
       required:
       - id
-      - name
       - project_id
+      - name
+      - scenarios_count
+      - description
       - last_modification
-    SearchTrackResult:
+      - tags
+      type: object
+    SearchResultItemTrack:
+      description: A search result item for a query with `object = "track"`
       properties:
         infra_id:
+          format: int64
           type: integer
         line_code:
+          format: int64
           type: integer
         line_name:
           type: string
       required:
       - infra_id
-      - line_code
       - line_name
+      - line_code
+      type: object
     SimulationReport:
       properties:
         base:
@@ -4745,30 +4945,71 @@ paths:
       - rolling_stock
   /search/:
     post:
+      description: |-
+        Returns all infra objects of some type according to a hierarchical query.
+
+        # Payload
+
+        {
+        "object": string,
+        "query": query,
+        "dry": boolean, # default: false
+        }
+
+        Where:
+        - `object` can be any search object declared in `search.yml`
+        - `query` is a JSON document which can be deserialized into a [SearchAst].
+        Check out examples below.
+
+        # Response
+
+        The response structure depends on the `object`.
+
+        # Query language
+
+        The query itself is defined using a language made up of nested JSON arrays.
+        It will be parsed and transformed into a PostgreSQL WHERE statement.
+        The language consist of a single boolean expression of comparison statements
+        in prefix notation. For example, the query `["like", ["name"], "%ari%"]`
+        will generate a WHERE statement like `WHERE "name" LIKE '%ari%'`.
+        For more information on the query language itself, check out examples below.
+
+        # Available functions
+
+        See [create_processing_context()].
+
+        # A few query examples
+
+        * The railway station PNO: `["=", ["trigram"], "pno"]`
+        * The railway stations with either "Paris" or "Lyon" (or both) in their name:
+        `["or", ["search", ["name"], "Paris"], ["search", ["name"], "Lyon"]]`
+        * All railway stations with "Paris" in their name but not PNO :
+        `["and", ["search", ["name"], "Paris"], ["not", ["=", ["trigram"], "pno"]]]`
+
+        See [SearchAst] for a more detailed view of the query language.
       parameters:
-      - description: number of results
-        in: query
-        name: page_size
+      - in: query
+        name: page
+        required: false
         schema:
+          default: 1
+          format: int64
+          minimum: 1
+          type: integer
+      - in: query
+        name: page_size
+        required: false
+        schema:
+          default: 25
+          format: int64
+          minimum: 1
+          nullable: true
           type: integer
       requestBody:
         content:
           application/json:
             schema:
-              properties:
-                object:
-                  example: operationalpoint
-                  type: string
-                page:
-                  default: 1
-                  type: integer
-                page_size:
-                  default: 25
-                  type: integer
-                query:
-                  $ref: '#/components/schemas/SearchQuery'
-              type: object
-        description: Search query
+              $ref: '#/components/schemas/SearchPayload'
         required: true
       responses:
         '200':
@@ -4776,16 +5017,12 @@ paths:
             application/json:
               schema:
                 items:
-                  oneOf:
-                  - $ref: '#/components/schemas/SearchTrackResult'
-                  - $ref: '#/components/schemas/SearchOperationalPointResult'
-                  - $ref: '#/components/schemas/SearchSignalResult'
-                  - $ref: '#/components/schemas/SearchStudyResult'
-                  - $ref: '#/components/schemas/SearchProjectResult'
-                  - $ref: '#/components/schemas/SearchScenarioResult'
+                  $ref: '#/components/schemas/SearchResultItem'
                 type: array
-          description: Search results, the structure of the returned objects depend on their type
-      summary: Generic search endpoint
+          description: The search results
+      summary: Returns all infra objects of some type according to a hierarchical query.
+      tags:
+      - search
   /single_simulation/:
     post:
       requestBody:
