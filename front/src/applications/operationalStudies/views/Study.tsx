@@ -20,7 +20,7 @@ import StateStep from 'applications/operationalStudies/components/Study/StateSte
 import {
   PostSearchApiArg,
   ScenarioResult,
-  SearchScenarioResult,
+  SearchResultItemScenario,
   StudyResult,
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
@@ -176,9 +176,9 @@ export default function Study() {
     if (projectId && studyId) {
       if (filter) {
         const payload: PostSearchApiArg = {
-          body: {
+          pageSize: 1000,
+          searchPayload: {
             object: 'scenario',
-            page_size: 1000,
             query: [
               'and',
               [
@@ -192,8 +192,9 @@ export default function Study() {
           },
         };
         try {
-          const filteredData = await postSearch(payload).unwrap();
-          let filteredScenarios = [...filteredData] as SearchScenarioResult[];
+          let filteredScenarios = (await postSearch(
+            payload
+          ).unwrap()) as SearchResultItemScenario[];
           if (sortOption === 'LastModifiedDesc') {
             filteredScenarios = filteredScenarios.sort((a, b) => {
               if (a.last_modification && b.last_modification) {

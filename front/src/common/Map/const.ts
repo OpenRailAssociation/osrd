@@ -1,4 +1,3 @@
-import { SearchQuery } from 'common/api/osrdEditoastApi';
 import config from 'config/config';
 
 export * from 'common/Map/Consts/SignalsNames';
@@ -100,9 +99,3 @@ export const catenaryMapKey: CatenaryKey[] = [
   { color: 'color800V', text: '800V', current: 'directCurrent' },
   { color: 'color750V', text: '750V', current: 'directCurrent' },
 ];
-
-// Search
-export type searchPayloadType = {
-  object: string;
-  query: SearchQuery;
-};

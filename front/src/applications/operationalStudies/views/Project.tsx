@@ -19,7 +19,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import FilterTextField from 'applications/operationalStudies/components/FilterTextField';
 import {
   PostSearchApiArg,
-  SearchStudyResult,
+  SearchResultItemStudy,
   StudyResult,
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
@@ -101,9 +101,9 @@ export default function Project() {
     if (projectId) {
       if (filter) {
         const payload: PostSearchApiArg = {
-          body: {
+          pageSize: 1000,
+          searchPayload: {
             object: 'study',
-            page_size: 1000,
             query: [
               'and',
               [
@@ -117,8 +117,7 @@ export default function Project() {
           },
         };
         try {
-          const filteredData = await postSearch(payload).unwrap();
-          let filteredStudies = [...filteredData] as SearchStudyResult[];
+          let filteredStudies = (await postSearch(payload).unwrap()) as SearchResultItemStudy[];
           if (sortOption === 'LastModifiedDesc') {
             filteredStudies = filteredStudies.sort((a, b) => {
               if (a.last_modification && b.last_modification) {

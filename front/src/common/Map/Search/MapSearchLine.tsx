@@ -10,8 +10,12 @@ import { BBox } from '@turf/helpers';
 import bbox from '@turf/bbox';
 import WebMercatorViewport from 'viewport-mercator-project';
 import { getMap } from 'reducers/map/selectors';
-import { Zone, osrdEditoastApi, SearchTrackResult } from 'common/api/osrdEditoastApi';
-import { searchPayloadType } from '../const';
+import {
+  Zone,
+  osrdEditoastApi,
+  SearchResultItemTrack,
+  SearchPayload,
+} from 'common/api/osrdEditoastApi';
 import LineCard from './LineCard';
 
 type MapSearchLineProps = {
@@ -29,7 +33,9 @@ const MapSearchLine: React.FC<MapSearchLineProps> = ({
   const dispatch = useDispatch();
   const [postSearch] = osrdEditoastApi.usePostSearchMutation();
   const [searchState, setSearchState] = useState<string>('');
-  const [searchResults, setSearchResults] = useState<SearchTrackResult[] | undefined>(undefined);
+  const [searchResults, setSearchResults] = useState<SearchResultItemTrack[] | undefined>(
+    undefined
+  );
   const [dataTrackZone, setDataTrackZone] = useState<{ id: number; lineCode: number }>({
     id: 0,
     lineCode: 0,
@@ -63,19 +69,17 @@ const MapSearchLine: React.FC<MapSearchLineProps> = ({
 
   const debouncedSearchTerm = useDebounce(searchState, 300);
 
-  const updateSearch = async (params: searchPayloadType) => {
+  const updateSearch = async (searchPayload: SearchPayload) => {
     try {
-      const results = await postSearch({
-        body: { object: params.object, query: params.query },
-      }).unwrap();
-      setSearchResults(results as SearchTrackResult[]);
+      const results = await postSearch({ searchPayload }).unwrap();
+      setSearchResults(results as SearchResultItemTrack[]);
     } catch (e) {
       console.error(e);
       setSearchResults(undefined);
     }
   };
 
-  const getPayload = (lineSearch: string, infraIDPayload: number): searchPayloadType => {
+  const getPayload = (lineSearch: string, infraIDPayload: number): SearchPayload => {
     const playloadQuery: (string | number | string[])[] = !Number.isNaN(Number(lineSearch))
       ? ['=', ['line_code'], Number(lineSearch)]
       : ['search', ['line_name'], lineSearch];
@@ -88,7 +92,7 @@ const MapSearchLine: React.FC<MapSearchLineProps> = ({
 
   const coordinates = (search: Zone) => search.geo;
 
-  const onResultClick = async (searchResultItem: SearchTrackResult) => {
+  const onResultClick = async (searchResultItem: SearchResultItemTrack) => {
     if (map.mapSearchMarker) {
       dispatch(updateMapSearchMarker(undefined));
     }

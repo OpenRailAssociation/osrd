@@ -2,7 +2,7 @@ import React from 'react';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import {
   ProjectWithStudies,
-  SearchProjectResult,
+  SearchResultItemProject,
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
 import { useTranslation } from 'react-i18next';
@@ -14,8 +14,8 @@ import DeleteProjectsModal from './DeleteProjectsModal';
 type Props = {
   selectedProjectIds: number[];
   setSelectedProjectIds: (ids: number[]) => void;
-  projectsList: Array<ProjectWithStudies | SearchProjectResult>;
-  setProjectsList: (list: Array<ProjectWithStudies | SearchProjectResult>) => void;
+  projectsList: Array<ProjectWithStudies | SearchResultItemProject>;
+  setProjectsList: (list: Array<ProjectWithStudies | SearchResultItemProject>) => void;
 };
 
 export default function ProjectSelectionToolbar({

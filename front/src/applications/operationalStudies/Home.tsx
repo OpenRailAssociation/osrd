@@ -12,7 +12,7 @@ import { useTranslation } from 'react-i18next';
 import {
   PostSearchApiArg,
   ProjectWithStudies,
-  SearchProjectResult,
+  SearchResultItemProject,
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
 import { useSelector } from 'react-redux';
@@ -30,9 +30,9 @@ export default function Home() {
   const { t } = useTranslation('operationalStudies/home');
   const safeWord = useSelector(getUserSafeWord);
   const [sortOption, setSortOption] = useState<SortOptions>('LastModifiedDesc');
-  const [projectsList, setProjectsList] = useState<Array<ProjectWithStudies | SearchProjectResult>>(
-    []
-  );
+  const [projectsList, setProjectsList] = useState<
+    Array<ProjectWithStudies | SearchResultItemProject>
+  >([]);
   const [selectedProjectIds, setSelectedProjectIds] = useState<number[]>([]);
   const [filter, setFilter] = useState('');
   const [filterChips, setFilterChips] = useState('');
@@ -53,9 +53,9 @@ export default function Home() {
   const getProjectList = async () => {
     if (filter || safeWord !== '') {
       const payload: PostSearchApiArg = {
-        body: {
+        pageSize: 1000,
+        searchPayload: {
           object: 'project',
-          page_size: 1000,
           query: [
             'and',
             [
@@ -64,15 +64,12 @@ export default function Home() {
               ['search', ['description'], filter],
               ['search', ['tags'], filter],
             ],
+            safeWord !== '' ? ['search', ['tags'], safeWord] : true,
           ],
         },
       };
-      if (safeWord !== '') {
-        payload?.body?.query?.push(['search', ['tags'], safeWord]);
-      }
       try {
-        const data = await postSearch(payload).unwrap();
-        let filteredData = [...data] as SearchProjectResult[];
+        let filteredData = (await postSearch(payload).unwrap()) as SearchResultItemProject[];
         if (sortOption === 'LastModifiedDesc') {
           filteredData = filteredData.sort((a, b) => {
             if (a.last_modification && b.last_modification) {

@@ -16,7 +16,7 @@ import {
   TrainScheduleImportConfig,
 } from 'applications/operationalStudies/types';
 import {
-  SearchOperationalPointResult,
+  SearchResultItemOperationalPoint,
   PostSearchApiArg,
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
@@ -62,7 +62,7 @@ export default function ImportTrainScheduleConfig({
       'or',
     ] as (string | SearchConstraintType)[]);
     const payload: PostSearchApiArg = {
-      body: {
+      searchPayload: {
         object: 'operationalpoint',
         query: ['and', constraint, ['=', ['infra_id'], infraId]],
       },
@@ -70,7 +70,7 @@ export default function ImportTrainScheduleConfig({
     };
     const operationalPoints = (await postSearch(
       payload
-    ).unwrap()) as SearchOperationalPointResult[];
+    ).unwrap()) as SearchResultItemOperationalPoint[];
 
     return operationalPoints.reduce(
       (res, operationalPoint) =>

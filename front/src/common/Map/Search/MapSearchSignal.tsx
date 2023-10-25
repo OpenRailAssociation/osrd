@@ -8,11 +8,10 @@ import MultiSelectSNCF from 'common/BootstrapSNCF/MultiSelectSNCF';
 import { useDebounce } from 'utils/helpers';
 import { Viewport } from 'reducers/map';
 import { getMap } from 'reducers/map/selectors';
-import { SearchSignalResult, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { SearchResultItemSignal, osrdEditoastApi, SearchPayload } from 'common/api/osrdEditoastApi';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import { setFailure } from 'reducers/main';
 import SelectImproved from 'common/BootstrapSNCF/SelectImprovedSNCF';
-import { searchPayloadType } from '../const';
 import SignalCard from './SignalCard';
 import { onResultSearchClick } from '../utils';
 
@@ -76,7 +75,7 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
   const [signalSystem, setSignalSystem] = useState(SIGNALING_SYSTEMS.ALL);
   const [signalSettings, setSignalSettings] = useState<string[]>([]);
   const [selectedSettings, setSelectedSettings] = useState<string[]>([]);
-  const [searchResults, setSearchResults] = useState<SearchSignalResult[]>([]);
+  const [searchResults, setSearchResults] = useState<SearchResultItemSignal[]>([]);
   const [autocompleteLineNames, setAutocompleteLineNames] = useState<string[]>([]);
   const [searchSignalWidth, setSearchSignalWidth] = useState<number>(0);
 
@@ -94,7 +93,7 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
     infraIDPayload: number,
     trackSystems: string[],
     settings: string[]
-  ): searchPayloadType => {
+  ): SearchPayload => {
     const payloadQuery = !Number.isNaN(Number(lineSearch))
       ? ['=', ['line_code'], Number(lineSearch)]
       : ['search', ['line_name'], lineSearch];
@@ -114,7 +113,7 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
 
   const updateSearch = async (infraIDPayload: number) => {
     const settings = selectedSettings.map((setting) => REVERSED_SIGNAL_SETTINGS_DISPLAY[setting]);
-    const payload: searchPayloadType = getPayload(
+    const payload = getPayload(
       searchLineState,
       searchState,
       infraIDPayload,
@@ -122,11 +121,11 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
       settings
     );
     await postSearch({
-      body: payload,
+      searchPayload: payload,
     })
       .unwrap()
       .then((results) => {
-        setSearchResults([...results] as SearchSignalResult[]);
+        setSearchResults([...results] as SearchResultItemSignal[]);
       })
       .catch((e) => {
         console.error(e);
@@ -151,7 +150,7 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
     }
   }, [debouncedSearchTerm, debouncedSearchLine, signalSystem, selectedSettings]);
 
-  const onResultClick = (result: SearchSignalResult) => {
+  const onResultClick = (result: SearchResultItemSignal) => {
     onResultSearchClick({
       result,
       map,

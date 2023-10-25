@@ -8,14 +8,14 @@ import nextId from 'react-id-generator';
 import { dateTimeFrenchFormatting } from 'utils/date';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateProjectID, updateScenarioID, updateStudyID } from 'reducers/osrdconf';
-import { ProjectWithStudies, SearchProjectResult } from 'common/api/osrdEditoastApi';
+import { ProjectWithStudies, SearchResultItemProject } from 'common/api/osrdEditoastApi';
 import { getDocument } from 'common/api/documentApi';
 import cx from 'classnames';
 import { getUserSafeWord } from 'reducers/user/userSelectors';
 
 type Props = {
   setFilterChips: (filterChips: string) => void;
-  project: ProjectWithStudies | SearchProjectResult;
+  project: ProjectWithStudies | SearchResultItemProject;
   isSelected: boolean;
   toggleSelect: (id?: number) => void;
 };

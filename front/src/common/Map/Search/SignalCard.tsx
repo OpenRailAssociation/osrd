@@ -1,10 +1,10 @@
 import React from 'react';
-import { SearchSignalResult } from 'common/api/osrdEditoastApi';
+import { SearchResultItemSignal } from 'common/api/osrdEditoastApi';
 import mainConfig from 'config/config';
 
 type SignalCardProps = {
-  signalSearchResult: SearchSignalResult;
-  onResultClick: (results: SearchSignalResult) => void;
+  signalSearchResult: SearchResultItemSignal;
+  onResultClick: (results: SearchResultItemSignal) => void;
 };
 const SignalCard = ({ signalSearchResult, onResultClick }: SignalCardProps) => (
   <div

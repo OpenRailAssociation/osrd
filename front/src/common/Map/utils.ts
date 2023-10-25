@@ -1,14 +1,17 @@
 import { AllGeoJSON } from '@turf/helpers';
 import turfCenter from '@turf/center';
 import { AnyAction, Dispatch } from 'redux';
-import { SearchOperationalPointResult, SearchSignalResult } from 'common/api/osrdEditoastApi';
+import {
+  SearchResultItemOperationalPoint,
+  SearchResultItemSignal,
+} from 'common/api/osrdEditoastApi';
 import { MapState, Viewport, updateMapSearchMarker } from '../../reducers/map/index';
 
-export const getCoordinates = (result: SearchSignalResult | SearchOperationalPointResult) =>
+export const getCoordinates = (result: SearchResultItemSignal | SearchResultItemOperationalPoint) =>
   result.geographic;
 
 type OnResultSearchClickType = {
-  result: SearchSignalResult | SearchOperationalPointResult;
+  result: SearchResultItemSignal | SearchResultItemOperationalPoint;
   map: MapState;
   updateExtViewport: (viewport: Partial<Viewport>) => void;
   dispatch: Dispatch<AnyAction>;
