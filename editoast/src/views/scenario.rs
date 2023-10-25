@@ -27,7 +27,7 @@ use super::projects::QueryParams;
 
 /// Returns `/projects/{project}/studies/{study}/scenarios` routes
 pub fn routes() -> impl HttpServiceFactory {
-    web::scope("/scenarios")
+    web::scope("/projects/{project_id}/studies/{study_id}/scenarios")
         .service((create, list))
         .service(web::scope("/{scenario}").service((get, delete, patch)))
 }

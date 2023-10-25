@@ -20,14 +20,13 @@ import StateStep from 'applications/operationalStudies/components/Study/StateSte
 import {
   PostSearchApiArg,
   ScenarioResult,
-  SearchResultItemScenario,
-  StudyResult,
+  StudyWithScenarios,
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
 import AddOrEditStudyModal from 'modules/study/components/AddOrEditStudyModal';
 import BreadCrumbs from '../components/BreadCrumbs';
 import FilterTextField from '../components/FilterTextField';
-import { studyStates } from '../consts';
+import { StudyState, studyStates } from '../consts';
 
 type SortOptions =
   | 'NameAsc'
@@ -38,7 +37,7 @@ type SortOptions =
   | 'LastModifiedDesc';
 
 // While files property is not implemented in studies
-type StudyWithFileType = StudyResult & {
+type StudyWithFileType = StudyWithScenarios & {
   files: {
     filename: string;
     url: string;
@@ -192,9 +191,7 @@ export default function Study() {
           },
         };
         try {
-          let filteredScenarios = (await postSearch(
-            payload
-          ).unwrap()) as SearchResultItemScenario[];
+          let filteredScenarios = (await postSearch(payload).unwrap()) as ScenarioResult[];
           if (sortOption === 'LastModifiedDesc') {
             filteredScenarios = filteredScenarios.sort((a, b) => {
               if (a.last_modification && b.last_modification) {
@@ -312,7 +309,7 @@ export default function Study() {
                               number={idx + 1}
                               studyName={study.name}
                               state={state}
-                              done={idx <= studyStates.indexOf(study.state)}
+                              done={idx <= studyStates.indexOf(study.state as StudyState)}
                               tags={study.tags}
                             />
                           )

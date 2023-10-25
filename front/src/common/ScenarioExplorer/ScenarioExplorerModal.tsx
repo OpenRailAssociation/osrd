@@ -8,7 +8,11 @@ import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import { useTranslation } from 'react-i18next';
 import { MdArrowRight } from 'react-icons/md';
 import { useDispatch } from 'react-redux';
-import { ScenarioListResult, StudyResult, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import {
+  ScenarioListResult,
+  StudyWithScenarios,
+  osrdEditoastApi,
+} from 'common/api/osrdEditoastApi';
 import { setFailure } from 'reducers/main';
 import ProjectMiniCard from './ScenarioExplorerModalProjectMiniCard';
 import ScenarioMiniCard from './ScenarioExplorerModalScenarioMiniCard';
@@ -26,7 +30,7 @@ export default function ScenarioExplorerModal({
   const [projectID, setProjectID] = useState<number | undefined>(globalProjectId);
   const [studyID, setStudyID] = useState<number | undefined>(globalStudyId);
   const [scenarioID, setScenarioID] = useState<number | undefined>(globalScenarioId);
-  const [studiesList, setStudiesList] = useState<StudyResult[]>();
+  const [studiesList, setStudiesList] = useState<StudyWithScenarios[]>();
   const [scenariosList, setScenariosList] = useState<ScenarioListResult[]>();
 
   const {

@@ -23,6 +23,8 @@ use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
+use super::study;
+
 crate::routes! {
     "/projects" => {
         create,
@@ -31,7 +33,7 @@ crate::routes! {
             get,
             delete,
             patch,
-            // study::routes(), TODO: uncomment once study routes have been annotated (also remove the service decl in mod.rs)
+            study::routes()
         },
     }
 }
@@ -40,6 +42,7 @@ crate::schemas! {
     PaginatedResponseOfProjectWithStudies,
     ProjectCreateForm,
     ProjectPatchForm,
+    study::schemas(),
 }
 
 #[derive(Debug, Error, EditoastError)]
@@ -168,7 +171,7 @@ async fn list(
 // Documentation struct
 #[derive(IntoParams)]
 #[allow(unused)]
-struct ProjectIdParam {
+pub struct ProjectIdParam {
     /// The id of a project
     project_id: i64,
 }

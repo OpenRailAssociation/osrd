@@ -877,6 +877,34 @@ components:
       - next
       - results
       type: object
+    PaginatedResponseOfStudyWithScenarios:
+      description: A paginated response
+      properties:
+        count:
+          description: The total number of items
+          format: int64
+          type: integer
+        next:
+          description: The next page number
+          format: int64
+          nullable: true
+          type: integer
+        previous:
+          description: The previous page number
+          format: int64
+          nullable: true
+          type: integer
+        results:
+          description: The list of results
+          items:
+            $ref: '#/components/schemas/StudyWithScenarios'
+          type: array
+      required:
+      - count
+      - previous
+      - next
+      - results
+      type: object
     Patch:
       description: A JSONPatch document as defined by RFC 6902
       properties:
@@ -2485,13 +2513,14 @@ components:
       - default_value
       - ranges
       - distribution
-    StudyResult:
+    Study:
       properties:
         actual_end_date:
-          format: date-time
+          format: date
           nullable: true
           type: string
         budget:
+          format: int32
           type: integer
         business_code:
           type: string
@@ -2501,10 +2530,11 @@ components:
         description:
           type: string
         expected_end_date:
-          format: date-time
+          format: date
           nullable: true
           type: string
         id:
+          format: int64
           type: integer
         last_modification:
           format: date-time
@@ -2512,32 +2542,17 @@ components:
         name:
           type: string
         project_id:
-          type: integer
-        scenarios_count:
+          format: int64
           type: integer
         service_code:
           type: string
         start_date:
-          format: date-time
+          format: date
           nullable: true
           type: string
         state:
-          enum:
-          - started
-          - inProgress
-          - finish
           type: string
         study_type:
-          enum:
-          - timeTables
-          - flowRate
-          - parkSizing
-          - garageRequirement
-          - operationOrSizing
-          - operability
-          - strategicPlanning
-          - chartStability
-          - disturbanceTests
           type: string
         tags:
           items:
@@ -2546,72 +2561,107 @@ components:
       required:
       - id
       - name
-      - project_id
       - description
-      - budget
-      - tags
-      - service_code
       - business_code
+      - service_code
       - creation_date
       - last_modification
-      - scenarios_count
-      - start_date
-      - expected_end_date
-      - actual_end_date
-    StudyUpsertRequest:
+      - budget
+      - tags
+      - state
+      - study_type
+      - project_id
+      type: object
+    StudyCreateForm:
+      description: This structure is used by the post endpoint to create a study
       properties:
         actual_end_date:
-          format: date-time
+          format: date
           nullable: true
           type: string
         budget:
+          format: int32
           type: integer
         business_code:
-          maxLength: 128
           type: string
         description:
-          maxLength: 1024
           type: string
         expected_end_date:
-          format: date-time
+          format: date
           nullable: true
           type: string
         name:
-          maxLength: 128
           type: string
         service_code:
-          maxLength: 128
           type: string
         start_date:
-          format: date-time
+          format: date
           nullable: true
           type: string
         state:
-          enum:
-          - started
-          - inProgress
-          - finish
           type: string
         study_type:
-          enum:
-          - timeTables
-          - flowRate
-          - parkSizing
-          - garageRequirement
-          - operationOrSizing
-          - operability
-          - strategicPlanning
-          - chartStability
-          - disturbanceTests
           type: string
         tags:
           items:
-            maxLength: 255
             type: string
           type: array
       required:
       - name
-      - tags
+      type: object
+    StudyPatchForm:
+      description: This structure is used by the patch endpoint to patch a study
+      properties:
+        actual_end_date:
+          format: date
+          nullable: true
+          type: string
+        budget:
+          format: int32
+          nullable: true
+          type: integer
+        business_code:
+          nullable: true
+          type: string
+        description:
+          nullable: true
+          type: string
+        expected_end_date:
+          format: date
+          nullable: true
+          type: string
+        name:
+          nullable: true
+          type: string
+        service_code:
+          nullable: true
+          type: string
+        start_date:
+          format: date
+          nullable: true
+          type: string
+        state:
+          nullable: true
+          type: string
+        study_type:
+          nullable: true
+          type: string
+        tags:
+          items:
+            type: string
+          nullable: true
+          type: array
+      type: object
+    StudyWithScenarios:
+      allOf:
+      - $ref: '#/components/schemas/Study'
+      - properties:
+          scenarios_count:
+            format: int64
+            type: integer
+        required:
+        - scenarios_count
+        type: object
     TimetableImportItem:
       properties:
         path:
@@ -4435,166 +4485,169 @@ paths:
       - projects
   /projects/{project_id}/studies/:
     get:
+      description: Return a list of studies
       parameters:
-      - in: path
+      - description: The id of a project
+        in: path
         name: project_id
         required: true
         schema:
+          format: int64
+          type: integer
+      - in: query
+        name: page
+        required: false
+        schema:
+          default: 1
+          format: int64
+          minimum: 1
+          type: integer
+      - in: query
+        name: page_size
+        required: false
+        schema:
+          default: 25
+          format: int64
+          minimum: 1
+          nullable: true
           type: integer
       - in: query
         name: ordering
+        required: false
         schema:
-          enum:
-          - NameAsc
-          - NameDesc
-          - CreationDateAsc
-          - CreationDateDesc
-          - LastModifiedAsc
-          - LastModifiedDesc
-          type: string
-      - description: Filter operational studies by name
-        in: query
-        name: name
-        schema:
-          type: string
-      - description: Filter operational studies by description
-        in: query
-        name: description
-        schema:
-          type: string
-      - description: Filter operational studies by tags
-        in: query
-        name: tags
-        schema:
-          type: string
-      - description: Page number
-        in: query
-        name: page
-        schema:
-          minimum: 0
-          type: integer
-      - description: Number of elements by page
-        in: query
-        name: page_size
-        schema:
-          default: 100
-          maximum: 10000
-          minimum: 1
-          type: integer
+          $ref: '#/components/schemas/Ordering'
       responses:
         '200':
           content:
             application/json:
               schema:
-                properties:
-                  count:
-                    type: number
-                  next: {}
-                  previous: {}
-                  results:
-                    items:
-                      $ref: '#/components/schemas/StudyResult'
-                    type: array
-                type: object
-          description: the studies list
-      summary: Paginated list of operational studies
+                $ref: '#/components/schemas/PaginatedResponseOfStudyWithScenarios'
+          description: The list of studies
+      summary: Return a list of studies
       tags:
       - studies
     post:
       parameters:
-      - in: path
+      - description: The id of a project
+        in: path
         name: project_id
         required: true
         schema:
+          format: int64
           type: integer
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/StudyUpsertRequest'
+              $ref: '#/components/schemas/StudyCreateForm'
+        required: true
       responses:
         '201':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StudyResult'
-          description: The created operational study
-      summary: Create a new operational study
+                $ref: '#/components/schemas/StudyWithScenarios'
+          description: The created study
       tags:
       - studies
   /projects/{project_id}/studies/{study_id}/:
     delete:
+      description: Delete a study
       parameters:
-      - description: project id refered to the operational study
+      - description: The id of a project
         in: path
         name: project_id
         required: true
         schema:
+          format: int64
           type: integer
-      - description: study id you want to delete
-        in: path
+      - in: path
         name: study_id
         required: true
         schema:
+          format: int64
           type: integer
       responses:
         '204':
-          description: No content
-      summary: delete an operational study
+          description: The study was deleted successfully
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalError'
+          description: The requested study was not found
+      summary: Delete a study
       tags:
       - studies
     get:
+      description: Return a specific study
       parameters:
-      - description: project id refered to the operational study
+      - description: The id of a project
         in: path
         name: project_id
         required: true
         schema:
+          format: int64
           type: integer
-      - description: study id you want to retrieve
-        in: path
+      - in: path
         name: study_id
         required: true
         schema:
+          format: int64
           type: integer
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StudyResult'
-          description: The operational study info
-      summary: Retrieve an operational study
+                $ref: '#/components/schemas/StudyWithScenarios'
+          description: The requested study
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalError'
+          description: The requested study was not found
+      summary: Return a specific study
       tags:
       - studies
     patch:
+      description: Update a study
       parameters:
-      - description: project id refered to the study
+      - description: The id of a project
         in: path
         name: project_id
         required: true
         schema:
+          format: int64
           type: integer
-      - description: study id you want to retrieve
-        in: path
+      - in: path
         name: study_id
         required: true
         schema:
+          format: int64
           type: integer
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/StudyUpsertRequest'
-        description: The fields you want to update
+              $ref: '#/components/schemas/StudyPatchForm'
+        description: The fields to update
+        required: true
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StudyResult'
-          description: The operational study updated
-      summary: update an operational study
+                $ref: '#/components/schemas/StudyWithScenarios'
+          description: The updated study
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalError'
+          description: The requested study was not found
+      summary: Update a study
       tags:
       - studies
   /projects/{project_id}/studies/{study_id}/scenarios/:

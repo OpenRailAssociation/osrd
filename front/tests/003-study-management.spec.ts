@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { v4 as uuidv4 } from 'uuid';
-import { Project, StudyResult } from 'common/api/osrdEditoastApi';
+import { Project, Study } from 'common/api/osrdEditoastApi';
 import { PlaywrightHomePage } from './pages/home-page-model';
 import project from './assets/operationStudies/project.json';
 import study from './assets/operationStudies/study.json';
@@ -86,7 +86,7 @@ test.describe('Test if operationnal study: study creation workflow is working pr
   });
 
   test(' update a study', async ({ page }) => {
-    const newStudyData: StudyResult = await postApiRequest(
+    const newStudyData: Study = await postApiRequest(
       `/projects/${newProjectData.id}/studies/`,
       {
         ...study,
@@ -161,7 +161,7 @@ test.describe('Test if operationnal study: study creation workflow is working pr
   });
 
   test('Delete a study', async ({ page }) => {
-    const newStudyData: StudyResult = await postApiRequest(
+    const newStudyData: Study = await postApiRequest(
       `/projects/${newProjectData.id}/studies/`,
       {
         ...study,

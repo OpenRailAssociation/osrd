@@ -18,7 +18,7 @@ import { useNavigate } from 'react-router-dom';
 import { setFailure, setSuccess } from 'reducers/main';
 import { updateStudyID } from 'reducers/osrdconf';
 import { getProjectID } from 'reducers/osrdconf/selectors';
-import { StudyResult, StudyUpsertRequest, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { StudyCreateForm, StudyWithScenarios, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import {
   StudyState,
   studyStates,
@@ -27,21 +27,23 @@ import {
 } from 'applications/operationalStudies/consts';
 import { isEmpty, sortBy } from 'lodash';
 
+interface StudyForm extends StudyCreateForm {
+  id?: number;
+}
+
 type Props = {
   editionMode?: boolean;
-  study?: StudyResult;
+  study?: StudyWithScenarios;
 };
 
 type OptionsList = StudyType[] | StudyState[];
 
-const emptyStudy: StudyUpsertRequest = { name: '', tags: [] };
+const emptyStudy: StudyForm = { name: '', tags: [] };
 
 export default function AddOrEditStudyModal({ editionMode, study }: Props) {
   const { t } = useTranslation('operationalStudies/study');
   const { closeModal } = useContext(ModalContext);
-  const [currentStudy, setCurrentStudy] = useState<StudyUpsertRequest>(
-    (study as StudyUpsertRequest) || emptyStudy
-  );
+  const [currentStudy, setCurrentStudy] = useState<StudyForm>((study as StudyForm) || emptyStudy);
   const [displayErrors, setDisplayErrors] = useState(false);
   const projectID = useSelector(getProjectID);
   const dispatch = useDispatch();
@@ -75,13 +77,13 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
   const formatDateForInput = (date?: string | null) => (date ? date.substring(0, 10) : '');
 
   const removeTag = (idx: number) => {
-    const newTags = [...currentStudy.tags];
+    const newTags = [...(currentStudy.tags || [])];
     newTags.splice(idx, 1);
     setCurrentStudy({ ...currentStudy, tags: newTags });
   };
 
   const addTag = (tag: string) => {
-    setCurrentStudy({ ...currentStudy, tags: [...currentStudy.tags, tag] });
+    setCurrentStudy({ ...currentStudy, tags: [...(currentStudy.tags || []), tag] });
   };
 
   const createStudy = () => {
@@ -90,7 +92,7 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
     } else {
       createStudies({
         projectId: projectID as number,
-        studyUpsertRequest: currentStudy,
+        studyCreateForm: currentStudy,
       })
         .unwrap()
         .then((createdStudy) => {
@@ -108,7 +110,7 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
       patchStudies({
         projectId: projectID,
         studyId: study.id,
-        studyUpsertRequest: currentStudy,
+        studyPatchForm: currentStudy,
       })
         .unwrap()
         .then(() => {
@@ -207,7 +209,7 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
                     onChange={(e) =>
                       setCurrentStudy({
                         ...currentStudy,
-                        study_type: e?.id as StudyUpsertRequest['study_type'],
+                        study_type: e?.id as StudyForm['study_type'],
                       })
                     }
                     data-testid="studyType"
@@ -233,7 +235,7 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
                     onChange={(e) =>
                       setCurrentStudy({
                         ...currentStudy,
-                        state: e?.id as StudyUpsertRequest['state'],
+                        state: e?.id as StudyForm['state'],
                       })
                     }
                   />
@@ -367,7 +369,7 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
         </div>
         <ChipsSNCF
           addTag={addTag}
-          tags={currentStudy?.tags}
+          tags={currentStudy?.tags || []}
           removeTag={removeTag}
           title={t('studyTags')}
           color="primary"

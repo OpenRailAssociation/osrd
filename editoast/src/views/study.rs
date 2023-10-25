@@ -1,3 +1,4 @@
+use crate::decl_paginated_response;
 use crate::error::Result;
 use crate::models::Create;
 use crate::models::Delete;
@@ -9,12 +10,11 @@ use crate::models::StudyWithScenarios;
 use crate::models::Update;
 use crate::views::pagination::{PaginatedResponse, PaginationQueryParam};
 use crate::views::projects::ProjectError;
+use crate::views::projects::ProjectIdParam;
 use crate::views::projects::QueryParams;
-use crate::views::scenario;
 use crate::DbPool;
-use actix_web::dev::HttpServiceFactory;
 use actix_web::patch;
-use actix_web::web::{self, Data, Json, Path, Query};
+use actix_web::web::{Data, Json, Path, Query};
 use actix_web::{delete, get, post, HttpResponse};
 use chrono::NaiveDate;
 use chrono::Utc;
@@ -22,16 +22,28 @@ use derivative::Derivative;
 use editoast_derive::EditoastError;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
+use utoipa::IntoParams;
+use utoipa::ToSchema;
 
-/// Returns `/projects/{project}/studies` routes
-pub fn routes() -> impl HttpServiceFactory {
-    web::scope("/projects/{project_id}/studies")
-        .service((create, list))
-        .service(
-            web::scope("/{study}")
-                .service((delete, get, patch))
-                .service(scenario::routes()),
-        )
+crate::routes! {
+    "/studies" => {
+        create,
+        list,
+        "/{study_id}" => {
+            get,
+            delete,
+            patch,
+            // scenario::routes() once scenarios routes have been annotated
+        }
+    }
+}
+
+crate::schemas! {
+    Study,
+    StudyCreateForm,
+    StudyPatchForm,
+    StudyWithScenarios,
+    PaginatedResponseOfStudyWithScenarios,
 }
 
 #[derive(Debug, Error, EditoastError)]
@@ -48,7 +60,7 @@ pub enum StudyError {
 }
 
 /// This structure is used by the post endpoint to create a study
-#[derive(Serialize, Deserialize, Derivative)]
+#[derive(Serialize, Deserialize, Derivative, ToSchema)]
 #[derivative(Default)]
 struct StudyCreateForm {
     pub name: String,
@@ -95,6 +107,14 @@ impl StudyCreateForm {
     }
 }
 
+#[utoipa::path(
+    tag = "studies",
+    params(ProjectIdParam),
+    request_body = StudyCreateForm,
+    responses(
+        (status = 201, body = StudyWithScenarios, description = "The created study"),
+    )
+)]
 #[post("")]
 async fn create(
     db_pool: Data<DbPool>,
@@ -125,7 +145,21 @@ async fn create(
     Ok(Json(study_with_scenarios))
 }
 
+#[derive(IntoParams)]
+#[allow(unused)]
+struct StudyIdParam {
+    study_id: i64,
+}
+
 /// Delete a study
+#[utoipa::path(
+    tag = "studies",
+    params(ProjectIdParam, StudyIdParam),
+    responses(
+        (status = 204, description = "The study was deleted successfully"),
+        (status = 404, body = InternalError, description = "The requested study was not found"),
+    )
+)]
 #[delete("")]
 async fn delete(path: Path<(i64, i64)>, db_pool: Data<DbPool>) -> Result<HttpResponse> {
     let (project_id, study_id) = path.into_inner();
@@ -147,7 +181,16 @@ async fn delete(path: Path<(i64, i64)>, db_pool: Data<DbPool>) -> Result<HttpRes
     Ok(HttpResponse::NoContent().finish())
 }
 
+decl_paginated_response!(PaginatedResponseOfStudyWithScenarios, StudyWithScenarios);
+
 /// Return a list of studies
+#[utoipa::path(
+    tag = "studies",
+    params(ProjectIdParam, PaginationQueryParam, QueryParams),
+    responses(
+        (status = 200, body = PaginatedResponseOfStudyWithScenarios, description = "The list of studies"),
+    )
+)]
 #[get("")]
 async fn list(
     db_pool: Data<DbPool>,
@@ -164,7 +207,15 @@ async fn list(
     Ok(Json(studies))
 }
 
-/// Return a specific studies
+/// Return a specific study
+#[utoipa::path(
+    tag = "studies",
+    params(ProjectIdParam, StudyIdParam),
+    responses(
+        (status = 200, body = StudyWithScenarios, description = "The requested study"),
+        (status = 404, body = InternalError, description = "The requested study was not found"),
+    )
+)]
 #[get("")]
 async fn get(db_pool: Data<DbPool>, path: Path<(i64, i64)>) -> Result<Json<StudyWithScenarios>> {
     let (project_id, study_id) = path.into_inner();
@@ -187,7 +238,7 @@ async fn get(db_pool: Data<DbPool>, path: Path<(i64, i64)>) -> Result<Json<Study
 }
 
 /// This structure is used by the patch endpoint to patch a study
-#[derive(Serialize, Deserialize, Derivative)]
+#[derive(Serialize, Deserialize, Derivative, ToSchema)]
 #[derivative(Default)]
 struct StudyPatchForm {
     pub name: Option<String>,
@@ -228,6 +279,19 @@ impl TryFrom<StudyPatchForm> for Study {
     }
 }
 
+/// Update a study
+#[utoipa::path(
+    tag = "studies",
+    params(ProjectIdParam, StudyIdParam),
+    request_body(
+        content = StudyPatchForm,
+        description = "The fields to update"
+    ),
+    responses(
+        (status = 200, body = StudyWithScenarios, description = "The updated study"),
+        (status = 404, body = InternalError, description = "The requested study was not found"),
+    )
+)]
 #[patch("")]
 async fn patch(
     data: Json<StudyPatchForm>,

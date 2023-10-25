@@ -34,7 +34,7 @@ export default function StateStep({
       await patchStudy({
         projectId: projectID,
         studyId: studyID,
-        studyUpsertRequest: { name: studyName, state, tags },
+        studyPatchForm: { name: studyName, state, tags },
       });
       dispatch(
         setSuccess({
