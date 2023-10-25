@@ -26,7 +26,7 @@
   "projectDescription": "Description du projet",
   "projectFunders": "Détails du financement",
   "projectModificationTitle": "Modifier le projet",
-  "projectModifyButton": "Modifier",
+  "projectModifyButton": "Enregistrer",
   "projectName": "Nom du projet",
   "projectNameMissing": "Vous devez renseigner un nom pour le projet",
   "projectObjectives": "Objectifs du projet",

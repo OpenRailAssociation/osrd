@@ -39,7 +39,7 @@
   "studyDescription": "Description",
   "studyEstimatedEndingDate": "Expected ending",
   "studyModificationTitle": "Edit a study",
-  "studyModifyButton": "Edit",
+  "studyModifyButton": "Save",
   "studyName": "Study name",
   "studyNameMissing": "You must enter a name for the study",
   "studyRealEndingDate": "Real ending",
