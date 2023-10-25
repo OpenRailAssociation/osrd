@@ -23,7 +23,7 @@
   "scenarioDeletedDetails": "Scenario {{ name }} has been deleted.",
   "scenarioDescription": "Description",
   "scenarioModificationTitle": "Modify scenario",
-  "scenarioModifyButton": "Edit",
+  "scenarioModifyButton": "Save",
   "scenarioName": "Scenario's name",
   "scenarioNameMissing": "You have to set a name for scenario",
   "scenarioTags": "Tags",
@@ -44,7 +44,6 @@
     "update": "Edit",
     "trainsSelectionDeletedCount_one": "The train has been deleted.",
     "trainsSelectionDeletedCount_other": "The {{count}} trains have been deleted."
-
   },
   "trainCount_one": "1 train",
   "trainCount_other": "{{ count }} trains",
