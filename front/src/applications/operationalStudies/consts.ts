@@ -197,7 +197,7 @@ export interface OsrdConfState {
 }
 
 export interface OsrdStdcmConfState extends OsrdConfState {
-  maximumRunTime?: number;
+  maximumRunTime: number;
   stdcmMode: ValueOf<typeof STDCM_MODES>;
   standardStdcmAllowance?: StandardAllowance; // We wait for auto generated types
 }
