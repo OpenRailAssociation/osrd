@@ -202,11 +202,11 @@ pub mod searchast;
 pub mod sqlquery;
 pub mod typing;
 
-pub use search_object::{SearchConfigStore, SearchObject};
+pub use self::search_object::*;
+pub use objects::SearchConfigFinder;
 
 use crate::error::Result;
 use crate::views::pagination::PaginationQueryParam;
-use crate::views::search::objects::SearchConfigFinder;
 use crate::DbPool;
 use actix_web::web::{Data, Json, Query};
 use actix_web::{post, HttpResponse, Responder};
@@ -222,7 +222,6 @@ use thiserror::Error;
 
 use self::context::{QueryContext, TypedAst};
 use self::process::create_processing_context;
-use self::search_object::{Criteria, Property, SearchConfig};
 use self::searchast::SearchAst;
 use self::typing::{AstType, TypeSpec};
 
@@ -248,7 +247,10 @@ impl SearchConfig {
         let mut context = create_processing_context();
         context.search_table_name = Some(self.table.to_owned());
         // Register known columns with their expected type
-        for Criteria { name, data_type } in self.criterias.iter() {
+        for Criteria {
+            name, data_type, ..
+        } in self.criterias.iter()
+        {
             context
                 .columns_type
                 .insert(name.to_string(), data_type.clone());

@@ -22,6 +22,7 @@ import fr.sncf.osrd.stdcm.preprocessing.implementation.UnavailableSpaceBuilder;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.StandaloneTrainSchedule;
 import fr.sncf.osrd.train.TrainStop;
+import fr.sncf.osrd.utils.graph.Pathfinding;
 import org.takes.Request;
 import org.takes.Response;
 import org.takes.Take;
@@ -96,7 +97,8 @@ public class STDCMEndpoint implements Take {
                     request.maximumDepartureDelay,
                     request.maximumRunTime,
                     tag,
-                    performanceAllowance
+                    performanceAllowance,
+                    Pathfinding.TIMEOUT
             );
             if (res == null) {
                 var error = new OSRDError(ErrorType.PathfindingGenericError);

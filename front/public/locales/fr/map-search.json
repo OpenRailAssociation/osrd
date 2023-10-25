@@ -19,7 +19,14 @@
   "reset": "Réinitialiser",
   "aspects": "Aspects",
   "noAspectSelected": "Aucun aspect sélectionné",
+  "signalSystem": "Système de signalisation",
   "errorMessages": {
     "unableToSearchSignal": "Recherche du signal impossible"
+  },
+  "all": "Tous",
+  "signalSettings": {
+    "Nf": "Non franchissable",
+    "distant": "Distant",
+    "is_430": "430"
   }
 }

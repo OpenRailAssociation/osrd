@@ -25,25 +25,36 @@ import java.util.concurrent.TimeUnit;
 public final class ApiServerCommand implements CliCommand {
     static final Logger logger = LoggerFactory.getLogger(ApiServerCommand.class);
 
-    static final int DEFAULT_API_THREADS = 4;
-
     @Parameter(names = {"-p", "--port"}, description = "The TCP port to listen on")
     private int port = 8000;
 
-    @Parameter(names = {"--url"}, description = "The base URL used to query infrastructures")
-    private String middlewareBaseUrl;
+    @Parameter(names = {"--editoast-url"}, description = "The base URL of editoast (used to query infrastructures)")
+    private String editoastUrl;
 
-    private String getMiddlewareBaseUrl() {
-        if (middlewareBaseUrl == null)
-            middlewareBaseUrl = System.getenv("MIDDLEWARE_BASE_URL");
+    @Parameter(names = {"--editoast-authorization"}, description = "The HTTP Authorization header sent to editoast")
+    private String editoastAuthorization;
 
-        if (middlewareBaseUrl == null)
+    @Parameter(names = {"--sentry-dsn"}, description = "The sentry DSN")
+    private String sentryDsn;
+
+    @Parameter(names = {"-j", "--threads"}, description = "The number of threads to serve requests from")
+    private int threads = 4;
+
+    private String getEditoastUrl() {
+        if (editoastUrl == null) {
+            System.err.println("The use of MIDDLEWARE_BASE_URL is deprecated. Use CORE_EDITOAST_URL instead.");
+            editoastUrl = System.getenv("MIDDLEWARE_BASE_URL");
+        }
+
+        if (editoastUrl == null)
             throw new RuntimeException(
-                "No middleware base url specified. Use '--url' option or 'MIDDLEWARE_BASE_URL' environment variable");
+                "No editoast base url specified. "
+                + "Use '--editoast-url' option or the 'CORE_EDITOAST_URL' environment variable"
+            );
 
-        if (!middlewareBaseUrl.endsWith("/"))
-            return middlewareBaseUrl + "/";
-        return middlewareBaseUrl;
+        if (!editoastUrl.endsWith("/"))
+            return editoastUrl + "/";
+        return editoastUrl;
     }
 
 
@@ -51,13 +62,12 @@ public final class ApiServerCommand implements CliCommand {
      * Run the Api Server
      */
     public int run() {
-        FbSentry.init();
-        var authorizationToken = System.getenv("FETCH_INFRA_AUTHORIZATION");
-        var middleWareBaseUrl = getMiddlewareBaseUrl();
+        FbSentry.init(sentryDsn);
+        var editoastUrl = getEditoastUrl();
         var httpClient = new OkHttpClient.Builder().readTimeout(120, TimeUnit.SECONDS).build();
-        var infraManager = new InfraManager(middleWareBaseUrl, authorizationToken, httpClient, false);
+        var infraManager = new InfraManager(editoastUrl, editoastAuthorization, httpClient, false);
         var electricalProfileSetManager =
-                new ElectricalProfileSetManager(middleWareBaseUrl, authorizationToken, httpClient);
+                new ElectricalProfileSetManager(editoastUrl, editoastAuthorization, httpClient);
 
         var maxMemory = String.format("%.2f", Runtime.getRuntime().maxMemory() / (double) (1 << 30));
         logger.info("starting the API server with max {}Gi of java heap", maxMemory);
@@ -83,14 +93,8 @@ public final class ApiServerCommand implements CliCommand {
                     new FbSentry()
             );
 
-            // parse the number of API threads from the environment, if present
-            int threadCount = DEFAULT_API_THREADS;
-            var envThreadCount = System.getenv("OSRD_API_THREADS");
-            if (envThreadCount != null)
-                threadCount = Integer.parseInt(envThreadCount);
-
             var serverConfig = new TkSlf4j(new TkFallback(routes, fallbacks));
-            var serverBack = new BkParallel(new BkSafe(new BkBasic(serverConfig)), threadCount);
+            var serverBack = new BkParallel(new BkSafe(new BkBasic(serverConfig)), threads);
             var serverFront = new FtBasic(serverBack, port);
             serverFront.start(Exit.NEVER);
             return 0;
@@ -101,10 +105,9 @@ public final class ApiServerCommand implements CliCommand {
     }
 
     private static final class FbSentry implements Fallback {
-        public static void init() {
-            var sentryDSN = System.getenv("SENTRY_DSN");
-            if (sentryDSN != null)
-                Sentry.init(options -> options.setDsn(sentryDSN));
+        public static void init(String sentryDsn) {
+            if (sentryDsn != null)
+                Sentry.init(options -> options.setDsn(sentryDsn));
         }
 
         @Override

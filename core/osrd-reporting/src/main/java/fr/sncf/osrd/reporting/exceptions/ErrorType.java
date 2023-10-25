@@ -95,6 +95,11 @@ public enum ErrorType {
             "No path could be found after loading Electrification constraints",
             ErrorCause.USER
     ),
+    PathfindingTimeoutError(
+            "no_path_found:timeout",
+            "Pathfinding timed out: no path could be found",
+            ErrorCause.INTERNAL
+    ),
     InvalidInfraDiscontinuousRoute(
             "invalid_infra:discontinuous_route",
             "Route track path isn't contiguous",

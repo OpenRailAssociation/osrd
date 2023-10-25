@@ -539,7 +539,6 @@ components:
         type:
           type: string
       required:
-      - status
       - type
       - context
       - message
@@ -728,6 +727,43 @@ components:
       required:
       - uic
       - type
+      type: object
+    Ordering:
+      enum:
+      - NameAsc
+      - NameDesc
+      - CreationDateAsc
+      - CreationDateDesc
+      - LastModifiedDesc
+      - LastModifiedAsc
+      type: string
+    PaginatedResponseOfProjectWithStudies:
+      description: A paginated response
+      properties:
+        count:
+          description: The total number of items
+          format: int64
+          type: integer
+        next:
+          description: The next page number
+          format: int64
+          nullable: true
+          type: integer
+        previous:
+          description: The previous page number
+          format: int64
+          nullable: true
+          type: integer
+        results:
+          description: The list of results
+          items:
+            $ref: '#/components/schemas/ProjectWithStudies'
+          type: array
+      required:
+      - count
+      - previous
+      - next
+      - results
       type: object
     Patch:
       description: A JSONPatch document as defined by RFC 6902
@@ -1017,69 +1053,10 @@ components:
       - electrical_profile_ranges
       - warnings
       type: object
-    ProjectCreateRequest:
+    Project:
       properties:
         budget:
-          type: integer
-        description:
-          default: ''
-          maxLength: 1024
-          type: string
-        funders:
-          default: ''
-          maxLength: 1024
-          type: string
-        image:
-          description: The id of the image in the document table
-          nullable: true
-          type: integer
-        name:
-          maxLength: 128
-          type: string
-        objectives:
-          default: ''
-          maxLength: 4096
-          type: string
-        tags:
-          items:
-            maxLength: 255
-            type: string
-          type: array
-      required:
-      - name
-      - description
-      - objectives
-      - funders
-      - budget
-      - tags
-    ProjectPatchRequest:
-      properties:
-        budget:
-          type: integer
-        description:
-          maxLength: 1024
-          type: string
-        funders:
-          maxLength: 1024
-          type: string
-        image:
-          description: The id of the image in the document table
-          nullable: true
-          type: integer
-        name:
-          maxLength: 128
-          type: string
-        objectives:
-          maxLength: 4096
-          type: string
-        tags:
-          items:
-            maxLength: 255
-            type: string
-          type: array
-    ProjectResult:
-      properties:
-        budget:
+          format: int32
           type: integer
         creation_date:
           format: date-time
@@ -1089,9 +1066,10 @@ components:
         funders:
           type: string
         id:
+          format: int64
           type: integer
         image:
-          description: the image id
+          format: int64
           nullable: true
           type: integer
         last_modification:
@@ -1101,8 +1079,6 @@ components:
           type: string
         objectives:
           type: string
-        studies_count:
-          type: integer
         tags:
           items:
             type: string
@@ -1116,8 +1092,84 @@ components:
       - budget
       - creation_date
       - last_modification
-      - studies_count
       - tags
+      type: object
+    ProjectCreateForm:
+      description: Creation form for a project
+      properties:
+        budget:
+          format: int32
+          type: integer
+        description:
+          maxLength: 1024
+          type: string
+        funders:
+          maxLength: 1024
+          type: string
+        image:
+          description: The id of the image document
+          format: int64
+          nullable: true
+          type: integer
+        name:
+          maxLength: 128
+          type: string
+        objectives:
+          maxLength: 4096
+          type: string
+        tags:
+          items:
+            maxLength: 255
+            type: string
+          type: array
+      required:
+      - name
+      type: object
+    ProjectPatchForm:
+      description: Patch form for a project
+      properties:
+        budget:
+          format: int32
+          nullable: true
+          type: integer
+        description:
+          maxLength: 1024
+          nullable: true
+          type: string
+        funders:
+          maxLength: 1024
+          nullable: true
+          type: string
+        image:
+          description: The id of the image document
+          format: int64
+          nullable: true
+          type: integer
+        name:
+          maxLength: 128
+          nullable: true
+          type: string
+        objectives:
+          maxLength: 4096
+          nullable: true
+          type: string
+        tags:
+          items:
+            maxLength: 255
+            type: string
+          nullable: true
+          type: array
+      type: object
+    ProjectWithStudies:
+      allOf:
+      - $ref: '#/components/schemas/Project'
+      - properties:
+          studies_count:
+            format: int64
+            type: integer
+        required:
+        - studies_count
+        type: object
     Railjson:
       additionalProperties: true
       description: This field follows railjson format
@@ -1758,10 +1810,6 @@ components:
       - timetable_id
     SearchSignalResult:
       properties:
-        aspects:
-          items:
-            type: string
-          type: array
         geographic:
           $ref: '#/components/schemas/Point'
         infra_id:
@@ -1769,23 +1817,34 @@ components:
         label:
           type: string
         line_code:
-          type: integer
+          type: string
         line_name:
           type: string
         schematic:
           $ref: '#/components/schemas/Point'
-        systems:
+        settings:
           items:
             type: string
           type: array
-        type:
+        signaling_systems:
+          items:
+            type: string
+          type: array
+        sprite:
+          nullable: true
+          type: string
+        sprite_signaling_system:
+          nullable: true
           type: string
       required:
+      - infra_id
       - label
-      - geographic
-      - schematic
+      - signaling_systems
+      - settings
       - line_code
       - line_name
+      - geographic
+      - schematic
     SearchStudyResult:
       properties:
         description:
@@ -3930,136 +3989,137 @@ paths:
       - electrical_profiles
   /projects/:
     get:
+      description: Returns a paginated list of projects
       parameters:
       - in: query
-        name: ordering
-        schema:
-          enum:
-          - NameAsc
-          - NameDesc
-          - CreationDateAsc
-          - CreationDateDesc
-          - LastModifiedAsc
-          - LastModifiedDesc
-          type: string
-      - description: Filter projects by name
-        in: query
-        name: name
-        schema:
-          type: string
-      - description: Filter projects by description
-        in: query
-        name: description
-        schema:
-          type: string
-      - description: Filter projects by tags
-        in: query
-        name: tags
-        schema:
-          type: string
-      - description: Page number
-        in: query
         name: page
+        required: false
         schema:
-          minimum: 0
-          type: integer
-      - description: Number of elements by page
-        in: query
-        name: page_size
-        schema:
-          default: 100
-          maximum: 10000
+          default: 1
+          format: int64
           minimum: 1
           type: integer
+      - in: query
+        name: page_size
+        required: false
+        schema:
+          default: 25
+          format: int64
+          minimum: 1
+          nullable: true
+          type: integer
+      - in: query
+        name: ordering
+        required: false
+        schema:
+          $ref: '#/components/schemas/Ordering'
       responses:
         '200':
           content:
             application/json:
               schema:
-                properties:
-                  count:
-                    type: number
-                  next: {}
-                  previous: {}
-                  results:
-                    items:
-                      $ref: '#/components/schemas/ProjectResult'
-                    type: array
-                type: object
-          description: the project list
-      summary: Paginated list of projects
+                $ref: '#/components/schemas/PaginatedResponseOfProjectWithStudies'
+          description: The list of projects
+      summary: Returns a paginated list of projects
       tags:
       - projects
     post:
+      description: Create a new project
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ProjectCreateRequest'
+              $ref: '#/components/schemas/ProjectCreateForm'
+        required: true
       responses:
         '201':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProjectResult'
+                $ref: '#/components/schemas/ProjectWithStudies'
           description: The created project
       summary: Create a new project
       tags:
       - projects
   /projects/{project_id}/:
     delete:
+      description: Delete a project
       parameters:
-      - description: project id you want to delete
+      - description: The id of a project
         in: path
         name: project_id
         required: true
         schema:
+          format: int64
           type: integer
       responses:
         '204':
-          description: No content
-      summary: delete a project
+          description: The project was deleted successfully
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalError'
+          description: The requested project was not found
+      summary: Delete a project
       tags:
       - projects
     get:
+      description: Retrieve a project
       parameters:
-      - description: project id you want to retrieve
+      - description: The id of a project
         in: path
         name: project_id
         required: true
         schema:
+          format: int64
           type: integer
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProjectResult'
-          description: The project info
+                $ref: '#/components/schemas/ProjectWithStudies'
+          description: The requested project
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalError'
+          description: The requested project was not found
       summary: Retrieve a project
       tags:
       - projects
     patch:
+      description: Update a project
       parameters:
-      - description: project id you want to update
+      - description: The id of a project
         in: path
         name: project_id
         required: true
         schema:
+          format: int64
           type: integer
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ProjectPatchRequest'
-        description: The fields you want to update
+              $ref: '#/components/schemas/ProjectPatchForm'
+        description: The fields to update
+        required: true
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProjectResult'
-          description: The project updated
+                $ref: '#/components/schemas/ProjectWithStudies'
+          description: The updated project
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalError'
+          description: The requested project was not found
       summary: Update a project
       tags:
       - projects

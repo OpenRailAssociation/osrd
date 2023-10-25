@@ -284,7 +284,7 @@
         },
         "endpoint": "Extrémité :",
         "help": {
-          "no-move": "Les aiguillages ne peuvent pas être déplacer, et sont automatiquement placés sur leur premier port.",
+          "no-move": "Les aiguillages ne peuvent pas être déplacés, et sont automatiquement placés sur leur premier port.",
           "select-track": "Sélectionnez une ligne sur la carte"
         },
         "label": "Outil \"Aiguillage\"",
@@ -354,7 +354,7 @@
       "range-edition": {
         "edit-track-range-start": "Modifier le point de départ",
         "edit-track-range-end": "Modifier le point d'arrivée",
-        "linked-track-sections": "Tronçons d'itinénaire de voie associés",
+        "linked-track-sections": "Tronçons d'itinéraire de voie associés",
         "only-show-n": "Ne montrer que les {{count}} premières sections de lignes",
         "show-more-ranges_one": "Voir une section de ligne de plus",
         "show-more-ranges_other": "Voir {{count}} sections de lignes de plus"

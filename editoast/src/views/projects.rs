@@ -1,3 +1,4 @@
+use crate::decl_paginated_response;
 use crate::error::Result;
 use crate::models::Create;
 use crate::models::Delete;
@@ -8,10 +9,9 @@ use crate::models::Project;
 use crate::models::ProjectWithStudies;
 use crate::models::Retrieve;
 use crate::views::pagination::{PaginatedResponse, PaginationQueryParam};
-use crate::views::study;
 use crate::DbPool;
-use actix_web::dev::HttpServiceFactory;
-use actix_web::web::{self, scope, Data, Json, Path, Query};
+
+use actix_web::web::{Data, Json, Path, Query};
 use actix_web::{delete, get, patch, post, HttpResponse};
 use chrono::Utc;
 use derivative::Derivative;
@@ -20,14 +20,26 @@ use image::ImageError;
 use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
+use utoipa::IntoParams;
+use utoipa::ToSchema;
 
-/// Returns `/projects` routes
-pub fn routes() -> impl HttpServiceFactory {
-    web::scope("/projects").service((create, list)).service(
-        scope("/{project}")
-            .service((get, delete, patch))
-            .service(study::routes()),
-    )
+crate::routes! {
+    "/projects" => {
+        create,
+        list,
+        "/{project_id}" => {
+            get,
+            delete,
+            patch,
+            // study::routes(), TODO: uncomment once study routes have been annotated (also remove the service decl in mod.rs)
+        },
+    }
+}
+
+crate::schemas! {
+    PaginatedResponseOfProjectWithStudies,
+    ProjectCreateForm,
+    ProjectPatchForm,
 }
 
 #[derive(Debug, Error, EditoastError)]
@@ -45,27 +57,33 @@ pub enum ProjectError {
     ImageError(ImageError),
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, IntoParams)]
 pub struct QueryParams {
     #[serde(default = "Ordering::default")]
     pub ordering: Ordering,
 }
 
 /// Creation form for a project
-#[derive(Serialize, Deserialize, Derivative)]
+#[derive(Serialize, Deserialize, Derivative, ToSchema)]
 #[derivative(Default)]
 struct ProjectCreateForm {
+    #[schema(max_length = 128)]
     pub name: String,
     #[serde(default)]
+    #[schema(max_length = 1024)]
     pub description: String,
     #[serde(default)]
+    #[schema(max_length = 4096)]
     pub objectives: String,
     #[serde(default)]
+    #[schema(max_length = 1024)]
     pub funders: String,
     #[serde(default)]
     pub budget: i32,
+    /// The id of the image document
     pub image: Option<i64>,
     #[serde(default)]
+    #[schema(max_length = 255)]
     pub tags: Vec<String>,
 }
 
@@ -97,6 +115,14 @@ async fn check_image_content(db_pool: Data<DbPool>, document_key: i64) -> Result
     Ok(())
 }
 
+/// Create a new project
+#[utoipa::path(
+    tag = "projects",
+    request_body = ProjectCreateForm,
+    responses(
+        (status = 201, body = ProjectWithStudies, description = "The created project"),
+    )
+)]
 #[post("")]
 async fn create(
     db_pool: Data<DbPool>,
@@ -115,7 +141,16 @@ async fn create(
     Ok(Json(project_with_studies))
 }
 
-/// Return a list of projects
+decl_paginated_response!(PaginatedResponseOfProjectWithStudies, ProjectWithStudies);
+
+/// Returns a paginated list of projects
+#[utoipa::path(
+    tag = "projects",
+    params(PaginationQueryParam, QueryParams),
+    responses(
+        (status = 200, body = PaginatedResponseOfProjectWithStudies, description = "The list of projects"),
+    )
+)]
 #[get("")]
 async fn list(
     db_pool: Data<DbPool>,
@@ -130,7 +165,23 @@ async fn list(
     Ok(Json(projects))
 }
 
-/// Return a specific project
+// Documentation struct
+#[derive(IntoParams)]
+#[allow(unused)]
+struct ProjectIdParam {
+    /// The id of a project
+    project_id: i64,
+}
+
+/// Retrieve a project
+#[utoipa::path(
+    tag = "projects",
+    params(ProjectIdParam),
+    responses(
+        (status = 200, body = ProjectWithStudies, description = "The requested project"),
+        (status = 404, body = InternalError, description = "The requested project was not found"),
+    )
+)]
 #[get("")]
 async fn get(db_pool: Data<DbPool>, project: Path<i64>) -> Result<Json<ProjectWithStudies>> {
     let project_id = project.into_inner();
@@ -143,6 +194,14 @@ async fn get(db_pool: Data<DbPool>, project: Path<i64>) -> Result<Json<ProjectWi
 }
 
 /// Delete a project
+#[utoipa::path(
+    tag = "projects",
+    params(ProjectIdParam),
+    responses(
+        (status = 204, description = "The project was deleted successfully"),
+        (status = 404, body = InternalError, description = "The requested project was not found"),
+    )
+)]
 #[delete("")]
 async fn delete(project: Path<i64>, db_pool: Data<DbPool>) -> Result<HttpResponse> {
     let project_id = project.into_inner();
@@ -154,14 +213,20 @@ async fn delete(project: Path<i64>, db_pool: Data<DbPool>) -> Result<HttpRespons
 }
 
 /// Patch form for a project
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, ToSchema)]
 struct ProjectPatchForm {
+    #[schema(max_length = 128)]
     pub name: Option<String>,
+    #[schema(max_length = 1024)]
     pub description: Option<String>,
+    #[schema(max_length = 4096)]
     pub objectives: Option<String>,
+    #[schema(max_length = 1024)]
     pub funders: Option<String>,
     pub budget: Option<i32>,
+    /// The id of the image document
     pub image: Option<i64>,
+    #[schema(max_length = 255)]
     pub tags: Option<Vec<String>>,
 }
 
@@ -181,6 +246,19 @@ impl ProjectPatchForm {
     }
 }
 
+/// Update a project
+#[utoipa::path(
+    tag = "projects",
+    params(ProjectIdParam),
+    request_body(
+        content = ProjectPatchForm,
+        description = "The fields to update"
+    ),
+    responses(
+        (status = 200, body = ProjectWithStudies, description = "The updated project"),
+        (status = 404, body = InternalError, description = "The requested project was not found"),
+    )
+)]
 #[patch("")]
 async fn patch(
     data: Json<ProjectPatchForm>,

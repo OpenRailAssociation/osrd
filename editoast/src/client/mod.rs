@@ -45,6 +45,8 @@ pub enum Commands {
     OsmToRailjson(OsmToRailjsonArgs),
     #[command(about, long_about = "Prints the OpenApi of the service")]
     Openapi,
+    #[command(subcommand, about, long_about = "Search engine related commands")]
+    Search(SearchCommands),
 }
 
 #[derive(Subcommand, Debug)]
@@ -52,6 +54,13 @@ pub enum ElectricalProfilesCommands {
     Import(ImportProfileSetArgs),
     Delete(DeleteProfileSetArgs),
     List(ListProfileSetArgs),
+}
+
+#[derive(Subcommand, Debug)]
+pub enum SearchCommands {
+    List,
+    MakeMigration(MakeMigrationArgs),
+    Refresh(RefreshArgs),
 }
 
 #[derive(Args, Debug, Derivative, Clone)]
@@ -165,6 +174,28 @@ pub struct OsmToRailjsonArgs {
     pub osm_pbf_in: PathBuf,
     /// Output file in Railjson format
     pub railjson_out: PathBuf,
+}
+
+#[derive(Args, Debug)]
+#[command(
+    about,
+    long_about = "Generate a migration's up.sql and down.sql content for a search object"
+)]
+pub struct MakeMigrationArgs {
+    /// The search object to generate a migration for
+    pub object: String,
+    /// The directory of the migration
+    pub migration: PathBuf,
+    #[arg(short, long)]
+    /// Overwrites the existing up.sql and down.sql files' content
+    pub force: bool,
+}
+
+#[derive(Args, Debug)]
+#[command(about, long_about = "Updates the content of the search cache tables")]
+pub struct RefreshArgs {
+    /// The search objects to refresh. If none, all search objects are refreshed
+    pub objects: Vec<String>,
 }
 
 /// Retrieve the ROOT_URL env var. If not found returns default local url.

@@ -1,13 +1,13 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 type MultiSelectSNCFProps = {
   multiSelectTitle: string;
   multiSelectPlaceholder: string;
-  options: { label: string; signals: string[] }[];
-
+  options: { group?: string; options: string[] }[];
   onChange: React.Dispatch<React.SetStateAction<string[]>>;
   selectedValues: string[];
   allowSelectAll?: boolean;
+  disable?: boolean;
 };
 
 const MultiSelectSNCF = ({
@@ -17,10 +17,14 @@ const MultiSelectSNCF = ({
   onChange,
   selectedValues,
   allowSelectAll,
+  disable = false,
 }: MultiSelectSNCFProps) => {
   const [multiSelectToggle, setMultiselectToggle] = useState<boolean>(false);
   const [selectAll, setSelectAll] = useState<boolean>(false);
-  const multiSelectOptions = options.map((optionGroup) => optionGroup.signals).flat();
+  const multiSelectOptions = useMemo(
+    () => options.map((optionGroup) => optionGroup.options).flat(),
+    [options]
+  );
 
   const renderSelectToggles = useCallback(
     (selectOptions: string[]) =>
@@ -57,6 +61,10 @@ const MultiSelectSNCF = ({
   );
 
   useEffect(() => {
+    if (disable) setMultiselectToggle(false);
+  }, [disable]);
+
+  useEffect(() => {
     const isAllSelected = multiSelectOptions?.length === selectedValues.length;
     if (isAllSelected) {
       setSelectAll(true);
@@ -88,7 +96,7 @@ const MultiSelectSNCF = ({
         data-component="select-multiple"
       >
         <div className="select-control">
-          <div className="input-group" data-role="select-toggle">
+          <div className="input-group input-group-sm" data-role="select-toggle">
             <div className="form-control form-control-sm is-placeholder">
               {allowSelectAll ? (
                 <div className="custom-control custom-checkbox">
@@ -117,6 +125,9 @@ const MultiSelectSNCF = ({
                 type="button"
                 aria-expanded="false"
                 aria-controls="multiselecttoggle"
+                disabled={disable}
+                aria-disabled={disable}
+                tabIndex={disable ? -1 : 0}
                 onClick={() => setMultiselectToggle((prevState) => !prevState)}
               >
                 <i className="icons-arrow-down icons-size-x75" aria-hidden="true" />
@@ -125,23 +136,23 @@ const MultiSelectSNCF = ({
           </div>
 
           <div id="multiselecttoggle" className="select-menu position-relative" data-role="menu">
-            {options.map((selectOption) =>
-              selectOption.label ? (
+            {options.map((selectOption, index) =>
+              selectOption.group !== undefined ? (
                 <div
                   role="listitem"
                   className="select-group"
-                  key={`multiSelect-selectOption-${selectOption.label}`}
+                  key={`multiSelect-selectOption-${selectOption.group}`}
                 >
                   <div className="select-group-head">
-                    <span className="select-group-title text-uppercase">{selectOption.label}</span>
+                    <span className="select-group-title text-uppercase">{selectOption.group}</span>
                   </div>
                   <div className="select-group-content" data-role="group" data-id="0" role="list">
-                    {renderSelectToggles(selectOption.signals)}
+                    {renderSelectToggles(selectOption.options)}
                   </div>
                 </div>
               ) : (
-                <div className="select-group-content" data-role="group" data-id="0" role="list">
-                  {renderSelectToggles(selectOption.signals)}
+                <div data-role="group" data-id="0" role="list" key={`group-${index}`}>
+                  {renderSelectToggles(selectOption.options)}
                 </div>
               )
             )}

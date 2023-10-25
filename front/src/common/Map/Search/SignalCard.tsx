@@ -1,5 +1,6 @@
 import React from 'react';
 import { SearchSignalResult } from 'common/api/osrdEditoastApi';
+import mainConfig from 'config/config';
 
 type SignalCardProps = {
   signalSearchResult: SearchSignalResult;
@@ -13,10 +14,13 @@ const SignalCard = ({ signalSearchResult, onResultClick }: SignalCardProps) => (
     onClick={() => onResultClick(signalSearchResult)}
   >
     <div className="col-1">
-      <img
-        src={`/pictures/signals/${signalSearchResult.type?.replace(/ /g, '_')}.svg`}
-        alt={signalSearchResult.type}
-      />
+      {typeof signalSearchResult.sprite === 'string' &&
+      typeof signalSearchResult.sprite_signaling_system === 'string' ? (
+        <img
+          src={`${mainConfig.proxy_editoast}/sprites/${signalSearchResult.sprite_signaling_system}/${signalSearchResult.sprite}.svg`}
+          alt={`${signalSearchResult.sprite_signaling_system} ${signalSearchResult.sprite}`}
+        />
+      ) : null}
     </div>
     <div className="col-1 small">{signalSearchResult.label}</div>
     <div className="col-3">{signalSearchResult.line_code}</div>

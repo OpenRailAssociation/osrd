@@ -350,12 +350,9 @@ const injectedRtkApi = api
         query: (queryArg) => ({
           url: `/projects/`,
           params: {
-            ordering: queryArg.ordering,
-            name: queryArg.name,
-            description: queryArg.description,
-            tags: queryArg.tags,
             page: queryArg.page,
             page_size: queryArg.pageSize,
+            ordering: queryArg.ordering,
           },
         }),
         providesTags: ['projects'],
@@ -364,7 +361,7 @@ const injectedRtkApi = api
         query: (queryArg) => ({
           url: `/projects/`,
           method: 'POST',
-          body: queryArg.projectCreateRequest,
+          body: queryArg.projectCreateForm,
         }),
         invalidatesTags: ['projects'],
       }),
@@ -389,7 +386,7 @@ const injectedRtkApi = api
         query: (queryArg) => ({
           url: `/projects/${queryArg.projectId}/`,
           method: 'PATCH',
-          body: queryArg.projectPatchRequest,
+          body: queryArg.projectPatchForm,
         }),
         invalidatesTags: ['projects'],
       }),
@@ -1013,52 +1010,36 @@ export type GetPathfindingByPathIdElectricalProfilesApiArg = {
   rollingStockId: number;
   electricalProfileSetId: number;
 };
-export type GetProjectsApiResponse = /** status 200 the project list */ {
-  count?: number;
-  next?: any;
-  previous?: any;
-  results?: ProjectResult[];
-};
+export type GetProjectsApiResponse =
+  /** status 200 The list of projects */ PaginatedResponseOfProjectWithStudies;
 export type GetProjectsApiArg = {
-  ordering?:
-    | 'NameAsc'
-    | 'NameDesc'
-    | 'CreationDateAsc'
-    | 'CreationDateDesc'
-    | 'LastModifiedAsc'
-    | 'LastModifiedDesc';
-  /** Filter projects by name */
-  name?: string;
-  /** Filter projects by description */
-  description?: string;
-  /** Filter projects by tags */
-  tags?: string;
-  /** Page number */
   page?: number;
-  /** Number of elements by page */
-  pageSize?: number;
+  pageSize?: number | null;
+  ordering?: Ordering;
 };
-export type PostProjectsApiResponse = /** status 201 The created project */ ProjectResult;
+export type PostProjectsApiResponse = /** status 201 The created project */ ProjectWithStudies;
 export type PostProjectsApiArg = {
-  projectCreateRequest: ProjectCreateRequest;
+  projectCreateForm: ProjectCreateForm;
 };
-export type DeleteProjectsByProjectIdApiResponse = unknown;
+export type DeleteProjectsByProjectIdApiResponse =
+  /** status 204 The project was deleted successfully */ undefined;
 export type DeleteProjectsByProjectIdApiArg = {
-  /** project id you want to delete */
+  /** The id of a project */
   projectId: number;
 };
-export type GetProjectsByProjectIdApiResponse = /** status 200 The project info */ ProjectResult;
+export type GetProjectsByProjectIdApiResponse =
+  /** status 200 The requested project */ ProjectWithStudies;
 export type GetProjectsByProjectIdApiArg = {
-  /** project id you want to retrieve */
+  /** The id of a project */
   projectId: number;
 };
 export type PatchProjectsByProjectIdApiResponse =
-  /** status 200 The project updated */ ProjectResult;
+  /** status 200 The updated project */ ProjectWithStudies;
 export type PatchProjectsByProjectIdApiArg = {
-  /** project id you want to update */
+  /** The id of a project */
   projectId: number;
-  /** The fields you want to update */
-  projectPatchRequest: ProjectPatchRequest;
+  /** The fields to update */
+  projectPatchForm: ProjectPatchForm;
 };
 export type GetProjectsByProjectIdStudiesApiResponse = /** status 200 the studies list */ {
   count?: number;
@@ -1361,7 +1342,7 @@ export type InternalError = {
     [key: string]: any;
   };
   message: string;
-  status: number;
+  status?: number;
   type: string;
 };
 export type TrackRange = {
@@ -1712,7 +1693,7 @@ export type ProfilesOnPathResponse = {
   electrical_profile_ranges: RangedValue[];
   warnings: InternalError[];
 };
-export type ProjectResult = {
+export type Project = {
   budget: number;
   creation_date: string;
   description: string;
@@ -1722,26 +1703,41 @@ export type ProjectResult = {
   last_modification: string;
   name: string;
   objectives: string;
+  tags: string[];
+};
+export type ProjectWithStudies = Project & {
   studies_count: number;
-  tags: string[];
 };
-export type ProjectCreateRequest = {
-  budget: number;
-  description: string;
-  funders: string;
-  image?: number | null;
-  name: string;
-  objectives: string;
-  tags: string[];
+export type PaginatedResponseOfProjectWithStudies = {
+  count: number;
+  next: number | null;
+  previous: number | null;
+  results: ProjectWithStudies[];
 };
-export type ProjectPatchRequest = {
+export type Ordering =
+  | 'NameAsc'
+  | 'NameDesc'
+  | 'CreationDateAsc'
+  | 'CreationDateDesc'
+  | 'LastModifiedDesc'
+  | 'LastModifiedAsc';
+export type ProjectCreateForm = {
   budget?: number;
   description?: string;
   funders?: string;
   image?: number | null;
-  name?: string;
+  name: string;
   objectives?: string;
   tags?: string[];
+};
+export type ProjectPatchForm = {
+  budget?: number | null;
+  description?: string | null;
+  funders?: string | null;
+  image?: number | null;
+  name?: string | null;
+  objectives?: string | null;
+  tags?: string[] | null;
 };
 export type StudyResult = {
   actual_end_date: string | null;
@@ -1903,15 +1899,16 @@ export type SearchOperationalPointResult = {
   uic?: number;
 };
 export type SearchSignalResult = {
-  aspects?: string[];
   geographic: Point;
-  infra_id?: number;
+  infra_id: number;
   label: string;
-  line_code: number;
+  line_code: string;
   line_name: string;
   schematic: Point;
-  systems?: string[];
-  type?: string;
+  settings: string[];
+  signaling_systems: string[];
+  sprite?: string | null;
+  sprite_signaling_system?: string | null;
 };
 export type SearchStudyResult = {
   description?: string;

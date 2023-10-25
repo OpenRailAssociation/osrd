@@ -1,9 +1,13 @@
 package fr.sncf.osrd.utils.graph;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.utils.graph.functional_interfaces.*;
 import fr.sncf.osrd.api.pathfinding.constraints.ConstraintCombiner;
+import fr.sncf.osrd.reporting.exceptions.ErrorType;
+import fr.sncf.osrd.reporting.exceptions.OSRDError;
+import fr.sncf.osrd.utils.graph.functional_interfaces.*;
 import org.jetbrains.annotations.NotNull;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -12,6 +16,8 @@ import java.util.stream.Collectors;
         justification = "No arithmetic is done on values where we test for equality, only copies"
 )
 public class Pathfinding<NodeT, EdgeT> {
+
+    public static final double TIMEOUT = 120;
 
     /** Pathfinding step */
     private record Step<EdgeT>(
@@ -74,6 +80,10 @@ public class Pathfinding<NodeT, EdgeT> {
      * Used in STDCM. Either totalDistanceUntilEdgeLocation or edgeRangeCost must be defined.
     */
     private TotalCostUntilEdgeLocation<EdgeT> totalCostUntilEdgeLocation = null;
+    /**
+     * Timeout, in seconds, to avoid infinite loop when no path can be found.
+     */
+    private double timeout = TIMEOUT;
 
     /** Constructor */
     public Pathfinding(Graph<NodeT, EdgeT> graph) {
@@ -113,6 +123,12 @@ public class Pathfinding<NodeT, EdgeT> {
     /** Sets the functor used to determine which ranges are blocked on an edge */
     public Pathfinding<NodeT, EdgeT> addBlockedRangeOnEdges(Collection<EdgeToRanges<EdgeT>> f) {
         this.blockedRangesOnEdge.functions.addAll(f);
+        return this;
+    }
+
+    /** Sets the pathfinding's timeout */
+    public Pathfinding<NodeT, EdgeT> setTimeout(double timeout) {
+        this.timeout = timeout;
         return this;
     }
 
@@ -159,7 +175,10 @@ public class Pathfinding<NodeT, EdgeT> {
             var startRange = new EdgeRange<>(location.edge, location.offset, location.offset);
             registerStep(startRange, null, 0, 0, List.of(location));
         }
+        Instant start = Instant.now();
         while (true) {
+            if (Duration.between(start, Instant.now()).toSeconds() >= this.timeout)
+                throw new OSRDError(ErrorType.PathfindingTimeoutError);
             var step = queue.poll();
             if (step == null)
                 return null;
