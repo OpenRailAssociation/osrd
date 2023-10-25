@@ -269,7 +269,8 @@ const SimulationWarpedMap: FC<{ collapsed?: boolean }> = ({ collapsed }) => {
         setState({ ...state, osrd: newTransformedOSRDData });
       }
     });
-  }, [state]);
+    // We call the function only if the state's type change otherwise we go to an infinite loop
+  }, [state.type]);
 
   return (
     <div

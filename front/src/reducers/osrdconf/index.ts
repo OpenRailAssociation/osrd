@@ -435,11 +435,16 @@ export function updateInfraID(infraID: number | undefined): ThunkAction<ActionUp
 
     if (infraID) {
       try {
-        // get switch types  with rtk query
-        const { data: newSwitchTypes = [] } = await dispatch(
+        // We use this syntax first because of the .initiate, to be able to unsubscribe from the results later
+        const results = dispatch(
           osrdEditoastApi.endpoints.getInfraByIdSwitchTypes.initiate({ id: infraID })
         );
+        const { data: newSwitchTypes = [] } = await results;
         dispatch(updateSwitchTypes(newSwitchTypes as SwitchType[]));
+
+        // Manually dispatching an RTK request with .initiate will create a subscription entry, but we need to unsubscribe from that data also manually - otherwise the data stays in the cache permanently.
+        // This prevents unwanted api calls
+        results.unsubscribe();
       } catch (e) {
         /* empty */
       }
