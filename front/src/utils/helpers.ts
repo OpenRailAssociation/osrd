@@ -67,9 +67,14 @@ export function gpsRound(val: number) {
 export function transformMapRequest(
   url: string,
   resourceType: ResourceType | undefined,
-  mapUrl: string
+  mapUrl: string,
+  spritesUrl: string
 ) {
-  if ((resourceType === 'Source' || resourceType === 'Tile') && url.startsWith(mapUrl)) {
+  if (
+    ((resourceType === 'Source' || resourceType === 'Tile') && url.startsWith(mapUrl)) ||
+    ((resourceType === 'SpriteImage' || resourceType === 'SpriteJSON') &&
+      url.startsWith(spritesUrl))
+  ) {
     return {
       url,
       headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
