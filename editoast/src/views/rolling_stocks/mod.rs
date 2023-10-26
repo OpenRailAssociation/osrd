@@ -505,12 +505,16 @@ pub mod tests {
 
     #[rstest]
     async fn get_returns_corresponding_rolling_stock(db_pool: Data<DbPool>) {
+        // GIVEN
         let name = "fast_rolling_stock_get_returns_corresponding_rolling_stock";
         let app = create_test_service().await;
         let rolling_stock = named_fast_rolling_stock(name, db_pool).await;
         let req = rolling_stock_get_request(rolling_stock.id());
+
+        // WHEN
         let response = call_service(&app, req).await;
 
+        // THEN
         let response_body: RollingStock = assert_status_and_read!(response, StatusCode::OK);
         assert_eq!(response_body.common.name, name);
     }
@@ -526,11 +530,13 @@ pub mod tests {
 
     #[rstest]
     async fn create_and_delete_unlocked_rolling_stock_successfully() {
+        // GIVEN
         let app = create_test_service().await;
         let mut rolling_stock: RollingStockModel = get_fast_rolling_stock(
             "fast_rolling_stock_create_and_delete_unlocked_rolling_stock_successfully",
         );
 
+        // WHEN
         let post_response = call_service(
             &app,
             TestRequest::post()
@@ -540,19 +546,20 @@ pub mod tests {
         )
         .await;
 
-        //Check rolling_stock creation
+        // THEN
+        // Check rolling_stock creation
         let response_body: RollingStock = assert_status_and_read!(post_response, StatusCode::OK);
         let rolling_stock_id: i64 = response_body.id;
         rolling_stock.id = Some(response_body.id);
         let expected_body = RollingStock::from(rolling_stock.clone());
         assert_eq!(response_body, expected_body);
 
-        //Check rolling_stock deletion
+        // Check rolling_stock deletion
         let delete_request = rolling_stock_delete_request(rolling_stock_id);
         let delete_response = call_service(&app, delete_request).await;
         assert_eq!(delete_response.status(), StatusCode::NO_CONTENT);
 
-        //Check rolling_stock does not exist anymore
+        // Check rolling_stock does not exist anymore
         let get_request = rolling_stock_get_request(rolling_stock_id);
         let get_response = call_service(&app, get_request).await;
         assert_eq!(get_response.status(), StatusCode::NOT_FOUND);
@@ -578,6 +585,7 @@ pub mod tests {
 
     #[rstest]
     async fn create_rolling_stock_with_base_power_class_empty(db_pool: Data<DbPool>) {
+        // GIVEN
         let app = create_test_service().await;
         let mut rolling_stock: RollingStockModel = get_fast_rolling_stock(
             "fast_rolling_stock_create_rolling_stock_with_base_power_class_empty",
@@ -585,6 +593,7 @@ pub mod tests {
 
         rolling_stock.base_power_class = Some(Some("".to_string()));
 
+        // WHEN
         let post_response = call_service(
             &app,
             TestRequest::post()
@@ -594,11 +603,13 @@ pub mod tests {
         )
         .await;
 
+        // THEN
         check_create_gave_400(db_pool, post_response).await;
     }
 
     #[rstest]
     async fn create_rolling_stock_with_duplicate_name(db_pool: Data<DbPool>) {
+        // GIVEN
         let name = "fast_rolling_stock_create_rolling_stock_with_duplicate_name";
         let fast_rolling_stock = named_fast_rolling_stock(name, db_pool.clone()).await;
         let app = create_test_service().await;
@@ -606,6 +617,7 @@ pub mod tests {
 
         rolling_stock.name = fast_rolling_stock.model.name.clone();
 
+        // WHEN
         let post_response = call_service(
             &app,
             TestRequest::post()
@@ -615,15 +627,19 @@ pub mod tests {
         )
         .await;
 
+        // THEN
         check_create_gave_400(db_pool, post_response).await;
     }
 
     #[rstest]
     async fn update_and_delete_locked_rolling_stock_fails(db_pool: Data<DbPool>) {
+        // GIVEN
         let app = create_test_service().await;
         let rolling_stock: RollingStockModel = get_fast_rolling_stock(
             "fast_rolling_stock_update_and_delete_locked_rolling_stock_fails",
         );
+
+        // WHEN
         let post_response = call_service(
             &app,
             TestRequest::post()
@@ -632,11 +648,13 @@ pub mod tests {
                 .to_request(),
         )
         .await;
+
+        // THEN
         let locked_rolling_stock: RollingStock =
             assert_status_and_read!(post_response, StatusCode::OK);
         let rolling_stock_id = locked_rolling_stock.id;
 
-        //Check rolling_stock update fails
+        // Check rolling_stock update fails
         let patch_response = call_service(
             &app,
             TestRequest::patch()
@@ -651,7 +669,7 @@ pub mod tests {
             RollingStockError::RollingStockIsLocked { rolling_stock_id }
         );
 
-        //Check rolling_stock deletion fails
+        // Check rolling_stock deletion fails
         let delete_request = rolling_stock_delete_request(rolling_stock_id);
         let delete_response = call_service(&app, delete_request).await;
         assert_eq!(delete_response.status(), StatusCode::BAD_REQUEST);
@@ -660,12 +678,12 @@ pub mod tests {
             RollingStockError::RollingStockIsLocked { rolling_stock_id }
         );
 
-        //Check rolling_stock still exists
+        // Check rolling_stock still exists
         let get_request = rolling_stock_get_request(rolling_stock_id);
         let get_response = call_service(&app, get_request).await;
         assert_eq!(get_response.status(), StatusCode::OK);
 
-        //Delete rolling_stock to clean db
+        // Delete rolling_stock to clean db
         let _ = RollingStockModel::delete(db_pool, rolling_stock_id).await;
     }
 
@@ -717,6 +735,7 @@ pub mod tests {
 
     #[rstest]
     async fn update_unlocked_rolling_stock(db_pool: Data<DbPool>) {
+        // GIVEN
         let app = create_test_service().await;
         let fast_rolling_stock = named_fast_rolling_stock(
             "fast_rolling_stock_update_unlocked_rolling_stock",
@@ -729,6 +748,7 @@ pub mod tests {
             get_other_rolling_stock("other_rolling_stock_update_unlocked_rolling_stock");
         rolling_stock.id = Some(rolling_stock_id);
 
+        // WHEN
         let response = call_service(
             &app,
             TestRequest::patch()
@@ -738,13 +758,14 @@ pub mod tests {
         )
         .await;
 
+        // THEN
         let response_body: RollingStock = assert_status_and_read!(response, StatusCode::OK);
 
         let rolling_stock = retrieve_existing_rolling_stock(&db_pool, rolling_stock_id)
             .await
             .unwrap();
 
-        //Assert rolling_stock version is 1
+        // Assert rolling_stock version is 1
         assert_eq!(rolling_stock.version.unwrap(), 1);
 
         let expected_body = RollingStock::from(rolling_stock);
@@ -790,8 +811,11 @@ pub mod tests {
 
     #[rstest]
     async fn update_locked_successfully(db_pool: Data<DbPool>) {
+        // GIVEN
         let app = create_test_service().await;
         let rolling_stock = get_fast_rolling_stock("fast_rolling_stock_update_locked_successfully");
+
+        // WHEN
         let post_response = call_service(
             &app,
             TestRequest::post()
@@ -800,31 +824,33 @@ pub mod tests {
                 .to_request(),
         )
         .await;
+
+        // THEN
         let response_body: RollingStock = assert_status_and_read!(post_response, StatusCode::OK);
         let rolling_stock_id = response_body.id;
         assert!(!response_body.locked);
 
-        //Lock rolling_stock
+        // Lock rolling_stock
         let request = rolling_stock_locked_request(rolling_stock_id, true);
         let response = call_service(&app, request).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
-        //Assert rolling_stock is locked
+        // Assert rolling_stock is locked
         let rolling_stock = retrieve_existing_rolling_stock(&db_pool, rolling_stock_id)
             .await
             .unwrap();
         assert!(rolling_stock.locked.unwrap());
 
-        //Unlock rolling_stock
+        // Unlock rolling_stock
         let request = rolling_stock_locked_request(rolling_stock_id, false);
         let response = call_service(&app, request).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
-        //Assert rolling_stock is unlocked
+        // Assert rolling_stock is unlocked
         let rolling_stock = retrieve_existing_rolling_stock(&db_pool, rolling_stock_id)
             .await
             .unwrap();
         assert!(!rolling_stock.locked.unwrap());
 
-        //Delete rolling_stock
+        // Delete rolling_stock
         call_service(&app, rolling_stock_delete_request(rolling_stock_id)).await;
     }
 
@@ -845,6 +871,7 @@ pub mod tests {
 
     #[rstest]
     async fn check_usage_no_train_schedule_for_this_rolling_stock(db_pool: Data<DbPool>) {
+        // GIVEN
         let rolling_stock = named_fast_rolling_stock(
             "fast_rolling_stock_check_usage_no_train_schedule_for_this_rolling_stock",
             db_pool,
@@ -852,6 +879,8 @@ pub mod tests {
         .await;
         let app = create_test_service().await;
         let rolling_stock_id = rolling_stock.id();
+
+        // WHEN
         let response = call_service(
             &app,
             TestRequest::get()
@@ -859,6 +888,8 @@ pub mod tests {
                 .to_request(),
         )
         .await;
+
+        // THEN
         let response_body: UsageResponse = assert_status_and_read!(response, StatusCode::OK);
         let expected_body = UsageResponse { usage: Vec::new() };
         assert_eq!(response_body, expected_body);
@@ -980,10 +1011,19 @@ pub mod tests {
 
     #[rstest]
     async fn get_power_restrictions_list(db_pool: Data<DbPool>) {
+        // GIVEN
         let app = create_test_service().await;
         let rolling_stock =
             named_fast_rolling_stock("fast_rolling_stock_get_power_restrictions_list", db_pool)
                 .await;
+        let power_restrictions = rolling_stock
+            .model
+            .power_restrictions
+            .clone()
+            .unwrap()
+            .unwrap();
+
+        // WHEN
         let response = call_service(
             &app,
             TestRequest::get()
@@ -991,12 +1031,8 @@ pub mod tests {
                 .to_request(),
         )
         .await;
-        let power_restrictions = rolling_stock
-            .model
-            .power_restrictions
-            .clone()
-            .unwrap()
-            .unwrap();
+
+        // THEN
         assert!(power_restrictions.to_string().contains(&"C2".to_string()));
         let response_body: Vec<String> = read_body_json(response).await;
         assert!(response_body.contains(&"C2".to_string()));
