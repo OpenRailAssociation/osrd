@@ -1,34 +1,20 @@
 import { CircleLayer, SymbolLayer } from 'react-map-gl/maplibre';
-import { SIGNALS_SIGNS } from 'common/Map/const';
 import { Theme, OmitLayer } from '../../../types';
 
 const signalTextOffsetX = 5;
 const signalTextOffsetY = -1;
 const signalCenteredTextOffset = [0, 6];
 
-export interface SignalsSettings {
-  all?: boolean;
-  stops?: boolean;
-  tivs?: boolean;
-  lights?: boolean;
-}
-
 export interface SignalContext {
   prefix: string;
   sourceTable?: string;
   colors: Theme;
-  signalsList: string[];
 }
 
-export function getPointLayerProps({
-  signalsList,
-  sourceTable,
-  colors,
-}: SignalContext): OmitLayer<CircleLayer> {
+export function getPointLayerProps({ sourceTable, colors }: SignalContext): OmitLayer<CircleLayer> {
   const props: OmitLayer<CircleLayer> = {
     type: 'circle',
     minzoom: 9,
-    filter: ['in', 'extensions_sncf_installation_type', ...signalsList],
     paint: {
       'circle-color': colors.signal.point,
       'circle-radius': 3,
@@ -40,14 +26,10 @@ export function getPointLayerProps({
   return props;
 }
 
-export function getSignalMatLayerProps({
-  signalsList,
-  sourceTable,
-}: SignalContext): OmitLayer<SymbolLayer> {
+export function getSignalMatLayerProps({ sourceTable }: SignalContext): OmitLayer<SymbolLayer> {
   const props: OmitLayer<SymbolLayer> = {
     type: 'symbol',
     minzoom: 12,
-    filter: ['in', 'extensions_sncf_installation_type', ...signalsList],
     paint: {},
     layout: {
       'text-field': '', // '{extensions_sncf_installation_type} / {extensions_sncf_value} / {extensions_sncf_label}',
@@ -77,17 +59,10 @@ export function getSignalMatLayerProps({
   return props;
 }
 
-export function getSignalLayerProps(context: SignalContext, type: string): OmitLayer<SymbolLayer> {
-  const { sourceTable, prefix, colors } = context;
-  let offsetY = -105;
-  let iconOffsetX = 45;
-  if (SIGNALS_SIGNS.indexOf(type) !== -1 && SIGNALS_SIGNS.indexOf(type) === -1) {
-    iconOffsetX = 55;
-    offsetY = -60;
-  } else if (prefix !== '') {
-    iconOffsetX = 30;
-    offsetY = -80;
-  }
+export function getSignalLayerProps(context: SignalContext): OmitLayer<SymbolLayer> {
+  const { sourceTable, colors } = context;
+  const offsetY = -105;
+  const iconOffsetX = 45;
 
   const iconOffset: Required<SymbolLayer>['layout']['icon-offset'] = [
     'case',

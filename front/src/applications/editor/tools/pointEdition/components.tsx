@@ -20,7 +20,6 @@ import {
   TrackSectionEntity,
   RouteEntity,
 } from 'types';
-import { SIGNALS_TO_SYMBOLS } from 'common/Map/Consts/SignalsNames';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { CustomFlagSignalCheckbox } from './CustomFlagSignalCheckbox';
 import { PointEditionState } from './types';
@@ -401,8 +400,6 @@ export const BasePointEditionLayers: FC<{
         {
           prefix: '',
           colors: colors[mapStyle],
-          signalsList: [type],
-          symbolsList: SIGNALS_TO_SYMBOLS[type] || [],
           isEmphasized: true,
           showIGNBDORTHO: false,
           layersSettings,

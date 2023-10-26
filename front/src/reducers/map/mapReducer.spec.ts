@@ -14,7 +14,6 @@ import {
   updateShowOSMtracksections,
   updateFeatureInfoClick,
   updateLayersSettings,
-  updateSignalsSettings,
   updateTerrain3DExaggeration,
   updateTransformRequest,
 } from 'reducers/map';
@@ -135,6 +134,7 @@ describe('mapReducer', () => {
       detectors: true,
       operationalpoints: true,
       routes: true,
+      signals: false,
       signalingtype: true,
       sncf_psl: true,
       speedlimittag: '60',
@@ -146,19 +146,6 @@ describe('mapReducer', () => {
     store.dispatch(updateLayersSettings(layersSettings));
     const mapState = store.getState().map;
     expect(mapState).toEqual({ ...mapState, layersSettings });
-  });
-
-  it('should handle updateSignalsSettings', () => {
-    const store = createStore();
-    const signalsSettings = {
-      all: true,
-      stops: true,
-      lights: true,
-      tivs: true,
-    };
-    store.dispatch(updateSignalsSettings(signalsSettings));
-    const mapState = store.getState().map;
-    expect(mapState).toEqual({ ...mapState, signalsSettings });
   });
 
   it('should handle updateTerrain3DExaggeration', () => {

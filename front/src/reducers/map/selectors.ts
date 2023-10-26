@@ -15,6 +15,5 @@ export const getShowOSM = makeMapStateSelector('showOSM');
 export const getShowOSMtracksections = makeMapStateSelector('showOSMtracksections');
 export const getTerrain3DExaggeration = makeMapStateSelector('terrain3DExaggeration');
 export const getViewport = makeMapStateSelector('viewport');
-export const getSignalsSettings = makeMapStateSelector('signalsSettings');
 export const getLayersSettings = makeMapStateSelector('layersSettings');
 export const getMapSearchMarker = makeMapStateSelector('mapSearchMarker');

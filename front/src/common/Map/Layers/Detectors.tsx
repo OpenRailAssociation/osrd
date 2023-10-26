@@ -2,12 +2,12 @@ import React, { FC } from 'react';
 import { useSelector } from 'react-redux';
 import { Source, CircleLayer, SymbolLayer } from 'react-map-gl/maplibre';
 
-import { RootState } from 'reducers';
 import { Theme, OmitLayer } from 'types';
 import { MAP_URL } from 'common/Map/const';
 
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import { getInfraID } from 'reducers/osrdconf/selectors';
+import { getLayersSettings } from 'reducers/map/selectors';
 
 export function getDetectorsLayerProps(params: {
   colors: Theme;
@@ -61,7 +61,7 @@ interface DetectorsProps {
 
 const Detectors: FC<DetectorsProps> = ({ colors, layerOrder }) => {
   const infraID = useSelector(getInfraID);
-  const { layersSettings } = useSelector((state: RootState) => state.map);
+  const layersSettings = useSelector(getLayersSettings);
 
   const layerPoint = getDetectorsLayerProps({ colors, sourceTable: 'detectors' });
   const layerName = getDetectorsNameLayerProps({ colors, sourceTable: 'detectors' });

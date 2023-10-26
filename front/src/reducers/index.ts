@@ -37,7 +37,6 @@ const mapWhiteList = [
   'layers',
   'layersSettings',
   'userPreference',
-  'signalsSettings',
   'terrain3DExaggeration',
 ];
 
