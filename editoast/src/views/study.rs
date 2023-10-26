@@ -41,6 +41,10 @@ pub enum StudyError {
     #[error("Study '{study_id}', could not be found")]
     #[editoast_error(status = 404)]
     NotFound { study_id: i64 },
+    // The study start and end date are in the wrong order
+    #[error("The study start date must be before the end date")]
+    #[editoast_error(status = 400)]
+    StartDateAfterEndDate,
 }
 
 /// This structure is used by the post endpoint to create a study
@@ -68,8 +72,11 @@ struct StudyCreateForm {
 }
 
 impl StudyCreateForm {
-    pub fn into_study(self, project_id: i64) -> Study {
-        Study {
+    pub fn into_study(self, project_id: i64) -> Result<Study> {
+        if self.start_date > self.expected_end_date || self.start_date > self.actual_end_date {
+            return Err(StudyError::StartDateAfterEndDate.into());
+        }
+        Ok(Study {
             name: Some(self.name),
             project_id: Some(project_id),
             description: Some(self.description),
@@ -84,7 +91,7 @@ impl StudyCreateForm {
             expected_end_date: Some(self.expected_end_date),
             actual_end_date: Some(self.actual_end_date),
             ..Default::default()
-        }
+        })
     }
 }
 
@@ -102,7 +109,7 @@ async fn create(
     };
 
     // Create study
-    let study: Study = data.into_inner().into_study(project_id);
+    let study: Study = data.into_inner().into_study(project_id)?;
     let study = study.create(db_pool.clone()).await?;
 
     // Update project last_modification field
@@ -196,9 +203,15 @@ struct StudyPatchForm {
     pub study_type: Option<String>,
 }
 
-impl From<StudyPatchForm> for Study {
-    fn from(form: StudyPatchForm) -> Self {
-        Study {
+impl TryFrom<StudyPatchForm> for Study {
+    type Error = crate::error::InternalError;
+
+    fn try_from(form: StudyPatchForm) -> std::result::Result<Self, Self::Error> {
+        if form.start_date > form.expected_end_date || form.start_date > form.actual_end_date {
+            return Err(StudyError::StartDateAfterEndDate.into());
+        }
+
+        Ok(Study {
             name: form.name,
             description: form.description,
             start_date: Some(form.start_date),
@@ -211,7 +224,7 @@ impl From<StudyPatchForm> for Study {
             tags: form.tags,
             study_type: form.study_type,
             ..Default::default()
-        }
+        })
     }
 }
 
@@ -230,7 +243,7 @@ async fn patch(
     };
 
     // Update study
-    let study: Study = data.into_inner().into();
+    let study: Study = data.into_inner().try_into()?;
     let study = match study.update(db_pool.clone(), study_id).await? {
         Some(study) => study,
         None => return Err(StudyError::NotFound { study_id }.into()),
