@@ -33,6 +33,8 @@ export type FlatSwitchEntity = Omit<
   objType: 'FlatSwitch';
 };
 
+export const GROUP_CHANGE_DELAY = 'group_change_delay' as const;
+
 export function getSwitchTypeJSONSchema(
   baseSchema: JSONSchema7,
   switchType: SwitchType
