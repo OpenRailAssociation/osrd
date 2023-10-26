@@ -10,8 +10,8 @@ export type InputSNCFProps = {
   value?: string | number;
   readonly?: boolean;
   inputProps?: Partial<InputHTMLAttributes<HTMLInputElement>>;
-  min?: number;
-  max?: number;
+  min?: string | number;
+  max?: string | number;
   list?: string;
   // Error handling
   isInvalid?: boolean;
