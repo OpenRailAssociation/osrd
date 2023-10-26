@@ -224,14 +224,14 @@ def make_stdcm_payload(scenario: Scenario, path: List[Tuple[str, float]], rollin
         "margin_after": random.randint(0, 600),
         "steps": [convert_stop(stop) for stop in path],
         "comfort": "STANDARD",
-        "standard_allowance": {
+        "performance_allowance": {
             "value_type": "percentage",
             "percentage": 0,
         },
     }
     allowance_value = make_random_allowance_value(0)
     if allowance_value["value_type"] != "time" and random.randint(0, 2) == 0:
-        res["standard_allowance"] = allowance_value
+        res["performance_allowance"] = allowance_value
     return res
 
 
@@ -572,7 +572,7 @@ def make_random_allowances(path_length: float) -> List[Dict]:
     if random.randint(0, 3) == 0:
         res.append(
             {
-                "allowance_type": "standard",
+                "allowance_type": "performance",
                 "default_value": make_random_allowance_value(path_length),
                 "ranges": list(make_random_ranges(path_length)),
                 "capacity_speed_limit": random.random() * 10,

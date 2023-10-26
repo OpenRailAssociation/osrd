@@ -25,7 +25,7 @@
         "offset": 612.5908071738528
       }
     ],
-    "standard_allowance": {
+    "performance_allowance": {
       "value_type": "time_per_distance",
       "minutes": 3.721996485553568
     }

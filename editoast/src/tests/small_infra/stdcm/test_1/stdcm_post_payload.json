@@ -34,7 +34,7 @@
   "maximum_departure_delay": 7200,
   "margin_before": 0,
   "margin_after": 0,
-  "standard_allowance": {
+  "performance_allowance": {
     "percentage": 0,
     "value_type": "percentage"
   }

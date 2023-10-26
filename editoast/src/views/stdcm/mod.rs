@@ -52,7 +52,7 @@ pub struct STDCMRequestPayload {
     pub speed_limit_tags: Option<String>,
     pub margin_before: Option<f64>,
     pub margin_after: Option<f64>,
-    pub standard_allowance: AllowanceValue,
+    pub performance_allowance: AllowanceValue,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
@@ -171,7 +171,7 @@ async fn call_core_stdcm(
         speed_limit_tags: data.speed_limit_tags.clone(),
         margin_before: data.margin_before.unwrap(),
         margin_after: data.margin_after.unwrap(),
-        standard_allowance: data.standard_allowance.clone(),
+        performance_allowance: data.performance_allowance.clone(),
         time_step: Some(2.0),
     }
     .fetch(core)

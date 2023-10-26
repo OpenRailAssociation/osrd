@@ -103,7 +103,7 @@ public class DelayManager {
         return ((BlockAvailabilityInterface.Available) availability).maximumDelay;
     }
 
-    /** Calls `blockAvailability.getAvailability`, on an envelope scaled to account for the standard allowance. */
+    /** Calls `blockAvailability.getAvailability`, on an envelope scaled to account for the performance allowance. */
     private BlockAvailabilityInterface.Availability getScaledAvailability(
             int blockId,
             long startOffset,
@@ -111,7 +111,7 @@ public class DelayManager {
             Envelope envelope,
             double startTime
     ) {
-        var speedRatio = graph.getStandardAllowanceSpeedRatio(envelope);
+        var speedRatio = graph.getPerformanceAllowanceSpeedRatio(envelope);
         Envelope scaledEnvelope;
         if (envelope.getEndPos() == 0)
             scaledEnvelope = envelope;

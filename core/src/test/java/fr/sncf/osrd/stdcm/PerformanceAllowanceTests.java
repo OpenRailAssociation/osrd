@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-public class StandardAllowanceTests {
+public class PerformanceAllowanceTests {
 
     private static final double timeStep = 2.;
 
@@ -31,7 +31,7 @@ public class StandardAllowanceTests {
     static STDCMAllowanceResults runWithAndWithoutAllowance(STDCMPathfindingBuilder builder) {
         builder.setTimeStep(timeStep);
         var resultWithAllowance = builder.run();
-        builder.setStandardAllowance(null);
+        builder.setPerformanceAllowance(null);
         var resultWithoutAllowance = builder.run();
         return new STDCMAllowanceResults(
                 resultWithAllowance,
@@ -61,7 +61,7 @@ public class StandardAllowanceTests {
 
     /** Test that the path found with a simple allowance is longer than the path we find with no allowance */
     @Test
-    public void testSimpleStandardAllowance() {
+    public void testSimplePerformanceAllowance() {
         /*
         a --> b --> c --> d
          */
@@ -76,7 +76,7 @@ public class StandardAllowanceTests {
                 .setInfra(infra.fullInfra())
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(0), 0)))
                 .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(2), meters(1_000))))
-                .setStandardAllowance(allowance)
+                .setPerformanceAllowance(allowance)
         );
         assertNotNull(res.withAllowance);
         assertNotNull(res.withoutAllowance);
@@ -85,7 +85,7 @@ public class StandardAllowanceTests {
 
     /** Same test as the previous one, with a very high allowance value (1000%) */
     @Test
-    public void testVeryHighStandardAllowance() {
+    public void testVeryHighPerformanceAllowance() {
         /*
         a --> b --> c --> d
          */
@@ -100,14 +100,14 @@ public class StandardAllowanceTests {
                 .setInfra(infra.fullInfra())
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(0), 0)))
                 .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(2), meters(1_000))))
-                .setStandardAllowance(allowance)
+                .setPerformanceAllowance(allowance)
         );
         assertNotNull(res.withAllowance);
         assertNotNull(res.withoutAllowance);
         checkAllowanceResult(res, allowance);
     }
 
-    /** Test that we can add delays to avoid occupied sections with a standard allowance */
+    /** Test that we can add delays to avoid occupied sections with a performance allowance */
     @Test
     public void testSimpleDelay() {
         /*
@@ -126,7 +126,7 @@ public class StandardAllowanceTests {
                 .setUnavailableTimes(occupancyGraph)
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 0)))
                 .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(secondBlock, meters(50))))
-                .setStandardAllowance(allowance)
+                .setPerformanceAllowance(allowance)
         );
         assertNotNull(res.withoutAllowance);
         assertNotNull(res.withAllowance);
@@ -137,7 +137,7 @@ public class StandardAllowanceTests {
         checkAllowanceResult(res, allowance);
     }
 
-    /** Test that we can add delays on partial block ranges with a standard allowance */
+    /** Test that we can add delays on partial block ranges with a performance allowance */
     @Test
     public void testBlockRangeOccupancy() {
         /*
@@ -157,7 +157,7 @@ public class StandardAllowanceTests {
                 .setUnavailableTimes(occupancyGraph)
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(block, 0)))
                 .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(block, meters(10_000))))
-                .setStandardAllowance(allowance)
+                .setPerformanceAllowance(allowance)
         );
         assertNotNull(res.withoutAllowance);
         assertNotNull(res.withAllowance);
@@ -168,9 +168,9 @@ public class StandardAllowanceTests {
         checkAllowanceResult(res, allowance);
     }
 
-    /** Test that we can have both an engineering and a standard allowance */
+    /** Test that we can have both an engineering and a performance allowance */
     @Test
-    public void testEngineeringWithStandardAllowance() {
+    public void testEngineeringWithPerformanceAllowance() {
         /*
         a --> b -----> c --> d
 
@@ -203,7 +203,7 @@ public class StandardAllowanceTests {
                 .setUnavailableTimes(occupancyGraph)
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(0), 0)))
                 .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(2), meters(1_000))))
-                .setStandardAllowance(allowance)
+                .setPerformanceAllowance(allowance)
                 .run();
         occupancyTest(res, occupancyGraph, timeStep);
 
@@ -214,7 +214,7 @@ public class StandardAllowanceTests {
 
     /** Same test as the previous one, with very short blocks at the start and end */
     @Test
-    public void testEngineeringWithStandardAllowanceSmallBlocks() {
+    public void testEngineeringWithPerformanceAllowanceSmallBlocks() {
         /*
         a -> b -----> c -> d
 
@@ -246,7 +246,7 @@ public class StandardAllowanceTests {
                 .setUnavailableTimes(occupancyGraph)
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(0), 0)))
                 .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(2), meters(1))))
-                .setStandardAllowance(allowance)
+                .setPerformanceAllowance(allowance)
                 .run();
         occupancyTest(res, occupancyGraph, timeStep);
 
@@ -280,7 +280,7 @@ public class StandardAllowanceTests {
                 .setInfra(infra.fullInfra())
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(0), 0)))
                 .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(blocks.size() - 1), 0)))
-                .setStandardAllowance(allowance)
+                .setPerformanceAllowance(allowance)
         );
         assertNotNull(res.withAllowance);
         assertNotNull(res.withoutAllowance);
@@ -323,7 +323,7 @@ public class StandardAllowanceTests {
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 0)))
                 .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(forthBlock, meters(1))))
                 .setUnavailableTimes(occupancyGraph)
-                .setStandardAllowance(allowance)
+                .setPerformanceAllowance(allowance)
         );
         assertNotNull(res.withoutAllowance);
         assertNotNull(res.withAllowance);
@@ -331,9 +331,9 @@ public class StandardAllowanceTests {
         checkAllowanceResult(res, allowance);
     }
 
-    /** Test that we can have both an engineering and a standard allowance, with a time per distance allowance */
+    /** Test that we can have both an engineering and a performance allowance, with a time per distance allowance */
     @Test
-    public void testEngineeringWithStandardAllowanceTimePerDistance() {
+    public void testEngineeringWithPerformanceAllowanceTimePerDistance() {
         /*
         a --> b -----> c --> d
 
@@ -366,7 +366,7 @@ public class StandardAllowanceTests {
                 .setUnavailableTimes(occupancyGraph)
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(0), 0)))
                 .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(2), meters(1_000))))
-                .setStandardAllowance(allowance)
+                .setPerformanceAllowance(allowance)
                 .run();
         occupancyTest(res, occupancyGraph, timeStep);
 
@@ -391,7 +391,7 @@ public class StandardAllowanceTests {
                 .setInfra(infra.fullInfra())
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 0)))
                 .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(forthBlock, meters(100))))
-                .setStandardAllowance(allowance)
+                .setPerformanceAllowance(allowance)
         );
         assertNotNull(res.withoutAllowance);
         assertNotNull(res.withAllowance);
@@ -416,7 +416,7 @@ public class StandardAllowanceTests {
                 .setInfra(infra.fullInfra())
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 0)))
                 .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(forthBlock, meters(100))))
-                .setStandardAllowance(allowance)
+                .setPerformanceAllowance(allowance)
         );
         assertNotNull(res.withoutAllowance);
         assertNotNull(res.withAllowance);
@@ -461,7 +461,7 @@ public class StandardAllowanceTests {
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 0)))
                 .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(forthBlock, meters(100))))
                 .setUnavailableTimes(occupancyGraph)
-                .setStandardAllowance(allowance)
+                .setPerformanceAllowance(allowance)
         );
         assertNotNull(res.withoutAllowance);
         assertNotNull(res.withAllowance);
@@ -505,7 +505,7 @@ public class StandardAllowanceTests {
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 0)))
                 .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(thirdBlock, meters(100))))
                 .setUnavailableTimes(occupancyGraph)
-                .setStandardAllowance(allowance)
+                .setPerformanceAllowance(allowance)
         );
         assertNotNull(res.withoutAllowance);
         assertNotNull(res.withAllowance);

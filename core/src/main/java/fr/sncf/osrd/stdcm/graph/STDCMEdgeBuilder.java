@@ -224,7 +224,7 @@ public class STDCMEdgeBuilder {
                 prevNode,
                 startOffset,
                 (int) (actualStartTime / 60),
-                graph.getStandardAllowanceSpeedRatio(envelope),
+                graph.getPerformanceAllowanceSpeedRatio(envelope),
                 waypointIndex,
                 endAtStop
         );

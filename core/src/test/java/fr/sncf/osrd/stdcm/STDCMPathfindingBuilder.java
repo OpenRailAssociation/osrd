@@ -38,7 +38,7 @@ public class STDCMPathfindingBuilder {
     double maxDepartureDelay = 3600 * 2;
     double maxRunTime = Double.POSITIVE_INFINITY;
     String tag = "";
-    AllowanceValue standardAllowance;
+    AllowanceValue performanceAllowance;
     // endregion OPTIONAL
 
     // region SETTERS
@@ -116,9 +116,9 @@ public class STDCMPathfindingBuilder {
         return this;
     }
 
-    /** Sets the standard allowance used for the new train. Defaults to null (no allowance) */
-    public STDCMPathfindingBuilder setStandardAllowance(AllowanceValue allowance) {
-        this.standardAllowance = allowance;
+    /** Sets the Performance allowance used for the new train. Defaults to null (no allowance) */
+    public STDCMPathfindingBuilder setPerformanceAllowance(AllowanceValue allowance) {
+        this.performanceAllowance = allowance;
         return this;
     }
 
@@ -147,7 +147,7 @@ public class STDCMPathfindingBuilder {
                 maxDepartureDelay,
                 maxRunTime,
                 tag,
-                standardAllowance,
+                performanceAllowance,
                 pathfindingTimeout
         );
     }

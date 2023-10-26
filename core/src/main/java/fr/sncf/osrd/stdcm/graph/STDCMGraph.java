@@ -35,7 +35,7 @@ public class STDCMGraph implements Graph<STDCMNode, STDCMEdge> {
     final AllowanceManager allowanceManager;
     final BacktrackingManager backtrackingManager;
     final String tag;
-    final AllowanceValue standardAllowance;
+    final AllowanceValue performanceAllowance;
 
     /** Constructor */
     public STDCMGraph(
@@ -49,7 +49,7 @@ public class STDCMGraph implements Graph<STDCMNode, STDCMEdge> {
             double minScheduleTimeStart,
             List<STDCMStep> steps,
             String tag,
-            AllowanceValue standardAllowance
+            AllowanceValue performanceAllowance
     ) {
         this.rawInfra = rawInfra;
         this.blockInfra = blockInfra;
@@ -62,22 +62,22 @@ public class STDCMGraph implements Graph<STDCMNode, STDCMEdge> {
         this.allowanceManager = new AllowanceManager(this);
         this.backtrackingManager = new BacktrackingManager(this);
         this.tag = tag;
-        this.standardAllowance = standardAllowance;
+        this.performanceAllowance = performanceAllowance;
 
-        assert !(standardAllowance instanceof AllowanceValue.FixedTime)
-                : "Standard allowance cannot be a flat time for STDCM trains";
+        assert !(performanceAllowance instanceof AllowanceValue.FixedTime)
+                : "Performance allowance cannot be a flat time for STDCM trains";
     }
 
-    /** Returns the speed ratio we need to apply to the envelope to follow the given standard allowance. */
-    public double getStandardAllowanceSpeedRatio(
+    /** Returns the speed ratio we need to apply to the envelope to follow the given performance allowance. */
+    public double getPerformanceAllowanceSpeedRatio(
             Envelope envelope
     ) {
-        if (standardAllowance == null)
+        if (performanceAllowance == null)
             return 1;
 
         var runTime = envelope.getTotalTime();
         var distance = envelope.getTotalDistance();
-        var allowanceRatio = standardAllowance.getAllowanceRatio(runTime, distance);
+        var allowanceRatio = performanceAllowance.getAllowanceRatio(runTime, distance);
         return 1 / (1 + allowanceRatio);
     }
 

@@ -7,7 +7,7 @@ public class RJSAllowance {
     public static final PolymorphicJsonAdapterFactory<RJSAllowance> adapter = (
             PolymorphicJsonAdapterFactory.of(RJSAllowance.class, "allowance_type")
                     .withSubtype(EngineeringAllowance.class, "engineering")
-                    .withSubtype(StandardAllowance.class, "standard")
+                    .withSubtype(PerformanceAllowance.class, "performance")
     );
 
     public RJSAllowanceDistribution distribution;
@@ -47,7 +47,7 @@ public class RJSAllowance {
      * It represents the additional time given to a train to fulfill its schedule.
      * Only one can be applied by TrainSchedule.
      */
-    public static final class StandardAllowance extends RJSAllowance {
+    public static final class PerformanceAllowance extends RJSAllowance {
         @Json(name = "default_value")
         public RJSAllowanceValue defaultValue;
 
@@ -55,14 +55,14 @@ public class RJSAllowance {
         public RJSAllowanceRange[] ranges;
 
         /** Constructor with default value only */
-        public StandardAllowance(RJSAllowanceDistribution distribution, RJSAllowanceValue defaultValue) {
+        public PerformanceAllowance(RJSAllowanceDistribution distribution, RJSAllowanceValue defaultValue) {
             this.distribution = distribution;
             this.defaultValue = defaultValue;
             this.ranges = null;
         }
 
         /** Constructor with default value and ranges */
-        public StandardAllowance(RJSAllowanceDistribution distribution,
+        public PerformanceAllowance(RJSAllowanceDistribution distribution,
                                  RJSAllowanceValue defaultValue, RJSAllowanceRange[] ranges) {
             this.distribution = distribution;
             this.defaultValue = defaultValue;

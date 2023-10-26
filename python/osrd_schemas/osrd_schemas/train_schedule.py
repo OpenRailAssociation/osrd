@@ -89,7 +89,7 @@ class RangeAllowance(BaseModel):
 
 class EngineeringAllowance(RangeAllowance):
     """This class determines the engineering allowance.
-    This corresponds to time added on a specific interval, in addition to the standard allowance,
+    This corresponds to time added on a specific interval, in addition to the performance allowance,
     but this time for operational reasons."""
 
     allowance_type: Literal["engineering"] = Field(default="engineering")
@@ -100,14 +100,14 @@ class EngineeringAllowance(RangeAllowance):
     )
 
 
-class StandardAllowance(BaseModel):
-    """This class determines the standard allowance.
+class PerformanceAllowance(BaseModel):
+    """This class determines the performance allowance.
     This corresponds to additional time added to the basic standalone simulation to take into account
     the inaccuracy of the speed measurement,
     to compensate for the consequences of external incidents disrupting the theoretical run of the trains,
     and to maintain the regularity of the traffic."""
 
-    allowance_type: Literal["standard"] = Field(default="standard")
+    allowance_type: Literal["performance"] = Field(default="performance")
     default_value: AllowanceValue = Field(description="Type of value of the allowance")
     ranges: List[RangeAllowance] = Field(description="List of the different application ranges of the allowances")
     distribution: AllowanceDistribution = Field(description="The considered distribution of an allowance")
@@ -120,7 +120,7 @@ class StandardAllowance(BaseModel):
 class Allowance(RootModel):
     """This class allows to choose the two different types of allowance."""
 
-    root: Union[EngineeringAllowance, StandardAllowance] = Field(discriminator="allowance_type")
+    root: Union[EngineeringAllowance, PerformanceAllowance] = Field(discriminator="allowance_type")
 
 
 class Allowances(RootModel):

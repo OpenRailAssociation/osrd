@@ -19,19 +19,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.*;
 
-/** We try to apply the standard allowance as one mareco computation over the whole path.
+/** We try to apply the performance allowance as one mareco computation over the whole path.
  * If it causes conflicts, we split the mareco ranges so that the passage time at the points of conflict
  * stays the same as the one we expected when exploring the graph. */
-public class STDCMStandardAllowance {
+public class STDCMPerformanceAllowance {
 
-    public static final Logger logger = LoggerFactory.getLogger(STDCMStandardAllowance.class);
+    public static final Logger logger = LoggerFactory.getLogger(STDCMPerformanceAllowance.class);
 
     /** Applies the allowance to the final envelope */
     static Envelope applyAllowance(
             STDCMGraph graph,
             Envelope envelope,
             List<Pathfinding.EdgeRange<STDCMEdge>> ranges,
-            AllowanceValue standardAllowance,
+            AllowanceValue performanceAllowance,
             EnvelopeSimPath envelopeSimPath,
             RollingStock rollingStock,
             double timeStep,
@@ -40,15 +40,15 @@ public class STDCMStandardAllowance {
             double departureTime,
             List<TrainStop> stops
     ) {
-        if (standardAllowance == null
-                || standardAllowance.getAllowanceTime(envelope.getTotalTime(), envelope.getTotalDistance()) < 1e-5)
+        if (performanceAllowance == null
+                || performanceAllowance.getAllowanceTime(envelope.getTotalTime(), envelope.getTotalDistance()) < 1e-5)
             return envelope; // This isn't just an optimization, it avoids float inaccuracies and possible errors
         var rangeTransitions = initRangeTransitions(stops);
         var context = EnvelopeSimContextBuilder.build(rollingStock, envelopeSimPath, timeStep, comfort);
         for (int i = 0; i < 10; i++) {
             var newEnvelope = applyAllowanceWithTransitions(
                     envelope,
-                    standardAllowance,
+                    performanceAllowance,
                     rangeTransitions,
                     context
             );
@@ -61,18 +61,18 @@ public class STDCMStandardAllowance {
             logger.info("Conflict in new envelope at offset {}, splitting mareco ranges", conflictOffset);
             rangeTransitions.add(conflictOffset);
         }
-        logger.info("Failed to compute a mareco standard allowance, fallback to linear allowance");
-        return makeFallbackEnvelope(envelope, standardAllowance, context);
+        logger.info("Failed to compute a mareco performance allowance, fallback to linear allowance");
+        return makeFallbackEnvelope(envelope, performanceAllowance, context);
     }
 
     /** Creates an envelope with a linear allowance. To be used in case we fail to compute a mareco envelope */
     private static Envelope makeFallbackEnvelope(
             Envelope envelope,
-            AllowanceValue standardAllowance,
+            AllowanceValue performanceAllowance,
             EnvelopeSimContext context
     ) {
         return new LinearAllowance(0, envelope.getEndPos(), 0, List.of(
-                new AllowanceRange(0, envelope.getEndPos(), standardAllowance)
+                new AllowanceRange(0, envelope.getEndPos(), performanceAllowance)
         )).apply(envelope, context);
     }
 
@@ -119,7 +119,7 @@ public class STDCMStandardAllowance {
     /** Applies the allowance to the final envelope, with range transitions at the given offsets */
     private static Envelope applyAllowanceWithTransitions(
             Envelope envelope,
-            AllowanceValue standardAllowance,
+            AllowanceValue performanceAllowance,
             NavigableSet<Long> rangeTransitions,
             EnvelopeSimContext context) {
 
@@ -127,7 +127,7 @@ public class STDCMStandardAllowance {
                 0,
                 envelope.getEndPos(),
                 0,
-                makeAllowanceRanges(standardAllowance, envelope.getEndPos(), rangeTransitions)
+                makeAllowanceRanges(performanceAllowance, envelope.getEndPos(), rangeTransitions)
         );
         return allowance.apply(envelope, context);
     }

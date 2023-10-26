@@ -630,7 +630,7 @@ train_0 = builder.add_train_schedule(
     stops=[Stop(location=loc, duration=60) for loc in stop_locations],
 )
 
-train_0.add_standard_single_value_allowance("percentage", 5)
+train_0.add_performance_single_value_allowance("percentage", 5)
 
 stop_locations = [Location(ta2, 500), Location(tc2, 500), Location(td1, 14000), Location(tg5, 1500)]
 train_1 = builder.add_train_schedule(
@@ -639,7 +639,7 @@ train_1 = builder.add_train_schedule(
     departure_time=10 * 3600 + 20 * 60,
     stops=[Stop(location=loc, duration=60) for loc in stop_locations],
 )
-train_1.add_standard_single_value_allowance("percentage", 5, "MARECO")
+train_1.add_performance_single_value_allowance("percentage", 5, "MARECO")
 
 stop_locations = [Location(ta0, 500), Location(tc1, 500), Location(td0, 14000), Location(th1, 1500)]
 train_2 = builder.add_train_schedule(
@@ -648,7 +648,7 @@ train_2 = builder.add_train_schedule(
     departure_time=10 * 3600 + 40 * 60,
     stops=[Stop(location=loc, duration=60) for loc in stop_locations],
 )
-train_2.add_standard_single_value_allowance("time_per_distance", 10)
+train_2.add_performance_single_value_allowance("time_per_distance", 10)
 
 stop_locations = [Location(ta0, 500), Location(tc0, 500), Location(td0, 14000), Location(th1, 1500)]
 train_3 = builder.add_train_schedule(
@@ -657,7 +657,7 @@ train_3 = builder.add_train_schedule(
     departure_time=11 * 3600,
     stops=[Stop(location=loc, duration=60) for loc in stop_locations],
 )
-train_3.add_standard_single_value_allowance("time", 300)
+train_3.add_performance_single_value_allowance("time", 300)
 
 # Build simulation
 sim = builder.build()

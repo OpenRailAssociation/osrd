@@ -31,7 +31,7 @@ public class STDCMPostProcessing {
             RawSignalingInfra infra,
             Pathfinding.Result<STDCMEdge> path,
             double startTime,
-            AllowanceValue standardAllowance,
+            AllowanceValue performanceAllowance,
             RollingStock rollingStock,
             double timeStep,
             RollingStock.Comfort comfort,
@@ -47,11 +47,11 @@ public class STDCMPostProcessing {
         var mergedEnvelopes = STDCMUtils.mergeEnvelopeRanges(ranges);
         var departureTime = computeDepartureTime(ranges, startTime);
         var stops = makeStops(ranges);
-        var withAllowance = STDCMStandardAllowance.applyAllowance(
+        var withAllowance = STDCMPerformanceAllowance.applyAllowance(
                 graph,
                 mergedEnvelopes,
                 ranges,
-                standardAllowance,
+                performanceAllowance,
                 physicsPath,
                 rollingStock,
                 timeStep,

@@ -65,10 +65,10 @@ public class STDCMEndpoint implements Take {
             final var comfort = RJSRollingStockParser.parseComfort(request.comfort);
             final var steps = parseSteps(infra, request.steps);
             final String tag = request.speedLimitComposition;
-            AllowanceValue standardAllowance = null;
-            if (request.standardAllowance != null)
-                standardAllowance = RJSStandaloneTrainScheduleParser.parseAllowanceValue(
-                        request.standardAllowance
+            AllowanceValue performanceAllowance = null;
+            if (request.performanceAllowance != null)
+                performanceAllowance = RJSStandaloneTrainScheduleParser.parseAllowanceValue(
+                        request.performanceAllowance
                 );
 
             assert Double.isFinite(startTime);
@@ -97,7 +97,7 @@ public class STDCMEndpoint implements Take {
                     request.maximumDepartureDelay,
                     request.maximumRunTime,
                     tag,
-                    standardAllowance,
+                    performanceAllowance,
                     Pathfinding.TIMEOUT
             );
             if (res == null) {

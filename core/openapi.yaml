@@ -870,12 +870,12 @@ components:
               description: end offset of the track range
     Allowance:
       oneOf:
-        - $ref: "#/components/schemas/StandardAllowance"
+        - $ref: "#/components/schemas/PerformanceAllowance"
         - $ref: "#/components/schemas/EngineeringAllowance"
       discriminator:
         propertyName: allowance_type
         mapping:
-          standard: "#/components/schemas/StandardAllowance"
+          performance: "#/components/schemas/PerformanceAllowance"
           engineering: "#/components/schemas/EngineeringAllowance"
     BaseAllowance:
       properties:
@@ -888,7 +888,7 @@ components:
           type: number
           format: double
           default: -1
-    StandardAllowance:
+    PerformanceAllowance:
       description: An allowance which will affect the whole path. It represents the additional time given to a train to fulfill its schedule. Only one can be applied by TrainSchedule.
       allOf:
         - $ref: "#/components/schemas/BaseAllowance"
