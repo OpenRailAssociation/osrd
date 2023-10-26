@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import studyLogo from 'assets/pictures/views/studies.svg';
 import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
@@ -6,7 +6,7 @@ import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import SelectImprovedSNCF, { SelectOptionObject } from 'common/BootstrapSNCF/SelectImprovedSNCF';
+import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
 import { useTranslation } from 'react-i18next';
 import { FaPencilAlt, FaPlus, FaTasks, FaTrash } from 'react-icons/fa';
@@ -18,13 +18,9 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { setFailure, setSuccess } from 'reducers/main';
 import { updateStudyID } from 'reducers/osrdconf';
 import { StudyCreateForm, StudyWithScenarios, osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import {
-  StudyState,
-  studyStates,
-  StudyType,
-  studyTypes,
-} from 'applications/operationalStudies/consts';
-import { isEmpty, sortBy } from 'lodash';
+import { studyStates, studyTypes } from 'applications/operationalStudies/consts';
+import { formatDateForInput, getEarliestDate } from 'utils/date';
+import { createSelectOptions } from '../utils';
 
 interface StudyForm extends StudyCreateForm {
   id?: number;
@@ -38,8 +34,6 @@ type Props = {
 type StudyParams = {
   projectId: string;
 };
-
-type OptionsList = StudyType[] | StudyState[];
 
 const emptyStudy: StudyForm = { name: '', tags: [] };
 
@@ -59,25 +53,9 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
   const [deleteStudies, { isError: isDeleteStudyError }] =
     osrdEditoastApi.useDeleteProjectsByProjectIdStudiesAndStudyIdMutation();
 
-  const createSelectOptions = (
-    translationList: string,
-    list: OptionsList
-  ): SelectOptionObject[] => {
-    if (isEmpty(list)) return [{ label: t('nothingSelected').toString() }];
-    return [
-      { label: t(`${translationList}.nothingSelected`).toString() },
-      ...sortBy(
-        list.map((key) => ({ id: key, label: t(`${translationList}.${key}`) })),
-        'value'
-      ),
-    ];
-  };
-
   const studyStateOptions = createSelectOptions('studyStates', studyStates);
 
   const studyCategoriesOptions = createSelectOptions('studyCategories', studyTypes);
-
-  const formatDateForInput = (date?: string | null) => (date ? date.substring(0, 10) : '');
 
   const removeTag = (idx: number) => {
     const newTags = [...(currentStudy.tags || [])];
@@ -159,6 +137,18 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
       );
     }
   }, [isCreateStudyError, isPatchStudyError, isDeleteStudyError]);
+
+  const { isExpectedEndDateValid, isActualEndDateValid } = useMemo(() => {
+    const startDate = currentStudy?.start_date;
+    const expectedEndDate = currentStudy?.expected_end_date;
+    const actualEndDate = currentStudy?.actual_end_date;
+    const expectedEndDateValid = !(startDate && expectedEndDate && startDate > expectedEndDate);
+    const actualEndDateValid = !(startDate && actualEndDate && startDate > actualEndDate);
+    return {
+      isExpectedEndDateValid: expectedEndDateValid,
+      isActualEndDateValid: actualEndDateValid,
+    };
+  }, [currentStudy?.start_date, currentStudy?.expected_end_date, currentStudy?.actual_end_date]);
 
   return (
     <div className="study-edition-modal">
@@ -278,6 +268,7 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
               onChange={(e) =>
                 setCurrentStudy({ ...currentStudy, start_date: e.target.value || null })
               }
+              max={getEarliestDate(currentStudy?.expected_end_date, currentStudy?.actual_end_date)}
             />
             <InputSNCF
               id="studyInputEstimatedEndingDate"
@@ -295,6 +286,8 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
               onChange={(e) =>
                 setCurrentStudy({ ...currentStudy, expected_end_date: e.target.value || null })
               }
+              min={formatDateForInput(currentStudy.start_date)}
+              isInvalid={!isExpectedEndDateValid}
             />
             <InputSNCF
               id="studyInputRealEndingDate"
@@ -312,6 +305,8 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
               onChange={(e) =>
                 setCurrentStudy({ ...currentStudy, actual_end_date: e.target.value || null })
               }
+              min={formatDateForInput(currentStudy.start_date)}
+              isInvalid={!isActualEndDateValid}
             />
           </div>
         </div>
@@ -407,6 +402,7 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
               className="btn btn-warning"
               type="button"
               onClick={updateStudy}
+              disabled={!isExpectedEndDateValid || !isActualEndDateValid}
             >
               <span className="mr-2">
                 <FaPencilAlt />
@@ -419,6 +415,7 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
               className="btn btn-primary"
               type="button"
               onClick={createStudy}
+              disabled={!isExpectedEndDateValid || !isActualEndDateValid}
             >
               <span className="mr-2">
                 <FaPlus />
