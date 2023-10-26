@@ -30,12 +30,6 @@ export interface MapState {
   terrain3DExaggeration: number;
   viewport: Viewport;
   featureInfoClickID?: number;
-  signalsSettings: {
-    all: boolean;
-    stops: boolean;
-    lights: boolean;
-    tivs: boolean;
-  };
   layersSettings: {
     bufferstops: boolean;
     catenaries: boolean;
@@ -43,6 +37,7 @@ export interface MapState {
     detectors: boolean;
     operationalpoints: boolean;
     routes: boolean;
+    signals: boolean;
     signalingtype: boolean;
     sncf_psl: boolean;
     speedlimittag: string;
@@ -76,12 +71,6 @@ export const mapInitialState: MapState = {
     transformRequest: transformMapRequest,
   },
   featureInfoClickID: undefined,
-  signalsSettings: {
-    all: false,
-    stops: true,
-    lights: false,
-    tivs: false,
-  },
   layersSettings: {
     bufferstops: false,
     catenaries: false,
@@ -89,6 +78,7 @@ export const mapInitialState: MapState = {
     detectors: false,
     operationalpoints: false,
     routes: false,
+    signals: false,
     signalingtype: true,
     sncf_psl: false,
     speedlimittag: '',
@@ -144,9 +134,6 @@ const mapSlice = createSlice({
     updateLayersSettings: (state, action: PayloadAction<MapState['layersSettings']>) => {
       state.layersSettings = action.payload;
     },
-    updateSignalsSettings: (state, action: PayloadAction<MapState['signalsSettings']>) => {
-      state.signalsSettings = action.payload;
-    },
     updateTerrain3DExaggeration: (
       state,
       action: PayloadAction<MapState['terrain3DExaggeration']>
@@ -191,7 +178,6 @@ export const {
   updateShowIGNSCAN25,
   updateShowOSM,
   updateShowOSMtracksections,
-  updateSignalsSettings,
   updateTerrain3DExaggeration,
   updateTransformRequest,
   updateViewportAction,

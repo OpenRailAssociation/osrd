@@ -26,7 +26,6 @@ import {
   getPointTextErrorsLayerProps,
 } from './Errors';
 import { LayerType } from '../../../applications/editor/tools/types';
-import { ALL_SIGNAL_LAYERS, SYMBOLS_TO_LAYERS } from '../Consts/SignalsNames';
 import { MAP_TRACK_SOURCE, MAP_URL } from '../const';
 import {
   getSpeedSectionsFilter,
@@ -46,8 +45,6 @@ import { LayerContext } from './types';
 import { getCatenariesProps, getCatenariesTextParams } from './Catenaries';
 import configKPLabelLayer from './configKPLabelLayer';
 import OrderedLayer from './OrderedLayer';
-
-const SIGNAL_TYPE_KEY = 'extensions_sncf_installation_type';
 
 const POINT_ENTITIES_MIN_ZOOM = 12;
 
@@ -144,6 +141,9 @@ function getTrackSectionLayers(context: LayerContext, prefix: string): LayerProp
 }
 
 function getSignalLayers(context: LayerContext, prefix: string): LayerProps[] {
+  const signalProps = getSignalLayerProps(context);
+  const { paint } = signalProps;
+  const opacity = paint && typeof paint['icon-opacity'] === 'number' ? paint['icon-opacity'] : 1;
   return [
     { ...getSignalMatLayerProps(context), id: `${prefix}geo/signal-mat` },
     { ...getPointLayerProps(context), id: `${prefix}geo/signal-point` },
@@ -157,23 +157,13 @@ function getSignalLayers(context: LayerContext, prefix: string): LayerProps[] {
         sourceLayer: context.sourceTable || '',
       }),
       id: `${prefix}geo/signal-kp`,
-      filter: ['in', 'extensions_sncf_installation_type', ...context.symbolsList],
-    } as LayerProps,
-  ].concat(
-    context.symbolsList.map((symbol) => {
-      const props = getSignalLayerProps(context, symbol);
-      const { paint } = props;
-      const opacity =
-        paint && typeof paint['icon-opacity'] === 'number' ? paint['icon-opacity'] : 1;
-
-      return {
-        ...props,
-        paint: { ...props.paint, 'icon-opacity': opacity * (context.isEmphasized ? 1 : 0.2) },
-        filter: ['==', SIGNAL_TYPE_KEY, SYMBOLS_TO_LAYERS[symbol]],
-        id: `${prefix}geo/signal-${symbol}`,
-      };
-    })
-  );
+    },
+    {
+      ...signalProps,
+      paint: { ...signalProps.paint, 'icon-opacity': opacity * (context.isEmphasized ? 1 : 0.2) },
+      id: `${prefix}geo/signal`,
+    },
+  ];
 }
 function getBufferStopsLayers(context: LayerContext, prefix: string): LayerProps[] {
   return [
@@ -402,8 +392,6 @@ const GeoJSONs: FC<{
   const layerContext: LayerContext = useMemo(
     () => ({
       colors,
-      signalsList: ALL_SIGNAL_LAYERS,
-      symbolsList: ALL_SIGNAL_LAYERS,
       prefix: mapStyle === 'blueprint' ? 'SCHB ' : '',
       isEmphasized,
       showIGNBDORTHO,

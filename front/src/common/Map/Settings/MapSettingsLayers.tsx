@@ -4,8 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { updateLayersSettings } from 'reducers/map';
 import { GiElectric, GiUnplugged } from 'react-icons/gi';
 
-import MapSettingsSignals from 'common/Map/Settings/MapSettingsSignals';
-
+import SignalsSVGFile from 'assets/pictures/layersicons/layer_signal.svg';
 import BufferStopSVGFile from 'assets/pictures/layersicons/bufferstop.svg';
 import OPsSVGFile from 'assets/pictures/layersicons/ops.svg';
 import SwitchesSVGFile from 'assets/pictures/layersicons/switches.svg';
@@ -60,41 +59,41 @@ export const Icon2SVG: FC<{ file: string; altName?: string }> = ({ file, altName
 );
 
 const MapSettingsLayers: FC<unknown> = () => (
-  <>
-    <MapSettingsSignals />
-    <div className="row mt-2">
-      <div className="col-md-6">
-        <FormatSwitch name="catenaries" icon={<GiElectric />} />
-      </div>
-      <div className="col-md-6">
-        <FormatSwitch name="neutral_sections" icon={<GiUnplugged />} />
-      </div>
-      <div className="col-md-6">
-        <FormatSwitch
-          name="operationalpoints"
-          icon={<Icon2SVG file={OPsSVGFile} altName="Operationnal points svg" />}
-        />
-      </div>
-      <div className="col-md-6">
-        <FormatSwitch
-          name="switches"
-          icon={<Icon2SVG file={SwitchesSVGFile} altName="Switches icon svg" />}
-        />
-      </div>
-      <div className="col-md-6">
-        <FormatSwitch
-          name="bufferstops"
-          icon={<Icon2SVG file={BufferStopSVGFile} altName="Buffer stop svg" />}
-        />
-      </div>
-      <div className="col-md-6">
-        <FormatSwitch
-          name="detectors"
-          icon={<Icon2SVG file={DetectorsSVGFile} altName="Detectors circles svg" />}
-        />
-      </div>
+  <div className="row mt-2">
+    <div className="col-md-6">
+      <FormatSwitch name="signals" icon={<Icon2SVG file={SignalsSVGFile} altName="Signal svg" />} />
     </div>
-  </>
+    <div className="col-md-6">
+      <FormatSwitch name="catenaries" icon={<GiElectric />} />
+    </div>
+    <div className="col-md-6">
+      <FormatSwitch name="neutral_sections" icon={<GiUnplugged />} />
+    </div>
+    <div className="col-md-6">
+      <FormatSwitch
+        name="operationalpoints"
+        icon={<Icon2SVG file={OPsSVGFile} altName="Operationnal points svg" />}
+      />
+    </div>
+    <div className="col-md-6">
+      <FormatSwitch
+        name="switches"
+        icon={<Icon2SVG file={SwitchesSVGFile} altName="Switches icon svg" />}
+      />
+    </div>
+    <div className="col-md-6">
+      <FormatSwitch
+        name="bufferstops"
+        icon={<Icon2SVG file={BufferStopSVGFile} altName="Buffer stop svg" />}
+      />
+    </div>
+    <div className="col-md-6">
+      <FormatSwitch
+        name="detectors"
+        icon={<Icon2SVG file={DetectorsSVGFile} altName="Detectors circles svg" />}
+      />
+    </div>
+  </div>
 );
 
 export default MapSettingsLayers;

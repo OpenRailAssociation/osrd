@@ -2,10 +2,10 @@ import React, { FC } from 'react';
 import { useSelector } from 'react-redux';
 import { Source, SymbolLayer } from 'react-map-gl/maplibre';
 import { getInfraID } from 'reducers/osrdconf/selectors';
-import { RootState } from 'reducers';
 import { Theme, OmitLayer } from 'types';
 import { MAP_URL } from 'common/Map/const';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
+import { getLayersSettings } from 'reducers/map/selectors';
 
 export function getBufferStopsLayerProps(params: { sourceTable?: string }): OmitLayer<SymbolLayer> {
   const res: OmitLayer<SymbolLayer> = {
@@ -40,7 +40,7 @@ interface BufferStopsProps {
 
 const BufferStops: FC<BufferStopsProps> = ({ layerOrder }) => {
   const infraID = useSelector(getInfraID);
-  const { layersSettings } = useSelector((state: RootState) => state.map);
+  const layersSettings = useSelector(getLayersSettings);
 
   return layersSettings.bufferstops ? (
     <Source
