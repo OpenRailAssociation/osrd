@@ -41,12 +41,13 @@ async fn get(
 
 #[cfg(test)]
 mod tests {
-    use crate::fixtures::tests::{fast_rolling_stock, TestFixture};
-    use crate::models::RollingStockModel;
+    use crate::fixtures::tests::{db_pool, named_fast_rolling_stock};
     use crate::views::tests::create_test_service;
+    use crate::DbPool;
     use actix_http::StatusCode;
     use actix_web::test as actix_test;
     use actix_web::test::{call_service, TestRequest};
+    use actix_web::web::Data;
     use rstest::*;
 
     #[actix_test]
@@ -58,14 +59,23 @@ mod tests {
     }
 
     #[rstest]
-    async fn get_light_rolling_stock(#[future] fast_rolling_stock: TestFixture<RollingStockModel>) {
+    async fn get_light_rolling_stock(db_pool: Data<DbPool>) {
+        // GIVEN
         let app = create_test_service().await;
-        let rolling_stock = fast_rolling_stock.await;
+        let rolling_stock = named_fast_rolling_stock(
+            "fast_rolling_stock_get_light_rolling_stock",
+            db_pool.clone(),
+        )
+        .await;
 
         let req = TestRequest::get()
             .uri(format!("/light_rolling_stock/{}", rolling_stock.id()).as_str())
             .to_request();
+
+        // WHEN
         let response = call_service(&app, req).await;
+
+        // THEN
         assert_eq!(response.status(), StatusCode::OK);
     }
 

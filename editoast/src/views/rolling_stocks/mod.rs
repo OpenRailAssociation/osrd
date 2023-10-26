@@ -487,7 +487,7 @@ pub mod tests {
         UsageResponse,
     };
     use crate::fixtures::tests::{
-        db_pool, fast_rolling_stock, other_rolling_stock, train_schedule_with_scenario, TestFixture,
+        db_pool, named_fast_rolling_stock, named_other_rolling_stock, train_schedule_with_scenario,
     };
     use crate::models::rolling_stock::tests::{
         get_fast_rolling_stock, get_invalid_effort_curves, get_other_rolling_stock,
@@ -504,16 +504,15 @@ pub mod tests {
     use serde_json::json;
 
     #[rstest]
-    async fn get_returns_corresponding_rolling_stock(
-        #[future] fast_rolling_stock: TestFixture<RollingStockModel>,
-    ) {
+    async fn get_returns_corresponding_rolling_stock(db_pool: Data<DbPool>) {
+        let name = "fast_rolling_stock_get_returns_corresponding_rolling_stock";
         let app = create_test_service().await;
-        let rolling_stock = fast_rolling_stock.await;
+        let rolling_stock = named_fast_rolling_stock(name, db_pool).await;
         let req = rolling_stock_get_request(rolling_stock.id());
         let response = call_service(&app, req).await;
 
         let response_body: RollingStock = assert_status_and_read!(response, StatusCode::OK);
-        assert_eq!(response_body.common.name, "fast_rolling_stock");
+        assert_eq!(response_body.common.name, name);
     }
 
     #[rstest]
@@ -528,7 +527,9 @@ pub mod tests {
     #[rstest]
     async fn create_and_delete_unlocked_rolling_stock_successfully() {
         let app = create_test_service().await;
-        let mut rolling_stock: RollingStockModel = get_fast_rolling_stock();
+        let mut rolling_stock: RollingStockModel = get_fast_rolling_stock(
+            "fast_rolling_stock_create_and_delete_unlocked_rolling_stock_successfully",
+        );
 
         let post_response = call_service(
             &app,
@@ -578,7 +579,9 @@ pub mod tests {
     #[rstest]
     async fn create_rolling_stock_with_base_power_class_empty(db_pool: Data<DbPool>) {
         let app = create_test_service().await;
-        let mut rolling_stock: RollingStockModel = get_fast_rolling_stock();
+        let mut rolling_stock: RollingStockModel = get_fast_rolling_stock(
+            "fast_rolling_stock_create_rolling_stock_with_base_power_class_empty",
+        );
 
         rolling_stock.base_power_class = Some(Some("".to_string()));
 
@@ -595,13 +598,11 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn create_rolling_stock_with_duplicate_name(
-        db_pool: Data<DbPool>,
-        #[future] fast_rolling_stock: TestFixture<RollingStockModel>,
-    ) {
-        let fast_rolling_stock = fast_rolling_stock.await;
+    async fn create_rolling_stock_with_duplicate_name(db_pool: Data<DbPool>) {
+        let name = "fast_rolling_stock_create_rolling_stock_with_duplicate_name";
+        let fast_rolling_stock = named_fast_rolling_stock(name, db_pool.clone()).await;
         let app = create_test_service().await;
-        let mut rolling_stock: RollingStockModel = get_fast_rolling_stock();
+        let mut rolling_stock: RollingStockModel = get_fast_rolling_stock(name);
 
         rolling_stock.name = fast_rolling_stock.model.name.clone();
 
@@ -620,7 +621,9 @@ pub mod tests {
     #[rstest]
     async fn update_and_delete_locked_rolling_stock_fails(db_pool: Data<DbPool>) {
         let app = create_test_service().await;
-        let rolling_stock: RollingStockModel = get_fast_rolling_stock();
+        let rolling_stock: RollingStockModel = get_fast_rolling_stock(
+            "fast_rolling_stock_update_and_delete_locked_rolling_stock_fails",
+        );
         let post_response = call_service(
             &app,
             TestRequest::post()
@@ -713,15 +716,17 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn update_unlocked_rolling_stock(
-        #[future] fast_rolling_stock: TestFixture<RollingStockModel>,
-        db_pool: Data<DbPool>,
-    ) {
+    async fn update_unlocked_rolling_stock(db_pool: Data<DbPool>) {
         let app = create_test_service().await;
-        let fast_rolling_stock = fast_rolling_stock.await;
+        let fast_rolling_stock = named_fast_rolling_stock(
+            "fast_rolling_stock_update_unlocked_rolling_stock",
+            db_pool.clone(),
+        )
+        .await;
         let rolling_stock_id = fast_rolling_stock.id();
 
-        let mut rolling_stock = get_other_rolling_stock();
+        let mut rolling_stock =
+            get_other_rolling_stock("other_rolling_stock_update_unlocked_rolling_stock");
         rolling_stock.id = Some(rolling_stock_id);
 
         let response = call_service(
@@ -747,18 +752,23 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn update_rolling_stock_failure_name_already_used(
-        #[future] fast_rolling_stock: TestFixture<RollingStockModel>,
-        #[future] other_rolling_stock: TestFixture<RollingStockModel>,
-    ) {
+    async fn update_rolling_stock_failure_name_already_used(db_pool: Data<DbPool>) {
+        // GIVEN
+        let other_rs_name = "other_rolling_stock_update_rolling_stock_failure_name_already_used";
         let app = create_test_service().await;
-        let fast_rolling_stock = fast_rolling_stock.await;
-        let _other_rolling_stock = other_rolling_stock.await;
+        let fast_rolling_stock = named_fast_rolling_stock(
+            "fast_rolling_stock_update_rolling_stock_failure_name_already_used",
+            db_pool.clone(),
+        )
+        .await;
+        let _other_rs = named_other_rolling_stock(other_rs_name, db_pool).await;
+
         let rolling_stock_id = fast_rolling_stock.id();
 
-        let mut rolling_stock = get_other_rolling_stock();
+        let mut rolling_stock = get_other_rolling_stock(other_rs_name);
         rolling_stock.id = Some(rolling_stock_id);
 
+        // WHEN
         let response = call_service(
             &app,
             TestRequest::patch()
@@ -767,11 +777,13 @@ pub mod tests {
                 .to_request(),
         )
         .await;
+
+        // THEN
         assert_eq!(response.status(), StatusCode::BAD_REQUEST);
         assert_editoast_error_type!(
             response,
             RollingStockError::NameAlreadyUsed {
-                name: String::from("other_rolling_stock"),
+                name: String::from(other_rs_name),
             }
         );
     }
@@ -779,7 +791,7 @@ pub mod tests {
     #[rstest]
     async fn update_locked_successfully(db_pool: Data<DbPool>) {
         let app = create_test_service().await;
-        let rolling_stock = get_fast_rolling_stock();
+        let rolling_stock = get_fast_rolling_stock("fast_rolling_stock_update_locked_successfully");
         let post_response = call_service(
             &app,
             TestRequest::post()
@@ -832,10 +844,12 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn check_usage_no_train_schedule_for_this_rolling_stock(
-        #[future] fast_rolling_stock: TestFixture<RollingStockModel>,
-    ) {
-        let rolling_stock = fast_rolling_stock.await;
+    async fn check_usage_no_train_schedule_for_this_rolling_stock(db_pool: Data<DbPool>) {
+        let rolling_stock = named_fast_rolling_stock(
+            "fast_rolling_stock_check_usage_no_train_schedule_for_this_rolling_stock",
+            db_pool,
+        )
+        .await;
         let app = create_test_service().await;
         let rolling_stock_id = rolling_stock.id();
         let response = call_service(
@@ -965,11 +979,11 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn get_power_restrictions_list(
-        #[future] fast_rolling_stock: TestFixture<RollingStockModel>,
-    ) {
+    async fn get_power_restrictions_list(db_pool: Data<DbPool>) {
         let app = create_test_service().await;
-        let rolling_stock = fast_rolling_stock.await;
+        let rolling_stock =
+            named_fast_rolling_stock("fast_rolling_stock_get_power_restrictions_list", db_pool)
+                .await;
         let response = call_service(
             &app,
             TestRequest::get()

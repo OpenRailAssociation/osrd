@@ -116,8 +116,8 @@ impl From<LightRollingStockModel> for LightRollingStock {
 
 #[cfg(test)]
 pub mod tests {
-    use crate::fixtures::tests::{db_pool, fast_rolling_stock, TestFixture};
-    use crate::models::{Retrieve, RollingStockModel};
+    use crate::fixtures::tests::{db_pool, named_fast_rolling_stock};
+    use crate::models::Retrieve;
     use crate::DbPool;
     use actix_web::web::Data;
     use rstest::*;
@@ -125,26 +125,36 @@ pub mod tests {
     use super::LightRollingStockModel;
 
     #[rstest]
-    async fn get_light_rolling_stock(
-        db_pool: Data<DbPool>,
-        #[future] fast_rolling_stock: TestFixture<RollingStockModel>,
-    ) {
-        let rolling_stock = fast_rolling_stock.await;
+    async fn get_light_rolling_stock(db_pool: Data<DbPool>) {
+        // GIVEN
+        let rolling_stock = named_fast_rolling_stock(
+            "fast_rolling_stock_get_light_rolling_stock",
+            db_pool.clone(),
+        )
+        .await;
         let rolling_stock_id = rolling_stock.id();
+
+        // THEN
         assert!(LightRollingStockModel::retrieve(db_pool, rolling_stock_id)
             .await
             .is_ok());
     }
 
     #[rstest]
-    async fn list_light_rolling_stock(
-        db_pool: Data<DbPool>,
-        #[future] fast_rolling_stock: TestFixture<RollingStockModel>,
-    ) {
-        let rolling_stock = fast_rolling_stock.await;
+    async fn list_light_rolling_stock(db_pool: Data<DbPool>) {
+        // GIVEN
+        let rolling_stock = named_fast_rolling_stock(
+            "fast_rolling_stock_list_light_rolling_stock",
+            db_pool.clone(),
+        )
+        .await;
+
+        // WHEN
         let rolling_stocks = LightRollingStockModel::list(db_pool, 1, 1000)
             .await
             .unwrap();
+
+        // THEN
         assert!(rolling_stocks.count >= 1);
         let ids: Vec<i64> = rolling_stocks
             .results
