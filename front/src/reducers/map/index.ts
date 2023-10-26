@@ -1,4 +1,4 @@
-import { MAP_URL } from 'common/Map/const';
+import { MAP_URL, SPRITES_URL } from 'common/Map/const';
 import { MapProps, ViewState } from 'react-map-gl/maplibre';
 import { Position } from '@turf/helpers';
 import { transformMapRequest as helperTransformRequest, gpsRound } from 'utils/helpers';
@@ -6,7 +6,7 @@ import { createSlice, Dispatch, PayloadAction } from '@reduxjs/toolkit';
 import history from 'main/history';
 
 export const transformMapRequest: MapProps['transformRequest'] = (url, resourceType) =>
-  helperTransformRequest(url, resourceType, MAP_URL);
+  helperTransformRequest(url, resourceType, MAP_URL, SPRITES_URL);
 
 export type Viewport = ViewState & {
   transformRequest: MapProps['transformRequest'];
