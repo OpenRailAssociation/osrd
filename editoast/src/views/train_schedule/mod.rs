@@ -280,7 +280,7 @@ async fn get_result(
         }
     };
 
-    let projection_path_payload = (*projection_path.payload).clone();
+    let projection_path_payload = projection_path.payload.0;
 
     let projection = Projection::new(&projection_path_payload);
 
@@ -586,6 +586,19 @@ async fn create_backend_request_payload(
     })
 }
 
+fn empty_range_to_range_of_none<T>(range: Vec<T>, len: usize) -> Vec<Option<T>>
+where
+    T: Clone,
+{
+    assert!(range.is_empty() || range.len() == len);
+    range
+        .into_iter()
+        .map(|prr| Some(prr))
+        .chain(std::iter::repeat(None))
+        .take(len)
+        .collect::<Vec<_>>()
+}
+
 pub fn process_simulation_response(
     simulation_response: SimulationResponse,
 ) -> Result<Vec<SimulationOutputChangeset>> {
@@ -601,22 +614,11 @@ pub fn process_simulation_response(
     if base_simulations.is_empty() {
         return Err(TrainScheduleError::NoSimulation.into());
     }
-    let electrification_ranges_vec = if electrification_ranges.is_empty() {
-        vec![None; base_simulations.len()]
-    } else {
-        electrification_ranges
-            .iter()
-            .map(|er| Some(er.clone()))
-            .collect()
-    };
-    let power_restriction_ranges_vec = if power_restriction_ranges.is_empty() {
-        vec![None; base_simulations.len()]
-    } else {
-        power_restriction_ranges
-            .iter()
-            .map(|prr| Some(prr.clone()))
-            .collect()
-    };
+    let electrification_ranges =
+        empty_range_to_range_of_none(electrification_ranges, base_simulations.len());
+    let power_restriction_ranges =
+        empty_range_to_range_of_none(power_restriction_ranges, base_simulations.len());
+
     for (
         base_simulation,
         eco_simulation,
@@ -627,8 +629,8 @@ pub fn process_simulation_response(
         base_simulations,
         eco_simulations,
         speed_limits,
-        electrification_ranges_vec,
-        power_restriction_ranges_vec
+        electrification_ranges,
+        power_restriction_ranges
     ) {
         let eco_simulation = match eco_simulation {
             Some(eco) => Some(Some(DieselJson(eco))),
