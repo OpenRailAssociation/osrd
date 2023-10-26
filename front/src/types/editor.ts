@@ -172,17 +172,34 @@ export type EndPoint = (typeof ENDPOINTS)[number];
 export interface SwitchPortConnection {
   src: string;
   dst: string;
-  bidirectionnal: boolean;
 }
 export interface TrackEndpoint {
   endpoint: EndPoint;
   track: string;
 }
+
+// TODO : Would be better and safer if editoast was sending this type in the getSwitchTypes endpoint so we can remove all related types
 export interface SwitchType {
-  id: string;
+  id: TrackNodeTypeId;
   ports: string[];
   groups: Record<string, SwitchPortConnection[]>;
 }
+
+export type TrackNodeTypeId =
+  | 'crossing'
+  | 'single_slip_switch'
+  | 'double_slip_switch'
+  | 'link'
+  | 'point_switch';
+
+export enum TRACK_NODE_TYPES_ID {
+  CROSSING = 'crossing',
+  SINGLE_SLIP_SWITCH = 'single_slip_switch',
+  DOUBLE_SLIP_SWITCH = 'double_slip_switch',
+  LINK = 'link',
+  POINT_SWITCH = 'point_switch',
+}
+
 export interface SwitchEntity
   extends EditorEntity<
     Point,

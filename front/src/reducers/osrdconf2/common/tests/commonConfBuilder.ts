@@ -39,15 +39,20 @@ export default function commonConfBuilder() {
         minutes: 3,
       },
     }),
-    buildWitchType: (): SwitchType => ({
-      id: 'test-id',
-      ports: ['A', 'B', 'C'],
+    buildSwitchType: (): SwitchType => ({
+      id: 'point_switch',
+      ports: ['A', 'B1', 'B2'],
       groups: {
-        A: [
+        A_B1: [
           {
-            src: 'source',
-            dst: 'destination',
-            bidirectionnal: false,
+            src: 'A',
+            dst: 'B1',
+          },
+        ],
+        A_B2: [
+          {
+            src: 'A',
+            dst: 'B2',
           },
         ],
       },
