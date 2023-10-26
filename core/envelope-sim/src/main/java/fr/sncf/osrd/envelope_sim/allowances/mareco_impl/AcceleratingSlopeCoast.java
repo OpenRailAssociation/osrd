@@ -1,5 +1,7 @@
 package fr.sncf.osrd.envelope_sim.allowances.mareco_impl;
 
+import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.arePositionsEqual;
+import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.areSpeedsEqual;
 import static java.lang.Double.NaN;
 
 import fr.sncf.osrd.envelope.Envelope;
@@ -190,9 +192,9 @@ public class AcceleratingSlopeCoast implements CoastingOpportunity {
             double previousPosition
     ) {
         assert !Double.isNaN(previousAcceleration);
-        if (Math.abs(currentPosition - previousPosition) < TrainPhysicsIntegrator.POSITION_EPSILON)
+        if (arePositionsEqual(currentPosition, previousPosition))
             return currentPosition;
-        if (Math.abs(currentAcceleration - previousAcceleration) < TrainPhysicsIntegrator.SPEED_EPSILON)
+        if (areSpeedsEqual(currentAcceleration, previousAcceleration))
             return currentPosition;
         double factor = (previousAcceleration - currentAcceleration) / (previousPosition - currentPosition);
         double y0 = previousAcceleration - factor * previousPosition;

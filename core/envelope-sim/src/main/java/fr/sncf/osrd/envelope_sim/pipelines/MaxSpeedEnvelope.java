@@ -2,7 +2,7 @@ package fr.sncf.osrd.envelope_sim.pipelines;
 
 import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.CEILING;
 import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.FLOOR;
-import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.POSITION_EPSILON;
+import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.arePositionsEqual;
 
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.EnvelopeCursor;
@@ -67,7 +67,7 @@ public class MaxSpeedEnvelope {
             if (stopPosition == 0.0)
                 continue;
             if (stopPosition > curveWithDecelerations.getEndPos()) {
-                if (Math.abs(stopPosition - curveWithDecelerations.getEndPos()) < POSITION_EPSILON)
+                if (arePositionsEqual(stopPosition, curveWithDecelerations.getEndPos()))
                     stopPosition = curveWithDecelerations.getEndPos();
                 else
                     throw OSRDError.newEnvelopeError(i, stopPosition, curveWithDecelerations.getEndPos());

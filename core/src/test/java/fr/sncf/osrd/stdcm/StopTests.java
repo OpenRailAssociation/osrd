@@ -1,6 +1,6 @@
 package fr.sncf.osrd.stdcm;
 
-import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.SPEED_EPSILON;
+import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.areSpeedsEqual;
 import static fr.sncf.osrd.stdcm.STDCMHelpers.meters;
 import static fr.sncf.osrd.stdcm.STDCMHelpers.occupancyTest;
 import static fr.sncf.osrd.stdcm.StandardAllowanceTests.checkAllowanceResult;
@@ -39,7 +39,7 @@ public class StopTests {
         double expectedOffset = 150;
 
         // Check that we stop
-        assertEquals(0, res.envelope().interpolateSpeed(expectedOffset), SPEED_EPSILON);
+        assertTrue(areSpeedsEqual(0, res.envelope().interpolateSpeed(expectedOffset)));
 
         // Check that the stop is properly returned
         assertEquals(
@@ -359,6 +359,6 @@ public class StopTests {
 
         // Check that we stop
         for (var stop : expectedStops)
-            assertEquals(0, res.envelope().interpolateSpeed(stop.position), SPEED_EPSILON);
+            assertTrue(areSpeedsEqual(0, res.envelope().interpolateSpeed(stop.position)));
     }
 }

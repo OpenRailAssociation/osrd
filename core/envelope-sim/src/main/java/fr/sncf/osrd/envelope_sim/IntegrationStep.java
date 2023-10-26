@@ -1,6 +1,6 @@
 package fr.sncf.osrd.envelope_sim;
 
-import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.SPEED_EPSILON;
+import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.areSpeedsEqual;
 
 public class IntegrationStep {
     public final double timeDelta;
@@ -42,7 +42,7 @@ public class IntegrationStep {
             positionDelta = startSpeed * timeDelta + 0.5 * acceleration * timeDelta * timeDelta;
             positionDelta = Math.copySign(positionDelta, directionSign);
         }
-        assert Math.abs(endSpeed - (startSpeed + directionSign * acceleration * timeDelta)) < SPEED_EPSILON;
+        assert areSpeedsEqual(endSpeed, (startSpeed + directionSign * acceleration * timeDelta));
         return new IntegrationStep(timeDelta, positionDelta, startSpeed, endSpeed, acceleration, directionSign);
     }
 
