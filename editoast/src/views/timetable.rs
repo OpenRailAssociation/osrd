@@ -518,7 +518,8 @@ pub mod test {
             .model
             .rolling_stock_id;
         // patch rolling_stock
-        let mut patch_rolling_stock = get_other_rolling_stock();
+        let mut patch_rolling_stock =
+            get_other_rolling_stock("fast_rolling_stock_newer_rolling_stock_version");
         patch_rolling_stock.id = Some(rolling_stock_id);
         call_service(
             &app,

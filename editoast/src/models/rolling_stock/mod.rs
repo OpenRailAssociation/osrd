@@ -241,7 +241,7 @@ impl From<RollingStockModel> for RollingStock {
 #[cfg(test)]
 pub mod tests {
     use crate::error::InternalError;
-    use crate::fixtures::tests::{db_pool, fast_rolling_stock, other_rolling_stock, TestFixture};
+    use crate::fixtures::tests::{db_pool, named_fast_rolling_stock, named_other_rolling_stock};
     use crate::models::{Retrieve, Update};
     use crate::views::rolling_stocks::RollingStockError;
     use crate::DbPool;
@@ -251,16 +251,21 @@ pub mod tests {
     use super::RollingStockModel;
     use actix_web::web::Data;
 
-    pub fn get_fast_rolling_stock() -> RollingStockModel {
-        serde_json::from_str(include_str!("../../tests/example_rolling_stock_1.json"))
-            .expect("Unable to parse")
+    pub fn get_fast_rolling_stock(name: &str) -> RollingStockModel {
+        let mut rs: RollingStockModel =
+            serde_json::from_str(include_str!("../../tests/example_rolling_stock_1.json"))
+                .expect("Unable to parse");
+        rs.name = Some(name.to_string());
+        rs
     }
 
-    pub fn get_other_rolling_stock() -> RollingStockModel {
-        serde_json::from_str(include_str!(
+    pub fn get_other_rolling_stock(name: &str) -> RollingStockModel {
+        let mut rs: RollingStockModel = serde_json::from_str(include_str!(
             "../../tests/example_rolling_stock_2_energy_sources.json"
         ))
-        .expect("Unable to parse")
+        .expect("Unable to parse");
+        rs.name = Some(name.to_string());
+        rs
     }
 
     pub fn get_invalid_effort_curves() -> &'static str {
@@ -268,18 +273,13 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn create_delete_rolling_stock(
-        db_pool: Data<DbPool>,
-        #[future] fast_rolling_stock: TestFixture<RollingStockModel>,
-    ) {
+    async fn create_delete_rolling_stock(db_pool: Data<DbPool>) {
+        let name = "fast_rolling_stock_create_delete_rolling_stock";
         let rolling_stock_id: i64;
         {
-            let rolling_stock = fast_rolling_stock.await;
+            let rolling_stock = named_fast_rolling_stock(name, db_pool.clone()).await;
             rolling_stock_id = rolling_stock.id();
-            assert_eq!(
-                "fast_rolling_stock",
-                rolling_stock.model.name.clone().unwrap()
-            );
+            assert_eq!(name, rolling_stock.model.name.clone().unwrap());
         }
         assert!(RollingStockModel::retrieve(db_pool, rolling_stock_id)
             .await
@@ -288,32 +288,38 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn update_rolling_stock(
-        db_pool: Data<DbPool>,
-        #[future] fast_rolling_stock: TestFixture<RollingStockModel>,
-    ) {
-        let rolling_stock = fast_rolling_stock.await;
+    async fn update_rolling_stock(db_pool: Data<DbPool>) {
+        // GIVEN
+        let other_rs_name = "other_rolling_stock_update_rolling_stock";
+        let rolling_stock =
+            named_fast_rolling_stock("fast_rolling_stock_update_rolling_stock", db_pool.clone())
+                .await;
         let rolling_stock_id = rolling_stock.id();
 
-        let mut updated_rolling_stock = get_other_rolling_stock();
+        let mut updated_rolling_stock = get_other_rolling_stock(other_rs_name);
         updated_rolling_stock.id = Some(rolling_stock_id);
 
+        // WHEN
         let updated_rolling_stock = updated_rolling_stock
             .update(db_pool, rolling_stock_id)
             .await
             .unwrap()
             .unwrap();
-        assert_eq!(updated_rolling_stock.name.unwrap(), "other_rolling_stock");
+
+        // THEN
+        assert_eq!(updated_rolling_stock.name.unwrap(), other_rs_name);
     }
 
     #[rstest]
-    async fn update_rolling_stock_failure_name_already_used(
-        db_pool: Data<DbPool>,
-        #[future] fast_rolling_stock: TestFixture<RollingStockModel>,
-        #[future] other_rolling_stock: TestFixture<RollingStockModel>,
-    ) {
-        let _rolling_stock = fast_rolling_stock.await;
-        let other_rolling_stock = other_rolling_stock.await;
+    async fn update_rolling_stock_failure_name_already_used(db_pool: Data<DbPool>) {
+        // GIVEN
+        let name = "fast_rolling_stock_update_rolling_stock_failure_name_already_used";
+        let _rolling_stock = named_fast_rolling_stock(name, db_pool.clone()).await;
+        let other_rolling_stock = named_other_rolling_stock(
+            "other_rolling_stock_update_rolling_stock_failure_name_already_used",
+            db_pool.clone(),
+        )
+        .await;
 
         let other_rolling_stock_id = other_rolling_stock.id();
         let mut other_rolling_stock =
@@ -321,15 +327,18 @@ pub mod tests {
                 .await
                 .unwrap()
                 .unwrap();
-        other_rolling_stock.name = Some(String::from("fast_rolling_stock"));
+        other_rolling_stock.name = Some(String::from(name));
 
+        // WHEN
         let result = other_rolling_stock
             .update(db_pool.clone(), other_rolling_stock_id)
             .await;
         let error: InternalError = RollingStockError::NameAlreadyUsed {
-            name: String::from("fast_rolling_stock"),
+            name: String::from(name),
         }
         .into();
+
+        // THEN
         assert_eq!(
             to_value(result.unwrap_err()).unwrap(),
             to_value(error).unwrap()

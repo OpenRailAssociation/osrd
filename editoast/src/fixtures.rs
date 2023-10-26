@@ -77,28 +77,40 @@ pub mod tests {
         Data::new(pool)
     }
 
-    #[fixture]
-    pub async fn fast_rolling_stock(db_pool: Data<DbPool>) -> TestFixture<RollingStockModel> {
-        TestFixture::create(
-            serde_json::from_str::<RollingStockModel>(include_str!(
-                "./tests/example_rolling_stock_1.json"
-            ))
-            .expect("Unable to parse"),
-            db_pool,
-        )
-        .await
+    pub async fn named_fast_rolling_stock(
+        name: &str,
+        db_pool: Data<DbPool>,
+    ) -> TestFixture<RollingStockModel> {
+        let mut rs = serde_json::from_str::<RollingStockModel>(include_str!(
+            "./tests/example_rolling_stock_1.json"
+        ))
+        .expect("Unable to parse");
+        rs.name = Some(name.to_string());
+        TestFixture::create(rs, db_pool).await
     }
 
+    // TODO: deprecate in favour of named_fast_rolling_stock, to avoid name conflicts
+    #[fixture]
+    pub async fn fast_rolling_stock(db_pool: Data<DbPool>) -> TestFixture<RollingStockModel> {
+        named_fast_rolling_stock("fast_rolling_stock", db_pool).await
+    }
+
+    pub async fn named_other_rolling_stock(
+        name: &str,
+        db_pool: Data<DbPool>,
+    ) -> TestFixture<RollingStockModel> {
+        let mut rs = serde_json::from_str::<RollingStockModel>(include_str!(
+            "./tests/example_rolling_stock_2_energy_sources.json"
+        ))
+        .expect("Unable to parse");
+        rs.name = Some(name.to_string());
+        TestFixture::create(rs, db_pool).await
+    }
+
+    // TODO: deprecate in favour of named_other_rolling_stock, to avoid name conflicts
     #[fixture]
     pub async fn other_rolling_stock(db_pool: Data<DbPool>) -> TestFixture<RollingStockModel> {
-        TestFixture::create(
-            serde_json::from_str::<RollingStockModel>(include_str!(
-                "./tests/example_rolling_stock_2_energy_sources.json"
-            ))
-            .expect("Unable to parse"),
-            db_pool,
-        )
-        .await
+        named_other_rolling_stock("other_rolling_stock", db_pool).await
     }
 
     #[fixture]
