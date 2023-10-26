@@ -1,7 +1,7 @@
 package fr.sncf.osrd.api.pathfinding;
 
 import static fr.sncf.osrd.api.pathfinding.RemainingDistanceEstimator.minDistanceBetweenSteps;
-import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.POSITION_EPSILON;
+import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.arePositionsEqual;
 import static fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection.START_TO_STOP;
 import static fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection.STOP_TO_START;
 import static fr.sncf.osrd.sim_infra.api.TrackInfraKt.getTrackSectionFromNameOrThrow;
@@ -374,8 +374,8 @@ public class PathfindingBlocksEndpoint implements Take {
             var loc = waypoint.location;
             assert tracksOnPath.stream()
                     .filter(range -> range.trackSectionID.equals(loc.trackSection))
-                    .anyMatch(range -> loc.offset >= range.begin - POSITION_EPSILON
-                            && loc.offset <= range.end + POSITION_EPSILON)
+                    .anyMatch(range -> (loc.offset > range.begin || arePositionsEqual(loc.offset, range.begin))
+                            && (loc.offset < range.end || arePositionsEqual(loc.offset, range.end)))
                     : "A waypoint isn't included in the track path";
         }
     }

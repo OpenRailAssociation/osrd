@@ -1,6 +1,6 @@
 package fr.sncf.osrd.envelope_sim;
 
-import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.POSITION_EPSILON;
+import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.arePositionsEqual;
 import static fr.sncf.osrd.envelope_utils.RangeMapUtils.fullyCovers;
 
 import com.google.common.collect.ImmutableRangeMap;
@@ -90,7 +90,7 @@ public class EnvelopeSimPath implements PhysicsPath {
     }
 
     private double getCumGrade(double position) {
-        if (position > length && Math.abs(position - length) < POSITION_EPSILON)
+        if (position > length && arePositionsEqual(position, length))
             position = length;
         assert position <= length && position >= 0;
         var pointIndex = Arrays.binarySearch(gradePositions, position);

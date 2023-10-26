@@ -3,7 +3,7 @@ package fr.sncf.osrd.stdcm.graph;
 import static fr.sncf.osrd.api.utils.PathPropUtils.makePathProps;
 import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.CEILING;
 import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.FLOOR;
-import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.POSITION_EPSILON;
+import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.arePositionsEqual;
 import static fr.sncf.osrd.envelope_sim_infra.MRSP.computeMRSP;
 
 import fr.sncf.osrd.envelope.Envelope;
@@ -109,7 +109,7 @@ public class STDCMSimulations {
             Long stopPosition,
             String trainTag
     ) {
-        if (stopPosition != null && Math.abs(stopPosition) < POSITION_EPSILON)
+        if (stopPosition != null && arePositionsEqual(0, stopPosition))
             return makeSinglePointEnvelope(0);
         var blockLength = blockInfra.getBlockLength(blockId);
         if (start >= blockLength)

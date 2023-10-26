@@ -1,6 +1,6 @@
 package fr.sncf.osrd.infra.implementation.tracks.directed;
 
-import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.POSITION_EPSILON;
+import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.arePositionsEqual;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableRangeMap;
@@ -9,13 +9,9 @@ import com.google.common.collect.RangeMap;
 import fr.sncf.osrd.geom.LineString;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.tracks.directed.DiTrackEdge;
-import fr.sncf.osrd.infra.api.tracks.undirected.NeutralSection;
-import fr.sncf.osrd.infra.api.tracks.undirected.Detector;
-import fr.sncf.osrd.sim_infra.api.LoadingGaugeConstraint;
-import fr.sncf.osrd.infra.api.tracks.undirected.SpeedLimits;
-import fr.sncf.osrd.infra.api.tracks.undirected.TrackLocation;
-import fr.sncf.osrd.infra.api.tracks.undirected.TrackSection;
+import fr.sncf.osrd.infra.api.tracks.undirected.*;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
+import fr.sncf.osrd.sim_infra.api.LoadingGaugeConstraint;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import java.util.Comparator;
 import java.util.List;
@@ -46,7 +42,7 @@ public class TrackRangeView {
         }
         var trackLength = track.getEdge().getLength();
         if (end > trackLength) {
-            assert Math.abs(end - trackLength) < POSITION_EPSILON;
+            assert arePositionsEqual(end, trackLength);
             end = trackLength;
         }
         this.begin = begin;

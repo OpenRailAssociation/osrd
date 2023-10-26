@@ -1,8 +1,6 @@
 package fr.sncf.osrd.stdcm.graph;
 
-import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.POSITION_EPSILON;
 import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.arePositionsEqual;
-import static fr.sncf.osrd.utils.units.Distance.toMeters;
 
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;

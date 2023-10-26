@@ -1,6 +1,6 @@
 package fr.sncf.osrd.stdcm.graph;
 
-import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.POSITION_EPSILON;
+import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.arePositionsEqual;
 import static fr.sncf.osrd.sim_infra.impl.PathPropertiesImplKt.buildChunkPath;
 import static fr.sncf.osrd.utils.KtToJavaConverter.toIntList;
 import static fr.sncf.osrd.utils.units.Distance.toMeters;
@@ -28,7 +28,7 @@ public class STDCMUtils {
             var sliceUntil = Math.min(envelope.getEndPos(), toMeters(Math.abs(edge.end() - edge.start())));
             if (sliceUntil == 0)
                 continue;
-            if (Math.abs(sliceUntil - envelope.getEndPos()) < POSITION_EPSILON)
+            if (arePositionsEqual(sliceUntil, envelope.getEndPos()))
                 sliceUntil = envelope.getEndPos(); // The diff between longs and floats can break things here
             var slicedEnvelope = Envelope.make(envelope.slice(0, sliceUntil));
             for (var part : slicedEnvelope)

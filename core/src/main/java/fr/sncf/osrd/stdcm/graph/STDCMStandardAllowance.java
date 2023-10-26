@@ -1,10 +1,10 @@
 package fr.sncf.osrd.stdcm.graph;
 
-import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.POSITION_EPSILON;
+import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.arePositionsEqual;
 
+import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimPath;
-import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.allowances.LinearAllowance;
 import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange;
@@ -102,7 +102,7 @@ public class STDCMStandardAllowance {
         var blocks = ranges.stream()
                 .map(x -> x.edge().block())
                 .toList();
-        assert Math.abs(envelopeWithStops.getEndPos() - Distance.toMeters(endOffset - startOffset)) < POSITION_EPSILON;
+        assert arePositionsEqual(envelopeWithStops.getEndPos(), Distance.toMeters(endOffset - startOffset));
         var availability = blockAvailability.getAvailability(
                 blocks,
                 startOffset,

@@ -9,7 +9,7 @@ import static fr.sncf.osrd.envelope_sim.MaxEffortEnvelopeBuilder.makeComplexMaxE
 import static fr.sncf.osrd.envelope_sim.MaxEffortEnvelopeBuilder.makeSimpleMaxEffortEnvelope;
 import static fr.sncf.osrd.envelope_sim.SimpleContextBuilder.TIME_STEP;
 import static fr.sncf.osrd.envelope_sim.SimpleContextBuilder.makeSimpleContext;
-import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.SPEED_EPSILON;
+import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.areSpeedsEqual;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -91,7 +91,7 @@ public class AllowanceTests {
                     var position = part.getPointSpeed(i);
                     var newSpeed = envelope.interpolateSpeed(position);
                     var prevSpeed = previousEnvelope.interpolateSpeed(position);
-                    assertTrue(newSpeed + SPEED_EPSILON >= prevSpeed);
+                    assertTrue(prevSpeed < newSpeed || areSpeedsEqual(prevSpeed, newSpeed));
                 }
             }
         }

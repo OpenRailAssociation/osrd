@@ -1,6 +1,6 @@
 package fr.sncf.osrd.stdcm.preprocessing.implementation;
 
-import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.POSITION_EPSILON;
+import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.arePositionsEqual;
 
 import com.google.common.collect.Multimap;
 import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate;
@@ -41,7 +41,7 @@ public class BlockAvailabilityLegacyAdapter implements BlockAvailabilityInterfac
             EnvelopeTimeInterpolate envelope,
             double startTime
     ) {
-        assert Math.abs(Distance.toMeters(endOffset - startOffset) - envelope.getEndPos()) < POSITION_EPSILON;
+        assert arePositionsEqual(Distance.toMeters(endOffset - startOffset), envelope.getEndPos());
         var blocksWithOffsets = makeBlocksWithOffsets(blocks);
         var unavailability = findMinimumDelay(blocksWithOffsets, startOffset, endOffset, envelope, startTime);
         if (unavailability != null)

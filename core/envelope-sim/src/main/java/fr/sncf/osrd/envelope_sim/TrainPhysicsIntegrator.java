@@ -12,9 +12,9 @@ public final class TrainPhysicsIntegrator {
     // A position delta lower than this value will be considered zero
     // Going back and forth with Distance and double (meters) often causes 1e-3 errors,
     // we need the tolerance to be higher than this
-    public static final double POSITION_EPSILON = 1E-2;
+    private static final double POSITION_EPSILON = 1E-2;
     // A speed lower than this value will be considered zero
-    public static final double SPEED_EPSILON = 1E-5;
+    private static final double SPEED_EPSILON = 1E-5;
 
     private final PhysicsRollingStock rollingStock;
     private final PhysicsPath path;
@@ -172,13 +172,17 @@ public final class TrainPhysicsIntegrator {
         );
     }
 
-    /** Returns true if the positions are less than an epsilon away */
+    /** Returns true if the positions' difference is lower than epsilon */
     public static boolean arePositionsEqual(double a, double b) {
-        return Math.abs(a - b) < POSITION_EPSILON;
+        return areDoublesEqual(a, b, POSITION_EPSILON);
     }
 
-    /** Returns true if the positions are closer than an epsilon */
+    /** Returns true if the speeds' difference is lower than an epsilon */
     public static boolean areSpeedsEqual(double a, double b) {
-        return Math.abs(a - b) < SPEED_EPSILON;
+        return areDoublesEqual(a, b, SPEED_EPSILON);
+    }
+
+    private static boolean areDoublesEqual(double a, double b, double delta) {
+        return Math.abs(a - b) < delta;
     }
 }
