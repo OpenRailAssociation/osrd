@@ -65,12 +65,9 @@ const parseData = (
 function LegendComfortSwitches(props: {
   curvesComfortList: Comfort[];
   comfortsStates: { [key: string]: boolean };
-  setComfortsStates: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>>;
+  onComfortsStatesChange: (comfort: string) => void;
 }) {
-  const { curvesComfortList, comfortsStates, setComfortsStates } = props;
-  const changeComfortState = (comfort: string) => {
-    setComfortsStates({ ...comfortsStates, [comfort]: !comfortsStates[comfort] });
-  };
+  const { curvesComfortList, comfortsStates, onComfortsStatesChange } = props;
 
   return curvesComfortList.length > 1 ? (
     <span className="d-flex">
@@ -82,7 +79,7 @@ function LegendComfortSwitches(props: {
           key={`comfortSwitch-${comfort}`}
           role="button"
           tabIndex={0}
-          onClick={() => changeComfortState(comfort)}
+          onClick={() => onComfortsStatesChange(comfort)}
         >
           {comfort2pictogram(comfort)}
         </span>
@@ -98,14 +95,11 @@ function LegendComfortSwitches(props: {
 function Legend(props: {
   curves: ParsedCurves[];
   curvesState: { [key: string]: boolean };
-  setCurvesState: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>>;
+  onCurvesStateChange: (id: string) => void;
   isOnEditionMode?: boolean;
   showPowerRestriction?: boolean;
 }) {
-  const { curves, curvesState, setCurvesState, isOnEditionMode, showPowerRestriction } = props;
-  const changeCurveState = (id: string) => {
-    setCurvesState({ ...curvesState, [id]: !curvesState[id] });
-  };
+  const { curves, curvesState, onCurvesStateChange, isOnEditionMode, showPowerRestriction } = props;
 
   return (
     <span className="d-flex">
@@ -116,7 +110,7 @@ function Legend(props: {
           key={`legend-${curve.id}`}
           role="button"
           tabIndex={0}
-          onClick={() => changeCurveState(curve.id)}
+          onClick={() => onCurvesStateChange(curve.id)}
         >
           {isOnEditionMode && showPowerRestriction && curve.power_restriction}
           {isOnEditionMode && !showPowerRestriction && curve.electrical_profile_level}
@@ -167,6 +161,17 @@ function initialComfortsState(curvesComfortList: string[]) {
     comfortsState[id] = true;
   });
   return comfortsState;
+}
+
+function getCurvesByComfortState(
+  transformedData: TransformedCurves,
+  comfortsStates: {
+    [key: string]: boolean;
+  }
+) {
+  return Object.keys(transformedData).filter(
+    (curve) => comfortsStates[transformedData[curve].comfort]
+  );
 }
 
 export default function RollingStockCurve({
@@ -294,18 +299,41 @@ export default function RollingStockCurve({
     setCurvesState(initialCurvesState(transformedData));
   }, [transformedData, ready]);
 
-  return curves[0] !== undefined && curvesState && curvesToDisplay && comfortsStates ? (
+  const changeComfortState = (comfort: string) => {
+    const nextComfortsStatesState = { ...comfortsStates, [comfort]: !comfortsStates[comfort] };
+    const nextCurves = getCurvesByComfortState(transformedData, nextComfortsStatesState).filter(
+      (curve) => curvesState[curve]
+    );
+
+    if (nextCurves.length > 0) {
+      setComfortsStates(nextComfortsStatesState);
+    }
+  };
+
+  const changeCurveState = (id: string) => {
+    const nextCurvesState = { ...curvesState, [id]: !curvesState[id] };
+
+    const nextCurves = getCurvesByComfortState(transformedData, comfortsStates).filter(
+      (curve) => nextCurvesState[curve]
+    );
+
+    if (nextCurves.length > 0) {
+      setCurvesState(nextCurvesState);
+    }
+  };
+
+  return (
     <div className="rollingstock-curves">
       <div className="curves-chart-legend">
         <LegendComfortSwitches
           curvesComfortList={isOnEditionMode ? [curvesComfortList[0]] : curvesComfortList}
           comfortsStates={comfortsStates}
-          setComfortsStates={setComfortsStates}
+          onComfortsStatesChange={changeComfortState}
         />
         <Legend
           curves={curves}
           curvesState={curvesState}
-          setCurvesState={setCurvesState}
+          onCurvesStateChange={changeCurveState}
           isOnEditionMode={isOnEditionMode}
           showPowerRestriction={showPowerRestriction}
         />
@@ -353,5 +381,5 @@ export default function RollingStockCurve({
         tooltip={formatTooltip}
       />
     </div>
-  ) : null;
+  );
 }
