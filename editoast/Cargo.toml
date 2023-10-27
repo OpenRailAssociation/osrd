@@ -15,9 +15,9 @@ serde_derive = "1.0.188"
 serde_json = "1.0.107"
 utoipa = { version = "3.5.0", features = ["actix_extras", "chrono", "uuid"] }
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
+# For batch dependcy updates see https://osrd.fr/en/docs/guides/contribute/batch-updating-dependencies/
+
 async-trait = "0.1.74"
 chashmap = "2.2.2"
 clap = { version = "4.4.7", features = ["derive", "env"] }
