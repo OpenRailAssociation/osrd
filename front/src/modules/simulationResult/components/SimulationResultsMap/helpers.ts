@@ -65,7 +65,7 @@ export function getSimulationHoverPositions(
       selectedTrainId,
       'tailPosition'
     );
-    if (headPositionRaw) {
+    if (headPositionRaw?.position && tailPositionRaw?.position) {
       const headDistanceAlong = headPositionRaw.position / 1000;
       const tailDistanceAlong = tailPositionRaw.position / 1000;
       const headPosition = along(line, headDistanceAlong, {
