@@ -480,42 +480,6 @@
 
   "SignalSncfExtension": {
     "properties": {
-      "aspects": {
-        "items": {
-          "type": "string"
-        },
-        "title": "Aspects",
-        "type": "array"
-      },
-      "comment": {
-        "title": "Commentaire",
-        "type": "string"
-      },
-      "default_aspect": {
-        "description": "Aspect affiché lorsqu'il n'y aucun train aux alentours",
-        "title": "Aspect par défaut",
-        "type": "string"
-      },
-      "installation_type": {
-        "title": "Type d'installation",
-        "type": "string"
-      },
-      "is_in_service": {
-        "description": "Précise si le signal est en service",
-        "title": "Signal en service",
-        "type": "boolean"
-      },
-      "is_lightable": {
-        "description": "Précise si le signal est lumineux",
-        "title": "Signal lumineux",
-        "type": "boolean"
-      },
-      "is_operational": {
-        "description": "Précise si le signal est opérationnel",
-        "title": "Signal opérationnel",
-        "type": "boolean"
-      },
-
       "kp": {
         "description": "Point kilométrique du signal",
         "title": "PK"

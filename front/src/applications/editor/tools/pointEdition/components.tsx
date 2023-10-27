@@ -19,6 +19,7 @@ import {
   EditorEntity,
   TrackSectionEntity,
   RouteEntity,
+  SignalEntity,
 } from 'types';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { CustomFlagSignalCheckbox } from './CustomFlagSignalCheckbox';
@@ -35,6 +36,7 @@ import { getEditRouteState } from '../routeEdition/utils';
 import { getMap } from '../../../../reducers/map/selectors';
 import TOOL_TYPES from '../toolTypes';
 import { EditorContextType, ExtendedEditorContextType } from '../editorContextTypes';
+import { formatSignalingSystems } from './utils';
 
 export const POINT_LAYER_ID = 'pointEditionTool/new-entity';
 
@@ -256,28 +258,6 @@ export const PointEditionLeftPanel: FC<{ type: EditoastType }> = <Entity extends
           },
         }}
         onSubmit={async (savedEntity) => {
-          /** Checks if the property 'signaling_system' is defined when we have a logical_signal given
-           * in the formData since it's undefined on 1st render if the __onChange__ event isn't triggered */
-          const checkedSavedEntity = () => {
-            if (
-              savedEntity.properties.logical_signals &&
-              !savedEntity.properties.logical_signals[0].signaling_system
-            ) {
-              return {
-                ...savedEntity,
-                properties: {
-                  ...savedEntity.properties,
-                  logical_signals: [
-                    {
-                      ...savedEntity.properties.logical_signals[0],
-                      signaling_system: 'BAL',
-                    },
-                  ],
-                },
-              };
-            }
-            return savedEntity;
-          };
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const res: any = await dispatch(
             save(
@@ -287,11 +267,11 @@ export const PointEditionLeftPanel: FC<{ type: EditoastType }> = <Entity extends
                     update: [
                       {
                         source: state.initialEntity,
-                        target: checkedSavedEntity(),
+                        target: savedEntity,
                       },
                     ],
                   }
-                : { create: [checkedSavedEntity()] }
+                : { create: [savedEntity] }
             )
           );
           const operation = res[0] as EntityObjectOperationResult;
@@ -312,7 +292,7 @@ export const PointEditionLeftPanel: FC<{ type: EditoastType }> = <Entity extends
         }}
         onChange={(entity) => {
           const additionalUpdate: Partial<Entity> = {};
-
+          const additionalPropertiesUpdate: Partial<SignalEntity['properties']> = {};
           const newPosition = entity.properties?.position;
           const oldPosition = state.entity.properties?.position;
           const trackId = entity.properties?.track;
@@ -328,7 +308,20 @@ export const PointEditionLeftPanel: FC<{ type: EditoastType }> = <Entity extends
             additionalUpdate.geometry = point.geometry;
           }
 
-          setState({ ...state, entity: { ...(entity as Entity), ...additionalUpdate } });
+          if (entity.objType === 'Signal' && entity.properties.logical_signals) {
+            additionalPropertiesUpdate.logical_signals = formatSignalingSystems(
+              entity as unknown as SignalEntity
+            );
+          }
+
+          setState({
+            ...state,
+            entity: {
+              ...(entity as Entity),
+              ...additionalUpdate,
+              properties: { ...(entity as Entity).properties, ...additionalPropertiesUpdate },
+            },
+          });
         }}
       >
         <div className="text-right">
