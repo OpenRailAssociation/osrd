@@ -1,7 +1,6 @@
 import { JSONSchema7 } from 'json-schema';
 import { Feature, GeoJsonProperties, Geometry, Point, LineString, MultiLineString } from 'geojson';
-
-import { Direction, ObjectType, DirectionalTrackRange } from '../common/api/osrdEditoastApi';
+import { Direction, DirectionalTrackRange, ObjectType } from 'common/api/osrdEditoastApi';
 import { NullGeometry } from './geospatial';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

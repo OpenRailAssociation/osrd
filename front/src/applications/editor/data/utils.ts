@@ -5,18 +5,18 @@ import bearing from '@turf/bearing';
 import { compare } from 'fast-json-patch';
 import { v4 as uuid } from 'uuid';
 
-import { EditorEntity, EditorSchema } from '../../../types';
+import { EditorEntity, EditorSchema } from 'types';
 import {
   ALL_SIGNAL_LAYERS_SET,
   SIGNALS_TO_SYMBOLS,
   SignalType,
-} from '../../../common/Map/Consts/SignalsNames';
+} from 'common/Map/Consts/SignalsNames';
 import {
   DeleteOperation,
   UpdateOperation,
   RailjsonObject,
   PostInfraByIdObjectsAndObjectTypeApiResponse,
-} from '../../../common/api/osrdEditoastApi';
+} from 'common/api/osrdEditoastApi';
 import { EditoastType } from '../tools/types';
 
 // Quick helper to get a "promised" setTimeout:
