@@ -6,6 +6,8 @@ use redis::cluster_async::ClusterConnection;
 use redis::Client;
 use redis::{cmd, FromRedisValue, RedisResult, ToRedisArgs};
 
+const REDIS_HASHTAG: &str = "{editoast}";
+
 pub enum RedisConnection {
     Cluster(ClusterConnection),
     Tokio(ConnectionManager),
@@ -79,7 +81,7 @@ impl RedisClient {
 /// Check redis pattern documentation [here](https://redis.io/commands/keys).
 pub async fn keys<C: ConnectionLike>(redis: &mut C, key_pattern: &str) -> Result<Vec<String>> {
     Ok(cmd("KEYS")
-        .arg(key_pattern)
+        .arg(key_with_tag(key_pattern))
         .query_async::<_, Vec<String>>(redis)
         .await?)
 }
@@ -91,7 +93,7 @@ pub async fn delete<C: ConnectionLike>(redis: &mut C, keys_to_delete: Vec<String
     }
     let mut del = cmd("DEL");
     for key in keys_to_delete {
-        del.arg(key);
+        del.arg(key_with_tag(&key));
     }
     Ok(del.query_async::<_, u64>(redis).await?)
 }
@@ -105,12 +107,12 @@ pub async fn set<C: ConnectionLike, T: ToRedisArgs>(
     cache_duration: u32,
 ) -> Result<()> {
     cmd("SET")
-        .arg(key)
+        .arg(key_with_tag(key))
         .arg(value)
         .query_async::<_, ()>(redis)
         .await?;
     cmd("EXPIRE")
-        .arg(key)
+        .arg(key_with_tag(key))
         .arg(cache_duration)
         .query_async::<_, ()>(redis)
         .await?;
@@ -124,10 +126,14 @@ pub async fn get<C: ConnectionLike, T: ToRedisArgs + FromRedisValue>(
     cache_key: &str,
 ) -> Option<T> {
     cmd("GET")
-        .arg(cache_key)
+        .arg(key_with_tag(cache_key))
         .query_async::<_, Option<T>>(redis)
         .await
         .unwrap()
+}
+
+fn key_with_tag(key: &str) -> String {
+    format!("{}{}", REDIS_HASHTAG, key)
 }
 
 #[cfg(test)]
@@ -162,7 +168,7 @@ mod tests {
             .unwrap();
         let mut test_keys = keys(&mut redis_pool, "test_*").await.unwrap();
         test_keys.sort();
-        assert_eq!(test_keys, vec!["test_1", "test_2"]);
+        assert_eq!(test_keys, vec!["{editoast}test_1", "{editoast}test_2"]);
         // Get value 1
         let value_1 = get::<_, String>(&mut redis_pool, "test_1").await.unwrap();
         assert_eq!("value_1", value_1);
