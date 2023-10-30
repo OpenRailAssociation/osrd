@@ -12,6 +12,7 @@ osrd-schemas = { path = "../osrd_schemas/", develop = false }
 black = "^22.12.0"
 isort = "^5.12.0"
 pyproject-flake8 = "^6.0.0.post1"
+pytype = "^2023.10.24"
 
 [tool.flake8]
 ignore = "W503,E203"
@@ -24,6 +25,9 @@ line-length = 120
 [tool.isort]
 profile = "black"
 multi_line_output = 3
+
+[tool.pytype]
+inputs = ["railjson_generator"]
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
