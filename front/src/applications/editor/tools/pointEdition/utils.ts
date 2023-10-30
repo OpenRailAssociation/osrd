@@ -4,7 +4,7 @@ import {
   NULL_GEOMETRY,
   SignalEntity,
   SignalingSystem,
-} from '../../../../types';
+} from 'types';
 import { NEW_ENTITY_ID } from '../../data/utils';
 
 export function getNewSignal(point?: [number, number]): SignalEntity {
