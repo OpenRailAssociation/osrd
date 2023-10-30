@@ -22,20 +22,23 @@ import {
   SignalEntity,
 } from 'types';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import EditorForm from 'applications/editor/components/EditorForm';
+import EntitySumUp from 'applications/editor/components/EntitySumUp';
+import EditorContext from 'applications/editor/context';
+import { getEntities, getEntity } from 'applications/editor/data/api';
+import { NEW_ENTITY_ID, flattenEntity, cleanSymbolType } from 'applications/editor/data/utils';
+import { Spinner } from 'common/Loader';
+import { getMap } from 'reducers/map/selectors';
+import EntityError from 'applications/editor/components/EntityError';
+import {
+  ExtendedEditorContextType,
+  EditorContextType,
+} from 'applications/editor/tools/editorContextTypes';
+import { getEditRouteState } from 'applications/editor/tools/routeEdition/utils';
+import TOOL_TYPES from 'applications/editor/tools/toolTypes';
+import { EditoastType } from 'applications/editor/tools/types';
 import { CustomFlagSignalCheckbox } from './CustomFlagSignalCheckbox';
 import { PointEditionState } from './types';
-import EditorForm from '../../components/EditorForm';
-import { cleanSymbolType, flattenEntity, NEW_ENTITY_ID } from '../../data/utils';
-import { EditoastType } from '../types';
-import EditorContext from '../../context';
-import EntitySumUp from '../../components/EntitySumUp';
-import EntityError from '../../components/EntityError';
-import { getEntities, getEntity } from '../../data/api';
-import { Spinner } from '../../../../common/Loader';
-import { getEditRouteState } from '../routeEdition/utils';
-import { getMap } from '../../../../reducers/map/selectors';
-import TOOL_TYPES from '../toolTypes';
-import { EditorContextType, ExtendedEditorContextType } from '../editorContextTypes';
 import { formatSignalingSystems } from './utils';
 
 export const POINT_LAYER_ID = 'pointEditionTool/new-entity';
@@ -290,7 +293,7 @@ export const PointEditionLeftPanel: FC<{ type: EditoastType }> = <Entity extends
             });
           }
         }}
-        onChange={(entity) => {
+        onChange={(entity: Entity | SignalEntity) => {
           const additionalUpdate: Partial<Entity> = {};
           const additionalPropertiesUpdate: Partial<SignalEntity['properties']> = {};
           const newPosition = entity.properties?.position;
@@ -310,7 +313,7 @@ export const PointEditionLeftPanel: FC<{ type: EditoastType }> = <Entity extends
 
           if (entity.objType === 'Signal' && entity.properties.logical_signals) {
             additionalPropertiesUpdate.logical_signals = formatSignalingSystems(
-              entity as unknown as SignalEntity
+              entity as SignalEntity
             );
           }
 

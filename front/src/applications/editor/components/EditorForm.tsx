@@ -8,11 +8,15 @@ import { isNil, omitBy } from 'lodash';
 import './EditorForm.scss';
 import { useTranslation } from 'react-i18next';
 import i18n from 'i18n';
-import { EditorEntity } from '../../../types';
+import { EditorEntity } from 'types';
+import { translateSchema } from 'applications/editor/tools/translationTools';
+import {
+  getLayerForObjectType,
+  getJsonSchemaForLayer,
+  NEW_ENTITY_ID,
+} from 'applications/editor/data/utils';
+import { EditorState } from 'applications/editor/tools/types';
 import { FormComponent, FormLineStringLength } from './LinearMetadata';
-import { getJsonSchemaForLayer, getLayerForObjectType, NEW_ENTITY_ID } from '../data/utils';
-import { EditorState } from '../tools/types';
-import { translateSchema } from '../tools/translationTools';
 
 const fields = {
   ArrayField: FormComponent,
