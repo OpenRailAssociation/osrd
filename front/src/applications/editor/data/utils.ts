@@ -162,7 +162,7 @@ export function entityToCreateOperation(entity: EditorEntity): RailjsonObject {
 export function entityToUpdateOperation(entity: EditorEntity, prev: EditorEntity): UpdateOperation {
   return {
     operation_type: 'UPDATE',
-    obj_id: prev.properties.id,
+    obj_id: entity.properties.id,
     obj_type: prev.objType,
     railjson_patch: compare(
       prev.properties || {},
