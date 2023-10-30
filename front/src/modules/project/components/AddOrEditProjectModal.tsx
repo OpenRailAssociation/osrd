@@ -27,7 +27,6 @@ import { SerializedError } from '@reduxjs/toolkit';
 import { getUserSafeWord } from 'reducers/user/userSelectors';
 
 const emptyProject: ProjectCreateForm = {
-  budget: 0,
   description: '',
   funders: '',
   image: null,
@@ -329,8 +328,13 @@ export default function AddOrEditProjectModal({
                   {t('projectBudget')}
                 </div>
               }
-              value={currentProject.budget}
-              onChange={(e) => setCurrentProject({ ...currentProject, budget: +e.target.value })}
+              value={currentProject.budget !== undefined ? currentProject.budget : ''}
+              onChange={(e) =>
+                setCurrentProject({
+                  ...currentProject,
+                  budget: e.target.value !== '' ? +e.target.value : undefined,
+                })
+              }
               textRight
             />
           </div>
