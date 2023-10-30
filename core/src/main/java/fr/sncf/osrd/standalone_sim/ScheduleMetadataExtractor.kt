@@ -78,7 +78,7 @@ fun run(envelope: Envelope, trainPath: PathProperties, chunkPath: ChunkPath, sch
     val simulator = fullInfra.signalingSimulator
 
     // get a new generation route path
-    val routePath = toRouteIdList(chunksToRoutes(rawInfra, toIntList(chunkPath.chunks)))
+    val routePath = toRouteIdList(chunksToRoutes(rawInfra, fullInfra.blockInfra, toIntList(chunkPath.chunks)))
 
     // recover blocks from the route paths
     val detailedBlockPath = recoverBlockPath(simulator, fullInfra, routePath)

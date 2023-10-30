@@ -2,6 +2,7 @@ package fr.sncf.osrd.api.pathfinding;
 
 import static fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection.START_TO_STOP;
 import static fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection.STOP_TO_START;
+import static fr.sncf.osrd.sim_infra.utils.BlockRecoveryKt.recoverBlocks;
 import static fr.sncf.osrd.utils.KtToJavaConverter.toIntList;
 import static fr.sncf.osrd.utils.indexing.DirStaticIdxKt.toDirection;
 import static fr.sncf.osrd.utils.indexing.DirStaticIdxKt.toValue;
@@ -17,13 +18,11 @@ import fr.sncf.osrd.railjson.schema.geom.RJSLineString;
 import fr.sncf.osrd.railjson.schema.infra.RJSRoutePath;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSDirectionalTrackRange;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
-import fr.sncf.osrd.sim_infra.api.BlockInfra;
-import fr.sncf.osrd.sim_infra.api.PathProperties;
-import fr.sncf.osrd.sim_infra.api.RawSignalingInfra;
-import fr.sncf.osrd.sim_infra.api.RawSignalingInfraKt;
+import fr.sncf.osrd.sim_infra.api.*;
 import fr.sncf.osrd.utils.Direction;
 import fr.sncf.osrd.utils.DistanceRangeMap;
 import fr.sncf.osrd.utils.graph.Pathfinding;
+import fr.sncf.osrd.utils.indexing.MutableStaticIdxArrayList;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -193,7 +192,7 @@ public class PathfindingResultConverter {
                 .map(Pathfinding.EdgeRange::edge)
                 .toList();
         var chunkPath = chunksOnBlocks(blockInfra, blocks);
-        var routes = chunksToRoutes(rawInfra, chunkPath);
+        var routes = chunksToRoutes(rawInfra, blockInfra, chunkPath);
         var startOffset = findStartOffset(blockInfra, rawInfra, chunkPath.get(0), routes.get(0), ranges.get(0));
         var endOffset = findEndOffset(blockInfra, rawInfra, Iterables.getLast(chunkPath),
                 Iterables.getLast(routes), Iterables.getLast(ranges));
@@ -347,12 +346,13 @@ public class PathfindingResultConverter {
     /** Converts a list of dir chunks into a list of routes */
     public static List<Integer> chunksToRoutes(
             RawSignalingInfra infra,
+            BlockInfra blockInfra,
             List<Integer> pathChunks
     ) {
         var chunkStartIndex = 0;
         var res = new ArrayList<Integer>();
         while (chunkStartIndex < pathChunks.size()) {
-            var route = findRoute(infra, pathChunks, chunkStartIndex, chunkStartIndex != 0);
+            var route = findRoute(infra, blockInfra, pathChunks, chunkStartIndex, chunkStartIndex != 0);
             res.add(route);
             var chunkSetOnRoute = new HashSet<>(toIntList(infra.getChunksOnRoute(route)));
             while (chunkStartIndex < pathChunks.size() && chunkSetOnRoute.contains(pathChunks.get(chunkStartIndex)))
@@ -364,6 +364,7 @@ public class PathfindingResultConverter {
     /** Finds a valid route that follows the given path */
     private static int findRoute(
             RawSignalingInfra infra,
+            BlockInfra blockInfra,
             List<Integer> chunks,
             int startIndex,
             boolean routeMustIncludeStart
@@ -374,7 +375,7 @@ public class PathfindingResultConverter {
         routes.sort(Comparator.comparingInt(r -> -infra.getChunksOnRoute(r).getSize()));
 
         for (var routeId : routes)
-            if (routeMatchPath(infra, chunks, startIndex, routeMustIncludeStart, routeId))
+            if (routeMatchPath(infra, blockInfra, chunks, startIndex, routeMustIncludeStart, routeId))
                 return routeId;
         throw new RuntimeException("Couldn't find a route matching the given chunk list");
     }
@@ -382,11 +383,14 @@ public class PathfindingResultConverter {
     /** Returns false if the route differs from the path */
     private static boolean routeMatchPath(
             RawSignalingInfra infra,
+            BlockInfra blockInfra,
             List<Integer> chunks,
             int chunkIndex,
             boolean routeMustIncludeStart,
             int routeId
     ) {
+        if (!routeHasBlockPath(infra, blockInfra, routeId))
+            return false; // Filter out routes that don't have block, they would cause issues later on
         var firstChunk = chunks.get(chunkIndex);
         var routeChunks = infra.getChunksOnRoute(routeId);
         var routeChunkIndex = 0;
@@ -407,5 +411,24 @@ public class PathfindingResultConverter {
             routeChunkIndex++;
             chunkIndex++;
         }
+    }
+
+    /** Returns true if the route contains a valid block path.
+     * </p>
+     * This should always be true, but it can be false on infrastructures with errors in its signaling data
+     * (such as the ones imported from poor data sources).
+     * At this step we know that there is at least one route with a valid block path,
+     * we just need to filter out the ones that don't. */
+    private static boolean routeHasBlockPath(
+            RawSignalingInfra infra,
+            BlockInfra blockInfra,
+            int routeId
+    ) {
+        var routeIds = new MutableStaticIdxArrayList<Route>();
+        routeIds.add(routeId);
+        var blockPaths = recoverBlocks(
+                infra, blockInfra, routeIds, null
+        );
+        return !blockPaths.isEmpty();
     }
 }
