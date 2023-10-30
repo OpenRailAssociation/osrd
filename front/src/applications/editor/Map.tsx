@@ -68,7 +68,7 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
   });
   const context = useContext(EditorContext) as EditorContextType<CommonToolState>;
   const infraID = useSelector(getInfraID);
-  const switchTypes = useSwitchTypes();
+  const switchTypes = useSwitchTypes(infraID);
   const editorState = useSelector((state: { editor: EditorState }) => state.editor);
   const showOSM = useSelector(getShowOSM);
   const terrain3DExaggeration = useSelector(getTerrain3DExaggeration);

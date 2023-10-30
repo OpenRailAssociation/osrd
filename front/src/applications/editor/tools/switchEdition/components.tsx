@@ -187,7 +187,7 @@ export const SwitchEditionLeftPanel: FC = () => {
   // Retrieve base JSON schema:
   const baseSchema = editorState.editorSchema.find((e) => e.objType === 'Switch')?.schema;
   // Retrieve proper data
-  const switchTypes = useSwitchTypes();
+  const switchTypes = useSwitchTypes(infraID);
   const switchTypesDict = useMemo(() => keyBy(switchTypes, 'id'), [switchTypes]);
   const switchTypeOptions = useMemo(
     () =>
@@ -308,8 +308,8 @@ export const SwitchEditionLeftPanel: FC = () => {
 export const SwitchEditionLayers: FC = () => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
-  const switchTypes = useSwitchTypes();
   const infraID = useSelector(getInfraID);
+  const switchTypes = useSwitchTypes(infraID);
   const {
     renderingFingerprint,
     state,
