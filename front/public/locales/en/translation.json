@@ -39,7 +39,7 @@
     "entities": {
       "track_section": "Track section",
       "track_section-length": "Length",
-      "errors-linked" : "Linked issues"
+      "errors-linked": "Linked issues"
     },
     "directions": {
       "START_TO_STOP": "Start to stop",
@@ -74,63 +74,63 @@
           "description": "Switch type « {{obj_id}} » contains a duplicate configuration « {{original_group_path}} »"
         },
         "empty_object": {
-          "name": "Empty object", 
+          "name": "Empty object",
           "description": "Object « {{obj_id}} » has the field « {{field}} » empty"
         },
         "invalid_group": {
-          "name": "Position de l'aiguille invalide", 
+          "name": "Position de l'aiguille invalide",
           "description": "The switch « {{obj_id}} » of the route « {{group}} » is in the configuration « {{switch_type}} » which does not exist"
         },
-        "invalid_reference":{
-          "name": "Invalid reference", 
+        "invalid_reference": {
+          "name": "Invalid reference",
           "description": "The object « {{obj_id}} » references the object « {{reference.obj_id}} » which does not exist"
         },
-        "invalid_route":{
-          "name": "Invalid route", 
+        "invalid_route": {
+          "name": "Invalid route",
           "description": "Route « {{obj_id}} » is invalid, requested path is not consistent"
         },
         "invalid_switch_ports": {
-          "name": "Invalid switch pattern", 
+          "name": "Invalid switch pattern",
           "description": "Switch « {{obj_id}} » has a branch which is not compatible with its type"
         },
         "missing_route": {
-          "name": "Missing route", 
+          "name": "Missing route",
           "description": "Track « {{obj_id}} » has no associated route"
         },
         "missing_buffer_stop": {
-          "name": "Missing buffer stop", 
-          "description":"Endpoint « {{endpoint}} » of track « {{obj_id}} » has no buffer stop"
+          "name": "Missing buffer stop",
+          "description": "Endpoint « {{endpoint}} » of track « {{obj_id}} » has no buffer stop"
         },
         "object_out_of_path": {
-          "name": "Object out of path", 
+          "name": "Object out of path",
           "description": "Object « {{obj_id}} » of track « {{reference.obj_id}} » is not contained in the corresponding path"
         },
         "odd_buffer_stop_location": {
-          "name": "Strange buffer stop position", 
+          "name": "Strange buffer stop position",
           "description": "Buffer stop « {{obj_id}} » has a strange position"
         },
-        "out_of_range":{
-          "name": "Invalid value", 
+        "out_of_range": {
+          "name": "Invalid value",
           "description": "Object « {{obj_id}} » has the field « {{field}} » with an invalid value. Value must be in the following range {{expected_range}}."
         },
-        "overlapping_speed_sections": { 
-          "name": "Overlapping of speed limits", 
+        "overlapping_speed_sections": {
+          "name": "Overlapping of speed limits",
           "description": "Speed limit « {{obj_id}} » overlaps « {{reference.obj_id}} »"
         },
         "overlapping_switches": {
-          "name": "Overlapping of switches", 
+          "name": "Overlapping of switches",
           "description": "Switches « {{obj_id}} » and « {{reference.obj_id}} » have the same extremeties"
         },
         "overlapping_catenaries": {
-          "name": "Overlapping of catenaries", 
+          "name": "Overlapping of catenaries",
           "description": "Catenary « {{obj_id}} » overlaps catenary « {{reference.obj_id}} »"
         },
         "unknown_port_name": {
-          "name": "Unknown branch name", 
+          "name": "Unknown branch name",
           "description": "Switch « {{obj_id}} » has the branch « {{port_name}} » which does not exist"
         },
         "unused_port": {
-          "name": "Unused branch", 
+          "name": "Unused branch",
           "description": "Branch « {{port_name}} » of switch type « {{obj_id}} » is nerver used"
         }
       },

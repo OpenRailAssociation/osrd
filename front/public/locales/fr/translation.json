@@ -39,7 +39,7 @@
     "entities": {
       "track_section": "Track section",
       "track_section-length": "Taille",
-      "errors-linked" : "Anomalies liées"
+      "errors-linked": "Anomalies liées"
     },
     "directions": {
       "START_TO_STOP": "Départ vers arrivée",
@@ -74,63 +74,63 @@
           "description": "Le type d’aiguille « {{obj_id}} » contient un doublon de configuration « {{original_group_path}} »"
         },
         "empty_object": {
-          "name": "Object vide", 
+          "name": "Object vide",
           "description": "L’objet « {{obj_id}} » a le champ « {{field}} » vide"
         },
         "invalid_group": {
-          "name": "Position de l'aiguille invalide", 
+          "name": "Position de l'aiguille invalide",
           "description": "L’aiguille « {{obj_id}} » de la route « {{group}} » est dans la configuration « {{switch_type}} » qui n’existe pas"
         },
-        "invalid_reference":{
-          "name": "Référence invalide", 
+        "invalid_reference": {
+          "name": "Référence invalide",
           "description": "L’object « {{obj_id}} » référence l’objet « {{reference.obj_id}} » qui n’existe pas"
         },
-        "invalid_route":{
-          "name": "Itinéraire invalide", 
+        "invalid_route": {
+          "name": "Itinéraire invalide",
           "description": "La route « {{obj_id}} » est invalide, le chemin demandé n’est pas consistant"
         },
         "invalid_switch_ports": {
-          "name": "Branche d’aiguille ou de nœud invalide", 
+          "name": "Branche d’aiguille ou de nœud invalide",
           "description": "L’aiguille/le nœud « {{obj_id}} » présente une branche qui n’est pas compatible avec son type d’aiguille/nœud (qui n’existe pas dans son type d’aiguille/nœud)"
         },
         "missing_route": {
-          "name": "Itinéraire manquant", 
+          "name": "Itinéraire manquant",
           "description": "La voie « {{obj_id}} » n’a aucun itinéraire associé"
         },
         "missing_buffer_stop": {
-          "name": "Heurtoir manquant", 
-          "description":"L'extrémité « {{endpoint}} » de la voie « {{obj_id}} » n'a pas de heurtoir"
+          "name": "Heurtoir manquant",
+          "description": "L'extrémité « {{endpoint}} » de la voie « {{obj_id}} » n'a pas de heurtoir"
         },
         "object_out_of_path": {
-          "name": "Objet en dehors de l'itinéraire", 
+          "name": "Objet en dehors de l'itinéraire",
           "description": "L’aiguille/le nœud ou le détecteur « {{obj_id}} » de l’itineraire « {{reference.obj_id}} » n’est pas contenu/contenue dans le chemin correspondant"
         },
         "odd_buffer_stop_location": {
-          "name": "Position d'heurtoir étrange", 
+          "name": "Position d'heurtoir étrange",
           "description": "L'heurtoir « {{obj_id}} » se trouve à une position étrange"
         },
-        "out_of_range":{
-          "name": "Valeur invalide", 
+        "out_of_range": {
+          "name": "Valeur invalide",
           "description": "L’objet « {{obj_id}} » a le champ « {{field}} » avec une valeur invalide. La valeur doit être comprise dans l'intervalle {{expected_range}}."
         },
-        "overlapping_speed_sections": { 
-          "name": "Superposition de limites de vitesse", 
+        "overlapping_speed_sections": {
+          "name": "Superposition de limites de vitesse",
           "description": "La limite « {{obj_id}} » se superpose à la limite « {{reference.obj_id}} »"
         },
         "overlapping_switches": {
-          "name": "Superposition d’aiguilles/nœuds", 
+          "name": "Superposition d’aiguilles/nœuds",
           "description": "L’aiguille/le noeud « {{obj_id}} » et l’aiguille/le noeud « {{reference.obj_id}} » connectent les mêmes extrémités des voies"
         },
         "overlapping_catenaries": {
-          "name": "Superposition de catenaires", 
+          "name": "Superposition de catenaires",
           "description": "La catenaire « {{obj_id}} » se superpose à la catenaire « {{reference.obj_id}} »"
         },
         "unknown_port_name": {
-          "name": "Nom de branche inconnu", 
+          "name": "Nom de branche inconnu",
           "description": "L’aiguille/le noeud « {{obj_id}} » présente la branche « {{port_name}} » qui n’est pas existante"
         },
         "unused_port": {
-          "name": "Branche non utilisée", 
+          "name": "Branche non utilisée",
           "description": "La branche « {{port_name}} » déclarée dans le type d’aiguille/nœud « {{obj_id}} » n’est pas utilisée dans les configurations de ce type"
         }
       },

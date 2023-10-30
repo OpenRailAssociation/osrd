@@ -1,4 +1,4 @@
-import { StandardAllowance } from 'common/api/osrdEditoastApi';
+import { StandardAllowanceForm } from './types';
 
 export enum unitsTypes {
   percentage = 'percentage',
@@ -18,11 +18,11 @@ export enum unitsLabels {
   time = 's',
 }
 
-export const initialStandardAllowance: StandardAllowance = {
+export const initialStandardAllowance: StandardAllowanceForm = {
   allowance_type: 'standard',
   default_value: {
     value_type: 'percentage',
-    percentage: 0,
+    percentage: undefined,
   },
   ranges: [],
   distribution: 'MARECO',
