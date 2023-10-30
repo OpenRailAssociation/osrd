@@ -244,7 +244,7 @@ export default function Study() {
         logo={logo}
       />
       <main className="mastcontainer mastcontainer-no-mastnav">
-        <div className="p-3">
+        <div className="p-3 study-view">
           {project && study ? (
             <div className="study-details">
               <div className="study-details-dates">

@@ -54,7 +54,7 @@ export default function ProjectCard({ setFilterChips, project, isSelected, toggl
 
   return (
     <div
-      className={cx('projects-list-project-card', isSelected && 'selected')}
+      className={cx('project-card', isSelected && 'selected')}
       data-testid={project.name}
       onClick={() => toggleSelect(project.id)}
       role="button"
@@ -63,7 +63,7 @@ export default function ProjectCard({ setFilterChips, project, isSelected, toggl
       <span className="selected-mark">
         <AiFillCheckCircle />
       </span>
-      <div className="projects-list-project-card-img">
+      <div className="project-card-img">
         <LazyLoadImage src={imageUrl} alt="project logo" />
         <div className="buttons">
           <button
@@ -77,7 +77,7 @@ export default function ProjectCard({ setFilterChips, project, isSelected, toggl
           </button>
         </div>
       </div>
-      <div className="projects-list-project-card-studies">
+      <div className="project-card-studies">
         <div>
           <span className="mr-1">
             <RiCalendarLine />
@@ -91,14 +91,14 @@ export default function ProjectCard({ setFilterChips, project, isSelected, toggl
           {t('studiesCount', { count: project.studies_count })}
         </div>
       </div>
-      <div className="projects-list-project-card-name">{project.name}</div>
-      <div className="projects-list-project-card-description">{project.description}</div>
-      <div className="projects-list-project-card-tags">
+      <div className="project-card-name">{project.name}</div>
+      <div className="project-card-description">{project.description}</div>
+      <div className="project-card-tags">
         {project.tags
           .filter((tag) => tag !== safeWord)
           .map((tag) => (
             <div
-              className="projects-list-project-card-tags-tag"
+              className="project-card-tags-tag"
               key={nextId()}
               role="button"
               tabIndex={0}

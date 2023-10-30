@@ -130,7 +130,7 @@ const PslSignCard = ({
         )}
         <div className="my-2">
           <SelectImprovedSNCF
-            label={t('Editor.tools.speed-edition.panel-side').toString()}
+            label={t('Editor.tools.speed-edition.sign-side').toString()}
             sm
             options={['LEFT', 'RIGHT', 'CENTER']}
             onChange={(selectedValue) => {

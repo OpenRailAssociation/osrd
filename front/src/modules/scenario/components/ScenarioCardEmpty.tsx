@@ -11,7 +11,7 @@ export default function StudyCard() {
   return (
     <div
       data-testid="addScenario"
-      className="scenarios-list-card empty"
+      className="scenario-card empty"
       role="button"
       tabIndex={0}
       onClick={() => openModal(<AddOrEditScenarioModal />, 'xl')}

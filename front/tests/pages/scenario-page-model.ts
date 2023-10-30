@@ -91,7 +91,7 @@ class PlaywrightScenarioPage {
     this.getScenarioDeleteConfirmBtn = page
       .locator('#modal-content')
       .getByText('Supprimer', { exact: true });
-    this.getScenarioTags = page.locator('.scenarios-list-card-tags');
+    this.getScenarioTags = page.locator('.scenario-card-tags');
     this.getSpeedLimitSelector = page.getByTestId('speed-limit-by-tag-selector');
     this.getItineraryModule = page.getByTestId('itinerary');
     this.getItineraryOrigin = this.getItineraryModule
