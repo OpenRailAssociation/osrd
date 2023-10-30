@@ -29,8 +29,8 @@ export default function StudyCard({ setFilterChips, study }: Props) {
   };
 
   return (
-    <div className="studies-list-card">
-      <div className="studies-list-card-name" data-testid={study.name}>
+    <div className="study-card">
+      <div className="study-card-name" data-testid={study.name}>
         <span className="mr-2">
           <img src={studyLogo} alt="study logo" height="24" />
         </span>
@@ -45,40 +45,40 @@ export default function StudyCard({ setFilterChips, study }: Props) {
           <AiFillFolderOpen />
         </button>
       </div>
-      <div className="studies-list-card-type">
+      <div className="study-card-type">
         {study.study_type ? t(`operationalStudies/study:studyCategories.${study.study_type}`) : ''}
       </div>
-      <div className="studies-list-card-description">{study.description}</div>
+      <div className="study-card-description">{study.description}</div>
 
-      <div className="studies-list-card-financials">
-        <div className="studies-list-card-financials-infos">
+      <div className="study-card-financials">
+        <div className="study-card-financials-infos">
           {study.service_code && (
-            <div className="studies-list-card-financials-infos-item">
+            <div className="study-card-financials-infos-item">
               <h3>{t('geremiCode')}</h3>
               <div>{study.service_code}</div>
             </div>
           )}
           {study.business_code && (
-            <div className="studies-list-card-financials-infos-item">
+            <div className="study-card-financials-infos-item">
               <h3>{t('affairCode')}</h3>
               <div>{study.business_code}</div>
             </div>
           )}
         </div>
         {study.budget && study.budget > 0 ? (
-          <div className="studies-list-card-financials-amount">
-            <span className="studies-list-card-financials-amount-text">{t('budget')}</span>
+          <div className="study-card-financials-amount">
+            <span className="study-card-financials-amount-text">{t('budget')}</span>
             {budgetFormat(study.budget)}
           </div>
         ) : null}
       </div>
 
-      <div className="studies-list-card-tags">
+      <div className="study-card-tags">
         {study.tags &&
           study.tags.length > 0 &&
           study.tags.map((tag) => (
             <div
-              className="studies-list-card-tags-tag"
+              className="study-card-tags-tag"
               key={nextId()}
               role="button"
               tabIndex={0}
@@ -89,14 +89,14 @@ export default function StudyCard({ setFilterChips, study }: Props) {
           ))}
       </div>
 
-      <div className="studies-list-card-footer">
-        <div className="studies-list-card-scenarios-count ml-auto">
+      <div className="study-card-footer">
+        <div className="study-card-scenarios-count ml-auto">
           <span className="mr-1">
             <RiFolderChartLine />
           </span>
           {t('scenariosCount', { count: study.scenarios_count })}
         </div>
-        <div className="studies-list-card-date">
+        <div className="study-card-date">
           <span className="mr-1">
             <FcCalendar />
           </span>

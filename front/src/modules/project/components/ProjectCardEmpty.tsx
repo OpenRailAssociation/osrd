@@ -11,7 +11,7 @@ export default function ProjectCard() {
   return (
     <div
       data-testid="addProject"
-      className="projects-list-project-card empty"
+      className="project-card empty"
       role="button"
       tabIndex={0}
       onClick={() => openModal(<AddOrEditProjectModal />, 'xl')}

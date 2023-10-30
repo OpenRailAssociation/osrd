@@ -30,8 +30,8 @@ export default function StudyCard({ setFilterChips, scenario }: Props) {
   };
 
   return (
-    <div className="scenarios-list-card">
-      <div className="scenarios-list-card-name" data-testid={scenario.name}>
+    <div className="scenario-card">
+      <div className="scenario-card-name" data-testid={scenario.name}>
         <span className="mr-2">
           <RiFolderChartLine />
         </span>
@@ -46,13 +46,13 @@ export default function StudyCard({ setFilterChips, scenario }: Props) {
           <AiFillFolderOpen />
         </button>
       </div>
-      <div className="scenarios-list-card-description">{scenario.description}</div>
+      <div className="scenario-card-description">{scenario.description}</div>
 
-      <div className="scenarios-list-card-tags">
+      <div className="scenario-card-tags">
         {scenario.tags &&
           scenario.tags.map((tag) => (
             <div
-              className="scenarios-list-card-tags-tag"
+              className="scenario-card-tags-tag"
               key={nextId()}
               role="button"
               tabIndex={0}
@@ -62,18 +62,18 @@ export default function StudyCard({ setFilterChips, scenario }: Props) {
             </div>
           ))}
       </div>
-      <div className="scenarios-list-card-footer">
-        <div className="scenarios-list-card-infra">
+      <div className="scenario-card-footer">
+        <div className="scenario-card-infra">
           <img src={infraLogo} alt="infra logo" />
           {scenario.infra_name}
         </div>
-        <div className="scenarios-list-card-trains-count ml-auto">
+        <div className="scenario-card-trains-count ml-auto">
           <span className="mr-1">
             <MdTrain />
           </span>
           {scenario.trains_count}
         </div>
-        <div className="scenarios-list-card-date">
+        <div className="scenario-card-date">
           <span className="mr-1">
             <FcCalendar />
           </span>

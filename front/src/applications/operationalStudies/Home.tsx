@@ -117,25 +117,23 @@ export default function Home() {
 
   function displayCards() {
     return projectsList ? (
-      <div className="projects-list">
-        <div className="row">
-          <div className="col-hdp-2 col-lg-3 col-md-4 col-sm-6">
-            <ProjectCardEmpty />
-          </div>
-          {projectsList.map((project) => (
-            <div
-              className="col-hdp-2 col-lg-3 col-md-4 col-sm-6"
-              key={`home-projectsList-${project.id}`}
-            >
-              <ProjectCard
-                project={project}
-                setFilterChips={setFilterChips}
-                isSelected={project.id !== undefined && selectedProjectIds.includes(project.id)}
-                toggleSelect={toggleProjectSelection}
-              />
-            </div>
-          ))}
+      <div className="projects-list row">
+        <div className="col-hdp-2 col-lg-3 col-md-4 col-sm-6">
+          <ProjectCardEmpty />
         </div>
+        {projectsList.map((project) => (
+          <div
+            className="col-hdp-2 col-lg-3 col-md-4 col-sm-6"
+            key={`home-projectsList-${project.id}`}
+          >
+            <ProjectCard
+              project={project}
+              setFilterChips={setFilterChips}
+              isSelected={project.id !== undefined && selectedProjectIds.includes(project.id)}
+              toggleSelect={toggleProjectSelection}
+            />
+          </div>
+        ))}
       </div>
     ) : (
       <div className="mt-5">

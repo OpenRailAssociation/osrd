@@ -181,7 +181,7 @@ export default function Project() {
     <>
       <NavBarSNCF appName={<BreadCrumbs projectName={project && project.name} />} logo={logo} />
       <main className="mastcontainer mastcontainer-no-mastnav">
-        <div className="p-3">
+        <div className="p-3 project-view">
           {project ? (
             <div className="project-details">
               <div className="project-details-title">
