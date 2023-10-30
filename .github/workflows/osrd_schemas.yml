@@ -8,6 +8,8 @@ on:
       - .github/workflows/osrd_schemas.yml
       - front/src/reducers/osrdconf/infra_schema.json
   merge_group:
+    # TODO: paths may not be relvant for merge_group
+    # https://docs.github.com/en/webhooks/webhook-events-and-payloads#merge_group
     paths:
       - python/osrd_schemas/**
       - .github/workflows/osrd_schemas.yml
@@ -34,7 +36,7 @@ jobs:
       - name: Install dependencies
         run: |
           cd python/osrd_schemas
-          poetry install --only dev
+          poetry install
       - name: Flake8
         run: |
           cd python/osrd_schemas
@@ -52,6 +54,10 @@ jobs:
         run: |
           cd python/osrd_schemas
           poetry run isort . --check
+      - name: Pytype
+        run: |
+          cd python/osrd_schemas
+          poetry run pytype -j auto
 
   schema_infra_sync:
     name: Check infra_schema.json
