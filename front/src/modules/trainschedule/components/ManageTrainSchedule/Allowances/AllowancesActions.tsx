@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import InputGroupSNCF, { InputGroupSNCFValue } from 'common/BootstrapSNCF/InputGroupSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
@@ -6,12 +6,7 @@ import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import { FaPlus, FaSearch, FaTrash } from 'react-icons/fa';
 import { CgArrowsShrinkH } from 'react-icons/cg';
 import { BiArrowFromLeft, BiArrowFromRight } from 'react-icons/bi';
-import {
-  AllowanceValue,
-  EngineeringAllowance,
-  PathStep,
-  RangeAllowance,
-} from 'common/api/osrdEditoastApi';
+import { EngineeringAllowance, PathStep, RangeAllowance } from 'common/api/osrdEditoastApi';
 import { BsCheckLg } from 'react-icons/bs';
 import { MdCancel } from 'react-icons/md';
 import cx from 'classnames';
@@ -23,12 +18,15 @@ import {
   ManageAllowancesType,
   ActionOnAllowance,
   OverlapAllowancesIndexesType,
+  AllowanceValueForm,
+  RangeAllowanceForm,
+  EngineeringAllowanceForm,
 } from './types';
 import getAllowanceValue, { findAllowanceOverlap } from './helpers';
 import AllowancesModalOP from './AllowancesModalOP';
 
 type Props = {
-  allowances: RangeAllowance[] | EngineeringAllowance[];
+  allowances: RangeAllowanceForm[] | EngineeringAllowanceForm[];
   manageAllowance: (props: ManageAllowancesType) => void;
   pathLength: number;
   pathFindingSteps?: PathStep[];
@@ -74,10 +72,15 @@ export default function AllowancesActions({
   const [endPosition, setEndPosition] = useState(pathLength);
   const [allowanceLength, setAllowanceLength] = useState(endPosition - beginPosition);
   const [distribution, setDistribution] = useState(distributionsList[0].value);
-  const [valueAndUnit, setValueAndUnit] = useState<AllowanceValue>();
+  const [valueAndUnit, setValueAndUnit] = useState<AllowanceValueForm>();
   const [isValid, setIsValid] = useState(false);
 
-  function validityTest() {
+  const allowanceValue = useMemo(() => {
+    if (valueAndUnit) return getAllowanceValue(valueAndUnit);
+    return undefined;
+  }, [valueAndUnit]);
+
+  function checkValidity() {
     if (setOverlapAllowancesIndexes) {
       const overlapAllowancesIndexes = findAllowanceOverlap({
         allowances,
@@ -86,12 +89,14 @@ export default function AllowancesActions({
         currentAllowanceSelected: allowanceSelectedIndex,
       });
       setOverlapAllowancesIndexes(overlapAllowancesIndexes);
-      if (!overlapAllowancesIndexes.every((index) => index === false || index === -1)) return false;
+      if (!overlapAllowancesIndexes.every((index) => index === false || index === -1)) return;
     }
-    return (
+
+    setIsValid(
       beginPosition < endPosition &&
-      getAllowanceValue(valueAndUnit) > 0 &&
-      endPosition <= pathLength
+        allowanceValue !== undefined &&
+        allowanceValue > 0 &&
+        endPosition <= pathLength
     );
   }
 
@@ -118,7 +123,7 @@ export default function AllowancesActions({
           begin_position: beginPosition,
           end_position: endPosition,
           value: valueAndUnit,
-        } as RangeAllowance;
+        } as RangeAllowanceForm;
       }
       if (type === AllowancesTypes.engineering) {
         newAllowance = {
@@ -127,7 +132,7 @@ export default function AllowancesActions({
           begin_position: beginPosition,
           end_position: endPosition,
           value: valueAndUnit,
-        } as EngineeringAllowance;
+        } as EngineeringAllowanceForm;
       }
     }
     manageAllowance({
@@ -144,11 +149,14 @@ export default function AllowancesActions({
   };
 
   const handleValueAndUnit = (newValueAndUnit: InputGroupSNCFValue) => {
-    if (newValueAndUnit.type && newValueAndUnit.value !== undefined) {
+    if (newValueAndUnit.type) {
       setValueAndUnit({
-        value_type: newValueAndUnit.type as AllowanceValue['value_type'],
-        [unitsNames[newValueAndUnit.type as keyof typeof unitsNames]]: +newValueAndUnit.value,
-      } as AllowanceValue);
+        value_type: newValueAndUnit.type as AllowanceValueForm['value_type'],
+        [unitsNames[newValueAndUnit.type as keyof typeof unitsNames]]:
+          newValueAndUnit.value && newValueAndUnit.value !== ''
+            ? +newValueAndUnit.value
+            : undefined,
+      } as AllowanceValueForm);
     }
   };
 
@@ -180,8 +188,8 @@ export default function AllowancesActions({
 
   // Test validity at each change
   useEffect(() => {
-    setIsValid(validityTest());
-  }, [beginPosition, endPosition, valueAndUnit, allowanceSelectedIndex]);
+    checkValidity();
+  }, [beginPosition, endPosition, allowanceValue, allowanceSelectedIndex]);
 
   useEffect(() => {
     if (allowanceSelectedIndex === undefined) {
@@ -306,13 +314,13 @@ export default function AllowancesActions({
             orientation="right"
             sm
             condensed
-            value={getAllowanceValue(valueAndUnit)}
+            value={allowanceValue !== undefined ? allowanceValue : ''}
             handleType={handleValueAndUnit}
             options={unitsList}
             typeValue="number"
             type={valueAndUnit?.value_type || defaultType()}
-            min={0}
-            isInvalid={!(getAllowanceValue(valueAndUnit) > 0)}
+            min={1}
+            isInvalid={allowanceValue !== undefined && allowanceValue < 1}
             textRight
           />
         </div>

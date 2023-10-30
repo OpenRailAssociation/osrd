@@ -1,13 +1,17 @@
-import { Allowance, EngineeringAllowance, RangeAllowance } from 'common/api/osrdEditoastApi';
+import { Allowance, EngineeringAllowance } from 'common/api/osrdEditoastApi';
 import React from 'react';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import getAllowanceValue from './helpers';
 import { unitsLabels } from './consts';
-import { SetAllowanceSelectedIndexType } from './types';
+import {
+  EngineeringAllowanceForm,
+  RangeAllowanceForm,
+  SetAllowanceSelectedIndexType,
+} from './types';
 
 type Props = {
-  allowances: RangeAllowance[] | EngineeringAllowance[];
+  allowances: RangeAllowanceForm[] | EngineeringAllowanceForm[];
   allowanceSelectedIndex?: number;
   setAllowanceSelectedIndex: SetAllowanceSelectedIndexType;
   pathLength: number;
@@ -25,7 +29,10 @@ export default function AllowancesLinearView({
   function valueToPercent(value: number) {
     return (100 * value) / pathLength;
   }
-  function coloredDistribution(specific: EngineeringAllowance, global?: Allowance['distribution']) {
+  function coloredDistribution(
+    specific: EngineeringAllowanceForm,
+    global?: Allowance['distribution']
+  ) {
     if (global) return globalDistribution;
     if (specific && specific.distribution) return specific.distribution;
     return '';

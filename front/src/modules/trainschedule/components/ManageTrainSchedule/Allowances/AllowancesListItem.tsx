@@ -1,14 +1,18 @@
 import React from 'react';
 import { TbArrowRightBar } from 'react-icons/tb';
 import { useTranslation } from 'react-i18next';
-import { EngineeringAllowance, RangeAllowance } from 'common/api/osrdEditoastApi';
 import cx from 'classnames';
-import { AllowancesTypes, SetAllowanceSelectedIndexType } from './types';
+import {
+  AllowancesTypes,
+  EngineeringAllowanceForm,
+  RangeAllowanceForm,
+  SetAllowanceSelectedIndexType,
+} from './types';
 import { unitsLabels } from './consts';
 import getAllowanceValue from './helpers';
 
 type AllowanceItemProps = {
-  allowance: RangeAllowance | EngineeringAllowance;
+  allowance: RangeAllowanceForm | EngineeringAllowanceForm;
   idx: number;
   isSelected?: boolean;
   isOverlapped?: boolean;

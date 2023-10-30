@@ -1,15 +1,16 @@
 import React from 'react';
-import { EngineeringAllowance, RangeAllowance } from 'common/api/osrdEditoastApi';
 import { useTranslation } from 'react-i18next';
 import {
   SetAllowanceSelectedIndexType,
   AllowancesTypes,
   OverlapAllowancesIndexesType,
+  RangeAllowanceForm,
+  EngineeringAllowanceForm,
 } from './types';
 import AllowancesListItem from './AllowancesListItem';
 
 type AllowancesListProps = {
-  allowances: RangeAllowance[] | EngineeringAllowance[];
+  allowances: RangeAllowanceForm[] | EngineeringAllowanceForm[];
   allowanceSelectedIndex?: number;
   type: AllowancesTypes;
   setAllowanceSelectedIndex: SetAllowanceSelectedIndexType;
@@ -49,7 +50,7 @@ export default function AllowancesList({
     return (
       <div className="allowances-list">
         {allowances &&
-          allowances.map((allowance: RangeAllowance, idx) => (
+          allowances.map((allowance: RangeAllowanceForm, idx) => (
             <AllowancesListItem
               allowance={allowance}
               idx={idx}

@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { getAllowances, getPathfindingID } from 'reducers/osrdconf/selectors';
 import {
   StandardAllowance,
   EngineeringAllowance,
-  AllowanceValue,
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
 import { AiOutlineDash } from 'react-icons/ai';
@@ -14,7 +13,14 @@ import cx from 'classnames';
 import AllowancesStandardSettings from './AllowancesStandardSettings';
 import AllowancesActions from './AllowancesActions';
 import AllowancesList from './AllowancesList';
-import { AllowancesTypes, ManageAllowancesType, OverlapAllowancesIndexesType } from './types';
+import {
+  AllowanceValueForm,
+  AllowancesTypes,
+  EngineeringAllowanceForm,
+  ManageAllowancesType,
+  OverlapAllowancesIndexesType,
+  StandardAllowanceForm,
+} from './types';
 import AllowancesLinearView from './AllowancesLinearView';
 import { initialStandardAllowance } from './consts';
 import getAllowanceValue from './helpers';
@@ -48,14 +54,14 @@ export default function Allowances() {
     (allowances &&
       (allowances.find(
         (allowance) => allowance.allowance_type === 'standard'
-      ) as StandardAllowance)) ||
+      ) as StandardAllowanceForm)) ||
       initialStandardAllowance
   );
   const [engineeringAllowances, setEngineeringAllowances] = useState(
     (allowances &&
       (allowances.filter(
         (allowance) => allowance.allowance_type === 'engineering'
-      ) as EngineeringAllowance[])) ||
+      ) as EngineeringAllowanceForm[])) ||
       []
   );
   const [standardAllowanceSelectedIndex, setStandardAllowanceSelectedIndex] = useState<
@@ -67,11 +73,16 @@ export default function Allowances() {
   const [overlapAllowancesIndexes, setOverlapAllowancesIndexes] =
     useState<OverlapAllowancesIndexesType>([false, false]);
 
+  const standardAllowanceValue = useMemo(
+    () => getAllowanceValue(standardAllowance.default_value),
+    [standardAllowance]
+  );
+
   const setStandardDistribution = (distribution: StandardAllowance['distribution']) => {
     setStandardAllowance({ ...standardAllowance, distribution });
   };
 
-  const setStandardValueAndUnit = (valueAndUnit: AllowanceValue) => {
+  const setStandardValueAndUnit = (valueAndUnit: AllowanceValueForm) => {
     setStandardAllowance({ ...standardAllowance, default_value: valueAndUnit });
   };
 
@@ -129,12 +140,19 @@ export default function Allowances() {
     }
   };
 
+  // dispatch only the valid allowances in the store
   useEffect(() => {
-    if (getAllowanceValue(standardAllowance.default_value) === 0) {
-      dispatch(updateAllowances(engineeringAllowances));
-    } else {
-      dispatch(updateAllowances([standardAllowance, ...engineeringAllowances]));
-    }
+    const standardAllowanceDefaultValue = getAllowanceValue(standardAllowance.default_value);
+    const validStandardAllowance =
+      standardAllowanceDefaultValue && standardAllowanceDefaultValue > 0
+        ? [standardAllowance as StandardAllowance]
+        : [];
+    dispatch(
+      updateAllowances([
+        ...validStandardAllowance,
+        ...(engineeringAllowances as EngineeringAllowance[]),
+      ])
+    );
   }, [standardAllowance, engineeringAllowances]);
 
   return (
@@ -152,7 +170,7 @@ export default function Allowances() {
               setDistribution={setStandardDistribution}
               setValueAndUnit={setStandardValueAndUnit}
             />
-            {getAllowanceValue(standardAllowance.default_value) !== 0 && (
+            {standardAllowanceValue !== undefined && standardAllowanceValue > 0 && (
               <>
                 <button
                   className="subtitle mb-1 mt-2"
