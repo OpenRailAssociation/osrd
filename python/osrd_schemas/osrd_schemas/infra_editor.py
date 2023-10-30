@@ -1,8 +1,9 @@
 from enum import Enum
 from typing import List, Literal, Union
 
-import infra
 from pydantic import BaseModel, Field, RootModel
+
+from . import infra
 
 
 class SignalingSystem(str, Enum):
