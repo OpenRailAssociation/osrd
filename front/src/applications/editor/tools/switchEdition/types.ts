@@ -1,10 +1,8 @@
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { Position } from 'geojson';
-import { useSelector } from 'react-redux';
-import { getInfraID } from 'reducers/osrdconf/selectors';
 
-import { EndPoint, SwitchEntity, SwitchType } from '../../../../types';
-import { CommonToolState } from '../commonToolState';
+import { EndPoint, SwitchEntity, SwitchType } from 'types';
+import { CommonToolState } from 'applications/editor/tools/commonToolState';
 
 export type PortEndPointCandidate = {
   endPoint: EndPoint;
@@ -27,11 +25,10 @@ export type SwitchEditionState = CommonToolState & {
       };
 };
 
-export const useSwitchTypes = () => {
-  const infraID = useSelector(getInfraID);
-  if (infraID) {
-    const { data } = osrdEditoastApi.endpoints.getInfraByIdSwitchTypes.useQuery({ id: infraID });
-    return (data || []) as SwitchType[];
-  }
-  return [];
+export const useSwitchTypes = (infraID: number | undefined) => {
+  const { data } = osrdEditoastApi.endpoints.getInfraByIdSwitchTypes.useQuery(
+    { id: infraID as number },
+    { skip: !infraID }
+  );
+  return (data || []) as SwitchType[];
 };

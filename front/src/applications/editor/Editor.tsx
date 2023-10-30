@@ -39,7 +39,7 @@ const Editor: FC = () => {
   const { urlInfra } = useParams();
   const infraID = useSelector(getInfraID);
   const editorState = useSelector((state: { editor: EditorState }) => state.editor);
-  const switchTypes = useSwitchTypes();
+  const switchTypes = useSwitchTypes(infraID);
   /* eslint-disable @typescript-eslint/no-explicit-any */
   const [toolAndState, setToolAndState] = useState<FullTool<any>>({
     tool: TOOLS[TOOL_TYPES.SELECTION],
