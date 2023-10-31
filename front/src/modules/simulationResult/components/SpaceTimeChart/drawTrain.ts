@@ -109,7 +109,7 @@ export default function drawTrain(
     : undefined;
 
   if (direction && currentAllowanceSettings) {
-    if (trainToDraw.eco_routeAspects && currentAllowanceSettings?.ecoBlocks) {
+    if (trainToDraw.eco_routeAspects) {
       // Let's draw eco_route_aspects
       trainToDraw.eco_routeAspects.forEach((ecoRouteAspect) => {
         drawRect(
