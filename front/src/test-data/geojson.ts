@@ -1,19 +1,19 @@
 import { random } from 'lodash';
-import type { LineString, Feature, Point, Position } from 'geojson';
+import type { LineString, Feature, Position } from 'geojson';
 import { lineString as turfLineString } from '@turf/helpers';
 
 /**
  * Creates a random position from a range
  * @param valueRange the range [min, max] where the values belong
  */
-export function position(valueRange: [number, number]): Position;
+function position(valueRange: [number, number]): Position;
 /**
  * Creates a json position from x and y values
  * @param x x coordinate
  * @param y y coordinate
  */
-export function position(x: number, y: number): Position;
-export function position(arg1: number | [number, number], arg2?: number): Position {
+function position(x: number, y: number): Position;
+function position(arg1: number | [number, number], arg2?: number): Position {
   if (Array.isArray(arg1)) {
     return [random(arg1[0], arg1[1]), random(arg1[0], arg1[1])];
   }
@@ -34,7 +34,7 @@ export function lineString(): Feature<LineString>;
  */
 export function lineString(length: number, valueRange: [number, number]): Feature<LineString>;
 /**
- * Creates a geojson position from an array of Position
+ * Creates a geojson lineString from an array of Position
  * @param positions
  */
 export function lineString(positions: Position[]): Feature<LineString>;

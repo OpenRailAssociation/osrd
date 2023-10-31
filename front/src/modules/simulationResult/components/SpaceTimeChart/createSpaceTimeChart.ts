@@ -10,8 +10,7 @@ import {
 import defineChart from 'modules/simulationResult/components/ChartHelpers/defineChart';
 import { ChartAxes } from '../simulationResultsConsts';
 
-// This is only used by SpaceTimeChart for now.
-export default function createChart<T extends number | Date>(
+export default function createSpaceTimeChart<T extends number | Date>(
   chart: Chart | undefined,
   chartID: string,
   dataSimulation: SimulationTrain[],
@@ -37,10 +36,7 @@ export default function createChart<T extends number | Date>(
         (train) =>
           d3.max(
             train[pos].map(
-              (section) =>
-                d3.max(
-                  section.map((step: ConsolidatedPosition) => step[keyValues[1] as 'position']) // dataSimulation is SimulationTrain[] so it’s always position here
-                ) as T
+              (section) => d3.max(section.map((step: ConsolidatedPosition) => step.position)) as T
             )
           ) as T
       )

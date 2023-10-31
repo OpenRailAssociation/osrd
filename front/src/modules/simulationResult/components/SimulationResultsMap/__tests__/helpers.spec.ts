@@ -11,7 +11,7 @@ describe('getSimulationHoverPositions', () => {
       ecoBlocks: false,
     },
   };
-  it('should not crash when headPosition but tailPosition does not', () => {
+  it('should not crash when headPosition exists but tailPosition does not', () => {
     const path = lineString();
     const simulation = { trains: [] };
     const date = new Date();

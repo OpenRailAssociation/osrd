@@ -1,5 +1,5 @@
 import drawTrain from 'modules/simulationResult/components/SpaceTimeChart/drawTrain';
-import createChart from 'modules/simulationResult/components/SpaceTimeChart/createChart';
+import createSpaceTimeChart from 'modules/simulationResult/components/SpaceTimeChart/createSpaceTimeChart';
 import {
   AllowancesSettings,
   Chart,
@@ -72,7 +72,7 @@ const drawAllTrains = (
   simulationTrains: Train[],
   trainsToDraw: SimulationTrain[]
 ) => {
-  const chartLocal = createChart(
+  const chartLocal = createSpaceTimeChart(
     chart,
     CHART_ID,
     trainsToDraw,
