@@ -1,16 +1,19 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { CircleLayer, LineLayer, Source, SymbolLayer } from 'react-map-gl/maplibre';
+import { Source } from 'react-map-gl/maplibre';
+import type { CircleLayer, LineLayer, SymbolLayer } from 'react-map-gl/maplibre';
 
-import { RootState } from 'reducers';
-import { Theme, OmitLayer } from 'types';
+import type { Theme, OmitLayer } from 'types';
+
 import { MAP_URL } from 'common/Map/const';
-import { getInfraID } from 'reducers/osrdconf/selectors';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
+
+import { getMap } from 'reducers/map/selectors';
 
 interface RoutesProps {
   colors: Theme;
   layerOrder: number;
+  infraID: number | undefined;
 }
 
 export function getRoutesLineLayerProps(params: {
@@ -87,10 +90,8 @@ export function getRoutesTextLayerProps(params: {
   return res;
 }
 
-export default function Routes(props: RoutesProps) {
-  const { colors, layerOrder } = props;
-  const { layersSettings } = useSelector((state: RootState) => state.map);
-  const infraID = useSelector(getInfraID);
+export default function Routes({ colors, layerOrder, infraID }: RoutesProps) {
+  const { layersSettings } = useSelector(getMap);
 
   const lineProps = getRoutesLineLayerProps({ colors, sourceTable: 'routes' });
   const pointProps = getRoutesPointLayerProps({ colors, sourceTable: 'routes' });

@@ -1,24 +1,27 @@
 /* eslint-disable react/jsx-pascal-case */
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { RootState } from 'reducers';
-import { LineLayer, SymbolLayer, Source } from 'react-map-gl/maplibre';
+import { Source } from 'react-map-gl/maplibre';
+import type { LineLayer, SymbolLayer } from 'react-map-gl/maplibre';
 import { isNil } from 'lodash';
-import { TFunction } from 'i18next';
+import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
-import { FilterSpecification } from 'maplibre-gl';
+import type { FilterSpecification } from 'maplibre-gl';
+
+import type { Theme, OmitLayer } from 'types';
 
 import { MAP_URL } from 'common/Map/const';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
-import { getInfraID } from 'reducers/osrdconf/selectors';
-import { MapState } from 'reducers/map';
-import { getSpeedSectionsTag, getSpeedSectionsName } from '../../SpeedLimits';
-import { Theme, OmitLayer } from '../../../../../types';
-import SNCF_PSL_Signs from './PSLSigns';
+import SNCF_PSL_Signs from 'common/Map/Layers/extensions/SNCF/PSLSigns';
+import { getSpeedSectionsTag, getSpeedSectionsName } from 'common/Map/Layers/SpeedLimits';
+
+import type { RootState } from 'reducers';
+import type { MapState } from 'reducers/map';
 
 interface SNCF_PSLProps {
   colors: Theme;
   layerOrder?: number;
+  infraID?: number | undefined;
 }
 
 export function getPSLFilter(layersSettings: MapState['layersSettings']): FilterSpecification {
@@ -154,11 +157,9 @@ export function getPSLSpeedLineLayerProps({
   return res;
 }
 
-export default function SNCF_PSL(props: SNCF_PSLProps) {
+const SNCF_PSL = ({ colors, layerOrder, infraID }: SNCF_PSLProps) => {
   const { t } = useTranslation('map-settings');
   const { layersSettings } = useSelector((state: RootState) => state.map);
-  const infraID = useSelector(getInfraID);
-  const { colors, layerOrder } = props;
 
   const speedSectionFilter = getPSLFilter(layersSettings);
 
@@ -219,4 +220,6 @@ export default function SNCF_PSL(props: SNCF_PSLProps) {
     );
   }
   return null;
-}
+};
+
+export default SNCF_PSL;

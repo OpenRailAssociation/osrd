@@ -1,33 +1,35 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
+import { compact } from 'lodash';
 import cx from 'classnames';
 
-import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
+import {
+  TrainSchedule,
+  TrainScheduleWithPath,
+  TrainScheduleWithPathRef,
+} from 'applications/operationalStudies/types';
+
 import Map from 'modules/trainschedule/components/ImportTrainSchedule/Map';
-import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
-import { getRollingStockID } from 'reducers/osrdconf/selectors';
+import type { Point } from 'modules/trainschedule/components/ImportTrainSchedule/types';
+import { refactorUniquePaths } from 'modules/trainschedule/components/ImportTrainSchedule/ImportTrainScheduleHelpers';
 import generatePathfindingPayload from 'modules/trainschedule/components/ImportTrainSchedule/generatePathfindingPayload';
 import generateTrainSchedulesPayload from 'modules/trainschedule/components/ImportTrainSchedule/generateTrainSchedulesPayload';
 import {
   initialViewport,
   initialStatus,
 } from 'modules/trainschedule/components/ImportTrainSchedule/consts';
-import { refactorUniquePaths } from 'modules/trainschedule/components/ImportTrainSchedule/ImportTrainScheduleHelpers';
-import {
+import Spacer from 'common/Spacer';
+import { useOsrdConfSelectors } from 'common/osrdContext';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
+import type {
   LightRollingStock,
   PathResponse,
   TrainScheduleBatchItem,
-  osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
-import { compact } from 'lodash';
-import Spacer from 'common/Spacer';
-import {
-  TrainSchedule,
-  TrainScheduleWithPath,
-  TrainScheduleWithPathRef,
-} from 'applications/operationalStudies/types';
-import ImportTrainScheduleModalFooter from './ImportTrainScheduleModalFooter';
-import { Point } from './types';
+
+import ImportTrainScheduleModalFooter from 'modules/trainschedule/components/ImportTrainSchedule/ImportTrainScheduleModalFooter';
 
 /* METHOD
  *
@@ -72,6 +74,7 @@ const ImportTrainScheduleModal = ({
   trains,
 }: ImportTrainScheduleModalProps) => {
   const { t } = useTranslation(['operationalStudies/importTrainSchedule']);
+  const { getRollingStockID } = useOsrdConfSelectors();
   const rollingStockID = useSelector(getRollingStockID);
 
   const { refetch: refetchTimetable } =

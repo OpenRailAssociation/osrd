@@ -1,16 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
-import { updateTrainStep, updateTrainCount, updateTrainDelta } from 'reducers/osrdconf';
-import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-
-import { getTrainStep, getTrainCount, getTrainDelta } from 'reducers/osrdconf/selectors';
-import { useDebounce } from 'utils/helpers';
-import { IoFootstepsSharp } from 'react-icons/io5';
 import { AiOutlineNumber } from 'react-icons/ai';
+import { IoFootstepsSharp } from 'react-icons/io5';
 import { RxSpaceEvenlyHorizontally } from 'react-icons/rx';
 
+import { useDebounce } from 'utils/helpers';
+
+import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
+
 export default function TrainAddingSettings() {
+  const { getTrainStep, getTrainCount, getTrainDelta } = useOsrdConfSelectors();
+  const { updateTrainStep, updateTrainCount, updateTrainDelta } = useOsrdConfActions();
   const [trainStep, setTrainStep] = useState(useSelector(getTrainStep));
   const [trainCount, setTrainCount] = useState(useSelector(getTrainCount));
   const [trainDelta, setTrainDelta] = useState(useSelector(getTrainDelta));

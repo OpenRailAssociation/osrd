@@ -1,13 +1,13 @@
-import { MapLayerMouseEvent } from 'maplibre-gl';
-import { Feature, LineString, Point } from 'geojson';
+import type { MapLayerMouseEvent } from 'maplibre-gl';
+import type { Dispatch } from 'redux';
+import turfBbox from '@turf/bbox';
 import length from '@turf/length';
 import lineSlice from '@turf/line-slice';
-import { NearestPoint } from '@turf/nearest-point';
-import turfBbox from '@turf/bbox';
 import { featureCollection } from '@turf/helpers';
-import { Dispatch } from 'redux';
+import type { NearestPoint } from '@turf/nearest-point';
+import type { Feature, LineString, Point } from 'geojson';
 
-import {
+import type {
   Bbox,
   BufferStopEntity,
   CatenaryEntity,
@@ -19,12 +19,15 @@ import {
   SwitchEntity,
   TrackSectionEntity,
 } from 'types';
-import { selectLayers } from 'reducers/editor';
-import { TrackState } from './rangeEdition/types';
-import TOOL_TYPES from './toolTypes';
-import { EditorContextType } from './editorContextTypes';
-import { EDITOAST_TO_LAYER_DICT, EditoastType, EditorState } from './types';
-import { getEntity } from '../data/api';
+
+import { getEntity } from 'applications/editor/data/api';
+import TOOL_TYPES from 'applications/editor/tools/toolTypes';
+import { EDITOAST_TO_LAYER_DICT } from 'applications/editor/tools/types';
+import type { TrackState } from 'applications/editor/tools/rangeEdition/types';
+import type { EditoastType, EditorState } from 'applications/editor/tools/types';
+import type { EditorContextType } from 'applications/editor/tools/editorContextTypes';
+
+import { editorSliceActions } from 'reducers/editor';
 
 /**
  * Since Turf and Editoast do not compute the lengths the same way (see #1751)
@@ -106,7 +109,7 @@ export function selectEntity(
   });
 
   // dispatch the new layers
-  if (actualLayers.size !== nextLayers.size) dispatch(selectLayers(nextLayers));
+  if (actualLayers.size !== nextLayers.size) dispatch(editorSliceActions.selectLayers(nextLayers));
 }
 
 /**

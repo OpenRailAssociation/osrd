@@ -2,24 +2,22 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { Source } from 'react-map-gl/maplibre';
 
-import { RootState } from 'reducers';
-import { Theme } from 'types';
+import type { Theme } from 'types';
 
 import { MAP_TRACK_SOURCES, MAP_URL } from 'common/Map/const';
 import geoMainLayer from 'common/Map/Layers/geographiclayers';
 import { lineNameLayer, lineNumberLayer, trackNameLayer } from 'common/Map/Layers/commonLayers';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
-import { getInfraID } from 'reducers/osrdconf/selectors';
+import { getMap } from 'reducers/map/selectors';
 
 interface TracksGeographicProps {
   colors: Theme;
   layerOrder?: number;
+  infraID: number | undefined;
 }
 
-function TracksGeographic(props: TracksGeographicProps) {
-  const { colors, layerOrder } = props;
-  const infraID = useSelector(getInfraID);
-  const { showIGNBDORTHO, showIGNSCAN25 } = useSelector((state: RootState) => state.map);
+function TracksGeographic({ colors, layerOrder, infraID }: TracksGeographicProps) {
+  const { showIGNBDORTHO, showIGNSCAN25 } = useSelector(getMap);
   const infraVersion = infraID !== undefined ? `?infra=${infraID}` : null;
 
   return (

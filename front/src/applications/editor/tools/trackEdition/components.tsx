@@ -1,35 +1,38 @@
-import React, { FC, useContext, useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Layer, Source } from 'react-map-gl/maplibre';
 import { useTranslation } from 'react-i18next';
-import { last } from 'lodash';
-import { Position } from 'geojson';
 import { BsBoxArrowInRight } from 'react-icons/bs';
+import { last } from 'lodash';
+import type { Position } from 'geojson';
 
+import type { CatenaryEntity, SpeedSectionEntity, TrackSectionEntity } from 'types';
+
+import EditorContext from 'applications/editor/context';
+import { getEntities } from 'applications/editor/data/api';
+import TOOL_TYPES from 'applications/editor/tools/toolTypes';
+import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import EditorForm from 'applications/editor/components/EditorForm';
 import EntitySumUp from 'applications/editor/components/EntitySumUp';
 import EntityError from 'applications/editor/components/EntityError';
-import { getEntities } from 'applications/editor/data/api';
-import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
-import EditorContext from 'applications/editor/context';
+import { injectGeometry, removeInvalidRanges } from 'applications/editor/tools/trackEdition/utils';
+import type { TrackEditionState } from 'applications/editor/tools/trackEdition/types';
+import type { ExtendedEditorContextType } from 'applications/editor/tools/editorContextTypes';
 import {
   getEditCatenaryState,
   getEditSpeedSectionState,
 } from 'applications/editor/tools/rangeEdition/utils';
-import TOOL_TYPES from 'applications/editor/tools/toolTypes';
-import { ExtendedEditorContextType } from 'applications/editor/tools/editorContextTypes';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+
 import { Spinner } from 'common/Loader';
-import GeoJSONs from 'common/Map/Layers/GeoJSONs';
 import colors from 'common/Map/Consts/colors';
+import GeoJSONs from 'common/Map/Layers/GeoJSONs';
+import { useInfraID } from 'common/osrdContext';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+
 import { save } from 'reducers/editor';
 import { getMap } from 'reducers/map/selectors';
-import { getInfraID } from 'reducers/osrdconf/selectors';
-import { CatenaryEntity, SpeedSectionEntity, TrackSectionEntity } from 'types';
 import DebouncedNumberInputSNCF from 'common/BootstrapSNCF/FormSNCF/DebouncedNumberInputSNCF';
 import { WidgetProps } from '@rjsf/core';
-import { TrackEditionState } from './types';
-import { injectGeometry, removeInvalidRanges } from './utils';
 
 export const TRACK_LAYER_ID = 'trackEditionTool/new-track-path';
 export const POINTS_LAYER_ID = 'trackEditionTool/new-track-points';
@@ -38,16 +41,19 @@ const TRACK_COLOR = '#666';
 const TRACK_STYLE = { 'line-color': TRACK_COLOR, 'line-dasharray': [2, 1], 'line-width': 2 };
 const DEFAULT_DISPLAYED_RANGES_COUNT = 3;
 
+interface AttachedRangesItemsListProps {
+  id: string;
+  itemType: 'SpeedSection' | 'Catenary';
+}
+
 /**
  * Generic component to show attached ranges items of a specific type for an edited track section:
  */
-export const AttachedRangesItemsList: FC<{ id: string; itemType: 'SpeedSection' | 'Catenary' }> = ({
-  id,
-  itemType,
-}) => {
+
+export const AttachedRangesItemsList = ({ id, itemType }: AttachedRangesItemsListProps) => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
-  const infraID = useSelector(getInfraID);
+  const infraID = useInfraID();
   const [itemsState, setItemsState] = useState<
     | { type: 'idle' }
     | { type: 'loading' }
@@ -185,13 +191,15 @@ export const AttachedRangesItemsList: FC<{ id: string; itemType: 'SpeedSection' 
   );
 };
 
-export const TrackEditionLayers: FC = () => {
+export const TrackEditionLayers = () => {
   const {
     state,
     renderingFingerprint,
     editorState: { editorLayers },
   } = useContext(EditorContext) as ExtendedEditorContextType<TrackEditionState>;
   const { mapStyle, layersSettings, issuesSettings } = useSelector(getMap);
+
+  const infraID = useInfraID();
 
   const isAddingPointOnExistingSection =
     typeof state.nearestPoint?.properties?.sectionIndex === 'number';
@@ -240,6 +248,7 @@ export const TrackEditionLayers: FC = () => {
         fingerprint={renderingFingerprint}
         layersSettings={layersSettings}
         issuesSettings={issuesSettings}
+        infraID={infraID}
       />
 
       {/* Track path */}
@@ -355,10 +364,10 @@ export const CustomLengthInput: React.FC<WidgetProps> = (props) => {
   );
 };
 
-export const TrackEditionLeftPanel: FC = () => {
+export const TrackEditionLeftPanel: React.FC = () => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
-  const infraID = useSelector(getInfraID);
+  const infraID = useInfraID();
   const { state, setState, isFormSubmited, setIsFormSubmited } = useContext(
     EditorContext
   ) as ExtendedEditorContextType<TrackEditionState>;
@@ -461,7 +470,7 @@ export const TrackEditionLeftPanel: FC = () => {
   );
 };
 
-export const TrackEditionMessages: FC = () => {
+export const TrackEditionMessages = () => {
   const { t, state } = useContext(EditorContext) as ExtendedEditorContextType<TrackEditionState>;
 
   switch (state.editionState.type) {

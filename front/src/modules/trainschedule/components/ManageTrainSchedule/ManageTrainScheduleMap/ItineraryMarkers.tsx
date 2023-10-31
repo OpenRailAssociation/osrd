@@ -1,14 +1,14 @@
-import { Map } from 'maplibre-gl';
 import React, { useMemo } from 'react';
+import { Map } from 'maplibre-gl';
 import { useSelector } from 'react-redux';
 import { Marker } from 'react-map-gl/maplibre';
 import originSVG from 'assets/pictures/origin.svg';
 import destinationSVG from 'assets/pictures/destination.svg';
 import viaSVG from 'assets/pictures/via.svg';
-import { getVias, getOrigin, getDestination } from 'reducers/osrdconf/selectors';
 import { getNearestTrack } from 'utils/mapHelper';
 import { PointOnMap } from 'applications/operationalStudies/consts';
 import { Position } from '@turf/helpers';
+import { useOsrdConfSelectors } from 'common/osrdContext';
 
 enum MARKER_TYPE {
   ORIGIN = 'origin',
@@ -67,6 +67,7 @@ const getMarkerName = (marker: PointOnMap, coordinates: number[] | Position, map
 };
 
 const ItineraryMarkers = ({ map }: { map: Map }) => {
+  const { getVias, getOrigin, getDestination } = useOsrdConfSelectors();
   const vias = useSelector(getVias);
   const origin = useSelector(getOrigin);
   const destination = useSelector(getDestination);

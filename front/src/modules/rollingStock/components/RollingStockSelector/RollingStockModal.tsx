@@ -1,16 +1,19 @@
-import React, { useState, useEffect, useContext, useMemo, MutableRefObject } from 'react';
+import React, { useState, useEffect, useContext, useMemo } from 'react';
+import type { MutableRefObject } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { setFailure } from 'reducers/main';
 import { useTranslation } from 'react-i18next';
 
-import { LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
-import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
-import { getRollingStockID } from 'reducers/osrdconf/selectors';
+import RollingStockCard from 'modules/rollingStock/components/RollingStockCard/RollingStockCard';
+import SearchRollingStock from 'modules/rollingStock/components/RollingStockSelector/SearchRollingStock';
+
 import Loader from 'common/Loader';
+import { useOsrdConfSelectors } from 'common/osrdContext';
+import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import RollingStockCard from 'modules/rollingStock/components/RollingStockCard/RollingStockCard';
-import SearchRollingStock from './SearchRollingStock';
+import type { LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
+
+import { setFailure } from 'reducers/main';
 
 interface RollingStockModal {
   ref2scroll: MutableRefObject<HTMLDivElement | null>;
@@ -18,6 +21,7 @@ interface RollingStockModal {
 
 function RollingStockModal({ ref2scroll }: RollingStockModal) {
   const dispatch = useDispatch();
+  const { getRollingStockID } = useOsrdConfSelectors();
   const rollingStockID = useSelector(getRollingStockID);
   const { t } = useTranslation(['translation', 'rollingstock']);
   const [isLoading, setIsLoading] = useState(true);

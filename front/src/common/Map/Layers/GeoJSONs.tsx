@@ -1,52 +1,59 @@
+import React, { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import React, { FC, useEffect, useMemo, useState } from 'react';
+import { Layer, Source } from 'react-map-gl/maplibre';
+import type { AnyLayer, LayerProps } from 'react-map-gl/maplibre';
+import type { FilterSpecification } from 'maplibre-gl';
 import chroma from 'chroma-js';
-import { Feature, FeatureCollection } from 'geojson';
+import type { Feature, FeatureCollection } from 'geojson';
 import { isPlainObject, mapValues, omit } from 'lodash';
-import { AnyLayer, Layer, Source, LayerProps } from 'react-map-gl/maplibre';
-import { FilterSpecification } from 'maplibre-gl';
 
-import { LayerType } from 'applications/editor/tools/types';
-import { RootState } from 'reducers';
-import { MapState } from 'reducers/map';
-import { getInfraID } from 'reducers/osrdconf/selectors';
+import type { Theme } from 'types';
+
 import { LAYERS, LAYER_ENTITIES_ORDERS, LAYER_GROUPS_ORDER } from 'config/layerOrder';
-import { Theme } from 'types';
-import geoMainLayer from './geographiclayers';
+
+import type { LayerType } from 'applications/editor/tools/types';
+
+import geoMainLayer from 'common/Map/Layers/geographiclayers';
 import {
   getPointLayerProps,
   getSignalLayerProps,
   getSignalMatLayerProps,
-} from './geoSignalsLayers';
-import { lineNameLayer, lineNumberLayer, trackNameLayer } from './commonLayers';
-import { getBufferStopsLayerProps } from './BufferStops';
-import { getDetectorsLayerProps, getDetectorsNameLayerProps } from './Detectors';
-import { getSwitchesLayerProps, getSwitchesNameLayerProps } from './Switches';
+} from 'common/Map/Layers/geoSignalsLayers';
+import type { LayerContext } from 'common/Map/Layers/types';
+import { Platforms } from 'common/Map/Layers/Platforms';
+import OrderedLayer from 'common/Map/Layers/OrderedLayer';
+import getKPLabelLayerProps from 'common/Map/Layers/KPLabel';
+import { MAP_TRACK_SOURCE, MAP_URL } from 'common/Map/const';
+import { getBufferStopsLayerProps } from 'common/Map/Layers/BufferStops';
+import { getSwitchesLayerProps, getSwitchesNameLayerProps } from 'common/Map/Layers/Switches';
+import { lineNameLayer, lineNumberLayer, trackNameLayer } from 'common/Map/Layers/commonLayers';
+import { getDetectorsLayerProps, getDetectorsNameLayerProps } from 'common/Map/Layers/Detectors';
+import { getCatenariesProps, getCatenariesTextParams } from 'common/Map/Layers/Catenaries';
+import {
+  getPSLSignsLayerProps,
+  getPSLSignsMastLayerProps,
+} from 'common/Map/Layers/extensions/SNCF/PSLSigns';
 import {
   getLineErrorsLayerProps,
   getLineTextErrorsLayerProps,
   getPointErrorsLayerProps,
   getPointTextErrorsLayerProps,
-} from './Errors';
-import { MAP_TRACK_SOURCE, MAP_URL } from '../const';
+} from 'common/Map/Layers/Errors';
 import {
   getSpeedSectionsFilter,
   getSpeedSectionsLineLayerProps,
   getSpeedSectionsPointLayerProps,
   getSpeedSectionsTextLayerProps,
-} from './SpeedLimits';
+} from 'common/Map/Layers/SpeedLimits';
 import {
   getPSLFilter,
   getPSLSpeedLineBGLayerProps,
   getPSLSpeedLineLayerProps,
   getPSLSpeedValueLayerProps,
-} from './extensions/SNCF/PSL';
-import { getPSLSignsLayerProps, getPSLSignsMastLayerProps } from './extensions/SNCF/PSLSigns';
-import { LayerContext } from './types';
-import { getCatenariesProps, getCatenariesTextParams } from './Catenaries';
-import getKPLabelLayerProps from './KPLabel';
-import OrderedLayer from './OrderedLayer';
-import { Platforms } from './Platforms';
+} from 'common/Map/Layers/extensions/SNCF/PSL';
+
+import type { RootState } from 'reducers';
+import type { MapState } from 'reducers/map';
 
 const POINT_ENTITIES_MIN_ZOOM = 12;
 
@@ -387,12 +394,14 @@ export const SourcesDefinitionsIndex = SOURCES_DEFINITION.reduce(
   {} as Record<LayerType, (context: LayerContext, prefix: string) => AnyLayer[]>
 );
 
-export const EditorSource: FC<{
+interface EditorSourceProps {
   id?: string;
   data: Feature | FeatureCollection;
   layers: AnyLayer[];
   layerOrder?: number;
-}> = ({ id, data, layers, layerOrder }) => {
+}
+
+export const EditorSource = ({ id, data, layers, layerOrder }: EditorSourceProps) => {
   const dataFingerPrint =
     data.type === 'FeatureCollection'
       ? data.features.map((f) => f.properties?.id).concat()
@@ -410,7 +419,7 @@ export const EditorSource: FC<{
   );
 };
 
-const GeoJSONs: FC<{
+interface GeoJSONsProps {
   colors: Theme;
   layersSettings: MapState['layersSettings'];
   issuesSettings?: MapState['issuesSettings'];
@@ -423,7 +432,10 @@ const GeoJSONs: FC<{
   beforeId?: string;
   // When true, all layers are rendered (ie "minZoom" restrictions are ignored)
   renderAll?: boolean;
-}> = ({
+  infraID: number | undefined;
+}
+
+const GeoJSONs = ({
   colors,
   layersSettings,
   issuesSettings,
@@ -435,8 +447,8 @@ const GeoJSONs: FC<{
   isEmphasized = true,
   beforeId,
   renderAll,
-}) => {
-  const infraID = useSelector(getInfraID);
+  infraID,
+}: GeoJSONsProps) => {
   const selectedPrefix = `${prefix}selected/`;
   const hiddenColors = useMemo(
     () =>

@@ -1,14 +1,14 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { getInfraID } from 'reducers/osrdconf/selectors';
 import { getMap } from 'reducers/map/selectors';
-import { onResultSearchClick } from 'common/Map/utils';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+
 import { setFailure } from 'reducers/main';
 import { sortBy } from 'lodash';
 import { useDebounce } from 'utils/helpers';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import { onResultSearchClick } from 'common/Map/utils';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import MultiSelectSNCF from 'common/BootstrapSNCF/MultiSelectSNCF';
 import nextId from 'react-id-generator';
 import SelectImproved from 'common/BootstrapSNCF/SelectImprovedSNCF';
@@ -16,6 +16,7 @@ import SignalCard from 'common/Map/Search/SignalCard';
 
 import type { SearchResultItemSignal, SearchPayload } from 'common/api/osrdEditoastApi';
 import type { Viewport } from 'reducers/map';
+import { useInfraID } from 'common/osrdContext';
 
 type MapSearchSignalProps = {
   updateExtViewport: (viewport: Partial<Viewport>) => void;
@@ -29,7 +30,7 @@ export type SortType = {
 
 const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSignalProps) => {
   const map = useSelector(getMap);
-  const infraID = useSelector(getInfraID);
+  const infraID = useInfraID();
   const [searchState, setSearch] = useState('');
   const [searchLineState, setSearchLine] = useState('');
   const { t } = useTranslation(['translation', 'map-search']);

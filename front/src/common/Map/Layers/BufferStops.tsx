@@ -1,7 +1,6 @@
-import React, { FC } from 'react';
+import React from 'react';
 import { useSelector } from 'react-redux';
 import { Source, SymbolLayer } from 'react-map-gl/maplibre';
-import { getInfraID } from 'reducers/osrdconf/selectors';
 import { Theme, OmitLayer } from 'types';
 import { MAP_URL } from 'common/Map/const';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
@@ -36,10 +35,10 @@ export function getBufferStopsLayerProps(params: { sourceTable?: string }): Omit
 interface BufferStopsProps {
   colors: Theme;
   layerOrder: number;
+  infraID: number | undefined;
 }
 
-const BufferStops: FC<BufferStopsProps> = ({ layerOrder }) => {
-  const infraID = useSelector(getInfraID);
+const BufferStops = ({ layerOrder, infraID }: BufferStopsProps) => {
   const layersSettings = useSelector(getLayersSettings);
 
   return layersSettings.bufferstops ? (

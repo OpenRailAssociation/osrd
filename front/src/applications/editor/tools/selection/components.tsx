@@ -1,4 +1,4 @@
-import React, { FC, useContext } from 'react';
+import React, { useContext } from 'react';
 import { Layer, Popup, Source } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
 import { groupBy, map } from 'lodash';
@@ -6,17 +6,24 @@ import { GoNoEntry } from 'react-icons/go';
 import { RiFocus3Line } from 'react-icons/ri';
 import { useTranslation } from 'react-i18next';
 
-import { Zone } from 'types';
-import colors from 'common/Map/Consts/colors';
-import { getMap } from 'reducers/map/selectors';
-import { zoneToFeature } from 'utils/mapHelper';
-import GeoJSONs from 'common/Map/Layers/GeoJSONs';
-import { SelectionState } from './types';
-import EditorContext from '../../context';
-import EntitySumUp from '../../components/EntitySumUp';
+import type { Zone } from 'types';
 
-import './styles.scss';
-import { EditorContextType, ExtendedEditorContextType } from '../editorContextTypes';
+import { zoneToFeature } from 'utils/mapHelper';
+
+import EditorContext from 'applications/editor/context';
+import 'applications/editor/tools/selection/styles.scss';
+import EntitySumUp from 'applications/editor/components/EntitySumUp';
+import type { SelectionState } from 'applications/editor/tools/selection/types';
+import type {
+  EditorContextType,
+  ExtendedEditorContextType,
+} from 'applications/editor/tools/editorContextTypes';
+
+import colors from 'common/Map/Consts/colors';
+import GeoJSONs from 'common/Map/Layers/GeoJSONs';
+import { useInfraID } from 'common/osrdContext';
+
+import { getMap } from 'reducers/map/selectors';
 
 export const SelectionMessages = () => {
   const { t, state } = useContext(EditorContext) as EditorContextType<SelectionState>;
@@ -24,20 +31,22 @@ export const SelectionMessages = () => {
   return t(`Editor.tools.select-items.help.${state.selectionState.type}-selection`).toString();
 };
 
-const SelectionZone: FC<{ newZone?: Zone }> = ({ newZone }) =>
+const SelectionZone = ({ newZone }: { newZone?: Zone }) =>
   newZone ? (
     <Source type="geojson" data={zoneToFeature(newZone)} key="new-zone">
       <Layer type="line" paint={{ 'line-color': '#666', 'line-dasharray': [3, 3] }} />
     </Source>
   ) : null;
 
-export const SelectionLayers: FC = () => {
+export const SelectionLayers = () => {
   const {
     state,
     editorState: { editorLayers },
     renderingFingerprint,
   } = useContext(EditorContext) as ExtendedEditorContextType<SelectionState>;
   const { mapStyle, layersSettings, issuesSettings } = useSelector(getMap);
+
+  const infraID = useInfraID();
 
   let selectionZone: Zone | undefined;
 
@@ -67,6 +76,7 @@ export const SelectionLayers: FC = () => {
         fingerprint={renderingFingerprint}
         layersSettings={layersSettings}
         issuesSettings={issuesSettings}
+        infraID={infraID}
       />
       <SelectionZone newZone={selectionZone} />
       {state.mousePosition && state.selectionState.type === 'single' && state.hovered && (
@@ -94,7 +104,7 @@ export const SelectionLayers: FC = () => {
   );
 };
 
-export const SelectionLeftPanel: FC = () => {
+export const SelectionLeftPanel = () => {
   const { t } = useTranslation();
   const { state, setState } = useContext(
     EditorContext

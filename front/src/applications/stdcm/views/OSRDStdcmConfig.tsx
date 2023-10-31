@@ -2,26 +2,22 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import { Itinerary, Map } from 'modules/trainschedule/components/ManageTrainSchedule';
-import { StdcmRequestStatus } from 'applications/stdcm/types';
 import STDCM_REQUEST_STATUS from 'applications/stdcm/consts';
+import type { StdcmRequestStatus } from 'applications/stdcm/types';
+import RunningTime from 'applications/stdcm/components/RunningTime';
+import OSRDStdcmResults from 'applications/stdcm/views/OSRDStdcmResults';
+import type { OsrdStdcmConfState } from 'applications/operationalStudies/consts';
+
+import StdcmAllowances from 'modules/stdcmAllowances/components/StdcmAllowances';
+import { Itinerary, Map } from 'modules/trainschedule/components/ManageTrainSchedule';
+import { RollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector';
+
+import { useInfraID, useOsrdConfSelectors } from 'common/osrdContext';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import ScenarioExplorer from 'common/ScenarioExplorer/ScenarioExplorer';
 import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector/SpeedLimitByTagSelector';
-import {
-  getConf,
-  getInfraID,
-  getProjectID,
-  getScenarioID,
-  getStudyID,
-  getTimetableID,
-} from 'reducers/osrdconf/selectors';
+
 import { getSelectedTrain } from 'reducers/osrdsimulation/selectors';
-import { RollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import StdcmAllowances from 'modules/stdcmAllowances/components/StdcmAllowances';
-import { OsrdStdcmConfState } from 'applications/operationalStudies/consts';
-import OSRDStdcmResults from './OSRDStdcmResults';
-import RunningTime from '../components/RunningTime';
 
 type OSRDStdcmConfigProps = {
   currentStdcmRequestStatus: string;
@@ -32,14 +28,17 @@ export default function OSRDConfig({
   currentStdcmRequestStatus,
   setCurrentStdcmRequestStatus,
 }: OSRDStdcmConfigProps) {
+  const { getConf, getProjectID, getScenarioID, getStudyID, getTimetableID } =
+    useOsrdConfSelectors();
   const projectID = useSelector(getProjectID);
   const studyID = useSelector(getStudyID);
   const scenarioID = useSelector(getScenarioID);
   const timetableID = useSelector(getTimetableID);
-  const infraID = useSelector(getInfraID);
+  const infraID = useInfraID();
   const selectedTrain = useSelector(getSelectedTrain);
   const [showMap, setShowMap] = useState<boolean>(true);
   const [isInfraLoaded, setIsInfraLoaded] = useState<boolean>(false);
+
   const osrdconf: OsrdStdcmConfState = useSelector(getConf) as OsrdStdcmConfState;
 
   const { t } = useTranslation([

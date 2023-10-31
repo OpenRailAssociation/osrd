@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl/maplibre';
-import { updateFeatureInfoClickOSRD } from 'reducers/osrdconf';
 import { updateMapSearchMarker, updateViewport } from 'reducers/map';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
@@ -8,37 +7,38 @@ import { useParams } from 'react-router-dom';
 import type { MapLayerMouseEvent } from 'maplibre-gl';
 import type { MapRef } from 'react-map-gl/maplibre';
 import type { NearestPointOnLine } from '@turf/nearest-point-on-line';
-import type { RootState } from 'reducers';
 import type { Viewport } from 'reducers/map';
 
 /* Main data & layers */
-import Background from 'common/Map/Layers/Background';
 import VirtualLayers from 'modules/simulationResult/components/SimulationResultsMap/VirtualLayers';
-/* Settings & Buttons */
-import Catenaries from 'common/Map/Layers/Catenaries';
+
+import Background from 'common/Map/Layers/Background';
+
+import OSM from 'common/Map/Layers/OSM';
 import Hillshade from 'common/Map/Layers/Hillshade';
+import Catenaries from 'common/Map/Layers/Catenaries';
 import MapButtons from 'common/Map/Buttons/MapButtons';
+import PlatformsLayer from 'common/Map/Layers/Platforms';
 import NeutralSections from 'common/Map/Layers/NeutralSections';
 import OperationalPoints from 'common/Map/Layers/OperationalPoints';
-import OSM from 'common/Map/Layers/OSM';
-import PlatformsLayer from 'common/Map/Layers/Platforms';
-import Itinerary from 'modules/trainschedule/components/ManageTrainSchedule/ManageTrainScheduleMap/Itinerary';
-import ItineraryMarkers from 'modules/trainschedule/components/ManageTrainSchedule/ManageTrainScheduleMap/ItineraryMarkers';
+
 /* Interactions */
-import BufferStops from 'common/Map/Layers/BufferStops';
-import Detectors from 'common/Map/Layers/Detectors';
 import RenderPopup from 'modules/trainschedule/components/ManageTrainSchedule/ManageTrainScheduleMap/RenderPopup';
+
 import Routes from 'common/Map/Layers/Routes';
-import SearchMarker from 'common/Map/Layers/SearchMarker';
 import Signals from 'common/Map/Layers/Signals';
-import SnappedMarker from 'common/Map/Layers/SnappedMarker';
-import SpeedLimits from 'common/Map/Layers/SpeedLimits';
 import Switches from 'common/Map/Layers/Switches';
 import TracksOSM from 'common/Map/Layers/TracksOSM';
+import Detectors from 'common/Map/Layers/Detectors';
+import BufferStops from 'common/Map/Layers/BufferStops';
+import SpeedLimits from 'common/Map/Layers/SpeedLimits';
+import SearchMarker from 'common/Map/Layers/SearchMarker';
+import SnappedMarker from 'common/Map/Layers/SnappedMarker';
+
 /* Objects & various */
 import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
 import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
-import { getTerrain3DExaggeration } from 'reducers/map/selectors';
+import { getMap, getTerrain3DExaggeration } from 'reducers/map/selectors';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import { useMapBlankStyle } from 'common/Map/Layers/blankStyle';
 import colors from 'common/Map/Consts/colors';
@@ -50,13 +50,18 @@ import SNCF_PSL from 'common/Map/Layers/extensions/SNCF/PSL';
 import Terrain from 'common/Map/Layers/Terrain';
 import TracksGeographic from 'common/Map/Layers/TracksGeographic';
 import 'common/Map/Map.scss';
+import { useInfraID, useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
+import Itinerary from 'modules/trainschedule/components/ManageTrainSchedule/ManageTrainScheduleMap/Itinerary';
+import ItineraryMarkers from 'modules/trainschedule/components/ManageTrainSchedule/ManageTrainScheduleMap/ItineraryMarkers';
 
 const Map = () => {
-  const { viewport, mapSearchMarker, mapStyle, showOSM, layersSettings } = useSelector(
-    (state: RootState) => state.map
-  );
-  const terrain3DExaggeration = useSelector(getTerrain3DExaggeration);
   const mapBlankStyle = useMapBlankStyle();
+
+  const infraID = useInfraID();
+  const terrain3DExaggeration = useSelector(getTerrain3DExaggeration);
+  const { viewport, mapSearchMarker, mapStyle, showOSM, layersSettings } = useSelector(getMap);
+
+  const [mapIsLoaded, setMapIsLoaded] = useState(false);
   const [snappedPoint, setSnappedPoint] = useState<NearestPointOnLine>();
   const { urlLat = '', urlLon = '', urlZoom = '', urlBearing = '', urlPitch = '' } = useParams();
   const dispatch = useDispatch();
@@ -65,14 +70,27 @@ const Map = () => {
     [dispatch]
   );
 
-  const [mapIsLoaded, setMapIsLoaded] = useState(false);
-
   const mapRef = useRef<MapRef | null>(null);
 
   const scaleControlStyle = {
     left: 20,
     bottom: 20,
   };
+
+  const { getFeatureInfoClick } = useOsrdConfSelectors();
+  const featureInfoClick = useSelector(getFeatureInfoClick);
+  const { updateFeatureInfoClick } = useOsrdConfActions();
+
+  const closeFeatureInfoClickPopup = useCallback(() => {
+    if (featureInfoClick.displayPopup) {
+      dispatch(
+        updateFeatureInfoClick({
+          displayPopup: false,
+          feature: undefined,
+        })
+      );
+    }
+  }, [featureInfoClick]);
 
   const resetPitchBearing = () => {
     updateViewportChange({
@@ -91,7 +109,7 @@ const Map = () => {
       result.feature.geometry.type === 'LineString'
     ) {
       dispatch(
-        updateFeatureInfoClickOSRD({
+        updateFeatureInfoClick({
           displayPopup: true,
           feature: result.feature,
           coordinates: result.nearest,
@@ -99,7 +117,7 @@ const Map = () => {
       );
     } else {
       dispatch(
-        updateFeatureInfoClickOSRD({
+        updateFeatureInfoClick({
           displayPopup: false,
           feature: undefined,
         })
@@ -159,7 +177,11 @@ const Map = () => {
 
   return (
     <>
-      <MapButtons map={mapRef.current ?? undefined} resetPitchBearing={resetPitchBearing} />
+      <MapButtons
+        map={mapRef.current ?? undefined}
+        resetPitchBearing={resetPitchBearing}
+        closeFeatureInfoClickPopup={closeFeatureInfoClickPopup}
+      />
       <ReactMapGL
         ref={mapRef}
         {...viewport}
@@ -224,50 +246,69 @@ const Map = () => {
         <TracksGeographic
           colors={colors[mapStyle]}
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.TRACKS_GEOGRAPHIC.GROUP]}
+          infraID={infraID}
         />
         <TracksOSM
           colors={colors[mapStyle]}
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.TRACKS_OSM.GROUP]}
         />
 
-        <Routes colors={colors[mapStyle]} layerOrder={LAYER_GROUPS_ORDER[LAYERS.ROUTES.GROUP]} />
+        <Routes
+          colors={colors[mapStyle]}
+          layerOrder={LAYER_GROUPS_ORDER[LAYERS.ROUTES.GROUP]}
+          infraID={infraID}
+        />
         <OperationalPoints
           colors={colors[mapStyle]}
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.OPERATIONAL_POINTS.GROUP]}
+          infraID={infraID}
         />
         <Catenaries
           colors={colors[mapStyle]}
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.CATENARIES.GROUP]}
+          infraID={infraID}
         />
-        <NeutralSections layerOrder={LAYER_GROUPS_ORDER[LAYERS.DEAD_SECTIONS.GROUP]} />
+        <NeutralSections
+          layerOrder={LAYER_GROUPS_ORDER[LAYERS.DEAD_SECTIONS.GROUP]}
+          infraID={infraID}
+        />
         <BufferStops
           colors={colors[mapStyle]}
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.BUFFER_STOPS.GROUP]}
+          infraID={infraID}
         />
         <Detectors
           colors={colors[mapStyle]}
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.DETECTORS.GROUP]}
+          infraID={infraID}
         />
         <Switches
           colors={colors[mapStyle]}
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.SWITCHES.GROUP]}
+          infraID={infraID}
         />
 
         <SpeedLimits
           colors={colors[mapStyle]}
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS.GROUP]}
+          infraID={infraID}
         />
         <SNCF_PSL
           colors={colors[mapStyle]}
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS.GROUP]}
+          infraID={infraID}
         />
 
         <Signals
           sourceTable="signals"
           colors={colors[mapStyle]}
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.SIGNALS.GROUP]}
+          infraID={infraID}
         />
-        <LineSearchLayer layerOrder={LAYER_GROUPS_ORDER[LAYERS.LINE_SEARCH.GROUP]} />
+        <LineSearchLayer
+          layerOrder={LAYER_GROUPS_ORDER[LAYERS.LINE_SEARCH.GROUP]}
+          infraID={infraID}
+        />
 
         <RenderPopup />
         {mapIsLoaded && (

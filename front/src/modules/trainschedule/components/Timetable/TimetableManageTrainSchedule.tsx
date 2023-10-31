@@ -1,17 +1,20 @@
 import React, { useState } from 'react';
-import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
-import { useTranslation } from 'react-i18next';
-import { updateTrainScheduleIDsToModify } from 'reducers/osrdconf';
-import DotsLoader from 'common/DotsLoader/DotsLoader';
 import { useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
+
+import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
+
+import DotsLoader from 'common/DotsLoader/DotsLoader';
 import TrainAddingSettings from 'modules/trainschedule/components/ManageTrainSchedule/TrainAddingSettings';
-import { Infra } from 'common/api/osrdEditoastApi';
 import {
   SubmitConfAddTrainSchedule,
   SubmitConfUpdateTrainSchedules,
 } from 'modules/trainschedule/components/ManageTrainSchedule';
 
-type Props = {
+import { useOsrdConfActions } from 'common/osrdContext';
+import type { Infra } from 'common/api/osrdEditoastApi';
+
+type TimetableManageTrainScheduleProps = {
   displayTrainScheduleManagement: string;
   setDisplayTrainScheduleManagement: (type: string) => void;
   infraState?: Infra['state'];
@@ -25,10 +28,11 @@ export default function TimetableManageTrainSchedule({
   infraState,
   refetchTimetable,
   refetchConflicts,
-}: Props) {
+}: TimetableManageTrainScheduleProps) {
   const { t } = useTranslation('operationalStudies/manageTrainSchedule');
   const dispatch = useDispatch();
   const [isWorking, setIsWorking] = useState(false);
+  const { updateTrainScheduleIDsToModify } = useOsrdConfActions();
 
   const leaveManageTrainSchedule = () => {
     setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.none);

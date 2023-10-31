@@ -1,27 +1,32 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
-import { RiFolderChartLine } from 'react-icons/ri';
-import infraLogo from 'assets/pictures/components/tracks.svg';
-import { AiFillFolderOpen } from 'react-icons/ai';
-import { dateTimeFormatting } from 'utils/date';
 import { useDispatch } from 'react-redux';
-import { updateScenarioID } from 'reducers/osrdconf';
-import { updateSelectedProjection } from 'reducers/osrdsimulation/actions';
-import { FcCalendar } from 'react-icons/fc';
+import { useTranslation } from 'react-i18next';
 import { MdTrain } from 'react-icons/md';
+import { FcCalendar } from 'react-icons/fc';
+import { useNavigate } from 'react-router-dom';
+import { AiFillFolderOpen } from 'react-icons/ai';
+import { RiFolderChartLine } from 'react-icons/ri';
 import nextId from 'react-id-generator';
-import { ScenarioWithCountTrains } from 'common/api/osrdEditoastApi';
 
-type Props = {
+import { dateTimeFormatting } from 'utils/date';
+
+import infraLogo from 'assets/pictures/components/tracks.svg';
+
+import { useOsrdConfActions } from 'common/osrdContext';
+import type { ScenarioWithCountTrains } from 'common/api/osrdEditoastApi';
+
+import { updateSelectedProjection } from 'reducers/osrdsimulation/actions';
+
+type StudyCardProps = {
   setFilterChips: (filterChips: string) => void;
   scenario: ScenarioWithCountTrains;
 };
 
-export default function StudyCard({ setFilterChips, scenario }: Props) {
+export default function StudyCard({ setFilterChips, scenario }: StudyCardProps) {
   const { t } = useTranslation('operationalStudies/study');
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { updateScenarioID } = useOsrdConfActions();
 
   const handleClick = () => {
     dispatch(updateScenarioID(scenario.id));

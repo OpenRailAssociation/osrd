@@ -1,19 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
-import infraIcon from 'assets/pictures/components/tracks.svg';
-import scenarioIcon from 'assets/pictures/home/operationalStudies.svg';
-import projectIcon from 'assets/pictures/views/projects.svg';
-import studyIcon from 'assets/pictures/views/study.svg';
 import { useTranslation } from 'react-i18next';
 import { MdTrain } from 'react-icons/md';
 import { useDispatch, useSelector } from 'react-redux';
-import { updateInfraID, updateTimetableID } from 'reducers/osrdconf';
-import { TrainScheduleSummary, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+
+import studyIcon from 'assets/pictures/views/study.svg';
+import projectIcon from 'assets/pictures/views/projects.svg';
+import infraIcon from 'assets/pictures/components/tracks.svg';
+import scenarioIcon from 'assets/pictures/home/operationalStudies.svg';
+
 import { getDocument } from 'common/api/documentApi';
-import { getTimetableID } from 'reducers/osrdconf/selectors';
-import { useOsrdConfContext } from 'common/osrdConfContext';
-import ScenarioExplorerModal from './ScenarioExplorerModal';
-import { ScenarioExplorerProps } from './ScenarioExplorerTypes';
+import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
+import type { TrainScheduleSummary } from 'common/api/osrdEditoastApi';
+import ScenarioExplorerModal from 'common/ScenarioExplorer/ScenarioExplorerModal';
+import type { ScenarioExplorerProps } from 'common/ScenarioExplorer/ScenarioExplorerTypes';
 
 export default function ScenarioExplorer({
   globalProjectId,
@@ -23,11 +24,9 @@ export default function ScenarioExplorer({
   const { t } = useTranslation('common/scenarioExplorer');
   const dispatch = useDispatch();
   const { openModal } = useModal();
+  const { getTimetableID } = useOsrdConfSelectors();
   const timetableID = useSelector(getTimetableID);
   const [imageUrl, setImageUrl] = useState<string>();
-  const {
-    slice: { actions: osrdConfActions },
-  } = useOsrdConfContext();
 
   const { data: projectDetails } = osrdEditoastApi.useGetProjectsByProjectIdQuery(
     { projectId: globalProjectId as number },
@@ -54,6 +53,8 @@ export default function ScenarioExplorer({
     { skip: !timetableID }
   );
 
+  const { updateInfraID, updateTimetableID } = useOsrdConfActions();
+
   const getProjectImage = async (imageId: number) => {
     try {
       const blobImage = await getDocument(imageId);
@@ -74,8 +75,6 @@ export default function ScenarioExplorer({
     if (scenarioDetails?.timetable_id) {
       dispatch(updateTimetableID(scenarioDetails.timetable_id));
       dispatch(updateInfraID(scenarioDetails.infra_id));
-      // TODO remove when completely separate simulationconf and stdcmconf
-      dispatch(osrdConfActions.updateInfraID(scenarioDetails.infra_id));
     }
   }, [scenarioDetails]);
 

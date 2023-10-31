@@ -1,13 +1,19 @@
 import { useContext, useMemo } from 'react';
-import { useSelector } from 'react-redux';
 import { first, keyBy } from 'lodash';
-import { SwitchEntity } from 'types';
+
+import type { SwitchEntity } from 'types';
+
 import EditorContext from 'applications/editor/context';
-import { getInfraID } from 'reducers/osrdconf/selectors';
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
-import { SwitchEditionState, useSwitchTypes } from './types';
-import { ExtendedEditorContextType } from '../editorContextTypes';
-import { getSwitchTypeJSONSchema, switchToFlatSwitch } from './utils';
+import { useSwitchTypes } from 'applications/editor/tools/switchEdition/types';
+import type { SwitchEditionState } from 'applications/editor/tools/switchEdition/types';
+import type { ExtendedEditorContextType } from 'applications/editor/tools/editorContextTypes';
+import {
+  getSwitchTypeJSONSchema,
+  switchToFlatSwitch,
+} from 'applications/editor/tools/switchEdition/utils';
+
+import { useInfraID } from 'common/osrdContext';
 
 // TODO : Rename all switch by tracknode when back renaming PR merged
 const useSwitch = () => {
@@ -19,8 +25,8 @@ const useSwitch = () => {
   const baseSchema = editorState.editorSchema.find((e) => e.objType === 'Switch')?.schema;
 
   // Retrieve proper data
-  const infraId = useSelector(getInfraID);
-  const switchTypes = useSwitchTypes(infraId);
+  const infraID = useInfraID();
+  const switchTypes = useSwitchTypes(infraID);
 
   const switchTypesDict = useMemo(() => keyBy(switchTypes, 'id'), [switchTypes]);
   const switchTypeOptions = useMemo(

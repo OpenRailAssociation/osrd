@@ -1,23 +1,27 @@
-import React, { FC, useContext } from 'react';
-import { BsArrowBarRight, BsBoxArrowInRight } from 'react-icons/bs';
+import React, { useContext } from 'react';
 import { HiSwitchVertical } from 'react-icons/hi';
 import { FaFlagCheckered } from 'react-icons/fa';
+import { BsArrowBarRight, BsBoxArrowInRight } from 'react-icons/bs';
 import { useTranslation } from 'react-i18next';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 
-import { getInfraID } from 'reducers/osrdconf/selectors';
-import { BufferStopEntity, DetectorEntity, WayPoint, WayPointEntity } from 'types';
+import type { BufferStopEntity, DetectorEntity, WayPoint, WayPointEntity } from 'types';
+
 import EditorContext from 'applications/editor/context';
 import { getEntity } from 'applications/editor/data/api';
-import EntitySumUp from 'applications/editor/components/EntitySumUp';
 import TOOL_TYPES from 'applications/editor/tools/toolTypes';
-import { RouteState } from 'applications/editor/tools/routeEdition/types';
-import WayPointInput from './WayPointInput';
+import EntitySumUp from 'applications/editor/components/EntitySumUp';
+import type { RouteState } from 'applications/editor/tools/routeEdition/types';
+import WayPointInput from 'applications/editor/tools/routeEdition/components/WayPointInput';
 
-export const EditEndpoints: FC<{ state: RouteState; onChange: (newState: RouteState) => void }> = ({
-  state,
-  onChange,
-}) => {
+import { useInfraID } from 'common/osrdContext';
+
+interface EditEndpointsProps {
+  state: RouteState;
+  onChange: (newState: RouteState) => void;
+}
+
+export const EditEndpoints = ({ state, onChange }: EditEndpointsProps) => {
   const { t } = useTranslation();
   const { entryPoint, exitPoint } = state;
 
@@ -59,11 +63,11 @@ export const EditEndpoints: FC<{ state: RouteState; onChange: (newState: RouteSt
   );
 };
 
-const ExtremityDisplay: FC<WayPoint> = ({ type, id }) => {
+const ExtremityDisplay = ({ type, id }: WayPoint) => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const { switchTool } = useContext(EditorContext);
-  const infraID = useSelector(getInfraID);
+  const infraID = useInfraID();
 
   return (
     <div className="d-flex align-items-center">
@@ -104,11 +108,8 @@ const ExtremityDisplay: FC<WayPoint> = ({ type, id }) => {
   );
 };
 
-export const DisplayEndpoints: FC<{
-  state: RouteState;
-}> = ({ state }) => {
+export const DisplayEndpoints = ({ entryPoint, exitPoint, entryPointDirection }: RouteState) => {
   const { t } = useTranslation();
-  const { entryPoint, exitPoint, entryPointDirection } = state;
 
   return (
     <>

@@ -2,17 +2,13 @@ import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
+import { comfort2pictogram } from 'modules/rollingStock/components/RollingStockSelector/RollingStockHelpers';
+
+import type { Comfort } from 'common/api/osrdEditoastApi';
+import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
+import type { Option } from 'common/BootstrapSNCF/OptionsSNCF';
+import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import OptionsSNCF, { Option } from 'common/BootstrapSNCF/OptionsSNCF';
-import {
-  updatePathfindingID,
-  updatePowerRestrictionRanges,
-  updateRollingStockComfort,
-  updateRollingStockID,
-} from 'reducers/osrdconf';
-import { getRollingStockComfort } from 'reducers/osrdconf/selectors';
-import { useOsrdConfContext } from 'common/osrdConfContext';
-import { comfort2pictogram } from '../RollingStockSelector/RollingStockHelpers';
 
 interface RollingStockCardButtonsProps {
   id: number;
@@ -28,16 +24,21 @@ const RollingStockCardButtons = ({
   const dispatch = useDispatch();
   const { t } = useTranslation(['rollingstock']);
   const { closeModal } = useContext(ModalContext);
-  const {
-    slice: { actions: osrdConfActions },
-  } = useOsrdConfContext();
+
+  const { getRollingStockComfort } = useOsrdConfSelectors();
   const rollingStockComfort = useSelector(getRollingStockComfort);
   const [comfort, setComfort] = useState('STANDARD');
 
+  const {
+    updatePathfindingID,
+    updatePowerRestrictionRanges,
+    updateRollingStockComfort,
+    updateRollingStockID,
+  } = useOsrdConfActions();
+
   const selectRollingStock = () => {
     setOpenedRollingStockCardId(undefined);
-    dispatch(updateRollingStockComfort(comfort));
-    dispatch(osrdConfActions.updateRollingStockID(id));
+    dispatch(updateRollingStockComfort(comfort as Comfort));
     dispatch(updateRollingStockID(id));
     dispatch(updatePowerRestrictionRanges([]));
     dispatch(updatePathfindingID(undefined));

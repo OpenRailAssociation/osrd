@@ -1,18 +1,20 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { Source, LayerProps } from 'react-map-gl/maplibre';
-
-import { RootState } from 'reducers';
-import { Theme } from 'types';
-import { MAP_URL } from 'common/Map/const';
-import { getInfraID } from 'reducers/osrdconf/selectors';
-
-import OrderedLayer from 'common/Map/Layers/OrderedLayer';
+import { Source } from 'react-map-gl/maplibre';
+import type { LayerProps } from 'react-map-gl/maplibre';
 import { isNil } from 'lodash';
+
+import type { Theme } from 'types';
+
+import { MAP_URL } from 'common/Map/const';
+import OrderedLayer from 'common/Map/Layers/OrderedLayer';
+
+import type { RootState } from 'reducers';
 
 interface CatenariesProps {
   colors: Theme;
   layerOrder: number;
+  infraID: number | undefined;
 }
 
 export function getCatenariesProps({
@@ -121,10 +123,8 @@ export function getCatenariesTextParams({
   return res;
 }
 
-export default function Catenaries(props: CatenariesProps) {
+export default function Catenaries({ colors, layerOrder, infraID }: CatenariesProps) {
   const { layersSettings } = useSelector((state: RootState) => state.map);
-  const infraID = useSelector(getInfraID);
-  const { colors, layerOrder } = props;
   const catenariesParams: LayerProps = getCatenariesProps({ colors, sourceTable: 'catenaries' });
   const catenariesTextParams: LayerProps = getCatenariesTextParams({
     colors,

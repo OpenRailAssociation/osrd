@@ -1,14 +1,18 @@
 import React from 'react';
-import { MAP_URL } from 'common/Map/const';
-import { LayerProps, Source, SymbolLayer } from 'react-map-gl/maplibre';
+import { Source } from 'react-map-gl/maplibre';
+import type { LayerProps, SymbolLayer } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
-import { getInfraID } from 'reducers/osrdconf/selectors';
-import { Theme, OmitLayer } from 'types';
 import { isNil } from 'lodash';
+
+import type { Theme, OmitLayer } from 'types';
+
+import { MAP_URL } from 'common/Map/const';
+import { useInfraID } from 'common/osrdContext';
+import OrderedLayer from 'common/Map/Layers/OrderedLayer';
+import type { LayerContext } from 'common/Map/Layers/types';
+import getKPLabelLayerProps from 'common/Map/Layers/KPLabel';
+
 import { getMap } from 'reducers/map/selectors';
-import OrderedLayer from '../../OrderedLayer';
-import { LayerContext } from '../../types';
-import getKPLabelLayerProps from '../../KPLabel';
 
 interface SNCF_PSL_SignsProps {
   colors: Theme;
@@ -95,7 +99,7 @@ export function getPSLSignsMastLayerProps({
 }
 
 export default function SNCF_PSL_Signs(props: SNCF_PSL_SignsProps) {
-  const infraID = useSelector(getInfraID);
+  const infraID = useInfraID();
   const { colors, layerOrder } = props;
 
   const { mapStyle } = useSelector(getMap);

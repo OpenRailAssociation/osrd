@@ -1,24 +1,28 @@
+import React, { useContext, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
-import React, { FC, useContext, useEffect, useMemo } from 'react';
-import { getMap } from 'reducers/map/selectors';
-import EditorContext from 'applications/editor/context';
-import { Feature, FeatureCollection, LineString, Point } from 'geojson';
-import { getInfraID } from 'reducers/osrdconf/selectors';
-import { flattenEntity } from 'applications/editor/data/utils';
 import { featureCollection } from '@turf/helpers';
-import { CatenaryEntity, TrackSectionEntity } from 'types';
-import colors from 'common/Map/Consts/colors';
-import GeoJSONs, { SourcesDefinitionsIndex } from 'common/Map/Layers/GeoJSONs';
-import { getEntities, getEntity } from 'applications/editor/data/api';
 import { mapValues } from 'lodash';
 import { Layer, Popup, Source } from 'react-map-gl/maplibre';
-import EntitySumUp from 'applications/editor/components/EntitySumUp';
-import { getTrackRangeFeatures, isOnModeMove } from 'applications/editor/tools/rangeEdition/utils';
-import { RangeEditionState, TrackState } from 'applications/editor/tools/rangeEdition/types';
-import { ExtendedEditorContextType } from 'applications/editor/tools/editorContextTypes';
+import type { Feature, FeatureCollection, LineString, Point } from 'geojson';
 
-export const CatenaryEditionLayers: FC = () => {
+import EditorContext from 'applications/editor/context';
+import { flattenEntity } from 'applications/editor/data/utils';
+import EntitySumUp from 'applications/editor/components/EntitySumUp';
+import { getEntities, getEntity } from 'applications/editor/data/api';
+import type { ExtendedEditorContextType } from 'applications/editor/tools/editorContextTypes';
+import type { RangeEditionState, TrackState } from 'applications/editor/tools/rangeEdition/types';
+import { getTrackRangeFeatures, isOnModeMove } from 'applications/editor/tools/rangeEdition/utils';
+
+import type { CatenaryEntity, TrackSectionEntity } from 'types';
+
+import colors from 'common/Map/Consts/colors';
+import { useInfraID } from 'common/osrdContext';
+import GeoJSONs, { SourcesDefinitionsIndex } from 'common/Map/Layers/GeoJSONs';
+
+import { getMap } from 'reducers/map/selectors';
+
+export const CatenaryEditionLayers = () => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const {
@@ -29,7 +33,8 @@ export const CatenaryEditionLayers: FC = () => {
   } = useContext(EditorContext) as ExtendedEditorContextType<RangeEditionState<CatenaryEntity>>;
 
   const { mapStyle, layersSettings, issuesSettings, showIGNBDORTHO } = useSelector(getMap);
-  const infraId = useSelector(getInfraID);
+
+  const infraID = useInfraID();
   const selection = useMemo(() => {
     // Dragging an extremity:
     if (interactionState.type === 'moveRangeExtremity')
@@ -91,7 +96,7 @@ export const CatenaryEditionLayers: FC = () => {
       }));
 
       getEntities<TrackSectionEntity>(
-        infraId as number,
+        infraID as number,
         missingTrackIDs,
         'TrackSection',
         dispatch
@@ -119,7 +124,7 @@ export const CatenaryEditionLayers: FC = () => {
       }));
 
       getEntity<TrackSectionEntity>(
-        infraId as number,
+        infraID as number,
         hoveredItem.id,
         'TrackSection',
         dispatch
@@ -189,6 +194,7 @@ export const CatenaryEditionLayers: FC = () => {
         layersSettings={layersSettings}
         issuesSettings={issuesSettings}
         isEmphasized={false}
+        infraID={infraID}
       />
       <Source type="geojson" data={catenariesFeature} key="catenaries">
         {layersProps.map((props, i) => (
@@ -210,7 +216,7 @@ export const CatenaryEditionLayers: FC = () => {
   );
 };
 
-export const CatenaryMessages: FC = () => {
+export const CatenaryMessages = () => {
   const { t } = useTranslation();
   const { state } = useContext(EditorContext) as ExtendedEditorContextType<
     RangeEditionState<CatenaryEntity>

@@ -1,21 +1,25 @@
 /* eslint-disable jsx-a11y/no-autofocus */
-import {
+import type {
   PathResponse,
   PostSearchApiArg,
   SearchResultItemOperationalPoint,
-  osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
-import { getInfraID, getRollingStockID } from 'reducers/osrdconf/selectors';
-import { useDebounce } from 'utils/helpers';
-import cx from 'classnames';
 import { GoAlert, GoTriangleRight } from 'react-icons/go';
-import { loadPathFinding } from 'modules/trainschedule/components/ManageTrainSchedule/helpers/adjustConfWithTrainToModify';
-import { setFailure } from 'reducers/main';
 import bbox from '@turf/bbox';
-import { Position } from 'geojson';
+import type { Position } from 'geojson';
+import cx from 'classnames';
+
+import { useDebounce } from 'utils/helpers';
+
+import { loadPathFinding } from 'modules/trainschedule/components/ManageTrainSchedule/helpers/adjustConfWithTrainToModify';
+
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { useInfraID, useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
+
+import { setFailure } from 'reducers/main';
 
 type SearchConstraintType = (string | number | string[])[];
 type PathfindingProps = {
@@ -54,11 +58,13 @@ export default function TypeAndPath({ zoomToFeature }: PathfindingProps) {
   const dispatch = useDispatch();
   const [inputText, setInputText] = useState('');
   const [opList, setOpList] = useState<SearchResultItemOperationalPoint[]>([]);
-  const infraId = useSelector(getInfraID);
+  const { getRollingStockID } = useOsrdConfSelectors();
+  const infraId = useInfraID();
   const rollingStockId = useSelector(getRollingStockID);
   const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
   const [postPathfinding] = osrdEditoastApi.endpoints.postPathfinding.useMutation();
   const { t } = useTranslation('operationalStudies/manageTrainSchedule');
+  const osrdActions = useOsrdConfActions();
 
   const debouncedInputText = useDebounce(inputText.trimEnd(), 500);
 
@@ -122,7 +128,7 @@ export default function TypeAndPath({ zoomToFeature }: PathfindingProps) {
         .unwrap()
         .then((itineraryCreated: PathResponse) => {
           zoomToFeature(bbox(itineraryCreated.geographic));
-          loadPathFinding(itineraryCreated, dispatch);
+          loadPathFinding(itineraryCreated, dispatch, osrdActions);
         })
         .catch((e) => {
           dispatch(

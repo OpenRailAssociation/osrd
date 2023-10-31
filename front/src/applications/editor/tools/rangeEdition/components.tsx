@@ -1,40 +1,40 @@
-import { cloneDeep } from 'lodash';
-import { useSelector } from 'react-redux';
+import React, { useContext, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import React, { FC, useContext, useState } from 'react';
 import { BsArrowBarRight } from 'react-icons/bs';
 import { MdShowChart } from 'react-icons/md';
 import { FaFlagCheckered, FaTimes } from 'react-icons/fa';
+import { cloneDeep } from 'lodash';
 
 import EditorContext from 'applications/editor/context';
+import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import EntityError from 'applications/editor/components/EntityError';
 import EntitySumUp from 'applications/editor/components/EntitySumUp';
-import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
-import {
+import type { RangeEditionState } from 'applications/editor/tools/rangeEdition/types';
+import { getPointAt, speedSectionIsPsl } from 'applications/editor/tools/rangeEdition/utils';
+import EditPSLSection from 'applications/editor/tools/rangeEdition/speedSection/EditPSLSection';
+import CatenaryMetadataForm from 'applications/editor/tools/rangeEdition/catenary/CatenaryMetadataForm';
+import SpeedSectionMetadataForm from 'applications/editor/tools/rangeEdition/speedSection/SpeedSectionMetadataForm';
+import type {
   ExtendedEditorContextType,
   PartialOrReducer,
 } from 'applications/editor/tools/editorContextTypes';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
-import { LoaderFill } from 'common/Loader';
-import { getInfraID } from 'reducers/osrdconf/selectors';
-import {
-  APPLICABLE_DIRECTIONS,
+
+import type {
   ApplicableDirection,
   CatenaryEntity,
   SpeedSectionEntity,
   SpeedSectionPslEntity,
 } from 'types';
+import { APPLICABLE_DIRECTIONS } from 'types';
 
-import CatenaryMetadataForm from './catenary/CatenaryMetadataForm';
-import EditPSLSection from './speedSection/EditPSLSection';
-import SpeedSectionMetadataForm from './speedSection/SpeedSectionMetadataForm';
-import { RangeEditionState } from './types';
-import { getPointAt, speedSectionIsPsl } from './utils';
+import { LoaderFill } from 'common/Loader';
+import { useInfraID } from 'common/osrdContext';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 
 const DEFAULT_DISPLAYED_RANGES_COUNT = 5;
 
-export const TrackRangesList: FC = () => {
+export const TrackRangesList = () => {
   const {
     state: { entity, trackSectionsCache },
     setState,
@@ -210,7 +210,7 @@ export const TrackRangesList: FC = () => {
   );
 };
 
-export const RangeEditionLeftPanel: FC = () => {
+export const RangeEditionLeftPanel = () => {
   const { t } = useTranslation();
   const {
     setState,
@@ -221,8 +221,7 @@ export const RangeEditionLeftPanel: FC = () => {
 
   const isNew = entity.properties.id === NEW_ENTITY_ID;
   const isPSL = speedSectionIsPsl(entity as SpeedSectionEntity);
-
-  const infraID = useSelector(getInfraID);
+  const infraID = useInfraID();
 
   const { data: voltages } = osrdEditoastApi.useGetInfraByIdVoltagesQuery(
     {

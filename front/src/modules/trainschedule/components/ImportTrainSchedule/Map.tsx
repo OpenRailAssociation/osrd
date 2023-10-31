@@ -1,30 +1,33 @@
 import React, { useEffect, useRef, useState } from 'react';
-import ReactMapGL, {
-  AttributionControl,
-  ScaleControl,
-  MapLayerMouseEvent,
-} from 'react-map-gl/maplibre';
-import { point as turfPoint } from '@turf/helpers';
 import { useSelector } from 'react-redux';
+import type { MapLayerMouseEvent } from 'react-map-gl/maplibre';
+import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl/maplibre';
+import { point as turfPoint } from '@turf/helpers';
 import turfNearestPointOnLine, { NearestPointOnLine } from '@turf/nearest-point-on-line';
+import type { LineString } from 'geojson';
 
 /* Main data & layers */
-import Background from 'common/Map/Layers/Background';
 import VirtualLayers from 'modules/simulationResult/components/SimulationResultsMap/VirtualLayers';
+
+import Background from 'common/Map/Layers/Background';
 import SnappedMarker from 'common/Map/Layers/SnappedMarker';
+
 /* Objects & various */
-import TracksGeographic from 'common/Map/Layers/TracksGeographic';
-import colors from 'common/Map/Consts/colors';
-import { useMapBlankStyle } from 'common/Map/Layers/blankStyle';
+import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
+
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 
-import 'common/Map/Map.scss';
-import OperationalPoints from 'common/Map/Layers/OperationalPoints';
-import { Platforms } from 'common/Map/Layers/Platforms';
-import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
+import colors from 'common/Map/Consts/colors';
 import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
+import { useInfraID } from 'common/osrdContext';
+import { Platforms } from 'common/Map/Layers/Platforms';
+import { useMapBlankStyle } from 'common/Map/Layers/blankStyle';
+import TracksGeographic from 'common/Map/Layers/TracksGeographic';
+import OperationalPoints from 'common/Map/Layers/OperationalPoints';
+
 import { getMapStyle } from 'reducers/map/selectors';
-import { LineString } from 'geojson';
+
+import 'common/Map/Map.scss';
 
 interface MapProps {
   viewport: { latitude: number; longitude: number };
@@ -47,6 +50,8 @@ const viewportExtraSettings = {
 const Map = ({ viewport, setViewport, setClickedFeatureId }: MapProps) => {
   const mapBlankStyle = useMapBlankStyle();
   const mapStyle = useSelector(getMapStyle);
+
+  const infraID = useInfraID();
 
   const [lngLatHover, setLngLatHover] = useState<number[] | undefined>();
   const [trackSectionGeoJSON, setTrackSectionGeoJSON] = useState<LineString | undefined>();
@@ -126,10 +131,12 @@ const Map = ({ viewport, setViewport, setClickedFeatureId }: MapProps) => {
       <TracksGeographic
         colors={colors[mapStyle]}
         layerOrder={LAYER_GROUPS_ORDER[LAYERS.TRACKS_GEOGRAPHIC.GROUP]}
+        infraID={infraID}
       />
       <OperationalPoints
         colors={colors[mapStyle]}
         layerOrder={LAYER_GROUPS_ORDER[LAYERS.OPERATIONAL_POINTS.GROUP]}
+        infraID={infraID}
       />
       {snappedPoint !== undefined ? <SnappedMarker geojson={snappedPoint} /> : null}
     </ReactMapGL>

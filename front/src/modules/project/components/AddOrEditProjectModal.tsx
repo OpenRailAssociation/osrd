@@ -1,29 +1,34 @@
 import React, { useContext, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { useDispatch, useSelector } from 'react-redux';
+import { FaPlus } from 'react-icons/fa';
+import { BiTargetLock } from 'react-icons/bi';
+import { GoPencil, GoTrash } from 'react-icons/go';
+import { RiMoneyEuroCircleLine } from 'react-icons/ri';
+import { MdBusinessCenter, MdDescription, MdTitle } from 'react-icons/md';
+import { ReactMarkdown } from 'react-markdown/lib/react-markdown';
+import { SerializedError } from '@reduxjs/toolkit';
+import remarkGfm from 'remark-gfm';
+
+import { useDebounce } from 'utils/helpers';
+
+import PictureUploader from 'applications/operationalStudies/components/Project/PictureUploader';
+
+import { useOsrdConfActions } from 'common/osrdContext';
+import { postDocument } from 'common/api/documentApi';
 import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import type { ApiError } from 'common/api/baseGeneratedApis';
+import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
-import { useTranslation } from 'react-i18next';
-import { BiTargetLock } from 'react-icons/bi';
-import { GoPencil, GoTrash } from 'react-icons/go';
-import { FaPlus } from 'react-icons/fa';
-import { MdBusinessCenter, MdDescription, MdTitle } from 'react-icons/md';
-import { RiMoneyEuroCircleLine } from 'react-icons/ri';
-import { ReactMarkdown } from 'react-markdown/lib/react-markdown';
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import type { ProjectWithStudies, ProjectCreateForm } from 'common/api/osrdEditoastApi';
+
 import { setFailure, setSuccess } from 'reducers/main';
-import { updateProjectID } from 'reducers/osrdconf';
-import remarkGfm from 'remark-gfm';
-import { useDebounce } from 'utils/helpers';
-import { ProjectCreateForm, ProjectWithStudies, osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { postDocument } from 'common/api/documentApi';
-import PictureUploader from 'applications/operationalStudies/components/Project/PictureUploader';
-import type { ApiError } from 'common/api/baseGeneratedApis';
-import { SerializedError } from '@reduxjs/toolkit';
 import { getUserSafeWord } from 'reducers/user/userSelectors';
 
 const emptyProject: ProjectCreateForm = {
@@ -63,6 +68,8 @@ export default function AddOrEditProjectModal({
   const [postProject] = osrdEditoastApi.endpoints.postProjects.useMutation();
   const [patchProject] = osrdEditoastApi.endpoints.patchProjectsByProjectId.useMutation();
   const [deleteProject] = osrdEditoastApi.endpoints.deleteProjectsByProjectId.useMutation();
+
+  const { updateProjectID } = useOsrdConfActions();
 
   const removeTag = (idx: number) => {
     if (!currentProject.tags) return;

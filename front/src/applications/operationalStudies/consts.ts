@@ -1,6 +1,4 @@
 import i18n from 'i18n';
-import { SwitchType } from 'types';
-import { ObjectFieldsTypes } from 'utils/types';
 import { Position, Feature } from 'geojson';
 import {
   AllowanceValue,
@@ -13,6 +11,7 @@ import {
 import { LinearMetadataItem } from 'common/IntervalsDataViz/types';
 import { HeightPosition } from 'reducers/osrdsimulation/types';
 import { AllowanceForm } from 'modules/trainschedule/components/ManageTrainSchedule/Allowances/types';
+import { InfraState } from 'reducers/infra';
 
 export const BLOCKTYPES = [
   {
@@ -88,6 +87,8 @@ interface MODES_Types {
 export const MODES: MODES_Types = Object.freeze({
   simulation: 'SIMULATION',
   stdcm: 'STDCM',
+  editor: 'EDITOR',
+  mapViewer: 'MAP_VIEWER',
 });
 
 export const DEFAULT_MODE = MODES.simulation;
@@ -149,7 +150,7 @@ export const studyTypes = Object.keys(STUDY_TYPES) as StudyType[];
 
 export type PowerRestrictionRange = LinearMetadataItem<{ value: string }>;
 
-export interface OsrdConfState {
+export interface OsrdConfState extends InfraState {
   rollingStockComfort: RollingStockComfortType;
   name: string;
   trainCount: number;
@@ -161,8 +162,6 @@ export interface OsrdConfState {
   projectID?: number;
   studyID?: number;
   scenarioID?: number;
-  infraID?: number;
-  switchTypes?: SwitchType[];
   pathfindingID?: number;
   timetableID?: number;
   rollingStockID?: number;
@@ -175,7 +174,6 @@ export interface OsrdConfState {
   destination?: PointOnMap;
   vias: PointOnMap[];
   suggeredVias: PathResponse['steps'] | PointOnMap[];
-  trainCompo: undefined;
   geojson?: PathResponse;
   originDate?: string;
   originTime?: string;
@@ -184,21 +182,15 @@ export interface OsrdConfState {
   originLinkedBounds: boolean;
   destinationDate?: string;
   destinationTime?: string;
-  featureInfoClick: { displayPopup: boolean; feature?: Feature; coordinates?: number[] };
   gridMarginBefore?: number;
   gridMarginAfter?: number;
   trainScheduleIDsToModify: number[];
+  featureInfoClick: { displayPopup: boolean; feature?: Feature; coordinates?: number[] };
 }
 
 export interface OsrdStdcmConfState extends OsrdConfState {
   maximumRunTime: number;
-  standardStdcmAllowance?: StandardAllowance; // We wait for auto generated types
-}
-
-export interface OsrdMultiConfState {
-  mode: ObjectFieldsTypes<typeof MODES>;
-  simulationConf: OsrdConfState;
-  stdcmConf: OsrdStdcmConfState;
+  standardStdcmAllowance?: StandardAllowance;
 }
 
 export const RUNTIME_CAP = 43200;

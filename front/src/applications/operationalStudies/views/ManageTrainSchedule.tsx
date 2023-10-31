@@ -2,40 +2,47 @@ import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 
-import TrainSettings from 'modules/trainschedule/components/ManageTrainSchedule/TrainSettings';
-import Itinerary from 'modules/trainschedule/components/ManageTrainSchedule/Itinerary/Itinerary';
-import Map from 'modules/trainschedule/components/ManageTrainSchedule/Map';
-import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector/SpeedLimitByTagSelector';
-import PowerRestrictionsSelector from 'modules/trainschedule/components/ManageTrainSchedule/PowerRestrictionsSelector';
-import adjustConfWithTrainToModify from 'modules/trainschedule/components/ManageTrainSchedule/helpers/adjustConfWithTrainToModify';
-import ElectricalProfiles from 'modules/trainschedule/components/ManageTrainSchedule/ElectricalProfiles';
-import Allowances from 'modules/trainschedule/components/ManageTrainSchedule/Allowances/Allowances';
-import {
-  getPathfindingID,
-  getRollingStockID,
-  getTrainScheduleIDsToModify,
-} from 'reducers/osrdconf/selectors';
-import { osrdEditoastApi, RangedValue } from 'common/api/osrdEditoastApi';
-import { RollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector';
-import Tabs from 'common/Tabs';
 import rollingStockPic from 'assets/pictures/components/train.svg';
 import pahtFindingPic from 'assets/pictures/components/pathfinding.svg';
 import allowancesPic from 'assets/pictures/components/allowances.svg';
 import simulationSettings from 'assets/pictures/components/simulationSettings.svg';
-import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
-import { isElectric } from 'modules/rollingStock/helpers/electric';
+
 import { formatKmValue } from 'utils/strings';
+
+import { isElectric } from 'modules/rollingStock/helpers/electric';
+import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
+import { Itinerary, Map } from 'modules/trainschedule/components/ManageTrainSchedule';
+import { RollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector';
+import TrainSettings from 'modules/trainschedule/components/ManageTrainSchedule/TrainSettings';
+import Allowances from 'modules/trainschedule/components/ManageTrainSchedule/Allowances/Allowances';
+import ElectricalProfiles from 'modules/trainschedule/components/ManageTrainSchedule/ElectricalProfiles';
+import PowerRestrictionsSelector from 'modules/trainschedule/components/ManageTrainSchedule/PowerRestrictionsSelector';
+import adjustConfWithTrainToModify from 'modules/trainschedule/components/ManageTrainSchedule/helpers/adjustConfWithTrainToModify';
+
+import Tabs from 'common/Tabs';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import type { RangedValue } from 'common/api/osrdEditoastApi';
+import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
+import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector/SpeedLimitByTagSelector';
 
 export default function ManageTrainSchedule() {
   const dispatch = useDispatch();
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
+  const {
+    getRollingStockID,
+    getPathfindingID,
+    getTrainScheduleIDsToModify,
+    getUsingElectricalProfiles,
+  } = useOsrdConfSelectors();
   const rollingStockID = useSelector(getRollingStockID);
   const pathFindingID = useSelector(getPathfindingID);
   const trainScheduleIDsToModify = useSelector(getTrainScheduleIDsToModify);
+  const usingElectricalProfiles = useSelector(getUsingElectricalProfiles);
   const [getTrainScheduleById] = osrdEditoastApi.endpoints.getTrainScheduleById.useLazyQuery({});
   const [getPathfindingById] = osrdEditoastApi.endpoints.getPathfindingByPathfindingId.useLazyQuery(
     {}
   );
+  const osrdActions = useOsrdConfActions();
 
   // Details for tabs
   const { data: pathFinding } = osrdEditoastApi.useGetPathfindingByPathfindingIdQuery(
@@ -159,7 +166,13 @@ export default function ManageTrainSchedule() {
             getPathfindingById({ pathfindingId: trainSchedule.path_id })
               .unwrap()
               .then((path) => {
-                adjustConfWithTrainToModify(trainSchedule, path, dispatch);
+                adjustConfWithTrainToModify(
+                  trainSchedule,
+                  path,
+                  dispatch,
+                  usingElectricalProfiles,
+                  osrdActions
+                );
               });
           }
         });

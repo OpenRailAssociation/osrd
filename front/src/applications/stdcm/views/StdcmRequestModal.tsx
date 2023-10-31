@@ -10,7 +10,6 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 
 import { CHART_AXES } from 'modules/simulationResult/components/simulationResultsConsts';
-import { getConf } from 'reducers/osrdconf/selectors';
 // Generic components
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
@@ -20,15 +19,16 @@ import createTrain from 'modules/simulationResult/components/SpaceTimeChart/crea
 import formatStdcmConf from 'applications/stdcm/formatStcmConf';
 // Static Data and Assets
 import { setFailure } from 'reducers/main';
-import { OsrdStdcmConfState } from 'applications/operationalStudies/consts';
 import STDCM_REQUEST_STATUS from 'applications/stdcm/consts';
-import { updateItinerary } from 'reducers/osrdconf';
 import { useTranslation } from 'react-i18next';
 import { Spinner } from 'common/Loader';
-import { osrdEditoastApi, SimulationReport } from 'common/api/osrdEditoastApi';
-import { StdcmRequestStatus } from 'applications/stdcm/types';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import type { SimulationReport } from 'common/api/osrdEditoastApi';
+import type { StdcmRequestStatus } from 'applications/stdcm/types';
 import { extractMessageFromError, extractStatusFromError } from 'utils/error';
 import { Train } from 'reducers/osrdsimulation/types';
+import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
+import type { OsrdStdcmConfState } from 'applications/operationalStudies/consts';
 
 type StdcmRequestModalProps = {
   setCurrentStdcmRequestStatus: (currentStdcmRequestStatus: StdcmRequestStatus) => void;
@@ -41,12 +41,15 @@ export default function StdcmRequestModal(props: StdcmRequestModalProps) {
     'operationalStudies/manageTrainSchedule',
     'translation',
   ]);
+  const { getConf } = useOsrdConfSelectors();
   const osrdconf = useSelector(getConf);
   const dispatch = useDispatch();
 
   const [postStdcm] = osrdEditoastApi.endpoints.postStdcm.useMutation();
   const [getTrainScheduleResults] =
     osrdEditoastApi.endpoints.getTrainScheduleResults.useLazyQuery();
+
+  const { updateItinerary } = useOsrdConfActions();
 
   // Theses are prop-drilled from OSRDSTDCM Component, which is conductor.
   // Remains fit with one-level limit

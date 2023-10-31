@@ -1,18 +1,17 @@
 import React, { FC, useMemo } from 'react';
-import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import cx from 'classnames';
 import { BsExclamationOctagon } from 'react-icons/bs';
 import { isNil, uniqueId } from 'lodash';
 
-import { EditorEntity } from 'types';
+import type { EditorEntity } from 'types';
+import { useInfraID } from 'common/osrdContext';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { getInfraID } from 'reducers/osrdconf/selectors';
 import { InfraErrorLine } from './InfraErrors/InfraError';
 
 const EntityError: FC<{ entity: EditorEntity; className?: string }> = ({ entity, className }) => {
   const { t } = useTranslation();
-  const infraID = useSelector(getInfraID);
+  const infraID = useInfraID();
   const { data } = osrdEditoastApi.endpoints.getInfraByIdErrors.useQuery(
     {
       // Infra can be undefined, but in this case the query is skipped

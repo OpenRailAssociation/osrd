@@ -3,23 +3,26 @@ import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { AiOutlineDash } from 'react-icons/ai';
 
-import { StandardAllowance, osrdEditoastApi, Allowance } from 'common/api/osrdEditoastApi';
-import { updateAllowances } from 'reducers/osrdconf';
-import { getAllowances, getPathfindingID } from 'reducers/osrdconf/selectors';
-import AllowancesStandardSettings from './AllowancesStandardSettings';
-import AllowancesActions from './AllowancesActions';
-import AllowancesList from './AllowancesList';
-import {
+import { AllowancesTypes } from 'modules/trainschedule/components/ManageTrainSchedule/Allowances/types';
+import AllowancesList from 'modules/trainschedule/components/ManageTrainSchedule/Allowances/AllowancesList';
+import AllowancesActions from 'modules/trainschedule/components/ManageTrainSchedule/Allowances/AllowancesActions';
+import { initialStandardAllowance } from 'modules/trainschedule/components/ManageTrainSchedule/Allowances/consts';
+import AllowancesLinearView from 'modules/trainschedule/components/ManageTrainSchedule/Allowances/AllowancesLinearView';
+import AllowancesStandardSettings from 'modules/trainschedule/components/ManageTrainSchedule/Allowances/AllowancesStandardSettings';
+import getAllowanceValue, {
+  fillAllowancesWithDefaultRanges,
+} from 'modules/trainschedule/components/ManageTrainSchedule/Allowances/helpers';
+import type {
   AllowanceValueForm,
-  AllowancesTypes,
   EngineeringAllowanceForm,
   OverlapAllowancesIndexesType,
   RangeAllowanceForm,
   StandardAllowanceForm,
-} from './types';
-import { initialStandardAllowance } from './consts';
-import getAllowanceValue, { fillAllowancesWithDefaultRanges } from './helpers';
-import AllowancesLinearView from './AllowancesLinearView';
+} from 'modules/trainschedule/components/ManageTrainSchedule/Allowances/types';
+
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
+import type { StandardAllowance, Allowance } from 'common/api/osrdEditoastApi';
 
 const MissingPathFindingMessage = () => {
   const { t } = useTranslation('operationalStudies/allowances');
@@ -38,6 +41,7 @@ const ResetButton = ({ resetFunction }: { resetFunction: () => void }) => {
 export default function Allowances() {
   const { t } = useTranslation('operationalStudies/allowances');
   const dispatch = useDispatch();
+  const { getAllowances, getPathfindingID } = useOsrdConfSelectors();
   const pathFindingID = useSelector(getPathfindingID);
   const { data: pathFinding } = osrdEditoastApi.useGetPathfindingByPathfindingIdQuery(
     { pathfindingId: pathFindingID as number },
@@ -86,6 +90,8 @@ export default function Allowances() {
     () => getAllowanceValue(standardAllowance.default_value),
     [standardAllowance]
   );
+
+  const { updateAllowances } = useOsrdConfActions();
 
   const setStandardDistribution = (distribution: StandardAllowance['distribution']) => {
     setStandardAllowance({ ...standardAllowance, distribution });

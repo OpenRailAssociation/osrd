@@ -1,18 +1,19 @@
 import { store } from 'store';
-import { updateFeatureInfoClick } from 'reducers/map';
-import {
-  updateOrigin,
-  updateDestination,
-  updateVias,
-  updateFeatureInfoClickOSRD,
-} from 'reducers/osrdconf';
-import { PointOnMap } from 'applications/operationalStudies/consts';
 
-export default function setPointIti(pointType: string, data: PointOnMap) {
+import type { PointOnMap } from 'applications/operationalStudies/consts';
+import { ConfSliceActions } from 'reducers/osrdconf/osrdConfCommon';
+
+export default function setPointIti(
+  pointType: string,
+  data: PointOnMap,
+  actions: ConfSliceActions
+) {
+  const { updateOrigin, updateDestination, addVias, updateFeatureInfoClick } = actions;
   const point: PointOnMap = {
     ...data,
     location: { track_section: data.id, geo_coordinates: data.coordinates },
   };
+
   switch (pointType) {
     case 'start':
       store.dispatch(updateOrigin(point));
@@ -21,8 +22,7 @@ export default function setPointIti(pointType: string, data: PointOnMap) {
       store.dispatch(updateDestination(point));
       break;
     default:
-      store.dispatch(updateVias(point));
+      store.dispatch(addVias(point));
   }
-  store.dispatch(updateFeatureInfoClickOSRD({ displayPopup: false }));
-  store.dispatch(updateFeatureInfoClick(undefined));
+  store.dispatch(updateFeatureInfoClick({ displayPopup: false }));
 }

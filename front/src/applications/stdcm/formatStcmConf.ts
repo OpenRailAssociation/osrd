@@ -1,18 +1,22 @@
 import { Dispatch } from 'redux';
 import { TFunction } from 'i18next';
-import { PathfindingRequest, PostStdcmApiArg } from 'common/api/osrdEditoastApi';
+import { PathfindingRequest } from 'common/api/osrdEditoastApi';
 
-import { createAllowanceValue } from 'applications/stdcm/components/allowancesConsts';
-import { OsrdStdcmConfState } from 'applications/operationalStudies/consts';
 import { time2sec } from 'utils/timeManipulation';
 
-import { setFailure } from 'reducers/main';
+import { createAllowanceValue } from 'applications/stdcm/components/allowancesConsts';
+import type { OsrdStdcmConfState } from 'applications/operationalStudies/consts';
+
 import { getPathfindingQuery } from 'common/Pathfinding/Pathfinding';
+import type { PostStdcmApiArg } from 'common/api/osrdEditoastApi';
+
+import { setFailure } from 'reducers/main';
+import type { InfraState } from 'reducers/infra';
 
 export default function formatStdcmConf(
   dispatch: Dispatch,
   t: TFunction,
-  osrdconf: OsrdStdcmConfState
+  osrdconf: OsrdStdcmConfState & InfraState
 ): PostStdcmApiArg | undefined {
   let error = false;
   if (!osrdconf.origin) {

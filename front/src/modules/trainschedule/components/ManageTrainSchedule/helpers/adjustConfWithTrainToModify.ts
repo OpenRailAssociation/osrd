@@ -1,28 +1,15 @@
-import {
-  updateLabels,
-  updateRollingStockID,
-  updateSpeedLimitByTag,
-  updateAllowances,
-  toggleUsingElectricalProfiles,
-  updateName,
-  updateDepartureTime,
-  updateInitialSpeed,
-  updatePathfindingID,
-  updateItinerary,
-  updateOrigin,
-  updateDestination,
-  replaceVias,
-  updateSuggeredVias,
-  updatePowerRestrictionRanges,
-} from 'reducers/osrdconf';
-import { sec2time } from 'utils/timeManipulation';
 import { Dispatch } from 'redux';
-import { store } from 'store';
-import { Allowance, PathResponse, TrainSchedule } from 'common/api/osrdEditoastApi';
-import { ArrayElement } from 'utils/types';
-import { PointOnMap } from 'applications/operationalStudies/consts';
 import { compact } from 'lodash';
+
 import { ms2kmh } from 'utils/physics';
+import type { ArrayElement } from 'utils/types';
+import { sec2time } from 'utils/timeManipulation';
+
+import type { PointOnMap } from 'applications/operationalStudies/consts';
+
+import type { Allowance, PathResponse, TrainSchedule } from 'common/api/osrdEditoastApi';
+
+import { ConfSliceActions } from 'reducers/osrdconf/osrdConfCommon';
 
 function convertStepToPointOnMap(
   step?: ArrayElement<PathResponse['steps']>
@@ -37,7 +24,19 @@ function convertStepToPointOnMap(
     : undefined;
 }
 
-export function loadPathFinding(path: PathResponse, dispatch: Dispatch) {
+export function loadPathFinding(
+  path: PathResponse,
+  dispatch: Dispatch,
+  osrdActions: ConfSliceActions
+) {
+  const {
+    updatePathfindingID,
+    updateItinerary,
+    updateOrigin,
+    updateDestination,
+    replaceVias,
+    updateSuggeredVias,
+  } = osrdActions;
   if (path.steps && path.steps.length > 1) {
     dispatch(updatePathfindingID(path.id));
     dispatch(updateItinerary(path));
@@ -60,28 +59,39 @@ export function loadPathFinding(path: PathResponse, dispatch: Dispatch) {
 export default function adjustConfWithTrainToModify(
   trainSchedule: TrainSchedule,
   path: PathResponse,
-  dispatch: Dispatch
+  dispatch: Dispatch,
+  usingElectricalProfiles: boolean,
+  osrdActions: ConfSliceActions
 ) {
-  const { osrdconf } = store.getState();
+  const {
+    updateRollingStockID,
+    toggleUsingElectricalProfiles,
+    updateSpeedLimitByTag,
+    updateLabels,
+    updateName,
+    updateDepartureTime,
+    updateInitialSpeed,
+    updateAllowances,
+    updatePowerRestrictionRanges,
+  } = osrdActions;
   if (trainSchedule.rolling_stock_id)
     dispatch(updateRollingStockID(trainSchedule.rolling_stock_id));
-  if (
-    trainSchedule.options?.ignore_electrical_profiles ===
-    osrdconf.simulationConf.usingElectricalProfiles
-  )
+
+  if (trainSchedule.options?.ignore_electrical_profiles === usingElectricalProfiles)
     dispatch(toggleUsingElectricalProfiles());
 
   dispatch(updateSpeedLimitByTag(trainSchedule.speed_limit_tags));
   dispatch(updateLabels(trainSchedule.labels));
 
   if (trainSchedule.train_name) dispatch(updateName(trainSchedule.train_name));
+
   if (trainSchedule.departure_time)
     dispatch(updateDepartureTime(sec2time(trainSchedule.departure_time)));
   dispatch(updateInitialSpeed(ms2kmh(trainSchedule.initial_speed) || 0));
 
   if (trainSchedule.allowances) dispatch(updateAllowances(trainSchedule.allowances as Allowance[]));
 
-  loadPathFinding(path, dispatch);
+  loadPathFinding(path, dispatch, osrdActions);
 
   if (trainSchedule.allowances) dispatch(updateAllowances(trainSchedule.allowances));
 

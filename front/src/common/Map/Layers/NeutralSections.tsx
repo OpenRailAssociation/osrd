@@ -4,7 +4,6 @@ import { Source, LayerProps } from 'react-map-gl/maplibre';
 
 import { RootState } from 'reducers';
 import { MAP_URL } from 'common/Map/const';
-import { getInfraID } from 'reducers/osrdconf/selectors';
 import colors from 'common/Map/Consts/colors';
 import { getMapStyle } from 'reducers/map/selectors';
 
@@ -12,13 +11,12 @@ import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 
 interface NeutralSectionsProps {
   layerOrder: number;
+  infraID: number | undefined;
 }
 
-export default function NeutralSections(props: NeutralSectionsProps) {
+export default function NeutralSections({ layerOrder, infraID }: NeutralSectionsProps) {
   const { layersSettings } = useSelector((state: RootState) => state.map);
-  const infraID = useSelector(getInfraID);
   const mapStyle = useSelector(getMapStyle);
-  const { layerOrder } = props;
   const neutralSectionsParams: LayerProps = {
     type: 'line',
     'source-layer': 'neutral_sections',

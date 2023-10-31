@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { getMap } from 'reducers/map/selectors';
-import { getInfraID } from 'reducers/osrdconf/selectors';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { updateLineSearchCode, updateMapSearchMarker } from 'reducers/map';
 import { useDebounce } from 'utils/helpers';
@@ -15,6 +14,7 @@ import WebMercatorViewport from 'viewport-mercator-project';
 import type { Viewport } from 'reducers/map';
 import type { Zone, SearchResultItemTrack, SearchPayload } from 'common/api/osrdEditoastApi';
 import type { BBox } from '@turf/helpers';
+import { useInfraID } from 'common/osrdContext';
 
 type MapSearchLineProps = {
   updateExtViewport: (viewport: Partial<Viewport>) => void;
@@ -22,7 +22,7 @@ type MapSearchLineProps = {
 };
 
 const MapSearchLine = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchLineProps) => {
-  const infraID = useSelector(getInfraID);
+  const infraID = useInfraID();
   const map = useSelector(getMap);
   const { t } = useTranslation(['map-search']);
   const dispatch = useDispatch();

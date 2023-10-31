@@ -1,13 +1,19 @@
-import { OsrdConfState } from 'applications/operationalStudies/consts';
-import { RootState } from 'reducers';
 import { makeSubSelector } from 'utils/selectors';
-import { simulationConfSliceType } from '../simulationConf';
-import { stdcmConfSliceType } from '../stdcmConf';
 
-const buildCommonConfSelectors = (slice: simulationConfSliceType | stdcmConfSliceType) => {
-  const getConf = (state: RootState) => state[slice.name];
-  const makeOsrdConfSelector = makeSubSelector<OsrdConfState>(getConf);
+import type { OsrdConfState } from 'applications/operationalStudies/consts';
+
+import type { RootState } from 'reducers';
+import type { StdcmConfSlice } from 'reducers/osrdconf/stdcmConf';
+import type { OperationalStudiesConfSlice } from 'reducers/osrdconf/operationalStudiesConf';
+import buildInfraStateSelectors from 'reducers/infra/selectors';
+
+const buildCommonConfSelectors = <ConfState extends OsrdConfState>(
+  slice: OperationalStudiesConfSlice | StdcmConfSlice
+) => {
+  const getConf = (state: RootState) => state[slice.name] as ConfState;
+  const makeOsrdConfSelector = makeSubSelector<ConfState>(getConf);
   return {
+    ...buildInfraStateSelectors(slice),
     getConf,
     getName: makeOsrdConfSelector('name'),
     getTrainCount: makeOsrdConfSelector('trainCount'),
@@ -19,8 +25,6 @@ const buildCommonConfSelectors = (slice: simulationConfSliceType | stdcmConfSlic
     getProjectID: makeOsrdConfSelector('projectID'),
     getStudyID: makeOsrdConfSelector('studyID'),
     getScenarioID: makeOsrdConfSelector('scenarioID'),
-    getInfraID: makeOsrdConfSelector('infraID'),
-    getSwitchTypes: makeOsrdConfSelector('switchTypes'),
     getPathfindingID: makeOsrdConfSelector('pathfindingID'),
     getTimetableID: makeOsrdConfSelector('timetableID'),
     getRollingStockID: makeOsrdConfSelector('rollingStockID'),
@@ -39,13 +43,12 @@ const buildCommonConfSelectors = (slice: simulationConfSliceType | stdcmConfSlic
     getDestinationTime: makeOsrdConfSelector('destinationTime'),
     getVias: makeOsrdConfSelector('vias'),
     getSuggeredVias: makeOsrdConfSelector('suggeredVias'),
-    getTrainCompo: makeOsrdConfSelector('trainCompo'),
     getGeojson: makeOsrdConfSelector('geojson'),
-    getFeatureInfoClick: makeOsrdConfSelector('featureInfoClick'),
     getGridMarginBefore: makeOsrdConfSelector('gridMarginBefore'),
     getGridMarginAfter: makeOsrdConfSelector('gridMarginAfter'),
     getPowerRestrictionRanges: makeOsrdConfSelector('powerRestrictionRanges'),
     getTrainScheduleIDsToModify: makeOsrdConfSelector('trainScheduleIDsToModify'),
+    getFeatureInfoClick: makeOsrdConfSelector('featureInfoClick'),
   };
 };
 

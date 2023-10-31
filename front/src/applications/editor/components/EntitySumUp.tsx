@@ -1,13 +1,14 @@
 import React, { FC, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { flatMap, forEach, isNumber, uniq } from 'lodash';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { Dispatch } from 'redux';
 import { TFunction } from 'i18next';
 import cx from 'classnames';
 
 import { LoaderFill } from 'common/Loader';
-import {
+import { useInfraID } from 'common/osrdContext';
+import type {
   BufferStopEntity,
   CatenaryEntity,
   EditorEntity,
@@ -18,7 +19,6 @@ import {
   TrackSectionEntity,
 } from 'types';
 import { getSpeedSectionsNameString } from 'common/Map/Layers/SpeedLimits';
-import { getInfraID } from 'reducers/osrdconf/selectors';
 import { EditoastType } from '../tools/types';
 import { NEW_ENTITY_ID } from '../data/utils';
 import { getEntities, getEntity } from '../data/api';
@@ -302,7 +302,7 @@ const EntitySumUp: FC<
 > = ({ entity, id, objType, classes, status, error }) => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
-  const infraID = useSelector(getInfraID);
+  const infraID = useInfraID();
   const [state, setState] = useState<
     | { type: 'idle' }
     | { type: 'loading' }

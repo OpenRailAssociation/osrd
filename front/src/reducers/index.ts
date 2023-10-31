@@ -1,40 +1,44 @@
-import { Action, Reducer, ReducersMapObject, AnyAction } from 'redux';
-import { persistCombineReducers, persistReducer, PersistConfig } from 'redux-persist';
+import type { Action, Reducer, ReducersMapObject, AnyAction } from 'redux';
+import type { PersistConfig } from 'redux-persist';
+import { persistCombineReducers, persistReducer } from 'redux-persist';
+import storage from 'redux-persist/lib/storage'; // defaults to localStorage
 import createCompressor from 'redux-persist-transform-compress';
 import { createFilter } from 'redux-persist-transform-filter';
-import storage from 'redux-persist/lib/storage'; // defaults to localStorage
 
-import {
-  OsrdConfState,
-  OsrdMultiConfState,
-  OsrdStdcmConfState,
-} from 'applications/operationalStudies/consts';
+import type { OsrdConfState, OsrdStdcmConfState } from 'applications/operationalStudies/consts';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { osrdGatewayApi } from 'common/api/osrdGatewayApi';
 
-import userReducer, { UserState, userInitialState } from 'reducers/user';
-import mainReducer, { MainState, mainInitialState } from 'reducers/main';
-import mapReducer, { MapState, mapInitialState } from 'reducers/map';
-import editorReducer, { EditorActions, editorInitialState, editorSlice } from 'reducers/editor';
-import osrdconfReducer, { initialState as osrdconfInitialState } from './osrdconf';
+import type { MapState } from 'reducers/map';
+import type { UserState } from 'reducers/user';
+import type { MainState } from 'reducers/main';
+import type { EditorSlice } from 'reducers/editor';
+import mapReducer, { mapInitialState, mapSlice } from 'reducers/map';
+import userReducer, { userInitialState, userSlice } from 'reducers/user';
+import mainReducer, { mainInitialState, mainSlice } from 'reducers/main';
+import type { EditorState } from 'applications/editor/tools/types';
+import type { RsEditorCurvesState } from 'reducers/rollingstockEditor';
+import type { OsrdSimulationState } from 'reducers/osrdsimulation/types';
+import mapViewerReducer, { mapViewerInitialState, mapViewerSlice } from 'reducers/mapViewer';
+import type { MapViewerState, MapViewerSlice } from 'reducers/mapViewer';
+import editorReducer, { editorInitialState, editorSlice } from 'reducers/editor';
 // Dependency cycle will be removed during the refactoring of store
 // eslint-disable-next-line import/no-cycle
 import osrdsimulationReducer, {
   initialState as osrdSimulationInitialState,
-} from './osrdsimulation';
-import { OsrdSimulationState } from './osrdsimulation/types';
-
-import { EditorState } from '../applications/editor/tools/types';
+} from 'reducers/osrdsimulation';
 import rollingstockeditorReducer, {
-  RsEditorCurvesState,
   initialState as rsEditorCurvesInitialState,
-} from './rollingstockEditor';
-import stdcmConfReducer, { stdcmConfInitialState, stdcmConfSlice } from './osrdconf2/stdcmConf';
-import simulationConfReducer, {
-  simulationConfInitialState,
-  simulationConfSlice,
-} from './osrdconf2/simulationConf';
+} from 'reducers/rollingstockEditor';
+import stdcmConfReducer, {
+  stdcmConfInitialState,
+  stdcmConfSlice,
+} from 'reducers/osrdconf/stdcmConf';
+import operationalStudiesConfReducer, {
+  operationalStudiesConfSlice,
+} from 'reducers/osrdconf/operationalStudiesConf';
+import { ConfSlice, defaultCommonConf } from './osrdconf/osrdConfCommon';
 
 const compressor = createCompressor({
   whitelist: ['rollingstock'],
@@ -65,70 +69,79 @@ const saveMainFilter = createFilter('main', mainWhiteList);
 const saveSimulationFilter = createFilter('osrdsimulation', simulationWhiteList);
 
 // Useful to only blacklist a sub-propertie of osrdconf
-const osrdconfPersistConfig: PersistConfig<OsrdMultiConfState> = {
-  key: 'osrdconf',
+const buildOsrdConfPersistConfig = <T extends OsrdConfState>(
+  slice: ConfSlice
+): PersistConfig<T> => ({
+  key: slice.name,
   storage,
-  blacklist: ['featureInfoClick', 'switchTypes'],
-};
+  blacklist: ['featureInfoClick'],
+});
 
 export const persistConfig = {
   key: 'root',
   storage,
   transforms: [compressor, saveMapFilter, saveUserFilter, saveMainFilter, saveSimulationFilter],
-  blacklist: ['osrdconf'],
-  whitelist: ['user', 'map', 'main', 'simulation'],
+  blacklist: [stdcmConfSlice.name, operationalStudiesConfSlice.name],
+  whitelist: ['user', 'map', 'main', 'simulation', 'mapViewer'],
 };
 
-type AllActions = EditorActions | Action;
+type AllActions = Action;
+
+export type OsrdSlice = ConfSlice | EditorSlice | MapViewerSlice;
 
 export interface RootState {
-  user: UserState;
-  map: MapState;
+  [userSlice.name]: UserState;
+  [mapSlice.name]: MapState;
+  [mapViewerSlice.name]: MapViewerState;
   [editorSlice.name]: EditorState;
-  main: MainState;
+  [mainSlice.name]: MainState;
   [stdcmConfSlice.name]: OsrdStdcmConfState;
-  [simulationConfSlice.name]: OsrdConfState;
-  osrdconf: OsrdMultiConfState;
-  osrdsimulation: OsrdSimulationState;
+  [operationalStudiesConfSlice.name]: OsrdConfState;
   [osrdEditoastApi.reducerPath]: ReturnType<typeof osrdEditoastApi.reducer>;
   [osrdGatewayApi.reducerPath]: ReturnType<typeof osrdGatewayApi.reducer>;
+  osrdsimulation: OsrdSimulationState;
   rsEditorCurvesParams: RsEditorCurvesState;
 }
 
 export const rootInitialState: RootState = {
-  user: userInitialState,
-  map: mapInitialState,
+  [userSlice.name]: userInitialState,
+  [mapSlice.name]: mapInitialState,
+  [mapViewerSlice.name]: mapViewerInitialState,
   [editorSlice.name]: editorInitialState,
-  main: mainInitialState,
+  [mainSlice.name]: mainInitialState,
   [stdcmConfSlice.name]: stdcmConfInitialState,
-  [simulationConfSlice.name]: simulationConfInitialState,
-  osrdconf: osrdconfInitialState,
-  osrdsimulation: osrdSimulationInitialState,
+  [operationalStudiesConfSlice.name]: defaultCommonConf,
   [osrdEditoastApi.reducerPath]: {} as ReturnType<typeof osrdEditoastApi.reducer>,
   [osrdGatewayApi.reducerPath]: {} as ReturnType<typeof osrdGatewayApi.reducer>,
+  osrdsimulation: osrdSimulationInitialState,
   rsEditorCurvesParams: rsEditorCurvesInitialState,
 };
 
 export type AnyReducerState =
   | UserState
   | MapState
+  | MapViewerState
   | EditorState
   | MainState
+  | OsrdStdcmConfState
   | OsrdConfState
   | OsrdSimulationState
   | RsEditorCurvesState;
 
 export const rootReducer: ReducersMapObject<RootState> = {
-  user: userReducer,
-  map: mapReducer,
-  [editorSlice.name]: editorReducer,
-  main: mainReducer,
-  [stdcmConfSlice.name]: stdcmConfReducer,
-  [simulationConfSlice.name]: simulationConfReducer,
-  osrdconf: persistReducer(osrdconfPersistConfig, osrdconfReducer) as unknown as Reducer<
-    OsrdMultiConfState,
-    AnyAction
-  >,
+  [userSlice.name]: userReducer,
+  [mapSlice.name]: mapReducer,
+  [mapViewerSlice.name]: mapViewerReducer,
+  [editorSlice.name]: editorReducer as Reducer<EditorState, AnyAction>,
+  [mainSlice.name]: mainReducer,
+  [stdcmConfSlice.name]: persistReducer(
+    buildOsrdConfPersistConfig<OsrdStdcmConfState>(stdcmConfSlice),
+    stdcmConfReducer
+  ) as unknown as Reducer<OsrdStdcmConfState, AnyAction>,
+  [operationalStudiesConfSlice.name]: persistReducer(
+    buildOsrdConfPersistConfig<OsrdConfState>(operationalStudiesConfSlice),
+    operationalStudiesConfReducer
+  ) as unknown as Reducer<OsrdConfState, AnyAction>,
   osrdsimulation: osrdsimulationReducer,
   [osrdEditoastApi.reducerPath]: osrdEditoastApi.reducer,
   [osrdGatewayApi.reducerPath]: osrdGatewayApi.reducer,

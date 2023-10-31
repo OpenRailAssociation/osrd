@@ -1,10 +1,14 @@
-import React, { ComponentType, useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { getRollingStockID, getRollingStockComfort } from 'reducers/osrdconf/selectors';
-import { RollingStockWithLiveries, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import React, { useEffect, useState } from 'react';
+import type { ComponentType } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
+
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
-import RollingStockSelector from './RollingStockSelector';
+import RollingStockSelector from 'modules/rollingStock/components/RollingStockSelector/RollingStockSelector';
+
+import { useOsrdConfSelectors } from 'common/osrdContext';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import type { RollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 
 const WithRollingStockSelector =
   <T extends object>(Component: ComponentType<T>) =>
@@ -14,6 +18,8 @@ const WithRollingStockSelector =
     const [rollingStockSelected, setRollingStockSelected] = useState<
       RollingStockWithLiveries | undefined
     >();
+
+    const { getRollingStockID, getRollingStockComfort } = useOsrdConfSelectors();
     const rollingStockId = useSelector(getRollingStockID);
     const rollingStockComfort: string = useSelector(getRollingStockComfort);
     const comfort = t('rollingstock:comfort');

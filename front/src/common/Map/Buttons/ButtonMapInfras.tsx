@@ -2,15 +2,14 @@ import React from 'react';
 import { GiRailway } from 'react-icons/gi';
 import InfraSelector from 'common/InfraSelector/InfraSelector';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
-import { getInfraID } from 'reducers/osrdconf/selectors';
-import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import cx from 'classnames';
 import Tipped from 'applications/editor/components/Tipped';
+import { useInfraID } from 'common/osrdContext';
 
 const ButtonMapInfras = () => {
   const { openModal } = useModal();
-  const infraID = useSelector(getInfraID);
+  const infraID = useInfraID();
   const { t } = useTranslation('translation');
 
   return (

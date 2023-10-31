@@ -1,44 +1,52 @@
-import React, { FC, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
-import { MapLayerMouseEvent } from 'maplibre-gl';
+import type { MapLayerMouseEvent } from 'maplibre-gl';
 import WebMercatorViewport from 'viewport-mercator-project';
-import ReactMapGL, { AttributionControl, MapRef, ScaleControl } from 'react-map-gl/maplibre';
-import { Feature, LineString } from 'geojson';
-import { BBox, lineString, point } from '@turf/helpers';
+import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl/maplibre';
+import type { MapRef } from 'react-map-gl/maplibre';
+import type { Feature, LineString } from 'geojson';
+import { lineString, point } from '@turf/helpers';
+import type { BBox } from '@turf/helpers';
 import bbox from '@turf/bbox';
 import lineLength from '@turf/length';
 import lineSlice from '@turf/line-slice';
 import { keyBy } from 'lodash';
 
+import type { TrainPosition } from 'modules/simulationResult/components/SimulationResultsMap/types';
+
+import type { RootState } from 'reducers';
+import type { Viewport } from 'reducers/map';
+import { updateViewport, updateMapSearchMarker } from 'reducers/map';
+import type { Train } from 'reducers/osrdsimulation/types';
 import { getPresentSimulation, getSelectedTrain } from 'reducers/osrdsimulation/selectors';
-import { Train } from 'reducers/osrdsimulation/types';
-import { updateMapSearchMarker, updateViewport, Viewport } from 'reducers/map';
-import { RootState } from 'reducers';
-import { TrainPosition } from 'modules/simulationResult/components/SimulationResultsMap/types';
 
 /* Main data & layers */
 import Background from 'common/Map/Layers/Background';
 import BufferStops from 'common/Map/Layers/BufferStops';
 import VirtualLayers from 'modules/simulationResult/components/SimulationResultsMap/VirtualLayers';
+
 /* Settings & Buttons */
-import MapButtons from 'common/Map/Buttons/MapButtons';
-import Detectors from 'common/Map/Layers/Detectors';
-import Catenaries from 'common/Map/Layers/Catenaries';
-import NeutralSections from 'common/Map/Layers/NeutralSections';
-import Hillshade from 'common/Map/Layers/Hillshade';
-import OSM from 'common/Map/Layers/OSM';
-import OperationalPoints from 'common/Map/Layers/OperationalPoints';
-import PlatformsLayer from 'common/Map/Layers/Platforms';
 import RenderItinerary from 'modules/simulationResult/components/SimulationResultsMap/RenderItinerary';
+
+import OSM from 'common/Map/Layers/OSM';
 import Routes from 'common/Map/Layers/Routes';
-import SearchMarker from 'common/Map/Layers/SearchMarker';
 import Signals from 'common/Map/Layers/Signals';
-import SpeedLimits from 'common/Map/Layers/SpeedLimits';
 import Switches from 'common/Map/Layers/Switches';
+import Detectors from 'common/Map/Layers/Detectors';
+import Hillshade from 'common/Map/Layers/Hillshade';
+import Catenaries from 'common/Map/Layers/Catenaries';
+import MapButtons from 'common/Map/Buttons/MapButtons';
+import SpeedLimits from 'common/Map/Layers/SpeedLimits';
+import PlatformsLayer from 'common/Map/Layers/Platforms';
+import SearchMarker from 'common/Map/Layers/SearchMarker';
+import NeutralSections from 'common/Map/Layers/NeutralSections';
+import OperationalPoints from 'common/Map/Layers/OperationalPoints';
+
 /* Objects & various */
-import TracksGeographic from 'common/Map/Layers/TracksGeographic';
 import TracksOSM from 'common/Map/Layers/TracksOSM';
+import TracksGeographic from 'common/Map/Layers/TracksGeographic';
+
 /* Interactions */
 import TrainHoverPosition from 'modules/simulationResult/components/SimulationResultsMap/TrainHoverPosition';
 
@@ -51,14 +59,16 @@ import {
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 
 import 'common/Map/Map.scss';
-import SNCF_PSL from 'common/Map/Layers/extensions/SNCF/PSL';
-import IGN_BD_ORTHO from 'common/Map/Layers/IGN_BD_ORTHO';
+import Terrain from 'common/Map/Layers/Terrain';
+import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
+import { useInfraID } from 'common/osrdContext';
 import IGN_SCAN25 from 'common/Map/Layers/IGN_SCAN25';
 import IGN_CADASTRE from 'common/Map/Layers/IGN_CADASTRE';
-import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
-import { SimulationReport, osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import Terrain from 'common/Map/Layers/Terrain';
+import IGN_BD_ORTHO from 'common/Map/Layers/IGN_BD_ORTHO';
+import SNCF_PSL from 'common/Map/Layers/extensions/SNCF/PSL';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { getTerrain3DExaggeration } from 'reducers/map/selectors';
+import type { SimulationReport } from 'common/api/osrdEditoastApi';
 import { getRegimeKey, getSimulationHoverPositions } from './SimulationResultsMap/helpers';
 import { useChartSynchronizer } from './ChartHelpers/ChartSynchronizer';
 
@@ -66,7 +76,7 @@ interface MapProps {
   setExtViewport: (viewport: Viewport) => void;
 }
 
-const Map: FC<MapProps> = ({ setExtViewport }) => {
+const Map = ({ setExtViewport }: MapProps) => {
   const mapBlankStyle = useMapBlankStyle();
   const [mapLoaded, setMapLoaded] = useState(false);
   const { viewport, mapSearchMarker, mapStyle, showOSM } = useSelector(
@@ -109,6 +119,8 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
     [dispatch]
   );
   const mapRef = React.useRef<MapRef>(null);
+
+  const infraID = useInfraID();
 
   const zoomToFeature = (boundingBox: BBox) => {
     const [minLng, minLat, maxLng, maxLat] = boundingBox;
@@ -295,42 +307,57 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
         <TracksGeographic
           colors={colors[mapStyle]}
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.TRACKS_GEOGRAPHIC.GROUP]}
+          infraID={infraID}
         />
         <TracksOSM
           colors={colors[mapStyle]}
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.TRACKS_OSM.GROUP]}
         />
 
-        <Routes colors={colors[mapStyle]} layerOrder={LAYER_GROUPS_ORDER[LAYERS.ROUTES.GROUP]} />
+        <Routes
+          colors={colors[mapStyle]}
+          layerOrder={LAYER_GROUPS_ORDER[LAYERS.ROUTES.GROUP]}
+          infraID={infraID}
+        />
         <OperationalPoints
           colors={colors[mapStyle]}
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.OPERATIONAL_POINTS.GROUP]}
+          infraID={infraID}
         />
         <Catenaries
           colors={colors[mapStyle]}
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.CATENARIES.GROUP]}
+          infraID={infraID}
         />
-        <NeutralSections layerOrder={LAYER_GROUPS_ORDER[LAYERS.DEAD_SECTIONS.GROUP]} />
+        <NeutralSections
+          layerOrder={LAYER_GROUPS_ORDER[LAYERS.DEAD_SECTIONS.GROUP]}
+          infraID={infraID}
+        />
         <BufferStops
           colors={colors[mapStyle]}
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.BUFFER_STOPS.GROUP]}
+          infraID={infraID}
         />
         <Detectors
           colors={colors[mapStyle]}
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.DETECTORS.GROUP]}
+          infraID={infraID}
         />
         <Switches
           colors={colors[mapStyle]}
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.SWITCHES.GROUP]}
+          infraID={infraID}
         />
 
         <SpeedLimits
           colors={colors[mapStyle]}
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS.GROUP]}
+          infraID={infraID}
         />
         <SNCF_PSL
           colors={colors[mapStyle]}
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS.GROUP]}
+          infraID={infraID}
         />
 
         <Signals
@@ -338,6 +365,7 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
           sourceTable="signals"
           colors={colors[mapStyle]}
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.SIGNALS.GROUP]}
+          infraID={infraID}
         />
 
         {mapSearchMarker && <SearchMarker data={mapSearchMarker} colors={colors[mapStyle]} />}

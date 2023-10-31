@@ -1,26 +1,30 @@
 import React from 'react';
+import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import nextId from 'react-id-generator';
-import { AiFillFolderOpen } from 'react-icons/ai';
 import { FcCalendar } from 'react-icons/fc';
+import { RiFolderChartLine } from 'react-icons/ri';
+import { AiFillFolderOpen } from 'react-icons/ai';
+
 import studyLogo from 'assets/pictures/views/study.svg';
+
 import { budgetFormat } from 'utils/numbers';
 import { dateTimeFormatting } from 'utils/date';
-import { useDispatch } from 'react-redux';
-import { updateScenarioID, updateStudyID } from 'reducers/osrdconf';
-import { RiFolderChartLine } from 'react-icons/ri';
-import { StudyWithScenarios } from 'common/api/osrdEditoastApi';
 
-type Props = {
+import type { StudyWithScenarios } from 'common/api/osrdEditoastApi';
+import { useOsrdConfActions } from 'common/osrdContext';
+
+type StudyCardProps = {
   setFilterChips: (filterChips: string) => void;
   study: StudyWithScenarios;
 };
 
-export default function StudyCard({ setFilterChips, study }: Props) {
+export default function StudyCard({ setFilterChips, study }: StudyCardProps) {
   const { t } = useTranslation(['operationalStudies/project', 'operationalStudies/study']);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { updateScenarioID, updateStudyID } = useOsrdConfActions();
 
   const handleClick = () => {
     dispatch(updateStudyID(study.id));

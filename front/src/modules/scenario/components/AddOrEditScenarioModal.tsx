@@ -4,23 +4,24 @@ import { GoPencil, GoTrash } from 'react-icons/go';
 import { FaPlus } from 'react-icons/fa';
 import { GiElectric } from 'react-icons/gi';
 import { MdDescription, MdTitle } from 'react-icons/md';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import { sortBy } from 'lodash';
 
 import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
+import { useInfraID, useOsrdConfActions } from 'common/osrdContext';
+import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
+import InfraSelectorModal from 'common/InfraSelector/InfraSelectorModal';
 import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
-import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
-import InfraSelectorModal from 'common/InfraSelector/InfraSelectorModal';
-import { osrdEditoastApi, ScenarioCreateForm, ScenarioPatchForm } from 'common/api/osrdEditoastApi';
+import type { ScenarioCreateForm, ScenarioPatchForm } from 'common/api/osrdEditoastApi';
+
 import { setFailure, setSuccess } from 'reducers/main';
-import { updateScenarioID } from 'reducers/osrdconf';
-import { getInfraID } from 'reducers/osrdconf/selectors';
 
 type CreateOrPatchScenarioForm = ScenarioPatchForm & {
   id?: number;
@@ -81,7 +82,7 @@ export default function AddOrEditScenarioModal({
   const [displayErrors, setDisplayErrors] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const infraID = useSelector(getInfraID);
+  const infraID = useInfraID();
 
   const selectedValue = useMemo(() => {
     if (currentScenario.electrical_profile_set_id) {
@@ -94,6 +95,8 @@ export default function AddOrEditScenarioModal({
   }, [currentScenario.electrical_profile_set_id, electricalProfilOptions]);
 
   type ElectricalProfileSetType = { id: number; name: string };
+
+  const { updateScenarioID } = useOsrdConfActions();
 
   const removeTag = (idx: number) => {
     const newTags = currentScenario.tags ? Array.from(currentScenario.tags) : [];

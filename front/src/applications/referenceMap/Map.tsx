@@ -6,11 +6,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
 import type { MapRef } from 'react-map-gl/maplibre';
-import type { RootState } from 'reducers';
 import type { Viewport } from 'reducers/map';
 
-import { getTerrain3DExaggeration } from 'reducers/map/selectors';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
+import { getMap, getTerrain3DExaggeration } from 'reducers/map/selectors';
 
 /* Main data & layers */
 import Background from 'common/Map/Layers/Background';
@@ -44,14 +43,14 @@ import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
 import { useMapBlankStyle } from 'common/Map/Layers/blankStyle';
 
 import 'common/Map/Map.scss';
+import { useInfraID } from 'common/osrdContext';
 
 function Map() {
   const mapBlankStyle = useMapBlankStyle();
 
-  const { viewport, mapSearchMarker, mapStyle, showOSM, layersSettings } = useSelector(
-    (state: RootState) => state.map
-  );
   const [mapLoaded, setMapLoaded] = useState(false);
+  const { viewport, mapSearchMarker, mapStyle, showOSM, layersSettings } = useSelector(getMap);
+  const infraID = useInfraID();
   const terrain3DExaggeration = useSelector(getTerrain3DExaggeration);
   const mapRef = useRef<MapRef | null>(null);
   const { urlLat, urlLon, urlZoom, urlBearing, urlPitch } = useParams();
@@ -175,50 +174,70 @@ function Map() {
         <TracksGeographic
           colors={colors[mapStyle]}
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.TRACKS_GEOGRAPHIC.GROUP]}
+          infraID={infraID}
         />
+
         <TracksOSM
           colors={colors[mapStyle]}
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.TRACKS_OSM.GROUP]}
         />
 
-        <Routes colors={colors[mapStyle]} layerOrder={LAYER_GROUPS_ORDER[LAYERS.ROUTES.GROUP]} />
+        <Routes
+          colors={colors[mapStyle]}
+          layerOrder={LAYER_GROUPS_ORDER[LAYERS.ROUTES.GROUP]}
+          infraID={infraID}
+        />
         <OperationalPoints
           colors={colors[mapStyle]}
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.OPERATIONAL_POINTS.GROUP]}
+          infraID={infraID}
         />
         <Catenaries
           colors={colors[mapStyle]}
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.CATENARIES.GROUP]}
+          infraID={infraID}
         />
-        <NeutralSections layerOrder={LAYER_GROUPS_ORDER[LAYERS.DEAD_SECTIONS.GROUP]} />
+        <NeutralSections
+          layerOrder={LAYER_GROUPS_ORDER[LAYERS.DEAD_SECTIONS.GROUP]}
+          infraID={infraID}
+        />
         <BufferStops
           colors={colors[mapStyle]}
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.BUFFER_STOPS.GROUP]}
+          infraID={infraID}
         />
         <Detectors
           colors={colors[mapStyle]}
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.DETECTORS.GROUP]}
+          infraID={infraID}
         />
         <Switches
           colors={colors[mapStyle]}
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.SWITCHES.GROUP]}
+          infraID={infraID}
         />
 
         <SpeedLimits
           colors={colors[mapStyle]}
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS.GROUP]}
+          infraID={infraID}
         />
         <SNCF_PSL
           colors={colors[mapStyle]}
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS.GROUP]}
+          infraID={infraID}
         />
 
         <Signals
           sourceTable="signals"
           colors={colors[mapStyle]}
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.SIGNALS.GROUP]}
+          infraID={infraID}
         />
-        <LineSearchLayer layerOrder={LAYER_GROUPS_ORDER[LAYERS.LINE_SEARCH.GROUP]} />
+        <LineSearchLayer
+          layerOrder={LAYER_GROUPS_ORDER[LAYERS.LINE_SEARCH.GROUP]}
+          infraID={infraID}
+        />
 
         {mapSearchMarker && <SearchMarker data={mapSearchMarker} colors={colors[mapStyle]} />}
       </ReactMapGL>

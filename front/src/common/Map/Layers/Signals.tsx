@@ -7,7 +7,6 @@ import { Theme } from 'types';
 import { MAP_URL } from 'common/Map/const';
 
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
-import { getInfraID } from 'reducers/osrdconf/selectors';
 import { getLayersSettings, getMapStyle } from 'reducers/map/selectors';
 import {
   getPointLayerProps,
@@ -23,13 +22,12 @@ interface PlatformProps {
   hovered?: { id: string; layer: string };
   mapRef?: React.RefObject<MapRef>;
   layerOrder: number;
+  infraID: number | undefined;
 }
 
-function Signals(props: PlatformProps) {
+const Signals = ({ colors, sourceTable, layerOrder, infraID }: PlatformProps) => {
   const mapStyle = useSelector(getMapStyle);
   const layersSettings = useSelector(getLayersSettings);
-  const infraID = useSelector(getInfraID);
-  const { colors, sourceTable, layerOrder } = props;
 
   const prefix = mapStyle === 'blueprint' ? 'SCHB ' : '';
 
@@ -74,6 +72,6 @@ function Signals(props: PlatformProps) {
       />
     </Source>
   ) : null;
-}
+};
 
 export default Signals;

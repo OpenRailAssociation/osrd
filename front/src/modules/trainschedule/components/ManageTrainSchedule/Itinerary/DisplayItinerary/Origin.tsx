@@ -1,40 +1,43 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Position } from 'geojson';
+import { useTranslation } from 'react-i18next';
 import { RiMapPin2Fill } from 'react-icons/ri';
 import { BiLink, BiUnlink } from 'react-icons/bi';
-import { useTranslation } from 'react-i18next';
+import type { Position } from 'geojson';
 
-import {
-  updateOrigin,
-  updateOriginDate,
-  updateOriginTime,
-  updateOriginUpperBoundDate,
-  updateOriginUpperBoundTime,
-  toggleOriginLinkedBounds,
-  updatePathfindingID,
-} from 'reducers/osrdconf';
-import {
-  getMode,
-  getOrigin,
-  getOriginDate,
-  getOriginTime,
-  getOriginLinkedBounds,
-  getOriginUpperBoundDate,
-  getOriginUpperBoundTime,
-} from 'reducers/osrdconf/selectors';
 import { makeEnumBooleans } from 'utils/constants';
 
-import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { MODES } from 'applications/operationalStudies/consts';
+
+import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import { useOsrdConfActions, useOsrdContext, useOsrdConfSelectors } from 'common/osrdContext';
 
 interface OriginProps {
   zoomToFeaturePoint: (lngLat?: Position, id?: string) => void;
 }
 
-function Origin(props: OriginProps) {
-  const { zoomToFeaturePoint } = props;
-  const mode = useSelector(getMode);
+function Origin({ zoomToFeaturePoint }: OriginProps) {
+  const {
+    getOrigin,
+    getOriginDate,
+    getOriginTime,
+    getOriginLinkedBounds,
+    getOriginUpperBoundDate,
+    getOriginUpperBoundTime,
+  } = useOsrdConfSelectors();
+
+  const { mode } = useOsrdContext();
+
+  const {
+    updateOrigin,
+    updateOriginDate,
+    updateOriginTime,
+    updateOriginUpperBoundDate,
+    updateOriginUpperBoundTime,
+    toggleOriginLinkedBounds,
+    updatePathfindingID,
+  } = useOsrdConfActions();
+
   const origin = useSelector(getOrigin);
   const originDate = useSelector(getOriginDate);
   const originTime = useSelector(getOriginTime);

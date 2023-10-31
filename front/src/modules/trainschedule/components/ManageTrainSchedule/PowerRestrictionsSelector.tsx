@@ -1,16 +1,19 @@
-import { compact, isEmpty, last, reduce, uniq } from 'lodash';
 import React, { useEffect, useMemo } from 'react';
+import { compact, isEmpty, last, reduce, uniq } from 'lodash';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
 import icon from 'assets/pictures/components/power_restrictions.svg';
-import { PowerRestrictionRange } from 'applications/operationalStudies/consts';
-import { RangedValue, RollingStock } from 'common/api/osrdEditoastApi';
-import { INTERVAL_TYPES, IntervalItem } from 'common/IntervalsEditor/types';
+
+import type { PowerRestrictionRange } from 'applications/operationalStudies/consts';
+
+import { INTERVAL_TYPES } from 'common/IntervalsEditor/types';
+import type { IntervalItem } from 'common/IntervalsEditor/types';
 import IntervalsEditor from 'common/IntervalsEditor/IntervalsEditor';
-import { updatePowerRestrictionRanges } from 'reducers/osrdconf';
+import type { RangedValue, RollingStock } from 'common/api/osrdEditoastApi';
+import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
+
 import { setWarning } from 'reducers/main';
-import { getPowerRestrictionRanges } from 'reducers/osrdconf/selectors';
 
 export const NO_POWER_RESTRICTION = 'NO_POWER_RESTRICTION';
 /** Arbitrairy default segment length (1km) */
@@ -55,6 +58,8 @@ const PowerRestrictionsSelector = ({
 }: PowerRestrictionsSelectorProps) => {
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const dispatch = useDispatch();
+  const { getPowerRestrictionRanges } = useOsrdConfSelectors();
+  const { updatePowerRestrictionRanges } = useOsrdConfActions();
   const powerRestrictionRanges = useSelector(getPowerRestrictionRanges);
 
   const pathLength = useMemo(() => {
