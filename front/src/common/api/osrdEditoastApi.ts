@@ -1267,12 +1267,12 @@ export type PostStdcmApiArg = {
     infra_id: number;
     margin_after?: number;
     margin_before?: number;
-    maximum_departure_delay?: number;
+    maximum_departure_delay: number;
     maximum_run_time?: number;
     rolling_stock_id: number;
     rolling_stocks: number[];
     speed_limit_tags?: string;
-    standard_allowance: AllowanceValue;
+    standard_allowance?: AllowanceValue;
     start_time?: number;
     steps: {
       duration: number;

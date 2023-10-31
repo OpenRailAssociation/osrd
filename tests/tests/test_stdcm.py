@@ -52,13 +52,10 @@ def test_empty_timetable(small_infra: Infra, foo_project_id: int, fast_rolling_s
             {"duration": 0.1, "waypoints": [_STOP]},
         ],
         "comfort": "STANDARD",
-        "standard_allowance": {"percentage": 0, "value_type": "percentage"},
-        "margin_before": 0,
-        "margin_after": 0,
         "maximum_departure_delay": 7200,
+        "maximum_run_time": 43200,
     }
     r = requests.post(EDITOAST_URL + "stdcm/", json=payload)
-
     assert r.status_code == 201
 
 
@@ -77,10 +74,8 @@ def test_empty_timetable_with_stop(small_infra: Infra, foo_project_id: int, fast
             {"duration": 0.1, "waypoints": [_STOP]},
         ],
         "comfort": "STANDARD",
-        "standard_allowance": {"percentage": 0, "value_type": "percentage"},
-        "margin_before": 0,
-        "margin_after": 0,
         "maximum_departure_delay": 7200,
+        "maximum_run_time": 43200,
     }
     r = requests.post(EDITOAST_URL + "stdcm/", json=payload)
     r.raise_for_status()
@@ -105,10 +100,8 @@ def test_between_trains(small_scenario: Scenario, fast_rolling_stock: int, west_
             {"duration": 0.1, "waypoints": [_STOP]},
         ],
         "comfort": "STANDARD",
-        "standard_allowance": {"percentage": 0, "value_type": "percentage"},
-        "margin_before": 0,
-        "margin_after": 0,
         "maximum_departure_delay": 7200,
+        "maximum_run_time": 43200,
     }
     r = requests.post(EDITOAST_URL + "stdcm/", json=payload)
     if r.status_code // 100 != 2:

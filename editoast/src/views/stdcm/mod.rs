@@ -48,11 +48,13 @@ pub struct STDCMRequestPayload {
     pub rolling_stock_id: i64,
     pub comfort: RollingStockComfortType,
     pub maximum_departure_delay: Option<f64>,
-    pub maximum_run_time: Option<f64>,
+    pub maximum_run_time: f64,
     pub speed_limit_tags: Option<String>,
-    pub margin_before: Option<f64>,
-    pub margin_after: Option<f64>,
-    pub standard_allowance: AllowanceValue,
+    #[serde(default)]
+    pub margin_before: f64,
+    #[serde(default)]
+    pub margin_after: f64,
+    pub standard_allowance: Option<AllowanceValue>,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
@@ -169,8 +171,8 @@ async fn call_core_stdcm(
         maximum_departure_delay: data.maximum_departure_delay,
         maximum_run_time: data.maximum_run_time,
         speed_limit_tags: data.speed_limit_tags.clone(),
-        margin_before: data.margin_before.unwrap(),
-        margin_after: data.margin_after.unwrap(),
+        margin_before: data.margin_before,
+        margin_after: data.margin_after,
         standard_allowance: data.standard_allowance.clone(),
         time_step: Some(2.0),
     }

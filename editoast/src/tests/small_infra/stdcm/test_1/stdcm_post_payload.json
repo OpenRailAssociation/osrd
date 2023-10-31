@@ -32,10 +32,5 @@
   "start_time": 25200,
   "end_time": null,
   "maximum_departure_delay": 7200,
-  "margin_before": 0,
-  "margin_after": 0,
-  "standard_allowance": {
-    "percentage": 0,
-    "value_type": "percentage"
-  }
+  "maximum_run_time": 43200
 }

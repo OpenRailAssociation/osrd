@@ -84,7 +84,6 @@ public final class STDCMRequest {
     /**
      * Specifies the running time that the train should not exceed to reach its destination,
      * e.g. with a value of 18000, we ignore results after 5h.
-     * Defaults to 12hrs.
      */
     @Json(name = "maximum_run_time")
     public double maximumRunTime;

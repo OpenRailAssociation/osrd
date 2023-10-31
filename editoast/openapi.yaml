@@ -4860,12 +4860,14 @@ paths:
                 infra_id:
                   type: integer
                 margin_after:
+                  default: 0
                   description: |
                     Margin of y seconds after the train passage, which means that the path used by the train should
                     be free and available at least y seconds after its passage.
                   format: double
                   type: number
                 margin_before:
+                  default: 0
                   description: |
                     Margin of x seconds before the train passage, which means that the path used by the train should
                     be free and available at least x seconds before its passage.
@@ -4919,7 +4921,7 @@ paths:
               - rolling_stocks
               - rolling_stock_id
               - comfort
-              - standard_allowance
+              - maximum_departure_delay
               type: object
       responses:
         '200':

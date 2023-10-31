@@ -23,12 +23,12 @@ pub struct STDCMCoreRequest {
     pub end_time: Option<f64>,
     pub time_step: Option<f64>,
     pub maximum_departure_delay: Option<f64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub maximum_run_time: Option<f64>,
+    pub maximum_run_time: f64,
     pub speed_limit_tags: Option<String>,
     pub margin_before: f64,
     pub margin_after: f64,
-    pub standard_allowance: AllowanceValue,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub standard_allowance: Option<AllowanceValue>,
 }
 
 impl AsCoreRequest<Json<STDCMCoreResponse>> for STDCMCoreRequest {
