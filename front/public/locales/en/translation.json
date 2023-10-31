@@ -38,7 +38,8 @@
   "Editor": {
     "entities": {
       "track_section": "Track section",
-      "track_section-length": "Length"
+      "track_section-length": "Length",
+      "errors-linked" : "Linked issues"
     },
     "directions": {
       "START_TO_STOP": "Start to stop",
@@ -53,6 +54,14 @@
       "technical": "A technical error has occurred: {{msg}}"
     },
     "infra-errors": {
+      "label": {
+        "title_other": "{{count}} issues",
+        "title_zero": "No issue",
+        "title_one": "{{count}} issue",
+        "title-with-filter_other": "{{count}} issues on {{total}}",
+        "title-with-filter_zero": "zero issues on {{total}}",
+        "title-with-filter_one": "{{count}} issues on {{total}}"
+      },
       "error-level": {
         "all": "All",
         "errors": "Errors",
@@ -60,21 +69,70 @@
       },
       "error-type": {
         "all": "All",
-        "duplicated_group": "Duplicated group",
-        "empty_object": "Empty object",
-        "invalid_group": "Invalid switch position",
-        "invalid_reference": "Invalid Reference",
-        "invalid_route": "Invalid path",
-        "invalid_switch_ports": "Invalid switch ports",
-        "missing_route": "Missing route",
-        "missing_buffer_stop": "Missing buffer stop",
-        "object_out_of_path": "Object out of path",
-        "odd_buffer_stop_location": "Odd buffer stop location",
-        "out_of_range": "Invalid value (out of range)",
-        "overlapping_speed_sections": "Speed limit superposition",
-        "overlapping_switches": "Overlapping switches",
-        "unknown_port_name": "Unknown port name",
-        "unused_port": "Unused port"
+        "duplicated_group": {
+          "name": "Duplicated switch pattern",
+          "description": "Switch type « {{obj_id}} » contains a duplicate configuration « {{original_group_path}} »"
+        },
+        "empty_object": {
+          "name": "Empty object", 
+          "description": "Object « {{obj_id}} » has the field « {{field}} » empty"
+        },
+        "invalid_group": {
+          "name": "Position de l'aiguille invalide", 
+          "description": "The switch « {{obj_id}} » of the route « {{group}} » is in the configuration « {{switch_type}} » which does not exist"
+        },
+        "invalid_reference":{
+          "name": "Invalid reference", 
+          "description": "The object « {{obj_id}} » references the object « {{reference.obj_id}} » which does not exist"
+        },
+        "invalid_route":{
+          "name": "Invalid route", 
+          "description": "Route « {{obj_id}} » is invalid, requested path is not consistent"
+        },
+        "invalid_switch_ports": {
+          "name": "Invalid switch pattern", 
+          "description": "Switch « {{obj_id}} » has a branch which is not compatible with its type"
+        },
+        "missing_route": {
+          "name": "Missing route", 
+          "description": "Track « {{obj_id}} » has no associated route"
+        },
+        "missing_buffer_stop": {
+          "name": "Missing buffer stop", 
+          "description":"Endpoint « {{endpoint}} » of track « {{obj_id}} » has no buffer stop"
+        },
+        "object_out_of_path": {
+          "name": "Object out of path", 
+          "description": "Object « {{obj_id}} » of track « {{reference.obj_id}} » is not contained in the corresponding path"
+        },
+        "odd_buffer_stop_location": {
+          "name": "Strange buffer stop position", 
+          "description": "Buffer stop « {{obj_id}} » has a strange position"
+        },
+        "out_of_range":{
+          "name": "Invalid value", 
+          "description": "Object « {{obj_id}} » has the field « {{field}} » with an invalid value. Value must be in the following range {{expected_range}}."
+        },
+        "overlapping_speed_sections": { 
+          "name": "Overlapping of speed limits", 
+          "description": "Speed limit « {{obj_id}} » overlaps « {{reference.obj_id}} »"
+        },
+        "overlapping_switches": {
+          "name": "Overlapping of switches", 
+          "description": "Switches « {{obj_id}} » and « {{reference.obj_id}} » have the same extremeties"
+        },
+        "overlapping_catenaries": {
+          "name": "Overlapping of catenaries", 
+          "description": "Catenary « {{obj_id}} » overlaps catenary « {{reference.obj_id}} »"
+        },
+        "unknown_port_name": {
+          "name": "Unknown branch name", 
+          "description": "Switch « {{obj_id}} » has the branch « {{port_name}} » which does not exist"
+        },
+        "unused_port": {
+          "name": "Unused branch", 
+          "description": "Branch « {{port_name}} » of switch type « {{obj_id}} » is nerver used"
+        }
       },
       "list": {
         "error": "An error occurred while loading the data",
@@ -82,7 +140,8 @@
         "filter-type": "Error type",
         "total-error": "{{count}} errors found",
         "total-error_one": "One error found",
-        "total-error_zero": "No error found"
+        "total-error_zero": "No error found",
+        "goto-error": "Select and locate on the map"
       },
       "modal": {
         "title": "Infrastructure {{id}} error list"
@@ -121,7 +180,8 @@
     },
     "nav": {
       "infra-changed": "You are now editing the infra \"{{label}}\" (id \"{{id}}\").",
-      "infra-errors": "Display current infrastructure errors",
+      "infra-errors": "Display current infrastructure issues on the map",
+      "infra-errors-list": "Configure display of issues",
       "recenter": "Recenter the map",
       "select-infra": "Select the infrastructure to edit",
       "toggle-layers": "Choose the types of elements to display",
@@ -140,6 +200,7 @@
       "SpeedSection": "Speed limit"
     },
     "title": "Editor",
+    "title-issue": "({{nbIssue}} issues)",
     "tool-help": "Show description for the active tool",
     "tools": {
       "buffer-stop-edition": {
@@ -285,7 +346,7 @@
         },
         "endpoint": "Endpoint:",
         "help": {
-          "no-move": "Switches cannot be moved, and are automatically located at their first port.",
+          "no-move": "Switches cannot be moved, and are automatically placed on their first port.",
           "select-track": "Select a line on the map"
         },
         "label": "Switch tool",
@@ -327,25 +388,25 @@
           "reset-speed-section": "Cancel the current modifications"
         },
         "add-new-speed-limit": "Add new speed limit",
-        "add-sign": "Add a {{signType}} panel",
+        "add-sign": "Add a sign from {{signType}} type",
         "add-track-range": "Click to link to:",
         "additional-speed-limit": "Additional speed limits",
-        "hovered-sign": "{{signType}} panel",
+        "hovered-sign": "Sign {{signType}}",
         "label": "Speed section tool",
         "main-speed-limit": "Default speed limit",
         "move-range-extremity": "Click to move the end:",
         "new-tag": "Composition code",
         "sign-angle-geo": "Angle Geo",
         "sign-angle-sch": "Angle Sch",
-        "sign-category": "{{signType}} panel(s)",
+        "sign-category": "Sign(s) {{signType}}",
         "sign-select": "Select",
-        "sign-remove": "Remove panel",
+        "sign-remove": "Remove sign",
         "sign-position": "Position",
         "sign-track-id": "Track section id",
         "sign-type": "Type",
         "sign-side": "Side",
         "sign-value": "Speed",
-        "signs-section-list": "Section panels list",
+        "signs-section-list": "Section signs list",
         "remove-track-range": "Click to detatch from:",
         "save-existing-speed-section": "Save modifications",
         "save-new-speed-section": "Save the new speed limit",
@@ -355,7 +416,7 @@
       "range-edition": {
         "edit-track-range-start": "Edit departure point",
         "edit-track-range-end": "Edit arrival point",
-        "linked-track-sections": "Associated track route sections",
+        "linked-track-sections": "Associated track sections",
         "only-show-n": "Only show the first {{count}} track sections",
         "show-more-ranges_one": "See an additional track section",
         "show-more-ranges_other": "See {{count}} additional track sections"
