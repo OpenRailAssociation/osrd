@@ -47,3 +47,11 @@ export function geti18nKeyForNull(str: string | null): string {
 export function onlyDigit(str: string): string {
   return str.replace(/\D/g, '');
 }
+
+/**
+ * Given a string, return a number or undefined
+ * Useful for number input
+ */
+export function convertInputStringToNumber(str: string) {
+  return str !== '' && !Number.isNaN(str) ? +str : undefined;
+}

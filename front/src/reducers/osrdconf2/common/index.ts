@@ -42,8 +42,8 @@ export const defaultCommonConf: OsrdConfState = {
   trainCompo: undefined,
   geojson: undefined,
   featureInfoClick: { displayPopup: false },
-  gridMarginBefore: 0,
-  gridMarginAfter: 0,
+  gridMarginBefore: undefined,
+  gridMarginAfter: undefined,
   trainScheduleIDsToModify: [],
 };
 
