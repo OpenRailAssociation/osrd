@@ -15,7 +15,11 @@ import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { useDispatch } from 'react-redux';
 import DateBox from 'applications/operationalStudies/components/Study/DateBox';
 import StateStep from 'applications/operationalStudies/components/Study/StateStep';
-import { PostSearchApiArg, ScenarioResult, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import {
+  PostSearchApiArg,
+  ScenarioWithCountTrains,
+  osrdEditoastApi,
+} from 'common/api/osrdEditoastApi';
 import AddOrEditStudyModal from 'modules/study/components/AddOrEditStudyModal';
 import BreadCrumbs from '../components/BreadCrumbs';
 import FilterTextField from '../components/FilterTextField';
@@ -30,7 +34,7 @@ type SortOptions =
   | 'LastModifiedDesc';
 
 function displayScenariosList(
-  scenariosList: ScenarioResult[],
+  scenariosList: ScenarioWithCountTrains[],
   setFilterChips: (filterChips: string) => void
 ) {
   return scenariosList ? (
@@ -57,7 +61,7 @@ function displayScenariosList(
 export default function Study() {
   const { t } = useTranslation('operationalStudies/study');
   const { openModal } = useModal();
-  const [scenariosList, setScenariosList] = useState<ScenarioResult[]>([]);
+  const [scenariosList, setScenariosList] = useState<ScenarioWithCountTrains[]>([]);
   const [filter, setFilter] = useState('');
   const [filterChips, setFilterChips] = useState('');
   const [sortOption, setSortOption] = useState<SortOptions>('LastModifiedDesc');
@@ -140,7 +144,7 @@ export default function Study() {
           },
         };
         try {
-          let filteredScenarios = (await postSearch(payload).unwrap()) as ScenarioResult[];
+          let filteredScenarios = (await postSearch(payload).unwrap()) as ScenarioWithCountTrains[];
           if (sortOption === 'LastModifiedDesc') {
             filteredScenarios = filteredScenarios.sort((a, b) => {
               if (a.last_modification && b.last_modification) {
@@ -156,7 +160,7 @@ export default function Study() {
               return 0;
             });
           }
-          setScenariosList(filteredScenarios);
+          setScenariosList(filteredScenarios as ScenarioWithCountTrains[]);
         } catch (error) {
           console.error(error);
         }

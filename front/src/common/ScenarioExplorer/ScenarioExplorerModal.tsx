@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { MdArrowRight } from 'react-icons/md';
 import { useDispatch } from 'react-redux';
 import {
-  ScenarioListResult,
+  ScenarioWithCountTrains,
   StudyWithScenarios,
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
@@ -31,7 +31,7 @@ export default function ScenarioExplorerModal({
   const [studyID, setStudyID] = useState<number | undefined>(globalStudyId);
   const [scenarioID, setScenarioID] = useState<number | undefined>(globalScenarioId);
   const [studiesList, setStudiesList] = useState<StudyWithScenarios[]>();
-  const [scenariosList, setScenariosList] = useState<ScenarioListResult[]>();
+  const [scenariosList, setScenariosList] = useState<ScenarioWithCountTrains[]>();
 
   const {
     projectsList,

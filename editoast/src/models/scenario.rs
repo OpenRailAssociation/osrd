@@ -16,6 +16,7 @@ use diesel::{delete, ExpressionMethods, QueryDsl};
 use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
 use editoast_derive::Model;
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 
 use super::projects::Ordering;
 use super::List;
@@ -32,6 +33,7 @@ use super::List;
     AsChangeset,
     Identifiable,
     Model,
+    ToSchema,
 )]
 #[derivative(Default)]
 #[model(table = "scenario")]
@@ -39,27 +41,36 @@ use super::List;
 #[diesel(table_name = scenario)]
 pub struct Scenario {
     #[diesel(deserialize_as = i64)]
+    #[schema(value_type = i64)]
     pub id: Option<i64>,
     #[diesel(deserialize_as = String)]
     #[derivative(Default(value = "Some(String::new())"))]
+    #[schema(value_type = String)]
     pub name: Option<String>,
     #[diesel(deserialize_as = String)]
     #[derivative(Default(value = "Some(String::new())"))]
+    #[schema(value_type = String)]
     pub description: Option<String>,
     #[diesel(deserialize_as = NaiveDateTime)]
+    #[schema(value_type = NaiveDateTime)]
     pub creation_date: Option<NaiveDateTime>,
     #[derivative(Default(value = "Utc::now().naive_utc()"))]
     pub last_modification: NaiveDateTime,
     #[diesel(deserialize_as = TextArray)]
     #[derivative(Default(value = "Some(Vec::new())"))]
+    #[schema(value_type = Vec<String>)]
     pub tags: Option<Vec<String>>,
     #[diesel(deserialize_as = i64)]
+    #[schema(value_type = i64)]
     pub infra_id: Option<i64>,
     #[diesel(deserialize_as = i64)]
+    #[schema(value_type = i64)]
     pub timetable_id: Option<i64>,
     #[diesel(deserialize_as = i64)]
+    #[schema(value_type = i64)]
     pub study_id: Option<i64>,
     #[diesel(deserialize_as = Option<i64>)]
+    #[schema(value_type = Option<i64>)]
     pub electrical_profile_set_id: Option<Option<i64>>,
 }
 
@@ -69,7 +80,7 @@ impl crate::models::Identifiable for Scenario {
     }
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize, QueryableByName)]
+#[derive(Debug, Clone, Deserialize, Serialize, QueryableByName, ToSchema)]
 pub struct ScenarioWithDetails {
     #[serde(flatten)]
     #[diesel(embed)]
@@ -84,7 +95,7 @@ pub struct ScenarioWithDetails {
     pub trains_count: i64,
 }
 
-#[derive(Debug, Clone, Serialize, QueryableByName)]
+#[derive(Debug, Clone, Serialize, QueryableByName, ToSchema)]
 pub struct ScenarioWithCountTrains {
     #[serde(flatten)]
     #[diesel(embed)]

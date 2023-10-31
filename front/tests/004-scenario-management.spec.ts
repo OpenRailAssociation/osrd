@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { Infra, Project, ScenarioResult, Study } from 'common/api/osrdEditoastApi';
+import { Infra, Project, Scenario, Study } from 'common/api/osrdEditoastApi';
 import { v4 as uuidv4 } from 'uuid';
 import { PlaywrightHomePage } from './pages/home-page-model';
 import project from './assets/operationStudies/project.json';
@@ -90,7 +90,7 @@ test.describe('Test if operationnal study : scenario creation workflow is workin
       project_id: newProjectData.id,
     });
 
-    const newScenarioData: ScenarioResult = await postApiRequest(
+    const newScenarioData: Scenario = await postApiRequest(
       `/projects/${newProjectData.id}/studies/${newStudyData.id}/scenarios`,
       {
         ...scenario,
@@ -147,7 +147,7 @@ test.describe('Test if operationnal study : scenario creation workflow is workin
       project_id: newProjectData.id,
     });
 
-    const newScenarioData: ScenarioResult = await postApiRequest(
+    const newScenarioData: Scenario = await postApiRequest(
       `/projects/${newProjectData.id}/studies/${newStudyData.id}/scenarios`,
       {
         ...scenario,

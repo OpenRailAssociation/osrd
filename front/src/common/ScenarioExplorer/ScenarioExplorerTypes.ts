@@ -1,7 +1,7 @@
 import {
   ProjectWithStudies,
-  ScenarioListResult,
   StudyWithScenarios,
+  ScenarioWithCountTrains,
 } from 'common/api/osrdEditoastApi';
 
 export type ScenarioExplorerProps = {
@@ -22,7 +22,7 @@ export interface MiniCardsStudyProps extends MiniCardsProps {
   study: StudyWithScenarios;
 }
 export interface MiniCardsScenarioProps extends MiniCardsProps {
-  scenario: ScenarioListResult;
+  scenario: ScenarioWithCountTrains;
   projectID: number;
   studyID: number;
 }

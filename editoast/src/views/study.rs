@@ -28,6 +28,8 @@ use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
+use super::scenario;
+
 crate::routes! {
     "/studies" => {
         create,
@@ -36,7 +38,7 @@ crate::routes! {
             get,
             delete,
             patch,
-            // scenario::routes() once scenarios routes have been annotated
+            scenario::routes(),
         }
     }
 }
@@ -47,6 +49,7 @@ crate::schemas! {
     StudyPatchForm,
     StudyWithScenarios,
     PaginatedResponseOfStudyWithScenarios,
+    scenario::schemas(),
 }
 
 #[derive(Debug, Error, EditoastError)]
@@ -149,7 +152,7 @@ async fn create(
 
 #[derive(IntoParams)]
 #[allow(unused)]
-struct StudyIdParam {
+pub struct StudyIdParam {
     study_id: i64,
 }
 

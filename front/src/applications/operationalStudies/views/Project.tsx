@@ -111,8 +111,7 @@ export default function Project() {
           },
         };
         try {
-          const filteredData = await postSearch(payload).unwrap();
-          let filteredStudies = [...filteredData] as StudyWithScenarios[];
+          let filteredStudies = (await postSearch(payload).unwrap()) as StudyWithScenarios[];
           if (sortOption === 'LastModifiedDesc') {
             filteredStudies = filteredStudies.sort((a, b) => {
               if (a.last_modification && b.last_modification) {
@@ -128,7 +127,7 @@ export default function Project() {
               return 0;
             });
           }
-          setStudiesList(filteredStudies as StudyWithScenarios[]);
+          setStudiesList(filteredStudies);
         } catch (error) {
           console.error(error);
         }

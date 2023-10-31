@@ -453,9 +453,9 @@ const injectedRtkApi = api
         query: (queryArg) => ({
           url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/`,
           params: {
-            ordering: queryArg.ordering,
             page: queryArg.page,
             page_size: queryArg.pageSize,
+            ordering: queryArg.ordering,
           },
         }),
         providesTags: ['scenarios'],
@@ -467,7 +467,7 @@ const injectedRtkApi = api
         query: (queryArg) => ({
           url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/`,
           method: 'POST',
-          body: queryArg.scenarioRequest,
+          body: queryArg.scenarioCreateForm,
         }),
         invalidatesTags: ['scenarios'],
       }),
@@ -497,7 +497,7 @@ const injectedRtkApi = api
         query: (queryArg) => ({
           url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/`,
           method: 'PATCH',
-          body: queryArg.scenarioPatchRequest,
+          body: queryArg.scenarioPatchForm,
         }),
         invalidatesTags: ['scenarios'],
       }),
@@ -1090,63 +1090,47 @@ export type PatchProjectsByProjectIdStudiesAndStudyIdApiArg = {
   studyPatchForm: StudyPatchForm;
 };
 export type GetProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse =
-  /** status 200 list of scenarios */ {
-    count?: number;
-    next?: any;
-    previous?: any;
-    results?: ScenarioListResult[];
-  };
+  /** status 200 The list of scenarios */ PaginatedResponseOfScenarioWithCountTrains;
 export type GetProjectsByProjectIdStudiesAndStudyIdScenariosApiArg = {
+  /** The id of a project */
   projectId: number;
   studyId: number;
-  ordering?:
-    | 'NameAsc'
-    | 'NameDesc'
-    | 'CreationDateAsc'
-    | 'CreationDateDesc'
-    | 'LastModifiedAsc'
-    | 'LastModifiedDesc';
-  /** Page number */
   page?: number;
-  /** Number of elements by page */
-  pageSize?: number;
+  pageSize?: number | null;
+  ordering?: Ordering;
 };
 export type PostProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse =
-  /** status 201 The created scenario */ ScenarioResult;
+  /** status 201 The created scenario */ ScenarioWithDetails;
 export type PostProjectsByProjectIdStudiesAndStudyIdScenariosApiArg = {
+  /** The id of a project */
   projectId: number;
   studyId: number;
-  scenarioRequest: ScenarioRequest;
+  scenarioCreateForm: ScenarioCreateForm;
 };
-export type DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse = unknown;
+export type DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse =
+  /** status 204 The scenario was deleted successfully */ undefined;
 export type DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg = {
-  /** project id refered to the scenario */
+  /** The id of a project */
   projectId: number;
-  /** study id refered to the scenario */
   studyId: number;
-  /** scenario id you want to delete */
   scenarioId: number;
 };
 export type GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse =
-  /** status 200 The operational study info */ ScenarioResult;
+  /** status 200 The requested scenario */ ScenarioWithDetails;
 export type GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg = {
-  /** project id refered to the scenario */
+  /** The id of a project */
   projectId: number;
   studyId: number;
-  /** scenario id you want to retrieve */
   scenarioId: number;
 };
 export type PatchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse =
-  /** status 200 The scenario updated */ ScenarioResult;
+  /** status 204 The scenario was updated successfully */ undefined;
 export type PatchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg = {
-  /** project id refered to the scenario */
+  /** The id of a project */
   projectId: number;
-  /** study refered to the scenario */
   studyId: number;
-  /** scenario you want to update */
   scenarioId: number;
-  /** The fields you want to update */
-  scenarioPatchRequest: ScenarioPatchRequest;
+  scenarioPatchForm: ScenarioPatchForm;
 };
 export type PostRollingStockApiResponse = /** status 200 The created rolling stock */ RollingStock;
 export type PostRollingStockApiArg = {
@@ -1774,53 +1758,51 @@ export type StudyPatchForm = {
   study_type?: string | null;
   tags?: string[] | null;
 };
-export type ScenarioListResult = {
-  creation_date?: string;
+export type Scenario = {
+  creation_date: string;
+  description: string;
+  electrical_profile_set_id?: number | null;
+  id: number;
+  infra_id: number;
+  last_modification: string;
+  name: string;
+  study_id: number;
+  tags: string[];
+  timetable_id: number;
+};
+export type ScenarioWithCountTrains = Scenario & {
+  infra_name: string;
+  trains_count: number;
+};
+export type PaginatedResponseOfScenarioWithCountTrains = {
+  count: number;
+  next: number | null;
+  previous: number | null;
+  results: ScenarioWithCountTrains[];
+};
+export type LightTrainSchedule = {
+  departure_time: number;
+  id: number;
+  train_name: string;
+  train_path: number;
+};
+export type ScenarioWithDetails = Scenario & {
+  electrical_profile_set_name?: string | null;
+  infra_name: string;
+  train_schedules: LightTrainSchedule[];
+  trains_count: number;
+};
+export type ScenarioCreateForm = {
   description?: string;
   electrical_profile_set_id?: number | null;
-  electrical_profile_set_name?: string | null;
-  id?: number;
-  infra_id?: number;
-  infra_name?: string;
-  last_modification?: string;
-  name?: string;
-  study_id?: number;
-  tags?: string[];
-  timetable_id?: number;
-  trains_count?: number;
-};
-export type ScenarioResult = {
-  creation_date?: string;
-  description?: string;
-  electrical_profile_set_id?: number | null;
-  electrical_profile_set_name?: string | null;
-  id?: number;
-  infra_id?: number;
-  infra_name?: string;
-  last_modification?: string;
-  name?: string;
-  study_id?: number;
-  tags?: string[];
-  timetable_id?: number;
-  trains_count?: number;
-  trains_schedules?: {
-    departure_time?: string;
-    id?: number;
-    train_name?: string;
-    train_path?: number;
-  }[];
-};
-export type ScenarioRequest = {
-  description?: string;
-  electrical_profile_set_id?: number;
   infra_id: number;
   name: string;
   tags?: string[];
 };
-export type ScenarioPatchRequest = {
-  description?: string;
-  name?: string;
-  tags?: string[];
+export type ScenarioPatchForm = {
+  description?: string | null;
+  name?: string | null;
+  tags?: string[] | null;
 };
 export type Comfort = 'AC' | 'HEATING' | 'STANDARD';
 export type EffortCurve = {

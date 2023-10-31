@@ -16,6 +16,7 @@ use serde_json::Value as JsonValue;
 
 use editoast_derive::Model;
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 
 use super::{
     check_train_validity, get_timetable_train_schedules, LightRollingStockModel, Retrieve,
@@ -146,7 +147,7 @@ impl From<TrainScheduleChangeset> for TrainSchedule {
     }
 }
 /// Returns the timetable with the main information about a train
-#[derive(Serialize, Deserialize, Debug, PartialEq, Clone, Queryable)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone, Queryable, ToSchema)]
 pub struct LightTrainSchedule {
     pub id: i64,
     pub train_name: String,
