@@ -1923,7 +1923,7 @@ paths:
                   rolling_stocks,
                   rolling_stock_id,
                   comfort,
-                  standard_allowance,
+                  maximum_departure_delay,
                 ]
               properties:
                 infra_id:
@@ -1976,12 +1976,14 @@ paths:
                   description: |
                     Margin of x seconds before the train passage, which means that the path used by the train should
                     be free and available at least x seconds before its passage.
+                  default: 0
                 margin_after:
                   type: number
                   format: double
                   description: |
                     Margin of y seconds after the train passage, which means that the path used by the train should
                     be free and available at least y seconds after its passage.
+                  default: 0
                 standard_allowance:
                   $ref: "#/components/schemas/AllowanceValue"
       responses:
@@ -2025,7 +2027,7 @@ paths:
   /single_simulation/:
     post:
       summary: Runs a simulation with a single train, does not write anything to the database
-      requestBody: 
+      requestBody:
         description: The details of the simulation
         content:
           application/json:
