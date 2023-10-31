@@ -20,6 +20,7 @@ def _load_generated_infra(name: str) -> int:
     main([name], output)
     with open(infra) as json_infra:
         res = requests.post(EDITOAST_URL + f"infra/railjson?name={name}&generate_data=true", json=json.load(json_infra))
+    res.raise_for_status()
     return res.json()["infra"]
 
 
