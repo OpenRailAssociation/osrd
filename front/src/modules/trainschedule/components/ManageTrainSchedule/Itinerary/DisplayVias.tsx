@@ -1,23 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { useSelector, useDispatch } from 'react-redux';
-import { deleteVias, permuteVias, updateViaStopTime } from 'reducers/osrdconf';
-import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import { useDebounce } from 'utils/helpers';
-import { getConf, getVias } from 'reducers/osrdconf/selectors';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import type { Action } from '@reduxjs/toolkit';
 import cx from 'classnames';
-import { AnyAction, ThunkAction } from '@reduxjs/toolkit';
 import { Position } from 'geojson';
-import { RootState } from 'reducers';
 import { formatUicToCi } from 'utils/strings';
+
+import { useDebounce } from 'utils/helpers';
+
+import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 
 type InputStopTimeProps = {
   index: number;
   setIndexSelected: (selectedIndex?: number) => void;
-  dispatchAndRun: (dispatch: ThunkAction<void, RootState, null, AnyAction>) => void;
+  dispatchAndRun: (action: Action) => void;
 };
 
 function InputStopTime({ index, setIndexSelected, dispatchAndRun }: InputStopTimeProps) {
+  const { getVias } = useOsrdConfSelectors();
+  const { updateViaStopTime } = useOsrdConfActions();
   const vias = useSelector(getVias);
   const [stopTime, setStopTime] = useState(vias[index].duration || 0);
   const [firstStart, setFirstStart] = useState(true);
@@ -53,12 +55,14 @@ type DisplayViasProps = {
 };
 
 export default function DisplayVias({ zoomToFeaturePoint }: DisplayViasProps) {
+  const { getConf, getVias } = useOsrdConfSelectors();
   const osrdconf = useSelector(getConf);
   const dispatch = useDispatch();
   const vias = useSelector(getVias);
   const [indexSelected, setIndexSelected] = useState<number | undefined>(undefined);
+  const { permuteVias, updateViaStopTime, deleteVias } = useOsrdConfActions();
 
-  const dispatchAndRun = (action: ThunkAction<void, RootState, null, AnyAction>) => {
+  const dispatchAndRun = (action: Action) => {
     dispatch(action);
   };
 

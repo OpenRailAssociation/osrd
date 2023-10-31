@@ -1,18 +1,18 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Position } from 'geojson';
 import { useTranslation } from 'react-i18next';
 import { IoFlag } from 'react-icons/io5';
+import type { Position } from 'geojson';
 
-import { getDestination } from 'reducers/osrdconf/selectors';
-import { updateDestination, updatePathfindingID } from 'reducers/osrdconf';
+import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 
 interface DestinationProps {
   zoomToFeaturePoint: (lngLat?: Position, id?: string) => void;
 }
 
-function Destination(props: DestinationProps) {
-  const { zoomToFeaturePoint } = props;
+function Destination({ zoomToFeaturePoint }: DestinationProps) {
+  const { getDestination } = useOsrdConfSelectors();
+  const { updateDestination, updatePathfindingID } = useOsrdConfActions();
   const destination = useSelector(getDestination);
 
   const dispatch = useDispatch();

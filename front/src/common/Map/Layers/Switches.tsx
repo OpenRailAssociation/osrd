@@ -1,12 +1,14 @@
-import React, { FC } from 'react';
+import React from 'react';
 import { useSelector } from 'react-redux';
-import { Source, SymbolLayer, CircleLayer } from 'react-map-gl/maplibre';
-import { MAP_URL } from 'common/Map/const';
-import { RootState } from 'reducers';
-import { Theme, OmitLayer } from 'types';
-import { getInfraID } from 'reducers/osrdconf/selectors';
+import { Source } from 'react-map-gl/maplibre';
+import type { SymbolLayer, CircleLayer } from 'react-map-gl/maplibre';
 
+import type { Theme, OmitLayer } from 'types';
+
+import { MAP_URL } from 'common/Map/const';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
+
+import type { RootState } from 'reducers';
 
 export function getSwitchesLayerProps(params: {
   colors: Theme;
@@ -59,12 +61,11 @@ export function getSwitchesNameLayerProps(params: {
 interface SwitchesProps {
   colors: Theme;
   layerOrder: number;
+  infraID: number | undefined;
 }
 
-const Switches: FC<SwitchesProps> = (props) => {
+const Switches = ({ colors, layerOrder, infraID }: SwitchesProps) => {
   const { layersSettings } = useSelector((state: RootState) => state.map);
-  const infraID = useSelector(getInfraID);
-  const { colors, layerOrder } = props;
 
   const layerPoint = getSwitchesLayerProps({ colors, sourceTable: 'switches' });
   const layerName = getSwitchesNameLayerProps({ colors, sourceTable: 'switches' });

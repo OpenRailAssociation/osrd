@@ -1,18 +1,30 @@
-import React, { FC, useContext } from 'react';
+import React, { useContext } from 'react';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-
 import { compact } from 'lodash';
+
 import EditorContext from 'applications/editor/context';
+import type { ExtendedEditorContextType } from 'applications/editor/tools/editorContextTypes';
+import type {
+  EditRoutePathState,
+  RouteEditionState,
+} from 'applications/editor/tools/routeEdition/types';
+import {
+  EditRoutePathEditionLayers,
+  EditRoutePathLeftPanel,
+} from 'applications/editor/tools/routeEdition/components/EditRoutePath';
+import {
+  EditRouteMetadataLayers,
+  EditRouteMetadataPanel,
+} from 'applications/editor/tools/routeEdition/components/EditRouteMetadata';
+
 import colors from 'common/Map/Consts/colors';
 import GeoJSONs from 'common/Map/Layers/GeoJSONs';
-import { getMap } from 'reducers/map/selectors';
-import { ExtendedEditorContextType } from 'applications/editor/tools/editorContextTypes';
-import { EditRoutePathState, RouteEditionState } from './types';
-import { EditRoutePathEditionLayers, EditRoutePathLeftPanel } from './components/EditRoutePath';
-import { EditRouteMetadataLayers, EditRouteMetadataPanel } from './components/EditRouteMetadata';
+import { useInfraID } from 'common/osrdContext';
 
-export const RouteEditionLeftPanel: FC = () => {
+import { getMap } from 'reducers/map/selectors';
+
+export const RouteEditionLeftPanel = () => {
   const { state } = useContext(EditorContext) as ExtendedEditorContextType<RouteEditionState>;
 
   return (
@@ -26,14 +38,14 @@ export const RouteEditionLeftPanel: FC = () => {
   );
 };
 
-export const RouteEditionLayers: FC = () => {
+export const RouteEditionLayers = () => {
   const {
     state,
     renderingFingerprint,
     editorState: { editorLayers },
   } = useContext(EditorContext) as ExtendedEditorContextType<RouteEditionState>;
   const { mapStyle, layersSettings, issuesSettings } = useSelector(getMap);
-
+  const infraID = useInfraID();
   const { routeState, optionsState } = state as EditRoutePathState;
   const selectedRouteIndex =
     optionsState.type === 'options' ? optionsState.focusedOptionIndex : undefined;
@@ -60,6 +72,7 @@ export const RouteEditionLayers: FC = () => {
         fingerprint={renderingFingerprint}
         layersSettings={layersSettings}
         issuesSettings={issuesSettings}
+        infraID={infraID}
       />
       {state.type === 'editRoutePath' ? (
         <EditRoutePathEditionLayers key="editRoutePath" state={state} />
@@ -70,7 +83,7 @@ export const RouteEditionLayers: FC = () => {
   );
 };
 
-export const RouteMessages: FC = () => {
+export const RouteMessages = () => {
   const { t } = useTranslation();
   const { state } = useContext(EditorContext) as ExtendedEditorContextType<RouteEditionState>;
 

@@ -1,18 +1,17 @@
-import cx from 'classnames';
-import { isNil, toInteger } from 'lodash';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useNavigate, useParams } from 'react-router-dom';
+import cx from 'classnames';
+import { isNil, toInteger } from 'lodash';
 
 import 'applications/editor/Editor.scss';
 import 'common/Map/Map.scss';
 
-import { getInfraID } from 'reducers/osrdconf/selectors';
+import type { EditorSliceActions } from 'reducers/editor';
 import { getIsLoading } from 'reducers/main/mainSelector';
 import { LoaderState } from 'common/Loader';
-import { loadDataModel, selectLayers, updateTotalsIssue } from 'reducers/editor';
-import { updateInfraID } from 'reducers/osrdconf';
+import { loadDataModel, updateTotalsIssue } from 'reducers/editor';
 import { updateViewport } from 'reducers/map';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { useSwitchTypes } from 'applications/editor/tools/switchEdition/types';
@@ -30,7 +29,8 @@ import TOOL_TYPES from 'applications/editor/tools/toolTypes';
 import type { CommonToolState } from 'applications/editor/tools/commonToolState';
 import type { EditorState } from 'applications/editor/tools/types';
 import type { MapRef } from 'react-map-gl/maplibre';
-import type {
+import { useInfraID, useOsrdActions } from 'common/osrdContext';
+import {
   EditorContextType,
   ExtendedEditorContextType,
   FullTool,
@@ -43,14 +43,16 @@ const Editor = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { register } = useKeyboardShortcuts();
   const { openModal, closeModal } = useModal();
+  const { updateInfraID, selectLayers } = useOsrdActions() as EditorSliceActions;
   const mapRef = useRef<MapRef>(null);
   const { urlInfra } = useParams();
-  const infraID = useSelector(getInfraID);
+  const infraID = useInfraID();
   const isLoading = useSelector(getIsLoading);
   const editorState = useSelector((state: { editor: EditorState }) => state.editor);
   const switchTypes = useSwitchTypes(infraID);
-  const { register } = useKeyboardShortcuts();
+
   /* eslint-disable @typescript-eslint/no-explicit-any */
   const [toolAndState, setToolAndState] = useState<FullTool<any>>({
     tool: TOOLS[TOOL_TYPES.SELECTION],
@@ -67,7 +69,10 @@ const Editor = () => {
   const switchTool = useCallback(
     ({ toolType, toolState }: switchProps) => {
       const tool = TOOLS[toolType];
-      const state = { ...tool.getInitialState({ infraID, switchTypes }), ...(toolState || {}) };
+      const state = {
+        ...tool.getInitialState({ infraID, switchTypes }),
+        ...(toolState || {}),
+      };
       setToolAndState({
         tool,
         state,
@@ -304,6 +309,7 @@ const Editor = () => {
                   toolState: toolAndState.state,
                   activeTool: toolAndState.tool,
                   setToolState,
+                  infraID,
                 }}
               />
               {isSearchToolOpened && (

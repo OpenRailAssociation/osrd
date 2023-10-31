@@ -1,38 +1,48 @@
-import React, { FC, useContext, useEffect, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Feature, LineString } from 'geojson';
-import { Layer, Popup, Source } from 'react-map-gl/maplibre';
-import { featureCollection, lineString } from '@turf/helpers';
 import { useTranslation } from 'react-i18next';
-import { cloneDeep, first, isEqual, last } from 'lodash';
 import { FaFlagCheckered } from 'react-icons/fa';
 import { BsArrowBarRight } from 'react-icons/bs';
 import { MdDelete, MdSave } from 'react-icons/md';
 import { GoPlusCircle } from 'react-icons/go';
-import { EditorEntity, WayPointEntity } from 'types/editor';
-import { addFailureNotification, addSuccessNotification } from 'reducers/main';
+import { Layer, Popup, Source } from 'react-map-gl/maplibre';
+import { featureCollection, lineString } from '@turf/helpers';
+import type { Feature, LineString } from 'geojson';
+import { cloneDeep, first, isEqual, last } from 'lodash';
 
-import { EditRoutePathState, EditRouteMetadataState, RouteEditionState } from '../types';
+import type { EditorEntity, WayPointEntity } from 'types/editor';
+import EditorContext from 'applications/editor/context';
+import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
+import { getMixedEntities } from 'applications/editor/data/api';
+import EntityError from 'applications/editor/components/EntityError';
+import type { ExtendedEditorContextType } from 'applications/editor/tools/editorContextTypes';
+import { DisplayEndpoints } from 'applications/editor/tools/routeEdition/components/Endpoints';
+import type {
+  EditRoutePathState,
+  EditRouteMetadataState,
+  RouteEditionState,
+} from 'applications/editor/tools/routeEdition/types';
+import {
+  getEditRouteState,
+  getEmptyCreateRouteState,
+  getRouteGeometryByRouteId,
+} from 'applications/editor/tools/routeEdition/utils';
+
+import { LoaderFill } from 'common/Loader';
+import colors from 'common/Map/Consts/colors';
+import { useInfraID } from 'common/osrdContext';
+import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF/ConfirmModal';
 import {
   getRoutesLineLayerProps,
   getRoutesPointLayerProps,
   getRoutesTextLayerProps,
-} from '../../../../../common/Map/Layers/Routes';
-import colors from '../../../../../common/Map/Consts/colors';
-import { getEditRouteState, getEmptyCreateRouteState, getRouteGeometryByRouteId } from '../utils';
-import EditorContext from '../../../context';
-import { getMixedEntities } from '../../../data/api';
-import { LoaderFill } from '../../../../../common/Loader';
-import { ConfirmModal } from '../../../../../common/BootstrapSNCF/ModalSNCF/ConfirmModal';
-import { save } from '../../../../../reducers/editor';
-import { DisplayEndpoints } from './Endpoints';
-import { getInfraID } from '../../../../../reducers/osrdconf/selectors';
-import { getMapStyle } from '../../../../../reducers/map/selectors';
-import { ExtendedEditorContextType } from '../../editorContextTypes';
-import EntityError from '../../../components/EntityError';
-import { NEW_ENTITY_ID } from '../../../data/utils';
+} from 'common/Map/Layers/Routes';
 
-export const EditRouteMetadataPanel: FC<{ state: EditRouteMetadataState }> = ({ state }) => {
+import { save } from 'reducers/editor';
+import { getMapStyle } from 'reducers/map/selectors';
+import { addFailureNotification, addSuccessNotification } from 'reducers/main';
+
+export const EditRouteMetadataPanel = ({ state }: { state: EditRouteMetadataState }) => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const { initialRouteEntity, routeEntity } = state;
@@ -40,7 +50,7 @@ export const EditRouteMetadataPanel: FC<{ state: EditRouteMetadataState }> = ({ 
   const { setState, openModal, closeModal } = useContext(
     EditorContext
   ) as ExtendedEditorContextType<RouteEditionState>;
-  const infraID = useSelector(getInfraID);
+  const infraID = useInfraID();
   const [isLoading, setIsLoading] = useState(false);
 
   const isReleaseDetectorsEditionLocked =
@@ -52,13 +62,11 @@ export const EditRouteMetadataPanel: FC<{ state: EditRouteMetadataState }> = ({ 
     <div className="position-relative">
       <legend>{t('Editor.tools.routes-edition.edit-route')}</legend>
       <DisplayEndpoints
-        state={{
-          entryPointDirection: entry_point_direction,
-          // Hack: positions are useless to DisplayEndpoints, but required
-          // typewise:
-          entryPoint: { ...entry_point, position: [0, 0] },
-          exitPoint: { ...exit_point, position: [0, 0] },
-        }}
+        entryPointDirection={entry_point_direction}
+        // Hack: positions are useless to DisplayEndpoints, but required
+        // typewise:
+        entryPoint={{ ...entry_point, position: [0, 0] }}
+        exitPoint={{ ...exit_point, position: [0, 0] }}
       />
 
       <hr />
@@ -190,10 +198,10 @@ export const EditRouteMetadataPanel: FC<{ state: EditRouteMetadataState }> = ({ 
   );
 };
 
-export const EditRouteMetadataLayers: FC<{ state: EditRouteMetadataState }> = ({ state }) => {
+export const EditRouteMetadataLayers = ({ state }: { state: EditRouteMetadataState }) => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
-  const infraID = useSelector(getInfraID);
+  const infraID = useInfraID();
   const mapStyle = useSelector(getMapStyle);
 
   const lineProps = useMemo(() => {

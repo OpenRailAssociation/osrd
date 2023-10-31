@@ -1,42 +1,25 @@
 import React, { useState, useEffect, useReducer } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Position } from 'geojson';
+import type { Position } from 'geojson';
 import bbox from '@turf/bbox';
 import { useTranslation } from 'react-i18next';
 import { compact, isEqual, omit } from 'lodash';
 import { GoAlert, GoCheckCircle, GoStop } from 'react-icons/go';
 
-import { setFailure } from 'reducers/main';
-
-import { ArrayElement } from 'utils/types';
+import type { ArrayElement } from 'utils/types';
 import { conditionalStringConcat, formatKmValue } from 'utils/strings';
 
-import {
-  PathResponse,
-  PathfindingRequest,
-  PathfindingStep,
-  osrdEditoastApi,
-} from 'common/api/osrdEditoastApi';
-import { PointOnMap } from 'applications/operationalStudies/consts';
+import type { PathResponse, PathfindingRequest, PathfindingStep } from 'common/api/osrdEditoastApi';
 
-import {
-  replaceVias,
-  updateItinerary,
-  updatePathfindingID,
-  updateSuggeredVias,
-} from 'reducers/osrdconf';
-import {
-  getInfraID,
-  getOrigin,
-  getDestination,
-  getVias,
-  getRollingStockID,
-  getPathfindingID,
-  getGeojson,
-} from 'reducers/osrdconf/selectors';
 import infraLogo from 'assets/pictures/components/tracks.svg';
+import type { PointOnMap } from 'applications/operationalStudies/consts';
 import InfraLoadingState from 'applications/operationalStudies/components/Scenario/InfraLoadingState';
-import { Spinner } from '../Loader';
+
+import { Spinner } from 'common/Loader';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
+
+import { setFailure } from 'reducers/main';
 
 interface PathfindingState {
   running: boolean;
@@ -268,6 +251,15 @@ function Pathfinding({ zoomToFeature, path }: PathfindingProps) {
   const [pathfindingRequest, setPathfindingRequest] =
     useState<ReturnType<typeof postPathfinding>>();
   const dispatch = useDispatch();
+  const {
+    getInfraID,
+    getOrigin,
+    getDestination,
+    getVias,
+    getRollingStockID,
+    getPathfindingID,
+    getGeojson,
+  } = useOsrdConfSelectors();
   const infraID = useSelector(getInfraID, isEqual);
   const origin = useSelector(getOrigin, isEqual);
   const destination = useSelector(getDestination, isEqual);
@@ -299,6 +291,10 @@ function Pathfinding({ zoomToFeature, path }: PathfindingProps) {
     }
   );
   const [reloadInfra] = osrdEditoastApi.usePostInfraByIdLoadMutation();
+
+  const { replaceVias, updateItinerary, updatePathfindingID, updateSuggeredVias } =
+    useOsrdConfActions();
+
   useEffect(() => {
     if (reloadCount <= 5 && infra && infra.state === 'TRANSIENT_ERROR') {
       setTimeout(() => {

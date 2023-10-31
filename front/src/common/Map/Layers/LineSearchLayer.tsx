@@ -1,5 +1,4 @@
 import React from 'react';
-import { getInfraID } from 'reducers/osrdconf/selectors';
 import { getMap } from 'reducers/map/selectors';
 import { MAP_TRACK_SOURCES, MAP_URL } from 'common/Map/const';
 import { useSelector } from 'react-redux';
@@ -8,11 +7,10 @@ import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 
 interface TracksGeographicProps {
   layerOrder?: number;
+  infraID: number | undefined;
 }
 
-function LineSearchLayer(props: TracksGeographicProps) {
-  const { layerOrder } = props;
-  const infraID = useSelector(getInfraID);
+const LineSearchLayer = ({ layerOrder, infraID }: TracksGeographicProps) => {
   const { lineSearchCode } = useSelector(getMap);
   const infraVersion = infraID !== undefined ? `?infra=${infraID}` : null;
 
@@ -38,6 +36,6 @@ function LineSearchLayer(props: TracksGeographicProps) {
       )}
     </Source>
   ) : null;
-}
+};
 
 export default LineSearchLayer;

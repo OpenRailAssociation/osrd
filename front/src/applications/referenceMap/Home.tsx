@@ -1,18 +1,18 @@
-import React, { FC, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Route, Routes } from 'react-router-dom';
-import { useSelector } from 'react-redux';
 import { GoLock } from 'react-icons/go';
 
-import { getInfraID } from 'reducers/osrdconf/selectors';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { ModalProvider } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import { useInfraID } from 'common/osrdContext';
 import Map from './Map';
 
-const HomeReferenceMap: FC = () => {
+const HomeReferenceMap = () => {
   const { t } = useTranslation(['home/home', 'referenceMap']);
-  const infraID = useSelector(getInfraID);
+
+  const infraID = useInfraID();
   const [getInfraById, { data: infra }] = osrdEditoastApi.endpoints.getInfraById.useLazyQuery({});
 
   /**

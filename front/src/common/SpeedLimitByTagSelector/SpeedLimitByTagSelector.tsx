@@ -1,17 +1,20 @@
-import React, { ComponentType, useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
+import type { ComponentType } from 'react';
+import type { Dispatch } from 'redux';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Dispatch } from 'redux';
+import type { FetchBaseQueryError } from '@reduxjs/toolkit/query/react';
 import { isEmpty, noop } from 'lodash';
-import { FetchBaseQueryError } from '@reduxjs/toolkit/query/react';
+
+import icon from 'assets/pictures/components/speedometer.svg';
+
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { useInfraID, useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
+import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 
 import { setFailure } from 'reducers/main';
-import { updateSpeedLimitByTag } from 'reducers/osrdconf';
-import { getInfraID, getSpeedLimitByTag } from 'reducers/osrdconf/selectors';
-import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import icon from 'assets/pictures/components/speedometer.svg';
-import './SpeedLimitByTagSelector.scss';
+
+import 'common/SpeedLimitByTagSelector/SpeedLimitByTagSelector.scss';
 
 type SpeedLimitByTagSelectorProps = {
   t?: (key: string) => string;
@@ -25,7 +28,8 @@ function withOSRDInfraData<T>(Component: ComponentType<T>) {
   return (hocProps: T) => {
     const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
     const dispatch = useDispatch();
-    const infraID = useSelector(getInfraID);
+    const { getSpeedLimitByTag } = useOsrdConfSelectors();
+    const infraID = useInfraID();
     const speedLimitByTag = useSelector(getSpeedLimitByTag);
     const { data: speedLimitsByTags = [], error } =
       osrdEditoastApi.useGetInfraByIdSpeedLimitTagsQuery(
@@ -34,6 +38,7 @@ function withOSRDInfraData<T>(Component: ComponentType<T>) {
         },
         { skip: !infraID }
       );
+    const { updateSpeedLimitByTag } = useOsrdConfActions();
     const dispatchUpdateSpeedLimitByTag = (newTag: string) => {
       dispatch(updateSpeedLimitByTag(newTag));
     };

@@ -17,7 +17,7 @@ export const userInitialState: UserState = {
   account: {},
 };
 
-const userSlice = createSlice({
+export const userSlice = createSlice({
   name: 'user',
   initialState: userInitialState,
   reducers: {

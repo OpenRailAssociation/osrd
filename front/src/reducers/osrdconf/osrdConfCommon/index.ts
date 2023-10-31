@@ -1,9 +1,20 @@
-import { CaseReducer, PayloadAction, PrepareAction } from '@reduxjs/toolkit';
-import { OsrdConfState, PointOnMap } from 'applications/operationalStudies/consts';
-import { Draft } from 'immer';
+import type { CaseReducer, PayloadAction, PrepareAction } from '@reduxjs/toolkit';
+import type { Draft } from 'immer';
 import { omit } from 'lodash';
-import { computeLinkedOriginTimes } from 'reducers/osrdconf/helpers';
+
 import { formatIsoDate } from 'utils/date';
+
+import type { OsrdConfState, PointOnMap } from 'applications/operationalStudies/consts';
+
+import { computeLinkedOriginTimes } from 'reducers/osrdconf/helpers';
+import { InfraStateReducers, buildInfraStateReducers, infraState } from 'reducers/infra';
+import type {
+  OperationalStudiesConfSlice,
+  OperationalStudiesConfSliceActions,
+} from 'reducers/osrdconf/operationalStudiesConf';
+import type { StdcmConfSlice, StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
+import type { StdcmConfSelectors } from 'reducers/osrdconf/stdcmConf/selectors';
+import type { OperationalStudiesConfSelectors } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 
 export const defaultCommonConf: OsrdConfState = {
   name: '',
@@ -16,8 +27,6 @@ export const defaultCommonConf: OsrdConfState = {
   projectID: undefined,
   studyID: undefined,
   scenarioID: undefined,
-  infraID: undefined,
-  switchTypes: undefined,
   pathfindingID: undefined,
   timetableID: undefined,
   rollingStockID: undefined,
@@ -37,15 +46,15 @@ export const defaultCommonConf: OsrdConfState = {
   destinationTime: undefined,
   vias: [],
   suggeredVias: [],
-  trainCompo: undefined,
   geojson: undefined,
-  featureInfoClick: { displayPopup: false },
   gridMarginBefore: undefined,
   gridMarginAfter: undefined,
   trainScheduleIDsToModify: [],
+  ...infraState,
+  featureInfoClick: { displayPopup: false },
 };
 
-type CommonConfReducersType<S extends OsrdConfState> = {
+interface CommonConfReducers<S extends OsrdConfState> extends InfraStateReducers<S> {
   ['updateName']: CaseReducer<S, PayloadAction<S['name']>>;
   ['updateTrainCount']: CaseReducer<S, PayloadAction<S['trainCount']>>;
   ['updateTrainDelta']: CaseReducer<S, PayloadAction<OsrdConfState['trainDelta']>>;
@@ -56,12 +65,11 @@ type CommonConfReducersType<S extends OsrdConfState> = {
   ['updateProjectID']: CaseReducer<S, PayloadAction<S['projectID']>>;
   ['updateStudyID']: CaseReducer<S, PayloadAction<S['studyID']>>;
   ['updateScenarioID']: CaseReducer<S, PayloadAction<S['scenarioID']>>;
-  ['updateInfraID']: CaseReducer<S, PayloadAction<S['infraID']>>;
   ['updatePathfindingID']: CaseReducer<S, PayloadAction<S['pathfindingID']>>;
   ['updateTimetableID']: CaseReducer<S, PayloadAction<S['timetableID']>>;
   ['updateRollingStockID']: CaseReducer<S, PayloadAction<S['rollingStockID']>>;
   ['updateRollingStockComfort']: CaseReducer<S, PayloadAction<S['rollingStockComfort']>>;
-  ['updateSpeedLimitByTag']: CaseReducer<S, PayloadAction<S['speedLimitByTag']>>;
+  ['updateSpeedLimitByTag']: CaseReducer<S, PayloadAction<S['speedLimitByTag'] | null>>;
   ['updateOrigin']: CaseReducer<S, PayloadAction<S['origin']>>;
   ['updateInitialSpeed']: CaseReducer<S, PayloadAction<S['initialSpeed']>>;
   ['updateDepartureTime']: CaseReducer<S, PayloadAction<S['departureTime']>>;
@@ -71,7 +79,8 @@ type CommonConfReducersType<S extends OsrdConfState> = {
   ['updateOriginDate']: CaseReducer<S, PayloadAction<S['originDate']>>;
   ['updateOriginUpperBoundDate']: CaseReducer<S, PayloadAction<S['originUpperBoundDate']>>;
   ['replaceVias']: CaseReducer<S, PayloadAction<S['vias']>>;
-  ['updateVias']: CaseReducer<S, PayloadAction<PointOnMap>>;
+  ['addVias']: CaseReducer<S, PayloadAction<PointOnMap>>;
+  ['clearVias']: CaseReducer<S>;
   ['updateViaStopTime']: {
     reducer: CaseReducer<S, PayloadAction<S['vias']>>;
     prepare: PrepareAction<S['vias']>;
@@ -87,18 +96,16 @@ type CommonConfReducersType<S extends OsrdConfState> = {
   ['updateDestinationDate']: CaseReducer<S, PayloadAction<S['destinationDate']>>;
   ['updateDestinationTime']: CaseReducer<S, PayloadAction<S['destinationTime']>>;
   ['updateItinerary']: CaseReducer<S, PayloadAction<S['geojson']>>;
-  ['updateFeatureInfoClickOSRD']: {
-    reducer: CaseReducer<S, PayloadAction<S['featureInfoClick']>>;
-    prepare: PrepareAction<S['featureInfoClick']>;
-  };
   ['updateGridMarginBefore']: CaseReducer<S, PayloadAction<S['gridMarginBefore']>>;
   ['updateGridMarginAfter']: CaseReducer<S, PayloadAction<S['gridMarginAfter']>>;
   ['updatePowerRestrictionRanges']: CaseReducer<S, PayloadAction<S['powerRestrictionRanges']>>;
   ['updateTrainScheduleIDsToModify']: CaseReducer<S, PayloadAction<S['trainScheduleIDsToModify']>>;
-};
+  ['updateFeatureInfoClick']: CaseReducer<S, PayloadAction<S['featureInfoClick']>>;
+}
 
-export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfReducersType<S> {
+export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfReducers<S> {
   return {
+    ...buildInfraStateReducers<S>(),
     updateName(state: Draft<S>, action: PayloadAction<S['name']>) {
       state.name = action.payload;
     },
@@ -129,9 +136,6 @@ export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfRe
     updateScenarioID(state: Draft<S>, action: PayloadAction<S['scenarioID']>) {
       state.scenarioID = action.payload;
     },
-    updateInfraID(state: Draft<S>, action: PayloadAction<S['infraID']>) {
-      state.infraID = action.payload;
-    },
     updatePathfindingID(state: Draft<S>, action: PayloadAction<S['pathfindingID']>) {
       state.pathfindingID = action.payload;
       state.powerRestrictionRanges = [];
@@ -145,8 +149,8 @@ export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfRe
     updateRollingStockComfort(state: Draft<S>, action: PayloadAction<S['rollingStockComfort']>) {
       state.rollingStockComfort = action.payload;
     },
-    updateSpeedLimitByTag(state: Draft<S>, action: PayloadAction<S['speedLimitByTag']>) {
-      state.speedLimitByTag = action.payload;
+    updateSpeedLimitByTag(state: Draft<S>, action: PayloadAction<S['speedLimitByTag'] | null>) {
+      state.speedLimitByTag = action.payload === null ? undefined : action.payload;
     },
     updateOrigin(state: Draft<S>, action: PayloadAction<S['origin']>) {
       state.origin = action.payload;
@@ -216,15 +220,17 @@ export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfRe
     replaceVias(state: Draft<S>, action: PayloadAction<S['vias']>) {
       state.vias = action.payload;
     },
-    // TODO rename updateVias -> addVias
-    updateVias(state: Draft<S>, action: PayloadAction<PointOnMap>) {
+    addVias(state: Draft<S>, action: PayloadAction<PointOnMap>) {
       state.vias.push(action.payload);
+    },
+    clearVias(state: Draft<S>) {
+      state.vias = [];
     },
     updateViaStopTime: {
       reducer: (state: Draft<S>, action: PayloadAction<S['vias']>) => {
         state.vias = action.payload;
       },
-      prepare: (vias: PointOnMap[], index: number, value: number) => {
+      prepare: (vias: S['vias'], index: number, value: number) => {
         const newVias = Array.from(vias);
         newVias[index] = { ...newVias[index], duration: value };
         return { payload: newVias };
@@ -234,7 +240,7 @@ export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfRe
       reducer: (state: Draft<S>, action: PayloadAction<S['vias']>) => {
         state.vias = action.payload;
       },
-      prepare: (vias: PointOnMap[], from: number, to: number) => {
+      prepare: (vias: S['vias'], from: number, to: number) => {
         const newVias = Array.from(vias);
         const itemToPermute = newVias.slice(from, from + 1);
         newVias.splice(from, 1); // Remove it from array
@@ -268,17 +274,6 @@ export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfRe
     updateItinerary(state: Draft<S>, action: PayloadAction<S['geojson']>) {
       state.geojson = action.payload;
     },
-    updateFeatureInfoClickOSRD: {
-      reducer: (state: Draft<S>, action: PayloadAction<S['featureInfoClick']>) => {
-        state.featureInfoClick = action.payload;
-      },
-      prepare: (featureInfoClick: S['featureInfoClick']) => ({
-        payload: {
-          ...featureInfoClick,
-          feature: omit(featureInfoClick.feature, ['_vectorTileFeature']),
-        },
-      }),
-    },
     updateGridMarginBefore(state: Draft<S>, action: PayloadAction<S['gridMarginBefore']>) {
       state.gridMarginBefore = action.payload;
     },
@@ -297,5 +292,15 @@ export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfRe
     ) {
       state.trainScheduleIDsToModify = action.payload;
     },
+    updateFeatureInfoClick(state: Draft<S>, action: PayloadAction<S['featureInfoClick']>) {
+      const feature = omit(action.payload.feature, ['_vectorTileFeature']);
+      state.featureInfoClick = { ...action.payload, feature };
+    },
   };
 }
+
+export type ConfSlice = StdcmConfSlice | OperationalStudiesConfSlice;
+
+export type ConfSliceActions = StdcmConfSliceActions | OperationalStudiesConfSliceActions;
+
+export type ConfSelectors = StdcmConfSelectors | OperationalStudiesConfSelectors;

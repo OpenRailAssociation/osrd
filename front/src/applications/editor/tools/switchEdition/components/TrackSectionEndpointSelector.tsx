@@ -1,29 +1,36 @@
-import React, { FC, useCallback, useContext, useEffect, useState } from 'react';
-import { keyBy } from 'lodash';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
 import Select from 'react-select';
-import { FieldProps } from '@rjsf/core';
 import { useTranslation } from 'react-i18next';
-import { useDispatch, useSelector } from 'react-redux';
 import { FaMapMarkedAlt, FaTimesCircle } from 'react-icons/fa';
+import type { FieldProps } from '@rjsf/core';
+import { keyBy } from 'lodash';
+
 import EditorContext from 'applications/editor/context';
-import { getInfraID } from 'reducers/osrdconf/selectors';
 import { getEntity } from 'applications/editor/data/api';
 import Tipped from 'applications/editor/components/Tipped';
-import { DEFAULT_ENDPOINT, ENDPOINTS, ENDPOINTS_SET, TrackSectionEntity } from 'types';
-import { FLAT_SWITCH_PORTS_PREFIX } from '../utils';
-import { PortEndPointCandidate, SwitchEditionState } from '../types';
-import { ExtendedEditorContextType } from '../../editorContextTypes';
+import { FLAT_SWITCH_PORTS_PREFIX } from 'applications/editor/tools/switchEdition/utils';
+import type { ExtendedEditorContextType } from 'applications/editor/tools/editorContextTypes';
+
+import type { TrackSectionEntity } from 'types';
+import { DEFAULT_ENDPOINT, ENDPOINTS, ENDPOINTS_SET } from 'types';
+import type {
+  PortEndPointCandidate,
+  SwitchEditionState,
+} from 'applications/editor/tools/switchEdition/types';
+
+import { useInfraID } from 'common/osrdContext';
 
 const ENDPOINT_OPTIONS = ENDPOINTS.map((s) => ({ value: s, label: s }));
 const ENDPOINT_OPTIONS_DICT = keyBy(ENDPOINT_OPTIONS, 'value');
 
-const TrackSectionEndpointSelector: FC<FieldProps> = ({ schema, formData, onChange, name }) => {
+const TrackSectionEndpointSelector = ({ schema, formData, onChange, name }: FieldProps) => {
   const dispatch = useDispatch();
   const { state, setState } = useContext(
     EditorContext
   ) as ExtendedEditorContextType<SwitchEditionState>;
   const { t } = useTranslation();
-  const infraID = useSelector(getInfraID);
+  const infraID = useInfraID();
 
   const portId = name.replace(FLAT_SWITCH_PORTS_PREFIX, '');
   const endpoint = ENDPOINTS_SET.has(formData?.endpoint) ? formData.endpoint : DEFAULT_ENDPOINT;

@@ -1,14 +1,20 @@
-import React, { ComponentType, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { updateMaximumRunTime } from 'reducers/osrdconf';
-import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import { Dispatch } from 'redux';
-import { noop } from 'lodash';
-import { RxLapTimer } from 'react-icons/rx';
+import React, { useState } from 'react';
+import type { ComponentType } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useDispatch, useSelector } from 'react-redux';
+import { RxLapTimer } from 'react-icons/rx';
+import type { Dispatch } from 'redux';
+import { noop } from 'lodash';
+
 import { sec2time, time2sec } from 'utils/timeManipulation';
+
 import { RUNTIME_CAP } from 'applications/operationalStudies/consts';
-import { getMaximumRunTime } from 'reducers/osrdconf/selectors';
+
+import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
+
+import type { StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
+import type { StdcmConfSelectors } from 'reducers/osrdconf/stdcmConf/selectors';
 
 interface RunningTimeProps {
   dispatch?: Dispatch;
@@ -23,6 +29,8 @@ export function withProps<T>(Component: ComponentType<T>) {
 
 function RunningTime({ dispatch = noop }: RunningTimeProps) {
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
+  const { getMaximumRunTime } = useOsrdConfSelectors() as StdcmConfSelectors;
+  const { updateMaximumRunTime } = useOsrdConfActions() as StdcmConfSliceActions;
   const maximumRunTime = useSelector(getMaximumRunTime);
   const [isRtBelowCap, setIsRtBelowCap] = useState(true);
 

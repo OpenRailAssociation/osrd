@@ -1,29 +1,28 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-
 import { useTranslation } from 'react-i18next';
 
-import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import InputGroupSNCF, { InputGroupSNCFValue } from 'common/BootstrapSNCF/InputGroupSNCF';
-
-import {
-  getGridMarginBefore,
-  getGridMarginAfter,
-  getStandardStdcmAllowance,
-} from 'reducers/osrdconf/selectors';
-import {
-  updateGridMarginAfter,
-  updateGridMarginBefore,
-  updateStdcmStandardAllowance,
-} from 'reducers/osrdconf';
-import { StandardAllowance } from 'applications/operationalStudies/consts';
-import { AllowanceValue } from 'common/api/osrdEditoastApi';
 import { convertInputStringToNumber } from 'utils/strings';
+
+import type { StandardAllowance } from 'applications/operationalStudies/consts';
 import { ALLOWANCE_UNITS_KEYS } from 'applications/stdcm/components/allowancesConsts';
+
+import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import InputGroupSNCF from 'common/BootstrapSNCF/InputGroupSNCF';
+import type { AllowanceValue } from 'common/api/osrdEditoastApi';
+import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
+import type { InputGroupSNCFValue } from 'common/BootstrapSNCF/InputGroupSNCF';
+
+import type { StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
+import type { StdcmConfSelectors } from 'reducers/osrdconf/stdcmConf/selectors';
 
 const StdcmAllowances = () => {
   const { t } = useTranslation('allowances');
   const dispatch = useDispatch();
+  const { getGridMarginBefore, getGridMarginAfter, getStandardStdcmAllowance } =
+    useOsrdConfSelectors() as StdcmConfSelectors;
+  const { updateGridMarginAfter, updateGridMarginBefore, updateStdcmStandardAllowance } =
+    useOsrdConfActions() as StdcmConfSliceActions;
   const gridMarginBefore = useSelector(getGridMarginBefore);
   const gridMarginAfter = useSelector(getGridMarginAfter);
   const stdcmStandardAllowance = useSelector(getStandardStdcmAllowance);

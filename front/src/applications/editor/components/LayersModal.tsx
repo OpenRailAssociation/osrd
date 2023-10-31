@@ -3,27 +3,30 @@ import { useDispatch, useSelector } from 'react-redux';
 import { groupBy, mapKeys, mapValues, sum, isString, isArray, uniq } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { MdSpeed } from 'react-icons/md';
+import { GiElectric } from 'react-icons/gi';
 import { TbRectangleVerticalFilled } from 'react-icons/tb';
 
-import bufferStopIcon from 'assets/pictures/layersicons/bufferstop.svg';
+import { EDITOAST_TO_LAYER_DICT } from 'applications/editor/tools/types';
+import type { LayerType, EditoastType } from 'applications/editor/tools/types';
+import type { EditorEntity } from 'types';
+
+import pslsIcon from 'assets/pictures/layersicons/layer_tivs.svg';
 import switchesIcon from 'assets/pictures/layersicons/switches.svg';
 import detectorsIcon from 'assets/pictures/layersicons/detectors.svg';
-import trackSectionsIcon from 'assets/pictures/layersicons/layer_adv.svg';
 import signalsIcon from 'assets/pictures/layersicons/layer_signal.svg';
-import pslsIcon from 'assets/pictures/layersicons/layer_tivs.svg';
+import bufferStopIcon from 'assets/pictures/layersicons/bufferstop.svg';
+import trackSectionsIcon from 'assets/pictures/layersicons/layer_adv.svg';
 
-import SwitchSNCF from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
+import { useInfraID } from 'common/osrdContext';
 import { Modal } from 'common/BootstrapSNCF/ModalSNCF';
-import MapSettingsBackgroundSwitches from 'common/Map/Settings/MapSettingsBackgroundSwitches';
-import { GiElectric } from 'react-icons/gi';
-import { LayerType, EDITOAST_TO_LAYER_DICT, EditoastType } from 'applications/editor/tools/types';
-import { selectLayers } from 'reducers/editor';
-import { EditorEntity } from 'types';
-import { getMap } from 'reducers/map/selectors';
-import { getInfraID } from 'reducers/osrdconf/selectors';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { updateLayersSettings } from 'reducers/map';
+import SwitchSNCF from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
 import MapSettingsMapStyle from 'common/Map/Settings/MapSettingsMapStyle';
+import MapSettingsBackgroundSwitches from 'common/Map/Settings/MapSettingsBackgroundSwitches';
+
+import { getMap } from 'reducers/map/selectors';
+import { updateLayersSettings } from 'reducers/map';
+import { editorSliceActions } from 'reducers/editor';
 
 export const LAYERS: Array<{ layers: LayerType[]; icon: string | JSX.Element }> = [
   { layers: ['track_sections'], icon: trackSectionsIcon },
@@ -56,7 +59,7 @@ const LayersModal: FC<LayersModalProps> = ({
   const { t } = useTranslation();
   const { layersSettings } = useSelector(getMap);
   const [selectedLayers, setSelectedLayers] = useState<Set<LayerType>>(initialLayers);
-  const infraID = useSelector(getInfraID);
+  const infraID = useInfraID();
 
   const { data: speedLimitTags } = osrdEditoastApi.endpoints.getInfraByIdSpeedLimitTags.useQuery({
     id: infraID as number,
@@ -138,7 +141,7 @@ const LayersModal: FC<LayersModalProps> = ({
                         return result;
                       }, new Set(selectedLayers));
                       setSelectedLayers(newSelectedLayersList);
-                      dispatch(selectLayers(newSelectedLayersList));
+                      dispatch(editorSliceActions.selectLayers(newSelectedLayersList));
                       onChange({ newLayers: newSelectedLayersList });
                     }}
                     name={`editor-layer-${layerKey}`}

@@ -1,45 +1,49 @@
-import React, { FC, useCallback, useContext, useMemo, useState } from 'react';
+import React, { useCallback, useContext, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
-import chroma from 'chroma-js';
-import { Layer, LineLayer, Popup, Source } from 'react-map-gl/maplibre';
+import type { LineLayer } from 'react-map-gl/maplibre';
+import { Layer, Popup, Source } from 'react-map-gl/maplibre';
+import { FiSearch } from 'react-icons/fi';
+import { FaFlagCheckered } from 'react-icons/fa';
+import { BsArrowBarRight } from 'react-icons/bs';
 import { featureCollection } from '@turf/helpers';
 import cx from 'classnames';
 import { omit } from 'lodash';
-import { FaFlagCheckered } from 'react-icons/fa';
-import { BsArrowBarRight } from 'react-icons/bs';
-import { FiSearch } from 'react-icons/fi';
+import chroma from 'chroma-js';
 
-import { EditorEntity, OmitLayer, RouteEntity, WayPointEntity } from 'types';
-import { LoaderFill } from 'common/Loader';
-import { getRoutesLineLayerProps } from 'common/Map/Layers/Routes';
-import colors from 'common/Map/Consts/colors';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { getInfraID } from 'reducers/osrdconf/selectors';
-import { getMapStyle } from 'reducers/map/selectors';
+import type { EditorEntity, OmitLayer, RouteEntity, WayPointEntity } from 'types';
+
 import EditorContext from 'applications/editor/context';
 import { getEntity } from 'applications/editor/data/api';
+import EntitySumUp from 'applications/editor/components/EntitySumUp';
 import { nestEntity, entityToCreateOperation } from 'applications/editor/data/utils';
+import type { ExtendedEditorContextType } from 'applications/editor/tools/editorContextTypes';
+import { EditEndpoints } from 'applications/editor/tools/routeEdition/components/Endpoints';
+import type {
+  EditRoutePathState,
+  OptionsStateType,
+  RouteEditionState,
+} from 'applications/editor/tools/routeEdition/types';
 import {
   getCompatibleRoutesPayload,
   getEditRouteState,
   getRouteGeometries,
 } from 'applications/editor/tools/routeEdition/utils';
-import EntitySumUp from 'applications/editor/components/EntitySumUp';
-import { ExtendedEditorContextType } from 'applications/editor/tools/editorContextTypes';
-import {
-  EditRoutePathState,
-  OptionsStateType,
-  RouteEditionState,
-} from 'applications/editor/tools/routeEdition/types';
-import { EditEndpoints } from './Endpoints';
 
-export const EditRoutePathLeftPanel: FC<{ state: EditRoutePathState }> = ({ state }) => {
+import { LoaderFill } from 'common/Loader';
+import colors from 'common/Map/Consts/colors';
+import { useInfraID } from 'common/osrdContext';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { getRoutesLineLayerProps } from 'common/Map/Layers/Routes';
+
+import { getMapStyle } from 'reducers/map/selectors';
+
+export const EditRoutePathLeftPanel = ({ state }: { state: EditRoutePathState }) => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const [editorSave] = osrdEditoastApi.endpoints.postInfraById.useMutation({});
   const { setState } = useContext(EditorContext) as ExtendedEditorContextType<RouteEditionState>;
-  const infraID = useSelector(getInfraID);
+  const infraID = useInfraID();
   const [isSaving, setIsSaving] = useState(false);
   const [includeReleaseDetectors, setIncludeReleaseDetectors] = useState(true);
   const { entryPoint, exitPoint } = state.routeState;
@@ -59,7 +63,10 @@ export const EditRoutePathLeftPanel: FC<{ state: EditRoutePathState }> = ({ stat
       exitPoint,
       dispatch
     );
-    const candidates = await postPathfinding({ id: infraID as number, body: payload }).unwrap();
+    const candidates = await postPathfinding({
+      id: infraID as number,
+      body: payload,
+    }).unwrap();
 
     const candidateColors = chroma
       .scale(['#321BF7CC', '#37B5F0CC', '#F0901FCC', '#F7311BCC', '#D124E0CC'])
@@ -248,7 +255,7 @@ export const EditRoutePathLeftPanel: FC<{ state: EditRoutePathState }> = ({ stat
   );
 };
 
-export const EditRoutePathEditionLayers: FC<{ state: EditRoutePathState }> = ({
+export const EditRoutePathEditionLayers = ({
   state: {
     hovered,
     extremityEditionState,
@@ -256,6 +263,8 @@ export const EditRoutePathEditionLayers: FC<{ state: EditRoutePathState }> = ({
     optionsState,
     routeState: { entryPoint, exitPoint },
   },
+}: {
+  state: EditRoutePathState;
 }) => {
   const mapStyle = useSelector(getMapStyle);
   const { t } = useTranslation();

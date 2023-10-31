@@ -1,34 +1,36 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
-import {
-  updateLabels,
-  updateDepartureTime,
-  updateInitialSpeed,
-  updateName,
-} from 'reducers/osrdconf';
-import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
-import { getLabels, getDepartureTime, getInitialSpeed, getName } from 'reducers/osrdconf/selectors';
 import { AiOutlineTags } from 'react-icons/ai';
-import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-
-import { useDebounce } from 'utils/helpers';
 import { SlSpeedometer } from 'react-icons/sl';
 import { MdOutlineAccessTime, MdOutlineDriveFileRenameOutline } from 'react-icons/md';
 
+import { useDebounce } from 'utils/helpers';
+
+import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
+import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
+
 export default function TrainSettings() {
-  const nameFromStore = useSelector(getName);
-  const departureTimeFromStore = useSelector(getDepartureTime);
-  const initialSpeedFromStore = useSelector(getInitialSpeed);
+  const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
+
+  const { getLabels, getDepartureTime, getInitialSpeed, getName } = useOsrdConfSelectors();
+  const { updateLabels, updateDepartureTime, updateInitialSpeed, updateName } =
+    useOsrdConfActions();
+
   const labels = useSelector(getLabels);
+  const nameFromStore = useSelector(getName);
+  const initialSpeedFromStore = useSelector(getInitialSpeed);
+  const departureTimeFromStore = useSelector(getDepartureTime);
+
   const [name, setName] = useState<string>(nameFromStore);
   const [departureTime, setDepartureTime] = useState<string>(departureTimeFromStore);
   const [initialSpeed, setInitialSpeed] = useState<number | undefined>(initialSpeedFromStore);
-  const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const dispatch = useDispatch();
+
   const debouncedName = useDebounce(name, 500);
-  const debouncedDepartureTime = useDebounce(departureTime, 500);
   const debouncedInitialSpeed = useDebounce(initialSpeed!, 500);
+  const debouncedDepartureTime = useDebounce(departureTime, 500);
 
   const removeTag = (idx: number) => {
     const newTags = Array.from(labels);

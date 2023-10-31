@@ -1,30 +1,34 @@
-import React, { FC, useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { GoTrash } from 'react-icons/go';
 import { FaMapMarkedAlt, FaTimesCircle } from 'react-icons/fa';
-import { Position } from 'geojson';
+import type { Position } from 'geojson';
+
+import type { EndPoint, WayPoint, WayPointEntity } from 'types';
 
 import EditorContext from 'applications/editor/context';
-import { EditRoutePathState, EndPointKeys } from 'applications/editor/tools/routeEdition/types';
 import { getEntity } from 'applications/editor/data/api';
-import EntitySumUp from 'applications/editor/components/EntitySumUp';
 import Tipped from 'applications/editor/components/Tipped';
-import { getInfraID } from 'reducers/osrdconf/selectors';
-import { ExtendedEditorContextType } from 'applications/editor/tools/editorContextTypes';
-import { EndPoint, WayPoint, WayPointEntity } from 'types';
+import EntitySumUp from 'applications/editor/components/EntitySumUp';
+import { EndPointKeys } from 'applications/editor/tools/routeEdition/types';
+import type { EditRoutePathState } from 'applications/editor/tools/routeEdition/types';
+import type { ExtendedEditorContextType } from 'applications/editor/tools/editorContextTypes';
 
-const WayPointInput: FC<{
+import { useInfraID } from 'common/osrdContext';
+
+interface WayPointInputProps {
   endPoint: EndPoint;
   wayPoint: WayPoint | null;
   onChange: (newWayPoint: WayPoint & { position: Position }) => void;
-}> = ({ endPoint, wayPoint, onChange }) => {
+}
+const WayPointInput = ({ endPoint, wayPoint, onChange }: WayPointInputProps) => {
   const dispatch = useDispatch();
   const { state, setState } = useContext(
     EditorContext
   ) as ExtendedEditorContextType<EditRoutePathState>;
   const { t } = useTranslation();
-  const infraID = useSelector(getInfraID);
+  const infraID = useInfraID();
   const [entityState, setEntityState] = useState<
     { type: 'data'; entity: WayPointEntity } | { type: 'loading' } | { type: 'empty' }
   >({ type: 'empty' });

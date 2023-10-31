@@ -1,16 +1,18 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
-import { toggleUsingElectricalProfiles } from 'reducers/osrdconf';
-import SwitchSNCF, { SWITCH_TYPES } from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
+
 import electricalProfilesIcon from 'assets/pictures/components/electricalProfiles.svg';
 
-import { getUsingElectricalProfiles } from 'reducers/osrdconf/selectors';
+import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
+import SwitchSNCF, { SWITCH_TYPES } from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
 
 export default function ElectricalProfiles() {
+  const { getUsingElectricalProfiles } = useOsrdConfSelectors();
+  const { toggleUsingElectricalProfiles } = useOsrdConfActions();
+  const dispatch = useDispatch();
   const usingElectricalProfiles = useSelector(getUsingElectricalProfiles);
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
-  const dispatch = useDispatch();
 
   return (
     <div className="osrd-config-item-container d-flex align-items-center mb-2">

@@ -1,17 +1,17 @@
 import React from 'react';
-import { Source } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
-
-import OrderedLayer from 'common/Map/Layers/OrderedLayer';
-import { getGeojson, getOrigin, getDestination } from 'reducers/osrdconf/selectors';
 import { GeoJSONFeature } from 'maplibre-gl';
+import { Source } from 'react-map-gl/maplibre';
+
+import { useOsrdConfSelectors } from 'common/osrdContext';
+import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 
 interface ItineraryProps {
   layerOrder: number;
 }
 
-export default function Itinerary(props: ItineraryProps) {
-  const { layerOrder } = props;
+export default function Itinerary({ layerOrder }: ItineraryProps) {
+  const { getGeojson, getOrigin, getDestination } = useOsrdConfSelectors();
   const geojson = useSelector(getGeojson);
   const origin = useSelector(getOrigin);
   const destination = useSelector(getDestination);

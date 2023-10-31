@@ -17,14 +17,14 @@ import ButtonMapInfras from 'common/Map/Buttons/ButtonMapInfras';
 import MapKey from 'common/Map/MapKey';
 import MapSearch from 'common/Map/Search/MapSearch';
 import MapSettings from 'common/Map/Settings/MapSettings';
-import { getFeatureInfoClick } from 'reducers/osrdconf/selectors';
-import { useSelector, useDispatch } from 'react-redux';
-import { updateFeatureInfoClickOSRD } from 'reducers/osrdconf';
+import { useDispatch } from 'react-redux';
+
 import useOutsideClick from 'utils/hooks/useOutsideClick';
 
 type MapButtonsProps = {
   map?: MapRef;
   resetPitchBearing: () => void;
+  closeFeatureInfoClickPopup?: () => void;
   withInfraButton?: boolean;
 };
 
@@ -39,8 +39,12 @@ const DEFAULT_VIEWPORT = {
 };
 
 const MAP_POPOVERS = { SEARCH: 'SEARCH', SETTINGS: 'SETTINGS', KEY: 'KEY' };
-export default function MapButtons({ map, resetPitchBearing, withInfraButton }: MapButtonsProps) {
-  const featureInfoClick = useSelector(getFeatureInfoClick);
+export default function MapButtons({
+  map,
+  resetPitchBearing,
+  closeFeatureInfoClickPopup,
+  withInfraButton,
+}: MapButtonsProps) {
   const dispatch = useDispatch();
   const { isOpen } = useContext(ModalContext);
 
@@ -54,15 +58,7 @@ export default function MapButtons({ map, resetPitchBearing, withInfraButton }: 
 
   // Close the pop up of the map
   useEffect(() => {
-    if (featureInfoClick.displayPopup) {
-      dispatch(
-        updateFeatureInfoClickOSRD({
-          displayPopup: false,
-          feature: undefined,
-        })
-      );
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (closeFeatureInfoClickPopup) closeFeatureInfoClickPopup();
   }, [openedPopover, isOpen]);
 
   // Close the Popover when opening modal

@@ -1,26 +1,33 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react';
-import studyLogo from 'assets/pictures/views/studies.svg';
-import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
-import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
-import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
-import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
-import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
-import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
+import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import { useNavigate, useParams } from 'react-router-dom';
 import { FaPlus, FaTasks } from 'react-icons/fa';
 import { GoNote, GoPencil, GoTrash } from 'react-icons/go';
 import { MdBusinessCenter, MdTitle } from 'react-icons/md';
 import { RiCalendarLine, RiMoneyEuroCircleLine, RiQuestionLine } from 'react-icons/ri';
-import { useDispatch } from 'react-redux';
-import { useNavigate, useParams } from 'react-router-dom';
-import { setFailure, setSuccess } from 'reducers/main';
-import { updateStudyID } from 'reducers/osrdconf';
-import { StudyCreateForm, StudyWithScenarios, osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { STUDY_STATES, studyStates, studyTypes } from 'applications/operationalStudies/consts';
+
+import studyLogo from 'assets/pictures/views/studies.svg';
+
 import { formatDateForInput, getEarliestDate } from 'utils/date';
-import { createSelectOptions } from '../utils';
+
+import { STUDY_STATES, studyStates, studyTypes } from 'applications/operationalStudies/consts';
+
+import { createSelectOptions } from 'modules/study/utils';
+
+import { useOsrdConfActions } from 'common/osrdContext';
+import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
+import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
+import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
+import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
+import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
+import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
+import type { StudyCreateForm, StudyWithScenarios } from 'common/api/osrdEditoastApi';
+
+import { setFailure, setSuccess } from 'reducers/main';
 
 interface StudyForm extends StudyCreateForm {
   id?: number;
@@ -43,6 +50,7 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
   const [currentStudy, setCurrentStudy] = useState<StudyForm>((study as StudyForm) || emptyStudy);
   const [displayErrors, setDisplayErrors] = useState(false);
   const { projectId } = useParams() as StudyParams;
+  const { updateStudyID } = useOsrdConfActions();
   const dispatch = useDispatch();
   const navigate = useNavigate();
 

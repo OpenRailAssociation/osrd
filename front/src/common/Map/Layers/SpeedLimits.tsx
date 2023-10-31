@@ -1,19 +1,22 @@
 import React from 'react';
 import { isNil } from 'lodash';
 import { useSelector } from 'react-redux';
-import { Source, SymbolLayer, LineLayer } from 'react-map-gl/maplibre';
-import { ExpressionSpecification, FilterSpecification } from 'maplibre-gl';
+import { Source } from 'react-map-gl/maplibre';
+import type { SymbolLayer, LineLayer } from 'react-map-gl/maplibre';
+import type { ExpressionSpecification, FilterSpecification } from 'maplibre-gl';
 
-import { RootState } from 'reducers';
+import type { Theme, OmitLayer } from 'types';
+
 import { MAP_URL } from 'common/Map/const';
-import { Theme, OmitLayer } from 'types';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
-import { getInfraID } from 'reducers/osrdconf/selectors';
-import { MapState } from 'reducers/map';
+
+import type { RootState } from 'reducers';
+import type { MapState } from 'reducers/map';
 
 interface SpeedLimitsProps {
   colors: Theme;
   layerOrder: number;
+  infraID: number | undefined;
 }
 
 export function getSpeedSectionsTag({ speedlimittag }: MapState['layersSettings']): string {
@@ -167,10 +170,8 @@ export function getSpeedSectionsTextLayerProps({
   return res;
 }
 
-export default function SpeedLimits(props: SpeedLimitsProps) {
+export default function SpeedLimits({ colors, layerOrder, infraID }: SpeedLimitsProps) {
   const { layersSettings } = useSelector((state: RootState) => state.map);
-  const infraID = useSelector(getInfraID);
-  const { colors, layerOrder } = props;
 
   const filter = getSpeedSectionsFilter(layersSettings);
   const lineProps = {

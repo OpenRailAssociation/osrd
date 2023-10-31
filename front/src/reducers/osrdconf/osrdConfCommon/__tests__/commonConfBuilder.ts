@@ -1,11 +1,13 @@
-import {
+import type { SwitchType } from 'types';
+
+import type {
   OsrdConfState,
   PointOnMap,
   PowerRestrictionRange,
 } from 'applications/operationalStudies/consts';
-import { Allowance, PathResponse } from 'common/api/osrdEditoastApi';
+
+import type { Allowance, PathResponse } from 'common/api/osrdEditoastApi';
 import { Feature } from 'geojson';
-import { SwitchType } from 'types';
 
 export default function commonConfBuilder() {
   return {
@@ -112,6 +114,15 @@ export default function commonConfBuilder() {
         },
       ],
     }),
+
+    buildPowerRestrictionRanges: (): PowerRestrictionRange[] => [
+      {
+        value: 'test',
+        begin: 1,
+        end: 2,
+      },
+    ],
+
     buildFeatureInfoClick: (
       featureInfoClickFields?: Partial<OsrdConfState['featureInfoClick']>
     ): OsrdConfState['featureInfoClick'] => ({
@@ -138,12 +149,5 @@ export default function commonConfBuilder() {
       } as unknown as Feature,
       ...featureInfoClickFields,
     }),
-    buildPowerRestrictionRanges: (): PowerRestrictionRange[] => [
-      {
-        value: 'test',
-        begin: 1,
-        end: 2,
-      },
-    ],
   };
 }

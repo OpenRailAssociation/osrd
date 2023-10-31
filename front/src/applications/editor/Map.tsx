@@ -25,7 +25,6 @@ import VirtualLayers from 'modules/simulationResult/components/SimulationResults
 import EditorContext from 'applications/editor/context';
 import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
 import { getEntity } from 'applications/editor/data/api';
-import { getInfraID } from 'reducers/osrdconf/selectors';
 import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
 import { getMap, getShowOSM, getTerrain3DExaggeration } from 'reducers/map/selectors';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
@@ -55,6 +54,7 @@ interface MapProps<S extends CommonToolState = CommonToolState> {
   viewport: Viewport;
   setViewport: (newViewport: Partial<Viewport>, updateRouter?: boolean) => void;
   mapRef: React.RefObject<MapRef>;
+  infraID: number | undefined;
 }
 
 interface MapState {
@@ -72,6 +72,7 @@ const MapUnplugged = ({
   viewport,
   setViewport,
   children,
+  infraID,
 }: PropsWithChildren<MapProps>) => {
   const dispatch = useDispatch();
   const mapBlankStyle = useMapBlankStyle();
@@ -81,7 +82,6 @@ const MapUnplugged = ({
     isHovering: false,
   });
   const context = useContext(EditorContext) as EditorContextType<CommonToolState>;
-  const infraID = useSelector(getInfraID);
   const switchTypes = useSwitchTypes(infraID);
   const editorState = useSelector((state: { editor: EditorState }) => state.editor);
   const showOSM = useSelector(getShowOSM);
@@ -303,7 +303,10 @@ const MapUnplugged = ({
             </>
           )}
 
-          <LineSearchLayer layerOrder={LAYER_GROUPS_ORDER[LAYERS.LINE_SEARCH.GROUP]} />
+          <LineSearchLayer
+            layerOrder={LAYER_GROUPS_ORDER[LAYERS.LINE_SEARCH.GROUP]}
+            infraID={infraID}
+          />
 
           <PlatformsLayer
             colors={colors[mapStyle]}

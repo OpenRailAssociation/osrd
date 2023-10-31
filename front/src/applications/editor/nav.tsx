@@ -1,23 +1,27 @@
 import React from 'react';
 import { Dispatch } from 'redux';
-import { IconType } from 'react-icons';
-import { BsExclamationOctagon, BsSliders2 } from 'react-icons/bs';
-import { FaRegCompass } from 'react-icons/fa';
-import { GiRailway } from 'react-icons/gi';
-import { isNil } from 'lodash';
-import { NavigateFunction } from 'react-router-dom';
 import { MapRef } from 'react-map-gl/maplibre';
-
-import { Viewport } from 'reducers/map';
-import { selectLayers } from 'reducers/editor';
-import { Shortcut } from 'utils/hooks/useKeyboardShortcuts';
-import { ModalContextType } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import InfraSelectorModal from 'common/InfraSelector/InfraSelectorModal';
+import { NavigateFunction } from 'react-router-dom';
+import { IconType } from 'react-icons';
+import { GiRailway } from 'react-icons/gi';
+import { FaRegCompass } from 'react-icons/fa';
 import { GoSearch, GoZoomIn, GoZoomOut } from 'react-icons/go';
-import { EditorState, EDITOAST_TO_LAYER_DICT, EditoastType } from './tools/types';
-import LayersModal from './components/LayersModal';
-import { SelectionState } from './tools/selection/types';
-import { EditorContextType, Tool } from './tools/editorContextTypes';
+import { BsExclamationOctagon, BsSliders2 } from 'react-icons/bs';
+import { isNil } from 'lodash';
+
+import type { Shortcut } from 'utils/hooks/useKeyboardShortcuts';
+
+import LayersModal from 'applications/editor/components/LayersModal';
+import { EDITOAST_TO_LAYER_DICT } from 'applications/editor/tools/types';
+import { SelectionState } from 'applications/editor/tools/selection/types';
+import type { EditorState, EditoastType } from 'applications/editor/tools/types';
+import type { EditorContextType, Tool } from 'applications/editor/tools/editorContextTypes';
+
+import InfraSelectorModal from 'common/InfraSelector/InfraSelectorModal';
+import type { ModalContextType } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+
+import type { Viewport } from 'reducers/map';
+import { editorSliceActions } from 'reducers/editor';
 
 const ZOOM_DEFAULT = 5;
 const ZOOM_DELTA = 1.5;
@@ -154,7 +158,7 @@ const NavButtons: NavButton[][] = [
         const newSet = new Set(editorState.editorLayers);
         if (newSet.has('errors')) newSet.delete('errors');
         else newSet.add('errors');
-        dispatch(selectLayers(newSet));
+        dispatch(editorSliceActions.selectLayers(newSet));
       },
     },
   ],

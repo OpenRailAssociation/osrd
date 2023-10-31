@@ -1,15 +1,20 @@
 import React from 'react';
-import { store } from 'store';
-import { FaPlus } from 'react-icons/fa';
-import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { setFailure, setSuccess } from 'reducers/main';
+import { useDispatch, useSelector } from 'react-redux';
+import { FaPlus } from 'react-icons/fa';
+
 import { time2sec, sec2time } from 'utils/timeManipulation';
+
 import formatConf from 'modules/trainschedule/components/ManageTrainSchedule/helpers/formatConf';
 import trainNameWithNum from 'modules/trainschedule/components/ManageTrainSchedule/helpers/trainNameHelper';
-import { Infra, TrainScheduleBatchItem, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 
-type Props = {
+import { useOsrdConfSelectors } from 'common/osrdContext';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import type { Infra, TrainScheduleBatchItem } from 'common/api/osrdEditoastApi';
+
+import { setFailure, setSuccess } from 'reducers/main';
+
+type SubmitConfAddTrainScheduleProps = {
   infraState?: Infra['state'];
   refetchTimetable: () => void;
   refetchConflicts: () => void;
@@ -32,65 +37,68 @@ export default function SubmitConfAddTrainSchedule({
   refetchTimetable,
   refetchConflicts,
   setIsWorking,
-}: Props) {
+}: SubmitConfAddTrainScheduleProps) {
   const [postTrainSchedule] =
     osrdEditoastApi.endpoints.postTrainScheduleStandaloneSimulation.useMutation();
   const dispatch = useDispatch();
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
 
-  async function submitConfAddTrainSchedules() {
-    const { osrdconf } = store.getState();
-    const osrdConfig = formatConf(dispatch, t, osrdconf.simulationConf);
+  const { getConf } = useOsrdConfSelectors();
+  const simulationConf = useSelector(getConf);
+  const {
+    pathfindingID,
+    timetableID,
+    departureTime,
+    trainCount,
+    trainDelta,
+    trainStep,
+    name: confName,
+  } = simulationConf;
 
-    if (!osrdconf.simulationConf.pathfindingID) {
+  async function submitConfAddTrainSchedules() {
+    const osrdConfig = formatConf(dispatch, t, simulationConf);
+
+    if (!pathfindingID) {
       dispatch(
         setFailure({
           name: t('errorMessages.error'),
           message: t(`errorMessages.noPathfinding`),
         })
       );
-    } else if (
-      osrdConfig &&
-      osrdconf.simulationConf.pathfindingID &&
-      osrdconf.simulationConf.timetableID
-    ) {
+    } else if (osrdConfig && timetableID) {
       setIsWorking(true);
-      const departureTime = time2sec(osrdconf.simulationConf.departureTime);
+      const formattedDepartureTime = time2sec(departureTime);
       const schedules: TrainScheduleBatchItem[] = [];
       let actualTrainCount = 1;
-      for (let nb = 1; nb <= osrdconf.simulationConf.trainCount; nb += 1) {
+      for (let nb = 1; nb <= trainCount; nb += 1) {
         const newDepartureTimeString = sec2time(
-          departureTime + 60 * osrdconf.simulationConf.trainDelta * (nb - 1)
+          formattedDepartureTime + 60 * trainDelta * (nb - 1)
         );
-        const trainName = trainNameWithNum(
-          osrdconf.simulationConf.name,
-          actualTrainCount,
-          osrdconf.simulationConf.trainCount
-        );
+        const trainName = trainNameWithNum(confName, actualTrainCount, trainCount);
         const schedule = formatConf(dispatch, t, {
-          ...osrdconf.simulationConf,
+          ...simulationConf,
           name: trainName,
           departureTime: newDepartureTimeString,
         });
         if (schedule) {
           schedules.push(schedule);
         }
-        actualTrainCount += osrdconf.simulationConf.trainStep;
+        actualTrainCount += trainStep;
       }
 
       try {
         await postTrainSchedule({
           body: {
-            path: osrdconf.simulationConf.pathfindingID,
+            path: pathfindingID,
             schedules,
-            timetable: osrdconf.simulationConf.timetableID,
+            timetable: timetableID,
           },
         }).unwrap();
 
         dispatch(
           setSuccess({
             title: t('trainAdded'),
-            text: `${osrdconf.simulationConf.name}: ${sec2time(departureTime)}`,
+            text: `${confName}: ${sec2time(formattedDepartureTime)}`,
           })
         );
         setIsWorking(false);

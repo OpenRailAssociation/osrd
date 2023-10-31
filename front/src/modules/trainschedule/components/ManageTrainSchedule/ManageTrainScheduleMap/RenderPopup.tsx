@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
-import { Popup } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
-
-import { getFeatureInfoClick } from 'reducers/osrdconf/selectors';
-import { RiMapPin2Fill, RiMapPin3Fill } from 'react-icons/ri';
-import setPointIti from 'modules/trainschedule/components/ManageTrainSchedule/ManageTrainScheduleMap/setPointIti';
 import { useTranslation } from 'react-i18next';
+import { Popup } from 'react-map-gl/maplibre';
 import { IoFlag } from 'react-icons/io5';
+import { RiMapPin2Fill, RiMapPin3Fill } from 'react-icons/ri';
+
+import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
+import setPointIti from 'modules/trainschedule/components/ManageTrainSchedule/ManageTrainScheduleMap/setPointIti';
 
 type FeatureInfoClickType = {
   displayPopup: boolean;
@@ -16,6 +16,8 @@ type FeatureInfoClickType = {
 };
 
 function RenderPopup() {
+  const { getFeatureInfoClick } = useOsrdConfSelectors();
+  const osrdConfActions = useOsrdConfActions();
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const featureInfoClick: FeatureInfoClickType = useSelector(getFeatureInfoClick);
 
@@ -51,7 +53,7 @@ function RenderPopup() {
           <button
             className="btn btn-sm btn-success"
             type="button"
-            onClick={() => setPointIti('start', properties)}
+            onClick={() => setPointIti('start', properties, osrdConfActions)}
           >
             <RiMapPin2Fill />
             <span className="d-none">{t('origin')}</span>
@@ -59,7 +61,7 @@ function RenderPopup() {
           <button
             className="btn btn-sm btn-info"
             type="button"
-            onClick={() => setPointIti('via', properties)}
+            onClick={() => setPointIti('via', properties, osrdConfActions)}
           >
             <RiMapPin3Fill />
             <span className="d-none">{t('via')}</span>
@@ -67,7 +69,7 @@ function RenderPopup() {
           <button
             className="btn btn-sm btn-warning"
             type="button"
-            onClick={() => setPointIti('end', properties)}
+            onClick={() => setPointIti('end', properties, osrdConfActions)}
           >
             <IoFlag />
             <span className="d-none">{t('destination')}</span>

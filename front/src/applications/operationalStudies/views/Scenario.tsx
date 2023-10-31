@@ -1,36 +1,40 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
-import { useTranslation } from 'react-i18next';
-import Timetable from 'modules/trainschedule/components/Timetable/Timetable';
-import infraLogo from 'assets/pictures/components/tracks.svg';
-import { useSelector, useDispatch } from 'react-redux';
-import { MODES, MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
-import { updateInfraID, updateMode, updateTimetableID } from 'reducers/osrdconf';
-import TimetableManageTrainSchedule from 'modules/trainschedule/components/Timetable/TimetableManageTrainSchedule';
-import BreadCrumbs from 'applications/operationalStudies/components/BreadCrumbs';
-import { getInfraID, getTimetableID } from 'reducers/osrdconf/selectors';
-import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
-import { GoPencil } from 'react-icons/go';
-import { FaEye, FaEyeSlash } from 'react-icons/fa';
-import { GiElectric } from 'react-icons/gi';
 import { useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { useSelector, useDispatch } from 'react-redux';
+import { GoPencil } from 'react-icons/go';
+import { GiElectric } from 'react-icons/gi';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
+
+import infraLogo from 'assets/pictures/components/tracks.svg';
+
+import BreadCrumbs from 'applications/operationalStudies/components/BreadCrumbs';
+import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
+import SimulationResults from 'applications/operationalStudies/views/SimulationResults';
+import ImportTrainSchedule from 'applications/operationalStudies/views/ImportTrainSchedule';
+import ManageTrainSchedule from 'applications/operationalStudies/views/ManageTrainSchedule';
+import InfraLoadingState from 'applications/operationalStudies/components/Scenario/InfraLoadingState';
+import getSimulationResults, {
+  selectProjection,
+} from 'applications/operationalStudies/components/Scenario/getSimulationResults';
+
+import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
+import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import AddAndEditScenarioModal from 'modules/scenario/components/AddOrEditScenarioModal';
+import { useInfraID, useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
+
+import Timetable from 'modules/trainschedule/components/Timetable/Timetable';
 import ScenarioLoaderMessage from 'modules/scenario/components/ScenarioLoaderMessage';
-import { RootState } from 'reducers';
+import AddAndEditScenarioModal from 'modules/scenario/components/AddOrEditScenarioModal';
+import TimetableManageTrainSchedule from 'modules/trainschedule/components/Timetable/TimetableManageTrainSchedule';
+
+import type { RootState } from 'reducers';
 import { updateSelectedProjection, updateSimulation } from 'reducers/osrdsimulation/actions';
 import {
   getAllowancesSettings,
   getSelectedProjection,
   getSelectedTrainId,
 } from 'reducers/osrdsimulation/selectors';
-import ImportTrainSchedule from './ImportTrainSchedule';
-import ManageTrainSchedule from './ManageTrainSchedule';
-import SimulationResults from './SimulationResults';
-import InfraLoadingState from '../components/Scenario/InfraLoadingState';
-import getSimulationResults, {
-  selectProjection,
-} from '../components/Scenario/getSimulationResults';
 
 type SimulationParams = {
   projectId: string;
@@ -57,7 +61,9 @@ export default function Scenario() {
     studyId: urlStudyId,
     scenarioId: urlScenarioId,
   } = useParams() as SimulationParams;
-  const infraId = useSelector(getInfraID);
+
+  const { getTimetableID } = useOsrdConfSelectors();
+  const infraId = useInfraID();
   const timetableId = useSelector(getTimetableID);
   const selectedTrainId = useSelector(getSelectedTrainId);
   const selectedProjection = useSelector(getSelectedProjection);
@@ -90,6 +96,8 @@ export default function Scenario() {
   useEffect(() => {
     if (isScenarioError && errorScenario) throw errorScenario;
   }, [isScenarioError, errorScenario]);
+
+  const { updateInfraID, updateTimetableID } = useOsrdConfActions();
 
   useEffect(() => {
     if (scenario) {
@@ -172,8 +180,6 @@ export default function Scenario() {
   useEffect(() => {
     if (!projectId || !studyId || !scenarioId) {
       throw new Error('Missing projectId, studyId or scenarioId');
-    } else {
-      dispatch(updateMode(MODES.simulation));
     }
   }, [projectId, studyId, scenarioId]);
 

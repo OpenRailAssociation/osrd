@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { OsrdStdcmConfState } from 'applications/operationalStudies/consts';
 import { Draft } from 'immer';
-import { defaultCommonConf, buildCommonConfReducers } from '../common';
+import { defaultCommonConf, buildCommonConfReducers } from '../osrdConfCommon';
 
 export const stdcmConfInitialState: OsrdStdcmConfState = {
   maximumRunTime: 43200,
@@ -31,8 +31,8 @@ export const stdcmConfSlice = createSlice({
 
 export const stdcmConfSliceActions = stdcmConfSlice.actions;
 
-export type stdcmConfSliceType = typeof stdcmConfSlice;
+export type StdcmConfSlice = typeof stdcmConfSlice;
 
-export type stdcmConfSliceActionsType = typeof stdcmConfSliceActions;
+export type StdcmConfSliceActions = typeof stdcmConfSliceActions;
 
 export default stdcmConfSlice.reducer;

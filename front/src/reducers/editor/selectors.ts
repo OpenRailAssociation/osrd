@@ -1,8 +1,23 @@
-import { EditorState } from 'applications/editor/tools/types';
-import { RootState } from 'reducers';
 import { makeSubSelector } from 'utils/selectors';
+
+import type { EditorState } from 'applications/editor/tools/types';
+
+import type { RootState } from 'reducers';
+import { editorSlice } from 'reducers/editor';
+import buildInfraStateSelectors from 'reducers/infra/selectors';
 
 export const getEditorState = (state: RootState) => state.editor;
 const makeEditorSelector = makeSubSelector<EditorState>(getEditorState);
 
 export const getEditorIssues = makeEditorSelector('issues');
+
+const selectors = {
+  ...buildInfraStateSelectors(editorSlice),
+  getEditorIssues: makeEditorSelector('issues'),
+  getEditorLayers: makeEditorSelector('editorLayers'),
+  getEditorSchema: makeEditorSelector('editorSchema'),
+};
+
+export type EditorSelectors = typeof selectors;
+
+export default selectors;

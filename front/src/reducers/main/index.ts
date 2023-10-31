@@ -15,7 +15,7 @@ export const mainInitialState: MainState = {
   lastInterfaceVersion: '',
 };
 
-const mainSlice = createSlice({
+export const mainSlice = createSlice({
   name: 'main',
   initialState: mainInitialState,
   reducers: {

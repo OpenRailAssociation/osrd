@@ -1,24 +1,30 @@
 import React from 'react';
+import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { GoPencil, GoTrash } from 'react-icons/go';
 import { GiPathDistance } from 'react-icons/gi';
+import { GoPencil, GoTrash } from 'react-icons/go';
 import { MdAvTimer, MdContentCopy } from 'react-icons/md';
+import nextId from 'react-id-generator';
+import cx from 'classnames';
+
 import invalidInfra from 'assets/pictures/components/missing_tracks.svg';
 import invalidRollingStock from 'assets/pictures/components/missing_train.svg';
-import { durationInSeconds, sec2time } from 'utils/timeManipulation';
-import nextId from 'react-id-generator';
-import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
-import cx from 'classnames';
-import { TrainScheduleValidation, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 
-import { ScheduledTrain } from 'reducers/osrdsimulation/types';
-import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
-import { updateTrainScheduleIDsToModify } from 'reducers/osrdconf';
-import { useDispatch } from 'react-redux';
 import { jouleToKwh, mToKmOneDecimal } from 'utils/physics';
+import { durationInSeconds, sec2time } from 'utils/timeManipulation';
+
+import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
+
+import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
+import trainNameWithNum from 'modules/trainschedule/components/ManageTrainSchedule/helpers/trainNameHelper';
+
+import { useOsrdConfActions } from 'common/osrdContext';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import type { TrainScheduleValidation } from 'common/api/osrdEditoastApi';
+
 import { setFailure, setSuccess } from 'reducers/main';
+import type { ScheduledTrain } from 'reducers/osrdsimulation/types';
 import { updateSelectedProjection, updateSelectedTrainId } from 'reducers/osrdsimulation/actions';
-import trainNameWithNum from '../ManageTrainSchedule/helpers/trainNameHelper';
 
 const invalidTrainValues: {
   [key in TrainScheduleValidation]: TrainScheduleValidation;
@@ -27,7 +33,7 @@ const invalidTrainValues: {
   NewerRollingStock: 'NewerRollingStock',
 };
 
-type Props = {
+type TimetableTrainCardProps = {
   isSelectable: boolean;
   isInSelection: boolean;
   train: ScheduledTrain;
@@ -53,13 +59,14 @@ function TimetableTrainCard({
   refetchTimetable,
   setDisplayTrainScheduleManagement,
   toggleTrainSelection,
-}: Props) {
+}: TimetableTrainCardProps) {
   const { data: rollingStock } =
     osrdEditoastApi.endpoints.getLightRollingStockByRollingStockId.useQuery({
       rollingStockId: train.rolling_stock_id,
     });
   const { t } = useTranslation(['operationalStudies/scenario']);
   const dispatch = useDispatch();
+  const { updateTrainScheduleIDsToModify } = useOsrdConfActions();
 
   const [postTrainSchedule] =
     osrdEditoastApi.endpoints.postTrainScheduleStandaloneSimulation.useMutation();

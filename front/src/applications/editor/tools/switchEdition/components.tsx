@@ -1,37 +1,40 @@
-import React, { FC, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import Select from 'react-select';
-import { first, last, debounce } from 'lodash';
 import { Layer, Popup, Source } from 'react-map-gl/maplibre';
-import { featureCollection, point } from '@turf/helpers';
 import nearestPoint from '@turf/nearest-point';
-import { Position } from 'geojson';
+import { featureCollection, point } from '@turf/helpers';
+import { first, last, debounce } from 'lodash';
+import type { Position } from 'geojson';
 
-import EditorForm from 'applications/editor//components/EditorForm';
-import EntitySumUp from 'applications/editor/components/EntitySumUp';
-import EntityError from 'applications/editor/components/EntityError';
+import type { SwitchEntity, TrackSectionEntity } from 'types';
+
 import EditorContext from 'applications/editor/context';
 import { getEntity } from 'applications/editor/data/api';
 import { flattenEntity } from 'applications/editor/data/utils';
-import { ExtendedEditorContextType } from 'applications/editor/tools/editorContextTypes';
+import EditorForm from 'applications/editor//components/EditorForm';
+import EntitySumUp from 'applications/editor/components/EntitySumUp';
+import EntityError from 'applications/editor/components/EntityError';
+import useSwitch from 'applications/editor/tools/switchEdition/useSwitch';
+import { SwitchEditionState } from 'applications/editor/tools/switchEdition/types';
+import type { FlatSwitchEntity } from 'applications/editor/tools/switchEdition/utils';
+import type { ExtendedEditorContextType } from 'applications/editor/tools/editorContextTypes';
+import { flatSwitchToSwitch, getNewSwitch } from 'applications/editor/tools/switchEdition/utils';
+import { CustomSchemaField } from 'applications/editor/tools/switchEdition/components/CustomSchemaField';
+
 import colors from 'common/Map/Consts/colors';
 import GeoJSONs from 'common/Map/Layers/GeoJSONs';
+import { useInfraID } from 'common/osrdContext';
 import { getSwitchesLayerProps, getSwitchesNameLayerProps } from 'common/Map/Layers/Switches';
+
 import { save } from 'reducers/editor';
-import { getInfraID } from 'reducers/osrdconf/selectors';
 import { getMap } from 'reducers/map/selectors';
-import { SwitchEntity, TrackSectionEntity } from 'types';
 
-import { FlatSwitchEntity, flatSwitchToSwitch, getNewSwitch } from './utils';
-import { SwitchEditionState } from './types';
-import useSwitch from './useSwitch';
-import { CustomSchemaField } from './components/CustomSchemaField';
-
-export const SwitchEditionLeftPanel: FC = () => {
+export const SwitchEditionLeftPanel = () => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
-  const infraID = useSelector(getInfraID);
+  const infraID = useInfraID();
   const { state, setState, isFormSubmited, setIsFormSubmited } = useContext(
     EditorContext
   ) as ExtendedEditorContextType<SwitchEditionState>;
@@ -146,10 +149,10 @@ export const SwitchEditionLeftPanel: FC = () => {
   );
 };
 
-export const SwitchEditionLayers: FC = () => {
+export const SwitchEditionLayers = () => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
-  const infraID = useSelector(getInfraID);
+  const infraID = useInfraID();
   const {
     renderingFingerprint,
     state,
@@ -288,6 +291,7 @@ export const SwitchEditionLayers: FC = () => {
         fingerprint={renderingFingerprint}
         layersSettings={layersSettings}
         issuesSettings={issuesSettings}
+        infraID={infraID}
       />
 
       {/* Edited switch */}
@@ -335,7 +339,7 @@ export const SwitchEditionLayers: FC = () => {
   );
 };
 
-export const SwitchMessages: FC = () => {
+export const SwitchMessages = () => {
   const { t } = useTranslation();
   const {
     state: { portEditionState },

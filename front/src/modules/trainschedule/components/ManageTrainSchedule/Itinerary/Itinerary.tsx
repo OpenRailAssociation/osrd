@@ -1,34 +1,32 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { WebMercatorViewport } from 'viewport-mercator-project';
+import { GoArrowSwitch, GoPlus, GoRocket, GoTrash } from 'react-icons/go';
+import type { Position } from 'geojson';
 
-import {
-  clearVias,
-  replaceVias,
-  updateDestination,
-  updateOrigin,
-  updatePathfindingID,
-} from 'reducers/osrdconf';
-import { updateFeatureInfoClick, updateViewport, Viewport } from 'reducers/map';
-import { Position } from 'geojson';
+import Tipped from 'applications/editor/components/Tipped';
 
 import DisplayItinerary from 'modules/trainschedule/components/ManageTrainSchedule/Itinerary/DisplayItinerary';
 import ModalSuggerredVias from 'modules/trainschedule/components/ManageTrainSchedule/Itinerary/ModalSuggeredVias';
-import { getOrigin, getDestination, getVias, getGeojson } from 'reducers/osrdconf/selectors';
-import { getMap } from 'reducers/map/selectors';
 import Pathfinding from 'common/Pathfinding/Pathfinding';
-import { useTranslation } from 'react-i18next';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
-import { GoArrowSwitch, GoPlus, GoRocket, GoTrash } from 'react-icons/go';
-import Tipped from 'applications/editor/components/Tipped';
 import TypeAndPath from 'common/Pathfinding/TypeAndPath';
 import { PathResponse } from 'common/api/osrdEditoastApi';
+import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
+
+import type { Viewport } from 'reducers/map';
+import { getMap } from 'reducers/map/selectors';
+import { updateViewport } from 'reducers/map';
 
 type ItineraryProps = {
   path?: PathResponse;
 };
 
 function Itinerary({ path }: ItineraryProps) {
+  const { getOrigin, getDestination, getVias, getGeojson } = useOsrdConfSelectors();
+  const { replaceVias, updateDestination, updateOrigin, updatePathfindingID, clearVias } =
+    useOsrdConfActions();
   const origin = useSelector(getOrigin);
   const destination = useSelector(getDestination);
   const vias = useSelector(getVias);
@@ -41,7 +39,7 @@ function Itinerary({ path }: ItineraryProps) {
   const { t } = useTranslation('operationalStudies/manageTrainSchedule');
   const { openModal } = useModal();
 
-  const zoomToFeature = (boundingBox: Position, id = undefined) => {
+  const zoomToFeature = (boundingBox: Position) => {
     const [minLng, minLat, maxLng, maxLat] = boundingBox;
 
     const viewport = new WebMercatorViewport({ ...map.viewport, width: 600, height: 400 });
@@ -62,10 +60,9 @@ function Itinerary({ path }: ItineraryProps) {
       zoom: zoom < 5 ? 5 : zoom,
     };
     setExtViewport(newViewport);
-    if (id) updateFeatureInfoClick(Number(id));
   };
 
-  const zoomToFeaturePoint = (lngLat?: Position, id?: string) => {
+  const zoomToFeaturePoint = (lngLat?: Position) => {
     if (lngLat) {
       const newViewport = {
         ...map.viewport,
@@ -74,9 +71,6 @@ function Itinerary({ path }: ItineraryProps) {
         zoom: 16,
       };
       setExtViewport(newViewport);
-      if (id) {
-        updateFeatureInfoClick(Number(id));
-      }
     }
   };
 

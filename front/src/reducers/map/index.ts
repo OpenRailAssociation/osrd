@@ -1,10 +1,15 @@
-import { MAP_URL } from 'common/Map/const';
-import { ViewState } from 'react-map-gl/maplibre';
-import { Position } from '@turf/helpers';
-import { gpsRound } from 'utils/helpers';
-import { createSlice, Dispatch, PayloadAction } from '@reduxjs/toolkit';
+import type { ViewState } from 'react-map-gl/maplibre';
+import type { Position } from '@turf/helpers';
+import { createSlice } from '@reduxjs/toolkit';
+import type { Dispatch, PayloadAction } from '@reduxjs/toolkit';
+
 import history from 'main/history';
-import { InfraErrorType } from 'applications/editor/components/InfraErrors/types';
+
+import { gpsRound } from 'utils/helpers';
+
+import type { InfraErrorType } from 'applications/editor/components/InfraErrors/types';
+
+import { MAP_URL } from 'common/Map/const';
 
 export type Viewport = ViewState & {
   width: number;
@@ -27,7 +32,6 @@ export interface MapState {
   terrain3DExaggeration: number;
   smoothTravel: boolean;
   viewport: Viewport;
-  featureInfoClickID?: number;
   layersSettings: {
     bufferstops: boolean;
     catenaries: boolean;
@@ -71,7 +75,6 @@ export const mapInitialState: MapState = {
     width: 0,
     height: 0,
   },
-  featureInfoClickID: undefined,
   layersSettings: {
     bufferstops: false,
     catenaries: false,
@@ -92,7 +95,7 @@ export const mapInitialState: MapState = {
   lineSearchCode: undefined,
 };
 
-const mapSlice = createSlice({
+export const mapSlice = createSlice({
   name: 'map',
   initialState: mapInitialState,
   reducers: {
@@ -125,9 +128,6 @@ const mapSlice = createSlice({
       action: PayloadAction<MapState['showOSMtracksections']>
     ) => {
       state.showOSMtracksections = action.payload;
-    },
-    updateFeatureInfoClick: (state, action: PayloadAction<MapState['featureInfoClickID']>) => {
-      state.featureInfoClickID = action.payload;
     },
     updateLayersSettings: (state, action: PayloadAction<MapState['layersSettings']>) => {
       state.layersSettings = action.payload;
@@ -170,9 +170,9 @@ export function updateViewport(
 }
 
 export const mapSliceActions = mapSlice.actions;
+export type MapSliceActions = typeof mapSlice.actions;
 
 export const {
-  updateFeatureInfoClick,
   updateLayersSettings,
   updateLineSearchCode,
   updateMapSearchMarker,

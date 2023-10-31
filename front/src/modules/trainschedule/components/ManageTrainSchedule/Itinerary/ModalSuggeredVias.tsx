@@ -1,20 +1,21 @@
 import React, { useContext } from 'react';
-import { getSuggeredVias, getVias } from 'reducers/osrdconf/selectors';
-import { replaceVias } from 'reducers/osrdconf';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
-import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
-import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import { GoDash, GoPlus, GoTrash } from 'react-icons/go';
-import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import { Spinner } from 'common/Loader';
+
 import type { ArrayElement } from 'utils/types';
+
+import { Spinner } from 'common/Loader';
 import type { PathResponse, PathWaypoint } from 'common/api/osrdEditoastApi';
 import { formatUicToCi } from 'utils/strings';
 import cx from 'classnames';
+import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
+import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
+import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
+import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 
-type Props = {
+type ModalSugerredViasProps = {
   removeAllVias: () => void;
   pathfindingInProgress?: boolean;
 };
@@ -23,12 +24,17 @@ function LoaderPathfindingInProgress() {
   return <Spinner className="loaderPathfindingInProgress" />;
 }
 
-export default function ModalSugerredVias({ removeAllVias, pathfindingInProgress }: Props) {
+export default function ModalSugerredVias({
+  removeAllVias,
+  pathfindingInProgress,
+}: ModalSugerredViasProps) {
+  const { replaceVias } = useOsrdConfActions();
+  const { getSuggeredVias, getVias } = useOsrdConfSelectors();
   const dispatch = useDispatch();
-  const suggeredVias = useSelector(getSuggeredVias) as PathWaypoint[];
   const vias = useSelector(getVias);
-
+  const suggeredVias = useSelector(getSuggeredVias) as PathWaypoint[];
   const { t } = useTranslation('operationalStudies/manageTrainSchedule');
+
   const nbVias = suggeredVias ? suggeredVias.length - 1 : 0;
   const selectedViasTracks = vias.map((via) => via.id);
   const { closeModal } = useContext(ModalContext);

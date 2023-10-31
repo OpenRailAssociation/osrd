@@ -1,24 +1,30 @@
+import i18next from 'i18next';
 import { Feature } from 'geojson';
-import { omit, clone, isNil, isUndefined } from 'lodash';
-import { JSONSchema7, JSONSchema7Definition } from 'json-schema';
-import type { AnyAction, Dispatch, PayloadAction } from '@reduxjs/toolkit';
 import { createSlice } from '@reduxjs/toolkit';
-import { setLoading, setSuccess, setFailure, setSuccessWithoutMessage } from 'reducers/main';
-import { updateIssuesSettings } from 'reducers/map';
-import { Operation, osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { ThunkAction, EditorSchema, EditorEntity } from 'types';
+import type { AnyAction, Dispatch, PayloadAction } from '@reduxjs/toolkit';
+import { JSONSchema7, JSONSchema7Definition } from 'json-schema';
+import { omit, clone, isNil, isUndefined } from 'lodash';
+
+import type { ThunkAction, EditorSchema, EditorEntity } from 'types';
+
 import {
   allInfraErrorTypes,
   infraErrorTypeList,
 } from 'applications/editor/components/InfraErrors/types';
-import { EditorState } from 'applications/editor/tools/types';
+import type { EditorState } from 'applications/editor/tools/types';
 import {
   entityToCreateOperation,
   entityToUpdateOperation,
   entityToDeleteOperation,
 } from 'applications/editor/data/utils';
-import i18next from 'i18next';
-import infra_schema from '../osrdconf/infra_schema.json';
+
+import type { Operation } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+
+import { updateIssuesSettings } from 'reducers/map';
+import infra_schema from 'reducers/osrdconf/infra_schema.json';
+import { buildInfraStateReducers, infraState } from 'reducers/infra';
+import { setLoading, setSuccess, setFailure, setSuccessWithoutMessage } from 'reducers/main';
 
 export const editorInitialState: EditorState = {
   // Definition of entities (json schema)
@@ -32,12 +38,14 @@ export const editorInitialState: EditorState = {
     filterLevel: 'all',
     filterType: null,
   },
+  ...infraState,
 };
 
 export const editorSlice = createSlice({
   name: 'editor',
   initialState: editorInitialState,
   reducers: {
+    ...buildInfraStateReducers<EditorState>(),
     selectLayers(state, action: PayloadAction<EditorState['editorLayers']>) {
       state.editorLayers = action.payload;
     },
@@ -64,17 +72,13 @@ export const editorSlice = createSlice({
     },
   },
 });
+export const editorSliceActions = editorSlice.actions;
+const { loadDataModelAction, updateTotalsIssueAction, updateFiltersIssueAction } =
+  editorSliceActions;
 
-export const {
-  selectLayers,
-  loadDataModelAction,
-  updateTotalsIssueAction,
-  updateFiltersIssueAction,
-} = editorSlice.actions;
+export type EditorSliceActions = typeof editorSlice.actions | ActionSave;
 
-export type editorSliceActionsType = typeof editorSlice.actions;
-
-export function loadDataModel(): ThunkAction<editorSliceActionsType['loadDataModelAction']> {
+export function loadDataModel(): ThunkAction<EditorSliceActions['loadDataModelAction']> {
   return async (dispatch: Dispatch, getState) => {
     // check if we need to load the model
     if (!Object.keys(getState().editor.editorSchema).length) {
@@ -122,7 +126,7 @@ export function loadDataModel(): ThunkAction<editorSliceActionsType['loadDataMod
 
 export function updateTotalsIssue(
   infraID: number | undefined
-): ThunkAction<editorSliceActionsType['updateTotalsIssueAction']> {
+): ThunkAction<EditorSliceActions['updateTotalsIssueAction']> {
   return async (dispatch: Dispatch, getState) => {
     const { editor } = getState();
     dispatch(setLoading());
@@ -171,7 +175,7 @@ export function updateTotalsIssue(
 export function updateFiltersIssue(
   infraID: number | undefined,
   filters: Partial<Pick<EditorState['issues'], 'filterLevel' | 'filterType'>>
-): ThunkAction<editorSliceActionsType['updateFiltersIssueAction']> {
+): ThunkAction<EditorSliceActions['updateFiltersIssueAction']> {
   return async (dispatch: Dispatch, getState) => {
     const { editor } = getState() as { editor: EditorState };
     let level = isUndefined(filters.filterLevel) ? editor.issues.filterLevel : filters.filterLevel;
@@ -274,11 +278,6 @@ export function save(
   return saveOperations(infraID, payload);
 }
 
-export type EditorActions =
-  | editorSliceActionsType['loadDataModelAction']
-  | editorSliceActionsType['selectLayers']
-  | editorSliceActionsType['updateFiltersIssueAction']
-  | editorSliceActionsType['updateTotalsIssueAction']
-  | ActionSave;
+export type EditorSlice = typeof editorSlice;
 
 export default editorSlice.reducer;

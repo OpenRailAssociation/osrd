@@ -1,13 +1,20 @@
 import React, { useContext } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useDispatch } from 'react-redux';
 import nextId from 'react-id-generator';
 import { GoLock } from 'react-icons/go';
+
+import { MODES } from 'applications/operationalStudies/consts';
+
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import { useDispatch, useSelector } from 'react-redux';
-import { getInfraID } from 'reducers/osrdconf/selectors';
-import { updateInfraID, deleteItinerary } from 'reducers/osrdconf';
-import { useTranslation } from 'react-i18next';
+import type { Infra } from 'common/api/osrdEditoastApi';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import { Infra } from 'common/api/osrdEditoastApi';
+import {
+  useInfraID,
+  useOsrdConfActions,
+  useOsrdContext,
+  useUpdateInfraID,
+} from 'common/osrdContext';
 
 type InfraSelectorModalBodyStandardProps = {
   filter: string;
@@ -38,13 +45,16 @@ export default function InfraSelectorModalBodyStandard({
 }: InfraSelectorModalBodyStandardProps) {
   const { t } = useTranslation(['translation', 'infraManagement']);
   const dispatch = useDispatch();
-  const infraID = useSelector(getInfraID);
+  const { mode } = useOsrdContext();
+  const updateInfraID = useUpdateInfraID();
+  const infraID = useInfraID();
   const { closeModal } = useContext(ModalContext);
+  const { deleteItinerary } = useOsrdConfActions();
 
   function setInfraID(id: number) {
     dispatch(updateInfraID(id));
     if (onInfraChange) onInfraChange(id);
-    dispatch(deleteItinerary());
+    if ([MODES.simulation, MODES.stdcm].includes(mode)) dispatch(deleteItinerary());
     if (!onlySelectionMode) {
       closeModal();
     }

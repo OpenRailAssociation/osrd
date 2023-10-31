@@ -1,9 +1,12 @@
 import { flatMap } from 'lodash';
 
-import { EditorSchema } from '../../../types';
-import { InfraErrorLevel, InfraErrorType } from '../components/InfraErrors/types';
+import { EditorSchema } from 'types';
 
-export interface EditorState {
+import { InfraErrorLevel, InfraErrorType } from 'applications/editor/components/InfraErrors/types';
+
+import { InfraState } from 'reducers/infra';
+
+export interface EditorState extends InfraState {
   editorSchema: EditorSchema;
   editorLayers: Set<LayerType>;
   issues: {

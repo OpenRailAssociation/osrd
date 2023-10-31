@@ -1,21 +1,27 @@
 import React, { useEffect, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { MapState, updateLayersSettings } from 'reducers/map';
 import { IoMdSpeedometer } from 'react-icons/io';
-import { IconType } from 'react-icons';
-import { SerializedError } from '@reduxjs/toolkit';
+import type { IconType } from 'react-icons';
+import type { SerializedError } from '@reduxjs/toolkit';
 
 import TIVsSVGFile from 'assets/pictures/layersicons/layer_tivs.svg';
-import SwitchSNCF, { SWITCH_TYPES } from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
-import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
+
 import DotsLoader from 'common/DotsLoader/DotsLoader';
+import { useInfraID } from 'common/osrdContext';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { ApiError } from 'common/api/baseGeneratedApis';
+import type { ApiError } from 'common/api/baseGeneratedApis';
+import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
+import SwitchSNCF, { SWITCH_TYPES } from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
+import {
+  FormatSwitch as SimpleFormatSwitch,
+  Icon2SVG,
+} from 'common/Map/Settings/MapSettingsLayers';
+
 import { setFailure } from 'reducers/main';
-import { getInfraID } from 'reducers/osrdconf/selectors';
 import { getMap } from 'reducers/map/selectors';
-import { FormatSwitch as SimpleFormatSwitch, Icon2SVG } from './MapSettingsLayers';
+import { updateLayersSettings } from 'reducers/map';
+import type { MapState } from 'reducers/map';
 
 type FormatSwitchProps = {
   name: keyof MapState['layersSettings'];
@@ -28,7 +34,7 @@ const FormatSwitch = ({ name, icon: IconComponent, color = '', disabled }: Forma
   const dispatch = useDispatch();
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule', 'map-settings']);
   const { layersSettings } = useSelector(getMap);
-  const infraID = useSelector(getInfraID);
+  const infraID = useInfraID();
   const {
     data: tagsList,
     isError: isGetSpeedLimitTagsError,

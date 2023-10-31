@@ -1,18 +1,13 @@
-import { EditorState } from 'applications/editor/tools/types';
 import { createStoreWithoutMiddleware } from 'store';
+import { editorInitialState, editorSliceActions, editorSlice } from 'reducers/editor';
 import editorTestDataBuilder from './editorTestDataBuilder';
-import {
-  editorInitialState,
-  selectLayers,
-  editorSlice,
-  loadDataModelAction,
-  updateTotalsIssueAction,
-  updateFiltersIssueAction,
-} from '..';
 
-const createStore = (initialStateExtra?: EditorState) =>
+const { selectLayers, loadDataModelAction, updateTotalsIssueAction, updateFiltersIssueAction } =
+  editorSliceActions;
+
+const createStore = () =>
   createStoreWithoutMiddleware({
-    [editorSlice.name]: initialStateExtra,
+    [editorSlice.name]: editorInitialState,
   });
 let store: ReturnType<typeof createStore>;
 
@@ -20,8 +15,9 @@ beforeEach(() => {
   store = createStore();
 });
 
+const testDataBuilder = editorTestDataBuilder();
+
 describe('editorReducer', () => {
-  const testDataBuilder = editorTestDataBuilder();
   it('should return initial state', () => {
     const editorState = store.getState()[editorSlice.name];
     expect(editorState).toEqual(editorInitialState);
@@ -53,5 +49,11 @@ describe('editorReducer', () => {
     store.dispatch(updateFiltersIssueAction(newIssues));
     const editorState = store.getState()[editorSlice.name];
     expect(editorState.issues).toEqual({ ...editorInitialState.issues, ...newIssues });
+  });
+
+  it('should handle updateInfraIDAction', () => {
+    store.dispatch(editorSliceActions.updateInfraID(15));
+    const editorState = store.getState()[editorSlice.name];
+    expect(editorState.infraID).toEqual(15);
   });
 });

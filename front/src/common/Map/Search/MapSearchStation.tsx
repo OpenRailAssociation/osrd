@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { getInfraID } from 'reducers/osrdconf/selectors';
 import { getMap } from 'reducers/map/selectors';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { onResultSearchClick } from 'common/Map/utils';
@@ -9,10 +8,12 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import nextId from 'react-id-generator';
+
 import StationCard from 'common/StationCard';
 
 import type { SearchQuery, SearchResultItemOperationalPoint } from 'common/api/osrdEditoastApi';
 import type { Viewport } from 'reducers/map';
+import { useInfraID } from 'common/osrdContext';
 
 type MapSearchStationProps = {
   updateExtViewport: (viewport: Partial<Viewport>) => void;
@@ -27,7 +28,7 @@ const MapSearchStation = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchS
   >(undefined);
   const [trigramResults, setTrigramResults] = useState<SearchResultItemOperationalPoint[]>([]);
   const [nameResults, setNameResults] = useState<SearchResultItemOperationalPoint[]>([]);
-  const infraID = useSelector(getInfraID);
+  const infraID = useInfraID();
 
   const [postSearch] = osrdEditoastApi.usePostSearchMutation();
   const dispatch = useDispatch();

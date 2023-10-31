@@ -1,23 +1,26 @@
 /* eslint-disable no-console */
-import React, { FC, useEffect, useMemo, useState } from 'react';
-import { useSelector } from 'react-redux';
+import React, { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
-
-import { FeatureCollection } from 'geojson';
-import ReactMapGL, { LayerProps, MapRef, Source } from 'react-map-gl/maplibre';
-import { BBox2d } from '@turf/helpers/dist/js/lib/geojson';
+import { useSelector } from 'react-redux';
+import ReactMapGL, { Source } from 'react-map-gl/maplibre';
+import type { LayerProps, MapRef } from 'react-map-gl/maplibre';
 import { featureCollection } from '@turf/helpers';
+import type { BBox2d } from '@turf/helpers/dist/js/lib/geojson';
+import type { FeatureCollection } from 'geojson';
 import { map, sum, uniqBy } from 'lodash';
 
 import mapStyleJson from 'assets/mapstyles/OSMStyle.json';
-import { LayerType } from 'applications/editor/tools/types';
-import { useMapBlankStyle } from 'common/Map/Layers/blankStyle';
-import GeoJSONs from 'common/Map/Layers/GeoJSONs';
+
+import type { LayerType } from 'applications/editor/tools/types';
+
+import { OSM_URL } from 'common/Map/const';
 import colors from 'common/Map/Consts/colors';
 import { getMap } from 'reducers/map/selectors';
-import { OSM_URL } from 'common/Map/const';
-import { simplifyFeature } from 'common/Map/WarpedMap/core/helpers';
+import GeoJSONs from 'common/Map/Layers/GeoJSONs';
+import { useInfraID } from 'common/osrdContext';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
+import { useMapBlankStyle } from 'common/Map/Layers/blankStyle';
+import { simplifyFeature } from 'common/Map/WarpedMap/core/helpers';
 
 const TIME_LABEL = 'Loading OSRD and OSM data around warped path';
 
@@ -31,16 +34,20 @@ const OSM_LAYERS = new Set(['building', 'water', 'water_name', 'waterway', 'poi'
  *
  * It is designed as a component instead of a hook to simplify mounting/unmounting the temporary invisible map.
  */
-const DataLoader: FC<{
+
+interface DataLoaderProps {
   bbox: BBox2d;
   getGeoJSONs: (
     osrdData: Partial<Record<LayerType, FeatureCollection>>,
     osmData: Record<string, FeatureCollection>
   ) => void;
   layers: Set<LayerType>;
-}> = ({ bbox, getGeoJSONs, layers }) => {
+}
+
+const DataLoader = ({ bbox, getGeoJSONs, layers }: DataLoaderProps) => {
   const mapBlankStyle = useMapBlankStyle();
   const { mapStyle, layersSettings } = useSelector(getMap);
+  const infraID = useInfraID();
   const [mapRef, setMapRef] = useState<MapRef | null>(null);
   const [state, setState] = useState<'idle' | 'render' | 'loaded'>('idle');
   const osmLayers = useMemo(() => {
@@ -154,6 +161,7 @@ const DataLoader: FC<{
                   isEmphasized={false}
                   layers={layers}
                   renderAll
+                  infraID={infraID}
                 />
               </>
             )}

@@ -8,17 +8,15 @@ import { MAP_URL } from 'common/Map/const';
 
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import getKPLabelLayerProps from 'common/Map/Layers/KPLabel';
-import { getInfraID } from 'reducers/osrdconf/selectors';
 
 interface Props {
   colors: Theme;
   layerOrder: number;
+  infraID: number | undefined;
 }
 
-export default function OperationalPoints(props: Props) {
+export default function OperationalPoints({ colors, layerOrder, infraID }: Props) {
   const { layersSettings } = useSelector((state: RootState) => state.map);
-  const infraID = useSelector(getInfraID);
-  const { colors, layerOrder } = props;
   const point: LayerProps = {
     type: 'circle',
     'source-layer': 'operational_points',

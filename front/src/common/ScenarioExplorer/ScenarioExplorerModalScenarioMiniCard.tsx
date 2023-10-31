@@ -1,15 +1,10 @@
-import cx from 'classnames';
 import React, { useContext } from 'react';
 import { useDispatch } from 'react-redux';
+import cx from 'classnames';
+
+import { useOsrdConfActions } from 'common/osrdContext';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import {
-  updateInfraID,
-  updateProjectID,
-  updateScenarioID,
-  updateStudyID,
-  updateTimetableID,
-} from 'reducers/osrdconf';
-import { MiniCardsScenarioProps } from './ScenarioExplorerTypes';
+import { MiniCardsScenarioProps } from 'common/ScenarioExplorer/ScenarioExplorerTypes';
 
 export default function ScenarioMiniCard({
   scenario,
@@ -20,6 +15,8 @@ export default function ScenarioMiniCard({
 }: MiniCardsScenarioProps) {
   const dispatch = useDispatch();
   const { closeModal } = useContext(ModalContext);
+  const { updateInfraID, updateProjectID, updateScenarioID, updateStudyID, updateTimetableID } =
+    useOsrdConfActions();
   const selectScenario = () => {
     setSelectedID(scenario.id);
     dispatch(updateProjectID(projectID));

@@ -1,20 +1,35 @@
-import { Map } from 'maplibre-gl';
-import React, { ComponentType, FC, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import type { ComponentType } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { Map } from 'maplibre-gl';
 import { Popup } from 'react-map-gl/maplibre';
 import { useTranslation } from 'react-i18next';
-import { featureCollection } from '@turf/helpers';
 import { isEqual } from 'lodash';
 import along from '@turf/along';
-import { BiArrowFromLeft, BiArrowToRight } from 'react-icons/bi';
+import length from '@turf/length';
+import { featureCollection } from '@turf/helpers';
 import { BsBoxArrowInRight } from 'react-icons/bs';
+import { BiArrowFromLeft, BiArrowToRight } from 'react-icons/bi';
 
-import GeoJSONs, { EditorSource, SourcesDefinitionsIndex } from 'common/Map/Layers/GeoJSONs';
-import colors from 'common/Map/Consts/colors';
-import { save } from 'reducers/editor';
-import { getInfraID } from 'reducers/osrdconf/selectors';
-import {
-  NULL_GEOMETRY,
+import type {
+  ExtendedEditorContextType,
+  EditorContextType,
+} from 'applications/editor/tools/editorContextTypes';
+import EditorContext from 'applications/editor/context';
+import TOOL_TYPES from 'applications/editor/tools/toolTypes';
+import EditorForm from 'applications/editor/components/EditorForm';
+import type { EditoastType } from 'applications/editor/tools/types';
+import EntityError from 'applications/editor/components/EntityError';
+import EntitySumUp from 'applications/editor/components/EntitySumUp';
+import { getEntities, getEntity } from 'applications/editor/data/api';
+import { getEditRouteState } from 'applications/editor/tools/routeEdition/utils';
+import type { PointEditionState } from 'applications/editor/tools/pointEdition/types';
+import { formatSignalingSystems } from 'applications/editor/tools/pointEdition/utils';
+import { CustomPosition } from 'applications/editor/tools/pointEdition/CustomPosition';
+import { NEW_ENTITY_ID, flattenEntity, cleanSymbolType } from 'applications/editor/data/utils';
+import { CustomFlagSignalCheckbox } from 'applications/editor/tools/pointEdition/CustomFlagSignalCheckbox';
+
+import type {
   EditorEntity,
   TrackSectionEntity,
   RouteEntity,
@@ -22,39 +37,33 @@ import {
   DetectorEntity,
   BufferStopEntity,
 } from 'types';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import EditorForm from 'applications/editor/components/EditorForm';
-import EntitySumUp from 'applications/editor/components/EntitySumUp';
-import EditorContext from 'applications/editor/context';
-import { getEntities, getEntity } from 'applications/editor/data/api';
-import { NEW_ENTITY_ID, flattenEntity, cleanSymbolType } from 'applications/editor/data/utils';
-import { Spinner } from 'common/Loader';
+import { NULL_GEOMETRY } from 'types';
+
+import { save } from 'reducers/editor';
 import { getMap } from 'reducers/map/selectors';
-import EntityError from 'applications/editor/components/EntityError';
-import {
-  ExtendedEditorContextType,
-  EditorContextType,
-} from 'applications/editor/tools/editorContextTypes';
-import { getEditRouteState } from 'applications/editor/tools/routeEdition/utils';
-import TOOL_TYPES from 'applications/editor/tools/toolTypes';
-import { EditoastType } from 'applications/editor/tools/types';
-import length from '@turf/length';
-import { CustomFlagSignalCheckbox } from './CustomFlagSignalCheckbox';
-import { PointEditionState } from './types';
-import { formatSignalingSystems } from './utils';
-import { CustomPosition } from './CustomPosition';
+
+import colors from 'common/Map/Consts/colors';
+import GeoJSONs, { EditorSource, SourcesDefinitionsIndex } from 'common/Map/Layers/GeoJSONs';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { Spinner } from 'common/Loader';
+import { useInfraID } from 'common/osrdContext';
 
 export const POINT_LAYER_ID = 'pointEditionTool/new-entity';
 
 type EditorPoint = BufferStopEntity | DetectorEntity | SignalEntity;
 
+interface RoutesListProps {
+  type: EditoastType;
+  id: string;
+}
+
 /**
  * Generic component to show routes starting or ending from the edited waypoint:
  */
-export const RoutesList: FC<{ type: EditoastType; id: string }> = ({ type, id }) => {
+export const RoutesList = ({ type, id }: RoutesListProps) => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
-  const infraID = useSelector(getInfraID);
+  const infraID = useInfraID();
   const [routesState, setRoutesState] = useState<
     | { type: 'idle' }
     | { type: 'loading' }
@@ -186,17 +195,18 @@ export const RoutesList: FC<{ type: EditoastType; id: string }> = ({ type, id })
   );
 };
 
+interface PointEditionLeftPanelProps {
+  type: EditoastType;
+}
 /**
  * Generic component for point edition left panel:
  */
-export const PointEditionLeftPanel: FC<{ type: EditoastType }> = <Entity extends EditorEntity>({
+export const PointEditionLeftPanel = <Entity extends EditorEntity>({
   type,
-}: {
-  type: EditoastType;
-}) => {
+}: PointEditionLeftPanelProps) => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
-  const infraID = useSelector(getInfraID);
+  const infraID = useInfraID();
   const { state, setState, isFormSubmited, setIsFormSubmited } = useContext(
     EditorContext
   ) as ExtendedEditorContextType<PointEditionState<Entity>>;
@@ -370,7 +380,7 @@ export const getPointEditionLeftPanel =
   () =>
     <PointEditionLeftPanel type={type} />;
 
-export const BasePointEditionLayers: FC<{
+interface BasePointEditionLayersProps {
   // eslint-disable-next-line react/no-unused-prop-types
   map: Map;
   mergeEntityWithNearestPoint?: (
@@ -378,7 +388,13 @@ export const BasePointEditionLayers: FC<{
     nearestPoint: NonNullable<PointEditionState<EditorEntity>['nearestPoint']>
   ) => EditorEntity;
   interactiveLayerIDRegex?: RegExp;
-}> = ({ mergeEntityWithNearestPoint, interactiveLayerIDRegex }) => {
+}
+
+export const BasePointEditionLayers = ({
+  mergeEntityWithNearestPoint,
+  interactiveLayerIDRegex,
+}: BasePointEditionLayersProps) => {
+  const infraID = useInfraID();
   const {
     renderingFingerprint,
     state: { nearestPoint, mousePosition, entity, objType },
@@ -446,6 +462,7 @@ export const BasePointEditionLayers: FC<{
         fingerprint={renderingFingerprint}
         layersSettings={layersSettings}
         issuesSettings={issuesSettings}
+        infraID={infraID}
       />
 
       {/* Edited entity */}
@@ -465,7 +482,7 @@ export const BasePointEditionLayers: FC<{
   );
 };
 
-export const SignalEditionLayers: FC<{ map: Map }> = ({ map }) => (
+export const SignalEditionLayers = ({ map }: { map: Map }) => (
   <BasePointEditionLayers
     map={map}
     interactiveLayerIDRegex={/signal-point$/}

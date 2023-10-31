@@ -2,24 +2,33 @@ import React, { Suspense, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import 'i18n';
-import { updateLastInterfaceVersion } from 'reducers/main';
 
+import Home from 'main/home';
+import Loader from 'common/Loader';
 import useAuth from 'utils/hooks/OsrdAuth';
+import ErrorBoundary from 'common/ErrorBoundary';
+import { OsrdContextLayout } from 'common/osrdContext';
+import { NotificationsState } from 'common/Notifications';
+
+import HomeStdcm from 'applications/stdcm/Home';
 import HomeEditor from 'applications/editor/Home';
 import HomeMap from 'applications/referenceMap/Home';
-import HomeOperationalStudies from 'applications/operationalStudies/Home';
-import HomeStdcm from 'applications/stdcm/Home';
-import Loader from 'common/Loader';
-import Home from 'main/home';
-import { NotificationsState } from 'common/Notifications';
-import Project from 'applications/operationalStudies/views/Project';
+import { MODES } from 'applications/operationalStudies/consts';
 import Study from 'applications/operationalStudies/views/Study';
+import Project from 'applications/operationalStudies/views/Project';
 import Scenario from 'applications/operationalStudies/views/Scenario';
+import HomeOperationalStudies from 'applications/operationalStudies/Home';
 import HomeRollingStockEditor from 'applications/rollingStockEditor/Home';
-import { OsrdConfContextLayout } from 'common/osrdConfContext';
-import { simulationConfSlice, simulationConfSliceActions } from 'reducers/osrdconf2/simulationConf';
-import { stdcmConfSlice, stdcmConfSliceActions } from 'reducers/osrdconf2/stdcmConf';
-import ErrorBoundary from 'common/ErrorBoundary';
+
+import { editorSlice } from 'reducers/editor';
+import { mapViewerSlice } from 'reducers/mapViewer';
+import editorSelectors from 'reducers/editor/selectors';
+import { updateLastInterfaceVersion } from 'reducers/main';
+import { stdcmConfSlice } from 'reducers/osrdconf/stdcmConf';
+import mapViewerSelectors from 'reducers/mapViewer/selectors';
+import stdcmConfSelectors from 'reducers/osrdconf/stdcmConf/selectors';
+import { operationalStudiesConfSlice } from 'reducers/osrdconf/operationalStudiesConf';
+import simulationConfSelectors from 'reducers/osrdconf/operationalStudiesConf/selectors';
 
 import('@sncf/bootstrap-sncf.metier.reseau/dist/css/bootstrap-sncf.min.css');
 
@@ -30,15 +39,32 @@ const router = createBrowserRouter([
   },
   {
     path: 'map/*',
-    element: <HomeMap />,
+    element: (
+      <OsrdContextLayout
+        slice={mapViewerSlice}
+        selectors={mapViewerSelectors}
+        mode={MODES.mapViewer}
+      />
+    ),
+    children: [{ path: '*', element: <HomeMap /> }],
   },
   {
     path: 'editor/*',
-    element: <HomeEditor />,
+    element: (
+      <OsrdContextLayout slice={editorSlice} selectors={editorSelectors} mode={MODES.editor} />
+    ),
+    children: [
+      {
+        path: '*',
+        element: <HomeEditor />,
+      },
+    ],
   },
   {
     path: 'stdcm/*',
-    element: <OsrdConfContextLayout slice={stdcmConfSlice} selectors={stdcmConfSliceActions} />,
+    element: (
+      <OsrdContextLayout slice={stdcmConfSlice} selectors={stdcmConfSelectors} mode={MODES.stdcm} />
+    ),
     children: [
       {
         path: '*',
@@ -53,7 +79,11 @@ const router = createBrowserRouter([
   {
     path: 'operational-studies/',
     element: (
-      <OsrdConfContextLayout slice={simulationConfSlice} selectors={simulationConfSliceActions} />
+      <OsrdContextLayout
+        slice={operationalStudiesConfSlice}
+        selectors={simulationConfSelectors}
+        mode={MODES.simulation}
+      />
     ),
     errorElement: <ErrorBoundary />,
     children: [
@@ -89,7 +119,6 @@ export default function App() {
     dispatch(updateLastInterfaceVersion(import.meta.env.OSRD_GIT_DESCRIBE));
   }, []);
   const { isUserLogged } = useAuth();
-
   return (
     <Suspense fallback={<Loader />}>
       <NotificationsState />
