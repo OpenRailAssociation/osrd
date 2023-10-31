@@ -11,11 +11,11 @@ import { updateSelectedProjection } from 'reducers/osrdsimulation/actions';
 import { FcCalendar } from 'react-icons/fc';
 import { MdTrain } from 'react-icons/md';
 import nextId from 'react-id-generator';
-import { ScenarioResult } from 'common/api/osrdEditoastApi';
+import { ScenarioWithCountTrains } from 'common/api/osrdEditoastApi';
 
 type Props = {
   setFilterChips: (filterChips: string) => void;
-  scenario: ScenarioResult;
+  scenario: ScenarioWithCountTrains;
 };
 
 export default function StudyCard({ setFilterChips, scenario }: Props) {

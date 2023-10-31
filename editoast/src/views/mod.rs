@@ -54,7 +54,6 @@ fn routes_v2() -> Routes<impl HttpServiceFactory> {
 
 pub fn routes() -> impl HttpServiceFactory {
     services![
-        scenario::routes(),
         routes_v2(),
         infra::routes(),
         layers::routes(),

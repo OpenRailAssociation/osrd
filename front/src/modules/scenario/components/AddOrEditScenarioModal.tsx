@@ -17,20 +17,20 @@ import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
 import InfraSelectorModal from 'common/InfraSelector/InfraSelectorModal';
-import { ScenarioListResult, osrdEditoastApi, ScenarioRequest } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, ScenarioCreateForm, ScenarioPatchForm } from 'common/api/osrdEditoastApi';
 import { setFailure, setSuccess } from 'reducers/main';
 import { updateScenarioID } from 'reducers/osrdconf';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 
-const scenarioTypesDefaults = {
-  name: '',
-  description: '',
-  infra: undefined,
+type CreateOrPatchScenarioForm = ScenarioPatchForm & {
+  id?: number;
+  infra_id?: number;
+  electrical_profile_set_id?: number | null;
 };
 
 type AddOrEditScenarioModalProps = {
   editionMode?: boolean;
-  scenario?: ScenarioListResult;
+  scenario?: CreateOrPatchScenarioForm;
 };
 
 type createScenarioParams = {
@@ -76,9 +76,7 @@ export default function AddOrEditScenarioModal({
     });
   const [loadInfra] = osrdEditoastApi.endpoints.postInfraByIdLoad.useMutation();
 
-  const [currentScenario, setCurrentScenario] = useState<ScenarioListResult>(
-    scenario || scenarioTypesDefaults
-  );
+  const [currentScenario, setCurrentScenario] = useState<CreateOrPatchScenarioForm>(scenario || {});
 
   const [displayErrors, setDisplayErrors] = useState(false);
   const dispatch = useDispatch();
@@ -116,7 +114,7 @@ export default function AddOrEditScenarioModal({
       postScenario({
         projectId: +projectId,
         studyId: +studyId,
-        scenarioRequest: currentScenario as ScenarioRequest,
+        scenarioCreateForm: currentScenario as ScenarioCreateForm,
       })
         .unwrap()
         .then(({ id }) => {
@@ -146,7 +144,7 @@ export default function AddOrEditScenarioModal({
         projectId: +projectId,
         studyId: +studyId,
         scenarioId: scenario.id,
-        scenarioPatchRequest: currentScenario,
+        scenarioPatchForm: currentScenario,
       })
         .unwrap()
         .then(() => {
@@ -226,7 +224,7 @@ export default function AddOrEditScenarioModal({
                     <span className="font-weight-bold">{t('scenarioName')}</span>
                   </div>
                 }
-                value={currentScenario.name}
+                value={currentScenario.name || ''}
                 onChange={(e) => setCurrentScenario({ ...currentScenario, name: e.target.value })}
                 isInvalid={displayErrors && !currentScenario.name}
                 errorMsg={
@@ -245,7 +243,7 @@ export default function AddOrEditScenarioModal({
                     {t('scenarioDescription')}
                   </div>
                 }
-                value={currentScenario.description}
+                value={currentScenario.description || ''}
                 onChange={(e) =>
                   setCurrentScenario({ ...currentScenario, description: e.target.value })
                 }
@@ -278,7 +276,7 @@ export default function AddOrEditScenarioModal({
             )}
             <ChipsSNCF
               addTag={addTag}
-              tags={currentScenario.tags}
+              tags={currentScenario.tags || []}
               removeTag={removeTag}
               title={t('scenarioTags')}
               color="teal"

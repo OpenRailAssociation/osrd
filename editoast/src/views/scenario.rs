@@ -1,11 +1,13 @@
+use crate::decl_paginated_response;
 use crate::error::Result;
+use crate::models::train_schedule::LightTrainSchedule;
 use crate::models::{
     Create, Delete, List, Project, Retrieve, ScenarioWithCountTrains, ScenarioWithDetails, Study,
     Timetable, Update,
 };
 use crate::views::pagination::{PaginatedResponse, PaginationQueryParam};
-use crate::views::projects::ProjectError;
-use crate::views::study::StudyError;
+use crate::views::projects::{ProjectError, ProjectIdParam};
+use crate::views::study::{StudyError, StudyIdParam};
 use crate::{models::Scenario, DbPool};
 use actix_web::{delete, HttpResponse};
 
@@ -13,23 +15,38 @@ use actix_web::get;
 use actix_web::patch;
 use actix_web::web::Query;
 use actix_web::{
-    dev::HttpServiceFactory,
     post,
-    web::{self, Data, Json, Path},
+    web::{Data, Json, Path},
 };
 use chrono::Utc;
 use derivative::Derivative;
 use editoast_derive::EditoastError;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
+use utoipa::{IntoParams, ToSchema};
 
 use super::projects::QueryParams;
 
-/// Returns `/projects/{project}/studies/{study}/scenarios` routes
-pub fn routes() -> impl HttpServiceFactory {
-    web::scope("/projects/{project_id}/studies/{study_id}/scenarios")
-        .service((create, list))
-        .service(web::scope("/{scenario}").service((get, delete, patch)))
+crate::routes! {
+    "/scenarios" => {
+        create,
+        list,
+        "/{scenario_id}" => {
+            get,
+            delete,
+            patch,
+        }
+    }
+}
+
+crate::schemas! {
+    Scenario,
+    ScenarioCreateForm,
+    ScenarioPatchForm,
+    ScenarioWithCountTrains,
+    ScenarioWithDetails,
+    PaginatedResponseOfScenarioWithCountTrains,
+    LightTrainSchedule, // TODO: remove from here once train schedule is migrated
 }
 
 #[derive(Debug, Error, EditoastError)]
@@ -44,7 +61,7 @@ enum ScenarioError {
 }
 
 /// This structure is used by the post endpoint to create a scenario
-#[derive(Serialize, Deserialize, Derivative)]
+#[derive(Serialize, Deserialize, Derivative, ToSchema)]
 #[derivative(Default)]
 struct ScenarioCreateForm {
     pub name: String,
@@ -89,6 +106,15 @@ async fn check_project_study(
     Ok((project, study))
 }
 
+/// Create a scenario
+#[utoipa::path(
+    tag = "scenarios",
+    params(ProjectIdParam, StudyIdParam),
+    request_body = ScenarioCreateForm,
+    responses(
+        (status = 201, body = ScenarioWithDetails, description = "The created scenario"),
+    )
+)]
 #[post("")]
 async fn create(
     db_pool: Data<DbPool>,
@@ -126,7 +152,21 @@ async fn create(
     Ok(Json(scenarios_with_trains))
 }
 
+#[derive(IntoParams)]
+#[allow(unused)]
+pub struct ScenarioIdParam {
+    scenario_id: i64,
+}
+
 /// Delete a scenario
+#[utoipa::path(
+    tag = "scenarios",
+    params(ProjectIdParam, StudyIdParam, ScenarioIdParam),
+    responses(
+        (status = 204, description = "The scenario was deleted successfully"),
+        (status = 404, body = InternalError, description = "The requested scenario was not found"),
+    )
+)]
 #[delete("")]
 async fn delete(path: Path<(i64, i64, i64)>, db_pool: Data<DbPool>) -> Result<HttpResponse> {
     let (project_id, study_id, scenario_id) = path.into_inner();
@@ -153,7 +193,7 @@ async fn delete(path: Path<(i64, i64, i64)>, db_pool: Data<DbPool>) -> Result<Ht
 }
 
 /// This structure is used by the patch endpoint to patch a study
-#[derive(Serialize, Deserialize, Derivative)]
+#[derive(Serialize, Deserialize, Derivative, ToSchema)]
 #[derivative(Default)]
 struct ScenarioPatchForm {
     pub name: Option<String>,
@@ -172,6 +212,16 @@ impl From<ScenarioPatchForm> for Scenario {
     }
 }
 
+/// Update a scenario
+#[utoipa::path(
+    tag = "scenarios",
+    params(ProjectIdParam, StudyIdParam, ScenarioIdParam),
+    request_body = ScenarioPatchForm,
+    responses(
+        (status = 204, description = "The scenario was updated successfully"),
+        (status = 404, body = InternalError, description = "The requested scenario was not found"),
+    )
+)]
 #[patch("")]
 async fn patch(
     data: Json<ScenarioPatchForm>,
@@ -203,6 +253,15 @@ async fn patch(
     Ok(Json(scenarios_with_details))
 }
 
+/// Return a specific scenario
+#[utoipa::path(
+    tag = "scenarios",
+    params(ProjectIdParam, StudyIdParam, ScenarioIdParam),
+    responses(
+        (status = 200, body = ScenarioWithDetails, description = "The requested scenario"),
+        (status = 404, body = InternalError, description = "The requested scenario was not found"),
+    )
+)]
 #[get("")]
 async fn get(
     db_pool: Data<DbPool>,
@@ -221,7 +280,18 @@ async fn get(
     Ok(Json(scenario_with_trains))
 }
 
-/// Return a list of studies
+decl_paginated_response!(
+    PaginatedResponseOfScenarioWithCountTrains,
+    ScenarioWithCountTrains
+);
+/// Return a list of scenarios
+#[utoipa::path(
+    tag = "scenarios",
+    params(ProjectIdParam, StudyIdParam, PaginationQueryParam, QueryParams),
+    responses(
+        (status = 200, body = PaginatedResponseOfScenarioWithCountTrains, description = "The list of scenarios"),
+    )
+)]
 #[get("")]
 async fn list(
     db_pool: Data<DbPool>,
