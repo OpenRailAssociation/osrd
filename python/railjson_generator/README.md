@@ -70,7 +70,7 @@ You can find a complete example [here](./railjson_generator/scripts/examples/exa
 
 ## Run the generation script
 
-In order to run a generation script, you must place it inside [the script directory](./railjson_generator/scripts), and then run [generate.py](./railjson_generator/generate.py) by passing it two arguments:
+In order to run a generation script, you must place it inside [the script directory](./railjson_generator/scripts), and then run [generate.py](./railjson_generator/scripts/generate.py) by passing it two arguments:
 
 - The output folder where to write the railjson and the simulation json.
 - The name of the script (without the extension nor the parent directory) that you want to run.
