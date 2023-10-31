@@ -18,9 +18,10 @@ import {
 } from 'reducers/osrdconf';
 import { StandardAllowance } from 'applications/operationalStudies/consts';
 import { AllowanceValue } from 'common/api/osrdEditoastApi';
-import { ALLOWANCE_UNITS_KEYS } from '../../../applications/stdcm/components/allowancesConsts';
+import { convertInputStringToNumber } from 'utils/strings';
+import { ALLOWANCE_UNITS_KEYS } from 'applications/stdcm/components/allowancesConsts';
 
-const STDCMAllowances = () => {
+const StdcmAllowances = () => {
   const { t } = useTranslation('allowances');
   const dispatch = useDispatch();
   const gridMarginBefore = useSelector(getGridMarginBefore);
@@ -54,9 +55,11 @@ const STDCMAllowances = () => {
         <InputSNCF
           id="standardAllowanceTypeGridMarginBefore"
           type="number"
-          value={gridMarginBefore}
+          value={gridMarginBefore || ''}
           unit={ALLOWANCE_UNITS_KEYS.time}
-          onChange={(e) => dispatch(updateGridMarginBefore(+e.target.value || 0))}
+          onChange={(e) =>
+            dispatch(updateGridMarginBefore(convertInputStringToNumber(e.target.value)))
+          }
           sm
           noMargin
           label={t('allowances:gridMarginBeforeAfter')}
@@ -67,9 +70,11 @@ const STDCMAllowances = () => {
         <InputSNCF
           id="standardAllowanceTypeGridMarginAfter"
           type="number"
-          value={gridMarginAfter}
+          value={gridMarginAfter || ''}
           unit={ALLOWANCE_UNITS_KEYS.time}
-          onChange={(e) => dispatch(updateGridMarginAfter(+e.target.value || 0))}
+          onChange={(e) =>
+            dispatch(updateGridMarginAfter(convertInputStringToNumber(e.target.value)))
+          }
           sm
           noMargin
           label=" "
@@ -82,8 +87,8 @@ const STDCMAllowances = () => {
           id="standardAllowanceTypeSelect"
           options={standardAllowanceTypes}
           handleType={onchangeType}
-          value={stdcmStandardAllowance?.value || 0}
-          type={stdcmStandardAllowance?.type || ''}
+          value={stdcmStandardAllowance?.value || ''}
+          type={stdcmStandardAllowance?.type || 'percentage'}
           orientation="right"
           typeValue="number"
           condensed
@@ -95,4 +100,4 @@ const STDCMAllowances = () => {
   );
 };
 
-export default STDCMAllowances;
+export default StdcmAllowances;

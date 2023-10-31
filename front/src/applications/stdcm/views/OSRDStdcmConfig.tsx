@@ -18,7 +18,7 @@ import {
 import { getSelectedTrain } from 'reducers/osrdsimulation/selectors';
 import { RollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import STDCMAllowances from 'modules/stdcmAllowances/components/STDCMAllowances';
+import StdcmAllowances from 'modules/stdcmAllowances/components/StdcmAllowances';
 import { OsrdStdcmConfState } from 'applications/operationalStudies/consts';
 import OSRDStdcmResults from './OSRDStdcmResults';
 import RunningTime from '../components/RunningTime';
@@ -97,7 +97,7 @@ export default function OSRDConfig({
               <SpeedLimitByTagSelector condensed />
               <Itinerary />
               <RunningTime />
-              <STDCMAllowances />
+              <StdcmAllowances />
               <div className="osrd-config-stdcm-apply">
                 {/* TODO: use RTK request status */}
                 <button
