@@ -35,7 +35,7 @@ import type { typedEntries } from 'utils/types';
 import type { SpaceCurvesSlopesData } from 'modules/simulationResult/components/SpaceCurvesSlopes';
 import type { AreaBlock, GevPreparedData } from '../SpeedSpaceChart/prepareData';
 
-export const displayGuide = (chart: Chart | undefined, opacity: number) => {
+export const displayGuide = (chart: Chart, opacity: number) => {
   if (chart?.svg) {
     chart.svg.selectAll('#vertical-line').style('opacity', opacity);
     chart.svg.selectAll('#horizontal-line').style('opacity', opacity);
@@ -46,7 +46,7 @@ export const displayGuide = (chart: Chart | undefined, opacity: number) => {
 };
 
 export const updatePointers = (
-  chart: Chart | undefined,
+  chart: Chart,
   keyValues: ChartAxes,
   positionValues: PositionsSpeedTimes<Date>,
   rotate: boolean
@@ -67,7 +67,7 @@ export const updatePointers = (
     )
     .forEach(([name, positionValue]) => {
       type Key = keyof typeof positionValue;
-      if (chart) {
+      if (chart?.svg) {
         chart?.svg
           .selectAll(`#pointer-${name}`)
           .attr('cx', chart.x(positionValue[xAxis as Key]))
@@ -126,7 +126,6 @@ const updateChart = <
       .line<T>()
       .x((d) => newX(d[xAxis as keyof T] as number | Date))
       .y((d) => newY(d[yAxis as keyof T] as number | Date))
-    // CLARA: a checker, pas sure de moi
   );
 
   chart.drawZone
@@ -136,7 +135,6 @@ const updateChart = <
     .attr('width', (d) => newX(d[xAxisEnd]!) - newX(d[xAxisStart]!))
     .attr('height', (d) => (newY(d[yAxisEnd]!) - newY(d[yAxisStart]!)) * -1);
 
-  // CLARA: in SpeedSpaceChart & SpaceCurveSlopes
   const newAreaData = rotate
     ? d3
         .area<AreaBlock>()
@@ -188,7 +186,6 @@ const updateChart = <
 
   chart.drawZone.selectAll('.curve-label').attr('transform', event.transform.toString());
 
-  // CLARA: removed conflictsPoints as it seems to never be created
   return { newX, newY };
 };
 
@@ -201,45 +198,21 @@ export const traceVerticalLine = (
   timePosition: Date
 ) => {
   if (chart !== undefined) {
+    const linePosition =
+      !isSpaceTimeChart(keyValues) && positionValues.speed
+        ? positionValues.speed.position
+        : timePosition;
     displayGuide(chart, 1);
     if (rotate) {
       chart.svg
         .selectAll('#horizontal-line')
-        .attr(
-          'y1',
-          chart.y(
-            !isSpaceTimeChart(keyValues) && positionValues.speed
-              ? positionValues.speed.position
-              : timePosition
-          )
-        )
-        .attr(
-          'y2',
-          chart.y(
-            !isSpaceTimeChart(keyValues) && positionValues.speed
-              ? positionValues.speed.position
-              : timePosition
-          )
-        );
+        .attr('y1', chart.y(linePosition))
+        .attr('y2', chart.y(linePosition));
     } else {
       chart.svg
         .selectAll('#vertical-line')
-        .attr(
-          'x1',
-          chart.x(
-            !isSpaceTimeChart(keyValues) && positionValues.speed
-              ? positionValues.speed.position
-              : timePosition
-          )
-        )
-        .attr(
-          'x2',
-          chart.x(
-            !isSpaceTimeChart(keyValues) && positionValues.speed
-              ? positionValues.speed.position
-              : timePosition
-          )
-        );
+        .attr('x1', chart.x(linePosition))
+        .attr('x2', chart.x(linePosition));
     }
 
     updatePointers(chart, keyValues, positionValues, rotate);
@@ -328,7 +301,6 @@ export const enableInteractivity = <
             ? chart.y.invert(pointer(event, event.currentTarget)[1])
             : chart.x.invert(pointer(event, event.currentTarget)[0])
         ) as number;
-        // TODO remove the cast once the type Date/number has been fixed in SimulationTrain
         timePositionLocal = interpolateOnPosition(
           selectedTrainData as { speed: PositionSpeedTime[] },
           positionLocal
@@ -358,7 +330,7 @@ export const enableInteractivity = <
       }
 
       debounceUpdateTimePositionValues(timePositionLocal, 15);
-      if (chart?.svg && dateIsInRange(timePositionLocal, chartDimensions)) {
+      if (chart.svg && dateIsInRange(timePositionLocal, chartDimensions)) {
         const verticalMark = pointer(event, event.currentTarget)[0];
         const horizontalMark = pointer(event, event.currentTarget)[1];
         chart.svg.selectAll('#vertical-line').attr('x1', verticalMark).attr('x2', verticalMark);

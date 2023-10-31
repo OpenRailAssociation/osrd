@@ -108,7 +108,6 @@ const SpaceCurvesSlopes = ({
   const [height, setHeight] = useState(initialHeight);
 
   const ref = useRef<HTMLDivElement>(null);
-  const keyValues = CHART_AXES.SPACE_GRADIENT;
   const rotate = false;
 
   const dispatchUpdateTimePositionValues = (newTimePositionValue: Date) => {
@@ -250,7 +249,7 @@ const SpaceCurvesSlopes = ({
     enableInteractivity(
       chartLocal,
       trainData,
-      keyValues,
+      CHART_AXES.SPACE_GRADIENT,
       rotate,
       setChart,
       simulationIsPlaying,
@@ -271,7 +270,7 @@ const SpaceCurvesSlopes = ({
 
   useEffect(() => {
     if (dateIsInRange(timePosition, timeScaleRange)) {
-      traceVerticalLine(chart, keyValues, positionValues, rotate, timePosition);
+      traceVerticalLine(chart, CHART_AXES.SPACE_GRADIENT, positionValues, rotate, timePosition);
     }
   }, [positionValues, timePosition]);
 
