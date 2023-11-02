@@ -179,7 +179,7 @@ mod tests {
 
     use crate::core::mocking::MockingClient;
     use crate::fixtures::tests::{
-        db_pool, electrical_profile_set, fast_rolling_stock, pathfinding,
+        db_pool, electrical_profile_set, named_fast_rolling_stock, pathfinding,
     };
     use crate::views::tests::create_test_service_with_core_client;
     use crate::{assert_editoast_error_type, assert_status_and_read};
@@ -217,6 +217,7 @@ mod tests {
         db_pool: Data<DbPool>,
         #[case] expected_error: Option<SingleSimulationError>,
     ) {
+        // GIVEN
         let (core_client, mock_response) = create_core_client();
         let app = create_test_service_with_core_client(core_client).await;
 
@@ -235,7 +236,13 @@ mod tests {
                 rolling_stock_id
             }
             _ => {
-                _rs = Some(fast_rolling_stock(db_pool.clone()).await);
+                _rs = Some(
+                    named_fast_rolling_stock(
+                        "fast_rolling_stock_infra_get_voltages",
+                        db_pool.clone(),
+                    )
+                    .await,
+                );
                 _rs.as_ref().unwrap().id()
             }
         };
@@ -271,7 +278,10 @@ mod tests {
             .set_json(&request_body)
             .to_request();
 
+        // WHEN
         let response = call_service(&app, request).await;
+
+        // THEN
         if let Some(expected_error) = expected_error {
             assert_editoast_error_type!(response, expected_error);
         } else {
@@ -283,11 +293,16 @@ mod tests {
 
     #[rstest]
     async fn test_single_simulation_bare_minimum_payload(db_pool: Data<DbPool>) {
+        // GIVEN
         let (core_client, mock_response) = create_core_client();
         let app = create_test_service_with_core_client(core_client).await;
 
         let pf = pathfinding(db_pool.clone()).await;
-        let rs = fast_rolling_stock(db_pool.clone()).await;
+        let rs = named_fast_rolling_stock(
+            "fast_rolling_stock_test_single_simulation_bare_minimum_payload",
+            db_pool.clone(),
+        )
+        .await;
 
         let request_body: Value = json!({
             "rolling_stock_id": rs.id(),
@@ -298,7 +313,10 @@ mod tests {
             .set_json(&request_body)
             .to_request();
 
+        // WHEN
         let response = call_service(&app, request).await;
+
+        // THEN
         let response_body: SingleSimulationResponse =
             assert_status_and_read!(response, StatusCode::OK);
         assert_eq!(response_body, mock_response.try_into().unwrap());
