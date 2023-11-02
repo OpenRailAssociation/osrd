@@ -290,7 +290,7 @@ async fn clone(
     for object in ObjectType::iter() {
         let model_table = object.get_table();
         let model = sql_query(format!(
-                "INSERT INTO {model_table}(obj_id,data,infra_id) SELECT obj_id,data,$1 FROM {model_table} WHERE infra_id=$2"
+                "INSERT INTO {model_table}(obj_id,data,infra_id) SELECT obj_id,data,$1 FROM {model_table} WHERE infra_id = $2"
             ))
             .bind::<BigInt, _>(cloned_infra.id.unwrap())
             .bind::<BigInt, _>(infra)
@@ -304,7 +304,7 @@ async fn clone(
                     "INSERT INTO {layer_table}(obj_id,geographic,schematic,infra_id) SELECT obj_id,geographic,schematic,$1 FROM {layer_table} WHERE infra_id=$2")
             } else {
                 format!(
-                    "INSERT INTO {layer_table}(obj_id,geographic,schematic,infra_id, angle_geo, angle_sch) SELECT obj_id,geographic,schematic,$1,angle_geo,angle_sch FROM {layer_table} WHERE infra_id=$2"
+                    "INSERT INTO {layer_table}(obj_id,geographic,schematic,infra_id, angle_geo, angle_sch) SELECT obj_id,geographic,schematic,$1,angle_geo,angle_sch FROM {layer_table} WHERE infra_id = $2"
                 )
             };
 
@@ -316,7 +316,15 @@ async fn clone(
         }
     }
 
+    // Add error layers
+    let error_layer = sql_query("INSERT INTO infra_layer_error(geographic, schematic, information, infra_id) SELECT geographic, schematic, information, $1 FROM infra_layer_error WHERE infra_id = $2")
+        .bind::<BigInt, _>(cloned_infra.id.unwrap())
+        .bind::<BigInt, _>(infra)
+        .execute(&mut conn);
+    futures.push(error_layer);
+
     let _res = try_join_all(futures).await?;
+
     Ok(Json(cloned_infra.id.unwrap()))
 }
 
