@@ -117,6 +117,7 @@ jobs:
       - name: Install tarpaulin
         run: cargo install cargo-tarpaulin
 
+      # TODO: when tests are isolated, allow multiple threads (4 may be a good tradeoff for speed/DB pool)
       - name: Test and coverage
         run: cargo tarpaulin -r ./editoast -p editoast -p editoast_derive --out xml -- --test-threads 1
 
