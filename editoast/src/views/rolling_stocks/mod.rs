@@ -899,9 +899,13 @@ pub mod tests {
     /// It should return the `TrainSchedule`, `project`/`study`/`scenario` ids/names
     #[rstest]
     async fn check_usage_one_train_schedule() {
+        // GIVEN
         let app = create_test_service().await;
-        let train_schedule_with_scenario = train_schedule_with_scenario().await;
+        let train_schedule_with_scenario =
+            train_schedule_with_scenario("test_single_simulation_bare_minimum_payload").await;
         let rolling_stock_id = train_schedule_with_scenario.rolling_stock.id();
+
+        // WHEN
         let response = call_service(
             &app,
             TestRequest::get()
@@ -910,6 +914,7 @@ pub mod tests {
         )
         .await;
 
+        // THEN
         let response_body: UsageResponse = assert_status_and_read!(response, StatusCode::OK);
         let expected_body = UsageResponse {
             usage: vec![TrainScheduleScenarioStudyProject {
@@ -947,11 +952,17 @@ pub mod tests {
 
     #[rstest]
     async fn delete_used_rolling_stock_should_fail() {
+        // GIVEN
         let app = create_test_service().await;
-        let train_schedule_with_scenario = train_schedule_with_scenario().await;
+        let train_schedule_with_scenario =
+            train_schedule_with_scenario("delete_used_rolling_stock_should_fail").await;
         let rolling_stock_id = train_schedule_with_scenario.rolling_stock.id();
+
+        // WHEN
         let response = call_service(&app, rolling_stock_delete_request(rolling_stock_id)).await;
 
+        // THEN
+        assert_eq!(response.status(), StatusCode::CONFLICT);
         let expected_usage = vec![TrainScheduleScenarioStudyProject {
             train_schedule_id: train_schedule_with_scenario.train_schedule.id(),
             train_name: train_schedule_with_scenario
@@ -981,8 +992,6 @@ pub mod tests {
                 .clone()
                 .unwrap(),
         }];
-
-        assert_eq!(response.status(), StatusCode::CONFLICT);
         assert_editoast_error_type!(
             response,
             RollingStockError::RollingStockIsUsed {
@@ -994,9 +1003,13 @@ pub mod tests {
 
     #[rstest]
     async fn forcefully_delete_used_rolling_stock() {
+        // GIVEN
         let app = create_test_service().await;
-        let train_schedule_with_scenario = train_schedule_with_scenario().await;
+        let train_schedule_with_scenario =
+            train_schedule_with_scenario("forcefully_delete_used_rolling_stock").await;
         let rolling_stock_id = train_schedule_with_scenario.rolling_stock.id();
+
+        // WHEN
         let response = call_service(
             &app,
             TestRequest::delete()
@@ -1005,6 +1018,7 @@ pub mod tests {
         )
         .await;
 
+        // THEN
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
     }
 

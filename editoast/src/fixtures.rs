@@ -164,8 +164,7 @@ pub mod tests {
         pub rolling_stock: TestFixture<RollingStockModel>,
     }
 
-    #[fixture]
-    pub async fn train_schedule_with_scenario() -> TrainScheduleFixtureSet {
+    pub async fn train_schedule_with_scenario(name: &str) -> TrainScheduleFixtureSet {
         let ScenarioFixtureSet {
             project,
             study,
@@ -175,7 +174,9 @@ pub mod tests {
         } = scenario_fixture_set().await;
 
         let pathfinding = pathfinding(db_pool()).await;
-        let rolling_stock = fast_rolling_stock(db_pool()).await;
+        let mut rs_name = "fast_rolling_stock_".to_string();
+        rs_name.push_str(name);
+        let rolling_stock = named_fast_rolling_stock(&rs_name, db_pool()).await;
         let ts_model = make_train_schedule(
             db_pool(),
             pathfinding.id(),
