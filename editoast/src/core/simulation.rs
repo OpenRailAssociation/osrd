@@ -1,4 +1,5 @@
 use super::{AsCoreRequest, Json};
+use crate::models::train_schedule::{PowerRestrictionRange, TrainScheduleOptions};
 use crate::models::{
     Allowance, Pathfinding, PathfindingPayload, ResultTrain, RoutePath, ScheduledPoint,
     SignalSighting, ZoneUpdate,
@@ -40,8 +41,8 @@ pub struct CoreTrainSchedule {
     pub stops: Vec<TrainStop>,
     pub tag: Option<String>,
     pub comfort: RollingStockComfortType,
-    pub power_restriction_ranges: Option<JsonValue>,
-    pub options: Option<JsonValue>,
+    pub power_restriction_ranges: Option<Vec<PowerRestrictionRange>>,
+    pub options: Option<TrainScheduleOptions>,
 }
 
 /// One must be specified between `position` and `location`.

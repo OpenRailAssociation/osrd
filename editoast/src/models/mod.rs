@@ -42,6 +42,7 @@ pub use train_schedule::{
 
 crate::schemas! {
     projects::schemas(),
+    train_schedule::schemas(),
 }
 
 pub trait Identifiable {

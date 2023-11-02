@@ -4,7 +4,9 @@ use crate::core::simulation::{
 use crate::core::{AsCoreRequest, CoreClient};
 use crate::error::{InternalError, Result};
 use crate::models::electrical_profiles::ElectricalProfileSet;
-use crate::models::train_schedule::{Allowance, ResultTrain, ScheduledPoint};
+use crate::models::train_schedule::{
+    Allowance, PowerRestrictionRange, ResultTrain, ScheduledPoint, TrainScheduleOptions,
+};
 use crate::models::{Pathfinding, Retrieve, RollingStockModel};
 use crate::schema::rolling_stock::RollingStockComfortType;
 use crate::DbPool;
@@ -52,9 +54,9 @@ struct ScheduleArgs {
     #[serde(default)]
     pub comfort: RollingStockComfortType,
     #[serde(default)]
-    pub power_restriction_ranges: Option<Value>,
+    pub power_restriction_ranges: Option<Vec<PowerRestrictionRange>>,
     #[serde(default)]
-    pub options: Option<Value>,
+    pub options: Option<TrainScheduleOptions>,
 }
 
 impl ScheduleArgs {

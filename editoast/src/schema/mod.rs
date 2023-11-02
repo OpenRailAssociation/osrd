@@ -46,6 +46,10 @@ pub use track_section::{Curve, Slope, TrackSection, TrackSectionCache};
 
 use self::utils::{Identifier, NonBlankString};
 
+crate::schemas! {
+    rolling_stock::schemas(),
+}
+
 /// This trait should be implemented by all struct that represents an OSRD type.
 pub trait OSRDTyped {
     fn get_type() -> ObjectType;

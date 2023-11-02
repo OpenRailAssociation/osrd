@@ -5,8 +5,13 @@ use serde::{Deserialize, Deserializer, Serialize};
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 use strum_macros::{Display, EnumString};
+use utoipa::ToSchema;
 
 use crate::models::rolling_stock::rolling_stock_livery::RollingStockLiveryMetadata;
+
+crate::schemas! {
+    RollingStockComfortType,
+}
 
 pub const ROLLING_STOCK_RAILJSON_VERSION: &str = "3.2";
 
@@ -85,7 +90,9 @@ pub struct RollingStockMetadata {
 }
 
 // Effort curves schema
-#[derive(Display, Clone, Default, Debug, EnumString, PartialEq, Deserialize, Serialize)]
+#[derive(
+    Display, Clone, Default, Debug, EnumString, PartialEq, Deserialize, Serialize, ToSchema,
+)]
 #[strum(serialize_all = "UPPERCASE")]
 #[serde(rename_all = "UPPERCASE")]
 pub enum RollingStockComfortType {
