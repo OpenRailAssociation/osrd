@@ -9,7 +9,9 @@ use crate::core::simulation::{
 use crate::core::{AsCoreRequest, CoreClient};
 use crate::error::{InternalError, Result};
 use crate::models::electrical_profiles::ElectricalProfileSet;
-use crate::models::train_schedule::{filter_invalid_trains, Allowance, ScheduledPoint};
+use crate::models::train_schedule::{
+    filter_invalid_trains, Allowance, PowerRestrictionRange, ScheduledPoint, TrainScheduleOptions,
+};
 use crate::models::{
     Create, Delete, Infra, LightRollingStockModel, Pathfinding, Retrieve, RollingStockModel,
     Scenario, SimulationOutputChangeset, TrainScheduleChangeset, Update,
@@ -19,8 +21,7 @@ use crate::schema::rolling_stock::RollingStockComfortType;
 use crate::views::train_schedule::simulation_report::fetch_simulation_output;
 use crate::DbPool;
 use crate::DieselJson;
-use actix_web::dev::HttpServiceFactory;
-use actix_web::web::{scope, Data, Json, Path, Query};
+use actix_web::web::{Data, Json, Path, Query};
 use actix_web::{delete, get, patch, post, HttpResponse};
 use diesel::{ExpressionMethods, QueryDsl};
 use diesel_async::scoped_futures::ScopedFutureExt;
@@ -28,10 +29,11 @@ use diesel_async::{AsyncConnection, RunQueryDsl};
 use editoast_derive::EditoastError;
 use itertools::izip;
 use serde_derive::Deserialize;
-use serde_json::{to_value, Value as JsonValue};
+use serde_json::to_value;
 use simulation_report::SimulationReport;
 use std::collections::{HashMap, HashSet};
 use thiserror::Error;
+use utoipa::{IntoParams, ToSchema};
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "train_schedule")]
@@ -65,18 +67,40 @@ pub enum TrainScheduleError {
     NoSimulation,
 }
 
-pub fn routes() -> impl HttpServiceFactory {
-    scope("/train_schedule")
-        .service((
-            get_results,
-            standalone_simulation,
-            delete_multiple,
-            patch_multiple,
-        ))
-        .service(scope("/{id}").service((delete, get_result, get)))
+crate::routes! {
+    "/train_schedule" => {
+        get_results,
+        standalone_simulation,
+        delete_multiple,
+        patch_multiple,
+        "/{id}" => {
+            delete,
+            get_result,
+            get,
+        }
+    },
+}
+
+crate::schemas! {
+    TrainScheduleBatchItem,
+    TrainSchedulePatch,
+}
+
+#[derive(IntoParams)]
+#[allow(unused)]
+struct TrainScheduleIdParam {
+    /// A train schedule ID
+    id: i64,
 }
 
 /// Return a specific timetable with its associated schedules
+#[utoipa::path(
+    tag = "train_schedule",
+    params(TrainScheduleIdParam),
+    responses(
+        (status = 200, description = "The train schedule", body = TrainSchedule)
+    )
+)]
 #[get("")]
 async fn get(db_pool: Data<DbPool>, train_schedule_id: Path<i64>) -> Result<Json<TrainSchedule>> {
     let train_schedule_id = train_schedule_id.into_inner();
@@ -89,7 +113,15 @@ async fn get(db_pool: Data<DbPool>, train_schedule_id: Path<i64>) -> Result<Json
     Ok(Json(train_schedule))
 }
 
-// Delete a specific train schedule
+/// Delete a train schedule and its result
+#[utoipa::path(
+    tag = "train_schedule",
+    // tag = "timetable", NOTE: utoipa does not support mutiple tags
+    params(TrainScheduleIdParam),
+    responses(
+        (status = 204, description = "The train schedule has been deleted")
+    )
+)]
 #[delete("")]
 async fn delete(db_pool: Data<DbPool>, train_schedule_id: Path<i64>) -> Result<HttpResponse> {
     let train_schedule_id = train_schedule_id.into_inner();
@@ -99,13 +131,23 @@ async fn delete(db_pool: Data<DbPool>, train_schedule_id: Path<i64>) -> Result<H
 
     Ok(HttpResponse::NoContent().finish())
 }
-#[derive(Debug, Deserialize)]
-pub struct BatchDeletionRequest {
+
+#[derive(Debug, Deserialize, ToSchema)]
+struct BatchDeletionRequest {
     ids: Vec<i64>,
 }
-//Delete multiple train schedule
+
+/// Delete multiple train schedules at once
+#[utoipa::path(
+    tag = "train_schedule",
+    // tag = "timetable", NOTE: utoipa does not support mutiple tags
+    request_body = inline(BatchDeletionRequest),
+    responses(
+        (status = 204, description = "The train schedules have been deleted")
+    ),
+)]
 #[delete("")]
-pub async fn delete_multiple(
+async fn delete_multiple(
     db_pool: Data<DbPool>,
     request: Json<BatchDeletionRequest>,
 ) -> Result<HttpResponse> {
@@ -119,21 +161,22 @@ pub async fn delete_multiple(
     Ok(HttpResponse::NoContent().finish())
 }
 
-#[derive(Debug, Default, Clone, Deserialize)]
+/// A patch of a train schedule
+#[derive(Debug, Default, Clone, Deserialize, ToSchema)]
 struct TrainSchedulePatch {
     id: i64,
-    pub train_name: Option<String>,
-    pub labels: Option<Vec<String>>,
-    pub departure_time: Option<f64>,
-    pub initial_speed: Option<f64>,
-    pub allowances: Option<Vec<Allowance>>,
-    pub scheduled_points: Option<Vec<ScheduledPoint>>,
-    pub comfort: Option<RollingStockComfortType>,
-    pub speed_limit_tags: Option<String>,
-    pub power_restriction_ranges: Option<JsonValue>,
-    pub options: Option<JsonValue>,
-    pub path_id: Option<i64>,
-    pub rolling_stock_id: Option<i64>,
+    train_name: Option<String>,
+    labels: Option<Vec<String>>,
+    departure_time: Option<f64>,
+    initial_speed: Option<f64>,
+    allowances: Option<Vec<Allowance>>,
+    scheduled_points: Option<Vec<ScheduledPoint>>,
+    comfort: Option<RollingStockComfortType>,
+    speed_limit_tags: Option<String>,
+    power_restriction_ranges: Option<Vec<PowerRestrictionRange>>,
+    options: Option<TrainScheduleOptions>,
+    path_id: Option<i64>,
+    rolling_stock_id: Option<i64>,
 }
 
 impl From<TrainSchedulePatch> for TrainScheduleChangeset {
@@ -148,8 +191,8 @@ impl From<TrainSchedulePatch> for TrainScheduleChangeset {
             scheduled_points: value.scheduled_points.map(DieselJson),
             comfort: value.comfort.map(|c| c.to_string()),
             speed_limit_tags: Some(value.speed_limit_tags),
-            power_restriction_ranges: Some(value.power_restriction_ranges),
-            options: Some(value.options),
+            power_restriction_ranges: Some(value.power_restriction_ranges.map(DieselJson)),
+            options: Some(value.options.map(DieselJson)),
             path_id: value.path_id,
             rolling_stock_id: value.rolling_stock_id,
             ..Default::default()
@@ -157,7 +200,18 @@ impl From<TrainSchedulePatch> for TrainScheduleChangeset {
     }
 }
 
-/// Patch a timetable
+#[derive(ToSchema)]
+struct PatchMultiplePayload(#[schema(min_items = 1)] Vec<TrainSchedulePatch>);
+
+/// Update multiple train schedules at once and re-run simulations accordingly
+#[utoipa::path(
+    tag = "train_schedule",
+    // tag = "timetable", NOTE: utoipa does not support mutiple tags
+    request_body = inline(PatchMultiplePayload),
+    responses(
+        (status = 204, description = "The train schedules have been updated")
+    )
+)]
 #[patch("")]
 async fn patch_multiple(
     db_pool: Data<DbPool>,
@@ -250,11 +304,19 @@ async fn patch_multiple(
     Ok(HttpResponse::NoContent().finish())
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, IntoParams)]
 struct GetResultQuery {
     path_id: Option<i64>,
 }
 
+/// Retrieve a simulation result
+#[utoipa::path(
+    tag = "train_schedule",
+    params(GetResultQuery, TrainScheduleIdParam),
+    responses(
+        (status = 200, description = "The train schedule result", body = SimulationReport)
+    )
+)]
 #[get("/result")]
 async fn get_result(
     db_pool: Data<DbPool>,
@@ -311,12 +373,22 @@ async fn get_result(
     Ok(Json(res))
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, IntoParams)]
 struct GetResultsQuery {
+    /// The ID of the path that was used to project the train path
     path_id: Option<i64>,
+    /// The timetable ID
     timetable_id: i64,
 }
 
+/// Retrieve the simulation result of multiple train schedules
+#[utoipa::path(
+    tag = "train_schedule",
+    params(GetResultsQuery),
+    responses(
+        (status = 200, description = "The train schedule results", body = Vec<SimulationReport>)
+    )
+)]
 #[get("/results")]
 async fn get_results(
     db_pool: Data<DbPool>,
@@ -375,36 +447,38 @@ async fn get_results(
     Ok(Json(res))
 }
 
-#[derive(Debug, Deserialize)]
+/// The list of train schedules to simulate
+#[derive(Debug, Deserialize, ToSchema)]
 struct TrainScheduleBatch {
     timetable: i64,
     path: i64,
+    #[schema(min_items = 1)]
     schedules: Vec<TrainScheduleBatchItem>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ToSchema)]
 struct TrainScheduleBatchItem {
-    pub train_name: String,
+    train_name: String,
     #[serde(default)]
-    pub labels: Vec<String>,
-    pub departure_time: f64,
-    pub initial_speed: f64,
+    labels: Vec<String>,
+    departure_time: f64,
+    initial_speed: f64,
     #[serde(default)]
-    pub allowances: Vec<Allowance>,
+    allowances: Vec<Allowance>,
     #[serde(default)]
-    pub scheduled_points: Vec<ScheduledPoint>,
+    scheduled_points: Vec<ScheduledPoint>,
     #[serde(default)]
-    pub comfort: RollingStockComfortType,
-    pub speed_limit_tags: Option<String>,
-    pub power_restriction_ranges: Option<JsonValue>,
-    pub options: Option<JsonValue>,
-    pub rolling_stock_id: i64,
-    /// Filled  later by the endpoint
+    comfort: RollingStockComfortType,
+    speed_limit_tags: Option<String>,
+    power_restriction_ranges: Option<Vec<PowerRestrictionRange>>,
+    options: Option<TrainScheduleOptions>,
+    rolling_stock_id: i64,
+    // Filled later by the endpoint
     #[serde(skip)]
-    pub infra_version: String,
-    /// Filled  later by the endpoint
+    infra_version: String,
+    // Filled later by the endpoint
     #[serde(skip)]
-    pub rollingstock_version: i64,
+    rollingstock_version: i64,
 }
 
 impl From<TrainScheduleBatch> for Vec<TrainSchedule> {
@@ -423,8 +497,8 @@ impl From<TrainScheduleBatch> for Vec<TrainSchedule> {
                 scheduled_points: DieselJson(item.scheduled_points),
                 comfort: item.comfort.to_string(),
                 speed_limit_tags: item.speed_limit_tags,
-                power_restriction_ranges: item.power_restriction_ranges,
-                options: item.options,
+                power_restriction_ranges: item.power_restriction_ranges.map(DieselJson),
+                options: item.options.map(DieselJson),
                 rolling_stock_id: item.rolling_stock_id,
                 infra_version: Some(item.infra_version),
                 rollingstock_version: Some(item.rollingstock_version),
@@ -434,6 +508,14 @@ impl From<TrainScheduleBatch> for Vec<TrainSchedule> {
     }
 }
 
+/// Create a batch of train schedule and run simulations accordingly
+#[utoipa::path(
+    tag = "train_schedule",
+    request_body = inline(TrainScheduleBatch),
+    responses(
+        (status = 200, description = "The ids of the train_schedules created", body = Vec<i64>)
+    )
+)]
 #[post("/standalone_simulation")]
 async fn standalone_simulation(
     db_pool: Data<DbPool>,
@@ -572,8 +654,11 @@ async fn create_backend_request_payload(
             stops: stops.clone(),
             tag: ts.speed_limit_tags.clone(),
             comfort: ts.comfort.parse().unwrap(),
-            power_restriction_ranges: ts.power_restriction_ranges.to_owned(),
-            options: ts.options.to_owned(),
+            power_restriction_ranges: ts
+                .power_restriction_ranges
+                .as_ref()
+                .map(|prr| prr.0.to_owned()),
+            options: ts.options.as_ref().map(|o| o.0.to_owned()),
         })
         .collect::<Vec<_>>();
 

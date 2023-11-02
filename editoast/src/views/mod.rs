@@ -25,6 +25,7 @@ use crate::core::{AsCoreRequest, CoreClient};
 use crate::error::{self, Result};
 use crate::map::redis_utils::RedisClient;
 use crate::models;
+use crate::schema;
 use crate::{schemas, DbPool};
 use actix_web::dev::HttpServiceFactory;
 use actix_web::web::{Data, Json};
@@ -48,6 +49,7 @@ fn routes_v2() -> Routes<impl HttpServiceFactory> {
         pathfinding::routes(),
         projects::routes(),
         search::routes(),
+        train_schedule::routes(),
     }
     routes()
 }
@@ -70,6 +72,7 @@ pub fn routes() -> impl HttpServiceFactory {
 schemas! {
     error::schemas(),
     models::schemas(),
+    schema::schemas(),
     Version,
     timetable::schemas(),
     documents::schemas(),
@@ -77,6 +80,7 @@ schemas! {
     projects::schemas(),
     search::schemas(),
     crate::schema::utils::geometry::schemas(),
+    train_schedule::schemas(),
 }
 
 #[derive(OpenApi)]

@@ -628,11 +628,11 @@ const injectedRtkApi = api
         DeleteTrainScheduleApiArg
       >({
         query: (queryArg) => ({ url: `/train_schedule/`, method: 'DELETE', body: queryArg.body }),
-        invalidatesTags: ['timetable', 'train_schedule'],
+        invalidatesTags: ['train_schedule'],
       }),
       patchTrainSchedule: build.mutation<PatchTrainScheduleApiResponse, PatchTrainScheduleApiArg>({
         query: (queryArg) => ({ url: `/train_schedule/`, method: 'PATCH', body: queryArg.body }),
-        invalidatesTags: ['timetable', 'train_schedule'],
+        invalidatesTags: ['train_schedule'],
       }),
       getTrainScheduleResults: build.query<
         GetTrainScheduleResultsApiResponse,
@@ -660,7 +660,7 @@ const injectedRtkApi = api
         DeleteTrainScheduleByIdApiArg
       >({
         query: (queryArg) => ({ url: `/train_schedule/${queryArg.id}/`, method: 'DELETE' }),
-        invalidatesTags: ['train_schedule', 'timetable'],
+        invalidatesTags: ['train_schedule'],
       }),
       getTrainScheduleById: build.query<
         GetTrainScheduleByIdApiResponse,
@@ -1257,21 +1257,19 @@ export type DeleteTrainScheduleApiArg = {
 };
 export type PatchTrainScheduleApiResponse = unknown;
 export type PatchTrainScheduleApiArg = {
-  /** A list of changes. Each changeset contains the corresponding train id */
   body: TrainSchedulePatch[];
 };
 export type GetTrainScheduleResultsApiResponse =
-  /** status 200 The train schedules results */ SimulationReport[];
+  /** status 200 The train schedule results */ SimulationReport[];
 export type GetTrainScheduleResultsApiArg = {
-  /** Path id used to project the train path */
-  pathId: number;
-  /** Timetable id */
+  /** The ID of the path that was used to project the train path */
+  pathId?: number | null;
+  /** The timetable ID */
   timetableId: number;
 };
 export type PostTrainScheduleStandaloneSimulationApiResponse =
-  /** status 201 The ids of the train_schedules created */ number[];
+  /** status 200 The ids of the train_schedules created */ number[];
 export type PostTrainScheduleStandaloneSimulationApiArg = {
-  /** The list of train schedules to simulate */
   body: {
     path: number;
     schedules: TrainScheduleBatchItem[];
@@ -1280,22 +1278,20 @@ export type PostTrainScheduleStandaloneSimulationApiArg = {
 };
 export type DeleteTrainScheduleByIdApiResponse = unknown;
 export type DeleteTrainScheduleByIdApiArg = {
-  /** Train schedule ID */
+  /** A train schedule ID */
   id: number;
 };
-export type GetTrainScheduleByIdApiResponse =
-  /** status 200 The train schedule info */ TrainSchedule;
+export type GetTrainScheduleByIdApiResponse = /** status 200 The train schedule */ TrainSchedule;
 export type GetTrainScheduleByIdApiArg = {
-  /** Train schedule ID */
+  /** A train schedule ID */
   id: number;
 };
 export type GetTrainScheduleByIdResultApiResponse =
   /** status 200 The train schedule result */ SimulationReport;
 export type GetTrainScheduleByIdResultApiArg = {
-  /** Train schedule ID */
+  pathId?: number | null;
+  /** A train schedule ID */
   id: number;
-  /** Path id used to project the train path */
-  pathId: number;
 };
 export type GetVersionApiResponse = /** status 200 Return the service version */ Version;
 export type GetVersionApiArg = void;
@@ -2011,52 +2007,42 @@ export type SingleSimulationResponse = {
   }[];
   warnings: string[];
 };
-export type AllowanceTimePerDistanceValue = {
-  minutes: number;
-  value_type: 'time_per_distance';
-};
-export type AllowanceTimeValue = {
-  seconds: number;
-  value_type: 'time';
-};
-export type AllowancePercentValue = {
-  percentage: number;
-  value_type: 'percentage';
-};
 export type AllowanceValue =
-  | ({
+  | {
+      minutes: number;
       value_type: 'time_per_distance';
-    } & AllowanceTimePerDistanceValue)
-  | ({
+    }
+  | {
+      seconds: number;
       value_type: 'time';
-    } & AllowanceTimeValue)
-  | ({
+    }
+  | {
+      percentage: number;
       value_type: 'percentage';
-    } & AllowancePercentValue);
+    };
 export type RangeAllowance = {
   begin_position: number;
   end_position: number;
   value: AllowanceValue;
 };
-export type EngineeringAllowance = {
-  allowance_type: 'engineering';
+export type AllowanceDistribution = 'MARECO' | 'LINEAR';
+export type EngineeringAllowance = RangeAllowance & {
   capacity_speed_limit?: number;
-  distribution: 'MARECO' | 'LINEAR';
-} & RangeAllowance;
+  distribution: AllowanceDistribution;
+};
 export type StandardAllowance = {
-  allowance_type: 'standard';
   capacity_speed_limit?: number;
   default_value: AllowanceValue;
-  distribution: 'MARECO' | 'LINEAR';
+  distribution: AllowanceDistribution;
   ranges: RangeAllowance[];
 };
 export type Allowance =
-  | ({
+  | (EngineeringAllowance & {
       allowance_type: 'engineering';
-    } & EngineeringAllowance)
-  | ({
+    })
+  | (StandardAllowance & {
       allowance_type: 'standard';
-    } & StandardAllowance);
+    });
 export type TrainScheduleOptions = {
   ignore_electrical_profiles?: boolean | null;
 };
@@ -2112,9 +2098,14 @@ export type Waypoint = {
   geo_coordinate?: number[];
   track_section?: string;
 }[];
+export type RollingStockComfortType = 'STANDARD' | 'AC' | 'HEATING';
+export type ScheduledPoint = {
+  path_offset: number;
+  time: number;
+};
 export type TrainSchedule = {
   allowances: Allowance[];
-  comfort: Comfort;
+  comfort: RollingStockComfortType;
   departure_time: number;
   id: number;
   initial_speed: number;
@@ -2123,10 +2114,7 @@ export type TrainSchedule = {
   path_id: number;
   power_restriction_ranges: PowerRestrictionRange[] | null;
   rolling_stock_id: number;
-  scheduled_points: {
-    path_offset: number;
-    time: number;
-  }[];
+  scheduled_points: ScheduledPoint[];
   speed_limit_tags: string | null;
   timetable_id: number;
   train_name: string;
@@ -2185,36 +2173,30 @@ export type Conflict = {
   train_names: string[];
 };
 export type TrainSchedulePatch = {
-  allowances?: Allowance[];
-  comfort?: Comfort;
-  departure_time?: number;
+  allowances?: Allowance[] | null;
+  comfort?: RollingStockComfortType | null;
+  departure_time?: number | null;
   id: number;
-  initial_speed?: number;
-  labels?: string[];
+  initial_speed?: number | null;
+  labels?: string[] | null;
   options?: TrainScheduleOptions | null;
-  path_id?: number;
+  path_id?: number | null;
   power_restriction_ranges?: PowerRestrictionRange[] | null;
-  rolling_stock_id?: number;
-  scheduled_points?: {
-    path_offset: number;
-    time: number;
-  }[];
-  speed_limit_tags?: string;
-  train_name?: string;
+  rolling_stock_id?: number | null;
+  scheduled_points?: ScheduledPoint[] | null;
+  speed_limit_tags?: string | null;
+  train_name?: string | null;
 };
 export type TrainScheduleBatchItem = {
   allowances?: Allowance[];
-  comfort?: Comfort;
+  comfort?: RollingStockComfortType;
   departure_time: number;
   initial_speed: number;
   labels?: string[];
   options?: TrainScheduleOptions | null;
   power_restriction_ranges?: PowerRestrictionRange[] | null;
   rolling_stock_id: number;
-  scheduled_points?: {
-    path_offset: number;
-    time: number;
-  }[];
+  scheduled_points?: ScheduledPoint[];
   speed_limit_tags?: string | null;
   train_name: string;
 };

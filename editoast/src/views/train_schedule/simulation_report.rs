@@ -111,7 +111,7 @@ pub async fn create_simulation_report(
 
     Ok(SimulationReport {
         id: train_schedule.id,
-        labels: train_schedule.labels.0,
+        labels: train_schedule.labels.0.to_vec(),
         path: train_schedule.path_id,
         name: train_schedule.train_name,
         vmax: simulation_output_cs.mrsp.unwrap(),

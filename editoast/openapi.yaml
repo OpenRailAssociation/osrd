@@ -1,55 +1,70 @@
 components:
   schemas:
     Allowance:
-      discriminator:
-        propertyName: allowance_type
       oneOf:
-      - $ref: '#/components/schemas/EngineeringAllowance'
-      - $ref: '#/components/schemas/StandardAllowance'
-    AllowancePercentValue:
-      properties:
-        percentage:
-          example: 15.0
-          type: number
-        value_type:
-          enum:
-          - percentage
-          type: string
-      required:
-      - value_type
-      - percentage
-    AllowanceTimePerDistanceValue:
-      properties:
-        minutes:
-          description: Minutes per 100k
-          example: 5.0
-          type: number
-        value_type:
-          enum:
-          - time_per_distance
-          type: string
-      required:
-      - value_type
-      - minutes
-    AllowanceTimeValue:
-      properties:
-        seconds:
-          example: 180.0
-          type: number
-        value_type:
-          enum:
-          - time
-          type: string
-      required:
-      - value_type
-      - seconds
+      - allOf:
+        - $ref: '#/components/schemas/EngineeringAllowance'
+        - properties:
+            allowance_type:
+              enum:
+              - engineering
+              type: string
+          required:
+          - allowance_type
+          type: object
+      - allOf:
+        - $ref: '#/components/schemas/StandardAllowance'
+        - properties:
+            allowance_type:
+              enum:
+              - standard
+              type: string
+          required:
+          - allowance_type
+          type: object
+    AllowanceDistribution:
+      enum:
+      - MARECO
+      - LINEAR
+      type: string
     AllowanceValue:
-      discriminator:
-        propertyName: value_type
       oneOf:
-      - $ref: '#/components/schemas/AllowanceTimePerDistanceValue'
-      - $ref: '#/components/schemas/AllowanceTimeValue'
-      - $ref: '#/components/schemas/AllowancePercentValue'
+      - properties:
+          minutes:
+            format: double
+            type: number
+          value_type:
+            enum:
+            - time_per_distance
+            type: string
+        required:
+        - minutes
+        - value_type
+        type: object
+      - properties:
+          seconds:
+            format: double
+            type: number
+          value_type:
+            enum:
+            - time
+            type: string
+        required:
+        - seconds
+        - value_type
+        type: object
+      - properties:
+          percentage:
+            format: double
+            type: number
+          value_type:
+            enum:
+            - percentage
+            type: string
+        required:
+        - percentage
+        - value_type
+        type: object
     Battery:
       description: energy source for a rolling stock representing a battery
       properties:
@@ -356,25 +371,17 @@ components:
       type: object
     EngineeringAllowance:
       allOf:
+      - $ref: '#/components/schemas/RangeAllowance'
       - properties:
-          allowance_type:
-            enum:
-            - engineering
-            type: string
           capacity_speed_limit:
-            default: -1
+            default: -1.0
             format: double
             type: number
           distribution:
-            enum:
-            - MARECO
-            - LINEAR
-            type: string
+            $ref: '#/components/schemas/AllowanceDistribution'
         required:
-        - allowance_type
         - distribution
         type: object
-      - $ref: '#/components/schemas/RangeAllowance'
     GeoJson:
       description: A GeoJSON geometry item
       oneOf:
@@ -1435,9 +1442,10 @@ components:
     RangeAllowance:
       properties:
         begin_position:
+          format: double
           type: number
         end_position:
-          example: 1000.0
+          format: double
           type: number
         value:
           $ref: '#/components/schemas/AllowanceValue'
@@ -1445,6 +1453,7 @@ components:
       - begin_position
       - end_position
       - value
+      type: object
     RangedValue:
       description: A struct to represent range maps in responses
       properties:
@@ -1647,6 +1656,12 @@ components:
       - energy_sources
       - electrical_power_startup_time
       - raise_pantograph_time
+    RollingStockComfortType:
+      enum:
+      - STANDARD
+      - AC
+      - HEATING
+      type: string
     RollingStockLivery:
       properties:
         compound_image_id:
@@ -1877,6 +1892,18 @@ components:
         - train_schedules
         - trains_count
         type: object
+    ScheduledPoint:
+      properties:
+        path_offset:
+          format: double
+          type: number
+        time:
+          format: double
+          type: number
+      required:
+      - path_offset
+      - time
+      type: object
     SearchPayload:
       description: The payload of a search request
       example:
@@ -2536,30 +2563,22 @@ components:
       type: object
     StandardAllowance:
       properties:
-        allowance_type:
-          enum:
-          - standard
-          type: string
         capacity_speed_limit:
-          default: -1
           format: double
           type: number
         default_value:
           $ref: '#/components/schemas/AllowanceValue'
         distribution:
-          enum:
-          - MARECO
-          - LINEAR
-          type: string
+          $ref: '#/components/schemas/AllowanceDistribution'
         ranges:
           items:
             $ref: '#/components/schemas/RangeAllowance'
           type: array
       required:
-      - allowance_type
       - default_value
       - ranges
       - distribution
+      type: object
     Study:
       properties:
         actual_end_date:
@@ -2877,14 +2896,15 @@ components:
             $ref: '#/components/schemas/Allowance'
           type: array
         comfort:
-          $ref: '#/components/schemas/Comfort'
+          $ref: '#/components/schemas/RollingStockComfortType'
         departure_time:
-          format: float
+          format: double
           type: number
         id:
-          type: number
+          format: int64
+          type: integer
         initial_speed:
-          format: float
+          format: double
           type: number
         labels:
           items:
@@ -2895,72 +2915,59 @@ components:
           - $ref: '#/components/schemas/TrainScheduleOptions'
           nullable: true
         path_id:
+          format: int64
           type: integer
         power_restriction_ranges:
-          description: A list of ranges along the train path where power restrictions apply.
           items:
             $ref: '#/components/schemas/PowerRestrictionRange'
           nullable: true
           type: array
         rolling_stock_id:
+          format: int64
           type: integer
         scheduled_points:
           items:
-            properties:
-              path_offset:
-                description: Offset in meters from the start of the path at which the train must be.
-                format: float
-                type: number
-              time:
-                description: Time in seconds (elapsed since the train's departure) at which the train must be.
-                format: float
-                type: number
-            required:
-            - path_offset
-            - time
-            type: object
+            $ref: '#/components/schemas/ScheduledPoint'
           type: array
         speed_limit_tags:
-          description: Train category for speed limits
           nullable: true
           type: string
         timetable_id:
+          format: int64
           type: integer
         train_name:
           type: string
       required:
       - id
       - train_name
-      - timetable_id
-      - rolling_stock_id
-      - departure_time
-      - path_id
-      - initial_speed
       - labels
-      - scheduled_points
+      - departure_time
+      - initial_speed
       - allowances
-      - speed_limit_tags
       - comfort
-      - options
+      - speed_limit_tags
       - power_restriction_ranges
+      - options
+      - path_id
+      - rolling_stock_id
+      - timetable_id
+      - scheduled_points
       type: object
     TrainScheduleBatchItem:
       properties:
         allowances:
-          default: []
           items:
             $ref: '#/components/schemas/Allowance'
           type: array
         comfort:
-          $ref: '#/components/schemas/Comfort'
+          $ref: '#/components/schemas/RollingStockComfortType'
         departure_time:
-          format: float
+          format: double
           type: number
         initial_speed:
-          format: float
+          format: double
           type: number
         labels:
-          default: []
           items:
             type: string
           type: array
@@ -2969,32 +2976,18 @@ components:
           - $ref: '#/components/schemas/TrainScheduleOptions'
           nullable: true
         power_restriction_ranges:
-          description: A list of ranges along the train path where power restrictions apply.
           items:
             $ref: '#/components/schemas/PowerRestrictionRange'
           nullable: true
           type: array
         rolling_stock_id:
+          format: int64
           type: integer
         scheduled_points:
-          default: []
           items:
-            properties:
-              path_offset:
-                description: Offset in meters from the start of the path at which the train must be.
-                format: float
-                type: number
-              time:
-                description: Time in seconds (elapsed since the train's departure) at which the train must be.
-                format: float
-                type: number
-            required:
-            - path_offset
-            - time
-            type: object
+            $ref: '#/components/schemas/ScheduledPoint'
           type: array
         speed_limit_tags:
-          description: Train category for speed limits
           nullable: true
           type: string
         train_name:
@@ -3009,63 +3002,65 @@ components:
       description: Options for the standalone simulation
       properties:
         ignore_electrical_profiles:
+          description: Whether to ignore the electrical profile of the train for simulation
           nullable: true
           type: boolean
       type: object
     TrainSchedulePatch:
+      description: A patch of a train schedule
       properties:
         allowances:
           items:
             $ref: '#/components/schemas/Allowance'
+          nullable: true
           type: array
         comfort:
-          $ref: '#/components/schemas/Comfort'
+          allOf:
+          - $ref: '#/components/schemas/RollingStockComfortType'
+          nullable: true
         departure_time:
-          format: float
+          format: double
+          nullable: true
           type: number
         id:
+          format: int64
           type: integer
         initial_speed:
-          format: float
+          format: double
+          nullable: true
           type: number
         labels:
           items:
             type: string
+          nullable: true
           type: array
         options:
           allOf:
           - $ref: '#/components/schemas/TrainScheduleOptions'
           nullable: true
         path_id:
+          format: int64
+          nullable: true
           type: integer
         power_restriction_ranges:
-          description: A list of ranges along the train path where power restrictions apply.
           items:
             $ref: '#/components/schemas/PowerRestrictionRange'
           nullable: true
           type: array
         rolling_stock_id:
+          format: int64
+          nullable: true
           type: integer
         scheduled_points:
           items:
-            properties:
-              path_offset:
-                description: Offset in meters from the start of the path at which the train must be.
-                format: float
-                type: number
-              time:
-                description: Time in seconds (elapsed since the train's departure) at which the train must be.
-                format: float
-                type: number
-            required:
-            - path_offset
-            - time
-            type: object
+            $ref: '#/components/schemas/ScheduledPoint'
+          nullable: true
           type: array
         speed_limit_tags:
-          description: Train category for speed limits
+          nullable: true
           type: string
         train_name:
+          nullable: true
           type: string
       required:
       - id
@@ -5382,6 +5377,7 @@ paths:
       - timetable
   /train_schedule/:
     delete:
+      description: Delete multiple train schedules at once
       requestBody:
         content:
           application/json:
@@ -5389,6 +5385,7 @@ paths:
               properties:
                 ids:
                   items:
+                    format: int64
                     type: integer
                   type: array
               required:
@@ -5397,43 +5394,44 @@ paths:
         required: true
       responses:
         '204':
-          description: No content
-      summary: Delete multiple train schedule
+          description: The train schedules have been deleted
+      summary: Delete multiple train schedules at once
       tags:
-      - timetable
       - train_schedule
     patch:
+      description: Update multiple train schedules at once and re-run simulations accordingly
       requestBody:
         content:
           application/json:
             schema:
               items:
                 $ref: '#/components/schemas/TrainSchedulePatch'
-              minimum: 1
               type: array
-        description: A list of changes. Each changeset contains the corresponding train id
         required: true
       responses:
-        '200':
-          description: The train schedule was updated successfully
-      summary: Update train schedules and run a simulation accordingly
+        '204':
+          description: The train schedules have been updated
+      summary: Update multiple train schedules at once and re-run simulations accordingly
       tags:
-      - timetable
       - train_schedule
   /train_schedule/results/:
     get:
+      description: Retrieve the simulation result of multiple train schedules
       parameters:
-      - description: Path id used to project the train path
+      - description: The ID of the path that was used to project the train path
         in: query
         name: path_id
-        required: true
+        required: false
         schema:
+          format: int64
+          nullable: true
           type: integer
-      - description: Timetable id
+      - description: The timetable ID
         in: query
         name: timetable_id
         required: true
         schema:
+          format: int64
           type: integer
       responses:
         '200':
@@ -5443,18 +5441,21 @@ paths:
                 items:
                   $ref: '#/components/schemas/SimulationReport'
                 type: array
-          description: The train schedules results
-      summary: Retrieve the simulation result of multiple train schedules of the timetable
+          description: The train schedule results
+      summary: Retrieve the simulation result of multiple train schedules
       tags:
       - train_schedule
   /train_schedule/standalone_simulation/:
     post:
+      description: Create a batch of train schedule and run simulations accordingly
       requestBody:
         content:
           application/json:
             schema:
+              description: The list of train schedules to simulate
               properties:
                 path:
+                  format: int64
                   type: integer
                 schedules:
                   items:
@@ -5462,23 +5463,22 @@ paths:
                   minItems: 1
                   type: array
                 timetable:
+                  format: int64
                   type: integer
               required:
               - timetable
               - path
               - schedules
               type: object
-        description: The list of train schedules to simulate
         required: true
       responses:
-        '201':
+        '200':
           content:
             application/json:
               schema:
                 items:
-                  format: integer
-                  type: number
-                minItems: 1
+                  format: int64
+                  type: integer
                 type: array
           description: The ids of the train_schedules created
       summary: Create a batch of train schedule and run simulations accordingly
@@ -5486,27 +5486,30 @@ paths:
       - train_schedule
   /train_schedule/{id}/:
     delete:
+      description: Delete a train schedule and its result
       parameters:
-      - description: Train schedule ID
+      - description: A train schedule ID
         in: path
         name: id
         required: true
         schema:
+          format: int64
           type: integer
       responses:
         '204':
-          description: No content
+          description: The train schedule has been deleted
       summary: Delete a train schedule and its result
       tags:
       - train_schedule
-      - timetable
     get:
+      description: Return a specific timetable with its associated schedules
       parameters:
-      - description: Train schedule ID
+      - description: A train schedule ID
         in: path
         name: id
         required: true
         schema:
+          format: int64
           type: integer
       responses:
         '200':
@@ -5514,24 +5517,27 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TrainSchedule'
-          description: The train schedule info
-      summary: Retrieve a train schedule
+          description: The train schedule
+      summary: Return a specific timetable with its associated schedules
       tags:
       - train_schedule
   /train_schedule/{id}/result/:
     get:
+      description: Retrieve a simulation result
       parameters:
-      - description: Train schedule ID
+      - in: query
+        name: path_id
+        required: false
+        schema:
+          format: int64
+          nullable: true
+          type: integer
+      - description: A train schedule ID
         in: path
         name: id
         required: true
         schema:
-          type: integer
-      - description: Path id used to project the train path
-        in: query
-        name: path_id
-        required: true
-        schema:
+          format: int64
           type: integer
       responses:
         '200':

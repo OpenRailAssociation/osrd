@@ -22,6 +22,19 @@ use super::{
     check_train_validity, get_timetable_train_schedules, LightRollingStockModel, Retrieve,
 };
 
+crate::schemas! {
+    TrainSchedule,
+    PowerRestrictionRange,
+    TrainScheduleOptions,
+    AllowanceValue,
+    AllowanceDistribution,
+    RangeAllowance,
+    EngineeringAllowance,
+    StandardAllowance,
+    Allowance,
+    ScheduledPoint,
+}
+
 #[derive(
     Associations,
     Clone,
@@ -34,6 +47,7 @@ use super::{
     PartialEq,
     Queryable,
     Selectable,
+    ToSchema,
     Serialize,
 )]
 #[model(table = "train_schedule")]
@@ -43,30 +57,40 @@ use super::{
 #[derivative(Default)]
 pub struct TrainSchedule {
     #[diesel(deserialize_as = i64)]
+    #[schema(value_type = i64)]
     pub id: Option<i64>,
     pub train_name: String,
+    #[schema(value_type = Vec<String>)]
     pub labels: DieselJson<Vec<String>>,
     pub departure_time: f64,
     pub initial_speed: f64,
-    #[derivative(Default(value = "DieselJson(Default::default())"))]
+    #[derivative(Default)]
+    #[schema(value_type = Vec<Allowance>)]
     pub allowances: DieselJson<Vec<Allowance>>,
     #[derivative(Default(
         value = "crate::schema::rolling_stock::RollingStockComfortType::default().to_string()"
     ))]
+    #[schema(value_type = RollingStockComfortType)]
     pub comfort: String,
+    #[schema(required)]
     pub speed_limit_tags: Option<String>,
-    pub power_restriction_ranges: Option<JsonValue>,
-    pub options: Option<JsonValue>,
+    #[schema(required, value_type = Option<Vec<PowerRestrictionRange>>)]
+    pub power_restriction_ranges: Option<DieselJson<Vec<PowerRestrictionRange>>>,
+    #[schema(required, value_type = Option<TrainScheduleOptions>)]
+    pub options: Option<DieselJson<TrainScheduleOptions>>,
     pub path_id: i64,
     pub rolling_stock_id: i64,
     pub timetable_id: i64,
     #[derivative(Default(value = "DieselJson(Default::default())"))]
+    #[schema(value_type = Vec<ScheduledPoint>)]
     pub scheduled_points: DieselJson<Vec<ScheduledPoint>>,
     #[serde(skip_serializing)]
     #[diesel(deserialize_as = String)]
+    #[schema(required)]
     pub infra_version: Option<String>,
     #[serde(skip_serializing)]
     #[diesel(deserialize_as = i64)]
+    #[schema(required)]
     pub rollingstock_version: Option<i64>,
 }
 
@@ -98,10 +122,10 @@ pub struct TrainScheduleChangeset {
     pub comfort: Option<String>,
     #[diesel(deserialize_as = Option<String>)]
     pub speed_limit_tags: Option<Option<String>>,
-    #[diesel(deserialize_as = Option<JsonValue>)]
-    pub power_restriction_ranges: Option<Option<JsonValue>>,
-    #[diesel(deserialize_as = Option<JsonValue>)]
-    pub options: Option<Option<JsonValue>>,
+    #[diesel(deserialize_as = Option<DieselJson<Vec<PowerRestrictionRange>>>)]
+    pub power_restriction_ranges: Option<Option<DieselJson<Vec<PowerRestrictionRange>>>>,
+    #[diesel(deserialize_as = Option<DieselJson<TrainScheduleOptions>>)]
+    pub options: Option<Option<DieselJson<TrainScheduleOptions>>>,
     #[diesel(deserialize_as = i64)]
     pub path_id: Option<i64>,
     #[diesel(deserialize_as = i64)]
@@ -273,6 +297,29 @@ pub struct ResultTrain {
     pub routing_requirements: Vec<RoutingRequirement>,
 }
 
+/// A range along the train path where a power restriction is applied.
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema, PartialEq)]
+#[schema(example = json!({
+    "begin_position": 0.0,
+    "end_position": 1000.0,
+    "power_restriction_code": "C1US"
+}))]
+pub struct PowerRestrictionRange {
+    /// Offset from the start of the path, in meters.
+    begin_position: f32,
+    /// Offset from the start of the path, in meters.
+    end_position: f32,
+    /// The power restriction code to apply.
+    power_restriction_code: String,
+}
+
+/// Options for the standalone simulation
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
+pub struct TrainScheduleOptions {
+    /// Whether to ignore the electrical profile of the train for simulation
+    ignore_electrical_profiles: Option<bool>,
+}
+
 #[derive(
     Associations,
     Clone,
@@ -365,7 +412,7 @@ impl From<SimulationOutputChangeset> for SimulationOutput {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 #[serde(tag = "value_type")]
 pub enum AllowanceValue {
     #[serde(rename = "time_per_distance")]
@@ -376,33 +423,32 @@ pub enum AllowanceValue {
     Percent { percentage: f64 },
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
+#[serde(rename_all = "UPPERCASE")]
 pub enum AllowanceDistribution {
-    #[serde(rename = "MARECO")]
     Mareco,
-    #[serde(rename = "LINEAR")]
     Linear,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 pub struct RangeAllowance {
     begin_position: f64,
     end_position: f64,
     value: AllowanceValue,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 
 pub struct EngineeringAllowance {
-    begin_position: f64,
-    end_position: f64,
-    value: AllowanceValue,
+    #[serde(flatten)]
+    range: RangeAllowance,
     distribution: AllowanceDistribution,
     #[serde(default = "default_capacity_speed_limit")]
+    #[schema(default = default_capacity_speed_limit)]
     capacity_speed_limit: f64,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 pub struct StandardAllowance {
     default_value: AllowanceValue,
     ranges: Vec<RangeAllowance>,
@@ -415,14 +461,14 @@ fn default_capacity_speed_limit() -> f64 {
     -1.0
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 #[serde(tag = "allowance_type", rename_all = "lowercase")]
 pub enum Allowance {
     Engineering(EngineeringAllowance),
     Standard(StandardAllowance),
 }
 
-#[derive(Debug, Clone, Derivative, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Derivative, Serialize, Deserialize, PartialEq, ToSchema)]
 #[derivative(Default)]
 pub struct ScheduledPoint {
     pub path_offset: f64,
