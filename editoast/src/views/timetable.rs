@@ -507,10 +507,12 @@ pub mod test {
 
     #[rstest]
     async fn newer_rolling_stock_version() {
+        // GIVEN
         let app = create_test_service().await;
 
         let train_with_simulation_output =
-            train_with_simulation_output_fixture_set(db_pool()).await;
+            train_with_simulation_output_fixture_set("newer_rolling_stock_version", db_pool())
+                .await;
 
         let rolling_stock_id = train_with_simulation_output
             .train_schedule
@@ -520,6 +522,8 @@ pub mod test {
         let mut patch_rolling_stock =
             get_other_rolling_stock("fast_rolling_stock_newer_rolling_stock_version");
         patch_rolling_stock.id = Some(rolling_stock_id);
+
+        // WHEN
         call_service(
             &app,
             TestRequest::patch()
@@ -547,6 +551,7 @@ pub mod test {
         )
         .await;
 
+        // THEN
         let response_body: TimetableWithSchedulesDetails =
             assert_status_and_read!(response, StatusCode::OK);
         let invalid_reasons = &response_body

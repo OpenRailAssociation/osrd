@@ -93,12 +93,6 @@ pub mod tests {
         TestFixture::create(rs, db_pool).await
     }
 
-    // TODO: deprecate in favour of named_fast_rolling_stock, to avoid name conflicts
-    #[fixture]
-    pub async fn fast_rolling_stock(db_pool: Data<DbPool>) -> TestFixture<RollingStockModel> {
-        named_fast_rolling_stock("fast_rolling_stock", db_pool).await
-    }
-
     pub fn get_other_rolling_stock(name: &str) -> RollingStockModel {
         let mut rs: RollingStockModel = serde_json::from_str(include_str!(
             "./tests/example_rolling_stock_2_energy_sources.json"
@@ -276,14 +270,14 @@ pub mod tests {
         TestFixture::create(Document::new(String::from("image/png"), img_bytes), db_pool).await
     }
 
-    #[fixture]
     pub async fn rolling_stock_livery(
+        name: &str,
         db_pool: Data<DbPool>,
-        #[future] fast_rolling_stock: TestFixture<RollingStockModel>,
-        #[future] document_example: TestFixture<Document>,
     ) -> TestFixture<RollingStockLiveryModel> {
-        let rolling_stock = fast_rolling_stock.await;
-        let image = document_example.await;
+        let mut rs_name = "fast_rolling_stock_".to_string();
+        rs_name.push_str(name);
+        let rolling_stock = named_fast_rolling_stock(&rs_name, db_pool.clone()).await;
+        let image = document_example(db_pool.clone()).await;
         let rolling_stock_livery = RollingStockLiveryModel {
             id: None,
             name: Some(String::from("test_livery")),
@@ -399,8 +393,8 @@ pub mod tests {
         pub rolling_stock: TestFixture<RollingStockModel>,
     }
 
-    #[fixture]
     pub async fn train_with_simulation_output_fixture_set(
+        name: &str,
         db_pool: Data<DbPool>,
     ) -> TrainScheduleWithSimulationOutputFixtureSet {
         let ScenarioFixtureSet {
@@ -410,7 +404,10 @@ pub mod tests {
             timetable,
             infra,
         } = scenario_fixture_set().await;
-        let rolling_stock = fast_rolling_stock(db_pool.clone()).await;
+
+        let mut rs_name = "fast_rolling_stock_".to_string();
+        rs_name.push_str(name);
+        let rolling_stock = named_fast_rolling_stock(&rs_name, db_pool.clone()).await;
         let pathfinding = pathfinding(db_pool.clone()).await;
         let train_schedule = make_train_schedule(
             db_pool.clone(),
