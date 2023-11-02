@@ -484,7 +484,9 @@ impl OpenApiMerger {
             .as_object_mut()
             .unwrap();
         for (key, schema) in new_schemas.iter_mut() {
-            old_schemas.insert(key.clone(), schema.clone());
+            if old_schemas.insert(key.clone(), schema.clone()).is_some() {
+                log::warn!("duplicated schema replaced: {}", key);
+            }
         }
 
         // Merge endpoint paths
@@ -501,7 +503,9 @@ impl OpenApiMerger {
                 Some((old_path, _)) => {
                     let old_path = old_path.as_object_mut().unwrap();
                     for (method, operation) in path.as_object_mut().unwrap().iter_mut() {
-                        old_path.insert(method.clone(), operation.clone());
+                        if old_path.insert(method.clone(), operation.clone()).is_some() {
+                            log::warn!("duplicated operation replaced: {} {}", method, key);
+                        }
                     }
                 }
                 // The endpoint doesn't exist, insert all operations
