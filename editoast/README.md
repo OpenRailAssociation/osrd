@@ -32,6 +32,8 @@ In order to run tests, you need to have a postgresql database and redis running.
 
 To avoid thread conflicts while accessing the database, use the `--test-threads=1` option.
 
+<!--- TODO: when tests are isolated, allow multiple threads (4 may be a good tradeoff for speed/DB pool)  --->
+
 ```sh
 cargo test -- --test-threads=1
 ```

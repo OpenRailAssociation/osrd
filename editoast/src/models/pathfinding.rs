@@ -37,6 +37,8 @@ use serde::{Deserialize, Serialize};
 #[model(retrieve, delete)]
 #[diesel(table_name = pathfinding)]
 pub struct Pathfinding {
+    // TODO: we probably want to use ModelV2 and avoid default 0 (test isolation, the DB assigns a value anyway)
+    // See https://github.com/osrd-project/osrd/pull/5033
     pub id: i64,
     pub owner: uuid::Uuid,
     #[derivative(Default(value = "Utc::now().naive_utc()"))]
