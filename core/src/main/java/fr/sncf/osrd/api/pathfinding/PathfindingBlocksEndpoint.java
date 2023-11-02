@@ -296,11 +296,11 @@ public class PathfindingBlocksEndpoint implements Take {
 
     private void validatePathfindingResult(PathfindingResult res, PathfindingWaypoint[][] reqWaypoints,
                                            RawSignalingInfra rawInfra) {
-        var routeTracks = res.routePaths.stream()
-                .flatMap(rjsRoutePath ->
-                        getRouteDirTracks(rawInfra, rawInfra.getRouteFromName(rjsRoutePath.route)).stream())
-                .distinct()
-                .toList();
+        var routeTracks = new ArrayList<Integer>();
+        for (var routePath : res.routePaths)
+            for (var dirTrack : getRouteDirTracks(rawInfra, rawInfra.getRouteFromName(routePath.route)))
+                if (routeTracks.isEmpty() || !routeTracks.get(routeTracks.size() - 1).equals(dirTrack))
+                    routeTracks.add(dirTrack);
         assertPathRoutesAreAdjacent(routeTracks, rawInfra);
 
         var tracksOnPath = res.routePaths.stream()
