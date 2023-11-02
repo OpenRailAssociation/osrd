@@ -80,10 +80,9 @@ async fn layer_view(
         return Err(LayersError::new_view_not_found(view_slug, layer).into());
     }
 
-    let tiles_url_pattern = format!(
-        "{root_url}/layers/tile/{layer_slug}/{view_slug}/{{z}}/{{x}}/{{y}}/?infra={infra}",
-        root_url = get_root_url()
-    );
+    let root_url = get_root_url()?.to_string();
+    let tiles_url_pattern =
+        format!("{root_url}layers/tile/{layer_slug}/{view_slug}/{{z}}/{{x}}/{{y}}/?infra={infra}");
 
     Ok(Json(json!({
         "type": "vector",

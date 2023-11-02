@@ -263,7 +263,10 @@ pub mod tests {
         F: for<'r> FnOnce(&'r mut PgConnection, Infra) -> ScopedBoxFuture<'a, 'r, ()> + Send + 'a,
     {
         let infra = build_test_infra();
-        let mut conn = PgConnection::establish(&PostgresConfig::default().url())
+        let pg_config_url = PostgresConfig::default()
+            .url()
+            .expect("cannot get postgres config url");
+        let mut conn = PgConnection::establish(pg_config_url.as_str())
             .await
             .unwrap();
         let _ = conn
@@ -284,7 +287,10 @@ pub mod tests {
     {
         use crate::models::Delete;
         use diesel_async::pooled_connection::AsyncDieselConnectionManager as ConnectionManager;
-        let manager = ConnectionManager::<PgConnection>::new(PostgresConfig::default().url());
+        let pg_config_url = PostgresConfig::default()
+            .url()
+            .expect("cannot get postgres config url");
+        let manager = ConnectionManager::<PgConnection>::new(pg_config_url.as_str());
         let db_pool = crate::Data::new(crate::Pool::builder(manager).build().unwrap());
         let infra = build_test_infra();
         let created = infra.create(db_pool.clone()).await.unwrap();
