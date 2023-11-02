@@ -498,11 +498,10 @@ pub mod test {
 
     use crate::{
         assert_status_and_read,
-        fixtures::tests::{db_pool, train_with_simulation_output_fixture_set},
-        models::{
-            rolling_stock::tests::get_other_rolling_stock, train_schedule::TrainScheduleValidation,
-            TimetableWithSchedulesDetails,
+        fixtures::tests::{
+            db_pool, get_other_rolling_stock, train_with_simulation_output_fixture_set,
         },
+        models::{train_schedule::TrainScheduleValidation, TimetableWithSchedulesDetails},
         views::tests::create_test_service,
     };
 

@@ -241,7 +241,9 @@ impl From<RollingStockModel> for RollingStock {
 #[cfg(test)]
 pub mod tests {
     use crate::error::InternalError;
-    use crate::fixtures::tests::{db_pool, named_fast_rolling_stock, named_other_rolling_stock};
+    use crate::fixtures::tests::{
+        db_pool, get_other_rolling_stock, named_fast_rolling_stock, named_other_rolling_stock,
+    };
     use crate::models::{Retrieve, Update};
     use crate::views::rolling_stocks::RollingStockError;
     use crate::DbPool;
@@ -250,23 +252,6 @@ pub mod tests {
 
     use super::RollingStockModel;
     use actix_web::web::Data;
-
-    pub fn get_fast_rolling_stock(name: &str) -> RollingStockModel {
-        let mut rs: RollingStockModel =
-            serde_json::from_str(include_str!("../../tests/example_rolling_stock_1.json"))
-                .expect("Unable to parse");
-        rs.name = Some(name.to_string());
-        rs
-    }
-
-    pub fn get_other_rolling_stock(name: &str) -> RollingStockModel {
-        let mut rs: RollingStockModel = serde_json::from_str(include_str!(
-            "../../tests/example_rolling_stock_2_energy_sources.json"
-        ))
-        .expect("Unable to parse");
-        rs.name = Some(name.to_string());
-        rs
-    }
 
     pub fn get_invalid_effort_curves() -> &'static str {
         include_str!("../../tests/example_rolling_stock_3.json")

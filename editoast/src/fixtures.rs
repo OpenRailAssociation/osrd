@@ -77,15 +77,19 @@ pub mod tests {
         Data::new(pool)
     }
 
+    pub fn get_fast_rolling_stock(name: &str) -> RollingStockModel {
+        let mut rs: RollingStockModel =
+            serde_json::from_str(include_str!("./tests/example_rolling_stock_1.json"))
+                .expect("Unable to parse");
+        rs.name = Some(name.to_string());
+        rs
+    }
+
     pub async fn named_fast_rolling_stock(
         name: &str,
         db_pool: Data<DbPool>,
     ) -> TestFixture<RollingStockModel> {
-        let mut rs = serde_json::from_str::<RollingStockModel>(include_str!(
-            "./tests/example_rolling_stock_1.json"
-        ))
-        .expect("Unable to parse");
-        rs.name = Some(name.to_string());
+        let rs = get_fast_rolling_stock(name);
         TestFixture::create(rs, db_pool).await
     }
 
@@ -95,15 +99,20 @@ pub mod tests {
         named_fast_rolling_stock("fast_rolling_stock", db_pool).await
     }
 
-    pub async fn named_other_rolling_stock(
-        name: &str,
-        db_pool: Data<DbPool>,
-    ) -> TestFixture<RollingStockModel> {
-        let mut rs = serde_json::from_str::<RollingStockModel>(include_str!(
+    pub fn get_other_rolling_stock(name: &str) -> RollingStockModel {
+        let mut rs: RollingStockModel = serde_json::from_str(include_str!(
             "./tests/example_rolling_stock_2_energy_sources.json"
         ))
         .expect("Unable to parse");
         rs.name = Some(name.to_string());
+        rs
+    }
+
+    pub async fn named_other_rolling_stock(
+        name: &str,
+        db_pool: Data<DbPool>,
+    ) -> TestFixture<RollingStockModel> {
+        let rs = get_other_rolling_stock(name);
         TestFixture::create(rs, db_pool).await
     }
 
