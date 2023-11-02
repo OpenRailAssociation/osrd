@@ -136,8 +136,8 @@ async fn electrical_profiles_on_path(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::fixtures::tests::{db_pool, empty_infra, fast_rolling_stock, TestFixture};
-    use crate::models::{pathfinding::tests::simple_pathfinding_fixture, Infra, RollingStockModel};
+    use crate::fixtures::tests::{db_pool, empty_infra, named_fast_rolling_stock, TestFixture};
+    use crate::models::{pathfinding::tests::simple_pathfinding_fixture, Infra};
     use crate::schema::{electrical_profiles::ElectricalProfile, TrackRange};
     use crate::views::tests::create_test_service;
     use crate::DieselJson;
@@ -243,11 +243,15 @@ mod tests {
     async fn test_view_electrical_profiles_on_path(
         db_pool: Data<DbPool>,
         #[future] empty_infra: TestFixture<Infra>,
-        #[future] fast_rolling_stock: TestFixture<RollingStockModel>,
         #[future] electrical_profile_set: TestFixture<ElectricalProfileSet>,
     ) {
+        // GIVEN
         let ep_set = electrical_profile_set.await;
-        let rolling_stock = fast_rolling_stock.await;
+        let rolling_stock = named_fast_rolling_stock(
+            "fast_rolling_stock_test_view_electrical_profiles_on_path",
+            db_pool.clone(),
+        )
+        .await;
         let infra = empty_infra.await;
 
         let pathfinding = simple_pathfinding_fixture(infra.id(), db_pool.clone()).await;
@@ -259,7 +263,10 @@ mod tests {
             )
             .to_request();
 
+        // WHEN
         let response = call_service(&app, req).await;
+
+        // THEN
         assert_eq!(response.status(), StatusCode::OK);
 
         let response: ProfilesOnPathResponse = read_body_json(response).await;
