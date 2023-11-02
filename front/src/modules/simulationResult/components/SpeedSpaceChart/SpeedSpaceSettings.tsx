@@ -1,13 +1,7 @@
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
-import {
-  ElectrificationRange,
-  LightRollingStock,
-  osrdEditoastApi,
-} from 'common/api/osrdEditoastApi';
+import { ElectrificationRange, LightRollingStock } from 'common/api/osrdEditoastApi';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
-import { getSelectedTrain } from 'reducers/osrdsimulation/selectors';
 import { SpeedSpaceSettingKey, SPEED_SPACE_SETTINGS_KEYS } from 'reducers/osrdsimulation/types';
 
 type RollingStockMode = {
@@ -19,6 +13,7 @@ interface SpeedSpaceSettingsProps {
   electrificationRanges: ElectrificationRange[];
   showSettings: boolean;
   speedSpaceSettings: { [key in SPEED_SPACE_SETTINGS_KEYS]: boolean };
+  trainRollingStock?: LightRollingStock;
   onSetSettings: (newSettings: { [key in SPEED_SPACE_SETTINGS_KEYS]: boolean }) => void;
 }
 
@@ -27,17 +22,10 @@ const SpeedSpaceSettings = ({
   showSettings,
   speedSpaceSettings,
   onSetSettings,
+  trainRollingStock,
 }: SpeedSpaceSettingsProps) => {
   const { t } = useTranslation(['simulation']);
   const [settings, setSettings] = useState(speedSpaceSettings);
-
-  const selectedTrain = useSelector(getSelectedTrain);
-
-  const [rollingStock, setRollingStock] = useState<LightRollingStock>();
-
-  const [getTrainSchedule] = osrdEditoastApi.endpoints.getTrainScheduleById.useLazyQuery();
-
-  const [getRollingStock] = osrdEditoastApi.endpoints.getLightRollingStockById.useLazyQuery();
 
   const isOnlyThermal = (modes: RollingStockMode) =>
     !Object.keys(modes).some((mode) => mode !== 'thermal');
@@ -64,25 +52,14 @@ const SpeedSpaceSettings = ({
     );
 
   useEffect(() => {
-    if (selectedTrain) {
-      getTrainSchedule({ id: selectedTrain.id })
-        .unwrap()
-        .then((trainSchedule) => {
-          getRollingStock({ id: trainSchedule.rolling_stock_id })
-            .unwrap()
-            .then((lightRollingStock) => {
-              setRollingStock(lightRollingStock);
-
-              if (
-                isOnlyThermal(lightRollingStock.effort_curves.modes) &&
-                settings.electricalProfiles
-              ) {
-                toggleSetting(SPEED_SPACE_SETTINGS_KEYS.ELECTRICAL_PROFILES);
-              }
-            });
-        });
+    if (
+      trainRollingStock &&
+      isOnlyThermal(trainRollingStock.effort_curves.modes) &&
+      settings.electricalProfiles
+    ) {
+      toggleSetting(SPEED_SPACE_SETTINGS_KEYS.ELECTRICAL_PROFILES);
     }
-  }, [selectedTrain]);
+  }, [trainRollingStock]);
 
   const getCheckboxRadio = useCallback(
     (settingKey: SpeedSpaceSettingKey, isChecked: boolean, disabled?: boolean) => (
@@ -109,11 +86,12 @@ const SpeedSpaceSettings = ({
       {getCheckboxRadio(SPEED_SPACE_SETTINGS_KEYS.CURVES, settings.curves)}
       {getCheckboxRadio(SPEED_SPACE_SETTINGS_KEYS.MAX_SPEED, settings.maxSpeed)}
       {getCheckboxRadio(SPEED_SPACE_SETTINGS_KEYS.SLOPES, settings.slopes)}
-      {rollingStock &&
+      {trainRollingStock &&
         getCheckboxRadio(
           SPEED_SPACE_SETTINGS_KEYS.ELECTRICAL_PROFILES,
           settings.electricalProfiles,
-          isOnlyThermal(rollingStock.effort_curves.modes) || runsOnlyThermal(electrificationRanges)
+          isOnlyThermal(trainRollingStock.effort_curves.modes) ||
+            runsOnlyThermal(electrificationRanges)
         )}
       {getCheckboxRadio(SPEED_SPACE_SETTINGS_KEYS.POWER_RESTRICTION, settings.powerRestriction)}
     </div>

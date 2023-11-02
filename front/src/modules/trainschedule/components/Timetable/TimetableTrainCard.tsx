@@ -75,6 +75,11 @@ function TimetableTrainCard({
   };
 
   const deleteTrain = async () => {
+    if (isSelected) {
+      // we need to set selectedTrainId to undefined, otherwise just after the delete,
+      // some unvalid rtk calls are dispatched (see rollingstock request in SimulationResults)
+      dispatch(updateSelectedTrainId(undefined));
+    }
     deleteTrainScheduleById({ id: train.id })
       .unwrap()
       .then(() => {
@@ -93,6 +98,9 @@ function TimetableTrainCard({
             message: t('errorMessages.unableToDeleteTrain'),
           })
         );
+        if (isSelected) {
+          dispatch(updateSelectedTrainId(train.id));
+        }
       });
   };
 

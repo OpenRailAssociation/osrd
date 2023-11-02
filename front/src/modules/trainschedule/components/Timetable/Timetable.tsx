@@ -22,6 +22,7 @@ import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import ConflictsList from 'modules/conflict/components/ConflictsList';
 import findTrainsDurationsIntervals from 'modules/trainschedule/components/ManageTrainSchedule/helpers/trainsDurationsIntervals';
+import { updateSelectedTrainId } from 'reducers/osrdsimulation/actions';
 import TimetableTrainCard from './TimetableTrainCard';
 
 type Props = {
@@ -131,6 +132,13 @@ export default function Timetable({
 
   const handleTrainsDelete = async () => {
     const trainsCount = selectedTrainIds.length;
+
+    if (selectedTrainId && selectedTrainIds.includes(selectedTrainId)) {
+      // we need to set selectedTrainId to undefined, otherwise just after the delete,
+      // some unvalid rtk calls are dispatched (see rollingstock request in SimulationResults)
+      dispatch(updateSelectedTrainId(undefined));
+    }
+
     await deleteTrainSchedules({ body: { ids: selectedTrainIds } })
       .unwrap()
       .then(() => {
@@ -141,8 +149,11 @@ export default function Timetable({
           })
         );
       })
-      .catch((e) => {
+      .catch((e: unknown) => {
         console.error(e);
+        if (selectedTrainId && selectedTrainIds.includes(selectedTrainId)) {
+          dispatch(updateSelectedTrainId(selectedTrainId));
+        }
         if (e instanceof Error) {
           dispatch(
             setFailure({

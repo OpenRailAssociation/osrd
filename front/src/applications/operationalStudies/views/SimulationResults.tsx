@@ -19,7 +19,7 @@ import {
 import { updateSelectedProjection, updateSimulation } from 'reducers/osrdsimulation/actions';
 
 import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
-import { SimulationReport } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, SimulationReport } from 'common/api/osrdEditoastApi';
 
 import SimulationResultsMap from 'modules/simulationResult/components/SimulationResultsMap';
 import SpaceCurvesSlopes from 'modules/simulationResult/components/SpaceCurvesSlopes';
@@ -61,6 +61,21 @@ export default function SimulationResults({
   const [heightOfSpaceCurvesSlopesChart, setHeightOfSpaceCurvesSlopesChart] = useState(150);
   const [initialHeightOfSpaceCurvesSlopesChart, setInitialHeightOfSpaceCurvesSlopesChart] =
     useState(heightOfSpaceCurvesSlopesChart);
+
+  const { data: selectedTrainSchedule } = osrdEditoastApi.endpoints.getTrainScheduleById.useQuery(
+    {
+      id: selectedTrain?.id as number,
+    },
+    { skip: !selectedTrain }
+  );
+
+  const { data: selectedTrainRollingStock } =
+    osrdEditoastApi.endpoints.getLightRollingStockById.useQuery(
+      {
+        id: selectedTrainSchedule?.rolling_stock_id as number,
+      },
+      { skip: !selectedTrainSchedule }
+    );
 
   const handleKey = (e: KeyboardEvent) => {
     if (e.key === 'z' && e.metaKey) {
@@ -160,6 +175,7 @@ export default function SimulationResults({
               positionValues={positionValues}
               selectedTrain={selectedTrain}
               timePosition={timePosition}
+              trainRollingStock={selectedTrainRollingStock}
             />
           </div>
         </div>
@@ -201,9 +217,9 @@ export default function SimulationResults({
       </div>
 
       {/* TRAIN : DRIVER TRAIN SCHEDULE */}
-      {selectedTrain && (
+      {selectedTrain && selectedTrainRollingStock && (
         <div className="osrd-simulation-container mb-2">
-          <DriverTrainSchedule train={selectedTrain} />
+          <DriverTrainSchedule train={selectedTrain} rollingStock={selectedTrainRollingStock} />
         </div>
       )}
 
