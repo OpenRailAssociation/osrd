@@ -1,11 +1,15 @@
 mod postgres_config;
 mod redis_config;
 
+use crate::error::Result;
 use clap::{Args, Parser, Subcommand, ValueEnum};
 use derivative::Derivative;
+use editoast_derive::EditoastError;
 pub use postgres_config::PostgresConfig;
 pub use redis_config::RedisConfig;
 use std::{env, path::PathBuf};
+use thiserror::Error;
+use url::Url;
 
 #[derive(Parser, Debug)]
 #[command(author, version)]
@@ -199,8 +203,10 @@ pub struct RefreshArgs {
 }
 
 /// Retrieve the ROOT_URL env var. If not found returns default local url.
-pub fn get_root_url() -> String {
-    env::var("ROOT_URL").unwrap_or(String::from("http://localhost:8090"))
+pub fn get_root_url() -> Result<Url> {
+    let url = env::var("ROOT_URL").unwrap_or(String::from("http://localhost:8090"));
+    let parsed_url = Url::parse(&url).map_err(|_| EditoastUrlError::InvalidUrl { url })?;
+    Ok(parsed_url)
 }
 
 /// Retrieve the app version (git describe)
@@ -213,4 +219,12 @@ pub fn get_assets_path() -> PathBuf {
     env::var("ASSETS_PATH")
         .unwrap_or(String::from("./assets"))
         .into()
+}
+
+#[derive(Debug, Error, EditoastError)]
+#[editoast_error(base_id = "url")]
+pub enum EditoastUrlError {
+    #[error("Invalid url '{url}'")]
+    #[editoast_error(status = 500)]
+    InvalidUrl { url: String },
 }

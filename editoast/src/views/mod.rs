@@ -282,12 +282,14 @@ mod tests {
     pub async fn create_test_service_with_core_client<C: Into<CoreClient>>(
         core: C,
     ) -> impl Service<Request, Response = ServiceResponse<BoxBody>, Error = Error> {
-        let pg_config = PostgresConfig::default();
-        let manager = ConnectionManager::<PgConnection>::new(pg_config.url());
+        let pg_config_url = PostgresConfig::default()
+            .url()
+            .expect("cannot get postgres config url");
+        let manager = ConnectionManager::<PgConnection>::new(pg_config_url.as_str());
         let pool = Pool::builder(manager)
             .build()
             .expect("Failed to create pool.");
-        let redis = RedisClient::new(RedisConfig::default());
+        let redis = RedisClient::new(RedisConfig::default()).expect("cannot get redis client");
 
         // Custom Json extractor configuration
         let json_cfg = JsonConfig::default()
