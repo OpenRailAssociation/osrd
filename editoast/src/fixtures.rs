@@ -116,26 +116,6 @@ pub mod tests {
         TestFixture::create(rs, db_pool).await
     }
 
-    #[fixture]
-    pub async fn train_schedule(
-        db_pool: Data<DbPool>,
-        #[future] pathfinding: TestFixture<Pathfinding>,
-        #[future] timetable: TestFixture<Timetable>,
-        #[future] fast_rolling_stock: TestFixture<RollingStockModel>,
-    ) -> TestFixture<TrainSchedule> {
-        let pathfinding = pathfinding.await;
-        let timetable = timetable.await;
-        let rolling_stock = fast_rolling_stock.await;
-        let train_schedule = make_train_schedule(
-            db_pool.clone(),
-            pathfinding.id(),
-            timetable.id(),
-            rolling_stock.id(),
-        )
-        .await;
-        TestFixture::new(train_schedule, db_pool)
-    }
-
     async fn make_train_schedule(
         db_pool: Data<DbPool>,
         path_id: i64,
