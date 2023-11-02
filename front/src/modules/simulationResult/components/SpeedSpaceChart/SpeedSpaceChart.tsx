@@ -24,7 +24,7 @@ import {
   updateSpeedSpaceSettings,
   updateTimePositionValues,
 } from 'reducers/osrdsimulation/actions';
-import { SimulationReport } from 'common/api/osrdEditoastApi';
+import { LightRollingStock, SimulationReport } from 'common/api/osrdEditoastApi';
 import { dateIsInRange } from 'utils/date';
 import SpeedSpaceSettings from './SpeedSpaceSettings';
 import ElectricalProfilesLegend from './ElectricalProfilesLegend';
@@ -40,6 +40,7 @@ export type SpeedSpaceChartProps = {
   positionValues: PositionsSpeedTimes<Date>;
   selectedTrain: SimulationReport | Train;
   timePosition: Date;
+  trainRollingStock?: LightRollingStock;
 };
 
 /**
@@ -57,6 +58,7 @@ export default function SpeedSpaceChart({
   selectedTrain,
   timePosition,
   positionValues,
+  trainRollingStock,
 }: SpeedSpaceChartProps) {
   const simulationIsPlaying = useSelector(getIsPlaying);
   const speedSpaceSettings = useSelector(getSpeedSpaceSettings);
@@ -254,6 +256,7 @@ export default function SpeedSpaceChart({
             showSettings={showSettings}
             onSetSettings={onLocalSetSettings}
             speedSpaceSettings={speedSpaceSettings}
+            trainRollingStock={trainRollingStock}
           />
         </div>
         <div ref={ref} className="w-100" />
