@@ -555,9 +555,8 @@ pub mod tests {
     use super::*;
     use crate::core::mocking::MockingClient;
     use crate::fixtures::tests::{
-        db_pool, empty_infra, other_rolling_stock, small_infra, TestFixture,
+        db_pool, empty_infra, named_other_rolling_stock, small_infra, TestFixture,
     };
-    use crate::models::RollingStockModel;
     use crate::schema::operation::{Operation, RailjsonObject};
     use crate::schema::{Catenary, SpeedSection, SwitchType};
     use crate::views::tests::{create_test_service, create_test_service_with_core_client};
@@ -733,7 +732,7 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn infra_get_all_voltages(#[future] other_rolling_stock: TestFixture<RollingStockModel>) {
+    async fn infra_get_all_voltages() {
         let app = create_test_service().await;
         let infra_1 = empty_infra(db_pool()).await;
         let infra_2 = small_infra(db_pool()).await;
@@ -757,7 +756,9 @@ pub mod tests {
         assert_eq!(call_service(&app, req).await.status(), StatusCode::OK);
 
         // Create rolling_stock
-        let _rolling_stock = other_rolling_stock.await;
+        let _rolling_stock =
+            named_other_rolling_stock("other_rolling_stock_infra_get_all_voltages", db_pool())
+                .await;
 
         let req = TestRequest::get().uri("/infra/voltages/").to_request();
         let response = call_service(&app, req).await;
@@ -770,10 +771,7 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn infra_get_voltages(
-        #[future] empty_infra: TestFixture<Infra>,
-        #[future] other_rolling_stock: TestFixture<RollingStockModel>,
-    ) {
+    async fn infra_get_voltages(#[future] empty_infra: TestFixture<Infra>) {
         let app = create_test_service().await;
         let infra = empty_infra.await;
 
@@ -789,7 +787,8 @@ pub mod tests {
         assert_eq!(call_service(&app, req).await.status(), StatusCode::OK);
 
         // Create rolling_stock
-        let _rolling_stock = other_rolling_stock.await;
+        let _rolling_stock =
+            named_other_rolling_stock("other_rolling_stock_infra_get_voltages", db_pool()).await;
 
         for include_rolling_stock_modes in test_cases {
             let req = TestRequest::get()

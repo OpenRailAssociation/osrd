@@ -116,12 +116,6 @@ pub mod tests {
         TestFixture::create(rs, db_pool).await
     }
 
-    // TODO: deprecate in favour of named_other_rolling_stock, to avoid name conflicts
-    #[fixture]
-    pub async fn other_rolling_stock(db_pool: Data<DbPool>) -> TestFixture<RollingStockModel> {
-        named_other_rolling_stock("other_rolling_stock", db_pool).await
-    }
-
     #[fixture]
     pub async fn train_schedule(
         db_pool: Data<DbPool>,
