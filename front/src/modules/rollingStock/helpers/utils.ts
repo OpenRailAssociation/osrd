@@ -1,7 +1,8 @@
 import { Comfort, RollingStock, RollingStockUpsertPayload } from 'common/api/osrdEditoastApi';
-import { isNull, some } from 'lodash';
+import { has, isNull, omitBy, some } from 'lodash';
 import {
   EffortCurves,
+  RollingStockParametersValidValues,
   RollingStockParametersValues,
   STANDARD_COMFORT_LEVEL,
   THERMAL_TRACTION_IDENTIFIER,
@@ -19,18 +20,7 @@ const newRollingStockValues = {
   subseries: '',
   type: '',
   unit: '',
-  length: 0,
-  mass: 0,
-  maxSpeed: 0,
-  startupTime: 0,
-  startupAcceleration: 0,
-  comfortAcceleration: 0.01,
-  gammaValue: 0.01,
-  inertiaCoefficient: 1,
   loadingGauge: 'G1' as RollingStockParametersValues['loadingGauge'],
-  rollingResistanceA: 0,
-  rollingResistanceB: 0,
-  rollingResistanceC: 0,
   electricalPowerStartupTime: null,
   raisePantographTime: null,
   basePowerClass: null,
@@ -124,7 +114,7 @@ export const getRollingStockEditorDefaultValues = (
 };
 
 export const rollingStockEditorQueryArg = (
-  data: RollingStockParametersValues,
+  data: RollingStockParametersValidValues,
   currentRsEffortCurve: RollingStock['effort_curves']
 ): RollingStockUpsertPayload => ({
   name: data.name,
@@ -165,6 +155,48 @@ export const rollingStockEditorQueryArg = (
   effort_curves: currentRsEffortCurve,
   base_power_class: data.basePowerClass || null,
 });
+
+export const checkRollingStockFormValidity = (
+  rollingStockForm: RollingStockParametersValues
+): { invalidFields: string[]; validRollingStockForm: RollingStockParametersValidValues } => {
+  const invalidFields = [
+    'length',
+    'mass',
+    'maxSpeed',
+    'startupAcceleration',
+    'comfortAcceleration',
+    'startupTime',
+    'gammaValue',
+    'inertiaCoefficient',
+    'rollingResistanceA',
+    'rollingResistanceB',
+    'rollingResistanceC',
+  ].reduce(
+    (result, field) =>
+      !has(rollingStockForm, field) || rollingStockForm[field] === undefined
+        ? [...result, field]
+        : result,
+    [] as string[]
+  );
+
+  return {
+    invalidFields,
+    validRollingStockForm: {
+      length: 0,
+      maxSpeed: 0,
+      startupAcceleration: 0,
+      comfortAcceleration: 0.01,
+      mass: 0,
+      startupTime: 0,
+      gammaValue: 0.01,
+      inertiaCoefficient: 1,
+      rollingResistanceA: 0,
+      rollingResistanceB: 0,
+      rollingResistanceC: 0,
+      ...omitBy(rollingStockForm, (value) => value === undefined),
+    } as RollingStockParametersValidValues,
+  };
+};
 
 export const createEmptyCurve = (
   comfort: Comfort,

@@ -59,7 +59,7 @@ export const effortCurveCondKeys: EffortCurveCondKeys = {
   powerRestrictions: 'power_restriction_code',
 };
 
-export type RollingStockParametersValues = {
+export type RollingStockParametersValidValues = {
   // TODO: remove this line in the type
   [key: string]: string | number | null | EffortCurves | RollingStockBase['power_restrictions'];
   railjsonVersion: string;
@@ -85,6 +85,46 @@ export type RollingStockParametersValues = {
   rollingResistanceA: number;
   rollingResistanceB: number;
   rollingResistanceC: number;
+  electricalPowerStartupTime: number | null;
+  raisePantographTime: number | null;
+  defaultMode: string | null;
+  effortCurves: EffortCurves;
+  basePowerClass: string | null;
+  powerRestrictions: RollingStockBase['power_restrictions'];
+};
+
+export type RollingStockParametersValues = {
+  // TODO: remove this line in the type
+  [key: string]:
+    | string
+    | number
+    | null
+    | EffortCurves
+    | RollingStockBase['power_restrictions']
+    | undefined;
+  railjsonVersion: string;
+  name: string;
+  detail: string;
+  family: string;
+  grouping: string;
+  number: string;
+  reference: string;
+  series: string;
+  subseries: string;
+  type: string;
+  unit: string;
+  length?: number;
+  mass?: number;
+  maxSpeed?: number;
+  startupTime?: number;
+  startupAcceleration?: number;
+  comfortAcceleration?: number;
+  gammaValue?: number;
+  inertiaCoefficient?: number;
+  loadingGauge: 'G1' | 'G2' | 'GA' | 'GB' | 'GB1' | 'GC' | 'FR3.3' | 'FR3.3/GB/G2' | 'GLOTT';
+  rollingResistanceA?: number;
+  rollingResistanceB?: number;
+  rollingResistanceC?: number;
   electricalPowerStartupTime: number | null;
   raisePantographTime: number | null;
   defaultMode: string | null;

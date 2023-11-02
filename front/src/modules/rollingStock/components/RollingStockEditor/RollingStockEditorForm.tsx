@@ -7,13 +7,14 @@ import {
 } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { useDispatch, useSelector } from 'react-redux';
-import { setFailure, setSuccess } from 'reducers/main';
+import { addFailureNotification, setFailure, setSuccess } from 'reducers/main';
 import Tabs, { TabProps } from 'common/Tabs';
 import RollingStockEditorFormModal from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorFormModal';
 import {
   getRollingStockEditorDefaultValues,
   getDefaultRollingStockMode,
   rollingStockEditorQueryArg,
+  checkRollingStockFormValidity,
 } from 'modules/rollingStock/helpers/utils';
 import {
   RollingStockEditorParameter,
@@ -53,6 +54,7 @@ const RollingStockEditorForm = ({
 
   const [isValid, setIsValid] = useState(true);
   const [optionValue, setOptionValue] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
   const selectedTractionMode = useSelector(getTractionMode);
 
@@ -149,22 +151,35 @@ const RollingStockEditorForm = ({
 
   const submit = (e: React.FormEvent<HTMLFormElement>, data: RollingStockParametersValues) => {
     e.preventDefault();
+    let error: undefined | { name: string; message: string };
     if (!data.name) {
-      dispatch(
-        setFailure({
-          name: t('messages.invalidForm'),
-          message: t('messages.missingName'),
-        })
-      );
+      error = {
+        name: t('messages.invalidForm'),
+        message: t('messages.missingName'),
+      };
     } else if (!selectedTractionMode || !currentRsEffortCurve) {
-      dispatch(
-        setFailure({
-          name: t('messages.invalidForm'),
-          message: t('messages.missingEffortCurves'),
+      error = {
+        name: t('messages.invalidForm'),
+        message: t('messages.missingEffortCurves'),
+      };
+    }
+    if (error) {
+      dispatch(addFailureNotification(error));
+      return;
+    }
+
+    const { invalidFields, validRollingStockForm } = checkRollingStockFormValidity(data);
+    if (invalidFields.length) {
+      setRollingStockValues(validRollingStockForm);
+      setErrorMessage(
+        t('messages.missingInformationAutomaticallyFilled', {
+          invalidFields: invalidFields.map((field) => t(field).toLowerCase()).join(', '),
+          count: invalidFields.length,
         })
       );
     } else {
-      const payload = rollingStockEditorQueryArg(data, currentRsEffortCurve);
+      setErrorMessage('');
+      const payload = rollingStockEditorQueryArg(validRollingStockForm, currentRsEffortCurve!);
       openModal(
         <RollingStockEditorFormModal
           setAddOrEditState={setAddOrEditState}
@@ -256,18 +271,23 @@ const RollingStockEditorForm = ({
       onSubmit={(e) => submit(e, rollingStockValues)}
     >
       <Tabs pills fullWidth tabs={[tabRollingStockDetails, tabRollingStockCurves]} />
-      <div className="d-flex justify-content-between align-items-center">
-        <div className="ml-auto my-3 pr-3">
-          <button
-            type="button"
-            className="btn btn-secondary mr-2 py-1 px-2"
-            onClick={() => cancel()}
-          >
-            {t('translation:common.cancel')}
-          </button>
-          <button type="submit" className="btn btn-primary py-1 px-2" disabled={!isValid}>
-            {t('translation:common.confirm')}
-          </button>
+      <div className="d-flex justify-content-end">
+        <div className="d-flex flex-column justify-content-end">
+          {errorMessage && (
+            <p className="text-danger mb-1 ml-auto error-message text-wrap">{errorMessage}</p>
+          )}
+          <div className="d-flex justify-content-end">
+            <button
+              type="button"
+              className="btn btn-secondary mr-2 py-1 px-2"
+              onClick={() => cancel()}
+            >
+              {t('translation:common.cancel')}
+            </button>
+            <button type="submit" className="btn btn-primary py-1 px-2" disabled={!isValid}>
+              {t('translation:common.confirm')}
+            </button>
+          </div>
         </div>
       </div>
     </form>

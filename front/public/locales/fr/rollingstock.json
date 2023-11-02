@@ -62,6 +62,8 @@
     "invalidForm": "Formulaire incomplet",
     "missingName": "Veuillez renseigner un nom",
     "missingEffortCurves": "Veuillez renseigner une courbe effort-vitesse",
+    "missingInformationAutomaticallyFilled_one": "Le champ suivant a été initialisé par défaut: {{invalidFields}}.",
+    "missingInformationAutomaticallyFilled_other": "Les champs suivants ont été initialisés par défaut: {{invalidFields}}.",
     "rollingStockAdded": "Le matériel roulant a été ajouté.",
     "rollingStockUpdated": "Le matériel roulant a été mis à jour.",
     "rollingStockDeleted": "Le matériel roulant a été supprimé.",
