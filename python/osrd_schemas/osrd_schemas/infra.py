@@ -232,6 +232,10 @@ class SwitchPortConnection(BaseModel):
     src: Identifier = Field(description="Port name that is source of the connection")
     dst: Identifier = Field(description="Port name that is destination of the connection")
 
+    @classmethod
+    def from_strs(cls, src: str, dst: str):
+        return cls(src=Identifier(src), dst=Identifier(dst))
+
 
 class SwitchType(BaseObjectTrait):
     """
@@ -247,6 +251,14 @@ class SwitchType(BaseObjectTrait):
     @classmethod
     def new(cls, id: Identifier, ports: List[Identifier], groups: Mapping[Identifier, List[SwitchPortConnection]]):
         return cls(id=id, ports=ports, groups=groups)
+
+    @classmethod
+    def from_strs(cls, id: str, ports: List[str], groups: Mapping[str, List[SwitchPortConnection]]):
+        return cls(
+            id=Identifier(id),
+            ports=[Identifier(e) for e in ports],
+            groups={Identifier(k): v for k, v in groups.items()},
+        )
 
     def to_dict(self):
         groups_dict = {}
