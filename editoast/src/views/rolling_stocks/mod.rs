@@ -487,11 +487,10 @@ pub mod tests {
         UsageResponse,
     };
     use crate::fixtures::tests::{
-        db_pool, named_fast_rolling_stock, named_other_rolling_stock, train_schedule_with_scenario,
+        db_pool, get_fast_rolling_stock, get_other_rolling_stock, named_fast_rolling_stock,
+        named_other_rolling_stock, train_schedule_with_scenario,
     };
-    use crate::models::rolling_stock::tests::{
-        get_fast_rolling_stock, get_invalid_effort_curves, get_other_rolling_stock,
-    };
+    use crate::models::rolling_stock::tests::get_invalid_effort_curves;
     use crate::models::{Delete, RollingStockModel};
     use crate::views::tests::create_test_service;
     use crate::{assert_editoast_error_type, assert_status_and_read, DbPool};
