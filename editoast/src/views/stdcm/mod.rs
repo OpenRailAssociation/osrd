@@ -298,9 +298,9 @@ pub mod tests {
     use crate::assert_status_and_read;
     use crate::core::mocking::MockingClient;
     use crate::fixtures::tests::{
-        db_pool, fast_rolling_stock, small_infra, timetable, TestFixture,
+        db_pool, named_fast_rolling_stock, small_infra, timetable, TestFixture,
     };
-    use crate::models::{RollingStockModel, Timetable};
+    use crate::models::Timetable;
     use crate::views::tests::{create_test_service, create_test_service_with_core_client};
     use actix_http::StatusCode;
     use actix_web::test::{call_service, TestRequest};
@@ -309,12 +309,14 @@ pub mod tests {
     /// conditions: one train scheduled for 8:00
     /// stdcm looks for a spot between 8:00 and 10:00
     #[rstest::rstest]
-    async fn stdcm_should_return_path_and_simulation(
-        #[future] fast_rolling_stock: TestFixture<RollingStockModel>,
-        #[future] timetable: TestFixture<Timetable>,
-    ) {
+    async fn stdcm_should_return_path_and_simulation(#[future] timetable: TestFixture<Timetable>) {
+        // GIVEN
         let small_infra = small_infra(db_pool()).await;
-        let fast_rolling_stock = fast_rolling_stock.await;
+        let fast_rolling_stock = named_fast_rolling_stock(
+            "fast_rolling_stock_stdcm_should_return_path_and_simulation",
+            db_pool(),
+        )
+        .await;
         let timetable = timetable.await;
         let mut payload: Value = from_str(include_str!(
             "../../tests/small_infra/stdcm/test_1/stdcm_post_payload.json"
@@ -346,7 +348,10 @@ pub mod tests {
             .set_json(payload)
             .to_request();
 
+        // WHEN
         let service_response = call_service(&app, req).await;
+
+        // THEN
         let stdcm_response: STDCMResponse =
             assert_status_and_read!(service_response, StatusCode::CREATED);
         let mut expected_response: Value = from_str(include_str!(
@@ -365,11 +370,13 @@ pub mod tests {
 
     ///
     #[rstest::rstest]
-    async fn stdcm_should_fail_if_infra_doesnt_exist(
-        #[future] fast_rolling_stock: TestFixture<RollingStockModel>,
-        #[future] timetable: TestFixture<Timetable>,
-    ) {
-        let fast_rolling_stock = fast_rolling_stock.await;
+    async fn stdcm_should_fail_if_infra_doesnt_exist(#[future] timetable: TestFixture<Timetable>) {
+        // GIVEN
+        let fast_rolling_stock = named_fast_rolling_stock(
+            "fast_rolling_stock_stdcm_should_fail_if_infra_doesnt_exist",
+            db_pool(),
+        )
+        .await;
         let timetable = timetable.await;
         let mut payload: Value = from_str(include_str!(
             "../../tests/small_infra/stdcm/test_1/stdcm_post_payload.json"
@@ -386,7 +393,10 @@ pub mod tests {
             .set_json(payload)
             .to_request();
 
+        // WHEN
         let service_response = call_service(&app, req).await;
+
+        // THEN
         assert_eq!(service_response.status(), StatusCode::NOT_FOUND);
     }
 }

@@ -533,13 +533,13 @@ mod test {
 
     use crate::core::mocking::MockingClient;
     use crate::fixtures::tests::{
-        db_pool, empty_infra, fast_rolling_stock, pathfinding, small_infra, TestFixture,
+        db_pool, empty_infra, named_fast_rolling_stock, pathfinding, small_infra, TestFixture,
     };
     use crate::models::{Infra, Pathfinding, Retrieve};
     use crate::views::pathfinding::{PathfindingError, Response};
+    use crate::views::tests::create_test_service;
     use crate::views::tests::create_test_service_with_core_client;
     use crate::{assert_editoast_error_type, assert_status_and_read};
-    use crate::{models::RollingStockModel, views::tests::create_test_service};
 
     #[rstest::rstest]
     async fn test_get_pf(#[future] pathfinding: TestFixture<Pathfinding>) {
@@ -583,9 +583,12 @@ mod test {
     }
 
     #[rstest::rstest]
-    async fn test_post_ok(#[future] fast_rolling_stock: TestFixture<RollingStockModel>) {
+    async fn test_post_ok() {
+        // GIVEN
         // Avoid `Drop`ping the fixture
-        let rs = &fast_rolling_stock.await.model;
+        let rs = &named_fast_rolling_stock("fast_rolling_stock_test_post_ok", db_pool())
+            .await
+            .model;
         let small_infra = small_infra(db_pool()).await;
         let infra = &small_infra.model;
         let rs_id = rs.id.unwrap();
@@ -610,17 +613,23 @@ mod test {
             .uri("/pathfinding")
             .set_json(payload)
             .to_request();
+
+        // WHEN
         let response = call_service(&app, req).await;
+
+        // THEN
         let response: Response = assert_status_and_read!(response, StatusCode::OK);
         assert!(Pathfinding::retrieve(db_pool(), response.id).await.is_ok());
     }
 
     #[rstest::rstest]
-    async fn test_multiple_waypoints_ok(
-        #[future] fast_rolling_stock: TestFixture<RollingStockModel>,
-    ) {
+    async fn test_multiple_waypoints_ok() {
+        // GIVEN
         // Avoid `Drop`ping the fixture
-        let rs = &fast_rolling_stock.await.model;
+        let rs =
+            &named_fast_rolling_stock("fast_rolling_stock_test_multiple_waypoints_ok", db_pool())
+                .await
+                .model;
         let small_infra = small_infra(db_pool()).await;
         let infra = &small_infra.model;
         let rs_id = rs.id.unwrap();
@@ -645,7 +654,11 @@ mod test {
             .uri("/pathfinding")
             .set_json(payload)
             .to_request();
+
+        // WHEN
         let response = call_service(&app, req).await;
+
+        // THEN
         let response: Response = assert_status_and_read!(response, StatusCode::OK);
         assert!(Pathfinding::retrieve(db_pool(), response.id).await.is_ok());
     }
