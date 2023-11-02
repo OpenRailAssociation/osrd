@@ -141,7 +141,11 @@ const RollingStockEditorParameterFormColumn = ({
               label={t(`${property.title}`)}
               typeValue={property.type}
               type={optionValue}
-              value={rollingStockValues[property.title] as string | number}
+              value={
+                rollingStockValues[property.title] !== undefined
+                  ? (rollingStockValues[property.title] as string | number)
+                  : ''
+              }
               options={property.units.map((unit) => ({
                 id: `${property.title}-${unit}`,
                 label: unit,
@@ -149,7 +153,7 @@ const RollingStockEditorParameterFormColumn = ({
               handleType={(type) => {
                 setRollingStockValues({
                   ...rollingStockValues,
-                  [property.title]: Number(type.value) || 0,
+                  [property.title]: type.value !== '' ? Number(type.value) : undefined,
                 } as SetStateAction<RollingStockParametersValues>);
                 setOptionValue(type.type as string);
               }}
@@ -205,17 +209,20 @@ const RollingStockEditorParameterFormColumn = ({
             }
             unit={property.unit}
             value={
-              property.title !== 'basePowerClass'
-                ? (rollingStockValues[property.title] as number)
-                : rollingStockValues[property.title] ?? ''
+              rollingStockValues[property.title] !== undefined
+                ? (rollingStockValues[property.title] as string | number)
+                : ''
             }
-            onChange={(e) =>
+            onChange={({ target: { value } }) => {
+              let newValue: string | number | undefined = value;
+              if (property.title !== 'basePowerClass') {
+                newValue = value !== '' ? Number(value) : undefined;
+              }
               setRollingStockValues({
                 ...rollingStockValues,
-                [property.title]:
-                  property.title !== 'basePowerClass' ? +e.target.value : e.target.value,
-              })
-            }
+                [property.title]: newValue,
+              });
+            }}
             sm
             isFlex
             key={index}
