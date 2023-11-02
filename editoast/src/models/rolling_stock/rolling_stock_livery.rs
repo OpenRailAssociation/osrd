@@ -96,17 +96,14 @@ pub struct RollingStockLiveryMetadata {
 #[cfg(test)]
 pub mod tests {
     use super::RollingStockLiveryModel;
-    use crate::fixtures::tests::{db_pool, rolling_stock_livery, TestFixture};
+    use crate::fixtures::tests::{db_pool, rolling_stock_livery};
     use crate::models::{Delete, Document, Retrieve};
     use actix_web::web::Data;
     use rstest::*;
 
     #[rstest]
-    async fn create_get_delete_rolling_stock_livery(
-        db_pool: Data<crate::DbPool>,
-        #[future] rolling_stock_livery: TestFixture<RollingStockLiveryModel>,
-    ) {
-        let rolling_stock_livery = rolling_stock_livery.await;
+    async fn create_get_delete_rolling_stock_livery(db_pool: Data<crate::DbPool>) {
+        let rolling_stock_livery = rolling_stock_livery("", db_pool.clone()).await;
         let livery_id = rolling_stock_livery.id();
         let image_id = rolling_stock_livery
             .model
