@@ -1,31 +1,34 @@
-from .infra import SwitchType
+from .infra import SwitchPortConnection, SwitchType
 
-POINT_SWITCH: SwitchType = SwitchType.new(
-    "point_switch", ["A", "B1", "B2"], {"A_B2": [{"src": "A", "dst": "B2"}], "A_B1": [{"src": "A", "dst": "B1"}]}
+_spc = SwitchPortConnection.from_strs
+
+
+POINT_SWITCH: SwitchType = SwitchType.from_strs(
+    "point_switch", ["A", "B1", "B2"], {"A_B2": [_spc("A", "B2")], "A_B1": [_spc("A", "B1")]}
 )
 
-LINK: SwitchType = SwitchType.new("link", ["A", "B"], {"STATIC": [{"src": "A", "dst": "B"}]})
-CROSSING: SwitchType = SwitchType.new(
-    "crossing", ["A1", "B1", "A2", "B2"], {"STATIC": [{"src": "A1", "dst": "B1"}, {"src": "A2", "dst": "B2"}]}
+LINK: SwitchType = SwitchType.from_strs("link", ["A", "B"], {"STATIC": [_spc("A", "B")]})
+CROSSING: SwitchType = SwitchType.from_strs(
+    "crossing", ["A1", "B1", "A2", "B2"], {"STATIC": [_spc("A1", "B1"), _spc("A2", "B2")]}
 )
 
-SINGLE_SLIP_SWITCH: SwitchType = SwitchType.new(
+SINGLE_SLIP_SWITCH: SwitchType = SwitchType.from_strs(
     "single_slip_switch",
     ["A1", "B1", "A2", "B2"],
     {
-        "STATIC": [{"src": "A1", "dst": "B1"}, {"src": "A2", "dst": "B2"}],
-        "A1_B2": [{"src": "A1", "dst": "B2"}],
+        "STATIC": [_spc("A1", "B1"), _spc("A2", "B2")],
+        "A1_B2": [_spc("A1", "B2")],
     },
 )
 
-DOUBLE_SLIP_SWITCH: SwitchType = SwitchType.new(
+DOUBLE_SLIP_SWITCH: SwitchType = SwitchType.from_strs(
     "double_slip_switch",
     ["A1", "B1", "A2", "B2"],
     {
-        "A1_B1": [{"src": "A1", "dst": "B1"}],
-        "A1_B2": [{"src": "A1", "dst": "B2"}],
-        "A2_B1": [{"src": "A2", "dst": "B1"}],
-        "A2_B2": [{"src": "A2", "dst": "B2"}],
+        "A1_B1": [_spc("A1", "B1")],
+        "A1_B2": [_spc("A1", "B2")],
+        "A2_B1": [_spc("A2", "B1")],
+        "A2_B2": [_spc("A2", "B2")],
     },
 )
 
