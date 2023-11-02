@@ -209,13 +209,14 @@ mod tests {
     }
 
     #[rstest]
-    #[case::normal(None)]
-    #[case::invalid_rs_id(Some(SingleSimulationError::RollingStockNotFound { rolling_stock_id: -666 }))]
-    #[case::invalid_path_id(Some(SingleSimulationError::PathNotFound { path_id: -666 }))]
-    #[case::invalid_ep_set_id(Some(SingleSimulationError::ElectricalProfileSetNotFound { electrical_profile_set_id: -666 }))]
+    #[case::normal(None, "case_1")]
+    #[case::invalid_rs_id(Some(SingleSimulationError::RollingStockNotFound { rolling_stock_id: -666 }), "case_2")]
+    #[case::invalid_path_id(Some(SingleSimulationError::PathNotFound { path_id: -666 }), "case_3")]
+    #[case::invalid_ep_set_id(Some(SingleSimulationError::ElectricalProfileSetNotFound { electrical_profile_set_id: -666 }), "case_4")]
     async fn test_single_simulation(
         db_pool: Data<DbPool>,
         #[case] expected_error: Option<SingleSimulationError>,
+        #[case] case_id: &str,
     ) {
         // GIVEN
         let (core_client, mock_response) = create_core_client();
@@ -236,13 +237,9 @@ mod tests {
                 rolling_stock_id
             }
             _ => {
-                _rs = Some(
-                    named_fast_rolling_stock(
-                        "fast_rolling_stock_infra_get_voltages",
-                        db_pool.clone(),
-                    )
-                    .await,
-                );
+                let mut rs_name = "fast_rolling_stock_infra_get_voltages_".to_string();
+                rs_name.push_str(case_id);
+                _rs = Some(named_fast_rolling_stock(&rs_name, db_pool.clone()).await);
                 _rs.as_ref().unwrap().id()
             }
         };
