@@ -15,7 +15,6 @@ import undoableSimulation from './simulation';
 
 import {
   UPDATE_CHART,
-  UPDATE_CHARTXGEV,
   UPDATE_IS_PLAYING,
   UPDATE_IS_UPDATING,
   UPDATE_ALLOWANCES_SETTINGS,
@@ -33,7 +32,6 @@ import {
 // Reducer
 export const initialState: OsrdSimulationState = {
   chart: undefined,
-  chartXGEV: undefined,
   isPlaying: false,
   isUpdating: false,
   allowancesSettings: undefined,
@@ -65,9 +63,6 @@ export default function reducer(inputState: OsrdSimulationState | undefined, act
     switch (action.type) {
       case UPDATE_CHART:
         draft.chart = action.chart;
-        break;
-      case UPDATE_CHARTXGEV:
-        draft.chartXGEV = action.chartXGEV;
         break;
       case UPDATE_IS_PLAYING:
         draft.isPlaying = action.isPlaying;

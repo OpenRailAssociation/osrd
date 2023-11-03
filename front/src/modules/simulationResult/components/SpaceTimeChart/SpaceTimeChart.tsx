@@ -56,6 +56,7 @@ export type SpaceTimeChartProps = {
   dispatchUpdateSelectedTrainId: DispatchUpdateSelectedTrainId;
   dispatchPersistentUpdateSimulation: DispatchPersistentUpdateSimulation;
   setTrainResultsToFetch?: (trainSchedulesIDs?: number[]) => void;
+  chartXScaleDomain?: number[] | Date[];
 };
 
 export default function SpaceTimeChart(props: SpaceTimeChartProps) {
@@ -74,6 +75,7 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
     dispatchUpdateSelectedTrainId,
     dispatchPersistentUpdateSimulation,
     setTrainResultsToFetch = noop,
+    chartXScaleDomain,
   } = props;
 
   const [baseHeight, setBaseHeight] = useState(initialHeight);
@@ -182,6 +184,7 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
       const trainsToDraw = trainSimulations.map((train) =>
         createTrain(CHART_AXES.SPACE_TIME, train as Train)
       );
+
       drawAllTrains(
         allowancesSettings,
         chart,
@@ -209,7 +212,7 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
    */
   useEffect(() => {
     redrawChart();
-  }, [resetChart, rotate, selectedTrain, trainSimulations, height]);
+  }, [resetChart, rotate, selectedTrain, trainSimulations, height, chartXScaleDomain]);
 
   /* add behaviour on zoom and mousemove/mouseover/wheel on the new chart each time the chart changes */
   useEffect(() => {

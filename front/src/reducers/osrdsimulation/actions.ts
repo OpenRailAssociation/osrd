@@ -6,7 +6,6 @@ import { SimulationSnapshot, OsrdSimulationState } from './types';
 
 // Action Types
 export const UPDATE_CHART = 'osrdsimu/UPDATE_CHART';
-export const UPDATE_CHARTXGEV = 'osrdsimu/UPDATE_CHARTXGEV';
 export const UPDATE_HOVER_POSITION = 'osrdsimu/UPDATE_HOVER_POSITION';
 export const UPDATE_IS_PLAYING = 'osrdsimu/UPDATE_IS_PLAYING';
 export const UPDATE_IS_UPDATING = 'osrdsimu/UPDATE_IS_UPDATING';
@@ -26,14 +25,6 @@ export const UNDO_SIMULATION = 'osrdsimu/UNDO_SIMULATION';
 export const REDO_SIMULATION = 'osrdsimu/REDO_SIMULATION';
 // Functions
 
-export function updateChartXGEV(chartXGEV: OsrdSimulationState['chartXGEV']) {
-  return (dispatch: Dispatch) => {
-    dispatch({
-      type: UPDATE_CHARTXGEV,
-      chartXGEV,
-    });
-  };
-}
 export function updateIsPlaying(isPlaying: OsrdSimulationState['isPlaying']) {
   return (dispatch: Dispatch) => {
     dispatch({
