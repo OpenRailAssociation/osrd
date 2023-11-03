@@ -25,7 +25,7 @@ class AllowanceManager(private val graph: STDCMGraph) {
         if (affectedEdges.isEmpty())
             return null // No space to try the allowance
         val context = makeAllowanceContext(affectedEdges)
-        val oldEnvelope = mergeEnvelopes(graph, affectedEdges)
+        val oldEnvelope = mergeEnvelopes(graph, affectedEdges, context)
         val newEnvelope = findEngineeringAllowance(context, oldEnvelope, neededDelay)
             ?: return null
         // We couldn't find an envelope
@@ -137,6 +137,6 @@ class AllowanceManager(private val graph: STDCMGraph) {
 private fun extractEnvelopeSection(base: Envelope, start: Double, end: Double): Envelope {
     val parts = base.slice(start, end)
     for (i in parts.indices)
-        parts[i] = parts[i].copyAndShift(-start)
+        parts[i] = parts[i].copyAndShift(-start, 0.0, end - start)
     return Envelope.make(*parts)
 }

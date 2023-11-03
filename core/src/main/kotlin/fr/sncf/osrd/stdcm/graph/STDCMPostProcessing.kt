@@ -41,7 +41,7 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
         val chunkPath = makeChunkPathFromRanges(graph, ranges)
         val trainPath = makePathProperties(infra!!, chunkPath)
         val physicsPath = EnvelopeTrainPath.from(infra, trainPath)
-        val mergedEnvelopes = mergeEnvelopeRanges(ranges)
+        val mergedEnvelopes = mergeEnvelopeRanges(ranges, physicsPath)
         val departureTime = computeDepartureTime(ranges, startTime)
         val stops = makeStops(ranges)
         val withAllowance = applyAllowance(
