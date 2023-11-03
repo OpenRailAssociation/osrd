@@ -1,7 +1,8 @@
 .study-view {
   .study-details {
-    position: relative;
+    width: 100%;
     margin-bottom: 1rem;
+    min-height: 15rem;
     .study-details-dates {
       display: flex;
       flex-wrap: wrap;
@@ -150,50 +151,6 @@
           }
           .study-details-state-step-label {
             color: var(--primary);
-          }
-        }
-      }
-    }
-    .study-details-files {
-      border: 2px solid var(--primary);
-      border-radius: 4px;
-      margin-bottom: 0.25rem;
-      .study-details-files-title {
-        display: flex;
-        align-items: center;
-        font-weight: 500;
-        padding: 0.25rem 0.5rem;
-        color: var(--white);
-        background-color: var(--primary);
-      }
-      .study-details-files-list {
-        display: flex;
-        flex-direction: column;
-        overflow: auto;
-        height: 12rem;
-        a {
-          display: flex;
-          flex-direction: column;
-          padding: 0.25rem 0.5rem;
-          transition: 0.2s;
-          &.url {
-            color: var(--cyan);
-            &:hover {
-              background-color: var(--cyan);
-            }
-          }
-          &:hover {
-            background-color: var(--primary);
-            color: var(--white);
-          }
-          .study-details-files-list-name {
-            display: flex;
-            align-items: center;
-            font-weight: 500;
-          }
-          .study-details-files-list-link {
-            font-size: 0.8rem;
-            margin-left: 1.5rem;
           }
         }
       }
