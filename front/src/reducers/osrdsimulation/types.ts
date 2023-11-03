@@ -225,7 +225,6 @@ export type SpeedSpaceSettingsType = { [key in SpeedSpaceSettingKey]: boolean };
 export interface OsrdSimulationState {
   redirectToGraph?: boolean;
   chart?: Chart;
-  chartXGEV?: Chart['x'];
   isPlaying: boolean;
   isUpdating: boolean;
   allowancesSettings?: AllowancesSettings;

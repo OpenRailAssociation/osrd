@@ -34,9 +34,10 @@ type TimeLineProps = {
   chart: Chart;
   selectedTrainId: number;
   trains: SimulationReport[];
+  onChangeXScaleDomain: (domain: Date[]) => void;
 };
 
-const TimeLine = ({ chart, selectedTrainId, trains }: TimeLineProps) => {
+const TimeLine = ({ chart, selectedTrainId, trains, onChangeXScaleDomain }: TimeLineProps) => {
   const ref = useRef<HTMLDivElement>(null);
   const [svgState, setSvg] = useState<
     d3.Selection<SVGGElement, unknown, null, undefined> | undefined
@@ -119,8 +120,8 @@ const TimeLine = ({ chart, selectedTrainId, trains }: TimeLineProps) => {
     const xScale = d3
       .scaleTime()
       .domain(dataRange)
-      .range([dimensions.margin.left, dimensions.width - dimensions.margin.right])
-      .nice();
+      .range([dimensions.margin.left, dimensions.width - dimensions.margin.right]);
+
     const axisBottomX = d3
       .axisBottom(xScale)
       .tickFormat((date) => d3.timeFormat('%H:%M')(date as Date));
@@ -158,10 +159,20 @@ const TimeLine = ({ chart, selectedTrainId, trains }: TimeLineProps) => {
 
     // drag behaviour
     let dragValue = 0;
-    const drag = d3.drag<SVGRectElement, unknown>().on('drag', (event) => {
-      dragValue += event.dx;
-      d3.select('#rectZoomTimeLine').attr('transform', `translate(${dragValue},0)`);
-    });
+    const drag = d3
+      .drag<SVGRectElement, unknown>()
+      .on('end', () => {
+        const delta = xScale.invert(dragValue).getTime() - xScale.domain()[0].getTime();
+        const newX0 = new Date(chartRect[0].getTime() + delta);
+        const newX1 = new Date(chartRect[1].getTime() + delta);
+        const newChart = { ...chart };
+        newChart.x.domain([newX0, newX1]);
+        onChangeXScaleDomain(newChart.x.domain() as Date[]);
+      })
+      .on('drag', (event) => {
+        dragValue += event.dx;
+        d3.select('#rectZoomTimeLine').attr('transform', `translate(${dragValue},0)`);
+      });
 
     svg
       .append('rect')
@@ -178,6 +189,10 @@ const TimeLine = ({ chart, selectedTrainId, trains }: TimeLineProps) => {
   useEffect(() => {
     drawChart();
   }, [trains]);
+
+  useEffect(() => {
+    drawChart();
+  }, [chart]);
 
   useEffect(() => {
     if (svgState) {
