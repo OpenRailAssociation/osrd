@@ -88,7 +88,7 @@ function Itinerary() {
   }, [extViewport]);
 
   return (
-    <div className="itinerary">
+    <div className="itinerary mb-2">
       <div className="mb-2">
         <Pathfinding zoomToFeature={zoomToFeature} />
       </div>

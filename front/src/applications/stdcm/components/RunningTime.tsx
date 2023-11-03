@@ -37,7 +37,7 @@ function RunningTime({ dispatch = noop }: RunningTimeProps) {
   }
 
   return (
-    <div className="d-flex my-2 p-2 align-items-center osrd-config-item-container">
+    <div className="d-flex mb-2 align-items-center osrd-config-item-container">
       <div className="text-orange mr-2 ml-1">
         <RxLapTimer />
       </div>
