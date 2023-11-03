@@ -12,16 +12,16 @@ import signalsIcon from 'assets/pictures/layersicons/layer_signal.svg';
 import pslsIcon from 'assets/pictures/layersicons/layer_tivs.svg';
 
 import SwitchSNCF from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
-import { useModal, Modal } from 'common/BootstrapSNCF/ModalSNCF';
+import { Modal } from 'common/BootstrapSNCF/ModalSNCF';
 import MapSettingsBackgroundSwitches from 'common/Map/Settings/MapSettingsBackgroundSwitches';
 import { GiElectric } from 'react-icons/gi';
-import { LayerType, EDITOAST_TO_LAYER_DICT, EditoastType } from '../tools/types';
-import { selectLayers } from '../../../reducers/editor';
-import { EditorEntity } from '../../../types';
-import { getMap } from '../../../reducers/map/selectors';
-import { getInfraID } from '../../../reducers/osrdconf/selectors';
-import { osrdEditoastApi } from '../../../common/api/osrdEditoastApi';
-import { updateLayersSettings } from '../../../reducers/map';
+import { LayerType, EDITOAST_TO_LAYER_DICT, EditoastType } from 'applications/editor/tools/types';
+import { selectLayers } from 'reducers/editor';
+import { EditorEntity } from 'types';
+import { getMap } from 'reducers/map/selectors';
+import { getInfraID } from 'reducers/osrdconf/selectors';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { updateLayersSettings } from 'reducers/map';
 
 export const LAYERS: Array<{ layers: LayerType[]; icon: string | JSX.Element }> = [
   { layers: ['track_sections'], icon: trackSectionsIcon },
@@ -40,17 +40,16 @@ interface LayersModalProps {
   initialLayers: Set<LayerType>;
   selection?: EditorEntity[];
   frozenLayers?: Set<LayerType>;
-  onSubmit: (args: { newLayers: Set<LayerType> }) => void;
+  onChange: (args: { newLayers: Set<LayerType> }) => void;
 }
 const LayersModal: FC<LayersModalProps> = ({
   initialLayers,
   selection,
   frozenLayers,
-  onSubmit,
+  onChange,
 }) => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
-  const { closeModal } = useModal();
   const { layersSettings } = useSelector(getMap);
   const [selectedLayers, setSelectedLayers] = useState<Set<LayerType>>(initialLayers);
   const [speedLimitTag, setSpeedLimitTag] = useState<string | undefined>(
@@ -123,24 +122,31 @@ const LayersModal: FC<LayersModalProps> = ({
             const layerKey = layers.join('-');
             const count = sum(layers.map((id) => selectionCounts[id] || 0));
             const disabled = frozenLayers && layers.some((id) => frozenLayers.has(id));
+            const checked = layers.every((id) => selectedLayers.has(id));
             return (
               <div className="col-lg-6" key={`${layerKey}-${count}-${disabled}`}>
                 <div className="d-flex align-items-center mt-2">
                   <SwitchSNCF
                     type="switch"
-                    onChange={() =>
-                      setSelectedLayers((set) => {
-                        const newSet = new Set(set);
-                        layers.forEach((id) => {
-                          if (newSet.has(id)) newSet.delete(id);
-                          else newSet.add(id);
-                        });
-                        return newSet;
-                      })
-                    }
+                    onChange={() => {
+                      const newSelectedLayersList = layers.reduce((result, layer) => {
+                        if (result.has(layer)) result.delete(layer);
+                        else result.add(layer);
+                        return result;
+                      }, new Set(selectedLayers));
+                      setSelectedLayers(newSelectedLayersList);
+                      dispatch(selectLayers(newSelectedLayersList));
+                      dispatch(
+                        updateLayersSettings({
+                          ...layersSettings,
+                          speedlimittag: speedLimitTag as string,
+                        })
+                      );
+                      onChange({ newLayers: newSelectedLayersList });
+                    }}
                     name={`editor-layer-${layerKey}`}
                     id={`editor-layer-${layerKey}`}
-                    checked={layers.every((id) => selectedLayers.has(id))}
+                    checked={checked}
                     disabled={disabled}
                   />
                   {isString(icon) ? (
@@ -150,7 +156,7 @@ const LayersModal: FC<LayersModalProps> = ({
                   )}
                   <div className="d-flex flex-column">
                     <div>{t(`Editor.layers.${layerKey}`)}</div>
-                    {!!count && (
+                    {!!count && checked && (
                       <div className="small text-muted font-italic">
                         {t('Editor.layers-modal.layer-selected-items', {
                           count,
@@ -198,26 +204,6 @@ const LayersModal: FC<LayersModalProps> = ({
             {t('Editor.layers-modal.selection-warning', { count: unselectCount })}
           </div>
         )}
-        <button type="button" className="btn btn-danger mr-2" onClick={closeModal}>
-          {t('common.cancel')}
-        </button>
-        <button
-          type="button"
-          className="btn btn-primary"
-          onClick={() => {
-            dispatch(selectLayers(selectedLayers));
-            dispatch(
-              updateLayersSettings({
-                ...layersSettings,
-                speedlimittag: speedLimitTag as string,
-              })
-            );
-            onSubmit({ newLayers: selectedLayers });
-            closeModal();
-          }}
-        >
-          {t('common.confirm')}
-        </button>
       </div>
     </Modal>
   );

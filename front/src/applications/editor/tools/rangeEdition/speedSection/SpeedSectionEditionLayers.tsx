@@ -18,16 +18,20 @@ import {
   getTrackRangeFeatures,
   isOnModeMove,
   speedSectionIsPsl,
-} from '../utils';
-import { PslSignFeature, RangeEditionState, TrackState } from '../types';
-import { ExtendedEditorContextType } from '../../editorContextTypes';
-import EntitySumUp from '../../../components/EntitySumUp';
-import { LayerType } from '../../types';
+} from 'applications/editor/tools/rangeEdition/utils';
+import {
+  PslSignFeature,
+  RangeEditionState,
+  TrackState,
+} from 'applications/editor/tools/rangeEdition/types';
+import { ExtendedEditorContextType } from 'applications/editor/tools/editorContextTypes';
+import EntitySumUp from 'applications/editor/components/EntitySumUp';
 
 export const SpeedSectionEditionLayers: FC = () => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const {
+    editorState: { editorLayers },
     renderingFingerprint,
     state: { entity, trackSectionsCache, hoveredItem, interactionState, mousePosition },
     setState,
@@ -96,8 +100,6 @@ export const SpeedSectionEditionLayers: FC = () => {
     );
     return [...pslLayers, ...pslSignLayers];
   }, [isPSL, mapStyle, showIGNBDORTHO, layersSettings, issuesSettings]);
-
-  const layers = useMemo(() => new Set(['track_sections']) as Set<LayerType>, []);
 
   // Here is where we handle loading the TrackSections attached to the speed section:
   useEffect(() => {
@@ -217,7 +219,7 @@ export const SpeedSectionEditionLayers: FC = () => {
     <>
       <GeoJSONs
         colors={colors[mapStyle]}
-        layers={layers}
+        layers={editorLayers}
         selection={selection}
         fingerprint={renderingFingerprint}
         layersSettings={layersSettings}

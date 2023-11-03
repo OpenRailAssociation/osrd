@@ -127,7 +127,7 @@ const NavButtons: NavButton[][] = [
                 ? (toolState as unknown as SelectionState).selection
                 : undefined
             }
-            onSubmit={({ newLayers }) => {
+            onChange={({ newLayers }) => {
               if (activeTool.id === 'select-items') {
                 const currentState = toolState as unknown as SelectionState;
                 (setToolState as unknown as (newState: SelectionState) => void)({

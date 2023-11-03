@@ -13,16 +13,16 @@ import GeoJSONs, { SourcesDefinitionsIndex } from 'common/Map/Layers/GeoJSONs';
 import { getEntities, getEntity } from 'applications/editor/data/api';
 import { mapValues } from 'lodash';
 import { Layer, Popup, Source } from 'react-map-gl/maplibre';
-import { getTrackRangeFeatures, isOnModeMove } from '../utils';
-import { RangeEditionState, TrackState } from '../types';
-import { ExtendedEditorContextType } from '../../editorContextTypes';
-import EntitySumUp from '../../../components/EntitySumUp';
-import { LayerType } from '../../types';
+import EntitySumUp from 'applications/editor/components/EntitySumUp';
+import { getTrackRangeFeatures, isOnModeMove } from 'applications/editor/tools/rangeEdition/utils';
+import { RangeEditionState, TrackState } from 'applications/editor/tools/rangeEdition/types';
+import { ExtendedEditorContextType } from 'applications/editor/tools/editorContextTypes';
 
 export const CatenaryEditionLayers: FC = () => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const {
+    editorState: { editorLayers },
     renderingFingerprint,
     state: { entity, trackSectionsCache, hoveredItem, interactionState, mousePosition },
     setState,
@@ -75,8 +75,6 @@ export const CatenaryEditionLayers: FC = () => {
     };
     return SourcesDefinitionsIndex.catenaries(context, 'rangeEditors/catenaries/');
   }, [mapStyle, showIGNBDORTHO, layersSettings, issuesSettings]);
-
-  const layers = useMemo(() => new Set(['track_sections']) as Set<LayerType>, []);
 
   // Here is where we handle loading the TrackSections attached to the speed section:
   useEffect(() => {
@@ -185,7 +183,7 @@ export const CatenaryEditionLayers: FC = () => {
     <>
       <GeoJSONs
         colors={colors[mapStyle]}
-        layers={layers}
+        layers={editorLayers}
         selection={selection}
         fingerprint={renderingFingerprint}
         layersSettings={layersSettings}
