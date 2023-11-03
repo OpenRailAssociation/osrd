@@ -69,7 +69,6 @@
 .form-control-container .chips-input {
   width: auto !important;
   flex-grow: 1;
-  min-height: 2.45rem;
   line-height: 1;
 }
 
@@ -96,7 +95,8 @@ button.chips.chips-btn {
 *   LABELS
 *
 */
-label, .labels {
+label,
+.labels {
   display: flex !important;
   align-items: center !important;
   white-space: nowrap;
