@@ -6,7 +6,6 @@
   "detectors": "Detectors",
   "jdz": "Zone junction",
   "layers": "Data layers",
-  "lights": "Light signals",
   "mapSettings": "Map settings",
   "mapstyles": {
     "blueprint": "Blueprint",
@@ -19,6 +18,7 @@
   "signals": "Signals",
   "signalingtype": "Signalling block type",
   "signalisation": "Signaling",
+  "signals": "Light signals",
   "showIGNBDORTHO": "BD Ortho photo ©IGN",
   "showIGNSCAN25": "SCAN PLAN/25/100 ©IGN",
   "showIGNCadastre": "Cadastre ©IGN",

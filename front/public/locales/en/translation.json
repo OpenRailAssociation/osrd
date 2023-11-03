@@ -167,8 +167,8 @@
       "frozen-layer": "needed for the active tool",
       "layer-selected-items_one": "One item selected",
       "layer-selected-items_other": "{{count}} items selected",
-      "selection-warning_one": "An element will be deselected during confirmation.",
-      "selection-warning_other": "{{count}} elements will be deselected during confirmation.",
+      "selection-warning_one": "An element has been deselected.",
+      "selection-warning_other": "{{count}} elements have been deselected.",
       "no-speed-limit-tag": "No composition code"
     },
     "linear-metadata": {

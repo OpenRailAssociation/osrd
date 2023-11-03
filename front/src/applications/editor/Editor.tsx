@@ -11,7 +11,7 @@ import 'common/Map/Map.scss';
 
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { LoaderState } from 'common/Loader';
-import { loadDataModel, updateTotalsIssue } from 'reducers/editor';
+import { loadDataModel, selectLayers, updateTotalsIssue } from 'reducers/editor';
 import { updateInfraID } from 'reducers/osrdconf';
 import { updateViewport, Viewport } from 'reducers/map';
 import { getInfraID } from 'reducers/osrdconf/selectors';
@@ -27,7 +27,6 @@ import {
   EditorContextType,
   ExtendedEditorContextType,
   FullTool,
-  ReadOnlyEditorContextType,
   Reducer,
 } from './tools/editorContextTypes';
 import { switchProps } from './tools/switchProps';
@@ -176,6 +175,11 @@ const Editor: FC = () => {
   useEffect(() => {
     if (toolAndState.tool.onMount) toolAndState.tool.onMount(extendedContext);
 
+    const layersList = toolAndState.tool.requiredLayers
+      ? new Set([...editorState.editorLayers, ...toolAndState.tool.requiredLayers])
+      : editorState.editorLayers;
+    dispatch(selectLayers(layersList));
+
     return () => {
       if (toolAndState.tool.onUnmount) toolAndState.tool.onUnmount(extendedContext);
     };
@@ -191,7 +195,7 @@ const Editor: FC = () => {
           <div className="tool-box bg-primary">
             {Object.values(TOOL_TYPES).map((toolType: TOOL_TYPES) => {
               const tool = TOOLS[toolType];
-              const { id, icon: IconComponent, labelTranslationKey, isDisabled } = tool;
+              const { id, icon: IconComponent, labelTranslationKey } = tool;
               const label = t(labelTranslationKey);
 
               return (
@@ -206,10 +210,6 @@ const Editor: FC = () => {
                     onClick={() => {
                       switchTool({ toolType, toolState: {} });
                     }}
-                    disabled={
-                      // TODO: clarify the type of extendedContext
-                      isDisabled && isDisabled(extendedContext as ReadOnlyEditorContextType<any>)
-                    }
                   >
                     <span className="sr-only">{label}</span>
                     <IconComponent />
