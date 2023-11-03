@@ -9,19 +9,13 @@ import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import ScenarioCard from 'modules/scenario/components/ScenarioCard';
 import { setFailure } from 'reducers/main';
 import ScenarioCardEmpty from 'modules/scenario/components/ScenarioCardEmpty';
-import { VscLink, VscFile, VscFiles } from 'react-icons/vsc';
 import { FaPencilAlt } from 'react-icons/fa';
 import { budgetFormat } from 'utils/numbers';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { useDispatch } from 'react-redux';
 import DateBox from 'applications/operationalStudies/components/Study/DateBox';
 import StateStep from 'applications/operationalStudies/components/Study/StateStep';
-import {
-  PostSearchApiArg,
-  ScenarioResult,
-  StudyWithScenarios,
-  osrdEditoastApi,
-} from 'common/api/osrdEditoastApi';
+import { PostSearchApiArg, ScenarioResult, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import AddOrEditStudyModal from 'modules/study/components/AddOrEditStudyModal';
 import BreadCrumbs from '../components/BreadCrumbs';
 import FilterTextField from '../components/FilterTextField';
@@ -34,15 +28,6 @@ type SortOptions =
   | 'CreationDateDesc'
   | 'LastModifiedAsc'
   | 'LastModifiedDesc';
-
-// While files property is not implemented in studies
-type StudyWithFileType = StudyWithScenarios & {
-  files: {
-    filename: string;
-    url: string;
-    name: string;
-  }[];
-};
 
 function displayScenariosList(
   scenariosList: ScenarioResult[],
@@ -134,43 +119,6 @@ export default function Study() {
   const handleSortOptions = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSortOption(e.target.value as SortOptions);
   };
-
-  // TODO: use Files when it is implemented in the backend
-  const getFileSection = () => (
-    <div className="study-details-files">
-      <div className="study-details-files-title">
-        <span className="mr-2">
-          <VscFiles />
-        </span>
-        {t('filesAndLinks')}
-        <span className="ml-auto">
-          {(study as StudyWithFileType).files ? (study as StudyWithFileType).files.length : 0}
-        </span>
-      </div>
-      <div className="study-details-files-list">
-        {(study as StudyWithFileType).files?.map((file) => {
-          const isUrl = Math.random() > 0.5;
-          return (
-            <a
-              href={file.url}
-              key={nextId()}
-              target="_blank"
-              rel="noreferrer"
-              className={isUrl ? 'url' : 'file'}
-            >
-              <span className="study-details-files-list-name">
-                <span className="mr-1">{isUrl ? <VscLink /> : <VscFile />}</span>
-                {file.name}
-              </span>
-              <span className="study-details-files-list-link">
-                {isUrl ? file.url : file.filename}
-              </span>
-            </a>
-          );
-        })}
-      </div>
-    </div>
-  );
 
   const getScenarioList = async () => {
     if (projectId && studyId) {
@@ -267,50 +215,47 @@ export default function Study() {
                   translation="modified"
                 />
               </div>
-              <div className="row">
-                <div className="col-xl-9 col-lg-8 col-md-7">
-                  <div className="study-details-name">
-                    <div className="study-name">{study.name}</div>
-                    <button
-                      className="study-details-modify-button"
-                      type="button"
-                      onClick={() =>
-                        openModal(<AddOrEditStudyModal editionMode study={study} />, 'xl')
-                      }
-                    >
-                      <span className="study-details-modify-button-text">{t('modifyStudy')}</span>
-                      <FaPencilAlt />
-                    </button>
-                  </div>
-                  {study.study_type && (
-                    <div className="study-details-type">
-                      {t(`studyCategories.${study.study_type}`)}
-                    </div>
-                  )}
-                  <div className="study-details-description">{study.description}</div>
-                  {study.state && (
-                    <div className="study-details-state">
-                      {studyStates.map(
-                        (state, idx) =>
-                          project.id &&
-                          study.id &&
-                          study.state && (
-                            <StateStep
-                              key={nextId()}
-                              projectID={project.id}
-                              studyID={study.id}
-                              number={idx + 1}
-                              studyName={study.name}
-                              state={state}
-                              done={idx <= studyStates.indexOf(study.state as StudyState)}
-                              tags={study.tags}
-                            />
-                          )
-                      )}
-                    </div>
-                  )}
+              <div className="d-flex flex-column p-2">
+                <div className="study-details-name">
+                  <div className="study-name">{study.name}</div>
+                  <button
+                    className="study-details-modify-button"
+                    type="button"
+                    onClick={() =>
+                      openModal(<AddOrEditStudyModal editionMode study={study} />, 'xl')
+                    }
+                  >
+                    <span className="study-details-modify-button-text">{t('modifyStudy')}</span>
+                    <FaPencilAlt />
+                  </button>
                 </div>
-                <div className="col-xl-3 col-lg-4 col-md-5">{getFileSection()}</div>
+                {study.study_type && (
+                  <div className="study-details-type">
+                    {t(`studyCategories.${study.study_type}`)}
+                  </div>
+                )}
+                <div className="study-details-description">{study.description}</div>
+                {study.state && (
+                  <div className="study-details-state">
+                    {studyStates.map(
+                      (state, idx) =>
+                        project.id &&
+                        study.id &&
+                        study.state && (
+                          <StateStep
+                            key={nextId()}
+                            projectID={project.id}
+                            studyID={study.id}
+                            number={idx + 1}
+                            studyName={study.name}
+                            state={state}
+                            done={idx <= studyStates.indexOf(study.state as StudyState)}
+                            tags={study.tags}
+                          />
+                        )
+                    )}
+                  </div>
+                )}
               </div>
 
               {study.service_code || study.business_code || study.budget ? (
