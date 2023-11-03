@@ -2,6 +2,8 @@ package fr.sncf.osrd.stdcm.graph
 
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.part.EnvelopePart
+import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
+import fr.sncf.osrd.envelope_sim.PhysicsPath
 import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator
 import fr.sncf.osrd.graph.Pathfinding.EdgeRange
 import fr.sncf.osrd.sim_infra.api.Block
@@ -18,7 +20,8 @@ import kotlin.math.min
 
 /** Combines all the envelopes in the given edge ranges  */
 fun mergeEnvelopeRanges(
-    edges: List<EdgeRange<STDCMEdge>>
+    edges: List<EdgeRange<STDCMEdge>>,
+    path: PhysicsPath
 ): Envelope {
     val parts = ArrayList<EnvelopePart>()
     var offset = 0.0
@@ -31,7 +34,7 @@ fun mergeEnvelopeRanges(
             sliceUntil = envelope.endPos // The diff between longs and floats can break things here
         val slicedEnvelope = Envelope.make(*envelope.slice(0.0, sliceUntil))
         for (part in slicedEnvelope)
-            parts.add(part.copyAndShift(offset))
+            parts.add(part.copyAndShift(offset, 0.0, path.length))
         offset = parts[parts.size - 1].endPos
     }
     val newEnvelope = Envelope.make(*parts.toTypedArray<EnvelopePart>())
@@ -42,12 +45,14 @@ fun mergeEnvelopeRanges(
 /** Combines all the envelopes in the given edges  */
 fun mergeEnvelopes(
     graph: STDCMGraph,
-    edges: List<STDCMEdge>
+    edges: List<STDCMEdge>,
+    context: EnvelopeSimContext
 ): Envelope {
     return mergeEnvelopeRanges(
-        edges.stream()
+        edges
             .map { e: STDCMEdge -> EdgeRange(e, 0.meters, graph.blockInfra.getBlockLength(e.block).distance) }
-            .toList()
+            .toList(),
+        context.path
     )
 }
 

@@ -626,15 +626,16 @@ public final class EnvelopePart implements SearchableEnvelope {
         return sliced;
     }
 
-    /** Returns a new EnvelopePart, where all positions are shifted by positionDelta */
-    public EnvelopePart copyAndShift(double positionDelta) {
+    /** Returns a new EnvelopePart, where all positions are shifted by positionDelta.
+     * Resulting positions are clipped to [minPosition; maxPosition]. */
+    public EnvelopePart copyAndShift(double positionDelta, double minPosition, double maxPosition) {
         var newPositions = new DoubleArrayList();
         var newSpeeds = new DoubleArrayList();
         var newTimeDeltas = new DoubleArrayList();
         newPositions.add(positions[0] + positionDelta);
         newSpeeds.add(speeds[0]);
         for (int i = 1; i < positions.length; i++) {
-            var p = positions[i] + positionDelta;
+            var p = Math.max(minPosition, Math.min(maxPosition, positions[i] + positionDelta));
             if (newPositions.get(newPositions.size() - 1) != p) {
                 // Positions that are an epsilon away may be overlapping after the shift, we only add the distinct ones
                 newPositions.add(p);
