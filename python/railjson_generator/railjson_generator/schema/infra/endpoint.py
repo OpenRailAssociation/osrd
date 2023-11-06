@@ -2,11 +2,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import IntEnum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Optional, Tuple
 
 from osrd_schemas import infra
 
 if TYPE_CHECKING:
+    from .switch import SwitchGroup
     from .track_section import TrackSection
 
 
@@ -31,7 +32,7 @@ class TrackEndpoint:
             return self.track_section.index * 2
         return self.track_section.index * 2 + 1
 
-    def get_neighbors(self) -> "TrackEndpoint":
+    def get_neighbors(self) -> List[Tuple["TrackEndpoint", Optional[SwitchGroup]]]:
         if self.endpoint == Endpoint.BEGIN:
             return self.track_section.begining_links
         return self.track_section.end_links
