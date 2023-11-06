@@ -30,6 +30,7 @@ type Props = {
   max?: number;
   step?: number | string;
   textRight?: boolean;
+  disableUnitSelector?: boolean;
 };
 
 export default function InputGroupSNCF({
@@ -51,6 +52,7 @@ export default function InputGroupSNCF({
   max,
   step,
   textRight = false,
+  disableUnitSelector = false,
 }: Props) {
   const [isDropdownShown, setIsDropdownShown] = useState(false);
   const [selected, setSelected] = useState(
@@ -119,6 +121,7 @@ export default function InputGroupSNCF({
               aria-haspopup="true"
               aria-expanded="false"
               aria-controls={id}
+              disabled={disableUnitSelector}
             >
               <span className={cx(condensed && 'small')}>{selected.label}</span>
               <i
