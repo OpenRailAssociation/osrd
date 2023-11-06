@@ -111,10 +111,10 @@ def find_detector_properties(infra: Infra):
     det_props: Dict[str, DetectorProps] = {}
     for track in infra.track_sections:
         for det_i, det in enumerate(track.waypoints):
-            incr_signals = list(_explore_signals(track, det_i, Direction.START_TO_STOP))
-            decr_signals = list(_explore_signals(track, det_i, Direction.STOP_TO_START))
-            incr_is_route_delim = any(sig.is_route_delimiter for _, sig in incr_signals)
-            decr_is_route_delim = any(sig.is_route_delimiter for _, sig in decr_signals)
+            incr_signals = list(sig for _, sig in _explore_signals(track, det_i, Direction.START_TO_STOP))
+            decr_signals = list(sig for _, sig in _explore_signals(track, det_i, Direction.STOP_TO_START))
+            incr_is_route_delim = any(sig.is_route_delimiter for sig in incr_signals)
+            decr_is_route_delim = any(sig.is_route_delimiter for sig in decr_signals)
             det_props[det.id] = DetectorProps(incr_is_route_delim, incr_signals, decr_is_route_delim, decr_signals)
     return det_props
 
@@ -124,7 +124,7 @@ class ZonePath:
     entry_det: Waypoint
     entry_dir: Direction
     exit_det: Waypoint
-    exit_dir: Waypoint
+    exit_dir: Direction
     switches_directions: Dict[str, str] = field(default_factory=dict)
 
     @property
