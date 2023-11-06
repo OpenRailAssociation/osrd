@@ -6,7 +6,7 @@ import { AiFillFolderOpen } from 'react-icons/ai';
 import { FcCalendar } from 'react-icons/fc';
 import studyLogo from 'assets/pictures/views/study.svg';
 import { budgetFormat } from 'utils/numbers';
-import { dateTimeFrenchFormatting } from 'utils/date';
+import { dateTimeFormatting } from 'utils/date';
 import { useDispatch } from 'react-redux';
 import { updateScenarioID, updateStudyID } from 'reducers/osrdconf';
 import { RiFolderChartLine } from 'react-icons/ri';
@@ -101,7 +101,7 @@ export default function StudyCard({ setFilterChips, study }: Props) {
             <FcCalendar />
           </span>
           <span className="mr-1">{t('updatedOn')}</span>
-          {study.last_modification && dateTimeFrenchFormatting(new Date(study.last_modification))}
+          {study.last_modification && dateTimeFormatting(new Date(study.last_modification))}
         </div>
       </div>
     </div>

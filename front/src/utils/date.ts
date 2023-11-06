@@ -2,6 +2,7 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/fr';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
+import i18n from 'i18n';
 
 dayjs.locale('fr');
 dayjs.extend(utc);
@@ -11,8 +12,16 @@ export function formatIsoDate(date: Date) {
   return date.toISOString().substring(0, 10);
 }
 
-export function dateTimeFrenchFormatting(date: Date) {
-  return dayjs.utc(date).tz(dayjs.tz.guess()).format('D MMM YYYY HH:mm').replace(/\./gi, '');
+export function dateTimeFormatting(date: Date, withoutTime: boolean = false) {
+  switch (i18n.language) {
+    case 'fr':
+      dayjs.locale('fr');
+      break;
+    default:
+      dayjs.locale('en-gb');
+  }
+  const dateFormat = withoutTime ? 'D MMM YYYY' : 'D MMM YYYY HH:mm';
+  return dayjs.utc(date).tz(dayjs.tz.guess()).format(dateFormat).replace(/\./gi, '');
 }
 
 /** check whether a date is included in the range or not */

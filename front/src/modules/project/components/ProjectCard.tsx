@@ -1,16 +1,17 @@
+import cx from 'classnames';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
+import { AiFillFolderOpen, AiFillCheckCircle } from 'react-icons/ai';
 import { RiCalendarLine, RiFoldersLine } from 'react-icons/ri';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { Link } from 'react-router-dom';
-import { AiFillFolderOpen, AiFillCheckCircle } from 'react-icons/ai';
 import nextId from 'react-id-generator';
-import { dateTimeFrenchFormatting } from 'utils/date';
-import { useSelector } from 'react-redux';
-import { ProjectWithStudies, SearchResultItemProject } from 'common/api/osrdEditoastApi';
+
 import { getDocument } from 'common/api/documentApi';
-import cx from 'classnames';
+import { ProjectWithStudies, SearchResultItemProject } from 'common/api/osrdEditoastApi';
 import { getUserSafeWord } from 'reducers/user/userSelectors';
+import { dateTimeFormatting } from 'utils/date';
 
 type Props = {
   setFilterChips: (filterChips: string) => void;
@@ -73,7 +74,7 @@ export default function ProjectCard({ setFilterChips, project, isSelected, toggl
           <span className="mr-1">
             <RiCalendarLine />
           </span>
-          {dateTimeFrenchFormatting(new Date(project.last_modification))}
+          {dateTimeFormatting(new Date(project.last_modification))}
         </div>
         <div>
           <span className="mr-1">
