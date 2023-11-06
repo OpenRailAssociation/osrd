@@ -202,16 +202,19 @@ export default function Study() {
                   date={study.start_date ? new Date(study.start_date) : null}
                   className="start"
                   translation="start"
+                  withoutTime
                 />
                 <DateBox
                   date={study.expected_end_date ? new Date(study.expected_end_date) : null}
                   className="estimatedend"
                   translation="estimatedend"
+                  withoutTime
                 />
                 <DateBox
                   date={study.actual_end_date ? new Date(study.actual_end_date) : null}
                   className="realend"
                   translation="realend"
+                  withoutTime
                 />
                 <DateBox
                   date={study.last_modification ? new Date(study.last_modification) : null}

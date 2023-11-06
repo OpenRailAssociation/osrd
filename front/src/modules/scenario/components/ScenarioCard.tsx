@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { RiFolderChartLine } from 'react-icons/ri';
 import infraLogo from 'assets/pictures/components/tracks.svg';
 import { AiFillFolderOpen } from 'react-icons/ai';
-import { dateTimeFrenchFormatting } from 'utils/date';
+import { dateTimeFormatting } from 'utils/date';
 import { useDispatch } from 'react-redux';
 import { updateScenarioID } from 'reducers/osrdconf';
 import { updateSelectedProjection } from 'reducers/osrdsimulation/actions';
@@ -78,8 +78,7 @@ export default function StudyCard({ setFilterChips, scenario }: Props) {
             <FcCalendar />
           </span>
           <span className="mr-1">{t('updatedOn')}</span>
-          {scenario.last_modification &&
-            dateTimeFrenchFormatting(new Date(scenario.last_modification))}
+          {scenario.last_modification && dateTimeFormatting(new Date(scenario.last_modification))}
         </div>
       </div>
     </div>
