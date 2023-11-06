@@ -157,7 +157,7 @@ impl EditoastError for diesel_async::pooled_connection::deadpool::PoolError {
     }
 
     fn get_type(&self) -> &str {
-        "editoast:DatabePoolError"
+        "editoast:DatabasePoolError"
     }
 }
 
