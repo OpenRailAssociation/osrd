@@ -79,7 +79,8 @@ impl LightRollingStockModel {
                 COALESCE(ARRAY_AGG(liveries_by_rs.liveries) FILTER (WHERE liveries_by_rs.liveries is not NULL), ARRAY[]::jsonb[]) AS liveries
             FROM rolling_stock
             LEFT JOIN liveries_by_rs liveries_by_rs ON liveries_by_rs.rolling_stock_id = rolling_stock.id
-            GROUP BY rolling_stock.id"
+            GROUP BY rolling_stock.id
+            ORDER BY rolling_stock.id"
         )
         .paginate(page, per_page)
         .load_and_count(&mut conn).await

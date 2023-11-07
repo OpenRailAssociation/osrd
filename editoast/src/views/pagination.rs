@@ -44,7 +44,7 @@ macro_rules! decl_paginated_response {
 }
 
 /// A paginated response
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct PaginatedResponse<T> {
     pub count: i64,
     pub previous: Option<i64>,

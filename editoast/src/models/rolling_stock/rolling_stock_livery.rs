@@ -104,8 +104,9 @@ pub mod tests {
     #[rstest]
     async fn create_get_delete_rolling_stock_livery(db_pool: Data<crate::DbPool>) {
         let rolling_stock_livery = rolling_stock_livery("", db_pool.clone()).await;
-        let livery_id = rolling_stock_livery.id();
+        let livery_id = rolling_stock_livery.rolling_stock_livery.id();
         let image_id = rolling_stock_livery
+            .rolling_stock_livery
             .model
             .compound_image_id
             .unwrap()

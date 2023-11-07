@@ -50,12 +50,12 @@ pub struct LightRollingStock {
     pub power_restrictions: Option<JsonValue>,
     #[diesel(sql_type = Jsonb)]
     pub energy_sources: DieselJson<Vec<EnergySource>>,
-    #[serde(skip_serializing)]
+    #[serde(skip)]
     #[diesel(sql_type = BigInt)]
     pub version: i64,
 }
 
-#[derive(Debug, QueryableByName, Serialize)]
+#[derive(Debug, QueryableByName, Serialize, Deserialize)]
 pub struct LightRollingStockWithLiveries {
     #[diesel(embed)]
     #[serde(flatten)]
