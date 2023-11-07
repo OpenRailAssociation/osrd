@@ -91,6 +91,8 @@ pub struct ScenarioWithCountTrains {
     pub scenario: Scenario,
     #[diesel(sql_type = BigInt)]
     pub trains_count: i64,
+    #[diesel(sql_type = Text)]
+    pub infra_name: String,
 }
 
 impl Scenario {
@@ -174,9 +176,15 @@ impl List<(i64, Ordering)> for ScenarioWithCountTrains {
     ) -> Result<PaginatedResponse<Self>> {
         let study_id = params.0;
         let ordering = params.1.to_sql();
-        sql_query(format!("SELECT t.*,COUNT(train_schedule.id) as trains_count FROM scenario as t
+        sql_query(format!("WITH scenarios_with_train_counts AS (
+            SELECT t.*, COUNT(train_schedule.id) as trains_count
+            FROM scenario as t
             LEFT JOIN train_schedule ON t.timetable_id = train_schedule.timetable_id WHERE t.study_id = $1
-            GROUP BY t.id ORDER BY {ordering}"))
+            GROUP BY t.id ORDER BY {ordering}
+        )
+        SELECT scenarios_with_train_counts.*, infra.name as infra_name
+        FROM scenarios_with_train_counts
+        JOIN infra ON infra.id = infra_id"))
             .bind::<BigInt, _>(study_id)
             .paginate(page, page_size)
             .load_and_count(conn).await
