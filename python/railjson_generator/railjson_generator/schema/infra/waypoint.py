@@ -1,11 +1,11 @@
 from dataclasses import dataclass, field
-from typing import Type, Union
+from typing import Union
 
 from osrd_schemas import infra
 
 from railjson_generator.schema.infra.direction import ApplicableDirection, Direction
 
-Waypoint = Union[Type["BufferStop"], Type["Detector"]]
+Waypoint = Union["BufferStop", "Detector"]
 
 
 def _buffer_stop_id():
