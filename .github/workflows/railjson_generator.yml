@@ -7,6 +7,8 @@ on:
       - python/railjson_generator/**
       - .github/workflows/railjson_generator.yml
   merge_group:
+    # TODO: paths may not be relvant for merge_group
+    # https://docs.github.com/en/webhooks/webhook-events-and-payloads#merge_group
     paths:
       - python/railjson_generator/**
       - .github/workflows/railjson_generator.yml
@@ -32,7 +34,7 @@ jobs:
       - name: Install dependencies
         run: |
           cd python/railjson_generator
-          poetry install --only dev
+          poetry install
       - name: Flake8
         run: |
           cd python/railjson_generator
@@ -50,3 +52,7 @@ jobs:
         run: |
           cd python/railjson_generator
           poetry run isort . --check
+      - name: Pytype
+        run: |
+          cd python/railjson_generator
+          poetry run pytype -j auto
