@@ -2,14 +2,15 @@ import React, { FC, useContext } from 'react';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
-import EditorContext from '../../context';
-import colors from '../../../../common/Map/Consts/colors';
-import GeoJSONs from '../../../../common/Map/Layers/GeoJSONs';
-import { RouteEditionState } from './types';
+import { compact, isEmpty } from 'lodash';
+import EditorContext from 'applications/editor/context';
+import colors from 'common/Map/Consts/colors';
+import GeoJSONs from 'common/Map/Layers/GeoJSONs';
+import { getMap } from 'reducers/map/selectors';
+import { ExtendedEditorContextType } from 'applications/editor/tools/editorContextTypes';
+import { EditRoutePathState, RouteEditionState } from './types';
 import { EditRoutePathEditionLayers, EditRoutePathLeftPanel } from './components/EditRoutePath';
 import { EditRouteMetadataLayers, EditRouteMetadataPanel } from './components/EditRouteMetadata';
-import { getMap } from '../../../../reducers/map/selectors';
-import { ExtendedEditorContextType } from '../editorContextTypes';
 
 export const RouteEditionLeftPanel: FC = () => {
   const { state } = useContext(EditorContext) as ExtendedEditorContextType<RouteEditionState>;
@@ -33,11 +34,14 @@ export const RouteEditionLayers: FC = () => {
   } = useContext(EditorContext) as ExtendedEditorContextType<RouteEditionState>;
   const { mapStyle, layersSettings, issuesSettings } = useSelector(getMap);
 
+  const { routeState } = state as EditRoutePathState;
+  const selectionList = compact([routeState.entryPoint?.id, routeState.exitPoint?.id]);
+
   return (
     <>
       {/* Editor data layer */}
       <GeoJSONs
-        selection={['placeholder']}
+        selection={selectionList.length > 1 ? selectionList : undefined}
         colors={colors[mapStyle]}
         layers={editorLayers}
         fingerprint={renderingFingerprint}

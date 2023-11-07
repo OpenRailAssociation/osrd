@@ -10,7 +10,7 @@ const RouteEditionTool: Tool<RouteEditionState> = {
   id: 'route-edition',
   icon: GiPathDistance,
   labelTranslationKey: 'Editor.tools.routes-edition.label',
-  requiredLayers: new Set(['buffer_stops', 'detectors', 'track_sections']),
+  requiredLayers: new Set(['buffer_stops', 'detectors']),
 
   getInitialState() {
     return getEmptyCreateRouteState();
