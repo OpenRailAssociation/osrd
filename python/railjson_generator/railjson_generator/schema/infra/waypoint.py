@@ -9,8 +9,8 @@ Waypoint = Union[Type["BufferStop"], Type["Detector"]]
 
 
 def _buffer_stop_id():
-    res = f"buffer_stop.{BufferStop._INDEX}"
-    BufferStop._INDEX += 1
+    res = f"buffer_stop.{BufferStop._INDEX}"  # pytype: disable=name-error
+    BufferStop._INDEX += 1  # pytype: disable=name-error
     return res
 
 
@@ -44,8 +44,8 @@ class BufferStop:
 
 
 def _detector_id():
-    res = f"detector.{Detector._INDEX}"
-    Detector._INDEX += 1
+    res = f"detector.{Detector._INDEX}"  # pytype: disable=name-error
+    Detector._INDEX += 1  # pytype: disable=name-error
     return res
 
 
