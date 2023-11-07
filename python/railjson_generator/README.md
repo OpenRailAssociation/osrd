@@ -20,7 +20,7 @@
 - `add_detector(self, position, label="detector.X", applicable_direction=ApplicableDirection.BOTH) -> Detector`: Add a detector.
 - `add_buffer_stop(self, position, label="buffer_stop.X") -> BufferStop`: Add a buffer_stop.
 - `add_signal(self, position, applicable_direction, is_route_delimiter, label="signal.X", sight_distance=400) -> Signal`: Add a signal. Simulation won't work unless logical signals are added to the signal. `is_route_delimiter` controls whether routes should stop at this signal.
-- `set_remaining_coords(self, [[x1, y1], [x2, y2], [x3, y3]])`: Sets the geometry coordinates for the track section. Sets values for extremities if none was already set, else only set values between extremities.
+- `set_remaining_coords(self, [(x1, y1), (x2, y2), (x3, y3)])`: Sets the geometry coordinates for the track section. Sets values for extremities if none was already set, else only set values between extremities.
 
 ### Signal
 
