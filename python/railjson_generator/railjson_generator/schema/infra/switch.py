@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from typing import Optional
 
 from osrd_schemas import infra
 from osrd_schemas.switch_type import (
@@ -14,8 +15,8 @@ from railjson_generator.schema.infra.endpoint import Endpoint, TrackEndpoint
 
 
 def _switch_id():
-    res = f"switch.{Switch._INDEX}"
-    Switch._INDEX += 1
+    res = f"switch.{Switch._INDEX}"  # pytype: disable=name-error
+    Switch._INDEX += 1  # pytype: disable=name-error
     return res
 
 
@@ -85,8 +86,8 @@ class Switch:
 
 @dataclass
 class Link(Switch):
-    A: TrackEndpoint = None
-    B: TrackEndpoint = None
+    A: Optional[TrackEndpoint] = None
+    B: Optional[TrackEndpoint] = None
 
     PORT_NAMES = LINK.ports
     SWITCH_TYPE = LINK.id
@@ -94,9 +95,9 @@ class Link(Switch):
 
 @dataclass
 class PointSwitch(Switch):
-    A: TrackEndpoint = None
-    B1: TrackEndpoint = None
-    B2: TrackEndpoint = None
+    A: Optional[TrackEndpoint] = None
+    B1: Optional[TrackEndpoint] = None
+    B2: Optional[TrackEndpoint] = None
 
     PORT_NAMES = POINT_SWITCH.ports
     SWITCH_TYPE = POINT_SWITCH.id
@@ -104,10 +105,10 @@ class PointSwitch(Switch):
 
 @dataclass
 class Crossing(Switch):
-    A1: TrackEndpoint = None
-    B1: TrackEndpoint = None
-    A2: TrackEndpoint = None
-    B2: TrackEndpoint = None
+    A1: Optional[TrackEndpoint] = None
+    B1: Optional[TrackEndpoint] = None
+    A2: Optional[TrackEndpoint] = None
+    B2: Optional[TrackEndpoint] = None
 
     PORT_NAMES = CROSSING.ports
     SWITCH_TYPE = CROSSING.id
@@ -115,10 +116,10 @@ class Crossing(Switch):
 
 @dataclass
 class DoubleSlipSwitch(Switch):
-    A1: TrackEndpoint = None
-    A2: TrackEndpoint = None
-    B1: TrackEndpoint = None
-    B2: TrackEndpoint = None
+    A1: Optional[TrackEndpoint] = None
+    A2: Optional[TrackEndpoint] = None
+    B1: Optional[TrackEndpoint] = None
+    B2: Optional[TrackEndpoint] = None
 
     PORT_NAMES = DOUBLE_SLIP_SWITCH.ports
     SWITCH_TYPE = DOUBLE_SLIP_SWITCH.id
@@ -126,10 +127,10 @@ class DoubleSlipSwitch(Switch):
 
 @dataclass
 class SingleSlipSwitch(Switch):
-    A1: TrackEndpoint = None
-    A2: TrackEndpoint = None
-    B1: TrackEndpoint = None
-    B2: TrackEndpoint = None
+    A1: Optional[TrackEndpoint] = None
+    A2: Optional[TrackEndpoint] = None
+    B1: Optional[TrackEndpoint] = None
+    B2: Optional[TrackEndpoint] = None
 
     PORT_NAMES = SINGLE_SLIP_SWITCH.ports
     SWITCH_TYPE = SINGLE_SLIP_SWITCH.id
