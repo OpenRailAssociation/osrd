@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Optional, Type, Union
+from typing import Type, Union
 
 from osrd_schemas import infra
 
@@ -18,8 +18,6 @@ def _buffer_stop_id():
 class BufferStop:
     position: float
     label: str = field(default_factory=_buffer_stop_id)
-    left_tvd: Optional["TVDSection"] = field(default=None, repr=False)  # noqa: F821
-    right_tvd: Optional["TVDSection"] = field(default=None, repr=False)  # noqa: F821
 
     _INDEX = 0
 
@@ -54,8 +52,6 @@ class Detector:
     position: float
     applicable_direction: ApplicableDirection = field(default=ApplicableDirection.BOTH)
     label: str = field(default_factory=_detector_id)
-    left_tvd: Optional["TVDSection"] = field(default=None, repr=False)  # noqa: F821
-    right_tvd: Optional["TVDSection"] = field(default=None, repr=False)  # noqa: F821
 
     _INDEX = 0
 

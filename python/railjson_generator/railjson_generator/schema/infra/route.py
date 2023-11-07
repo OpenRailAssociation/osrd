@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import List, Mapping
+from typing import List, Mapping, Optional
 
 from osrd_schemas import infra
 
@@ -13,7 +13,7 @@ class Route:
     release_waypoints: List[Waypoint]
     entry_point_direction: Direction
     switches_directions: Mapping[str, str] = field(default_factory=dict)
-    label: str = field(default=None)
+    label: Optional[str] = field(default=None)
 
     def __hash__(self):
         return hash(self.label)
