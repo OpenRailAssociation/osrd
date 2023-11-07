@@ -2,7 +2,7 @@
 
 For more information, and a diagram of this infrastructure, see: https://osrd.fr/en/docs/explanation/data-model/
 """
-from typing import Mapping, Tuple
+from typing import Mapping, Optional, Tuple
 
 from railjson_generator import (
     ApplicableDirection,
@@ -23,9 +23,9 @@ OUTPUT_DIR = get_output_dir()
 def place_regular_signals_detectors(
     track_section: TrackSection,
     label_suffix: str,
-    prefered_direction: Direction = None,
+    prefered_direction: Optional[Direction] = None,
     min_offset: float = 0,
-    max_offset: float = None,
+    max_offset: Optional[float] = None,
     period: float = 1500,
 ):
     """Place signals and detectors regularly on the track section.
@@ -162,9 +162,9 @@ pa3 = builder.add_point_switch(
 add_signal_on_ports(pa3, {"A": ("DA4", "SA4")})
 pa3.set_coords(-0.365, LAT_1)
 
-ta0.set_remaining_coords([[-0.4, LAT_0]])
-ta1.set_remaining_coords([[-0.4, LAT_1]])
-ta2.set_remaining_coords([[-0.4, LAT_2]])
+ta0.set_remaining_coords([(-0.4, LAT_0)])
+ta1.set_remaining_coords([(-0.4, LAT_1)])
+ta2.set_remaining_coords([(-0.4, LAT_2)])
 
 # Extra detectors, which are not associated to signals
 
@@ -202,7 +202,7 @@ ta7.add_slope(begin=7700, end=8000, slope=3)
 #  Around station B: South-West
 # ================================
 
-tb0.set_remaining_coords([[-0.4, 49.49], [-0.373, 49.49], [-0.37, 49.492]])
+tb0.set_remaining_coords([(-0.4, 49.49), (-0.373, 49.49), (-0.37, 49.492)])
 
 south_west = builder.add_operational_point(label="West_station")
 south_west.add_part(tb0, 500)
@@ -285,8 +285,8 @@ add_signal_on_ports(
 pc3.set_coords(-0.296, LAT_1)
 
 
-tc0.set_remaining_coords([[-0.309, LAT_0 + LAT_LINE_SPACE], [-0.297, LAT_0 + LAT_LINE_SPACE]])
-tc3.set_remaining_coords([[-0.309, LAT_1 - LAT_LINE_SPACE], [-0.297, LAT_1 - LAT_LINE_SPACE]])
+tc0.set_remaining_coords([(-0.309, LAT_0 + LAT_LINE_SPACE), (-0.297, LAT_0 + LAT_LINE_SPACE)])
+tc3.set_remaining_coords([(-0.309, LAT_1 - LAT_LINE_SPACE), (-0.297, LAT_1 - LAT_LINE_SPACE)])
 
 # Station
 mid_west = builder.add_operational_point(label="Mid_West_station")
@@ -420,14 +420,14 @@ add_signal_on_ports(
 )
 pe2.set_coords(-0.15, LAT_0)
 
-te0.set_remaining_coords([[-0.172, LAT_3 - 0.002]])
+te0.set_remaining_coords([(-0.172, LAT_3 - 0.002)])
 te1.set_remaining_coords(
     [
-        [-0.151, LAT_3 + LAT_LINE_SPACE],
-        [-0.164, LAT_3 + LAT_LINE_SPACE],
+        (-0.151, LAT_3 + LAT_LINE_SPACE),
+        (-0.164, LAT_3 + LAT_LINE_SPACE),
     ]
 )
-te3.set_remaining_coords([[-0.145, LAT_0 + 0.002], [-0.145, LAT_3 - 0.002]])
+te3.set_remaining_coords([(-0.145, LAT_0 + 0.002), (-0.145, LAT_3 - 0.002)])
 
 # Station
 north = builder.add_operational_point(label="North_station")
@@ -450,7 +450,7 @@ te0.add_curve(begin=500, end=1000, curve=8000)
 #  Around station F: South
 # ================================
 
-tf1.set_remaining_coords([[-0.172, 49.47], [-0.167, 49.466], [-0.135, 49.466]])
+tf1.set_remaining_coords([(-0.172, 49.47), (-0.167, 49.466), (-0.135, 49.466)])
 
 south = builder.add_operational_point(label="South_station")
 south.add_part(tf1, 4300)
@@ -487,8 +487,8 @@ pg1 = builder.add_point_switch(
 add_signal_on_ports(pg1, {"A": ("DG6", "SG6"), "B1": ("DG4", "SG4")})
 pg1.set_coords(-0.108, LAT_4 - LAT_LINE_SPACE)
 
-tg4.set_remaining_coords([[-0.09, LAT_4]])
-tg5.set_remaining_coords([[-0.09, LAT_4 - LAT_LINE_SPACE]])
+tg4.set_remaining_coords([(-0.09, LAT_4)])
+tg5.set_remaining_coords([(-0.09, LAT_4 - LAT_LINE_SPACE)])
 
 dg6 = tg3.add_detector(label="DG7", position=tg3.length / 2)
 
@@ -541,27 +541,27 @@ add_signal_on_ports(
 )
 ph1.set_coords(-0.12, LAT_1)
 
-td3.set_remaining_coords([[-0.1354, LAT_1]])
-tg0.set_remaining_coords([[-0.1354, LAT_0]])
+td3.set_remaining_coords([(-0.1354, LAT_1)])
+tg0.set_remaining_coords([(-0.1354, LAT_0)])
 tg1.set_remaining_coords(
     [
-        [-0.1346, LAT_0],
-        [-0.12, LAT_0],
-        [-0.115, 49.503],
-        [-0.115, 49.51],
-        [-0.11, LAT_4],
+        (-0.1346, LAT_0),
+        (-0.12, LAT_0),
+        (-0.115, 49.503),
+        (-0.115, 49.51),
+        (-0.11, LAT_4),
     ]
 )
 tg2.set_remaining_coords(
     [
-        [-0.1199, LAT_1],
-        [-0.1149, 49.50296],
-        [-0.1149, 49.50997],
-        [-0.1099, LAT_4 - LAT_LINE_SPACE],
+        (-0.1199, LAT_1),
+        (-0.1149, 49.50296),
+        (-0.1149, 49.50997),
+        (-0.1099, LAT_4 - LAT_LINE_SPACE),
     ]
 )
-th0.set_remaining_coords([[-0.1346, LAT_1]])
-th1.set_remaining_coords([[-0.115, 49.497], [-0.115, 49.487], [-0.11, 49.484], [-0.09, 49.484]])
+th0.set_remaining_coords([(-0.1346, LAT_1)])
+th1.set_remaining_coords([(-0.115, 49.497), (-0.115, 49.487), (-0.11, 49.484), (-0.09, 49.484)])
 
 # Station
 south_east = builder.add_operational_point(label="South_East_station")
@@ -586,8 +586,8 @@ speed_2.add_track_range(th1, 3500, 4400, ApplicableDirection.BOTH)
 #  Catenaries
 # ================================
 electrified_tracks_25000 = set(builder.infra.track_sections) - {td1, ta0}
-builder.infra.catenaries.append(Catenary("catenary_25k", "25000", electrified_tracks_25000))
-builder.infra.catenaries.append(Catenary("catenary_1.5k", "1500", {ta0}))
+builder.infra.catenaries.append(Catenary("catenary_25k", "25000", list(electrified_tracks_25000)))
+builder.infra.catenaries.append(Catenary("catenary_1.5k", "1500", [ta0]))
 
 # ================================
 #  Neutral sections
