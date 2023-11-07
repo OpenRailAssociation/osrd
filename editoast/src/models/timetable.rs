@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::diesel::QueryDsl;
 use crate::error::Result;
 use crate::models::LightRollingStockModel;
@@ -212,9 +214,18 @@ pub async fn get_timetable_train_schedules_with_simulations(
     let simulation_outputs = SimulationOutput::belonging_to(&train_schedules)
         .load::<SimulationOutput>(&mut conn)
         .await?;
-    let result = train_schedules
+    let mut output_map: HashMap<_, _> = simulation_outputs
         .into_iter()
-        .zip(simulation_outputs)
+        .map(|o| (o.train_schedule_id.unwrap(), o))
+        .collect();
+    let result: Vec<(TrainSchedule, SimulationOutput)> = train_schedules
+        .into_iter()
+        .filter_map(|schedule| {
+            schedule
+                .id
+                .and_then(|id| output_map.remove(&id))
+                .map(|output| (schedule, output))
+        })
         .collect();
     Ok(result)
 }
