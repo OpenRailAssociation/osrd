@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List
+from typing import List, Optional
 
 from osrd_schemas import infra
 
@@ -10,7 +10,7 @@ class OperationalPoint:
     trigram: str
     parts: List
 
-    def __init__(self, label: str, trigram: str = None):
+    def __init__(self, label: str, trigram: Optional[str] = None):
         self.label = label
         self.trigram = trigram or label[:3].upper()
         self.parts = list()
