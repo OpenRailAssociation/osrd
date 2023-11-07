@@ -15,8 +15,8 @@ from railjson_generator.schema.infra.waypoint import BufferStop, Detector, Waypo
 
 
 def _track_id():
-    res = f"track.{TrackSection._INDEX}"
-    TrackSection._INDEX += 1
+    res = f"track.{TrackSection._INDEX}"  # pytype: disable=name-error
+    TrackSection._INDEX += 1  # pytype: disable=name-error
     return res
 
 
@@ -34,7 +34,9 @@ class TrackSection:
     signals: List[Signal] = field(default_factory=list)
     operational_points: List[OperationalPointPart] = field(default_factory=list)
     index: int = field(default=-1, repr=False)
-    coordinates: List[Tuple[float, float]] = field(default_factory=lambda: [(None, None), (None, None)])
+    coordinates: List[Tuple[Optional[float], Optional[float]]] = field(
+        default_factory=lambda: [(None, None), (None, None)]
+    )
     begining_links: List[Tuple[TrackEndpoint, Optional[SwitchGroup]]] = field(default_factory=list, repr=False)
     end_links: List[Tuple[TrackEndpoint, Optional[SwitchGroup]]] = field(default_factory=list, repr=False)
     slopes: List[Slope] = field(default_factory=list)
