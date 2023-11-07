@@ -272,11 +272,16 @@ pub mod tests {
             .is_ok());
         TestFixture::create(Document::new(String::from("image/png"), img_bytes), db_pool).await
     }
+    pub struct RollingStockLiveryFixture {
+        pub rolling_stock_livery: TestFixture<RollingStockLiveryModel>,
+        pub rolling_stock: TestFixture<RollingStockModel>,
+        pub image: TestFixture<Document>,
+    }
 
     pub async fn rolling_stock_livery(
         name: &str,
         db_pool: Data<DbPool>,
-    ) -> TestFixture<RollingStockLiveryModel> {
+    ) -> RollingStockLiveryFixture {
         let mut rs_name = "fast_rolling_stock_".to_string();
         rs_name.push_str(name);
         let rolling_stock = named_fast_rolling_stock(&rs_name, db_pool.clone()).await;
@@ -287,7 +292,11 @@ pub mod tests {
             rolling_stock_id: Some(rolling_stock.id()),
             compound_image_id: Some(Some(image.id())),
         };
-        TestFixture::create(rolling_stock_livery, db_pool).await
+        RollingStockLiveryFixture {
+            rolling_stock_livery: TestFixture::create(rolling_stock_livery, db_pool).await,
+            rolling_stock,
+            image,
+        }
     }
 
     #[fixture]
