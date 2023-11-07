@@ -7,8 +7,8 @@ from railjson_generator.schema.infra.direction import Direction
 
 
 def _signal_id():
-    res = f"signal.{Signal._INDEX}"
-    Signal._INDEX += 1
+    res = f"signal.{Signal._INDEX}"  # pytype: disable=name-error
+    Signal._INDEX += 1  # pytype: disable=name-error
     return res
 
 
