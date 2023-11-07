@@ -274,15 +274,15 @@ async fn create(db_pool: Data<DbPool>, data: Json<InfraForm>) -> Result<impl Res
 /// Duplicate an infra
 #[post("/clone")]
 async fn clone(
-    infra: Path<i64>,
+    infra_id: Path<i64>,
     db_pool: Data<DbPool>,
     new_name: Query<InfraForm>,
 ) -> Result<Json<i64>> {
     let mut futures = Vec::<Pin<Box<dyn Future<Output = _>>>>::new();
 
-    let infra = infra.into_inner();
+    let infra_id = infra_id.into_inner();
     let name = new_name.name.clone();
-    let cloned_infra = Infra::clone(infra, db_pool.clone(), name).await?;
+    let cloned_infra = Infra::clone(infra_id, db_pool.clone(), name).await?;
     // When creating a connection for each objet, it will a panic with 'Cannot access shared transaction state' in the database pool
     // Just one connection fixes it, but partially* defeats the purpose of joining all the requests at the end
     // * AsyncPgConnection supports pipeling within one connection, but it won’t run parallel
@@ -293,7 +293,7 @@ async fn clone(
                 "INSERT INTO {model_table}(obj_id,data,infra_id) SELECT obj_id,data,$1 FROM {model_table} WHERE infra_id = $2"
             ))
             .bind::<BigInt, _>(cloned_infra.id.unwrap())
-            .bind::<BigInt, _>(infra)
+            .bind::<BigInt, _>(infra_id)
             .execute(&mut conn);
         futures.push(model);
 
@@ -310,7 +310,7 @@ async fn clone(
 
             let layer = sql_query(sql)
                 .bind::<BigInt, _>(cloned_infra.id.unwrap())
-                .bind::<BigInt, _>(infra)
+                .bind::<BigInt, _>(infra_id)
                 .execute(&mut conn);
             futures.push(layer);
         }
@@ -319,7 +319,7 @@ async fn clone(
     // Add error layers
     let error_layer = sql_query("INSERT INTO infra_layer_error(geographic, schematic, information, infra_id) SELECT geographic, schematic, information, $1 FROM infra_layer_error WHERE infra_id = $2")
         .bind::<BigInt, _>(cloned_infra.id.unwrap())
-        .bind::<BigInt, _>(infra)
+        .bind::<BigInt, _>(infra_id)
         .execute(&mut conn);
     futures.push(error_layer);
 
