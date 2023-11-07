@@ -18,7 +18,7 @@ export function getDetectorsLayerProps(params: {
     paint: {
       'circle-stroke-color': params.colors.detectors.circle,
       'circle-color': params.colors.detectors.circle,
-      'circle-radius': 3,
+      'circle-radius': 4,
     },
   };
 

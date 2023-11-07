@@ -178,6 +178,9 @@ const Editor: FC = () => {
     const layersList = toolAndState.tool.requiredLayers
       ? new Set([...editorState.editorLayers, ...toolAndState.tool.requiredLayers])
       : editorState.editorLayers;
+
+    // Remove the errors layer for better visibility in the route tool
+    if (toolAndState.tool.id === 'route-edition') layersList.delete('errors');
     dispatch(selectLayers(layersList));
 
     return () => {
