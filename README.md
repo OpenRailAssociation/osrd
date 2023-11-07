@@ -35,7 +35,7 @@ To compile and run the application with an example infrastructure:
 
 ```sh
 # build and run the entire stack
-docker-compose up -d --build
+docker compose up -d --build
 
 # generate and load an example infrastructure
 poetry --directory=python/railjson_generator install
