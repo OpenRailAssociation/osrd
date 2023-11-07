@@ -1,4 +1,4 @@
-import { Allowance, EngineeringAllowance } from 'common/api/osrdEditoastApi';
+import { Allowance } from 'common/api/osrdEditoastApi';
 import React from 'react';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
@@ -30,11 +30,11 @@ export default function AllowancesLinearView({
     return (100 * value) / pathLength;
   }
   function coloredDistribution(
-    specific: EngineeringAllowanceForm,
+    specific: RangeAllowanceForm | EngineeringAllowanceForm,
     global?: Allowance['distribution']
   ) {
     if (global) return globalDistribution;
-    if (specific && specific.distribution) return specific.distribution;
+    if (specific && 'distribution' in specific) return specific.distribution;
     return '';
   }
   return (
@@ -53,12 +53,7 @@ export default function AllowancesLinearView({
               onClick={() => setAllowanceSelectedIndex(idx)}
               key={`linearview-${typeof allowance}-${idx}`}
             >
-              <div
-                className={`value ${coloredDistribution(
-                  allowance as EngineeringAllowance,
-                  globalDistribution
-                )}`}
-              >
+              <div className={`value ${coloredDistribution(allowance, globalDistribution)}`}>
                 {getAllowanceValue(allowance.value)}
                 <div className="unit">{unitsLabels[allowance.value.value_type]}</div>
               </div>

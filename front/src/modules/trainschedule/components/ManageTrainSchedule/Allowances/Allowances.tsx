@@ -2,11 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { getAllowances, getPathfindingID } from 'reducers/osrdconf/selectors';
-import {
-  StandardAllowance,
-  EngineeringAllowance,
-  osrdEditoastApi,
-} from 'common/api/osrdEditoastApi';
+import { StandardAllowance, osrdEditoastApi, Allowance } from 'common/api/osrdEditoastApi';
 import { AiOutlineDash } from 'react-icons/ai';
 import { updateAllowances } from 'reducers/osrdconf';
 import cx from 'classnames';
@@ -132,7 +128,7 @@ export default function Allowances() {
           : [...engineeringAllowances];
       setEngineeringAllowances(
         (newAllowance
-          ? ([...newEngineeringAllowances, newAllowance] as EngineeringAllowance[])
+          ? ([...newEngineeringAllowances, newAllowance] as EngineeringAllowanceForm[])
           : newEngineeringAllowances
         ).sort((a, b) => a.begin_position - b.begin_position)
       );
@@ -148,10 +144,7 @@ export default function Allowances() {
         ? [standardAllowance as StandardAllowance]
         : [];
     dispatch(
-      updateAllowances([
-        ...validStandardAllowance,
-        ...(engineeringAllowances as EngineeringAllowance[]),
-      ])
+      updateAllowances([...validStandardAllowance, ...engineeringAllowances] as Allowance[])
     );
   }, [standardAllowance, engineeringAllowances]);
 
