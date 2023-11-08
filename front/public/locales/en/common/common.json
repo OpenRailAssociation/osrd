@@ -1,14 +1,14 @@
 {
   "actions": {
     "add": "Add",
-    "delete": "Remove",
-    "merge": "Merge into the next segment",
+    "delete": "Delete",
+    "merge": "Merge with next segment",
     "reset": "Reset",
     "split": "Split",
-    "translate": "Translate",
+    "translate": "Shift",
     "zoom-in": "Zoom in",
     "zoom-out": "Zoom out",
-    "deleteSelectionCount": "Do you confirm the deletion of {{items}} ?"
+    "deleteSelectionCount": "Do you confirm the deletion of {{items}}?"
   },
   "navigation": {
     "next": "Next",
