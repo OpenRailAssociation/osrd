@@ -281,7 +281,7 @@ async fn clone(
     let mut futures = Vec::<Pin<Box<dyn Future<Output = _>>>>::new();
 
     let infra_id = infra_id.into_inner();
-    let name = new_name.name.clone();
+    let name = Some(new_name.name.clone());
     let cloned_infra = Infra::clone(infra_id, db_pool.clone(), name).await?;
     // When creating a connection for each objet, it will a panic with 'Cannot access shared transaction state' in the database pool
     // Just one connection fixes it, but partially* defeats the purpose of joining all the requests at the end

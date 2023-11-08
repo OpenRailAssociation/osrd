@@ -37,7 +37,6 @@ pub enum Color {
 pub enum Commands {
     Runserver(RunserverArgs),
     Generate(GenerateArgs),
-    Clear(ClearArgs),
     ImportRailjson(ImportRailjsonArgs),
     #[command(
         subcommand,
@@ -51,6 +50,8 @@ pub enum Commands {
     Openapi,
     #[command(subcommand, about, long_about = "Search engine related commands")]
     Search(SearchCommands),
+    #[command(subcommand, about, long_about = "Infrastructure related commands")]
+    Infra(InfraCommands),
 }
 
 #[derive(Subcommand, Debug)]
@@ -65,6 +66,12 @@ pub enum SearchCommands {
     List,
     MakeMigration(MakeMigrationArgs),
     Refresh(RefreshArgs),
+}
+
+#[derive(Subcommand, Debug)]
+pub enum InfraCommands {
+    Clone(InfraCloneArgs),
+    Clear(ClearArgs),
 }
 
 #[derive(Args, Debug, Derivative, Clone)]
@@ -141,6 +148,15 @@ pub struct ImportProfileSetArgs {
     pub name: String,
     /// Electrical profile set file path
     pub electrical_profile_set_path: PathBuf,
+}
+
+#[derive(Args, Debug, Clone)]
+#[command(about, long_about = "Clone an infrastructure")]
+pub struct InfraCloneArgs {
+    /// Infrastructure ID
+    pub id: i64,
+    /// Infrastructure new name
+    pub new_name: Option<String>,
 }
 
 #[derive(Args, Debug)]
