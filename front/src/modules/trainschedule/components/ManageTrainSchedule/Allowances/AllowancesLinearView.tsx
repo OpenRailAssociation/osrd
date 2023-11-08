@@ -1,66 +1,107 @@
 import { Allowance } from 'common/api/osrdEditoastApi';
-import React from 'react';
+import React, { useMemo } from 'react';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
-import getAllowanceValue from './helpers';
-import { unitsLabels } from './consts';
+
+import { getAllowanceToDisplay, getAllowanceTag } from './helpers';
 import {
+  AllowanceValueForm,
   EngineeringAllowanceForm,
   RangeAllowanceForm,
   SetAllowanceSelectedIndexType,
 } from './types';
 
-type Props = {
+type AllowanceTag = {
+  allowance: { value: number | undefined; unit: string };
+  width: number;
+  leftOffset: number;
+  distributionColor?: 'MARECO' | 'LINEAR';
+};
+
+type AllowanceTagProps = {
+  allowance: { value: number | undefined; unit: string };
+  isSelected: boolean;
+  tagWidth: number;
+  leftOffset: number;
+  selectAllowance: () => void;
+  distributionColor?: 'MARECO' | 'LINEAR';
+};
+
+const AllowanceTag = ({
+  allowance,
+  isSelected,
+  tagWidth,
+  leftOffset,
+  selectAllowance,
+  distributionColor,
+}: AllowanceTagProps) => (
+  <div
+    className={cx('range', { selected: isSelected })}
+    style={{
+      width: `${tagWidth}%`,
+      left: `${leftOffset}%`,
+    }}
+    role="button"
+    tabIndex={0}
+    onClick={selectAllowance}
+  >
+    <div className={`value ${distributionColor}`}>
+      {allowance.value}
+      <div className="unit">{allowance.unit}</div>
+    </div>
+  </div>
+);
+
+type AllowancesLinearViewProps = {
   allowances: RangeAllowanceForm[] | EngineeringAllowanceForm[];
-  allowanceSelectedIndex?: number;
-  setAllowanceSelectedIndex: SetAllowanceSelectedIndexType;
   pathLength: number;
+  setAllowanceSelectedIndex: SetAllowanceSelectedIndexType;
+  allowanceSelectedIndex?: number;
+  defaultAllowance?: AllowanceValueForm;
   globalDistribution?: Allowance['distribution'];
 };
 
 export default function AllowancesLinearView({
   allowances,
-  allowanceSelectedIndex,
   setAllowanceSelectedIndex,
   pathLength,
+  allowanceSelectedIndex,
+  defaultAllowance,
   globalDistribution,
-}: Props) {
+}: AllowancesLinearViewProps) {
   const { t } = useTranslation('operationalStudies/allowances');
-  function valueToPercent(value: number) {
-    return (100 * value) / pathLength;
-  }
-  function coloredDistribution(
-    specific: RangeAllowanceForm | EngineeringAllowanceForm,
-    global?: Allowance['distribution']
-  ) {
-    if (global) return globalDistribution;
-    if (specific && 'distribution' in specific) return specific.distribution;
-    return '';
-  }
+
+  const defaultAllowanceToDisplay = useMemo(
+    () => (defaultAllowance ? getAllowanceToDisplay(defaultAllowance) : undefined),
+    [defaultAllowance]
+  );
+
+  const allowanceTags = useMemo(
+    () => allowances.map((allowance) => getAllowanceTag(allowance, pathLength, globalDistribution)),
+    [allowances, defaultAllowance, globalDistribution]
+  );
+
   return (
     <div className="outside-container">
       <div className="allowances-linear-view">
-        {allowances && allowances.length > 0 ? (
-          allowances.map((allowance, idx) => (
-            <div
-              className={cx('range', allowanceSelectedIndex === idx && 'selected')}
-              style={{
-                width: `${valueToPercent(allowance.end_position - allowance.begin_position)}%`,
-                left: `${valueToPercent(allowance.begin_position)}%`,
-              }}
-              role="button"
-              tabIndex={0}
-              onClick={() => setAllowanceSelectedIndex(idx)}
-              key={`linearview-${typeof allowance}-${idx}`}
-            >
-              <div className={`value ${coloredDistribution(allowance, globalDistribution)}`}>
-                {getAllowanceValue(allowance.value)}
-                <div className="unit">{unitsLabels[allowance.value.value_type]}</div>
-              </div>
-            </div>
+        {allowances.length > 0 ? (
+          allowanceTags.map((allowanceTag, idx) => (
+            <AllowanceTag
+              allowance={allowanceTag.allowance}
+              isSelected={allowanceSelectedIndex === idx}
+              tagWidth={allowanceTag.width}
+              leftOffset={allowanceTag.leftOffset}
+              distributionColor={allowanceTag.distributionColor}
+              selectAllowance={() => setAllowanceSelectedIndex(idx)}
+              key={`linearview-${idx}`}
+            />
           ))
         ) : (
-          <div className="range-no-allowance">{t('no-allowance')}</div>
+          <div className="range-no-allowance">
+            {(defaultAllowanceToDisplay &&
+              `${defaultAllowanceToDisplay.value}${defaultAllowanceToDisplay.unit}`) ||
+              t('no-allowance')}
+          </div>
         )}
       </div>
     </div>

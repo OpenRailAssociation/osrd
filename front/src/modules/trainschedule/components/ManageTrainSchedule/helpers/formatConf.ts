@@ -1,6 +1,7 @@
 import { isEmpty } from 'lodash';
 import { Dispatch } from 'redux';
 import { OsrdConfState, PowerRestrictionRange } from 'applications/operationalStudies/consts';
+import { formatAllowances } from 'modules/trainschedule/components/ManageTrainSchedule/Allowances/helpers';
 import { NO_POWER_RESTRICTION } from 'modules/trainschedule/components/ManageTrainSchedule/PowerRestrictionsSelector';
 import { setFailure } from 'reducers/main';
 import { time2sec } from 'utils/timeManipulation';
@@ -117,7 +118,7 @@ export default function formatConf(
       train_name: osrdconf.name,
       labels: osrdconf.labels,
       departure_time: time2sec(osrdconf.departureTime),
-      allowances: osrdconf.allowances,
+      allowances: formatAllowances(osrdconf.allowances),
       initial_speed: osrdconf.initialSpeed ? kmh2ms(osrdconf.initialSpeed) : 0,
       rolling_stock_id: osrdconf.rollingStockID as number,
       comfort: osrdconf.rollingStockComfort,

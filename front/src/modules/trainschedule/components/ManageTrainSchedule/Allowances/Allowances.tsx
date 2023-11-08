@@ -1,11 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
-import { getAllowances, getPathfindingID } from 'reducers/osrdconf/selectors';
-import { StandardAllowance, osrdEditoastApi, Allowance } from 'common/api/osrdEditoastApi';
 import { AiOutlineDash } from 'react-icons/ai';
+
+import { StandardAllowance, osrdEditoastApi, Allowance } from 'common/api/osrdEditoastApi';
 import { updateAllowances } from 'reducers/osrdconf';
-import cx from 'classnames';
+import { getAllowances, getPathfindingID } from 'reducers/osrdconf/selectors';
 import AllowancesStandardSettings from './AllowancesStandardSettings';
 import AllowancesActions from './AllowancesActions';
 import AllowancesList from './AllowancesList';
@@ -13,13 +13,13 @@ import {
   AllowanceValueForm,
   AllowancesTypes,
   EngineeringAllowanceForm,
-  ManageAllowancesType,
   OverlapAllowancesIndexesType,
+  RangeAllowanceForm,
   StandardAllowanceForm,
 } from './types';
-import AllowancesLinearView from './AllowancesLinearView';
 import { initialStandardAllowance } from './consts';
-import getAllowanceValue from './helpers';
+import getAllowanceValue, { fillAllowancesWithDefaultRanges } from './helpers';
+import AllowancesLinearView from './AllowancesLinearView';
 
 const MissingPathFindingMessage = () => {
   const { t } = useTranslation('operationalStudies/allowances');
@@ -43,16 +43,26 @@ export default function Allowances() {
     { id: pathFindingID as number },
     { skip: !pathFindingID }
   );
-  const pathLength = pathFinding?.length ? Math.round(pathFinding.length) : 0;
+
+  const pathLength = pathFinding?.length ? pathFinding.length : 0;
   const allowances = useSelector(getAllowances);
-  const [collapsedStandardAllowanceRanges, setCollapsedStandardAllowanceRanges] = useState(true);
-  const [standardAllowance, setStandardAllowance] = useState(
-    (allowances &&
-      (allowances.find(
+  const [standardAllowance, setStandardAllowance] = useState(() => {
+    if (allowances) {
+      const tmpStandardAllowance = allowances.find(
         (allowance) => allowance.allowance_type === 'standard'
-      ) as StandardAllowanceForm)) ||
-      initialStandardAllowance
-  );
+      ) as StandardAllowanceForm;
+      if (tmpStandardAllowance)
+        return {
+          ...tmpStandardAllowance,
+          ranges: fillAllowancesWithDefaultRanges(
+            tmpStandardAllowance.ranges,
+            tmpStandardAllowance.default_value,
+            pathLength
+          ),
+        };
+    }
+    return initialStandardAllowance;
+  });
   const [engineeringAllowances, setEngineeringAllowances] = useState(
     (allowances &&
       (allowances.filter(
@@ -69,6 +79,9 @@ export default function Allowances() {
   const [overlapAllowancesIndexes, setOverlapAllowancesIndexes] =
     useState<OverlapAllowancesIndexesType>([false, false]);
 
+  const [engineeringOverlapAllowancesIndexes, setEngineeringOverlapAllowancesIndexes] =
+    useState<OverlapAllowancesIndexesType>([false, false]);
+
   const standardAllowanceValue = useMemo(
     () => getAllowanceValue(standardAllowance.default_value),
     [standardAllowance]
@@ -76,10 +89,6 @@ export default function Allowances() {
 
   const setStandardDistribution = (distribution: StandardAllowance['distribution']) => {
     setStandardAllowance({ ...standardAllowance, distribution });
-  };
-
-  const setStandardValueAndUnit = (valueAndUnit: AllowanceValueForm) => {
-    setStandardAllowance({ ...standardAllowance, default_value: valueAndUnit });
   };
 
   const toggleStandardAllowanceSelectedIndex = (AllowanceIndex?: number) => {
@@ -96,45 +105,37 @@ export default function Allowances() {
   const resetFunction = (type: AllowancesTypes) => {
     if (type === AllowancesTypes.standard) {
       setStandardAllowance(initialStandardAllowance);
+      setStandardAllowanceSelectedIndex(undefined);
     }
     if (type === AllowancesTypes.standard) {
       setEngineeringAllowances([]);
-    }
-  };
-
-  // This function manage "add" and "delete" allowance, "update" is "delete" followed by "add"
-  const manageAllowance = ({
-    type,
-    newAllowance,
-    allowanceIndexToDelete,
-  }: ManageAllowancesType) => {
-    if (type === AllowancesTypes.standard) {
-      const newRanges =
-        allowanceIndexToDelete !== undefined
-          ? standardAllowance.ranges.filter((_, idx) => allowanceIndexToDelete !== idx)
-          : [...standardAllowance.ranges];
-      setStandardAllowance({
-        ...standardAllowance,
-        ranges: (newAllowance ? [...newRanges, newAllowance] : newRanges).sort(
-          (a, b) => a.begin_position - b.begin_position
-        ),
-      });
-      setStandardAllowanceSelectedIndex(undefined);
-    }
-    if (type === AllowancesTypes.engineering) {
-      const newEngineeringAllowances =
-        allowanceIndexToDelete !== undefined
-          ? engineeringAllowances.filter((_, index) => index !== allowanceIndexToDelete)
-          : [...engineeringAllowances];
-      setEngineeringAllowances(
-        (newAllowance
-          ? ([...newEngineeringAllowances, newAllowance] as EngineeringAllowanceForm[])
-          : newEngineeringAllowances
-        ).sort((a, b) => a.begin_position - b.begin_position)
-      );
       setEngineeringAllowanceSelectedIndex(undefined);
     }
   };
+
+  const updateStandardAllowanceDefaultValue = (newDefaultValue: AllowanceValueForm) => {
+    setStandardAllowance({ ...standardAllowance, default_value: newDefaultValue });
+  };
+
+  const updateStandardAllowances = (newStandardAllowanceRanges: RangeAllowanceForm[]) => {
+    setStandardAllowance({
+      ...standardAllowance,
+      ranges: newStandardAllowanceRanges,
+    });
+    setStandardAllowanceSelectedIndex(undefined);
+  };
+
+  const updateEngineeringAllowances = (newStandardAllowanceRanges: EngineeringAllowanceForm[]) => {
+    setEngineeringAllowances(newStandardAllowanceRanges);
+    setEngineeringAllowanceSelectedIndex(undefined);
+  };
+
+  useEffect(() => {
+    const newRanges = standardAllowance.ranges.map((allowance) =>
+      allowance.isDefault ? { ...allowance, value: standardAllowance.default_value } : allowance
+    );
+    setStandardAllowance({ ...standardAllowance, ranges: newRanges });
+  }, [standardAllowance.default_value]);
 
   // dispatch only the valid allowances in the store
   useEffect(() => {
@@ -161,55 +162,40 @@ export default function Allowances() {
               distribution={standardAllowance.distribution}
               valueAndUnit={standardAllowance.default_value}
               setDistribution={setStandardDistribution}
-              setValueAndUnit={setStandardValueAndUnit}
+              updateStandardAllowanceDefaultValue={updateStandardAllowanceDefaultValue}
             />
             {standardAllowanceValue !== undefined && standardAllowanceValue > 0 && (
               <>
-                <button
-                  className="subtitle mb-1 mt-2"
-                  type="button"
-                  onClick={() =>
-                    setCollapsedStandardAllowanceRanges(!collapsedStandardAllowanceRanges)
-                  }
-                >
+                <div className="subtitle mb-2 mt-2">
                   <AiOutlineDash />
                   <span className="ml-1">{t('standardAllowanceIntervals')}</span>
-                  <span className={cx('ml-auto', standardAllowance.ranges.length > 0 && 'd-none')}>
-                    {collapsedStandardAllowanceRanges ? (
-                      <i className="icons-arrow-down" />
-                    ) : (
-                      <i className="icons-arrow-up" />
-                    )}
-                  </span>
-                </button>
-                {(!collapsedStandardAllowanceRanges || standardAllowance.ranges.length > 0) && (
-                  <>
-                    <AllowancesActions
-                      allowances={standardAllowance.ranges}
-                      pathLength={pathLength}
-                      manageAllowance={manageAllowance}
-                      type={AllowancesTypes.standard}
-                      allowanceSelectedIndex={standardAllowanceSelectedIndex}
-                      setAllowanceSelectedIndex={setStandardAllowanceSelectedIndex}
-                      setOverlapAllowancesIndexes={setOverlapAllowancesIndexes}
-                      pathFindingSteps={pathFinding?.steps}
-                    />
-                    <AllowancesLinearView
-                      allowances={standardAllowance.ranges}
-                      pathLength={pathLength}
-                      allowanceSelectedIndex={standardAllowanceSelectedIndex}
-                      setAllowanceSelectedIndex={toggleStandardAllowanceSelectedIndex}
-                      globalDistribution={standardAllowance.distribution}
-                    />
-                    <AllowancesList
-                      allowances={standardAllowance.ranges}
-                      type={AllowancesTypes.standard}
-                      allowanceSelectedIndex={standardAllowanceSelectedIndex}
-                      setAllowanceSelectedIndex={toggleStandardAllowanceSelectedIndex}
-                      overlapAllowancesIndexes={overlapAllowancesIndexes}
-                    />
-                  </>
-                )}
+                </div>
+                <AllowancesActions
+                  allowances={standardAllowance.ranges}
+                  pathLength={pathLength}
+                  type={AllowancesTypes.standard}
+                  allowanceSelectedIndex={standardAllowanceSelectedIndex}
+                  setAllowanceSelectedIndex={setStandardAllowanceSelectedIndex}
+                  setOverlapAllowancesIndexes={setOverlapAllowancesIndexes}
+                  pathFindingSteps={pathFinding?.steps}
+                  updateAllowances={updateStandardAllowances}
+                  defaultAllowance={standardAllowance.default_value}
+                  overlapAllowancesIndexes={overlapAllowancesIndexes}
+                />
+                <AllowancesLinearView
+                  allowances={standardAllowance.ranges}
+                  defaultAllowance={standardAllowance.default_value}
+                  pathLength={pathLength}
+                  allowanceSelectedIndex={standardAllowanceSelectedIndex}
+                  setAllowanceSelectedIndex={toggleStandardAllowanceSelectedIndex}
+                  globalDistribution={standardAllowance.distribution}
+                />
+                <AllowancesList
+                  allowances={standardAllowance.ranges}
+                  allowanceSelectedIndex={standardAllowanceSelectedIndex}
+                  setAllowanceSelectedIndex={toggleStandardAllowanceSelectedIndex}
+                  overlapAllowancesIndexes={overlapAllowancesIndexes}
+                />
               </>
             )}
           </div>
@@ -232,11 +218,13 @@ export default function Allowances() {
             <AllowancesActions
               allowances={engineeringAllowances}
               pathLength={pathLength}
-              manageAllowance={manageAllowance}
+              updateAllowances={updateEngineeringAllowances}
               type={AllowancesTypes.engineering}
               allowanceSelectedIndex={EngineeringAllowanceSelectedIndex}
               setAllowanceSelectedIndex={setEngineeringAllowanceSelectedIndex}
               pathFindingSteps={pathFinding?.steps}
+              overlapAllowancesIndexes={engineeringOverlapAllowancesIndexes}
+              setOverlapAllowancesIndexes={setEngineeringOverlapAllowancesIndexes}
             />
             {/*
               * Temporary desactivated until new version with overlap
@@ -250,9 +238,9 @@ export default function Allowances() {
               */}
             <AllowancesList
               allowances={engineeringAllowances}
-              type={AllowancesTypes.engineering}
               allowanceSelectedIndex={EngineeringAllowanceSelectedIndex}
               setAllowanceSelectedIndex={toggleEngineeringAllowanceSelectedIndex}
+              overlapAllowancesIndexes={engineeringOverlapAllowancesIndexes}
             />
           </div>
         </>

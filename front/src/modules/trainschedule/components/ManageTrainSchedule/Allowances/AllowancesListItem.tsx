@@ -27,9 +27,9 @@ export default function AllowancesListItem({
   setAllowanceSelectedIndex,
 }: AllowanceItemProps) {
   const { t } = useTranslation('operationalStudies/allowances');
-  return 'begin_position' in allowance ? (
+  return (
     <button
-      className={cx('allowance', isSelected && 'selected', isOverlapped && 'overlapped')}
+      className={cx('allowance', { selected: isSelected, overlapped: isOverlapped })}
       type="button"
       onClick={() => setAllowanceSelectedIndex(idx)}
       data-testid="engineering-allowance"
@@ -40,9 +40,9 @@ export default function AllowancesListItem({
         <span className="separator">
           <TbArrowRightBar />
         </span>
-        <span className="end">{allowance.end_position}m</span>
+        <span className="end">{Math.round(allowance.end_position)}m</span>
       </div>
-      <div className="length">{allowance.end_position - allowance.begin_position}m</div>
+      <div className="length">{Math.round(allowance.end_position) - allowance.begin_position}m</div>
       {'allowance_type' in allowance &&
         allowance.allowance_type === AllowancesTypes.engineering && (
           <div className={`distribution ${allowance.distribution}`}>
@@ -54,5 +54,5 @@ export default function AllowancesListItem({
         <span className="unit">{unitsLabels[allowance.value.value_type]}</span>
       </div>
     </button>
-  ) : null;
+  );
 }

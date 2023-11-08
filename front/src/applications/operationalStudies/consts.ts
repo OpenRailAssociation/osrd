@@ -3,7 +3,6 @@ import { SwitchType } from 'types';
 import { ObjectFieldsTypes } from 'utils/types';
 import { Position, Feature } from 'geojson';
 import {
-  Allowance,
   AllowanceValue,
   Comfort,
   ElectrificationRange,
@@ -15,6 +14,7 @@ import {
 } from 'common/api/osrdEditoastApi';
 import { LinearMetadataItem } from 'common/IntervalsDataViz/types';
 import { HeightPosition } from 'reducers/osrdsimulation/types';
+import { AllowanceForm } from 'modules/trainschedule/components/ManageTrainSchedule/Allowances/types';
 
 export const BLOCKTYPES = [
   {
@@ -161,7 +161,7 @@ export interface OsrdConfState {
   trainCount: number;
   trainStep: number;
   trainDelta: number;
-  allowances: Allowance[];
+  allowances: AllowanceForm[];
   usingElectricalProfiles: boolean;
   labels: string[];
   projectID?: number;

@@ -75,6 +75,8 @@ export default function adjustConfWithTrainToModify(
     }
   }
 
+  if (trainSchedule.allowances) dispatch(updateAllowances(trainSchedule.allowances));
+
   if (trainSchedule.power_restriction_ranges) {
     // TODO: refacto this when using the new train_schedule endpoints
     dispatch(

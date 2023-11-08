@@ -1,8 +1,6 @@
-import React from 'react';
-import { useTranslation } from 'react-i18next';
+import React, { useCallback } from 'react';
 import {
   SetAllowanceSelectedIndexType,
-  AllowancesTypes,
   OverlapAllowancesIndexesType,
   RangeAllowanceForm,
   EngineeringAllowanceForm,
@@ -12,7 +10,6 @@ import AllowancesListItem from './AllowancesListItem';
 type AllowancesListProps = {
   allowances: RangeAllowanceForm[] | EngineeringAllowanceForm[];
   allowanceSelectedIndex?: number;
-  type: AllowancesTypes;
   setAllowanceSelectedIndex: SetAllowanceSelectedIndexType;
   overlapAllowancesIndexes?: OverlapAllowancesIndexesType;
 };
@@ -20,64 +17,63 @@ type AllowancesListProps = {
 export default function AllowancesList({
   allowances,
   allowanceSelectedIndex,
-  type,
   setAllowanceSelectedIndex,
   overlapAllowancesIndexes,
 }: AllowancesListProps) {
-  const { t } = useTranslation('operationalStudies/allowances');
-
   // Test if index of allowance is part of overlapped allowances
   // It's an array with index of first and last allowance concerned
   // false if selected, -1 if no allowance founded
   //
   // Have to test if :
-  const isOverlapped = (index: number) =>
-    overlapAllowancesIndexes &&
-    // indexes ARE thoses concerned
-    (index === overlapAllowancesIndexes[0] ||
-      index === overlapAllowancesIndexes[1] ||
-      // If [0] is not selected (not false)
-      (overlapAllowancesIndexes[0] !== false &&
-        // If [0] is a find one, so !== -1
-        overlapAllowancesIndexes[0] > -1 &&
-        // if [0] is concerned
-        index > overlapAllowancesIndexes[0] &&
-        overlapAllowancesIndexes[1] !== false &&
-        overlapAllowancesIndexes[1] > -1 &&
-        index < overlapAllowancesIndexes[1]));
+  const isOverlapped = useCallback(
+    (index: number) => {
+      if (!overlapAllowancesIndexes) return false;
 
-  if (type === AllowancesTypes.standard) {
-    return (
-      <div className="allowances-list">
-        {allowances &&
-          allowances.map((allowance: RangeAllowanceForm, idx) => (
+      // if indexes are both -1 or false, return false
+      if (
+        overlapAllowancesIndexes.every(
+          (overlapIndex) => overlapIndex === -1 || overlapIndex === false
+        )
+      )
+        return false;
+
+      const firstIndex =
+        overlapAllowancesIndexes[0] !== false && overlapAllowancesIndexes[0] > -1
+          ? overlapAllowancesIndexes[0]
+          : 0;
+      const lastIndex =
+        overlapAllowancesIndexes[1] !== false && overlapAllowancesIndexes[1] > -1
+          ? overlapAllowancesIndexes[1]
+          : allowances.length - 1;
+
+      // check if index is between overlapAllowancesIndexes
+      return firstIndex <= index && index <= lastIndex;
+    },
+    [overlapAllowancesIndexes]
+  );
+
+  return (
+    <div className="allowances-list">
+      {allowances
+        .map((allowance, idx) => ({
+          ...allowance,
+          isOverlapped: isOverlapped(idx),
+          selectAllowance: () => setAllowanceSelectedIndex(idx),
+          isSelected: allowanceSelectedIndex === idx,
+        }))
+        .filter((allowance) => !allowance.isDefault)
+        .map((allowance, idx) =>
+          !allowance.isDefault ? (
             <AllowancesListItem
               allowance={allowance}
               idx={idx}
-              isSelected={allowanceSelectedIndex === idx}
-              setAllowanceSelectedIndex={setAllowanceSelectedIndex}
-              isOverlapped={isOverlapped(idx)}
-              key={`allowance-${type}-${idx}`}
+              isSelected={allowance.isSelected}
+              setAllowanceSelectedIndex={allowance.selectAllowance}
+              isOverlapped={allowance.isOverlapped}
+              key={`allowance-${idx}`}
             />
-          ))}
-      </div>
-    );
-  }
-  if (type === AllowancesTypes.engineering) {
-    return (
-      <div className="allowances-list">
-        {allowances &&
-          allowances.map((allowance, idx) => (
-            <AllowancesListItem
-              allowance={allowance}
-              idx={idx}
-              isSelected={allowanceSelectedIndex === idx}
-              setAllowanceSelectedIndex={setAllowanceSelectedIndex}
-              key={`allowance-${type}-${idx}`}
-            />
-          ))}
-      </div>
-    );
-  }
-  return <>{t('no-allowance')}</>;
+          ) : null
+        )}
+    </div>
+  );
 }

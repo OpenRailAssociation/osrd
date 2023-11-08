@@ -6,48 +6,60 @@ import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import { FaPlus, FaSearch, FaTrash } from 'react-icons/fa';
 import { CgArrowsShrinkH } from 'react-icons/cg';
 import { BiArrowFromLeft, BiArrowFromRight } from 'react-icons/bi';
-import { EngineeringAllowance, PathStep, RangeAllowance } from 'common/api/osrdEditoastApi';
+import { EngineeringAllowance, PathStep } from 'common/api/osrdEditoastApi';
 import { BsCheckLg } from 'react-icons/bs';
 import { MdCancel } from 'react-icons/md';
 import cx from 'classnames';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
+import { removeElementAtIndex, replaceElementAtIndex } from 'utils/array';
+import { sortBy } from 'lodash';
 import { unitsList, unitsNames, unitsTypes } from './consts';
 import {
   AllowancesTypes,
   SetAllowanceSelectedIndexType,
-  ManageAllowancesType,
   ActionOnAllowance,
   OverlapAllowancesIndexesType,
   AllowanceValueForm,
   RangeAllowanceForm,
   EngineeringAllowanceForm,
 } from './types';
-import getAllowanceValue, { findAllowanceOverlap } from './helpers';
+import getAllowanceValue, {
+  fillAllowancesWithDefaultRanges,
+  findAllowanceOverlap,
+  getExactEndPosition,
+  getFirstEmptyRange,
+  getFirstEmptyRangeFromPosition,
+} from './helpers';
 import AllowancesModalOP from './AllowancesModalOP';
 
-type Props = {
-  allowances: RangeAllowanceForm[] | EngineeringAllowanceForm[];
-  manageAllowance: (props: ManageAllowancesType) => void;
+interface Props<T extends RangeAllowanceForm | EngineeringAllowanceForm> {
+  allowances: T[];
+  defaultAllowance?: AllowanceValueForm;
   pathLength: number;
   pathFindingSteps?: PathStep[];
   allowanceSelectedIndex?: number;
+  updateAllowances: (allowances: T[]) => void;
   setAllowanceSelectedIndex: SetAllowanceSelectedIndexType;
-  setOverlapAllowancesIndexes?: (overlapAllowancesIndexes: OverlapAllowancesIndexesType) => void;
+  setOverlapAllowancesIndexes: (overlapAllowancesIndexes: OverlapAllowancesIndexesType) => void;
   type: 'engineering' | 'standard';
-};
+  overlapAllowancesIndexes: OverlapAllowancesIndexesType;
+}
 
-export default function AllowancesActions({
+const AllowancesActions = <T extends RangeAllowanceForm | EngineeringAllowanceForm>({
   allowances,
-  manageAllowance,
   pathLength,
   pathFindingSteps,
   allowanceSelectedIndex,
   setAllowanceSelectedIndex,
   setOverlapAllowancesIndexes,
+  updateAllowances,
   type,
-}: Props) {
+  defaultAllowance,
+  overlapAllowancesIndexes,
+}: Props<T>) => {
   const { t } = useTranslation('operationalStudies/allowances');
   const { openModal } = useModal();
+
   const distributionsList = [
     {
       label: (
@@ -68,36 +80,46 @@ export default function AllowancesActions({
       value: 'MARECO',
     },
   ];
+
+  const roundedPathLength = useMemo(() => Math.round(pathLength), [pathLength]);
+  const [isMarginDefinedEverywhere, setIsMarginDefinedEverywhere] = useState(false);
+
   const [beginPosition, setBeginPosition] = useState(0);
-  const [endPosition, setEndPosition] = useState(pathLength);
+  const [endPosition, setEndPosition] = useState(roundedPathLength);
+
   const [allowanceLength, setAllowanceLength] = useState(endPosition - beginPosition);
   const [distribution, setDistribution] = useState(distributionsList[0].value);
   const [valueAndUnit, setValueAndUnit] = useState<AllowanceValueForm>();
   const [isValid, setIsValid] = useState(false);
+  const [nextPosition, setNextPosition] = useState(0);
 
   const allowanceValue = useMemo(() => {
     if (valueAndUnit) return getAllowanceValue(valueAndUnit);
     return undefined;
   }, [valueAndUnit]);
 
-  function checkValidity() {
-    if (setOverlapAllowancesIndexes) {
-      const overlapAllowancesIndexes = findAllowanceOverlap({
-        allowances,
-        beginPosition,
-        endPosition,
-        currentAllowanceSelected: allowanceSelectedIndex,
-      });
-      setOverlapAllowancesIndexes(overlapAllowancesIndexes);
-      if (!overlapAllowancesIndexes.every((index) => index === false || index === -1)) return;
-    }
+  const isDisabled = useMemo(
+    () => isMarginDefinedEverywhere && allowanceSelectedIndex === undefined,
+    [isMarginDefinedEverywhere, allowanceSelectedIndex]
+  );
 
-    setIsValid(
-      beginPosition < endPosition &&
-        allowanceValue !== undefined &&
-        allowanceValue > 0 &&
-        endPosition <= pathLength
-    );
+  function checkValidity() {
+    if (isMarginDefinedEverywhere && allowanceSelectedIndex === undefined) {
+      setOverlapAllowancesIndexes([false, false]);
+      return;
+    }
+    const newOverlapAllowancesIndexes = findAllowanceOverlap({
+      allowances,
+      beginPosition,
+      endPosition,
+      currentAllowanceSelected: allowanceSelectedIndex,
+    });
+    setOverlapAllowancesIndexes(newOverlapAllowancesIndexes);
+    if (!newOverlapAllowancesIndexes.every((index) => index === false || index === -1)) {
+      setIsValid(false);
+      return;
+    }
+    setIsValid(!!allowanceValue && beginPosition < endPosition && endPosition <= roundedPathLength);
   }
 
   const handleInputFrom = (value: number) => {
@@ -115,37 +137,80 @@ export default function AllowancesActions({
     setEndPosition(beginPosition + value);
   };
 
-  const handleManageAllowance = (action: ActionOnAllowance) => {
-    let newAllowance;
-    if (action === ActionOnAllowance.add || action === ActionOnAllowance.update) {
-      if (type === AllowancesTypes.standard) {
-        newAllowance = {
-          begin_position: beginPosition,
-          end_position: endPosition,
-          value: valueAndUnit,
-        } as RangeAllowanceForm;
-      }
+  const updateInputRangeExtremities = () => {
+    if (allowanceSelectedIndex !== undefined && allowances.length > allowanceSelectedIndex) {
+      const selectedAllowance = allowances[allowanceSelectedIndex];
+      setBeginPosition(selectedAllowance.begin_position);
+      setEndPosition(Math.round(selectedAllowance.end_position));
+      setAllowanceLength(
+        Math.round(selectedAllowance.end_position) - selectedAllowance.begin_position
+      );
+      setValueAndUnit(selectedAllowance.value);
       if (type === AllowancesTypes.engineering) {
-        newAllowance = {
-          allowance_type: type,
-          distribution,
-          begin_position: beginPosition,
-          end_position: endPosition,
-          value: valueAndUnit,
-        } as EngineeringAllowanceForm;
+        const selectedEngineeringAllowance = allowances[
+          allowanceSelectedIndex
+        ] as EngineeringAllowance;
+        setDistribution(selectedEngineeringAllowance.distribution);
       }
+      return;
     }
-    manageAllowance({
-      type: type as AllowancesTypes,
-      newAllowance,
-      allowanceIndexToDelete:
-        action === ActionOnAllowance.delete || action === ActionOnAllowance.update
-          ? allowanceSelectedIndex
-          : undefined,
-    });
-    // Follow natural behaviour of allowances determination
-    setBeginPosition(endPosition + 1);
-    setEndPosition(pathLength);
+
+    let firstEmptyRange = getFirstEmptyRangeFromPosition(allowances, nextPosition, pathLength);
+    if (!firstEmptyRange) {
+      firstEmptyRange = getFirstEmptyRange(allowances, pathLength);
+    }
+
+    if (firstEmptyRange) {
+      setBeginPosition(firstEmptyRange.beginPosition);
+      setEndPosition(Math.round(firstEmptyRange.endPosition));
+      setIsMarginDefinedEverywhere(false);
+      if (setOverlapAllowancesIndexes) setOverlapAllowancesIndexes([false, false]);
+    } else {
+      // if no empty range, disable all the inputs
+      setIsMarginDefinedEverywhere(true);
+    }
+  };
+
+  const handleManageAllowance = (action: ActionOnAllowance) => {
+    let newAllowancesRanges = [...allowances] as T[];
+    if (action === ActionOnAllowance.delete && allowanceSelectedIndex !== undefined) {
+      newAllowancesRanges = removeElementAtIndex(allowances, allowanceSelectedIndex);
+    } else {
+      const newAllowance = {
+        begin_position: beginPosition,
+        end_position: getExactEndPosition(endPosition, roundedPathLength, pathLength),
+        value: valueAndUnit,
+        ...(type === AllowancesTypes.engineering
+          ? {
+              allowance_type: type,
+              distribution,
+            }
+          : {}),
+      } as T;
+      if (action === ActionOnAllowance.add) {
+        newAllowancesRanges = sortBy(
+          [...allowances, newAllowance],
+          (allowance) => allowance.begin_position
+        );
+      } else if (action === ActionOnAllowance.update && allowanceSelectedIndex !== undefined) {
+        newAllowancesRanges = replaceElementAtIndex(
+          allowances,
+          allowanceSelectedIndex,
+          newAllowance
+        );
+      }
+      setNextPosition(newAllowance.end_position + 1);
+    }
+
+    if (type === AllowancesTypes.standard && defaultAllowance) {
+      newAllowancesRanges = fillAllowancesWithDefaultRanges(
+        newAllowancesRanges,
+        defaultAllowance,
+        pathLength
+      ) as T[];
+    }
+
+    updateAllowances(newAllowancesRanges);
   };
 
   const handleValueAndUnit = (newValueAndUnit: InputGroupSNCFValue) => {
@@ -166,41 +231,20 @@ export default function AllowancesActions({
     return unitsNames.percentage;
   };
 
-  useEffect(() => {
-    if (allowanceSelectedIndex !== undefined) {
-      if (type === AllowancesTypes.standard) {
-        const selectedAllowance = allowances[allowanceSelectedIndex] as RangeAllowance;
-        setBeginPosition(selectedAllowance.begin_position);
-        setEndPosition(selectedAllowance.end_position);
-        setAllowanceLength(selectedAllowance.end_position - selectedAllowance.begin_position);
-        setValueAndUnit(selectedAllowance.value);
-      }
-      if (type === AllowancesTypes.engineering) {
-        const selectedAllowance = allowances[allowanceSelectedIndex] as EngineeringAllowance;
-        setBeginPosition(selectedAllowance.begin_position);
-        setEndPosition(selectedAllowance.end_position);
-        setAllowanceLength(selectedAllowance.end_position - selectedAllowance.begin_position);
-        setDistribution(selectedAllowance.distribution);
-        setValueAndUnit(selectedAllowance.value);
-      }
-    }
-  }, [allowanceSelectedIndex]);
-
   // Test validity at each change
   useEffect(() => {
     checkValidity();
-  }, [beginPosition, endPosition, allowanceValue, allowanceSelectedIndex]);
+  }, [
+    beginPosition,
+    endPosition,
+    allowanceValue,
+    allowanceSelectedIndex,
+    isMarginDefinedEverywhere,
+  ]);
 
   useEffect(() => {
-    if (allowanceSelectedIndex === undefined) {
-      const newBeginPosition = allowances?.at(-1)?.end_position;
-      const newEndPosition =
-        newBeginPosition && newBeginPosition === pathLength ? pathLength + 1 : pathLength;
-      setBeginPosition(newBeginPosition ? newBeginPosition + 1 : 0);
-      setEndPosition(newEndPosition);
-      if (newBeginPosition) setAllowanceLength(newEndPosition - newBeginPosition + 1);
-    }
-  }, [allowanceSelectedIndex]);
+    updateInputRangeExtremities();
+  }, [allowances, allowanceSelectedIndex, isDisabled, defaultAllowance]);
 
   return (
     <div className="allowances-actions">
@@ -220,7 +264,11 @@ export default function AllowancesActions({
             noMargin
             textRight
             min={0}
-            isInvalid={beginPosition >= endPosition || (!beginPosition && beginPosition !== 0)}
+            isInvalid={
+              beginPosition >= endPosition ||
+              (!beginPosition && beginPosition !== 0) ||
+              ![-1, false].includes(overlapAllowancesIndexes[0])
+            }
             value={beginPosition}
             onChange={(e) => handleInputFrom(+e.target.value)}
             appendOptions={
@@ -236,6 +284,7 @@ export default function AllowancesActions({
                   ),
               }
             }
+            disabled={isDisabled}
           />
         </div>
         <div>
@@ -256,7 +305,8 @@ export default function AllowancesActions({
             isInvalid={
               beginPosition >= endPosition ||
               (!endPosition && endPosition !== 0) ||
-              endPosition > pathLength
+              endPosition > roundedPathLength ||
+              ![-1, false].includes(overlapAllowancesIndexes[1])
             }
             value={endPosition}
             onChange={(e) => handleInputTo(+e.target.value)}
@@ -273,6 +323,7 @@ export default function AllowancesActions({
                   ),
               }
             }
+            disabled={isDisabled}
           />
         </div>
         <div>
@@ -293,6 +344,7 @@ export default function AllowancesActions({
             isInvalid={allowanceLength < 1}
             value={allowanceLength}
             onChange={(e) => handleInputLength(+e.target.value)}
+            disabled={isDisabled}
           />
         </div>
       </div>
@@ -314,7 +366,7 @@ export default function AllowancesActions({
             orientation="right"
             sm
             condensed
-            value={allowanceValue !== undefined ? allowanceValue : ''}
+            value={allowanceValue}
             handleType={handleValueAndUnit}
             options={unitsList}
             typeValue="number"
@@ -322,6 +374,7 @@ export default function AllowancesActions({
             min={1}
             isInvalid={allowanceValue !== undefined && allowanceValue < 1}
             textRight
+            disabled={isDisabled}
           />
         </div>
         {allowanceSelectedIndex !== undefined ? (
@@ -334,13 +387,16 @@ export default function AllowancesActions({
             >
               <BsCheckLg />
             </button>
-            <button
-              className="btn btn-sm btn-danger"
-              type="button"
-              onClick={() => handleManageAllowance(ActionOnAllowance.delete)}
-            >
-              <FaTrash />
-            </button>
+            {allowances[allowanceSelectedIndex] &&
+              !allowances[allowanceSelectedIndex].isDefault && (
+                <button
+                  className="btn btn-sm btn-danger"
+                  type="button"
+                  onClick={() => handleManageAllowance(ActionOnAllowance.delete)}
+                >
+                  <FaTrash />
+                </button>
+              )}
             <button
               className="btn btn-sm btn-secondary"
               type="button"
@@ -354,7 +410,7 @@ export default function AllowancesActions({
             className={cx('btn btn-sm btn-success')}
             type="button"
             onClick={() => handleManageAllowance(ActionOnAllowance.add)}
-            disabled={!isValid}
+            disabled={!isValid || isMarginDefinedEverywhere}
           >
             <FaPlus />
           </button>
@@ -362,4 +418,6 @@ export default function AllowancesActions({
       </div>
     </div>
   );
-}
+};
+
+export default AllowancesActions;
