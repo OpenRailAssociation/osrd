@@ -143,6 +143,92 @@ fn generate_errors<Ctx: Default>(
     errors
 }
 
+pub fn generate_infra_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
+    // Create a graph for topological errors
+    let graph = Graph::load(infra_cache);
+
+    // Generate the errors
+    let mut infra_errors = generate_errors(
+        ObjectType::TrackSection,
+        infra_cache,
+        &graph,
+        &track_sections::OBJECT_GENERATORS,
+        &[],
+    );
+    infra_errors.extend(generate_errors(
+        ObjectType::Signal,
+        infra_cache,
+        &graph,
+        &signals::OBJECT_GENERATORS,
+        &[],
+    ));
+    infra_errors.extend(generate_errors(
+        ObjectType::SpeedSection,
+        infra_cache,
+        &graph,
+        &speed_sections::OBJECT_GENERATORS,
+        &speed_sections::GLOBAL_GENERATORS,
+    ));
+
+    infra_errors.extend(generate_errors(
+        ObjectType::SwitchType,
+        infra_cache,
+        &graph,
+        &switch_types::OBJECT_GENERATORS,
+        &[],
+    ));
+
+    infra_errors.extend(generate_errors(
+        ObjectType::Detector,
+        infra_cache,
+        &graph,
+        &detectors::OBJECT_GENERATORS,
+        &[],
+    ));
+    infra_errors.extend(generate_errors(
+        ObjectType::BufferStop,
+        infra_cache,
+        &graph,
+        &buffer_stops::OBJECT_GENERATORS,
+        &buffer_stops::GLOBAL_GENERATORS,
+    ));
+
+    infra_errors.extend(generate_errors(
+        ObjectType::OperationalPoint,
+        infra_cache,
+        &graph,
+        &operational_points::OBJECT_GENERATORS,
+        &[],
+    ));
+
+    infra_errors.extend(generate_errors(
+        ObjectType::Route,
+        infra_cache,
+        &graph,
+        &routes::OBJECT_GENERATORS,
+        &routes::GLOBAL_GENERATORS,
+    ));
+
+    infra_errors.extend(generate_errors(
+        ObjectType::Switch,
+        infra_cache,
+        &graph,
+        &switches::OBJECT_GENERATORS,
+        &[],
+    ));
+    infra_errors.extend(generate_errors(
+        ObjectType::Catenary,
+        infra_cache,
+        &graph,
+        &catenaries::OBJECT_GENERATORS,
+        &catenaries::GLOBAL_GENERATORS,
+    ));
+
+    // TODO: generate neutralSections errors
+
+    infra_errors
+}
+
 /// Get sql query that insert errors given an object type
 fn get_insert_errors_query(obj_type: ObjectType) -> &'static str {
     match obj_type {
@@ -198,87 +284,7 @@ impl GeneratedData for ErrorLayer {
         infra_id: i64,
         infra_cache: &InfraCache,
     ) -> Result<()> {
-        // Create a graph for topological errors
-        let graph = Graph::load(infra_cache);
-
-        // Generate the errors
-        let mut infra_errors = generate_errors(
-            ObjectType::TrackSection,
-            infra_cache,
-            &graph,
-            &track_sections::OBJECT_GENERATORS,
-            &[],
-        );
-        infra_errors.extend(generate_errors(
-            ObjectType::Signal,
-            infra_cache,
-            &graph,
-            &signals::OBJECT_GENERATORS,
-            &[],
-        ));
-        infra_errors.extend(generate_errors(
-            ObjectType::SpeedSection,
-            infra_cache,
-            &graph,
-            &speed_sections::OBJECT_GENERATORS,
-            &speed_sections::GLOBAL_GENERATORS,
-        ));
-
-        infra_errors.extend(generate_errors(
-            ObjectType::SwitchType,
-            infra_cache,
-            &graph,
-            &switch_types::OBJECT_GENERATORS,
-            &[],
-        ));
-
-        infra_errors.extend(generate_errors(
-            ObjectType::Detector,
-            infra_cache,
-            &graph,
-            &detectors::OBJECT_GENERATORS,
-            &[],
-        ));
-        infra_errors.extend(generate_errors(
-            ObjectType::BufferStop,
-            infra_cache,
-            &graph,
-            &buffer_stops::OBJECT_GENERATORS,
-            &buffer_stops::GLOBAL_GENERATORS,
-        ));
-
-        infra_errors.extend(generate_errors(
-            ObjectType::OperationalPoint,
-            infra_cache,
-            &graph,
-            &operational_points::OBJECT_GENERATORS,
-            &[],
-        ));
-
-        infra_errors.extend(generate_errors(
-            ObjectType::Route,
-            infra_cache,
-            &graph,
-            &routes::OBJECT_GENERATORS,
-            &routes::GLOBAL_GENERATORS,
-        ));
-
-        infra_errors.extend(generate_errors(
-            ObjectType::Switch,
-            infra_cache,
-            &graph,
-            &switches::OBJECT_GENERATORS,
-            &[],
-        ));
-        infra_errors.extend(generate_errors(
-            ObjectType::Catenary,
-            infra_cache,
-            &graph,
-            &catenaries::OBJECT_GENERATORS,
-            &catenaries::GLOBAL_GENERATORS,
-        ));
-
-        // TODO: generer les erreurs pour les neutralSections
+        let infra_errors = generate_infra_errors(infra_cache);
 
         // Insert errors in DB
         insert_errors(conn, infra_id, infra_errors).await?;
