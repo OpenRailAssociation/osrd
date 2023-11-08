@@ -1,0 +1,49 @@
+name: Build & Push to DockerHub
+
+on:
+  workflow_dispatch:
+  push:
+    branches-ignore:
+      - dev
+      - staging
+
+jobs:
+  build_push_core:
+    name: Core
+    uses: osrd-project/osrd/.github/workflows/docker-build-push-template.yml@dev
+    with:
+      context: core
+      image_name: ghcr.io/osrd-project/osrd-tmp-dev/core
+      cache_scope: core
+      registry: ghcr.io
+    secrets:
+      USERNAME: ${{ github.actor }}
+      PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+
+  build_push_front:
+    name: Front
+    uses: osrd-project/osrd/.github/workflows/docker-build-push-template.yml@dev
+    with:
+      context: front
+      image_name: ghcr.io/osrd-project/osrd-tmp-dev/front
+      cache_scope: front
+      registry: ghcr.io
+      build_args: |
+        NGINX_CONFIG=nginx-dev.conf
+        REACT_APP_LOCAL_BACKEND=True
+        REACT_APP_API_URL=http://localhost:8000
+    secrets:
+      USERNAME: ${{ github.actor }}
+      PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+
+  build_push_editoast:
+    name: Editoast
+    uses: osrd-project/osrd/.github/workflows/docker-build-push-template.yml@dev
+    with:
+      context: editoast
+      image_name: ghcr.io/osrd-project/osrd-tmp-dev/editoast
+      cache_scope: editoast
+      registry: ghcr.io
+    secrets:
+      USERNAME: ${{ github.actor }}
+      PASSWORD: ${{ secrets.GITHUB_TOKEN }}

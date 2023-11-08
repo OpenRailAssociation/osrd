@@ -1,0 +1,31 @@
+name: Clean up old images
+
+on:
+  schedule:
+    # Run every day at midnight to check for old images
+    - cron: '0 0 * * *'
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Run cleanup script for tmp core
+      run: ./.github/scripts/cleanup-ghcr.sh
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        IMAGE_NAME: ghcr.io/osrd-project/osrd-tmp-dev/core
+
+    - name: Run cleanup script for tmp editoast
+      run: ./.github/scripts/cleanup-ghcr.sh
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        IMAGE_NAME: ghcr.io/osrd-project/osrd-tmp-dev/editoast
+
+    - name: Run cleanup script for tmp front
+      run: ./.github/scripts/cleanup-ghcr.sh
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        IMAGE_NAME: ghcr.io/osrd-project/osrd-tmp-dev/front
