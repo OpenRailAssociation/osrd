@@ -15,8 +15,10 @@ from railjson_generator.schema.infra.endpoint import Endpoint, TrackEndpoint
 
 
 def _switch_id():
-    res = f"switch.{Switch._INDEX}"  # pytype: disable=name-error
-    Switch._INDEX += 1  # pytype: disable=name-error
+    # pytype: disable=name-error
+    res = f"switch.{Switch._INDEX}"
+    Switch._INDEX += 1
+    # pytype: enable=name-error
     return res
 
 
