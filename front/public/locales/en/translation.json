@@ -39,7 +39,7 @@
     "entities": {
       "track_section": "Track section",
       "track_section-length": "Length",
-      "errors-linked" : "Linked issues"
+      "errors-linked": "Related anomalies"
     },
     "directions": {
       "START_TO_STOP": "Start to stop",
@@ -55,12 +55,12 @@
     },
     "infra-errors": {
       "label": {
-        "title_other": "{{count}} issues",
-        "title_zero": "No issue",
-        "title_one": "{{count}} issue",
-        "title-with-filter_other": "{{count}} issues on {{total}}",
-        "title-with-filter_zero": "zero issues on {{total}}",
-        "title-with-filter_one": "{{count}} issues on {{total}}"
+        "title_other": "{{count}} anomalies",
+        "title_zero": "No anomalies",
+        "title_one": "{{count}} anomalie",
+        "title-with-filter_other": "{{count}} anomalies on {{total}}",
+        "title-with-filter_zero": "no anomaly on {{total}}",
+        "title-with-filter_one": "{{count}} anomaly on {{total}}"
       },
       "error-level": {
         "all": "All",
@@ -70,81 +70,81 @@
       "error-type": {
         "all": "All",
         "duplicated_group": {
-          "name": "Duplicated switch pattern",
-          "description": "Switch type « {{obj_id}} » contains a duplicate configuration « {{original_group_path}} »"
+          "name": "Duplicate switch configuration",
+          "description": "The \"{{obj_id}}\" switch type contains a \"{{original_group_path}}\" configuration duplicate."
         },
         "empty_object": {
-          "name": "Empty object", 
-          "description": "Object « {{obj_id}} » has the field « {{field}} » empty"
+          "name": "Empty object",
+          "description": "The \"{{obj_id}}\" object has the \"{{field}}\" field empty."
         },
         "invalid_group": {
-          "name": "Position de l'aiguille invalide", 
-          "description": "The switch « {{obj_id}} » of the route « {{group}} » is in the configuration « {{switch_type}} » which does not exist"
+          "name": "Invalid switch position",
+          "description": "The \"{{obj_id}}\" switch for the \"{{group}}\" route is in the \"{{switch_type}}\" configuration, which does not exist."
         },
-        "invalid_reference":{
-          "name": "Invalid reference", 
-          "description": "The object « {{obj_id}} » references the object « {{reference.obj_id}} » which does not exist"
+        "invalid_reference": {
+          "name": "Invalid Reference",
+          "description": "The \"{{obj_id}}\" object references the \"{{reference.obj_id}}\" object, which does not exist."
         },
-        "invalid_route":{
-          "name": "Invalid route", 
-          "description": "Route « {{obj_id}} » is invalid, requested path is not consistent"
+        "invalid_route": {
+          "name": "Invalid path",
+          "description": "Route \"{{obj_id}}\" is invalid, requested path is not consistent"
         },
         "invalid_switch_ports": {
-          "name": "Invalid switch pattern", 
-          "description": "Switch « {{obj_id}} » has a branch which is not compatible with its type"
+          "name": "Invalid switch or node branch",
+          "description": "The switch/node \"{{obj_id}}\" has a branch that is not compatible with its switch/node type (which does not exist in its switch/node type)."
         },
         "missing_route": {
-          "name": "Missing route", 
-          "description": "Track « {{obj_id}} » has no associated route"
+          "name": "Missing route",
+          "description": "The \"{{obj_id}}\" track has no associated route"
         },
         "missing_buffer_stop": {
-          "name": "Missing buffer stop", 
-          "description":"Endpoint « {{endpoint}} » of track « {{obj_id}} » has no buffer stop"
+          "name": "Missing buffer stop",
+          "description": "The \"{{endpoint}}\" end of the \"{{obj_id}}\" track has no buffer stop."
         },
         "object_out_of_path": {
-          "name": "Object out of path", 
-          "description": "Object « {{obj_id}} » of track « {{reference.obj_id}} » is not contained in the corresponding path"
+          "name": "Object out of path",
+          "description": "The switch/node or detector \"{{obj_id}}\" of the route \"{{reference.obj_id}}\" is not contained in the corresponding path."
         },
         "odd_buffer_stop_location": {
-          "name": "Strange buffer stop position", 
-          "description": "Buffer stop « {{obj_id}} » has a strange position"
+          "name": "Strange buffer stop position",
+          "description": "L'heurtoir « {{obj_id}} » se trouve à une position étrange"
         },
-        "out_of_range":{
-          "name": "Invalid value", 
-          "description": "Object « {{obj_id}} » has the field « {{field}} » with an invalid value. Value must be in the following range {{expected_range}}."
+        "out_of_range": {
+          "name": "Valeur invalide",
+          "description": "L’objet « {{obj_id}} » a le champ « {{field}} » avec une valeur invalide. La valeur doit être comprise dans l'intervalle {{expected_range}}."
         },
-        "overlapping_speed_sections": { 
-          "name": "Overlapping of speed limits", 
-          "description": "Speed limit « {{obj_id}} » overlaps « {{reference.obj_id}} »"
+        "overlapping_speed_sections": {
+          "name": "Speed limit superposition",
+          "description": "La limite « {{obj_id}} » se superpose à la limite « {{reference.obj_id}} »"
         },
         "overlapping_switches": {
-          "name": "Overlapping of switches", 
-          "description": "Switches « {{obj_id}} » and « {{reference.obj_id}} » have the same extremeties"
+          "name": "Superposition d’aiguilles/nœuds",
+          "description": "L’aiguille/le noeud « {{obj_id}} » et l’aiguille/le noeud « {{reference.obj_id}} » connectent les mêmes extrémités des voies"
         },
         "overlapping_catenaries": {
-          "name": "Overlapping of catenaries", 
-          "description": "Catenary « {{obj_id}} » overlaps catenary « {{reference.obj_id}} »"
+          "name": "Superposition de catenaires",
+          "description": "La catenaire « {{obj_id}} » se superpose à la catenaire « {{reference.obj_id}} »"
         },
         "unknown_port_name": {
-          "name": "Unknown branch name", 
-          "description": "Switch « {{obj_id}} » has the branch « {{port_name}} » which does not exist"
+          "name": "Nom de branche inconnu",
+          "description": "L’aiguille/le noeud « {{obj_id}} » présente la branche « {{port_name}} » qui n’est pas existante"
         },
         "unused_port": {
-          "name": "Unused branch", 
-          "description": "Branch « {{port_name}} » of switch type « {{obj_id}} » is nerver used"
+          "name": "Branche non utilisée",
+          "description": "La branche « {{port_name}} » déclarée dans le type d’aiguille/nœud « {{obj_id}} » n’est pas utilisée dans les configurations de ce type"
         }
       },
       "list": {
         "error": "An error occurred while loading the data",
-        "filter-level": "Error level",
-        "filter-type": "Error type",
-        "total-error": "{{count}} errors found",
-        "total-error_one": "One error found",
-        "total-error_zero": "No error found",
-        "goto-error": "Select and locate on the map"
+        "filter-level": "Niveau",
+        "filter-type": "Type d'anomalie",
+        "total-error": "{{count}} anomalies trouvées",
+        "total-error_one": "Une anomalie trouvée",
+        "total-error_zero": "Aucune anomalie trouvée",
+        "goto-error": "Sélectionner et viualiser sur la carte"
       },
       "modal": {
-        "title": "Infrastructure {{id}} error list"
+        "title": "Anomalies de l'infrastructure {{id}}"
       }
     },
     "item-statuses": {
@@ -180,8 +180,8 @@
     },
     "nav": {
       "infra-changed": "You are now editing the infra \"{{label}}\" (id \"{{id}}\").",
-      "infra-errors": "Display current infrastructure issues on the map",
-      "infra-errors-list": "Configure display of issues",
+      "infra-errors-map": "Afficher/Masquer les anomalies d'infrastructure",
+      "infra-errors-list": "Gestion et affichage des anomalies",
       "recenter": "Recenter the map",
       "select-infra": "Select the infrastructure to edit",
       "toggle-layers": "Choose the types of elements to display",
@@ -200,7 +200,7 @@
       "SpeedSection": "Speed limit"
     },
     "title": "Editor",
-    "title-issue": "({{nbIssue}} issues)",
+    "title-issue": "({{nbIssue}} anomalies)",
     "tool-help": "Show description for the active tool",
     "tools": {
       "buffer-stop-edition": {
@@ -346,7 +346,7 @@
         },
         "endpoint": "Endpoint:",
         "help": {
-          "no-move": "Switches cannot be moved, and are automatically placed on their first port.",
+          "no-move": "Switches cannot be moved, and are automatically located at their first port.",
           "select-track": "Select a line on the map"
         },
         "label": "Switch tool",
@@ -388,25 +388,25 @@
           "reset-speed-section": "Cancel the current modifications"
         },
         "add-new-speed-limit": "Add new speed limit",
-        "add-sign": "Add a sign from {{signType}} type",
+        "add-sign": "Add a {{signType}} panel",
         "add-track-range": "Click to link to:",
         "additional-speed-limit": "Additional speed limits",
-        "hovered-sign": "Sign {{signType}}",
+        "hovered-sign": "{{signType}} panel",
         "label": "Speed section tool",
         "main-speed-limit": "Default speed limit",
         "move-range-extremity": "Click to move the end:",
         "new-tag": "Composition code",
         "sign-angle-geo": "Angle Geo",
         "sign-angle-sch": "Angle Sch",
-        "sign-category": "Sign(s) {{signType}}",
+        "sign-category": "{{signType}} panel(s)",
         "sign-select": "Select",
-        "sign-remove": "Remove sign",
+        "sign-remove": "Remove panel",
         "sign-position": "Position",
         "sign-track-id": "Track section id",
         "sign-type": "Type",
         "sign-side": "Side",
         "sign-value": "Speed",
-        "signs-section-list": "Section signs list",
+        "signs-section-list": "Section panels list",
         "remove-track-range": "Click to detatch from:",
         "save-existing-speed-section": "Save modifications",
         "save-new-speed-section": "Save the new speed limit",
@@ -416,7 +416,7 @@
       "range-edition": {
         "edit-track-range-start": "Edit departure point",
         "edit-track-range-end": "Edit arrival point",
-        "linked-track-sections": "Associated track sections",
+        "linked-track-sections": "Associated track route sections",
         "only-show-n": "Only show the first {{count}} track sections",
         "show-more-ranges_one": "See an additional track section",
         "show-more-ranges_other": "See {{count}} additional track sections"
