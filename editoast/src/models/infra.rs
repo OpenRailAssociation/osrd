@@ -150,10 +150,19 @@ impl Infra {
         }
     }
 
-    pub async fn clone(infra_id: i64, db_pool: Data<DbPool>, new_name: String) -> Result<Infra> {
+    pub async fn clone(
+        infra_id: i64,
+        db_pool: Data<DbPool>,
+        new_name: Option<String>,
+    ) -> Result<Infra> {
         let infra_to_clone = Infra::retrieve(db_pool.clone(), infra_id)
             .await?
             .ok_or(InfraError::NotFound(infra_id))?;
+        let new_name = new_name.unwrap_or_else(|| {
+            let mut cloned_name = infra_to_clone.name.unwrap();
+            cloned_name.push_str(" (copy)");
+            cloned_name
+        });
         let mut conn = db_pool.get().await?;
         sql_query(
             "INSERT INTO infra (name, railjson_version, owner, version, generated_version, locked, created, modified
@@ -244,14 +253,18 @@ pub enum InfraError {
 pub mod tests {
     use super::Infra;
     use crate::client::PostgresConfig;
-    use crate::models::infra::INFRA_VERSION;
+    use crate::fixtures::tests::{db_pool, small_infra};
+    use crate::models::infra::{InfraError, INFRA_VERSION};
     use crate::models::{Create, RAILJSON_VERSION};
     use crate::{Data, DbPool};
     use actix_web::test as actix_test;
     use chrono::Utc;
     use diesel::result::Error;
+    use diesel::sql_query;
+    use diesel::sql_types::Text;
     use diesel_async::scoped_futures::{ScopedBoxFuture, ScopedFutureExt};
-    use diesel_async::{AsyncConnection, AsyncPgConnection as PgConnection};
+    use diesel_async::{AsyncConnection, AsyncPgConnection as PgConnection, RunQueryDsl};
+    use rstest::rstest;
     use uuid::Uuid;
 
     pub fn build_test_infra() -> Infra {
@@ -295,12 +308,7 @@ pub mod tests {
         F: for<'r> FnOnce(Data<DbPool>, Infra) -> ScopedBoxFuture<'a, 'a, ()> + Send + 'a,
     {
         use crate::models::Delete;
-        use diesel_async::pooled_connection::AsyncDieselConnectionManager as ConnectionManager;
-        let pg_config_url = PostgresConfig::default()
-            .url()
-            .expect("cannot get postgres config url");
-        let manager = ConnectionManager::<PgConnection>::new(pg_config_url.as_str());
-        let db_pool = crate::Data::new(crate::Pool::builder(manager).build().unwrap());
+        let db_pool = db_pool();
         let infra = build_test_infra();
         let created = infra.create(db_pool.clone()).await.unwrap();
         let id = created.id.unwrap();
@@ -322,5 +330,82 @@ pub mod tests {
             .scope_boxed()
         })
         .await;
+    }
+
+    #[rstest]
+    async fn clone_infra_with_new_name_returns_new_cloned_infra() {
+        // GIVEN
+        let pg_db_pool = db_pool();
+        let small_infra = &small_infra(pg_db_pool.clone()).await.model;
+        let infra_new_name = "clone_infra_with_new_name_returns_new_cloned_infra".to_string();
+
+        // WHEN
+        let result = Infra::clone(
+            small_infra.id.unwrap(),
+            pg_db_pool,
+            Some(infra_new_name.clone()),
+        )
+        .await;
+
+        // THEN
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap().name, Some(infra_new_name.clone()));
+
+        // CLEANUP
+        let pg_config = PostgresConfig::default();
+        let pg_config_url = pg_config.url().expect("cannot get postgres config url");
+        let mut conn = PgConnection::establish(pg_config_url.as_str())
+            .await
+            .expect("Error while connecting DB");
+        sql_query("DELETE FROM infra WHERE name = $1")
+            .bind::<Text, _>(infra_new_name)
+            .execute(&mut conn)
+            .await
+            .unwrap();
+    }
+
+    #[rstest]
+    async fn clone_infra_without_new_name_returns_new_cloned_infra() {
+        // GIVEN
+        let pg_db_pool = db_pool();
+        let small_infra = &small_infra(pg_db_pool.clone()).await.model;
+
+        // WHEN
+        let result = Infra::clone(small_infra.id.unwrap(), pg_db_pool, None).await;
+
+        // THEN
+        assert!(result.is_ok());
+        let mut new_name = small_infra.name.clone().unwrap();
+        new_name.push_str(" (copy)");
+        assert_eq!(result.unwrap().name.unwrap(), new_name);
+
+        // CLEANUP
+        let pg_config = PostgresConfig::default();
+        let pg_config_url = pg_config.url().expect("cannot get postgres config url");
+        let mut conn = PgConnection::establish(pg_config_url.as_str())
+            .await
+            .expect("Error while connecting DB");
+        sql_query("DELETE FROM infra WHERE name = $1")
+            .bind::<Text, _>(new_name)
+            .execute(&mut conn)
+            .await
+            .unwrap();
+    }
+
+    #[actix_test]
+    async fn clone_infra_returns_infra_not_found() {
+        // GIVEN
+        let not_found_infra_id: i64 = 1234567890;
+
+        // WHEN
+        let result = Infra::clone(not_found_infra_id, db_pool(), None).await;
+
+        // THEN
+        assert!(result.is_err());
+        assert_eq!(
+            result.unwrap_err(),
+            InfraError::NotFound(not_found_infra_id).into(),
+            "error type mismatch"
+        );
     }
 }

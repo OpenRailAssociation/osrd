@@ -31,9 +31,9 @@ use chashmap::CHashMap;
 use clap::Parser;
 use client::{
     ClearArgs, Client, Color, Commands, DeleteProfileSetArgs, ElectricalProfilesCommands,
-    GenerateArgs, ImportProfileSetArgs, ImportRailjsonArgs, ImportRollingStockArgs,
-    ListProfileSetArgs, MakeMigrationArgs, PostgresConfig, RedisConfig, RefreshArgs, RunserverArgs,
-    SearchCommands,
+    GenerateArgs, ImportProfileSetArgs, ImportRailjsonArgs, ImportRollingStockArgs, InfraCloneArgs,
+    InfraCommands, ListProfileSetArgs, MakeMigrationArgs, PostgresConfig, RedisConfig, RefreshArgs,
+    RunserverArgs, SearchCommands,
 };
 use colored::*;
 use diesel::{sql_query, ConnectionError, ConnectionResult};
@@ -50,6 +50,7 @@ use infra_cache::InfraCache;
 use log::{error, info, warn};
 use map::MapLayers;
 use models::electrical_profiles::ElectricalProfileSet;
+use models::infra::InfraError;
 use models::{Retrieve, RollingStockModel};
 use openssl::ssl::{SslConnector, SslMethod, SslVerifyMode};
 use sentry::ClientInitGuard;
@@ -92,7 +93,6 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
     match client.command {
         Commands::Runserver(args) => runserver(args, pg_config, redis_config).await,
         Commands::Generate(args) => generate(args, pg_config, redis_config).await,
-        Commands::Clear(args) => clear(args, pg_config, redis_config).await,
         Commands::ImportRailjson(args) => import_railjson(args, pg_config).await,
         Commands::ImportRollingStock(args) => import_rolling_stock(args, pg_config).await,
         Commands::OsmToRailjson(args) => {
@@ -124,6 +124,10 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
         Commands::Search(SearchCommands::Refresh(args)) => {
             refresh_search_tables(args, pg_config).await
         }
+        Commands::Infra(subcommand) => match subcommand {
+            InfraCommands::Clone(args) => clone_infra(args, pg_config).await,
+            InfraCommands::Clear(args) => clear_infra(args, pg_config, redis_config).await,
+        },
     }
 }
 
@@ -381,6 +385,28 @@ async fn import_rolling_stock(
     Ok(())
 }
 
+async fn clone_infra(
+    infra_args: InfraCloneArgs,
+    pg_config: PostgresConfig,
+) -> Result<(), Box<dyn Error + Send + Sync>> {
+    let db_pool = Data::new(get_pool(pg_config.url()?, pg_config.pool_size));
+    match Infra::clone(infra_args.id, db_pool, infra_args.new_name).await {
+        Ok(cloned_infra) => println!(
+            "✅ Infra {} (ID: {}) was successfully cloned",
+            cloned_infra.name.unwrap(),
+            cloned_infra.id.unwrap()
+        ),
+        Err(e) => {
+            if e == InfraError::NotFound(infra_args.id).into() {
+                eprintln!("❌ {}", e.message);
+                exit(1);
+            }
+            return Err(e.message.into());
+        }
+    }
+    Ok(())
+}
+
 async fn import_railjson(
     args: ImportRailjsonArgs,
     pg_config: PostgresConfig,
@@ -482,7 +508,7 @@ async fn electrical_profile_set_delete(
 
 /// Run the clear subcommand
 /// This command clear all generated data for the given infra
-async fn clear(
+async fn clear_infra(
     args: ClearArgs,
     pg_config: PostgresConfig,
     redis_config: RedisConfig,
@@ -498,28 +524,25 @@ async fn clear(
     } else {
         // Retrieve given infras
         for id in args.infra_ids {
-            let infra = match Infra::retrieve(pool.clone(), id as i64).await? {
-                Some(infra) => infra,
+            match Infra::retrieve(pool.clone(), id as i64).await? {
+                Some(infra) => infras.push(infra),
                 None => {
-                    return Err(InfraApiError::NotFound {
-                        infra_id: id as i64,
-                    }
-                    .into())
+                    eprintln!("❌ Infrastructure not found, ID: {}", id);
+                    exit(1);
                 }
             };
-            infras.push(infra);
         }
     };
 
     for infra in infras {
-        info!(
+        println!(
             "🍞 Infra {}[{}] is clearing:",
             infra.name.clone().unwrap().bold(),
             infra.id.unwrap()
         );
         build_redis_pool_and_invalidate_all_cache(redis_config.clone(), infra.id.unwrap()).await;
         infra.clear(&mut conn).await?;
-        info!(
+        println!(
             "✅ Infra {}[{}] cleared!",
             infra.name.unwrap().bold(),
             infra.id.unwrap()
