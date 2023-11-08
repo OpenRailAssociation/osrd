@@ -14,7 +14,7 @@
   "addInfraJSONFileRemove": "Cancel RailJSON import",
   "chooseInfrastructure": "Pick an infrastructure",
   "createInfra": "Create",
-  "deleteConfirm": "Do you want to delete the infrastructure?",
+  "deleteConfirm": "Do you wish to delete the infrastructure?",
   "errorMessages": {
     "noExistingInfra": "No infrastructure available",
     "unableToRetrieveInfra": "Impossible to load infrastructure",
