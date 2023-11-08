@@ -7,10 +7,13 @@ It will apply modification and update generated data such as object geometry.
 
 ## Requirements
 
+For both tests or run:
+
 - [rustup](https://rustup.rs/)
 - [libpq](https://www.postgresql.org/docs/current/libpq.html) (may be packaged as `libpq-dev`)
 - [openssl](https://www.openssl.org)
 - [libgeos](https://libgeos.org/usage/install/) (may be packaged as `libgeos-dev`)
+- A properly initialized postgresql database and a redis server: `docker compose up --no-build --detach postgres redis`
 
 ## Steps
 
@@ -21,11 +24,11 @@ $ diesel migration run
 # Build and run
 $ cargo build
 $ cargo run -- runserver
+# Test server is up
+$ curl -f http://localhost:8090/health
 ```
 
 ## Tests
-
-In order to run tests, you need to have a postgresql database and redis running.
 
 To avoid thread conflicts while accessing the database, use the `--test-threads=1` option.
 
@@ -37,17 +40,19 @@ cargo test -- --test-threads=1
 
 ## Useful tools
 
-Here a list of components to help you in your development:
+Here a list of components to help you in your development (see CI jobs if necessary):
 
- - [rustfmt](https://github.com/rust-lang/rustfmt): Format the whole code `cargo fmt`
- - [clippy](https://github.com/rust-lang/rust-clippy): Run a powerful linter `cargo clippy --all-features --all-targets -- -D warnings`
- - [tarpaulin](https://github.com/xd009642/tarpaulin): Check code coverage `cargo tarpaulin --skip-clean -o Lcov --output-dir target/tarpaulin/`
+- [rustfmt](https://github.com/rust-lang/rustfmt): Format the whole code `cargo fmt`
+- [clippy](https://github.com/rust-lang/rust-clippy): Run a powerful linter `cargo clippy --all-features --all-targets -- -D warnings`
+- [grcov](https://github.com/mozilla/grcov): Check code coverage (see documentation on GitHub)
 
-To install them simply run:
+To install `rustfmt` and `clippy`, simply run:
+
 ```sh
-$ rustup component add rustfmt clippy
-$ cargo install cargo-tarpaulin
+rustup component add rustfmt clippy
 ```
+
+To setup `grcov`, please see [its documentation](https://github.com/mozilla/grcov#how-to-get-grcov)
 
 ## OpenApi generation
 
