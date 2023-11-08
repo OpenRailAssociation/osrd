@@ -182,8 +182,9 @@ export default function reducer(inputState: OsrdMultiConfState | undefined, acti
         break;
       case UPDATE_PATHFINDING_ID:
         draft[section].pathfindingID = action.pathfindingID;
-        // reset power restriction ranges
+        // reset power restriction ranges and allowances
         draft[section].powerRestrictionRanges = [];
+        draft[section].allowances = [];
         break;
       case UPDATE_TIMETABLE_ID:
         draft[section].timetableID = action.timetableID;

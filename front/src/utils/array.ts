@@ -21,3 +21,15 @@ export const splitArrayByFirstLetter = (array: string[]): [string[], string[]] =
   }
   return [digitalArray, letterArray];
 };
+
+export const removeElementAtIndex = <T>(array: T[], indexToRemove: number) => {
+  const result = [...array];
+  result.splice(indexToRemove, 1);
+  return result;
+};
+
+export const replaceElementAtIndex = <T>(array: T[], indexToRemove: number, newElement: T) => {
+  const result = [...array];
+  result.splice(indexToRemove, 1, newElement);
+  return result;
+};

@@ -2,7 +2,6 @@ import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import InputGroupSNCF, { InputGroupSNCFValue } from 'common/BootstrapSNCF/InputGroupSNCF';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
-import { onlyDigit } from 'utils/strings';
 import { unitsList, unitsNames } from './consts';
 import getAllowanceValue from './helpers';
 import { AllowanceValueForm, StandardAllowanceForm } from './types';
@@ -11,14 +10,14 @@ type Props = {
   distribution: string;
   setDistribution: (distribution: StandardAllowanceForm['distribution']) => void;
   valueAndUnit: AllowanceValueForm;
-  setValueAndUnit: (valueAndUnit: AllowanceValueForm) => void;
+  updateStandardAllowanceDefaultValue: (valueAndUnit: AllowanceValueForm) => void;
 };
 
 export default function AllowancesStandardSettings({
   distribution,
   setDistribution,
   valueAndUnit,
-  setValueAndUnit,
+  updateStandardAllowanceDefaultValue,
 }: Props) {
   const { t } = useTranslation(['operationalStudies/allowances', 'translation']);
 
@@ -50,10 +49,10 @@ export default function AllowancesStandardSettings({
 
   const handleType = (type: InputGroupSNCFValue) => {
     if (type.type && type.value !== undefined) {
-      setValueAndUnit({
+      updateStandardAllowanceDefaultValue({
         value_type: type.type as AllowanceValueForm['value_type'],
         [unitsNames[type.type as keyof typeof unitsNames]]:
-          onlyDigit(type.value as string) !== '' ? +onlyDigit(type.value as string) : undefined,
+          (type.value as string) !== '' ? +type.value : undefined,
       } as AllowanceValueForm);
     }
   };

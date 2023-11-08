@@ -103,6 +103,7 @@ const InputSNCF = ({
             type="button"
             className={`${newFormSize} btn btn-primary btn-only-icon active`}
             onClick={appendOptions.onClick}
+            disabled={disabled}
           >
             {appendOptions.label}
             <span className="sr-only">{appendOptions.name}</span>
@@ -149,7 +150,7 @@ const InputSNCF = ({
               className={`form-control ${backgroundColor} ${formSize} ${readOnlyFlag} ${clearOption} ${condensedInput} ${textAlignmentClass}`}
               id={id}
               name={name}
-              value={value}
+              value={disabled ? '' : value}
               placeholder={placeholder}
               ref={(input) => (focus ? input && input.focus() : null)}
               min={min}

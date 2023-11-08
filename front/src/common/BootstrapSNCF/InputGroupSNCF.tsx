@@ -30,6 +30,7 @@ type Props = {
   max?: number;
   step?: number | string;
   textRight?: boolean;
+  disabled?: boolean;
   disableUnitSelector?: boolean;
 };
 
@@ -52,6 +53,7 @@ export default function InputGroupSNCF({
   max,
   step,
   textRight = false,
+  disabled = false,
   disableUnitSelector = false,
 }: Props) {
   const [isDropdownShown, setIsDropdownShown] = useState(false);
@@ -88,11 +90,12 @@ export default function InputGroupSNCF({
         title={placeholder}
         placeholder={placeholder}
         onChange={(e) => handleType({ type: selected.id, value: e.target.value })}
-        value={value}
+        value={value !== undefined && !disabled ? value : ''}
         min={min}
         max={max}
         data-testid="input-group-first-field"
         step={step}
+        disabled={disabled}
       />
       <span className="form-control-state" />
       {selected.unit && (
@@ -122,7 +125,7 @@ export default function InputGroupSNCF({
               aria-haspopup="true"
               aria-expanded="false"
               aria-controls={id}
-              disabled={disableUnitSelector}
+              disabled={disabled || disableUnitSelector}
             >
               <span className={cx(condensed && 'small')}>{selected.label}</span>
               <i

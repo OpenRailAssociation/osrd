@@ -16,6 +16,7 @@
     background-color: var(--white);
     border-radius: var(--border-radius);
     padding: 0.5rem;
+    width: 50%;
 
     .subtitle {
       all: unset;
@@ -48,10 +49,12 @@
         padding: 0;
       }
       // Same height for all inputs
-      .input-group-sm .form-control-container, .input-group-sm button {
+      .input-group-sm .form-control-container,
+      .input-group-sm button {
         height: 2rem;
       }
-      .first-line, .second-line {
+      .first-line,
+      .second-line {
         display: flex;
         gap: 0.25rem;
       }
@@ -90,9 +93,16 @@
         gap: 0.1rem;
         width: 100%;
         height: 1.5rem;
+        justify-content: center;
         color: var(--secondary);
         background-color: var(--coolgray3);
-        background-image: repeating-linear-gradient(-45deg, transparent, transparent 3px, var(--coolgray1) 3px, var(--coolgray1) 6px);
+        background-image: repeating-linear-gradient(
+          -45deg,
+          transparent,
+          transparent 3px,
+          var(--coolgray1) 3px,
+          var(--coolgray1) 6px
+        );
         .range-no-allowance {
           margin-top: 0.35rem;
           margin-left: 0.5rem;
@@ -118,7 +128,6 @@
             justify-content: center;
             font-size: 0.7rem;
             font-weight: 500;
-            background-color: var(--coolgray9);
             height: 100%;
             width: 100%;
             .unit {
@@ -192,7 +201,8 @@
           align-items: center;
           justify-content: center;
           font-size: 0.8rem;
-          .begin, .end {
+          .begin,
+          .end {
             text-align: right;
             width: 4rem;
           }

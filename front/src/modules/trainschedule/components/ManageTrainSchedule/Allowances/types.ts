@@ -21,6 +21,7 @@ export type RangeAllowanceForm = {
   begin_position: number;
   end_position: number;
   value: AllowanceValueForm;
+  isDefault?: boolean;
 };
 
 export type StandardAllowanceForm = {
@@ -37,11 +38,14 @@ export type EngineeringAllowanceForm = {
   distribution: 'MARECO' | 'LINEAR';
 } & RangeAllowanceForm;
 
-export type ManageAllowancesType = {
-  type: AllowancesTypes;
-  newAllowance?: RangeAllowanceForm | EngineeringAllowanceForm;
-  allowanceIndexToDelete?: number;
-};
+export type AllowanceForm =
+  | (EngineeringAllowanceForm & {
+      allowance_type: 'engineering';
+    })
+  | (StandardAllowanceForm & {
+      allowance_type: 'standard';
+    });
+
 export type FindAllowanceOverlapType = {
   allowances: RangeAllowanceForm[] | EngineeringAllowanceForm[];
   beginPosition: number;
