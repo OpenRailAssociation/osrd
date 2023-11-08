@@ -18,9 +18,10 @@ use diesel::result::Error as DieselError;
 use diesel::sql_types::{BigInt, Bool, Nullable, Text};
 use diesel::{sql_query, ExpressionMethods, QueryDsl};
 use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
-use editoast_derive::Model;
+use editoast_derive::{EditoastError, Model};
 use log::{debug, error};
 use serde::{Deserialize, Serialize};
+use thiserror::Error;
 use uuid::Uuid;
 
 pub const RAILJSON_VERSION: &str = "3.4.6";
@@ -150,8 +151,9 @@ impl Infra {
     }
 
     pub async fn clone(infra_id: i64, db_pool: Data<DbPool>, new_name: String) -> Result<Infra> {
-        let infra_to_clone = Infra::retrieve(db_pool.clone(), infra_id).await?.unwrap();
-
+        let infra_to_clone = Infra::retrieve(db_pool.clone(), infra_id)
+            .await?
+            .ok_or(InfraError::NotFound(infra_id))?;
         let mut conn = db_pool.get().await?;
         sql_query(
             "INSERT INTO infra (name, railjson_version, owner, version, generated_version, locked, created, modified
@@ -229,6 +231,13 @@ impl Identifiable for Infra {
     fn get_id(&self) -> i64 {
         self.id.unwrap()
     }
+}
+
+#[derive(Debug, Error, EditoastError)]
+#[editoast_error(base_id = "infra")]
+pub enum InfraError {
+    #[error("Infrastructure not found, ID: {0}")]
+    NotFound(i64),
 }
 
 #[cfg(test)]
