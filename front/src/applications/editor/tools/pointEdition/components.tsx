@@ -20,6 +20,8 @@ import {
   TrackSectionEntity,
   RouteEntity,
   SignalEntity,
+  DetectorEntity,
+  BufferStopEntity,
 } from 'types';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import EditorForm from 'applications/editor/components/EditorForm';
@@ -38,11 +40,15 @@ import { getEditRouteState } from 'applications/editor/tools/routeEdition/utils'
 import TOOL_TYPES from 'applications/editor/tools/toolTypes';
 import { EditoastType } from 'applications/editor/tools/types';
 import { getIsLoading } from 'reducers/main/mainSelector';
+import length from '@turf/length';
 import { CustomFlagSignalCheckbox } from './CustomFlagSignalCheckbox';
 import { PointEditionState } from './types';
 import { formatSignalingSystems } from './utils';
+import { CustomPosition } from './CustomPosition';
 
 export const POINT_LAYER_ID = 'pointEditionTool/new-entity';
+
+type EditorPoint = BufferStopEntity | DetectorEntity | SignalEntity;
 
 /**
  * Generic component to show routes starting or ending from the edited waypoint:
@@ -218,7 +224,9 @@ export const PointEditionLeftPanel: FC<{ type: EditoastType }> = <Entity extends
 
           if (!firstLoading) {
             const { position } = state.entity.properties;
-            const point = along(track, position, { units: 'meters' });
+            const turfPosition =
+              (position * length(track, { units: 'meters' })) / track.properties.length;
+            const point = along(track, turfPosition, { units: 'meters' });
 
             setState({ ...state, entity: { ...state.entity, geometry: point.geometry } });
           }
@@ -261,6 +269,9 @@ export const PointEditionLeftPanel: FC<{ type: EditoastType }> = <Entity extends
               },
             },
           },
+          position: {
+            'ui:widget': CustomPosition,
+          },
         }}
         onSubmit={async (savedEntity) => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -297,8 +308,8 @@ export const PointEditionLeftPanel: FC<{ type: EditoastType }> = <Entity extends
             });
           }
         }}
-        onChange={(entity: Entity | SignalEntity) => {
-          const additionalUpdate: Partial<Entity> = {};
+        onChange={(entity: Entity | EditorPoint) => {
+          const additionalUpdate: Partial<EditorPoint> = {};
           const additionalPropertiesUpdate: Partial<SignalEntity['properties']> = {};
           const newPosition = entity.properties?.position;
           const oldPosition = state.entity.properties?.position;
@@ -311,16 +322,17 @@ export const PointEditionLeftPanel: FC<{ type: EditoastType }> = <Entity extends
             typeof oldPosition === 'number' &&
             newPosition !== oldPosition
           ) {
-            const point = along(trackState.track, newPosition, { units: 'meters' });
+            const turfPosition =
+              (newPosition * length(trackState.track, { units: 'meters' })) /
+              trackState.track.properties.length;
+            const point = along(trackState.track, turfPosition, { units: 'meters' });
             additionalUpdate.geometry = point.geometry;
           }
-
           if (entity.objType === 'Signal' && entity.properties.logical_signals) {
             additionalPropertiesUpdate.logical_signals = formatSignalingSystems(
               entity as SignalEntity
             );
           }
-
           setState({
             ...state,
             entity: {

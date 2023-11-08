@@ -11,14 +11,21 @@ import { Map } from 'maplibre-gl';
 import { save } from 'reducers/editor';
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
+import {
+  NULL_GEOMETRY,
+  BufferStopEntity,
+  DetectorEntity,
+  SignalEntity,
+  TrackSectionEntity,
+} from 'types';
 import { LAYER_TO_EDITOAST_DICT, LayerType } from '../types';
 import { getNearestPoint } from '../../../../utils/mapHelper';
 import { getPointEditionLeftPanel, POINT_LAYER_ID, PointEditionMessages } from './components';
 import { PointEditionState } from './types';
-import { NULL_GEOMETRY, BufferStopEntity, DetectorEntity, SignalEntity } from '../../../../types';
 import { getEntity } from '../../data/api';
 import { Tool } from '../editorContextTypes';
 import { DEFAULT_COMMON_TOOL_STATE } from '../commonToolState';
+import { approximateDistanceWithEditoastData } from '../utils';
 
 type EditorPoint = BufferStopEntity | DetectorEntity | SignalEntity;
 interface PointEditionToolParams<T extends EditorPoint> {
@@ -27,6 +34,14 @@ interface PointEditionToolParams<T extends EditorPoint> {
   getNewEntity: (point?: [number, number]) => T;
   layersComponent: ComponentType<{ map: Map }>;
   requiresAngle?: boolean;
+}
+
+function calculateDistanceAlongTrack(track: Feature<LineString>, point: Point) {
+  const wrongPointOnTrack = nearestPointOnLine(track.geometry, point, { units: 'meters' });
+  return approximateDistanceWithEditoastData(
+    track as TrackSectionEntity,
+    wrongPointOnTrack.geometry
+  );
 }
 
 function getPointEditionTool<T extends EditorPoint>({
@@ -62,25 +77,24 @@ function getPointEditionTool<T extends EditorPoint>({
     actions: [
       [
         {
-          id: 'reset-entity',
-          icon: BiReset,
-          labelTranslationKey: `Editor.tools.${id}-edition.actions.reset-entity`,
-          onClick({ setState, state }) {
-            setState({
-              ...getInitialState(),
-              entity: state.initialEntity,
-            });
-          },
-          isDisabled({ state }) {
-            return isEqual(state.entity, state.initialEntity);
-          },
-        },
-        {
           id: 'new-entity',
           icon: AiOutlinePlus,
           labelTranslationKey: `Editor.tools.${id}-edition.actions.new-entity`,
           onClick({ setState }) {
             setState(getInitialState());
+          },
+        },
+        {
+          id: 'reset-entity',
+          icon: BiReset,
+          labelTranslationKey: `Editor.tools.${id}-edition.actions.reset-entity`,
+          isDisabled({ state: { entity, initialEntity } }) {
+            return isEqual(entity, initialEntity);
+          },
+          onClick({ setState, state: { initialEntity } }) {
+            setState({
+              entity: cloneDeep(initialEntity),
+            });
           },
         },
       ],
@@ -116,6 +130,12 @@ function getPointEditionTool<T extends EditorPoint>({
     ],
 
     // Interactions:
+    getCursor({ state }, { isDragging }) {
+      if (isDragging || !state.entity.geometry || isEqual(state.entity.geometry, NULL_GEOMETRY))
+        return 'move';
+      if (state.isHoveringTarget) return 'pointer';
+      return 'default';
+    },
     onClickMap(_e, { setState, state, infraID, dispatch }) {
       const { isHoveringTarget, entity, nearestPoint } = state;
       if (entity.geometry && !isEqual(entity.geometry, NULL_GEOMETRY) && isHoveringTarget) {
@@ -125,7 +145,6 @@ function getPointEditionTool<T extends EditorPoint>({
           entity: omit(entity, 'geometry') as T,
         });
       }
-
       if ((!entity.geometry || isEqual(entity.geometry, NULL_GEOMETRY)) && nearestPoint) {
         const newEntity = cloneDeep(entity);
         newEntity.geometry = {
@@ -135,15 +154,13 @@ function getPointEditionTool<T extends EditorPoint>({
         newEntity.properties = newEntity.properties || {};
         newEntity.properties.track = nearestPoint.trackSectionID;
 
-        // retrieve the track section to be sure that the computation of the distance will be good
-        // we can't trust maplibre, because the stored gemetry is not necessary the real one
         getEntity(infraID as number, newEntity.properties.track, 'TrackSection', dispatch).then(
           (track) => {
-            newEntity.properties.position = nearestPointOnLine(
-              (track as Feature<LineString>).geometry,
-              newEntity.geometry as Point,
-              { units: 'meters' }
-            ).properties?.location;
+            const distanceAlongTrack = calculateDistanceAlongTrack(
+              track as TrackSectionEntity,
+              newEntity.geometry as Point
+            );
+            newEntity.properties.position = distanceAlongTrack;
 
             setState({
               ...state,
@@ -243,12 +260,6 @@ function getPointEditionTool<T extends EditorPoint>({
 
     getInteractiveLayers() {
       return ['editor/geo/track-main', POINT_LAYER_ID];
-    },
-    getCursor({ state }, { isDragging }) {
-      if (isDragging || !state.entity.geometry || isEqual(state.entity.geometry, NULL_GEOMETRY))
-        return 'move';
-      if (state.isHoveringTarget) return 'pointer';
-      return 'default';
     },
 
     layersComponent,
