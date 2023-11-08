@@ -30,13 +30,19 @@ import { getEntity } from '../data/api';
  * Since Turf and Editoast do not compute the lengths the same way (see #1751)
  * we can have data "end" being larger than Turf's computed length, which
  * throws an error. Until we find a way to get similar computations, we can
- * approximate this way:
+ * approximate it with a rule of Three.
+ *
+ * This approximation is not good if the track is long.
  */
 export function approximateDistanceWithEditoastData(track: TrackSectionEntity, point: Point) {
-  const distanceAlongTrack =
-    (length(lineSlice(track.geometry.coordinates[0], point, track)) * track.properties.length) /
-    length(track);
-  return distanceAlongTrack;
+  const wrongDistanceAlongTrack = length(lineSlice(track.geometry.coordinates[0], point, track));
+  const wrongTrackLength = length(track);
+  const realTrackLength = track.properties.length;
+
+  const distanceAlongTrack = (wrongDistanceAlongTrack * realTrackLength) / wrongTrackLength;
+
+  if (Math.abs(distanceAlongTrack - realTrackLength) < 0.1) return realTrackLength;
+  return Math.round(distanceAlongTrack * 100) / 100;
 }
 
 /** return the trackRanges near the mouse thanks to the hover event */
