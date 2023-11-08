@@ -254,6 +254,9 @@ const RollingStockEditorForm = ({
   }, [powerRestrictionsClass]);
 
   const tabRollingStockDetails: TabProps = {
+    id: 'rollingstock-details',
+    title: t('tabs.rollingStockDetails'),
+    withWarning: false,
     label: t('tabs.rollingStockDetails'),
     content: (
       <>
@@ -274,6 +277,9 @@ const RollingStockEditorForm = ({
   };
 
   const tabRollingStockCurves: TabProps = {
+    id: 'rollingstock-curves',
+    title: t('tabs.rollingStockCurves'),
+    withWarning: false,
     label: t('tabs.rollingStockCurves'),
     content: (
       <RollingStockEditorCurves

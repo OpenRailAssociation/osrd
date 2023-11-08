@@ -4160,8 +4160,8 @@ paths:
             application/json:
               schema:
                 properties:
-                  id:
-                    type: string
+                  infra:
+                    type: integer
                 type: object
           description: The imported infra id
       summary: Import an infra from railjson

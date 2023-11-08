@@ -67,6 +67,7 @@ const MapSearch = ({ map, closeMapSearchPopUp }: MapSearchProps) => {
       <Tabs
         tabs={[
           {
+            id: 'station',
             label: t('map-search:station'),
             content: (
               <MapSearchStation
@@ -76,6 +77,7 @@ const MapSearch = ({ map, closeMapSearchPopUp }: MapSearchProps) => {
             ),
           },
           {
+            id: 'line',
             label: t('map-search:line'),
             content: (
               <MapSearchLine
@@ -85,6 +87,7 @@ const MapSearch = ({ map, closeMapSearchPopUp }: MapSearchProps) => {
             ),
           },
           {
+            id: 'signal',
             label: t('map-search:signal'),
             content: (
               <MapSearchSignal

@@ -1,5 +1,4 @@
 import { test, expect } from '@playwright/test';
-import VARIABLES from './assets/operationStudies/testVariables';
 import PATH_VARIABLES from './assets/operationStudies/testVariablesPaths';
 import PlaywrightScenarioPage from './pages/scenario-page-model';
 import createCompleteScenario from './assets/utils';
@@ -15,7 +14,7 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
       '15',
       PATH_VARIABLES.originSearch,
       PATH_VARIABLES.destinationSearch,
-      VARIABLES.pathfindingDistance
+      '16 km'
     );
   });
 

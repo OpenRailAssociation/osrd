@@ -41,6 +41,7 @@ const SwitchSNCF: FC<SwitchSNCFProps> = ({
             return (
               <div className="custom-control custom-radio" key={`option-${id}-${option.value}`}>
                 <input
+                  data-testid={optionId}
                   type="radio"
                   id={optionId}
                   name={name}
@@ -62,6 +63,7 @@ const SwitchSNCF: FC<SwitchSNCFProps> = ({
         <label htmlFor={id} className="switch-control">
           <span className="sr-only">On/Off switch</span>
           <input
+            data-testid={name}
             id={id}
             type="checkbox"
             className="sr-only"

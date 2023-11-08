@@ -538,7 +538,7 @@ function Pathfinding({ zoomToFeature, path }: PathfindingProps) {
             <GoCheckCircle />
           </span>
           <span className="flex-grow-1">{t('pathfindingDone')}</span>
-          <small className="text-secondary">
+          <small className="text-secondary" data-testid="result-pathfinding-distance">
             {geojson?.length && formatKmValue(geojson?.length / 1000, 3)}
           </small>
         </div>

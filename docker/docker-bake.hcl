@@ -9,6 +9,7 @@ group "default" {
     "front-devel",
     "front-nginx",
     "front-build",
+    "front-tests",
     "gateway-standalone",
     "gateway-test",
     "gateway-front",
@@ -107,6 +108,17 @@ target "front-build" {
   context = "front"
   dockerfile = "docker/Dockerfile.nginx"
   target = "build"
+}
+
+target "base-front-tests" {}
+target "front-tests" {
+  inherits = ["base", "base-front-tests"]
+  context = "front"
+  dockerfile = "docker/Dockerfile.nginx"
+  target = "tests"
+  contexts = {
+    test_data = "./tests/data"
+  } 
 }
 
 ###########

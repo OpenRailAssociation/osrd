@@ -69,7 +69,7 @@ const MapSettingsBackgroundSwitches: FC<unknown> = () => {
   return (
     <>
       <FormatSwitch
-        name="showosmwitch"
+        name="show-osm-switch"
         onChange={() => dispatch(updateShowOSM(!showOSM))}
         state={showOSM}
         icon={iconOSM}
@@ -86,7 +86,7 @@ const MapSettingsBackgroundSwitches: FC<unknown> = () => {
       />
       <div className="my-2" />
       <FormatSwitch
-        name="showosmtracksectionswitch"
+        name="show-osm-track-section-switch"
         onChange={() => dispatch(updateShowOSMtracksections(!showOSMtracksections))}
         state={showOSMtracksections}
         icon={iconOSMTracks}
@@ -94,7 +94,7 @@ const MapSettingsBackgroundSwitches: FC<unknown> = () => {
       />
       <div className="my-2" />
       <FormatSwitch
-        name="showignbdorthoswitch"
+        name="show-ign-bdortho-switch"
         onChange={() => dispatch(updateShowIGNBDORTHO(!showIGNBDORTHO))}
         state={showIGNBDORTHO}
         icon={iconIGNBDORTHO}
@@ -102,7 +102,7 @@ const MapSettingsBackgroundSwitches: FC<unknown> = () => {
       />
       <div className="my-2" />
       <FormatSwitch
-        name="showignscan25switch"
+        name="show-ignscan25-switch"
         onChange={() => dispatch(updateShowIGNSCAN25(!showIGNSCAN25))}
         state={showIGNSCAN25}
         icon={iconIGNSCAN25}
@@ -110,7 +110,7 @@ const MapSettingsBackgroundSwitches: FC<unknown> = () => {
       />
       <div className="my-2" />
       <FormatSwitch
-        name="showigncadastreswitch"
+        name="show-ign-cadastres-witch"
         onChange={() => dispatch(updateShowIGNCadastre(!showIGNCadastre))}
         state={showIGNCadastre}
         icon={iconIGNCadastre}

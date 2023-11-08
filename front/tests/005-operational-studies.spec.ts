@@ -1,33 +1,33 @@
 import { test, expect } from '@playwright/test';
+import type { Project, RollingStock, Scenario, Study } from 'common/api/osrdEditoastApi';
 import { PlaywrightHomePage } from './pages/home-page-model';
 import PlaywrightRollingstockModalPage from './pages/rollingstock-modal-model';
 import PlaywrightMap from './pages/map-model';
-import VARIABLES from './assets/operationStudies/testVariables';
 import PATH_VARIABLES from './assets/operationStudies/testVariablesPaths';
 import PlaywrightScenarioPage from './pages/scenario-page-model';
-import { ProjectPage } from './pages/project-page-model';
-import { StudyPage } from './pages/study-page-model';
+import { getProject, getStudy, getScenario, getRollingStock } from './assets/utils';
 
-test.describe('Testing if all mandatory elements simulation configuration are loaded in operationnal studies app', () => {
-  test('Testing pathfinding with rollingstock an composition code', async ({ page }) => {
-    test.setTimeout(90000); // 1min30
+let project: Project;
+let study: Study;
+let scenario: Scenario;
+let rollingStock: RollingStock;
+
+test.beforeAll(async () => {
+  project = await getProject();
+  study = await getStudy(project.id);
+  scenario = await getScenario(project.id, study.id);
+  rollingStock = await getRollingStock();
+});
+
+// TODO: remove (enabled) when every tests are refactored
+test.describe('Testing if all mandatory elements simulation configuration are loaded in operationnal studies app (enabled)', () => {
+  test('Testing pathfinding with rollingstock and composition code', async ({ page }) => {
     const playwrightHomePage = new PlaywrightHomePage(page);
     const scenarioPage = new PlaywrightScenarioPage(page);
-    const projectPage = new ProjectPage(page);
-    const studyPage = new StudyPage(page);
 
-    await playwrightHomePage.goToHomePage();
-
-    // Real click on project, study, scenario
-    await playwrightHomePage.goToOperationalStudiesPage();
-    await projectPage.openProjectByTestId('_@Test integration project');
-    await studyPage.openStudyByTestId('_@Test integration study');
-
-    await scenarioPage.openScenarioCreationModal();
-    await scenarioPage.setScenarioName('_@Test integration scenario created');
-    await scenarioPage.setScenarioInfraByName(VARIABLES.infraName);
-    const createButton = playwrightHomePage.page.getByText('Créer le scénario');
-    await createButton.click();
+    await page.goto(
+      `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
+    );
 
     await scenarioPage.checkInfraLoaded();
     await playwrightHomePage.page.getByTestId('scenarios-add-train-schedule-button').click();
@@ -36,6 +36,7 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
     const trainCount = '7';
     await scenarioPage.setNumberOfTrains(trainCount);
 
+    // TODO: move this test in his own file
     // ***************** Test Rolling Stock *****************
     const playwrightRollingstockModalPage = new PlaywrightRollingstockModalPage(
       playwrightHomePage.page
@@ -45,22 +46,10 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
     const rollingstockModal = playwrightRollingstockModalPage.getRollingstockModal;
     await expect(rollingstockModal).toBeVisible();
 
-    await playwrightRollingstockModalPage.checkNumberOfRollingstockFound(
-      VARIABLES.numberOfRollingstock
-    );
-
-    await playwrightRollingstockModalPage.getElectricalCheckbox.click();
-    await playwrightRollingstockModalPage.checkNumberOfRollingstockFound(
-      VARIABLES.numberOfRollingstockWithElectrical
-    );
-
-    await playwrightRollingstockModalPage.searchRollingstock(VARIABLES.searchRollingstock);
-    await playwrightRollingstockModalPage.checkNumberOfRollingstockFound(
-      VARIABLES.numberOfRollingstockWithSearch
-    );
+    await playwrightRollingstockModalPage.searchRollingstock('rollingstock_1500_25000_test_e2e');
 
     const rollingstockCard = playwrightRollingstockModalPage.getRollingstockCardByTestID(
-      VARIABLES.rollingstockTestID
+      `rollingstock-${rollingStock.name}`
     );
     await expect(rollingstockCard).toHaveClass(/inactive/);
     await rollingstockCard.click();
@@ -70,13 +59,14 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
 
     expect(
       await playwrightRollingstockModalPage.getRollingStockMiniCardInfo().first().textContent()
-    ).toMatch(VARIABLES.rollingStockInfo);
+    ).toMatch(rollingStock.name);
     expect(
       await playwrightRollingstockModalPage.getRollingStockInfoComfort().textContent()
     ).toMatch(/ConfortSStandard/i);
 
+    // TODO: move this test in his own file
     // ***************** Test Composition Code *****************
-    await scenarioPage.openTabByText('Paramètres de simulation');
+    await scenarioPage.openTabByDataId('tab-simulation-settings');
     await expect(scenarioPage.getSpeedLimitSelector).toBeVisible();
     await scenarioPage.getSpeedLimitSelector.click();
     await scenarioPage.getSpeedLimitSelector.locator('input').fill('32');
@@ -89,8 +79,8 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
 
     // ***************** Test choice Origin/Destination *****************
     const playwrightMap = new PlaywrightMap(playwrightHomePage.page);
-    await scenarioPage.openTabByText('Itinéraire');
-    await playwrightMap.page.waitForTimeout(2000);
+    await scenarioPage.openTabByDataId('tab-pathfinding');
+    await playwrightMap.disableLayers();
     const itinerary = scenarioPage.getItineraryModule;
     await expect(itinerary).toBeVisible();
     await expect(scenarioPage.getMapModule).toBeVisible();
@@ -101,15 +91,13 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
     // Search and select destination
     await playwrightMap.selectDestination(PATH_VARIABLES.destinationSearch);
 
-    await scenarioPage.checkPathfindingDistance(VARIABLES.pathfindingDistance);
+    await scenarioPage.checkPathfindingDistance('34.000 km');
 
     // ***************** Test Add Train Schedule *****************
     await scenarioPage.addTrainSchedule();
     await scenarioPage.page.waitForSelector('.dots-loader', { state: 'hidden' });
-    await scenarioPage.checkToastSNCFTitle('Train ajouté');
+    await scenarioPage.checkToastSNCFTitle();
     await scenarioPage.returnSimulationResult();
     await scenarioPage.checkNumberOfTrains(Number(trainCount));
-
-    // Delete all trains when the selection of multiple trains has been added
   });
 });

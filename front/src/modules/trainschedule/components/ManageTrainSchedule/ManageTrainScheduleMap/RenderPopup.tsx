@@ -51,6 +51,7 @@ function RenderPopup() {
         </div>
         <div className="actions">
           <button
+            data-testid="map-origin-button"
             className="btn btn-sm btn-success"
             type="button"
             onClick={() => setPointIti('start', properties, osrdConfActions)}
@@ -67,6 +68,7 @@ function RenderPopup() {
             <span className="d-none">{t('via')}</span>
           </button>
           <button
+            data-testid="map-destination-button"
             className="btn btn-sm btn-warning"
             type="button"
             onClick={() => setPointIti('end', properties, osrdConfActions)}
