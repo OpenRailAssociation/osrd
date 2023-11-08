@@ -35,6 +35,7 @@ type Props = {
   disabled?: boolean;
   disableUnitSelector?: boolean;
   limitDecimal?: number;
+  inputDataTestId?: string;
 };
 
 const isNeedStripDecimalDigits = (inputValue: string, limit: number) => {
@@ -64,6 +65,7 @@ export default function InputGroupSNCF({
   disabled = false,
   disableUnitSelector = false,
   limitDecimal = 10,
+  inputDataTestId,
 }: Props) {
   const [isDropdownShown, setIsDropdownShown] = useState(false);
   const [selected, setSelected] = useState(
@@ -125,7 +127,7 @@ export default function InputGroupSNCF({
         value={inputValue}
         min={min}
         max={max}
-        data-testid="input-group-first-field"
+        data-testid={inputDataTestId}
         step={step}
         disabled={disabled}
       />

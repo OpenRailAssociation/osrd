@@ -319,7 +319,12 @@ const RollingStockEditorForm = ({
             >
               {t('translation:common.cancel')}
             </button>
-            <button type="submit" className="btn btn-primary py-1 px-2" disabled={!isValid}>
+            <button
+              type="submit"
+              className="btn btn-primary py-1 px-2"
+              disabled={!isValid}
+              data-testid="submit-rollingstock-button"
+            >
               {t('translation:common.confirm')}
             </button>
           </div>

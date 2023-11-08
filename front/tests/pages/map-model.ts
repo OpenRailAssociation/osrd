@@ -85,11 +85,13 @@ class PlaywrightMap {
       .click();
     await this.clickOnMap();
     // We don't use ternaries here, as eslint warns us about rule no-unused-expressions
-    if (isOrigin) {
-      await this.clickOnOrigin();
-    } else {
-      await this.clickOnDestination();
-    }
+    await expect(async () => {
+      if (isOrigin) {
+        await this.clickOnOrigin();
+      } else {
+        await this.clickOnDestination();
+      }
+    }).toPass({ timeout: 60_000 });
   }
 
   async selectOrigin(props: selectPointOnMapProps) {

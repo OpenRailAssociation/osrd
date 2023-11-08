@@ -145,6 +145,7 @@ const RollingStockEditorParameterFormColumn = ({
           >
             <InputGroupSNCF
               id={property.title}
+              inputDataTestId={`${property.title}-input`}
               label={t(`${property.title}`)}
               typeValue={property.type}
               type={optionValue}

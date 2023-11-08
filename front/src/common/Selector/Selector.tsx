@@ -142,6 +142,7 @@ const Selector = <
       selectNewItem: (arg: NonNullable<T>) => void;
       customOnClick?: () => void;
     };
+    dataTestID?: string;
   }>
 ) => {
   const {
@@ -155,12 +156,13 @@ const Selector = <
     onItemRemoved,
     extraColumn,
     selectNewItemButtonProps,
+    dataTestID,
   } = props;
 
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
   return (
-    <div className="selector">
+    <div className="selector" data-testid={dataTestID}>
       <div className={`selector-title ${borderClass} pl-1 pb-1`}>
         <h2 className="mb-0 text-blue">{title}</h2>
       </div>

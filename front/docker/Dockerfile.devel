@@ -12,6 +12,9 @@ RUN apt-get update -yqq && \
     apt-get install -yqq --no-install-recommends xdg-utils && \
     rm -rf /var/lib/apt/lists/*
 
+# Allow to import tests data files
+COPY --from=test_data . /tests/data
+
 COPY --from=exec_as_builder /exec-as /
 
 WORKDIR /app

@@ -48,7 +48,7 @@ jobs:
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
-          username: '$' # special user for authenticating as a gh actions worker
+          username: "$" # special user for authenticating as a gh actions worker
           password: ${{ secrets.GITHUB_TOKEN }}
 
       # This action happens to randomly fail, so we retry it 3 times.
@@ -295,20 +295,20 @@ jobs:
   check_infra_schema_sync:
     runs-on: ubuntu-latest
     steps:
-        - name: Checkout
-          uses: actions/checkout@v4
-        - name: Install poetry
-          run: pipx install poetry
-        - uses: actions/setup-python@v5
-          with:
-            python-version: "3.11"
-            cache: "poetry"
-        - name: Check infra_schema.json sync
-          run: |
-            cd python/osrd_schemas
-            poetry install --no-interaction --no-root
-            poetry run python -m osrd_schemas.infra_editor > current_infra_schema.json
-            diff current_infra_schema.json ../../front/src/reducers/osrdconf/infra_schema.json
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install poetry
+        run: pipx install poetry
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "poetry"
+      - name: Check infra_schema.json sync
+        run: |
+          cd python/osrd_schemas
+          poetry install --no-interaction --no-root
+          poetry run python -m osrd_schemas.infra_editor > current_infra_schema.json
+          diff current_infra_schema.json ../../front/src/reducers/osrdconf/infra_schema.json
 
   check_front_rtk_sync:
     runs-on: ubuntu-latest

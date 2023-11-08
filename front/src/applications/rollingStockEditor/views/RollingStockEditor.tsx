@@ -41,7 +41,7 @@ export default function RollingStockEditor({ rollingStocks }: RollingStockEditor
   useEffect(() => setFilteredRollingStockList(rollingStocks), []);
 
   const rollingStocksList = (
-    <div className="rollingstock-editor-list pr-1">
+    <div className="rollingstock-editor-list pr-1" data-testid="rollingstock-editor-list">
       {filteredRollingStockList.map((data) => (
         <div key={data.id}>
           <div className="d-flex">
@@ -150,6 +150,7 @@ export default function RollingStockEditor({ rollingStocks }: RollingStockEditor
           <button
             type="button"
             className="btn btn-primary mb-4"
+            data-testid="new-rollingstock-button"
             onClick={() => {
               setIsAdding(true);
               setOpenedRollingStockCardId(undefined);

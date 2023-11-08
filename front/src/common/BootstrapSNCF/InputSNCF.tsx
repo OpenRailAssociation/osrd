@@ -16,6 +16,7 @@ export type InputSNCFProps = {
   min?: string | number;
   max?: string | number;
   list?: string;
+  dataTestID?: string;
   // Error handling
   isInvalid?: boolean;
   errorMsg?: string;

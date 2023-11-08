@@ -93,6 +93,9 @@ target "front-devel" {
   inherits = ["base", "base-front-devel"]
   context = "front"
   dockerfile = "docker/Dockerfile.devel"
+  contexts = {
+    test_data = "./tests/data"
+  }
 }
 
 target "base-front-nginx" {}
@@ -100,6 +103,9 @@ target "front-nginx" {
   inherits = ["base", "base-front-nginx"]
   context = "front"
   dockerfile = "docker/Dockerfile.nginx"
+  contexts = {
+    test_data = "./tests/data"
+  }
 }
 
 target "base-front-build" {}
@@ -108,6 +114,20 @@ target "front-build" {
   context = "front"
   dockerfile = "docker/Dockerfile.nginx"
   target = "build"
+  contexts = {
+    test_data = "./tests/data"
+  }
+}
+
+target "base-front-tests" {}
+target "front-tests" {
+  inherits = ["base", "base-front-tests"]
+  context = "front"
+  dockerfile = "docker/Dockerfile.nginx"
+  target = "tests"
+  contexts = {
+    test_data = "./tests/data"
+  } 
 }
 
 target "base-front-tests" {}
