@@ -13,6 +13,7 @@ const ButtonMapSettings = ({ toggleMapSettings }: ButtonMapSettingsProps) => {
   return (
     <Tipped mode="left">
       <button
+        data-testid="button-map-settings"
         type="button"
         className="btn-rounded btn-rounded-white btn-map-settings"
         onClick={toggleMapSettings}

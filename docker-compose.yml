@@ -57,6 +57,8 @@ services:
     container_name: osrd-front
     build:
       context: front
+      additional_contexts:
+        test_data: tests/data
       dockerfile: docker/Dockerfile.${OSRD_FRONT_MODE-devel}
       args:
         OSRD_GIT_DESCRIBE: ${OSRD_GIT_DESCRIBE}
@@ -65,6 +67,7 @@ services:
       OSRD_EDITOAST_URL: /api
     volumes:
       - "./front:/app"
+      - "./tests/data:/tests/data"
     restart: unless-stopped
     ports: ["3000:3000"]
     healthcheck:

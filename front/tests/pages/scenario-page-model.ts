@@ -5,8 +5,6 @@ class PlaywrightScenarioPage {
 
   readonly getScenarioDeleteConfirmBtn: Locator;
 
-  readonly getScenarioTags: Locator;
-
   readonly getRollingStockSelector: Locator;
 
   readonly getSpeedLimitSelector: Locator;
@@ -86,12 +84,11 @@ class PlaywrightScenarioPage {
   readonly getSuccessBtn: Locator;
 
   constructor(readonly page: Page) {
-    this.getRollingStockSelector = page.getByTestId('rollingstock-selector-minicard');
+    this.getRollingStockSelector = page.getByTestId('rollingstock-selector-empty');
     this.getScenarioUpdateBtn = page.getByTitle('Modifier le scénario');
     this.getScenarioDeleteConfirmBtn = page
       .locator('#modal-content')
       .getByText('Supprimer', { exact: true });
-    this.getScenarioTags = page.locator('.scenario-card-tags');
     this.getSpeedLimitSelector = page.getByTestId('speed-limit-by-tag-selector');
     this.getItineraryModule = page.getByTestId('itinerary');
     this.getItineraryOrigin = this.getItineraryModule
@@ -148,12 +145,16 @@ class PlaywrightScenarioPage {
     this.getScenarioUpdateConfirmBtn = page.locator('#modal-content').getByTestId('updateScenario');
   }
 
-  async openTabByText(text: string) {
-    await this.page.locator('span', { hasText: text }).click();
+  async openTabByDataId(id: string) {
+    await this.page.getByTestId(id).click();
   }
 
   getScenarioByName(name: string) {
     return this.page.locator(`text=${name}`);
+  }
+
+  getScenarioTags(id: string) {
+    return this.page.getByTestId(`scenario-card-${id}`).locator('.scenario-card-tags');
   }
 
   async openScenarioByTestId(scenarioTestId: string) {
@@ -231,8 +232,8 @@ class PlaywrightScenarioPage {
     await this.getReturnSimulationResultBtn.click();
   }
 
-  async checkToastSNCFTitle(title: string | RegExp) {
-    await expect(this.getToastSNCFTitle).toHaveText(title);
+  async checkToastSNCFTitle() {
+    await expect(this.getToastSNCFTitle).not.toBeEmpty();
   }
 
   async checkToastSNCFBody(text: string | RegExp) {

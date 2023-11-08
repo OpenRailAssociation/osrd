@@ -240,8 +240,8 @@ paths:
               schema:
                 type: object
                 properties:
-                  id:
-                    type: string
+                  infra:
+                    type: integer
 
   /infra/{id}/errors/:
     get:

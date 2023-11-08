@@ -1,6 +1,6 @@
 {
   "id": 0,
-  "name": "Test scenario",
+  "name": "scenario_test_e2e",
   "description": "scenario description",
   "infra": 0,
   "creation_date": "2023-02-02T23:31:08.218Z",

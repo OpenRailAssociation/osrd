@@ -1,6 +1,4 @@
-import type { PlaywrightTestConfig } from '@playwright/test';
-import { devices } from '@playwright/test';
-
+import { defineConfig, devices } from '@playwright/test';
 /**
  * Read environment variables from file.
  * https://github.com/motdotla/dotenv
@@ -10,7 +8,7 @@ import { devices } from '@playwright/test';
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
-const config: PlaywrightTestConfig = {
+export default defineConfig({
   testDir: './tests',
 
   /* Maximum time one test can run for. */
@@ -25,7 +23,7 @@ const config: PlaywrightTestConfig = {
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Opt out of parallel tests on CI based on cpu capacity */
-  workers: process.env.CI ? '100%' : '50%',
+  workers: '50%',
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
@@ -42,27 +40,34 @@ const config: PlaywrightTestConfig = {
     locale: 'fr',
     video: 'retain-on-failure',
   },
+  reporter: process.env.CI ? 'github' : 'line',
 
   /* Configure projects for major browsers */
   projects: [
+    { name: 'setup', testMatch: 'global-setup.ts', teardown: 'teardown' },
+    {
+      name: 'teardown',
+      testMatch: 'global-teardown.ts',
+    },
     {
       name: 'chromium',
       use: {
         ...devices['Desktop Chrome'],
       },
+      dependencies: ['setup'],
     },
-
     {
       name: 'firefox',
       use: {
         ...devices['Desktop Firefox'],
       },
+      dependencies: ['setup'],
+      // ! we ignore tests that use canvas because it's not well supported in firefox with playwright
+      testIgnore: /.005-operational-studies.spec.ts/,
     },
   ],
 
   /* select tags to run specific tests */
   // TODO: remove grep when every tests are refactored
-  grep: [/home/, /project/, /study/, /scenario/],
-};
-
-export default config;
+  grep: [/(enabled)/],
+});

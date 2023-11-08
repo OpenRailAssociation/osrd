@@ -84,7 +84,7 @@ const RollingStockSelector = ({
             )}
           </div>
         ) : (
-          <div className="d-flex align-items-center">
+          <div data-testid="rollingstock-selector-empty" className="d-flex align-items-center">
             <img width="32px" className="mr-2" src={icon} alt="infraIcon" />
             {t('rollingstockChoice')}
           </div>

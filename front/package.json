@@ -192,7 +192,7 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "generate-licenses": "license-checker-rseidelsohn --json --production --direct --excludePackagesStartingWith '@types' --excludePrivatePackages --customPath src/common/ReleaseInformations/json/licenseCustomFormat.json > src/common/ReleaseInformations/json/licenses.json",
-    "e2e-tests": "yarn playwright test --reporter=line"
+    "e2e-tests": "yarn playwright test"
   },
   "browserslist": {
     "production": [

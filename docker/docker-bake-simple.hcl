@@ -32,6 +32,10 @@ target "base-front-build" {
   tags = tags("front-build")
 }
 
+target "base-front-tests" {
+  tags = tags("front-tests")
+}
+
 target "base-gateway-standalone" {
   tags = tags("gateway-standalone")
 }

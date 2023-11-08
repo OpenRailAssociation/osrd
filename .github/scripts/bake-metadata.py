@@ -42,6 +42,7 @@ TARGETS = [
     Target(name="front-devel", image="front", variant="devel"),
     Target(name="front-nginx", image="front", variant="nginx"),
     Target(name="front-build", image="front", variant="build"),
+    Target(name="front-tests", image="front", variant="tests"),
     Target(name="gateway-standalone", image="gateway", variant="standalone"),
     Target(name="gateway-test", image="gateway", variant="test"),
     Target(name="gateway-front", image="gateway", variant="front", release=True),

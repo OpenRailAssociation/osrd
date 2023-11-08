@@ -609,7 +609,7 @@ jobs:
             docker run --init --name=playwright-test --net=host \
               -e CI=true \
               -v $PWD/front/test-results:/app/test-results \
-              ${{ fromJSON(needs.build.outputs.stable_tags).front-build }} \
+              ${{ fromJSON(needs.build.outputs.stable_tags).front-tests }} \
               /bin/sh -c "npx playwright install --with-deps && yarn e2e-tests"
 
             exit $(docker wait playwright-test)

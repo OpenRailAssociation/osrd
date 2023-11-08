@@ -12,7 +12,12 @@ const HearderPopUp: React.FC<HearderPopUpProps> = ({ onClick, title, isLight, ac
   <div className="d-flex justify-content-between align-items-start">
     <div className={cx('h2', { 'text-light': isLight })}>{title}</div>
     {action && <div>{action}</div>}
-    <button type="button" className={cx('close', { 'text-light': isLight })} onClick={onClick}>
+    <button
+      type="button"
+      className={cx('close', { 'text-light': isLight })}
+      onClick={onClick}
+      data-testid="close-modal"
+    >
       &times;
     </button>
   </div>

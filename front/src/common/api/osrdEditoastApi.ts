@@ -788,7 +788,7 @@ export type PostInfraApiArg = {
   };
 };
 export type PostInfraRailjsonApiResponse = /** status 201 The imported infra id */ {
-  id?: string;
+  infra?: number;
 };
 export type PostInfraRailjsonApiArg = {
   /** Infra name */

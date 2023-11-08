@@ -12,6 +12,12 @@ RUN yarn install --frozen-lockfile
 COPY . /app
 RUN yarn generate-licenses && yarn build
 
+### TESTS STAGE
+
+FROM build as tests
+
+# Allow to import tests data files
+COPY --from=test_data . /tests/data
 
 ### SERVE STAGE
 
