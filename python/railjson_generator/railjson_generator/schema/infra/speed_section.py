@@ -9,8 +9,10 @@ from railjson_generator.schema.infra.range_elements import (
 
 
 def _speed_section_id():
-    res = f"speed_section.{SpeedSection._INDEX}"  # pytype: disable=name-error
-    SpeedSection._INDEX += 1  # pytype: disable=name-error
+    # pytype: disable=name-error
+    res = f"speed_section.{SpeedSection._INDEX}"
+    SpeedSection._INDEX += 1
+    # pytype: enable=name-error
     return res
 
 
