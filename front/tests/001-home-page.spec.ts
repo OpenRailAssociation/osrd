@@ -2,7 +2,8 @@ import { test, expect } from '@playwright/test';
 import { PlaywrightHomePage } from './pages/home-page-model';
 
 // Describe the test suite for the home page of OSRD
-test.describe('Home page OSRD', () => {
+// TODO: remove (enabled) when every tests are refactored
+test.describe('Home page OSRD (enabled)', () => {
   let playwrightHomePage: PlaywrightHomePage;
 
   test.beforeEach(async ({ page }) => {

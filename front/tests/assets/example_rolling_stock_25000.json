@@ -1,6 +1,6 @@
 {
   "railjson_version": "3.2",
-  "Version": 0,
+  "version": 0,
   "locked": false,
   "length": 400.0,
   "max_speed": 80.0,
@@ -9,7 +9,7 @@
   "comfort_acceleration": 0.25,
   "inertia_coefficient": 1.05,
   "features": ["TVM300", "TVM430", "ETCS1", "ETCS2", "KVB"],
-  "name": "7200",
+  "name": "15000",
   "mass": 900000.0,
   "loading_gauge": "G1",
   "gamma": {
@@ -23,14 +23,28 @@
     "C": 12
   },
   "effort_curves": {
-    "default_mode": "1500",
+    "default_mode": "thermal",
     "modes": {
-      "1500": {
+      "thermal": {
+        "curves": [],
+        "default_curve": {
+          "speeds": [0, 5, 10, 15, 20, 22, 27, 32, 37, 42, 47, 52, 57, 62, 67, 72, 77],
+          "max_efforts": [
+            441666.6666666667, 439473.6842105263, 435714.28571428574, 427777.77777777775, 400000,
+            350971.5388299929, 347206.93642395496, 346938.7385068534, 344395.0325320009,
+            334314.2138640166, 313589.8108101956, 283584.5657113532, 250604.14937613969,
+            222698.71360301683, 204685.35097358702, 195984.55717992093, 192916.7642524637
+          ]
+        },
+        "is_electric": false
+      },
+
+      "25000": {
         "curves": [
           {
             "cond": {
               "comfort": "STANDARD",
-              "electrical_profile_level": "1500",
+              "electrical_profile_level": "25000",
               "power_restriction_code": "C1"
             },
             "curve": {
@@ -52,7 +66,7 @@
           {
             "cond": {
               "comfort": "STANDARD",
-              "electrical_profile_level": "1500",
+              "electrical_profile_level": "25000",
               "power_restriction_code": "C2"
             },
             "curve": {
@@ -74,7 +88,7 @@
           {
             "cond": {
               "comfort": "STANDARD",
-              "electrical_profile_level": "1500",
+              "electrical_profile_level": "25000",
               "power_restriction_code": null
             },
             "curve": {
@@ -294,7 +308,7 @@
           {
             "cond": {
               "comfort": "HEATING",
-              "electrical_profile_level": "1500",
+              "electrical_profile_level": "25000",
               "power_restriction_code": "C1"
             },
             "curve": {
@@ -316,7 +330,7 @@
           {
             "cond": {
               "comfort": "HEATING",
-              "electrical_profile_level": "1500",
+              "electrical_profile_level": "25000",
               "power_restriction_code": "C2"
             },
             "curve": {
@@ -338,7 +352,7 @@
           {
             "cond": {
               "comfort": "HEATING",
-              "electrical_profile_level": "1500",
+              "electrical_profile_level": "25000",
               "power_restriction_code": null
             },
             "curve": {
@@ -558,7 +572,7 @@
           {
             "cond": {
               "comfort": "AC",
-              "electrical_profile_level": "1500",
+              "electrical_profile_level": "25000",
               "power_restriction_code": "C1"
             },
             "curve": {
@@ -580,7 +594,7 @@
           {
             "cond": {
               "comfort": "AC",
-              "electrical_profile_level": "1500",
+              "electrical_profile_level": "25000",
               "power_restriction_code": "C2"
             },
             "curve": {
@@ -602,7 +616,7 @@
           {
             "cond": {
               "comfort": "AC",
-              "electrical_profile_level": "1500",
+              "electrical_profile_level": "25000",
               "power_restriction_code": null
             },
             "curve": {
@@ -840,18 +854,18 @@
   },
   "base_power_class": "1",
   "metadata": {
-    "detail": "BB 7200",
+    "detail": "BB15000 US",
     "number": "1",
-    "reference": "7200",
+    "reference": "15000",
     "family": "LOCOMOTIVES",
     "type": "Locomotives électriques",
-    "grouping": "Locomotives électriques courant continu",
-    "series": "BB 7200",
-    "subseries": "GV",
+    "grouping": "Locomotives électriques monophasé",
+    "series": "BB 15000",
+    "subseries": "BB 15000",
     "unit": "US"
   },
   "energy_sources": [],
-  "power_restrictions": {},
+  "power_restrictions": { "C2": "2" },
   "electrical_power_startup_time": 5.0,
   "raise_pantograph_time": 15.0
 }

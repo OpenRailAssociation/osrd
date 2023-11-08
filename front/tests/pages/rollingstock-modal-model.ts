@@ -25,12 +25,12 @@ class PlaywrightRollingstockModalPage {
   constructor(page: Page) {
     this.page = page;
     this.playwrightCommonPage = new PlaywrightCommonPage(page);
-    this.getRollingStockSelector = page.getByTestId('rollingstock-selector-minicard');
+    this.getRollingStockSelector = page.getByTestId('rollingstock-selector-empty');
     this.getRollingstockModal = page.locator('.modal-dialog');
     this.getResultsFound = page.locator('.modal-dialog').locator('small').first();
     this.getRollingStockSearch = this.getRollingstockModal.locator('#searchfilter');
     this.getRollingStockSearchFilter = page.locator('.rollingstock-search-filters');
-    this.getRollingstockMiniCard = page.locator('.rollingstock-minicard');
+    this.getRollingstockMiniCard = page.locator('.rollingstock-selector-minicard');
     this.getRollingstockSpanNames = page.locator('.rollingstock-minicard-name');
     this.getElectricalCheckbox = this.getRollingstockModal.locator('label').filter({
       hasText: this.playwrightCommonPage.getRollingstockTranslation('electric') as string,

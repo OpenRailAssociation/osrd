@@ -7,6 +7,7 @@ type TabComponentProps = {
 };
 
 export type TabProps = {
+  id: string;
   label: string;
   title?: React.ReactNode;
   withWarning?: boolean;
@@ -38,6 +39,7 @@ const Tabs = ({ tabs, pills = false, fullWidth = false, fullHeight = false }: Ta
       <div className={cx('tabs', pills && 'pills')}>
         {tabs.map((tab, index) => (
           <div
+            data-testid={`tab-${tab.id}`}
             className={cx(
               'tab',
               index === activeTabIndex && 'active',

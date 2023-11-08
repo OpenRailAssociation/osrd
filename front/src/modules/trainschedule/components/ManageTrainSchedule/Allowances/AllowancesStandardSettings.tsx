@@ -2,10 +2,10 @@ import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import InputGroupSNCF, { InputGroupSNCFValue } from 'common/BootstrapSNCF/InputGroupSNCF';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
+import { onlyDigit } from 'utils/strings';
 import { unitsList, unitsNames } from './consts';
 import getAllowanceValue from './helpers';
 import { AllowanceValueForm, StandardAllowanceForm } from './types';
-import { onlyDigit } from 'utils/strings';
 
 type Props = {
   distribution: string;

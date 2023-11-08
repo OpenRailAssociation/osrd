@@ -12,6 +12,8 @@ import { devices } from '@playwright/test';
  */
 const config: PlaywrightTestConfig = {
   testDir: './tests',
+  globalSetup: require.resolve('./tests/global-setup'),
+  globalTeardown: require.resolve('./tests/global-teardown'),
 
   /* Maximum time one test can run for. */
   timeout: 50 * 1000,
@@ -25,7 +27,7 @@ const config: PlaywrightTestConfig = {
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Opt out of parallel tests on CI based on cpu capacity */
-  workers: process.env.CI ? '100%' : '50%',
+  workers: '50%',
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
@@ -62,7 +64,7 @@ const config: PlaywrightTestConfig = {
 
   /* select tags to run specific tests */
   // TODO: remove grep when every tests are refactored
-  grep: [/home/, /project/, /study/, /scenario/],
+  grep: [/(enabled)/],
 };
 
 export default config;

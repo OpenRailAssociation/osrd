@@ -29,8 +29,8 @@ class PlaywrightMap {
     this.getBtnCloseShearch = page.locator('.map-modal').getByRole('button', { name: '×' });
     this.getSearchedStation = page.locator('#map-search-station');
     this.getMap = page.locator('.maplibregl-map');
-    this.getBtnOrigin = page.getByRole('button').filter({ hasText: 'Origine' });
-    this.getBtnDestination = page.getByRole('button').filter({ hasText: 'Destination' });
+    this.getBtnOrigin = page.locator('.map-popup-click-select').getByTestId('mapOrigin');
+    this.getBtnDestination = page.locator('.map-popup-click-select').getByTestId('mapDestination');
     this.getPathFindingResult = page.locator('.pathfinding-done');
     this.playwrightHomePage = new PlaywrightHomePage(page);
   }
@@ -47,12 +47,12 @@ class PlaywrightMap {
     await this.getSearchedStation.fill(station);
   }
 
-  async clickOnMap(position: { x: number; y: number }) {
-    await this.getMap.click({ position });
+  async clickOnMap() {
+    await this.getMap.click();
   }
 
   async clickOnOrigin() {
-    await this.getBtnOrigin.click();
+    await this.getBtnOrigin.first().click();
   }
 
   async clickOnDestination() {
@@ -64,17 +64,16 @@ class PlaywrightMap {
   }
 
   async selectPointOnMap(args: selectPointOnMapProps & { isOrigin: boolean }) {
-    const { stationName, stationItemName, positionClick, isOrigin } = args;
+    const { stationName, stationItemName, isOrigin } = args;
     await this.openMapSearch();
     await this.searchStation(stationName);
     await this.playwrightHomePage.page
       .getByRole('button', { name: stationItemName })
       .first()
       .click();
-    await this.closeMapSearch();
     await this.page.waitForTimeout(1000);
     await this.page.waitForSelector('.maplibregl-marker');
-    await this.clickOnMap(positionClick);
+    await this.clickOnMap();
     // We don't use ternaries here, as eslint warns us about rule no-unused-expressions
     if (isOrigin) {
       await this.clickOnOrigin();

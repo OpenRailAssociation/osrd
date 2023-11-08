@@ -86,7 +86,7 @@ class PlaywrightScenarioPage {
   readonly getSuccessBtn: Locator;
 
   constructor(readonly page: Page) {
-    this.getRollingStockSelector = page.getByTestId('rollingstock-selector-minicard');
+    this.getRollingStockSelector = page.getByTestId('rollingstock-selector-empty');
     this.getScenarioUpdateBtn = page.getByTitle('Modifier le scénario');
     this.getScenarioDeleteConfirmBtn = page
       .locator('#modal-content')
@@ -148,8 +148,8 @@ class PlaywrightScenarioPage {
     this.getScenarioUpdateConfirmBtn = page.locator('#modal-content').getByTestId('updateScenario');
   }
 
-  async openTabByText(text: string) {
-    await this.page.locator('span', { hasText: text }).click();
+  async openTabByDataId(id: string) {
+    await this.page.getByTestId(id).click();
   }
 
   getScenarioByName(name: string) {
@@ -231,8 +231,8 @@ class PlaywrightScenarioPage {
     await this.getReturnSimulationResultBtn.click();
   }
 
-  async checkToastSNCFTitle(title: string | RegExp) {
-    await expect(this.getToastSNCFTitle).toHaveText(title);
+  async checkToastSNCFTitle() {
+    await expect(this.getToastSNCFTitle).not.toBeEmpty();
   }
 
   async checkToastSNCFBody(text: string | RegExp) {

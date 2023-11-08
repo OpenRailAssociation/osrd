@@ -30,6 +30,7 @@ const RollingStockSelector = ({
   const { openModal } = useModal();
 
   const ref2scroll = useRef<HTMLDivElement>(null);
+
   return (
     <div className="osrd-config-item mb-2">
       <div
@@ -81,7 +82,7 @@ const RollingStockSelector = ({
             )}
           </div>
         ) : (
-          <div className="d-flex align-items-center">
+          <div data-testid="rollingstock-selector-empty" className="d-flex align-items-center">
             <img width="32px" className="mr-2" src={icon} alt="infraIcon" />
             {choice}
           </div>

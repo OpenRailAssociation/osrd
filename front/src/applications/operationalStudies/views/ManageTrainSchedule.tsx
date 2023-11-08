@@ -58,6 +58,7 @@ export default function ManageTrainSchedule() {
     );
 
   const tabRollingStock = {
+    id: 'rollingstock',
     title: rollingStock ? (
       <div className="managetrainschedule-tab">
         <span className="rolling-stock">
@@ -84,6 +85,7 @@ export default function ManageTrainSchedule() {
   };
 
   const tabPathFinding = {
+    id: 'pathfinding',
     title: (
       <div className="managetrainschedule-tab">
         <img src={pahtFindingPic} alt="path finding" />
@@ -111,6 +113,7 @@ export default function ManageTrainSchedule() {
   };
 
   const tabAllowances = {
+    id: 'allowances',
     title: (
       <div className="managetrainschedule-tab" data-testid="allowances">
         <img src={allowancesPic} alt="allowances" />
@@ -122,6 +125,7 @@ export default function ManageTrainSchedule() {
   };
 
   const tabSimulationSettings = {
+    id: 'simulation-settings',
     title: (
       <div className="managetrainschedule-tab">
         <img src={simulationSettings} alt="simulation settings" />

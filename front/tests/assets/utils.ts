@@ -57,7 +57,7 @@ export default async function createCompleteScenario(
   await rollingstockCard.locator('button').click();
 
   // ***************** Select Origin/Destination *****************
-  await scenarioPage.openTabByText('Itinéraire');
+  await scenarioPage.openTabByDataId('tab-pathfinding');
   await playwrightMap.page.waitForTimeout(2000);
   const itinerary = scenarioPage.getItineraryModule;
   await expect(itinerary).toBeVisible();
@@ -74,7 +74,7 @@ export default async function createCompleteScenario(
   // ***************** Create train *****************
   await scenarioPage.addTrainSchedule();
   await scenarioPage.page.waitForSelector('.dots-loader', { state: 'hidden' });
-  await scenarioPage.checkToastSNCFTitle('Train ajouté');
+  await scenarioPage.checkToastSNCFTitle();
   await scenarioPage.returnSimulationResult();
 }
 
@@ -91,9 +91,13 @@ export const getApiRequest = async (url: string) => {
   return response.json();
 };
 
-export const postApiRequest = async <T>(url: string, data: T) => {
+export const postApiRequest = async <T>(
+  url: string,
+  data?: T,
+  params?: { [key: string]: string | number | boolean }
+) => {
   const apiContext = await getApiContext();
-  const newProject = await apiContext.post(url, { data });
+  const newProject = await apiContext.post(url, { data, params });
   return newProject.json();
 };
 

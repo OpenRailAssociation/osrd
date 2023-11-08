@@ -21,7 +21,8 @@ test.afterEach(async () => {
   await deleteApiRequest(`/projects/${newProjectData.id}/`);
 });
 
-test.describe('Test if operationnal study  : project workflow is working properly', () => {
+// TODO: remove (enabled) when every tests are refactored
+test.describe('Test if operationnal study  : project workflow is working properly (enabled)', () => {
   test('Create a new project', async ({ page }) => {
     const playwrightHomePage = new PlaywrightHomePage(page);
     const projectPage = new ProjectPage(page);

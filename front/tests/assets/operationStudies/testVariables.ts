@@ -1,32 +1,32 @@
 export default {
   infraName: 'small_infra',
-  numberOfRollingstock: '3',
-  numberOfRollingstockWithElectrical: '3',
-  searchRollingstock: '7200',
-  searchRollingstock1500V: '22200',
-  numberOfRollingstockWithSearch: '1',
-  rollingstockTestID: 'rollingstock-_@Test BB 7200GVLOCOMOTIVES',
-  rollingstockTestID1500V: 'rollingstock-_@Test BB 22200',
-  rollingStockInfo: /BB 7200GV/,
-  pathfindingDistance: '22 km',
+  numberOfRollingstock: process.env.CI ? '3' : '446',
+  numberOfRollingstockWithElectrical: process.env.CI ? '3' : '265',
+  searchRollingstock: '22200',
+  searchRollingstock1500V: '7200',
+  numberOfRollingstockWithSearch: process.env.CI ? '1' : '6',
+  rollingstockTestID: process.env.CI ? 'rollingstock-22200-test' : 'rollingstock-22200G',
+  rollingstockTestID1500V: process.env.CI ? 'rollingstock-7200-test' : 'rollingstock-7200GH',
+  rollingStockInfo: /BB 22200V160/,
+  pathfindingDistance: '16 km',
   stdcm: {
-    pathfindingDistance: '22 km',
+    pathfindingDistance: '16 km',
   },
 };
-//  {
-//     infraName: 'France',
-//     numberOfRollingstock: '443',
-//     numberOfRollingstockWithElectrical: '262',
-//     numberOfRollingstockWithSearch: '27',
-//     searchRollingstock: 'tgv',
-//     rollingstockTestID: 'rollingstock-1TGV2N2',
-//     rollingStockInfo: /TGV2N2US/,
-//     pathfindingDistance: '461 km',
-//     stdcm: {
-//       searchRollingstock: 'ter',
-//       rollingstockTestID: 'rollingstock-2X725003',
-//       pathfindingDistance: '126 km',
-//     },
-//   };
+// {
+//   infraName: 'small_infra',
+//   numberOfRollingstock: '443',
+//   numberOfRollingstockWithElectrical: '262',
+//   numberOfRollingstockWithSearch: '27',
+//   searchRollingstock: 'tgv',
+//   rollingstockTestID: 'rollingstock-1TGV2N2',
+//   rollingStockInfo: /TGV2N2US/,
+//   pathfindingDistance: '461 km',
+//   stdcm: {
+//     searchRollingstock: 'ter',
+//     rollingstockTestID: 'rollingstock-2X725003',
+//     pathfindingDistance: '126 km',
+//   },
+// };
 
 export const BASE_URL = 'http://localhost:8090';

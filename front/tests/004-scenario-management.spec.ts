@@ -36,7 +36,8 @@ test.afterEach(async () => {
   expect(deleteTestInfra.status()).toEqual(204);
 });
 
-test.describe('Test if operationnal study : scenario creation workflow is working properly', () => {
+// TODO: remove (enabled) when every tests are refactored
+test.describe('Test if operationnal study : scenario creation workflow is working properly  (enabled)', () => {
   test('Create a new scenario', async ({ page }) => {
     const playwrightHomePage = new PlaywrightHomePage(page);
     const projectPage = new ProjectPage(page);
@@ -44,15 +45,12 @@ test.describe('Test if operationnal study : scenario creation workflow is workin
     const scenarioPage = new ScenarioPage(page);
     const commonPage = new PlaywrightCommonPage(page);
 
-    const newStudyData: Study = await postApiRequest(
-      `/projects/${newProjectData.id}/studies`,
-      {
-        ...study,
-        name: `${study.name} ${uuidv4()}`,
-        budget: 1234567890,
-        project_id: newProjectData.id,
-      }
-    );
+    const newStudyData: Study = await postApiRequest(`/projects/${newProjectData.id}/studies`, {
+      ...study,
+      name: `${study.name} ${uuidv4()}`,
+      budget: 1234567890,
+      project_id: newProjectData.id,
+    });
 
     await playwrightHomePage.goToHomePage();
     await playwrightHomePage.goToOperationalStudiesPage();
@@ -86,15 +84,12 @@ test.describe('Test if operationnal study : scenario creation workflow is workin
   });
 
   test('Update a scenario', async ({ page }) => {
-    const newStudyData: Study = await postApiRequest(
-      `/projects/${newProjectData.id}/studies`,
-      {
-        ...study,
-        name: `${study.name} ${uuidv4()}`,
-        budget: 1234567890,
-        project_id: newProjectData.id,
-      }
-    );
+    const newStudyData: Study = await postApiRequest(`/projects/${newProjectData.id}/studies`, {
+      ...study,
+      name: `${study.name} ${uuidv4()}`,
+      budget: 1234567890,
+      project_id: newProjectData.id,
+    });
 
     const newScenarioData: ScenarioResult = await postApiRequest(
       `/projects/${newProjectData.id}/studies/${newStudyData.id}/scenarios`,
@@ -146,15 +141,12 @@ test.describe('Test if operationnal study : scenario creation workflow is workin
   });
 
   test('Delete a scenario', async ({ page }) => {
-    const newStudyData: Study = await postApiRequest(
-      `/projects/${newProjectData.id}/studies`,
-      {
-        ...study,
-        name: `${study.name} ${uuidv4()}`,
-        budget: 1234567890,
-        project_id: newProjectData.id,
-      }
-    );
+    const newStudyData: Study = await postApiRequest(`/projects/${newProjectData.id}/studies`, {
+      ...study,
+      name: `${study.name} ${uuidv4()}`,
+      budget: 1234567890,
+      project_id: newProjectData.id,
+    });
 
     const newScenarioData: ScenarioResult = await postApiRequest(
       `/projects/${newProjectData.id}/studies/${newStudyData.id}/scenarios`,
