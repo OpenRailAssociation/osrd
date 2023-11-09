@@ -4,10 +4,28 @@ import {
   EffortCurve,
   LoadingGaugeType,
   RollingStockCommon,
+  RollingStock,
 } from 'common/api/osrdEditoastApi';
+import { isElectric } from './helpers/electric';
 
 export const THERMAL_TRACTION_IDENTIFIER = 'thermal';
 export const STANDARD_COMFORT_LEVEL: RollingStockComfortType = 'STANDARD';
+
+export const RS_REQUIRED_FIELDS = Object.freeze({
+  length: 0,
+  mass: 0,
+  maxSpeed: 0,
+  startupAcceleration: 0,
+  comfortAcceleration: 0.01,
+  startupTime: 0,
+  gammaValue: 0.01,
+  inertiaCoefficient: 1,
+  rollingResistanceA: 0,
+  rollingResistanceB: 0,
+  rollingResistanceC: 0,
+  electricalPowerStartupTime: 5,
+  raisePantographTime: 15,
+});
 
 export const DEFAULT_SELECTORS_CLASSNAME = 'selector-SNCF';
 
@@ -144,6 +162,7 @@ export type SchemaProperty = {
   max?: number;
   unit?: string;
   units?: string[];
+  condition?: (effortCurves: RollingStock['effort_curves'] | null) => boolean;
 };
 
 export enum RollingStockEditorMetadata {
@@ -165,17 +184,19 @@ export enum RollingStockEditorParameter {
   maxSpeed = 'maxSpeed',
   startupTime = 'startupTime',
   startupAcceleration = 'startupAcceleration',
+  electricalPowerStartupTime = 'electricalPowerStartupTime',
   comfortAcceleration = 'comfortAcceleration',
   gammaValue = 'gammaValue',
   inertiaCoefficient = 'inertiaCoefficient',
   loadingGauge = 'loadingGauge',
   basePowerClass = 'basePowerClass',
+  raisePantographTime = 'raisePantographTime',
   rollingResistanceA = 'rollingResistanceA',
   rollingResistanceB = 'rollingResistanceB',
   rollingResistanceC = 'rollingResistanceC',
 }
 
-export const RollingStockSchemaProperties: SchemaProperty[] = [
+export const RollingStockSchemaProperties: readonly SchemaProperty[] = [
   {
     title: 'name',
     type: 'string',
@@ -317,6 +338,22 @@ export const RollingStockSchemaProperties: SchemaProperty[] = [
     min: 0,
     units: ['N/(m/s)²', 'daN/(km/h)²', 'daN/(km/h)²/t'],
     side: 'right',
+  },
+  {
+    title: 'electricalPowerStartupTime',
+    type: 'number',
+    min: 0,
+    unit: 's',
+    side: 'left',
+    condition: isElectric,
+  },
+  {
+    title: 'raisePantographTime',
+    type: 'number',
+    min: 0,
+    unit: 's',
+    side: 'middle',
+    condition: isElectric,
   },
 ];
 

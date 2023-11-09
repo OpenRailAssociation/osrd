@@ -1,16 +1,21 @@
-import {
+/* eslint-disable @typescript-eslint/no-use-before-define */
+import type {
   RollingStockComfortType,
   ConditionalEffortCurve,
   RollingStock,
   RollingStockForm,
+  ModeEffortCurves,
 } from 'common/api/osrdEditoastApi';
-import { has, isNull, omitBy, some } from 'lodash';
+import { has, isNull, isNil, omit, pick } from 'lodash';
 import {
   EffortCurves,
+  RS_REQUIRED_FIELDS,
   RollingStockParametersValidValues,
   RollingStockParametersValues,
   THERMAL_TRACTION_IDENTIFIER,
-} from 'modules/rollingStock/consts';
+  RollingStockSchemaProperties,
+} from '../consts';
+import { isElectric } from './electric';
 
 const newRollingStockValues = {
   railjsonVersion: '',
@@ -36,26 +41,7 @@ export const getDefaultRollingStockMode = (
 ): RollingStock['effort_curves'] => ({
   default_mode: selectedMode,
   modes: {
-    [`${selectedMode}`]: {
-      curves: [
-        {
-          cond: {
-            comfort: 'STANDARD',
-            electrical_profile_level: null,
-            power_restriction_code: null,
-          },
-          curve: {
-            max_efforts: [0],
-            speeds: [0],
-          },
-        },
-      ],
-      default_curve: {
-        max_efforts: [],
-        speeds: [],
-      },
-      is_electric: false,
-    },
+    [`${selectedMode}`]: makeEffortCurve(selectedMode),
   },
 });
 
@@ -120,84 +106,78 @@ export const getRollingStockEditorDefaultValues = (
 export const rollingStockEditorQueryArg = (
   data: RollingStockParametersValidValues,
   currentRsEffortCurve: RollingStock['effort_curves']
-): RollingStockForm => ({
-  name: data.name,
-  length: data.length,
-  max_speed: data.maxSpeed / 3.6, // The user enters a value in km/h, which is then interpreted in m/s by the server.
-  startup_time: data.startupTime,
-  startup_acceleration: data.startupAcceleration,
-  comfort_acceleration: data.comfortAcceleration,
-  gamma: {
-    type: 'CONST',
-    value: data.gammaValue,
-  },
-  inertia_coefficient: data.inertiaCoefficient,
-  features: [],
-  mass: data.mass * 1000, // Here we receive a value in ton which will be interpreted in kg by the server.
-  rolling_resistance: {
-    A: data.rollingResistanceA,
-    B: data.rollingResistanceB,
-    C: data.rollingResistanceC,
-    type: 'davis',
-  },
-  loading_gauge: data.loadingGauge,
-  power_restrictions: data.powerRestrictions,
-  energy_sources: [],
-  electrical_power_startup_time: data.electricalPowerStartupTime,
-  raise_pantograph_time: data.raisePantographTime,
-  metadata: {
-    detail: data.detail || data.name,
-    family: data.family,
-    grouping: data.grouping,
-    number: data.number,
-    reference: data.reference || data.name,
-    series: data.series,
-    subseries: data.subseries,
-    type: data.type,
-    unit: data.unit,
-  },
-  effort_curves: currentRsEffortCurve,
-  base_power_class: data.basePowerClass,
-});
+): RollingStockForm => {
+  const electric = isElectric(currentRsEffortCurve);
+  return {
+    name: data.name,
+    length: data.length,
+    max_speed: data.maxSpeed / 3.6, // The user enters a value in km/h, which is then interpreted in m/s by the server.
+    startup_time: data.startupTime,
+    startup_acceleration: data.startupAcceleration,
+    comfort_acceleration: data.comfortAcceleration,
+    gamma: {
+      type: 'CONST',
+      value: data.gammaValue,
+    },
+    inertia_coefficient: data.inertiaCoefficient,
+    features: [],
+    mass: data.mass * 1000, // Here we receive a value in ton which will be interpreted in kg by the server.
+    rolling_resistance: {
+      A: data.rollingResistanceA,
+      B: data.rollingResistanceB,
+      C: data.rollingResistanceC,
+      type: 'davis',
+    },
+    loading_gauge: data.loadingGauge,
+    power_restrictions: data.powerRestrictions,
+    energy_sources: [],
+    electrical_power_startup_time: electric ? data.electricalPowerStartupTime : null,
+    raise_pantograph_time: electric ? data.raisePantographTime : null,
+    metadata: {
+      detail: data.detail || data.name,
+      family: data.family,
+      grouping: data.grouping,
+      number: data.number,
+      reference: data.reference || data.name,
+      series: data.series,
+      subseries: data.subseries,
+      type: data.type,
+      unit: data.unit,
+    },
+    effort_curves: currentRsEffortCurve,
+    base_power_class: data.basePowerClass,
+  };
+};
+
+type Conditions = Record<string, (effortCurves: RollingStock['effort_curves'] | null) => boolean>;
 
 export const checkRollingStockFormValidity = (
-  rollingStockForm: RollingStockParametersValues
+  rollingStockForm: RollingStockParametersValues,
+  effortCurves: RollingStock['effort_curves'] | null
 ): { invalidFields: string[]; validRollingStockForm: RollingStockParametersValidValues } => {
-  const invalidFields = [
-    'length',
-    'mass',
-    'maxSpeed',
-    'startupAcceleration',
-    'comfortAcceleration',
-    'startupTime',
-    'gammaValue',
-    'inertiaCoefficient',
-    'rollingResistanceA',
-    'rollingResistanceB',
-    'rollingResistanceC',
-  ].reduce(
-    (result, field) =>
-      !has(rollingStockForm, field) || rollingStockForm[field] === undefined
-        ? [...result, field]
-        : result,
-    [] as string[]
-  );
+  const conditions = RollingStockSchemaProperties.reduce<Conditions>((acc, val) => {
+    if (val.condition) {
+      return { ...acc, [val.title]: val.condition };
+    }
+    return acc;
+  }, {});
+  const invalidFields = Object.keys(RS_REQUIRED_FIELDS).filter((field) => {
+    const conditionForFieldBeingRequired = conditions[field];
+    const isFieldInvalid = !has(rollingStockForm, field) || isNil(rollingStockForm[field]);
+    const isRequired = conditionForFieldBeingRequired
+      ? conditionForFieldBeingRequired(effortCurves)
+      : true;
+    if (isRequired) {
+      return isFieldInvalid;
+    }
+    return false;
+  });
 
   return {
     invalidFields,
     validRollingStockForm: {
-      length: 0,
-      maxSpeed: 0,
-      startupAcceleration: 0,
-      comfortAcceleration: 0.01,
-      mass: 0,
-      startupTime: 0,
-      gammaValue: 0.01,
-      inertiaCoefficient: 1,
-      rollingResistanceA: 0,
-      rollingResistanceB: 0,
-      rollingResistanceC: 0,
-      ...omitBy(rollingStockForm, (value) => value === undefined),
+      ...pick(RS_REQUIRED_FIELDS, invalidFields),
+      ...omit(rollingStockForm, invalidFields),
     } as RollingStockParametersValidValues,
   };
 };
@@ -259,5 +239,25 @@ export const sortSelectedModeCurves = (curvesList: ConditionalEffortCurve[]) => 
   return allConds.concat(onlyPR, onlyEP, nulls);
 };
 
-export const isElectric = (rollingStock: RollingStock) =>
-  some(Object.values(rollingStock.effort_curves.modes), (effortCurve) => effortCurve.is_electric);
+export function makeEffortCurve(selectedMode: string): ModeEffortCurves {
+  return {
+    curves: [
+      {
+        cond: {
+          comfort: 'STANDARD',
+          electrical_profile_level: null,
+          power_restriction_code: null,
+        },
+        curve: {
+          max_efforts: [0],
+          speeds: [0],
+        },
+      },
+    ],
+    default_curve: {
+      max_efforts: [],
+      speeds: [],
+    },
+    is_electric: !(selectedMode === 'thermal'),
+  };
+}
