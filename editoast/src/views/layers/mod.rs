@@ -80,10 +80,13 @@ async fn layer_view(
         return Err(LayersError::new_view_not_found(view_slug, layer).into());
     }
 
-    let tiles_url_pattern = format!(
-        "{root_url}/layers/tile/{layer_slug}/{view_slug}/{{z}}/{{x}}/{{y}}/?infra={infra}",
-        root_url = get_root_url()
-    );
+    let mut root_url = get_root_url()?;
+    if !root_url.path().ends_with('/') {
+        root_url.path_segments_mut().unwrap().push(""); // Add a trailing slash
+    }
+    let root_url = root_url.to_string();
+    let tiles_url_pattern =
+        format!("{root_url}layers/tile/{layer_slug}/{view_slug}/{{z}}/{{x}}/{{y}}/?infra={infra}");
 
     Ok(Json(json!({
         "type": "vector",
@@ -161,11 +164,11 @@ mod tests {
     use crate::error::InternalError;
     use crate::map::MapLayers;
     use crate::views::tests::create_test_service;
-    use actix_web::test as actix_test;
     use actix_web::{
         http::StatusCode,
         test::{call_service, read_body_json, TestRequest},
     };
+    use rstest::rstest;
     use serde_json::{json, to_value, Value as JsonValue};
 
     use super::LayersError;
@@ -180,19 +183,8 @@ mod tests {
         assert_eq!(expected_body, body)
     }
 
-    #[actix_test]
-    async fn layer_view() {
-        let map_layers = MapLayers::parse();
-        let error: InternalError =
-            LayersError::new_view_not_found("does_not_exist", &map_layers.layers["track_sections"])
-                .into();
-        test_get_query(
-            "/layers/layer/track_sections/mvt/does_not_exist?infra=2",
-            StatusCode::NOT_FOUND,
-            to_value(error).unwrap(),
-        )
-        .await;
-
+    async fn test_get_query_with_preset_values(root_url: &str) {
+        let tiles = root_url.to_string() + "layers/tile/track_sections/geo/{z}/{x}/{y}/?infra=2";
         test_get_query(
             "/layers/layer/track_sections/mvt/geo?infra=2",
             StatusCode::OK,
@@ -203,11 +195,36 @@ mod tests {
                     "track_sections": "id"
                 },
                 "scheme": "xyz",
-                "tiles": ["http://localhost:8090/layers/tile/track_sections/geo/{z}/{x}/{y}/?infra=2"],
+                "tiles": [tiles],
                 "attribution": "",
                 "minzoom": 0,
                 "maxzoom": 18
             }),
-        ).await;
+        )
+        .await;
+    }
+
+    #[rstest]
+    async fn layer_view_ko() {
+        let map_layers = MapLayers::parse();
+        let error: InternalError =
+            LayersError::new_view_not_found("does_not_exist", &map_layers.layers["track_sections"])
+                .into();
+        test_get_query(
+            "/layers/layer/track_sections/mvt/does_not_exist?infra=2",
+            StatusCode::NOT_FOUND,
+            to_value(error).unwrap(),
+        )
+        .await;
+    }
+
+    #[rstest]
+    #[case("http://localhost:8090", "http://localhost:8090/")]
+    #[case("http://localhost:8090/", "http://localhost:8090/")]
+    #[case("http://localhost:8090/test", "http://localhost:8090/test/")]
+    #[case("http://localhost:8090/test/", "http://localhost:8090/test/")]
+    async fn layer_view_ok(#[case] root_url: &str, #[case] expected_root_url: &str) {
+        std::env::set_var("ROOT_URL", root_url);
+        test_get_query_with_preset_values(expected_root_url).await;
     }
 }
