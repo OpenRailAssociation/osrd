@@ -94,10 +94,7 @@ pub mod test {
     #[actix_test]
     async fn persists_railjson_ko_version() {
         let infra = build_test_infra();
-        let pg_config_url = PostgresConfig::default()
-            .url()
-            .expect("cannot get postgres config url");
-        let manager = ConnectionManager::<PgConnection>::new(pg_config_url);
+        let manager = ConnectionManager::<PgConnection>::new(PostgresConfig::default().url());
         let pool = Data::new(Pool::builder(manager).max_size(1).build().unwrap());
         let infra = infra.create(pool.clone()).await.unwrap();
         let railjson_with_invalid_version = RailJson {
@@ -112,10 +109,7 @@ pub mod test {
 
     #[actix_test]
     async fn persist_railjson_ok() {
-        let pg_config_url = PostgresConfig::default()
-            .url()
-            .expect("cannot get postgres config url");
-        let manager = ConnectionManager::<PgConnection>::new(pg_config_url);
+        let manager = ConnectionManager::<PgConnection>::new(PostgresConfig::default().url());
         let pool = Data::new(Pool::builder(manager).build().unwrap());
         let mut conn = pool.get().await.unwrap();
 

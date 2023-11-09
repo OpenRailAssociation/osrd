@@ -1165,7 +1165,6 @@ dependencies = [
  "thiserror",
  "tokio",
  "tokio-postgres",
- "url",
  "utoipa",
  "uuid",
 ]

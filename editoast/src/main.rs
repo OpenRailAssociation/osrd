@@ -58,7 +58,6 @@ use std::fs::File;
 use std::io::{BufReader, IsTerminal};
 use std::process::exit;
 use std::{env, fs};
-use url::Url;
 use views::infra::InfraApiError;
 use views::search::{SearchConfig, SearchConfigFinder, SearchConfigStore};
 
@@ -187,7 +186,7 @@ fn establish_connection(config: &str) -> BoxFuture<ConnectionResult<AsyncPgConne
     fut.boxed()
 }
 
-fn get_pool(url: Url, max_size: usize) -> DbPool {
+fn get_pool(url: String, max_size: usize) -> DbPool {
     let mut manager_config = ManagerConfig::default();
     manager_config.custom_setup = Box::new(establish_connection);
     let manager = ConnectionManager::new_with_config(url, manager_config);
@@ -205,9 +204,9 @@ async fn runserver(
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     info!("Building server...");
     // Config databases
-    let pool = get_pool(pg_config.url()?, pg_config.pool_size);
+    let pool = get_pool(pg_config.url(), pg_config.pool_size);
 
-    let redis = RedisClient::new(redis_config)?;
+    let redis = RedisClient::new(redis_config);
 
     // Custom Json extractor configuration
     let json_cfg = JsonConfig::default()
@@ -281,7 +280,7 @@ async fn runserver(
 }
 
 async fn build_redis_pool_and_invalidate_all_cache(redis_config: RedisConfig, infra_id: i64) {
-    let redis = RedisClient::new(redis_config).unwrap();
+    let redis = RedisClient::new(redis_config);
     let mut conn = redis.get_connection().await.unwrap();
     map::invalidate_all(
         &mut conn,
@@ -298,7 +297,7 @@ async fn generate(
     pg_config: PostgresConfig,
     redis_config: RedisConfig,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let pool = Data::new(get_pool(pg_config.url()?, pg_config.pool_size));
+    let pool = Data::new(get_pool(pg_config.url(), pg_config.pool_size));
     let mut conn = pool.get().await?;
     let mut infras = vec![];
     if args.infra_ids.is_empty() {
@@ -360,7 +359,7 @@ async fn import_rolling_stock(
     args: ImportRollingStockArgs,
     pg_config: PostgresConfig,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let pool = Data::new(get_pool(pg_config.url()?, pg_config.pool_size));
+    let pool = Data::new(get_pool(pg_config.url(), pg_config.pool_size));
     for rolling_stock_path in args.rolling_stock_path {
         let rolling_stock_file = File::open(rolling_stock_path)?;
         let mut rolling_stock: RollingStockModel =
@@ -386,8 +385,7 @@ async fn import_railjson(
     pg_config: PostgresConfig,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     let railjson_file = File::open(args.railjson_path)?;
-
-    let pool = Data::new(get_pool(pg_config.url()?, pg_config.pool_size));
+    let pool = Data::new(get_pool(pg_config.url(), pg_config.pool_size));
 
     let infra: Infra = InfraForm {
         name: args.infra_name,
@@ -437,7 +435,7 @@ async fn electrical_profile_set_import(
         data: Some(DieselJson(electrical_profile_set_data)),
     };
 
-    let mut conn = establish_connection(pg_config.url()?.as_str()).await?;
+    let mut conn = establish_connection(pg_config.url().as_str()).await?;
     let created_ep_set = ep_set.create_conn(&mut conn).await.unwrap();
     let ep_set_id = created_ep_set.id.unwrap();
     info!("✅ Electrical profile set {ep_set_id} created");
@@ -448,7 +446,7 @@ async fn electrical_profile_set_list(
     args: ListProfileSetArgs,
     pg_config: PostgresConfig,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let mut conn = establish_connection(pg_config.url()?.as_str()).await?;
+    let mut conn = establish_connection(pg_config.url().as_str()).await?;
     let electrical_profile_sets = ElectricalProfileSet::list_light(&mut conn).await.unwrap();
     if !args.quiet {
         println!("Electrical profile sets:\nID - Name");
@@ -466,7 +464,7 @@ async fn electrical_profile_set_delete(
     args: DeleteProfileSetArgs,
     pg_config: PostgresConfig,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let pool = Data::new(get_pool(pg_config.url()?, pg_config.pool_size));
+    let pool = Data::new(get_pool(pg_config.url(), pg_config.pool_size));
     for profile_set_id in args.profile_set_ids {
         let deleted = ElectricalProfileSet::delete(pool.clone(), profile_set_id)
             .await
@@ -487,7 +485,7 @@ async fn clear(
     pg_config: PostgresConfig,
     redis_config: RedisConfig,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let pool = Data::new(get_pool(pg_config.url()?, pg_config.pool_size));
+    let pool = Data::new(get_pool(pg_config.url(), pg_config.pool_size));
     let mut conn = pool.get().await?;
     let mut infras = vec![];
     if args.infra_ids.is_empty() {
@@ -617,8 +615,7 @@ async fn refresh_search_tables(
     } else {
         args.objects
     };
-
-    let mut conn = establish_connection(pg_config.url()?.as_str()).await?;
+    let mut conn = establish_connection(pg_config.url().as_str()).await?;
     for object in objects {
         let Some(search_config) = SearchConfigFinder::find(&object) else {
             eprintln!("❌ No search object found for {object}");
@@ -700,8 +697,7 @@ mod tests {
         assert!(result.is_ok());
 
         // CLEANUP
-        let pg_config_url = pg_config.url().expect("cannot get postgres config url");
-        let mut conn = PgConnection::establish(pg_config_url.as_str())
+        let mut conn = PgConnection::establish(&pg_config.url())
             .await
             .expect("Error while connecting DB");
         sql_query("DELETE FROM infra WHERE name = $1")
@@ -735,10 +731,7 @@ mod tests {
             .unwrap();
 
         // THEN
-        let pg_config_url = pg_config.url().expect("cannot get postgres config url");
-        let mut conn = PgConnection::establish(pg_config_url.as_str())
-            .await
-            .unwrap();
+        let mut conn = PgConnection::establish(&pg_config.url()).await.unwrap();
         let empty = !ElectricalProfileSet::list_light(&mut conn)
             .await
             .unwrap()

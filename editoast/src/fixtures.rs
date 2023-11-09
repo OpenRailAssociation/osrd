@@ -71,11 +71,8 @@ pub mod tests {
 
     #[fixture]
     pub fn db_pool() -> Data<DbPool> {
-        let pg_config_url = PostgresConfig::default()
-            .url()
-            .expect("cannot get postgres config url");
-        let config =
-            AsyncDieselConnectionManager::<diesel_async::AsyncPgConnection>::new(pg_config_url);
+        let url = PostgresConfig::default().url();
+        let config = AsyncDieselConnectionManager::<diesel_async::AsyncPgConnection>::new(url);
         let pool = DbPool::builder(config).build().unwrap();
         Data::new(pool)
     }
