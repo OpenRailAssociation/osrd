@@ -1,11 +1,34 @@
+import React from 'react';
 import { TbSwitch2 } from 'react-icons/tb';
 import { IoMdAddCircleOutline } from 'react-icons/io';
+import { BsTrash } from 'react-icons/bs';
 
+import { save } from 'reducers/editor';
+import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
+import { SwitchEntity, SwitchType } from 'types';
+import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import { SwitchEditionState } from './types';
 import { getNewSwitch } from './utils';
 import { SwitchEditionLayers, SwitchEditionLeftPanel, SwitchMessages } from './components';
 import { Tool } from '../editorContextTypes';
 import { DEFAULT_COMMON_TOOL_STATE } from '../commonToolState';
+
+function getInitialState({
+  switchTypes,
+}: {
+  switchTypes: SwitchType[] | undefined;
+}): SwitchEditionState {
+  if (!switchTypes?.length) throw new Error('There is no switch type yet.');
+
+  const entity = getNewSwitch(switchTypes[0]);
+
+  return {
+    ...DEFAULT_COMMON_TOOL_STATE,
+    entity,
+    initialEntity: entity,
+    portEditionState: { type: 'idle' },
+  };
+}
 
 const SwitchEditionTool: Tool<SwitchEditionState> = {
   id: 'switch-edition',
@@ -17,20 +40,7 @@ const SwitchEditionTool: Tool<SwitchEditionState> = {
       !editorState.editorLayers.has('switches') || !editorState.editorLayers.has('track_sections')
     );
   },
-
-  getInitialState({ switchTypes }) {
-    if (!switchTypes?.length) throw new Error('There is no switch type yet.');
-
-    const entity = getNewSwitch(switchTypes[0]);
-
-    return {
-      ...DEFAULT_COMMON_TOOL_STATE,
-      entity,
-      initialEntity: entity,
-      portEditionState: { type: 'idle' },
-    };
-  },
-
+  getInitialState,
   actions: [
     [
       {
@@ -48,6 +58,46 @@ const SwitchEditionTool: Tool<SwitchEditionState> = {
             initialEntity: entity,
             portEditionState: { type: 'idle' },
           });
+        },
+      },
+    ],
+    [
+      {
+        id: 'delete-switch',
+        icon: BsTrash,
+        labelTranslationKey: `Editor.tools.switch-edition.actions.delete-switch`,
+        // Show button only if we are editing
+        isDisabled({ state }) {
+          return state.initialEntity.properties?.id === NEW_ENTITY_ID;
+        },
+        onClick({
+          infraID,
+          openModal,
+          closeModal,
+          forceRender,
+          state,
+          setState,
+          switchTypes,
+          dispatch,
+          t,
+        }) {
+          openModal(
+            <ConfirmModal
+              title={t(`Editor.tools.switch-edition.actions.delete-switch`)}
+              onConfirm={async () => {
+                await dispatch<ReturnType<typeof save>>(
+                  // We have to put state.initialEntity in array because delete initially works with selection which can get multiple elements
+                  // The cast is required because of the Partial<SwitchEntity> returned by getNewSwitch which doesnt fit with EditorEntity
+                  save(infraID, { delete: [state.initialEntity as SwitchEntity] })
+                );
+                setState(getInitialState({ switchTypes }));
+                closeModal();
+                forceRender();
+              }}
+            >
+              <p>{t('Editor.tools.switch-edition.actions.confirm-delete-switch').toString()}</p>
+            </ConfirmModal>
+          );
         },
       },
     ],

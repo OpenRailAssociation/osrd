@@ -280,16 +280,18 @@ export const PointEditionLeftPanel: FC<{ type: EditoastType }> = <Entity extends
           const operation = res[0] as EntityObjectOperationResult;
           const { id } = operation.railjson;
           if (id && id !== savedEntity.properties.id) {
+            const saveEntity = {
+              ...state.entity,
+              id,
+              properties: {
+                ...state.entity.properties,
+                ...operation.railjson,
+              },
+            };
             setState({
               ...state,
-              entity: {
-                ...state.entity,
-                id,
-                properties: {
-                  ...state.entity.properties,
-                  ...operation.railjson,
-                },
-              },
+              initialEntity: saveEntity,
+              entity: saveEntity,
             });
           }
         }}

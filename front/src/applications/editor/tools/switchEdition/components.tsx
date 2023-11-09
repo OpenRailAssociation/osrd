@@ -101,11 +101,17 @@ export const SwitchEditionLeftPanel: FC = () => {
           const operation = res[0] as EntityObjectOperationResult;
           const { id } = operation.railjson;
 
-          if (id && id !== entityToSave.properties.id)
+          if (id && id !== entityToSave.properties.id) {
+            const savedEntity = {
+              ...entityToSave,
+              properties: { ...entityToSave.properties, id: `${id}` },
+            };
             setState({
               ...state,
-              entity: { ...entityToSave, properties: { ...entityToSave.properties, id: `${id}` } },
+              initialEntity: savedEntity,
+              entity: savedEntity,
             });
+          }
         }}
         onChange={debounce((entity) => {
           const flatSwitch = entity as FlatSwitchEntity;

@@ -382,11 +382,14 @@ export const TrackEditionLeftPanel: FC = () => {
           const operation = res[0] as EntityObjectOperationResult;
           const { id } = operation.railjson;
 
-          if (id && id !== savedEntity.properties.id)
+          if (id && id !== savedEntity.properties.id) {
+            const savedTrack = { ...track, properties: { ...track.properties, id: `${id}` } };
             setState({
               ...state,
-              track: { ...track, properties: { ...track.properties, id: `${id}` } },
+              initialTrack: savedTrack,
+              track: savedTrack,
             });
+          }
         }}
         onChange={(newTrack) => {
           setState({ ...state, track: newTrack as TrackSectionEntity });

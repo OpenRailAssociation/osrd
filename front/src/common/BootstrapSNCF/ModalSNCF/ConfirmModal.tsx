@@ -54,10 +54,10 @@ export const ConfirmModal: FC<PropsWithChildren<ConfirmModalProps>> = ({
     <Modal title={title} withCloseButton>
       {children}
 
-      <div className="text-right">
+      <div className="text-right m-auto">
         <button
           type="button"
-          className="btn btn-danger mr-2"
+          className="btn btn-primary mr-5"
           onClick={() => cancel()}
           disabled={disabled}
         >
@@ -65,7 +65,7 @@ export const ConfirmModal: FC<PropsWithChildren<ConfirmModalProps>> = ({
         </button>
         <button
           type="button"
-          className="btn btn-primary"
+          className="btn btn-danger"
           onClick={() => confirm()}
           disabled={disabled}
         >

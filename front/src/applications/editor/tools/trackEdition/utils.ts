@@ -1,4 +1,4 @@
-import { EditorEntity, TrackSectionEntity } from '../../../../types';
+import { EditorEntity, TrackSectionEntity } from 'types';
 import { NEW_ENTITY_ID } from '../../data/utils';
 
 // eslint-disable-next-line import/prefer-default-export

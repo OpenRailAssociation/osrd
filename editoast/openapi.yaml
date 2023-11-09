@@ -3621,8 +3621,6 @@ paths:
                 type: object
           description: All objects attached to the given track (arranged by types)
       summary: Retrieve all objects attached to a given track
-      tags:
-      - infra
   /infra/{id}/clone/:
     post:
       parameters:

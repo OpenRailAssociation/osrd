@@ -582,8 +582,6 @@ paths:
 
   /infra/{id}/attached/{track_id}/:
     get:
-      tags:
-        - infra
       summary: Retrieve all objects attached to a given track
       parameters:
         - in: path
@@ -2913,7 +2911,15 @@ components:
 
     SingleSimulationResponse:
       type: object
-      required: [base_simulation, eco_simulation, speed_limits, warnings, electrification_ranges, power_restriction_ranges]
+      required:
+        [
+          base_simulation,
+          eco_simulation,
+          speed_limits,
+          warnings,
+          electrification_ranges,
+          power_restriction_ranges,
+        ]
       properties:
         base_simulation:
           $ref: "#/components/schemas/SimulationReportByTrain"

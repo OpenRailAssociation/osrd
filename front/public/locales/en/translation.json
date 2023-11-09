@@ -205,6 +205,8 @@
     "tools": {
       "buffer-stop-edition": {
         "actions": {
+          "confirm-delete-entity": "Are you sure you want to remove the buffer stop?",
+          "delete-entity": "Delete the buffer stop",
           "new-entity": "Create a new buffer stop",
           "reset-entity": "Reset data"
         },
@@ -212,8 +214,10 @@
       },
       "catenary-edition": {
         "actions": {
+          "confirm-delete-catenary": "Are you sure you want to remove the catenary?",
           "new-catenary": "Create a new catenary",
-          "reset-catenary": "Cancel the current modifications"
+          "reset-catenary": "Cancel the current modifications",
+          "delete-catenary": "Delete the catenary"
         },
         "add-new-catenary": "Add new catenary",
         "catenaries": "Electrification",
@@ -225,6 +229,8 @@
       },
       "detector-edition": {
         "actions": {
+          "confirm-delete-entity": "Are you sure you want to remove the detector?",
+          "delete-entity": "Delete the detector",
           "new-entity": "Create a new detector",
           "reset-entity": "Reset data"
         },
@@ -241,6 +247,14 @@
         "no-linked-route": "No linked routes",
         "routes-ending-at": "Ending at...",
         "routes-starting-from": "Starting from..."
+      },
+      "range-edition": {
+        "edit-track-range-start": "Edit departure point",
+        "edit-track-range-end": "Edit arrival point",
+        "linked-track-sections": "Associated track sections",
+        "only-show-n": "Only show the first {{count}} track sections",
+        "show-more-ranges_one": "See an additional track section",
+        "show-more-ranges_other": "See {{count}} additional track sections"
       },
       "routes-edition": {
         "actions": {
@@ -332,60 +346,19 @@
       },
       "signal-edition": {
         "actions": {
+          "confirm-delete-entity": "Are you sure you want to remove the signal?",
+          "delete-entity": "Delete the signal",
           "new-entity": "Create a new signal",
           "reset-entity": "Reset data"
         },
         "label": "Signal tool"
       },
-      "switch-edition": {
-        "actions": {
-          "delete-switch": "Delete the switch",
-          "new-switch": "Create a new switch",
-          "pick-track": "Track selection tool on the map",
-          "pick-track-cancel": "Undo line selection"
-        },
-        "endpoint": "Endpoint:",
-        "help": {
-          "no-move": "Switches cannot be moved, and are automatically placed on their first port.",
-          "select-track": "Select a line on the map"
-        },
-        "label": "Switch tool",
-        "no-track-picked-yet": "No line selected yet",
-        "switch-type": "Switch type",
-        "untitled-track": "Untitled track"
-      },
-      "track-edition": {
-        "actions": {
-          "add-at-end": "Add the new points at the end",
-          "add-at-start": "Add the new points at the beginning",
-          "cancel-line": "Undo current input",
-          "mode-add-point": "Add a point",
-          "mode-delete-point": "Delete points",
-          "mode-move-point": "Move points",
-          "toggle-anchoring": "Toggle anchoring on/off"
-        },
-        "help": {
-          "add-anchor-point": "Click to add a point at the end of the track section. Click on the track to add an intermediate point.",
-          "add-point": "Click to add a point at the end of the track section.",
-          "delete-point": "Click on a point to remove it from the line.",
-          "move-point": "Click a point once to start moving it.",
-          "move-point-end": "Click to confirm the move of the point."
-        },
-        "attached-catenaries": "Catenaries",
-        "attached-speed-sections": "Speed limits",
-        "default-catenaries-error": "An error occurred when loading the {{type}} linked to this line segment.",
-        "default-speed-sections-error": "An exception occured when loading speed limits related to this section.",
-        "label": "Track tool",
-        "no-linked-catenary": "No electrification data available",
-        "no-linked-speed-section": "No speed limit entered",
-        "only-show-n": "Only show the first {{count}} results",
-        "show-more-ranges_one": "Show one more result",
-        "show-more-ranges_other": "Show {{count}} more results"
-      },
       "speed-edition": {
         "actions": {
+          "confirm-delete-speed-section": "Are you sure you want to remove the speed limit?",
           "new-speed-section": "Create a new speed limit",
-          "reset-speed-section": "Cancel the current modifications"
+          "reset-speed-section": "Cancel the current modifications",
+          "delete-speed-section": "Delete the speed limit"
         },
         "add-new-speed-limit": "Add new speed limit",
         "add-sign": "Add a sign from {{signType}} type",
@@ -413,13 +386,53 @@
         "speed-limits": "Speed limits",
         "toggle-psl": "Permanent speed limit"
       },
-      "range-edition": {
-        "edit-track-range-start": "Edit departure point",
-        "edit-track-range-end": "Edit arrival point",
-        "linked-track-sections": "Associated track sections",
-        "only-show-n": "Only show the first {{count}} track sections",
-        "show-more-ranges_one": "See an additional track section",
-        "show-more-ranges_other": "See {{count}} additional track sections"
+      "switch-edition": {
+        "actions": {
+          "confirm-delete-switch": "Are you sure you want to remove the switch?",
+          "delete-switch": "Delete the switch",
+          "new-switch": "Create a new switch",
+          "pick-track": "Track selection tool on the map",
+          "pick-track-cancel": "Undo line selection"
+        },
+        "endpoint": "Endpoint:",
+        "help": {
+          "no-move": "Switches cannot be moved, and are automatically placed on their first port.",
+          "select-track": "Select a line on the map"
+        },
+        "label": "Switch tool",
+        "no-track-picked-yet": "No line selected yet",
+        "switch-type": "Switch type",
+        "untitled-track": "Untitled track"
+      },
+      "track-edition": {
+        "actions": {
+          "add-at-end": "Add the new points at the end",
+          "add-at-start": "Add the new points at the beginning",
+          "cancel-line": "Remove selected line",
+          "confirm-delete-line": "Are you sure you want to remove the line?",
+          "delete-line": "Delete the line",
+          "mode-add-point": "Add a point",
+          "mode-delete-point": "Delete points",
+          "mode-move-point": "Move points",
+          "toggle-anchoring": "Toggle anchoring on/off"
+        },
+        "help": {
+          "add-anchor-point": "Click to add a point at the end of the track section. Click on the track to add an intermediate point.",
+          "add-point": "Click to add a point at the end of the track section.",
+          "delete-point": "Click on a point to remove it from the line.",
+          "move-point": "Click a point once to start moving it.",
+          "move-point-end": "Click to confirm the move of the point."
+        },
+        "attached-catenaries": "Catenaries",
+        "attached-speed-sections": "Speed limits",
+        "default-catenaries-error": "An error occurred when loading the {{type}} linked to this line segment.",
+        "default-speed-sections-error": "An exception occured when loading speed limits related to this section.",
+        "label": "Track tool",
+        "no-linked-catenary": "No electrification data available",
+        "no-linked-speed-section": "No speed limit entered",
+        "only-show-n": "Only show the first {{count}} results",
+        "show-more-ranges_one": "Show one more result",
+        "show-more-ranges_other": "Show {{count}} more results"
       }
     }
   },
