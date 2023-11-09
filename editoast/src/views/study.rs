@@ -230,11 +230,17 @@ async fn get(db_pool: Data<DbPool>, path: Path<(i64, i64)>) -> Result<Json<Study
         return Err(ProjectError::NotFound { project_id }.into());
     };
 
-    // Return the studies
+    // Return the study
     let study = match Study::retrieve(db_pool.clone(), study_id).await? {
         Some(study) => study,
         None => return Err(StudyError::NotFound { study_id }.into()),
     };
+
+    //Check if the study belongs to the project
+    if study.project_id.unwrap() != project_id {
+        return Err(StudyError::NotFound { study_id }.into());
+    }
+
     let study_scenarios = study.with_scenarios(db_pool).await?;
     Ok(Json(study_scenarios))
 }
@@ -346,7 +352,7 @@ pub mod test {
     use rstest::rstest;
     use serde_json::json;
 
-    fn study_url(study_fixture_set: &StudyFixtureSet, detail: bool) -> String {
+    fn easy_study_url(study_fixture_set: &StudyFixtureSet, detail: bool) -> String {
         format!(
             "/projects/{project_id}/studies/{study_id}",
             project_id = study_fixture_set.project.id(),
@@ -358,9 +364,17 @@ pub mod test {
         )
     }
 
+    pub fn study_url(project_id: i64, study_id: Option<i64>) -> String {
+        format!(
+            "/projects/{}/studies/{}",
+            project_id,
+            study_id.map_or_else(|| "".to_owned(), |v| v.to_string())
+        )
+    }
+
     fn delete_study_request(study_fixture_set: &StudyFixtureSet) -> Request {
         TestRequest::delete()
-            .uri(study_url(study_fixture_set, true).as_str())
+            .uri(easy_study_url(study_fixture_set, true).as_str())
             .to_request()
     }
 
@@ -397,7 +411,7 @@ pub mod test {
         let app = create_test_service().await;
 
         let req = TestRequest::get()
-            .uri(study_url(&study_fixture_set.await, false).as_str())
+            .uri(easy_study_url(&study_fixture_set.await, false).as_str())
             .to_request();
 
         let response = call_service(&app, req).await;
@@ -409,7 +423,17 @@ pub mod test {
         let app = create_test_service().await;
         let study_fixture_set = study_fixture_set.await;
 
-        let url = study_url(&study_fixture_set, true);
+        let url = easy_study_url(&study_fixture_set, true);
+        let url_project_not_found = study_url(
+            study_fixture_set.project.id() + 1,
+            Some(study_fixture_set.study.id()),
+        );
+
+        let req = TestRequest::get()
+            .uri(url_project_not_found.as_str())
+            .to_request();
+        let response = call_service(&app, req).await;
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
 
         let req = TestRequest::get().uri(url.as_str()).to_request();
         let response = call_service(&app, req).await;
@@ -429,7 +453,7 @@ pub mod test {
         let app = create_test_service().await;
         let study_fixture_set = study_fixture_set.await;
         let req = TestRequest::patch()
-            .uri(study_url(&study_fixture_set, true).as_str())
+            .uri(easy_study_url(&study_fixture_set, true).as_str())
             .set_json(json!({"name": "rename_test", "budget":20000}))
             .to_request();
         let response = call_service(&app, req).await;
