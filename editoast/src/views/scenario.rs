@@ -103,6 +103,10 @@ async fn check_project_study(
         None => return Err(StudyError::NotFound { study_id }.into()),
         Some(study) => study,
     };
+
+    if study.project_id.unwrap() != project_id {
+        return Err(StudyError::NotFound { study_id }.into());
+    }
     Ok((project, study))
 }
 
@@ -234,6 +238,7 @@ async fn patch(
     let (project, study) = check_project_study(db_pool.clone(), project_id, study_id)
         .await
         .unwrap();
+
     // Update a scenario
     let scenario: Scenario = data.into_inner().into();
     let scenario = match scenario.update(db_pool.clone(), scenario_id).await? {
@@ -273,9 +278,15 @@ async fn get(
 
     // Return the scenarios
     let scenario = match Scenario::retrieve(db_pool.clone(), scenario_id).await? {
-        Some(study) => study,
+        Some(scenario) => scenario,
         None => return Err(ScenarioError::NotFound { scenario_id }.into()),
     };
+
+    // Check if the scenario belongs to the study
+    if scenario.study_id.unwrap() != study_id {
+        return Err(ScenarioError::NotFound { scenario_id }.into());
+    }
+
     let scenario_with_trains = scenario.with_details(db_pool).await?;
     Ok(Json(scenario_with_trains))
 }
@@ -399,13 +410,37 @@ mod test {
         let scenario_fixture_set = scenario_fixture_set().await;
 
         let url = easy_scenario_url(&scenario_fixture_set, true);
+        let url_project_not_found = scenario_url(
+            scenario_fixture_set.project.id() + 1,
+            scenario_fixture_set.study.id(),
+            Some(scenario_fixture_set.scenario.id()),
+        );
+        let url_study_not_found = scenario_url(
+            scenario_fixture_set.project.id(),
+            scenario_fixture_set.study.id() + 1,
+            Some(scenario_fixture_set.scenario.id()),
+        );
+        let response = call_service(
+            &app,
+            TestRequest::get()
+                .uri(url_project_not_found.as_str())
+                .to_request(),
+        )
+        .await;
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+        let response = call_service(
+            &app,
+            TestRequest::get()
+                .uri(url_study_not_found.as_str())
+                .to_request(),
+        )
+        .await;
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
         let response = call_service(&app, TestRequest::get().uri(url.as_str()).to_request()).await;
         assert_eq!(response.status(), StatusCode::OK);
-
         let response =
             call_service(&app, TestRequest::delete().uri(url.as_str()).to_request()).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
-
         let response = call_service(&app, TestRequest::get().uri(url.as_str()).to_request()).await;
         assert_eq!(response.status(), StatusCode::NOT_FOUND);
     }
