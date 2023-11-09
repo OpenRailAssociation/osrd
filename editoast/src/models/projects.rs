@@ -130,9 +130,17 @@ impl Ordering {
 
 impl Project {
     /// This function takes a filled project and update to now the last_modification field
-    pub async fn update_last_modified(mut self, db_pool: Data<DbPool>) -> Result<Option<Project>> {
+    pub async fn update_last_modified(self, db_pool: Data<DbPool>) -> Result<Option<Project>> {
+        let mut conn = db_pool.get().await?;
+        self.update_last_modified_conn(&mut conn).await
+    }
+
+    pub async fn update_last_modified_conn(
+        mut self,
+        conn: &mut PgConnection,
+    ) -> Result<Option<Project>> {
         self.last_modification = Utc::now().naive_utc();
-        self.update(db_pool).await
+        self.update_conn(conn).await
     }
 
     pub async fn with_studies(self, db_pool: Data<DbPool>) -> Result<ProjectWithStudies> {
@@ -153,8 +161,13 @@ impl Project {
     /// If the image is not found, return `None`.
     /// If the project id is `None` this function panics.
     pub async fn update(self, db_pool: Data<DbPool>) -> Result<Option<Project>> {
+        let mut conn = db_pool.get().await?;
+        self.update_conn(&mut conn).await
+    }
+
+    pub async fn update_conn(self, conn: &mut PgConnection) -> Result<Option<Project>> {
         let project_id = self.id.expect("Project id is None");
-        let project_obj = match Project::retrieve(db_pool.clone(), project_id).await? {
+        let project_obj = match Project::retrieve_conn(conn, project_id).await? {
             Some(project_obj) => project_obj,
             None => return Ok(None),
         };
@@ -164,12 +177,10 @@ impl Project {
             None
         };
 
-        let db_pool_ref = db_pool.clone();
         use crate::tables::project::dsl::*;
-        let mut conn = db_pool_ref.get().await?;
         let project_obj = update(project.find(project_id))
             .set(&self)
-            .get_result::<Project>(&mut conn)
+            .get_result::<Project>(conn)
             .await
             .map_err(|err| match err {
                 DieselError::NotFound => panic!("Project should exist"),
@@ -178,7 +189,7 @@ impl Project {
 
         if let Some(image) = image_to_delete {
             // We don't check the result. We don't want to throw an error if the image is used in another project.
-            let _ = Document::delete(db_pool, image).await;
+            let _ = Document::delete_conn(conn, image).await;
         }
 
         Ok(Some(project_obj))

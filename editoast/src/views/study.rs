@@ -1,4 +1,5 @@
 use crate::decl_paginated_response;
+use crate::error::InternalError;
 use crate::error::Result;
 use crate::models::Create;
 use crate::models::Delete;
@@ -19,6 +20,8 @@ use actix_web::{delete, get, post, HttpResponse};
 use chrono::NaiveDate;
 use chrono::Utc;
 use derivative::Derivative;
+use diesel_async::scoped_futures::ScopedFutureExt;
+use diesel_async::AsyncConnection;
 use editoast_derive::EditoastError;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -85,10 +88,7 @@ struct StudyCreateForm {
 
 impl StudyCreateForm {
     pub fn into_study(self, project_id: i64) -> Result<Study> {
-        if self.start_date > self.expected_end_date || self.start_date > self.actual_end_date {
-            return Err(StudyError::StartDateAfterEndDate.into());
-        }
-        Ok(Study {
+        let res = Study {
             name: Some(self.name),
             project_id: Some(project_id),
             description: Some(self.description),
@@ -103,7 +103,9 @@ impl StudyCreateForm {
             expected_end_date: Some(self.expected_end_date),
             actual_end_date: Some(self.actual_end_date),
             ..Default::default()
-        })
+        };
+        res.validate()?;
+        Ok(res)
     }
 }
 
@@ -258,11 +260,7 @@ impl TryFrom<StudyPatchForm> for Study {
     type Error = crate::error::InternalError;
 
     fn try_from(form: StudyPatchForm) -> std::result::Result<Self, Self::Error> {
-        if form.start_date > form.expected_end_date || form.start_date > form.actual_end_date {
-            return Err(StudyError::StartDateAfterEndDate.into());
-        }
-
-        Ok(Study {
+        let res = Study {
             name: form.name,
             description: form.description,
             start_date: Some(form.start_date),
@@ -275,7 +273,9 @@ impl TryFrom<StudyPatchForm> for Study {
             tags: form.tags,
             study_type: form.study_type,
             ..Default::default()
-        })
+        };
+        res.validate()?;
+        Ok(res)
     }
 }
 
@@ -300,24 +300,34 @@ async fn patch(
 ) -> Result<Json<StudyWithScenarios>> {
     let (project_id, study_id) = path.into_inner();
 
-    // Check if project exists
-    let project = match Project::retrieve(db_pool.clone(), project_id).await? {
-        None => return Err(ProjectError::NotFound { project_id }.into()),
-        Some(project) => project,
-    };
+    let mut conn = db_pool.get().await?;
+    let study_scenarios = conn
+        .transaction::<_, InternalError, _>(|conn| {
+            async {
+                // Check if project exists
+                let project = match Project::retrieve_conn(conn, project_id).await? {
+                    None => return Err(ProjectError::NotFound { project_id }.into()),
+                    Some(project) => project,
+                };
 
-    // Update study
-    let study: Study = data.into_inner().try_into()?;
-    let study = match study.update(db_pool.clone(), study_id).await? {
-        Some(study) => study,
-        None => return Err(StudyError::NotFound { study_id }.into()),
-    };
+                // Update study
+                let study: Study = data.into_inner().try_into()?;
+                let study = match study.update_conn(conn, study_id).await? {
+                    Some(study) => study,
+                    None => return Err(StudyError::NotFound { study_id }.into()),
+                };
 
-    // Update project last_modification field
-    let project = project.update_last_modified(db_pool.clone()).await?;
-    project.expect("Project should exist");
+                study.validate()?;
 
-    let study_scenarios = study.with_scenarios(db_pool).await?;
+                // Update project last_modification field
+                let project = project.update_last_modified_conn(conn).await?;
+                project.expect("Project should exist");
+
+                study.with_scenarios_conn(conn).await
+            }
+            .scope_boxed()
+        })
+        .await?;
     Ok(Json(study_scenarios))
 }
 
