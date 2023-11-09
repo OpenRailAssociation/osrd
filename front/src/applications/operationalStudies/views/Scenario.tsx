@@ -52,13 +52,13 @@ export default function Scenario() {
     {
       projectId: +projectId,
     },
-    { skip: !projectId }
+    { skip: !projectId || Number.isNaN(+projectId) }
   );
   const { data: study } =
     osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyId.useQuery(
       { projectId: +projectId, studyId: +studyId },
       {
-        skip: !projectId || !studyId,
+        skip: !projectId || Number.isNaN(+projectId) || !studyId || Number.isNaN(+studyId),
       }
     );
   const { data: scenario } =
@@ -68,7 +68,15 @@ export default function Scenario() {
         studyId: +studyId,
         scenarioId: +scenarioId,
       },
-      { skip: !projectId || !studyId || !scenarioId }
+      {
+        skip:
+          !projectId ||
+          Number.isNaN(+projectId) ||
+          !studyId ||
+          Number.isNaN(+studyId) ||
+          !scenarioId ||
+          Number.isNaN(+scenarioId),
+      }
     );
 
   useEffect(() => {
@@ -126,6 +134,15 @@ export default function Scenario() {
       { id: timetableId as number },
       { skip: !timetableId }
     );
+
+  useEffect(() => {
+    if (!projectId || !studyId || !scenarioId) navigate('/operational-studies/projects');
+    // redirect if projectId or studyId is not a number
+    if (projectId && Number.isNaN(+projectId)) navigate('/operational-studies/projects');
+    if (studyId && Number.isNaN(+studyId)) navigate(`/operational-studies/projects/${projectId}`);
+    if (scenarioId && Number.isNaN(+scenarioId))
+      navigate(`/operational-studies/projects/${projectId}/studies/${studyId}`);
+  }, [projectId, studyId, scenarioId]);
 
   useEffect(() => {
     if (!scenarioId || !studyId || !projectId) {

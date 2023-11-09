@@ -1,11 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Project, StudyResult, ScenarioResult } from 'common/api/osrdEditoastApi';
+import { Project, Study, ScenarioResult } from 'common/api/osrdEditoastApi';
 
 type Props = {
   project?: Project;
-  study?: StudyResult;
+  study?: Study;
   scenario?: ScenarioResult;
 };
 

@@ -80,7 +80,7 @@ export default function Project() {
   const { data: project, isError: isProjectError } = osrdEditoastApi.useGetProjectsByProjectIdQuery(
     { projectId: Number(projectId) },
     {
-      skip: !projectId,
+      skip: !projectId || Number.isNaN(+projectId),
     }
   );
 
@@ -152,8 +152,8 @@ export default function Project() {
   };
 
   useEffect(() => {
-    if (!projectId) {
-      navigate('/operational-studies');
+    if (!projectId || Number.isNaN(+projectId)) {
+      navigate('/operational-studies/projects');
     }
   }, []);
 

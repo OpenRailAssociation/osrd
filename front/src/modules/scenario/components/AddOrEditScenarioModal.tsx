@@ -4,7 +4,7 @@ import { FaPencilAlt, FaPlus, FaTrash } from 'react-icons/fa';
 import { GiElectric } from 'react-icons/gi';
 import { MdDescription, MdTitle } from 'react-icons/md';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { sortBy } from 'lodash';
 
 import scenarioLogo from 'assets/pictures/views/studies.svg';
@@ -20,7 +20,7 @@ import InfraSelectorModal from 'common/InfraSelector/InfraSelectorModal';
 import { ScenarioListResult, osrdEditoastApi, ScenarioRequest } from 'common/api/osrdEditoastApi';
 import { setFailure, setSuccess } from 'reducers/main';
 import { updateScenarioID } from 'reducers/osrdconf';
-import { getInfraID, getProjectID, getStudyID } from 'reducers/osrdconf/selectors';
+import { getInfraID } from 'reducers/osrdconf/selectors';
 
 const scenarioTypesDefaults = {
   name: '',
@@ -33,6 +33,11 @@ type AddOrEditScenarioModalProps = {
   scenario?: ScenarioListResult;
 };
 
+type createScenarioParams = {
+  projectId: string;
+  studyId: string;
+};
+
 export default function AddOrEditScenarioModal({
   editionMode = false,
   scenario,
@@ -43,6 +48,8 @@ export default function AddOrEditScenarioModal({
     key: undefined,
     value: t('noElectricalProfileSet').toString(),
   };
+
+  const { projectId, studyId } = useParams() as createScenarioParams;
 
   const [deleteScenario] =
     osrdEditoastApi.endpoints.deleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId.useMutation(
@@ -76,8 +83,6 @@ export default function AddOrEditScenarioModal({
   const [displayErrors, setDisplayErrors] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const projectID = useSelector(getProjectID);
-  const studyID = useSelector(getStudyID);
   const infraID = useSelector(getInfraID);
 
   const selectedValue = useMemo(() => {
@@ -104,20 +109,20 @@ export default function AddOrEditScenarioModal({
     setCurrentScenario({ ...currentScenario, tags: newTags });
   };
 
-  const createScenario = async () => {
+  const createScenario = () => {
     if (!currentScenario.name || !currentScenario.infra_id) {
       setDisplayErrors(true);
-    } else if (projectID && studyID && currentScenario) {
+    } else if (projectId && studyId && currentScenario) {
       postScenario({
-        projectId: projectID,
-        studyId: studyID,
+        projectId: +projectId,
+        studyId: +studyId,
         scenarioRequest: currentScenario as ScenarioRequest,
       })
         .unwrap()
         .then(({ id }) => {
           dispatch(updateScenarioID(id));
           loadInfra({ id: infraID as number }).unwrap();
-          navigate(`projects/${projectID}/studies/${studyID}/scenarios/${id}`);
+          navigate(`projects/${projectId}/studies/${studyId}/scenarios/${id}`);
           closeModal();
         })
 
@@ -133,13 +138,13 @@ export default function AddOrEditScenarioModal({
     }
   };
 
-  const updateScenario = async () => {
+  const updateScenario = () => {
     if (!currentScenario.name) {
       setDisplayErrors(true);
-    } else if (scenario && projectID && studyID && scenario.id) {
+    } else if (scenario && projectId && studyId && scenario.id) {
       patchScenario({
-        projectId: projectID,
-        studyId: studyID,
+        projectId: +projectId,
+        studyId: +studyId,
         scenarioId: scenario.id,
         scenarioPatchRequest: currentScenario,
       })
@@ -165,13 +170,13 @@ export default function AddOrEditScenarioModal({
     }
   };
 
-  const removeScenario = async () => {
-    if (projectID && studyID && scenario?.id) {
-      deleteScenario({ projectId: projectID, studyId: studyID, scenarioId: scenario.id })
+  const removeScenario = () => {
+    if (projectId && studyId && scenario?.id) {
+      deleteScenario({ projectId: +projectId, studyId: +studyId, scenarioId: scenario.id })
         .unwrap()
         .then(() => {
           dispatch(updateScenarioID(undefined));
-          navigate('/operational-studies/study');
+          navigate(`projects/${projectId}/studies/${studyId}`);
           closeModal();
           dispatch(
             setSuccess({

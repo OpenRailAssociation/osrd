@@ -49,7 +49,7 @@ test.describe('Test if operationnal study  : project workflow is working properl
 
     const createButton = playwrightHomePage.page.getByTestId('createProject');
     await createButton.click();
-    await playwrightHomePage.page.waitForURL('**/project');
+    await playwrightHomePage.page.waitForURL('**/projects/*');
     expect(await projectPage.getProjectName.textContent()).toContain(projectName);
     expect(await projectPage.getProjectDescription.textContent()).toContain(project.description);
     const objectives = await projectPage.getProjectObjectives.textContent();

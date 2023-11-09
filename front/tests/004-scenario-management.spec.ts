@@ -44,15 +44,12 @@ test.describe('Test if operationnal study : scenario creation workflow is workin
     const scenarioPage = new ScenarioPage(page);
     const commonPage = new PlaywrightCommonPage(page);
 
-    const newStudyData: Study = await postApiRequest(
-      `/projects/${newProjectData.id}/studies`,
-      {
-        ...study,
-        name: `${study.name} ${uuidv4()}`,
-        budget: 1234567890,
-        project_id: newProjectData.id,
-      }
-    );
+    const newStudyData: Study = await postApiRequest(`/projects/${newProjectData.id}/studies`, {
+      ...study,
+      name: `${study.name} ${uuidv4()}`,
+      budget: 1234567890,
+      project_id: newProjectData.id,
+    });
 
     await playwrightHomePage.goToHomePage();
     await playwrightHomePage.goToOperationalStudiesPage();
@@ -79,22 +76,19 @@ test.describe('Test if operationnal study : scenario creation workflow is workin
     await scenarioPage.setScenarioInfraByName(VARIABLES.infraName);
     const createButton = playwrightHomePage.page.getByTestId('createScenario');
     await createButton.click();
-    await playwrightHomePage.page.waitForURL('**/scenario');
+    await playwrightHomePage.page.waitForURL('**/scenarios/*');
     expect(await scenarioPage.getScenarioName.textContent()).toContain(scenarioName);
     expect(await scenarioPage.getScenarioDescription.textContent()).toContain(scenario.description);
     expect(await scenarioPage.getScenarioInfraName.textContent()).toContain(VARIABLES.infraName);
   });
 
   test('Update a scenario', async ({ page }) => {
-    const newStudyData: Study = await postApiRequest(
-      `/projects/${newProjectData.id}/studies`,
-      {
-        ...study,
-        name: `${study.name} ${uuidv4()}`,
-        budget: 1234567890,
-        project_id: newProjectData.id,
-      }
-    );
+    const newStudyData: Study = await postApiRequest(`/projects/${newProjectData.id}/studies`, {
+      ...study,
+      name: `${study.name} ${uuidv4()}`,
+      budget: 1234567890,
+      project_id: newProjectData.id,
+    });
 
     const newScenarioData: ScenarioResult = await postApiRequest(
       `/projects/${newProjectData.id}/studies/${newStudyData.id}/scenarios`,
@@ -146,15 +140,12 @@ test.describe('Test if operationnal study : scenario creation workflow is workin
   });
 
   test('Delete a scenario', async ({ page }) => {
-    const newStudyData: Study = await postApiRequest(
-      `/projects/${newProjectData.id}/studies`,
-      {
-        ...study,
-        name: `${study.name} ${uuidv4()}`,
-        budget: 1234567890,
-        project_id: newProjectData.id,
-      }
-    );
+    const newStudyData: Study = await postApiRequest(`/projects/${newProjectData.id}/studies`, {
+      ...study,
+      name: `${study.name} ${uuidv4()}`,
+      budget: 1234567890,
+      project_id: newProjectData.id,
+    });
 
     const newScenarioData: ScenarioResult = await postApiRequest(
       `/projects/${newProjectData.id}/studies/${newStudyData.id}/scenarios`,
