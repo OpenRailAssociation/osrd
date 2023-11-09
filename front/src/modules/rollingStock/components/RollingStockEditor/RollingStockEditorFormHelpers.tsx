@@ -9,6 +9,8 @@ import {
   RollingStockParametersValues,
   RollingStockSchemaProperties,
 } from 'modules/rollingStock/consts';
+import { RollingStock } from 'common/api/osrdEditoastApi';
+import { isNil } from 'lodash';
 
 type RollingStockMetadataFormProps = {
   rollingStockValues: RollingStockParametersValues;
@@ -26,12 +28,13 @@ const RollingStockEditorMetadataFormColumn = ({
 
   return (
     <>
-      {RollingStockSchemaProperties.filter(
-        (property) =>
+      {RollingStockSchemaProperties.filter((property) => {
+        const isInThisGroup =
           property.title ===
-            RollingStockEditorMetadata[property.title as RollingStockEditorMetadata] &&
-          property.side === formSide
-      ).map((property, index) => (
+          RollingStockEditorMetadata[property.title as RollingStockEditorMetadata];
+        const isOnThisSide = property.side === formSide;
+        return isInThisGroup && isOnThisSide;
+      }).map((property, index) => (
         <InputSNCF
           id={property.title}
           name={property.title}
@@ -86,6 +89,7 @@ type RollingStockEditorParameterFormProps = {
   setRollingStockValues: (
     rollingStockValue: React.SetStateAction<RollingStockParametersValues>
   ) => void;
+  currentRsEffortCurve: RollingStock['effort_curves'] | null;
 };
 
 // TODO: make the conditional return clearer
@@ -95,16 +99,19 @@ const RollingStockEditorParameterFormColumn = ({
   rollingStockValues,
   setOptionValue,
   setRollingStockValues,
+  currentRsEffortCurve,
 }: RollingStockEditorParameterFormProps & { formSide: 'left' | 'middle' | 'right' }) => {
   const { t } = useTranslation(['rollingstock', 'translation']);
   return (
     <>
-      {RollingStockSchemaProperties.filter(
-        (property) =>
+      {RollingStockSchemaProperties.filter((property) => {
+        const isInThisGroup =
           property.title ===
-            RollingStockEditorParameter[property.title as RollingStockEditorParameter] &&
-          property.side === formSide
-      ).map((property, index) => {
+          RollingStockEditorParameter[property.title as RollingStockEditorParameter];
+        const isOnThisSide = property.side === formSide;
+        const isDisplayed = property.condition ? property.condition(currentRsEffortCurve) : true;
+        return isInThisGroup && isOnThisSide && isDisplayed;
+      }).map((property, index) => {
         if (property.enum) {
           return (
             <div
@@ -142,7 +149,7 @@ const RollingStockEditorParameterFormColumn = ({
               typeValue={property.type}
               type={optionValue}
               value={
-                rollingStockValues[property.title] !== undefined
+                !isNil(rollingStockValues[property.title])
                   ? (rollingStockValues[property.title] as string | number)
                   : ''
               }
@@ -209,7 +216,7 @@ const RollingStockEditorParameterFormColumn = ({
             }
             unit={property.unit}
             value={
-              rollingStockValues[property.title] !== undefined
+              !isNil(rollingStockValues[property.title])
                 ? (rollingStockValues[property.title] as string | number)
                 : ''
             }
@@ -239,6 +246,7 @@ export const RollingStockEditorParameterForm = ({
   rollingStockValues,
   setOptionValue,
   setRollingStockValues,
+  currentRsEffortCurve,
 }: RollingStockEditorParameterFormProps) => {
   const { t } = useTranslation(['rollingstock', 'translation']);
   return (
@@ -250,6 +258,7 @@ export const RollingStockEditorParameterForm = ({
           rollingStockValues={rollingStockValues}
           setOptionValue={setOptionValue}
           setRollingStockValues={setRollingStockValues}
+          currentRsEffortCurve={currentRsEffortCurve}
         />
       </div>
       <div className="col-lg-4 rollingstock-editor-input-container">
@@ -259,6 +268,7 @@ export const RollingStockEditorParameterForm = ({
           rollingStockValues={rollingStockValues}
           setOptionValue={setOptionValue}
           setRollingStockValues={setRollingStockValues}
+          currentRsEffortCurve={currentRsEffortCurve}
         />
       </div>
       <div className="col-lg-4">
@@ -272,6 +282,7 @@ export const RollingStockEditorParameterForm = ({
           rollingStockValues={rollingStockValues}
           setOptionValue={setOptionValue}
           setRollingStockValues={setRollingStockValues}
+          currentRsEffortCurve={currentRsEffortCurve}
         />
       </div>
     </div>

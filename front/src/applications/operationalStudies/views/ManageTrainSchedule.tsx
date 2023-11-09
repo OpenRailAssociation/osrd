@@ -23,7 +23,7 @@ import pahtFindingPic from 'assets/pictures/components/pathfinding.svg';
 import allowancesPic from 'assets/pictures/components/allowances.svg';
 import simulationSettings from 'assets/pictures/components/simulationSettings.svg';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
-import { isElectric } from 'modules/rollingStock/helpers/utils';
+import { isElectric } from 'modules/rollingStock/helpers/electric';
 import { formatKmValue } from 'utils/strings';
 
 export default function ManageTrainSchedule() {
@@ -137,7 +137,7 @@ export default function ManageTrainSchedule() {
             <SpeedLimitByTagSelector />
           </div>
         </div>
-        {rollingStock && isElectric(rollingStock) && (
+        {rollingStock && isElectric(rollingStock.effort_curves) && (
           <PowerRestrictionsSelector
             rollingStockModes={rollingStock.effort_curves.modes}
             rollingStockPowerRestrictions={rollingStock.power_restrictions}

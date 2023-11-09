@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
+import { usePrevious } from 'utils/hooks/state';
 import { useTranslation } from 'react-i18next';
 import {
   RollingStock,
@@ -24,6 +25,7 @@ import {
 } from 'modules/rollingStock/consts';
 import { getTractionMode } from 'reducers/rollingstockEditor/selectors';
 import { updateTractionMode } from 'reducers/rollingstockEditor';
+import { isElectric } from 'modules/rollingStock/helpers/electric';
 import {
   RollingStockEditorMetadataForm,
   RollingStockEditorParameterForm,
@@ -36,6 +38,21 @@ type RollingStockParametersProps = {
   setOpenedRollingStockCardId?: React.Dispatch<React.SetStateAction<number | undefined>>;
   isAdding?: boolean;
 };
+
+export function modifyRollingStockElectricalValues(
+  currentRollingStockValues: RollingStockParametersValues,
+  currentRsEffortCurve: RollingStock['effort_curves'] | null
+) {
+  const isCurrentElectric = isElectric(currentRsEffortCurve);
+  if (!isCurrentElectric) {
+    return {
+      ...currentRollingStockValues,
+      electricalPowerStartupTime: null,
+      raisePantographTime: null,
+    };
+  }
+  return currentRollingStockValues;
+}
 
 const RollingStockEditorForm = ({
   rollingStockData,
@@ -68,13 +85,21 @@ const RollingStockEditorForm = ({
   const [currentRsEffortCurve, setCurrentRsEffortCurve] = useState<
     RollingStock['effort_curves'] | null
   >(defaultRollingStockMode);
-
+  const prevRsEffortCurve = usePrevious(currentRsEffortCurve);
   const defaultValues: RollingStockParametersValues = useMemo(
     () => getRollingStockEditorDefaultValues(selectedTractionMode, rollingStockData),
     [rollingStockData, selectedTractionMode, defaultRollingStockMode]
   );
 
   const [rollingStockValues, setRollingStockValues] = useState(defaultValues);
+
+  useEffect(() => {
+    if (prevRsEffortCurve !== undefined) {
+      setRollingStockValues(
+        modifyRollingStockElectricalValues(rollingStockValues, currentRsEffortCurve)
+      );
+    }
+  }, [currentRsEffortCurve]);
 
   const [powerRestrictionsClass, setPowerRestrictionsClass] = useState<
     RollingStock['power_restrictions']
@@ -170,7 +195,10 @@ const RollingStockEditorForm = ({
       return;
     }
 
-    const { invalidFields, validRollingStockForm } = checkRollingStockFormValidity(data);
+    const { invalidFields, validRollingStockForm } = checkRollingStockFormValidity(
+      data,
+      currentRsEffortCurve
+    );
     if (invalidFields.length) {
       setRollingStockValues(validRollingStockForm);
       setErrorMessage(
@@ -245,6 +273,7 @@ const RollingStockEditorForm = ({
           rollingStockValues={rollingStockValues}
           setOptionValue={setOptionValue}
           setRollingStockValues={setRollingStockValues}
+          currentRsEffortCurve={currentRsEffortCurve}
         />
       </>
     ),
