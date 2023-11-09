@@ -277,6 +277,10 @@ impl InfraError {
             sub_type: InfraErrorType::OverlappingSwitches { reference },
         }
     }
+
+    pub fn get_sub_type(&self) -> &InfraErrorType {
+        &self.sub_type
+    }
 }
 
 impl OSRDIdentified for InfraError {

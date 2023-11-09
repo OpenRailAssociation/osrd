@@ -11,7 +11,7 @@ use serde_json::Value;
 
 use super::OperationError;
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(tag = "obj_type", deny_unknown_fields)]
 pub enum RailjsonObject {
     TrackSection { railjson: TrackSection },

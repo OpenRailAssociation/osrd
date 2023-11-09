@@ -3886,6 +3886,27 @@ paths:
                 type: object
           description: All objects attached to the given track (arranged by types)
       summary: Retrieve all objects attached to a given track
+  /infra/{id}/auto_fixes/:
+    get:
+      parameters:
+      - description: infra id
+        in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Operation'
+                type: array
+          description: A list of operations
+      summary: Retrieve a list of suggested operations to fix issues
+      tags:
+      - infra
   /infra/{id}/clone/:
     post:
       parameters:

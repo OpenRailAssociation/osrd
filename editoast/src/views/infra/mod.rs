@@ -1,4 +1,5 @@
 mod attached;
+mod auto_fixes;
 mod edition;
 mod errors;
 mod lines;
@@ -67,6 +68,7 @@ pub fn routes() -> impl HttpServiceFactory {
                 ))
                 .service((
                     errors::routes(),
+                    auto_fixes::routes(),
                     objects::routes(),
                     lines::routes(),
                     routes::routes(),

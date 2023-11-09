@@ -16,7 +16,7 @@ use std::collections::{HashMap, HashSet};
 pub use graph::Graph;
 
 /// Contains infra cached data used to generate layers and errors
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct InfraCache {
     /// Map track section id to the list of objects that depend on it
     /// Contains all referenced track sections (not only existing ones)
