@@ -53,16 +53,13 @@ pub enum RedisClient {
 }
 
 impl RedisClient {
-    pub fn new(redis_config: RedisConfig) -> Result<RedisClient> {
-        let redis_config_url = redis_config.url()?;
+    pub fn new(redis_config: RedisConfig) -> RedisClient {
         if redis_config.is_cluster_client {
-            return Ok(RedisClient::Cluster(
-                redis::cluster::ClusterClient::new(vec![redis_config_url.as_str()]).unwrap(),
-            ));
+            return RedisClient::Cluster(
+                redis::cluster::ClusterClient::new(vec![redis_config.redis_url.as_str()]).unwrap(),
+            );
         }
-        Ok(RedisClient::Tokio(
-            redis::Client::open(redis_config_url.as_str()).unwrap(),
-        ))
+        RedisClient::Tokio(redis::Client::open(redis_config.redis_url.as_str()).unwrap())
     }
 
     pub async fn get_connection(&self) -> RedisResult<RedisConnection> {
@@ -145,10 +142,8 @@ mod tests {
     use redis::aio::ConnectionManager;
 
     async fn create_redis_pool() -> ConnectionManager {
-        let redis_url = RedisConfig::default()
-            .url()
-            .expect("cannot get redis config url");
-        let redis = redis::Client::open(redis_url.to_string()).unwrap();
+        let cfg = RedisConfig::default();
+        let redis = redis::Client::open(cfg.redis_url).unwrap();
         redis.get_tokio_connection_manager().await.unwrap()
     }
 
