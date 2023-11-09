@@ -11,7 +11,7 @@ use serde_json::{from_value, json, Value};
 
 use super::OperationError;
 
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct UpdateOperation {
     pub obj_id: String,

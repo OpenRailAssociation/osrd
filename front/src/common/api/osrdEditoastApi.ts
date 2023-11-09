@@ -159,6 +159,13 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({ url: `/infra/${queryArg.id}/attached/${queryArg.trackId}/` }),
       }),
+      getInfraByIdAutoFixes: build.query<
+        GetInfraByIdAutoFixesApiResponse,
+        GetInfraByIdAutoFixesApiArg
+      >({
+        query: (queryArg) => ({ url: `/infra/${queryArg.id}/auto_fixes/` }),
+        providesTags: ['infra'],
+      }),
       postInfraByIdClone: build.mutation<PostInfraByIdCloneApiResponse, PostInfraByIdCloneApiArg>({
         query: (queryArg) => ({
           url: `/infra/${queryArg.id}/clone/`,
@@ -821,6 +828,11 @@ export type GetInfraByIdAttachedAndTrackIdApiArg = {
   id: number;
   /** Track ID */
   trackId: string;
+};
+export type GetInfraByIdAutoFixesApiResponse = /** status 200 A list of operations */ Operation[];
+export type GetInfraByIdAutoFixesApiArg = {
+  /** infra id */
+  id: number;
 };
 export type PostInfraByIdCloneApiResponse = /** status 201 The duplicated infra id */ {
   id?: number;

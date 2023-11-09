@@ -12,6 +12,8 @@ mod speed_section;
 mod switch;
 mod track_section;
 
+pub use error::generate_infra_errors;
+
 use async_trait::async_trait;
 use buffer_stop::BufferStopLayer;
 use catenary::CatenaryLayer;

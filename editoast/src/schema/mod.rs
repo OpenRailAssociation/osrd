@@ -62,7 +62,7 @@ pub trait OSRDIdentified {
 }
 
 /// This trait is used for all object that can be typed and identified.
-/// It allows to get an `ObjectRef` fromt it.
+/// It allows to get an `ObjectRef` from it.
 pub trait OSRDObject: OSRDIdentified {
     fn get_type(&self) -> ObjectType;
     fn get_ref(&self) -> ObjectRef {

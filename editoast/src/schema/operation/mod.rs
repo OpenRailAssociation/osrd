@@ -13,7 +13,7 @@ pub use self::delete::DeleteOperation;
 pub use create::RailjsonObject;
 pub use update::UpdateOperation;
 
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
 #[serde(tag = "operation_type", deny_unknown_fields)]
 pub enum Operation {
     #[serde(rename = "CREATE")]
@@ -67,4 +67,14 @@ enum OperationError {
     ModifyId,
     #[error("A Json Patch error occurred: '{}'", .0)]
     InvalidPatch(String),
+}
+
+impl From<&Operation> for OperationResult {
+    fn from(op: &Operation) -> Self {
+        match op {
+            Operation::Delete(deletion) => OperationResult::Delete(deletion.clone().into()),
+            Operation::Create(railjson_object) => OperationResult::Create(*railjson_object.clone()),
+            Operation::Update(_update) => todo!(),
+        }
+    }
 }
