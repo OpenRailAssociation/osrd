@@ -1,5 +1,9 @@
+use crate::error::Result;
 use clap::Args;
 use derivative::Derivative;
+use editoast_derive::EditoastError;
+use thiserror::Error;
+use url::Url;
 
 #[derive(Args, Debug, Derivative, Clone)]
 #[derivative(Default)]
@@ -25,14 +29,34 @@ pub struct PostgresConfig {
 }
 
 impl PostgresConfig {
-    pub fn url(&self) -> String {
-        format!(
-            "postgresql://{}:{}@{}:{}/{}",
-            self.psql_username,
-            self.psql_password,
-            self.psql_host,
-            self.psql_port,
-            self.psql_database
-        )
+    pub fn url(&self) -> Result<Url> {
+        let base_url = format!("postgresql://{}", self.psql_host);
+        let mut url = Url::parse(&base_url).map_err(|_| PostgresConfigError::Host {
+            hostname: self.psql_host.clone(),
+        })?;
+        url.set_port(Some(self.psql_port))
+            .map_err(|_| PostgresConfigError::Port {
+                port: self.psql_port,
+            })?;
+        url.set_path(&self.psql_database);
+        url.set_username(&self.psql_username)
+            .map_err(|_| PostgresConfigError::Username)?;
+        url.set_password(Some(&self.psql_password))
+            .map_err(|_| PostgresConfigError::Password)?;
+
+        Ok(url)
     }
+}
+
+#[derive(Debug, Error, EditoastError)]
+#[editoast_error(base_id = "postgres", default_status = 500)]
+pub enum PostgresConfigError {
+    #[error("Invalid host '{hostname}'")]
+    Host { hostname: String },
+    #[error("Invalid port '{port}'")]
+    Port { port: u16 },
+    #[error("Invalid username")]
+    Username,
+    #[error("Invalid password")]
+    Password,
 }
