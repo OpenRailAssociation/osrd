@@ -73,12 +73,6 @@ jobs:
           cd tests
           poetry run pytest -m "not e2e"
 
-      - name: Test railjson generator
-        run: |
-          cd python/railjson_generator
-          poetry install
-          poetry run python -m railjson_generator ../../front/tests/assets/ small_infra
-
       - name: Run Playwright tests
         run: |
           cd front

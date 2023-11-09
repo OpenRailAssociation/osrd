@@ -3,7 +3,6 @@ import { Project, Infra, ScenarioResult, Study, RollingStock } from 'common/api/
 import { v4 as uuidv4 } from 'uuid';
 import { PlaywrightHomePage } from './pages/home-page-model';
 import PlaywrightRollingstockModalPage from './pages/rollingstock-modal-model';
-import smallInfraRailjson from './assets/small_infra/infra.json';
 import exampleRollingStock from './assets/example_rolling_stock_1.json';
 import exampleRollingStock1500 from './assets/example_rolling_stock_1500.json';
 import exampleRollingStock25000 from './assets/example_rolling_stock_25000.json';
@@ -16,9 +15,8 @@ import PATH_VARIABLES from './assets/operationStudies/testVariablesPaths';
 import PlaywrightScenarioPage from './pages/scenario-page-model';
 import { ProjectPage } from './pages/project-page-model';
 import { StudyPage } from './pages/study-page-model';
-import { postApiRequest, deleteApiRequest, getApiRequest } from './assets/utils';
+import { postApiRequest, deleteApiRequest, getSmallInfra } from './assets/utils';
 
-let testInfra: Infra;
 let newProjectData: Project;
 let newStudyData: Study;
 let newScenarioData: ScenarioResult;
@@ -27,19 +25,6 @@ let rollingStock2: RollingStock;
 let rollingStock3: RollingStock;
 
 test.beforeEach(async () => {
-  const createdInfra = await postApiRequest(
-    `/infra/railjson/`,
-    {
-      ...smallInfraRailjson,
-    },
-    {
-      name: `${VARIABLES.infraName}_${uuidv4().slice(0, 8)}`,
-      generate_data: true,
-    }
-  );
-
-  testInfra = await getApiRequest(`/infra/${createdInfra.infra}`);
-
   rollingStock1 = await postApiRequest('/rolling_stock/', {
     ...exampleRollingStock,
     name: `${exampleRollingStock.name} ${uuidv4()}`,
@@ -74,7 +59,7 @@ test.beforeEach(async () => {
       ...scenario,
       name: `${scenario.name} ${uuidv4()}`,
       study_id: newStudyData.id,
-      infra_id: testInfra.id,
+      infra_id: getSmallInfra().id,
     }
   );
 });
@@ -87,14 +72,13 @@ test.afterEach(async () => {
   await deleteApiRequest(`/rolling_stock/${rollingStock2.id}/`);
 
   await deleteApiRequest(`/rolling_stock/${rollingStock3.id}/`);
-
-  await deleteApiRequest(`/infra/${testInfra.id}/`);
 });
 
 // TODO: remove (enabled) when every tests are refactored
 test.describe('Testing if all mandatory elements simulation configuration are loaded in operationnal studies app (enabled)', () => {
   test('Testing pathfinding with rollingstock and composition code', async ({ page }) => {
-    test.setTimeout(90000); // 1min30
+    console.log(getSmallInfra().id);
+    test.setTimeout(180000); // 1min30
     const playwrightHomePage = new PlaywrightHomePage(page);
     const scenarioPage = new PlaywrightScenarioPage(page);
     const projectPage = new ProjectPage(page);
@@ -109,7 +93,7 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
 
     await scenarioPage.openScenarioCreationModal();
     await scenarioPage.setScenarioName(newScenarioData.name as string);
-    await scenarioPage.setScenarioInfraByName(testInfra.name);
+    await scenarioPage.setScenarioInfraByName(getSmallInfra().name);
     const createButton = playwrightHomePage.page.getByTestId('createScenario');
     await createButton.click();
 

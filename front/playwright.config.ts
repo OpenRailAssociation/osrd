@@ -1,5 +1,4 @@
-import type { PlaywrightTestConfig } from '@playwright/test';
-import { devices } from '@playwright/test';
+import { defineConfig, devices } from '@playwright/test';
 
 /**
  * Read environment variables from file.
@@ -10,10 +9,9 @@ import { devices } from '@playwright/test';
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
-const config: PlaywrightTestConfig = {
+
+export default defineConfig({
   testDir: './tests',
-  globalSetup: require.resolve('./tests/global-setup'),
-  globalTeardown: require.resolve('./tests/global-teardown'),
 
   /* Maximum time one test can run for. */
   timeout: 50 * 1000,
@@ -47,24 +45,24 @@ const config: PlaywrightTestConfig = {
 
   /* Configure projects for major browsers */
   projects: [
+    { name: 'setup', testMatch: 'global.setup.ts', teardown: 'teardown' },
+    {
+      name: 'teardown',
+      testMatch: 'global.teardown.ts',
+    },
     {
       name: 'chromium',
-      use: {
-        ...devices['Desktop Chrome'],
-      },
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['setup'],
     },
-
     {
       name: 'firefox',
-      use: {
-        ...devices['Desktop Firefox'],
-      },
+      use: { ...devices['Desktop Firefox'] },
+      dependencies: ['setup'],
     },
   ],
 
   /* select tags to run specific tests */
   // TODO: remove grep when every tests are refactored
   grep: [/(enabled)/],
-};
-
-export default config;
+});

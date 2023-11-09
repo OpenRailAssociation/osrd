@@ -1,4 +1,5 @@
 import { expect, Page, request } from '@playwright/test';
+import { Infra } from 'common/api/osrdEditoastApi';
 import { PlaywrightHomePage } from '../pages/home-page-model';
 import PlaywrightRollingstockModalPage from '../pages/rollingstock-modal-model';
 import PlaywrightMap, { selectPointOnMapProps } from '../pages/map-model';
@@ -105,4 +106,13 @@ export const deleteApiRequest = async (url: string) => {
   const apiContext = await getApiContext();
   const deleteProject = apiContext.delete(url);
   return deleteProject;
+};
+
+export const getSmallInfra = () => {
+  let smallInfra: Infra;
+  if (process.env.SMALL_INFRA !== undefined) {
+    smallInfra = JSON.parse(process.env.SMALL_INFRA);
+    return smallInfra;
+  }
+  throw new Error('Small infra not found');
 };
