@@ -10,6 +10,12 @@
     "zoom-out": "Zoom out",
     "deleteSelectionCount": "Do you confirm the deletion of {{items}} ?"
   },
+  "navigation": {
+    "next": "Next",
+    "previous": "Previous",
+    "goBack": "Back to previous page",
+    "goHome": "Go to home page"
+  },
   "begin": "Start",
   "end": "End"
 }

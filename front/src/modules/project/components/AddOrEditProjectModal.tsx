@@ -164,7 +164,7 @@ export default function AddOrEditProjectModal({
         .unwrap()
         .then(() => {
           dispatch(updateProjectID(undefined));
-          navigate('/operational-studies');
+          navigate(`/operational-studies/projects/`);
           closeModal();
           dispatch(
             setSuccess({

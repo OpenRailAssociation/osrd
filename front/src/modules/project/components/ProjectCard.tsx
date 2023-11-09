@@ -2,12 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { RiCalendarLine, RiFoldersLine } from 'react-icons/ri';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { AiFillFolderOpen, AiFillCheckCircle } from 'react-icons/ai';
 import nextId from 'react-id-generator';
 import { dateTimeFrenchFormatting } from 'utils/date';
-import { useDispatch, useSelector } from 'react-redux';
-import { updateProjectID, updateScenarioID, updateStudyID } from 'reducers/osrdconf';
+import { useSelector } from 'react-redux';
 import { ProjectWithStudies, SearchResultItemProject } from 'common/api/osrdEditoastApi';
 import { getDocument } from 'common/api/documentApi';
 import cx from 'classnames';
@@ -20,19 +19,10 @@ type Props = {
   toggleSelect: (id?: number) => void;
 };
 
-export default function ProjectCard({ setFilterChips, project, isSelected }: Props) {
+export default function ProjectCard({ setFilterChips, project, isSelected, toggleSelect }: Props) {
   const { t } = useTranslation('operationalStudies/home');
   const [imageUrl, setImageUrl] = useState<string>();
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
   const safeWord = useSelector(getUserSafeWord);
-
-  const openProject = () => {
-    dispatch(updateProjectID(project.id));
-    dispatch(updateStudyID(undefined));
-    dispatch(updateScenarioID(undefined));
-    navigate(`/operational-studies/projects/${project.id}`);
-  };
 
   // as the image is stored in the database and can be fetched only through api (authentication needed),
   // the direct url can not be given to the <img /> directly. Thus the image is fetched, and a new
@@ -56,7 +46,7 @@ export default function ProjectCard({ setFilterChips, project, isSelected }: Pro
     <div
       className={cx('project-card', isSelected && 'selected')}
       data-testid={project.name}
-      // onClick={() => toggleSelect(project.id)}
+      onClick={() => toggleSelect(project.id)}
       role="button"
       tabIndex={0}
     >

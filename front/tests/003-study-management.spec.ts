@@ -66,7 +66,7 @@ test.describe('Test if operationnal study: study creation workflow is working pr
 
     const createButton = playwrightHomePage.page.getByTestId('createStudy');
     await createButton.click();
-    await playwrightHomePage.page.waitForURL('**/study');
+    await playwrightHomePage.page.waitForURL('**/studies/*');
     expect(await studyPage.getStudyName.textContent()).toContain(studyName);
     expect(await studyPage.getStudyDescription.textContent()).toContain(study.description);
     expect(await studyPage.getStudyType.textContent()).toContain(study.type);
@@ -86,15 +86,12 @@ test.describe('Test if operationnal study: study creation workflow is working pr
   });
 
   test(' update a study', async ({ page }) => {
-    const newStudyData: Study = await postApiRequest(
-      `/projects/${newProjectData.id}/studies/`,
-      {
-        ...study,
-        name: `${study.name} ${uuidv4()}`,
-        budget: 1234567890,
-        project: newProjectData.id,
-      }
-    );
+    const newStudyData: Study = await postApiRequest(`/projects/${newProjectData.id}/studies/`, {
+      ...study,
+      name: `${study.name} ${uuidv4()}`,
+      budget: 1234567890,
+      project: newProjectData.id,
+    });
 
     const playwrightHomePage = new PlaywrightHomePage(page);
     const studyPage = new StudyPage(page);
@@ -161,15 +158,12 @@ test.describe('Test if operationnal study: study creation workflow is working pr
   });
 
   test('Delete a study', async ({ page }) => {
-    const newStudyData: Study = await postApiRequest(
-      `/projects/${newProjectData.id}/studies/`,
-      {
-        ...study,
-        name: `${study.name} ${uuidv4()}`,
-        budget: 1234567890,
-        project: newProjectData.id,
-      }
-    );
+    const newStudyData: Study = await postApiRequest(`/projects/${newProjectData.id}/studies/`, {
+      ...study,
+      name: `${study.name} ${uuidv4()}`,
+      budget: 1234567890,
+      project: newProjectData.id,
+    });
 
     const playwrightHomePage = new PlaywrightHomePage(page);
     const studyPage = new StudyPage(page);

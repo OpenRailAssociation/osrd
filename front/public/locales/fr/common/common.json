@@ -10,6 +10,12 @@
     "Zoom-out": "Réduire",
     "deleteSelectionCount": "Confirmez-vous la suppression de {{items}}?"
   },
+  "navigation": {
+    "next": "Suivant",
+    "previous": "Précédent",
+    "goBack": "Retour à  la page précédente",
+    "goHome": "Retour à la page d'accueil"
+  },
   "begin": "Début",
   "end": "Fin"
 }

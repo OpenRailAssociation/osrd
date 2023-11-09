@@ -83,7 +83,7 @@ export default function Study() {
   const { data: project, isError: isProjectError } = osrdEditoastApi.useGetProjectsByProjectIdQuery(
     { projectId: Number(projectId) },
     {
-      skip: !projectId,
+      skip: !projectId || Number.isNaN(+projectId),
     }
   );
 
@@ -94,7 +94,7 @@ export default function Study() {
         studyId: Number(studyId),
       },
       {
-        skip: !projectId || !studyId,
+        skip: !projectId || Number.isNaN(+projectId) || !studyId || Number.isNaN(+studyId),
       }
     );
 
@@ -103,7 +103,10 @@ export default function Study() {
     osrdEditoastApi.useLazyGetProjectsByProjectIdStudiesAndStudyIdScenariosQuery();
 
   useEffect(() => {
-    if (!projectId || !studyId) navigate('/operational-studies/project');
+    if (!projectId || (projectId && Number.isNaN(+projectId)))
+      navigate('/operational-studies/projects');
+    if (!studyId || (studyId && Number.isNaN(+studyId)))
+      navigate(`/operational-studies/projects/${projectId}`);
   }, [projectId, studyId]);
 
   useEffect(() => {

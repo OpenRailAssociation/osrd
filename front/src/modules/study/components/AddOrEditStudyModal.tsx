@@ -13,11 +13,10 @@ import { FaPencilAlt, FaPlus, FaTasks, FaTrash } from 'react-icons/fa';
 import { GoNote } from 'react-icons/go';
 import { MdBusinessCenter, MdTitle } from 'react-icons/md';
 import { RiCalendarLine, RiMoneyEuroCircleLine, RiQuestionLine } from 'react-icons/ri';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import { setFailure, setSuccess } from 'reducers/main';
 import { updateStudyID } from 'reducers/osrdconf';
-import { getProjectID } from 'reducers/osrdconf/selectors';
 import { StudyCreateForm, StudyWithScenarios, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import {
   StudyState,
@@ -144,7 +143,7 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
             })
           );
           dispatch(updateStudyID(undefined));
-          navigate('/operational-studies/project');
+          navigate(`projects/${projectId}/`);
           closeModal();
         });
     }
