@@ -121,18 +121,39 @@ impl Study {
 
     /// This function adds the list of scenarios ID that are linked to the study
     pub async fn with_scenarios(self, db_pool: Data<DbPool>) -> Result<StudyWithScenarios> {
-        use crate::tables::scenario::dsl as scenario_dsl;
         let mut conn = db_pool.get().await?;
+        self.with_scenarios_conn(&mut conn).await
+    }
+
+    pub async fn with_scenarios_conn(self, conn: &mut PgConnection) -> Result<StudyWithScenarios> {
+        use crate::tables::scenario::dsl as scenario_dsl;
         scenario_dsl::scenario
             .filter(scenario_dsl::study_id.eq(self.id.unwrap()))
             .count()
-            .get_result(&mut conn)
+            .get_result(conn)
             .await
             .map(|scenarios_count| StudyWithScenarios {
                 study: self,
                 scenarios_count,
             })
             .map_err(|err| err.into())
+    }
+
+    pub fn validate(&self) -> Result<()> {
+        if !dates_in_order(self.start_date, self.expected_end_date)
+            || !dates_in_order(self.start_date, self.actual_end_date)
+        {
+            return Err(crate::views::study::StudyError::StartDateAfterEndDate.into());
+        }
+
+        Ok(())
+    }
+}
+
+fn dates_in_order(a: Option<Option<NaiveDate>>, b: Option<Option<NaiveDate>>) -> bool {
+    match (a, b) {
+        (Some(Some(a)), Some(Some(b))) => a <= b,
+        _ => true,
     }
 }
 
