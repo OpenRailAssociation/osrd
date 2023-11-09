@@ -1,16 +1,23 @@
+import React from 'react';
 import { cloneDeep, isEmpty, isEqual } from 'lodash';
-import { BiAnchor, BiArrowFromLeft, BiArrowToRight, BiTrash } from 'react-icons/bi';
-import { CgAdd } from 'react-icons/cg';
+import { BsTrash } from 'react-icons/bs';
 import { MdShowChart } from 'react-icons/md';
 import { RiDragMoveLine } from 'react-icons/ri';
+import { CgAdd, CgRemove } from 'react-icons/cg';
 import { TiDeleteOutline } from 'react-icons/ti';
+import { BiAnchor, BiArrowFromLeft, BiArrowToRight } from 'react-icons/bi';
 import { Feature, LineString } from 'geojson';
-import nearestPointOnLine, { NearestPointOnLine } from '@turf/nearest-point-on-line';
 import getNearestPoint from '@turf/nearest-point';
 import { featureCollection } from '@turf/helpers';
+import nearestPointOnLine, { NearestPointOnLine } from '@turf/nearest-point-on-line';
 
+import { save } from 'reducers/editor';
 import { entityDoUpdate } from 'common/IntervalsDataViz/data';
-import { getMapMouseEventNearestFeature } from '../../../../utils/mapHelper';
+import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
+import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
+import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
+import { Tool } from '../editorContextTypes';
+import { DEFAULT_COMMON_TOOL_STATE } from '../commonToolState';
 import {
   POINTS_LAYER_ID,
   TRACK_LAYER_ID,
@@ -18,10 +25,22 @@ import {
   TrackEditionLeftPanel,
   TrackEditionMessages,
 } from './components';
-import { TrackEditionState } from './types';
 import { getNewLine } from './utils';
-import { Tool } from '../editorContextTypes';
-import { DEFAULT_COMMON_TOOL_STATE } from '../commonToolState';
+import { TrackEditionState } from './types';
+
+function getInitialState(): TrackEditionState {
+  const track = getNewLine([]);
+
+  return {
+    ...DEFAULT_COMMON_TOOL_STATE,
+    anchorLinePoints: true,
+    addNewPointsAtStart: false,
+    nearestPoint: null,
+    track,
+    initialTrack: track,
+    editionState: { type: 'addPoint' },
+  };
+}
 
 const TrackEditionTool: Tool<TrackEditionState> = {
   id: 'track-edition',
@@ -31,19 +50,7 @@ const TrackEditionTool: Tool<TrackEditionState> = {
   isDisabled({ editorState }) {
     return !editorState.editorLayers.has('track_sections');
   },
-  getInitialState() {
-    const track = getNewLine([]);
-
-    return {
-      ...DEFAULT_COMMON_TOOL_STATE,
-      anchorLinePoints: true,
-      addNewPointsAtStart: false,
-      nearestPoint: null,
-      track,
-      initialTrack: track,
-      editionState: { type: 'addPoint' },
-    };
-  },
+  getInitialState,
   actions: [
     [
       {
@@ -142,7 +149,7 @@ const TrackEditionTool: Tool<TrackEditionState> = {
       },
       {
         id: 'cancel-line',
-        icon: BiTrash,
+        icon: CgRemove,
         labelTranslationKey: 'Editor.tools.track-edition.actions.cancel-line',
         onClick({ setState, state }) {
           if (state.track.geometry.coordinates.length) {
@@ -153,6 +160,33 @@ const TrackEditionTool: Tool<TrackEditionState> = {
         },
         isDisabled({ state }) {
           return !state.track.geometry.coordinates.length;
+        },
+      },
+      {
+        id: 'delete-line',
+        icon: BsTrash,
+        labelTranslationKey: 'Editor.tools.track-edition.actions.delete-line',
+        // Show button only if we are editing
+        isDisabled({ state }) {
+          return state.initialTrack.properties.id === NEW_ENTITY_ID;
+        },
+        onClick({ infraID, openModal, closeModal, forceRender, state, setState, dispatch, t }) {
+          openModal(
+            <ConfirmModal
+              title={t('Editor.tools.track-edition.actions.delete-line')}
+              onConfirm={async () => {
+                await dispatch<ReturnType<typeof save>>(
+                  // We have to put state.initialTrack in array because delete initially works with selection which can get multiple elements
+                  save(infraID, { delete: [state.initialTrack] })
+                );
+                setState(getInitialState());
+                closeModal();
+                forceRender();
+              }}
+            >
+              <p>{t('Editor.tools.track-edition.actions.confirm-delete-line').toString()}</p>
+            </ConfirmModal>
+          );
         },
       },
     ],

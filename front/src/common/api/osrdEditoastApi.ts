@@ -150,7 +150,6 @@ const injectedRtkApi = api
         GetInfraByIdAttachedAndTrackIdApiArg
       >({
         query: (queryArg) => ({ url: `/infra/${queryArg.id}/attached/${queryArg.trackId}/` }),
-        providesTags: ['infra'],
       }),
       postInfraByIdClone: build.mutation<PostInfraByIdCloneApiResponse, PostInfraByIdCloneApiArg>({
         query: (queryArg) => ({

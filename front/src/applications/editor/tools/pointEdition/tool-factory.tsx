@@ -1,12 +1,16 @@
-import { ComponentType } from 'react';
+import React, { ComponentType } from 'react';
 import { cloneDeep, isEqual, omit } from 'lodash';
 import { Feature, LineString, Point } from 'geojson';
 import { BiReset } from 'react-icons/bi';
 import { AiOutlinePlus } from 'react-icons/ai';
+import { BsTrash } from 'react-icons/bs';
 import { IconType } from 'react-icons';
 import nearestPointOnLine from '@turf/nearest-point-on-line';
 import { Map } from 'maplibre-gl';
 
+import { save } from 'reducers/editor';
+import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
+import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import { LAYER_TO_EDITOAST_DICT, LayerType } from '../types';
 import { getNearestPoint } from '../../../../utils/mapHelper';
 import { getPointEditionLeftPanel, POINT_LAYER_ID, PointEditionMessages } from './components';
@@ -77,6 +81,35 @@ function getPointEditionTool<T extends EditorPoint>({
           labelTranslationKey: `Editor.tools.${id}-edition.actions.new-entity`,
           onClick({ setState }) {
             setState(getInitialState());
+          },
+        },
+      ],
+      [
+        {
+          id: 'delete-entity',
+          icon: BsTrash,
+          labelTranslationKey: `Editor.tools.${id}-edition.actions.delete-entity`,
+          // Show button only if we are editing
+          isDisabled({ state }) {
+            return state.initialEntity.properties.id === NEW_ENTITY_ID;
+          },
+          onClick({ infraID, openModal, closeModal, forceRender, state, setState, dispatch, t }) {
+            openModal(
+              <ConfirmModal
+                title={t(`Editor.tools.${id}-edition.actions.delete-entity`)}
+                onConfirm={async () => {
+                  await dispatch<ReturnType<typeof save>>(
+                    // We have to put state.initialEntity in array because delete initially works with selection which can get multiple elements
+                    save(infraID, { delete: [state.initialEntity] })
+                  );
+                  setState(getInitialState());
+                  closeModal();
+                  forceRender();
+                }}
+              >
+                <p>{t(`Editor.tools.${id}-edition.actions.confirm-delete-entity`).toString()}</p>
+              </ConfirmModal>
+            );
           },
         },
       ],

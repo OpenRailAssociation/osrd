@@ -1,10 +1,24 @@
-import { IoMdAddCircleOutline } from 'react-icons/io';
+import React, { ComponentType } from 'react';
+import { Map } from 'maplibre-gl';
 import { cloneDeep, isEqual } from 'lodash';
 import { BiReset } from 'react-icons/bi';
-import { Map } from 'maplibre-gl';
+import { BsTrash } from 'react-icons/bs';
 import { IconType } from 'react-icons';
-import { ComponentType } from 'react';
+import { IoMdAddCircleOutline } from 'react-icons/io';
 
+import { save } from 'reducers/editor';
+import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
+import {
+  CatenaryEntity,
+  SpeedSectionEntity,
+  SpeedSectionPslEntity,
+  TrackSectionEntity,
+} from 'types/editor';
+import { getNearestPoint } from 'utils/mapHelper';
+import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
+import { PartialOrReducer, Tool } from '../editorContextTypes';
+import { DEFAULT_COMMON_TOOL_STATE } from '../commonToolState';
+import { approximateDistanceWithEditoastData } from '../utils';
 import { LAYER_TO_EDITOAST_DICT, LAYERS_SET, LayerType } from '../types';
 import {
   HoveredExtremityState,
@@ -21,17 +35,9 @@ import {
   getSignInformationFromInteractionState,
   isOnModeMove,
   selectPslSign,
+  getObjTypeAction,
+  getObjTypeEdition,
 } from './utils';
-import {
-  CatenaryEntity,
-  SpeedSectionEntity,
-  SpeedSectionPslEntity,
-  TrackSectionEntity,
-} from '../../../../types';
-import { getNearestPoint } from '../../../../utils/mapHelper';
-import { approximateDistanceWithEditoastData } from '../utils';
-import { PartialOrReducer, Tool } from '../editorContextTypes';
-import { DEFAULT_COMMON_TOOL_STATE } from '../commonToolState';
 
 type EditorRange = SpeedSectionEntity | CatenaryEntity;
 interface RangeEditionToolParams<T extends EditorRange> {
@@ -64,13 +70,13 @@ function getRangeEditionTool<T extends EditorRange>({
     };
   }
 
+  const objectTypeEdition = getObjTypeEdition(layersEntity.objType);
+  const objectTypeAction = getObjTypeAction(layersEntity.objType);
+
   return {
     id,
     icon,
-    labelTranslationKey:
-      layersEntity.objType === 'SpeedSection'
-        ? 'Editor.tools.speed-edition.label'
-        : 'Editor.tools.catenary-edition.label',
+    labelTranslationKey: `Editor.tools.${objectTypeEdition}-edition.label`,
     requiredLayers: new Set(
       layersEntity.objType === 'SpeedSection'
         ? ['speed_sections', 'psl', 'psl_signs']
@@ -80,50 +86,62 @@ function getRangeEditionTool<T extends EditorRange>({
 
     actions: [
       [
-        layersEntity.objType === 'SpeedSection'
-          ? {
-              id: 'new-speed-section',
-              icon: IoMdAddCircleOutline,
-              labelTranslationKey: 'Editor.tools.speed-edition.actions.new-speed-section',
-              onClick({ setState }) {
-                setState(getInitialState());
-              },
-            }
-          : {
-              id: 'new-catenary',
-              icon: IoMdAddCircleOutline,
-              labelTranslationKey: 'Editor.tools.catenary-edition.actions.new-catenary',
-              onClick({ setState }) {
-                setState(getInitialState());
-              },
-            },
-        layersEntity.objType === 'SpeedSection'
-          ? {
-              id: 'reset-speed-section',
-              icon: BiReset,
-              labelTranslationKey: 'Editor.tools.speed-edition.actions.reset-speed-section',
-              isDisabled({ state: { entity, initialEntity } }) {
-                return isEqual(entity, initialEntity);
-              },
-              onClick({ setState, state: { initialEntity } }) {
-                setState({
-                  entity: cloneDeep(initialEntity),
-                });
-              },
-            }
-          : {
-              id: 'reset-catenary',
-              icon: BiReset,
-              labelTranslationKey: 'Editor.tools.catenary-edition.actions.reset-catenary',
-              isDisabled({ state: { entity, initialEntity } }) {
-                return isEqual(entity, initialEntity);
-              },
-              onClick({ setState, state: { initialEntity } }) {
-                setState({
-                  entity: cloneDeep(initialEntity),
-                });
-              },
-            },
+        {
+          id: `new-${objectTypeAction}`,
+          icon: IoMdAddCircleOutline,
+          labelTranslationKey: `Editor.tools.${objectTypeEdition}-edition.actions.new-${objectTypeAction}`,
+          onClick({ setState }) {
+            setState(getInitialState());
+          },
+        },
+        {
+          id: `reset-${objectTypeAction}`,
+          icon: BiReset,
+          labelTranslationKey: `Editor.tools.${objectTypeEdition}-edition.actions.reset-${objectTypeAction}`,
+          isDisabled({ state: { entity, initialEntity } }) {
+            return isEqual(entity, initialEntity);
+          },
+          onClick({ setState, state: { initialEntity } }) {
+            setState({
+              entity: cloneDeep(initialEntity),
+            });
+          },
+        },
+      ],
+      [
+        {
+          id: 'delete-entity',
+          icon: BsTrash,
+          labelTranslationKey: `Editor.tools.${objectTypeEdition}-edition.actions.delete-${objectTypeAction}`,
+          // Show button only if we are editing
+          isDisabled({ state }) {
+            return state.initialEntity.properties.id === NEW_ENTITY_ID;
+          },
+          onClick({ infraID, openModal, closeModal, forceRender, state, setState, dispatch, t }) {
+            openModal(
+              <ConfirmModal
+                title={t(
+                  `Editor.tools.${objectTypeEdition}-edition.actions.delete-${objectTypeAction}`
+                )}
+                onConfirm={async () => {
+                  await dispatch<ReturnType<typeof save>>(
+                    // We have to put state.initialEntity in array because delete initially works with selection which can get multiple elements
+                    save(infraID, { delete: [state.initialEntity] })
+                  );
+                  setState(getInitialState());
+                  closeModal();
+                  forceRender();
+                }}
+              >
+                <p>
+                  {t(
+                    `Editor.tools.${objectTypeEdition}-edition.actions.confirm-delete-${objectTypeAction}`
+                  ).toString()}
+                </p>
+              </ConfirmModal>
+            );
+          },
+        },
       ],
     ],
 

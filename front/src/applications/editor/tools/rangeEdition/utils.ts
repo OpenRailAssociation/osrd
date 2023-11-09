@@ -369,3 +369,9 @@ export function speedSectionIsPsl(entity: SpeedSectionEntity): boolean {
 export function isOnModeMove(interactionStateType: string): boolean {
   return ['moveRangeExtremity', 'moveSign'].includes(interactionStateType);
 }
+
+export const getObjTypeEdition = (objType: 'SpeedSection' | 'Catenary') =>
+  objType === 'SpeedSection' ? 'speed' : 'catenary';
+
+export const getObjTypeAction = (objType: 'SpeedSection' | 'Catenary') =>
+  objType === 'SpeedSection' ? 'speed-section' : 'catenary';
