@@ -115,8 +115,7 @@ async fn get(db_pool: Data<DbPool>, train_schedule_id: Path<i64>) -> Result<Json
 
 /// Delete a train schedule and its result
 #[utoipa::path(
-    tag = "train_schedule",
-    // tag = "timetable", NOTE: utoipa does not support mutiple tags
+    tag = "train_schedule,timetable",
     params(TrainScheduleIdParam),
     responses(
         (status = 204, description = "The train schedule has been deleted")
@@ -139,8 +138,7 @@ struct BatchDeletionRequest {
 
 /// Delete multiple train schedules at once
 #[utoipa::path(
-    tag = "train_schedule",
-    // tag = "timetable", NOTE: utoipa does not support mutiple tags
+    tag = "train_schedule,timetable",
     request_body = inline(BatchDeletionRequest),
     responses(
         (status = 204, description = "The train schedules have been deleted")
@@ -205,8 +203,7 @@ struct PatchMultiplePayload(#[schema(min_items = 1)] Vec<TrainSchedulePatch>);
 
 /// Update multiple train schedules at once and re-run simulations accordingly
 #[utoipa::path(
-    tag = "train_schedule",
-    // tag = "timetable", NOTE: utoipa does not support mutiple tags
+    tag = "train_schedule,timetable",
     request_body = inline(PatchMultiplePayload),
     responses(
         (status = 204, description = "The train schedules have been updated")

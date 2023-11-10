@@ -31,7 +31,6 @@ use actix_web::dev::HttpServiceFactory;
 use actix_web::web::{Data, Json};
 use actix_web::{get, services};
 use diesel::sql_query;
-use diesel_async::RunQueryDsl;
 use redis::cmd;
 use serde_derive::{Deserialize, Serialize};
 use utoipa::{OpenApi, ToSchema};
@@ -112,6 +111,22 @@ impl OpenApiRoot {
         }
     }
 
+    // utoipa::path doesn't support multiple tags, so this is a hack to split them
+    // A PR on utoipa might be a good idea
+    /// Split comma-separated tags into multiple tags
+    fn split_tags(openapi: &mut utoipa::openapi::OpenApi) {
+        for (_, endpoint) in openapi.paths.paths.iter_mut() {
+            for (_, operation) in endpoint.operations.iter_mut() {
+                operation.tags = operation.tags.as_ref().map(|tags| {
+                    tags.iter()
+                        .flat_map(|tag| tag.split(','))
+                        .map(|tag| tag.trim().to_owned())
+                        .collect()
+                });
+            }
+        }
+    }
+
     pub fn build_openapi() -> serde_json::Value {
         let manual = include_str!("../../openapi_legacy.yaml").to_owned();
         let mut openapi = OpenApiRoot::openapi();
@@ -139,6 +154,7 @@ impl OpenApiRoot {
             .extend(schemas());
 
         Self::remove_discrimators(&mut openapi);
+        Self::split_tags(&mut openapi);
 
         // Remove the operation_id that defaults to the endpoint function name
         // so that it doesn't override the RTK methods names.
@@ -148,7 +164,7 @@ impl OpenApiRoot {
                 // By default utoipa adds a tag "crate" to operations that don't have
                 // any. That causes problems with RTK tag management.
                 match &operation.tags {
-                    Some(tags) if tags.len() == 1 && tags.get(0).unwrap() == "crate" => {
+                    Some(tags) if tags.len() == 1 && tags.first().unwrap() == "crate" => {
                         operation.tags = None;
                     }
                     _ => (),
@@ -172,6 +188,7 @@ impl OpenApiRoot {
 )]
 #[get("/health")]
 async fn health(db_pool: Data<DbPool>, redis_client: Data<RedisClient>) -> Result<&'static str> {
+    use diesel_async::RunQueryDsl;
     let mut conn = db_pool.get().await?;
     sql_query("SELECT 1").execute(&mut conn).await?;
 

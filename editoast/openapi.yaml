@@ -5398,6 +5398,7 @@ paths:
       summary: Delete multiple train schedules at once
       tags:
       - train_schedule
+      - timetable
     patch:
       description: Update multiple train schedules at once and re-run simulations accordingly
       requestBody:
@@ -5414,6 +5415,7 @@ paths:
       summary: Update multiple train schedules at once and re-run simulations accordingly
       tags:
       - train_schedule
+      - timetable
   /train_schedule/results/:
     get:
       description: Retrieve the simulation result of multiple train schedules
@@ -5501,6 +5503,7 @@ paths:
       summary: Delete a train schedule and its result
       tags:
       - train_schedule
+      - timetable
     get:
       description: Return a specific timetable with its associated schedules
       parameters:
