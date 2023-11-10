@@ -95,7 +95,7 @@ async fn layer_view(
         "scheme": "xyz",
         "tiles": [tiles_url_pattern],
         "attribution": layer.attribution.clone().unwrap_or_default(),
-        "minzoom": 0,
+        "minzoom": 5,
         "maxzoom": map_layers_config.max_zoom,
     })))
 }
