@@ -263,6 +263,13 @@ public class UndirectedInfraBuilder {
     private void makeWaypoint(HashMap<String, TrackSectionImpl> trackSectionsByID,
                             RJSRouteWaypoint waypoint, boolean isBufferStop) {
         var track = trackSectionsByID.get(waypoint.track);
+        if (track == null) {
+            diagnosticRecorder.register(new Warning(String.format(
+                    "Waypoint %s references unknown track %s",
+                    waypoint.id, waypoint.track
+            )));
+            return;
+        }
         var newWaypoint = new DetectorImpl(track, waypoint.position, isBufferStop, waypoint.id);
         var detectors = detectorLists.get(track);
         for (var detector : detectors)
