@@ -65,9 +65,6 @@ jobs:
     steps:
         - name: Checkout
           uses: actions/checkout@v4
-          with:
-            # run the CI on the actual latest commit of the PR, not the attempted merge
-            ref: ${{ github.event.pull_request.head.sha }}
         - name: Install poetry
           run: pipx install poetry
         - uses: actions/setup-python@v4
