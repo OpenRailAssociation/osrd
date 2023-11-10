@@ -40,7 +40,7 @@ public class RJSSwitchType implements Identified {
          * @param src the name of the source port
          * @param dst the name of the destination port
          */
-        public SwitchPortConnection(String src, String dst, boolean bidirectional) {
+        public SwitchPortConnection(String src, String dst) {
             this.src = src;
             this.dst = dst;
         }
@@ -50,41 +50,41 @@ public class RJSSwitchType implements Identified {
             "point_switch",
             List.of("A", "B1", "B2"),
             Map.of(
-                "A_B1", List.of(new SwitchPortConnection("A", "B1", true)),
-                "A_B2", List.of(new SwitchPortConnection("A", "B2", true))
+                "A_B1", List.of(new SwitchPortConnection("A", "B1")),
+                "A_B2", List.of(new SwitchPortConnection("A", "B2"))
             )
         );
     
     public static final RJSSwitchType LINK = new RJSSwitchType("link",
             List.of("A", "B"),
-            Map.of("STATIC", List.of(new SwitchPortConnection("A", "B", true))
+            Map.of("STATIC", List.of(new SwitchPortConnection("A", "B"))
             )
         );
     
     public static final RJSSwitchType CROSSING = new RJSSwitchType("crossing",
             List.of("A1", "B1", "A2", "B2"),
             Map.of("STATIC", List.of(
-                            new SwitchPortConnection("A1", "B1", true),
-                            new SwitchPortConnection("A2", "B2", true)
+                            new SwitchPortConnection("A1", "B1"),
+                            new SwitchPortConnection("A2", "B2")
                         )
             )
         );
     public static final RJSSwitchType SINGLE_SLIP_SWITCH = new RJSSwitchType("single_slip_switch",
             List.of("A1", "B1", "A2", "B2"),
             Map.of("STATIC", List.of(
-                            new SwitchPortConnection("A1", "B1", true), 
-                            new SwitchPortConnection("A2", "B2", true)
+                            new SwitchPortConnection("A1", "B1"),
+                            new SwitchPortConnection("A2", "B2")
                         ),
-                    "A1_B2", List.of(new SwitchPortConnection("A1", "B2", true))
+                    "A1_B2", List.of(new SwitchPortConnection("A1", "B2"))
             )
         );
 
     public static final RJSSwitchType DOUBLE_SLIP_SWITCH = new RJSSwitchType("double_slip_switch",
             List.of("A1", "B1", "A2", "B2"),
-            Map.of("A1_B1", List.of(new SwitchPortConnection("A1", "B1", true)), 
-                    "A1_B2", List.of(new SwitchPortConnection("A1", "B2", true)), 
-                    "A2_B1", List.of(new SwitchPortConnection("A2", "B1", true)), 
-                    "A2_B2", List.of(new SwitchPortConnection("A2", "B2", true))
+            Map.of("A1_B1", List.of(new SwitchPortConnection("A1", "B1")),
+                    "A1_B2", List.of(new SwitchPortConnection("A1", "B2")),
+                    "A2_B1", List.of(new SwitchPortConnection("A2", "B1")),
+                    "A2_B2", List.of(new SwitchPortConnection("A2", "B2"))
             )
         );
     
