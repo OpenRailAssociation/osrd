@@ -24,9 +24,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          # run the CI on the actual latest commit of the PR, not the attempted merge
-          ref: ${{ github.event.pull_request.head.sha }}
       - name: Install poetry
         run: pipx install poetry
       - name: Set up Python
@@ -54,9 +51,6 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
-          # github runs PR workflows on the result of a merge commit.
-          # tell codecov the sha of the unmerged PR https://github.com/codecov/uploader/issues/525
-          override_commit: "${{ github.event.pull_request.head.sha }}"
           name: codecov
           flags: core
           directory: ./core/build/reports/jacoco/testCodeCoverageReport
