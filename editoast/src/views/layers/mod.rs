@@ -219,12 +219,16 @@ mod tests {
     }
 
     #[rstest]
-    #[case("http://localhost:8090", "http://localhost:8090/")]
-    #[case("http://localhost:8090/", "http://localhost:8090/")]
-    #[case("http://localhost:8090/test", "http://localhost:8090/test/")]
-    #[case("http://localhost:8090/test/", "http://localhost:8090/test/")]
-    async fn layer_view_ok(#[case] root_url: &str, #[case] expected_root_url: &str) {
-        std::env::set_var("ROOT_URL", root_url);
-        test_get_query_with_preset_values(expected_root_url).await;
+    async fn layer_view_ok() {
+        // We can't use #[case] here, for these cases can't run in parallel.
+        for (root_url, expected_root_url) in [
+            ("http://localhost:8090", "http://localhost:8090/"),
+            ("http://localhost:8090/", "http://localhost:8090/"),
+            ("http://localhost:8090/test", "http://localhost:8090/test/"),
+            ("http://localhost:8090/test/", "http://localhost:8090/test/"),
+        ] {
+            std::env::set_var("ROOT_URL", root_url);
+            test_get_query_with_preset_values(expected_root_url).await;
+        }
     }
 }
