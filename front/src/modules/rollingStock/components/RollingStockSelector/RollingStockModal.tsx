@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { setFailure } from 'reducers/main';
 import { useTranslation } from 'react-i18next';
 
-import { LightRollingStock } from 'common/api/osrdEditoastApi';
+import { LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
 import { getRollingStockID } from 'reducers/osrdconf/selectors';
 import Loader from 'common/Loader';
@@ -33,7 +33,7 @@ function RollingStockModal({ ref2scroll }: RollingStockModal) {
     pageSize: 1000,
   });
   const [filteredRollingStockList, setFilteredRollingStockList] =
-    useState<LightRollingStock[]>(rollingStocks);
+    useState<LightRollingStockWithLiveries[]>(rollingStocks);
 
   useEffect(() => {
     if (openRollingStockCardId !== undefined) {
@@ -62,7 +62,7 @@ function RollingStockModal({ ref2scroll }: RollingStockModal) {
   const rollingStocksList = useMemo(
     () =>
       filteredRollingStockList.length > 0 ? (
-        filteredRollingStockList.map((item: LightRollingStock) => (
+        filteredRollingStockList.map((item) => (
           <RollingStockCard
             rollingStock={item}
             key={item.id}

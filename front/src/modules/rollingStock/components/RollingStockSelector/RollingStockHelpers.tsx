@@ -1,7 +1,7 @@
 import React from 'react';
 import { IoIosSnow } from 'react-icons/io';
 import { ImFire } from 'react-icons/im';
-import { Comfort, LightRollingStock } from 'common/api/osrdEditoastApi';
+import { Comfort, LightRollingStock, RollingStock } from 'common/api/osrdEditoastApi';
 import { BiLockAlt } from 'react-icons/bi';
 
 const RollingStockUnit = ({ unit, detail }: { unit: string; detail: string }) => {
@@ -18,7 +18,7 @@ const RollingStockUnit = ({ unit, detail }: { unit: string; detail: string }) =>
 };
 
 interface RollingStockInfoProps {
-  rollingStock: LightRollingStock;
+  rollingStock: RollingStock | LightRollingStock;
   showSeries?: boolean;
   showMiddle?: boolean;
   showEnd?: boolean;

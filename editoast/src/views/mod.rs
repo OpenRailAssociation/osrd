@@ -49,6 +49,8 @@ fn routes_v2() -> Routes<impl HttpServiceFactory> {
         projects::routes(),
         search::routes(),
         train_schedule::routes(),
+        rolling_stocks::routes(),
+        light_rolling_stocks::routes(),
     }
     routes()
 }
@@ -59,8 +61,6 @@ pub fn routes() -> impl HttpServiceFactory {
         infra::routes(),
         layers::routes(),
         electrical_profiles::routes(),
-        rolling_stocks::routes(),
-        light_rolling_stocks::routes(),
         pathfinding::routes_v1(),
         train_schedule::routes(),
         stdcm::routes(),

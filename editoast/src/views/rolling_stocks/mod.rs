@@ -10,8 +10,7 @@ use crate::schema::rolling_stock::{
 };
 use crate::DbPool;
 use actix_multipart::form::text::Text;
-use actix_web::dev::HttpServiceFactory;
-use actix_web::web::{scope, Data, Json, Path, Query};
+use actix_web::web::{Data, Json, Path, Query};
 use actix_web::{delete, get, patch, post, HttpResponse};
 use diesel::{
     sql_query,
@@ -29,7 +28,9 @@ use thiserror::Error;
 
 use actix_multipart::form::{tempfile::TempFile, MultipartForm};
 
-#[derive(Debug, Error, EditoastError)]
+use utoipa::{IntoParams, ToSchema};
+
+#[derive(Debug, Error, EditoastError, ToSchema)]
 #[editoast_error(base_id = "rollingstocks")]
 pub enum RollingStockError {
     #[error("Impossible to read the separated image")]
@@ -58,13 +59,52 @@ pub enum RollingStockError {
     BasePowerClassEmpty,
 }
 
-pub fn routes() -> impl HttpServiceFactory {
-    scope("/rolling_stock")
-        .service((get_power_restrictions, get, create, update, delete))
-        .service(scope("/{rolling_stock_id}").service((create_livery, update_locked)))
+crate::routes! {
+    "/rolling_stock" => {
+        create,
+        "/power_restrictions" => {
+            get_power_restrictions,
+        },
+        "/{rolling_stock_id}" => {
+            get,
+            update,
+            delete,
+            "/locked" => {
+                update_locked,
+            },
+            "/livery" => {
+                create_livery,
+            },
+        }
+    }
 }
 
-#[get("/{rolling_stock_id}")]
+crate::schemas! {
+    RollingStockForm,
+    DeleteRollingStockQueryParams,
+    RollingStockLockedUpdateForm,
+    RollingStockLiveryCreateForm,
+    PowerRestriction,
+    RollingStockLivery,
+    RollingStockError,
+    TrainScheduleScenarioStudyProject,
+}
+
+#[derive(IntoParams)]
+#[allow(unused)]
+pub struct RollingStockIdParam {
+    rolling_stock_id: i64,
+}
+
+/// Get a rolling stock by Id
+#[utoipa::path(
+    tag = "rolling_stock",
+    params(RollingStockIdParam),
+    responses(
+        (status = 201, body = RollingStockWithLiveries, description = "The requested rolling stock"),
+    )
+)]
+#[get("")]
 async fn get(db_pool: Data<DbPool>, path: Path<i64>) -> Result<Json<RollingStockWithLiveries>> {
     let rolling_stock_id = path.into_inner();
     let rolling_stock = retrieve_existing_rolling_stock(&db_pool, rolling_stock_id).await?;
@@ -72,7 +112,7 @@ async fn get(db_pool: Data<DbPool>, path: Path<i64>) -> Result<Json<RollingStock
     Ok(Json(rolling_stock_with_liveries))
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize, ToSchema)]
 pub struct RollingStockForm {
     #[serde(flatten)]
     pub common: RollingStockCommon,
@@ -123,7 +163,7 @@ impl RollingStockForm {
     }
 }
 
-#[derive(QueryableByName, Debug, Clone, Serialize, Deserialize)]
+#[derive(QueryableByName, Debug, Clone, Serialize, Deserialize, ToSchema)]
 struct PowerRestriction {
     #[diesel(sql_type = SqlText)]
     power_restriction: String,
@@ -135,7 +175,7 @@ struct PowerRestriction {
         (status = 200, description = "Retrieve the power restrictions list", body = Vec<String>)
     )
 )]
-#[get("/power_restrictions")]
+#[get("")]
 async fn get_power_restrictions(db_pool: Data<DbPool>) -> Result<Json<Vec<String>>> {
     let mut conn = db_pool.get().await?;
     let power_restrictions: Vec<PowerRestriction> = sql_query(
@@ -152,17 +192,25 @@ async fn get_power_restrictions(db_pool: Data<DbPool>) -> Result<Json<Vec<String
     ))
 }
 
-#[derive(Debug, Deserialize)]
-struct PostQueryParams {
+#[derive(Debug, Deserialize, IntoParams, ToSchema)]
+struct PostRollingStockQueryParams {
     #[serde(default)]
     locked: bool,
 }
 
+/// Create a rolling stock
+#[utoipa::path(tag = "rolling_stock",
+    params(PostRollingStockQueryParams),
+    request_body = RollingStockForm,
+    responses(
+        (status = 200, description = "The created rolling stock", body = RollingStock)
+    )
+)]
 #[post("")]
 async fn create(
     db_pool: Data<DbPool>,
     data: Json<RollingStockForm>,
-    query_params: Query<PostQueryParams>,
+    query_params: Query<PostRollingStockQueryParams>,
 ) -> Result<Json<RollingStock>> {
     let mut rolling_stock: RollingStockModel = data.into_inner().into();
     rolling_stock.locked = Some(query_params.locked);
@@ -172,7 +220,15 @@ async fn create(
     Ok(Json(rolling_stock))
 }
 
-#[patch("/{rolling_stock_id}")]
+/// Patch a rolling stock
+#[utoipa::path(tag = "rolling_stock",
+    params(RollingStockIdParam),
+    request_body = RollingStockForm,
+    responses(
+        (status = 200, description = "The created rolling stock", body = RollingStock)
+    )
+)]
+#[patch("")]
 async fn update(
     db_pool: Data<DbPool>,
     path: Path<i64>,
@@ -201,17 +257,29 @@ async fn update(
     }
 }
 
-#[derive(Deserialize)]
-struct DeleteQueryParams {
+#[derive(Deserialize, ToSchema)]
+struct DeleteRollingStockQueryParams {
+    /// force the deletion even if it’s used
     #[serde(default)]
     force: bool,
 }
 
-#[delete("/{rolling_stock_id}")]
+/// Delete a rolling_stock and all entities linked to it
+#[utoipa::path(tag = "rolling_stock",
+    params(RollingStockIdParam),
+    request_body = DeleteRollingStockQueryParams,
+    responses(
+        (status = 204, description = "The rolling stock was deleted successfully"),
+        (status = 404, description = "The requested rolling stock is locked"),
+        (status = 404, description = "The requested rolling stock was not found"),
+        (status = 409, description = "The requested rolling stock is used", body = RollingStockError),
+    )
+)]
+#[delete("")]
 async fn delete(
     db_pool: Data<DbPool>,
     path: Path<i64>,
-    params: Query<DeleteQueryParams>,
+    params: Query<DeleteRollingStockQueryParams>,
 ) -> Result<HttpResponse> {
     let rolling_stock_id = path.into_inner();
     assert_rolling_stock_unlocked(
@@ -244,9 +312,10 @@ async fn delete_rolling_stock(
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ToSchema)]
 #[serde(deny_unknown_fields)]
 struct RollingStockLockedUpdateForm {
+    /// New locked value
     pub locked: bool,
 }
 
@@ -260,7 +329,15 @@ impl RollingStockLockedUpdateForm {
     }
 }
 
-#[patch("/locked")]
+/// Update rolling_stock locked field
+#[utoipa::path(tag = "rolling_stock",
+    params(RollingStockIdParam),
+    request_body = RollingStockLockedUpdateForm,
+    responses(
+        (status = 200, description = "The created rolling stock", body = RollingStock)
+    )
+)]
+#[patch("")]
 async fn update_locked(
     db_pool: Data<DbPool>,
     rolling_stock_id: Path<i64>,
@@ -276,13 +353,15 @@ async fn update_locked(
     Ok(HttpResponse::NoContent().finish())
 }
 
-#[derive(Debug, MultipartForm)]
+#[derive(Debug, MultipartForm, ToSchema)]
 struct RollingStockLiveryCreateForm {
+    #[schema(value_type=String)]
     pub name: Text<String>,
+    #[schema(value_type=Vec<String>, format=Binary)]
     pub images: Vec<TempFile>,
 }
 
-#[derive(Debug, QueryableByName, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, QueryableByName, Serialize, Deserialize, PartialEq, ToSchema)]
 pub struct TrainScheduleScenarioStudyProject {
     #[diesel(sql_type = BigInt)]
     pub train_schedule_id: i64,
@@ -318,7 +397,16 @@ async fn get_rolling_stock_usage(
         .map_err(|e| e.into())
 }
 
-#[post("/livery")]
+/// Create a rolling stock livery
+#[utoipa::path(tag = "rolling_stock,rolling_stock_livery",
+    params(RollingStockIdParam),
+    request_body = RollingStockLiveryCreateForm,
+    responses(
+        (status = 200, description = "The created rolling stock", body = RollingStockLivery),
+        (status = 404, description = "The requested rolling stock was not found"),
+    )
+)]
+#[post("")]
 async fn create_livery(
     db_pool: Data<DbPool>,
     rolling_stock_id: Path<i64>,
@@ -382,7 +470,7 @@ fn assert_rolling_stock_unlocked(rolling_stock: RollingStockModel) -> Result<()>
     Ok(())
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, ToSchema)]
 struct FormattedImages {
     compound_image_height: u32,
     compound_image_width: u32,

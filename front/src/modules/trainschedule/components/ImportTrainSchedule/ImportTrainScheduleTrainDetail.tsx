@@ -5,12 +5,15 @@ import { seconds2hhmmss } from 'modules/trainschedule/components/ImportTrainSche
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import { LazyLoadComponent } from 'react-lazy-load-image-component';
 import { TrainSchedule } from 'applications/operationalStudies/types';
-import { LightRollingStock, RollingStock } from 'common/api/osrdEditoastApi';
+import {
+  LightRollingStockWithLiveries,
+  RollingStockWithLiveries,
+} from 'common/api/osrdEditoastApi';
 
 type Props = {
   trainData: TrainSchedule;
   idx: number;
-  rollingStock?: LightRollingStock | RollingStock;
+  rollingStock?: LightRollingStockWithLiveries | RollingStockWithLiveries;
 };
 
 export default function ImportTrainScheduleTrainDetail({ trainData, idx, rollingStock }: Props) {

@@ -28,13 +28,13 @@ function RollingStockEditorButtons({
   const dispatch = useDispatch();
   const { t } = useTranslation(['rollingstock', 'translation']);
   const { openModal } = useModal();
-  const [deleteRollingStockById] = osrdEditoastApi.useDeleteRollingStockByIdMutation();
+  const [deleteRollingStockById] = osrdEditoastApi.useDeleteRollingStockByRollingStockIdMutation();
   const [postRollingstock] = osrdEditoastApi.usePostRollingStockMutation();
 
   const deleteRollingStock = () => {
     setOpenedRollingStockCardId(undefined);
     if (!rollingStock.locked)
-      deleteRollingStockById({ id: rollingStock.id })
+      deleteRollingStockById({ rollingStockId: rollingStock.id, deleteRollingStockQueryParams: {} })
         .unwrap()
         .then(() => {
           dispatch(
@@ -67,7 +67,7 @@ function RollingStockEditorButtons({
     const duplicatedRollingstock = { ...rollingStock, name: `${rollingStock.name}-${date}` };
     postRollingstock({
       locked: false,
-      rollingStockUpsertPayload: duplicatedRollingstock,
+      rollingStockForm: duplicatedRollingstock,
     })
       .unwrap()
       .then((res) => {

@@ -44,6 +44,7 @@ crate::schemas! {
     projects::schemas(),
     train_schedule::schemas(),
     timetable::schemas(),
+    rolling_stock::schemas(),
 }
 
 pub trait Identifiable {

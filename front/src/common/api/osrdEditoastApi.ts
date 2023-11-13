@@ -297,11 +297,11 @@ const injectedRtkApi = api
         }),
         providesTags: ['rolling_stock'],
       }),
-      getLightRollingStockById: build.query<
-        GetLightRollingStockByIdApiResponse,
-        GetLightRollingStockByIdApiArg
+      getLightRollingStockByRollingStockId: build.query<
+        GetLightRollingStockByRollingStockIdApiResponse,
+        GetLightRollingStockByRollingStockIdApiArg
       >({
-        query: (queryArg) => ({ url: `/light_rolling_stock/${queryArg.id}/` }),
+        query: (queryArg) => ({ url: `/light_rolling_stock/${queryArg.rollingStockId}/` }),
         providesTags: ['rolling_stock'],
       }),
       postPathfinding: build.mutation<PostPathfindingApiResponse, PostPathfindingApiArg>({
@@ -504,7 +504,7 @@ const injectedRtkApi = api
         query: (queryArg) => ({
           url: `/rolling_stock/`,
           method: 'POST',
-          body: queryArg.rollingStockUpsertPayload,
+          body: queryArg.rollingStockForm,
           params: { locked: queryArg.locked },
         }),
         invalidatesTags: ['rolling_stock'],
@@ -516,51 +516,54 @@ const injectedRtkApi = api
         query: () => ({ url: `/rolling_stock/power_restrictions/` }),
         providesTags: ['rolling_stock'],
       }),
-      deleteRollingStockById: build.mutation<
-        DeleteRollingStockByIdApiResponse,
-        DeleteRollingStockByIdApiArg
+      deleteRollingStockByRollingStockId: build.mutation<
+        DeleteRollingStockByRollingStockIdApiResponse,
+        DeleteRollingStockByRollingStockIdApiArg
       >({
         query: (queryArg) => ({
-          url: `/rolling_stock/${queryArg.id}/`,
+          url: `/rolling_stock/${queryArg.rollingStockId}/`,
           method: 'DELETE',
-          params: { force: queryArg.force },
+          body: queryArg.deleteRollingStockQueryParams,
         }),
         invalidatesTags: ['rolling_stock'],
       }),
-      getRollingStockById: build.query<GetRollingStockByIdApiResponse, GetRollingStockByIdApiArg>({
-        query: (queryArg) => ({ url: `/rolling_stock/${queryArg.id}/` }),
+      getRollingStockByRollingStockId: build.query<
+        GetRollingStockByRollingStockIdApiResponse,
+        GetRollingStockByRollingStockIdApiArg
+      >({
+        query: (queryArg) => ({ url: `/rolling_stock/${queryArg.rollingStockId}/` }),
         providesTags: ['rolling_stock'],
       }),
-      patchRollingStockById: build.mutation<
-        PatchRollingStockByIdApiResponse,
-        PatchRollingStockByIdApiArg
+      patchRollingStockByRollingStockId: build.mutation<
+        PatchRollingStockByRollingStockIdApiResponse,
+        PatchRollingStockByRollingStockIdApiArg
       >({
         query: (queryArg) => ({
-          url: `/rolling_stock/${queryArg.id}/`,
+          url: `/rolling_stock/${queryArg.rollingStockId}/`,
           method: 'PATCH',
-          body: queryArg.rollingStockUpsertPayload,
+          body: queryArg.rollingStockForm,
         }),
         invalidatesTags: ['rolling_stock'],
       }),
-      postRollingStockByIdLivery: build.mutation<
-        PostRollingStockByIdLiveryApiResponse,
-        PostRollingStockByIdLiveryApiArg
+      postRollingStockByRollingStockIdLivery: build.mutation<
+        PostRollingStockByRollingStockIdLiveryApiResponse,
+        PostRollingStockByRollingStockIdLiveryApiArg
       >({
         query: (queryArg) => ({
-          url: `/rolling_stock/${queryArg.id}/livery/`,
+          url: `/rolling_stock/${queryArg.rollingStockId}/livery/`,
           method: 'POST',
-          body: queryArg.body,
+          body: queryArg.rollingStockLiveryCreateForm,
         }),
         invalidatesTags: ['rolling_stock', 'rolling_stock_livery'],
       }),
-      patchRollingStockByIdLocked: build.mutation<
-        PatchRollingStockByIdLockedApiResponse,
-        PatchRollingStockByIdLockedApiArg
+      patchRollingStockByRollingStockIdLocked: build.mutation<
+        PatchRollingStockByRollingStockIdLockedApiResponse,
+        PatchRollingStockByRollingStockIdLockedApiArg
       >({
         query: (queryArg) => ({
-          url: `/rolling_stock/${queryArg.id}/locked/`,
+          url: `/rolling_stock/${queryArg.rollingStockId}/locked/`,
           method: 'PATCH',
-          body: queryArg.body,
+          body: queryArg.rollingStockLockedUpdateForm,
         }),
         invalidatesTags: ['rolling_stock'],
       }),
@@ -964,23 +967,16 @@ export type GetLayersTileByLayerSlugAndViewSlugZXYApiArg = {
   y: number;
   infra: number;
 };
-export type GetLightRollingStockApiResponse = /** status 200 The rolling stock list */ {
-  count?: number;
-  next?: any;
-  previous?: any;
-  results: LightRollingStock[];
-};
+export type GetLightRollingStockApiResponse =
+  /** status 200  */ PaginatedResponseOfLightRollingStockWithLiveries;
 export type GetLightRollingStockApiArg = {
-  /** Page number */
   page?: number;
-  /** Number of elements by page */
-  pageSize?: number;
+  pageSize?: number | null;
 };
-export type GetLightRollingStockByIdApiResponse =
-  /** status 200 The rolling stock with their simplified effort curves */ LightRollingStock;
-export type GetLightRollingStockByIdApiArg = {
-  /** Rolling Stock ID */
-  id: number;
+export type GetLightRollingStockByRollingStockIdApiResponse =
+  /** status 200 The rolling stock with their simplified effort curves */ LightRollingStockWithLiveries;
+export type GetLightRollingStockByRollingStockIdApiArg = {
+  rollingStockId: number;
 };
 export type PostPathfindingApiResponse = /** status 201 The created Path */ Path;
 export type PostPathfindingApiArg = {
@@ -1133,51 +1129,40 @@ export type PatchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg =
 };
 export type PostRollingStockApiResponse = /** status 200 The created rolling stock */ RollingStock;
 export type PostRollingStockApiArg = {
-  /** whether or not the rolling_stock can be edited/deleted. */
   locked?: boolean;
-  rollingStockUpsertPayload: RollingStockUpsertPayload;
+  rollingStockForm: RollingStockForm;
 };
 export type GetRollingStockPowerRestrictionsApiResponse =
-  /** status 200 power restrictions list */ string[];
+  /** status 200 Retrieve the power restrictions list */ string[];
 export type GetRollingStockPowerRestrictionsApiArg = void;
-export type DeleteRollingStockByIdApiResponse = /** status 204 No content */ undefined;
-export type DeleteRollingStockByIdApiArg = {
-  /** rolling_stock id */
-  id: number;
-  /** force the deletion even if it’s used */
-  force?: boolean;
+export type DeleteRollingStockByRollingStockIdApiResponse =
+  /** status 204 The rolling stock was deleted successfully */ undefined;
+export type DeleteRollingStockByRollingStockIdApiArg = {
+  rollingStockId: number;
+  deleteRollingStockQueryParams: DeleteRollingStockQueryParams;
 };
-export type GetRollingStockByIdApiResponse =
-  /** status 200 The rolling stock information */ RollingStock;
-export type GetRollingStockByIdApiArg = {
-  /** Rolling Stock ID */
-  id: number;
+export type GetRollingStockByRollingStockIdApiResponse =
+  /** status 201 The requested rolling stock */ RollingStockWithLiveries;
+export type GetRollingStockByRollingStockIdApiArg = {
+  rollingStockId: number;
 };
-export type PatchRollingStockByIdApiResponse =
-  /** status 200 The updated rolling stock */ RollingStock;
-export type PatchRollingStockByIdApiArg = {
-  /** Rolling Stock ID */
-  id: number;
-  rollingStockUpsertPayload: RollingStockUpsertPayload;
+export type PatchRollingStockByRollingStockIdApiResponse =
+  /** status 200 The created rolling stock */ RollingStock;
+export type PatchRollingStockByRollingStockIdApiArg = {
+  rollingStockId: number;
+  rollingStockForm: RollingStockForm;
 };
-export type PostRollingStockByIdLiveryApiResponse =
-  /** status 200 The rolling stock livery */ RollingStockLivery;
-export type PostRollingStockByIdLiveryApiArg = {
-  /** Rolling Stock ID */
-  id: number;
-  body: {
-    images?: Blob[];
-    name?: string;
-  };
+export type PostRollingStockByRollingStockIdLiveryApiResponse =
+  /** status 200 The created rolling stock */ RollingStockLivery;
+export type PostRollingStockByRollingStockIdLiveryApiArg = {
+  rollingStockId: number;
+  rollingStockLiveryCreateForm: RollingStockLiveryCreateForm;
 };
-export type PatchRollingStockByIdLockedApiResponse = unknown;
-export type PatchRollingStockByIdLockedApiArg = {
-  /** Rolling_stock id */
-  id: number;
-  /** New locked value */
-  body: {
-    locked?: boolean;
-  };
+export type PatchRollingStockByRollingStockIdLockedApiResponse =
+  /** status 200 The created rolling stock */ RollingStock;
+export type PatchRollingStockByRollingStockIdLockedApiArg = {
+  rollingStockId: number;
+  rollingStockLockedUpdateForm: RollingStockLockedUpdateForm;
 };
 export type PostSearchApiResponse = /** status 200 The search results */ SearchResultItem[];
 export type PostSearchApiArg = {
@@ -1487,108 +1472,109 @@ export type ViewMetadata = {
   tiles?: string[];
   type?: string;
 };
+export type LightModeEffortCurves = {
+  is_electric: boolean;
+};
+export type LightEffortCurves = {
+  default_mode: string;
+  modes: {
+    [key: string]: LightModeEffortCurves;
+  };
+};
 export type SpeedDependantPower = {
   powers: number[];
   speeds: number[];
 };
-export type Catenary = {
-  efficiency: number;
-  energy_source_type: 'Catenary';
-  max_input_power: SpeedDependantPower;
-  max_output_power: SpeedDependantPower;
+export type RefillLaw = {
+  soc_ref: number;
+  tau: number;
 };
 export type EnergyStorage = {
   capacity: number;
-  refill_law: {
-    soc_ref: number;
-    tau: number;
-  } | null;
+  refill_law?: RefillLaw | null;
   soc: number;
   soc_max: number;
   soc_min: number;
 };
-export type PowerPack = {
-  efficiency: number;
-  energy_source_type: 'PowerPack';
-  energy_storage: EnergyStorage;
-  max_input_power: SpeedDependantPower;
-  max_output_power: SpeedDependantPower;
-};
-export type Battery = {
-  efficiency: number;
-  energy_source_type: 'Battery';
-  energy_storage: EnergyStorage;
-  max_input_power: SpeedDependantPower;
-  max_output_power: SpeedDependantPower;
-};
 export type EnergySource =
-  | ({
+  | {
+      efficiency: number;
       energy_source_type: 'Catenary';
-    } & Catenary)
-  | ({
+      max_input_power: SpeedDependantPower;
+      max_output_power: SpeedDependantPower;
+    }
+  | {
+      efficiency: number;
       energy_source_type: 'PowerPack';
-    } & PowerPack)
-  | ({
+      energy_storage: EnergyStorage;
+      max_input_power: SpeedDependantPower;
+      max_output_power: SpeedDependantPower;
+    }
+  | {
+      efficiency: number;
       energy_source_type: 'Battery';
-    } & Battery);
-export type RollingStockBase = {
-  base_power_class: string | null;
+      energy_storage: EnergyStorage;
+      max_input_power: SpeedDependantPower;
+      max_output_power: SpeedDependantPower;
+    };
+export type Gamma = {
+  type: string;
+  value: number;
+};
+export type RollingStockMetadata = {
+  detail: string;
+  family: string;
+  grouping: string;
+  number: string;
+  reference: string;
+  series: string;
+  subseries: string;
+  type: string;
+  unit: string;
+};
+export type RollingResistance = {
+  A: number;
+  B: number;
+  C: number;
+  type: string;
+};
+export type LightRollingStock = {
+  base_power_class?: string | null;
   comfort_acceleration: number;
-  electrical_power_startup_time: number | null;
+  effort_curves: LightEffortCurves;
   energy_sources: EnergySource[];
   features: string[];
-  gamma: {
-    type: 'CONST' | 'MAX';
-    value: number;
-  };
+  gamma: Gamma;
+  id: number;
   inertia_coefficient: number;
   length: number;
-  loading_gauge: 'G1' | 'G2' | 'GA' | 'GB' | 'GB1' | 'GC' | 'FR3.3' | 'FR3.3/GB/G2' | 'GLOTT';
-  locked?: boolean;
+  loading_gauge: string;
+  locked: boolean;
   mass: number;
   max_speed: number;
-  metadata: {
-    detail: string;
-    family: string;
-    grouping: string;
-    number: string;
-    reference: string;
-    series: string;
-    subseries: string;
-    type: string;
-    unit: string;
-  };
+  metadata: RollingStockMetadata;
   name: string;
   power_restrictions: {
     [key: string]: string;
   };
-  raise_pantograph_time: number | null;
-  rolling_resistance: {
-    A: number;
-    B: number;
-    C: number;
-    type: 'davis';
-  };
+  railjson_version: string;
+  rolling_resistance: RollingResistance;
   startup_acceleration: number;
   startup_time: number;
 };
-export type RollingStockLivery = {
-  compound_image_id: number | null;
+export type RollingStockLiveryMetadata = {
+  compound_image_id?: number | null;
   id: number;
   name: string;
 };
-export type LightRollingStock = RollingStockBase & {
-  effort_curves: {
-    default_mode: string;
-    modes: {
-      [key: string]: {
-        is_electric: boolean;
-      };
-    };
-  };
-  id: number;
-  liveries: RollingStockLivery[];
-  railjson_version: string;
+export type LightRollingStockWithLiveries = LightRollingStock & {
+  liveries: RollingStockLiveryMetadata[];
+};
+export type PaginatedResponseOfLightRollingStockWithLiveries = {
+  count: number;
+  next: number | null;
+  previous: number | null;
+  results: LightRollingStockWithLiveries[];
 };
 export type GeoJsonObject = {
   coordinates: number[][];
@@ -1799,48 +1785,116 @@ export type ScenarioPatchForm = {
   name?: string | null;
   tags?: string[] | null;
 };
-export type Comfort = 'AC' | 'HEATING' | 'STANDARD';
+export type RollingStockComfortType = 'STANDARD' | 'AC' | 'HEATING';
+export type EffortCurveConditions = {
+  comfort?: RollingStockComfortType | null;
+  electrical_profile_level?: string | null;
+  power_restriction_code?: string | null;
+};
 export type EffortCurve = {
-  max_efforts?: number[];
-  speeds?: number[];
+  max_efforts: number[];
+  speeds: number[];
 };
 export type ConditionalEffortCurve = {
-  cond?: {
-    comfort?: Comfort | null;
-    electrical_profile_level?: string | null;
-    power_restriction_code?: string | null;
-  } | null;
-  curve?: EffortCurve;
+  cond: EffortCurveConditions;
+  curve: EffortCurve;
 };
-export type RollingStockUpsertPayload = RollingStockBase & {
-  effort_curves: {
-    default_mode: string;
-    modes: {
-      [key: string]: {
-        curves: ConditionalEffortCurve[];
-        default_curve: EffortCurve;
-        is_electric: boolean;
-      };
-    };
+export type ModeEffortCurves = {
+  curves: ConditionalEffortCurve[];
+  default_curve: EffortCurve;
+  is_electric: boolean;
+};
+export type EffortCurves = {
+  default_mode: string;
+  modes: {
+    [key: string]: ModeEffortCurves;
   };
 };
-export type RollingStock = RollingStockUpsertPayload & {
+export type RollingStockCommon = {
+  base_power_class?: string | null;
+  comfort_acceleration: number;
+  effort_curves: EffortCurves;
+  electrical_power_startup_time?: number | null;
+  energy_sources?: EnergySource[];
+  features: string[];
+  gamma: Gamma;
+  inertia_coefficient: number;
+  length: number;
+  loading_gauge: string;
+  mass: number;
+  max_speed: number;
+  name: string;
+  power_restrictions: {
+    [key: string]: string;
+  };
+  raise_pantograph_time?: number | null;
+  rolling_resistance: RollingResistance;
+  startup_acceleration: number;
+  startup_time: number;
+};
+export type RollingStock = RollingStockCommon & {
   id: number;
-  liveries: RollingStockLivery[];
+  locked: boolean;
+  metadata: RollingStockMetadata;
   railjson_version: string;
 };
-export type RollingStockUsage = {
+export type RollingStockForm = RollingStockCommon & {
+  locked?: boolean | null;
+  metadata: RollingStockMetadata;
+};
+export type TrainScheduleScenarioStudyProject = {
+  project_id: number;
+  project_name: string;
+  scenario_id: number;
+  scenario_name: string;
+  study_id: number;
+  study_name: string;
+  train_name: string;
+  train_schedule_id: number;
+};
+export type RollingStockError =
+  | 'CannotReadImage'
+  | 'CannotCreateCompoundImage'
+  | {
+      NotFound: {
+        rolling_stock_id: number;
+      };
+    }
+  | {
+      NameAlreadyUsed: {
+        name: string;
+      };
+    }
+  | {
+      RollingStockIsLocked: {
+        rolling_stock_id: number;
+      };
+    }
+  | {
+      RollingStockIsUsed: {
+        rolling_stock_id: number;
+        usage: TrainScheduleScenarioStudyProject[];
+      };
+    }
+  | 'BasePowerClassEmpty';
+export type DeleteRollingStockQueryParams = {
+  force?: boolean;
+};
+export type RollingStockWithLiveries = RollingStock & {
+  liveries: RollingStockLiveryMetadata[];
+};
+export type RollingStockLivery = {
+  compound_image_id?: number | null;
+  id: number;
+  name: string;
   rolling_stock_id: number;
-  usage: {
-    project_id: number;
-    project_name: string;
-    scenario_id: number;
-    scenario_name: string;
-    study_id: number;
-    study_name: string;
-    train_name: string;
-    train_schedule_id: number;
-  };
+};
+export type RollingStockLiveryCreateForm = {
+  images: Blob[];
+  name: string;
+};
+export type RollingStockLockedUpdateForm = {
+  locked: boolean;
 };
 export type SearchResultItemTrack = {
   infra_id: number;
@@ -2042,6 +2096,7 @@ export type Allowance =
   | (StandardAllowance & {
       allowance_type: 'standard';
     });
+export type Comfort = 'AC' | 'HEATING' | 'STANDARD';
 export type TrainScheduleOptions = {
   ignore_electrical_profiles?: boolean | null;
 };
@@ -2101,7 +2156,6 @@ export type Timetable = {
   id: number;
   name: string;
 };
-export type RollingStockComfortType = 'STANDARD' | 'AC' | 'HEATING';
 export type ScheduledPoint = {
   path_offset: number;
   time: number;

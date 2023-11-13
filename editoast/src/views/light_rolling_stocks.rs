@@ -2,16 +2,35 @@ use crate::error::Result;
 use crate::models::{LightRollingStockModel, Retrieve};
 use crate::schema::rolling_stock::light_rolling_stock::LightRollingStockWithLiveries;
 use crate::views::pagination::{PaginatedResponse, PaginationQueryParam};
-use crate::views::rolling_stocks::RollingStockError;
-use crate::DbPool;
-use actix_web::dev::HttpServiceFactory;
+use crate::views::rolling_stocks::{RollingStockError, RollingStockIdParam};
+use crate::{decl_paginated_response, DbPool};
 use actix_web::get;
-use actix_web::web::{self, Data, Json, Path, Query};
+use actix_web::web::{Data, Json, Path, Query};
 
-pub fn routes() -> impl HttpServiceFactory {
-    web::scope("/light_rolling_stock").service((get, list))
+crate::routes! {
+    "/light_rolling_stock" => {
+        get,
+        list,
+    },
 }
 
+decl_paginated_response!(
+    PaginatedResponseOfLightRollingStockWithLiveries,
+    LightRollingStockWithLiveries
+);
+
+crate::schemas! {
+    PaginatedResponseOfLightRollingStockWithLiveries,
+}
+
+/// Paginated list of rolling stock with a lighter response
+#[utoipa::path(
+    tag = "rolling_stock",
+    params(PaginationQueryParam),
+    responses(
+        (status = 200, body = PaginatedResponseOfLightRollingStockWithLiveries),
+    )
+)]
 #[get("")]
 async fn list(
     db_pool: Data<DbPool>,
@@ -24,6 +43,14 @@ async fn list(
     ))
 }
 
+/// Retrieve a rolling stock's light representation
+#[utoipa::path(
+    tag = "rolling_stock",
+    params(RollingStockIdParam),
+    responses(
+        (status = 200, body = LightRollingStockWithLiveries, description = "The rolling stock with their simplified effort curves"),
+    )
+)]
 #[get("/{rolling_stock_id}")]
 async fn get(
     db_pool: Data<DbPool>,

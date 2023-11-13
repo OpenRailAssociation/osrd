@@ -1,6 +1,6 @@
 import cx from 'classnames';
 import React, { useState } from 'react';
-import { Comfort, RollingStock } from 'common/api/osrdEditoastApi';
+import { Comfort, RollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 import RollingStockCardDetail, {
   listCurvesComfort,
 } from 'modules/rollingStock/components/RollingStockCard/RollingStockCardDetail';
@@ -11,7 +11,7 @@ import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 type RollingStockInformationPanelProps = {
   id: number;
   isEditing: boolean;
-  rollingStock: RollingStock;
+  rollingStock: RollingStockWithLiveries;
 };
 
 export default function RollingStockInformationPanel({

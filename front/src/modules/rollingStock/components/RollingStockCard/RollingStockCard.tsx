@@ -8,7 +8,7 @@ import { IoIosSpeedometer } from 'react-icons/io';
 import { FaWeightHanging } from 'react-icons/fa';
 import { AiOutlineColumnWidth } from 'react-icons/ai';
 
-import { Comfort, LightRollingStock } from 'common/api/osrdEditoastApi';
+import { Comfort, LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import RollingStockCardDetail from './RollingStockCardDetail';
 import { RollingStockInfo } from '../RollingStockSelector/RollingStockHelpers';
@@ -19,7 +19,7 @@ interface RollingStockCardProps {
   isOnEditMode?: boolean;
   noCardSelected: boolean;
   ref2scroll?: React.MutableRefObject<HTMLDivElement | null>;
-  rollingStock: LightRollingStock;
+  rollingStock: LightRollingStockWithLiveries;
   setOpenedRollingStockCardId: (openCardId: number | undefined) => void;
 }
 

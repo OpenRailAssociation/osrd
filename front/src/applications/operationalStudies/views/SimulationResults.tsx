@@ -70,9 +70,9 @@ export default function SimulationResults({
   );
 
   const { data: selectedTrainRollingStock } =
-    osrdEditoastApi.endpoints.getLightRollingStockById.useQuery(
+    osrdEditoastApi.endpoints.getLightRollingStockByRollingStockId.useQuery(
       {
-        id: selectedTrainSchedule?.rolling_stock_id as number,
+        rollingStockId: selectedTrainSchedule?.rolling_stock_id as number,
       },
       { skip: !selectedTrainSchedule }
     );
