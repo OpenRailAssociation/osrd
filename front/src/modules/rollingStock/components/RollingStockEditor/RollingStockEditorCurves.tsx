@@ -42,6 +42,7 @@ import {
   createEmptyCurve,
   createEmptyCurves,
   orderSelectorList,
+  sortSelectedModeCurves,
 } from 'modules/rollingStock/helpers/utils';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import RollingStockCurve from 'modules/rollingStock/components/RollingStockCurve';
@@ -339,10 +340,15 @@ export default function RollingStockEditorCurves({
       ];
 
       if (index > 0) updatedCurvesList.unshift(...selectedTractionModeCurves.slice(0, index));
-      const defaultCurve =
-        index === 0
-          ? updatedSelectedCurve.curve
-          : currentRsEffortCurve.modes[selectedTractionMode].default_curve;
+
+      const isDefaultCurve =
+        selectedComfortLvl === STANDARD_COMFORT_LEVEL &&
+        selectedElectricalProfile === null &&
+        selectedPowerRestriction === null;
+
+      const defaultCurve = isDefaultCurve
+        ? updatedSelectedCurve.curve
+        : currentRsEffortCurve.modes[selectedTractionMode].default_curve;
 
       const updatedCurrentRsEffortCurve = {
         default_mode: currentRsEffortCurve.default_mode,
@@ -379,10 +385,8 @@ export default function RollingStockEditorCurves({
     }
   };
 
-  const orderSpreadsheetValues = () => {
-    const orderedValuesByVelocity = curveForSpreadsheet.sort(
-      (a, b) => Number(a[0]?.value) - Number(b[0]?.value)
-    );
+  const orderSpreadsheetValues = (e: Matrix<CellBase<string>>) => {
+    const orderedValuesByVelocity = e.sort((a, b) => Number(a[0]?.value) - Number(b[0]?.value));
     updateSpreadsheet(orderedValuesByVelocity);
     updateCurrentRs(orderedValuesByVelocity);
   };
@@ -430,7 +434,7 @@ export default function RollingStockEditorCurves({
         ...currentRsEffortCurve.modes,
         [selectedTractionMode]: {
           ...selectedModeCurves,
-          curves: [...selectedModeCurves.curves, newEmptyCurve],
+          curves: sortSelectedModeCurves([...selectedModeCurves.curves, newEmptyCurve]),
         },
       },
     };
@@ -454,7 +458,7 @@ export default function RollingStockEditorCurves({
         ...currentRsEffortCurve.modes,
         [selectedTractionMode]: {
           ...selectedModeCurves,
-          curves: [...selectedModeCurves.curves, newEmptyCurve],
+          curves: sortSelectedModeCurves([...selectedModeCurves.curves, newEmptyCurve]),
         },
       },
     };
@@ -499,7 +503,7 @@ export default function RollingStockEditorCurves({
         ...acc,
         [key]: {
           ...currentRsEffortCurve.modes[key],
-          curves: cleanedList,
+          curves: sortSelectedModeCurves(cleanedList),
         },
       };
     }, {});
@@ -660,12 +664,11 @@ export default function RollingStockEditorCurves({
             <Spreadsheet
               data={curveForSpreadsheet}
               onChange={(e) => {
-                updateSpreadsheet(e);
-                updateCurrentRs(e);
+                orderSpreadsheetValues(e);
               }}
-              onBlur={orderSpreadsheetValues}
+              onBlur={() => orderSpreadsheetValues(curveForSpreadsheet)}
               onKeyDown={(e) => {
-                if (e.key === 'Enter') orderSpreadsheetValues();
+                if (e.key === 'Enter') orderSpreadsheetValues(curveForSpreadsheet);
               }}
               columnLabels={[t('speed'), t('effort')]}
             />
