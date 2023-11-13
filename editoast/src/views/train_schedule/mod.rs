@@ -53,9 +53,6 @@ pub enum TrainScheduleError {
     #[error("Train Schedule '{train_schedule_id}' is not simulated")]
     #[editoast_error(status = 500)]
     UnsimulatedTrainSchedule { train_schedule_id: i64 },
-    #[error("No train ids given")]
-    #[editoast_error(status = 400)]
-    NoTrainIds,
     #[error("No train schedules given")]
     #[editoast_error(status = 400)]
     NoTrainSchedules,
@@ -405,7 +402,7 @@ async fn get_results(
     let schedules =
         filter_invalid_trains(db_pool.clone(), timetable.id.unwrap(), infra_version).await?;
     if schedules.is_empty() {
-        return Err(TrainScheduleError::NoTrainIds.into());
+        return Ok(Json(vec![]));
     }
 
     let path_id = match query.path_id {
@@ -730,4 +727,34 @@ pub fn process_simulation_response(
         simulation_outputs.push(simulation_output);
     }
     Ok(simulation_outputs)
+}
+
+#[cfg(test)]
+pub mod tests {
+    use actix_http::StatusCode;
+    use actix_web::test::{call_service, read_body_json, TestRequest};
+    use rstest::rstest;
+
+    use crate::{
+        fixtures::tests::pathfinding,
+        fixtures::tests::{db_pool, scenario_fixture_set},
+        views::{tests::create_test_service, train_schedule::simulation_report::SimulationReport},
+    };
+
+    #[rstest]
+    async fn empty_timetable() {
+        let app = create_test_service().await;
+        let scenario_fixture_set = scenario_fixture_set().await;
+        let pathfinding = pathfinding(db_pool()).await;
+        let url = format!(
+            "/train_schedule/results/?path_id={}&timetable_id={}",
+            pathfinding.id(),
+            scenario_fixture_set.timetable.id()
+        );
+        let req = TestRequest::get().uri(url.as_str()).to_request();
+        let response = call_service(&app, req).await;
+        assert_eq!(response.status(), StatusCode::OK);
+        let empty_vec: Vec<SimulationReport> = read_body_json(response).await;
+        assert!(empty_vec.is_empty());
+    }
 }
