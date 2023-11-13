@@ -1,10 +1,14 @@
-import { Comfort, RollingStock, RollingStockUpsertPayload } from 'common/api/osrdEditoastApi';
+import {
+  Comfort,
+  ConditionalEffortCurve,
+  RollingStock,
+  RollingStockUpsertPayload,
+} from 'common/api/osrdEditoastApi';
 import { has, isNull, omitBy, some } from 'lodash';
 import {
   EffortCurves,
   RollingStockParametersValidValues,
   RollingStockParametersValues,
-  STANDARD_COMFORT_LEVEL,
   THERMAL_TRACTION_IDENTIFIER,
 } from 'modules/rollingStock/consts';
 
@@ -204,7 +208,7 @@ export const createEmptyCurve = (
   powerRestriction: string | null = null
 ) => ({
   cond: {
-    comfort: comfort || STANDARD_COMFORT_LEVEL,
+    comfort,
     electrical_profile_level: electricalProfile,
     power_restriction_code: powerRestriction,
   },
@@ -223,6 +227,36 @@ export const orderSelectorList = (list: (string | null)[]) => {
   return isNull(list[0]) || list[0] === 'O'
     ? list.slice(0, index).concat(list.slice(index).sort())
     : list.sort();
+};
+
+/** This function will sort the curves list based on the number of conditions they have.
+ *
+ * Curves will be sorted in the following order (comfort is compulsory):
+ * - curves with all conditions (power restriction & electrical profile)
+ * - curves with at least power restriction
+ * - curves with least electrical profile
+ * - other curves (without power restriction and without electrical profile)
+ */
+export const sortSelectedModeCurves = (curvesList: ConditionalEffortCurve[]) => {
+  const { allConds, onlyPR, onlyEP, nulls } = curvesList.reduce(
+    (sortedCurves, curve) => {
+      const { cond } = curve;
+      if (!cond) return sortedCurves;
+      if (cond.electrical_profile_level && cond.power_restriction_code) {
+        return { ...sortedCurves, allConds: [...sortedCurves.allConds, curve] };
+      }
+      if (cond.power_restriction_code) {
+        return { ...sortedCurves, onlyPR: [...sortedCurves.onlyPR, curve] };
+      }
+      if (cond.electrical_profile_level) {
+        return { ...sortedCurves, onlyEP: [...sortedCurves.onlyEP, curve] };
+      }
+      return { ...sortedCurves, nulls: [...sortedCurves.nulls, curve] };
+    },
+    { allConds: [], onlyPR: [], onlyEP: [], nulls: [] } as Record<string, ConditionalEffortCurve[]>
+  );
+
+  return allConds.concat(onlyPR, onlyEP, nulls);
 };
 
 export const isElectric = (rollingStock: RollingStock) =>
