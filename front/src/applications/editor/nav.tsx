@@ -1,9 +1,8 @@
 import React from 'react';
 import { Dispatch } from 'redux';
 import { IconType } from 'react-icons';
-import { BiTargetLock } from 'react-icons/bi';
-import { BsFillExclamationOctagonFill } from 'react-icons/bs';
-import { FaCompass } from 'react-icons/fa';
+import { BsExclamationOctagon, BsSliders2 } from 'react-icons/bs';
+import { FaRegCompass } from 'react-icons/fa';
 import { GiRailway } from 'react-icons/gi';
 import { isNil } from 'lodash';
 import { NavigateFunction } from 'react-router-dom';
@@ -14,7 +13,7 @@ import { selectLayers } from 'reducers/editor';
 import { Shortcut } from 'utils/hooks/useKeyboardShortcuts';
 import { ModalContextType } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import InfraSelectorModal from 'common/InfraSelector/InfraSelectorModal';
-import { GoSearch, GoStack, GoZoomIn, GoZoomOut } from 'react-icons/go';
+import { GoSearch, GoZoomIn, GoZoomOut } from 'react-icons/go';
 import { EditorState, EDITOAST_TO_LAYER_DICT, EditoastType } from './tools/types';
 import LayersModal from './components/LayersModal';
 import { SelectionState } from './tools/selection/types';
@@ -22,13 +21,6 @@ import { EditorContextType, Tool } from './tools/editorContextTypes';
 
 const ZOOM_DEFAULT = 5;
 const ZOOM_DELTA = 1.5;
-const DEFAULT_VIEWPORT = {
-  latitude: 47.3,
-  longitude: 2.0,
-  zoom: 5.0,
-  bearing: 0,
-  pitch: 0,
-};
 
 export interface NavButton {
   id: string;
@@ -67,14 +59,6 @@ export interface NavButton {
 const NavButtons: NavButton[][] = [
   [
     {
-      id: 'search',
-      icon: GoSearch,
-      labelTranslationKey: 'common.search',
-      onClick({ setIsSearchToolOpened }) {
-        setIsSearchToolOpened((state) => !state);
-      },
-    },
-    {
       id: 'zoom-in',
       icon: GoZoomIn,
       labelTranslationKey: 'common.zoom-in',
@@ -97,19 +81,8 @@ const NavButtons: NavButton[][] = [
       },
     },
     {
-      id: 'recenter',
-      icon: BiTargetLock,
-      labelTranslationKey: 'Editor.nav.recenter',
-      onClick({ setViewport, viewport }) {
-        setViewport({
-          ...viewport,
-          ...DEFAULT_VIEWPORT,
-        });
-      },
-    },
-    {
       id: 'reset-viewport',
-      icon: FaCompass,
+      icon: FaRegCompass,
       labelTranslationKey: 'common.reset-north',
       onClick({ setViewport, viewport }) {
         setViewport({
@@ -119,11 +92,19 @@ const NavButtons: NavButton[][] = [
         });
       },
     },
+    {
+      id: 'search',
+      icon: GoSearch,
+      labelTranslationKey: 'common.search',
+      onClick({ setIsSearchToolOpened }) {
+        setIsSearchToolOpened((state) => !state);
+      },
+    },
   ],
   [
     {
       id: 'layers',
-      icon: GoStack,
+      icon: BsSliders2,
       labelTranslationKey: 'Editor.nav.toggle-layers',
       shortcut: { code: 'KeyL', optionalKeys: { ctrlKey: true, shiftKey: true } },
       onClick({ openModal, editorState }, { activeTool, toolState, setToolState }) {
@@ -165,7 +146,7 @@ const NavButtons: NavButton[][] = [
     },
     {
       id: 'infra-errors',
-      icon: BsFillExclamationOctagonFill,
+      icon: BsExclamationOctagon,
       labelTranslationKey: 'Editor.nav.infra-errors-map',
       shortcut: { code: 'KeyE', optionalKeys: { ctrlKey: true, shiftKey: true } },
       isActive: (state) => state.editorLayers.has('errors'),

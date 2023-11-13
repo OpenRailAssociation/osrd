@@ -6,7 +6,12 @@ import ButtonMapSearch from 'common/Map/Buttons/ButtonMapSearch';
 import ButtonMapSettings from 'common/Map/Buttons/ButtonMapSettings';
 import ButtonMapKey from 'common/Map/Buttons/ButtonMapKey';
 import ButtonResetViewport from 'common/Map/Buttons/ButtonResetViewport';
-import ButtonFullscreen from 'common/ButtonFullscreen';
+import ButtonZoomIn from 'common/Map/Buttons/ButtonZoomIn';
+import ButtonZoomOut from 'common/Map/Buttons/ButtonZoomOut';
+
+// Viewport
+
+import { updateViewport } from 'reducers/map';
 
 // Map modals
 import MapSearch from 'common/Map/Search/MapSearch';
@@ -22,17 +27,21 @@ import ButtonMapInfras from './ButtonMapInfras';
 type MapButtonsProps = {
   map?: MapRef;
   resetPitchBearing: () => void;
-  withFullscreenButton?: boolean;
   withInfraButton?: boolean;
 };
 
+const ZOOM_DEFAULT = 5;
+const ZOOM_DELTA = 1.5;
+const DEFAULT_VIEWPORT = {
+  latitude: 47.3,
+  longitude: 2.0,
+  zoom: 5.0,
+  bearing: 0,
+  pitch: 0,
+};
+
 const MAP_POPOVERS = { SEARCH: 'SEARCH', SETTINGS: 'SETTINGS', KEY: 'KEY' };
-export default function MapButtons({
-  map,
-  resetPitchBearing,
-  withFullscreenButton,
-  withInfraButton,
-}: MapButtonsProps) {
+export default function MapButtons({ map, resetPitchBearing, withInfraButton }: MapButtonsProps) {
   const featureInfoClick = useSelector(getFeatureInfoClick);
   const dispatch = useDispatch();
   const { isOpen } = useContext(ModalContext);
@@ -65,15 +74,43 @@ export default function MapButtons({
 
   useOutsideClick(mapButtonsRef, () => setOpenedPopover(undefined));
 
+  const [viewport, setViewport] = useState(DEFAULT_VIEWPORT);
+
+  const zoomIn = () => {
+    setViewport((prevViewport) => ({
+      ...prevViewport,
+      zoom: (prevViewport.zoom || ZOOM_DEFAULT) + ZOOM_DELTA,
+    }));
+    dispatch(
+      updateViewport({
+        ...viewport,
+        zoom: (viewport.zoom || ZOOM_DEFAULT) + ZOOM_DELTA,
+      })
+    );
+  };
+  const zoomOut = () => {
+    setViewport((prevViewport) => ({
+      ...prevViewport,
+      zoom: (prevViewport.zoom || ZOOM_DEFAULT) - ZOOM_DELTA,
+    }));
+    dispatch(
+      updateViewport({
+        ...viewport,
+        zoom: (viewport.zoom || ZOOM_DEFAULT) - ZOOM_DELTA,
+      })
+    );
+  };
+
   return (
     <div ref={mapButtonsRef}>
       <div className="btn-map-container">
+        <ButtonZoomIn zoomIn={() => zoomIn()} />
+        <ButtonZoomOut zoomOut={() => zoomOut()} />
+        <ButtonResetViewport updateLocalViewport={resetPitchBearing} />
         <ButtonMapSearch toggleMapSearch={() => toggleMapModal('SEARCH')} />
         <ButtonMapSettings toggleMapSettings={() => toggleMapModal('SETTINGS')} />
-        <ButtonMapKey toggleMapKey={() => toggleMapModal('KEY')} />
-        <ButtonResetViewport updateLocalViewport={resetPitchBearing} />
-        {withFullscreenButton && <ButtonFullscreen />}
         {withInfraButton && <ButtonMapInfras />}
+        <ButtonMapKey toggleMapKey={() => toggleMapModal('KEY')} />
       </div>
       {openedPopover === MAP_POPOVERS.SEARCH && (
         <MapSearch map={map} closeMapSearchPopUp={() => setOpenedPopover(undefined)} />

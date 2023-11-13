@@ -103,7 +103,6 @@ function Map() {
         map={mapRef.current ?? undefined}
         resetPitchBearing={resetPitchBearing}
         withInfraButton
-        withFullscreenButton
       />
       <ReactMapGL
         {...viewport}
