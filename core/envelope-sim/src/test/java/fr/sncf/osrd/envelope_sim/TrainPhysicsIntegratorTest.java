@@ -112,7 +112,6 @@ public class TrainPhysicsIntegratorTest {
         for (int i = 0; i < 60; i++) {
             step = TrainPhysicsIntegrator.step(context, position, speed, Action.COAST, +1);
             position += step.positionDelta;
-            var prevSpeed = step.startSpeed;
             speed = step.endSpeed;
         }
         // it should be stopped
@@ -130,7 +129,8 @@ public class TrainPhysicsIntegratorTest {
         EnvelopeDeceleration.decelerate(context, 0, 10, constrainedBuilder, 1);
         var acceleration = Envelope.make(builder.build());
         // starting a coasting phase in a braking phase must result in a null EnvelopePart
-        var failedCoast = coastFromBeginning(acceleration, context, 0);
+        var speed = acceleration.interpolateSpeed(0);
+        var failedCoast = coastFromBeginning(acceleration, context, 0, speed);
         assertNull(failedCoast);
     }
 }

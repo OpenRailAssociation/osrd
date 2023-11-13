@@ -1,5 +1,6 @@
 package fr.sncf.osrd.envelope;
 
+import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.areSpeedsEqual;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import fr.sncf.osrd.envelope.part.EnvelopePart;
@@ -14,7 +15,7 @@ public enum EnvelopeShape {
     public static EnvelopeShape fromStep(EnvelopePart part, int stepIndex) {
         var beginSpeed = part.getBeginSpeed(stepIndex);
         var endSpeed = part.getEndSpeed(stepIndex);
-        if (beginSpeed == endSpeed)
+        if (areSpeedsEqual(beginSpeed, endSpeed))
             return CONSTANT;
         else if (beginSpeed < endSpeed)
             return INCREASING;

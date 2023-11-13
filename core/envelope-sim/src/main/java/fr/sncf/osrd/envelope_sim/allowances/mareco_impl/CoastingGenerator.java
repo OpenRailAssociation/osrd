@@ -2,6 +2,7 @@ package fr.sncf.osrd.envelope_sim.allowances.mareco_impl;
 
 import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.CEILING;
 import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.FLOOR;
+import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.areSpeedsEqual;
 
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder;
@@ -11,15 +12,16 @@ import fr.sncf.osrd.envelope.part.constraints.EnvelopeConstraint;
 import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint;
 import fr.sncf.osrd.envelope_sim.*;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeCoasting;
-import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.reporting.exceptions.ErrorType;
+import fr.sncf.osrd.reporting.exceptions.OSRDError;
 
 public final class CoastingGenerator {
     /** Generate a coasting envelope part which starts at startPos */
     public static EnvelopePart coastFromBeginning(
             Envelope envelope,
             EnvelopeSimContext context,
-            double startPos
+            double startPos,
+            double startSpeed
     ) {
         var partBuilder = new EnvelopePartBuilder();
         partBuilder.setAttr(EnvelopeProfile.COASTING);
@@ -28,8 +30,7 @@ public final class CoastingGenerator {
                 new SpeedConstraint(0, FLOOR),
                 new EnvelopeConstraint(envelope, CEILING)
         );
-        var speed = envelope.interpolateSpeed(startPos);
-        EnvelopeCoasting.coast(context, startPos, speed, constrainedBuilder, 1);
+        EnvelopeCoasting.coast(context, startPos, startSpeed, constrainedBuilder, 1);
         if (constrainedBuilder.lastIntersection == 0)
             throw new OSRDError(ErrorType.ImpossibleSimulationError); // We reached a stop while coasting
         if (partBuilder.isEmpty())
@@ -66,7 +67,7 @@ public final class CoastingGenerator {
             var step = TrainPhysicsIntegrator.step(context, position, speed, Action.COAST, -1);
             position += step.positionDelta;
             speed = step.endSpeed;
-            if (speed < lowSpeedLimit) {
+            if (!areSpeedsEqual(speed, lowSpeedLimit) && speed < lowSpeedLimit) {
                 speed = lowSpeedLimit;
                 reachedLowLimit = true;
             }
@@ -83,7 +84,8 @@ public final class CoastingGenerator {
         if (!reachedLowLimit && constrainedBuilder.getLastPos() != envelope.getBeginPos())
             return backwardPartBuilder.build();
 
-        var resultCoast = coastFromBeginning(envelope, context, constrainedBuilder.getLastPos());
+        var resultCoast = coastFromBeginning(envelope, context, constrainedBuilder.getLastPos(),
+                constrainedBuilder.getLastSpeed());
         assert resultCoast == null || resultCoast.getEndPos() <= endPos + context.timeStep * speed;
         return resultCoast;
     }
