@@ -3,6 +3,7 @@ package fr.sncf.osrd.envelope.part.constraints;
 import static fr.sncf.osrd.envelope.EnvelopeCursor.NextStepResult.NEXT_PART;
 import static fr.sncf.osrd.envelope.EnvelopeCursor.NextStepResult.NEXT_REACHED_END;
 import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.*;
+import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.areSpeedsEqual;
 
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.EnvelopeCursor;
@@ -32,9 +33,9 @@ public class EnvelopeConstraint implements EnvelopePartConstraint {
         var envelopeSpeed = part.interpolateSpeed(stepIndex, position);
         cursor = new EnvelopeCursor(envelope, direction < 0, partIndex, stepIndex, position);
         return switch (type) {
-            case CEILING -> envelopeSpeed >= speed;
-            case FLOOR -> envelopeSpeed <= speed;
-            case EQUAL -> envelopeSpeed == speed;
+            case CEILING -> envelopeSpeed > speed || areSpeedsEqual(envelopeSpeed, speed);
+            case FLOOR -> envelopeSpeed < speed || areSpeedsEqual(envelopeSpeed, speed);
+            case EQUAL -> areSpeedsEqual(envelopeSpeed, speed);
         };
     }
 

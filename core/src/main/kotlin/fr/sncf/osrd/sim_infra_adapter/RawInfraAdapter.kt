@@ -276,7 +276,6 @@ fun adaptRawInfra(infra: SignalingInfra): SimInfraAdapter {
                     signalsPerTrack,
                     builder
                 )
-                builder
 
                 // check if the zone is a release zone
                 if (releaseIndex < oldReleasePoints.size && oldEndDet.detector!! == oldReleasePoints[releaseIndex]) {
