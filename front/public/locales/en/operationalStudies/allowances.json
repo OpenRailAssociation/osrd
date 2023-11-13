@@ -15,10 +15,10 @@
     "mareco": "Mareco",
     "MARECO": "Mareco"
   },
-  "engineeringAllowances": "Time allowance",
+  "engineeringAllowances": "Engineering allowance",
   "missingPathFinding": "Please define a path before specifying margins",
   "no-allowance": "No allowance set",
   "reset": "Reset",
   "standardAllowance": "Recovery margin",
-  "standardAllowanceIntervals": "Standard allowance intervals"
+  "standardAllowanceIntervals": "Recovery allowance intervals"
 }
