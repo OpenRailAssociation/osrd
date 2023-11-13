@@ -61,11 +61,7 @@ pub enum RollingStockError {
 pub fn routes() -> impl HttpServiceFactory {
     scope("/rolling_stock")
         .service((get_power_restrictions, get, create, update, delete))
-        .service(scope("/{rolling_stock_id}").service((
-            create_livery,
-            update_locked,
-            check_rolling_stock_usage,
-        )))
+        .service(scope("/{rolling_stock_id}").service((create_livery, update_locked)))
 }
 
 #[get("/{rolling_stock_id}")]
@@ -306,22 +302,6 @@ pub struct TrainScheduleScenarioStudyProject {
     pub scenario_name: String,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
-struct UsageResponse {
-    usage: Vec<TrainScheduleScenarioStudyProject>,
-}
-
-#[get("/check_usage")]
-async fn check_rolling_stock_usage(
-    db_pool: Data<DbPool>,
-    rolling_stock_id: Path<i64>,
-) -> Result<Json<UsageResponse>> {
-    let rolling_stock_id = rolling_stock_id.into_inner();
-    get_rolling_stock_usage(db_pool, rolling_stock_id)
-        .await
-        .map(|trains| Json(UsageResponse { usage: trains }))
-}
-
 async fn get_rolling_stock_usage(
     db_pool: Data<DbPool>,
     rolling_stock_id: i64,
@@ -482,10 +462,7 @@ pub mod tests {
     use std::vec;
 
     use super::RollingStockError;
-    use super::{
-        retrieve_existing_rolling_stock, RollingStock, TrainScheduleScenarioStudyProject,
-        UsageResponse,
-    };
+    use super::{retrieve_existing_rolling_stock, RollingStock, TrainScheduleScenarioStudyProject};
     use crate::fixtures::tests::{
         db_pool, get_fast_rolling_stock, get_other_rolling_stock, named_fast_rolling_stock,
         named_other_rolling_stock, train_schedule_with_scenario,
@@ -851,103 +828,6 @@ pub mod tests {
 
         // Delete rolling_stock
         call_service(&app, rolling_stock_delete_request(rolling_stock_id)).await;
-    }
-
-    #[rstest]
-    async fn check_usage_rolling_stock_not_found() {
-        let app = create_test_service().await;
-        let rolling_stock_id = 314159;
-        let response = call_service(
-            &app,
-            TestRequest::get()
-                .uri(format!("/rolling_stock/{}/check_usage", rolling_stock_id).as_str())
-                .to_request(),
-        )
-        .await;
-        assert_eq!(response.status(), StatusCode::NOT_FOUND);
-        assert_editoast_error_type!(response, RollingStockError::NotFound { rolling_stock_id });
-    }
-
-    #[rstest]
-    async fn check_usage_no_train_schedule_for_this_rolling_stock(db_pool: Data<DbPool>) {
-        // GIVEN
-        let rolling_stock = named_fast_rolling_stock(
-            "fast_rolling_stock_check_usage_no_train_schedule_for_this_rolling_stock",
-            db_pool,
-        )
-        .await;
-        let app = create_test_service().await;
-        let rolling_stock_id = rolling_stock.id();
-
-        // WHEN
-        let response = call_service(
-            &app,
-            TestRequest::get()
-                .uri(format!("/rolling_stock/{}/check_usage", rolling_stock_id).as_str())
-                .to_request(),
-        )
-        .await;
-
-        // THEN
-        let response_body: UsageResponse = assert_status_and_read!(response, StatusCode::OK);
-        let expected_body = UsageResponse { usage: Vec::new() };
-        assert_eq!(response_body, expected_body);
-    }
-
-    /// Tests`/rolling_stock/{rolling_stock_id}/check_usage` endpoint.
-    /// Initial conditions: one `TrainSchedule` using the given `rolling_stock_id`.
-    /// It should return the `TrainSchedule`, `project`/`study`/`scenario` ids/names
-    #[rstest]
-    async fn check_usage_one_train_schedule() {
-        // GIVEN
-        let app = create_test_service().await;
-        let train_schedule_with_scenario =
-            train_schedule_with_scenario("test_single_simulation_bare_minimum_payload").await;
-        let rolling_stock_id = train_schedule_with_scenario.rolling_stock.id();
-
-        // WHEN
-        let response = call_service(
-            &app,
-            TestRequest::get()
-                .uri(format!("/rolling_stock/{}/check_usage", rolling_stock_id).as_str())
-                .to_request(),
-        )
-        .await;
-
-        // THEN
-        let response_body: UsageResponse = assert_status_and_read!(response, StatusCode::OK);
-        let expected_body = UsageResponse {
-            usage: vec![TrainScheduleScenarioStudyProject {
-                train_schedule_id: train_schedule_with_scenario.train_schedule.id(),
-                train_name: train_schedule_with_scenario
-                    .train_schedule
-                    .model
-                    .train_name
-                    .clone(),
-                scenario_id: train_schedule_with_scenario.scenario.id(),
-                scenario_name: train_schedule_with_scenario
-                    .scenario
-                    .model
-                    .name
-                    .clone()
-                    .unwrap(),
-                study_id: train_schedule_with_scenario.study.id(),
-                study_name: train_schedule_with_scenario
-                    .study
-                    .model
-                    .name
-                    .clone()
-                    .unwrap(),
-                project_id: train_schedule_with_scenario.project.id(),
-                project_name: train_schedule_with_scenario
-                    .project
-                    .model
-                    .name
-                    .clone()
-                    .unwrap(),
-            }],
-        };
-        assert_eq!(response_body, expected_body);
     }
 
     #[rstest]
