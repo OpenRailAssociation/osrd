@@ -15,8 +15,9 @@ use diesel_json::Json as DieselJson;
 use editoast_derive::Model;
 use serde::Serialize;
 use serde_json::Value as JsonValue;
+use utoipa::ToSchema;
 
-#[derive(Debug, Model, Queryable, QueryableByName, Serialize)]
+#[derive(Debug, Model, Queryable, QueryableByName, Serialize, ToSchema)]
 #[model(table = "rolling_stock")]
 #[model(retrieve)]
 #[diesel(table_name = rolling_stock)]
@@ -24,7 +25,9 @@ pub struct LightRollingStockModel {
     pub id: i64,
     railjson_version: String,
     name: String,
+    #[schema(value_type = LightEffortCurves)]
     effort_curves: DieselJson<LightEffortCurves>,
+    #[schema(value_type = RollingStockLiveryMetadata)]
     metadata: DieselJson<RollingStockMetadata>,
     length: f64,
     max_speed: f64,
@@ -36,9 +39,12 @@ pub struct LightRollingStockModel {
     pub base_power_class: Option<String>,
     features: Vec<Option<String>>,
     mass: f64,
+    #[schema(value_type = RollingResistance)]
     rolling_resistance: DieselJson<RollingResistance>,
     loading_gauge: String,
+    #[schema(value_type = HashMap<String, String>)]
     power_restrictions: Option<JsonValue>,
+    #[schema(value_type = Vec<EnergySource>)]
     energy_sources: DieselJson<Vec<EnergySource>>,
     locked: bool,
     electrical_power_startup_time: Option<f64>,

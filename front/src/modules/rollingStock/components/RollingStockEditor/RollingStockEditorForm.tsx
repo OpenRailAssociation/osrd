@@ -2,7 +2,8 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   RollingStock,
-  RollingStockUpsertPayload,
+  RollingStockForm,
+  RollingStockWithLiveries,
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
@@ -30,7 +31,7 @@ import {
 import RollingStockEditorCurves from './RollingStockEditorCurves';
 
 type RollingStockParametersProps = {
-  rollingStockData?: RollingStock;
+  rollingStockData?: RollingStockWithLiveries;
   setAddOrEditState: React.Dispatch<React.SetStateAction<boolean>>;
   setOpenedRollingStockCardId?: React.Dispatch<React.SetStateAction<number | undefined>>;
   isAdding?: boolean;
@@ -50,7 +51,8 @@ const RollingStockEditorForm = ({
   ]);
   const { openModal } = useModal();
   const [postRollingstock] = osrdEditoastApi.endpoints.postRollingStock.useMutation();
-  const [patchRollingStock] = osrdEditoastApi.endpoints.patchRollingStockById.useMutation();
+  const [patchRollingStock] =
+    osrdEditoastApi.endpoints.patchRollingStockByRollingStockId.useMutation();
 
   const [isValid, setIsValid] = useState(true);
   const [optionValue, setOptionValue] = useState('');
@@ -78,10 +80,10 @@ const RollingStockEditorForm = ({
     RollingStock['power_restrictions']
   >(defaultValues.powerRestrictions);
 
-  const addNewRollingstock = (payload: RollingStockUpsertPayload) => () => {
+  const addNewRollingstock = (payload: RollingStockForm) => () => {
     postRollingstock({
       locked: false,
-      rollingStockUpsertPayload: payload,
+      rollingStockForm: payload,
     })
       .unwrap()
       .then((res) => {
@@ -113,11 +115,11 @@ const RollingStockEditorForm = ({
       });
   };
 
-  const updateRollingStock = (payload: RollingStockUpsertPayload) => () => {
+  const updateRollingStock = (payload: RollingStockForm) => () => {
     if (rollingStockData) {
       patchRollingStock({
-        id: rollingStockData.id,
-        rollingStockUpsertPayload: payload,
+        rollingStockId: rollingStockData.id,
+        rollingStockForm: payload,
       })
         .unwrap()
         .then(() => {

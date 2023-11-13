@@ -1,6 +1,6 @@
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import { LightRollingStock } from 'common/api/osrdEditoastApi';
+import { LightRollingStock, LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BiLockAlt, BiLockOpenAlt } from 'react-icons/bi';
@@ -70,7 +70,7 @@ function rollingStockPassesNotlockedFilter(locked: boolean, filters: Filters) {
   return true;
 }
 
-function filterRollingStocks(rollingStockList: LightRollingStock[], filters: Filters) {
+function filterRollingStocks(rollingStockList: LightRollingStockWithLiveries[], filters: Filters) {
   return rollingStockList?.filter(({ name, metadata, effort_curves: effortCurves, locked }) => {
     const passSearchedStringFilter = rollingStockPassesSearchedStringFilter(
       name,
@@ -93,9 +93,9 @@ function filterRollingStocks(rollingStockList: LightRollingStock[], filters: Fil
 }
 
 type SearchRollingStockProps = {
-  rollingStocks: LightRollingStock[];
-  setFilteredRollingStockList: (rollingStocks: LightRollingStock[]) => void;
-  filteredRollingStockList: LightRollingStock[];
+  rollingStocks: LightRollingStockWithLiveries[];
+  setFilteredRollingStockList: (rollingStocks: LightRollingStockWithLiveries[]) => void;
+  filteredRollingStockList: LightRollingStockWithLiveries[];
   setIsLoading?: (isLoading: boolean) => void;
   isSuccess?: boolean;
   mustResetFilters?: boolean;

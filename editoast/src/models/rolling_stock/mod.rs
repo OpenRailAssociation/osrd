@@ -6,6 +6,7 @@ use async_trait::async_trait;
 pub use light_rolling_stock::LightRollingStockModel;
 pub use rolling_stock_image::RollingStockSeparatedImageModel;
 pub use rolling_stock_livery::RollingStockLiveryModel;
+use utoipa::ToSchema;
 
 use crate::error::{InternalError, Result};
 use crate::models::rolling_stock::rolling_stock_livery::RollingStockLiveryMetadata;
@@ -27,6 +28,13 @@ use editoast_derive::Model;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 
+crate::schemas! {
+    RollingStock,
+    RollingStockWithLiveries,
+    crate::views::rolling_stocks::schemas(),
+    crate::views::light_rolling_stocks::schemas(),
+}
+
 #[derive(
     AsChangeset,
     Clone,
@@ -38,6 +46,7 @@ use serde_json::Value as JsonValue;
     Model,
     Queryable,
     Serialize,
+    ToSchema,
 )]
 #[derivative(Default, PartialEq)]
 #[model(table = "rolling_stock")]
@@ -47,53 +56,75 @@ pub struct RollingStockModel {
     #[diesel(deserialize_as = i64)]
     pub id: Option<i64>,
     #[diesel(deserialize_as = String)]
+    #[schema(value_type = String)]
     pub railjson_version: Option<String>,
     #[derivative(PartialEq = "ignore")]
     #[diesel(deserialize_as = String)]
+    #[schema(value_type = String)]
     pub name: Option<String>,
     #[diesel(deserialize_as = DieselJson<EffortCurves>)]
+    #[schema(value_type = EffortCurves)]
     pub effort_curves: Option<DieselJson<EffortCurves>>,
     #[derivative(PartialEq = "ignore")]
     #[diesel(deserialize_as = DieselJson<RollingStockMetadata>)]
+    #[schema(value_type = RollingStockMetadata)]
     pub metadata: Option<DieselJson<RollingStockMetadata>>,
     #[diesel(deserialize_as = f64)]
+    #[schema(value_type = f64)]
     pub length: Option<f64>,
     #[diesel(deserialize_as = f64)]
+    #[schema(value_type = f64)]
     pub max_speed: Option<f64>,
     #[diesel(deserialize_as = f64)]
+    #[schema(value_type = f64)]
     pub startup_time: Option<f64>,
     #[diesel(deserialize_as = f64)]
+    #[schema(value_type = f64)]
     pub startup_acceleration: Option<f64>,
     #[diesel(deserialize_as = f64)]
+    #[schema(value_type = f64)]
     pub comfort_acceleration: Option<f64>,
     #[diesel(deserialize_as = DieselJson<Gamma>)]
+    #[schema(value_type = Gamma)]
     pub gamma: Option<DieselJson<Gamma>>,
     #[diesel(deserialize_as = f64)]
+    #[schema(value_type = f64)]
     pub inertia_coefficient: Option<f64>,
     #[diesel(deserialize_as = Option<String>)]
+    #[schema(value_type = Option<String>)]
     pub base_power_class: Option<Option<String>>,
     #[diesel(deserialize_as = TextArray)]
+    #[schema(value_type = Vec<String>)]
     pub features: Option<Vec<String>>,
     #[diesel(deserialize_as = f64)]
+    #[schema(value_type = f64)]
     pub mass: Option<f64>,
     #[diesel(deserialize_as = DieselJson<RollingResistance>)]
+    #[schema(value_type = RollingResistance)]
     pub rolling_resistance: Option<DieselJson<RollingResistance>>,
     #[diesel(deserialize_as = String)]
+    #[schema(value_type = String)]
     pub loading_gauge: Option<String>,
     #[diesel(deserialize_as = Option<JsonValue>)]
+    #[schema(value_type = Option<HashMap<String, String>>)]
     pub power_restrictions: Option<Option<JsonValue>>,
     #[diesel(deserialize_as = DieselJson<Vec<EnergySource>>)]
+    #[schema(value_type = EnergySource)]
     pub energy_sources: Option<DieselJson<Vec<EnergySource>>>,
     #[derivative(PartialEq = "ignore")]
     #[diesel(deserialize_as = bool)]
+    #[schema(value_type = bool)]
     pub locked: Option<bool>,
     #[diesel(deserialize_as = Option<f64>)]
+    #[schema(value_type = Option<f64>)]
     pub electrical_power_startup_time: Option<Option<f64>>,
     #[diesel(deserialize_as = Option<f64>)]
+    #[schema(value_type = Option<f64>)]
     pub raise_pantograph_time: Option<Option<f64>>,
     #[derivative(Default(value = "None"))]
     #[derivative(PartialEq = "ignore")]
     #[diesel(deserialize_as = i64)]
+    #[schema(value_type = i64)]
     pub version: Option<i64>,
 }
 

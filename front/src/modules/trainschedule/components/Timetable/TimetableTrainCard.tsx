@@ -54,9 +54,10 @@ function TimetableTrainCard({
   setDisplayTrainScheduleManagement,
   toggleTrainSelection,
 }: Props) {
-  const { data: rollingStock } = osrdEditoastApi.endpoints.getLightRollingStockById.useQuery({
-    id: train.rolling_stock_id,
-  });
+  const { data: rollingStock } =
+    osrdEditoastApi.endpoints.getLightRollingStockByRollingStockId.useQuery({
+      rollingStockId: train.rolling_stock_id,
+    });
   const { t } = useTranslation(['operationalStudies/scenario']);
   const dispatch = useDispatch();
 

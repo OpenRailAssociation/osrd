@@ -42,9 +42,9 @@ export default function ManageTrainSchedule() {
     }
   );
 
-  const { data: rollingStock } = osrdEditoastApi.endpoints.getRollingStockById.useQuery(
+  const { data: rollingStock } = osrdEditoastApi.endpoints.getRollingStockByRollingStockId.useQuery(
     {
-      id: rollingStockID as number,
+      rollingStockId: rollingStockID as number,
     },
     {
       skip: !rollingStockID,

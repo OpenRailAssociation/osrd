@@ -3,6 +3,7 @@ import {
   Comfort,
   ConditionalEffortCurve,
   RollingStock,
+  RollingStockWithLiveries,
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
 import { isEmpty, isNull } from 'lodash';
@@ -58,7 +59,7 @@ const EMPTY_PARAMS = {
 };
 
 type RollingStockEditorCurvesProps = {
-  data?: RollingStock;
+  data?: RollingStockWithLiveries;
   currentRsEffortCurve: RollingStock['effort_curves'] | null;
   setCurrentRsEffortCurve: Dispatch<SetStateAction<RollingStock['effort_curves'] | null>>;
   selectedTractionMode: string | null;

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { useTranslation } from 'react-i18next';
-import { RollingStockUsage } from 'common/api/osrdEditoastApi';
+import { RollingStockError, TrainScheduleScenarioStudyProject } from 'common/api/osrdEditoastApi';
 import { groupBy } from 'lodash';
 
 type RollingStockEditorFormModalProps = {
@@ -9,9 +9,16 @@ type RollingStockEditorFormModalProps = {
   // request can be a POST, PUT, PATCH or DELETE request
   request?: () => void;
   mainText: string;
-  errorObject?: RollingStockUsage['usage'][];
+  errorObject?: RollingStockError;
   buttonText?: string;
   deleteAction?: boolean;
+};
+
+type RollingStockIsUsed = {
+  RollingStockIsUsed: {
+    rolling_stock_id: number;
+    usage: TrainScheduleScenarioStudyProject[];
+  };
 };
 
 const RollingStockEditorFormModal = ({
@@ -25,8 +32,8 @@ const RollingStockEditorFormModal = ({
   const { closeModal } = useModal();
   const { t } = useTranslation(['translation', 'rollingstock']);
 
-  const displayErrorObject = (errorList: RollingStockUsage['usage'][]): JSX.Element => {
-    const projectList = groupBy(errorList, 'project_name');
+  const displayErrorObject = (errorList: RollingStockIsUsed): JSX.Element => {
+    const projectList = groupBy(errorList.RollingStockIsUsed, 'project_name');
     const scenarioList = Object.keys(projectList).map((projectName) =>
       groupBy(projectList[projectName], 'scenario_name')
     );
@@ -52,7 +59,7 @@ const RollingStockEditorFormModal = ({
       {!errorObject ? (
         <span className="text-primary mb-3">{mainText}</span>
       ) : (
-        displayErrorObject(errorObject)
+        displayErrorObject(errorObject as RollingStockIsUsed)
       )}
       <div className="d-flex justify-content-end w-100">
         <button type="button" className="btn btn-sm btn-primary-gray" onClick={() => closeModal()}>

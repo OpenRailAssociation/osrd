@@ -40,8 +40,8 @@ export default function RollingStockCardDetail({
   const { t } = useTranslation(['rollingstock']);
 
   // we only fetch the whole rollingStock here, when we open the card and display its details
-  const { data: rollingStock, error } = osrdEditoastApi.useGetRollingStockByIdQuery(
-    { id },
+  const { data: rollingStock, error } = osrdEditoastApi.useGetRollingStockByRollingStockIdQuery(
+    { rollingStockId: id },
     {
       skip: !id,
     }

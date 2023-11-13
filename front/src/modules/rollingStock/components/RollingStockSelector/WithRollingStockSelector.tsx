@@ -1,7 +1,7 @@
 import React, { ComponentType, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { getRollingStockID, getRollingStockComfort } from 'reducers/osrdconf/selectors';
-import { RollingStock, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { RollingStockWithLiveries, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useTranslation } from 'react-i18next';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import RollingStockSelector from './RollingStockSelector';
@@ -11,33 +11,33 @@ const WithRollingStockSelector =
   (hocProps: T) => {
     const { t } = useTranslation(['translation', 'rollingstock']);
 
-    const [rollingStockSelected, setRollingStockSelected] = useState<RollingStock | undefined>(
-      undefined
-    );
-    const rollingStockID = useSelector(getRollingStockID);
+    const [rollingStockSelected, setRollingStockSelected] = useState<
+      RollingStockWithLiveries | undefined
+    >(undefined);
+    const rollingStockId = useSelector(getRollingStockID);
     const rollingStockComfort: string = useSelector(getRollingStockComfort);
     const comfort = t('rollingstock:comfort');
     const comfortType = t(`rollingstock:comfortTypes.${rollingStockComfort}`);
     const choice = t('rollingstock:rollingstockChoice');
 
-    const [getRollingStockByID] = osrdEditoastApi.useLazyGetRollingStockByIdQuery();
+    const [getRollingStockByID] = osrdEditoastApi.useLazyGetRollingStockByRollingStockIdQuery();
 
     const getRollingStock = () => {
-      if (rollingStockID) {
-        getRollingStockByID({ id: rollingStockID })
+      if (rollingStockId) {
+        getRollingStockByID({ rollingStockId })
           .then(({ data }) => setRollingStockSelected(data))
           .catch((err) => console.error(err));
       }
     };
 
     useEffect(() => {
-      if (rollingStockID !== undefined) {
+      if (rollingStockId !== undefined) {
         getRollingStock();
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [rollingStockID]);
+    }, [rollingStockId]);
 
-    const image = <RollingStock2Img rollingStock={rollingStockSelected as RollingStock} />;
+    const image = rollingStockSelected && <RollingStock2Img rollingStock={rollingStockSelected} />;
 
     return (
       <Component

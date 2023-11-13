@@ -12,7 +12,7 @@ import { keyBy } from 'lodash';
 import rollingstockOpenData2OSRD from 'modules/trainschedule/components/ImportTrainSchedule/rollingstock_opendata2osrd.json';
 import nextId from 'react-id-generator';
 import { TrainSchedule } from 'applications/operationalStudies/types';
-import { LightRollingStock } from 'common/api/osrdEditoastApi';
+import { LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 import { TFunction } from 'i18next';
 
 function LoadingIfSearching({ isLoading, t }: { isLoading: boolean; t: TFunction }) {
@@ -25,7 +25,7 @@ function LoadingIfSearching({ isLoading, t }: { isLoading: boolean; t: TFunction
 
 type ImportTrainScheduleTrainsListProps = {
   trainsList: TrainSchedule[];
-  rollingStocks: LightRollingStock[];
+  rollingStocks: LightRollingStockWithLiveries[];
   infraId: number;
   isLoading: boolean;
   timetableId: number;

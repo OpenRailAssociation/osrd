@@ -65,31 +65,6 @@ components:
         - percentage
         - value_type
         type: object
-    Battery:
-      description: energy source for a rolling stock representing a battery
-      properties:
-        efficiency:
-          format: float
-          maximum: 1
-          minimum: 0
-          type: number
-        energy_source_type:
-          enum:
-          - Battery
-          type: string
-        energy_storage:
-          $ref: '#/components/schemas/EnergyStorage'
-        max_input_power:
-          $ref: '#/components/schemas/SpeedDependantPower'
-        max_output_power:
-          $ref: '#/components/schemas/SpeedDependantPower'
-      required:
-      - energy_source_type
-      - max_input_power
-      - max_output_power
-      - energy_storage
-      - efficiency
-      type: object
     BoundingBox:
       description: A bounding box
       items:
@@ -118,28 +93,6 @@ components:
       - catenary_ranges
       - warnings
       type: object
-    Catenary:
-      description: energy source for a rolling stock representing a catenary
-      properties:
-        efficiency:
-          format: float
-          maximum: 1
-          minimum: 0
-          type: number
-        energy_source_type:
-          enum:
-          - Catenary
-          type: string
-        max_input_power:
-          $ref: '#/components/schemas/SpeedDependantPower'
-        max_output_power:
-          $ref: '#/components/schemas/SpeedDependantPower'
-      required:
-      - energy_source_type
-      - max_input_power
-      - max_output_power
-      - efficiency
-      type: object
     Comfort:
       default: STANDARD
       description: Train comfort that will be used for the simulation
@@ -151,20 +104,12 @@ components:
     ConditionalEffortCurve:
       properties:
         cond:
-          nullable: true
-          properties:
-            comfort:
-              $ref: '#/components/schemas/Comfort'
-              nullable: true
-            electrical_profile_level:
-              nullable: true
-              type: string
-            power_restriction_code:
-              nullable: true
-              type: string
-          type: object
+          $ref: '#/components/schemas/EffortCurveConditions'
         curve:
           $ref: '#/components/schemas/EffortCurve'
+      required:
+      - cond
+      - curve
       type: object
     Conflict:
       properties:
@@ -214,6 +159,12 @@ components:
       - operation_type
       - obj_type
       - obj_id
+    DeleteRollingStockQueryParams:
+      properties:
+        force:
+          description: force the deletion even if it’s used
+          type: boolean
+      type: object
     Direction:
       enum:
       - START_TO_STOP
@@ -248,7 +199,7 @@ components:
           - 23200.0
           - 21200.0
           items:
-            format: float
+            format: double
             type: number
           minItems: 2
           type: array
@@ -258,10 +209,38 @@ components:
           - 2.958
           - 46.719
           items:
-            format: float
+            format: double
             type: number
           minItems: 2
           type: array
+      required:
+      - speeds
+      - max_efforts
+      type: object
+    EffortCurveConditions:
+      properties:
+        comfort:
+          allOf:
+          - $ref: '#/components/schemas/RollingStockComfortType'
+          nullable: true
+        electrical_profile_level:
+          nullable: true
+          type: string
+        power_restriction_code:
+          nullable: true
+          type: string
+      type: object
+    EffortCurves:
+      properties:
+        default_mode:
+          type: string
+        modes:
+          additionalProperties:
+            $ref: '#/components/schemas/ModeEffortCurves'
+          type: object
+      required:
+      - modes
+      - default_mode
       type: object
     ElectricalProfile:
       properties:
@@ -317,48 +296,98 @@ components:
       - object_type
       - profile_handled
     EnergySource:
-      description: enery source of a rolling stock
-      discriminator:
-        propertyName: energy_source_type
+      description: energy source of a rolling stock
       oneOf:
-      - $ref: '#/components/schemas/Catenary'
-      - $ref: '#/components/schemas/PowerPack'
-      - $ref: '#/components/schemas/Battery'
+      - description: energy source for a rolling stock representing a catenary
+        properties:
+          efficiency:
+            format: double
+            maximum: 1
+            minimum: 0
+            type: number
+          energy_source_type:
+            enum:
+            - Catenary
+            type: string
+          max_input_power:
+            $ref: '#/components/schemas/SpeedDependantPower'
+          max_output_power:
+            $ref: '#/components/schemas/SpeedDependantPower'
+        required:
+        - max_input_power
+        - max_output_power
+        - efficiency
+        - energy_source_type
+        type: object
+      - properties:
+          efficiency:
+            format: double
+            maximum: 1
+            minimum: 0
+            type: number
+          energy_source_type:
+            enum:
+            - PowerPack
+            type: string
+          energy_storage:
+            $ref: '#/components/schemas/EnergyStorage'
+          max_input_power:
+            $ref: '#/components/schemas/SpeedDependantPower'
+          max_output_power:
+            $ref: '#/components/schemas/SpeedDependantPower'
+        required:
+        - max_input_power
+        - max_output_power
+        - energy_storage
+        - efficiency
+        - energy_source_type
+        type: object
+      - description: energy source for a rolling stock representing a battery
+        properties:
+          efficiency:
+            format: double
+            maximum: 1
+            minimum: 0
+            type: number
+          energy_source_type:
+            enum:
+            - Battery
+            type: string
+          energy_storage:
+            $ref: '#/components/schemas/EnergyStorage'
+          max_input_power:
+            $ref: '#/components/schemas/SpeedDependantPower'
+          max_output_power:
+            $ref: '#/components/schemas/SpeedDependantPower'
+        required:
+        - max_input_power
+        - max_output_power
+        - energy_storage
+        - efficiency
+        - energy_source_type
+        type: object
     EnergyStorage:
       description: energy storage of an energy source (of a rolling stock, can be a electrical battery or a hydrogen/fuel powerPack)
       properties:
         capacity:
-          format: float
+          format: double
           type: number
         refill_law:
-          description: physical law defining how the storage can be refilled
+          allOf:
+          - $ref: '#/components/schemas/RefillLaw'
           nullable: true
-          properties:
-            soc_ref:
-              format: float
-              maximum: 1
-              minimum: 0
-              type: number
-            tau:
-              format: float
-              minimum: 0
-              type: number
-          required:
-          - tau
-          - soc_ref
-          type: object
         soc:
-          format: float
+          format: double
           maximum: 1
           minimum: 0
           type: number
         soc_max:
-          format: float
+          format: double
           maximum: 1
           minimum: 0
           type: number
         soc_min:
-          format: float
+          format: double
           maximum: 1
           minimum: 0
           type: number
@@ -367,7 +396,6 @@ components:
       - soc
       - soc_min
       - soc_max
-      - refill_law
       type: object
     EngineeringAllowance:
       allOf:
@@ -382,6 +410,17 @@ components:
         required:
         - distribution
         type: object
+    Gamma:
+      properties:
+        type:
+          type: string
+        value:
+          format: double
+          type: number
+      required:
+      - type
+      - value
+      type: object
     GeoJson:
       description: A GeoJSON geometry item
       oneOf:
@@ -662,41 +701,113 @@ components:
       - context
       - message
       type: object
+    LightEffortCurves:
+      properties:
+        default_mode:
+          type: string
+        modes:
+          additionalProperties:
+            $ref: '#/components/schemas/LightModeEffortCurves'
+          type: object
+      required:
+      - modes
+      - default_mode
+      type: object
+    LightModeEffortCurves:
+      properties:
+        is_electric:
+          type: boolean
+      required:
+      - is_electric
+      type: object
     LightRollingStock:
+      properties:
+        base_power_class:
+          nullable: true
+          type: string
+        comfort_acceleration:
+          format: double
+          type: number
+        effort_curves:
+          $ref: '#/components/schemas/LightEffortCurves'
+        energy_sources:
+          items:
+            $ref: '#/components/schemas/EnergySource'
+          type: array
+        features:
+          items:
+            type: string
+          type: array
+        gamma:
+          $ref: '#/components/schemas/Gamma'
+        id:
+          format: int64
+          type: integer
+        inertia_coefficient:
+          format: double
+          type: number
+        length:
+          format: double
+          type: number
+        loading_gauge:
+          type: string
+        locked:
+          type: boolean
+        mass:
+          format: double
+          type: number
+        max_speed:
+          format: double
+          type: number
+        metadata:
+          $ref: '#/components/schemas/RollingStockMetadata'
+        name:
+          type: string
+        power_restrictions:
+          additionalProperties:
+            type: string
+          type: object
+        railjson_version:
+          type: string
+        rolling_resistance:
+          $ref: '#/components/schemas/RollingResistance'
+        startup_acceleration:
+          format: double
+          type: number
+        startup_time:
+          format: double
+          type: number
+      required:
+      - id
+      - name
+      - railjson_version
+      - locked
+      - effort_curves
+      - length
+      - max_speed
+      - startup_time
+      - startup_acceleration
+      - comfort_acceleration
+      - gamma
+      - inertia_coefficient
+      - features
+      - mass
+      - rolling_resistance
+      - loading_gauge
+      - metadata
+      - power_restrictions
+      - energy_sources
+      type: object
+    LightRollingStockWithLiveries:
       allOf:
-      - $ref: '#/components/schemas/RollingStockBase'
+      - $ref: '#/components/schemas/LightRollingStock'
       - properties:
-          effort_curves:
-            properties:
-              default_mode:
-                type: string
-              modes:
-                additionalProperties:
-                  properties:
-                    is_electric:
-                      type: boolean
-                  required:
-                  - is_electric
-                  type: object
-                type: object
-            required:
-            - default_mode
-            - modes
-            type: object
-          id:
-            type: number
           liveries:
             items:
-              $ref: '#/components/schemas/RollingStockLivery'
+              $ref: '#/components/schemas/RollingStockLiveryMetadata'
             type: array
-          railjson_version:
-            example: '3.2'
-            type: string
         required:
-        - railjson_version
-        - id
         - liveries
-        - effort_curves
         type: object
     LightTrainSchedule:
       description: Returns the timetable with the main information about a train
@@ -744,6 +855,21 @@ components:
           type: number
       required:
       - base
+      type: object
+    ModeEffortCurves:
+      properties:
+        curves:
+          items:
+            $ref: '#/components/schemas/ConditionalEffortCurve'
+          type: array
+        default_curve:
+          $ref: '#/components/schemas/EffortCurve'
+        is_electric:
+          type: boolean
+      required:
+      - curves
+      - default_curve
+      - is_electric
       type: object
     MultiLineString:
       description: GeoJSon geometry
@@ -870,6 +996,34 @@ components:
       - LastModifiedDesc
       - LastModifiedAsc
       type: string
+    PaginatedResponseOfLightRollingStockWithLiveries:
+      description: A paginated response
+      properties:
+        count:
+          description: The total number of items
+          format: int64
+          type: integer
+        next:
+          description: The next page number
+          format: int64
+          nullable: true
+          type: integer
+        previous:
+          description: The previous page number
+          format: int64
+          nullable: true
+          type: integer
+        results:
+          description: The list of results
+          items:
+            $ref: '#/components/schemas/LightRollingStockWithLiveries'
+          type: array
+      required:
+      - count
+      - previous
+      - next
+      - results
+      type: object
     PaginatedResponseOfProjectWithStudies:
       description: A paginated response
       properties:
@@ -1160,30 +1314,12 @@ components:
       - type
       - coordinates
       type: object
-    PowerPack:
-      description: energy source for a rolling stock representing a power pack (hydrogen, fuel...)
+    PowerRestriction:
       properties:
-        efficiency:
-          format: float
-          maximum: 1
-          minimum: 0
-          type: number
-        energy_source_type:
-          enum:
-          - PowerPack
+        power_restriction:
           type: string
-        energy_storage:
-          $ref: '#/components/schemas/EnergyStorage'
-        max_input_power:
-          $ref: '#/components/schemas/SpeedDependantPower'
-        max_output_power:
-          $ref: '#/components/schemas/SpeedDependantPower'
       required:
-      - energy_source_type
-      - max_input_power
-      - max_output_power
-      - energy_storage
-      - efficiency
+      - power_restriction
       type: object
     PowerRestrictionRange:
       description: A range along the train path where a power restriction is applied.
@@ -1467,37 +1603,82 @@ components:
       - end
       - value
       type: object
+    RefillLaw:
+      description: physical law defining how the storage can be refilled
+      properties:
+        soc_ref:
+          format: double
+          maximum: 1
+          minimum: 0
+          type: number
+        tau:
+          format: double
+          minimum: 0
+          type: number
+      required:
+      - tau
+      - soc_ref
+      type: object
+    RollingResistance:
+      properties:
+        A:
+          format: double
+          type: number
+        B:
+          format: double
+          type: number
+        C:
+          format: double
+          type: number
+        type:
+          type: string
+      required:
+      - type
+      - A
+      - B
+      - C
+      type: object
     RollingStock:
       allOf:
-      - $ref: '#/components/schemas/RollingStockUpsertPayload'
+      - $ref: '#/components/schemas/RollingStockCommon'
       - properties:
           id:
-            type: number
-          liveries:
-            items:
-              $ref: '#/components/schemas/RollingStockLivery'
-            type: array
+            format: int64
+            type: integer
+          locked:
+            description: Whether the rolling stock can be edited/deleted or not.
+            type: boolean
+          metadata:
+            $ref: '#/components/schemas/RollingStockMetadata'
           railjson_version:
-            example: '3.2'
             type: string
         required:
-        - railjson_version
         - id
-        - liveries
+        - railjson_version
+        - locked
+        - metadata
         type: object
-    RollingStockBase:
+    RollingStockComfortType:
+      enum:
+      - STANDARD
+      - AC
+      - HEATING
+      type: string
+    RollingStockCommon:
       properties:
         base_power_class:
           example: '5'
           nullable: true
           type: string
         comfort_acceleration:
-          format: float
+          format: double
           type: number
+        effort_curves:
+          $ref: '#/components/schemas/EffortCurves'
         electrical_power_startup_time:
           description: The time the train takes before actually using electrical power (in seconds). Is null if the train is not electric.
           example: 5.0
-          format: float
+          format: double
           nullable: true
           type: number
         energy_sources:
@@ -1509,130 +1690,46 @@ components:
             type: string
           type: array
         gamma:
-          properties:
-            type:
-              enum:
-              - CONST
-              - MAX
-              type: string
-            value:
-              format: float
-              type: number
-          required:
-          - type
-          - value
-          type: object
+          $ref: '#/components/schemas/Gamma'
         inertia_coefficient:
-          format: float
+          format: double
           type: number
         length:
-          format: float
+          format: double
           type: number
         loading_gauge:
-          enum:
-          - G1
-          - G2
-          - GA
-          - GB
-          - GB1
-          - GC
-          - FR3.3
-          - FR3.3/GB/G2
-          - GLOTT
+          example: GC
           type: string
-        locked:
-          default: false
-          description: Whether the rolling stock can be edited/deleted or not.
-          type: boolean
         mass:
-          format: float
+          format: double
           type: number
         max_speed:
-          format: float
+          format: double
           type: number
-        metadata:
-          example:
-            detail: BB 7200
-            family: LOCOMOTIVES
-            grouping: Locomotives électriques courant continu
-            number: '1'
-            reference: '7200'
-            series: BB 7200
-            subseries: GV
-            type: Locomotives électriques
-            unit: US
-          properties:
-            detail:
-              type: string
-            family:
-              type: string
-            grouping:
-              type: string
-            number:
-              type: string
-            reference:
-              type: string
-            series:
-              type: string
-            subseries:
-              type: string
-            type:
-              type: string
-            unit:
-              type: string
-          required:
-          - detail
-          - family
-          - grouping
-          - number
-          - reference
-          - series
-          - subseries
-          - type
-          - unit
-          type: object
         name:
           type: string
         power_restrictions:
           additionalProperties:
             type: string
           description: Mapping of power restriction code to power class
-          example:
-            C1US: '4'
-            C2US: '3'
           type: object
         raise_pantograph_time:
           description: The time it takes to raise this train's pantograph in seconds. Is null if the train is not electric.
           example: 15.0
-          format: float
+          format: double
           nullable: true
           type: number
         rolling_resistance:
-          properties:
-            A:
-              type: number
-            B:
-              type: number
-            C:
-              type: number
-            type:
-              enum:
-              - davis
-              type: string
-          required:
-          - A
-          - B
-          - C
-          - type
-          type: object
+          $ref: '#/components/schemas/RollingResistance'
         startup_acceleration:
-          format: float
+          format: double
           type: number
         startup_time:
-          format: float
+          format: double
           type: number
       required:
       - name
+      - effort_curves
       - length
       - max_speed
       - startup_time
@@ -1644,99 +1741,180 @@ components:
       - mass
       - rolling_resistance
       - loading_gauge
-      - base_power_class
       - power_restrictions
-      - metadata
-      - energy_sources
-      - electrical_power_startup_time
-      - raise_pantograph_time
-    RollingStockComfortType:
-      enum:
-      - STANDARD
-      - AC
-      - HEATING
-      type: string
+      type: object
+    RollingStockError:
+      oneOf:
+      - enum:
+        - CannotReadImage
+        type: string
+      - enum:
+        - CannotCreateCompoundImage
+        type: string
+      - properties:
+          NotFound:
+            properties:
+              rolling_stock_id:
+                format: int64
+                type: integer
+            required:
+            - rolling_stock_id
+            type: object
+        required:
+        - NotFound
+        type: object
+      - properties:
+          NameAlreadyUsed:
+            properties:
+              name:
+                type: string
+            required:
+            - name
+            type: object
+        required:
+        - NameAlreadyUsed
+        type: object
+      - properties:
+          RollingStockIsLocked:
+            properties:
+              rolling_stock_id:
+                format: int64
+                type: integer
+            required:
+            - rolling_stock_id
+            type: object
+        required:
+        - RollingStockIsLocked
+        type: object
+      - properties:
+          RollingStockIsUsed:
+            properties:
+              rolling_stock_id:
+                format: int64
+                type: integer
+              usage:
+                items:
+                  $ref: '#/components/schemas/TrainScheduleScenarioStudyProject'
+                type: array
+            required:
+            - rolling_stock_id
+            - usage
+            type: object
+        required:
+        - RollingStockIsUsed
+        type: object
+      - enum:
+        - BasePowerClassEmpty
+        type: string
+    RollingStockForm:
+      allOf:
+      - $ref: '#/components/schemas/RollingStockCommon'
+      - properties:
+          locked:
+            nullable: true
+            type: boolean
+          metadata:
+            $ref: '#/components/schemas/RollingStockMetadata'
+        required:
+        - metadata
+        type: object
     RollingStockLivery:
       properties:
         compound_image_id:
+          format: int64
           nullable: true
-          type: number
+          type: integer
         id:
-          type: number
+          format: int64
+          type: integer
+        name:
+          type: string
+        rolling_stock_id:
+          format: int64
+          type: integer
+      required:
+      - id
+      - name
+      - rolling_stock_id
+      type: object
+    RollingStockLiveryCreateForm:
+      properties:
+        images:
+          items:
+            format: binary
+            type: string
+          type: array
+        name:
+          type: string
+      required:
+      - name
+      - images
+      type: object
+    RollingStockLiveryMetadata:
+      properties:
+        compound_image_id:
+          format: int64
+          nullable: true
+          type: integer
+        id:
+          format: int64
+          type: integer
         name:
           type: string
       required:
       - id
       - name
-      - compound_image_id
-    RollingStockUpsertPayload:
-      allOf:
-      - $ref: '#/components/schemas/RollingStockBase'
-      - properties:
-          effort_curves:
-            properties:
-              default_mode:
-                type: string
-              modes:
-                additionalProperties:
-                  properties:
-                    curves:
-                      items:
-                        $ref: '#/components/schemas/ConditionalEffortCurve'
-                      type: array
-                    default_curve:
-                      $ref: '#/components/schemas/EffortCurve'
-                    is_electric:
-                      type: boolean
-                  required:
-                  - curves
-                  - default_curve
-                  - is_electric
-                  type: object
-                type: object
-            required:
-            - default_mode
-            - modes
-            type: object
-        required:
-        - effort_curves
-        type: object
-    RollingStockUsage:
-      properties:
-        rolling_stock_id:
-          type: integer
-        usage:
-          properties:
-            project_id:
-              type: integer
-            project_name:
-              type: string
-            scenario_id:
-              type: integer
-            scenario_name:
-              type: string
-            study_id:
-              type: integer
-            study_name:
-              type: string
-            train_name:
-              type: string
-            train_schedule_id:
-              type: integer
-          required:
-          - train_schedule_id
-          - train_name
-          - project_id
-          - project_name
-          - study_id
-          - study_name
-          - scenario_id
-          - scenario_name
-          type: object
-      required:
-      - rolling_stock_id
-      - usage
       type: object
+    RollingStockLockedUpdateForm:
+      properties:
+        locked:
+          description: New locked value
+          type: boolean
+      required:
+      - locked
+      type: object
+    RollingStockMetadata:
+      properties:
+        detail:
+          type: string
+        family:
+          type: string
+        grouping:
+          type: string
+        number:
+          type: string
+        reference:
+          type: string
+        series:
+          type: string
+        subseries:
+          type: string
+        type:
+          type: string
+        unit:
+          type: string
+      required:
+      - detail
+      - family
+      - type
+      - grouping
+      - series
+      - subseries
+      - unit
+      - number
+      - reference
+      type: object
+    RollingStockWithLiveries:
+      allOf:
+      - $ref: '#/components/schemas/RollingStock'
+      - properties:
+          liveries:
+            items:
+              $ref: '#/components/schemas/RollingStockLiveryMetadata'
+            type: array
+        required:
+        - liveries
+        type: object
     RouteTrackRangesCantComputePathError:
       description: Error when the route path couldn't be computed
       properties:
@@ -2543,12 +2721,12 @@ components:
       properties:
         powers:
           items:
-            format: float
+            format: double
             type: number
           type: array
         speeds:
           items:
-            format: float
+            format: double
             type: number
           type: array
       required:
@@ -3049,6 +3227,38 @@ components:
           type: string
       required:
       - id
+      type: object
+    TrainScheduleScenarioStudyProject:
+      properties:
+        project_id:
+          format: int64
+          type: integer
+        project_name:
+          type: string
+        scenario_id:
+          format: int64
+          type: integer
+        scenario_name:
+          type: string
+        study_id:
+          format: int64
+          type: integer
+        study_name:
+          type: string
+        train_name:
+          type: string
+        train_schedule_id:
+          format: int64
+          type: integer
+      required:
+      - train_schedule_id
+      - train_name
+      - project_id
+      - project_name
+      - study_id
+      - study_name
+      - scenario_id
+      - scenario_name
       type: object
     TrainScheduleSummary:
       allOf:
@@ -4187,58 +4397,57 @@ paths:
       - layers
   /light_rolling_stock/:
     get:
+      description: Paginated list of rolling stock with a lighter response
       parameters:
-      - description: Page number
-        in: query
+      - in: query
         name: page
+        required: false
         schema:
           default: 1
+          format: int64
           minimum: 1
           type: integer
-      - description: Number of elements by page
-        in: query
+      - in: query
         name: page_size
+        required: false
         schema:
-          default: 100
-          maximum: 10000
+          default: 25
+          format: int64
           minimum: 1
+          nullable: true
           type: integer
       responses:
         '200':
           content:
             application/json:
               schema:
-                properties:
-                  count:
-                    type: number
-                  next: {}
-                  previous: {}
-                  results:
-                    items:
-                      $ref: '#/components/schemas/LightRollingStock'
-                    type: array
-                required:
-                - results
-                type: object
-          description: The rolling stock list
+                $ref: '#/components/schemas/PaginatedResponseOfLightRollingStockWithLiveries'
+          description: ''
       summary: Paginated list of rolling stock with a lighter response
       tags:
       - rolling_stock
-  /light_rolling_stock/{id}/:
+  /light_rolling_stock/{rolling_stock_id}/:
     get:
+      description: Retrieve a rolling stock's light representation
       parameters:
-      - description: Rolling Stock ID
-        in: path
-        name: id
+      - in: path
+        name: rolling_stock_id
         required: true
         schema:
+          format: int64
+          type: integer
+      - in: path
+        name: rolling_stock_id
+        required: true
+        schema:
+          format: int64
           type: integer
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/LightRollingStock'
+                $ref: '#/components/schemas/LightRollingStockWithLiveries'
           description: The rolling stock with their simplified effort curves
       summary: Retrieve a rolling stock's light representation
       tags:
@@ -4871,18 +5080,19 @@ paths:
       - scenarios
   /rolling_stock/:
     post:
+      description: Create a rolling stock
       parameters:
-      - description: whether or not the rolling_stock can be edited/deleted.
-        in: query
+      - in: query
         name: locked
+        required: false
         schema:
-          default: false
           type: boolean
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RollingStockUpsertPayload'
+              $ref: '#/components/schemas/RollingStockForm'
+        required: true
       responses:
         '200':
           content:
@@ -4895,147 +5105,145 @@ paths:
       - rolling_stock
   /rolling_stock/power_restrictions/:
     get:
+      description: Returns the set of power restrictions for all rolling_stocks modes.
       responses:
         '200':
           content:
             application/json:
               schema:
-                example:
-                - AAA
-                - ABC
-                - 1AZE
                 items:
                   type: string
                 type: array
-          description: power restrictions list
-      summary: List all power restrictions
+          description: Retrieve the power restrictions list
+      summary: Returns the set of power restrictions for all rolling_stocks modes.
       tags:
       - rolling_stock
-  /rolling_stock/{id}/:
+  /rolling_stock/{rolling_stock_id}/:
     delete:
+      description: Delete a rolling_stock and all entities linked to it
       parameters:
-      - description: rolling_stock id
-        in: path
-        name: id
+      - in: path
+        name: rolling_stock_id
         required: true
         schema:
-          type: integer
-      - description: force the deletion even if it’s used
-        in: query
-        name: force
-        schema:
-          default: false
-          type: boolean
-      responses:
-        '204':
-          description: No content
-        '409':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RollingStockUsage'
-          description: Rolling stock is used in a train schedule.
-      summary: Delete a rolling_stock and all entities linked to it
-      tags:
-      - rolling_stock
-    get:
-      parameters:
-      - description: Rolling Stock ID
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RollingStock'
-          description: The rolling stock information
-      summary: Retrieve a rolling stock
-      tags:
-      - rolling_stock
-    patch:
-      parameters:
-      - description: Rolling Stock ID
-        in: path
-        name: id
-        required: true
-        schema:
+          format: int64
           type: integer
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RollingStockUpsertPayload'
+              $ref: '#/components/schemas/DeleteRollingStockQueryParams'
+        required: true
+      responses:
+        '204':
+          description: The rolling stock was deleted successfully
+        '404':
+          description: The requested rolling stock was not found
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RollingStockError'
+          description: The requested rolling stock is used
+      summary: Delete a rolling_stock and all entities linked to it
+      tags:
+      - rolling_stock
+    get:
+      description: Get a rolling stock by Id
+      parameters:
+      - in: path
+        name: rolling_stock_id
+        required: true
+        schema:
+          format: int64
+          type: integer
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RollingStockWithLiveries'
+          description: The requested rolling stock
+      summary: Get a rolling stock by Id
+      tags:
+      - rolling_stock
+    patch:
+      description: Patch a rolling stock
+      parameters:
+      - in: path
+        name: rolling_stock_id
+        required: true
+        schema:
+          format: int64
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RollingStockForm'
+        required: true
       responses:
         '200':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/RollingStock'
-          description: The updated rolling stock
+          description: The created rolling stock
       summary: Patch a rolling stock
       tags:
       - rolling_stock
-  /rolling_stock/{id}/livery/:
+  /rolling_stock/{rolling_stock_id}/livery/:
     post:
+      description: Create a rolling stock livery
       parameters:
-      - description: Rolling Stock ID
-        in: path
-        name: id
+      - in: path
+        name: rolling_stock_id
         required: true
         schema:
+          format: int64
           type: integer
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
-              properties:
-                images:
-                  items:
-                    format: binary
-                    type: string
-                  type: array
-                name:
-                  type: string
-              type: object
+              $ref: '#/components/schemas/RollingStockLiveryCreateForm'
+        required: true
       responses:
         '200':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/RollingStockLivery'
-          description: The rolling stock livery
+          description: The created rolling stock
+        '404':
+          description: The requested rolling stock was not found
       summary: Create a rolling stock livery
       tags:
       - rolling_stock
       - rolling_stock_livery
-  /rolling_stock/{id}/locked/:
+  /rolling_stock/{rolling_stock_id}/locked/:
     patch:
+      description: Update rolling_stock locked field
       parameters:
-      - description: Rolling_stock id
-        in: path
-        name: id
+      - in: path
+        name: rolling_stock_id
         required: true
         schema:
+          format: int64
           type: integer
       requestBody:
         content:
           application/json:
             schema:
-              properties:
-                locked:
-                  type: boolean
-              type: object
-        description: New locked value
+              $ref: '#/components/schemas/RollingStockLockedUpdateForm'
         required: true
       responses:
-        '204':
-          description: No content
-        '404':
-          description: Not found
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RollingStock'
+          description: The created rolling stock
       summary: Update rolling_stock locked field
       tags:
       - rolling_stock

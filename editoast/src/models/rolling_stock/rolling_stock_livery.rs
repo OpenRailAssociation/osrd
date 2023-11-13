@@ -12,6 +12,7 @@ use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
 use serde::{Deserialize, Serialize};
 
 use editoast_derive::Model;
+use utoipa::ToSchema;
 
 /// Rolling Stock Livery
 ///
@@ -79,7 +80,7 @@ impl From<RollingStockLiveryModel> for RollingStockLivery {
     }
 }
 
-#[derive(Debug, Deserialize, Queryable, QueryableByName, Selectable, Serialize)]
+#[derive(Debug, Deserialize, Queryable, QueryableByName, Selectable, Serialize, ToSchema)]
 #[diesel(table_name = rolling_stock_livery)]
 pub struct RollingStockLiveryMetadata {
     #[diesel(sql_type = BigInt)]

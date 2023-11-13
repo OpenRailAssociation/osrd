@@ -5,7 +5,7 @@ import { RollingStockCard } from 'modules/rollingStock/components/RollingStockCa
 import { useDispatch } from 'react-redux';
 import Loader from 'common/Loader';
 import { useTranslation } from 'react-i18next';
-import { LightRollingStock, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { LightRollingStockWithLiveries, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import RollingStockEditorButtons from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorButtons';
 import RollingStockInformationPanel from 'modules/rollingStock/components/RollingStockEditor/RollingStockInformationPanel';
 import RollingStockEditorForm from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorForm';
@@ -20,7 +20,7 @@ import RollingStockEditorFormModal from 'modules/rollingStock/components/Rolling
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 
 type RollingStockEditorProps = {
-  rollingStocks: LightRollingStock[];
+  rollingStocks: LightRollingStockWithLiveries[];
 };
 
 export default function RollingStockEditor({ rollingStocks }: RollingStockEditorProps) {
@@ -36,14 +36,15 @@ export default function RollingStockEditor({ rollingStocks }: RollingStockEditor
 
   const [openedRollingStockCardId, setOpenedRollingStockCardId] = useState<number>();
 
-  const { data: selectedRollingStock } = osrdEditoastApi.endpoints.getRollingStockById.useQuery(
-    {
-      id: openedRollingStockCardId as number,
-    },
-    {
-      skip: !openedRollingStockCardId,
-    }
-  );
+  const { data: selectedRollingStock } =
+    osrdEditoastApi.endpoints.getRollingStockByRollingStockId.useQuery(
+      {
+        rollingStockId: openedRollingStockCardId as number,
+      },
+      {
+        skip: !openedRollingStockCardId,
+      }
+    );
 
   const resetRollingstockCurvesParams = () => {
     dispatch(updateComfortLvl(STANDARD_COMFORT_LEVEL));

@@ -2,7 +2,7 @@ import {
   Comfort,
   ConditionalEffortCurve,
   RollingStock,
-  RollingStockUpsertPayload,
+  RollingStockForm,
 } from 'common/api/osrdEditoastApi';
 import { has, isNull, omitBy, some } from 'lodash';
 import {
@@ -103,11 +103,11 @@ export const getRollingStockEditorDefaultValues = (
         rollingResistanceA: rollingStockData.rolling_resistance.A,
         rollingResistanceB: rollingStockData.rolling_resistance.B,
         rollingResistanceC: rollingStockData.rolling_resistance.C,
-        electricalPowerStartupTime: rollingStockData.electrical_power_startup_time,
-        raisePantographTime: rollingStockData.raise_pantograph_time,
+        electricalPowerStartupTime: rollingStockData.electrical_power_startup_time || null,
+        raisePantographTime: rollingStockData.raise_pantograph_time || null,
         defaultMode: rollingStockData.effort_curves.default_mode,
         effortCurves,
-        basePowerClass: rollingStockData.base_power_class,
+        basePowerClass: rollingStockData.base_power_class || null,
         powerRestrictions: rollingStockData.power_restrictions,
       }
     : {
@@ -120,7 +120,7 @@ export const getRollingStockEditorDefaultValues = (
 export const rollingStockEditorQueryArg = (
   data: RollingStockParametersValidValues,
   currentRsEffortCurve: RollingStock['effort_curves']
-): RollingStockUpsertPayload => ({
+): RollingStockForm => ({
   name: data.name,
   length: data.length,
   max_speed: data.maxSpeed / 3.6, // The user enters a value in km/h, which is then interpreted in m/s by the server.
@@ -157,7 +157,7 @@ export const rollingStockEditorQueryArg = (
     unit: data.unit,
   },
   effort_curves: currentRsEffortCurve,
-  base_power_class: data.basePowerClass || null,
+  base_power_class: data.basePowerClass,
 });
 
 export const checkRollingStockFormValidity = (
