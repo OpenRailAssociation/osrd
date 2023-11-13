@@ -294,7 +294,7 @@ const Editor: FC = () => {
               )}
 
               <div className="nav-box">
-                {NavButtons.flatMap((navButtons, i, a) => {
+                {NavButtons.flatMap((navButtons) => {
                   const buttons = navButtons.map((navButton) => {
                     const {
                       id,
@@ -356,8 +356,6 @@ const Editor: FC = () => {
                     );
                   });
 
-                  if (i < a.length - 1)
-                    return buttons.concat([<div key={`separator-${i}`} className="separator" />]);
                   return buttons;
                 })}
               </div>

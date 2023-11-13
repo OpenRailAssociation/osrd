@@ -1,7 +1,7 @@
 import React, { FC, useCallback, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { LngLatBoundsLike, MapRef } from 'react-map-gl/maplibre';
-import { BsFillExclamationOctagonFill } from 'react-icons/bs';
+import { BsExclamationOctagon } from 'react-icons/bs';
 import { useTranslation } from 'react-i18next';
 
 import useKeyboardShortcuts from 'utils/hooks/useKeyboardShortcuts';
@@ -83,7 +83,7 @@ const InfraErrorMapControl: FC<{
       disabled={total === 0}
     >
       <span className="px-1">{label}</span>
-      <BsFillExclamationOctagonFill size="1.2em" className="ml-1 text-danger" />
+      <BsExclamationOctagon size="1.2em" className="ml-1 text-danger" />
     </button>
   );
 };

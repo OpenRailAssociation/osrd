@@ -17,6 +17,7 @@
     "filter": "Filter",
     "help": "Help",
     "help-display": "Show help",
+    "help-legend": "Show legend",
     "itinerary": "Route",
     "loading": "Loading...",
     "next": "Next",
@@ -196,6 +197,7 @@
       "sync-length-with-geometry": "Synchronize with the geometry"
     },
     "nav": {
+      "choose-infra": "Choose an infrastructure",
       "infra-changed": "You are now editing the infra \"{{label}}\" (id \"{{id}}\").",
       "infra-errors": "Display current infrastructure issues on the map",
       "infra-errors-list": "Configure display of issues",

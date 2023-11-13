@@ -2,7 +2,7 @@ import React, { FC, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import cx from 'classnames';
-import { BsFillExclamationOctagonFill } from 'react-icons/bs';
+import { BsExclamationOctagon } from 'react-icons/bs';
 import { isNil, uniqueId } from 'lodash';
 
 import { EditorEntity } from 'types';
@@ -30,7 +30,7 @@ const EntityError: FC<{ entity: EditorEntity; className?: string }> = ({ entity,
   return hasError ? (
     <div className={cx('entity-errors-linked', className)}>
       <h4>
-        <BsFillExclamationOctagonFill className="mr-1" />
+        <BsExclamationOctagon className="mr-1" />
         {t('Editor.entities.errors-linked')}
       </h4>
       <div className="small">

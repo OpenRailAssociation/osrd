@@ -17,6 +17,7 @@
     "filter": "Filtrer",
     "help": "Aide",
     "help-display": "Afficher l'aide",
+    "help-legend": "Afficher la légende",
     "itinerary": "Itinéraire",
     "loading": "Chargement…",
     "next": "Suivant",
@@ -196,6 +197,7 @@
       "sync-length-with-geometry": "Synchroniser avec la géométrie"
     },
     "nav": {
+      "choose-infra": "Choisissez une infrastructure",
       "infra-changed": "Vous éditez maintenant l'infra \"{{label}}\" (id \"{{id}}\").",
       "infra-errors-map": "Afficher/Masquer les anomalies d'infrastructure",
       "infra-errors-list": "Gestion et affichage des anomalies",
@@ -238,7 +240,7 @@
           "delete-catenary": "Supprimer l'électrification"
         },
         "help": {
-          "init":"Cliquez sur un tronçon d'itinéraire pour l'associer à l'électrification",
+          "init": "Cliquez sur un tronçon d'itinéraire pour l'associer à l'électrification",
           "add-track": "Ajouter le tronçon '{{track.id}}' à l'électrification {{voltage}}",
           "remove-range": "Supprimer le tronçon de l'électrification {{voltage}}"
         },
