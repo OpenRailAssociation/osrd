@@ -32,6 +32,7 @@ export function getDetectorsNameLayerProps(params: {
 }): OmitLayer<SymbolLayer> {
   const res: OmitLayer<SymbolLayer> = {
     type: 'symbol',
+    minzoom: 8,
     layout: {
       'text-field': '{extensions_sncf_kp}',
       'text-font': ['Roboto Condensed'],

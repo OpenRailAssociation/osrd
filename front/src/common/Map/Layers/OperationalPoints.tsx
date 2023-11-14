@@ -22,6 +22,7 @@ export default function OperationalPoints(props: Props) {
   const point: LayerProps = {
     type: 'circle',
     'source-layer': 'operational_points',
+    minzoom: 8,
     paint: {
       'circle-stroke-color': colors.op.circle,
       'circle-stroke-width': 2,
