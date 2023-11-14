@@ -157,7 +157,7 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
             var range = ranges.get(i);
             var percentage = range.value.getAllowanceRatio(
                     envelopeRegion.getTimeBetween(range.beginPos, range.endPos),
-                    range.beginPos - range.endPos
+                    range.endPos - range.beginPos
             );
             rangePercentages[i] = new RangePercentage(range, percentage);
         }
