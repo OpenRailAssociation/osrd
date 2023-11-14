@@ -1,0 +1,11 @@
+{
+"401": "Unauthenticated user",
+"403": "Access denied",
+"404": "Resource not found",
+"500": "Server errors",
+"502": "Server errors",
+"503": "Server errors",
+"504": "The server did not respond.",
+"default": "An error has occurred.",
+"pageNotFound": "The page you are looking for does not exist."
+}

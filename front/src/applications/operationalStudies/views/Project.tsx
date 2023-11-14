@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import logo from 'assets/pictures/views/studies.svg';
 import { useTranslation } from 'react-i18next';
@@ -14,11 +13,10 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { budgetFormat } from 'utils/numbers';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
-import { useDispatch } from 'react-redux';
 import FilterTextField from 'applications/operationalStudies/components/FilterTextField';
 import { PostSearchApiArg, StudyWithScenarios, osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { setFailure } from 'reducers/main';
 import { getDocument } from 'common/api/documentApi';
+import { useParams } from 'react-router-dom';
 import AddOrEditProjectModal from '../../../modules/project/components/AddOrEditProjectModal';
 import BreadCrumbs from '../components/BreadCrumbs';
 
@@ -52,6 +50,9 @@ function displayStudiesList(
   );
 }
 
+type ProjectParams = {
+  projectId: string;
+};
 export default function Project() {
   const { t } = useTranslation('operationalStudies/project');
   const { openModal } = useModal();
@@ -60,11 +61,16 @@ export default function Project() {
   const [filterChips, setFilterChips] = useState('');
   const [sortOption, setSortOption] = useState<SortOptions>('LastModifiedDesc');
   const [imageUrl, setImageUrl] = useState('');
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const { projectId } = useParams();
+  const { projectId: urlProjectId } = useParams() as ProjectParams;
   const [postSearch] = osrdEditoastApi.usePostSearchMutation();
   const [getStudies] = osrdEditoastApi.useLazyGetProjectsByProjectIdStudiesQuery();
+
+  const { projectId } = useMemo(
+    () => ({
+      projectId: !Number.isNaN(+urlProjectId) ? +urlProjectId : undefined,
+    }),
+    [urlProjectId]
+  );
 
   const sortOptions = [
     {
@@ -77,10 +83,14 @@ export default function Project() {
     },
   ];
 
-  const { data: project, isError: isProjectError } = osrdEditoastApi.useGetProjectsByProjectIdQuery(
-    { projectId: Number(projectId) },
+  const {
+    data: project,
+    isError: isProjectError,
+    error: projectError,
+  } = osrdEditoastApi.useGetProjectsByProjectIdQuery(
+    { projectId: +projectId! },
     {
-      skip: !projectId || Number.isNaN(+projectId),
+      skip: !projectId,
     }
   );
 
@@ -151,9 +161,7 @@ export default function Project() {
   };
 
   useEffect(() => {
-    if (!projectId || Number.isNaN(+projectId)) {
-      navigate('/operational-studies/projects');
-    }
+    if (!projectId) throw new Error('Project id is undefined');
   }, []);
 
   useEffect(() => {
@@ -161,15 +169,8 @@ export default function Project() {
   }, [project?.image]);
 
   useEffect(() => {
-    if (isProjectError) {
-      dispatch(
-        setFailure({
-          name: t('errorHappened'),
-          message: t('errorHappened'),
-        })
-      );
-    }
-  }, [isProjectError]);
+    if (isProjectError && projectError) throw projectError;
+  }, [isProjectError, projectError]);
 
   useEffect(() => {
     if (projectId) getStudiesList();

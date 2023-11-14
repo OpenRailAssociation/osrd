@@ -20,7 +20,7 @@ import { attemptLoginOnLaunch } from 'reducers/user';
 import { OsrdConfContextLayout } from 'common/osrdConfContext';
 import { simulationConfSlice, simulationConfSliceActions } from 'reducers/osrdconf2/simulationConf';
 import { stdcmConfSlice, stdcmConfSliceActions } from 'reducers/osrdconf2/stdcmConf';
-import PageNotFound from 'common/PageNotFound';
+import ErrorBoundary from 'common/ErrorBoundary';
 
 import('@sncf/bootstrap-sncf.metier.reseau/dist/css/bootstrap-sncf.min.css');
 
@@ -56,6 +56,7 @@ const router = createBrowserRouter([
     element: (
       <OsrdConfContextLayout slice={simulationConfSlice} selectors={simulationConfSliceActions} />
     ),
+    errorElement: <ErrorBoundary />,
     children: [
       {
         path: 'projects',
@@ -77,7 +78,7 @@ const router = createBrowserRouter([
   },
   {
     path: '*',
-    element: <PageNotFound />,
+    element: <ErrorBoundary />,
   },
 ]);
 

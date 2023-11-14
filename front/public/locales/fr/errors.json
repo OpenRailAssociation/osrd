@@ -1,0 +1,11 @@
+{
+"401" : "Utilisateur non authentifié",
+"403" : "Accès refusé",
+"404" : "Ressource non trouvée",
+"500" : "Erreurs serveur",
+"502" : "Erreurs serveur",
+"503" : "Erreurs serveur",
+"504" : "Le serveur n'a pas répondu.",
+"default" : "Une erreur est survenue.",
+"pageNotFound" : "La page que vous recherchez n'existe pas."    
+}

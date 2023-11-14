@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import logo from 'assets/pictures/home/operationalStudies.svg';
 import { useTranslation } from 'react-i18next';
@@ -13,7 +13,7 @@ import { getInfraID, getTimetableID } from 'reducers/osrdconf/selectors';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { FaEye, FaEyeSlash, FaPencilAlt } from 'react-icons/fa';
 import { GiElectric } from 'react-icons/gi';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import AddAndEditScenarioModal from 'modules/scenario/components/AddOrEditScenarioModal';
 import ScenarioLoaderMessage from 'modules/scenario/components/ScenarioLoaderMessage';
@@ -51,44 +51,67 @@ export default function Scenario() {
   const isUpdating = useSelector((state: RootState) => state.osrdsimulation.isUpdating);
 
   const { openModal } = useModal();
-  const navigate = useNavigate();
-  const { projectId, studyId, scenarioId } = useParams() as SimulationParams;
+
+  const {
+    projectId: urlProjectId,
+    studyId: urlStudyId,
+    scenarioId: urlScenarioId,
+  } = useParams() as SimulationParams;
   const infraId = useSelector(getInfraID);
   const timetableId = useSelector(getTimetableID);
   const selectedTrainId = useSelector(getSelectedTrainId);
   const selectedProjection = useSelector(getSelectedProjection);
   const allowancesSettings = useSelector(getAllowancesSettings);
 
-  const { data: project } = osrdEditoastApi.endpoints.getProjectsByProjectId.useQuery(
-    {
-      projectId: +projectId,
-    },
-    { skip: !projectId || Number.isNaN(+projectId) }
+  const { projectId, studyId, scenarioId } = useMemo(
+    () => ({
+      projectId: !Number.isNaN(+urlProjectId) ? +urlProjectId : undefined,
+      studyId: !Number.isNaN(+urlStudyId) ? +urlStudyId : undefined,
+      scenarioId: !Number.isNaN(+urlScenarioId) ? +urlScenarioId : undefined,
+    }),
+    [urlStudyId, urlProjectId, urlScenarioId]
   );
-  const { data: study } =
-    osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyId.useQuery(
-      { projectId: +projectId, studyId: +studyId },
-      {
-        skip: !projectId || Number.isNaN(+projectId) || !studyId || Number.isNaN(+studyId),
-      }
-    );
-  const { data: scenario } =
-    osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId.useQuery(
-      {
-        projectId: +projectId,
-        studyId: +studyId,
-        scenarioId: +scenarioId,
-      },
-      {
-        skip:
-          !projectId ||
-          Number.isNaN(+projectId) ||
-          !studyId ||
-          Number.isNaN(+studyId) ||
-          !scenarioId ||
-          Number.isNaN(+scenarioId),
-      }
-    );
+
+  const {
+    data: project,
+    isError: isProjectError,
+    error: errorProject,
+  } = osrdEditoastApi.endpoints.getProjectsByProjectId.useQuery(
+    {
+      projectId: projectId!,
+    },
+    { skip: !projectId }
+  );
+  const {
+    data: study,
+    isError: isStudyError,
+    error: errorStudy,
+  } = osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyId.useQuery(
+    { projectId: projectId!, studyId: studyId! },
+    {
+      skip: !projectId || !studyId,
+    }
+  );
+  const {
+    data: scenario,
+    isError: isScenarioError,
+    error: errorScenario,
+  } = osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId.useQuery(
+    {
+      projectId: projectId!,
+      studyId: studyId!,
+      scenarioId: scenarioId!,
+    },
+    {
+      skip: !projectId || !studyId || !scenarioId,
+    }
+  );
+
+  useEffect(() => {
+    if (isProjectError && errorProject) throw errorProject;
+    if (isStudyError && errorStudy) throw errorStudy;
+    if (isScenarioError && errorScenario) throw errorScenario;
+  }, [isProjectError, isStudyError, isScenarioError, errorProject, errorStudy, errorScenario]);
 
   useEffect(() => {
     if (scenario) {
@@ -163,27 +186,22 @@ export default function Scenario() {
   }, [timetable, infra, selectedProjection]);
 
   useEffect(() => {
-    if (!scenarioId || !studyId || !projectId) {
-      navigate('/operational-studies/study');
+    if (!projectId || !studyId || !scenarioId) {
+      throw new Error('Missing projectId, studyId or scenarioId');
     } else {
       dispatch(updateMode(MODES.simulation));
     }
-    return () => {
+  }, [projectId, studyId, scenarioId]);
+
+  useEffect(
+    () => () => {
       dispatch(updateTimetableID(undefined));
       dispatch(updateInfraID(undefined));
       dispatch(updateSimulation({ trains: [] }));
       dispatch(updateSelectedProjection(undefined));
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!projectId || !studyId || !scenarioId) navigate('/operational-studies/projects');
-    // redirect if projectId or studyId is not a number
-    if (projectId && Number.isNaN(+projectId)) navigate('/operational-studies/projects');
-    if (studyId && Number.isNaN(+studyId)) navigate(`/operational-studies/projects/${projectId}`);
-    if (scenarioId && Number.isNaN(+scenarioId))
-      navigate(`/operational-studies/projects/${projectId}/studies/${studyId}`);
-  }, [projectId, studyId, scenarioId]);
+    },
+    []
+  );
 
   return scenario && infraId && timetableId ? (
     <>
