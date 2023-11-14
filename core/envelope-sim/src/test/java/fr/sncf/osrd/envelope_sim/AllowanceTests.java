@@ -749,4 +749,24 @@ public class AllowanceTests {
         );
         secondAllowance.apply(firstAllowance.apply(maxEffortEnvelope, testContext), testContext);
     }
+
+    @Test
+    public void testPercentageAfterTimePerDistance() {
+        var length = 10_000;
+        var testContext = makeSimpleContext(length, 0, 2.0);
+        var stops = new double[] { 10_000 };
+
+        var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testContext, 40, stops);
+
+        var allowance = new MarecoAllowance(
+                0,
+                10_000,
+                1,
+                List.of(
+                        new AllowanceRange(0, 8_000, new AllowanceValue.TimePerDistance(1_000)),
+                        new AllowanceRange(8_000, 10_000, new AllowanceValue.Percentage(10))
+                )
+        );
+        allowance.apply(maxEffortEnvelope, testContext);
+    }
 }
