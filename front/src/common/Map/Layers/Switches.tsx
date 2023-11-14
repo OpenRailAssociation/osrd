@@ -14,6 +14,7 @@ export function getSwitchesLayerProps(params: {
 }): OmitLayer<CircleLayer> {
   const res: OmitLayer<CircleLayer> = {
     type: 'circle',
+    minzoom: 8,
     paint: {
       'circle-stroke-color': params.colors.switches.circle,
       'circle-stroke-width': 2,
@@ -32,6 +33,7 @@ export function getSwitchesNameLayerProps(params: {
 }): OmitLayer<SymbolLayer> {
   const res: OmitLayer<SymbolLayer> = {
     type: 'symbol',
+    minzoom: 8,
     layout: {
       'text-field': '{label}',
       'text-font': ['Roboto Condensed'],
