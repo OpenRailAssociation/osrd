@@ -44,8 +44,10 @@ public final class CoastingGenerator {
             double endPos,
             double lowSpeedLimit
     ) {
-        assert lowSpeedLimit >= 0;
         assert endPos >= 0 && endPos <= context.path.getLength();
+
+        // Lower values can often cause many float-related errors when the speed gets too close to 0
+        lowSpeedLimit = Math.max(1, lowSpeedLimit);
 
         // coast backwards from the end position until the base curve is met
         var backwardPartBuilder = new EnvelopePartBuilder();
