@@ -470,7 +470,7 @@ pub mod tests {
     use crate::models::rolling_stock::tests::get_invalid_effort_curves;
     use crate::models::{Delete, RollingStockModel};
     use crate::views::tests::create_test_service;
-    use crate::{assert_editoast_error_type, assert_status_and_read, DbPool};
+    use crate::{assert_response_error_type_match, assert_status_and_read, DbPool};
     use actix_http::{Request, StatusCode};
     use actix_web::dev::ServiceResponse;
     use actix_web::http::header::ContentType;
@@ -640,7 +640,7 @@ pub mod tests {
         )
         .await;
         assert_eq!(patch_response.status(), StatusCode::BAD_REQUEST);
-        assert_editoast_error_type!(
+        assert_response_error_type_match!(
             patch_response,
             RollingStockError::RollingStockIsLocked { rolling_stock_id }
         );
@@ -649,7 +649,7 @@ pub mod tests {
         let delete_request = rolling_stock_delete_request(rolling_stock_id);
         let delete_response = call_service(&app, delete_request).await;
         assert_eq!(delete_response.status(), StatusCode::BAD_REQUEST);
-        assert_editoast_error_type!(
+        assert_response_error_type_match!(
             delete_response,
             RollingStockError::RollingStockIsLocked { rolling_stock_id }
         );
@@ -777,7 +777,7 @@ pub mod tests {
 
         // THEN
         assert_eq!(response.status(), StatusCode::BAD_REQUEST);
-        assert_editoast_error_type!(
+        assert_response_error_type_match!(
             response,
             RollingStockError::NameAlreadyUsed {
                 name: String::from(other_rs_name),
@@ -872,7 +872,7 @@ pub mod tests {
                 .clone()
                 .unwrap(),
         }];
-        assert_editoast_error_type!(
+        assert_response_error_type_match!(
             response,
             RollingStockError::RollingStockIsUsed {
                 rolling_stock_id,

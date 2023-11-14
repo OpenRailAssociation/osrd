@@ -184,7 +184,7 @@ mod tests {
         db_pool, electrical_profile_set, named_fast_rolling_stock, pathfinding,
     };
     use crate::views::tests::create_test_service_with_core_client;
-    use crate::{assert_editoast_error_type, assert_status_and_read};
+    use crate::{assert_response_error_type_match, assert_status_and_read};
     use actix_web::test::{call_service, TestRequest};
     use pretty_assertions::assert_eq;
     use reqwest::{Method, StatusCode};
@@ -282,7 +282,7 @@ mod tests {
 
         // THEN
         if let Some(expected_error) = expected_error {
-            assert_editoast_error_type!(response, expected_error);
+            assert_response_error_type_match!(response, expected_error);
         } else {
             let response_body: SingleSimulationResponse =
                 assert_status_and_read!(response, StatusCode::OK);

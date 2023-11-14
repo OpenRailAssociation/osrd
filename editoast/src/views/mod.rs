@@ -287,7 +287,7 @@ mod tests {
     ///
     /// The other error fields (message, status_code and context) are ignored.
     #[macro_export]
-    macro_rules! assert_editoast_error_type {
+    macro_rules! assert_response_error_type_match {
         ($response: ident, $error: expr) => {{
             let expected_error: $crate::error::InternalError = $error.into();
             let payload: serde_json::Value = actix_web::test::try_read_body_json($response)
