@@ -15,8 +15,8 @@ import { osrdGatewayApi } from 'common/api/osrdGatewayApi';
 
 import userReducer, { UserState, userInitialState } from 'reducers/user';
 import mainReducer, { MainState, mainInitialState } from 'reducers/main';
-import mapReducer, { MapState, mapInitialState } from './map';
-import editorReducer, { EditorActions, initialState as editorInitialState } from './editor';
+import mapReducer, { MapState, mapInitialState } from 'reducers/map';
+import editorReducer, { EditorActions, editorInitialState, editorSlice } from 'reducers/editor';
 import osrdconfReducer, { initialState as osrdconfInitialState } from './osrdconf';
 // Dependency cycle will be removed during the refactoring of store
 // eslint-disable-next-line import/no-cycle
@@ -84,7 +84,7 @@ type AllActions = EditorActions | Action;
 export interface RootState {
   user: UserState;
   map: MapState;
-  editor: EditorState;
+  [editorSlice.name]: EditorState;
   main: MainState;
   [stdcmConfSlice.name]: OsrdStdcmConfState;
   [simulationConfSlice.name]: OsrdConfState;
@@ -98,7 +98,7 @@ export interface RootState {
 export const rootInitialState: RootState = {
   user: userInitialState,
   map: mapInitialState,
-  editor: editorInitialState,
+  [editorSlice.name]: editorInitialState,
   main: mainInitialState,
   [stdcmConfSlice.name]: stdcmConfInitialState,
   [simulationConfSlice.name]: simulationConfInitialState,
@@ -121,7 +121,7 @@ export type AnyReducerState =
 export const rootReducer: ReducersMapObject<RootState> = {
   user: userReducer,
   map: mapReducer,
-  editor: editorReducer,
+  [editorSlice.name]: editorReducer,
   main: mainReducer,
   [stdcmConfSlice.name]: stdcmConfReducer,
   [simulationConfSlice.name]: simulationConfReducer,
