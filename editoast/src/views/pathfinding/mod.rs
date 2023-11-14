@@ -539,7 +539,7 @@ mod test {
     use crate::views::pathfinding::{PathfindingError, Response};
     use crate::views::tests::create_test_service;
     use crate::views::tests::create_test_service_with_core_client;
-    use crate::{assert_editoast_error_type, assert_status_and_read};
+    use crate::{assert_response_error_type_match, assert_status_and_read};
 
     #[rstest::rstest]
     async fn test_get_pf(#[future] pathfinding: TestFixture<Pathfinding>) {
@@ -676,7 +676,10 @@ mod test {
             .to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::NOT_FOUND);
-        assert_editoast_error_type!(response, PathfindingError::InfraNotFound { infra_id: 0 });
+        assert_response_error_type_match!(
+            response,
+            PathfindingError::InfraNotFound { infra_id: 0 }
+        );
     }
 
     #[rstest::rstest]
@@ -694,7 +697,7 @@ mod test {
             .to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::NOT_FOUND);
-        assert_editoast_error_type!(
+        assert_response_error_type_match!(
             response,
             PathfindingError::RollingStockNotFound {
                 rolling_stock_id: 0
@@ -717,7 +720,7 @@ mod test {
             .to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::NOT_FOUND);
-        assert_editoast_error_type!(
+        assert_response_error_type_match!(
             response,
             PathfindingError::TrackSectionsNotFound {
                 track_sections: Default::default()
