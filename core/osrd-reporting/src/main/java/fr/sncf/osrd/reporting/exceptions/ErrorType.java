@@ -371,6 +371,11 @@ public enum ErrorType {
             "Electrical profile set had invalid status after loading",
             ErrorCause.INTERNAL
     ),
+    PathWithRepeatedTracks(
+            "path_with_repeated_tracks",
+            "the path goes over the same track multiple times",
+            ErrorCause.USER
+    ),
     ;
 
     public final String type;

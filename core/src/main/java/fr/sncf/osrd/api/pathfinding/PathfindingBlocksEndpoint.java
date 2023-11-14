@@ -301,6 +301,8 @@ public class PathfindingBlocksEndpoint implements Take {
             for (var dirTrack : getRouteDirTracks(rawInfra, rawInfra.getRouteFromName(routePath.route)))
                 if (routeTracks.isEmpty() || !routeTracks.get(routeTracks.size() - 1).equals(dirTrack))
                     routeTracks.add(dirTrack);
+        if (new HashSet<>(routeTracks).size() < routeTracks.size())
+            throw new OSRDError(ErrorType.PathWithRepeatedTracks);
         assertPathRoutesAreAdjacent(routeTracks, rawInfra);
 
         var tracksOnPath = res.routePaths.stream()
