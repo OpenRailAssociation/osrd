@@ -197,7 +197,7 @@ mod tests {
                 "scheme": "xyz",
                 "tiles": [tiles],
                 "attribution": "",
-                "minzoom": 0,
+                "minzoom": 5,
                 "maxzoom": 18
             }),
         )
