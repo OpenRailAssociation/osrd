@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import logo from 'assets/pictures/views/study.svg';
 import { useTranslation } from 'react-i18next';
@@ -7,12 +7,10 @@ import Loader from 'common/Loader';
 import nextId from 'react-id-generator';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import ScenarioCard from 'modules/scenario/components/ScenarioCard';
-import { setFailure } from 'reducers/main';
 import ScenarioCardEmpty from 'modules/scenario/components/ScenarioCardEmpty';
 import { FaPencilAlt } from 'react-icons/fa';
 import { budgetFormat } from 'utils/numbers';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
-import { useDispatch } from 'react-redux';
 import DateBox from 'applications/operationalStudies/components/Study/DateBox';
 import StateStep from 'applications/operationalStudies/components/Study/StateStep';
 import {
@@ -57,6 +55,10 @@ function displayScenariosList(
     </span>
   );
 }
+type studyParams = {
+  projectId: string;
+  studyId: string;
+};
 
 export default function Study() {
   const { t } = useTranslation('operationalStudies/study');
@@ -65,49 +67,55 @@ export default function Study() {
   const [filter, setFilter] = useState('');
   const [filterChips, setFilterChips] = useState('');
   const [sortOption, setSortOption] = useState<SortOptions>('LastModifiedDesc');
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const { projectId, studyId } = useParams();
+  const { projectId: urlProjectId, studyId: urlStudyId } = useParams() as studyParams;
 
-  const { data: project, isError: isProjectError } = osrdEditoastApi.useGetProjectsByProjectIdQuery(
-    { projectId: Number(projectId) },
+  const { projectId, studyId } = useMemo(
+    () => ({
+      projectId: !Number.isNaN(+urlProjectId) ? +urlProjectId : undefined,
+      studyId: !Number.isNaN(+urlStudyId) ? +urlStudyId : undefined,
+    }),
+    [urlStudyId, urlProjectId]
+  );
+
+  const {
+    data: project,
+    isError: isProjectError,
+    error: projectError,
+  } = osrdEditoastApi.useGetProjectsByProjectIdQuery(
+    { projectId: +projectId! },
     {
-      skip: !projectId || Number.isNaN(+projectId),
+      skip: !projectId,
     }
   );
 
-  const { data: study, isError: isCurrentStudyError } =
-    osrdEditoastApi.useGetProjectsByProjectIdStudiesAndStudyIdQuery(
-      {
-        projectId: Number(projectId),
-        studyId: Number(studyId),
-      },
-      {
-        skip: !projectId || Number.isNaN(+projectId) || !studyId || Number.isNaN(+studyId),
-      }
-    );
+  const {
+    data: study,
+    isError: isCurrentStudyError,
+    error: studyError,
+  } = osrdEditoastApi.useGetProjectsByProjectIdStudiesAndStudyIdQuery(
+    {
+      projectId: +projectId!,
+      studyId: +studyId!,
+    },
+    {
+      skip: !projectId || !studyId,
+    }
+  );
 
   const [postSearch] = osrdEditoastApi.usePostSearchMutation();
   const [getScenarios] =
     osrdEditoastApi.useLazyGetProjectsByProjectIdStudiesAndStudyIdScenariosQuery();
 
   useEffect(() => {
-    if (!projectId || (projectId && Number.isNaN(+projectId)))
-      navigate('/operational-studies/projects');
-    if (!studyId || (studyId && Number.isNaN(+studyId)))
-      navigate(`/operational-studies/projects/${projectId}`);
+    if (!projectId || !studyId) throw new Error('Missing projectId or studyId in url');
   }, [projectId, studyId]);
 
   useEffect(() => {
-    if (isProjectError || isCurrentStudyError) {
-      dispatch(
-        setFailure({
-          name: t('errorHappened'),
-          message: t('errorHappened'),
-        })
-      );
+    if (isProjectError && projectError) {
+      throw projectError;
     }
-  }, [isProjectError, isCurrentStudyError]);
+    if (isCurrentStudyError && studyError) throw studyError;
+  }, [isProjectError, projectError, isCurrentStudyError, studyError]);
 
   const sortOptions = [
     {
