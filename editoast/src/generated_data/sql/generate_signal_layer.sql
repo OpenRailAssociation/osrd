@@ -32,18 +32,24 @@ INSERT INTO infra_layer_signal (
     )
 SELECT collect.signal_id,
     $1,
-    degrees(
-        ST_Azimuth(
-            ST_LineInterpolatePoint(track_geo, GREATEST(norm_pos - 0.0001, 0.)),
-            ST_LineInterpolatePoint(track_geo, LEAST(norm_pos + 0.0001, 1.))
-        )
-    ) + angle_direction,
-    degrees(
-        ST_Azimuth(
-            ST_LineInterpolatePoint(track_sch, GREATEST(norm_pos - 0.0001, 0.)),
-            ST_LineInterpolatePoint(track_sch, LEAST(norm_pos + 0.0001, 1.))
-        )
-    ) + angle_direction,
+    COALESCE(
+        degrees(
+            ST_Azimuth(
+                ST_LineInterpolatePoint(track_geo, GREATEST(norm_pos - 0.0001, 0.)),
+                ST_LineInterpolatePoint(track_geo, LEAST(norm_pos + 0.0001, 1.))
+            )
+        ) + angle_direction,
+        0.
+    ),
+    COALESCE(
+        degrees(
+            ST_Azimuth(
+                ST_LineInterpolatePoint(track_sch, GREATEST(norm_pos - 0.0001, 0.)),
+                ST_LineInterpolatePoint(track_sch, LEAST(norm_pos + 0.0001, 1.))
+            )
+        ) + angle_direction,
+        0.
+    ),
     ST_LineInterpolatePoint(track_geo, norm_pos),
     ST_LineInterpolatePoint(track_sch, norm_pos)
 FROM collect
