@@ -1047,10 +1047,10 @@
     "type": "fill-extrusion",
     "minzoom": 0,
     "paint": {
-        "fill-extrusion-color": "#aaa",
-        "fill-extrusion-height": ["get", "render_height"],
-        "fill-extrusion-base": ["get", "render_min_height"],
-        "fill-extrusion-opacity": 0.6
+      "fill-extrusion-color": "#aaa",
+      "fill-extrusion-height": ["get", "render_height"],
+      "fill-extrusion-base": ["get", "render_min_height"],
+      "fill-extrusion-opacity": 0.6
     }
   },
   {

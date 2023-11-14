@@ -16,7 +16,7 @@ function Platforms(props: PlatformsProps) {
 
   const platformsParams: LayerProps = {
     id: 'osm/platforms',
-    type: 'fill-extrusion',
+    type: 'fill',
     source: 'openmaptiles',
     'source-layer': 'transportation',
     filter: [
@@ -26,10 +26,7 @@ function Platforms(props: PlatformsProps) {
       ['==', 'subclass', 'platform'],
     ],
     paint: {
-      'fill-extrusion-color': colors.platform.fill,
-      'fill-extrusion-height': 2,
-      'fill-extrusion-base': 1,
-      'fill-extrusion-opacity': 0.4,
+      'fill-color': colors.platform.fill,
     },
   };
 
