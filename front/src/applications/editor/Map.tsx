@@ -206,7 +206,11 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
           attributionControl={false}
           touchZoomRotate
           maxPitch={85}
-          terrain={{ source: 'terrain', exaggeration: terrain3DExaggeration }}
+          terrain={
+            terrain3DExaggeration
+              ? { source: 'terrain', exaggeration: terrain3DExaggeration }
+              : undefined
+          }
           doubleClickZoom={false}
           interactive
           cursor={cursor}

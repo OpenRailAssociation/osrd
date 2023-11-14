@@ -56,7 +56,7 @@ const colors: Record<string, Theme> = {
       halo: '#eee',
     },
     platform: {
-      fill: '#e05206',
+      fill: '#e9b996',
     },
     pn: {
       text: '#712b2b',

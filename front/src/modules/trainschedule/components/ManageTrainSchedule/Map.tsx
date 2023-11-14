@@ -171,7 +171,11 @@ function Map() {
         interactiveLayerIds={defineInteractiveLayers()}
         touchZoomRotate
         maxPitch={85}
-        terrain={{ source: 'terrain', exaggeration: terrain3DExaggeration }}
+        terrain={
+          terrain3DExaggeration
+            ? { source: 'terrain', exaggeration: terrain3DExaggeration }
+            : undefined
+        }
       >
         <VirtualLayers />
         <AttributionControl position="bottom-right" customAttribution={CUSTOM_ATTRIBUTION} />

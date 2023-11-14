@@ -247,7 +247,11 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
         interactiveLayerIds={interactiveLayerIds}
         touchZoomRotate
         maxPitch={85}
-        terrain={{ source: 'terrain', exaggeration: terrain3DExaggeration }}
+        terrain={
+          terrain3DExaggeration
+            ? { source: 'terrain', exaggeration: terrain3DExaggeration }
+            : undefined
+        }
         onLoad={handleLoadFinished}
       >
         <VirtualLayers />
