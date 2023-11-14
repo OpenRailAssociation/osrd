@@ -1,8 +1,7 @@
-import produce from 'immer';
 import { Feature } from 'geojson';
 import { omit, clone, isNil, isUndefined } from 'lodash';
 import { JSONSchema7, JSONSchema7Definition } from 'json-schema';
-import { Action, AnyAction, Dispatch, Reducer } from '@reduxjs/toolkit';
+import { AnyAction, createSlice, Dispatch, PayloadAction } from '@reduxjs/toolkit';
 
 import { setLoading, setSuccess, setFailure, setSuccessWithoutMessage } from 'reducers/main';
 import { updateIssuesSettings } from 'reducers/map';
@@ -12,7 +11,7 @@ import {
   allInfraErrorTypes,
   infraErrorTypeList,
 } from 'applications/editor/components/InfraErrors/types';
-import { EditorState, LayerType } from 'applications/editor/tools/types';
+import { EditorState } from 'applications/editor/tools/types';
 import {
   entityToCreateOperation,
   entityToUpdateOperation,
@@ -20,37 +19,61 @@ import {
 } from 'applications/editor/data/utils';
 import infra_schema from '../osrdconf/infra_schema.json';
 
-//
-// Actions
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+export const editorInitialState: EditorState = {
+  // Definition of entities (json schema)
+  editorSchema: [],
+  // ID of selected layers on which we are working
+  editorLayers: new Set(['track_sections', 'errors']),
+  // Editor issue management
+  issues: {
+    total: 0,
+    filterTotal: 0,
+    filterLevel: 'all',
+    filterType: null,
+  },
+};
 
-const SELECT_LAYERS = 'editor/SELECT_LAYERS';
-export interface ActionSelectLayers extends AnyAction {
-  type: typeof SELECT_LAYERS;
-  layers: Set<LayerType>;
-}
-export function selectLayers(
-  layers: ActionSelectLayers['layers']
-): ThunkAction<ActionSelectLayers> {
-  return (dispatch) => {
-    dispatch({
-      type: SELECT_LAYERS,
-      layers,
-    });
-  };
-}
+export const editorSlice = createSlice({
+  name: 'editor',
+  initialState: editorInitialState,
+  reducers: {
+    selectLayers(state, action: PayloadAction<EditorState['editorLayers']>) {
+      state.editorLayers = action.payload;
+    },
+    loadDataModelAction(state, action: PayloadAction<EditorState['editorSchema']>) {
+      state.editorSchema = action.payload;
+    },
+    updateTotalsIssueAction(
+      state,
+      action: PayloadAction<Pick<EditorState['issues'], 'total' | 'filterTotal'>>
+    ) {
+      state.issues = {
+        ...state.issues,
+        ...action.payload,
+      };
+    },
+    updateFiltersIssueAction(
+      state,
+      action: PayloadAction<Omit<EditorState['issues'], 'total' | 'filterTotal'>>
+    ) {
+      state.issues = {
+        ...state.issues,
+        ...action.payload,
+      };
+    },
+  },
+});
 
-//
-// Verify if the data model definition is already loaded.
-// If not we do it and store it in the state
-//
-export const LOAD_DATA_MODEL = 'editor/LOAD_DATA_MODEL';
-export interface ActionLoadDataModel extends AnyAction {
-  type: typeof LOAD_DATA_MODEL;
-  schema: EditorSchema;
-}
+export const {
+  selectLayers,
+  loadDataModelAction,
+  updateTotalsIssueAction,
+  updateFiltersIssueAction,
+} = editorSlice.actions;
 
-export function loadDataModel(): ThunkAction<ActionLoadDataModel> {
+export type editorSliceActionsType = typeof editorSlice.actions;
+
+export function loadDataModel(): ThunkAction<editorSliceActionsType['loadDataModelAction']> {
   return async (dispatch: Dispatch, getState) => {
     // check if we need to load the model
     if (!Object.keys(getState().editor.editorSchema).length) {
@@ -87,10 +110,7 @@ export function loadDataModel(): ThunkAction<ActionLoadDataModel> {
             } as EditorSchema[0];
           });
         dispatch(setSuccessWithoutMessage());
-        dispatch({
-          type: LOAD_DATA_MODEL,
-          schema,
-        });
+        dispatch(loadDataModelAction(schema));
       } catch (e) {
         console.error(e);
         dispatch(setFailure(e as Error));
@@ -99,14 +119,9 @@ export function loadDataModel(): ThunkAction<ActionLoadDataModel> {
   };
 }
 
-const UPDATE_TOTALS_ISSUE = 'editor/UPDATE_TOTALS_ISSUE';
-export interface ActionUpdateTotalsIssue extends AnyAction {
-  type: typeof UPDATE_TOTALS_ISSUE;
-  issues: Pick<EditorState['issues'], 'total' | 'filterTotal'>;
-}
 export function updateTotalsIssue(
   infraID: number | undefined
-): ThunkAction<ActionUpdateTotalsIssue> {
+): ThunkAction<editorSliceActionsType['updateTotalsIssueAction']> {
   return async (dispatch: Dispatch, getState) => {
     const { editor } = getState();
     dispatch(setLoading());
@@ -142,10 +157,7 @@ export function updateTotalsIssue(
         const filterResult = await filterResp;
         filterTotal = filterResult.data?.count || 0;
       }
-      dispatch({
-        type: UPDATE_TOTALS_ISSUE,
-        issues: { total, filterTotal },
-      });
+      dispatch(updateTotalsIssueAction({ total, filterTotal }));
     } catch (e) {
       dispatch(setFailure(e as Error));
       throw e;
@@ -155,15 +167,10 @@ export function updateTotalsIssue(
   };
 }
 
-const UPDATE_FILTERS_ISSUE = 'editor/UPDATE_FILTERS_ISSUE';
-export interface ActionUpdateFiltersIssue extends AnyAction {
-  type: typeof UPDATE_FILTERS_ISSUE;
-  issues: Omit<EditorState['issues'], 'total' | 'filterTotal'>;
-}
 export function updateFiltersIssue(
   infraID: number | undefined,
   filters: Partial<Pick<EditorState['issues'], 'filterLevel' | 'filterType'>>
-): ThunkAction<ActionUpdateTotalsIssue> {
+): ThunkAction<editorSliceActionsType['updateFiltersIssueAction']> {
   return async (dispatch: Dispatch, getState) => {
     const { editor } = getState() as { editor: EditorState };
     let level = isUndefined(filters.filterLevel) ? editor.issues.filterLevel : filters.filterLevel;
@@ -187,10 +194,7 @@ export function updateFiltersIssue(
       }
     }
 
-    dispatch({
-      type: UPDATE_FILTERS_ISSUE,
-      issues: { filterLevel: level, filterType: type },
-    });
+    dispatch(updateFiltersIssueAction({ filterLevel: level, filterType: type }));
     dispatch(updateTotalsIssue(infraID));
 
     // dispatch the list of types matched by the filter to the map
@@ -261,57 +265,10 @@ export function save(
 }
 
 export type EditorActions =
-  | ActionLoadDataModel
-  | ActionSave
-  | ActionSelectLayers
-  | ActionUpdateTotalsIssue
-  | ActionUpdateFiltersIssue;
+  | editorSliceActionsType['loadDataModelAction']
+  | editorSliceActionsType['selectLayers']
+  | editorSliceActionsType['updateFiltersIssueAction']
+  | editorSliceActionsType['updateTotalsIssueAction']
+  | ActionSave;
 
-//
-// State definition
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-export const initialState: EditorState = {
-  // Definition of entities (json schema)
-  editorSchema: [],
-  // ID of selected layers on which we are working
-  editorLayers: new Set(['track_sections', 'errors']),
-  // Editor issue management
-  issues: {
-    total: 0,
-    filterTotal: 0,
-    filterLevel: 'all',
-    filterType: null,
-  },
-};
-
-//
-// State reducer
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-const reducer = (inputState: EditorState | undefined, action: EditorActions) => {
-  const state = inputState || initialState;
-
-  return produce(state, (draft) => {
-    switch (action.type) {
-      case SELECT_LAYERS:
-        draft.editorLayers = action.layers;
-        break;
-      case LOAD_DATA_MODEL:
-        draft.editorSchema = action.schema;
-        break;
-      case UPDATE_FILTERS_ISSUE:
-      case UPDATE_TOTALS_ISSUE:
-        draft.issues = {
-          ...state.issues,
-          ...action.issues,
-        };
-        break;
-      default:
-        // Nothing to do here
-        break;
-    }
-  });
-};
-
-// TODO: to avoid error "Type 'Action<any>' is not assignable to type 'EditorActions'"
-// We need to migrate the editor store with slice
-export default reducer as Reducer<EditorState, Action>;
+export default editorSlice.reducer;
