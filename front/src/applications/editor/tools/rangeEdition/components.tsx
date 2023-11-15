@@ -6,11 +6,21 @@ import { BsArrowBarRight } from 'react-icons/bs';
 import { AiFillSave } from 'react-icons/ai';
 import { MdShowChart } from 'react-icons/md';
 import { FaFlagCheckered, FaTimes } from 'react-icons/fa';
-import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
+
+import EditorContext from 'applications/editor/context';
+import EntityError from 'applications/editor/components/EntityError';
+import EntitySumUp from 'applications/editor/components/EntitySumUp';
+import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
+import {
+  ExtendedEditorContextType,
+  PartialOrReducer,
+} from 'applications/editor/tools/editorContextTypes';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
+import { LoaderFill } from 'common/Loader';
+import { save } from 'reducers/editor';
+import { getIsLoading } from 'reducers/main/mainSelector';
 import { getInfraID } from 'reducers/osrdconf/selectors';
-import EditorContext from '../../context';
-import { RangeEditionState } from './types';
 import {
   APPLICABLE_DIRECTIONS,
   ApplicableDirection,
@@ -18,17 +28,13 @@ import {
   EntityObjectOperationResult,
   SpeedSectionEntity,
   SpeedSectionPslEntity,
-} from '../../../../types';
-import { NEW_ENTITY_ID } from '../../data/utils';
-import { LoaderFill } from '../../../../common/Loader';
-import EntitySumUp from '../../components/EntitySumUp';
-import EntityError from '../../components/EntityError';
-import { save } from '../../../../reducers/editor';
-import EditPSLSection from './speedSection/EditPSLSection';
-import { ExtendedEditorContextType, PartialOrReducer } from '../editorContextTypes';
-import { getPointAt, speedSectionIsPsl } from './utils';
-import SpeedSectionMetadataForm from './speedSection/SpeedSectionMetadataForm';
+} from 'types';
+
 import CatenaryMetadataForm from './catenary/CatenaryMetadataForm';
+import EditPSLSection from './speedSection/EditPSLSection';
+import SpeedSectionMetadataForm from './speedSection/SpeedSectionMetadataForm';
+import { RangeEditionState } from './types';
+import { getPointAt, speedSectionIsPsl } from './utils';
 
 const DEFAULT_DISPLAYED_RANGES_COUNT = 5;
 
@@ -210,8 +216,9 @@ export const RangeEditionLeftPanel: FC = () => {
   } = useContext(EditorContext) as ExtendedEditorContextType<
     RangeEditionState<SpeedSectionEntity | CatenaryEntity>
   >;
+  const isLoading = useSelector(getIsLoading);
+
   const isNew = entity.properties.id === NEW_ENTITY_ID;
-  const [isLoading, setIsLoading] = useState(false);
   const isPSL = speedSectionIsPsl(entity as SpeedSectionEntity);
 
   const infraID = useSelector(getInfraID);
@@ -255,43 +262,36 @@ export const RangeEditionLeftPanel: FC = () => {
           className="btn btn-primary w-100 text-wrap"
           disabled={isLoading || isEqual(entity, initialEntity)}
           onClick={async () => {
-            setIsLoading(true);
-
-            try {
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const res: any = await dispatch(
-                save(
-                  infraID,
-                  !isNew
-                    ? {
-                        update: [
-                          {
-                            source: initialEntity,
-                            target: entity,
-                          },
-                        ],
-                      }
-                    : { create: [entity] }
-                )
-              );
-              const operation = res[0] as EntityObjectOperationResult;
-              const { id } = operation.railjson;
-              setIsLoading(false);
-
-              const savedEntity =
-                id && id !== entity.properties.id
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const res: any = await dispatch(
+              save(
+                infraID,
+                !isNew
                   ? {
-                      ...entity,
-                      properties: { ...entity.properties, id: `${id}` },
+                      update: [
+                        {
+                          source: initialEntity,
+                          target: entity,
+                        },
+                      ],
                     }
-                  : entity;
-              setState({
-                entity: cloneDeep(savedEntity),
-                initialEntity: cloneDeep(savedEntity),
-              });
-            } catch (e: unknown) {
-              setIsLoading(false);
-            }
+                  : { create: [entity] }
+              )
+            );
+            const operation = res[0] as EntityObjectOperationResult;
+            const { id } = operation.railjson;
+
+            const savedEntity =
+              id && id !== entity.properties.id
+                ? {
+                    ...entity,
+                    properties: { ...entity.properties, id: `${id}` },
+                  }
+                : entity;
+            setState({
+              entity: cloneDeep(savedEntity),
+              initialEntity: cloneDeep(savedEntity),
+            });
           }}
         >
           <AiFillSave className="mr-2" />
