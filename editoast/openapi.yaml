@@ -750,7 +750,7 @@ components:
           format: double
           type: number
         loading_gauge:
-          type: string
+          $ref: '#/components/schemas/LoadingGaugeType'
         locked:
           type: boolean
         mass:
@@ -844,6 +844,18 @@ components:
       - type
       - coordinates
       type: object
+    LoadingGaugeType:
+      enum:
+      - G1
+      - G2
+      - GA
+      - GB
+      - GB1
+      - GC
+      - FR3.3
+      - FR3.3/GB/G2
+      - GLOTT
+      type: string
     MechanicalEnergyConsumedBaseEco:
       properties:
         base:
@@ -1698,8 +1710,7 @@ components:
           format: double
           type: number
         loading_gauge:
-          example: GC
-          type: string
+          $ref: '#/components/schemas/LoadingGaugeType'
         mass:
           format: double
           type: number

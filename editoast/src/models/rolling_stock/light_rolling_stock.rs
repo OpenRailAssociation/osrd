@@ -41,6 +41,7 @@ pub struct LightRollingStockModel {
     mass: f64,
     #[schema(value_type = RollingResistance)]
     rolling_resistance: DieselJson<RollingResistance>,
+    #[schema(value_type = LoadingGaugeType)]
     loading_gauge: String,
     #[schema(value_type = HashMap<String, String>)]
     power_restrictions: Option<JsonValue>,

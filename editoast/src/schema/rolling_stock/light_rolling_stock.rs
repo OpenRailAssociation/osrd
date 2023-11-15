@@ -54,6 +54,7 @@ pub struct LightRollingStock {
     #[schema(value_type = RollingResistance)]
     pub rolling_resistance: DieselJson<RollingResistance>,
     #[diesel(sql_type = Text)]
+    #[schema(value_type = LoadingGaugeType)]
     pub loading_gauge: String,
     #[diesel(sql_type = Jsonb)]
     #[schema(value_type = RollingStockMetadata)]

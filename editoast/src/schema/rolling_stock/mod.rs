@@ -48,7 +48,7 @@ pub struct RollingStockCommon {
     pub features: Vec<String>,
     pub mass: f64,
     pub rolling_resistance: RollingResistance,
-    #[schema(example = "GC")]
+    #[schema(value_type = LoadingGaugeType)]
     pub loading_gauge: String,
     /// Mapping of power restriction code to power class
     #[schema(value_type = HashMap<String, String>)]
