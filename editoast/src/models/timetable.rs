@@ -22,9 +22,15 @@ use diesel_async::RunQueryDsl;
 use editoast_derive::Model;
 use futures::future::try_join_all;
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 
 use super::train_schedule::TrainScheduleValidation;
 use super::Scenario;
+
+crate::schemas! {
+    Timetable,
+    TimetableWithSchedulesDetails,
+}
 
 #[derive(
     Debug,
@@ -37,6 +43,7 @@ use super::Scenario;
     Derivative,
     Insertable,
     Deserialize,
+    ToSchema,
 )]
 #[derivative(Default)]
 #[model(table = "timetable")]
@@ -44,12 +51,14 @@ use super::Scenario;
 #[diesel(table_name = timetable)]
 pub struct Timetable {
     #[diesel(deserialize_as = i64)]
+    #[schema(value_type = i64)]
     pub id: Option<i64>,
     #[diesel(deserialize_as = String)]
+    #[schema(value_type = String)]
     pub name: Option<String>,
 }
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Serialize, Deserialize, ToSchema)]
 pub struct TimetableWithSchedulesDetails {
     #[serde(flatten)]
     pub timetable: Timetable,
