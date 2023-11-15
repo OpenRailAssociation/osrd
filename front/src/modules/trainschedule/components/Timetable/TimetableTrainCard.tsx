@@ -9,7 +9,7 @@ import { durationInSeconds, sec2time } from 'utils/timeManipulation';
 import nextId from 'react-id-generator';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import cx from 'classnames';
-import { InvalidTrainValues, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { TrainScheduleValidation, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 
 import { ScheduledTrain } from 'reducers/osrdsimulation/types';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
@@ -21,7 +21,7 @@ import { updateSelectedProjection, updateSelectedTrainId } from 'reducers/osrdsi
 import trainNameWithNum from '../ManageTrainSchedule/helpers/trainNameHelper';
 
 const invalidTrainValues: {
-  [key in InvalidTrainValues]: InvalidTrainValues;
+  [key in TrainScheduleValidation]: TrainScheduleValidation;
 } = {
   NewerInfra: 'NewerInfra',
   NewerRollingStock: 'NewerRollingStock',
