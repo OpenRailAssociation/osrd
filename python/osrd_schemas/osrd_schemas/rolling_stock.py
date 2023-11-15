@@ -3,7 +3,6 @@ from typing import Annotated, List, Literal, Mapping, Optional, Union, get_args
 
 from pydantic import (
     BaseModel,
-    Extra,
     Field,
     NonNegativeFloat,
     PositiveFloat,
@@ -28,14 +27,14 @@ class ComfortType(str, Enum):
     HEATING = "HEATING"
 
 
-class RollingResistance(BaseModel, extra=Extra.forbid):
+class RollingResistance(BaseModel, extra="forbid"):
     type: Literal["davis"]
     A: NonNegativeFloat
     B: NonNegativeFloat
     C: NonNegativeFloat
 
 
-class EffortCurve(BaseModel, extra=Extra.forbid):
+class EffortCurve(BaseModel, extra="forbid"):
     speeds: List[NonNegativeFloat] = Field(
         min_length=2, description="Curves mapping speed (in m/s) to maximum traction (in newtons)"
     )
@@ -47,20 +46,20 @@ class EffortCurve(BaseModel, extra=Extra.forbid):
         return self
 
 
-class EffortCurveConditions(BaseModel, extra=Extra.forbid):
+class EffortCurveConditions(BaseModel, extra="forbid"):
     comfort: Optional[ComfortType] = None
     electrical_profile_level: Optional[str] = None
     power_restriction_code: Optional[str] = None
 
 
-class ConditionalEffortCurve(BaseModel, extra=Extra.forbid):
+class ConditionalEffortCurve(BaseModel, extra="forbid"):
     """Effort curve subject to application conditions"""
 
     cond: EffortCurveConditions = Field(default=EffortCurveConditions())
     curve: EffortCurve = Field(description="Effort curve to apply if the conditions are met")
 
 
-class ModeEffortCurves(BaseModel, extra=Extra.forbid):
+class ModeEffortCurves(BaseModel, extra="forbid"):
     """Effort curves for a given mode"""
 
     curves: List[ConditionalEffortCurve] = Field(
@@ -70,7 +69,7 @@ class ModeEffortCurves(BaseModel, extra=Extra.forbid):
     is_electric: bool = Field(description="Whether the mode is electric or not")
 
 
-class EffortCurves(BaseModel, extra=Extra.forbid):
+class EffortCurves(BaseModel, extra="forbid"):
     """
     Effort curves for a given rolling stock.
     This schema handle multiple modes and conditions such as comfort, power restrictions, etc.
@@ -92,7 +91,7 @@ class GammaType(str, Enum):
     MAX = "MAX"
 
 
-class Gamma(BaseModel, extra=Extra.forbid):
+class Gamma(BaseModel, extra="forbid"):
     type: GammaType
     value: PositiveFloat
 
@@ -105,14 +104,14 @@ class PowerRestrictions(RootModel):
     root: Mapping[str, str]
 
 
-class RefillLaw(BaseModel, extra=Extra.forbid):
+class RefillLaw(BaseModel, extra="forbid"):
     """The EnergyStorage refilling behavior"""
 
     tau: float = Field(ge=0, description="Time constant of the refill behavior (in seconds)")
     soc_ref: float = Field(ge=0, le=1, description="Reference (target) value of state of charge")
 
 
-class EnergyStorage(BaseModel, extra=Extra.forbid):
+class EnergyStorage(BaseModel, extra="forbid"):
     """If the EnergySource is capable of storing some energy"""
 
     capacity: float = Field(ge=0, description="How much energy the source can store (in Joules)")
@@ -122,7 +121,7 @@ class EnergyStorage(BaseModel, extra=Extra.forbid):
     refill_law: Optional[RefillLaw] = None
 
 
-class SpeedDependantPower(BaseModel, extra=Extra.forbid):
+class SpeedDependantPower(BaseModel, extra="forbid"):
     """
     A curve that account for speed-related power (output/availability) behavior of specific energy sources,
     - the pantograph power is lowered at low speed to avoid welding the pantograph to the catenary
@@ -138,7 +137,7 @@ class SpeedDependantPower(BaseModel, extra=Extra.forbid):
         return self
 
 
-class Catenary(BaseModel, extra=Extra.forbid):
+class Catenary(BaseModel, extra="forbid"):
     """Catenary used when simulating qualesi trains"""
 
     energy_source_type: Literal["Catenary"] = Field(default="Catenary")
@@ -147,7 +146,7 @@ class Catenary(BaseModel, extra=Extra.forbid):
     efficiency: float = Field(ge=0, le=1, description="Efficiency of catenary and pantograph transmission")
 
 
-class PowerPack(BaseModel, extra=Extra.forbid):
+class PowerPack(BaseModel, extra="forbid"):
     """Power pack, either diesel or hydrogen, used when simulating qualesi trains"""
 
     energy_source_type: Literal["PowerPack"] = Field(default="PowerPack")
@@ -157,7 +156,7 @@ class PowerPack(BaseModel, extra=Extra.forbid):
     efficiency: float = Field(ge=0, le=1, description="Efficiency of the power pack")
 
 
-class Battery(BaseModel, extra=Extra.forbid):
+class Battery(BaseModel, extra="forbid"):
     """Battery used when simulating qualesi trains"""
 
     energy_source_type: Literal["Battery"] = Field(default="Battery")
@@ -167,7 +166,7 @@ class Battery(BaseModel, extra=Extra.forbid):
     efficiency: float = Field(ge=0, le=1, description="Battery efficiency")
 
 
-class EnergySource(RootModel, extra=Extra.forbid):
+class EnergySource(RootModel, extra="forbid"):
     """Energy sources used when simulating qualesi trains"""
 
     root: Union[Catenary, PowerPack, Battery] = Field(discriminator="energy_source_type")
@@ -179,7 +178,7 @@ class EnergySourcesList(RootModel):
     root: List[EnergySource]
 
 
-class RollingStock(BaseModel, extra=Extra.forbid):
+class RollingStock(BaseModel, extra="forbid"):
     """Electrical profiles and power classes are used to model the power loss along a catenary:
     * Rolling stocks are attributed a power class depending on their power usage.
     * Electrical profiles are then computed for each power class along all catenaries.
