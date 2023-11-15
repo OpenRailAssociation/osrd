@@ -316,6 +316,11 @@ public enum ErrorType {
             "Invalid STDCM request: both end time and start time are unspecified, at least one must be set",
             ErrorCause.USER
     ),
+    DelimitingSignalEmptyBlock(
+            "delimiting_signal_empty_block",
+            "Delimiting signals must protect a non-empty block",
+            ErrorCause.USER
+    ),
     BALUnprotectedZones(
             "unprotected_zones",
             "BAL signals always protect zones",
