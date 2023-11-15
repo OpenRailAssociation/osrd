@@ -114,10 +114,10 @@ export function getSpeedSectionsPointLayerProps({
       'symbol-placement': 'point',
       'text-field': ['to-string', getSpeedSectionsName(layersSettings)],
       'text-size': 12,
-      'icon-allow-overlap': false,
+      'icon-allow-overlap': ['step', ['zoom'], false, 15, true],
       'icon-ignore-placement': false,
       'text-justify': 'left',
-      'text-allow-overlap': false,
+      'text-allow-overlap': ['step', ['zoom'], false, 15, true],
       'text-ignore-placement': false,
     },
     paint: {

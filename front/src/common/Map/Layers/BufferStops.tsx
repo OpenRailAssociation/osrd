@@ -20,9 +20,9 @@ export function getBufferStopsLayerProps(params: { sourceTable?: string }): Omit
       'icon-size': 0.2,
       'text-anchor': 'left',
       'icon-rotation-alignment': 'viewport',
-      'icon-allow-overlap': false,
       'icon-ignore-placement': false,
-      'text-allow-overlap': false,
+      'icon-allow-overlap': ['step', ['zoom'], false, 15, true],
+      'text-allow-overlap': ['step', ['zoom'], false, 15, true],
     },
     paint: {
       'text-color': '#333',
