@@ -1,5 +1,7 @@
 package fr.sncf.osrd.sim_infra.impl
 
+import fr.sncf.osrd.reporting.exceptions.ErrorType
+import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.utils.units.*
@@ -26,7 +28,15 @@ class BlockInfraBuilderImpl(val loadedSignalInfra: LoadedSignalInfra, val rawInf
         signals: StaticIdxList<LogicalSignal>,
         signalsDistances: OffsetList<Block>,
     ): BlockId {
-        assert(path.size != 0)
+        if (path.size == 0) {
+            val error = OSRDError(ErrorType.DelimitingSignalEmptyBlock)
+            error.context["signals"] = signals.map { rawInfra.getLogicalSignalName(it) }
+            error.context["signalingSystems"] = signals.map { rawInfra.getSignalingSystemId(it) }
+            error.context["startAtBufferStop"] = startAtBufferStop
+            error.context["stopsAtBufferStop"] = stopsAtBufferStop
+            error.context["signalsDistances"] = signalsDistances.toList()
+            throw error
+        }
 
         var length = Length<Block>(0.meters)
         for (zonePath in path)
