@@ -8,7 +8,7 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use uuid::Uuid;
 
 /// A wrapper around a String that ensures that the string is not empty and not longer than 255 characters.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, utoipa::ToSchema)]
 pub struct Identifier(pub String);
 
 impl<'de> Deserialize<'de> for Identifier {

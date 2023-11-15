@@ -144,6 +144,18 @@ components:
       - Spacing
       - Routing
       type: string
+    Curve:
+      properties:
+        position:
+          format: double
+          type: number
+        radius:
+          format: double
+          type: number
+      required:
+      - radius
+      - position
+      type: object
     DeleteOperation:
       properties:
         obj_id:
@@ -611,6 +623,9 @@ components:
       - $ref: '#/components/schemas/MultiLineString'
       - $ref: '#/components/schemas/MultiPolygon'
       type: object
+    Identifier:
+      description: A wrapper around a String that ensures that the string is not empty and not longer than 255 characters.
+      type: string
     Infra:
       properties:
         created:
@@ -1291,35 +1306,46 @@ components:
       - slopes
       - curves
       - steps
-    PathQuery:
+    PathResponse:
       properties:
-        infra:
-          type: number
-        rolling_stocks:
-          description: List of rolling stocks that must be able to use this path
+        created:
+          format: date-time
+          type: string
+        curves:
           items:
-            type: integer
+            $ref: '#/components/schemas/Curve'
+          type: array
+        geographic:
+          $ref: '#/components/schemas/GeoJsonLineString'
+        id:
+          format: int64
+          type: integer
+        length:
+          format: double
+          type: number
+        owner:
+          format: uuid
+          type: string
+        schematic:
+          $ref: '#/components/schemas/GeoJsonLineString'
+        slopes:
+          items:
+            $ref: '#/components/schemas/Slope'
           type: array
         steps:
           items:
-            properties:
-              duration:
-                format: float
-                type: number
-              waypoints:
-                items:
-                  $ref: '#/components/schemas/PathWaypoint'
-                type: array
-            required:
-            - duration
-            - waypoints
-            type: object
-          minItems: 2
+            $ref: '#/components/schemas/PathWaypoint'
           type: array
       required:
-      - infra
+      - id
+      - owner
+      - length
+      - created
+      - slopes
+      - curves
+      - geographic
+      - schematic
       - steps
-      - rolling_stocks
       type: object
     PathStep:
       properties:
@@ -1331,7 +1357,7 @@ components:
         id:
           type: string
         location:
-          $ref: '#/components/schemas/TrackSectionLocation'
+          $ref: '#/components/schemas/TrackLocation'
         name:
           type: string
         path_offset:
@@ -1352,21 +1378,53 @@ components:
       type: object
     PathWaypoint:
       properties:
-        geo_coordinate:
-          items:
-            format: float
-            type: number
-          maxItems: 2
-          minItems: 2
-          type: array
-        offset:
+        duration:
+          format: double
           type: number
-        track_section:
-          description: track section ID of the waypoint
+        geo:
+          $ref: '#/components/schemas/GeoJsonLineString'
+        id:
+          nullable: true
           type: string
+        location:
+          $ref: '#/components/schemas/TrackLocation'
+        name:
+          nullable: true
+          type: string
+        path_offset:
+          format: double
+          type: number
+        sch:
+          $ref: '#/components/schemas/GeoJsonLineString'
+        suggestion:
+          type: boolean
       required:
-      - track_section
-      - geo_cordinate
+      - id
+      - name
+      - location
+      - duration
+      - path_offset
+      - suggestion
+      - geo
+      - sch
+      type: object
+    PathfindingRequest:
+      properties:
+        infra:
+          format: int64
+          type: integer
+        rolling_stocks:
+          items:
+            format: int64
+            type: integer
+          type: array
+        steps:
+          items:
+            $ref: '#/components/schemas/StepPayload'
+          type: array
+      required:
+      - infra
+      - steps
       type: object
     Point:
       description: GeoJSon geometry
@@ -2821,6 +2879,18 @@ components:
       - electrification_ranges
       - power_restriction_ranges
       type: object
+    Slope:
+      properties:
+        gradient:
+          format: double
+          type: number
+        position:
+          format: double
+          type: number
+      required:
+      - gradient
+      - position
+      type: object
     SpaceTimePosition:
       properties:
         position:
@@ -2868,6 +2938,19 @@ components:
       - default_value
       - ranges
       - distribution
+      type: object
+    StepPayload:
+      properties:
+        duration:
+          format: double
+          type: number
+        waypoints:
+          items:
+            $ref: '#/components/schemas/WaypointPayload'
+          type: array
+      required:
+      - duration
+      - waypoints
       type: object
     Study:
       properties:
@@ -3142,17 +3225,17 @@ components:
         - train_schedule_summaries
         type: object
     TrackLocation:
-      description: A track location (track section and offset)
+      description: A track location is a track section and an offset
       properties:
         offset:
-          description: The offset on the track section
-          example: 42.0
-          format: float
+          description: The offset on the track section in meters
+          format: double
           type: number
-        track:
-          description: The track section ID
-          example: 61205924-6667-11e3-81ff-01f464e0362d
-          type: string
+        track_section:
+          $ref: '#/components/schemas/Identifier'
+      required:
+      - track_section
+      - offset
       type: object
     TrackRange:
       properties:
@@ -3169,22 +3252,6 @@ components:
       - track
       - begin
       - end
-      type: object
-    TrackSectionLocation:
-      description: A track location (track section and offset)
-      properties:
-        offset:
-          description: The offset on the track section
-          example: 42.0
-          format: float
-          type: number
-        track_section:
-          description: The track section ID
-          example: 61205924-6667-11e3-81ff-01f464e0362d
-          type: string
-      required:
-      - track_section
-      - offset
       type: object
     TrainSchedule:
       properties:
@@ -3465,6 +3532,39 @@ components:
             type: string
         type: object
       type: array
+    WaypointLocation:
+      oneOf:
+      - properties:
+          offset:
+            description: Offset in meters from the start of the waypoint's track section
+            format: double
+            type: number
+        required:
+        - offset
+        type: object
+      - properties:
+          geo_coordinate:
+            description: A geographic coordinate (lon, lat) that will be projected onto the waypoint's track section
+            items:
+              allOf:
+              - format: double
+                type: number
+              - format: double
+                type: number
+            type: array
+        required:
+        - geo_coordinate
+        type: object
+    WaypointPayload:
+      allOf:
+      - $ref: '#/components/schemas/WaypointLocation'
+      - properties:
+          track_section:
+            description: A track section UUID
+            type: string
+        required:
+        - track_section
+        type: object
     Zone:
       properties:
         geo:
@@ -4628,86 +4728,93 @@ paths:
       - rolling_stock
   /pathfinding/:
     post:
+      description: Run a pathfinding between waypoints and store the resulting path in the DB
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PathQuery'
-        description: Path information
+              $ref: '#/components/schemas/PathfindingRequest'
+        required: true
       responses:
         '201':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Path'
-          description: The created Path
-      summary: Create a Path
-  /pathfinding/{id}/:
+                $ref: '#/components/schemas/PathResponse'
+          description: The created path
+      summary: Run a pathfinding between waypoints and store the resulting path in the DB
+      tags:
+      - pathfinding
+  /pathfinding/{pathfinding_id}/:
     delete:
+      description: Deletes a stored path
       parameters:
-      - description: Path ID
+      - description: A stored path ID
         in: path
-        name: id
+        name: pathfinding_id
         required: true
         schema:
+          format: int64
           type: integer
       responses:
         '204':
-          description: No content
-      summary: Delete a path
+          description: The path was deleted
+      summary: Deletes a stored path
       tags:
       - pathfinding
     get:
+      description: Retrieves a stored path
       parameters:
-      - description: Path ID
+      - description: A stored path ID
         in: path
-        name: id
+        name: pathfinding_id
         required: true
         schema:
+          format: int64
           type: integer
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Path'
-          description: The retrieved path
-      summary: Retrieve a Path
+                $ref: '#/components/schemas/PathResponse'
+          description: The requested path
+      summary: Retrieves a stored path
       tags:
       - pathfinding
     put:
+      description: Updates an existing path with the result of a new pathfinding run
       parameters:
-      - description: Path ID
+      - description: A stored path ID
         in: path
-        name: id
+        name: pathfinding_id
         required: true
         schema:
+          format: int64
           type: integer
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PathQuery'
-        description: Updated Path
+              $ref: '#/components/schemas/PathfindingRequest'
+        required: true
       responses:
         '200':
           content:
             application/json:
               schema:
-                items:
-                  $ref: '#/components/schemas/Path'
-                type: array
+                $ref: '#/components/schemas/PathResponse'
           description: The updated path
-      summary: Update a path
+      summary: Updates an existing path with the result of a new pathfinding run
       tags:
       - pathfinding
-  /pathfinding/{path_id}/catenaries/:
+  /pathfinding/{pathfinding_id}/catenaries/:
     get:
       description: Retrieve the catenary modes along a path, as seen by the rolling stock specified
       parameters:
-      - description: The path's id
+      - description: A stored path ID
         in: path
-        name: path_id
+        name: pathfinding_id
         required: true
         schema:
           format: int64
@@ -4722,13 +4829,13 @@ paths:
       summary: Retrieve the catenary modes along a path, as seen by the rolling stock specified
       tags:
       - infra
-  /pathfinding/{path_id}/electrical_profiles/:
+  /pathfinding/{pathfinding_id}/electrical_profiles/:
     get:
       description: Retrieve the electrical profiles along a path, as seen by the rolling stock specified
       parameters:
-      - description: The path's id
+      - description: A stored path ID
         in: path
-        name: path_id
+        name: pathfinding_id
         required: true
         schema:
           format: int64

@@ -5,10 +5,8 @@ mod path_rangemap;
 use std::collections::{HashMap, HashSet};
 
 use actix_web::{
-    delete,
-    dev::HttpServiceFactory,
-    get, post, put,
-    web::{self, Data, Json, Path},
+    delete, get, post, put,
+    web::{Data, Json, Path},
     HttpResponse, Responder,
 };
 use chrono::NaiveDateTime;
@@ -21,10 +19,14 @@ use geos::Geom;
 
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
+use utoipa::ToSchema;
 
 use crate::{
     core::{
-        pathfinding::{PathfindingRequest, PathfindingResponse, PathfindingWaypoints, Waypoint},
+        pathfinding::{
+            PathfindingRequest as CorePathfindingRequest, PathfindingResponse,
+            PathfindingWaypoints, Waypoint,
+        },
         AsCoreRequest, CoreClient,
     },
     error::Result,
@@ -32,8 +34,8 @@ use crate::{
         infra_objects::{
             operational_point::OperationalPointModel, track_section::TrackSectionModel,
         },
-        Create, CurveGraph, Delete, Infra, PathWaypoint, Pathfinding, PathfindingChangeset,
-        PathfindingPayload, Retrieve, RollingStockModel, SlopeGraph, Update,
+        Create, Curve, Delete, Infra, PathWaypoint, Pathfinding, PathfindingChangeset,
+        PathfindingPayload, Retrieve, RollingStockModel, Slope, Update,
     },
     schema::{
         rolling_stock::RollingStock,
@@ -42,6 +44,29 @@ use crate::{
     },
     tables, DbPool,
 };
+
+crate::routes! {
+    "/pathfinding" => {
+        create_pf,
+        "/{pathfinding_id}" => {
+            get_pf,
+            del_pf,
+            update_pf,
+            catenaries::routes(),
+            electrical_profiles::routes(),
+        },
+    }
+}
+
+crate::schemas! {
+    PathResponse,
+    PathfindingRequest,
+    StepPayload,
+    WaypointPayload,
+    WaypointLocation,
+    catenaries::schemas(),
+    electrical_profiles::schemas(),
+}
 
 #[derive(Debug, Error, EditoastError, Serialize)]
 #[editoast_error(base_id = "pathfinding")]
@@ -73,38 +98,22 @@ enum PathfindingError {
     RollingStockNotFound { rolling_stock_id: i64 },
 }
 
-// FIXME: The following routes include "pathfinding" directly in their path, as to not conflict with the
-// other routes. When the routes in mod.rs are moved to utoipa, the paths can be fixed.
-crate::routes! {
-    catenaries::routes(),
-    electrical_profiles::routes(),
-}
-
-crate::schemas! {
-    catenaries::schemas(),
-    electrical_profiles::schemas(),
-}
-
-/// Returns `/pathfinding` routes
-/// TODO: This is not called `routes` because it should be integrated in the `routes!` macro
-pub fn routes_v1() -> impl HttpServiceFactory {
-    web::scope("/pathfinding").service((get_pf, del_pf, create_pf, update_pf))
-}
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-struct Response {
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, ToSchema)]
+struct PathResponse {
     id: i64,
     owner: uuid::Uuid,
     length: f64,
     created: NaiveDateTime,
-    slopes: SlopeGraph,
-    curves: CurveGraph,
+    slopes: Vec<Slope>,
+    curves: Vec<Curve>,
+    #[schema(value_type = GeoJsonLineString)]
     geographic: Geometry,
+    #[schema(value_type = GeoJsonLineString)]
     schematic: Geometry,
     steps: Vec<PathWaypoint>,
 }
 
-impl From<Pathfinding> for Response {
+impl From<Pathfinding> for PathResponse {
     fn from(value: Pathfinding) -> Self {
         let Pathfinding {
             id,
@@ -132,34 +141,38 @@ impl From<Pathfinding> for Response {
     }
 }
 
-#[derive(Debug, Default, Deserialize)]
-struct PathfindingRequestPayload {
+#[derive(Debug, Default, Deserialize, ToSchema)]
+struct PathfindingRequest {
     infra: i64,
     steps: Vec<StepPayload>,
     #[serde(default)]
     rolling_stocks: Vec<i64>,
 }
 
-#[derive(Debug, Default, Serialize, Deserialize, PartialEq, Clone)]
+#[derive(Debug, Default, Serialize, Deserialize, PartialEq, Clone, ToSchema)]
 pub struct StepPayload {
     pub duration: f64,
     pub waypoints: Vec<WaypointPayload>,
 }
 
-#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, ToSchema)]
 pub struct WaypointPayload {
+    /// A track section UUID
     track_section: String,
+    /// The location of the waypoint on the track section
     #[serde(flatten)]
-    location: TrackSectionLocation,
+    location: WaypointLocation,
 }
 
-#[derive(Debug, Clone, Derivative, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Derivative, Serialize, Deserialize, PartialEq, ToSchema)]
 #[derivative(Default)]
 #[serde(rename_all = "snake_case")]
-enum TrackSectionLocation {
-    GeoCoordinate((f64, f64)),
+enum WaypointLocation {
+    /// Offset in meters from the start of the waypoint's track section
     #[derivative(Default)]
     Offset(f64),
+    /// A geographic coordinate (lon, lat)/WGS84 that will be projected onto the waypoint's track section
+    GeoCoordinate((f64, f64)),
 }
 
 impl WaypointPayload {
@@ -168,7 +181,7 @@ impl WaypointPayload {
     fn compute_waypoints(&self, track_map: &TrackMap) -> Vec<Waypoint> {
         let track = track_map.get(&self.track_section).unwrap();
         let offset = match self.location {
-            TrackSectionLocation::GeoCoordinate((lon, lat)) => {
+            WaypointLocation::GeoCoordinate((lon, lat)) => {
                 let point =
                     geos::Geometry::try_from(geojson::Geometry::new(geojson::Value::Point(vec![
                         lon, lat,
@@ -180,7 +193,7 @@ impl WaypointPayload {
                     .expect("could not compute the projection of the waypoint");
                 normalized_offset * track.length
             }
-            TrackSectionLocation::Offset(offset) => offset,
+            WaypointLocation::Offset(offset) => offset,
         };
         let [wp, wp2] = Waypoint::bidirectional(&track.id, offset);
         vec![wp, wp2]
@@ -253,7 +266,7 @@ async fn make_op_map<I: Iterator<Item = String>>(
     ))
 }
 
-impl PathfindingRequestPayload {
+impl PathfindingRequest {
     /// Queries all track sections of the payload and builds a track hash map
     async fn fetch_track_map(&self, conn: &mut PgConnection) -> Result<TrackMap> {
         fetch_pathfinding_payload_track_map(conn, self.infra, &self.steps).await
@@ -410,7 +423,7 @@ impl Pathfinding {
 
 /// Builds a Core pathfinding request, runs it, post-processes the response and stores it in the DB
 async fn call_core_pf_and_save_result(
-    payload: Json<PathfindingRequestPayload>,
+    payload: Json<PathfindingRequest>,
     db_pool: Data<DbPool>,
     core: Data<CoreClient>,
     update_id: Option<i64>,
@@ -431,7 +444,7 @@ async fn call_core_pf_and_save_result(
     let track_map = payload.fetch_track_map(conn).await?;
     let mut waypoints = payload.parse_waypoints(&track_map)?;
     let mut rolling_stocks = payload.parse_rolling_stocks(conn).await?;
-    let mut path_request = PathfindingRequest::new(infra.id.unwrap(), infra.version.unwrap());
+    let mut path_request = CorePathfindingRequest::new(infra.id.unwrap(), infra.version.unwrap());
     path_request
         .with_waypoints(&mut waypoints)
         .with_rolling_stocks(&mut rolling_stocks);
@@ -450,7 +463,7 @@ async fn call_core_pf_and_save_result(
 /// Run a pathfinding request and store the result in the DB
 /// If `update_id` is provided then update the corresponding path instead of creating a new one
 pub async fn run_pathfinding(
-    path_request: &PathfindingRequest,
+    path_request: &CorePathfindingRequest,
     core: Data<CoreClient>,
     conn: &mut PgConnection,
     infra_id: i64,
@@ -484,40 +497,82 @@ pub async fn run_pathfinding(
     Ok(pathfinding)
 }
 
+/// Run a pathfinding between waypoints and store the resulting path in the DB
+#[utoipa::path(
+    tag = "pathfinding",
+    request_body = PathfindingRequest,
+    responses(
+        (status = 201, body = PathResponse, description = "The created path")
+    )
+)]
 #[post("")]
 async fn create_pf(
-    payload: Json<PathfindingRequestPayload>,
+    payload: Json<PathfindingRequest>,
     db_pool: Data<DbPool>,
     core: Data<CoreClient>,
-) -> Result<Json<Response>> {
+) -> Result<Json<PathResponse>> {
     let pathfinding = call_core_pf_and_save_result(payload, db_pool, core, None).await?;
     Ok(Json(pathfinding.into()))
 }
 
-#[put("{id}")]
+#[derive(Deserialize, utoipa::IntoParams)]
+struct PathfindingIdParam {
+    /// A stored path ID
+    pathfinding_id: i64,
+}
+
+/// Updates an existing path with the result of a new pathfinding run
+#[utoipa::path(
+    tag = "pathfinding",
+    request_body = PathfindingRequest,
+    params(PathfindingIdParam),
+    responses(
+        (status = 200, body = PathResponse, description = "The updated path"),
+    )
+)]
+#[put("")]
 async fn update_pf(
-    path: Path<i64>,
-    payload: Json<PathfindingRequestPayload>,
+    params: Path<PathfindingIdParam>,
+    payload: Json<PathfindingRequest>,
     db_pool: Data<DbPool>,
     core: Data<CoreClient>,
-) -> Result<Json<Response>> {
+) -> Result<Json<PathResponse>> {
     let pathfinding =
-        call_core_pf_and_save_result(payload, db_pool, core, Some(path.into_inner())).await?;
+        call_core_pf_and_save_result(payload, db_pool, core, Some(params.pathfinding_id)).await?;
     Ok(Json(pathfinding.into()))
 }
 
-#[get("{id}")]
-async fn get_pf(path: Path<i64>, db_pool: Data<DbPool>) -> Result<Json<Response>> {
-    let pathfinding_id = path.into_inner();
+/// Retrieves a stored path
+#[utoipa::path(
+    tag = "pathfinding",
+    params(PathfindingIdParam),
+    responses(
+        (status = 200, body = PathResponse, description = "The requested path"),
+    )
+)]
+#[get("")]
+async fn get_pf(
+    params: Path<PathfindingIdParam>,
+    db_pool: Data<DbPool>,
+) -> Result<Json<PathResponse>> {
+    let pathfinding_id = params.pathfinding_id;
     match Pathfinding::retrieve(db_pool, pathfinding_id).await? {
         Some(pf) => Ok(Json(pf.into())),
         None => Err(PathfindingError::NotFound { pathfinding_id }.into()),
     }
 }
 
-#[delete("{id}")]
-async fn del_pf(path: Path<i64>, db_pool: Data<DbPool>) -> Result<impl Responder> {
-    let pathfinding_id = path.into_inner();
+/// Deletes a stored path
+#[utoipa::path(
+    tag = "pathfinding",
+    params(PathfindingIdParam),
+    responses(
+        (status = 204, description = "The path was deleted"),
+    )
+)]
+#[delete("")]
+async fn del_pf(params: Path<PathfindingIdParam>, db_pool: Data<DbPool>) -> Result<impl Responder> {
+    let pathfinding_id = params.pathfinding_id;
     if Pathfinding::delete(db_pool, pathfinding_id).await? {
         Ok(HttpResponse::NoContent())
     } else {
@@ -536,7 +591,7 @@ mod test {
         db_pool, empty_infra, named_fast_rolling_stock, pathfinding, small_infra, TestFixture,
     };
     use crate::models::{Infra, Pathfinding, Retrieve};
-    use crate::views::pathfinding::{PathfindingError, Response};
+    use crate::views::pathfinding::{PathResponse, PathfindingError};
     use crate::views::tests::create_test_service;
     use crate::views::tests::create_test_service_with_core_client;
     use crate::{assert_response_error_type_match, assert_status_and_read};
@@ -549,8 +604,8 @@ mod test {
             .uri(&format!("/pathfinding/{}", pf.id))
             .to_request();
         let response = call_service(&app, req).await;
-        let response: Response = assert_status_and_read!(response, StatusCode::OK);
-        let expected_response = Response::from(pf.clone());
+        let response: PathResponse = assert_status_and_read!(response, StatusCode::OK);
+        let expected_response = PathResponse::from(pf.clone());
         assert_eq!(response, expected_response);
     }
 
@@ -618,7 +673,7 @@ mod test {
         let response = call_service(&app, req).await;
 
         // THEN
-        let response: Response = assert_status_and_read!(response, StatusCode::OK);
+        let response: PathResponse = assert_status_and_read!(response, StatusCode::OK);
         assert!(Pathfinding::retrieve(db_pool(), response.id).await.is_ok());
     }
 
@@ -659,7 +714,7 @@ mod test {
         let response = call_service(&app, req).await;
 
         // THEN
-        let response: Response = assert_status_and_read!(response, StatusCode::OK);
+        let response: PathResponse = assert_status_and_read!(response, StatusCode::OK);
         assert!(Pathfinding::retrieve(db_pool(), response.id).await.is_ok());
     }
 
