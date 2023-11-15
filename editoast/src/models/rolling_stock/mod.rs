@@ -15,6 +15,7 @@ use crate::schema::rolling_stock::{
     EffortCurves, EnergySource, Gamma, RollingResistance, RollingStock, RollingStockCommon,
     RollingStockMetadata, RollingStockWithLiveries,
 };
+use crate::schema::track_section::LoadingGaugeType;
 use crate::tables::rolling_stock;
 use crate::views::rolling_stocks::RollingStockError;
 use crate::DbPool;
@@ -33,6 +34,7 @@ crate::schemas! {
     RollingStockWithLiveries,
     crate::views::rolling_stocks::schemas(),
     crate::views::light_rolling_stocks::schemas(),
+    LoadingGaugeType,
 }
 
 #[derive(
@@ -103,7 +105,7 @@ pub struct RollingStockModel {
     #[schema(value_type = RollingResistance)]
     pub rolling_resistance: Option<DieselJson<RollingResistance>>,
     #[diesel(deserialize_as = String)]
-    #[schema(value_type = String)]
+    #[schema(value_type = LoadingGaugeType)]
     pub loading_gauge: Option<String>,
     #[diesel(deserialize_as = Option<JsonValue>)]
     #[schema(value_type = Option<HashMap<String, String>>)]

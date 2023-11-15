@@ -2,6 +2,7 @@ import {
   Comfort,
   ConditionalEffortCurve,
   EffortCurve,
+  LoadingGaugeType,
   RollingStockCommon,
 } from 'common/api/osrdEditoastApi';
 
@@ -81,7 +82,7 @@ export type RollingStockParametersValidValues = {
   comfortAcceleration: number;
   gammaValue: number;
   inertiaCoefficient: number;
-  loadingGauge: string; // 'G1' | 'G2' | 'GA' | 'GB' | 'GB1' | 'GC' | 'FR3.3' | 'FR3.3/GB/G2' | 'GLOTT';
+  loadingGauge: LoadingGaugeType;
   rollingResistanceA: number;
   rollingResistanceB: number;
   rollingResistanceC: number;

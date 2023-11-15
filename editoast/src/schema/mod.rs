@@ -15,7 +15,7 @@ mod speed_section;
 pub mod sprite_config;
 mod switch;
 mod switch_type;
-mod track_section;
+pub mod track_section;
 
 pub mod utils;
 pub use buffer_stop::{BufferStop, BufferStopCache};

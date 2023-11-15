@@ -1521,6 +1521,16 @@ export type Gamma = {
   type: string;
   value: number;
 };
+export type LoadingGaugeType =
+  | 'G1'
+  | 'G2'
+  | 'GA'
+  | 'GB'
+  | 'GB1'
+  | 'GC'
+  | 'FR3.3'
+  | 'FR3.3/GB/G2'
+  | 'GLOTT';
 export type RollingStockMetadata = {
   detail: string;
   family: string;
@@ -1548,7 +1558,7 @@ export type LightRollingStock = {
   id: number;
   inertia_coefficient: number;
   length: number;
-  loading_gauge: string;
+  loading_gauge: LoadingGaugeType;
   locked: boolean;
   mass: number;
   max_speed: number;
@@ -1820,7 +1830,7 @@ export type RollingStockCommon = {
   gamma: Gamma;
   inertia_coefficient: number;
   length: number;
-  loading_gauge: string;
+  loading_gauge: LoadingGaugeType;
   mass: number;
   max_speed: number;
   name: string;

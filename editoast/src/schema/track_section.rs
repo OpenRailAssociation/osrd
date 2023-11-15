@@ -14,6 +14,7 @@ use derivative::Derivative;
 use editoast_derive::InfraModel;
 use geos::geojson::{Geometry, Value::LineString};
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, InfraModel)]
 #[serde(deny_unknown_fields)]
@@ -96,7 +97,7 @@ pub struct Slope {
     pub end: f64,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq, ToSchema)]
 pub enum LoadingGaugeType {
     G1,
     G2,
