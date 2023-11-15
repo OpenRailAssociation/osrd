@@ -43,6 +43,7 @@ crate::schemas! {
     train_schedule::schemas(),
     timetable::schemas(),
     rolling_stock::schemas(),
+    pathfinding::schemas(),
 }
 
 pub trait Identifiable<T = i64>

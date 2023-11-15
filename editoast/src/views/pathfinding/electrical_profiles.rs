@@ -4,6 +4,7 @@ use crate::models::{
 };
 use crate::schema::electrical_profiles::ElectricalProfileSetData;
 use crate::views::electrical_profiles::ElectricalProfilesError;
+use crate::views::pathfinding::PathfindingIdParam;
 use crate::views::pathfinding::{
     path_rangemap::{make_path_range_map, TrackMap},
     PathfindingError,
@@ -79,22 +80,19 @@ struct ProfilesOnPathResponse {
 
 #[utoipa::path(
     tag = "electrical_profiles",
-    params(
-        ("path_id" = i64, Path, description = "The path's id"),
-        ProfilesOnPathQuery,
-    ),
+    params(PathfindingIdParam, ProfilesOnPathQuery),
     responses(
         (status = 200, body = ProfilesOnPathResponse),
     )
 )]
-#[get("/pathfinding/{path_id}/electrical_profiles")]
+#[get("/electrical_profiles")]
 /// Retrieve the electrical profiles along a path, as seen by the rolling stock specified
 async fn electrical_profiles_on_path(
-    pathfinding_id: Path<i64>,
+    params: Path<PathfindingIdParam>,
     request: Query<ProfilesOnPathQuery>,
     db_pool: Data<DbPool>,
 ) -> Result<Json<ProfilesOnPathResponse>> {
-    let pathfinding_id = *pathfinding_id;
+    let pathfinding_id = params.pathfinding_id;
     let pathfinding = match Pathfinding::retrieve(db_pool.clone(), pathfinding_id).await? {
         Some(pf) => pf,
         None => return Err(PathfindingError::NotFound { pathfinding_id }.into()),

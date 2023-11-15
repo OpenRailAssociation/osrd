@@ -62,8 +62,6 @@ pub fn routes() -> impl HttpServiceFactory {
     services![
         routes_v2(),
         infra::routes(),
-        pathfinding::routes_v1(),
-        train_schedule::routes(),
         stdcm::routes(),
         single_simulation::routes(),
     ]
@@ -79,7 +77,7 @@ schemas! {
     pathfinding::schemas(),
     projects::schemas(),
     search::schemas(),
-    crate::schema::utils::geometry::schemas(),
+    crate::schema::schemas(),
     train_schedule::schemas(),
     rolling_stocks::schemas(),
     light_rolling_stocks::schemas(),

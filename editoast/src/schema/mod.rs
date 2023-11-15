@@ -56,6 +56,8 @@ use strum_macros::{Display, EnumIter};
 use utoipa::ToSchema;
 
 crate::schemas! {
+    TrackLocation,
+    utils::schemas(),
     rolling_stock::schemas(),
     operation::schemas(),
 }
@@ -393,8 +395,11 @@ pub struct Sign {
     pub kp: String,
 }
 
-#[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq)]
+/// A track location is a track section and an offset
+#[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq, ToSchema)]
 pub struct TrackLocation {
+    /// The track section UUID
     pub track_section: Identifier,
+    /// The offset on the track section in meters
     pub offset: f64,
 }

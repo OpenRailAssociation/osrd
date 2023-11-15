@@ -3,7 +3,7 @@ use crate::infra_cache::InfraCache;
 use crate::models::{pathfinding::Pathfinding, Infra, Retrieve};
 use crate::schema::ObjectType;
 use crate::views::pathfinding::path_rangemap::{make_path_range_map, TrackMap};
-use crate::views::pathfinding::PathfindingError;
+use crate::views::pathfinding::{PathfindingError, PathfindingIdParam};
 use crate::DbPool;
 use actix_web::{
     get,
@@ -85,21 +85,19 @@ struct CatenariesOnPathResponse {
 
 #[utoipa::path(
     tag = "infra",
-    params(
-        ("path_id" = i64, Path, description = "The path's id"),
-    ),
+    params(PathfindingIdParam),
     responses(
         (status = 200, body = CatenariesOnPathResponse),
     )
 )]
-#[get("/pathfinding/{path_id}/catenaries")]
+#[get("/catenaries")]
 /// Retrieve the catenary modes along a path, as seen by the rolling stock specified
 async fn catenaries_on_path(
-    pathfinding_id: Path<i64>,
+    params: Path<PathfindingIdParam>,
     db_pool: Data<DbPool>,
     infra_caches: Data<CHashMap<i64, InfraCache>>,
 ) -> Result<Json<CatenariesOnPathResponse>> {
-    let pathfinding_id = *pathfinding_id;
+    let pathfinding_id = params.pathfinding_id;
     let pathfinding = match Pathfinding::retrieve(db_pool.clone(), pathfinding_id).await? {
         Some(pf) => pf,
         None => return Err(PathfindingError::NotFound { pathfinding_id }.into()),

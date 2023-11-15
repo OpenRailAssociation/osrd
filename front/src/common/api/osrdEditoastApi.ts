@@ -320,40 +320,51 @@ const injectedRtkApi = api
         providesTags: ['rolling_stock'],
       }),
       postPathfinding: build.mutation<PostPathfindingApiResponse, PostPathfindingApiArg>({
-        query: (queryArg) => ({ url: `/pathfinding/`, method: 'POST', body: queryArg.pathQuery }),
-      }),
-      deletePathfindingById: build.mutation<
-        DeletePathfindingByIdApiResponse,
-        DeletePathfindingByIdApiArg
-      >({
-        query: (queryArg) => ({ url: `/pathfinding/${queryArg.id}/`, method: 'DELETE' }),
-        invalidatesTags: ['pathfinding'],
-      }),
-      getPathfindingById: build.query<GetPathfindingByIdApiResponse, GetPathfindingByIdApiArg>({
-        query: (queryArg) => ({ url: `/pathfinding/${queryArg.id}/` }),
-        providesTags: ['pathfinding'],
-      }),
-      putPathfindingById: build.mutation<PutPathfindingByIdApiResponse, PutPathfindingByIdApiArg>({
         query: (queryArg) => ({
-          url: `/pathfinding/${queryArg.id}/`,
-          method: 'PUT',
-          body: queryArg.pathQuery,
+          url: `/pathfinding/`,
+          method: 'POST',
+          body: queryArg.pathfindingRequest,
         }),
         invalidatesTags: ['pathfinding'],
       }),
-      getPathfindingByPathIdCatenaries: build.query<
-        GetPathfindingByPathIdCatenariesApiResponse,
-        GetPathfindingByPathIdCatenariesApiArg
+      deletePathfindingByPathfindingId: build.mutation<
+        DeletePathfindingByPathfindingIdApiResponse,
+        DeletePathfindingByPathfindingIdApiArg
       >({
-        query: (queryArg) => ({ url: `/pathfinding/${queryArg.pathId}/catenaries/` }),
-        providesTags: ['infra'],
+        query: (queryArg) => ({ url: `/pathfinding/${queryArg.pathfindingId}/`, method: 'DELETE' }),
+        invalidatesTags: ['pathfinding'],
       }),
-      getPathfindingByPathIdElectricalProfiles: build.query<
-        GetPathfindingByPathIdElectricalProfilesApiResponse,
-        GetPathfindingByPathIdElectricalProfilesApiArg
+      getPathfindingByPathfindingId: build.query<
+        GetPathfindingByPathfindingIdApiResponse,
+        GetPathfindingByPathfindingIdApiArg
+      >({
+        query: (queryArg) => ({ url: `/pathfinding/${queryArg.pathfindingId}/` }),
+        providesTags: ['pathfinding'],
+      }),
+      putPathfindingByPathfindingId: build.mutation<
+        PutPathfindingByPathfindingIdApiResponse,
+        PutPathfindingByPathfindingIdApiArg
       >({
         query: (queryArg) => ({
-          url: `/pathfinding/${queryArg.pathId}/electrical_profiles/`,
+          url: `/pathfinding/${queryArg.pathfindingId}/`,
+          method: 'PUT',
+          body: queryArg.pathfindingRequest,
+        }),
+        invalidatesTags: ['pathfinding'],
+      }),
+      getPathfindingByPathfindingIdCatenaries: build.query<
+        GetPathfindingByPathfindingIdCatenariesApiResponse,
+        GetPathfindingByPathfindingIdCatenariesApiArg
+      >({
+        query: (queryArg) => ({ url: `/pathfinding/${queryArg.pathfindingId}/catenaries/` }),
+        providesTags: ['infra'],
+      }),
+      getPathfindingByPathfindingIdElectricalProfiles: build.query<
+        GetPathfindingByPathfindingIdElectricalProfilesApiResponse,
+        GetPathfindingByPathfindingIdElectricalProfilesApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/pathfinding/${queryArg.pathfindingId}/electrical_profiles/`,
           params: {
             rolling_stock_id: queryArg.rollingStockId,
             electrical_profile_set_id: queryArg.electricalProfileSetId,
@@ -1002,39 +1013,39 @@ export type GetLightRollingStockByRollingStockIdApiResponse =
 export type GetLightRollingStockByRollingStockIdApiArg = {
   rollingStockId: number;
 };
-export type PostPathfindingApiResponse = /** status 201 The created Path */ Path;
+export type PostPathfindingApiResponse = /** status 201 The created path */ PathResponse;
 export type PostPathfindingApiArg = {
-  /** Path information */
-  pathQuery: PathQuery;
+  pathfindingRequest: PathfindingRequest;
 };
-export type DeletePathfindingByIdApiResponse = unknown;
-export type DeletePathfindingByIdApiArg = {
-  /** Path ID */
-  id: number;
+export type DeletePathfindingByPathfindingIdApiResponse = unknown;
+export type DeletePathfindingByPathfindingIdApiArg = {
+  /** A stored path ID */
+  pathfindingId: number;
 };
-export type GetPathfindingByIdApiResponse = /** status 200 The retrieved path */ Path;
-export type GetPathfindingByIdApiArg = {
-  /** Path ID */
-  id: number;
+export type GetPathfindingByPathfindingIdApiResponse =
+  /** status 200 The requested path */ PathResponse;
+export type GetPathfindingByPathfindingIdApiArg = {
+  /** A stored path ID */
+  pathfindingId: number;
 };
-export type PutPathfindingByIdApiResponse = /** status 200 The updated path */ Path[];
-export type PutPathfindingByIdApiArg = {
-  /** Path ID */
-  id: number;
-  /** Updated Path */
-  pathQuery: PathQuery;
+export type PutPathfindingByPathfindingIdApiResponse =
+  /** status 200 The updated path */ PathResponse;
+export type PutPathfindingByPathfindingIdApiArg = {
+  /** A stored path ID */
+  pathfindingId: number;
+  pathfindingRequest: PathfindingRequest;
 };
-export type GetPathfindingByPathIdCatenariesApiResponse =
+export type GetPathfindingByPathfindingIdCatenariesApiResponse =
   /** status 200  */ CatenariesOnPathResponse;
-export type GetPathfindingByPathIdCatenariesApiArg = {
-  /** The path's id */
-  pathId: number;
+export type GetPathfindingByPathfindingIdCatenariesApiArg = {
+  /** A stored path ID */
+  pathfindingId: number;
 };
-export type GetPathfindingByPathIdElectricalProfilesApiResponse =
+export type GetPathfindingByPathfindingIdElectricalProfilesApiResponse =
   /** status 200  */ ProfilesOnPathResponse;
-export type GetPathfindingByPathIdElectricalProfilesApiArg = {
-  /** The path's id */
-  pathId: number;
+export type GetPathfindingByPathfindingIdElectricalProfilesApiArg = {
+  /** A stored path ID */
+  pathfindingId: number;
   rollingStockId: number;
   electricalProfileSetId: number;
 };
@@ -1498,9 +1509,10 @@ export type DirectionalTrackRange = {
   end: number;
   track: string;
 };
+export type Identifier = string;
 export type TrackLocation = {
-  offset?: number;
-  track?: string;
+  offset: number;
+  track_section: Identifier;
 };
 export type RouteTrackRangesNotFoundError = {
   type: 'NotFound';
@@ -1626,57 +1638,59 @@ export type PaginatedResponseOfLightRollingStockWithLiveries = {
   previous: number | null;
   results: LightRollingStockWithLiveries[];
 };
-export type GeoJsonObject = {
-  coordinates: number[][];
-  type: string;
+export type Curve = {
+  position: number;
+  radius: number;
 };
-export type GeoJsonPosition = {
-  coordinates: number[];
-  type: string;
+export type GeoJsonPointValue = number[];
+export type GeoJsonLineStringValue = GeoJsonPointValue[];
+export type GeoJsonLineString = {
+  coordinates: GeoJsonLineStringValue;
+  type: 'LineString';
 };
-export type TrackSectionLocation = {
-  offset: number;
-  track_section: string;
+export type Slope = {
+  gradient: number;
+  position: number;
 };
-export type PathStep = {
+export type PathWaypoint = {
   duration: number;
-  geo: GeoJsonPosition;
-  id?: string;
-  location: TrackSectionLocation;
-  name?: string;
+  geo: GeoJsonLineString;
+  id: string | null;
+  location: TrackLocation;
+  name: string | null;
   path_offset: number;
-  sch: GeoJsonPosition;
+  sch: GeoJsonLineString;
   suggestion: boolean;
 };
-export type Path = {
+export type PathResponse = {
   created: string;
-  curves: {
-    position: number;
-    radius: number;
-  }[];
-  geographic: GeoJsonObject;
+  curves: Curve[];
+  geographic: GeoJsonLineString;
   id: number;
   length: number;
   owner: string;
-  schematic: GeoJsonObject;
-  slopes: {
-    gradient: number;
-    position: number;
-  }[];
-  steps: PathStep[];
+  schematic: GeoJsonLineString;
+  slopes: Slope[];
+  steps: PathWaypoint[];
 };
-export type PathWaypoint = {
-  geo_coordinate?: number[];
-  offset?: number;
+export type WaypointLocation =
+  | {
+      offset: number;
+    }
+  | {
+      geo_coordinate: (number & number)[];
+    };
+export type WaypointPayload = WaypointLocation & {
   track_section: string;
 };
-export type PathQuery = {
+export type StepPayload = {
+  duration: number;
+  waypoints: WaypointPayload[];
+};
+export type PathfindingRequest = {
   infra: number;
-  rolling_stocks: number[];
-  steps: {
-    duration: number;
-    waypoints: PathWaypoint[];
-  }[];
+  rolling_stocks?: number[];
+  steps: StepPayload[];
 };
 export type RangedValue = {
   begin: number;
@@ -1954,7 +1968,6 @@ export type SearchResultItemTrack = {
   line_code: number;
   line_name: string;
 };
-export type GeoJsonPointValue = number[];
 export type GeoJsonPoint = {
   coordinates: GeoJsonPointValue;
   type: 'Point';
@@ -2177,6 +2190,41 @@ export type SingleSimulationRequest = {
     position?: number;
   }[];
   tag?: string;
+};
+export type GeoJsonObject = {
+  coordinates: number[][];
+  type: string;
+};
+export type GeoJsonPosition = {
+  coordinates: number[];
+  type: string;
+};
+export type PathStep = {
+  duration: number;
+  geo: GeoJsonPosition;
+  id?: string;
+  location: TrackLocation;
+  name?: string;
+  path_offset: number;
+  sch: GeoJsonPosition;
+  suggestion: boolean;
+};
+export type Path = {
+  created: string;
+  curves: {
+    position: number;
+    radius: number;
+  }[];
+  geographic: GeoJsonObject;
+  id: number;
+  length: number;
+  owner: string;
+  schematic: GeoJsonObject;
+  slopes: {
+    gradient: number;
+    position: number;
+  }[];
+  steps: PathStep[];
 };
 export type SimulationReport = {
   base: SimulationReportByTrain;

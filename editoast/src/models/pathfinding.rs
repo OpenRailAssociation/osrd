@@ -15,6 +15,13 @@ use editoast_derive::Model;
 use geos::geojson;
 use postgis_diesel::types::*;
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
+
+crate::schemas! {
+    Slope,
+    Curve,
+    PathWaypoint,
+}
 
 /// Describes a pathfinding that resulted from a simulation and stored in the DB
 ///
@@ -122,13 +129,13 @@ impl From<PathfindingChangeset> for Pathfinding {
 pub type SlopeGraph = Vec<Slope>;
 pub type CurveGraph = Vec<Curve>;
 
-#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 pub struct Slope {
     pub gradient: f64,
     pub position: f64,
 }
 
-#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 pub struct Curve {
     radius: f64,
     position: f64,
@@ -149,10 +156,12 @@ pub struct RoutePath {
     pub track_ranges: Vec<DirectionalTrackRange>,
 }
 
-#[derive(Debug, Clone, PartialEq, Derivative, Deserialize, Serialize)]
+#[derive(Debug, Clone, PartialEq, Derivative, Deserialize, Serialize, ToSchema)]
 #[derivative(Default)]
 pub struct PathWaypoint {
+    #[schema(required)]
     pub id: Option<String>,
+    #[schema(required)]
     pub name: Option<String>,
     pub location: TrackLocation,
     pub duration: f64,
@@ -161,10 +170,12 @@ pub struct PathWaypoint {
     #[derivative(Default(
         value = "geojson::Geometry::new(geojson::Value::LineString(Default::default()))"
     ))]
+    #[schema(value_type = GeoJsonLineString)]
     pub geo: geojson::Geometry,
     #[derivative(Default(
         value = "geojson::Geometry::new(geojson::Value::LineString(Default::default()))"
     ))]
+    #[schema(value_type = GeoJsonLineString)]
     pub sch: geojson::Geometry,
 }
 
