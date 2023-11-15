@@ -25,6 +25,10 @@ use super::{
 crate::schemas! {
     TrainSchedule,
     PowerRestrictionRange,
+    LightTrainSchedule,
+    MechanicalEnergyConsumedBaseEco,
+    TrainScheduleValidation,
+    TrainScheduleSummary,
     TrainScheduleOptions,
     AllowanceValue,
     AllowanceDistribution,
@@ -179,20 +183,20 @@ pub struct LightTrainSchedule {
     pub train_path: i64,
 }
 
-#[derive(Serialize, Debug, PartialEq, Clone, Default, Deserialize)]
+#[derive(Serialize, Debug, PartialEq, Clone, Default, Deserialize, ToSchema)]
 pub struct MechanicalEnergyConsumedBaseEco {
     pub base: f64,
     pub eco: Option<f64>,
 }
 
-#[derive(Serialize, Debug, PartialEq, Clone, Deserialize)]
+#[derive(Serialize, Debug, PartialEq, Clone, Deserialize, ToSchema)]
 pub enum TrainScheduleValidation {
     NewerRollingStock,
     NewerInfra,
 }
 
 /// Returns the timetable with the train's important route information (distance travelled, arrival time, etc.)
-#[derive(Serialize, Debug, PartialEq, Clone, Queryable, Deserialize)]
+#[derive(Serialize, Debug, PartialEq, Clone, Queryable, Deserialize, ToSchema)]
 pub struct TrainScheduleSummary {
     #[serde(flatten)]
     pub train_schedule: TrainSchedule,

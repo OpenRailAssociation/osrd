@@ -2098,6 +2098,10 @@ export type Waypoint = {
   geo_coordinate?: number[];
   track_section?: string;
 }[];
+export type Timetable = {
+  id: number;
+  name: string;
+};
 export type RollingStockComfortType = 'STANDARD' | 'AC' | 'HEATING';
 export type ScheduledPoint = {
   path_offset: number;
@@ -2119,20 +2123,19 @@ export type TrainSchedule = {
   timetable_id: number;
   train_name: string;
 };
-export type InvalidTrainValues = 'NewerRollingStock' | 'NewerInfra';
+export type TrainScheduleValidation = 'NewerRollingStock' | 'NewerInfra';
+export type MechanicalEnergyConsumedBaseEco = {
+  base: number;
+  eco?: number | null;
+};
 export type TrainScheduleSummary = TrainSchedule & {
   arrival_time: number;
-  invalid_reasons: InvalidTrainValues[];
-  mechanical_energy_consumed: {
-    base: number;
-    eco: number | null;
-  };
+  invalid_reasons: TrainScheduleValidation[];
+  mechanical_energy_consumed: MechanicalEnergyConsumedBaseEco;
   path_length: number;
   stops_count: number;
 };
-export type TimetableWithSchedulesDetails = {
-  id: number;
-  name: string;
+export type TimetableWithSchedulesDetails = Timetable & {
   train_schedule_summaries: TrainScheduleSummary[];
 };
 export type TimetableImportPathLocation =
