@@ -37,6 +37,7 @@ import {
 import { getEditRouteState } from 'applications/editor/tools/routeEdition/utils';
 import TOOL_TYPES from 'applications/editor/tools/toolTypes';
 import { EditoastType } from 'applications/editor/tools/types';
+import { getIsLoading } from 'reducers/main/mainSelector';
 import { CustomFlagSignalCheckbox } from './CustomFlagSignalCheckbox';
 import { PointEditionState } from './types';
 import { formatSignalingSystems } from './utils';
@@ -192,6 +193,7 @@ export const PointEditionLeftPanel: FC<{ type: EditoastType }> = <Entity extends
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const infraID = useSelector(getInfraID);
+  const isLoading = useSelector(getIsLoading);
   const { state, setState } = useContext(EditorContext) as ExtendedEditorContextType<
     PointEditionState<Entity>
   >;
@@ -333,7 +335,7 @@ export const PointEditionLeftPanel: FC<{ type: EditoastType }> = <Entity extends
           <button
             type="submit"
             className="btn btn-primary"
-            disabled={!state.entity.properties?.track || !state.entity.geometry}
+            disabled={!state.entity.properties?.track || !state.entity.geometry || isLoading}
           >
             {t('common.save')}
           </button>

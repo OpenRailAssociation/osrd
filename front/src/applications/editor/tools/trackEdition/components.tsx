@@ -6,30 +6,35 @@ import { last } from 'lodash';
 import { Position } from 'geojson';
 import { BsBoxArrowInRight } from 'react-icons/bs';
 
+import EditorForm from 'applications/editor/components/EditorForm';
+import EntitySumUp from 'applications/editor/components/EntitySumUp';
+import EntityError from 'applications/editor/components/EntityError';
+import { getEntities } from 'applications/editor/data/api';
+import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
+import EditorContext from 'applications/editor/context';
+import {
+  getEditCatenaryState,
+  getEditSpeedSectionState,
+} from 'applications/editor/tools/rangeEdition/utils';
+import TOOL_TYPES from 'applications/editor/tools/toolTypes';
+import { ExtendedEditorContextType } from 'applications/editor/tools/editorContextTypes';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import EditorContext from '../../context';
-import GeoJSONs from '../../../../common/Map/Layers/GeoJSONs';
-import colors from '../../../../common/Map/Consts/colors';
-import { TrackEditionState } from './types';
-import EditorForm from '../../components/EditorForm';
-import { save } from '../../../../reducers/editor';
+import { Spinner } from 'common/Loader';
+import GeoJSONs from 'common/Map/Layers/GeoJSONs';
+import colors from 'common/Map/Consts/colors';
+import { save } from 'reducers/editor';
+import { getIsLoading } from 'reducers/main/mainSelector';
+import { getMap } from 'reducers/map/selectors';
+import { getInfraID } from 'reducers/osrdconf/selectors';
 import {
   CatenaryEntity,
   EntityObjectOperationResult,
   SpeedSectionEntity,
   TrackSectionEntity,
-} from '../../../../types';
+} from 'types';
+
+import { TrackEditionState } from './types';
 import { injectGeometry } from './utils';
-import { NEW_ENTITY_ID } from '../../data/utils';
-import { getMap } from '../../../../reducers/map/selectors';
-import { getInfraID } from '../../../../reducers/osrdconf/selectors';
-import { getEntities } from '../../data/api';
-import { Spinner } from '../../../../common/Loader';
-import EntitySumUp from '../../components/EntitySumUp';
-import { getEditCatenaryState, getEditSpeedSectionState } from '../rangeEdition/utils';
-import TOOL_TYPES from '../toolTypes';
-import { ExtendedEditorContextType } from '../editorContextTypes';
-import EntityError from '../../components/EntityError';
 
 export const TRACK_LAYER_ID = 'trackEditionTool/new-track-path';
 export const POINTS_LAYER_ID = 'trackEditionTool/new-track-points';
@@ -351,6 +356,7 @@ export const TrackEditionLeftPanel: FC = () => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const infraID = useSelector(getInfraID);
+  const isLoading = useSelector(getIsLoading);
   const { state, setState } = useContext(
     EditorContext
   ) as ExtendedEditorContextType<TrackEditionState>;
@@ -399,7 +405,7 @@ export const TrackEditionLeftPanel: FC = () => {
           <button
             type="submit"
             className="btn btn-primary"
-            disabled={state.track.geometry.coordinates.length < 2}
+            disabled={state.track.geometry.coordinates.length < 2 || isLoading}
           >
             {t('common.save')}
           </button>

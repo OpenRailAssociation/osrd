@@ -8,32 +8,32 @@ import { featureCollection, point } from '@turf/helpers';
 import nearestPoint from '@turf/nearest-point';
 import { Position } from 'geojson';
 
-import EditorContext from '../../context';
-import { EntityObjectOperationResult, SwitchEntity, TrackSectionEntity } from '../../../../types';
-import colors from '../../../../common/Map/Consts/colors';
-import GeoJSONs from '../../../../common/Map/Layers/GeoJSONs';
-import { SwitchEditionState } from './types';
-import EditorForm from '../../components/EditorForm';
-import { save } from '../../../../reducers/editor';
+import EditorForm from 'applications/editor//components/EditorForm';
+import EntitySumUp from 'applications/editor/components/EntitySumUp';
+import EntityError from 'applications/editor/components/EntityError';
+import EditorContext from 'applications/editor/context';
+import { getEntity } from 'applications/editor/data/api';
+import { flattenEntity } from 'applications/editor/data/utils';
+import { ExtendedEditorContextType } from 'applications/editor/tools/editorContextTypes';
+import colors from 'common/Map/Consts/colors';
+import GeoJSONs from 'common/Map/Layers/GeoJSONs';
+import { getSwitchesLayerProps, getSwitchesNameLayerProps } from 'common/Map/Layers/Switches';
+import { save } from 'reducers/editor';
+import { getInfraID } from 'reducers/osrdconf/selectors';
+import { getMap } from 'reducers/map/selectors';
+import { getIsLoading } from 'reducers/main/mainSelector';
+import { EntityObjectOperationResult, SwitchEntity, TrackSectionEntity } from 'types';
+
 import { FlatSwitchEntity, flatSwitchToSwitch, getNewSwitch, isSwitchValid } from './utils';
-import {
-  getSwitchesLayerProps,
-  getSwitchesNameLayerProps,
-} from '../../../../common/Map/Layers/Switches';
-import { flattenEntity } from '../../data/utils';
-import EntitySumUp from '../../components/EntitySumUp';
-import EntityError from '../../components/EntityError';
-import { getEntity } from '../../data/api';
-import { getInfraID } from '../../../../reducers/osrdconf/selectors';
-import { getMap } from '../../../../reducers/map/selectors';
-import { ExtendedEditorContextType } from '../editorContextTypes';
-import { CustomSchemaField } from './components/CustomSchemaField';
+import { SwitchEditionState } from './types';
 import useSwitch from './useSwitch';
+import { CustomSchemaField } from './components/CustomSchemaField';
 
 export const SwitchEditionLeftPanel: FC = () => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const infraID = useSelector(getInfraID);
+  const isLoading = useSelector(getIsLoading);
   const { state, setState } = useContext(
     EditorContext
   ) as ExtendedEditorContextType<SwitchEditionState>;
@@ -132,7 +132,8 @@ export const SwitchEditionLeftPanel: FC = () => {
             disabled={
               !switchType ||
               !isSwitchValid(switchEntity, switchType) ||
-              state.portEditionState.type !== 'idle'
+              state.portEditionState.type !== 'idle' ||
+              isLoading
             }
           >
             {t('common.save')}

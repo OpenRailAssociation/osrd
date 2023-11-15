@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import cx from 'classnames';
 
 import './Loader.scss';
-import { getLoading } from 'reducers/main/mainSelector';
+import { getIsLoading } from 'reducers/main/mainSelector';
 
 type LoaderProps = {
   msg?: string;
@@ -37,9 +37,8 @@ export const LoaderFill: FC<HTMLAttributes<HTMLDivElement>> = ({ className, ...p
 );
 
 export const LoaderState: FC<unknown> = () => {
-  const loading = useSelector(getLoading);
-  if (loading && loading > 0) return <LoaderSNCF position="top-right" />;
-  return null;
+  const isLoading = useSelector(getIsLoading);
+  return isLoading ? <LoaderSNCF position="top-right" /> : null;
 };
 
 export default LoaderSNCF;
