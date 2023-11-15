@@ -4,14 +4,14 @@ import { useDispatch, useSelector } from 'react-redux';
 import { FaMapMarkedAlt, FaTimesCircle } from 'react-icons/fa';
 import { Position } from 'geojson';
 
-import { EndPoint, WayPoint, WayPointEntity } from '../../../../../types';
-import EditorContext from '../../../context';
-import { EditRoutePathState } from '../types';
-import { getEntity } from '../../../data/api';
-import EntitySumUp from '../../../components/EntitySumUp';
-import Tipped from '../../../components/Tipped';
-import { getInfraID } from '../../../../../reducers/osrdconf/selectors';
-import { ExtendedEditorContextType } from '../../editorContextTypes';
+import EditorContext from 'applications/editor/context';
+import { EditRoutePathState } from 'applications/editor/tools/routeEdition/types';
+import { getEntity } from 'applications/editor/data/api';
+import EntitySumUp from 'applications/editor/components/EntitySumUp';
+import Tipped from 'applications/editor/components/Tipped';
+import { getInfraID } from 'reducers/osrdconf/selectors';
+import { ExtendedEditorContextType } from 'applications/editor/tools/editorContextTypes';
+import { EndPoint, WayPoint, WayPointEntity } from 'types';
 
 const WayPointInput: FC<{
   endPoint: EndPoint;
@@ -28,8 +28,13 @@ const WayPointInput: FC<{
     { type: 'data'; entity: WayPointEntity } | { type: 'loading' } | { type: 'empty' }
   >({ type: 'empty' });
 
-  const isPicking = state.extremityEditionState.type === 'selection';
-  const isDisabled = state.extremityEditionState.type === 'selection';
+  const isPicking =
+    state.extremityEditionState.type === 'selection' &&
+    state.extremityEditionState.extremity === endPoint;
+  const isDisabled =
+    state.extremityEditionState.type === 'selection' &&
+    !isPicking &&
+    state.extremityEditionState.extremity !== endPoint;
 
   const startPickingWayPoint = useCallback(() => {
     // Cancel current selection:
@@ -42,7 +47,7 @@ const WayPointInput: FC<{
       });
     }
     // Start selecting:
-    else if (!isDisabled) {
+    else {
       setState({
         ...state,
         extremityEditionState: {
@@ -60,7 +65,7 @@ const WayPointInput: FC<{
         },
       });
     }
-  }, [endPoint, isDisabled, isPicking, onChange, setState, state]);
+  }, [endPoint, isPicking, onChange, setState, state]);
 
   useEffect(() => {
     if (
