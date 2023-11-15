@@ -7,19 +7,13 @@ import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { getInfraID } from 'reducers/osrdconf/selectors';
+import { BufferStopEntity, DetectorEntity, DIRECTIONS, WayPoint, WayPointEntity } from 'types';
+import EditorContext from 'applications/editor/context';
+import { getEntity } from 'applications/editor/data/api';
+import EntitySumUp from 'applications/editor/components/EntitySumUp';
+import TOOL_TYPES from 'applications/editor/tools/toolTypes';
+import { RouteState } from 'applications/editor/tools/routeEdition/types';
 import WayPointInput from './WayPointInput';
-import {
-  BufferStopEntity,
-  DetectorEntity,
-  DIRECTIONS,
-  WayPoint,
-  WayPointEntity,
-} from '../../../../../types';
-import { RouteState } from '../types';
-import EditorContext from '../../../context';
-import { getEntity } from '../../../data/api';
-import EntitySumUp from '../../../components/EntitySumUp';
-import TOOL_TYPES from '../../toolTypes';
 
 export const EditEndpoints: FC<{ state: RouteState; onChange: (newState: RouteState) => void }> = ({
   state,
