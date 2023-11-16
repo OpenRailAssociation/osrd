@@ -59,6 +59,7 @@ use std::fs::File;
 use std::io::{BufReader, IsTerminal};
 use std::process::exit;
 use std::{env, fs};
+use thiserror::Error;
 use url::Url;
 use views::infra::InfraApiError;
 use views::search::{SearchConfig, SearchConfigFinder, SearchConfigStore};
@@ -73,8 +74,13 @@ async fn main() {
     match run().await {
         Ok(_) => (),
         Err(e) => {
-            error!("{e}");
-            exit(2);
+            if let Some(e) = e.downcast_ref::<CliError>() {
+                println!("{e}");
+                exit(e.exit_code);
+            } else {
+                error!("{e}");
+                exit(2);
+            }
         }
     }
 }
@@ -99,8 +105,6 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
 
     match client.command {
         Commands::Runserver(args) => runserver(args, create_db_pool()?, redis_config).await,
-        Commands::Generate(args) => generate(args, create_db_pool()?, redis_config).await,
-        Commands::ImportRailjson(args) => import_railjson(args, create_db_pool()?).await,
         Commands::ImportRollingStock(args) => import_rolling_stock(args, create_db_pool()?).await,
         Commands::OsmToRailjson(args) => {
             converters::osm_to_railjson(args.osm_pbf_in, args.railjson_out)
@@ -124,16 +128,17 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
             list_search_objects();
             Ok(())
         }
-        Commands::Search(SearchCommands::MakeMigration(args)) => {
-            make_search_migration(args);
-            Ok(())
-        }
+        Commands::Search(SearchCommands::MakeMigration(args)) => make_search_migration(args),
         Commands::Search(SearchCommands::Refresh(args)) => {
             refresh_search_tables(args, create_db_pool()?).await
         }
         Commands::Infra(subcommand) => match subcommand {
             InfraCommands::Clone(args) => clone_infra(args, create_db_pool()?).await,
             InfraCommands::Clear(args) => clear_infra(args, create_db_pool()?, redis_config).await,
+            InfraCommands::Generate(args) => {
+                generate_infra(args, create_db_pool()?, redis_config).await
+            }
+            InfraCommands::ImportRailjson(args) => import_railjson(args, create_db_pool()?).await,
         },
     }
 }
@@ -302,7 +307,7 @@ async fn build_redis_pool_and_invalidate_all_cache(redis_config: RedisConfig, in
 
 /// Run the generate sub command
 /// This command refresh all infra given as input (if no infra given then refresh all of them)
-async fn generate(
+async fn generate_infra(
     args: GenerateArgs,
     db_pool: Data<DbPool>,
     redis_config: RedisConfig,
@@ -317,22 +322,19 @@ async fn generate(
     } else {
         // Retrieve given infras
         for id in args.infra_ids {
-            let infra = match Infra::retrieve(db_pool.clone(), id as i64).await? {
-                Some(infra) => infra,
+            match Infra::retrieve(db_pool.clone(), id as i64).await? {
+                Some(infra) => infras.push(infra),
                 None => {
-                    return Err(InfraApiError::NotFound {
-                        infra_id: id as i64,
-                    }
-                    .into())
+                    let error = CliError::new(1, format!("❌ Infrastructure not found, ID: {id}"));
+                    return Err(Box::new(error));
                 }
             };
-            infras.push(infra);
         }
     };
 
     // Refresh each infras
     for infra in infras {
-        info!(
+        println!(
             "🍞 Infra {}[{}] is generating:",
             infra.name.clone().unwrap().bold(),
             infra.id.unwrap()
@@ -344,20 +346,20 @@ async fn generate(
         {
             build_redis_pool_and_invalidate_all_cache(redis_config.clone(), infra.id.unwrap())
                 .await;
-            info!(
+            println!(
                 "✅ Infra {}[{}] generated!",
                 infra.name.unwrap().bold(),
                 infra.id.unwrap()
             );
         } else {
-            info!(
+            println!(
                 "✅ Infra {}[{}] already generated!",
                 infra.name.unwrap().bold(),
                 infra.id.unwrap()
             );
         }
     }
-    info!(
+    println!(
         "🚨 You may want to refresh the search caches. If so, use {}.",
         "editoast search refresh".bold()
     );
@@ -392,16 +394,19 @@ async fn clone_infra(
     infra_args: InfraCloneArgs,
     db_pool: Data<DbPool>,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
-    match Infra::clone(infra_args.id, db_pool, infra_args.new_name).await {
+    match Infra::clone(infra_args.id as i64, db_pool, infra_args.new_name).await {
         Ok(cloned_infra) => println!(
             "✅ Infra {} (ID: {}) was successfully cloned",
             cloned_infra.name.unwrap(),
             cloned_infra.id.unwrap()
         ),
         Err(e) => {
-            if e == InfraError::NotFound(infra_args.id).into() {
-                eprintln!("❌ {}", e.message);
-                exit(1);
+            if e == InfraError::NotFound(infra_args.id as i64).into() {
+                let error = CliError::new(
+                    1,
+                    format!("❌ Infrastructure not found, ID: {}", infra_args.id),
+                );
+                return Err(Box::new(error));
             }
             return Err(e.message.into());
         }
@@ -413,7 +418,19 @@ async fn import_railjson(
     args: ImportRailjsonArgs,
     db_pool: Data<DbPool>,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let railjson_file = File::open(args.railjson_path)?;
+    let railjson_file = match File::open(args.railjson_path.clone()) {
+        Ok(file) => file,
+        Err(_) => {
+            let error = CliError::new(
+                1,
+                format!(
+                    "❌ Railjson file not found, Path: {}",
+                    args.railjson_path.to_string_lossy()
+                ),
+            );
+            return Err(Box::new(error));
+        }
+    };
 
     let infra: Infra = InfraForm {
         name: args.infra_name,
@@ -421,7 +438,7 @@ async fn import_railjson(
     .into();
     let railjson: RailJson = serde_json::from_reader(BufReader::new(railjson_file))?;
 
-    info!("🍞 Importing infra {}", infra.name.clone().unwrap().bold());
+    println!("🍞 Importing infra {}", infra.name.clone().unwrap().bold());
     let infra = infra.persist(railjson, db_pool.clone()).await?;
     let infra_id = infra.id.unwrap();
 
@@ -431,7 +448,7 @@ async fn import_railjson(
         .await
         .map_err(|_| InfraApiError::NotFound { infra_id })?;
 
-    info!(
+    println!(
         "✅ Infra {}[{}] saved!",
         infra.name.clone().unwrap().bold(),
         infra.id.unwrap()
@@ -440,7 +457,7 @@ async fn import_railjson(
     if args.generate {
         let infra_cache = InfraCache::load(&mut conn, &infra).await?;
         infra.refresh(db_pool, true, &infra_cache).await?;
-        info!(
+        println!(
             "✅ Infra {}[{}] generated data refreshed!",
             infra.name.unwrap().bold(),
             infra.id.unwrap()
@@ -525,8 +542,8 @@ async fn clear_infra(
             match Infra::retrieve(db_pool.clone(), id as i64).await? {
                 Some(infra) => infras.push(infra),
                 None => {
-                    eprintln!("❌ Infrastructure not found, ID: {}", id);
-                    exit(1);
+                    let error = CliError::new(1, format!("❌ Infrastructure not found, ID: {id}"));
+                    return Err(Box::new(error));
                 }
             };
         }
@@ -563,26 +580,26 @@ fn list_search_objects() {
         });
 }
 
-fn make_search_migration(args: MakeMigrationArgs) {
+fn make_search_migration(args: MakeMigrationArgs) -> Result<(), Box<dyn Error + Send + Sync>> {
     let MakeMigrationArgs {
         object,
         migration,
         force,
     } = args;
     let Some(search_config) = SearchConfigFinder::find(&object) else {
-        eprintln!("❌ No search object found for {object}");
-        return;
+        let error = format!("❌ No search object found for {object}");
+        return Err(Box::new(CliError::new(2, error)));
     };
     if !search_config.has_migration() {
-        eprintln!("❌ No migration defined for {object}");
-        return;
+        let error = format!("❌ No migration defined for {object}");
+        return Err(Box::new(CliError::new(2, error)));
     }
     if !migration.is_dir() {
-        eprintln!(
+        let error = format!(
             "❌ {} is not a directory",
             migration.to_str().unwrap_or("<unprintable path>")
         );
-        return;
+        return Err(Box::new(CliError::new(2, error)));
     }
     let up_path = migration.join("up.sql");
     let down_path = migration.join("down.sql");
@@ -595,12 +612,10 @@ fn make_search_migration(args: MakeMigrationArgs) {
         && (up_path.exists() && fs::read(up_path.clone()).is_ok_and(|v| !v.is_empty())
             || down_path.exists() && fs::read(down_path.clone()).is_ok_and(|v| !v.is_empty()))
     {
-        eprintln!(
-            "❌ Migration {} already has content\nCowardly refusing to overwrite it\nUse {} at your own risk",
-            migration.to_str().unwrap_or("<unprintable path>"),
-            "--force".bold()
-        );
-        return;
+        let error = format!("❌ Migration {} already has content\nCowardly refusing to overwrite it\nUse {} at your own risk",
+        migration.to_str().unwrap_or("<unprintable path>"),
+        "--force".bold());
+        return Err(Box::new(CliError::new(2, error)));
     }
     println!(
         "🤖 Generating migration {}",
@@ -608,13 +623,13 @@ fn make_search_migration(args: MakeMigrationArgs) {
     );
     let (up, down) = search_config.make_up_down();
     if let Err(err) = fs::write(up_path, up) {
-        eprintln!("❌ Failed to write to {up_path_str}: {err}");
-        return;
+        let error = format!("❌ Failed to write to {up_path_str}: {err}");
+        return Err(Box::new(CliError::new(2, error)));
     }
     println!("➡️  Wrote to {up_path_str}");
     if let Err(err) = fs::write(down_path, down) {
-        eprintln!("❌ Failed to write to {down_path_str}: {err}");
-        return;
+        let error = format!("❌ Failed to write to {down_path_str}: {err}");
+        return Err(Box::new(CliError::new(2, error)));
     }
     println!("➡️  Wrote to {down_path_str}");
     println!(
@@ -623,6 +638,7 @@ fn make_search_migration(args: MakeMigrationArgs) {
         "diesel migration run".bold(),
         "diesel migration redo".bold(),
     );
+    Ok(())
 }
 
 async fn refresh_search_tables(
@@ -663,6 +679,27 @@ async fn refresh_search_tables(
     Ok(())
 }
 
+#[derive(Debug, Error, PartialEq)]
+pub struct CliError {
+    exit_code: i32,
+    message: String,
+}
+
+impl std::fmt::Display for CliError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.message)
+    }
+}
+
+impl CliError {
+    pub fn new<T: AsRef<str>>(exit_code: i32, message: T) -> Self {
+        CliError {
+            exit_code,
+            message: message.as_ref().to_string(),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -680,17 +717,26 @@ mod tests {
     #[rstest]
     async fn import_railjson_ko_file_not_found(db_pool: Data<DbPool>) {
         // GIVEN
+        let railjson_path = "non/existing/railjson/file/location";
         let args: ImportRailjsonArgs = ImportRailjsonArgs {
             infra_name: "test".into(),
-            railjson_path: "non/existing/railjson/file/location".into(),
+            railjson_path: railjson_path.into(),
             generate: false,
         };
 
         // WHEN
-        let result = import_railjson(args, db_pool).await;
+        let result = import_railjson(args.clone(), db_pool).await;
 
         // THEN
-        assert!(result.is_err())
+        assert!(result.is_err());
+        assert_eq!(
+            result
+                .unwrap_err()
+                .downcast_ref::<CliError>()
+                .unwrap()
+                .exit_code,
+            1
+        );
     }
 
     #[rstest]
