@@ -5,8 +5,6 @@ import { omit } from 'lodash';
 import {
   MODES,
   DEFAULT_MODE,
-  DEFAULT_STDCM_MODE,
-  STDCM_MODES,
   OsrdConfState,
   OsrdMultiConfState,
   OsrdStdcmConfState,
@@ -14,7 +12,6 @@ import {
   PowerRestrictionRange,
 } from 'applications/operationalStudies/consts';
 import { formatIsoDate } from 'utils/date';
-import { ObjectFieldsTypes } from 'utils/types';
 import { Allowance, Path, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { SwitchType, ThunkAction } from 'types';
 import { computeLinkedOriginTimes } from './helpers';
@@ -23,7 +20,6 @@ import { computeLinkedOriginTimes } from './helpers';
 
 // Action Types
 export const UPDATE_MODE = 'osrdconf/UPDATE_MODE';
-export const UPDATE_STDCM_MODE = 'osrdconf/UPDATE_STDCM_MODE';
 export const UPDATE_NAME = 'osrdconf/UPDATE_NAME';
 export const UPDATE_TRAIN_COUNT = 'osrdconf/UPDATE_TRAIN_COUNT';
 export const UPDATE_TRAIN_DELTA = 'osrdconf/UPDATE_TRAIN_DELTA';
@@ -117,7 +113,6 @@ export const initialState: OsrdMultiConfState = {
   },
   stdcmConf: {
     maximumRunTime: 43200,
-    stdcmMode: DEFAULT_STDCM_MODE,
     standardStdcmAllowance: undefined,
     ...defaultCommonConf,
   },
@@ -139,9 +134,6 @@ export default function reducer(inputState: OsrdMultiConfState | undefined, acti
     switch (action.type) {
       case UPDATE_MODE:
         draft.mode = action.mode;
-        break;
-      case UPDATE_STDCM_MODE:
-        draft.stdcmConf.stdcmMode = action.stdcmMode;
         break;
       case UPDATE_NAME:
         draft[section].name = action.name;
@@ -382,14 +374,7 @@ export function updateMode(mode: string) {
     });
   };
 }
-export function updateStdcmMode(stdcmMode: ObjectFieldsTypes<typeof STDCM_MODES>) {
-  return (dispatch: Dispatch) => {
-    dispatch({
-      type: UPDATE_STDCM_MODE,
-      stdcmMode,
-    });
-  };
-}
+
 export function updateLabels(labels?: string[]) {
   return (dispatch: Dispatch) => {
     dispatch({

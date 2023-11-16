@@ -1,11 +1,10 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { DEFAULT_STDCM_MODE, OsrdStdcmConfState } from 'applications/operationalStudies/consts';
+import { OsrdStdcmConfState } from 'applications/operationalStudies/consts';
 import { Draft } from 'immer';
 import { defaultCommonConf, buildCommonConfReducers } from '../common';
 
 export const stdcmConfInitialState: OsrdStdcmConfState = {
   maximumRunTime: 43200,
-  stdcmMode: DEFAULT_STDCM_MODE,
   standardStdcmAllowance: undefined,
   ...defaultCommonConf,
 };
@@ -20,12 +19,6 @@ export const stdcmConfSlice = createSlice({
       action: PayloadAction<OsrdStdcmConfState['maximumRunTime']>
     ) {
       state.maximumRunTime = action.payload;
-    },
-    updateStdcmMode(
-      state: Draft<OsrdStdcmConfState>,
-      action: PayloadAction<OsrdStdcmConfState['stdcmMode']>
-    ) {
-      state.stdcmMode = action.payload;
     },
     updateStdcmStandardAllowance(
       state: Draft<OsrdStdcmConfState>,

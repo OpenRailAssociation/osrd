@@ -3,9 +3,8 @@ import { TFunction } from 'i18next';
 import { PathQuery, PostStdcmApiArg } from 'common/api/osrdEditoastApi';
 
 import { createAllowanceValue } from 'applications/stdcm/components/allowancesConsts';
-import { STDCM_MODES, OsrdStdcmConfState } from 'applications/operationalStudies/consts';
+import { OsrdStdcmConfState } from 'applications/operationalStudies/consts';
 import { time2sec } from 'utils/timeManipulation';
-import { makeEnumBooleans } from 'utils/constants';
 
 import { setFailure } from 'reducers/main';
 import { getPathfindingQuery } from 'common/Pathfinding/Pathfinding';
@@ -15,8 +14,6 @@ export default function formatStdcmConf(
   t: TFunction,
   osrdconf: OsrdStdcmConfState
 ): PostStdcmApiArg | undefined {
-  const { isByOrigin, isByDestination } = makeEnumBooleans(STDCM_MODES, osrdconf.stdcmMode);
-
   let error = false;
   if (!osrdconf.origin) {
     error = true;
@@ -27,7 +24,7 @@ export default function formatStdcmConf(
       })
     );
   }
-  if (!(osrdconf.originTime && osrdconf.originUpperBoundTime) && isByOrigin) {
+  if (!(osrdconf.originTime && osrdconf.originUpperBoundTime)) {
     error = true;
     dispatch(
       setFailure({
@@ -42,15 +39,6 @@ export default function formatStdcmConf(
       setFailure({
         name: t('osrdconf:errorMessages.trainScheduleTitle'),
         message: t('osrdconf:errorMessages.noDestination'),
-      })
-    );
-  }
-  if (!osrdconf.destinationTime && isByDestination) {
-    error = true;
-    dispatch(
-      setFailure({
-        name: t('osrdconf:errorMessages.trainScheduleTitle'),
-        message: t('osrdconf:errorMessages.noOriginTime'),
       })
     );
   }
