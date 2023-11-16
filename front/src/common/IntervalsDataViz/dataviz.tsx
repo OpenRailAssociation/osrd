@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { head, last, maxBy, minBy } from 'lodash';
+import { head, isNil, last, maxBy, minBy } from 'lodash';
 import cx from 'classnames';
 
 import { AdditionalDataItem } from 'common/IntervalsEditor/types';
@@ -375,7 +375,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
           <SimpleScale className="scale-y" begin={min} end={max} />
         )}
 
-        {hoverAtx && !draginStartAt && (
+        {!isNil(hoverAtx) && !draginStartAt && (
           <div
             className="hover-x"
             style={{
