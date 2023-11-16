@@ -119,6 +119,10 @@
                 # Nix formatter
                 alejandra.defaultPackage.${system}
               ]
+              ++ lib.optionals stdenv.isDarwin (with pkgs.darwin.apple_sdk.frameworks; [
+                CoreFoundation
+                SystemConfiguration
+              ])
               ++ scriptBins;
 
             RUST_SRC_PATH = "${rustPlatform.rustLibSrc}";
