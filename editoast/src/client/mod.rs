@@ -36,8 +36,6 @@ pub enum Color {
 #[derive(Subcommand, Debug)]
 pub enum Commands {
     Runserver(RunserverArgs),
-    Generate(GenerateArgs),
-    ImportRailjson(ImportRailjsonArgs),
     #[command(
         subcommand,
         about,
@@ -72,6 +70,8 @@ pub enum SearchCommands {
 pub enum InfraCommands {
     Clone(InfraCloneArgs),
     Clear(ClearArgs),
+    Generate(GenerateArgs),
+    ImportRailjson(ImportRailjsonArgs),
 }
 
 #[derive(Args, Debug, Derivative, Clone)]
@@ -129,7 +129,7 @@ pub struct ClearArgs {
     pub infra_ids: Vec<u64>,
 }
 
-#[derive(Args, Debug)]
+#[derive(Args, Debug, Clone)]
 #[command(about, long_about = "Import an infra given a railjson file")]
 pub struct ImportRailjsonArgs {
     /// Infra name
@@ -154,7 +154,7 @@ pub struct ImportProfileSetArgs {
 #[command(about, long_about = "Clone an infrastructure")]
 pub struct InfraCloneArgs {
     /// Infrastructure ID
-    pub id: i64,
+    pub id: u64,
     /// Infrastructure new name
     pub new_name: Option<String>,
 }
