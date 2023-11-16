@@ -3,7 +3,6 @@ package fr.sncf.osrd.envelope;
 import static fr.sncf.osrd.envelope.EnvelopePhysics.getPartMechanicalEnergyConsumed;
 import static org.junit.jupiter.api.Assertions.*;
 
-import fr.sncf.osrd.envelope.EnvelopeTestUtils.TestAttr;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.envelope_sim.*;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
@@ -15,26 +14,26 @@ class EnvelopePartTest {
     @Test
     void toStringTest() {
         var part = EnvelopePart.generateTimes(
-                List.of(TestAttr.A),
+                List.of(EnvelopeProfile.ACCELERATING),
                 new double[]{1.5, 5},
                 new double[]{3, 4}
         );
-        assertEquals("EnvelopePart { TestAttr=A }", part.toString());
+        assertEquals("EnvelopePart { EnvelopeProfile=ACCELERATING }", part.toString());
     }
 
     @Test
     void getAttrTest() {
         var part = EnvelopePart.generateTimes(
-                List.of(TestAttr.A),
+                List.of(EnvelopeProfile.ACCELERATING),
                 new double[]{1.5, 5},
                 new double[]{3, 4}
         );
-        assertEquals(TestAttr.A, part.getAttr(TestAttr.class));
+        assertEquals(EnvelopeProfile.ACCELERATING, part.getAttr(EnvelopeProfile.class));
     }
 
     @Test
     void interpolateSpeedTest() {
-        var ep = EnvelopePart.generateTimes(
+        var ep = EnvelopeTestUtils.generateTimes(
                 new double[]{1.5, 5},
                 new double[]{3, 4}
         );
@@ -45,7 +44,7 @@ class EnvelopePartTest {
 
     @Test
     void findStep() {
-        var ep = EnvelopePart.generateTimes(
+        var ep = EnvelopeTestUtils.generateTimes(
                 new double[]{1.5, 3, 5},
                 new double[]{3, 4, 4}
         );
@@ -71,17 +70,17 @@ class EnvelopePartTest {
     @Test
     void testEquals() {
         var ep1 = EnvelopePart.generateTimes(
-                List.of(TestAttr.A),
+                List.of(EnvelopeProfile.ACCELERATING),
                 new double[]{1.5, 3, 5},
                 new double[]{3, 4, 4}
         );
         var ep2 = EnvelopePart.generateTimes(
-                List.of(TestAttr.A),
+                List.of(EnvelopeProfile.ACCELERATING),
                 new double[]{1.5, 3, 5},
                 new double[]{3, 4, 4}
         );
         var ep3 = EnvelopePart.generateTimes(
-                List.of(TestAttr.B),
+                List.of(EnvelopeProfile.COASTING),
                 new double[]{1.5, 3, 5},
                 new double[]{3, 4, 4}
         );

@@ -7,6 +7,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope.EnvelopeAttr;
 import fr.sncf.osrd.envelope.EnvelopePhysics;
 import fr.sncf.osrd.envelope.SearchableEnvelope;
+import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
 import fr.sncf.osrd.envelope_utils.ExcludeFromGeneratedCodeCoverage;
 import java.util.Arrays;
 import java.util.Collections;
@@ -106,19 +107,6 @@ public final class EnvelopePart implements SearchableEnvelope {
         );
     }
 
-    /** Creates an envelope part by generating step times from speeds and positions */
-    public static EnvelopePart generateTimes(
-            double[] positions,
-            double[] speeds
-    ) {
-        return new EnvelopePart(
-                new HashMap<>(),
-                positions,
-                speeds,
-                computeTimes(positions, speeds)
-        );
-    }
-
     // endregion
 
     // region ATTRS
@@ -165,6 +153,7 @@ public final class EnvelopePart implements SearchableEnvelope {
      * (which should be avoided when possible) */
     private void runSanityChecks() {
         assert attrs != null : "missing attributes";
+        assert hasAttr(EnvelopeProfile.class) : "missing EnvelopeProfile attribute";
         assert positions.length > 0 : "attempted to create an empty EnvelopePart";
         assert positions.length == speeds.length : "there must be the same number of point and speeds";
         assert timeDeltas.length == positions.length - 1 : "there must be as many timeDeltas as gaps between points";

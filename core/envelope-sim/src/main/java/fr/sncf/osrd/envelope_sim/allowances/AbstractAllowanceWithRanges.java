@@ -14,6 +14,7 @@ import fr.sncf.osrd.envelope.part.EnvelopePartBuilder;
 import fr.sncf.osrd.envelope.part.constraints.EnvelopeConstraint;
 import fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraint;
 import fr.sncf.osrd.envelope.part.constraints.PositionConstraint;
+import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange;
@@ -157,7 +158,7 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
             var range = ranges.get(i);
             var percentage = range.value.getAllowanceRatio(
                     envelopeRegion.getTimeBetween(range.beginPos, range.endPos),
-                    range.beginPos - range.endPos
+                    range.endPos - range.beginPos
             );
             rangePercentages[i] = new RangePercentage(range, percentage);
         }
@@ -401,6 +402,7 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
             EnvelopeDeceleration.decelerate(
                     context, envelopeSection.getBeginPos(), imposedBeginSpeed, constrainedBuilder, 1
             );
+            partBuilder.setAttr(EnvelopeProfile.BRAKING);
             lastIntersection = constrainedBuilder.lastIntersection;
         } else if (imposedBeginSpeed < envelopeSection.getBeginSpeed()) {
             constraints.add(new EnvelopeConstraint(envelopeTarget, CEILING));
@@ -412,6 +414,7 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
             EnvelopeAcceleration.accelerate(
                     context, envelopeSection.getBeginPos(), imposedBeginSpeed, constrainedBuilder, 1
             );
+            partBuilder.setAttr(EnvelopeProfile.ACCELERATING);
             lastIntersection = constrainedBuilder.lastIntersection;
         }
         if (lastIntersection == 0) {
@@ -449,6 +452,7 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
             EnvelopeAcceleration.accelerate(
                     context, envelopeSection.getEndPos(), imposedEndSpeed, constrainedBuilder, -1
             );
+            partBuilder.setAttr(EnvelopeProfile.ACCELERATING);
             lastIntersection = constrainedBuilder.lastIntersection;
         } else if (imposedEndSpeed < envelopeSection.getEndSpeed()) {
             constraints.add(new EnvelopeConstraint(envelopeTarget, CEILING));
@@ -459,6 +463,7 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
             EnvelopeDeceleration.decelerate(
                     context, envelopeSection.getEndPos(), imposedEndSpeed, constrainedBuilder, -1
             );
+            partBuilder.setAttr(EnvelopeProfile.BRAKING);
             lastIntersection = constrainedBuilder.lastIntersection;
         }
         if (lastIntersection == 0) {

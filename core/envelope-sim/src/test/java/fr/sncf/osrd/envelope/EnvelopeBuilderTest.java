@@ -2,18 +2,17 @@ package fr.sncf.osrd.envelope;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import fr.sncf.osrd.envelope.part.EnvelopePart;
 import org.junit.jupiter.api.Test;
 
 public class EnvelopeBuilderTest {
     @Test
     public void testEnvelopeBuilder() {
         var builder = new EnvelopeBuilder();
-        builder.addPart(EnvelopePart.generateTimes(
+        builder.addPart(EnvelopeTestUtils.generateTimes(
                 new double[]{0, 1},
                 new double[]{10, 20}
         ));
-        builder.addPart(EnvelopePart.generateTimes(
+        builder.addPart(EnvelopeTestUtils.generateTimes(
                 new double[]{1, 2},
                 new double[]{20, 30}
         ));
@@ -24,11 +23,11 @@ public class EnvelopeBuilderTest {
     @Test
     public void testEnvelopeBuilderReversed() {
         var builder = new EnvelopeBuilder();
-        builder.addPart(EnvelopePart.generateTimes(
+        builder.addPart(EnvelopeTestUtils.generateTimes(
                 new double[]{1, 2},
                 new double[]{20, 30}
         ));
-        builder.addPart(EnvelopePart.generateTimes(
+        builder.addPart(EnvelopeTestUtils.generateTimes(
                 new double[]{0, 1},
                 new double[]{10, 20}
         ));

@@ -5,12 +5,12 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import fr.sncf.osrd.envelope.EnvelopeTestUtils.TestAttr;
 import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder;
-import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.envelope.part.EnvelopePartBuilder;
 import fr.sncf.osrd.envelope.part.EnvelopePartConsumer;
 import fr.sncf.osrd.envelope.part.constraints.EnvelopeConstraint;
 import fr.sncf.osrd.envelope.part.constraints.PositionConstraint;
 import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint;
+import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
 import org.junit.jupiter.api.Test;
 import java.util.List;
 
@@ -27,13 +27,11 @@ public class ConstraintBuilderTest {
     //   0  1  2  3  4  5  6  7  8  9  10
 
     private ConstrainedEnvelopePartBuilder wrap(EnvelopePartConsumer sink) {
-        var envelopeFloor = Envelope.make(EnvelopePart.generateTimes(
-                List.of(),
+        var envelopeFloor = Envelope.make(EnvelopeTestUtils.generateTimes(
                 new double[] {0, 3, 4, 5, 6, 7, 10},
                 new double[] {0, 0, 1, 2, 1, 0, 0}
         ));
-        var envelopeCeiling = Envelope.make(EnvelopePart.generateTimes(
-                List.of(),
+        var envelopeCeiling = Envelope.make(EnvelopeTestUtils.generateTimes(
                 new double[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
                 new double[] {2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2}
         ));
@@ -53,6 +51,7 @@ public class ConstraintBuilderTest {
         var builder = wrap(partBuilder);
         builder.setAttrs(List.of(TestAttr.A));
         builder.setAttr(TestAttr.B);
+        builder.setAttr(EnvelopeProfile.ACCELERATING);
         assertTrue(builder.initEnvelopePart(2, 0, 1));
         assertFalse(builder.addStep(5, 1));
         var part = partBuilder.build();
