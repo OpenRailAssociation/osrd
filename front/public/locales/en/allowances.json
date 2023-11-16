@@ -40,7 +40,7 @@
     "time_per_distance": "Time/Distance"
   },
   "standardAllowance": "Recovery margin",
-  "gridMarginBeforeAfter": "Timetable margin",
+  "gridMarginBeforeAfter": "Timetable margin before/after",
   "op": "op",
   "to": "to",
   "trainSchedules": "Working type"
