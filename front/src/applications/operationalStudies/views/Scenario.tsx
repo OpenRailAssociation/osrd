@@ -143,7 +143,11 @@ export default function Scenario() {
   const { data: timetable, refetch: refetchTimetable } =
     osrdEditoastApi.endpoints.getTimetableById.useQuery(
       { id: timetableId as number },
-      { skip: !timetableId }
+      {
+        skip: !timetableId,
+        // This cause the timetable to refetch each time the component mounts
+        refetchOnMountOrArgChange: true,
+      }
     );
 
   useEffect(() => {
