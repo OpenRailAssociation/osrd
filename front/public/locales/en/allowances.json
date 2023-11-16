@@ -12,7 +12,7 @@
   "begin_position": "Started",
   "marecoWholePath": "Theoretical running profile to save energy (full path)",
   "standardAllowancesWholePath": "Recovery margin",
-  "engineeringAllowances": "Engineering allowance",
+  "engineeringAllowances": "Time allowance",
   "margedTrainSchedule": "With margins",
   "allowanceByInterval": "Margins by intervals",
   "ecoAllowanceByInterval": "Theoretical running profile to save energy by intervals",
@@ -40,7 +40,7 @@
     "time_per_distance": "Time/Distance"
   },
   "standardAllowance": "Recovery margin",
-  "gridMarginBeforeAfter": "TImetable margin",
+  "gridMarginBeforeAfter": "Timetable margin",
   "op": "op",
   "to": "to",
   "trainSchedules": "Working type"
