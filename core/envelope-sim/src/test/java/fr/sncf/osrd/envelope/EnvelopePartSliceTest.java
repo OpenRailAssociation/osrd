@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import fr.sncf.osrd.envelope.EnvelopeTestUtils.TestAttr;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
+import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
 import org.junit.jupiter.api.Test;
 import java.util.List;
 
@@ -14,12 +15,12 @@ public class EnvelopePartSliceTest {
     @Test
     void sliceIndex() {
         var ep1 = EnvelopePart.generateTimes(
-                List.of(TestAttr.A),
+                List.of(TestAttr.A, EnvelopeProfile.ACCELERATING),
                 new double[] {1.5, 3, 5},
                 new double[] {3, 4, 4}
         );
         var ep2 = EnvelopePart.generateTimes(
-                List.of(TestAttr.A),
+                List.of(TestAttr.A, EnvelopeProfile.ACCELERATING),
                 new double[] {1.5, 3},
                 new double[] {3, 4}
         );
@@ -31,7 +32,7 @@ public class EnvelopePartSliceTest {
     @Test
     void sliceIndexFull() {
         var ep1 = EnvelopePart.generateTimes(
-                List.of(TestAttr.A),
+                List.of(TestAttr.A, EnvelopeProfile.ACCELERATING),
                 new double[] {1.5, 3, 5},
                 new double[] {3, 3, 4}
         );
@@ -43,7 +44,7 @@ public class EnvelopePartSliceTest {
     @Test
     void sliceIndexEmpty() {
         var ep1 = EnvelopePart.generateTimes(
-                List.of(TestAttr.A),
+                List.of(TestAttr.A, EnvelopeProfile.ACCELERATING),
                 new double[] {1.5, 3, 5},
                 new double[] {3, 3, 4}
         );
@@ -54,7 +55,7 @@ public class EnvelopePartSliceTest {
     @Test
     void sliceOffsetEmpty() {
         var ep1 = EnvelopePart.generateTimes(
-                List.of(TestAttr.A),
+                List.of(TestAttr.A, EnvelopeProfile.ACCELERATING),
                 new double[] {1.5, 3, 5},
                 new double[] {3, 3, 4}
         );
@@ -65,7 +66,7 @@ public class EnvelopePartSliceTest {
     @Test
     void sliceOffsetFull() {
         var ep1 = EnvelopePart.generateTimes(
-                List.of(TestAttr.A),
+                List.of(TestAttr.A, EnvelopeProfile.ACCELERATING),
                 new double[] {1.5, 3, 5},
                 new double[] {3, 3, 4}
         );
@@ -76,13 +77,13 @@ public class EnvelopePartSliceTest {
     @Test
     void sliceOffsetInterpolate() {
         var ep1 = EnvelopePart.generateTimes(
-                List.of(TestAttr.A),
+                List.of(TestAttr.A, EnvelopeProfile.BRAKING),
                 new double[] {0, 3},
                 new double[] {3.46, 0}
         );
         var slice = ep1.slice(Double.NEGATIVE_INFINITY, 2);
         var expectedSlice = new EnvelopePart(
-                List.of(TestAttr.A),
+                List.of(TestAttr.A, EnvelopeProfile.BRAKING),
                 new double[] {0, 2},
                 new double[] {3.46, 2},
                 new double[] {0.73}
@@ -93,13 +94,13 @@ public class EnvelopePartSliceTest {
     @Test
     void sliceWithImposedSpeeds() {
         var ep1 = EnvelopePart.generateTimes(
-                List.of(TestAttr.A),
+                List.of(TestAttr.A, EnvelopeProfile.ACCELERATING),
                 new double[] {1, 3, 5},
                 new double[] {3, 3, 4}
         );
         var slice = ep1.sliceWithSpeeds(2, 3, 4, 3.5);
         var expectedSlice = EnvelopePart.generateTimes(
-                List.of(TestAttr.A),
+                List.of(TestAttr.A, EnvelopeProfile.ACCELERATING),
                 new double[] {2, 3, 4},
                 new double[] {3, 3, 3.5}
         );

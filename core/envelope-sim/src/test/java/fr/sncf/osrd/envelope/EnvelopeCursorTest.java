@@ -2,21 +2,20 @@ package fr.sncf.osrd.envelope;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import fr.sncf.osrd.envelope.part.EnvelopePart;
 import org.junit.jupiter.api.Test;
 
 
 public class EnvelopeCursorTest {
     public static final Envelope FLAT_ENVELOPE = Envelope.make(
-            EnvelopePart.generateTimes(
+            EnvelopeTestUtils.generateTimes(
                     new double[]{1, 3, 4},
                     new double[]{4, 4, 4}
             ),
-            EnvelopePart.generateTimes(
+            EnvelopeTestUtils.generateTimes(
                     new double[]{4, 6},
                     new double[]{4, 4}
             ),
-            EnvelopePart.generateTimes(
+            EnvelopeTestUtils.generateTimes(
                     new double[]{6, 8, 10},
                     new double[]{4, 4, 4}
             )

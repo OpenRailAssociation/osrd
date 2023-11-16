@@ -8,6 +8,7 @@ import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.envelope.part.EnvelopePartBuilder;
 import fr.sncf.osrd.envelope.part.constraints.EnvelopeConstraint;
+import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -19,7 +20,7 @@ public class EnvelopeOverlayTest {
     void noChangeSinglePartOverlay(boolean backwardDir) {
         //  +==============+
         //  0              8
-        var baseEnvelope = Envelope.make(EnvelopePart.generateTimes(
+        var baseEnvelope = Envelope.make(EnvelopeTestUtils.generateTimes(
                 new double[]{0, 8},
                 new double[]{1, 1}
         ));
@@ -36,11 +37,11 @@ public class EnvelopeOverlayTest {
         //  +==============+==============+
         //  0              8              16
         var baseEnvelope = Envelope.make(
-                EnvelopePart.generateTimes(
+                EnvelopeTestUtils.generateTimes(
                         new double[]{0, 8},
                         new double[]{1, 1}
                 ),
-                EnvelopePart.generateTimes(
+                EnvelopeTestUtils.generateTimes(
                         new double[]{8, 16},
                         new double[]{2, 2}
                 )
@@ -58,7 +59,7 @@ public class EnvelopeOverlayTest {
         //        \   /  <= overlay
         //          +
         //  0    3  4  5    8
-        var constSpeedPart = EnvelopePart.generateTimes(
+        var constSpeedPart = EnvelopeTestUtils.generateTimes(
                 new double[]{0, 8},
                 new double[]{2, 2}
         );
@@ -66,6 +67,7 @@ public class EnvelopeOverlayTest {
         var builder = OverlayEnvelopeBuilder.forward(constSpeedEnvelope);
         {
             var partBuilder = new EnvelopePartBuilder();
+            partBuilder.setAttr(EnvelopeProfile.COASTING);
             var overlayBuilder = new ConstrainedEnvelopePartBuilder(
                     partBuilder, new EnvelopeConstraint(constSpeedEnvelope, CEILING));
             overlayBuilder.initEnvelopePart(3, constSpeedEnvelope.interpolateSpeed(3), 1);
@@ -85,7 +87,7 @@ public class EnvelopeOverlayTest {
 
     @Test
     void testMultipleOverlays() {
-        var constSpeedPart = EnvelopePart.generateTimes(
+        var constSpeedPart = EnvelopeTestUtils.generateTimes(
                 new double[]{0, 8},
                 new double[]{2, 2}
         );
@@ -94,6 +96,7 @@ public class EnvelopeOverlayTest {
 
         {
             var partBuilder = new EnvelopePartBuilder();
+            partBuilder.setAttr(EnvelopeProfile.COASTING);
             var overlayBuilder = new ConstrainedEnvelopePartBuilder(
                     partBuilder, new EnvelopeConstraint(constSpeedEnvelope, CEILING));
             overlayBuilder.initEnvelopePart(0, constSpeedEnvelope.interpolateSpeed(0), 1);
@@ -104,6 +107,7 @@ public class EnvelopeOverlayTest {
 
         {
             var partBuilder = new EnvelopePartBuilder();
+            partBuilder.setAttr(EnvelopeProfile.COASTING);
             var overlayBuilder = new ConstrainedEnvelopePartBuilder(
                     partBuilder, new EnvelopeConstraint(constSpeedEnvelope, CEILING));
             overlayBuilder.initEnvelopePart(6, constSpeedEnvelope.interpolateSpeed(6), 1);
@@ -123,7 +127,7 @@ public class EnvelopeOverlayTest {
     @ValueSource(booleans = {false, true})
     void testSymmetricOverlay(boolean backwardDir) {
         var constSpeedPart = EnvelopePart.generateTimes(
-                List.of(TestAttr.B),
+                List.of(TestAttr.B, EnvelopeProfile.CONSTANT_SPEED),
                 new double[]{0, 3.5, 8},
                 new double[]{2, 2, 2}
         );
@@ -134,6 +138,7 @@ public class EnvelopeOverlayTest {
         {
             var partBuilder = new EnvelopePartBuilder();
             partBuilder.setAttr(TestAttr.A);
+            partBuilder.setAttr(EnvelopeProfile.COASTING);
             var overlayBuilder = new ConstrainedEnvelopePartBuilder(
                     partBuilder, new EnvelopeConstraint(constSpeedEnvelope, CEILING));
             overlayBuilder.initEnvelopePart(overlayPoints[0], 2, backwardDir ? -1 : 1);
@@ -149,7 +154,7 @@ public class EnvelopeOverlayTest {
         var expectedFirst = constSpeedPart.sliceBeginning(constSpeedPart.findLeft(3), 3, Double.NaN);
         EnvelopeTestUtils.assertEquals(expectedFirst, envelope.get(0));
         var expectedMid = EnvelopePart.generateTimes(
-                List.of(TestAttr.A),
+                List.of(TestAttr.A, EnvelopeProfile.COASTING),
                 new double[]{3, 4, 5},
                 new double[]{2, 1, 2}
         );
@@ -168,19 +173,19 @@ public class EnvelopeOverlayTest {
         //               +
         //    0  1   3   4   5   6   8
         var baseEnvelope = Envelope.make(
-                EnvelopePart.generateTimes(
+                EnvelopeTestUtils.generateTimes(
                         new double[]{0, 1},
                         new double[]{4, 4}
                 ),
-                EnvelopePart.generateTimes(
+                EnvelopeTestUtils.generateTimes(
                         new double[]{1, 4},
                         new double[]{4, 4}
                 ),
-                EnvelopePart.generateTimes(
+                EnvelopeTestUtils.generateTimes(
                         new double[]{4, 6},
                         new double[]{4, 4}
                 ),
-                EnvelopePart.generateTimes(
+                EnvelopeTestUtils.generateTimes(
                         new double[]{6, 8},
                         new double[]{4, 4}
                 )
@@ -190,7 +195,8 @@ public class EnvelopeOverlayTest {
         var cursor = new EnvelopeCursor(baseEnvelope, isBackward);
         var positions = new double[] { 3, 4, 6 };
         var speeds = new double[] { 4, 3, 4 };
-        builder.addPart(EnvelopeTestUtils.buildContinuous(cursor, List.of(), positions, speeds, isBackward));
+        builder.addPart(EnvelopeTestUtils.buildContinuous(cursor, List.of(EnvelopeProfile.COASTING), positions, speeds,
+                isBackward));
         var envelope = builder.build();
         assertEquals(4, envelope.size());
         assertTrue(envelope.continuous);
@@ -203,27 +209,27 @@ public class EnvelopeOverlayTest {
         // 4           +===+===+ <= base
         //   0  1  2   4   5   6   8   10
         var baseEnvelope = Envelope.make(
-                EnvelopePart.generateTimes(
+                EnvelopeTestUtils.generateTimes(
                         new double[]{0, 2},
                         new double[]{6, 6}
                 ),
-                EnvelopePart.generateTimes(
+                EnvelopeTestUtils.generateTimes(
                         new double[]{2, 4},
                         new double[]{6, 6}
                 ),
-                EnvelopePart.generateTimes(
+                EnvelopeTestUtils.generateTimes(
                         new double[]{4, 5},
                         new double[]{4, 4}
                 ),
-                EnvelopePart.generateTimes(
+                EnvelopeTestUtils.generateTimes(
                         new double[]{5, 6},
                         new double[]{4, 4}
                 ),
-                EnvelopePart.generateTimes(
+                EnvelopeTestUtils.generateTimes(
                         new double[]{6, 8},
                         new double[]{6, 6}
                 ),
-                EnvelopePart.generateTimes(
+                EnvelopeTestUtils.generateTimes(
                         new double[]{8, 10},
                         new double[]{6, 6}
                 )
@@ -233,6 +239,7 @@ public class EnvelopeOverlayTest {
 
         {
             var partBuilder = new EnvelopePartBuilder();
+            partBuilder.setAttr(EnvelopeProfile.BRAKING);
             var overlayBuilder = new ConstrainedEnvelopePartBuilder(
                     partBuilder,
                     new EnvelopeConstraint(baseEnvelope, CEILING)
@@ -257,19 +264,19 @@ public class EnvelopeOverlayTest {
         //               +---+
         //    0  1   3   4   5   6   8
         var baseEnvelope = Envelope.make(
-                EnvelopePart.generateTimes(
+                EnvelopeTestUtils.generateTimes(
                         new double[]{0, 1},
                         new double[]{4, 4}
                 ),
-                EnvelopePart.generateTimes(
+                EnvelopeTestUtils.generateTimes(
                         new double[]{1, 4},
                         new double[]{4, 4}
                 ),
-                EnvelopePart.generateTimes(
+                EnvelopeTestUtils.generateTimes(
                         new double[]{4, 6},
                         new double[]{4, 4}
                 ),
-                EnvelopePart.generateTimes(
+                EnvelopeTestUtils.generateTimes(
                         new double[]{6, 8},
                         new double[]{4, 4}
                 )
@@ -279,7 +286,8 @@ public class EnvelopeOverlayTest {
         var cursor = new EnvelopeCursor(baseEnvelope, reverse);
         var positions = new double[] { 3, 4, 5, 6 };
         var speeds = new double[] { 4, 3, 3, 4 };
-        builder.addPart(EnvelopeTestUtils.buildContinuous(cursor, List.of(), positions, speeds, reverse));
+        builder.addPart(EnvelopeTestUtils.buildContinuous(cursor, List.of(EnvelopeProfile.COASTING), positions, speeds,
+                reverse));
         var envelope = builder.build();
         assertEquals(4, envelope.size());
         assertTrue(envelope.continuous);
@@ -287,7 +295,7 @@ public class EnvelopeOverlayTest {
 
     @Test
     void testUnlikelyIntersection() {
-        var inputEnvelope = Envelope.make(EnvelopePart.generateTimes(
+        var inputEnvelope = Envelope.make(EnvelopeTestUtils.generateTimes(
                 new double[]{0, 3, 4},
                 new double[]{2, 1, 0}
         ));
@@ -296,6 +304,7 @@ public class EnvelopeOverlayTest {
 
         {
             var partBuilder = new EnvelopePartBuilder();
+            partBuilder.setAttr(EnvelopeProfile.COASTING);
             var overlayBuilder = new ConstrainedEnvelopePartBuilder(
                     partBuilder,
                     new EnvelopeConstraint(inputEnvelope, CEILING)
@@ -313,7 +322,7 @@ public class EnvelopeOverlayTest {
 
     @Test
     void testIncreasingContinuousOverlay() {
-        var inputEnvelope = Envelope.make(EnvelopePart.generateTimes(
+        var inputEnvelope = Envelope.make(EnvelopeTestUtils.generateTimes(
                 new double[]{0, 2, 4},
                 new double[]{1, 1, 3}
         ));
@@ -322,6 +331,7 @@ public class EnvelopeOverlayTest {
 
         {
             var partBuilder = new EnvelopePartBuilder();
+            partBuilder.setAttr(EnvelopeProfile.ACCELERATING);
             var overlayBuilder = new ConstrainedEnvelopePartBuilder(
                     partBuilder,
                     new EnvelopeConstraint(inputEnvelope, CEILING)

@@ -52,6 +52,7 @@ public final class CoastingGenerator {
 
         // coast backwards from the end position until the base curve is met
         var backwardPartBuilder = new EnvelopePartBuilder();
+        backwardPartBuilder.setAttr(EnvelopeProfile.COASTING);
         var constrainedBuilder = new ConstrainedEnvelopePartBuilder(
                 backwardPartBuilder,
                 new SpeedConstraint(0, FLOOR),

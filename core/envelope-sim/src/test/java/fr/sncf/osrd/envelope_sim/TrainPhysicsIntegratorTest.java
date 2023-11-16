@@ -127,6 +127,7 @@ public class TrainPhysicsIntegratorTest {
                 new SpeedConstraint(0, EnvelopePartConstraintType.FLOOR)
         );
         EnvelopeDeceleration.decelerate(context, 0, 10, constrainedBuilder, 1);
+        builder.setAttr(EnvelopeProfile.BRAKING);
         var acceleration = Envelope.make(builder.build());
         // starting a coasting phase in a braking phase must result in a null EnvelopePart
         var speed = acceleration.interpolateSpeed(0);

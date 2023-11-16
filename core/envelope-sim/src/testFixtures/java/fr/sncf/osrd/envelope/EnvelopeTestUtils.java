@@ -2,13 +2,16 @@ package fr.sncf.osrd.envelope;
 
 import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.CEILING;
 import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.FLOOR;
+import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.areSpeedsEqual;
 
 import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.envelope.part.EnvelopePartBuilder;
 import fr.sncf.osrd.envelope.part.constraints.EnvelopeConstraint;
 import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint;
+import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
 import org.junit.jupiter.api.Assertions;
+import java.util.Collections;
 import java.util.List;
 
 public class EnvelopeTestUtils {
@@ -89,8 +92,8 @@ public class EnvelopeTestUtils {
     }
 
     /** Creates a flat envelope part */
-    public static EnvelopePart makeFlatPart(TestAttr attr, double beginPos, double endPos, double speed) {
-        return makeFlatPart(List.of(attr), beginPos, endPos, speed);
+    public static EnvelopePart makeFlatPart(EnvelopeAttr attr, double beginPos, double endPos, double speed) {
+        return makeFlatPart(List.of(attr, EnvelopeProfile.CONSTANT_SPEED), beginPos, endPos, speed);
     }
 
     /** Creates a flat envelope part */
@@ -100,6 +103,23 @@ public class EnvelopeTestUtils {
                 attrs,
                 new double[]{beginPos, endPos},
                 new double[]{speed, speed}
+        );
+    }
+
+    /** Creates an envelope part by generating step times from speeds and positions */
+    public static EnvelopePart generateTimes(double[] positions, double[] speeds) {
+        //Input a default compulsory EnvelopeProfile attribute. This is not physically correct in some cases. If so,
+        //use generateTimes with attributes argument.
+        var envelopeProfile = EnvelopeProfile.BRAKING;
+        if (areSpeedsEqual(speeds[0], speeds[speeds.length - 1])) {
+            envelopeProfile = EnvelopeProfile.CONSTANT_SPEED;
+        } else if (speeds[0] < speeds[speeds.length - 1]) {
+            envelopeProfile = EnvelopeProfile.ACCELERATING;
+        }
+        return EnvelopePart.generateTimes(
+                Collections.singleton(envelopeProfile),
+                positions,
+                speeds
         );
     }
 }

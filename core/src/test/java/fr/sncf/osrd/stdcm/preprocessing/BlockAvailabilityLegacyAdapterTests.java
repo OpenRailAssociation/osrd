@@ -6,7 +6,7 @@ import static fr.sncf.osrd.stdcm.STDCMHelpers.meters;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import fr.sncf.osrd.envelope.Envelope;
-import fr.sncf.osrd.envelope.part.EnvelopePart;
+import fr.sncf.osrd.envelope.EnvelopeTestUtils;
 import fr.sncf.osrd.envelope_sim.SimpleRollingStock;
 import fr.sncf.osrd.sim_infra.api.InterlockingInfraKt;
 import fr.sncf.osrd.standalone_sim.result.ResultTrain;
@@ -52,7 +52,7 @@ public class BlockAvailabilityLegacyAdapterTests {
                 List.of(blocks.get(0)),
                 0,
                 meters(1),
-                Envelope.make(EnvelopePart.generateTimes(new double[]{0., 1.}, new double[]{100., 100.})),
+                Envelope.make(EnvelopeTestUtils.generateTimes(new double[]{0., 1.}, new double[]{100., 100.})),
                 42
         );
         var expected = new BlockAvailabilityInterface.Unavailable(42 + 20, 0);

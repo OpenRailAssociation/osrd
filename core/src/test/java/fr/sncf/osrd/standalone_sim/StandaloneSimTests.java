@@ -3,7 +3,7 @@ package fr.sncf.osrd.standalone_sim;
 import static fr.sncf.osrd.standalone_sim.StandaloneSim.generateAllowanceFromScheduledPoints;
 
 import fr.sncf.osrd.envelope.Envelope;
-import fr.sncf.osrd.envelope.part.EnvelopePart;
+import fr.sncf.osrd.envelope.EnvelopeTestUtils;
 import fr.sncf.osrd.train.ScheduledPoint;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -13,7 +13,7 @@ import java.util.List;
 public class StandaloneSimTests {
     @Test
     public void generateAllowanceFromOneScheduledPoint() {
-        var envelopeFloor = Envelope.make(EnvelopePart.generateTimes(
+        var envelopeFloor = Envelope.make(EnvelopeTestUtils.generateTimes(
                 new double[] {0, 1, 2, 3, 4, 5, 6},
                 new double[] {1, 1, 1, 1, 1, 1, 1}
         ));
@@ -32,7 +32,7 @@ public class StandaloneSimTests {
 
     @Test
     public void generateAllowanceFromMultipleScheduledPoints() {
-        var envelopeFloor = Envelope.make(EnvelopePart.generateTimes(
+        var envelopeFloor = Envelope.make(EnvelopeTestUtils.generateTimes(
                 new double[] {0, 1, 2, 3, 4, 5, 6},
                 new double[] {1, 1, 1, 1, 1, 1, 1}
         ));
@@ -56,7 +56,7 @@ public class StandaloneSimTests {
 
     @Test
     public void generateAllowanceFromNoScheduledPoints() {
-        var envelopeFloor = Envelope.make(EnvelopePart.generateTimes(
+        var envelopeFloor = Envelope.make(EnvelopeTestUtils.generateTimes(
                 new double[] {0, 1, 2, 3, 4, 5, 6},
                 new double[] {1, 1, 1, 1, 1, 1, 1}
         ));

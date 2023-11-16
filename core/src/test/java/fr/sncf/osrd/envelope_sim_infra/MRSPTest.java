@@ -76,30 +76,30 @@ public class MRSPTest {
                 Arguments.of(path, REALISTIC_FAST_TRAIN, false, TRAIN_TAG2,
                         Envelope.make(
                                 // No speed section at first => train speed limit
-                                makeFlatPart(List.of(TRAIN_LIMIT, CONSTANT_SPEED), 0, POSITION1, MAX_SPEED),
+                                makeFlatPart(TRAIN_LIMIT, 0, POSITION1, MAX_SPEED),
                                 // Speed section with incorrect train tag => speed 1
-                                makeFlatPart(List.of(SPEED_LIMIT, CONSTANT_SPEED), POSITION1, POSITION2, SPEED1),
+                                makeFlatPart(SPEED_LIMIT, POSITION1, POSITION2, SPEED1),
                                 // Speed section with correct train tag => speed 3
-                                makeFlatPart(List.of(SPEED_LIMIT, CONSTANT_SPEED), POSITION2, POSITION3, SPEED3),
+                                makeFlatPart(SPEED_LIMIT, POSITION2, POSITION3, SPEED3),
                                 // No speed section at end => train speed limit
-                                makeFlatPart(List.of(TRAIN_LIMIT, CONSTANT_SPEED), POSITION3, pathLength, MAX_SPEED))),
+                                makeFlatPart(TRAIN_LIMIT, POSITION3, pathLength, MAX_SPEED))),
 
                 // Multiple speed sections with rolling stock length
                 Arguments.of(path, REALISTIC_FAST_TRAIN, true, null,
                         Envelope.make(
                                 // No speed section at first => train speed limit
-                                makeFlatPart(List.of(TRAIN_LIMIT, CONSTANT_SPEED), 0, POSITION1, MAX_SPEED),
+                                makeFlatPart(TRAIN_LIMIT, 0, POSITION1, MAX_SPEED),
                                 // Speed section with incorrect train tag: speed 1
-                                makeFlatPart(List.of(SPEED_LIMIT, CONSTANT_SPEED), POSITION1,
-                                        POSITION2 + REALISTIC_FAST_TRAIN.length, SPEED1),
+                                makeFlatPart(SPEED_LIMIT, POSITION1, POSITION2 + REALISTIC_FAST_TRAIN.length,
+                                        SPEED1),
                                 // Rolling stock length > speedSection2 length => speedSection2 not taken into account
                                 // No speed section at end => train speed limit
-                                makeFlatPart(List.of(TRAIN_LIMIT, CONSTANT_SPEED),
-                                        POSITION2 + REALISTIC_FAST_TRAIN.length, pathLength, MAX_SPEED))),
+                                makeFlatPart(TRAIN_LIMIT, POSITION2 + REALISTIC_FAST_TRAIN.length, pathLength,
+                                        MAX_SPEED))),
 
                 // No speed sections taken into account: speedSection1 speed2 > train maxSpeed, speedSection2 speed 0m/s
                 Arguments.of(path, REALISTIC_FAST_TRAIN, false, TRAIN_TAG1,
-                        Envelope.make(makeFlatPart(List.of(TRAIN_LIMIT, CONSTANT_SPEED), 0, pathLength, MAX_SPEED))));
+                        Envelope.make(makeFlatPart(TRAIN_LIMIT, 0, pathLength, MAX_SPEED))));
     }
 }
 

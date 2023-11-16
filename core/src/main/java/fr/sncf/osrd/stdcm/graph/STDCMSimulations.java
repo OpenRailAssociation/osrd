@@ -137,7 +137,7 @@ public class STDCMSimulations {
      */
     private static Envelope makeSinglePointEnvelope(double speed) {
         return Envelope.make(new EnvelopePart(
-                Map.of(),
+                Map.of(EnvelopeProfile.class, EnvelopeProfile.CONSTANT_SPEED),
                 new double[]{0},
                 new double[]{speed},
                 new double[]{}
