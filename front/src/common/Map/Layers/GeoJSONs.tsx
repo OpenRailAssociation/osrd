@@ -2,13 +2,16 @@ import { useSelector } from 'react-redux';
 import React, { FC, useEffect, useMemo, useState } from 'react';
 import chroma from 'chroma-js';
 import { Feature, FeatureCollection } from 'geojson';
-import { isPlainObject, keyBy, mapValues, omit } from 'lodash';
+import { isPlainObject, mapValues, omit } from 'lodash';
 import { AnyLayer, Layer, Source, LayerProps } from 'react-map-gl/maplibre';
 import { FilterSpecification } from 'maplibre-gl';
-import { getInfraID } from 'reducers/osrdconf/selectors';
 
-import { Theme } from '../../../types';
-import { RootState } from '../../../reducers';
+import { LayerType } from 'applications/editor/tools/types';
+import { RootState } from 'reducers';
+import { MapState } from 'reducers/map';
+import { getInfraID } from 'reducers/osrdconf/selectors';
+import { LAYER_ENTITIES_ORDERS } from 'config/layerOrder';
+import { Theme } from 'types';
 import { geoMainLayer, geoServiceLayer } from './geographiclayers';
 import {
   getPointLayerProps,
@@ -25,7 +28,6 @@ import {
   getPointErrorsLayerProps,
   getPointTextErrorsLayerProps,
 } from './Errors';
-import { LayerType } from '../../../applications/editor/tools/types';
 import { MAP_TRACK_SOURCE, MAP_URL } from '../const';
 import {
   getSpeedSectionsFilter,
@@ -33,7 +35,6 @@ import {
   getSpeedSectionsPointLayerProps,
   getSpeedSectionsTextLayerProps,
 } from './SpeedLimits';
-import { MapState } from '../../../reducers/map';
 import {
   getPSLFilter,
   getPSLSpeedLineBGLayerProps,
@@ -334,10 +335,10 @@ const SOURCES_DEFINITION: {
   { entityType: 'errors', getLayers: getErrorsLayers },
 ];
 
-export const SourcesDefinitionsIndex = mapValues(
-  keyBy(SOURCES_DEFINITION, 'entityType'),
-  (def) => def.getLayers
-) as Record<LayerType, (context: LayerContext, prefix: string) => AnyLayer[]>;
+export const SourcesDefinitionsIndex = SOURCES_DEFINITION.reduce(
+  (acc, curr) => ({ ...acc, [curr.entityType]: curr.getLayers }),
+  {} as Record<LayerType, (context: LayerContext, prefix: string) => AnyLayer[]>
+);
 
 export const EditorSource: FC<{
   id?: string;
@@ -430,6 +431,7 @@ const GeoJSONs: FC<{
               {
                 id: `${prefix}geo/${source.entityType}`,
                 url: `${MAP_URL}/layer/${source.entityType}/mvt/geo/?infra=${infraID}`,
+                layerOrder: LAYER_ENTITIES_ORDERS[source.entityType],
                 layers: source
                   .getLayers({ ...hiddenLayerContext, sourceTable: source.entityType }, prefix)
                   .map((layer) =>
@@ -439,6 +441,7 @@ const GeoJSONs: FC<{
               {
                 id: `${selectedPrefix}geo/${source.entityType}`,
                 url: `${MAP_URL}/layer/${source.entityType}/mvt/geo/?infra=${infraID}`,
+                layerOrder: LAYER_ENTITIES_ORDERS[source.entityType],
                 layers: source
                   .getLayers({ ...layerContext, sourceTable: source.entityType }, selectedPrefix)
                   .map((layer) => adaptFilter(layer, hidden || [], selection || [], renderAll)),
@@ -467,13 +470,13 @@ const GeoJSONs: FC<{
     <>
       {sources.map((source) => (
         <Source key={source.id} promoteId="id" type="vector" url={source.url} id={source.id}>
-          {source.layers.map((layer, index) => (
+          {source.layers.map((layer) => (
             <OrderedLayer
               source-layer={MAP_TRACK_SOURCE}
-              key={`${layer.id}-${index}`}
+              key={layer.id}
               {...layer}
               beforeId={beforeId}
-              layerOrder={index}
+              layerOrder={source.layerOrder}
             />
           ))}
         </Source>

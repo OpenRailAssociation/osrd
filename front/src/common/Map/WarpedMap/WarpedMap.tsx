@@ -7,7 +7,7 @@ import { Feature, FeatureCollection, LineString } from 'geojson';
 import ReactMapGL, { Layer, MapRef, Source } from 'react-map-gl/maplibre';
 import { LngLatBoundsLike } from 'maplibre-gl';
 
-import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
+import { LAYERS, LAYER_ENTITIES_ORDERS, LAYER_GROUPS_ORDER } from 'config/layerOrder';
 import colors from 'common/Map/Consts/colors';
 import { ALL_SIGNAL_LAYERS } from 'common/Map/Consts/SignalsNames';
 import { LayerType } from 'applications/editor/tools/types';
@@ -16,28 +16,13 @@ import VirtualLayers from 'modules/simulationResult/components/SimulationResults
 import RenderItinerary from 'modules/simulationResult/components/SimulationResultsMap/RenderItinerary';
 import TrainHoverPosition from 'modules/simulationResult/components/SimulationResultsMap/TrainHoverPosition';
 import { LayerContext } from 'common/Map/Layers/types';
-import { EditorSource, SourcesDefinitionsIndex } from 'common/Map/Layers/GeoJSONs';
 import OrderedLayer, { OrderedLayerProps } from 'common/Map/Layers/OrderedLayer';
 import { genOSMLayerProps } from 'common/Map/Layers/OSM';
 import { useMapBlankStyle } from 'common/Map/Layers/blankStyle';
+import { EditorSource, SourcesDefinitionsIndex } from 'common/Map/Layers/GeoJSONs';
 import { Viewport } from 'reducers/map';
 import { getMap } from 'reducers/map/selectors';
 import { AllowancesSettings, Train } from 'reducers/osrdsimulation/types';
-
-const OSRD_LAYER_ORDERS: Record<LayerType, number> = {
-  buffer_stops: LAYER_GROUPS_ORDER[LAYERS.BUFFER_STOPS.GROUP],
-  detectors: LAYER_GROUPS_ORDER[LAYERS.DETECTORS.GROUP],
-  signals: LAYER_GROUPS_ORDER[LAYERS.SIGNALS.GROUP],
-  switches: LAYER_GROUPS_ORDER[LAYERS.SWITCHES.GROUP],
-  track_sections: LAYER_GROUPS_ORDER[LAYERS.TRACKS_GEOGRAPHIC.GROUP],
-  // Unused:
-  catenaries: 0,
-  psl: 0,
-  psl_signs: 0,
-  routes: 0,
-  speed_sections: 0,
-  errors: 0,
-};
 
 /**
  * This component handles displaying warped data. The data must be warped before being given to this component.
@@ -88,7 +73,7 @@ const WarpedMap: FC<{
     () =>
       Array.from(osrdLayers).map((layer) => ({
         source: layer,
-        order: OSRD_LAYER_ORDERS[layer],
+        order: LAYER_ENTITIES_ORDERS[layer],
         id: `${prefix}geo/${layer}`,
         layers: SourcesDefinitionsIndex[layer](layerContext, prefix).map(
           (props) => omit(props, 'source-layer') as typeof props

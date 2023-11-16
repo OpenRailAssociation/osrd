@@ -1,3 +1,5 @@
+import { LayerType } from 'applications/editor/tools/types';
+
 export const LAYER_GROUPS = Object.freeze({
   MAP_BACKGROUND: Symbol('MAP_BACKGROUND'),
   TOPOGRAPHY: Symbol('TOPOGRAPHY'),
@@ -6,6 +8,7 @@ export const LAYER_GROUPS = Object.freeze({
   SIGNALS: Symbol('SIGNALS'),
   DYN_SIGNALS: Symbol('DYN_SIGNALS'),
   TRAIN: Symbol('TRAIN'),
+  ERRORS: Symbol('ERRORS'),
 });
 
 export const LAYER_GROUPS_ORDER = Object.freeze({
@@ -16,6 +19,7 @@ export const LAYER_GROUPS_ORDER = Object.freeze({
   [LAYER_GROUPS.SIGNALS]: 4,
   [LAYER_GROUPS.DYN_SIGNALS]: 5,
   [LAYER_GROUPS.TRAIN]: 6,
+  [LAYER_GROUPS.ERRORS]: 7,
 });
 
 /**
@@ -49,4 +53,20 @@ export const LAYERS = Object.freeze({
   SIGNALS: { GROUP: LAYER_GROUPS.DYN_SIGNALS },
   // 6
   TRAIN: { GROUP: LAYER_GROUPS.TRAIN },
+  // 7
+  ERRORS: { GROUP: LAYER_GROUPS.ERRORS },
+});
+
+export const LAYER_ENTITIES_ORDERS: Record<LayerType, number> = Object.freeze({
+  buffer_stops: LAYER_GROUPS_ORDER[LAYERS.BUFFER_STOPS.GROUP],
+  detectors: LAYER_GROUPS_ORDER[LAYERS.DETECTORS.GROUP],
+  signals: LAYER_GROUPS_ORDER[LAYERS.SIGNALS.GROUP],
+  switches: LAYER_GROUPS_ORDER[LAYERS.SWITCHES.GROUP],
+  track_sections: LAYER_GROUPS_ORDER[LAYERS.TRACKS_GEOGRAPHIC.GROUP],
+  catenaries: LAYER_GROUPS_ORDER[LAYERS.CATENARIES.GROUP],
+  speed_sections: LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS.GROUP],
+  routes: LAYER_GROUPS_ORDER[LAYERS.ROUTES.GROUP],
+  psl: LAYER_GROUPS_ORDER[LAYERS.SIGNALS.GROUP],
+  psl_signs: LAYER_GROUPS_ORDER[LAYERS.SIGNALS.GROUP],
+  errors: LAYER_GROUPS_ORDER[LAYERS.ERRORS.GROUP],
 });
