@@ -52,9 +52,6 @@ const LayersModal: FC<LayersModalProps> = ({
   const { t } = useTranslation();
   const { layersSettings } = useSelector(getMap);
   const [selectedLayers, setSelectedLayers] = useState<Set<LayerType>>(initialLayers);
-  const [speedLimitTag, setSpeedLimitTag] = useState<string | undefined>(
-    layersSettings.speedlimittag as string | undefined
-  );
   const infraID = useSelector(getInfraID);
   const { data: speedLimitTags } = osrdEditoastApi.endpoints.getInfraByIdSpeedLimitTags.useQuery({
     id: infraID as number,
@@ -136,12 +133,6 @@ const LayersModal: FC<LayersModalProps> = ({
                       }, new Set(selectedLayers));
                       setSelectedLayers(newSelectedLayersList);
                       dispatch(selectLayers(newSelectedLayersList));
-                      dispatch(
-                        updateLayersSettings({
-                          ...layersSettings,
-                          speedlimittag: speedLimitTag as string,
-                        })
-                      );
                       onChange({ newLayers: newSelectedLayersList });
                     }}
                     name={`editor-layer-${layerKey}`}
@@ -180,9 +171,16 @@ const LayersModal: FC<LayersModalProps> = ({
           <select
             id="filterLevel"
             className="form-control"
-            value={speedLimitTag || NO_SPEED_LIMIT_TAG}
+            value={layersSettings.speedlimittag}
             disabled={!isArray(speedLimitTags) || !selectedLayers.has('speed_sections')}
-            onChange={(e) => setSpeedLimitTag(e.target.value)}
+            onChange={(e) => {
+              dispatch(
+                updateLayersSettings({
+                  ...layersSettings,
+                  speedlimittag: e.target.value,
+                })
+              );
+            }}
           >
             {memoOptions.map((tag) => (
               <option value={tag} key={tag}>
