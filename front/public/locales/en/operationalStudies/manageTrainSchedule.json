@@ -13,6 +13,7 @@
   "deleteVias": "Delete steps",
   "destination": "Destination",
   "errorMessages": {
+    "allowance_convergence": "We could not go slow enough in this setting to match the given allowance time",
     "error": "An error has occurred",
     "hardErrorInfra": "The infrastructure contains errors and cannot be used without first being corrected.",
     "mandatoryField": "Required field",
@@ -33,7 +34,6 @@
     "softErrorInfra": "The application is unavailable, a server error has occurred, please try again later.",
     "stdcmError": "Calculation error for last minute train path.",
     "stdcmErrorNoPaths": "Incompatibility with other train paths.",
-    "TOO_MUCH_TIME": "Impossible to run slowly enough to meet the required allowance",
     "The requested train couldn't reach its destination": "The train cannot reach its destination",
     "trainScheduleTitle": "An error has occurred",
     "unableToDeleteTrain": "Impossible to delete the train",
