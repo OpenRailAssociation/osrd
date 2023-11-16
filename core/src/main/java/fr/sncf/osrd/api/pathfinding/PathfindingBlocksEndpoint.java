@@ -235,6 +235,7 @@ public class PathfindingBlocksEndpoint implements Take {
         blocksOnWaypoint.forEach(block -> {
             var offset = getBlockOffset(block, trackChunkOnWaypoint, trackSectionId, waypoint.offset,
                     waypoint.direction, infra);
+            assert offset <= infra.blockInfra().getBlockLength(block);
             res.add(new Pathfinding.EdgeLocation<>(block, offset));
         });
         return res;

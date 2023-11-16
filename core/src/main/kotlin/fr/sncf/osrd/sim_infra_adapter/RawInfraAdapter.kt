@@ -506,14 +506,14 @@ private fun buildZonePath(
     // Build chunk list
     val chunks = MutableDirStaticIdxArrayList<TrackChunk>()
     for (range in zoneTrackPath) {
-        val chunk = trackChunkMap[range.track]!![range.begin]
-        if (chunk != null)
-            chunks.add(DirStaticIdx(chunk, range.direction.toKtDirection()))
-        else {
-            // This can happen with 0-length range at track transition, which can be ignored.
-            // We assert that we are in that scenario and move on
-            assert(range.begin == range.end)
+        if (range.begin == range.end) {
+            // 0-length ranges can happen at track transition.
+            // They can and should be ignored, adding the chunk starting there would add an extra chunk.
+            // We assert that we are at a track transition, and move on
             assert(range.end == Distance.fromMeters(range.track.length) || range.end == 0.meters)
+        } else {
+            val chunk = trackChunkMap[range.track]!![range.begin]!!
+            chunks.add(DirStaticIdx(chunk, range.direction.toKtDirection()))
         }
     }
 

@@ -30,6 +30,7 @@ data class ChunkViewer(
 data class ZonePathViewer(
     val chunks: List<DirectedViewer<ChunkViewer>>,
     val id: ZonePathId,
+    val length: Length<ZonePath>,
 )
 
 data class BlockViewer(
@@ -71,6 +72,7 @@ fun makeZonePath(infra: RawInfra, id: StaticIdx<ZonePath>): ZonePathViewer {
         infra.getZonePathChunks(id)
             .map { dirChunk -> makeDirViewer(dirChunk, makeChunk(infra, dirChunk.value)) },
         id,
+        infra.getZonePathLength(id),
     )
 }
 
