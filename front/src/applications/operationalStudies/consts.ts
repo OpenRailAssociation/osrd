@@ -94,13 +94,6 @@ export const MODES: MODES_Types = Object.freeze({
 
 export const DEFAULT_MODE = MODES.simulation;
 
-export const STDCM_MODES = Object.freeze({
-  byOrigin: Symbol('BY_ORIGIN'),
-  byDestination: Symbol('BY_DESTINATION'),
-});
-
-export const DEFAULT_STDCM_MODE = STDCM_MODES.byOrigin;
-
 export interface StandardAllowance {
   type: AllowanceValue['value_type'];
   value: number;
@@ -199,7 +192,6 @@ export interface OsrdConfState {
 
 export interface OsrdStdcmConfState extends OsrdConfState {
   maximumRunTime: number;
-  stdcmMode: ObjectFieldsTypes<typeof STDCM_MODES>;
   standardStdcmAllowance?: StandardAllowance; // We wait for auto generated types
 }
 

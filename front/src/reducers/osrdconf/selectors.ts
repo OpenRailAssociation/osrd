@@ -28,7 +28,6 @@ export const getAllowances = (state: RootState) => getSection(state).allowances;
 export const getUsingElectricalProfiles = (state: RootState) =>
   getSection(state).usingElectricalProfiles;
 export const getMode = (state: RootState) => state.osrdconf.mode;
-export const getStdcmMode = (state: RootState) => state.osrdconf.stdcmConf.stdcmMode;
 export const getLabels = (state: RootState) => getSection(state).labels;
 export const getProjectID = (state: RootState) => getSection(state).projectID;
 export const getStudyID = (state: RootState) => getSection(state).studyID;

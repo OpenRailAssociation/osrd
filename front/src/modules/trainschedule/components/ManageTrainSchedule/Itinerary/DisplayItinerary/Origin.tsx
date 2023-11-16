@@ -11,12 +11,10 @@ import {
   updateOriginTime,
   updateOriginUpperBoundDate,
   updateOriginUpperBoundTime,
-  updateStdcmMode,
   toggleOriginLinkedBounds,
   updatePathfindingID,
 } from 'reducers/osrdconf';
 import {
-  getStdcmMode,
   getMode,
   getOrigin,
   getOriginDate,
@@ -28,7 +26,7 @@ import {
 import { makeEnumBooleans } from 'utils/constants';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import { MODES, STDCM_MODES } from 'applications/operationalStudies/consts';
+import { MODES } from 'applications/operationalStudies/consts';
 
 interface OriginProps {
   zoomToFeaturePoint: (lngLat?: Position, id?: string) => void;
@@ -36,7 +34,6 @@ interface OriginProps {
 
 function Origin(props: OriginProps) {
   const { zoomToFeaturePoint } = props;
-  const stdcmMode = useSelector(getStdcmMode);
   const mode = useSelector(getMode);
   const origin = useSelector(getOrigin);
   const originDate = useSelector(getOriginDate);
@@ -46,8 +43,6 @@ function Origin(props: OriginProps) {
   const originUpperBoundTime = useSelector(getOriginUpperBoundTime);
   const dispatch = useDispatch();
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
-
-  const { isByOrigin, isByDestination } = makeEnumBooleans(STDCM_MODES, stdcmMode);
   const { isStdcm } = makeEnumBooleans(MODES, mode);
 
   const originPointName = (
@@ -62,16 +57,6 @@ function Origin(props: OriginProps) {
         {origin?.name || origin?.location?.track_section?.split('-')[0]}
       </strong>
     </div>
-  );
-
-  const radioButton = (
-    <input
-      type="radio"
-      id="stdcmMode"
-      name="stdcmMode"
-      checked={isByOrigin}
-      onChange={() => dispatch(updateStdcmMode(STDCM_MODES.byOrigin))}
-    />
   );
 
   const toggleButton = (
@@ -116,7 +101,6 @@ function Origin(props: OriginProps) {
           </div>
           {isStdcm && (
             <div className="d-flex align-items-center ml-4">
-              {radioButton}
               <div className="d-flex flex-column">
                 <div className="d-flex">
                   <input
@@ -134,11 +118,6 @@ function Origin(props: OriginProps) {
                     value={originTime}
                     sm
                     noMargin
-                    readonly={isByDestination}
-                    isInvalid={
-                      (originTime && originUpperBoundTime && originTime > originUpperBoundTime) ||
-                      false
-                    }
                   />
                 </div>
                 <div className="d-flex my-1">
@@ -157,11 +136,6 @@ function Origin(props: OriginProps) {
                     value={originUpperBoundTime}
                     sm
                     noMargin
-                    readonly={isByDestination}
-                    isInvalid={
-                      (originTime && originUpperBoundTime && originTime > originUpperBoundTime) ||
-                      false
-                    }
                   />
                 </div>
               </div>
