@@ -23,14 +23,10 @@ export const FormLineStringLength: React.FC<WidgetProps> = (props) => {
    */
   useEffect(() => {
     const distance = getLineStringDistance(formContext.geometry);
-    if (formContext.isCreation) {
-      setTimeout(() => onChange(distance), 0);
-    } else {
-      setMin(Math.round(distance - distance * DISTANCE_ERROR_RANGE));
-      setMax(Math.round(distance + distance * DISTANCE_ERROR_RANGE));
-      setGeoLength(distance);
-    }
-  }, [formContext.geometry, formContext.isCreation, onChange]);
+    setMin(Math.round(distance - distance * DISTANCE_ERROR_RANGE));
+    setMax(Math.round(distance + distance * DISTANCE_ERROR_RANGE));
+    setGeoLength(distance);
+  }, [formContext.geometry, formContext.isCreation]);
 
   return (
     <div>
@@ -49,7 +45,7 @@ export const FormLineStringLength: React.FC<WidgetProps> = (props) => {
           }}
         />
       )}
-      {geoLength && (length < min || length > max) && (
+      {geoLength > 0 && (length < min || length > max) && (
         <p className="text-warning">
           {t('Editor.errors.length-out-of-sync-with-geometry', { min, max })}.{' '}
           <button
