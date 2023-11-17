@@ -28,6 +28,7 @@ use diesel_json::Json as DieselJson;
 use editoast_derive::Model;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
+use validator::{Validate, ValidationError};
 
 crate::schemas! {
     RollingStock,
@@ -48,11 +49,13 @@ crate::schemas! {
     Queryable,
     Serialize,
     ToSchema,
+    Validate,
 )]
 #[derivative(Default, PartialEq)]
 #[model(table = "rolling_stock")]
 #[model(retrieve, delete)]
 #[diesel(table_name = rolling_stock)]
+#[validate(schema(function = "validate_rolling_stock"))]
 pub struct RollingStockModel {
     #[diesel(deserialize_as = i64)]
     pub id: Option<i64>,
@@ -129,6 +132,34 @@ pub struct RollingStockModel {
     pub version: Option<i64>,
 }
 
+fn validate_rolling_stock(
+    rolling_stock: &RollingStockModel,
+) -> std::result::Result<(), ValidationError> {
+    if !rolling_stock.is_electric() {
+        return Ok(());
+    }
+    if rolling_stock.electrical_power_startup_time.is_none()
+        || rolling_stock
+            .electrical_power_startup_time
+            .unwrap()
+            .is_none()
+    {
+        let mut error = ValidationError::new("electrical_power_startup_time");
+        error.message =
+            Some("electrical_power_startup_time is required for electric rolling stocks".into());
+        return Err(error);
+    }
+    if rolling_stock.raise_pantograph_time.is_none()
+        || rolling_stock.raise_pantograph_time.unwrap().is_none()
+    {
+        let mut error = ValidationError::new("raise_pantograph_time");
+        error.message =
+            Some("raise_pantograph_time is required for electric rolling stocks".into());
+        return Err(error);
+    }
+    Ok(())
+}
+
 impl Identifiable for RollingStockModel {
     fn get_id(&self) -> i64 {
         self.id.expect("Id not found")
@@ -166,6 +197,17 @@ impl RollingStockModel {
             Err(e) => Err(e.into()),
         }
     }
+
+    fn is_electric(&self) -> bool {
+        match &self.effort_curves {
+            Some(curves) => has_electric_curves(curves),
+            None => false,
+        }
+    }
+}
+
+fn has_electric_curves(curves: &EffortCurves) -> bool {
+    curves.modes.values().any(|mode| mode.is_electric)
 }
 
 fn is_given_constraint(

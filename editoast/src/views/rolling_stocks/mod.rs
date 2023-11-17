@@ -26,6 +26,7 @@ use image::{DynamicImage, GenericImage, ImageBuffer, ImageOutputFormat};
 use serde_derive::{Deserialize, Serialize};
 use std::io::{BufReader, Cursor, Read};
 use thiserror::Error;
+use validator::Validate;
 
 use actix_multipart::form::{tempfile::TempFile, MultipartForm};
 
@@ -213,6 +214,7 @@ async fn create(
     query_params: Query<PostRollingStockQueryParams>,
 ) -> Result<Json<RollingStock>> {
     let mut rolling_stock: RollingStockModel = data.into_inner().into();
+    rolling_stock.validate()?;
     rolling_stock.locked = Some(query_params.locked);
     rolling_stock.version = Some(0);
     let rolling_stock: RollingStock = rolling_stock.create(db_pool).await?.into();
@@ -242,6 +244,7 @@ async fn update(
     let version = existing_rolling_stock.version;
 
     let mut rolling_stock = data.into_rolling_stock_model(rolling_stock_id, version);
+    rolling_stock.validate()?;
     if existing_rolling_stock != rolling_stock {
         rolling_stock.version = version.map(|v| v + 1);
     };
