@@ -72,20 +72,6 @@ export default function StdcmRequestModal(props: StdcmRequestModalProps) {
               isStdcm: true,
             };
 
-            fakedNewTrain.base.stops = fakedNewTrain.base.head_positions[0].map(
-              (headPosition: { position: number; time: number }, index: number) => ({
-                id: fakedNewTrain.id.toString(),
-                name: `stop ${index}`,
-                time: headPosition.time,
-                position: headPosition.position,
-                duration: headPosition.time,
-                line_code: 0,
-                line_name: '',
-                track_number: 0,
-                track_name: '',
-              })
-            );
-
             getTrainScheduleResults({
               timetableId,
               pathId: result.path.id,
