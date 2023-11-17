@@ -1,6 +1,7 @@
 import React from 'react';
 import { JSONSchema7 } from 'json-schema';
 import { LinearMetadataItem } from 'common/IntervalsDataViz/types';
+import { isNil } from 'lodash';
 
 interface LinearMetadataTooltipProps<T> {
   item: LinearMetadataItem<T>;
@@ -38,7 +39,7 @@ export const LinearMetadataTooltip = <T extends Record<string, unknown>>({
             <span className="mr-3">
               {((schema.properties || {})[k] as JSONSchema7 | undefined)?.title || k}
             </span>
-            {`${item[k] || '-'}`}
+            {isNil(item[k]) ? '-' : `${item[k]}`}
           </div>
         ))}
       </div>

@@ -3,7 +3,7 @@ import { head, isNil, last, maxBy, minBy } from 'lodash';
 import cx from 'classnames';
 
 import { AdditionalDataItem } from 'common/IntervalsEditor/types';
-import { preventDefault, computeStyleForDataValue, getPositionFromMouseEvent } from './utils';
+import { preventDefault, getPositionFromMouseEvent } from './utils';
 import {
   cropForDatavizViewbox,
   cropOperationPointsForDatavizViewbox,
@@ -366,10 +366,6 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
           (viewBox === null || viewBox[1] === last(data)?.end) && 'end-visible'
         )}
       >
-        {/* Display the 0 axis if it's necessary */}
-        {min < 0 && max > 0 && (
-          <div className="axis-zero" style={computeStyleForDataValue(0, min, max)} />
-        )}
         {/* Display the Y axis if there is one */}
         {field && min !== max && !options.fullHeightItem && (
           <SimpleScale className="scale-y" begin={min} end={max} />

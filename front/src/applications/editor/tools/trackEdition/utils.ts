@@ -13,6 +13,8 @@ export function getNewLine(points: [number, number][]): TrackSectionEntity {
     properties: {
       id: NEW_ENTITY_ID,
       length: 0,
+      slopes: [],
+      curves: [],
     },
   };
 }
