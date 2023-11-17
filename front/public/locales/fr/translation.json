@@ -262,8 +262,10 @@
           "new-route": "Créer un nouvel itinéraire",
           "pick-entrypoint": "Outil de sélection du point de départ",
           "pick-entrypoint-cancel": "Annuler la sélection du point de départ",
+          "pick-entrypoint-delete": "Supprimer le point de départ sélectionné",
           "pick-exitpoint": "Outil de sélection du point d'arrivée",
-          "pick-exitpoint-cancel": "Annuler la sélection du point d'arrivée"
+          "pick-exitpoint-cancel": "Annuler la sélection du point d'arrivée",
+          "pick-exitpoint-delete": "Supprimer le point d'arrivée sélectionné"
         },
         "alternative-routes": "Rechercher des itinéraires alternatifs",
         "confirm-delete-route": "Êtes-vous sûr(e) de vouloir supprimer cet itinéraire ?",

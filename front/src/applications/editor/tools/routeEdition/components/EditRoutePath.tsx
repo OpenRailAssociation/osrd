@@ -10,21 +10,29 @@ import { FaFlagCheckered } from 'react-icons/fa';
 import { BsArrowBarRight } from 'react-icons/bs';
 import { FiSearch } from 'react-icons/fi';
 
-import { EditRoutePathState, OptionsStateType, RouteEditionState } from '../types';
-import EditorContext from '../../../context';
-import { getEntity } from '../../../data/api';
-import { EditorEntity, OmitLayer, RouteEntity, WayPointEntity } from '../../../../../types';
-import { LoaderFill } from '../../../../../common/Loader';
-import { getRoutesLineLayerProps } from '../../../../../common/Map/Layers/Routes';
-import colors from '../../../../../common/Map/Consts/colors';
-import { osrdEditoastApi } from '../../../../../common/api/osrdEditoastApi';
-import { nestEntity, entityToCreateOperation } from '../../../data/utils';
-import { getCompatibleRoutesPayload, getEditRouteState, getRouteGeometries } from '../utils';
-import EntitySumUp from '../../../components/EntitySumUp';
+import { EditorEntity, OmitLayer, RouteEntity, WayPointEntity } from 'types';
+import { LoaderFill } from 'common/Loader';
+import { getRoutesLineLayerProps } from 'common/Map/Layers/Routes';
+import colors from 'common/Map/Consts/colors';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { getInfraID } from 'reducers/osrdconf/selectors';
+import { getMapStyle } from 'reducers/map/selectors';
+import EditorContext from 'applications/editor/context';
+import { getEntity } from 'applications/editor/data/api';
+import { nestEntity, entityToCreateOperation } from 'applications/editor/data/utils';
+import {
+  getCompatibleRoutesPayload,
+  getEditRouteState,
+  getRouteGeometries,
+} from 'applications/editor/tools/routeEdition/utils';
+import EntitySumUp from 'applications/editor/components/EntitySumUp';
+import { ExtendedEditorContextType } from 'applications/editor/tools/editorContextTypes';
+import {
+  EditRoutePathState,
+  OptionsStateType,
+  RouteEditionState,
+} from 'applications/editor/tools/routeEdition/types';
 import { EditEndpoints } from './Endpoints';
-import { getInfraID } from '../../../../../reducers/osrdconf/selectors';
-import { getMapStyle } from '../../../../../reducers/map/selectors';
-import { ExtendedEditorContextType } from '../../editorContextTypes';
 
 export const EditRoutePathLeftPanel: FC<{ state: EditRoutePathState }> = ({ state }) => {
   const dispatch = useDispatch();

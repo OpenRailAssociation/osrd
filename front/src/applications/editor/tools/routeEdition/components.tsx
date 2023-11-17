@@ -34,8 +34,21 @@ export const RouteEditionLayers: FC = () => {
   } = useContext(EditorContext) as ExtendedEditorContextType<RouteEditionState>;
   const { mapStyle, layersSettings, issuesSettings } = useSelector(getMap);
 
-  const { routeState } = state as EditRoutePathState;
-  const selectionList = compact([routeState.entryPoint?.id, routeState.exitPoint?.id]);
+  const { routeState, optionsState } = state as EditRoutePathState;
+  const selectedRouteIndex =
+    optionsState.type === 'options' ? optionsState.focusedOptionIndex : undefined;
+  const selectedRouteDetectors =
+    selectedRouteIndex !== undefined
+      ? optionsState.options![selectedRouteIndex].data.detectors
+      : [];
+  const selectedRouteSwitches =
+    selectedRouteIndex !== undefined
+      ? Object.keys(optionsState.options![selectedRouteIndex].data.switches_directions)
+      : [];
+  const selectionList = compact([routeState.entryPoint?.id, routeState.exitPoint?.id]).concat(
+    selectedRouteDetectors,
+    selectedRouteSwitches
+  );
 
   return (
     <>

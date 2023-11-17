@@ -1,8 +1,8 @@
 import { Feature, LineString, Position } from 'geojson';
 
-import { Direction, EndPoint, RouteEntity, WayPoint, WayPointEntity } from '../../../../types';
-import { DirectionalTrackRange } from '../../../../common/api/osrdEditoastApi';
-import { CommonToolState } from '../commonToolState';
+import { Direction, EndPoint, RouteEntity, WayPoint, WayPointEntity } from 'types';
+import { DirectionalTrackRange } from 'common/api/osrdEditoastApi';
+import { CommonToolState } from 'applications/editor/tools/commonToolState';
 
 export interface RouteCandidate {
   track_ranges: Required<DirectionalTrackRange>[];
@@ -14,6 +14,11 @@ export interface RouteState {
   entryPoint: (WayPoint & { position: Position }) | null;
   entryPointDirection: Direction;
   exitPoint: (WayPoint & { position: Position }) | null;
+}
+
+export enum EndPointKeys {
+  BEGIN = 'entryPoint',
+  END = 'exitPoint',
 }
 
 export type EditRouteMetadataState = CommonToolState & {
