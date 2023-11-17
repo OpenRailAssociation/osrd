@@ -33,7 +33,7 @@ crate::schemas! {
 
 pub const ROLLING_STOCK_RAILJSON_VERSION: &str = "3.2";
 
-#[derive(Debug, Clone, PartialEq, Deserialize, Serialize, ToSchema)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 pub struct RollingStockCommon {
     pub name: String,
     pub effort_curves: EffortCurves,
@@ -188,13 +188,13 @@ impl<'de> Deserialize<'de> for EffortCurve {
 pub struct ModeEffortCurves {
     curves: Vec<ConditionalEffortCurve>,
     default_curve: EffortCurve,
-    is_electric: bool,
+    pub is_electric: bool,
 }
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct EffortCurves {
-    modes: HashMap<String, ModeEffortCurves>,
+    pub modes: HashMap<String, ModeEffortCurves>,
     default_mode: String,
 }
 

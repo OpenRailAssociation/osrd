@@ -64,6 +64,7 @@ use std::process::exit;
 use std::{env, fs};
 use thiserror::Error;
 use url::Url;
+use validator::{Validate, ValidationErrorsKind};
 use views::infra::InfraApiError;
 use views::search::{SearchConfig, SearchConfigFinder, SearchConfigStore};
 
@@ -377,18 +378,40 @@ async fn import_rolling_stock(
         let rolling_stock_file = File::open(rolling_stock_path)?;
         let mut rolling_stock: RollingStockModel =
             serde_json::from_reader(BufReader::new(rolling_stock_file))?;
-        info!(
-            "🍞 Importing rolling stock {}",
-            rolling_stock.name.clone().unwrap().bold()
-        );
-        rolling_stock.locked = Some(false);
-        rolling_stock.version = Some(0);
-        let rolling_stock = rolling_stock.create(db_pool.clone()).await?;
-        info!(
-            "✅ Rolling stock {}[{}] saved!",
-            rolling_stock.name.clone().unwrap().bold(),
-            rolling_stock.id.unwrap()
-        );
+        match rolling_stock.validate() {
+            Ok(()) => {
+                info!(
+                    "🍞 Importing rolling stock {}",
+                    rolling_stock.name.clone().unwrap().bold()
+                );
+                rolling_stock.locked = Some(false);
+                rolling_stock.version = Some(0);
+                let rolling_stock = rolling_stock.create(db_pool.clone()).await?;
+                info!(
+                    "✅ Rolling stock {}[{}] saved!",
+                    rolling_stock.name.clone().unwrap().bold(),
+                    rolling_stock.id.unwrap()
+                );
+            }
+            Err(e) => {
+                let mut error_message = "❌ Rolling stock was not created!".to_string();
+                if let Some(ValidationErrorsKind::Field(field_errors)) = e.errors().get("__all__") {
+                    for error in field_errors {
+                        if &error.code == "electrical_power_startup_time" {
+                            error_message.push_str(
+                                "\nRolling stock is electrical, but electrical_power_startup_time is missing"
+                            );
+                        }
+                        if &error.code == "raise_pantograph_time" {
+                            error_message.push_str(
+                                "\nRolling stock is electrical, but raise_pantograph_time is missing"
+                            );
+                        }
+                    }
+                }
+                return Err(Box::new(CliError::new(2, error_message)));
+            }
+        };
     }
     Ok(())
 }
@@ -707,15 +730,164 @@ impl CliError {
 mod tests {
     use super::*;
 
-    use crate::fixtures::tests::{db_pool, electrical_profile_set, TestFixture};
+    use crate::fixtures::tests::{
+        db_pool, electrical_profile_set, get_fast_rolling_stock, TestFixture,
+    };
     use diesel::sql_query;
     use diesel::sql_types::Text;
     use diesel_async::RunQueryDsl;
     use rand::distributions::Alphanumeric;
     use rand::{thread_rng, Rng};
     use rstest::rstest;
+    use serde::Serialize;
     use std::io::Write;
     use tempfile::NamedTempFile;
+
+    #[rstest]
+    async fn import_rolling_stock_ko_file_not_found(db_pool: Data<DbPool>) {
+        // GIVEN
+        let args = ImportRollingStockArgs {
+            rolling_stock_path: vec!["non/existing/railjson/file/location".into()],
+        };
+
+        // WHEN
+        let result = import_rolling_stock(args, db_pool).await;
+
+        // THEN
+        assert!(result.is_err())
+    }
+
+    #[rstest]
+    async fn import_non_electric_rs_without_startup_and_panto_values(db_pool: Data<DbPool>) {
+        // GIVEN
+        let rolling_stock_name =
+            "fast_rolling_stock_import_non_electric_rs_without_startup_and_panto_values";
+        let mut non_electric_rolling_stock = get_fast_rolling_stock(rolling_stock_name);
+        if let Some(ref mut effort_curves) = non_electric_rolling_stock.effort_curves {
+            effort_curves.modes.remove("25000");
+            non_electric_rolling_stock.electrical_power_startup_time = Some(None);
+            non_electric_rolling_stock.raise_pantograph_time = Some(None);
+        }
+        let file = generate_temp_file(&non_electric_rolling_stock);
+        let args = ImportRollingStockArgs {
+            rolling_stock_path: vec![file.path().into()],
+        };
+
+        // WHEN
+        let result = import_rolling_stock(args, db_pool.clone()).await;
+
+        // THEN
+        // import should not fail, as raise_panto and startup are not required for non electric
+        assert!(result.is_ok());
+        let mut conn = db_pool.get().await.unwrap();
+        let created_rs =
+            RollingStockModel::retrieve_by_name(&mut conn, rolling_stock_name.to_string())
+                .await
+                .unwrap();
+        assert!(created_rs.is_some());
+        TestFixture::new(created_rs.unwrap(), db_pool.clone());
+    }
+
+    #[rstest]
+    async fn import_non_electric_rs_with_startup_and_panto_values(db_pool: Data<DbPool>) {
+        // GIVEN
+        let rolling_stock_name =
+            "fast_rolling_stock_import_non_electric_rs_with_startup_and_panto_values";
+        let mut non_electric_rolling_stock = get_fast_rolling_stock(rolling_stock_name);
+        if let Some(ref mut effort_curves) = non_electric_rolling_stock.effort_curves {
+            effort_curves.modes.remove("25000");
+        }
+        let file = generate_temp_file(&non_electric_rolling_stock);
+        let args = ImportRollingStockArgs {
+            rolling_stock_path: vec![file.path().into()],
+        };
+
+        // WHEN
+        let result = import_rolling_stock(args, db_pool.clone()).await;
+
+        // THEN
+        assert!(result.is_ok());
+        let mut conn = db_pool.get().await.unwrap();
+        let created_rs =
+            RollingStockModel::retrieve_by_name(&mut conn, rolling_stock_name.to_string())
+                .await
+                .unwrap();
+        assert!(created_rs.is_some());
+        let rs_fixture = TestFixture::new(created_rs.unwrap(), db_pool.clone());
+        let RollingStockModel {
+            electrical_power_startup_time,
+            raise_pantograph_time,
+            ..
+        } = rs_fixture.model;
+        assert!(electrical_power_startup_time.unwrap().is_some());
+        assert!(raise_pantograph_time.unwrap().is_some());
+    }
+
+    #[rstest]
+    async fn import_electric_rs_without_startup_and_panto_values(db_pool: Data<DbPool>) {
+        // GIVEN
+        let rolling_stock_name =
+            "fast_rolling_stock_import_electric_rs_without_startup_and_panto_values";
+        let mut electric_rolling_stock = get_fast_rolling_stock(rolling_stock_name);
+        electric_rolling_stock.electrical_power_startup_time = Some(None);
+        electric_rolling_stock.raise_pantograph_time = Some(None);
+        let file = generate_temp_file(&electric_rolling_stock.clone());
+        let args = ImportRollingStockArgs {
+            rolling_stock_path: vec![file.path().into()],
+        };
+
+        // WHEN
+        let result = import_rolling_stock(args, db_pool.clone()).await;
+
+        // THEN
+        // it should just fail to import
+        assert!(result.is_err());
+        let mut conn = db_pool.get().await.unwrap();
+        let created_rs =
+            RollingStockModel::retrieve_by_name(&mut conn, rolling_stock_name.to_string())
+                .await
+                .unwrap();
+        assert!(created_rs.is_none());
+    }
+
+    #[rstest]
+    async fn import_electric_rs_with_startup_and_panto_values(db_pool: Data<DbPool>) {
+        // GIVEN
+        let rolling_stock_name =
+            "fast_rolling_stock_import_electric_rs_with_startup_and_panto_values";
+        let electric_rolling_stock = get_fast_rolling_stock(rolling_stock_name);
+        let file = generate_temp_file(&electric_rolling_stock);
+        let args = ImportRollingStockArgs {
+            rolling_stock_path: vec![file.path().into()],
+        };
+
+        // WHEN
+        let result = import_rolling_stock(args, db_pool.clone()).await;
+
+        // THEN
+        // import should succeed, and rolling stock should have the correct values in DB
+        assert!(result.is_ok());
+        let mut conn = db_pool.get().await.unwrap();
+        let created_rs =
+            RollingStockModel::retrieve_by_name(&mut conn, rolling_stock_name.to_string())
+                .await
+                .unwrap();
+        assert!(created_rs.is_some());
+        let rs_fixture = TestFixture::new(created_rs.unwrap(), db_pool.clone());
+        let RollingStockModel {
+            electrical_power_startup_time,
+            raise_pantograph_time,
+            ..
+        } = rs_fixture.model;
+        assert_eq!(
+            electrical_power_startup_time,
+            rs_fixture.model.electrical_power_startup_time
+        );
+        assert_eq!(
+            raise_pantograph_time,
+            rs_fixture.model.raise_pantograph_time
+        );
+    }
 
     #[rstest]
     async fn import_railjson_ko_file_not_found(db_pool: Data<DbPool>) {
@@ -746,7 +918,7 @@ mod tests {
     async fn import_railjson_ok(db_pool: Data<DbPool>) {
         // GIVEN
         let railjson = Default::default();
-        let file = generate_railjson_temp_file(&railjson);
+        let file = generate_temp_file::<RailJson>(&railjson);
         let infra_name = format!(
             "{}_{}",
             "infra",
@@ -775,9 +947,9 @@ mod tests {
             .unwrap();
     }
 
-    fn generate_railjson_temp_file(railjson: &RailJson) -> NamedTempFile {
+    fn generate_temp_file<T: Serialize>(object: &T) -> NamedTempFile {
         let mut tmp_file = NamedTempFile::new().unwrap();
-        write!(tmp_file, "{}", serde_json::to_string(railjson).unwrap()).unwrap();
+        write!(tmp_file, "{}", serde_json::to_string(object).unwrap()).unwrap();
         tmp_file
     }
 
