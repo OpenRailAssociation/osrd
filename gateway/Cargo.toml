@@ -33,7 +33,7 @@ actix-files = "0.6.2"
 base64ct = "1.6.0"
 
 # reverse proxy dependencies
-ipnet = "2.8"
+ipnet = "2.9"
 awc = { version = "3.2.0", features = ["rustls"] }  # the http / ws client
 actix = "0.13.1"
 actix-web-actors = "4.2.0"
