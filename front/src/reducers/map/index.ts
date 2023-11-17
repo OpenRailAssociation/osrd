@@ -18,7 +18,7 @@ export interface MapSearchMarker {
 }
 export interface MapState {
   url: typeof MAP_URL;
-  mapStyle: 'normal' | 'dark' | 'blueprint';
+  mapStyle: 'normal' | 'dark' | 'blueprint' | 'minimal';
   showIGNBDORTHO: boolean;
   showIGNSCAN25: boolean;
   showIGNCadastre: boolean;

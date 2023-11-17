@@ -1,10 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Source, LayerProps } from 'react-map-gl/maplibre';
+import { LayerProps, Source } from 'react-map-gl/maplibre';
 
-import mapStyleJson from 'assets/mapstyles/OSMStyle.json';
-import mapStyleDarkJson from 'assets/mapstyles/OSMDarkStyle.json';
 import mapStyleBluePrintJson from 'assets/mapstyles/OSMBluePrintStyle.json';
+import mapStyleDarkJson from 'assets/mapstyles/OSMDarkStyle.json';
+import mapStyleMinimalJson from 'assets/mapstyles/OSMMinimalStyle.json';
+import mapStyleJson from 'assets/mapstyles/OSMStyle.json';
 import { OSM_URL } from 'common/Map/const';
 
 import OrderedLayer, { OrderedLayerProps } from 'common/Map/Layers/OrderedLayer';
@@ -22,6 +23,8 @@ function getMapStyle(mapStyle: string): LayerProps[] {
       return mapStyleDarkJson as LayerProps[];
     case 'blueprint':
       return mapStyleBluePrintJson as LayerProps[];
+    case 'minimal':
+      return mapStyleMinimalJson as LayerProps[];
     default:
       return mapStyleJson as LayerProps[];
   }

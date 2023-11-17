@@ -9,6 +9,7 @@
   "mapSettings": "Map settings",
   "mapstyles": {
     "blueprint": "Blueprint",
+    "minimal": "Minimal",
     "darkmode": "Dark",
     "normal": "Normal"
   },

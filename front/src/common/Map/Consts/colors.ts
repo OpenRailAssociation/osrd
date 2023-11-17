@@ -440,6 +440,158 @@ const colors: Record<string, Theme> = {
       text: bpMedium,
     },
   },
+  /* ***************************************************************************
+   *
+   * MINIMAL
+   *
+   **************************************************************************** */
+  minimal: {
+    background: { color: '#eeeeee' },
+    chantier: {
+      text: '#2c457a',
+      halo: '#ffffff',
+    },
+    dbc: {
+      text: '#c16b00',
+      circle: '#c16b00',
+    },
+    detectors: {
+      circle: '#cd0037',
+      halo: '#e7e7e7',
+      text: '#a1006b',
+    },
+    electricbox: {
+      text: '#b42222',
+    },
+    kp: {
+      circle: '#162873',
+      text: '#4d4f53',
+      halo: '#ffffff',
+    },
+    kvb: {
+      color: '#ffc700',
+    },
+    line: {
+      color: '#555555',
+      halo: '#eee',
+      off: '#888888',
+      text: '#0088ce',
+    },
+    linename: {
+      text: '#555555',
+      halo: '#eee',
+    },
+    mapmarker: {
+      text: '#0088ce',
+      circle: '#0088ce',
+    },
+    neutral_sections: {
+      lower_pantograph: '#ff0000',
+      switch_off: '#000000',
+    },
+    op: {
+      circle: '#82be00',
+      text: '#202258',
+      minitext: '#333',
+      halo: '#eee',
+    },
+    platform: {
+      fill: '#d2e5ef',
+    },
+    pn: {
+      text: '#712b2b',
+      halo: '#ffffff',
+      pk: '#333333',
+      halopk: '#ffffff',
+    },
+    powerline: {
+      color25000V: '#8700ff',
+      color15000V1623: '#00cf65',
+      color3000V: '#86cf00',
+      color1500V: '#ff0073',
+      color850V: '#86cf00',
+      color800V: '#86cf00',
+      color750V: '#86cf00',
+      colorOther: '#000000',
+    },
+    psl: {
+      pointtext: '#5b5b5b',
+      pointhalo: '#ffffff',
+      detailtext: '#555555',
+      detailhalo: '#ffffff',
+      text: '#4d4f53',
+      halo: '#ffffff',
+    },
+    radio: {
+      text: '#5596c8',
+    },
+    radioline: {
+      gsmr: '#00a3d6',
+      gsmr2: '#008515',
+      rst: '#a47500',
+    },
+    railaccess: {
+      halo: '#fff',
+    },
+    railyard: {
+      text: '#2c457a',
+    },
+    routes: {
+      text: '#e05206',
+      halo: '#ffffff',
+    },
+    sign: {
+      text: '#333333',
+      halo: '#ffffff',
+    },
+    signal: {
+      text: '#333333',
+      halo: '#ffffff',
+      point: '#0088ce',
+    },
+    speed: {
+      pointtext: '#ffffff',
+      pointhalo: '#5b5b5b',
+      detailtext: '#555555',
+      detailhalo: '#ffffff',
+      text: '#4d4f53',
+      halo: '#ffffff',
+    },
+    station: {
+      circle: '#555555',
+      halo: '#ffffff',
+      text: '#555555',
+    },
+    switches: {
+      circle: '#a1006b',
+      halo: '#e7e7e7',
+      text: '#a1006b',
+    },
+    track: {
+      minor: '#777777',
+      major: '#003377',
+    },
+    trackname: {
+      text: '#555555',
+      halo: '#eee',
+    },
+    tracksosm: {
+      minor: '#2a686c',
+      major: '#009aa6',
+    },
+    tunnel: {
+      color: '#4b4b4b',
+      text: '#164721',
+    },
+    error: {
+      color: '#ff0000',
+      text: '#ff0000',
+    },
+    warning: {
+      color: '#FF8C00',
+      text: '#FF8C00',
+    },
+  },
 };
 
 export default colors;
