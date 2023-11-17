@@ -26,7 +26,6 @@ import { LinearMetadataDataviz } from 'common/IntervalsDataViz/dataviz';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { tooltipPosition, notEmpty } from 'common/IntervalsDataViz/utils';
 import HelpModal from './HelpModal';
-
 import { LinearMetadataTooltip } from './tooltip';
 import { FormBeginEndWidget } from './FormBeginEndWidget';
 import 'common/IntervalsDataViz/style.scss';
