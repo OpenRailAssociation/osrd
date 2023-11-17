@@ -102,7 +102,7 @@ public class PathfindingResultConverter {
 
 
     /** Returns all the operational points on the path as waypoints */
-    private static Collection<PathWaypointResult> makeOperationalPoints(
+    public static Collection<PathWaypointResult> makeOperationalPoints(
             RawSignalingInfra infra,
             PathProperties path
     ) {

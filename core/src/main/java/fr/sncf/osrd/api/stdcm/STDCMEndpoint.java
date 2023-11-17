@@ -134,13 +134,14 @@ public class STDCMEndpoint implements Take {
                 .toList();
     }
 
-    /** Generate a train schedule matching the envelope and rolling stock, with one stop at the end */
+    /** Generate a train schedule matching the envelope and rolling stock */
     public static StandaloneTrainSchedule makeTrainSchedule(
             double endPos,
             RollingStock rollingStock,
             RollingStock.Comfort comfort,
             List<TrainStop> trainStops
     ) {
+        // Force the train to end its path without a speed
         trainStops.add(new TrainStop(endPos, 0.1));
         return new StandaloneTrainSchedule(rollingStock, 0., new ArrayList<>(), trainStops,
                 List.of(), null, comfort, null, null);

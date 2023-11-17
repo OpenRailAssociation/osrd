@@ -81,7 +81,7 @@ def test_empty_timetable_with_stop(small_infra: Infra, foo_project_id: int, fast
     r.raise_for_status()
     result = r.json()
     stops = result["simulation"]["base"]["stops"]
-    assert len(stops) == 2
+    assert len(stops) == 4
     assert stops[0]["duration"] == 42
     assert r.status_code == 201
 

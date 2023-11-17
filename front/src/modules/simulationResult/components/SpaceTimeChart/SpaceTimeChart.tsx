@@ -174,7 +174,6 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
       const trainsToDraw = trainSimulations.map((train) =>
         createTrain(CHART_AXES.SPACE_TIME, train)
       );
-      console.log(selectedTrain, 'ok');
       drawAllTrains(
         allowancesSettings,
         chart,

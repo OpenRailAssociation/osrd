@@ -1,10 +1,13 @@
 package fr.sncf.osrd.stdcm.graph;
 
+import static fr.sncf.osrd.api.pathfinding.PathfindingResultConverter.makeOperationalPoints;
 import static fr.sncf.osrd.sim_infra.api.PathPropertiesKt.makePathProperties;
 import static fr.sncf.osrd.utils.units.Distance.toMeters;
+import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.arePositionsEqual;
 
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
+import fr.sncf.osrd.sim_infra.api.PathProperties;
 import fr.sncf.osrd.sim_infra.api.RawSignalingInfra;
 import fr.sncf.osrd.stdcm.STDCMResult;
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface;
@@ -13,6 +16,7 @@ import fr.sncf.osrd.train.TrainStop;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /** This class contains all the static methods used to turn the raw pathfinding result into a full response.
@@ -67,7 +71,9 @@ public class STDCMPostProcessing {
                 chunkPath,
                 physicsPath,
                 departureTime,
-                stops
+                // Allow us to display OP, a hack that will be fixed
+                // after the redesign of simulation data models
+                makePathStops(stops, infra, trainPath)
         );
         if (res.envelope().getTotalTime() > maxRunTime) {
             // This can happen if the destination is one edge away from being reachable in time,
@@ -159,5 +165,41 @@ public class STDCMPostProcessing {
             offset += range.end() - range.start();
         }
         return res;
+    }
+
+    /** Builds the list of stops from OP */
+    private static List<TrainStop> makeOpStops(RawSignalingInfra infra, PathProperties trainPath) {
+        var operationalPoints = makeOperationalPoints(infra, trainPath);
+        var res = new ArrayList<TrainStop>();
+        for (var op: operationalPoints) {
+            res.add(new TrainStop(op.pathOffset, 0));
+        }
+        return res;
+    }
+
+    /** Sorts the stops on the path. When stops overlap, the user-defined one is kept. */
+    private static List<TrainStop> sortAndMergeStopsDuplicates(List<TrainStop> stops) {
+        stops.sort(Comparator.comparingDouble(st -> st.position));
+        var res = new ArrayList<TrainStop>();
+        TrainStop last = null;
+        for (var stop : stops) {
+            if (last != null && arePositionsEqual(last.position, stop.position))
+                last.position = stop.position;
+            else {
+                last = stop;
+                res.add(last);
+            }
+        }
+        return res;
+    }
+
+    /** Make the path's ordered list of stops, in order. Both user-defined stops and operational points. */
+    private static List<TrainStop> makePathStops(
+            List<TrainStop> stops,
+            RawSignalingInfra infra, 
+            PathProperties trainPath
+    ) {
+        stops.addAll(makeOpStops(infra, trainPath));
+        return sortAndMergeStopsDuplicates(stops);
     }
 }
