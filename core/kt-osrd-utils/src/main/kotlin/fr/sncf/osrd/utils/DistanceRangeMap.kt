@@ -18,6 +18,9 @@ interface DistanceRangeMap<T> : Iterable<DistanceRangeMap.RangeMapEntry<T>> {
     /** Sets the value between the lower and upper distances */
     fun put(lower: Distance, upper: Distance, value: T)
 
+    /** Sets many values more efficiently than many calls to `put` */
+    fun putMany(entries: List<RangeMapEntry<T>>)
+
     /** Returns a list of the entries in the map */
     fun asList(): List<RangeMapEntry<T>>
 
