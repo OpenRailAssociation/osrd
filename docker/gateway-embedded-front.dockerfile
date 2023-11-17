@@ -1,5 +1,19 @@
 # syntax=docker/dockerfile:1
 
+### FRONT BUILD STAGE
+
+FROM node:18-alpine as front_build
+
+WORKDIR /app
+
+# Build dependencies
+COPY --from=front package.json yarn.lock /app/
+RUN yarn install
+
+# Generate the licenses file and build
+COPY --from=front . /app
+RUN yarn generate-licenses && yarn build
+
 ### GATEWAY BUILD STAGE
 
 FROM lukemathwalker/cargo-chef:latest AS chef
@@ -42,7 +56,7 @@ ENV OSRD_GIT_DESCRIBE=${OSRD_GIT_DESCRIBE}
 
 # Copy the front
 WORKDIR /srv
-COPY --from=built_front /srv /srv/front/
+COPY --from=front_build /app/build /srv/front/
 
 # Copy an example config file
 COPY --from=gateway ./gateway.prod.sample.toml /gateway.sample.toml

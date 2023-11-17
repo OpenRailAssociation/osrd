@@ -58,7 +58,7 @@ target "gateway-embedded-front" {
   dockerfile = "gateway-embedded-front.dockerfile"
   context = "docker"
   contexts = {
-    built_front = "target:front-nginx"
+    front = "./front"
     gateway = "./gateway"
   }
 }
