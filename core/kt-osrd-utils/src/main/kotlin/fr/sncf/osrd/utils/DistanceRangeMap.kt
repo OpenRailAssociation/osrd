@@ -53,6 +53,7 @@ interface DistanceRangeMap<T> : Iterable<DistanceRangeMap.RangeMapEntry<T>> {
     )
 }
 
-fun <T> distanceRangeMapOf(): DistanceRangeMap<T> {
-    return DistanceRangeMapImpl()
+fun <T> distanceRangeMapOf(entries: List<DistanceRangeMap.RangeMapEntry<T>> = emptyList())
+  : DistanceRangeMap<T> {
+    return DistanceRangeMapImpl(entries)
 }

@@ -11,7 +11,10 @@ data class DistanceRangeMapImpl<T>(
     private val values: MutableList<T?>,
 ) : DistanceRangeMap<T> {
 
-    constructor() : this(MutableDistanceArrayList(), ArrayList())
+    constructor(entries: List<DistanceRangeMap.RangeMapEntry<T>> = emptyList())
+      : this(MutableDistanceArrayList(), ArrayList()) {
+            putMany(entries)
+    }
 
     /** Sets the value between the lower and upper distances */
     override fun put(lower: Distance, upper: Distance, value: T) {
@@ -20,6 +23,7 @@ data class DistanceRangeMapImpl<T>(
 
     /** Sets many values more efficiently than many calls to `put` */
     override fun putMany(entries: List<DistanceRangeMap.RangeMapEntry<T>>) {
+        // Let's not forget that the entries order matters.
         for (entry in entries)
             put(entry.lower, entry.upper, entry.value)
     }

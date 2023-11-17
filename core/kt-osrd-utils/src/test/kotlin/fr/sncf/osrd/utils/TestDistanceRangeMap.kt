@@ -15,6 +15,9 @@ class TestDistanceRangeMap {
         val rangeMapMany = distanceRangeMapOf<T>()
         rangeMapMany.putMany(entries)
         assertEquals(expected, rangeMapMany.asList())
+
+        val rangeMapCtor = distanceRangeMapOf<T>(entries)
+        assertEquals(expected, rangeMapCtor.asList())
     }
 
     @Test
