@@ -1,11 +1,12 @@
-import React, { FC } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { useTranslation } from 'react-i18next';
 import cx from 'classnames';
+import React, { FC } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useDispatch, useSelector } from 'react-redux';
 
-import picNormalMode from 'assets/pictures/mapbuttons/mapstyle-normal.jpg';
-import picDarkMode from 'assets/pictures/mapbuttons/mapstyle-dark.jpg';
 import picBlueprint from 'assets/pictures/mapbuttons/mapstyle-blueprint.jpg';
+import picDarkMode from 'assets/pictures/mapbuttons/mapstyle-dark.jpg';
+import picMinimalMode from 'assets/pictures/mapbuttons/mapstyle-minimal.jpg';
+import picNormalMode from 'assets/pictures/mapbuttons/mapstyle-normal.jpg';
 import { updateMapStyle } from 'reducers/map';
 import { getMap } from 'reducers/map/selectors';
 
@@ -25,11 +26,19 @@ const MapSettingsMapStyle: FC<unknown> = () => {
         <span>{t('mapstyles.normal')}</span>
       </button>
       <button
+        className={cx('col-xs-4 mb-2 mapstyle-style-select', mapStyle === 'minimal' && 'active')}
+        type="button"
+        onClick={() => dispatch(updateMapStyle('minimal'))}
+      >
+        <img src={picMinimalMode} alt="minimal mode" />
+        <span>{t('mapstyles.minimal')}</span>
+      </button>
+      <button
         className={cx('col-xs-4 mb-2 mapstyle-style-select', mapStyle === 'dark' && 'active')}
         type="button"
         onClick={() => dispatch(updateMapStyle('dark'))}
       >
-        <img src={picDarkMode} alt="normal mode" />
+        <img src={picDarkMode} alt="dark mode" />
         <span>{t('mapstyles.darkmode')}</span>
       </button>
       <button
@@ -37,7 +46,7 @@ const MapSettingsMapStyle: FC<unknown> = () => {
         type="button"
         onClick={() => dispatch(updateMapStyle('blueprint'))}
       >
-        <img src={picBlueprint} alt="normal mode" />
+        <img src={picBlueprint} alt="blueprint mode" />
         <span>{t('mapstyles.blueprint')}</span>
       </button>
     </div>
