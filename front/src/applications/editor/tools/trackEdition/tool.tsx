@@ -12,7 +12,7 @@ import { featureCollection } from '@turf/helpers';
 import nearestPointOnLine, { NearestPointOnLine } from '@turf/nearest-point-on-line';
 
 import { save } from 'reducers/editor';
-import { entityDoUpdate } from 'common/IntervalsDataViz/data';
+import { entityDoUpdate, getLineStringDistance } from 'common/IntervalsDataViz/data';
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
@@ -195,7 +195,6 @@ const TrackEditionTool: Tool<TrackEditionState> = {
   // Interactions:
   onClickMap(e, { setState, state }) {
     const { editionState, anchorLinePoints, track, nearestPoint } = state;
-
     if (editionState.type === 'addPoint') {
       // Adding a point on an existing section:
       if (
@@ -230,6 +229,11 @@ const TrackEditionTool: Tool<TrackEditionState> = {
           }
 
           newState.nearestPoint = null;
+
+          // compute new length if it's newly tracksection
+          if (newState.track.properties.id === NEW_ENTITY_ID) {
+            newState.track.properties.length = getLineStringDistance(newState.track.geometry);
+          }
           setState(newState);
         } else {
           setState({
