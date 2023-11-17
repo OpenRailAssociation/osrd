@@ -1,6 +1,7 @@
 import { JSONSchema7 } from 'json-schema';
 import { Feature, GeoJsonProperties, Geometry, Point, LineString, MultiLineString } from 'geojson';
 import { Direction, DirectionalTrackRange, ObjectType } from 'common/api/osrdEditoastApi';
+import { LinearMetadataItem } from 'common/IntervalsDataViz/types';
 import { NullGeometry } from './geospatial';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -22,6 +23,8 @@ export interface TrackSectionEntity
     LineString,
     {
       length: number;
+      slopes: LinearMetadataItem<{ gradient: number }>[];
+      curves: LinearMetadataItem<{ radius: number }>[];
       extensions?: {
         sncf?: {
           line_code?: number;

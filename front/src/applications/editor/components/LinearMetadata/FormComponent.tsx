@@ -23,9 +23,9 @@ import {
 } from 'common/IntervalsDataViz/data';
 import { LinearMetadataItem } from 'common/IntervalsDataViz/types';
 import { LinearMetadataDataviz } from 'common/IntervalsDataViz/dataviz';
-import { useModal } from '../../../../common/BootstrapSNCF/ModalSNCF';
+import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
+import { tooltipPosition, notEmpty } from 'common/IntervalsDataViz/utils';
 import HelpModal from './HelpModal';
-import { tooltipPosition, notEmpty } from '../../../../common/IntervalsDataViz/utils';
 
 import { LinearMetadataTooltip } from './tooltip';
 import { FormBeginEndWidget } from './FormBeginEndWidget';
@@ -66,12 +66,19 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
     return 0;
   }, [formContext]);
 
+  // Remove the 'valueField' required field because it is required by the backend. However,
+  // the segment with missing values is filtered in 'customOnChange' before being sent to the backend,
+  // and then re-added by 'fixLinearMetadataItems'.
+  const requiredFilter = (requireds: string[]) =>
+    requireds.filter((r) => ['end', 'begin'].includes(r));
+
   // Compute the JSON schema of the linear metadata item
   const jsonSchema = useMemo(
     () =>
       getFieldJsonSchema(
         schema,
         registry.rootSchema,
+        requiredFilter,
         distance
           ? {
               begin: {
@@ -108,6 +115,7 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
 
   const customOnChange = useCallback(
     (newData: Array<LinearMetadataItem>) => {
+      // Remove item without value, it will be recreated by the fixLinearMetadataItems function
       onChange(newData.filter((e) => (valueField ? !isNil(e[valueField]) : true)));
     },
     [onChange, valueField]
@@ -337,7 +345,7 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
                 noHtml5Validate
                 tagName="div"
                 schema={
-                  (getFieldJsonSchema(schema, registry.rootSchema, {
+                  (getFieldJsonSchema(schema, registry.rootSchema, requiredFilter, {
                     begin: {
                       minimum: 0,
                       maximum: fnMax([selectedData.begin, selectedData.end - SEGMENT_MIN_SIZE]),
@@ -363,43 +371,41 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
                 }}
                 formData={selectedData}
                 onChange={(e) => {
-                  if (e.errors.length === 0) {
-                    const newItem = e.formData;
-                    const oldItem = data[selected];
-                    let newData = [...data];
-                    // we keep the old value for begin and end
-                    // they will be change in the resize function if needed
-                    newData[selected] = {
-                      ...oldItem,
-                      ...omit(newItem, ['begin', 'end']),
-                    };
+                  const newItem = e.formData;
+                  const oldItem = data[selected];
+                  let newData = [...data];
+                  // we keep the old value for begin and end
+                  // they will be change in the resize function if needed
+                  newData[selected] = {
+                    ...oldItem,
+                    ...omit(newItem, ['begin', 'end']),
+                  };
 
-                    // Check if there is a resize
-                    try {
-                      if (newItem.begin !== oldItem.begin) {
-                        const resizeBegin = resizeSegment(
-                          [...newData],
-                          selected,
-                          newItem.begin - oldItem.begin,
-                          'begin'
-                        );
-                        newData = resizeBegin.result;
-                      }
-                      if (oldItem.end !== newItem.end) {
-                        const resizeEnd = resizeSegment(
-                          [...newData],
-                          selected,
-                          newItem.end - oldItem.end,
-                          'end'
-                        );
-                        newData = resizeEnd.result;
-                      }
-                      customOnChange(newData);
-                    } catch (error) {
-                      // TODO: Should we display the resize error ?
-                    } finally {
-                      setSelectedData(newItem);
+                  // Check if there is a resize
+                  try {
+                    if (newItem.begin !== oldItem.begin) {
+                      const resizeBegin = resizeSegment(
+                        [...newData],
+                        selected,
+                        newItem.begin - oldItem.begin,
+                        'begin'
+                      );
+                      newData = resizeBegin.result;
                     }
+                    if (oldItem.end !== newItem.end) {
+                      const resizeEnd = resizeSegment(
+                        [...newData],
+                        selected,
+                        newItem.end - oldItem.end,
+                        'end'
+                      );
+                      newData = resizeEnd.result;
+                    }
+                    customOnChange(newData);
+                  } catch (error) {
+                    // TODO: Should we display the resize error ?
+                  } finally {
+                    setSelectedData(newItem);
                   }
                 }}
               >

@@ -56,21 +56,27 @@ const IntervalItem = <T extends { [key: string]: string | number }>({
       valueText = `${interval[field]}`;
     }
   }
+
+  const hasNoData =
+    !!field &&
+    (segment === undefined || segment[field] === undefined || segment[field] === emptyValue);
+  const hasData =
+    !!field &&
+    segment !== undefined &&
+    segment[field] !== undefined &&
+    segment[field] !== emptyValue;
+  const fieldValue = !!field && segment !== undefined && segment[field];
+  const isDataZero = fieldValue === 0;
+
   return (
     <div
       className={cx(
         'item',
         highlighted.includes(segment.index) && 'highlighted',
-        field &&
-          segment !== undefined &&
-          segment[field] !== undefined &&
-          segment[field] !== emptyValue &&
-          'with-data',
-        field &&
-          (segment === undefined ||
-            segment[field] === undefined ||
-            segment[field] === emptyValue) &&
-          'no-data',
+        {
+          'with-data': hasData,
+          'no-data': hasNoData,
+        },
         !field && isNilObject(segment, ['begin', 'end', 'index']) && 'no-data'
       )}
       style={{
@@ -146,6 +152,9 @@ const IntervalItem = <T extends { [key: string]: string | number }>({
       {!field && !isNilObject(segment, ['begin', 'end', 'index']) && (
         <span className="value" style={{ height: '100%' }} />
       )}
+
+      {hasNoData && <div className="no-data-line" style={computeStyleForDataValue(0, min, max)} />}
+      {isDataZero && <div className="zero-line" style={computeStyleForDataValue(0, min, max)} />}
 
       {/* Create a div for the resize */}
       {data[segment.index] && segment.end === data[segment.index].end && (

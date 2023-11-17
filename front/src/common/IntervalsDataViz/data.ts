@@ -688,6 +688,7 @@ export function entityDoUpdate<T extends EditorEntity>(entity: T, sourceLine: Li
 export function getFieldJsonSchema(
   fieldSchema: JSONSchema7,
   rootSchema: JSONSchema7,
+  requiredFilter?: (required: string[]) => string[],
   enhancement: { [key: string]: JSONSchema7Definition } = {}
 ): JSONSchema7 {
   let result = { ...fieldSchema };
@@ -698,6 +699,10 @@ export function getFieldJsonSchema(
         ...result,
         items: {
           ...itemsSchema,
+          required:
+            requiredFilter && itemsSchema.required && isArray(itemsSchema.required)
+              ? requiredFilter(itemsSchema.required)
+              : itemsSchema.required,
           properties: {
             begin: {
               ...(itemsSchema.properties?.begin as JSONSchema7),
