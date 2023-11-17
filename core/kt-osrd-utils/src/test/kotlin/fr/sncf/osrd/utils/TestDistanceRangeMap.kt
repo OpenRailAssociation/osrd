@@ -5,6 +5,18 @@ import org.junit.Test
 import kotlin.test.assertEquals
 
 class TestDistanceRangeMap {
+    fun <T>testPut(entries: List<DistanceRangeMap.RangeMapEntry<T>>,
+                   expected: List<DistanceRangeMap.RangeMapEntry<T>> = entries){
+        val rangeMap = distanceRangeMapOf<T>()
+        for (entry in entries)
+            rangeMap.put(entry.lower, entry.upper, entry.value)
+        assertEquals(expected, rangeMap.asList())
+
+        val rangeMapMany = distanceRangeMapOf<T>()
+        rangeMapMany.putMany(entries)
+        assertEquals(expected, rangeMapMany.asList())
+    }
+
     @Test
     fun testEmpty() {
         val rangeMap = distanceRangeMapOf<Int>()
@@ -13,94 +25,109 @@ class TestDistanceRangeMap {
 
     @Test
     fun testSingleEntry() {
-        val rangeMap = distanceRangeMapOf<Int>()
-        rangeMap.put(Distance(100), Distance(1000), 42)
-        assertEquals(listOf(
-            DistanceRangeMap.RangeMapEntry(
+        val entries = listOf(DistanceRangeMap.RangeMapEntry(
             Distance(100), Distance(1000), 42
-        )), rangeMap.asList())
+        ))
+
+        testPut(entries)
     }
 
     @Test
     fun testEmptyEntry() {
-        val rangeMap = distanceRangeMapOf<Int>()
-        rangeMap.put(Distance(100), Distance(100), 42)
-        assertEquals(emptyList(), rangeMap.asList())
+        val entries = listOf(DistanceRangeMap.RangeMapEntry(
+            Distance(100), Distance(100), 42
+        ))
+
+        testPut(entries, emptyList())
     }
 
     @Test
     fun testOverlappingRanges() {
-        val rangeMap = distanceRangeMapOf<Int>()
-        rangeMap.put(Distance(100), Distance(200), 42)
-        rangeMap.put(Distance(150), Distance(300), 43)
-        assertEquals(listOf(
+        val entries = listOf(
+            DistanceRangeMap.RangeMapEntry(Distance(100), Distance(200), 42),
+            DistanceRangeMap.RangeMapEntry(Distance(150), Distance(300), 43)
+        )
+        val expected = listOf(
             DistanceRangeMap.RangeMapEntry(Distance(100), Distance(150), 42),
-                    DistanceRangeMap.RangeMapEntry(Distance(150), Distance(300), 43)
-        ), rangeMap.asList())
+            DistanceRangeMap.RangeMapEntry(Distance(150), Distance(300), 43)
+        )
+
+        testPut(entries, expected)
     }
 
     @Test
     fun testNonOverlappingRanges() {
-        val rangeMap = distanceRangeMapOf<Int>()
-        rangeMap.put(Distance(100), Distance(200), 42)
-        rangeMap.put(Distance(300), Distance(400), 43)
-        assertEquals(listOf(
+        val entries = listOf(
             DistanceRangeMap.RangeMapEntry(Distance(100), Distance(200), 42),
             DistanceRangeMap.RangeMapEntry(Distance(300), Distance(400), 43)
-        ), rangeMap.asList())
+        )
+
+        testPut(entries)
     }
 
     @Test
     fun testSplitRange() {
-        val rangeMap = distanceRangeMapOf<Int>()
-        rangeMap.put(Distance(100), Distance(200), 42)
-        rangeMap.put(Distance(120), Distance(130), 43)
-        assertEquals(listOf(
+        val entries = listOf(
+            DistanceRangeMap.RangeMapEntry(Distance(100), Distance(200), 42),
+            DistanceRangeMap.RangeMapEntry(Distance(120), Distance(130), 43)
+        )
+        val expected = listOf(
             DistanceRangeMap.RangeMapEntry(Distance(100), Distance(120), 42),
             DistanceRangeMap.RangeMapEntry(Distance(120), Distance(130), 43),
-            DistanceRangeMap.RangeMapEntry(Distance(130), Distance(200), 42)
-        ), rangeMap.asList())
+            DistanceRangeMap.RangeMapEntry(Distance(130), Distance(200), 42),
+        )
+
+        testPut(entries, expected)
     }
 
     @Test
     fun testOverwritingSeveralRanges() {
-        val rangeMap = distanceRangeMapOf<Int>()
-        rangeMap.put(Distance(0), Distance(100), 1)
-        rangeMap.put(Distance(100), Distance(200), 2)
-        rangeMap.put(Distance(200), Distance(300), 3)
-        rangeMap.put(Distance(300), Distance(400), 4)
-        rangeMap.put(Distance(400), Distance(500), 5)
-        rangeMap.put(Distance(50), Distance(450), 42)
-        assertEquals(listOf(
+        val entries = listOf(
+            DistanceRangeMap.RangeMapEntry(Distance(0), Distance(100), 1),
+            DistanceRangeMap.RangeMapEntry(Distance(100), Distance(200), 2),
+            DistanceRangeMap.RangeMapEntry(Distance(200), Distance(300), 3),
+            DistanceRangeMap.RangeMapEntry(Distance(300), Distance(400), 4),
+            DistanceRangeMap.RangeMapEntry(Distance(400), Distance(500), 5),
+            DistanceRangeMap.RangeMapEntry(Distance(50), Distance(450), 42)
+        )
+        val expected = listOf(
             DistanceRangeMap.RangeMapEntry(Distance(0), Distance(50), 1),
             DistanceRangeMap.RangeMapEntry(Distance(50), Distance(450), 42),
             DistanceRangeMap.RangeMapEntry(Distance(450), Distance(500), 5)
-        ), rangeMap.asList())
+        )
+
+        testPut(entries, expected)
     }
 
     @Test
     fun testAddingFromEnd() {
-        val rangeMap = distanceRangeMapOf<Int>()
-        rangeMap.put(Distance(100), Distance(200), 1)
-        rangeMap.put(Distance(0), Distance(100), 2)
-        assertEquals(listOf(
+        val entries = listOf(
+            DistanceRangeMap.RangeMapEntry(Distance(100), Distance(200), 1),
+            DistanceRangeMap.RangeMapEntry(Distance(0), Distance(100), 2),
+        )
+        val expected = listOf(
             DistanceRangeMap.RangeMapEntry(Distance(0), Distance(100), 2),
             DistanceRangeMap.RangeMapEntry(Distance(100), Distance(200), 1),
-        ), rangeMap.asList())
+        )
+
+        testPut(entries, expected)
     }
 
     @Test
     fun testMergeRanges() {
-        val rangeMap = distanceRangeMapOf<Int>()
-        rangeMap.put(Distance(0), Distance(100), 42)
-        rangeMap.put(Distance(100), Distance(200), 2)
-        rangeMap.put(Distance(200), Distance(300), 3)
-        rangeMap.put(Distance(300), Distance(400), 4)
-        rangeMap.put(Distance(400), Distance(500), 42)
-        rangeMap.put(Distance(50), Distance(450), 42)
-        assertEquals(listOf(
-            DistanceRangeMap.RangeMapEntry(Distance(0), Distance(500), 42),
-        ), rangeMap.asList())
+        val entries = listOf(
+            DistanceRangeMap.RangeMapEntry(Distance(0), Distance(100), 42),
+            DistanceRangeMap.RangeMapEntry(Distance(100), Distance(200), 2),
+            DistanceRangeMap.RangeMapEntry(Distance(200), Distance(300), 3),
+            DistanceRangeMap.RangeMapEntry(Distance(300), Distance(400), 4),
+            DistanceRangeMap.RangeMapEntry(Distance(400), Distance(500), 42),
+            DistanceRangeMap.RangeMapEntry(Distance(50), Distance(450), 42)
+        )
+        val expected = listOf(
+            DistanceRangeMap.RangeMapEntry(Distance(0), Distance(500), 42)
+        )
+
+        testPut(entries, expected)
     }
 
     @Test

@@ -18,6 +18,12 @@ data class DistanceRangeMapImpl<T>(
         putOptional(lower, upper, value)
     }
 
+    /** Sets many values more efficiently than many calls to `put` */
+    override fun putMany(entries: List<DistanceRangeMap.RangeMapEntry<T>>) {
+        for (entry in entries)
+            put(entry.lower, entry.upper, entry.value)
+    }
+
     /** Iterates over the entries in the map */
     override fun iterator(): Iterator<DistanceRangeMap.RangeMapEntry<T>> {
         return asList().iterator()
