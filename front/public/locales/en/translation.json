@@ -262,8 +262,10 @@
           "new-route": "Create a new route",
           "pick-entrypoint": "Starting point selection tool",
           "pick-entrypoint-cancel": "Cancel the selection of the starting point",
+          "pick-entrypoint-delete": "Delete the selected starting point",
           "pick-exitpoint": "Ending point selection tool",
-          "pick-exitpoint-cancel": "Undo exit point selection."
+          "pick-exitpoint-cancel": "Undo exit point selection.",
+          "pick-exitpoint-delete": "Delete the selected exit point"
         },
         "alternative-routes": "Search for alternative routes",
         "confirm-delete-route": "Are you sure to delete this route?",

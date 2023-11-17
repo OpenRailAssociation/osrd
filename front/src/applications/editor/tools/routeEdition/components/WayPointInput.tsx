@@ -5,13 +5,14 @@ import { FaMapMarkedAlt, FaTimesCircle } from 'react-icons/fa';
 import { Position } from 'geojson';
 
 import EditorContext from 'applications/editor/context';
-import { EditRoutePathState } from 'applications/editor/tools/routeEdition/types';
+import { EditRoutePathState, EndPointKeys } from 'applications/editor/tools/routeEdition/types';
 import { getEntity } from 'applications/editor/data/api';
 import EntitySumUp from 'applications/editor/components/EntitySumUp';
 import Tipped from 'applications/editor/components/Tipped';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import { ExtendedEditorContextType } from 'applications/editor/tools/editorContextTypes';
 import { EndPoint, WayPoint, WayPointEntity } from 'types';
+import { BsTrash } from 'react-icons/bs';
 
 const WayPointInput: FC<{
   endPoint: EndPoint;
@@ -35,6 +36,7 @@ const WayPointInput: FC<{
     state.extremityEditionState.type === 'selection' &&
     !isPicking &&
     state.extremityEditionState.extremity !== endPoint;
+  const isWayPointSelected = state.routeState[EndPointKeys[endPoint]] !== null;
 
   const startPickingWayPoint = useCallback(() => {
     // Cancel current selection:
@@ -47,7 +49,7 @@ const WayPointInput: FC<{
       });
     }
     // Start selecting:
-    else {
+    else if (!isWayPointSelected) {
       setState({
         ...state,
         extremityEditionState: {
@@ -64,8 +66,22 @@ const WayPointInput: FC<{
           },
         },
       });
+    } else {
+      setState({
+        ...state,
+        routeState: {
+          ...state.routeState,
+          [EndPointKeys[endPoint]]: null,
+        },
+        optionsState: { type: 'idle' },
+      });
     }
   }, [endPoint, isPicking, onChange, setState, state]);
+
+  const getButtonIcon = () => {
+    if (!isPicking && isWayPointSelected) return <BsTrash />;
+    return isPicking ? <FaTimesCircle /> : <FaMapMarkedAlt />;
+  };
 
   useEffect(() => {
     if (
@@ -103,13 +119,13 @@ const WayPointInput: FC<{
             onClick={startPickingWayPoint}
             disabled={isDisabled}
           >
-            {isPicking ? <FaTimesCircle /> : <FaMapMarkedAlt />}
+            {getButtonIcon()}
           </button>
           <span>
             {t(
-              `Editor.tools.routes-edition.actions.pick-${
-                endPoint === 'BEGIN' ? 'entry' : 'exit'
-              }point${isPicking ? '-cancel' : ''}`
+              `Editor.tools.routes-edition.actions.pick-${EndPointKeys[endPoint].toLowerCase()}${
+                isPicking ? '-cancel' : ''
+              }${isWayPointSelected ? '-delete' : ''}`
             )}
           </span>
         </Tipped>
