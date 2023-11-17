@@ -572,7 +572,7 @@ def make_random_allowances(path_length: float) -> List[Dict]:
                 "allowance_type": "standard",
                 "default_value": make_random_allowance_value(path_length),
                 "ranges": list(make_random_ranges(path_length)),
-                "capacity_speed_limit": random.random() * 10,
+                "capacity_speed_limit": 1 + random.random() * 30,
                 "distribution": "MARECO" if random.randint(0, 1) == 0 else "LINEAR",
             }
         )
@@ -586,7 +586,7 @@ def make_random_allowances(path_length: float) -> List[Dict]:
                 "begin_position": min(positions),
                 "end_position": max(positions),
                 "value": make_random_allowance_value(max(positions) - min(positions)),
-                "capacity_speed_limit": random.random() * 10,
+                "capacity_speed_limit": 1 + random.random() * 30,
                 "distribution": "MARECO" if random.randint(0, 1) == 0 else "LINEAR",
             }
         )

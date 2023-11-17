@@ -37,7 +37,7 @@ public class AllowanceRangesTests {
                 new AllowanceRange(0, 0.3 * path.getLength(), value1),
                 new AllowanceRange(0.3 * path.getLength(), path.getLength(), value2)
         );
-        var allowance = new MarecoAllowance(0, path.getLength(), 0, ranges);
+        var allowance = new MarecoAllowance(0, path.getLength(), 1, ranges);
         return allowance.apply(maxEffortEnvelope, context);
     }
 
@@ -275,7 +275,7 @@ public class AllowanceRangesTests {
         var ranges = List.of(
                 new AllowanceRange(rangesTransitions[0], rangesTransitions[1], value1)
         );
-        var allowance = new LinearAllowance(rangesTransitions[0], rangesTransitions[1], 0, ranges
+        var allowance = new LinearAllowance(rangesTransitions[0], rangesTransitions[1], 1, ranges
         );
         applyAllowanceIgnoringUserError(allowance, maxEffortEnvelope, testContext);
     }
@@ -295,7 +295,7 @@ public class AllowanceRangesTests {
         var ranges = List.of(
                 new AllowanceRange(rangesTransitions[0], rangesTransitions[1], value1)
         );
-        var allowance = new LinearAllowance(rangesTransitions[0], rangesTransitions[1], 0, ranges);
+        var allowance = new LinearAllowance(rangesTransitions[0], rangesTransitions[1], 1, ranges);
         applyAllowanceIgnoringUserError(allowance, maxEffortEnvelope, testContext);
     }
 

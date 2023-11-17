@@ -9,6 +9,8 @@ import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue
 import fr.sncf.osrd.graph.Pathfinding.EdgeRange
+import fr.sncf.osrd.reporting.exceptions.ErrorType
+import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface.NotEnoughLookahead
@@ -49,18 +51,29 @@ fun applyAllowance(
     val rangeTransitions = initRangeTransitions(stops)
     val context = build(rollingStock!!, envelopeSimPath!!, timeStep, comfort)
     for (i in 0..9) {
-        val newEnvelope = applyAllowanceWithTransitions(
-            envelope,
-            standardAllowance,
-            rangeTransitions,
-            context
-        )
-        val conflictOffset = findConflictOffsets(newEnvelope, blockAvailability, ranges, departureTime, stops)
-            ?: return newEnvelope
-        if (rangeTransitions.contains(conflictOffset))
-            break // Error case, we exit and fallback to the linear envelope
-        logger.info("Conflict in new envelope at offset {}, splitting mareco ranges", conflictOffset)
-        rangeTransitions.add(conflictOffset)
+        try {
+            val newEnvelope = applyAllowanceWithTransitions(
+                envelope,
+                standardAllowance,
+                rangeTransitions,
+                context
+            )
+            val conflictOffset = findConflictOffsets(newEnvelope, blockAvailability, ranges, departureTime, stops)
+                ?: return newEnvelope
+            if (rangeTransitions.contains(conflictOffset))
+                break // Error case, we exit and fallback to the linear envelope
+            logger.info("Conflict in new envelope at offset {}, splitting mareco ranges", conflictOffset)
+            rangeTransitions.add(conflictOffset)
+        } catch (e: OSRDError) {
+            if (e.osrdErrorType == ErrorType.AllowanceConvergenceTooMuchTime) {
+                // Mareco allowances must have a non-zero capacity speed limit,
+                // which may cause "too much time" errors.
+                // We can ignore this exception and move on to the linear allowance as fallback
+                logger.info("Can't slow down enough to match the given standard allowance")
+                break
+            } else
+                throw e
+        }
     }
     logger.info("Failed to compute a mareco standard allowance, fallback to linear allowance")
     return makeFallbackEnvelope(envelope, standardAllowance, context)
@@ -127,7 +140,7 @@ private fun applyAllowanceWithTransitions(
     val allowance = MarecoAllowance(
         0.0,
         envelope.endPos,
-        0.0,
+        1.0,
         makeAllowanceRanges(standardAllowance, envelope.endPos, rangeTransitions)
     )
     return allowance.apply(envelope, context)

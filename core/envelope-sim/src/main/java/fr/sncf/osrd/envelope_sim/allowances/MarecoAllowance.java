@@ -20,6 +20,7 @@ public class MarecoAllowance extends AbstractAllowanceWithRanges {
             List<AllowanceRange> ranges
     ) {
         super(beginPos, endPos, capacitySpeedLimit, ranges);
+        assert capacitySpeedLimit >= 1 : "capacity speed limit can't be lower than 1m/s for mareco allowances";
     }
 
     public static final class MarecoSpeedLimit implements EnvelopeAttr {
@@ -36,7 +37,9 @@ public class MarecoAllowance extends AbstractAllowanceWithRanges {
     private double computeVf(double v1, PhysicsRollingStock rollingStock) {
         // formulas given by MARECO
         var wle = v1 * v1 * rollingStock.getRollingResistanceDeriv(v1);
-        return wle * v1 / (wle + rollingStock.getRollingResistance(v1) * v1);
+        var vf = wle * v1 / (wle + rollingStock.getRollingResistance(v1) * v1);
+
+        return Math.max(vf, capacitySpeedLimit); // Prevents coasting from starting below capacity speed limit
     }
 
     /** Compute the initial low bound for the binary search */
