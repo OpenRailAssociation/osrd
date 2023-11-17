@@ -386,16 +386,18 @@ export const TrackEditionLeftPanel: FC = () => {
           );
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const operation = res[0] as EntityObjectOperationResult;
-          const { id } = operation.railjson;
+          const savedTrack = {
+            objType: 'TrackSection',
+            type: 'Feature',
+            properties: operation.railjson,
+            geometry: operation.railjson.geo,
+          } as TrackSectionEntity;
 
-          if (id && id !== savedEntity.properties.id) {
-            const savedTrack = { ...track, properties: { ...track.properties, id: `${id}` } };
-            setState({
-              ...state,
-              initialTrack: savedTrack,
-              track: savedTrack,
-            });
-          }
+          setState({
+            ...state,
+            initialTrack: savedTrack,
+            track: savedTrack,
+          });
         }}
         onChange={(newTrack) => {
           setState({ ...state, track: newTrack as TrackSectionEntity });
