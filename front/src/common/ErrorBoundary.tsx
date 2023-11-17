@@ -4,7 +4,7 @@ import { SerializedError } from '@reduxjs/toolkit';
 import { useTranslation } from 'react-i18next';
 import { extractMessageFromError } from 'utils/error';
 import logo from 'assets/pictures/views/projects.svg';
-import { ApiError } from 'common/api/emptyApi';
+import { ApiError } from 'common/api/baseGeneratedApis';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import { ModalProvider } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 
