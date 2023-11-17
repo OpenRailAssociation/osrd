@@ -13,17 +13,17 @@ default-members = [".", "actix_proxy", "actix_auth"]
 [workspace.dependencies]
 # common utils
 log = "0.4.20"
-env_logger = "0.10.0"
+env_logger = "0.10.1"
 either = "1.9.0"
 thiserror = "1.0.50"
-dyn-clone = "1.0.14"
+dyn-clone = "1.0.16"
 futures-util = "0.3.29"
 futures = "0.3.29"
-smallvec = "1.11.1"
+smallvec = "1.11.2"
 
 # main crate
 figment = "0.10"
-serde = { version = "1.0.189", features = ["derive"] }
+serde = { version = "1.0.192", features = ["derive"] }
 serde_json = "1.0.108"
 humantime = "2.1.0"
 humantime-serde = "1.1.1"
@@ -33,7 +33,7 @@ actix-files = "0.6.2"
 base64ct = "1.6.0"
 
 # reverse proxy dependencies
-ipnet = "2.8"
+ipnet = "2.9"
 awc = { version = "3.2.0", features = ["rustls"] }  # the http / ws client
 actix = "0.13.1"
 actix-web-actors = "4.2.0"
