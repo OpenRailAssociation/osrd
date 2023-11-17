@@ -8,7 +8,7 @@ import {
   enableInteractivity,
   traceVerticalLine,
 } from 'modules/simulationResult/components/ChartHelpers/enableInteractivity';
-import { CHART_AXES } from 'modules/simulationResult/components/simulationResultsConsts';
+import { CHART_AXES, ChartAxes } from 'modules/simulationResult/components/simulationResultsConsts';
 import {
   createChart,
   drawTrain,
@@ -33,6 +33,11 @@ import { interpolateOnPosition } from '../ChartHelpers/ChartHelpers';
 
 const CHART_ID = 'SpeedSpaceChart';
 const CHART_MIN_HEIGHT = 250;
+const SETTINGS_TO_AXIS = {
+  altitude: CHART_AXES.SPACE_HEIGHT,
+  curves: CHART_AXES.SPACE_RADIUS,
+  slopes: CHART_AXES.SPACE_GRADIENT,
+};
 
 export type SpeedSpaceChartProps = {
   initialHeight: number;
@@ -166,6 +171,17 @@ export default function SpeedSpaceChart({
   }, [resetChart]);
 
   /**
+   * Recompute the enabled axes when the settings change
+   */
+  const additionalAxes = useMemo(
+    () =>
+      Object.keys(SETTINGS_TO_AXIS)
+        .filter((key) => localSettings[key as keyof typeof localSettings])
+        .map((key) => SETTINGS_TO_AXIS[key as keyof typeof SETTINGS_TO_AXIS] as ChartAxes),
+    [localSettings]
+  );
+
+  /**
    * CHART INTERACTIVITY
    */
 
@@ -183,9 +199,10 @@ export default function SpeedSpaceChart({
       setChart,
       simulationIsPlaying,
       dispatchUpdateTimePositionValues,
-      timeScaleRange
+      timeScaleRange,
+      additionalAxes
     );
-  }, [chart]);
+  }, [chart, additionalAxes]);
 
   /**
    * coordinate guidelines and pointers with other graphs

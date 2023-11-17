@@ -254,7 +254,8 @@ const SpaceCurvesSlopes = ({
       setChart,
       simulationIsPlaying,
       dispatchUpdateTimePositionValues,
-      timeScaleRange
+      timeScaleRange,
+      [CHART_AXES.SPACE_GRADIENT, CHART_AXES.SPACE_RADIUS, CHART_AXES.SPACE_HEIGHT]
     );
     setChart(chartLocal);
   };

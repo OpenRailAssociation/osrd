@@ -82,12 +82,15 @@ const updateChart = <
 >(
   chart: Chart,
   keyValues: ChartAxes,
+  additionalValues: ChartAxes[], // more values to display on the same chart
   rotate: boolean,
   event: d3.D3ZoomEvent<Element, Datum>
 ) => {
   // recover the new scale & test if movement under 0
   const xAxis = getAxis(keyValues, 'x', rotate);
+  const supplementaryXAxis = additionalValues.map((value) => getAxis(value, 'x', rotate));
   const yAxis = getAxis(keyValues, 'y', rotate);
+  const supplementaryYAxis = additionalValues.map((value) => getAxis(value, 'y', rotate));
   const xAxisStart = `${xAxis}_start` as const;
   const xAxisEnd = `${xAxis}_end` as const;
   const yAxisStart = `${yAxis}_start` as 'time_start' | 'position_start';
@@ -120,12 +123,19 @@ const updateChart = <
   chart.yAxisGrid.call(gridY(newY, chart.width));
 
   // update lines & areas
+
   chart.drawZone.selectAll<SVGLineElement, T[]>('.line').attr(
     'd',
     d3
       .line<T>()
-      .x((d) => newX(d[xAxis as keyof T] as number | Date))
-      .y((d) => newY(d[yAxis as keyof T] as number | Date))
+      .x((d) => {
+        const key = supplementaryXAxis.find((axis) => d[axis as keyof T] !== undefined) || xAxis;
+        return newX(d[key as keyof T] as number | Date);
+      })
+      .y((d) => {
+        const key = supplementaryYAxis.find((axis) => d[axis as keyof T] !== undefined) || yAxis;
+        return newY(d[key as keyof T] as number | Date);
+      })
   );
 
   chart.drawZone
@@ -246,10 +256,10 @@ export const enableInteractivity = <
   setChart: React.Dispatch<React.SetStateAction<T | undefined>>,
   simulationIsPlaying: boolean,
   dispatchUpdateTimePositionValues: (newTimePositionValues: Date) => void,
-  chartDimensions: [Date, Date]
+  chartDimensions: [Date, Date],
+  additionalValues: ChartAxes[] = [] // more values to display on the same chart
 ) => {
   if (!chart) return;
-
   const zoom = d3zoom<SVGGElement, unknown>()
     .scaleExtent([0.3, 20]) // This controls how much you can unzoom (x0.5) and zoom (x20)
     .extent([
@@ -259,7 +269,7 @@ export const enableInteractivity = <
     .wheelDelta(wheelDelta)
     .on('zoom', (event) => {
       event.sourceEvent.preventDefault();
-      const zoomFunctions = updateChart(chart, keyValues, rotate, event);
+      const zoomFunctions = updateChart(chart, keyValues, additionalValues, rotate, event);
       const newChart = { ...chart, x: zoomFunctions.newX, y: zoomFunctions.newY };
       setChart(newChart);
     })
