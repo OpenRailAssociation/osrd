@@ -420,7 +420,7 @@ class DummyInfra : RawInfra, BlockInfra {
     }
 
     override fun getTrackChunkOperationalPointParts(trackChunk: TrackChunkId): StaticIdxList<OperationalPointPart> {
-        TODO("Not yet implemented")
+        return mutableStaticIdxArrayListOf()
     }
 
     override fun getOperationalPointPartChunk(operationalPoint: OperationalPointPartId): TrackChunkId {
