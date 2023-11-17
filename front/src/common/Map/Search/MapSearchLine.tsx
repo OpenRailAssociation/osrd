@@ -9,13 +9,13 @@ import nextId from 'react-id-generator';
 import { BBox } from '@turf/helpers';
 import bbox from '@turf/bbox';
 import WebMercatorViewport from 'viewport-mercator-project';
-import { getMap } from 'reducers/map/selectors';
 import {
   Zone,
   osrdEditoastApi,
   SearchResultItemTrack,
   SearchPayload,
 } from 'common/api/osrdEditoastApi';
+import { getMap } from 'reducers/map/selectors';
 import LineCard from './LineCard';
 
 type MapSearchLineProps = {
@@ -36,16 +36,8 @@ const MapSearchLine: React.FC<MapSearchLineProps> = ({
   const [searchResults, setSearchResults] = useState<SearchResultItemTrack[] | undefined>(
     undefined
   );
-  const [dataTrackZone, setDataTrackZone] = useState<{ id: number; lineCode: number }>({
-    id: 0,
-    lineCode: 0,
-  });
-  const [skip, setSkip] = useState<boolean>(true);
-
-  const { data: trackZones } = osrdEditoastApi.useGetInfraByIdLinesAndLineCodeBboxQuery(
-    dataTrackZone,
-    { skip }
-  );
+  const [getTrackZones, { data: trackZones }] =
+    osrdEditoastApi.endpoints.getInfraByIdLinesAndLineCodeBbox.useLazyQuery({});
 
   const zoomToFeature = (boundingBox: BBox) => {
     const [minLng, minLat, maxLng, maxLat] = boundingBox;
@@ -96,18 +88,14 @@ const MapSearchLine: React.FC<MapSearchLineProps> = ({
     if (map.mapSearchMarker) {
       dispatch(updateMapSearchMarker(undefined));
     }
-    setSkip(false);
-    setDataTrackZone({ id: infraID as number, lineCode: searchResultItem.line_code });
-
+    getTrackZones({ id: infraID as number, lineCode: searchResultItem.line_code });
     dispatch(updateLineSearchCode(searchResultItem.line_code));
-    closeMapSearchPopUp();
   };
 
   useEffect(() => {
     if (searchState && infraID) {
       updateSearch(getPayload(searchState, infraID));
     }
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearchTerm]);
 
@@ -118,6 +106,7 @@ const MapSearchLine: React.FC<MapSearchLineProps> = ({
         coordinates: coordinates(trackZones),
       });
       zoomToFeature(tempBbox);
+      closeMapSearchPopUp();
     }
   }, [trackZones]);
 
@@ -142,7 +131,6 @@ const MapSearchLine: React.FC<MapSearchLineProps> = ({
             clearButton
             noMargin
             sm
-            // focus
           />
         </span>
       </div>
