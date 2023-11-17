@@ -72,7 +72,7 @@
               "value_type": "percentage",
               "percentage": 10.071188593833375
             },
-            "capacity_speed_limit": 0.6513002857517136,
+            "capacity_speed_limit": 1,
             "distribution": "MARECO"
           }
         ],

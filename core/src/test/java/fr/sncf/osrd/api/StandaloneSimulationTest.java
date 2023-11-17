@@ -340,7 +340,7 @@ public class StandaloneSimulationTest extends ApiTest {
         // build the simulation request
         var stops = new RJSTrainStop[]{RJSTrainStop.lastStop(0.1)};
         var allowance = new RJSAllowance[]{new RJSAllowance.EngineeringAllowance(
-                RJSAllowanceDistribution.MARECO, 0, 1000, new RJSAllowanceValue.Time(30), 0.01
+                RJSAllowanceDistribution.MARECO, 0, 1000, new RJSAllowanceValue.Time(5), 1
         )
         };
         var trains = new ArrayList<RJSStandaloneTrainSchedule>();
@@ -365,7 +365,7 @@ public class StandaloneSimulationTest extends ApiTest {
         var noAllowanceTime = noAllowanceResult.headPositions.get(noAllowanceResult.headPositions.size() - 1).time;
         var allowanceResult = simResult.ecoSimulations.get(1);
         var allowanceTime = allowanceResult.headPositions.get(allowanceResult.headPositions.size() - 1).time;
-        assertEquals(noAllowanceTime + 30, allowanceTime, noAllowanceTime * 0.01);
+        assertEquals(noAllowanceTime + 5, allowanceTime, noAllowanceTime * 0.01);
     }
 
     @Test

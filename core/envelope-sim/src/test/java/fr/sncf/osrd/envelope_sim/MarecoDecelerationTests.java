@@ -42,7 +42,7 @@ public class MarecoDecelerationTests {
         EnvelopeDeceleration.decelerate(context, 100_000, 0, overlayBuilder, -1);
         var envelope = builder.build();
 
-        var allowance = new MarecoAllowance(startOffset, endOffset, 0,
+        var allowance = new MarecoAllowance(startOffset, endOffset, 1,
                 List.of(new AllowanceRange(startOffset, endOffset, new AllowanceValue.Percentage(50))));
         try {
             allowance.apply(envelope, context);

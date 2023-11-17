@@ -47,9 +47,6 @@ public final class CoastingGenerator {
     ) {
         assert endPos >= 0 && endPos <= context.path.getLength();
 
-        // Lower values can often cause many float-related errors when the speed gets too close to 0
-        lowSpeedLimit = Math.max(1, lowSpeedLimit);
-
         // coast backwards from the end position until the base curve is met
         var backwardPartBuilder = new EnvelopePartBuilder();
         backwardPartBuilder.setAttr(EnvelopeProfile.COASTING);
@@ -61,6 +58,7 @@ public final class CoastingGenerator {
 
         double position = endPos;
         double speed = envelope.interpolateSpeed(position);
+        assert speed >= lowSpeedLimit || areSpeedsEqual(speed, lowSpeedLimit) : "start coasting below min speed";
         var initInter = constrainedBuilder.initEnvelopePart(position, speed, -1);
         assert initInter;
         boolean reachedLowLimit = false;
