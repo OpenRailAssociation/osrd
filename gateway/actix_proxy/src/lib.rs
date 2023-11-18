@@ -17,6 +17,7 @@ use awc::Client;
 use either::Either;
 use futures_util::future::LocalBoxFuture;
 use log::{debug, warn};
+use percent_encoding::{utf8_percent_encode, AsciiSet};
 
 use awc::error::{ConnectError, SendRequestError as AwcSendRequestError};
 use futures_util::StreamExt;
@@ -68,6 +69,30 @@ pub struct Proxy {
     timeout: Option<Duration>,
 }
 
+/// The set of characters that have to be percent encoded in the path.
+/// Actix web decodes the percent-encoded path for routing to perform as expected.
+/// We thus need to re-encode everything that was decoded in the first place.
+///
+/// The set of characters that need to be percent-encoded can be found in the source of
+/// actix_web::http::uri::PathAndQuery::from_shared
+///
+/// ```python
+/// allowed_bytes = {0x21, *range(0x24, 0x3B + 1), 0x3D, *range(0x40, 0x5F + 1), *range(0x61, 0x7A + 1), 0x7C, 0x7E}
+/// controls = {*range(0x20), 0x7F}
+/// forbidden_bytes = set(range(0, 128)) - allowed_bytes - controls
+/// print("".join(f".add(b{chr(e)!r})" for e in forbidden_bytes))
+/// ```
+const REQUIRES_PATH_ENCODING: &AsciiSet = &percent_encoding::CONTROLS
+    .add(b' ')
+    .add(b'`')
+    .add(b'"')
+    .add(b'#')
+    .add(b'{')
+    .add(b'<')
+    .add(b'}')
+    .add(b'>')
+    .add(b'?');
+
 impl Proxy {
     pub fn new(
         mount_path: Option<String>,
@@ -106,7 +131,11 @@ impl Proxy {
         let scheme = new_protocol.unwrap_or(&self.upstream_scheme);
 
         let mut final_path = self.upstream_path_prefix.clone();
-        final_path.push_str(path.trim_start_matches('/'));
+        let path = path.trim_start_matches('/');
+        for c in utf8_percent_encode(path, REQUIRES_PATH_ENCODING) {
+            final_path.push_str(c);
+        }
+
         if !query.is_empty() {
             final_path.push('?');
             final_path.push_str(query);

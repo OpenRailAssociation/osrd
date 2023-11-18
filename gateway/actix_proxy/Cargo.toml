@@ -18,6 +18,7 @@ either.workspace = true
 actix-web.workspace = true
 ipnet.workspace = true
 awc.workspace = true  # the http / ws client
+percent-encoding.workspace = true
 
 # header classifier
 smallvec.workspace = true
