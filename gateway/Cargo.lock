@@ -343,6 +343,7 @@ dependencies = [
  "futures-util",
  "ipnet",
  "log",
+ "percent-encoding",
  "phf",
  "smallvec",
 ]
