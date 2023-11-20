@@ -1,20 +1,28 @@
 use actix_web::HttpRequest;
 use serde::{Deserialize, Serialize};
 
-use super::{ProviderSessionStatus, SessionProvider};
+use super::{IdentityProvider, ProviderIdentityStatus, ProviderSessionStatus, SessionProvider};
 
 #[derive(Clone)]
 pub struct MockProvider {
     require_login: bool,
     username: String,
+    user_id: Option<String>,
 }
 
 impl MockProvider {
-    pub fn new(require_login: bool, username: String) -> Self {
+    pub fn new(require_login: bool, username: String, user_id: Option<String>) -> Self {
         Self {
             require_login,
             username,
+            user_id,
         }
+    }
+
+    fn get_user_id(&self) -> &str {
+        self.user_id
+            .as_deref()
+            .unwrap_or_else(|| self.username.as_ref())
     }
 }
 
@@ -35,13 +43,12 @@ impl SessionProvider for MockProvider {
         ctx: &mut super::ProviderContext<Self>,
         _: &HttpRequest,
     ) -> ProviderSessionStatus {
-        if self.require_login && ctx.state().is_none() {
-            ProviderSessionStatus::LoggedOut
-        } else {
-            ProviderSessionStatus::LoggedIn {
-                user_id: self.username.clone(),
+        match ctx.state() {
+            None => ProviderSessionStatus::LoggedOut,
+            Some(MockState::LoggedIn) => ProviderSessionStatus::LoggedIn {
+                user_id: self.get_user_id().to_owned(),
                 username: self.username.clone(),
-            }
+            },
         }
     }
 
@@ -63,5 +70,17 @@ impl SessionProvider for MockProvider {
     ) -> Result<super::LogoutResponse, actix_web::Error> {
         ctx.logout();
         Ok(super::LogoutResponse::Success)
+    }
+}
+
+impl IdentityProvider for MockProvider {
+    fn get_identity(&self, _: &HttpRequest) -> ProviderIdentityStatus {
+        if self.require_login {
+            ProviderIdentityStatus::Unknown
+        } else {
+            ProviderIdentityStatus::Known {
+                user_id: self.get_user_id().to_owned(),
+            }
+        }
     }
 }

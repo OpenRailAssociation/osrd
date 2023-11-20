@@ -94,8 +94,11 @@ pub async fn parse_auth_config(config: AuthConfig) -> AuthContext {
                 provider_id,
                 username,
                 require_login,
+                user_id,
             } => {
-                let provider = MockProvider::new(require_login, username);
+                let provider = MockProvider::new(require_login, username, user_id);
+                auth_context
+                    .add_identity_provider(format!("{provider_id}.identity"), provider.clone());
                 auth_context.add_session_provider(provider_id, provider);
             }
             config::AuthProvider::Bearer {

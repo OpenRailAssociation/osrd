@@ -42,6 +42,7 @@ pub enum AuthProvider {
         provider_id: String,
         username: String,
         require_login: bool,
+        user_id: Option<String>,
     },
 
     /// Basic authentication provider
