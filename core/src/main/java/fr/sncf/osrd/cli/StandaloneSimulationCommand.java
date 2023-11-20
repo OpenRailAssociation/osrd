@@ -1,19 +1,21 @@
 package fr.sncf.osrd.cli;
 
 import static fr.sncf.osrd.api.SignalingSimulatorKt.makeSignalingSimulator;
+import static fr.sncf.osrd.api.pathfinding.PathfindingBlocksEndpointKt.runPathfinding;
+import static fr.sncf.osrd.api.pathfinding.PathfindingResultConverterKt.convertPathfindingResult;
 
 import com.beust.jcommander.Parameter;
 import com.squareup.moshi.Json;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.Types;
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory;
 import fr.sncf.osrd.api.FullInfra;
-import fr.sncf.osrd.api.pathfinding.PathfindingBlocksEndpoint;
-import fr.sncf.osrd.api.pathfinding.PathfindingResultConverter;
 import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint;
 import fr.sncf.osrd.railjson.parser.RJSRollingStockParser;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
+import fr.sncf.osrd.railjson.schema.infra.RJSRoutePath;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
 import fr.sncf.osrd.railjson.schema.schedule.*;
@@ -91,12 +93,15 @@ public class StandaloneSimulationCommand implements CliCommand {
         var results = new HashMap<String, StandaloneSimResult>();
         for (var trainScheduleGroup : input.trainScheduleGroups) {
             logger.info("Running simulation for schedule group: {}", trainScheduleGroup.id);
-            var rawPathfindingResult = PathfindingBlocksEndpoint.runPathfinding(
+            var rawPathfindingResult = runPathfinding(
                     infra, trainScheduleGroup.waypoints, rollingStocks.values());
-            var pathfindingResult = PathfindingResultConverter.convert(
+            var pathfindingResult = convertPathfindingResult(
                     infra.blockInfra(), infra.rawInfra(), rawPathfindingResult, diagnosticRecorder);
+            var routePath = pathfindingResult.routePaths.stream()
+                    .map(x -> (RJSRoutePath) x) // Converts the list from '? extends RJSRoutePath' to 'RJSRoutePath'
+                    .toList();
             var res = StandaloneSim.runFromRJS(
-                    infra, null, new RJSTrainPath(pathfindingResult.routePaths), rollingStocks,
+                    infra, null, new RJSTrainPath(routePath), rollingStocks,
                     trainScheduleGroup.schedules, input.timeStep);
             res.addDepartureTimes(trainScheduleGroup.schedules.stream().map(s -> s.departureTime).toList());
             results.put(trainScheduleGroup.id, res);
@@ -160,6 +165,7 @@ public class StandaloneSimulationCommand implements CliCommand {
     public static class Input {
         public static final JsonAdapter<Input> adapter =
                 new Moshi.Builder().add(ID.Adapter.FACTORY).add(RJSRollingResistance.adapter).add(RJSAllowance.adapter)
+                        .add(new KotlinJsonAdapterFactory())
                         .add(RJSAllowanceValue.adapter).build().adapter(Input.class);
 
         /** The time step which shall be used for all simulations */

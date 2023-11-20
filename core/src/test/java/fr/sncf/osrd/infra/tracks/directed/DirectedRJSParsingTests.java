@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.google.common.collect.*;
 import com.google.common.graph.NetworkBuilder;
 import com.google.common.graph.Traverser;
-import fr.sncf.osrd.Helpers;
+import fr.sncf.osrd.utils.Helpers;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.tracks.undirected.Detector;
 import fr.sncf.osrd.infra.api.tracks.undirected.SpeedLimits;

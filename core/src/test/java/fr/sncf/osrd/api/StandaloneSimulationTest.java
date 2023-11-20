@@ -1,7 +1,7 @@
 package fr.sncf.osrd.api;
 
-import static fr.sncf.osrd.Helpers.getExampleRollingStock;
-import static fr.sncf.osrd.Helpers.getExampleRollingStocks;
+import static fr.sncf.osrd.utils.Helpers.getExampleRollingStock;
+import static fr.sncf.osrd.utils.Helpers.getExampleRollingStocks;
 import static fr.sncf.osrd.standalone_sim.result.ElectrificationRange.ElectrificationUsage;
 import static fr.sncf.osrd.standalone_sim.result.ElectrificationRange.ElectrificationUsage.ElectrifiedUsage;
 import static fr.sncf.osrd.standalone_sim.result.ElectrificationRange.ElectrificationUsage.NeutralUsage;

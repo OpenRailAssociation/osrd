@@ -1,6 +1,6 @@
 package fr.sncf.osrd.standalone_sim;
 
-import static fr.sncf.osrd.api.utils.PathPropUtils.makeChunkPath;
+import static fr.sncf.osrd.api.pathfinding.PathPropUtilsKt.makeChunkPath;
 import static fr.sncf.osrd.sim_infra.api.PathPropertiesKt.makePathProperties;
 
 import fr.sncf.osrd.DriverBehaviour;

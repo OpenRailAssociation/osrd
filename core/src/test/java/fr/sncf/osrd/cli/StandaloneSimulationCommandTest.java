@@ -1,6 +1,6 @@
 package fr.sncf.osrd.cli;
 
-import static fr.sncf.osrd.Helpers.getResourcePath;
+import static fr.sncf.osrd.utils.Helpers.getResourcePath;
 
 import okio.FileSystem;
 import okio.Okio;

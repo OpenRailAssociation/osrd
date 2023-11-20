@@ -2,7 +2,6 @@ package fr.sncf.osrd.sim_infra_adapter
 
 import com.google.common.collect.ImmutableRangeMap
 import com.google.common.collect.Range
-import fr.sncf.osrd.Helpers
 import fr.sncf.osrd.envelope_sim.electrification.Electrification
 import fr.sncf.osrd.envelope_sim.electrification.Electrified
 import fr.sncf.osrd.envelope_sim.electrification.Neutral
@@ -13,10 +12,7 @@ import fr.sncf.osrd.railjson.schema.common.graph.ApplicableDirection
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSApplicableDirectionsTrackRange
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSCatenary
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSlope
-import fr.sncf.osrd.utils.Direction
-import fr.sncf.osrd.utils.getRjsElectricalProfileMapping_1
-import fr.sncf.osrd.utils.getRjsElectricalProfileMapping_2
-import fr.sncf.osrd.utils.pathFromTracks
+import fr.sncf.osrd.utils.*
 import fr.sncf.osrd.utils.units.meters
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions
@@ -30,7 +26,7 @@ class EnvelopeTrainPathTest {
 
     @Test
     fun envelopeFromPathTestAverageGrades() {
-        val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")!!
+        val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
         for (track in rjsInfra.trackSections) {
             if (track.id.equals("TA0")) {
                 track.slopes = listOf(
@@ -64,7 +60,7 @@ class EnvelopeTrainPathTest {
         direction: Direction,
         expectedMap: ImmutableRangeMap<Double, Electrification>
     ) {
-        val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")!!
+        val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
         rjsInfra.catenaries = listOf(
             RJSCatenary(
                 "", listOf(
@@ -94,7 +90,7 @@ class EnvelopeTrainPathTest {
 
     @Test
     fun envelopeFromPathTestElectrificationMapByPowerClassIncreasingDirection() {
-        val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")!!
+        val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
         rjsInfra.catenaries = listOf(
             RJSCatenary(
                 "", listOf(
@@ -119,7 +115,8 @@ class EnvelopeTrainPathTest {
         val rjsElectricalProfiles = getRjsElectricalProfileMapping_1()
         val profileMap = ElectricalProfileMapping()
         profileMap.parseRJS(rjsElectricalProfiles)
-        val path = pathFromTracks(infra.rawInfra, listOf("TA0", "TA1"), Direction.INCREASING, 1_000.meters, 3_500.meters)
+        val path =
+            pathFromTracks(infra.rawInfra, listOf("TA0", "TA1"), Direction.INCREASING, 1_000.meters, 3_500.meters)
         val envelopeSimPath = EnvelopeTrainPath.from(infra.rawInfra, path, profileMap)
         val electrificationByPowerClass = envelopeSimPath.getElectrificationMap(
             "1",
@@ -165,7 +162,7 @@ class EnvelopeTrainPathTest {
 
     @Test
     fun envelopeFromPathTestElectrificationMapByPowerClassDecreasingDirection() {
-        val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")!!
+        val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
         rjsInfra.catenaries = listOf(
             RJSCatenary(
                 "1500",
@@ -181,7 +178,13 @@ class EnvelopeTrainPathTest {
         val rjsElectricalProfiles = getRjsElectricalProfileMapping_2()
         val profileMap = ElectricalProfileMapping()
         profileMap.parseRJS(rjsElectricalProfiles)
-        val path = pathFromTracks(infra.rawInfra, listOf("TA2", "TA1", "TA0"), Direction.DECREASING, 1_000.meters, 5_000.meters)
+        val path = pathFromTracks(
+            infra.rawInfra,
+            listOf("TA2", "TA1", "TA0"),
+            Direction.DECREASING,
+            1_000.meters,
+            5_000.meters
+        )
         val envelopeSimPath = EnvelopeTrainPath.from(infra.rawInfra, path, profileMap)
         val electrificationPowerClass1 = envelopeSimPath.getElectrificationMap(
             "1", null, null

@@ -139,14 +139,12 @@ class BlockInfraImpl(
     }
 }
 
-@JvmName("getBlockEntry")
 fun BlockInfra.getBlockEntry(rawInfra: RawInfra, block: BlockId): DirDetectorId {
     val blockPath: StaticIdxList<ZonePath> = getBlockPath(block)
     val firstZone: ZonePathId = blockPath[0]
     return rawInfra.getZonePathEntry(firstZone)
 }
 
-@JvmName("getBlockExit")
 fun BlockInfra.getBlockExit(rawInfra: RawInfra, block: BlockId): DirDetectorId {
     val blockPath: StaticIdxList<ZonePath> = getBlockPath(block)
     val lastZonePath: ZonePathId = blockPath[blockPath.size - 1]

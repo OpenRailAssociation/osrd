@@ -7,19 +7,13 @@ import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.distanceRangeMapOf
 import fr.sncf.osrd.utils.indexing.DirStaticIdxList
 import fr.sncf.osrd.utils.indexing.mutableDirStaticIdxArrayListOf
-import fr.sncf.osrd.utils.units.Distance
-import fr.sncf.osrd.utils.units.Offset
-import fr.sncf.osrd.utils.units.Speed
-import fr.sncf.osrd.utils.units.meters
+import fr.sncf.osrd.utils.units.*
 
 /** A ChunkPath is a list of directional track chunks which form a path, with beginOffset being the offset
  * on the first chunk, and endOffset on the last chunk. **/
 data class ChunkPath(
-    @get:JvmName("getChunks")
     val chunks: DirStaticIdxList<TrackChunk>,
-    @get:JvmName("getBeginOffset")
     val beginOffset: Distance,
-    @get:JvmName("getEndOffset")
     val endOffset: Distance
 )
 
@@ -246,26 +240,15 @@ fun getOffsetOfTrackLocationOnChunks(
     return null
 }
 
-/** Returns the offset of a location on a given list of chunks, throws if not found */
-@JvmName("getOffsetOfTrackLocationOnChunksOrThrow")
-fun getOffsetOfTrackLocationOnChunksOrThrow(
-    infra: TrackProperties,
-    location: TrackLocation,
-    chunks: DirStaticIdxList<TrackChunk>,
-): Distance {
-    return getOffsetOfTrackLocationOnChunks(infra, location, chunks) ?: throw RuntimeException()
-}
-
 /** Build chunkPath, which is the subset of the given chunks corresponding to the beginOffset and endOffset. **/
-@JvmName("buildChunkPath")
 fun buildChunkPath(
     infra: TrackProperties,
     chunks: DirStaticIdxList<TrackChunk>,
-    pathBeginOffset: Distance,
-    pathEndOffset: Distance
+    pathBeginOffset: Length<Block>,
+    pathEndOffset: Length<Block>
 ): ChunkPath {
     val filteredChunks = mutableDirStaticIdxArrayListOf<TrackChunk>()
-    var totalLength = 0.meters
+    var totalLength = Length<Block>(0.meters)
     var mutBeginOffset = pathBeginOffset
     var mutEndOffset = pathEndOffset
     for (dirChunkId in chunks) {
@@ -284,5 +267,5 @@ fun buildChunkPath(
         }
         totalLength += length.distance
     }
-    return ChunkPath(filteredChunks, mutBeginOffset, mutEndOffset)
+    return ChunkPath(filteredChunks, mutBeginOffset.distance, mutEndOffset.distance)
 }

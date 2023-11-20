@@ -14,7 +14,7 @@ fun rangeMapEntryToSpeed(entry: DistanceRangeMap.RangeMapEntry<Speed>): Long {
 
 fun toRouteIdList(entry: List<Int?>): StaticIdxList<Route> {
     val res = mutableStaticIdxArrayListOf<Route>()
-    for(route in entry)
+    for (route in entry)
         res.add(RouteId(route!!.toUInt()))
     return res
 }

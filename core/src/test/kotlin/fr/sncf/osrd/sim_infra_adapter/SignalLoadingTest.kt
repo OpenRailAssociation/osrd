@@ -1,6 +1,6 @@
 package fr.sncf.osrd.sim_infra_adapter
 
-import fr.sncf.osrd.Helpers
+import fr.sncf.osrd.utils.Helpers
 import fr.sncf.osrd.signaling.impl.MockSigSystemManager
 import fr.sncf.osrd.signaling.impl.SignalingSimulatorImpl
 import fr.sncf.osrd.sim_infra.api.SigSettingsSchema

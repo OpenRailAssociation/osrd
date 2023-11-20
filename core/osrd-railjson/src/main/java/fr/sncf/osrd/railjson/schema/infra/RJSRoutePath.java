@@ -20,13 +20,6 @@ public class RJSRoutePath {
         this.signalingType = signalingType;
     }
 
-    /** Constructor with empty ranges */
-    public RJSRoutePath(String route, String signalingType) {
-        this.route = route;
-        this.trackSections = new ArrayList<>();
-        this.signalingType = signalingType;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

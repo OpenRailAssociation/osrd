@@ -34,18 +34,3 @@ value class DirStaticIdx<T>(val data: UInt) : NumIdx {
         return String.format("(id=%s, dir=%s)", value.index, direction)
     }
 }
-
-@JvmName("toDirection")
-fun <T> toDirection(dirStaticIdx: DirStaticIdx<T>): Direction {
-    return dirStaticIdx.direction
-}
-
-@JvmName("toValue")
-fun <T> toValue(dirStaticIdx: DirStaticIdx<T>): StaticIdx<T> {
-    return dirStaticIdx.value
-}
-
-@JvmName("from")
-fun <T> from(id: StaticIdx<T>, dir: Direction): DirStaticIdx<T> {
-    return DirStaticIdx(id, dir)
-}

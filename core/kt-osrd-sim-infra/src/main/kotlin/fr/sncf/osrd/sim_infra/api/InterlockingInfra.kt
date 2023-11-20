@@ -18,14 +18,11 @@ import fr.sncf.osrd.utils.units.OffsetList
 sealed interface Zone
 typealias ZoneId = StaticIdx<Zone>
 
-@Suppress("INAPPLICABLE_JVM_NAME")
 interface LocationInfra : TrackNetworkInfra, TrackInfra, TrackProperties {
     val zones: StaticIdxSpace<Zone>
     fun getMovableElements(zone: ZoneId): StaticIdxSortedSet<TrackNode>
     fun getZoneBounds(zone: ZoneId): List<DirDetectorId>
-    @JvmName("getZoneName")
     fun getZoneName(zone: ZoneId): String
-    @JvmName("getZoneFromName")
     fun getZoneFromName(name: String): ZoneId
 
     val detectors: StaticIdxSpace<Detector>
@@ -39,16 +36,13 @@ fun LocationInfra.isBufferStop(detector: StaticIdx<Detector>): Boolean {
 }
 
 
-@Suppress("INAPPLICABLE_JVM_NAME")
 interface ReservationInfra : LocationInfra {
     val zonePaths: StaticIdxSpace<ZonePath>
     fun findZonePath(entry: DirDetectorId, exit: DirDetectorId,
                      movableElements: StaticIdxList<TrackNode>,
                      trackNodeConfigs: StaticIdxList<TrackNodeConfig>): ZonePathId?
     fun getZonePathEntry(zonePath: ZonePathId): DirDetectorId
-    @JvmName("getZonePathExit")
     fun getZonePathExit(zonePath: ZonePathId): DirDetectorId
-    @JvmName("getZonePathLength")
     fun getZonePathLength(zonePath: ZonePathId): Length<ZonePath>
     /** The movable elements in the order encountered when traversing the zone from entry to exit */
     fun getZonePathMovableElements(zonePath: ZonePathId): StaticIdxList<TrackNode>
@@ -57,11 +51,9 @@ interface ReservationInfra : LocationInfra {
     /** The distances from the beginning of the zone path to its switches, in encounter order */
     fun getZonePathMovableElementsPositions(zonePath: ZonePathId): OffsetList<ZonePath>
     /** Returns the list of track chunks on the zone path */
-    @JvmName("getZonePathChunks")
     fun getZonePathChunks(zonePath: ZonePathId): DirStaticIdxList<TrackChunk>
 }
 
-@JvmName("getZonePathZone")
 fun ReservationInfra.getZonePathZone(zonePath: ZonePathId): ZoneId {
     return getNextZone(getZonePathEntry(zonePath))!!
 }
@@ -78,26 +70,18 @@ typealias RouteId = StaticIdx<Route>
 
 @Suppress("INAPPLICABLE_JVM_NAME")
 interface RoutingInfra : ReservationInfra {
-    @get:JvmName("getRoutes")
     val routes: StaticIdxSpace<Route>
-    @JvmName("getRoutePath")
     fun getRoutePath(route: RouteId): StaticIdxList<ZonePath>
-    @JvmName("getRouteName")
     fun getRouteName(route: RouteId): String?
-    @JvmName("getRouteLength")
     fun getRouteLength(route: RouteId): Length<Route>
     @JvmName("getRouteFromName")
     fun getRouteFromName(name: String): RouteId
 
     /** Returns a list of indices of zones in the train path at which the reservations shall be released. */
     fun getRouteReleaseZones(route: RouteId): IntArray
-    @JvmName("getChunksOnRoute")
     fun getChunksOnRoute(route: RouteId): DirStaticIdxList<TrackChunk>
-    @JvmName("getRoutesOnTrackChunk")
     fun getRoutesOnTrackChunk(trackChunk: DirTrackChunkId): StaticIdxList<Route>
-    @JvmName("getRoutesStartingAtDet")
     fun getRoutesStartingAtDet(dirDetector: DirDetectorId): StaticIdxList<Route>
-    @JvmName("getRoutesEndingAtDet")
     fun getRoutesEndingAtDet(dirDetector: DirDetectorId): StaticIdxList<Route>
 }
 
@@ -105,12 +89,10 @@ fun ReservationInfra.findZonePath(entry: DirDetectorId, exit: DirDetectorId): Zo
     return findZonePath(entry, exit, mutableStaticIdxArrayListOf(), mutableStaticIdxArrayListOf())
 }
 
-@JvmName("getRouteEntry")
 fun RoutingInfra.getRouteEntry(route: RouteId): DirDetectorId {
     return getZonePathEntry(getRoutePath(route).first())
 }
 
-@JvmName("getRouteExit")
 fun RoutingInfra.getRouteExit(route: RouteId): DirDetectorId {
     return getZonePathExit(getRoutePath(route).last())
 }

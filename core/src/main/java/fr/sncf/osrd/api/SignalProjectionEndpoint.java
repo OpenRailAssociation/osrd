@@ -1,6 +1,6 @@
 package fr.sncf.osrd.api;
 
-import static fr.sncf.osrd.api.utils.PathPropUtils.makeChunkPath;
+import static fr.sncf.osrd.api.pathfinding.PathPropUtilsKt.makeChunkPath;
 
 import com.squareup.moshi.Json;
 import com.squareup.moshi.JsonAdapter;

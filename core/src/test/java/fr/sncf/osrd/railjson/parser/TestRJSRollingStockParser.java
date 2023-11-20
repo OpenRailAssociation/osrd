@@ -2,7 +2,7 @@ package fr.sncf.osrd.railjson.parser;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import fr.sncf.osrd.Helpers;
+import fr.sncf.osrd.utils.Helpers;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
 import fr.sncf.osrd.reporting.exceptions.ErrorType;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;

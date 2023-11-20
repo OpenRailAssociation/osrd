@@ -8,7 +8,6 @@ import java.util.*
 
 data class BlockPathElement(
     val prev: BlockPathElement?,
-    @get:JvmName("getBlock")
     val block: BlockId,
     // the index of the route in the path
     val routeIndex: Int,

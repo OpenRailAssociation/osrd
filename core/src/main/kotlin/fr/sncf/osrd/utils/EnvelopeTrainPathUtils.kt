@@ -6,8 +6,6 @@ import fr.sncf.osrd.envelope_sim.electrification.Neutral
 import fr.sncf.osrd.envelope_sim.electrification.NonElectrified
 import fr.sncf.osrd.sim_infra.api.PathProperties
 import fr.sncf.osrd.sim_infra.impl.NeutralSection
-import fr.sncf.osrd.utils.DistanceRangeMap
-import fr.sncf.osrd.utils.DistanceRangeMapImpl
 import fr.sncf.osrd.utils.units.Distance
 
 
@@ -20,7 +18,10 @@ fun buildElectrificationMap(path: PathProperties): DistanceRangeMap<Electrificat
     res.updateMap(
         path.getCatenary()
     ) { _: Electrification?, catenaryMode: String ->
-        if (catenaryMode == "") NonElectrified() else Electrified(catenaryMode)
+        if (catenaryMode == "")
+            NonElectrified()
+        else
+            Electrified(catenaryMode)
     }
     res.updateMap(
         path.getNeutralSections()

@@ -4,7 +4,7 @@ import static fr.sncf.osrd.infra.InfraHelpers.makeSwitchInfra;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
-import fr.sncf.osrd.Helpers;
+import fr.sncf.osrd.utils.Helpers;
 import fr.sncf.osrd.infra.InfraHelpers;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.reservation.DetectionSection;

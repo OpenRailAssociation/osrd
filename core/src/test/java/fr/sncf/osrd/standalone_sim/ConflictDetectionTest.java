@@ -1,7 +1,7 @@
 package fr.sncf.osrd.standalone_sim;
 
-import static fr.sncf.osrd.Helpers.fullInfraFromRJS;
-import static fr.sncf.osrd.Helpers.chunkPathFromRoutes;
+import static fr.sncf.osrd.utils.Helpers.fullInfraFromRJS;
+import static fr.sncf.osrd.utils.Helpers.chunkPathFromRoutes;
 import static fr.sncf.osrd.api.ConflictDetectionEndpoint.ConflictDetectionResult.Conflict.ConflictType.ROUTING;
 import static fr.sncf.osrd.api.ConflictDetectionEndpoint.ConflictDetectionResult.Conflict.ConflictType.SPACING;
 import static fr.sncf.osrd.envelope_sim.TestMRSPBuilder.makeSimpleMRSP;
@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import fr.sncf.osrd.Helpers;
+import fr.sncf.osrd.utils.Helpers;
 import fr.sncf.osrd.api.FullInfra;
 import fr.sncf.osrd.conflicts.ConflictsKt;
 import fr.sncf.osrd.conflicts.TrainRequirements;

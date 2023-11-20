@@ -8,20 +8,17 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import com.google.common.collect.*;
 import com.google.common.graph.Traverser;
-import fr.sncf.osrd.Helpers;
+import fr.sncf.osrd.utils.Helpers;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.tracks.undirected.SpeedLimits;
 import fr.sncf.osrd.infra.implementation.tracks.undirected.UndirectedInfraBuilder;
 import fr.sncf.osrd.railjson.schema.common.graph.ApplicableDirection;
-import fr.sncf.osrd.railjson.schema.common.graph.EdgeEndpoint;
-import fr.sncf.osrd.railjson.schema.infra.RJSTrackEndpoint;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSApplicableDirectionsTrackRange;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSection;
 import fr.sncf.osrd.reporting.exceptions.ErrorType;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import org.junit.jupiter.api.Test;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 

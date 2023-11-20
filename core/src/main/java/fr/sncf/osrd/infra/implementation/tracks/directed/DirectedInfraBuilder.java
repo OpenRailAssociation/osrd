@@ -1,7 +1,9 @@
 package fr.sncf.osrd.infra.implementation.tracks.directed;
 
+import static fr.sncf.osrd.graph.GraphHelpersKt.adjacentEdges;
+import static fr.sncf.osrd.graph.GraphHelpersKt.endpointOfNode;
+import static fr.sncf.osrd.graph.GraphHelpersKt.nodeFromEdgeEndpoint;
 import static fr.sncf.osrd.infra.api.Direction.endEndpoint;
-import static fr.sncf.osrd.utils.graph.GraphHelpers.*;
 
 import com.google.common.collect.HashBiMap;
 import com.google.common.graph.ImmutableNetwork;
