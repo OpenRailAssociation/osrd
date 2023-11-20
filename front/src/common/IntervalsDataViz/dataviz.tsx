@@ -349,9 +349,10 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
           setHoverAtx(e.clientX - (wrapperObject ? wrapperObject.getBoundingClientRect().x : 0));
 
           if (!draginStartAt && onMouseMove && wrapperObject) {
-            const point = getPositionFromMouseEvent(e, fullLength, wrapperObject);
+            const point =
+              (viewBox ? viewBox[0] : 0) + getPositionFromMouseEvent(e, fullLength, wrapperObject);
             const result = getHoveredItem(data, e.clientX);
-            if (result) {
+            if (point > 0 && result) {
               const { hoveredItem, hoveredItemIndex } = result;
               onMouseMove(e, hoveredItem, hoveredItemIndex, point);
             }
@@ -371,7 +372,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
           <SimpleScale className="scale-y" begin={min} end={max} />
         )}
 
-        {!isNil(hoverAtx) && !draginStartAt && (
+        {!isNil(hoverAtx) && hoverAtx > 0 && !draginStartAt && (
           <div
             className="hover-x"
             style={{
