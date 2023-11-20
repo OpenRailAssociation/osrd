@@ -1,12 +1,11 @@
 package fr.sncf.osrd.envelope_sim_infra;
 
-import static fr.sncf.osrd.Helpers.fullInfraFromRJS;
-import static fr.sncf.osrd.Helpers.getExampleInfra;
-import static fr.sncf.osrd.api.utils.PathPropUtils.makePathProps;
+import static fr.sncf.osrd.api.pathfinding.PathPropUtilsKt.makePathProps;
+import static fr.sncf.osrd.utils.Helpers.fullInfraFromRJS;
+import static fr.sncf.osrd.utils.Helpers.getExampleInfra;
 import static fr.sncf.osrd.envelope.EnvelopeTestUtils.makeFlatPart;
 import static fr.sncf.osrd.envelope.MRSPEnvelopeBuilder.LimitKind.SPEED_LIMIT;
 import static fr.sncf.osrd.envelope.MRSPEnvelopeBuilder.LimitKind.TRAIN_LIMIT;
-import static fr.sncf.osrd.envelope_sim.EnvelopeProfile.CONSTANT_SPEED;
 import static fr.sncf.osrd.train.TestTrains.MAX_SPEED;
 import static fr.sncf.osrd.train.TestTrains.REALISTIC_FAST_TRAIN;
 import static fr.sncf.osrd.utils.units.Distance.toMeters;
@@ -57,7 +56,7 @@ public class MRSPTest {
         rjsInfra.speedSections = new ArrayList<>();
         rjsInfra.speedSections.addAll(List.of(speedSection1, speedSection2));
         var infra = fullInfraFromRJS(rjsInfra);
-        path = makePathProps(infra.blockInfra(), infra.rawInfra(), 0);
+        path = makePathProps(infra.blockInfra(), infra.rawInfra(), 0, 0, infra.blockInfra().getBlockLength(0));
     }
 
     @ParameterizedTest

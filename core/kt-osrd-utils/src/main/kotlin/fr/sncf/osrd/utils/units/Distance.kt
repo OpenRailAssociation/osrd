@@ -17,6 +17,7 @@
 package fr.sncf.osrd.utils.units
 
 import fr.sncf.osrd.fast_collections.PrimitiveWrapperCollections
+import kotlin.math.abs
 import kotlin.math.absoluteValue
 
 @JvmInline
@@ -39,7 +40,10 @@ value class Distance(val millimeters: Long) : Comparable<Distance> {
         fun fromMeters(meters: Double) = Distance(millimeters = (Math.round(meters * 1_000.0)))
         @JvmStatic
         @JvmName("toMeters")
-        fun toMeters(distance: Distance) = distance.meters
+        fun toMeters(distance: Distance) = distance.meters // Only meant to be used in java, for compatibility
+
+        fun min(a: Distance, b: Distance) = Distance(millimeters = a.millimeters.coerceAtMost(b.millimeters))
+        fun max(a: Distance, b: Distance) = Distance(millimeters = a.millimeters.coerceAtLeast(b.millimeters))
     }
 
     override fun compareTo(other: Distance): Int {

@@ -1,11 +1,11 @@
 package fr.sncf.osrd.sim_infra_adapter
 
-import fr.sncf.osrd.Helpers
 import fr.sncf.osrd.railjson.schema.common.RJSWaypointRef
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.railjson.schema.infra.RJSRoute
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSTrainDetector
 import fr.sncf.osrd.utils.DistanceRangeMapImpl
+import fr.sncf.osrd.utils.Helpers
 import fr.sncf.osrd.utils.units.meters
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
@@ -43,7 +43,7 @@ class RawInfraAdapterTest {
                 val end = offset + infra.getTrackChunkLength(chunk.value).distance
                 val trackRangeViews = oldRoute.getTrackRanges(offset.meters, end.meters)!!
                 assertTrue { trackRangeViews.size == 1 } // This may fail because of float rounding,
-                                                         // but as long as it's true it makes testing much easier
+                // but as long as it's true it makes testing much easier
                 val trackRangeView = trackRangeViews[0]
                 assertEquals(
                     trackRangeView.track.edge.id,
@@ -72,7 +72,7 @@ class RawInfraAdapterTest {
                 val end = offset + infra.getTrackChunkLength(chunk.value).distance
                 val trackRangeViews = oldRoute.getTrackRanges(offset.meters, end.meters)!!
                 assertTrue { trackRangeViews.size == 1 } // This may fail because of float rounding,
-                                                         // but as long as it's true it makes testing much easier
+                // but as long as it's true it makes testing much easier
                 val trackRangeView = trackRangeViews[0]
 
                 val slopes = infra.getTrackChunkSlope(chunk)
@@ -92,13 +92,17 @@ class RawInfraAdapterTest {
     @Test
     fun adaptSmallInfraRouteWithEmptyTrackRange() {
         // The route goes from the end of TA1 to TA3, two tracks that are linked through switch PA0 in its LEFT config
-        val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")!!
-        rjsInfra.detectors.add(RJSTrainDetector(
-            "det_at_transition", 1950.0, "TA1"
-        ))
-        rjsInfra.detectors.add(RJSTrainDetector(
-            "det_end_new_route", 20.0, "TA3"
-        ))
+        val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
+        rjsInfra.detectors.add(
+            RJSTrainDetector(
+                "det_at_transition", 1950.0, "TA1"
+            )
+        )
+        rjsInfra.detectors.add(
+            RJSTrainDetector(
+                "det_end_new_route", 20.0, "TA3"
+            )
+        )
         val newRoute = RJSRoute(
             "new_route",
             RJSWaypointRef("det_at_transition", RJSWaypointRef.RJSWaypointType.DETECTOR),

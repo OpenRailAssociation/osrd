@@ -1,12 +1,12 @@
 package fr.sncf.osrd.infra.signaling_infra;
 
-import static fr.sncf.osrd.Helpers.infraFromRJS;
+import static fr.sncf.osrd.utils.Helpers.infraFromRJS;
 import static fr.sncf.osrd.infra.InfraHelpers.testTinyInfraDiDetectorGraph;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
-import fr.sncf.osrd.Helpers;
+import fr.sncf.osrd.utils.Helpers;
 import fr.sncf.osrd.infra.api.reservation.ReservationInfra;
 import fr.sncf.osrd.infra.api.reservation.ReservationRoute;
 import fr.sncf.osrd.infra.api.signaling.Signal;

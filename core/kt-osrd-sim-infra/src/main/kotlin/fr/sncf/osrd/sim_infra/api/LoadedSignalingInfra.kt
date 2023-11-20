@@ -23,9 +23,7 @@ typealias SigStateSchema = SigSchema<SignalStateMarker>
 
 
 /** The signaling system manager is a repository for drivers and signaling systems */
-@Suppress("INAPPLICABLE_JVM_NAME")
 interface InfraSigSystemManager {
-    @get:JvmName("getSignalingSystems")
     val signalingSystems: StaticIdxSpace<SignalingSystem>
     fun findSignalingSystem(sigSystem: String): SignalingSystemId
     fun getStateSchema(sigSystem: SignalingSystemId): SigStateSchema
@@ -54,26 +52,19 @@ interface LoadedSignalInfra {
 
 @Suppress("INAPPLICABLE_JVM_NAME")
 interface BlockInfra {
-    @get:JvmName("getBlocks")
     val blocks: StaticIdxSpace<Block>
-    @JvmName("getBlockPath")
     fun getBlockPath(block: BlockId): StaticIdxList<ZonePath>
-    @JvmName("getBlocksInZone")
     fun getBlocksInZone(zone: ZoneId): StaticIdxList<Block>
     fun getBlockSignals(block: BlockId): StaticIdxList<LogicalSignal>
     fun blockStartAtBufferStop(block: BlockId): Boolean
     fun blockStopAtBufferStop(block: BlockId): Boolean
 
     fun getBlockSignalingSystem(block: BlockId): SignalingSystemId
-    @JvmName("getBlocksStartingAtDetector")
     fun getBlocksStartingAtDetector(detector: DirDetectorId): StaticIdxList<Block>
-    @JvmName("getBlocksEndingAtDetector")
     fun getBlocksEndingAtDetector(detector: DirDetectorId): StaticIdxList<Block>
     fun getBlocksAtSignal(signal: LogicalSignalId): StaticIdxList<Block>
     fun getSignalsPositions(block: BlockId): OffsetList<Block>
-    @JvmName("getBlocksFromTrackChunk")
     fun getBlocksFromTrackChunk(trackChunk: TrackChunkId, direction: Direction): MutableStaticIdxArraySet<Block>
-    @JvmName("getTrackChunksFromBlock")
     fun getTrackChunksFromBlock(block: BlockId): DirStaticIdxList<TrackChunk>
     @JvmName("getBlockLength")
     fun getBlockLength(block: BlockId): Length<Block>

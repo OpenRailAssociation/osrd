@@ -4,7 +4,7 @@ package fr.sncf.osrd.standalone_sim
 
 
 import fr.sncf.osrd.api.FullInfra
-import fr.sncf.osrd.api.pathfinding.PathfindingResultConverter.chunksToRoutes
+import fr.sncf.osrd.api.pathfinding.chunksToRoutes
 import fr.sncf.osrd.conflicts.IncrementalRequirementEnvelopeAdapter
 import fr.sncf.osrd.conflicts.PathFragment
 import fr.sncf.osrd.conflicts.SpacingRequirementAutomaton
@@ -28,18 +28,14 @@ import fr.sncf.osrd.standalone_sim.result.ResultTrain.SignalSighting
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.StandaloneTrainSchedule
 import fr.sncf.osrd.utils.CurveSimplification
-import fr.sncf.osrd.utils.KtToJavaConverter.toIntList
 import fr.sncf.osrd.utils.indexing.IdxMap
 import fr.sncf.osrd.utils.indexing.MutableStaticIdxArrayList
 import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
-import fr.sncf.osrd.utils.toRouteIdList
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.MutableDistanceArray
 import fr.sncf.osrd.utils.units.meters
 import mu.KotlinLogging
-import kotlin.collections.component1
-import kotlin.collections.component2
 import kotlin.collections.set
 import kotlin.math.abs
 import kotlin.math.max
@@ -78,7 +74,7 @@ fun run(envelope: Envelope, trainPath: PathProperties, chunkPath: ChunkPath, sch
     val simulator = fullInfra.signalingSimulator
 
     // get a new generation route path
-    val routePath = toRouteIdList(chunksToRoutes(rawInfra, fullInfra.blockInfra, toIntList(chunkPath.chunks)))
+    val routePath = chunksToRoutes(rawInfra, fullInfra.blockInfra, chunkPath.chunks)
 
     // recover blocks from the route paths
     val detailedBlockPath = recoverBlockPath(simulator, fullInfra, routePath)

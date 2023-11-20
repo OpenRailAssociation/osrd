@@ -5,7 +5,7 @@ import static fr.sncf.osrd.envelope_sim.SimpleRollingStock.CurveShape;
 import static fr.sncf.osrd.train.RollingStock.Comfort;
 
 import com.google.common.collect.Lists;
-import fr.sncf.osrd.Helpers;
+import fr.sncf.osrd.utils.Helpers;
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
 import org.junit.jupiter.api.Test;

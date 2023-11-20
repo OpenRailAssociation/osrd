@@ -35,15 +35,4 @@ public class KtToJavaConverter {
             res.add(list.get(i));
         return res;
     }
-
-    /**
-     * Iterating over an iterable of value class doesn't automatically convert it to the underlying type,
-     * this prevents typing errors caused by java inability to handle them
-     */
-    public static <T> Set<Integer> toIntSet(MutableStaticIdxArraySet<T> set) {
-        var res = new HashSet<Integer>();
-        for (int i = 0; i < set.getSize(); i++)
-            res.add(set.getAtIndex(i));
-        return res;
-    }
 }

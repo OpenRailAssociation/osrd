@@ -18,14 +18,10 @@ import fr.sncf.osrd.utils.units.Speed
 sealed interface OperationalPointPart
 typealias OperationalPointPartId = StaticIdx<OperationalPointPart>
 
-@Suppress("INAPPLICABLE_JVM_NAME")
 interface TrackProperties {
     // Chunk attributes
-    @JvmName("getTrackChunkLength")
     fun getTrackChunkLength(trackChunk: TrackChunkId): Length<TrackChunk>
-    @JvmName("getTrackChunkOffset")
     fun getTrackChunkOffset(trackChunk: TrackChunkId): Offset<TrackSection>
-    @JvmName("getTrackFromChunk")
     fun getTrackFromChunk(trackChunk: TrackChunkId): TrackSectionId
 
     // Linear track attributes
@@ -34,16 +30,13 @@ interface TrackProperties {
     fun getTrackChunkGradient(trackChunk: DirTrackChunkId): DistanceRangeMap<Double>
     fun getTrackChunkLoadingGaugeConstraints(trackChunk: TrackChunkId): DistanceRangeMap<LoadingGaugeConstraint>
     fun getTrackChunkCatenaryVoltage(trackChunk: TrackChunkId): DistanceRangeMap<String>
-    @JvmName("getTrackChunkNeutralSections")
     fun getTrackChunkNeutralSections(trackChunk: DirTrackChunkId): DistanceRangeMap<NeutralSection>
     fun getTrackChunkSpeedSections(trackChunk: DirTrackChunkId, trainTag: String?): DistanceRangeMap<Speed>
-    @JvmName("getTrackChunkGeom")
     fun getTrackChunkGeom(trackChunk: TrackChunkId): LineString
 
     // Operational points
     fun getTrackChunkOperationalPointParts(trackChunk: TrackChunkId): StaticIdxList<OperationalPointPart>
     fun getOperationalPointPartChunk(operationalPoint: OperationalPointPartId): TrackChunkId
     fun getOperationalPointPartChunkOffset(operationalPoint: OperationalPointPartId): Offset<TrackChunk>
-    @JvmName("getOperationalPointPartName")
     fun getOperationalPointPartName(operationalPoint: OperationalPointPartId): String
 }

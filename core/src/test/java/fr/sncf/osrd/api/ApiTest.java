@@ -3,7 +3,8 @@ package fr.sncf.osrd.api;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 
-import fr.sncf.osrd.Helpers;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.utils.Helpers;
 import okhttp3.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,7 +12,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.regex.Pattern;
 
 @ExtendWith(MockitoExtension.class)
@@ -36,6 +36,7 @@ public class ApiTest {
         return okHttpClient;
     }
 
+    @SuppressFBWarnings("DCN_NULLPOINTER_EXCEPTION")
     private static String parseMockRequest(Request request, String regex) throws IOException {
         var url = request.url().toString();
         var matcher = Pattern.compile(regex).matcher(url);
@@ -45,7 +46,7 @@ public class ApiTest {
                 return Files.readString(Helpers.getResourcePath(path));
             } catch (IOException e) {
                 throw new IOException("Failed to read mock file", e);
-            } catch (AssertionError e) {
+            } catch (AssertionError | NullPointerException e) {
                 return ""; // If we can't find the file we return an empty string
             }
         }

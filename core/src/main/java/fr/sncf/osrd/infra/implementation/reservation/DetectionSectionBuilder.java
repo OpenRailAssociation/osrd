@@ -1,8 +1,9 @@
 package fr.sncf.osrd.infra.implementation.reservation;
 
+import static fr.sncf.osrd.graph.GraphHelpersKt.getCommonNodes;
+import static fr.sncf.osrd.graph.GraphHelpersKt.getDirectionFromEndpoint;
 import static fr.sncf.osrd.infra.api.Direction.BACKWARD;
 import static fr.sncf.osrd.infra.api.Direction.FORWARD;
-import static fr.sncf.osrd.utils.graph.GraphHelpers.*;
 
 import com.google.common.collect.ImmutableSet;
 import fr.sncf.osrd.infra.api.Direction;

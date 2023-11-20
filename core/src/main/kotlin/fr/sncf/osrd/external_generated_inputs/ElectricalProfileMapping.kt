@@ -1,7 +1,6 @@
 package fr.sncf.osrd.external_generated_inputs
 
 import fr.sncf.osrd.railjson.schema.external_generated_inputs.RJSElectricalProfileSet
-import fr.sncf.osrd.sim_infra.api.DirTrackChunkId
 import fr.sncf.osrd.sim_infra.api.PathProperties
 import fr.sncf.osrd.sim_infra.api.RawInfra
 import fr.sncf.osrd.sim_infra.api.TrackChunkId
@@ -46,9 +45,9 @@ class ElectricalProfileMapping {
         val res = HashMap<String, DistanceRangeMap<String>>()
         for (entry in mapping.entries) {
             val powerClass = entry.key
-            val byTrackMapping: HashMap<String, DistanceRangeMap<String>> = entry.value
-            res[powerClass] = path.getRangeMapFromUndirected {
-                chunkId -> getProfilesOnChunk(infra, chunkId, byTrackMapping)
+            val byTrackMapping = entry.value
+            res[powerClass] = path.getRangeMapFromUndirected { chunkId ->
+                getProfilesOnChunk(infra, chunkId, byTrackMapping)
             }
         }
         return res

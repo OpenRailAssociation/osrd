@@ -79,7 +79,7 @@ class SimInfraAdapter(
 
 class TrackRangeViewIterator(private val views: ImmutableList<TrackRangeView>) {
     private var index: Int = 0
-    val view get() = views[index]
+    val view: TrackRangeView get() = views[index]
 
     fun next() {
         index++

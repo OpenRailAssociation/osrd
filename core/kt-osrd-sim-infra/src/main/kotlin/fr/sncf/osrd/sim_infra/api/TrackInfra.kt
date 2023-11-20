@@ -21,7 +21,6 @@ interface TrackInfra {
     @JvmName("getTrackSectionName")
     fun getTrackSectionName(trackSection: TrackSectionId): String
     fun getTrackSectionFromName(name: String): TrackSectionId?
-    @JvmName("getTrackSectionChunks")
     fun getTrackSectionChunks(trackSection: TrackSectionId): StaticIdxList<TrackChunk>
     @JvmName("getTrackSectionLength")
     fun getTrackSectionLength(trackSection: TrackSectionId): Length<TrackSection>

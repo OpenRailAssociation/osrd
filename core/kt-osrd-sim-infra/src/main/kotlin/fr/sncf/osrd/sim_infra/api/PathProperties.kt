@@ -9,13 +9,12 @@ import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.indexing.DirStaticIdxList
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.units.Distance
+import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.Speed
 
 data class IdxWithOffset<T>(
-    @get:JvmName("getValue")
     val value: StaticIdx<T>,
-    @get:JvmName("getOffset")
     val offset: Distance,
 )
 
@@ -34,9 +33,7 @@ interface PathProperties {
     fun getCurves(): DistanceRangeMap<Double>
     fun getGeo(): LineString
     fun getLoadingGauge(): DistanceRangeMap<LoadingGaugeConstraint>
-    @JvmName("getCatenary")
     fun getCatenary(): DistanceRangeMap<String>
-    @JvmName("getNeutralSections")
     fun getNeutralSections(): DistanceRangeMap<NeutralSection>
     @JvmName("getSpeedLimits")
     fun getSpeedLimits(trainTag: String?): DistanceRangeMap<Speed>
@@ -50,12 +47,11 @@ interface PathProperties {
 }
 
 /** Build a Path from chunks and offsets, filtering the chunks outside the offsets */
-@JvmName("buildPathPropertiesFrom")
 fun buildPathPropertiesFrom(
     infra: TrackProperties,
     chunks: DirStaticIdxList<TrackChunk>,
-    pathBeginOffset: Distance,
-    pathEndOffset: Distance,
+    pathBeginOffset: Length<Block>,
+    pathEndOffset: Length<Block>,
 ): PathProperties {
     val chunkPath = buildChunkPath(infra, chunks, pathBeginOffset, pathEndOffset)
     return makePathProperties(infra, chunkPath)

@@ -1,11 +1,11 @@
 package fr.sncf.osrd.standalone_sim;
 
-import static fr.sncf.osrd.Helpers.fullInfraFromRJS;
+import static fr.sncf.osrd.utils.Helpers.fullInfraFromRJS;
 import static fr.sncf.osrd.envelope_sim.MaxEffortEnvelopeBuilder.makeSimpleMaxEffortEnvelope;
 import static fr.sncf.osrd.sim_infra.api.PathPropertiesKt.makePathProperties;
 import static fr.sncf.osrd.sim_infra.api.PathPropertiesKt.makeTrackLocation;
 
-import fr.sncf.osrd.Helpers;
+import fr.sncf.osrd.utils.Helpers;
 import fr.sncf.osrd.api.FullInfra;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.SimpleContextBuilder;

@@ -3,7 +3,7 @@ package fr.sncf.osrd.infra.reservation;
 import static fr.sncf.osrd.infra.InfraHelpers.testTinyInfraDiDetectorGraph;
 import static org.junit.jupiter.api.Assertions.*;
 
-import fr.sncf.osrd.Helpers;
+import fr.sncf.osrd.utils.Helpers;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.reservation.ReservationInfra;
 import fr.sncf.osrd.infra.api.tracks.undirected.SwitchBranch;

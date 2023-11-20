@@ -1,7 +1,6 @@
 package fr.sncf.osrd.sim_infra_adapter
 
-import fr.sncf.osrd.Helpers
-import fr.sncf.osrd.api.utils.PathPropUtils.makePathProps
+import fr.sncf.osrd.api.pathfinding.makePathProps
 import fr.sncf.osrd.geom.LineString
 import fr.sncf.osrd.geom.Point
 import fr.sncf.osrd.railjson.schema.common.graph.ApplicableDirection
@@ -9,9 +8,11 @@ import fr.sncf.osrd.railjson.schema.geom.RJSLineString
 import fr.sncf.osrd.railjson.schema.infra.RJSOperationalPoint
 import fr.sncf.osrd.railjson.schema.infra.trackranges.*
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
+import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.train.TestTrains.MAX_SPEED
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.DistanceRangeMap
+import fr.sncf.osrd.utils.Helpers
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.pathFromTracks
 import fr.sncf.osrd.utils.units.Speed.Companion.fromMetersPerSecond
@@ -35,7 +36,7 @@ class PathPropertiesTests {
             |----------------------------->         path forward (.5 to 3.5km)
                  <-------------------|              path backward (3 to 1km)
          */
-        val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")!!
+        val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
         for (track in rjsInfra.trackSections) {
             if (track.id.equals("TA0")) // 2km long
                 track.slopes = listOf(
@@ -52,19 +53,23 @@ class PathPropertiesTests {
 
         val path = pathFromTracks(infra, listOf("TA0", "TA1"), Direction.INCREASING, 500.meters, 3_500.meters)
         val slopes = path.getSlopes()
-        assertEquals(listOf(
-            DistanceRangeMap.RangeMapEntry(0.meters, 500.meters, 10.0),
-            DistanceRangeMap.RangeMapEntry(500.meters, 1_500.meters, 15.0),
-            DistanceRangeMap.RangeMapEntry(1_500.meters, 2_500.meters, .0),
-            DistanceRangeMap.RangeMapEntry(2_500.meters, 3_000.meters, -5.0),
-        ), slopes.asList())
+        assertEquals(
+            listOf(
+                DistanceRangeMap.RangeMapEntry(0.meters, 500.meters, 10.0),
+                DistanceRangeMap.RangeMapEntry(500.meters, 1_500.meters, 15.0),
+                DistanceRangeMap.RangeMapEntry(1_500.meters, 2_500.meters, .0),
+                DistanceRangeMap.RangeMapEntry(2_500.meters, 3_000.meters, -5.0),
+            ), slopes.asList()
+        )
 
         val pathBackward = pathFromTracks(infra, listOf("TA1", "TA0"), Direction.DECREASING, 950.meters, 2_950.meters)
         val slopesBackward = pathBackward.getSlopes()
-        assertEquals(listOf(
-            DistanceRangeMap.RangeMapEntry(0.meters, 1_000.meters, .0),
-            DistanceRangeMap.RangeMapEntry(1_000.meters, 2_000.meters, -15.0),
-        ), slopesBackward.asList())
+        assertEquals(
+            listOf(
+                DistanceRangeMap.RangeMapEntry(0.meters, 1_000.meters, .0),
+                DistanceRangeMap.RangeMapEntry(1_000.meters, 2_000.meters, -15.0),
+            ), slopesBackward.asList()
+        )
     }
 
     @Test
@@ -79,37 +84,45 @@ class PathPropertiesTests {
             |----------------------------->         path forward (.5 to 3.5km)
                  <-----------------------------|    path backward (3.95 to 1km)
          */
-        val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")!!
+        val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
         rjsInfra.operationalPoints = listOf(
-            RJSOperationalPoint("point1", listOf(
-                RJSOperationalPointPart("TA0", 1_000.0),
-                RJSOperationalPointPart("TA0", 1_500.0),
-            )),
-            RJSOperationalPoint("point2", listOf(
-                RJSOperationalPointPart("TA1", 0.0),
-                RJSOperationalPointPart("TA1", 1_950.0),
-            ))
+            RJSOperationalPoint(
+                "point1", listOf(
+                    RJSOperationalPointPart("TA0", 1_000.0),
+                    RJSOperationalPointPart("TA0", 1_500.0),
+                )
+            ),
+            RJSOperationalPoint(
+                "point2", listOf(
+                    RJSOperationalPointPart("TA1", 0.0),
+                    RJSOperationalPointPart("TA1", 1_950.0),
+                )
+            )
         )
         val oldInfra = Helpers.infraFromRJS(rjsInfra)
         val infra = adaptRawInfra(oldInfra)
         val path = pathFromTracks(infra, listOf("TA0", "TA1"), Direction.INCREASING, 500.meters, 3_500.meters)
         val opIdsIdxWithOffset = path.getOperationalPointParts()
             .map { op -> Pair(infra.getOperationalPointPartName(op.value), op.offset) }
-        assertEquals(listOf(
-            Pair("point1", 500.meters),
-            Pair("point1", 1_000.meters),
-            Pair("point2", 1_500.meters),
-        ), opIdsIdxWithOffset)
+        assertEquals(
+            listOf(
+                Pair("point1", 500.meters),
+                Pair("point1", 1_000.meters),
+                Pair("point2", 1_500.meters),
+            ), opIdsIdxWithOffset
+        )
 
         val pathBackward = pathFromTracks(infra, listOf("TA1", "TA0"), Direction.DECREASING, 0.meters, 2_950.meters)
         val opIdsIdxWithOffsetBackward = pathBackward.getOperationalPointParts()
             .map { op -> Pair(infra.getOperationalPointPartName(op.value), op.offset) }
-        assertEquals(listOf(
-            Pair("point2", 0.meters),
-            Pair("point2", 1_950.meters),
-            Pair("point1", 2_450.meters),
-            Pair("point1", 2_950.meters),
-        ), opIdsIdxWithOffsetBackward)
+        assertEquals(
+            listOf(
+                Pair("point2", 0.meters),
+                Pair("point2", 1_950.meters),
+                Pair("point1", 2_450.meters),
+                Pair("point1", 2_950.meters),
+            ), opIdsIdxWithOffsetBackward
+        )
     }
 
     @Test
@@ -126,7 +139,7 @@ class PathPropertiesTests {
 
             <--------|         path backward (1.5 to .5km)
          */
-        val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")!!
+        val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
         for (track in rjsInfra.trackSections)
             if (track.id.equals("TA0"))
                 track.curves = listOf(
@@ -137,10 +150,12 @@ class PathPropertiesTests {
         val infra = adaptRawInfra(oldInfra)
         val pathBackward = pathFromTracks(infra, listOf("TA0"), Direction.DECREASING, 500.meters, 1_500.meters)
         val slopesBackward = pathBackward.getCurves()
-        assertEquals(listOf(
-            DistanceRangeMap.RangeMapEntry(0.meters, 500.meters, -10_000.0),
-            DistanceRangeMap.RangeMapEntry(500.meters, 1_000.meters, -5_000.0),
-        ), slopesBackward.asList())
+        assertEquals(
+            listOf(
+                DistanceRangeMap.RangeMapEntry(0.meters, 500.meters, -10_000.0),
+                DistanceRangeMap.RangeMapEntry(500.meters, 1_000.meters, -5_000.0),
+            ), slopesBackward.asList()
+        )
     }
 
     @Test
@@ -158,7 +173,7 @@ class PathPropertiesTests {
 
             <--------|         path backward (1.5 to .5km)
          */
-        val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")!!
+        val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
         for (track in rjsInfra.trackSections)
             if (track.id.equals("TA0")) {
                 track.slopes = listOf(
@@ -173,10 +188,12 @@ class PathPropertiesTests {
         val infra = adaptRawInfra(oldInfra)
         val pathBackward = pathFromTracks(infra, listOf("TA0"), Direction.DECREASING, 500.meters, 1_500.meters)
         val slopesBackward = pathBackward.getGradients()
-        assertEquals(listOf(
-            DistanceRangeMap.RangeMapEntry(0.meters, 500.meters, -15.0),
-            DistanceRangeMap.RangeMapEntry(500.meters, 1_000.meters, -5.0 + 800.0 / 5_000.0),
-        ), slopesBackward.asList())
+        assertEquals(
+            listOf(
+                DistanceRangeMap.RangeMapEntry(0.meters, 500.meters, -15.0),
+                DistanceRangeMap.RangeMapEntry(500.meters, 1_000.meters, -5.0 + 800.0 / 5_000.0),
+            ), slopesBackward.asList()
+        )
     }
 
     @Test
@@ -191,7 +208,7 @@ class PathPropertiesTests {
             |----------------------------->             path forward (.5 to 3.5km)
                  <-------------------|                  path backward (3 to 1km)
          */
-        val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")!!
+        val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
         for (track in rjsInfra.trackSections) {
             if (track.id.equals("TA0"))
                 track.geo = RJSLineString.make(listOf(0.0, 1.0, 1.0), listOf(0.0, 0.0, 1.0))
@@ -236,15 +253,19 @@ class PathPropertiesTests {
             |----------------------------->             path forward (.5 to 3.5km)
                  <------------------------|             path backward (3.5 to 1km)
          */
-        val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")!!
+        val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
         rjsInfra.catenaries = listOf(
-            RJSCatenary("1500", listOf(
-                RJSApplicableDirectionsTrackRange("TA0", ApplicableDirection.BOTH, 0.0, 2_000.0),
-                RJSApplicableDirectionsTrackRange("TA1", ApplicableDirection.BOTH, 0.0, 1_000.0)
-            )),
-            RJSCatenary("25000", listOf(
-                RJSApplicableDirectionsTrackRange("TA1", ApplicableDirection.BOTH, 1_000.0, 1_950.0)
-            ))
+            RJSCatenary(
+                "1500", listOf(
+                    RJSApplicableDirectionsTrackRange("TA0", ApplicableDirection.BOTH, 0.0, 2_000.0),
+                    RJSApplicableDirectionsTrackRange("TA1", ApplicableDirection.BOTH, 0.0, 1_000.0)
+                )
+            ),
+            RJSCatenary(
+                "25000", listOf(
+                    RJSApplicableDirectionsTrackRange("TA1", ApplicableDirection.BOTH, 1_000.0, 1_950.0)
+                )
+            )
         )
         val oldInfra = Helpers.infraFromRJS(rjsInfra)
         val infra = adaptRawInfra(oldInfra)
@@ -281,7 +302,7 @@ class PathPropertiesTests {
 
                  <------------------------|             path backward (3.5 to 1km)
          */
-        val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")!!
+        val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
         for (track in rjsInfra.trackSections) {
             if (track.id.equals("TA0"))
                 track.loadingGaugeLimits = listOf(
@@ -304,17 +325,20 @@ class PathPropertiesTests {
 
     @Test
     fun testSmallInfraSpeedLimits() {
-        val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")!!
-        val speedSection = RJSSpeedSection("speedSection", 30.0, mapOf(Pair("trainTag", 42.42)),
-            listOf(RJSApplicableDirectionsTrackRange("TA0", ApplicableDirection.BOTH, 0.0, 400.0)))
+        val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
+        val speedSection = RJSSpeedSection(
+            "speedSection", 30.0, mapOf(Pair("trainTag", 42.42)),
+            listOf(RJSApplicableDirectionsTrackRange("TA0", ApplicableDirection.BOTH, 0.0, 400.0))
+        )
         rjsInfra.speedSections.add(speedSection)
         val infra = Helpers.fullInfraFromRJS(rjsInfra)
-        val path = makePathProps(infra.blockInfra, infra.rawInfra, 0)
+        val path = makePathProps(infra.blockInfra, infra.rawInfra, BlockId(0U))
         val speedLimits = path.getSpeedLimits("trainTag")
         assertThat(speedLimits.asList()).containsExactlyElementsOf(
             listOf(
                 DistanceRangeMap.RangeMapEntry(0.meters, 400.meters, fromMetersPerSecond(42.42)),
-                DistanceRangeMap.RangeMapEntry(400.meters, 1_820.meters, fromMetersPerSecond(MAX_SPEED)))
+                DistanceRangeMap.RangeMapEntry(400.meters, 1_820.meters, fromMetersPerSecond(MAX_SPEED))
+            )
         )
     }
 
@@ -336,6 +360,7 @@ class PathPropertiesTests {
                     p3.x * (p1.y - p2.y)).absoluteValue
             return triangleArea < 1e-5
         }
+
         val xs = arrayListOf<Double>()
         val ys = arrayListOf<Double>()
         for (i in 0 until l.points.size) {

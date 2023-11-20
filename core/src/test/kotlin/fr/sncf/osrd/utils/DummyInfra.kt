@@ -1,6 +1,5 @@
 package fr.sncf.osrd.utils
 
-import com.google.common.collect.BiMap
 import com.google.common.collect.HashBiMap
 import com.google.common.collect.HashMultimap
 import fr.sncf.osrd.api.FullInfra
@@ -8,33 +7,14 @@ import fr.sncf.osrd.geom.LineString
 import fr.sncf.osrd.geom.Point
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.NeutralSection
-import fr.sncf.osrd.sim_infra.impl.getBlockEntry
-import fr.sncf.osrd.utils.indexing.DirStaticIdx
-import fr.sncf.osrd.utils.indexing.DirStaticIdxList
-import fr.sncf.osrd.utils.indexing.MutableDirStaticIdxArrayList
-import fr.sncf.osrd.utils.indexing.MutableStaticIdxArrayList
-import fr.sncf.osrd.utils.indexing.MutableStaticIdxArraySet
-import fr.sncf.osrd.utils.indexing.OptStaticIdx
-import fr.sncf.osrd.utils.indexing.StaticIdx
-import fr.sncf.osrd.utils.indexing.StaticIdxList
-import fr.sncf.osrd.utils.indexing.StaticIdxSortedSet
-import fr.sncf.osrd.utils.indexing.StaticIdxSpace
-import fr.sncf.osrd.utils.indexing.get
-import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
-import fr.sncf.osrd.utils.indexing.mutableStaticIdxArraySetOf
-import fr.sncf.osrd.utils.units.Distance
-import fr.sncf.osrd.utils.units.Length
-import fr.sncf.osrd.utils.units.Offset
-import fr.sncf.osrd.utils.units.OffsetList
-import fr.sncf.osrd.utils.units.Speed
-import fr.sncf.osrd.utils.units.meters
+import fr.sncf.osrd.utils.indexing.*
+import fr.sncf.osrd.utils.units.*
 import kotlin.time.Duration
 
 /** This class is used to create a minimal infra to be used on unit tests, with a simple block graph.
  * Ids are all interchangeable, there's one zone, one chunk, one track, one route per block.
  * Block descriptor can be edited when we need to set data that isn't included in the method parameters.
  * Not all methods are implemented, but it can be added when relevant. */
-@Suppress("INAPPLICABLE_JVM_NAME")
 class DummyInfra : RawInfra, BlockInfra {
 
     val blockPool = mutableListOf<DummyBlockDescriptor>() // A StaticPool (somehow) fails to link with java here
@@ -44,7 +24,6 @@ class DummyInfra : RawInfra, BlockInfra {
     private val exitMap = HashMultimap.create<DirDetectorId, BlockId>()
 
     /** get the FullInfra  */
-    @JvmName("fullInfra")
     fun fullInfra(): FullInfra {
         return FullInfra(
             this,
@@ -55,7 +34,6 @@ class DummyInfra : RawInfra, BlockInfra {
     }
 
     /** Creates a block going from nodes `entry` to `exit` of length 100m, named $entry->$exit, with no max speed.  */
-    @JvmName("addBlock")
     fun addBlock(
         entry: String,
         exit: String,
@@ -64,7 +42,6 @@ class DummyInfra : RawInfra, BlockInfra {
     }
 
     /** Creates a block going from nodes `entry` to `exit` of length `length`, named $entry->$exit */
-    @JvmName("addBlock")
     fun addBlock(
         entry: String,
         exit: String,
@@ -75,7 +52,6 @@ class DummyInfra : RawInfra, BlockInfra {
 
     /** Creates a block going from nodes `entry` to `exit` of length `length`, named $entry->$exit,
      * with the given maximum speed. */
-    @JvmName("addBlock")
     fun addBlock(
         entry: String,
         exit: String,
@@ -175,17 +151,14 @@ class DummyInfra : RawInfra, BlockInfra {
         return makeIndexList(route)
     }
 
-    @JvmName("getRouteName")
     override fun getRouteName(route: RouteId): String {
         return blockPool[route.index].name
     }
 
-    @JvmName("getRouteLength")
     override fun getRouteLength(route: RouteId): Length<Route> {
         return Length(blockPool[route.index].length)
     }
 
-    @JvmName("getRouteFromName")
     override fun getRouteFromName(name: String): RouteId {
         for (i in 0 until blockPool.size) {
             if (blockPool[i].name == name)
@@ -497,7 +470,6 @@ class DummyInfra : RawInfra, BlockInfra {
         return makeDirIndexList(block)
     }
 
-    @JvmName("getBlockLength")
     override fun getBlockLength(block: BlockId): Length<Block> {
         return Length(blockPool[block.index].length)
     }
@@ -522,12 +494,4 @@ class DummyInfra : RawInfra, BlockInfra {
         return res
     }
     // endregion
-
-    companion object {
-        /** Just for linking / symbol purpose with java interface */
-        @JvmStatic
-        fun make(): DummyInfra {
-            return DummyInfra()
-        }
-    }
 }
