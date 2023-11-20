@@ -38,6 +38,7 @@ async fn list(
     db_pool: Data<DbPool>,
     page_settings: Query<PaginationQueryParam>,
 ) -> Result<Json<PaginatedResponse<LightRollingStockWithLiveries>>> {
+    page_settings.validate(1000)?;
     let page = page_settings.page;
     let per_page = page_settings.page_size.unwrap_or(25);
     Ok(Json(
@@ -70,12 +71,12 @@ async fn get(
 
 #[cfg(test)]
 mod tests {
-    use crate::assert_status_and_read;
     use crate::fixtures::tests::{db_pool, named_fast_rolling_stock, rolling_stock_livery};
     use crate::schema::rolling_stock::light_rolling_stock::LightRollingStockWithLiveries;
-    use crate::views::pagination::PaginatedResponse;
+    use crate::views::pagination::{PaginatedResponse, PaginationError};
     use crate::views::tests::create_test_service;
     use crate::DbPool;
+    use crate::{assert_response_error_type_match, assert_status_and_read};
     use actix_http::StatusCode;
     use actix_web::test as actix_test;
     use actix_web::test::{call_service, TestRequest};
@@ -174,5 +175,22 @@ mod tests {
 
         // Since tests are not properly isolated, some rolling stock fixture may "leak" from another test, so maybe ids.len() > expected_ids.len()
         assert!(expected_ids.is_subset(&ids));
+    }
+
+    #[rstest]
+    async fn light_rolling_stock_max_page_size() {
+        let app = create_test_service().await;
+        let req = TestRequest::get()
+            .uri("/light_rolling_stock/?page_size=1010")
+            .to_request();
+        let response = call_service(&app, req).await;
+        assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+        assert_response_error_type_match!(
+            response,
+            PaginationError::InvalidMaxPageSize {
+                page_size: 1010,
+                max_page_size: 1000
+            }
+        );
     }
 }

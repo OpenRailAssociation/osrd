@@ -203,6 +203,7 @@ async fn list(
     project: Path<i64>,
     params: Query<QueryParams>,
 ) -> Result<Json<PaginatedResponse<StudyWithScenarios>>> {
+    pagination_params.validate(100)?;
     let project = project.into_inner();
     let page = pagination_params.page;
     let per_page = pagination_params.page_size.unwrap_or(25).max(10);

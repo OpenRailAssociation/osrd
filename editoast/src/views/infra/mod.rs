@@ -188,6 +188,7 @@ async fn list(
     core: Data<CoreClient>,
     pagination_params: Query<PaginationQueryParam>,
 ) -> Result<Json<PaginatedResponse<InfraWithState>>> {
+    pagination_params.validate(100)?;
     let page = pagination_params.page;
     let per_page = pagination_params.page_size.unwrap_or(25).max(10);
     let infras = Infra::list(db_pool.clone(), page, per_page, NoParams).await?;

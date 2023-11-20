@@ -310,6 +310,7 @@ async fn list(
     path: Path<(i64, i64)>,
     params: Query<QueryParams>,
 ) -> Result<Json<PaginatedResponse<ScenarioWithCountTrains>>> {
+    pagination_params.validate(100)?;
     let (project_id, study_id) = path.into_inner();
     let _ = check_project_study(db_pool.clone(), project_id, study_id).await?;
     let page = pagination_params.page;
