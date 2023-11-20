@@ -6,12 +6,15 @@ use diesel::sql_types::Untyped;
 use diesel::{QueryResult, QueryableByName};
 use diesel_async::methods::LoadQuery;
 use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
+use log::warn;
 use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
 
 use editoast_derive::EditoastError;
 use utoipa::IntoParams;
+
+const DEFAULT_PAGE_SIZE: i64 = 25;
 
 /// Generates a specialized [PaginatedResponse], commented, annotated with `ToSchema`
 ///
@@ -66,16 +69,32 @@ fn default_page() -> i64 {
 }
 
 impl PaginationQueryParam {
-    pub fn validate(&self, max_page_size: i64) -> Result<()> {
-        let page_size = self.page_size.unwrap_or(25);
-        if page_size > max_page_size {
-            return Err(PaginationError::InvalidMaxPageSize {
-                page_size,
+    pub fn validate(self, max_page_size: i64) -> Result<PaginationQueryParam> {
+        let page_size = self.page_size.unwrap_or(DEFAULT_PAGE_SIZE);
+        if page_size > max_page_size || page_size < 1 || self.page < 1 {
+            return Err(PaginationError::InvalidPageSize {
+                provided_page_size: page_size,
                 max_page_size,
             }
             .into());
         }
-        Ok(())
+        Ok(self)
+    }
+
+    pub fn warn_page_size(self, warn_page_size: i64) -> PaginationQueryParam {
+        let page_size = self.page_size.unwrap_or(DEFAULT_PAGE_SIZE);
+        if page_size < warn_page_size {
+            warn!(
+                "Too many elements per page, should be lower or equal to {}.",
+                warn_page_size
+            );
+        }
+        self
+    }
+
+    pub fn unpack(self) -> (i64, i64) {
+        let page_size = self.page_size.unwrap_or(DEFAULT_PAGE_SIZE);
+        (self.page, page_size)
     }
 }
 
@@ -86,14 +105,12 @@ pub enum PaginationError {
     #[error("Invalid page number ({page})")]
     #[editoast_error(status = 404)]
     InvalidPage { page: i64 },
-    #[error("Invalid page size ({page_size}), expected an integer strictly greater than 0")]
+    #[error("Invalid page size ({provided_page_size}), expected an integer 0 < page_size <= {max_page_size}")]
     #[editoast_error(status = 400)]
-    InvalidPageSize { page_size: i64 },
-    #[error(
-        "Invalid page size ({page_size}), expected an integer lower or equal to {max_page_size}"
-    )]
-    #[editoast_error(status = 400)]
-    InvalidMaxPageSize { page_size: i64, max_page_size: i64 },
+    InvalidPageSize {
+        provided_page_size: i64,
+        max_page_size: i64,
+    },
 }
 
 pub trait Paginate: Sized {
@@ -142,7 +159,11 @@ impl<T> Paginated<T> {
         if page < 1 {
             return Err(PaginationError::InvalidPage { page }.into());
         } else if page_size < 1 {
-            return Err(PaginationError::InvalidPageSize { page_size }.into());
+            return Err(PaginationError::InvalidPageSize {
+                provided_page_size: page,
+                max_page_size: 1000,
+            }
+            .into());
         }
 
         let results = self.load::<InternalPaginatedResult<R>>(conn).await?;

@@ -34,10 +34,11 @@ async fn list_errors(
     pagination_params: Query<PaginationQueryParam>,
     params: Query<QueryParams>,
 ) -> Result<WebJson<PaginatedResponse<InfraError>>> {
-    pagination_params.validate(100)?;
+    let (page, per_page) = pagination_params
+        .validate(100)?
+        .warn_page_size(100)
+        .unpack();
     let infra = infra.into_inner();
-    let page = pagination_params.page;
-    let per_page = pagination_params.page_size.unwrap_or(25).max(10);
 
     if let Some(error_type) = &params.error_type {
         if !check_error_type_query(error_type) {

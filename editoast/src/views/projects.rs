@@ -160,9 +160,10 @@ async fn list(
     pagination_params: Query<PaginationQueryParam>,
     params: Query<QueryParams>,
 ) -> Result<Json<PaginatedResponse<ProjectWithStudies>>> {
-    pagination_params.validate(100)?;
-    let page = pagination_params.page;
-    let per_page = pagination_params.page_size.unwrap_or(25).max(10);
+    let (page, per_page) = pagination_params
+        .validate(1000)?
+        .warn_page_size(100)
+        .unpack();
     let ordering = params.ordering.clone();
     let projects = ProjectWithStudies::list(db_pool, page, per_page, ordering).await?;
 

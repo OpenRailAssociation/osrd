@@ -203,10 +203,11 @@ async fn list(
     project: Path<i64>,
     params: Query<QueryParams>,
 ) -> Result<Json<PaginatedResponse<StudyWithScenarios>>> {
-    pagination_params.validate(100)?;
+    let (page, per_page) = pagination_params
+        .validate(1000)?
+        .warn_page_size(100)
+        .unpack();
     let project = project.into_inner();
-    let page = pagination_params.page;
-    let per_page = pagination_params.page_size.unwrap_or(25).max(10);
     let ordering = params.ordering.clone();
     let studies = StudyWithScenarios::list(db_pool, page, per_page, (project, ordering)).await?;
 
