@@ -242,20 +242,6 @@ const testCommonConfReducers = (slice: simulationConfSliceType | stdcmConfSliceT
       expect(state.originTime).toBe('08:00:00');
       expect(state.originUpperBoundTime).toBe('10:00:00');
     });
-
-    it('lower bound should not go above upper bound when unlinked', () => {
-      const store = createStore(slice, {
-        originLinkedBounds: false,
-        originUpperBoundTime: '12:00:00',
-        originTime: '10:00:00',
-      });
-
-      store.dispatch(slice.actions.updateOriginTime('13:00:00'));
-
-      const state = store.getState()[slice.name];
-      expect(state.originTime).toBe('12:00:00');
-      expect(state.originUpperBoundTime).toBe('12:00:00');
-    });
   });
 
   describe('should handle updateOriginUpperBoundTime', () => {
@@ -312,20 +298,6 @@ const testCommonConfReducers = (slice: simulationConfSliceType | stdcmConfSliceT
       const state = store.getState()[slice.name];
       expect(state.originTime).toBe('18:00:00');
       expect(state.originUpperBoundTime).toBe('20:00:00');
-    });
-
-    it('upper bound should not go below lower bonud when unlinked', () => {
-      const store = createStore(slice, {
-        originLinkedBounds: false,
-        originTime: '14:00:00',
-        originUpperBoundTime: '18:00:00',
-      });
-
-      store.dispatch(slice.actions.updateOriginUpperBoundTime('12:00:00'));
-
-      const state = store.getState()[slice.name];
-      expect(state.originTime).toBe('14:00:00');
-      expect(state.originUpperBoundTime).toBe('14:00:00');
     });
   });
 

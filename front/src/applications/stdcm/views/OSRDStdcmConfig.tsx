@@ -64,6 +64,9 @@ export default function OSRDConfig({
       !osrdconf.origin ||
       !osrdconf.destination ||
       !(osrdconf.originTime || osrdconf.destinationTime) ||
+      (osrdconf.originTime &&
+        osrdconf.originUpperBoundTime &&
+        osrdconf.originTime > osrdconf.originUpperBoundTime) ||
       !osrdconf.rollingStockID,
     [infra, osrdconf]
   );

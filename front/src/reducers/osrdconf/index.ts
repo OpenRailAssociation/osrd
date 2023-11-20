@@ -15,9 +15,9 @@ import {
 } from 'applications/operationalStudies/consts';
 import { formatIsoDate } from 'utils/date';
 import { ObjectFieldsTypes } from 'utils/types';
-import { sec2time, time2sec } from 'utils/timeManipulation';
 import { Allowance, Path, osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { SwitchType, ThunkAction } from '../../types';
+import { SwitchType, ThunkAction } from 'types';
+import { computeLinkedOriginTimes } from './helpers';
 
 /* eslint-disable default-case */
 
@@ -122,8 +122,6 @@ export const initialState: OsrdMultiConfState = {
   },
 };
 
-const ORIGIN_TIME_BOUND_DEFAULT_DIFFERENCE = 7200;
-
 export default function reducer(inputState: OsrdMultiConfState | undefined, action: AnyAction) {
   const state = inputState || initialState;
   return produce(state, (draft) => {
@@ -208,42 +206,49 @@ export default function reducer(inputState: OsrdMultiConfState | undefined, acti
         draft[section].departureTime = action.departureTime;
         break;
       case UPDATE_ORIGIN_TIME: {
-        const newOriginTimeSeconds = time2sec(action.originTime);
-        const { originLinkedBounds, originTime, originUpperBoundTime } = draft[section];
-        if (originLinkedBounds) {
-          const difference =
-            originTime && originUpperBoundTime
-              ? time2sec(originUpperBoundTime) - time2sec(originTime)
-              : ORIGIN_TIME_BOUND_DEFAULT_DIFFERENCE;
-          draft[section].originUpperBoundTime = sec2time(newOriginTimeSeconds + difference);
-        }
-        if (
-          draft[section].originUpperBoundTime &&
-          time2sec(action.originTime) > time2sec(draft[section].originUpperBoundTime as string)
-        ) {
-          draft[section].originTime = draft[section].originUpperBoundTime;
-        } else {
+        const { originLinkedBounds } = draft[section];
+        if (!originLinkedBounds) {
           draft[section].originTime = action.originTime;
+        } else {
+          const { originDate, originTime, originUpperBoundDate, originUpperBoundTime } =
+            draft[section];
+          const { newOriginTime, newOriginUpperBoundDate, newOriginUpperBoundTime } =
+            computeLinkedOriginTimes(
+              originDate,
+              originTime,
+              originUpperBoundDate,
+              originUpperBoundTime,
+              action.originTime
+            );
+          if (newOriginUpperBoundDate) {
+            draft[section].originUpperBoundDate = newOriginUpperBoundDate;
+          }
+          draft[section].originTime = newOriginTime;
+          draft[section].originUpperBoundTime = newOriginUpperBoundTime;
         }
         break;
       }
       case UPDATE_ORIGIN_UPPER_BOUND_TIME: {
-        const newOriginUpperBoundTimeSeconds = time2sec(action.originUpperBoundTime);
-        if (draft[section].originLinkedBounds) {
-          const difference =
-            draft[section].originTime && draft[section].originUpperBoundTime
-              ? time2sec(draft[section].originUpperBoundTime as string) -
-                time2sec(draft[section].originTime as string)
-              : ORIGIN_TIME_BOUND_DEFAULT_DIFFERENCE;
-          draft[section].originTime = sec2time(newOriginUpperBoundTimeSeconds - difference);
-        }
-        if (
-          draft[section].originTime &&
-          time2sec(action.originUpperBoundTime) < time2sec(draft[section].originTime as string)
-        ) {
-          draft[section].originUpperBoundTime = draft[section].originTime;
-        } else {
+        const { originLinkedBounds } = draft[section];
+        if (!originLinkedBounds) {
           draft[section].originUpperBoundTime = action.originUpperBoundTime;
+        } else {
+          const { originDate, originTime, originUpperBoundDate, originUpperBoundTime } =
+            draft[section];
+          const { newOriginTime, newOriginUpperBoundDate, newOriginUpperBoundTime } =
+            computeLinkedOriginTimes(
+              originDate,
+              originTime,
+              originUpperBoundDate,
+              originUpperBoundTime,
+              undefined,
+              action.originUpperBoundTime
+            );
+          if (newOriginUpperBoundDate) {
+            draft[section].originUpperBoundDate = newOriginUpperBoundDate;
+          }
+          draft[section].originTime = newOriginTime;
+          draft[section].originUpperBoundTime = newOriginUpperBoundTime;
         }
         break;
       }
