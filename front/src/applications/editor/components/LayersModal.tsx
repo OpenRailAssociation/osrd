@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { groupBy, mapKeys, mapValues, sum, isString, isArray, uniq } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { MdSpeed } from 'react-icons/md';
+import { TbRectangleVerticalFilled } from 'react-icons/tb';
 
 import bufferStopIcon from 'assets/pictures/layersicons/bufferstop.svg';
 import switchesIcon from 'assets/pictures/layersicons/switches.svg';
@@ -32,6 +33,10 @@ export const LAYERS: Array<{ layers: LayerType[]; icon: string | JSX.Element }> 
   { layers: ['speed_sections'], icon: <MdSpeed style={{ width: '20px' }} className="mx-2" /> },
   { layers: ['psl', 'psl_signs'], icon: pslsIcon },
   { layers: ['catenaries'], icon: <GiElectric style={{ width: '20px' }} className="mx-2" /> },
+  {
+    layers: ['platforms'],
+    icon: <TbRectangleVerticalFilled style={{ width: '20px' }} className="mx-2" />,
+  },
 ];
 
 const NO_SPEED_LIMIT_TAG = 'undefined';

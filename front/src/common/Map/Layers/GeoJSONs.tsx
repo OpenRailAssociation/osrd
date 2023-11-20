@@ -10,7 +10,7 @@ import { LayerType } from 'applications/editor/tools/types';
 import { RootState } from 'reducers';
 import { MapState } from 'reducers/map';
 import { getInfraID } from 'reducers/osrdconf/selectors';
-import { LAYER_ENTITIES_ORDERS } from 'config/layerOrder';
+import { LAYERS, LAYER_ENTITIES_ORDERS, LAYER_GROUPS_ORDER } from 'config/layerOrder';
 import { Theme } from 'types';
 import { geoMainLayer, geoServiceLayer } from './geographiclayers';
 import {
@@ -46,6 +46,7 @@ import { LayerContext } from './types';
 import { getCatenariesProps, getCatenariesTextParams } from './Catenaries';
 import configKPLabelLayer from './configKPLabelLayer';
 import OrderedLayer from './OrderedLayer';
+import { Platforms } from './Platforms';
 
 const POINT_ENTITIES_MIN_ZOOM = 12;
 
@@ -465,7 +466,6 @@ const GeoJSONs: FC<{
   if (skipSources) {
     return null;
   }
-
   return (
     <>
       {sources.map((source) => (
@@ -481,6 +481,11 @@ const GeoJSONs: FC<{
           ))}
         </Source>
       ))}
+
+      {/* platform's data are not managed by OSRD, that's why they are here */}
+      {layers?.has('platforms') && (
+        <Platforms colors={colors} layerOrder={LAYER_GROUPS_ORDER[LAYERS.PLATFORMS.GROUP]} />
+      )}
     </>
   );
 };

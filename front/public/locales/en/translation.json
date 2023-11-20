@@ -161,7 +161,8 @@
       "signals": "Signals",
       "switches": "Switches",
       "track_sections": "Track sections",
-      "speed_sections": "Speed limits"
+      "speed_sections": "Speed limits",
+      "platforms": "Platforms"
     },
     "layers-modal": {
       "frozen-layer": "needed for the active tool",
@@ -185,7 +186,7 @@
       "recenter": "Recenter the map",
       "select-infra": "Select the infrastructure to edit",
       "toggle-layers": "Choose the types of elements to display",
-      "osrd-layers": "OSRD data layers",
+      "osrd-layers": "Data layers",
       "speed-limits": "Speed limits",
       "map-layers": "Map layers"
     },

@@ -2,7 +2,7 @@ import React, { FC, useContext } from 'react';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
-import { compact, isEmpty } from 'lodash';
+import { compact } from 'lodash';
 import EditorContext from 'applications/editor/context';
 import colors from 'common/Map/Consts/colors';
 import GeoJSONs from 'common/Map/Layers/GeoJSONs';

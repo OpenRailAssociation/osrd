@@ -161,7 +161,8 @@
       "signals": "Signaux",
       "switches": "Aiguillages",
       "track_sections": "Sections de lignes",
-      "speed_sections": "Vitesses limites"
+      "speed_sections": "Vitesses limites",
+      "Platforms": "Quais"
     },
     "layers-modal": {
       "frozen-layer": "nécessaire pour l'outil actif",
@@ -185,7 +186,7 @@
       "recenter": "Recentrer la carte",
       "select-infra": "Choisir l'infrastructure à éditer",
       "toggle-layers": "Choisir les types d'éléments à afficher",
-      "osrd-layers": "Couches de données OSRD",
+      "osrd-layers": "Couches de données",
       "speed-limits": "Limitations de vitesse",
       "map-layers": "Couches cartographiques"
     },

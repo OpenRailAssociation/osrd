@@ -5,13 +5,15 @@ import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import { OSM_URL } from 'common/Map/const';
 
 import { Theme } from 'types';
+import { useSelector } from 'react-redux';
+import { RootState } from 'reducers';
 
 interface PlatformsProps {
   colors: Theme;
   layerOrder?: number;
 }
 
-function Platforms(props: PlatformsProps) {
+export function Platforms(props: PlatformsProps) {
   const { colors, layerOrder } = props;
 
   const platformsParams: LayerProps = {
@@ -37,4 +39,9 @@ function Platforms(props: PlatformsProps) {
   );
 }
 
-export default Platforms;
+function PlatformsState(props: PlatformsProps) {
+  const { layersSettings } = useSelector((state: RootState) => state.map);
+  return layersSettings.platforms ? <Platforms {...props} /> : null;
+}
+
+export default PlatformsState;

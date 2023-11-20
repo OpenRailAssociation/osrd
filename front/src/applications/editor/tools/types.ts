@@ -26,6 +26,7 @@ export const LAYERS = [
   'speed_sections',
   'switches',
   'track_sections',
+  'platforms',
 ] as const;
 export const LAYERS_SET: Set<string> = new Set(LAYERS);
 export type LayerType = (typeof LAYERS)[number];

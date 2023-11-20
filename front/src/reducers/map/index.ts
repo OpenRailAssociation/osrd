@@ -41,6 +41,7 @@ export interface MapState {
     speedlimits: boolean;
     switches: boolean;
     tvds: boolean;
+    platforms: boolean;
   };
   issuesSettings?: {
     types: Array<InfraErrorType>;
@@ -83,6 +84,7 @@ export const mapInitialState: MapState = {
     speedlimits: false,
     switches: false,
     tvds: false,
+    platforms: true,
   },
   mapSearchMarker: undefined,
   lineSearchCode: undefined,
