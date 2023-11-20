@@ -6,7 +6,7 @@ import { Dispatch } from 'redux';
 import { TFunction } from 'i18next';
 import cx from 'classnames';
 
-import { Spinner } from 'common/Loader';
+import { LoaderFill } from 'common/Loader';
 import {
   BufferStopEntity,
   CatenaryEntity,
@@ -330,7 +330,7 @@ const EntitySumUp: FC<
     }
   }, [entity, id, objType, infraID, state.type]);
 
-  if (state.type === 'loading' || state.type === 'idle') return <Spinner />;
+  if (state.type === 'loading' || state.type === 'idle') return <LoaderFill displayDelay={500} />;
 
   if (state.type === 'error')
     return (
