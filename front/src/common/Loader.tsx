@@ -1,9 +1,39 @@
-import React, { FC, HTMLAttributes } from 'react';
+import React, { FC, HTMLAttributes, useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import cx from 'classnames';
 
 import './Loader.scss';
 import { getIsLoading } from 'reducers/main/mainSelector';
+
+type SpinnerProps = HTMLAttributes<HTMLDivElement> & { displayDelay?: number };
+
+export const Spinner: FC<SpinnerProps> = ({ displayDelay, ...props }) => {
+  const [display, setDisplay] = useState(false);
+  const timeoutRef = useRef<null | number>(null);
+
+  useEffect(() => {
+    if (displayDelay) {
+      setDisplay(false);
+      timeoutRef.current = window.setTimeout(() => setDisplay(true), displayDelay);
+    } else setDisplay(true);
+
+    return () => {
+      if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
+    };
+  }, [displayDelay, timeoutRef]);
+
+  return display ? (
+    <div {...props}>
+      <div className="spinner-border" role="status">
+        <span className="sr-only">Loading...</span>
+      </div>
+    </div>
+  ) : null;
+};
+
+export const LoaderFill: FC<SpinnerProps> = ({ className, ...props }) => (
+  <Spinner {...props} className={cx(`loader-fill inset-0`, className)} />
+);
 
 type LoaderProps = {
   msg?: string;
@@ -11,14 +41,6 @@ type LoaderProps = {
   childClass?: string;
   className?: string;
 };
-
-export const Spinner: FC<HTMLAttributes<HTMLDivElement>> = (props) => (
-  <div {...props}>
-    <div className="spinner-border" role="status">
-      <span className="sr-only">Loading...</span>
-    </div>
-  </div>
-);
 
 const LoaderSNCF: FC<LoaderProps> = ({
   msg = '',
@@ -30,10 +52,6 @@ const LoaderSNCF: FC<LoaderProps> = ({
     <Spinner />
     <div className={childClass}>{msg}</div>
   </div>
-);
-
-export const LoaderFill: FC<HTMLAttributes<HTMLDivElement>> = ({ className, ...props }) => (
-  <Spinner {...props} className={cx(`loader-fill inset-0`, className)} />
 );
 
 export const LoaderState: FC<unknown> = () => {
