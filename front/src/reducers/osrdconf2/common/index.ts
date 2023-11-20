@@ -2,10 +2,8 @@ import { CaseReducer, PayloadAction, PrepareAction } from '@reduxjs/toolkit';
 import { OsrdConfState, PointOnMap } from 'applications/operationalStudies/consts';
 import { Draft } from 'immer';
 import { omit } from 'lodash';
+import { computeLinkedOriginTimes } from 'reducers/osrdconf/helpers';
 import { formatIsoDate } from 'utils/date';
-import { sec2time, time2sec } from 'utils/timeManipulation';
-
-const ORIGIN_TIME_BOUND_DEFAULT_DIFFERENCE = 7200;
 
 export const defaultCommonConf: OsrdConfState = {
   name: '',
@@ -161,39 +159,48 @@ export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfRe
     },
     updateOriginTime(state: Draft<S>, action: PayloadAction<S['originTime']>) {
       if (action.payload) {
-        const newOriginTimeSeconds = time2sec(action.payload);
-        const { originLinkedBounds, originTime, originUpperBoundTime } = state;
-        if (originLinkedBounds) {
-          const difference =
-            originTime && originUpperBoundTime
-              ? time2sec(originUpperBoundTime) - time2sec(originTime)
-              : ORIGIN_TIME_BOUND_DEFAULT_DIFFERENCE;
-          state.originUpperBoundTime = sec2time(newOriginTimeSeconds + difference);
-        }
-        if (
-          state.originUpperBoundTime &&
-          time2sec(action.payload) > time2sec(state.originUpperBoundTime)
-        ) {
-          state.originTime = state.originUpperBoundTime;
-        } else {
+        const { originLinkedBounds } = state;
+        if (!originLinkedBounds) {
           state.originTime = action.payload;
+        } else {
+          const { originDate, originTime, originUpperBoundDate, originUpperBoundTime } = state;
+          const { newOriginTime, newOriginUpperBoundDate, newOriginUpperBoundTime } =
+            computeLinkedOriginTimes(
+              originDate,
+              originTime,
+              originUpperBoundDate,
+              originUpperBoundTime,
+              action.payload
+            );
+          if (newOriginUpperBoundDate) {
+            state.originUpperBoundDate = newOriginUpperBoundDate;
+          }
+          state.originTime = newOriginTime;
+          state.originUpperBoundTime = newOriginUpperBoundTime;
         }
       }
     },
     updateOriginUpperBoundTime(state: Draft<S>, action: PayloadAction<S['originUpperBoundTime']>) {
       if (action.payload) {
-        const newOriginUpperBoundTimeSeconds = time2sec(action.payload);
-        if (state.originLinkedBounds) {
-          const difference =
-            state.originTime && state.originUpperBoundTime
-              ? time2sec(state.originUpperBoundTime) - time2sec(state.originTime)
-              : ORIGIN_TIME_BOUND_DEFAULT_DIFFERENCE;
-          state.originTime = sec2time(newOriginUpperBoundTimeSeconds - difference);
-        }
-        if (state.originTime && time2sec(action.payload) < time2sec(state.originTime)) {
-          state.originUpperBoundTime = state.originTime;
-        } else {
+        const { originLinkedBounds } = state;
+        if (!originLinkedBounds) {
           state.originUpperBoundTime = action.payload;
+        } else {
+          const { originDate, originTime, originUpperBoundDate, originUpperBoundTime } = state;
+          const { newOriginTime, newOriginUpperBoundDate, newOriginUpperBoundTime } =
+            computeLinkedOriginTimes(
+              originDate,
+              originTime,
+              originUpperBoundDate,
+              originUpperBoundTime,
+              undefined,
+              action.payload
+            );
+          if (newOriginUpperBoundDate) {
+            state.originUpperBoundDate = newOriginUpperBoundDate;
+          }
+          state.originTime = newOriginTime;
+          state.originUpperBoundTime = newOriginUpperBoundTime;
         }
       }
     },

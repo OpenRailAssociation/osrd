@@ -124,7 +124,6 @@ function Origin(props: OriginProps) {
                     className="form-control form-control-sm mx-1"
                     onChange={(e) => dispatch(updateOriginDate(e.target.value))}
                     value={originDate}
-                    disabled
                   />
                   <InputSNCF
                     type="time"
@@ -136,6 +135,10 @@ function Origin(props: OriginProps) {
                     sm
                     noMargin
                     readonly={isByDestination}
+                    isInvalid={
+                      (originTime && originUpperBoundTime && originTime > originUpperBoundTime) ||
+                      false
+                    }
                   />
                 </div>
                 <div className="d-flex my-1">
@@ -144,7 +147,6 @@ function Origin(props: OriginProps) {
                     className="form-control form-control-sm mx-1"
                     onChange={(e) => dispatch(updateOriginUpperBoundDate(e.target.value))}
                     value={originUpperBoundDate}
-                    disabled
                   />
                   <InputSNCF
                     type="time"
@@ -156,6 +158,10 @@ function Origin(props: OriginProps) {
                     sm
                     noMargin
                     readonly={isByDestination}
+                    isInvalid={
+                      (originTime && originUpperBoundTime && originTime > originUpperBoundTime) ||
+                      false
+                    }
                   />
                 </div>
               </div>
