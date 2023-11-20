@@ -71,7 +71,7 @@ export const SelectionLayers: FC = () => {
       <SelectionZone newZone={selectionZone} />
       {state.mousePosition && state.selectionState.type === 'single' && state.hovered && (
         <Popup
-          className="popup"
+          className="popup editor-selection"
           anchor="bottom"
           longitude={state.mousePosition[0]}
           latitude={state.mousePosition[1]}
