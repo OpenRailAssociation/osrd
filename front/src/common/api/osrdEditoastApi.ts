@@ -523,7 +523,7 @@ const injectedRtkApi = api
         query: (queryArg) => ({
           url: `/rolling_stock/${queryArg.rollingStockId}/`,
           method: 'DELETE',
-          body: queryArg.deleteRollingStockQueryParams,
+          params: { force: queryArg.force },
         }),
         invalidatesTags: ['rolling_stock'],
       }),
@@ -1139,7 +1139,8 @@ export type DeleteRollingStockByRollingStockIdApiResponse =
   /** status 204 The rolling stock was deleted successfully */ undefined;
 export type DeleteRollingStockByRollingStockIdApiArg = {
   rollingStockId: number;
-  deleteRollingStockQueryParams: DeleteRollingStockQueryParams;
+  /** force the deletion even if it’s used */
+  force?: boolean;
 };
 export type GetRollingStockByRollingStockIdApiResponse =
   /** status 201 The requested rolling stock */ RollingStockWithLiveries;
@@ -1491,7 +1492,7 @@ export type RefillLaw = {
 };
 export type EnergyStorage = {
   capacity: number;
-  refill_law?: RefillLaw | null;
+  refill_law: RefillLaw | null;
   soc: number;
   soc_max: number;
   soc_min: number;
@@ -1797,9 +1798,9 @@ export type ScenarioPatchForm = {
 };
 export type RollingStockComfortType = 'STANDARD' | 'AC' | 'HEATING';
 export type EffortCurveConditions = {
-  comfort?: RollingStockComfortType | null;
-  electrical_profile_level?: string | null;
-  power_restriction_code?: string | null;
+  comfort: RollingStockComfortType | null;
+  electrical_profile_level: string | null;
+  power_restriction_code: string | null;
 };
 export type EffortCurve = {
   max_efforts: number[];
@@ -1821,7 +1822,7 @@ export type EffortCurves = {
   };
 };
 export type RollingStockCommon = {
-  base_power_class?: string | null;
+  base_power_class: string | null;
   comfort_acceleration: number;
   effort_curves: EffortCurves;
   electrical_power_startup_time?: number | null;
@@ -1887,9 +1888,6 @@ export type RollingStockError =
       };
     }
   | 'BasePowerClassEmpty';
-export type DeleteRollingStockQueryParams = {
-  force?: boolean;
-};
 export type RollingStockWithLiveries = RollingStock & {
   liveries: RollingStockLiveryMetadata[];
 };

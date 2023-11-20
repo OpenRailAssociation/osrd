@@ -30,6 +30,36 @@ use actix_multipart::form::{tempfile::TempFile, MultipartForm};
 
 use utoipa::{IntoParams, ToSchema};
 
+crate::routes! {
+    "/rolling_stock" => {
+        create,
+        "/power_restrictions" => {
+            get_power_restrictions,
+        },
+        "/{rolling_stock_id}" => {
+            get,
+            update,
+            delete,
+            "/locked" => {
+                update_locked,
+            },
+            "/livery" => {
+                create_livery,
+            },
+        }
+    }
+}
+
+crate::schemas! {
+    RollingStockForm,
+    DeleteRollingStockQueryParams,
+    RollingStockLockedUpdateForm,
+    RollingStockLiveryCreateForm,
+    PowerRestriction,
+    RollingStockError,
+    TrainScheduleScenarioStudyProject,
+}
+
 #[derive(Debug, Error, EditoastError, ToSchema)]
 #[editoast_error(base_id = "rollingstocks")]
 pub enum RollingStockError {
@@ -57,37 +87,6 @@ pub enum RollingStockError {
     #[error("Base power class is an empty string")]
     #[editoast_error(status = 400)]
     BasePowerClassEmpty,
-}
-
-crate::routes! {
-    "/rolling_stock" => {
-        create,
-        "/power_restrictions" => {
-            get_power_restrictions,
-        },
-        "/{rolling_stock_id}" => {
-            get,
-            update,
-            delete,
-            "/locked" => {
-                update_locked,
-            },
-            "/livery" => {
-                create_livery,
-            },
-        }
-    }
-}
-
-crate::schemas! {
-    RollingStockForm,
-    DeleteRollingStockQueryParams,
-    RollingStockLockedUpdateForm,
-    RollingStockLiveryCreateForm,
-    PowerRestriction,
-    RollingStockLivery,
-    RollingStockError,
-    TrainScheduleScenarioStudyProject,
 }
 
 #[derive(IntoParams)]
@@ -257,7 +256,7 @@ async fn update(
     }
 }
 
-#[derive(Deserialize, ToSchema)]
+#[derive(Deserialize, IntoParams, ToSchema)]
 struct DeleteRollingStockQueryParams {
     /// force the deletion even if it’s used
     #[serde(default)]
@@ -266,8 +265,7 @@ struct DeleteRollingStockQueryParams {
 
 /// Delete a rolling_stock and all entities linked to it
 #[utoipa::path(tag = "rolling_stock",
-    params(RollingStockIdParam),
-    request_body = DeleteRollingStockQueryParams,
+    params(RollingStockIdParam, DeleteRollingStockQueryParams),
     responses(
         (status = 204, description = "The rolling stock was deleted successfully"),
         (status = 404, description = "The requested rolling stock is locked"),

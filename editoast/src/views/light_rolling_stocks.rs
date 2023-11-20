@@ -9,8 +9,10 @@ use actix_web::web::{Data, Json, Path, Query};
 
 crate::routes! {
     "/light_rolling_stock" => {
-        get,
         list,
+        "/{rolling_stock_id}" => {
+            get,
+        },
     },
 }
 
@@ -51,7 +53,7 @@ async fn list(
         (status = 200, body = LightRollingStockWithLiveries, description = "The rolling stock with their simplified effort curves"),
     )
 )]
-#[get("/{rolling_stock_id}")]
+#[get("")]
 async fn get(
     db_pool: Data<DbPool>,
     rolling_stock_id: Path<i64>,
