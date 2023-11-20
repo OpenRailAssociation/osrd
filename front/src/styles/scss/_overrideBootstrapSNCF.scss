@@ -66,27 +66,34 @@
 *   CHIPS
 *
 */
-.form-control-container .chips-input {
-  width: auto !important;
-  flex-grow: 1;
-  line-height: 1;
-}
-
-button.chips.chips-btn {
-  min-height: 2rem;
-
-  &:hover {
-    background-color: var(--secondary);
-    color: var(--white) !important;
+.chips-container {
+  .form-chips-container {
+    min-height: 3rem;
   }
-}
 
-.chips {
-  border: none !important;
-  &.chips-label {
-    font-size: 0.9rem;
-    line-height: 1.5;
+  input {
+    width: auto !important;
+    flex-grow: 1;
+    line-height: 1;
     height: 2.2rem;
+  }
+
+  .chips {
+    border: none !important;
+    &.chips-label {
+      font-size: 0.9rem;
+      line-height: 1.5;
+      height: 2.2rem;
+    }
+
+    &.chips-btn {
+      min-height: 2rem;
+
+      &:hover {
+        background-color: var(--secondary);
+        color: var(--white) !important;
+      }
+    }
   }
 }
 

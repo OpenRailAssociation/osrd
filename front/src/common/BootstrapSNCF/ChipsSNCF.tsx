@@ -61,13 +61,13 @@ export default function ChipsSNCF({
 
   const chipsID = `chipsSNCF${nextId()}`;
   return (
-    <>
+    <div className="chips-container">
       {title ? (
         <label className="font-weight-medium mb-2" htmlFor={chipsID}>
           {title}
         </label>
       ) : null}
-      <div className="form-control-container form-chips-container">
+      <div className="form-chips-container">
         {tags && tags.map((label, idx) => chip(label, idx))}
         <input
           data-role="typewriter"
@@ -80,6 +80,6 @@ export default function ChipsSNCF({
           onChange={(e) => setChipInputValue(e.target.value)}
         />
       </div>
-    </>
+    </div>
   );
 }
