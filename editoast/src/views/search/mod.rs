@@ -399,6 +399,7 @@ pub async fn search(
     payload: Json<SearchPayload>,
     db_pool: Data<DbPool>,
 ) -> Result<impl Responder> {
+    query_params.validate(100)?;
     let Json(SearchPayload { object, query, dry }) = payload;
     let page = query_params.page;
     let per_page = query_params.page_size.unwrap_or(25).max(10);

@@ -65,6 +65,20 @@ fn default_page() -> i64 {
     1
 }
 
+impl PaginationQueryParam {
+    pub fn validate(&self, max_page_size: i64) -> Result<()> {
+        let page_size = self.page_size.unwrap_or(25);
+        if page_size > max_page_size {
+            return Err(PaginationError::InvalidMaxPageSize {
+                page_size,
+                max_page_size,
+            }
+            .into());
+        }
+        Ok(())
+    }
+}
+
 /// Simple pagination error
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "pagination")]
@@ -75,6 +89,11 @@ pub enum PaginationError {
     #[error("Invalid page size ({page_size}), expected an integer strictly greater than 0")]
     #[editoast_error(status = 400)]
     InvalidPageSize { page_size: i64 },
+    #[error(
+        "Invalid page size ({page_size}), expected an integer lower or equal to {max_page_size}"
+    )]
+    #[editoast_error(status = 400)]
+    InvalidMaxPageSize { page_size: i64, max_page_size: i64 },
 }
 
 pub trait Paginate: Sized {
