@@ -38,9 +38,7 @@ async fn list(
     db_pool: Data<DbPool>,
     page_settings: Query<PaginationQueryParam>,
 ) -> Result<Json<PaginatedResponse<LightRollingStockWithLiveries>>> {
-    page_settings.validate(1000)?;
-    let page = page_settings.page;
-    let per_page = page_settings.page_size.unwrap_or(25);
+    let (page, per_page) = page_settings.validate(1000)?.warn_page_size(100).unpack();
     Ok(Json(
         LightRollingStockModel::list(db_pool, page, per_page).await?,
     ))
@@ -187,8 +185,8 @@ mod tests {
         assert_eq!(response.status(), StatusCode::BAD_REQUEST);
         assert_response_error_type_match!(
             response,
-            PaginationError::InvalidMaxPageSize {
-                page_size: 1010,
+            PaginationError::InvalidPageSize {
+                provided_page_size: 1010,
                 max_page_size: 1000
             }
         );

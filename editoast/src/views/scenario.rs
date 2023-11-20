@@ -310,11 +310,12 @@ async fn list(
     path: Path<(i64, i64)>,
     params: Query<QueryParams>,
 ) -> Result<Json<PaginatedResponse<ScenarioWithCountTrains>>> {
-    pagination_params.validate(100)?;
+    let (page, per_page) = pagination_params
+        .validate(1000)?
+        .warn_page_size(100)
+        .unpack();
     let (project_id, study_id) = path.into_inner();
     let _ = check_project_study(db_pool.clone(), project_id, study_id).await?;
-    let page = pagination_params.page;
-    let per_page = pagination_params.page_size.unwrap_or(25).max(10);
     let ordering = params.ordering.clone();
     let scenarios =
         ScenarioWithCountTrains::list(db_pool, page, per_page, (study_id, ordering)).await?;

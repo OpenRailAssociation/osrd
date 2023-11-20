@@ -190,9 +190,10 @@ async fn list(
     core: Data<CoreClient>,
     pagination_params: Query<PaginationQueryParam>,
 ) -> Result<Json<PaginatedResponse<InfraWithState>>> {
-    pagination_params.validate(100)?;
-    let page = pagination_params.page;
-    let per_page = pagination_params.page_size.unwrap_or(25).max(10);
+    let (page, per_page) = pagination_params
+        .validate(1000)?
+        .warn_page_size(100)
+        .unpack();
     let infras = Infra::list(db_pool.clone(), page, per_page, NoParams).await?;
     let infra_state = call_core_infra_state(None, db_pool, core).await?;
     let infras_with_state: Vec<InfraWithState> = infras
