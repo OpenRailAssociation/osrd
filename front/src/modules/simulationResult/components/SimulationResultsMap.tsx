@@ -276,13 +276,12 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]}
               display={terrain3DExaggeration > 0}
             />
+            <Platforms
+              colors={colors[mapStyle]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.PLATFORMS.GROUP]}
+            />
           </>
         )}
-
-        <Platforms
-          colors={colors[mapStyle]}
-          layerOrder={LAYER_GROUPS_ORDER[LAYERS.PLATFORMS.GROUP]}
-        />
 
         <TracksGeographic
           colors={colors[mapStyle]}

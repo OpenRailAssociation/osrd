@@ -198,13 +198,12 @@ function Map() {
               mapStyle={mapStyle}
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]}
             />
+            <Platforms
+              colors={colors[mapStyle]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.PLATFORMS.GROUP]}
+            />
           </>
         )}
-
-        <Platforms
-          colors={colors[mapStyle]}
-          layerOrder={LAYER_GROUPS_ORDER[LAYERS.PLATFORMS.GROUP]}
-        />
 
         <TracksGeographic
           colors={colors[mapStyle]}
