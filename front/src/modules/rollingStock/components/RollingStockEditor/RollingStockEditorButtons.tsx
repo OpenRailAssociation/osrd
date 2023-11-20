@@ -34,7 +34,7 @@ function RollingStockEditorButtons({
   const deleteRollingStock = () => {
     setOpenedRollingStockCardId(undefined);
     if (!rollingStock.locked)
-      deleteRollingStockById({ rollingStockId: rollingStock.id, deleteRollingStockQueryParams: {} })
+      deleteRollingStockById({ rollingStockId: rollingStock.id })
         .unwrap()
         .then(() => {
           dispatch(

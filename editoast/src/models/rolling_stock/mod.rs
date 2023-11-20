@@ -32,9 +32,8 @@ use serde_json::Value as JsonValue;
 crate::schemas! {
     RollingStock,
     RollingStockWithLiveries,
-    crate::views::rolling_stocks::schemas(),
-    crate::views::light_rolling_stocks::schemas(),
     LoadingGaugeType,
+    RollingStockLiveryMetadata,
 }
 
 #[derive(

@@ -13,7 +13,7 @@ const WithRollingStockSelector =
 
     const [rollingStockSelected, setRollingStockSelected] = useState<
       RollingStockWithLiveries | undefined
-    >(undefined);
+    >();
     const rollingStockId = useSelector(getRollingStockID);
     const rollingStockComfort: string = useSelector(getRollingStockComfort);
     const comfort = t('rollingstock:comfort');

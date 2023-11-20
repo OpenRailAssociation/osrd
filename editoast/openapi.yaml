@@ -229,6 +229,10 @@ components:
         power_restriction_code:
           nullable: true
           type: string
+      required:
+      - comfort
+      - electrical_profile_level
+      - power_restriction_code
       type: object
     EffortCurves:
       properties:
@@ -396,6 +400,7 @@ components:
       - soc
       - soc_min
       - soc_max
+      - refill_law
       type: object
     EngineeringAllowance:
       allOf:
@@ -1741,6 +1746,7 @@ components:
       required:
       - name
       - effort_curves
+      - base_power_class
       - length
       - max_speed
       - startup_time
@@ -4447,12 +4453,6 @@ paths:
         schema:
           format: int64
           type: integer
-      - in: path
-        name: rolling_stock_id
-        required: true
-        schema:
-          format: int64
-          type: integer
       responses:
         '200':
           content:
@@ -5139,12 +5139,12 @@ paths:
         schema:
           format: int64
           type: integer
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/DeleteRollingStockQueryParams'
-        required: true
+      - description: force the deletion even if it’s used
+        in: query
+        name: force
+        required: false
+        schema:
+          type: boolean
       responses:
         '204':
           description: The rolling stock was deleted successfully

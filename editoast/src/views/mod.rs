@@ -80,6 +80,8 @@ schemas! {
     search::schemas(),
     crate::schema::utils::geometry::schemas(),
     train_schedule::schemas(),
+    rolling_stocks::schemas(),
+    light_rolling_stocks::schemas(),
 }
 
 #[derive(OpenApi)]

@@ -8,6 +8,7 @@ use strum_macros::{Display, EnumString};
 use utoipa::ToSchema;
 
 use crate::models::rolling_stock::rolling_stock_livery::RollingStockLiveryMetadata;
+use rolling_stock_livery::RollingStockLivery;
 
 crate::schemas! {
     RollingStockComfortType,
@@ -15,7 +16,6 @@ crate::schemas! {
     RollingStockWithLiveries,
     RollingResistance,
     RollingStockMetadata,
-    RollingStockLiveryMetadata,
     RollingStockComfortType,
     Gamma,
     EffortCurve,
@@ -27,6 +27,7 @@ crate::schemas! {
     SpeedDependantPower,
     EnergyStorage,
     RefillLaw,
+    RollingStockLivery,
     light_rolling_stock::schemas(),
 }
 
@@ -36,7 +37,7 @@ pub const ROLLING_STOCK_RAILJSON_VERSION: &str = "3.2";
 pub struct RollingStockCommon {
     pub name: String,
     pub effort_curves: EffortCurves,
-    #[schema(example = "5")]
+    #[schema(example = "5", required)]
     pub base_power_class: Option<String>,
     pub length: f64,
     pub max_speed: f64,
@@ -131,8 +132,11 @@ pub enum RollingStockComfortType {
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct EffortCurveConditions {
+    #[schema(required)]
     comfort: Option<RollingStockComfortType>,
+    #[schema(required)]
     electrical_profile_level: Option<String>,
+    #[schema(required)]
     power_restriction_code: Option<String>,
 }
 
@@ -217,6 +221,7 @@ pub struct EnergyStorage {
     soc_min: f64,
     #[schema(minimum = 0, maximum = 1)]
     soc_max: f64,
+    #[schema(required)]
     refill_law: Option<RefillLaw>,
 }
 
