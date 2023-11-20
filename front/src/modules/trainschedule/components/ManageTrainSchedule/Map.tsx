@@ -17,7 +17,7 @@ import NeutralSections from 'common/Map/Layers/NeutralSections';
 import Hillshade from 'common/Map/Layers/Hillshade';
 import OSM from 'common/Map/Layers/OSM';
 import OperationalPoints from 'common/Map/Layers/OperationalPoints';
-import Platforms from 'common/Map/Layers/Platforms';
+import PlatformsLayer from 'common/Map/Layers/Platforms';
 import RenderItinerary from 'modules/trainschedule/components/ManageTrainSchedule/ManageTrainScheduleMap/RenderItinerary';
 import RenderItineraryMarkers from 'modules/trainschedule/components/ManageTrainSchedule/ManageTrainScheduleMap/RenderItineraryMarkers';
 /* Interactions */
@@ -201,7 +201,7 @@ function Map() {
           </>
         )}
 
-        <Platforms
+        <PlatformsLayer
           colors={colors[mapStyle]}
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.PLATFORMS.GROUP]}
         />

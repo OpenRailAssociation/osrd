@@ -26,7 +26,7 @@ import IGN_CADASTRE from 'common/Map/Layers/IGN_CADASTRE';
 import OSM from 'common/Map/Layers/OSM';
 /* Objects & various */
 import OperationalPoints from 'common/Map/Layers/OperationalPoints';
-import Platforms from 'common/Map/Layers/Platforms';
+import PlatformsLayer from 'common/Map/Layers/Platforms';
 import Routes from 'common/Map/Layers/Routes';
 import SearchMarker from 'common/Map/Layers/SearchMarker';
 import Signals from 'common/Map/Layers/Signals';
@@ -154,7 +154,7 @@ function Map() {
           </>
         )}
 
-        <Platforms
+        <PlatformsLayer
           colors={colors[mapStyle]}
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.PLATFORMS.GROUP]}
         />

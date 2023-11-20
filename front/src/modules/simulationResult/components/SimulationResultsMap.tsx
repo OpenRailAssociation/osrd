@@ -30,7 +30,7 @@ import NeutralSections from 'common/Map/Layers/NeutralSections';
 import Hillshade from 'common/Map/Layers/Hillshade';
 import OSM from 'common/Map/Layers/OSM';
 import OperationalPoints from 'common/Map/Layers/OperationalPoints';
-import Platforms from 'common/Map/Layers/Platforms';
+import PlatformsLayer from 'common/Map/Layers/Platforms';
 import RenderItinerary from 'modules/simulationResult/components/SimulationResultsMap/RenderItinerary';
 import Routes from 'common/Map/Layers/Routes';
 import SearchMarker from 'common/Map/Layers/SearchMarker';
@@ -279,7 +279,7 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
           </>
         )}
 
-        <Platforms
+        <PlatformsLayer
           colors={colors[mapStyle]}
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.PLATFORMS.GROUP]}
         />

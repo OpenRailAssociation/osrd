@@ -20,7 +20,7 @@ import Terrain from 'common/Map/Layers/Terrain';
 import Background from 'common/Map/Layers/Background';
 import OSM from 'common/Map/Layers/OSM';
 import Hillshade from 'common/Map/Layers/Hillshade';
-import Platforms from 'common/Map/Layers/Platforms';
+import PlatformsLayer from 'common/Map/Layers/Platforms';
 import { useMapBlankStyle } from 'common/Map/Layers/blankStyle';
 import IGN_BD_ORTHO from 'common/Map/Layers/IGN_BD_ORTHO';
 import { getInfraID } from 'reducers/osrdconf/selectors';
@@ -288,7 +288,8 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
               />
             </>
           )}
-          <Platforms
+
+          <PlatformsLayer
             colors={colors[mapStyle]}
             layerOrder={LAYER_GROUPS_ORDER[LAYERS.PLATFORMS.GROUP]}
           />

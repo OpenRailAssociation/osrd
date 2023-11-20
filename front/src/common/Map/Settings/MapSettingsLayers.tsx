@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { updateLayersSettings } from 'reducers/map';
 import { GiElectric, GiUnplugged } from 'react-icons/gi';
+import { TbRectangleVerticalFilled } from 'react-icons/tb';
 
 import SignalsSVGFile from 'assets/pictures/layersicons/layer_signal.svg';
 import BufferStopSVGFile from 'assets/pictures/layersicons/bufferstop.svg';
@@ -92,6 +93,9 @@ const MapSettingsLayers: FC<unknown> = () => (
         name="detectors"
         icon={<Icon2SVG file={DetectorsSVGFile} altName="Detectors circles svg" />}
       />
+    </div>
+    <div className="col-md-6">
+      <FormatSwitch name="platforms" icon={<TbRectangleVerticalFilled />} />
     </div>
   </div>
 );

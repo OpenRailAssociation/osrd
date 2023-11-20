@@ -129,6 +129,7 @@ describe('mapReducer', () => {
       switches: true,
       tvds: true,
       errors: true,
+      platforms: true,
     };
     store.dispatch(updateLayersSettings(layersSettings));
     const mapState = store.getState().map;
