@@ -24,6 +24,7 @@ import fnDistance from '@turf/distance';
 import fnExplode from '@turf/explode';
 import { MapLayerMouseEvent, MapGeoJSONFeature } from 'maplibre-gl';
 import { getAngle } from '../applications/editor/data/utils';
+import { LayerType } from '../applications/editor/tools/types';
 import { Zone } from '../types';
 
 /**
@@ -305,6 +306,16 @@ export function getNearestPoint(
   return nearestPoint(coord, featureCollection(nearestPoints));
 }
 
+// These multipliers help boosting point features, when picking the feature to
+// highlight near a given point (lower is more boosted):
+const DEFAULT_MULTIPLIER = 1 / 2;
+const POINT_FEATURES_DISTANCE_MULTIPLIERS: Partial<Record<LayerType, number>> = {
+  detectors: 1 / 20, // Most boosted, because smallest on screen
+  buffer_stops: 1 / 5,
+  switches: 1 / 5,
+  signals: 1 / 2, // The signals display make them easier to select
+};
+
 /**
  * Given a Map MouseEvent, find the nearest feature from the position of the mouse.
  * @param e The MouseEvent
@@ -339,9 +350,11 @@ export function getMapMouseEventNearestFeature(
         let nearestFeaturePoint: Feature<Point> | null = null;
         switch (feature.geometry.type) {
           case 'Point': {
+            const layer = feature.sourceLayer as LayerType;
+            const multiplier = POINT_FEATURES_DISTANCE_MULTIPLIERS[layer] || DEFAULT_MULTIPLIER;
             nearestFeaturePoint = feature as Feature<Point>;
             // we boost point, otherwise when a point is on line, it's too hard to find it
-            distance = 0.7 * fnDistance(coord, nearestFeaturePoint.geometry.coordinates);
+            distance = fnDistance(coord, nearestFeaturePoint.geometry.coordinates) * multiplier;
             break;
           }
           case 'LineString': {
