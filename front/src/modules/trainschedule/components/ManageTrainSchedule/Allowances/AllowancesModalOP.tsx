@@ -24,7 +24,7 @@ export default function AllowancesModalOP({
                 setPosition(step.path_offset);
                 closeModal();
               }}
-              disabled
+              key={step.path_offset}
             >
               <div className="col-6">{step.path_offset}</div>
               <div className="col-6">{step.name}</div>
