@@ -61,6 +61,7 @@ def foo_project_id() -> Iterator[int]:
 def foo_study_id(foo_project_id: int) -> Iterator[int]:
     payload = {
         "name": "_@Test integration study",
+        "state": "Starting",
         "service_code": "AAA",
         "business_code": "BBB",
         "tags": [],

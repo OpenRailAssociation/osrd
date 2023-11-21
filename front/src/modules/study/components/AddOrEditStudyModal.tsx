@@ -18,7 +18,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { setFailure, setSuccess } from 'reducers/main';
 import { updateStudyID } from 'reducers/osrdconf';
 import { StudyCreateForm, StudyWithScenarios, osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { studyStates, studyTypes } from 'applications/operationalStudies/consts';
+import { STUDY_STATES, studyStates, studyTypes } from 'applications/operationalStudies/consts';
 import { formatDateForInput, getEarliestDate } from 'utils/date';
 import { createSelectOptions } from '../utils';
 
@@ -35,7 +35,7 @@ type StudyParams = {
   projectId: string;
 };
 
-const emptyStudy: StudyForm = { name: '', tags: [] };
+const emptyStudy: StudyForm = { name: '', state: STUDY_STATES.started, tags: [] };
 
 export default function AddOrEditStudyModal({ editionMode, study }: Props) {
   const { t } = useTranslation('operationalStudies/study');

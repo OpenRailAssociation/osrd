@@ -129,7 +129,7 @@ export interface PointOnMap {
   };
 }
 
-const STUDY_STATES = {
+export const STUDY_STATES = {
   started: 'started',
   inProgress: 'inProgress',
   finish: 'finish',
@@ -139,6 +139,7 @@ export type StudyState = keyof typeof STUDY_STATES;
 export const studyStates = Object.keys(STUDY_STATES) as StudyState[];
 
 const STUDY_TYPES = {
+  nothingSelected: 'nothingSelected',
   timeTables: 'timeTables',
   flowRate: 'flowRate',
   parkSizing: 'parkSizing',

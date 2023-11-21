@@ -83,7 +83,6 @@ struct StudyCreateForm {
     pub budget: i32,
     #[serde(default)]
     pub tags: Vec<String>,
-    #[serde(default)]
     pub state: String,
     #[serde(default)]
     pub study_type: String,
@@ -387,7 +386,7 @@ pub mod test {
         let project = project.await;
         let req = TestRequest::post()
             .uri(format!("/projects/{}/studies/", project.id()).as_str())
-            .set_json(json!({ "name": "study_test" }))
+            .set_json(json!({ "name": "study_test", "state": "Starting" }))
             .to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
