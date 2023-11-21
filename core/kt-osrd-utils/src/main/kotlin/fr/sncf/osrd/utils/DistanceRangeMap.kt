@@ -3,6 +3,10 @@ package fr.sncf.osrd.utils
 import fr.sncf.osrd.utils.units.Distance
 import java.util.function.BiFunction
 
+/**
+DistanceRangeMap allows to store values over intervals (e.g. elevation on sections of a track) and query them.
+The default value is null.
+*/
 interface DistanceRangeMap<T> : Iterable<DistanceRangeMap.RangeMapEntry<T>> {
 
     /** When iterating over the values of the map, this represents one range of constant value */

@@ -4,6 +4,7 @@ import com.google.common.collect.RangeMap
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.MutableDistanceArrayList
 import java.util.function.BiFunction
+import java.util.PriorityQueue
 import kotlin.math.min
 
 data class DistanceRangeMapImpl<T>(
@@ -21,11 +22,63 @@ data class DistanceRangeMapImpl<T>(
         putOptional(lower, upper, value)
     }
 
-    /** Sets many values more efficiently than many calls to `put` */
+    /**
+    Sets many values more efficiently than many calls to `put`
+
+    The idea here is to build the map from scratch, by iterating over sorted bounds and maintaining entries priority.
+
+    Another idea would be to use a temporary (so we can free the memory later) tree-like structure (RangeMaps lib).
+    */
     override fun putMany(entries: List<DistanceRangeMap.RangeMapEntry<T>>) {
-        // Let's not forget that the entries order matters.
-        for (entry in entries)
-            put(entry.lower, entry.upper, entry.value)
+        // Order matters and existing entries should come first.
+        val allEntries = asList() + entries
+
+        // Start from scratch.
+        values.clear()
+        bounds.clear()
+
+        // Build a sorted list of bounds, while keeping track of entries order.
+        val boundEntries = mutableListOf<Pair<Distance, Int>>()
+        for ((index, entry) in allEntries.withIndex()) {
+            boundEntries.add(Pair(entry.lower, index))
+            boundEntries.add(Pair(entry.upper, index))
+        }
+        boundEntries.sortWith(
+            Comparator<Pair<Distance, Int>>{
+                a, b -> a.first.compareTo(b.first)
+            }.thenBy{it.second}
+        )
+
+        // Relevant entries for the interval we're building. Early entries have low priority.
+        val entryQueue = PriorityQueue<Int>{i, j -> j-i}
+        // Value over the interval we're building.
+        var value: T? = null
+        // Start of the interval we're building.
+        var start: Distance? = null
+        for ((bound, index) in boundEntries) {
+            // Update relevant entries. PriorityQueue only guarantees linear time for contains and remove, an
+            // optimized heap could be helpful.
+            if (entryQueue.contains(index)) entryQueue.remove(index)
+            else entryQueue.add(index)
+
+            // Get the latest relevant entry.
+            val entryIndex = entryQueue.peek()
+            val newValue = if (entryIndex != null) allEntries[entryIndex].value else null
+            val newStart = bound
+
+            // Merge identical ranges.
+            if (value == newValue) continue
+
+            // Add the interval, unless it's empty or implicitly null (very beginning).
+            if (start != newStart && start != null) {
+                values.add(value)
+                bounds.add(start)
+            }
+            value = newValue
+            start = newStart
+        }
+        // Close the last interval, if needed.
+        if (start != null) bounds.add(start)
     }
 
     /** Iterates over the entries in the map */
