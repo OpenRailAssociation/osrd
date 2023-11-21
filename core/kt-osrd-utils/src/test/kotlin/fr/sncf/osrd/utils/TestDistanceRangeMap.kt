@@ -3,6 +3,8 @@ package fr.sncf.osrd.utils
 import fr.sncf.osrd.utils.units.Distance
 import org.junit.Test
 import kotlin.test.assertEquals
+import kotlin.time.*
+import kotlin.time.Duration.Companion.seconds
 
 class TestDistanceRangeMap {
     fun <T>testPut(entries: List<DistanceRangeMap.RangeMapEntry<T>>,
@@ -179,5 +181,44 @@ class TestDistanceRangeMap {
             DistanceRangeMap.RangeMapEntry(Distance(-100), Distance(0), 41),
             DistanceRangeMap.RangeMapEntry(Distance(100), Distance(200), 42),
         ), rangeMap.asList())
+    }
+
+    @Test
+    fun testPutManyOnNonEmpty(){
+        val rangeMap = distanceRangeMapOf<Int>()
+        rangeMap.put(Distance(100), Distance(1000), 42)
+        val entries = listOf(
+            DistanceRangeMap.RangeMapEntry(Distance(100), Distance(500), 41),
+            DistanceRangeMap.RangeMapEntry(Distance(600), Distance(1000), 43),
+        )
+        rangeMap.putMany(entries)
+        assertEquals(listOf(
+            DistanceRangeMap.RangeMapEntry(Distance(100), Distance(500), 41),
+            DistanceRangeMap.RangeMapEntry(Distance(500), Distance(600), 42),
+            DistanceRangeMap.RangeMapEntry(Distance(600), Distance(1000), 43),
+        ), rangeMap.asList())
+    }
+
+    @Test
+    fun testLarge() {
+        val n = 10000
+        val oneSecond: Duration = 1.seconds
+        val timeSource = TimeSource.Monotonic
+        val entries = List(n) {
+                DistanceRangeMap.RangeMapEntry(Distance(it.toLong()), Distance(it.toLong()+1), it)
+            }
+
+        val mark1 = timeSource.markNow()
+        val mark2 = mark1 + oneSecond
+        val rangeMap = distanceRangeMapOf<Int>()
+        rangeMap.putMany(entries)
+        assert(!mark2.hasPassedNow())
+        assertEquals(entries, rangeMap.asList())
+
+        val mark3 = timeSource.markNow()
+        val mark4 = mark3 + oneSecond
+        val rangeMapCtor = distanceRangeMapOf<Int>(entries)
+        assert(!mark4.hasPassedNow())
+        assertEquals(entries, rangeMapCtor.asList())
     }
 }
