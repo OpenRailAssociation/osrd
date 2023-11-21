@@ -92,7 +92,10 @@ function prepareData(trainSimulation: Train): GevPreparedData {
 
   // Slopes
   const speeds = speed.map((step) => step.speed);
-  const slopesCurve = createSlopeCurve(trainSimulation.slopes, speeds);
+
+  const gradients = trainSimulation.slopes.map((step) => step.gradient);
+
+  const slopesCurve = createSlopeCurve(trainSimulation.slopes, gradients);
 
   const zeroLineSlope = slopesCurve[0].height as number; // Start height of histogram
 

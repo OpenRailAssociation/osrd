@@ -6,6 +6,7 @@ import { pointer } from 'd3-selection';
 import {
   gridX,
   gridY,
+  gridY2,
   interpolateOnPosition,
   interpolateOnTime,
   getAxis,
@@ -80,6 +81,7 @@ export const updatePointers = (
     });
 };
 
+// * Define new X and Y axis (and Y2 if exists) and update impacted SVG elements in all charts
 const updateChart = <
   T extends SpeedPosition | GradientPosition | Position,
   Datum extends ConsolidatedRouteAspect
@@ -95,6 +97,7 @@ const updateChart = <
   const supplementaryXAxis = additionalValues.map((value) => getAxis(value, 'x', rotate));
   const yAxis = getAxis(keyValues, 'y', rotate);
   const supplementaryYAxis = additionalValues.map((value) => getAxis(value, 'y', rotate));
+
   const xAxisStart = `${xAxis}_start` as const;
   const xAxisEnd = `${xAxis}_end` as const;
   const yAxisStart = `${yAxis}_start` as 'time_start' | 'position_start';
@@ -102,9 +105,11 @@ const updateChart = <
 
   let newX = chart.x;
   let newY = chart.y;
+  let newY2 = chart.y2 as SimulationD3Scale;
   if (event.sourceEvent.shiftKey || event.sourceEvent.ctrlKey) {
     newX = event.transform.rescaleX(chart.originalScaleX as SimulationD3Scale);
     newY = event.transform.rescaleY(chart.originalScaleY as SimulationD3Scale);
+    if (newY2) newY2 = event.transform.rescaleY(chart.originalScaleY2 as SimulationD3Scale);
   }
 
   // update axes with these new boundaries
@@ -120,13 +125,19 @@ const updateChart = <
           .axisLeft<Date>(newY as d3.ScaleTime<number, number>)
           .tickFormat(d3.timeFormat('%H:%M:%S'))
       : d3.axisLeft(newY);
+
   chart.xAxis.call(axisBottomX);
   chart.yAxis.call(axisLeftY);
+  if (chart.y2Axis) {
+    const axisRightY = d3.axisRight(newY2 as d3.ScaleTime<number, number>);
+    chart.y2Axis.call(axisRightY);
+  }
 
   chart.xAxisGrid.call(gridX(newX, chart.height));
   chart.yAxisGrid.call(gridY(newY, chart.width));
+  if (chart.y2AxisGrid) chart.y2AxisGrid.call(gridY2(newY2 as SimulationD3Scale, chart.width));
 
-  // update lines & areas
+  // * update lines, areas, rects by aiming their specific class.
 
   chart.drawZone.selectAll<SVGLineElement, T[]>('.line').attr(
     'd',
@@ -142,10 +153,22 @@ const updateChart = <
       })
   );
 
+  // We need to redraw line with newY2() for SpaceCurveSlopes chart if Y2 exists
+  if (newY2) {
+    chart.drawZone.selectAll<SVGLineElement, T[]>('.additional-y').attr(
+      'd',
+      d3
+        .line<T>()
+        .x((d) => newX(d[xAxis as keyof T] as number | Date))
+        .y((d) => newY2(d['height' as keyof T] as number))
+    );
+  }
+
   chart.drawZone
     .selectAll<SVGRectElement, ConsolidatedRouteAspect>('rect.route-aspect')
     .attr('x', (d) => newX(d[xAxisStart]!))
     .attr('y', (d) => newY(d[yAxisStart]!) - (newY(d[yAxisEnd]!) - newY(d[yAxisStart]!)) * -1)
+
     .attr('width', (d) => newX(d[xAxisEnd]!) - newX(d[xAxisStart]!))
     .attr('height', (d) => (newY(d[yAxisEnd]!) - newY(d[yAxisStart]!)) * -1);
 
@@ -205,7 +228,7 @@ const updateChart = <
       d.direction ? newY(d.y) + event.transform.k * 15 : newY(d.y) - event.transform.k * 5
     );
 
-  return { newX, newY };
+  return { newX, newY, newY2 };
 };
 
 // Factorizes func to update VerticalLine on 3 charts: SpaceTime, SpeedSpaceChart, SpaceCurvesSlopes
@@ -213,8 +236,8 @@ export const traceVerticalLine = (
   chart: Chart | undefined,
   keyValues: ChartAxes,
   positionValues: PositionsSpeedTimes<Date>,
-  rotate: boolean,
-  timePosition: Date
+  timePosition: Date,
+  rotate = false
 ) => {
   if (chart !== undefined) {
     const linePosition =
@@ -238,7 +261,7 @@ export const traceVerticalLine = (
   }
 };
 
-// enableInteractivity
+// * enableInteractivity
 
 // Override the default wheelDelta computation to get smoother zoom
 function wheelDelta(event: WheelEvent) {
@@ -271,16 +294,24 @@ export const enableInteractivity = <
 ) => {
   if (!chart) return;
   const zoom = d3zoom<SVGGElement, unknown>()
-    .scaleExtent([0.3, 20]) // This controls how much you can unzoom (x0.5) and zoom (x20)
+    .scaleExtent([0.3, 20]) // This controls how much you can unzoom (x0.3) and zoom (x20)
     .extent([
       [0, 0],
       [chart.width, chart.height],
     ])
     .wheelDelta(wheelDelta)
+    // Allows evenements to be triggered on zoom and drag interactions for all graphs
     .on('zoom', (event) => {
       event.sourceEvent.preventDefault();
-      const zoomFunctions = updateChart(chart, keyValues, additionalValues, rotate, event);
-      const newChart = { ...chart, x: zoomFunctions.newX, y: zoomFunctions.newY };
+      const updatedAxis = updateChart(chart, keyValues, additionalValues, rotate, event);
+      // Overide axis with new ones from updated chart
+      const newChart = {
+        ...chart,
+        x: updatedAxis.newX,
+        y: updatedAxis.newY,
+        y2: updatedAxis.newY2,
+      };
+      // Synchronization between SpeedSpaceChart and SpaceCurveSlopes interactions
       if (setSharedXScaleDomain)
         setSharedXScaleDomain((prevState) => ({
           ...prevState,
@@ -293,6 +324,7 @@ export const enableInteractivity = <
       (event) => (event.button === 0 || event.button === 1) && (event.ctrlKey || event.shiftKey)
     );
 
+  // Updates in real time the position of the pointer and the vertical/horizontal guidelines
   const mousemove = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     if (!simulationIsPlaying) {
       let immediatePositionsValuesForPointer: ReturnType<ReturnType<typeof interpolateOnTime>>;
@@ -312,11 +344,7 @@ export const enableInteractivity = <
         )(timePositionLocal);
       } else {
         // SpeedSpaceChart or SpaceCurvesSlopesChart
-        const positionLocal = (
-          rotate
-            ? chart.y.invert(pointer(event, event.currentTarget)[1])
-            : chart.x.invert(pointer(event, event.currentTarget)[0])
-        ) as number;
+        const positionLocal = chart.x.invert(pointer(event, event.currentTarget)[0]) as number;
         timePositionLocal = interpolateOnPosition(
           selectedTrainData as { speed: PositionSpeedTime[] },
           positionLocal
@@ -333,7 +361,7 @@ export const enableInteractivity = <
           LIST_VALUES.SPACE_SPEED
         )(timePositionLocal);
 
-        // GEV prepareData func multiply speeds by 3.6. We need to normalize that to make a convenitn pointer update
+        // GEV prepareData func multiply speeds by 3.6. We need to normalize that to make a convenient pointer update
         LIST_VALUES.SPACE_SPEED.forEach((name) => {
           if (
             immediatePositionsValuesForPointer[name] &&

@@ -21,6 +21,7 @@ export const CHART_AXES = {
 export type ChartAxes = ObjectFieldsTypes<typeof CHART_AXES>;
 export type XAxis = ChartAxes[0];
 export type YAxis = ChartAxes[1];
+export type Y2Axis = typeof CHART_AXES.SPACE_HEIGHT;
 
 export const LIST_VALUES = {
   SPACE_TIME: [

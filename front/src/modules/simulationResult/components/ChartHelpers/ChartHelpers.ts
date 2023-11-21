@@ -19,9 +19,11 @@ import {
 } from 'reducers/osrdsimulation/types';
 import {
   ChartAxes,
+  GRADIENT,
   ListValues,
   TIME,
   XAxis,
+  Y2Axis,
   YAxis,
 } from 'modules/simulationResult/components/simulationResultsConsts';
 
@@ -260,6 +262,13 @@ export const gridY = (axisScale: SimulationD3Scale, width: number) =>
     .tickSize(-width)
     .tickFormat(() => '');
 
+export const gridY2 = (axisScale: SimulationD3Scale, width: number) =>
+  d3
+    .axisRight(axisScale)
+    .ticks(10)
+    .tickSize(-width)
+    .tickFormat(() => '');
+
 // Interpolation of cursor based on space position
 // ['position', 'speed']
 export const interpolateOnPosition = (
@@ -376,6 +385,8 @@ const specificInterpolateOnTime =
 
 export const isSpaceTimeChart = (keyValues: ChartAxes) => keyValues[0] === TIME;
 
+export const isSpaceSlopesCurves = (keyValues: ChartAxes) => keyValues[1] === GRADIENT;
+
 export function trainWithDepartureAndArrivalTimes(train: Train, dragOffset = 0) {
   const firstStop = train.base.stops[0];
   const lastStop = last(train.base.stops) as Stop;
@@ -431,9 +442,10 @@ export function getElementWidth(text: string, fontSize: number, selector: string
 
 export function getAxis(keyValues: ChartAxes, axis: 'x', rotate: boolean): XAxis;
 export function getAxis(keyValues: ChartAxes, axis: 'y', rotate: boolean): YAxis;
-export function getAxis(keyValues: ChartAxes, axis: 'x' | 'y', rotate: boolean) {
+export function getAxis(keyValues: ChartAxes, axis: 'y2', rotate: boolean): Y2Axis;
+export function getAxis(keyValues: ChartAxes, axis: 'x' | 'y' | 'y2', rotate: boolean) {
   if (axis === 'x') {
     return (!rotate ? keyValues[0] : keyValues[1]) as XAxis;
   }
-  return (!rotate ? keyValues[1] : keyValues[0]) as YAxis;
+  return (!rotate ? keyValues[1] : keyValues[0]) as YAxis | Y2Axis;
 }

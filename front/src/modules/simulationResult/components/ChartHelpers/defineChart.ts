@@ -3,6 +3,8 @@ import { select as d3select } from 'd3-selection';
 import {
   gridX,
   gridY,
+  gridY2,
+  isSpaceSlopesCurves,
   isSpaceTimeChart,
 } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
 import nextId from 'react-id-generator';
@@ -19,13 +21,14 @@ const defineChart = (
   ref: React.MutableRefObject<HTMLDivElement> | React.RefObject<HTMLDivElement>,
   rotate: boolean,
   keyValues: ChartAxes,
-  id: string
+  id: string,
+  defineY2?: SimulationD3Scale
 ): Chart => {
   const margin = {
-    top: 1,
-    right: 1,
+    top: 10,
+    right: 30,
     bottom: 30,
-    left: 55,
+    left: 45,
   };
   const width = svgWidth - margin.left - margin.right;
   const height = svgHeight - margin.top - margin.bottom;
@@ -77,6 +80,28 @@ const defineChart = (
   const yAxisGrid = svg.append('g').attr('class', 'grid').call(gridY(y, width));
   const originalScaleY = y; // We need to keep a ref on that to not double translation
 
+  // Add Y axis on the right
+  let rightAxis;
+
+  if (defineY2 && isSpaceSlopesCurves(keyValues)) {
+    const y2 = defineY2.range([height, 0]) as SimulationD3Scale;
+    const axisRightY = d3.axisRight(y2);
+
+    const y2Axis = svg.append('g').attr('transform', `translate(${width}, 0)`).call(axisRightY);
+    const y2AxisGrid = svg
+      .append('g')
+      .attr('class', 'grid')
+      .attr('transform', `translate(${width}, 0)`)
+      .call(gridY2(y2, width));
+
+    rightAxis = {
+      y2,
+      y2Axis,
+      y2AxisGrid,
+      originalScaleY2: y2,
+    };
+  }
+
   // Create clip path to hide everything out of this area
   const idClip = `clip-${nextId()}`;
   defs
@@ -115,6 +140,7 @@ const defineChart = (
     originalScaleX,
     originalScaleY,
     rotate,
+    ...rightAxis,
   };
 };
 

@@ -108,11 +108,11 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
   const { timePosition } = useChartSynchronizer(
     (newTimePosition, positionValues) => {
       if (dateIsInRange(newTimePosition, timeScaleRange)) {
-        traceVerticalLine(chart, CHART_AXES.SPACE_TIME, positionValues, rotate, newTimePosition);
+        traceVerticalLine(chart, CHART_AXES.SPACE_TIME, positionValues, newTimePosition, rotate);
       }
     },
     'space-time',
-    [chart]
+    [chart, rotate]
   );
 
   const dragShiftTrain = useCallback(
