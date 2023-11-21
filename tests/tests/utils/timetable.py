@@ -5,7 +5,7 @@ import requests
 
 
 def create_op_study(editoast_url, project_id: int) -> int:
-    payload = {"name": "foo", "service_code": "AAA", "business_code": "BBB"}
+    payload = {"name": "foo", "state": "Starting", "service_code": "AAA", "business_code": "BBB"}
     res = requests.post(editoast_url + f"projects/{project_id}/studies/", json=payload)
     if res.status_code // 100 != 2:
         err = f"Error creating operational study {res.status_code}: {res.content}, payload={json.dumps(payload)}"

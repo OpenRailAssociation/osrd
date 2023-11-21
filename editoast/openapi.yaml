@@ -2937,6 +2937,7 @@ components:
           type: array
       required:
       - name
+      - state
       type: object
     StudyPatchForm:
       description: This structure is used by the patch endpoint to patch a study

@@ -1774,7 +1774,7 @@ export type StudyCreateForm = {
   name: string;
   service_code?: string;
   start_date?: string | null;
-  state?: string;
+  state: string;
   study_type?: string;
   tags?: string[];
 };
