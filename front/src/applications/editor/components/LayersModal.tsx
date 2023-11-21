@@ -103,7 +103,7 @@ const LayersModal: FC<LayersModalProps> = ({
     [selectedLayers, selectionCounts]
   );
 
-  const memoOptions = useMemo(
+  const speedLimitOptions = useMemo(
     () => uniq([NO_SPEED_LIMIT_TAG, ...(speedLimitTags || [])]),
     [speedLimitTags]
   );
@@ -169,7 +169,7 @@ const LayersModal: FC<LayersModalProps> = ({
         <div>
           <h4>{t('Editor.nav.speed-limits')}</h4>
           <select
-            id="filterLevel"
+            id="speedLimitTag"
             className="form-control"
             value={layersSettings.speedlimittag}
             disabled={!isArray(speedLimitTags) || !selectedLayers.has('speed_sections')}
@@ -177,12 +177,12 @@ const LayersModal: FC<LayersModalProps> = ({
               dispatch(
                 updateLayersSettings({
                   ...layersSettings,
-                  speedlimittag: e.target.value,
+                  speedlimittag: e.target.value === NO_SPEED_LIMIT_TAG ? undefined : e.target.value,
                 })
               );
             }}
           >
-            {memoOptions.map((tag) => (
+            {speedLimitOptions.map((tag) => (
               <option value={tag} key={tag}>
                 {tag === NO_SPEED_LIMIT_TAG ? t('Editor.layers-modal.no-speed-limit-tag') : tag}
               </option>
