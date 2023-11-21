@@ -1,6 +1,7 @@
 use actix_web::http::header::{self, LanguageTag, Preference};
 use actix_web::{http::StatusCode, web, FromRequest, HttpRequest, HttpResponse};
 use futures_util::future::LocalBoxFuture;
+use log::error;
 use openidconnect::core::{CoreAuthenticationFlow, CoreClient, CoreProviderMetadata};
 use openidconnect::reqwest::async_http_client;
 use openidconnect::{
@@ -158,7 +159,10 @@ impl SessionProvider for OidcProvider {
                 .exchange_code(AuthorizationCode::new(info.code.clone()))
                 .request_async(async_http_client)
                 .await
-                .map_err(|_| CallbackError::CodeExchangeError)?;
+                .map_err(|err| {
+                    error!("unable to exchange code: {err:?}");
+                    CallbackError::CodeExchangeError
+                })?;
 
             // Extract the ID token claims after verifying its authenticity and nonce.
             let id_token = token_response
@@ -166,7 +170,10 @@ impl SessionProvider for OidcProvider {
                 .ok_or(CallbackError::MissingIDToken)?;
             let claims = id_token
                 .claims(&self.client.id_token_verifier(), nonce)
-                .map_err(|_| CallbackError::InvalidIDTokenSignature)?;
+                .map_err(|err| {
+                    error!("unable to verify ID token signature: {err:?}");
+                    CallbackError::InvalidIDTokenSignature
+                })?;
 
             // Verify the access token hash to ensure that the access token hasn't been substituted for
             // another user's.
