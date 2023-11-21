@@ -1,8 +1,8 @@
 import { Feature } from 'geojson';
 import { omit, clone, isNil, isUndefined } from 'lodash';
 import { JSONSchema7, JSONSchema7Definition } from 'json-schema';
-import { AnyAction, createSlice, Dispatch, PayloadAction } from '@reduxjs/toolkit';
-
+import type { AnyAction, Dispatch, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice } from '@reduxjs/toolkit';
 import { setLoading, setSuccess, setFailure, setSuccessWithoutMessage } from 'reducers/main';
 import { updateIssuesSettings } from 'reducers/map';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
@@ -54,7 +54,7 @@ export const editorSlice = createSlice({
     },
     updateFiltersIssueAction(
       state,
-      action: PayloadAction<Omit<EditorState['issues'], 'total' | 'filterTotal'>>
+      action: PayloadAction<Pick<EditorState['issues'], 'filterLevel' | 'filterType'>>
     ) {
       state.issues = {
         ...state.issues,
