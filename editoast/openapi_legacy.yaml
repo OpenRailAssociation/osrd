@@ -838,112 +838,6 @@ paths:
                 properties:
                   id: { type: integer }
 
-  /electrical_profile_set/:
-    get:
-      tags:
-        - electrical_profiles
-      summary: Retrieve the list of ids and names of electrical profile sets available
-      responses:
-        200:
-          description: The list of ids and names of electrical profile sets available
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  required:
-                    - id
-                    - name
-                  properties:
-                    id:
-                      type: integer
-                    name:
-                      type: string
-                      example: "France 2023"
-
-    post:
-      tags:
-        - electrical_profiles
-      summary: import a new electrical profile set
-      parameters:
-        - in: query
-          name: name
-          required: true
-          schema:
-            type: string
-      responses:
-        200:
-          description: The list of ids and names of electrical profile sets available
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ElectricalProfile"
-
-  /electrical_profile_set/{id}/:
-    get:
-      tags:
-        - electrical_profiles
-      summary: Retrieve the set of electrical profiles with the given id
-      parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          description: Electrical profile set ID
-          required: true
-      responses:
-        200:
-          description: The list of electrical profiles in the set
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/ElectricalProfile"
-
-    delete:
-      tags:
-        - electrical_profiles
-      summary: Delete the set of electrical profiles with the given id
-      parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          description: Electrical profile set ID
-          required: true
-      responses:
-        204:
-          description: No content
-
-  /electrical_profile_set/{id}/level_order/:
-    get:
-      tags:
-        - electrical_profiles
-      summary: Retrieve the order of strength of the electrical profiles in the set with the given id
-      parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          description: Electrical profile set ID
-          required: true
-      responses:
-        200:
-          description: A dictionary mapping catenary modes to a list of electrical profiles ordered by decreasing strength
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties:
-                  type: array
-                  items:
-                    type: string
-                example:
-                  "1500": ["A", "B", "C"]
-                  "25000": ["25000", "22500", "20000"]
-
   /pathfinding/:
     post:
       summary: Create a Path
@@ -1544,21 +1438,6 @@ components:
       type: string
       enum: [START_TO_STOP, STOP_TO_START]
 
-    TrackRange:
-      type: object
-      description: Track range
-      properties:
-        track:
-          type: string
-          example: 01234567-89ab-cdef-0123-456789abcdef
-        begin:
-          type: number
-          format: float
-        end:
-          type: number
-          format: float
-          example: 100
-
     DirectionalTrackRange:
       type: object
       description: Track range associated with a direction
@@ -1728,20 +1607,6 @@ components:
           type: string
           enum:
             - CantComputePath
-
-    ElectricalProfile:
-      type: object
-      properties:
-        value:
-          type: string
-          example: "A"
-        power_class:
-          type: string
-          example: "1"
-        track_ranges:
-          type: array
-          items:
-            $ref: "#/components/schemas/TrackRange"
 
     Geometry:
       type: object

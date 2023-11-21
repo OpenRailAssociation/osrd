@@ -10,6 +10,7 @@ use diesel::result::Error as DieselError;
 use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
 use editoast_derive::Model;
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 
 #[derive(
     Clone,
@@ -23,6 +24,7 @@ use serde::{Deserialize, Serialize};
     Queryable,
     Selectable,
     Serialize,
+    ToSchema,
 )]
 #[model(table = "electrical_profile_set")]
 #[model(create, delete, retrieve)]
@@ -32,6 +34,7 @@ pub struct ElectricalProfileSet {
     pub id: Option<i64>,
     #[diesel(deserialize_as = String)]
     pub name: Option<String>,
+    #[schema(value_type=ElectricalProfileSetData)]
     #[diesel(deserialize_as = DieselJson<ElectricalProfileSetData>)]
     pub data: Option<DieselJson<ElectricalProfileSetData>>,
 }
@@ -50,7 +53,7 @@ impl ElectricalProfileSet {
     }
 }
 
-#[derive(Debug, Queryable, Identifiable, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Queryable, Identifiable, Serialize, Deserialize, PartialEq, ToSchema)]
 #[diesel(table_name = electrical_profile_set)]
 pub struct LightElectricalProfileSet {
     pub id: i64,

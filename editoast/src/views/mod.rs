@@ -37,11 +37,10 @@ use utoipa::{OpenApi, ToSchema};
 
 // This function is only temporary while our migration to using utoipa is
 // still going
+
 fn routes_v2() -> Routes<impl HttpServiceFactory> {
     crate::routes! {
-        health,
-        version,
-        core_version,
+        (health, version, core_version),
         timetable::routes(),
         documents::routes(),
         sprites::routes(),
@@ -51,6 +50,7 @@ fn routes_v2() -> Routes<impl HttpServiceFactory> {
         train_schedule::routes(),
         rolling_stocks::routes(),
         light_rolling_stocks::routes(),
+        electrical_profiles::routes(),
     }
     routes()
 }
@@ -60,7 +60,6 @@ pub fn routes() -> impl HttpServiceFactory {
         routes_v2(),
         infra::routes(),
         layers::routes(),
-        electrical_profiles::routes(),
         pathfinding::routes_v1(),
         train_schedule::routes(),
         stdcm::routes(),
@@ -82,6 +81,7 @@ schemas! {
     train_schedule::schemas(),
     rolling_stocks::schemas(),
     light_rolling_stocks::schemas(),
+    electrical_profiles::schemas(),
 }
 
 #[derive(OpenApi)]

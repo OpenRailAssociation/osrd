@@ -1,30 +1,57 @@
 use crate::error::Result;
 use crate::models::electrical_profiles::{ElectricalProfileSet, LightElectricalProfileSet};
 use crate::models::{Create, Delete, Retrieve};
-use crate::schema::electrical_profiles::ElectricalProfileSetData;
+use crate::schema::electrical_profiles::{
+    ElectricalProfile, ElectricalProfileSetData, LevelValues,
+};
+use crate::schema::TrackRange;
 use crate::DbPool;
 use crate::DieselJson;
 
-use actix_web::dev::HttpServiceFactory;
-use actix_web::web::{self, Data, Json, Path, Query};
+use actix_web::web::{Data, Json, Path, Query};
 use actix_web::{delete, get, post, HttpResponse};
 use editoast_derive::EditoastError;
 use serde::Deserialize;
 use std::collections::HashMap;
 use thiserror::Error;
+use utoipa::IntoParams;
 
-/// Returns `/electrical_profile_set` routes
-pub fn routes() -> impl HttpServiceFactory {
-    web::scope("/electrical_profile_set").service((
-        delete,
-        list,
-        get,
-        get_level_order,
+crate::routes! {
+    "/electrical_profile_set" => {
         post_electrical_profile,
-    ))
+        list,
+        "/{electrical_profile_set_id}" => {
+            get,
+            delete,
+            "/level_order" => {
+                get_level_order
+            }
+        }
+    }
 }
 
-/// Return a list of electrical profile sets
+crate::schemas! {
+    LightElectricalProfileSet,
+    ElectricalProfile,
+    ElectricalProfileSetData,
+    ElectricalProfileSet,
+    LevelValues,
+    TrackRange,
+}
+
+#[derive(IntoParams)]
+#[allow(unused)]
+pub struct ElectricalProfileSetId {
+    electrical_profile_set_id: i64,
+}
+
+/// Retrieve the list of ids and names of electrical profile sets available
+#[utoipa::path(
+    tag = "electrical_profiles",
+    responses(
+        (status = 200, body = Vec<LightElectricalProfileSet>, description = "The list of ids and names of electrical profile sets available"),
+    )
+)]
 #[get("")]
 async fn list(db_pool: Data<DbPool>) -> Result<Json<Vec<LightElectricalProfileSet>>> {
     let mut conn = db_pool.get().await?;
@@ -32,7 +59,15 @@ async fn list(db_pool: Data<DbPool>) -> Result<Json<Vec<LightElectricalProfileSe
 }
 
 /// Return a specific set of electrical profiles
-#[get("/{electrical_profile_set}")]
+#[utoipa::path(
+    tag = "electrical_profiles",
+    params(ElectricalProfileSetId),
+    responses(
+        (status = 200, body = ElectricalProfileSetData, description = "The list of electrical profiles in the set"),
+        (status = 404, body = InternalError, description = "The requested electrical profile set was not found"),
+    )
+)]
+#[get("")]
 async fn get(
     db_pool: Data<DbPool>,
     electrical_profile_set: Path<i64>,
@@ -47,11 +82,26 @@ async fn get(
 }
 
 /// Return the electrical profile value order for this set
-#[get("/{electrical_profile_set}/level_order")]
+#[utoipa::path(
+    tag = "electrical_profiles",
+    params(ElectricalProfileSetId),
+    responses(
+        (status = 200,
+            body = HashMap<String, LevelValues>,
+            description = "A dictionary mapping catenary modes to a list of electrical profiles ordered by decreasing strength",
+            example = json!({
+                "1500": ["A", "B", "C"],
+                "25000": ["25000", "22500", "20000"]
+            })
+        ),
+        (status = 404, body = InternalError, description = "The requested electrical profile set was not found"),
+    )
+)]
+#[get("")]
 async fn get_level_order(
     db_pool: Data<DbPool>,
     electrical_profile_set: Path<i64>,
-) -> Result<Json<HashMap<String, Vec<String>>>> {
+) -> Result<Json<HashMap<String, LevelValues>>> {
     let electrical_profile_set_id = electrical_profile_set.into_inner();
     let ep_set = ElectricalProfileSet::retrieve(db_pool, electrical_profile_set_id)
         .await?
@@ -62,7 +112,15 @@ async fn get_level_order(
 }
 
 /// Delete an electrical profile set
-#[delete("/{electrical_profile_set}")]
+#[utoipa::path(
+    tag = "electrical_profiles",
+    params(ElectricalProfileSetId),
+    responses(
+        (status = 204, description = "The electrical profile was deleted successfully"),
+        (status = 404, body = InternalError, description = "The requested electrical profie was not found"),
+    )
+)]
+#[delete("")]
 async fn delete(db_pool: Data<DbPool>, electrical_profile_set: Path<i64>) -> Result<HttpResponse> {
     let electrical_profile_set_id = electrical_profile_set.into_inner();
     let deleted = ElectricalProfileSet::delete(db_pool, electrical_profile_set_id).await?;
@@ -73,12 +131,20 @@ async fn delete(db_pool: Data<DbPool>, electrical_profile_set: Path<i64>) -> Res
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, IntoParams)]
 struct ElectricalProfileQueryArgs {
     name: String,
 }
 
-/// import electrical profile set
+/// import a new electrical profile set
+#[utoipa::path(
+    tag = "electrical_profiles",
+    params(ElectricalProfileQueryArgs),
+    request_body = ElectricalProfileSetData,
+    responses(
+        (status = 200, body = ElectricalProfileSet, description = "The list of ids and names of electrical profile sets available"),
+    )
+)]
 #[post("")]
 async fn post_electrical_profile(
     db_pool: Data<DbPool>,

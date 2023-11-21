@@ -43,6 +43,7 @@ pub use switch_type::{
     SwitchPortConnection, SwitchType,
 };
 pub use track_section::{Curve, Slope, TrackSection, TrackSectionCache};
+use utoipa::ToSchema;
 
 use self::utils::{Identifier, NonBlankString};
 
@@ -204,10 +205,11 @@ impl OSRDObject for Waypoint {
     }
 }
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
 #[serde(deny_unknown_fields)]
 #[derivative(Default)]
 pub struct TrackRange {
+    #[schema(value_type=String, example="01234567-89ab-cdef-0123-456789abcdef")]
     #[derivative(Default(value = r#""InvalidRef".into()"#))]
     pub track: Identifier,
     pub begin: f64,
