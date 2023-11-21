@@ -112,8 +112,8 @@ impl SessionProvider for OidcProvider {
                 CoreAuthenticationFlow::AuthorizationCode,
                 CsrfToken::new_random,
                 Nonce::new_random,
-            )
-            .add_scope(Scope::new("openid".to_owned())).add_scope(Scope::new("caiman".to_owned()));
+            );
+            // .add_scope(Scope::new("openid".to_owned())).add_scope(Scope::new("caiman".to_owned()));
 
         let (auth_url, csrf_token, nonce) = client_builder.url();
         // if we ever decide to store the nonce unencrypted, we should also change how it's checked:
