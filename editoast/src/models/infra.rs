@@ -1,10 +1,12 @@
+use std::pin::Pin;
+
 use super::{Create, Delete, List, NoParams, Update};
 use crate::error::Result;
 use crate::infra_cache::InfraCache;
 use crate::models::{Identifiable, Retrieve};
 use crate::schema::{
-    BufferStop, Catenary, Detector, NeutralSection, OperationalPoint, RailJson, RailjsonError,
-    Route, Signal, SpeedSection, Switch, SwitchType, TrackSection,
+    BufferStop, Catenary, Detector, NeutralSection, ObjectType, OperationalPoint, RailJson,
+    RailjsonError, Route, Signal, SpeedSection, Switch, SwitchType, TrackSection,
 };
 use crate::tables::infra;
 use crate::tables::infra::dsl;
@@ -19,8 +21,11 @@ use diesel::sql_types::{BigInt, Bool, Nullable, Text};
 use diesel::{sql_query, ExpressionMethods, QueryDsl};
 use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
 use editoast_derive::{EditoastError, Model};
+use futures::future::try_join_all;
+use futures::Future;
 use log::{debug, error};
 use serde::{Deserialize, Serialize};
+use strum::IntoEnumIterator;
 use thiserror::Error;
 use uuid::Uuid;
 
@@ -155,6 +160,7 @@ impl Infra {
         db_pool: Data<DbPool>,
         new_name: Option<String>,
     ) -> Result<Infra> {
+        // Duplicate infra shell
         let infra_to_clone = Infra::retrieve(db_pool.clone(), infra_id)
             .await?
             .ok_or(InfraError::NotFound(infra_id))?;
@@ -164,7 +170,7 @@ impl Infra {
             cloned_name
         });
         let mut conn = db_pool.get().await?;
-        sql_query(
+        let cloned_infra = sql_query(
             "INSERT INTO infra (name, railjson_version, owner, version, generated_version, locked, created, modified
             )
             SELECT $1, $2, '00000000-0000-0000-0000-000000000000', $3, $4, $5, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP FROM infra
@@ -177,7 +183,53 @@ impl Infra {
         .bind::<Nullable<Text>,_>(infra_to_clone.generated_version.unwrap())
         .bind::<Bool,_>(infra_to_clone.locked.unwrap())
         .bind::<BigInt,_>(infra_id)
-        .get_result::<Infra>(&mut conn).await.map_err(|err| err.into())
+        .get_result::<Infra>(&mut conn).await?;
+
+        // Fill cloned infra with data
+
+        // When creating a connection for each objet, it will a panic with 'Cannot access shared transaction state' in the database pool
+        // Just one connection fixes it, but partially* defeats the purpose of joining all the requests at the end
+        // * AsyncPgConnection supports pipeling within one connection, but it won’t run parallel
+        let mut futures = Vec::<Pin<Box<dyn Future<Output = _>>>>::new();
+        let mut conn = db_pool.get().await?;
+        for object in ObjectType::iter() {
+            let model_table = object.get_table();
+            let model = sql_query(format!(
+                "INSERT INTO {model_table}(obj_id,data,infra_id) SELECT obj_id,data,$1 FROM {model_table} WHERE infra_id = $2"
+            ))
+            .bind::<BigInt, _>(cloned_infra.id.unwrap())
+            .bind::<BigInt, _>(infra_id)
+            .execute(&mut conn);
+            futures.push(model);
+
+            if let Some(layer_table) = object.get_geometry_layer_table() {
+                let layer_table = layer_table.to_string();
+                let sql = if layer_table != ObjectType::Signal.get_geometry_layer_table().unwrap() {
+                    format!(
+                    "INSERT INTO {layer_table}(obj_id,geographic,schematic,infra_id) SELECT obj_id,geographic,schematic,$1 FROM {layer_table} WHERE infra_id=$2")
+                } else {
+                    format!(
+                    "INSERT INTO {layer_table}(obj_id,geographic,schematic,infra_id, angle_geo, angle_sch) SELECT obj_id,geographic,schematic,$1,angle_geo,angle_sch FROM {layer_table} WHERE infra_id = $2"
+                )
+                };
+
+                let layer = sql_query(sql)
+                    .bind::<BigInt, _>(cloned_infra.id.unwrap())
+                    .bind::<BigInt, _>(infra_id)
+                    .execute(&mut conn);
+                futures.push(layer);
+            }
+        }
+
+        // Add error layers
+        let error_layer = sql_query("INSERT INTO infra_layer_error(geographic, schematic, information, infra_id) SELECT geographic, schematic, information, $1 FROM infra_layer_error WHERE infra_id = $2")
+        .bind::<BigInt, _>(cloned_infra.id.unwrap())
+        .bind::<BigInt, _>(infra_id)
+        .execute(&mut conn);
+        futures.push(error_layer);
+
+        let _res = try_join_all(futures).await?;
+        Ok(cloned_infra)
     }
 
     /// Refreshes generated data if not up to date and returns whether they were refreshed.

@@ -7,9 +7,6 @@ mod pathfinding;
 mod railjson;
 mod routes;
 
-use std::collections::HashMap;
-use std::pin::Pin;
-
 use self::edition::edit;
 use super::params::List;
 use crate::core::infra_loading::InfraLoadRequest;
@@ -23,9 +20,10 @@ use crate::models::infra::INFRA_VERSION;
 use crate::models::{
     Create, Delete, Infra, List as ModelList, NoParams, Retrieve, Update, RAILJSON_VERSION,
 };
-use crate::schema::{ObjectType, SwitchType};
+use crate::schema::SwitchType;
 use crate::views::pagination::{PaginatedResponse, PaginationQueryParam};
 use crate::DbPool;
+
 use actix_web::dev::HttpServiceFactory;
 use actix_web::web::{scope, Data, Json, Path, Query};
 use actix_web::{delete, get, post, put, Either, HttpResponse, Responder};
@@ -35,11 +33,9 @@ use diesel::sql_types::{BigInt, Text};
 use diesel::{sql_query, QueryableByName};
 use diesel_async::RunQueryDsl;
 use editoast_derive::EditoastError;
-use futures::future::try_join_all;
-use futures::Future;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value as JsonValue};
-use strum::IntoEnumIterator;
+use std::collections::HashMap;
 use thiserror::Error;
 use uuid::Uuid;
 
@@ -278,53 +274,9 @@ async fn clone(
     db_pool: Data<DbPool>,
     new_name: Query<InfraForm>,
 ) -> Result<Json<i64>> {
-    let mut futures = Vec::<Pin<Box<dyn Future<Output = _>>>>::new();
-
     let infra_id = infra_id.into_inner();
     let name = Some(new_name.name.clone());
     let cloned_infra = Infra::clone(infra_id, db_pool.clone(), name).await?;
-    // When creating a connection for each objet, it will a panic with 'Cannot access shared transaction state' in the database pool
-    // Just one connection fixes it, but partially* defeats the purpose of joining all the requests at the end
-    // * AsyncPgConnection supports pipeling within one connection, but it won’t run parallel
-    let mut conn = db_pool.get().await?;
-    for object in ObjectType::iter() {
-        let model_table = object.get_table();
-        let model = sql_query(format!(
-                "INSERT INTO {model_table}(obj_id,data,infra_id) SELECT obj_id,data,$1 FROM {model_table} WHERE infra_id = $2"
-            ))
-            .bind::<BigInt, _>(cloned_infra.id.unwrap())
-            .bind::<BigInt, _>(infra_id)
-            .execute(&mut conn);
-        futures.push(model);
-
-        if let Some(layer_table) = object.get_geometry_layer_table() {
-            let layer_table = layer_table.to_string();
-            let sql = if layer_table != ObjectType::Signal.get_geometry_layer_table().unwrap() {
-                format!(
-                    "INSERT INTO {layer_table}(obj_id,geographic,schematic,infra_id) SELECT obj_id,geographic,schematic,$1 FROM {layer_table} WHERE infra_id=$2")
-            } else {
-                format!(
-                    "INSERT INTO {layer_table}(obj_id,geographic,schematic,infra_id, angle_geo, angle_sch) SELECT obj_id,geographic,schematic,$1,angle_geo,angle_sch FROM {layer_table} WHERE infra_id = $2"
-                )
-            };
-
-            let layer = sql_query(sql)
-                .bind::<BigInt, _>(cloned_infra.id.unwrap())
-                .bind::<BigInt, _>(infra_id)
-                .execute(&mut conn);
-            futures.push(layer);
-        }
-    }
-
-    // Add error layers
-    let error_layer = sql_query("INSERT INTO infra_layer_error(geographic, schematic, information, infra_id) SELECT geographic, schematic, information, $1 FROM infra_layer_error WHERE infra_id = $2")
-        .bind::<BigInt, _>(cloned_infra.id.unwrap())
-        .bind::<BigInt, _>(infra_id)
-        .execute(&mut conn);
-    futures.push(error_layer);
-
-    let _res = try_join_all(futures).await?;
-
     Ok(Json(cloned_infra.id.unwrap()))
 }
 
