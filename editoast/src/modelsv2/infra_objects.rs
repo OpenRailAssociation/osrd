@@ -175,10 +175,10 @@ infra_model!(
 );
 
 infra_model!(
-    SwitchModel,
-    infra_object_switch,
-    infra_layer_switch,
-    schema::Switch
+    TrackNodeModel,
+    infra_object_track_node,
+    infra_layer_track_node,
+    schema::TrackNode
 );
 
 infra_model!(
@@ -189,9 +189,9 @@ infra_model!(
 );
 
 infra_model!(
-    SwitchTypeModel,
-    infra_object_extended_switch_type,
-    schema::SwitchType
+    TrackNodeTypeModel,
+    infra_object_extended_track_node_type,
+    schema::TrackNodeType
 );
 
 infra_model!(
@@ -209,16 +209,16 @@ pub fn get_table(object_type: &ObjectType) -> &'static str {
         ObjectType::OperationalPoint => OperationalPointModel::TABLE,
         ObjectType::Route => RouteModel::TABLE,
         ObjectType::Signal => SignalModel::TABLE,
-        ObjectType::Switch => SwitchModel::TABLE,
+        ObjectType::TrackNode => TrackNodeModel::TABLE,
         ObjectType::SpeedSection => SpeedSectionModel::TABLE,
-        ObjectType::SwitchType => SwitchTypeModel::TABLE,
+        ObjectType::TrackNodeType => TrackNodeTypeModel::TABLE,
         ObjectType::NeutralSection => NeutralSectionModel::TABLE,
     }
 }
 
 /// Returns the layer table name of the given object type
 ///
-/// Returns `None` for objects that doesn't have a layer such as routes or switch types.
+/// Returns `None` for objects that doesn't have a layer such as routes or track node types.
 pub fn get_geometry_layer_table(object_type: &ObjectType) -> Option<&'static str> {
     match object_type {
         ObjectType::TrackSection => TrackSectionModel::LAYER_TABLE,
@@ -228,9 +228,9 @@ pub fn get_geometry_layer_table(object_type: &ObjectType) -> Option<&'static str
         ObjectType::OperationalPoint => OperationalPointModel::LAYER_TABLE,
         ObjectType::Route => RouteModel::LAYER_TABLE,
         ObjectType::Signal => SignalModel::LAYER_TABLE,
-        ObjectType::Switch => SwitchModel::LAYER_TABLE,
+        ObjectType::TrackNode => TrackNodeModel::LAYER_TABLE,
         ObjectType::SpeedSection => SpeedSectionModel::LAYER_TABLE,
-        ObjectType::SwitchType => SwitchTypeModel::LAYER_TABLE,
+        ObjectType::TrackNodeType => TrackNodeTypeModel::LAYER_TABLE,
         ObjectType::NeutralSection => NeutralSectionModel::LAYER_TABLE,
     }
 }
@@ -289,8 +289,8 @@ mod test_persist {
     test_persist!(OperationalPointModel);
     test_persist!(RouteModel);
     test_persist!(SignalModel);
-    test_persist!(SwitchModel);
+    test_persist!(TrackNodeModel);
     test_persist!(SpeedSectionModel);
-    test_persist!(SwitchTypeModel);
+    test_persist!(TrackNodeTypeModel);
     test_persist!(NeutralSectionModel);
 }

@@ -13,9 +13,10 @@ mod route;
 mod signal;
 mod speed_section;
 pub mod sprite_config;
-mod switch;
-mod switch_type;
+mod track_node;
+mod track_node_type;
 pub mod track_section;
+
 pub mod utils;
 
 pub use buffer_stop::{BufferStop, BufferStopCache};
@@ -32,17 +33,17 @@ pub use railjson::{RailJson, RAILJSON_VERSION};
 pub use route::Route;
 pub use signal::{LogicalSignal, Signal, SignalCache, SignalExtensions, SignalSncfExtension};
 pub use speed_section::{Speed, SpeedSection};
-pub use switch::{Switch, SwitchCache};
-pub use switch_type::{
+pub use track_node::{TrackNode, TrackNodeCache};
+pub use track_node_type::{
     builtin_node_types_list, Crossing, DoubleSlipSwitch, Link, PointSwitch, SingleSlipSwitch,
-    SwitchType,
+    TrackNodeType,
 };
 pub use track_section::{TrackSection, TrackSectionCache};
 
 cfg_if! {
     if #[cfg(test)] {
         pub use operational_point::OperationalPointPartCache;
-        pub use switch_type::SwitchPortConnection;
+        pub use track_node_type::TrackNodePortConnection;
         pub use track_section::{Curve, Slope};
         pub use buffer_stop::BufferStopExtension;
     }
@@ -112,8 +113,8 @@ pub enum ObjectType {
     SpeedSection,
     Detector,
     NeutralSection,
-    Switch,
-    SwitchType,
+    TrackNode,
+    TrackNodeType,
     BufferStop,
     Route,
     OperationalPoint,

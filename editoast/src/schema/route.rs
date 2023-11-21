@@ -18,7 +18,7 @@ pub struct Route {
     pub entry_point_direction: Direction,
     pub exit_point: Waypoint,
     pub release_detectors: Vec<Identifier>,
-    pub switches_directions: HashMap<Identifier, Identifier>,
+    pub track_nodes_directions: HashMap<Identifier, Identifier>,
 }
 
 impl OSRDTyped for Route {
@@ -48,7 +48,7 @@ impl Cache for Route {
 #[derive(Debug, Clone)]
 pub struct RoutePath {
     pub track_ranges: Vec<DirectionalTrackRange>,
-    pub switches_directions: HashMap<Identifier, Identifier>,
+    pub track_nodes_directions: HashMap<Identifier, Identifier>,
 }
 
 impl Route {
@@ -91,9 +91,9 @@ impl Route {
             .get(cur_track)?
             .unwrap_track_section();
 
-        // Save track ranges and used switches
+        // Save track ranges and used Track Nodes
         let mut track_ranges = vec![];
-        let mut used_switches = HashMap::new();
+        let mut used_track_nodes = HashMap::new();
 
         // Check path validity
         loop {
@@ -131,11 +131,11 @@ impl Route {
                 return None;
             }
 
-            let switch = graph.get_switch(&endpoint)?;
-            let switch_id = switch.get_id();
-            // Check we found the switch in the route
-            let group = self.switches_directions.get(&switch_id.clone().into())?;
-            used_switches.insert(switch_id.clone().into(), group.clone());
+            let track_node = graph.get_track_node(&endpoint)?;
+            let track_node_id = track_node.get_id();
+            // Check we found the Track Node in the route
+            let group = self.track_nodes_directions.get(&track_node_id.clone().into())?;
+            used_track_nodes.insert(track_node_id.clone().into(), group.clone());
             let next_endpoint = graph.get_neighbour(&endpoint, group)?;
 
             // Update current track section, offset and direction
@@ -150,7 +150,7 @@ impl Route {
         }
         Some(RoutePath {
             track_ranges,
-            switches_directions: used_switches,
+            track_nodes_directions: used_track_nodes,
         })
     }
 }
@@ -174,8 +174,8 @@ mod test {
         assert_eq!(path.track_ranges[1].track, "B".into());
         assert_eq!(path.track_ranges[1].begin, 0.);
         assert_eq!(path.track_ranges[1].end, 250.);
-        assert_eq!(path.switches_directions.len(), 1);
-        assert!(path.switches_directions.contains_key(&"link".into()));
+        assert_eq!(path.track_nodes_directions.len(), 1);
+        assert!(path.track_nodes_directions.contains_key(&"link".into()));
     }
 
     #[test]
@@ -191,7 +191,7 @@ mod test {
         assert_eq!(path.track_ranges[1].track, "C".into());
         assert_eq!(path.track_ranges[1].begin, 0.);
         assert_eq!(path.track_ranges[1].end, 480.);
-        assert_eq!(path.switches_directions.len(), 1);
-        assert!(path.switches_directions.contains_key(&"switch".into()));
+        assert_eq!(path.track_nodes_directions.len(), 1);
+        assert!(path.track_nodes_directions.contains_key(&"point_switch".into()));
     }
 }

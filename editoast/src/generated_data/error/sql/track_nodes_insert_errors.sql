@@ -10,10 +10,10 @@ INSERT INTO infra_layer_error (
         info_hash
     )
 SELECT $1 AS infra_id,
-    switches.geographic,
-    switches.schematic,
+    track_nodes.geographic,
+    track_nodes.schematic,
     errors.information,
     errors.error_hash
 FROM errors
-    LEFT JOIN infra_layer_switch AS switches ON switches.obj_id = information->>'obj_id'
-    AND switches.infra_id = $1
+    LEFT JOIN infra_layer_track_node AS track_nodes ON track_nodes.obj_id = information->>'obj_id'
+    AND track_nodes.infra_id = $1

@@ -61,7 +61,7 @@ mod tests {
     use crate::models::infra::tests::test_infra_transaction;
     use crate::schema::operation::create::tests::{
         create_buffer_stop, create_detector, create_electrification, create_op, create_route,
-        create_signal, create_speed, create_switch, create_track,
+        create_signal, create_speed, create_track_node, create_track,
     };
     use crate::schema::operation::delete::DeleteOperation;
     use crate::schema::{OSRDIdentified, OSRDObject};
@@ -138,17 +138,17 @@ mod tests {
     }
 
     #[actix_test]
-    async fn delete_switch() {
+    async fn delete_track_node() {
         test_infra_transaction(|conn, infra| async  move {
-            let switch = create_switch(conn, infra.id.unwrap(), Default::default()).await;
+            let track_node = create_track_node(conn, infra.id.unwrap(), Default::default()).await;
 
-            let switch_deletion: DeleteOperation = switch.get_ref().into();
+            let track_node_deletion: DeleteOperation = track_node.get_ref().into();
 
-            assert!(switch_deletion.apply(infra.id.unwrap(), conn).await.is_ok());
+            assert!(track_node_deletion.apply(infra.id.unwrap(), conn).await.is_ok());
 
             let res_del = sql_query(format!(
-                "SELECT COUNT (*) AS nb FROM infra_object_switch WHERE obj_id = '{}' AND infra_id = {}",
-                switch.get_id(),
+                "SELECT COUNT (*) AS nb FROM infra_object_track_node WHERE obj_id = '{}' AND infra_id = {}",
+                track_node.get_id(),
                 infra.id.unwrap()
             ))
             .get_result::<Count>(conn).await.unwrap();

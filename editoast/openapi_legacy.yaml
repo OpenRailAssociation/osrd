@@ -312,11 +312,11 @@ paths:
                     items:
                       $ref: "#/components/schemas/InfraError"
 
-  /infra/{id}/switch_types/:
+  /infra/{id}/track_node_types/:
     get:
       tags:
         - infra
-      summary: Retrieve a list of switch types
+      summary: Retrieve a list of track node types
       parameters:
         - in: path
           name: id
@@ -326,14 +326,14 @@ paths:
           required: true
       responses:
         200:
-          description: A list of switch types
+          description: A list of track node types
           content:
             application/json:
               schema:
                 type: array
                 items:
                   type: object
-                  description: A switch type following Railjson spec
+                  description: A track node type following Railjson spec
                   example:
                     id: Point
                     ports: [LEFT, RIGHT, BASE]
@@ -636,9 +636,9 @@ components:
           type: array
         routes:
           type: array
-        switch_types:
+        track_node_types:
           type: array
-        switches:
+        track_nodes:
           type: array
         track_sections:
           type: array
@@ -775,15 +775,15 @@ components:
         - invalid_group
         - invalid_reference
         - invalid_route
-        - invalid_switch_ports
+        - invalid_track_node_ports
         - missing_route
         - missing_buffer_stop
         - object_out_of_path
         - odd_buffer_stop_location
         - out_of_range
         - overlapping_speed_sections
-        - overlapping_switches
         - overlapping_electrifications
+        - overlapping_track_nodes
         - unknown_port_name
         - unused_port
         - node_endpoints_not_unique
@@ -815,7 +815,7 @@ components:
                 - Signal
                 - BufferStop
                 - Detector
-                - Switch
+                - TrackNode
                 - Route
             error_type:
               $ref: "#/components/schemas/InfraErrorType"

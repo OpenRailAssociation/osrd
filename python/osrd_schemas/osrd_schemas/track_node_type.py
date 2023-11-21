@@ -1,18 +1,18 @@
-from .infra import SwitchPortConnection, SwitchType
+from .infra import TrackNodePortConnection, TrackNodeType
 
-_spc = SwitchPortConnection.from_strs
+_spc = TrackNodePortConnection.from_strs
 
 
-POINT_SWITCH: SwitchType = SwitchType.from_strs(
+POINT_SWITCH: TrackNodeType = TrackNodeType.from_strs(
     "point_switch", ["A", "B1", "B2"], {"A_B2": [_spc("A", "B2")], "A_B1": [_spc("A", "B1")]}
 )
 
-LINK: SwitchType = SwitchType.from_strs("link", ["A", "B"], {"STATIC": [_spc("A", "B")]})
-CROSSING: SwitchType = SwitchType.from_strs(
+LINK: TrackNodeType = TrackNodeType.from_strs("link", ["A", "B"], {"STATIC": [_spc("A", "B")]})
+CROSSING: TrackNodeType = TrackNodeType.from_strs(
     "crossing", ["A1", "B1", "A2", "B2"], {"STATIC": [_spc("A1", "B1"), _spc("A2", "B2")]}
 )
 
-SINGLE_SLIP_SWITCH: SwitchType = SwitchType.from_strs(
+SINGLE_SLIP_SWITCH: TrackNodeType = TrackNodeType.from_strs(
     "single_slip_switch",
     ["A1", "B1", "A2", "B2"],
     {
@@ -21,7 +21,7 @@ SINGLE_SLIP_SWITCH: SwitchType = SwitchType.from_strs(
     },
 )
 
-DOUBLE_SLIP_SWITCH: SwitchType = SwitchType.from_strs(
+DOUBLE_SLIP_SWITCH: TrackNodeType = TrackNodeType.from_strs(
     "double_slip_switch",
     ["A1", "B1", "A2", "B2"],
     {

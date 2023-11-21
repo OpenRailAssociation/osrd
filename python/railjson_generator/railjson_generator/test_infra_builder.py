@@ -6,7 +6,7 @@ from railjson_generator.schema.infra.neutral_section import NeutralSection
 from railjson_generator.schema.infra.operational_point import OperationalPoint
 from railjson_generator.schema.infra.route import Route
 from railjson_generator.schema.infra.speed_section import SpeedSection
-from railjson_generator.schema.infra.switch import (
+from railjson_generator.schema.infra.track_node import (
     Crossing,
     DoubleSlipSwitch,
     Link,
@@ -28,7 +28,7 @@ class TestInfraBuilder:
 
     def test_add_point_switch(self):
         ib = InfraBuilder()
-        assert ib.infra.switches == []
+        assert ib.infra.track_nodes == []
         #     x        y
         # =========o======
         #           \=====
@@ -40,17 +40,17 @@ class TestInfraBuilder:
         z = ib.add_track_section(length=1)
         right = z.begin()
 
-        switch = ib.add_point_switch(base, left, right)
+        track_node = ib.add_point_switch(base, left, right)
 
-        assert switch == PointSwitch(A=base, B1=left, B2=right, label=switch.label)
-        assert ib.infra.switches == [switch]
-        assert base.get_neighbors() == [(left, switch.group("A_B1")), (right, switch.group("A_B2"))]
-        assert left.get_neighbors() == [(base, switch.group("A_B1"))]
-        assert right.get_neighbors() == [(base, switch.group("A_B2"))]
+        assert track_node == PointSwitch(A=base, B1=left, B2=right, label=track_node.label)
+        assert ib.infra.track_nodes == [track_node]
+        assert base.get_neighbors() == [(left, track_node.group("A_B1")), (right, track_node.group("A_B2"))]
+        assert left.get_neighbors() == [(base, track_node.group("A_B1"))]
+        assert right.get_neighbors() == [(base, track_node.group("A_B2"))]
 
     def test_add_crossing(self):
         ib = InfraBuilder()
-        assert ib.infra.switches == []
+        assert ib.infra.track_nodes == []
         #     w         y
         # ========\ /=======
         #          o
@@ -68,7 +68,7 @@ class TestInfraBuilder:
         crossing = ib.add_crossing(north, south, east, west)
 
         assert crossing == Crossing(A1=north, B1=south, B2=east, A2=west, label=crossing.label)
-        assert ib.infra.switches == [crossing]
+        assert ib.infra.track_nodes == [crossing]
         assert north.get_neighbors() == [(south, crossing.group("STATIC"))]
         assert south.get_neighbors() == [(north, crossing.group("STATIC"))]
         assert east.get_neighbors() == [(west, crossing.group("STATIC"))]
@@ -76,7 +76,7 @@ class TestInfraBuilder:
 
     def test_add_double_slip_switch(self):
         ib = InfraBuilder()
-        assert ib.infra.switches == []
+        assert ib.infra.track_nodes == []
         # Here, we can one can go ahead OR "turn".
         #     w         y
         # ==================
@@ -92,18 +92,18 @@ class TestInfraBuilder:
         z = ib.add_track_section(length=1)
         south_2 = z.begin()
 
-        switch = ib.add_double_slip_switch(north_1, north_2, south_1, south_2)
+        track_node = ib.add_double_slip_switch(north_1, north_2, south_1, south_2)
 
-        assert switch == DoubleSlipSwitch(A1=north_1, A2=north_2, B1=south_1, B2=south_2, label=switch.label)
-        assert ib.infra.switches == [switch]
-        assert north_1.get_neighbors() == [(south_1, switch.group("A1_B1")), (south_2, switch.group("A1_B2"))]
-        assert north_2.get_neighbors() == [(south_1, switch.group("A2_B1")), (south_2, switch.group("A2_B2"))]
-        assert south_1.get_neighbors() == [(north_1, switch.group("A1_B1")), (north_2, switch.group("A2_B1"))]
-        assert south_2.get_neighbors() == [(north_1, switch.group("A1_B2")), (north_2, switch.group("A2_B2"))]
+        assert track_node == DoubleSlipSwitch(A1=north_1, A2=north_2, B1=south_1, B2=south_2, label=track_node.label)
+        assert ib.infra.track_nodes == [track_node]
+        assert north_1.get_neighbors() == [(south_1, track_node.group("A1_B1")), (south_2, track_node.group("A1_B2"))]
+        assert north_2.get_neighbors() == [(south_1, track_node.group("A2_B1")), (south_2, track_node.group("A2_B2"))]
+        assert south_1.get_neighbors() == [(north_1, track_node.group("A1_B1")), (north_2, track_node.group("A2_B1"))]
+        assert south_2.get_neighbors() == [(north_1, track_node.group("A1_B2")), (north_2, track_node.group("A2_B2"))]
 
     def test_add_link(self):
         ib = InfraBuilder()
-        assert ib.infra.switches == []
+        assert ib.infra.track_nodes == []
         #     x        y
         # ========o========
         x = ib.add_track_section(length=1)
@@ -114,7 +114,7 @@ class TestInfraBuilder:
         link = ib.add_link(source, destination)
 
         assert link == Link(A=source, B=destination, label=link.label)
-        assert ib.infra.switches == [link]
+        assert ib.infra.track_nodes == [link]
         assert source.get_neighbors() == [(destination, link.group("STATIC"))]
         assert destination.get_neighbors() == [(source, link.group("STATIC"))]
 
@@ -172,7 +172,7 @@ class TestInfraBuilder:
         left = y.begin()
         z = ib.add_track_section(length=1)
         right = z.begin()
-        switch = ib.add_point_switch(base, left, right)
+        track_node = ib.add_point_switch(base, left, right)
 
         routes = ib.generate_routes(progressive_release=True)
 
@@ -183,28 +183,28 @@ class TestInfraBuilder:
             entry_point_direction=Direction.START_TO_STOP,
             waypoints=[x.waypoints[0], y.waypoints[-1]],
             release_waypoints=[detector],
-            switches_directions={switch.label: "A_B1"},
+            track_nodes_directions={track_node.label: "A_B1"},
             label=f"rt.{x.waypoints[0].label}->{y.waypoints[-1].label}",
         ).to_rjs()
         yx = Route(
             entry_point_direction=Direction.STOP_TO_START,
             waypoints=[y.waypoints[-1], x.waypoints[0]],
             release_waypoints=[detector],
-            switches_directions={switch.label: "A_B1"},
+            track_nodes_directions={track_node.label: "A_B1"},
             label=f"rt.{y.waypoints[-1].label}->{x.waypoints[0].label}",
         ).to_rjs()
         xz = Route(
             entry_point_direction=Direction.START_TO_STOP,
             waypoints=[x.waypoints[0], z.waypoints[-1]],
             release_waypoints=[detector],
-            switches_directions={switch.label: "A_B2"},
+            track_nodes_directions={track_node.label: "A_B2"},
             label=f"rt.{x.waypoints[0].label}->{z.waypoints[-1].label}",
         ).to_rjs()
         zx = Route(
             entry_point_direction=Direction.STOP_TO_START,
             waypoints=[z.waypoints[-1], x.waypoints[0]],
             release_waypoints=[detector],
-            switches_directions={switch.label: "A_B2"},
+            track_nodes_directions={track_node.label: "A_B2"},
             label=f"rt.{z.waypoints[-1].label}->{x.waypoints[0].label}",
         ).to_rjs()
         # Route.__eq__ only compares labels, so let's compare resulting rjs instead.
@@ -230,7 +230,7 @@ class TestInfraBuilder:
         left = y.begin()
         z = ib.add_track_section(length=1)
         right = z.begin()
-        switch = ib.add_point_switch(base, left, right)
+        track_node = ib.add_point_switch(base, left, right)
 
         routes = ib.generate_routes(progressive_release=False)
 
@@ -241,28 +241,28 @@ class TestInfraBuilder:
             entry_point_direction=Direction.START_TO_STOP,
             waypoints=[x.waypoints[0], y.waypoints[-1]],
             release_waypoints=[],
-            switches_directions={switch.label: "A_B1"},
+            track_nodes_directions={track_node.label: "A_B1"},
             label=f"rt.{x.waypoints[0].label}->{y.waypoints[-1].label}",
         ).to_rjs()
         yx = Route(
             entry_point_direction=Direction.STOP_TO_START,
             waypoints=[y.waypoints[-1], x.waypoints[0]],
             release_waypoints=[],
-            switches_directions={switch.label: "A_B1"},
+            track_nodes_directions={track_node.label: "A_B1"},
             label=f"rt.{y.waypoints[-1].label}->{x.waypoints[0].label}",
         ).to_rjs()
         xz = Route(
             entry_point_direction=Direction.START_TO_STOP,
             waypoints=[x.waypoints[0], z.waypoints[-1]],
             release_waypoints=[],
-            switches_directions={switch.label: "A_B2"},
+            track_nodes_directions={track_node.label: "A_B2"},
             label=f"rt.{x.waypoints[0].label}->{z.waypoints[-1].label}",
         ).to_rjs()
         zx = Route(
             entry_point_direction=Direction.STOP_TO_START,
             waypoints=[z.waypoints[-1], x.waypoints[0]],
             release_waypoints=[],
-            switches_directions={switch.label: "A_B2"},
+            track_nodes_directions={track_node.label: "A_B2"},
             label=f"rt.{z.waypoints[-1].label}->{x.waypoints[0].label}",
         ).to_rjs()
         # Route.__eq__ only compares labels, so let's compare resulting rjs instead.
@@ -295,7 +295,7 @@ class TestInfraBuilder:
         left = y.begin()
         z = ib.add_track_section(length=1)
         right = z.begin()
-        switch = ib.add_point_switch(base, left, right)
+        track_node = ib.add_point_switch(base, left, right)
 
         infra = ib.build()
 
@@ -306,28 +306,28 @@ class TestInfraBuilder:
             entry_point_direction=Direction.START_TO_STOP,
             waypoints=[x.waypoints[0], y.waypoints[-1]],
             release_waypoints=[detector],
-            switches_directions={switch.label: "A_B1"},
+            track_nodes_directions={track_node.label: "A_B1"},
             label=f"rt.{x.waypoints[0].label}->{y.waypoints[-1].label}",
         ).to_rjs()
         yx = Route(
             entry_point_direction=Direction.STOP_TO_START,
             waypoints=[y.waypoints[-1], x.waypoints[0]],
             release_waypoints=[detector],
-            switches_directions={switch.label: "A_B1"},
+            track_nodes_directions={track_node.label: "A_B1"},
             label=f"rt.{y.waypoints[-1].label}->{x.waypoints[0].label}",
         ).to_rjs()
         xz = Route(
             entry_point_direction=Direction.START_TO_STOP,
             waypoints=[x.waypoints[0], z.waypoints[-1]],
             release_waypoints=[detector],
-            switches_directions={switch.label: "A_B2"},
+            track_nodes_directions={track_node.label: "A_B2"},
             label=f"rt.{x.waypoints[0].label}->{z.waypoints[-1].label}",
         ).to_rjs()
         zx = Route(
             entry_point_direction=Direction.STOP_TO_START,
             waypoints=[z.waypoints[-1], x.waypoints[0]],
             release_waypoints=[detector],
-            switches_directions={switch.label: "A_B2"},
+            track_nodes_directions={track_node.label: "A_B2"},
             label=f"rt.{z.waypoints[-1].label}->{x.waypoints[0].label}",
         ).to_rjs()
         # Route.__eq__ only compares labels, so let's compare resulting rjs instead.

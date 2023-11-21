@@ -49,9 +49,9 @@ pub async fn persist_railjson(
         operational_points,
         routes,
         signals,
-        switches,
+        track_nodes,
         speed_sections,
-        extended_switch_types,
+        extended_track_node_types,
         neutral_sections,
     } = railjson;
     if version != RAILJSON_VERSION {
@@ -65,9 +65,9 @@ pub async fn persist_railjson(
         persist!(OperationalPointModel, operational_points),
         persist!(RouteModel, routes),
         persist!(SignalModel, signals),
-        persist!(SwitchModel, switches),
+        persist!(TrackNodeModel, track_nodes),
         persist!(SpeedSectionModel, speed_sections),
-        persist!(SwitchTypeModel, extended_switch_types),
+        persist!(TrackNodeTypeModel, extended_track_node_types),
         persist!(NeutralSectionModel, neutral_sections),
     )
     .map(|_| ())

@@ -65,7 +65,7 @@ struct PathfindingInput {
 struct PathfindingOutput {
     track_ranges: Vec<DirectionalTrackRange>,
     detectors: Vec<Identifier>,
-    switches_directions: HashMap<Identifier, Identifier>,
+    track_nodes_directions: HashMap<Identifier, Identifier>,
 }
 
 #[derive(Debug, Clone, IntoParams, Deserialize)]
@@ -127,7 +127,7 @@ struct PathfindingStep {
     #[derivative(Hash = "ignore", PartialEq = "ignore")]
     position: f64,
     direction: Direction,
-    switch_direction: Option<(Identifier, Identifier)>,
+    track_node_direction: Option<(Identifier, Identifier)>,
     found: bool,
     starting_step: bool,
     #[derivative(Hash = "ignore", PartialEq = "ignore")]
@@ -141,7 +141,7 @@ impl PathfindingStep {
             track,
             position,
             direction: Direction::StartToStop, // Ignored for initial node
-            switch_direction: None,
+            track_node_direction: None,
             found: false,
             starting_step: true,
             previous: None,
@@ -153,7 +153,7 @@ impl PathfindingStep {
         track: String,
         position: f64,
         direction: Direction,
-        switch_direction: Option<(Identifier, Identifier)>,
+        track_node_direction: Option<(Identifier, Identifier)>,
         found: bool,
         previous: PathfindingStep,
         length: u64,
@@ -163,7 +163,7 @@ impl PathfindingStep {
             track,
             position,
             direction,
-            switch_direction,
+            track_node_direction,
             found,
             starting_step: false,
             previous: Some(Box::new(previous)),
@@ -171,17 +171,17 @@ impl PathfindingStep {
         }
     }
 
-    /// Check if the step or a previous step is using the given switch
-    fn is_using_switch(&self, switch_id: &String) -> bool {
-        if let Some((switch, _)) = &self.switch_direction {
-            if switch.0 == *switch_id {
+    /// Check if the step or a previous step is using the given track node
+    fn is_using_track_node(&self, track_node_id: &String) -> bool {
+        if let Some((track_node, _)) = &self.track_node_direction {
+            if track_node.0 == *track_node_id {
                 return true;
             }
         }
 
         self.previous
             .as_ref()
-            .map_or(false, |p| p.is_using_switch(switch_id))
+            .map_or(false, |p| p.is_using_track_node(track_node_id))
     }
 }
 
@@ -284,12 +284,12 @@ fn compute_path(
         // Find neighbours
         let mut successors = vec![];
         let endpoint = TrackEndpoint::from_track_and_direction(&step.track, step.direction);
-        let switch = graph.get_switch(&endpoint);
+        let track_node = graph.get_track_node(&endpoint);
 
-        // Check switch not already used
-        if let Some(switch) = switch {
-            let switch_id = &switch.obj_id;
-            if step.is_using_switch(switch_id) {
+        // Check if track node is not already used
+        if let Some(track_node) = track_node {
+            let track_node_id = &track_node.obj_id;
+            if step.is_using_track_node(track_node_id) {
                 return vec![];
             }
         }
@@ -308,7 +308,7 @@ fn compute_path(
                         neighbour_track.obj_id.clone(),
                         pos,
                         dir,
-                        switch.map(|s| (s.obj_id.clone().into(), neighbour_group.clone())),
+                        track_node.map(|s| (s.obj_id.clone().into(), neighbour_group.clone())),
                         false,
                         step.clone(),
                         cost,
@@ -356,10 +356,10 @@ fn build_path_output(path: &[PathfindingStep], infra_cache: &InfraCache) -> Path
         last.position.max(before_last.position),
         last.direction,
     ));
-    // Fill switches directions
-    let switches_directions = path
+    // Fill track nodes directions
+    let track_nodes_directions = path
         .iter()
-        .filter_map(|step| step.switch_direction.clone())
+        .filter_map(|step| step.track_node_direction.clone())
         .collect();
 
     // Search for detectors on the path
@@ -384,7 +384,7 @@ fn build_path_output(path: &[PathfindingStep], infra_cache: &InfraCache) -> Path
     PathfindingOutput {
         track_ranges,
         detectors,
-        switches_directions,
+        track_nodes_directions,
     }
 }
 
@@ -406,10 +406,11 @@ mod tests {
             DirectionalTrackRange::new("C", 0., 470., Direction::StartToStop),
         ]
     }
-    fn expected_switches() -> HashMap<Identifier, Identifier> {
+
+    fn expected_track_nodes() -> HashMap<Identifier, Identifier> {
         HashMap::from([
             ("link".into(), "LINK".into()),
-            ("switch".into(), "A_B1".into()),
+            ("point_switch".into(), "A_B1".into()),
         ])
     }
 
@@ -433,7 +434,7 @@ mod tests {
         let path = paths.pop().unwrap();
         assert_eq!(path.track_ranges, expected_path());
         assert_eq!(path.detectors, vec!["D1".into()]);
-        assert_eq!(path.switches_directions, expected_switches());
+        assert_eq!(path.track_nodes_directions, expected_track_nodes());
     }
 
     #[test]
@@ -456,6 +457,6 @@ mod tests {
         let path = paths.pop().unwrap();
         assert_eq!(path.track_ranges, expected_path());
         assert_eq!(path.detectors, vec!["D1".into()]);
-        assert_eq!(path.switches_directions, expected_switches());
+        assert_eq!(path.track_nodes_directions, expected_track_nodes());
     }
 }

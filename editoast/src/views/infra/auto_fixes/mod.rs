@@ -24,7 +24,7 @@ mod operational_point;
 mod route;
 mod signal;
 mod speed_section;
-mod switch;
+mod track_node;
 mod track_section;
 
 const MAX_AUTO_FIXES_ITERATIONS: u8 = 5;
@@ -130,11 +130,11 @@ fn fix_infra(
                     .map_err(|e| AutoFixesEditoastError::MissingErrorObject { source: e })?;
                 detector::fix_detector(detector, errors)
             }
-            ObjectType::Switch => {
-                let switch = infra_cache
-                    .get_switch(&object_ref.obj_id)
+            ObjectType::TrackNode => {
+                let track_node = infra_cache
+                    .get_track_node(&object_ref.obj_id)
                     .map_err(|e| AutoFixesEditoastError::MissingErrorObject { source: e })?;
-                switch::fix_switch(switch, errors)
+                track_node::fix_track_node(track_node, errors)
             }
             ObjectType::BufferStop => {
                 let buffer_stop = infra_cache
@@ -308,7 +308,7 @@ mod tests {
     use crate::schema::{
         ApplicableDirectionsTrackRange, BufferStop, BufferStopCache, BufferStopExtension, Detector,
         DetectorCache, Electrification, Endpoint, ObjectRef, ObjectType, OperationalPoint,
-        OperationalPointPart, Route, Signal, SignalCache, Slope, SpeedSection, Switch,
+        OperationalPointPart, Route, Signal, SignalCache, Slope, SpeedSection, TrackNode,
         TrackEndpoint, TrackSection, Waypoint,
     };
     use crate::views::pagination::PaginatedResponse;
@@ -413,7 +413,7 @@ mod tests {
         })));
         assert!(operations.contains(&Operation::Delete(DeleteOperation {
             obj_id: "PA0".to_string(),
-            obj_type: ObjectType::Switch,
+            obj_type: ObjectType::TrackNode,
         })));
     }
 
@@ -658,7 +658,7 @@ mod tests {
     }
 
     #[rstest::rstest]
-    async fn invalid_switch_ports() {
+    async fn invalid_track_node_ports() {
         let app = create_test_service().await;
         let small_infra = small_infra(db_pool()).await;
         let small_infra_id = small_infra.id();
@@ -668,14 +668,14 @@ mod tests {
             ("B1".into(), TrackEndpoint::new("TA3", Endpoint::Begin)),
             ("B2".into(), TrackEndpoint::new("TA4", Endpoint::Begin)),
         ]);
-        let invalid_switch = Switch {
-            switch_type: "point_switch".into(),
+        let invalid_track_node = TrackNode {
+            track_node_type: "point_switch".into(),
             ports,
             ..Default::default()
         };
-        // Create an invalid switch
+        // Create an invalid track node
         let req_create =
-            get_create_operation_request(invalid_switch.clone().into(), small_infra_id);
+            get_create_operation_request(invalid_track_node.clone().into(), small_infra_id);
         assert_eq!(
             call_service(&app, req_create).await.status(),
             StatusCode::OK
@@ -686,8 +686,8 @@ mod tests {
 
         let operations: Vec<Operation> = read_body_json(response).await;
         assert!(operations.contains(&Operation::Delete(DeleteOperation {
-            obj_id: invalid_switch.get_id().to_string(),
-            obj_type: ObjectType::Switch,
+            obj_id: invalid_track_node.get_id().to_string(),
+            obj_type: ObjectType::TrackNode,
         })));
     }
 
@@ -697,7 +697,7 @@ mod tests {
         let empty_infra = empty_infra(db_pool()).await;
         let empty_infra_id = empty_infra.id();
 
-        // Create an odd buffer stops (to a track endpoint linked by a switch)
+        // Create an odd buffer stops (to a track endpoint linked by a track node)
         let track: RailjsonObject = TrackSection {
             id: "test_track".into(),
             length: 1_000.0,

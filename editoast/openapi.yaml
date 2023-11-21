@@ -736,7 +736,7 @@ components:
               - Signal
               - BufferStop
               - Detector
-              - Switch
+              - TrackNode
               - Route
               type: string
           required:
@@ -760,15 +760,15 @@ components:
       - invalid_group
       - invalid_reference
       - invalid_route
-      - invalid_switch_ports
+      - invalid_track_node_ports
       - missing_route
       - missing_buffer_stop
       - object_out_of_path
       - odd_buffer_stop_location
       - out_of_range
       - overlapping_speed_sections
-      - overlapping_switches
       - overlapping_electrifications
+      - overlapping_track_nodes
       - unknown_port_name
       - unused_port
       - node_endpoints_not_unique
@@ -1082,8 +1082,8 @@ components:
       - SpeedSection
       - Detector
       - NeutralSection
-      - Switch
-      - SwitchType
+      - TrackNode
+      - TrackNodeType
       - BufferStop
       - Route
       - OperationalPoint
@@ -1370,7 +1370,7 @@ components:
           items:
             $ref: '#/components/schemas/Identifier'
           type: array
-        switches_directions:
+        track_nodes_directions:
           additionalProperties:
             $ref: '#/components/schemas/Identifier'
           type: object
@@ -1381,7 +1381,7 @@ components:
       required:
       - track_ranges
       - detectors
-      - switches_directions
+      - track_nodes_directions
       type: object
     PathfindingPayload:
       description: |-
@@ -1694,9 +1694,9 @@ components:
           type: array
         speed_sections:
           type: array
-        switch_types:
+        track_node_types:
           type: array
-        switches:
+        track_nodes:
           type: array
         track_sections:
           type: array
@@ -2201,7 +2201,7 @@ components:
           type: string
         exit_detector:
           type: string
-        switches:
+        track_nodes:
           additionalProperties:
             type: string
           type: object
@@ -2211,7 +2211,7 @@ components:
       - zone
       - entry_detector
       - exit_detector
-      - switches
+      - track_nodes
       - end_time
       type: object
     Scenario:
@@ -4541,7 +4541,7 @@ paths:
       summary: List all speed limit tags
       tags:
       - infra
-  /infra/{id}/switch_types/:
+  /infra/{id}/track_node_types/:
     get:
       parameters:
       - description: infra id
@@ -4556,7 +4556,7 @@ paths:
             application/json:
               schema:
                 items:
-                  description: A switch type following Railjson spec
+                  description: A track node type following Railjson spec
                   example:
                     groups:
                       LEFT:
@@ -4572,8 +4572,8 @@ paths:
                     - BASE
                   type: object
                 type: array
-          description: A list of switch types
-      summary: Retrieve a list of switch types
+          description: A list of track node types
+      summary: Retrieve a list of track node types
       tags:
       - infra
   /infra/{id}/unlock/:

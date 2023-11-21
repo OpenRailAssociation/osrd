@@ -9,16 +9,16 @@ use diesel::sql_query;
 use diesel::sql_types::{Array, BigInt, Text};
 use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
 
-pub struct SwitchLayer;
+pub struct TrackNodeLayer;
 
 #[async_trait]
-impl GeneratedData for SwitchLayer {
+impl GeneratedData for TrackNodeLayer {
     fn table_name() -> &'static str {
-        "infra_layer_switch"
+        "infra_layer_track_node"
     }
 
     async fn generate(conn: &mut PgConnection, infra: i64, _cache: &InfraCache) -> Result<()> {
-        sql_query(include_str!("sql/generate_switch_layer.sql"))
+        sql_query(include_str!("sql/generate_track_node_layer.sql"))
             .bind::<BigInt, _>(infra)
             .execute(conn)
             .await?;
@@ -32,7 +32,7 @@ impl GeneratedData for SwitchLayer {
         infra_cache: &crate::infra_cache::InfraCache,
     ) -> Result<()> {
         let involved_objects =
-            InvolvedObjects::from_operations(operations, infra_cache, ObjectType::Switch);
+            InvolvedObjects::from_operations(operations, infra_cache, ObjectType::TrackNode);
 
         // Delete elements
         if !involved_objects.deleted.is_empty() {
@@ -48,7 +48,7 @@ impl GeneratedData for SwitchLayer {
 
         // Update elements
         if !involved_objects.updated.is_empty() {
-            sql_query(include_str!("sql/insert_update_switch_layer.sql"))
+            sql_query(include_str!("sql/insert_update_track_node_layer.sql"))
                 .bind::<BigInt, _>(infra)
                 .bind::<Array<Text>, _>(involved_objects.updated.into_iter().collect::<Vec<_>>())
                 .execute(conn)

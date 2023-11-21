@@ -10,17 +10,17 @@ from railjson_generator.schema.infra.endpoint import Endpoint, TrackEndpoint
 from railjson_generator.schema.infra.infra import Infra
 from railjson_generator.schema.infra.route import Route
 from railjson_generator.schema.infra.signal import Signal
-from railjson_generator.schema.infra.switch import SwitchGroup
+from railjson_generator.schema.infra.track_node import TrackNodeGroup
 from railjson_generator.schema.infra.track_section import TrackSection
 from railjson_generator.schema.infra.waypoint import BufferStop, Waypoint
 
 
-def follow_track_link(connections: List[Tuple[TrackEndpoint, Optional[SwitchGroup]]]) -> Optional[TrackEndpoint]:
+def follow_track_link(connections: List[Tuple[TrackEndpoint, Optional[TrackNodeGroup]]]) -> Optional[TrackEndpoint]:
     """Follow a track link. If there is no track link on this endpoint, return None."""
     if not connections:
         return None
-    (endpoint, switch_group) = connections[0]
-    if switch_group is not None:
+    (endpoint, track_node_group) = connections[0]
+    if track_node_group is not None:
         return None
     return endpoint
 
@@ -125,7 +125,7 @@ class ZonePath:
     entry_dir: Direction
     exit_det: Waypoint
     exit_dir: Direction
-    switches_directions: Dict[str, str] = field(default_factory=dict)
+    track_nodes_directions: Dict[str, str] = field(default_factory=dict)
 
     @property
     def entry(self) -> Tuple[str, Direction]:
@@ -140,18 +140,18 @@ class ZonePath:
 class ZonePathStep:
     track_section: TrackSection
     direction: Direction
-    switch_direction: Optional[SwitchGroup] = field(default=None)
+    track_node_direction: Optional[TrackNodeGroup] = field(default=None)
     previous: Optional["ZonePathStep"] = field(default=None)
 
     def build(self, entry_det: Waypoint, entry_dir: Direction, exit_det: Waypoint, exit_dir: Direction) -> ZonePath:
-        switches_directions = {}
+        track_nodes_directions = {}
         step = self
         while step is not None:
-            switch_group = step.switch_direction
-            if switch_group is not None:
-                switches_directions[switch_group.switch.label] = switch_group.group
+            track_node_group = step.track_node_direction
+            if track_node_group is not None:
+                track_nodes_directions[track_node_group.track_node.label] = track_node_group.group
             step = step.previous
-        return ZonePath(entry_det, entry_dir, exit_det, exit_dir, switches_directions)
+        return ZonePath(entry_det, entry_dir, exit_det, exit_dir, track_nodes_directions)
 
 
 def search_zone_paths(infra: Infra) -> List[ZonePath]:
@@ -189,14 +189,14 @@ def search_zone_paths(infra: Infra) -> List[ZonePath]:
             incomplete_paths = [ZonePathStep(track, start_direction)]
             while incomplete_paths:
                 step = incomplete_paths.pop()
-                for neighbor, switch_group in step.track_section.neighbors(step.direction):
+                for neighbor, track_node_group in step.track_section.neighbors(step.direction):
                     neighbor_track = neighbor.track_section
                     if neighbor.endpoint == Endpoint.BEGIN:
                         neighbor_dir = Direction.START_TO_STOP
                     else:
                         neighbor_dir = Direction.STOP_TO_START
 
-                    new_step = ZonePathStep(neighbor_track, neighbor_dir, switch_group, step)
+                    new_step = ZonePathStep(neighbor_track, neighbor_dir, track_node_group, step)
 
                     if not neighbor_track.waypoints:
                         incomplete_paths.append(new_step)
@@ -217,18 +217,18 @@ def search_zone_paths(infra: Infra) -> List[ZonePath]:
 @dataclass(frozen=True)
 class IncompleteRoute:
     path: List[ZonePath]
-    switches_directions: Dict[str, str]
+    track_nodes_directions: Dict[str, str]
 
     @staticmethod
     def from_zonepath(zone_path: ZonePath) -> "IncompleteRoute":
-        return IncompleteRoute(path=[zone_path], switches_directions={**zone_path.switches_directions})
+        return IncompleteRoute(path=[zone_path], track_nodes_directions={**zone_path.track_nodes_directions})
 
     def fork(self, new_zone_path: ZonePath) -> Optional["IncompleteRoute"]:
-        if any(switch in self.switches_directions for switch in new_zone_path.switches_directions):
+        if any(track_node in self.strack_nodes_directions for track_node in new_zone_path.track_nodes_directions):
             return None
         new_path = [*self.path, new_zone_path]
-        new_switches_directions = {**self.switches_directions, **new_zone_path.switches_directions}
-        return IncompleteRoute(path=new_path, switches_directions=new_switches_directions)
+        new_track_nodes_directions = {**self.track_nodes_directions, **new_zone_path.track_nodes_directions}
+        return IncompleteRoute(path=new_path, track_nodes_directions=new_track_nodes_directions)
 
     def dir_waypoints(self) -> List[Tuple[Waypoint, Direction]]:
         return [
@@ -290,5 +290,5 @@ def generate_routes(infra: Infra, progressive_release: bool = True) -> Iterable[
             waypoints,
             release_waypoints,
             path[0].entry_dir,
-            switches_directions=incomplete_route.switches_directions,
+            track_nodes_directions=incomplete_route.track_nodes_directions,
         )

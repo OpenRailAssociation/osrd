@@ -1,0 +1,95 @@
+[
+    {
+        "id": "point_switch",
+        "ports": [
+            "A",
+            "B1",
+            "B2"
+        ],
+        "groups": {
+            "A_B1": [
+                {
+                    "src": "A",
+                    "dst": "B1"
+                }
+            ],
+            "A_B2": [
+                {
+                    "src": "A",
+                    "dst": "B2"
+                }
+            ]
+        }
+    },
+    {
+        "id": "crossing",
+        "ports": [
+            "A1",
+            "B1",
+            "A2",
+            "B2"
+        ],
+        "groups": {
+            "STATIC": [
+                {
+                    "dst": "A1",
+                    "src": "B1"
+                },
+                {
+                    "dst": "A2",
+                    "src": "B2"
+                }
+            ]
+        }
+    },
+    {
+        "id": "double_cross",
+        "ports": [
+            "A1",
+            "B1",
+            "A2",
+            "B2"
+        ],
+        "groups": {
+            "A1_B1": [
+                {
+                    "dst": "A1",
+                    "src": "B1"
+                }
+            ],
+            "A1_B2": [
+                {
+                    "dst": "A1",
+                    "src": "B2"
+                }
+            ],
+            "A2_B1": [
+                {
+                    "dst": "A2",
+                    "src": "B1"
+                }
+            ],
+            "A2_B2": [
+                {
+                    "dst": "A2",
+                    "src": "B2"
+                }
+            ]
+        }
+    },
+    {
+        "id": "link",
+        "ports": [
+            "A",
+            "B"
+        ],
+        "groups": {
+            "STATIC": [
+                {
+                    "src": "A",
+                    "dst": "B"
+                }
+            ]
+        }
+    }
+]

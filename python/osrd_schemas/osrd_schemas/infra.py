@@ -8,7 +8,7 @@ from pydantic.fields import FieldInfo
 
 ALL_OBJECT_TYPES = []
 
-RAILJSON_INFRA_VERSION_TYPE = Literal["3.4.8"]
+RAILJSON_INFRA_VERSION_TYPE = Literal["3.4.9"]
 RAILJSON_INFRA_VERSION = get_args(RAILJSON_INFRA_VERSION_TYPE)[0]
 
 # Traits
@@ -220,12 +220,14 @@ class Route(BaseObjectTrait):
     release_detectors: List[Identifier] = Field(
         description="Detector allowing the release of resources reserved from the beginning of the route until this one"
     )
-    switches_directions: Mapping[Identifier, Identifier] = Field(description="Switches position part of the route")
+    track_nodes_directions: Mapping[Identifier, Identifier] = Field(
+        description="Track Nodes position part of the route"
+    )
 
 
-class SwitchPortConnection(BaseModel):
+class TrackNodePortConnection(BaseModel):
     """
-    This class allows to know the connection between each port in switch type.
+    This class allows to know the connection between each port in track node type.
     The connection is always bidirectional.
     """
 
@@ -237,23 +239,23 @@ class SwitchPortConnection(BaseModel):
         return cls(src=Identifier(src), dst=Identifier(dst))
 
 
-class SwitchType(BaseObjectTrait):
+class TrackNodeType(BaseObjectTrait):
     """
-    Switch types are used to define what kind of switch is used in the infrastructure.
-    A switch type is defined by a list of ports and groups which are the possible configurations of the switch.
+    Track node types are used to define what kind of track node is used in the infrastructure.
+    A track node type is defined by a list of ports and groups which are the possible configurations of the track node.
     """
 
-    ports: List[Identifier] = Field(min_length=1, description="List of ports. Ports map to the ends of switches")
-    groups: Mapping[Identifier, List[SwitchPortConnection]] = Field(
+    ports: List[Identifier] = Field(min_length=1, description="List of ports. Ports map to the ends of track_nodes")
+    groups: Mapping[Identifier, List[TrackNodePortConnection]] = Field(
         description="Connection between and according ports"
     )
 
     @classmethod
-    def new(cls, id: Identifier, ports: List[Identifier], groups: Mapping[Identifier, List[SwitchPortConnection]]):
+    def new(cls, id: Identifier, ports: List[Identifier], groups: Mapping[Identifier, List[TrackNodePortConnection]]):
         return cls(id=id, ports=ports, groups=groups)
 
     @classmethod
-    def from_strs(cls, id: str, ports: List[str], groups: Mapping[str, List[SwitchPortConnection]]):
+    def from_strs(cls, id: str, ports: List[str], groups: Mapping[str, List[TrackNodePortConnection]]):
         return cls(
             id=Identifier(id),
             ports=[Identifier(e) for e in ports],
@@ -271,14 +273,14 @@ class SwitchType(BaseObjectTrait):
         return {self.id: {"ports": self.ports, "groups": groups_dict}}
 
 
-class Switch(BaseObjectTrait):
+class TrackNode(BaseObjectTrait):
     """
-    Switches are devices used for track changes.
+    Track nodes are devices used for track changes.
     """
 
-    switch_type: Identifier = Field(description="Identifier and type of the switch type")
+    track_node_type: Identifier = Field(description="Identifier and type of the track node type")
     group_change_delay: float = Field(
-        description="Time it takes to change which group of the switch is activated", ge=0
+        description="Time it takes to change which group of the track node is activated", ge=0
     )
     ports: Mapping[Identifier, TrackEndpoint] = Field(
         description="Location of different ports according to track sections"
@@ -480,10 +482,10 @@ class RailJsonInfra(BaseModel):
         description="List of operational points of the corresponding infra"
     )
     routes: List[Route] = Field(description="Routes of the infra")
-    extended_switch_types: List[SwitchType] = Field(
-        default=[], description="Switch types of the infra that can be added by the user"
+    extended_track_node_types: List[TrackNodeType] = Field(
+        default=[], description="Track node types of the infra that can be added by the user"
     )
-    switches: List[Switch] = Field(description="Switches of the infra")
+    track_nodes: List[TrackNode] = Field(description="Track nodes of the infra")
     track_sections: List[TrackSection] = Field(description="Track sections of the infra")
     speed_sections: List[SpeedSection] = Field(description="Speed sections of the infra")
     electrifications: List[Electrification] = Field(description="Electrifications of the infra")
@@ -564,9 +566,9 @@ class OperationalPointIdentifierExtension(BaseModel):
     uic: int = Field(description="International Union of Railways code of the operational point")
 
 
-@register_extension(object=Switch, name="sncf")
-class SwitchSncfExtension(BaseModel):
-    label: NonBlankStr = Field(description="Identifier of the switch")
+@register_extension(object=TrackNode, name="sncf")
+class TrackNodeSncfExtension(BaseModel):
+    label: NonBlankStr = Field(description="Identifier of the track node")
 
 
 @register_extension(object=Signal, name="sncf")

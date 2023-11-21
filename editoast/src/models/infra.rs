@@ -462,8 +462,8 @@ pub mod tests {
         let railjson = RailJson {
             buffer_stops: (0..10).map(|_| Default::default()).collect(),
             routes: (0..10).map(|_| Default::default()).collect(),
-            extended_switch_types: (0..10).map(|_| Default::default()).collect(),
-            switches: (0..10).map(|_| Default::default()).collect(),
+            extended_track_node_types: (0..10).map(|_| Default::default()).collect(),
+            track_nodes: (0..10).map(|_| Default::default()).collect(),
             track_sections: (0..10).map(|_| Default::default()).collect(),
             speed_sections: (0..10).map(|_| Default::default()).collect(),
             neutral_sections: (0..10).map(|_| Default::default()).collect(),
@@ -498,12 +498,12 @@ pub mod tests {
             sort(railjson.routes)
         );
         assert_eq!(
-            sort::<SwitchType>(find_all_schemas(&mut conn, id).await.unwrap()),
-            sort(railjson.extended_switch_types)
+            sort::<TrackNodeType>(find_all_schemas(&mut conn, id).await.unwrap()),
+            sort(railjson.extended_track_node_types)
         );
         assert_eq!(
-            sort::<Switch>(find_all_schemas(&mut conn, id).await.unwrap()),
-            sort(railjson.switches)
+            sort::<TrackNode>(find_all_schemas(&mut conn, id).await.unwrap()),
+            sort(railjson.track_nodes)
         );
         assert_eq!(
             sort::<TrackSection>(find_all_schemas(&mut conn, id).await.unwrap()),

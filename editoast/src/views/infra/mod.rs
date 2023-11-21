@@ -19,7 +19,7 @@ use crate::map::redis_utils::RedisClient;
 use crate::map::{self, MapLayers};
 use crate::models::infra::INFRA_VERSION;
 use crate::models::{Create, Delete, Infra, List as ModelList, NoParams, Retrieve, Update};
-use crate::schema::{SwitchType, RAILJSON_VERSION};
+use crate::schema::{TrackNodeType, RAILJSON_VERSION};
 use crate::views::pagination::{PaginatedResponse, PaginationQueryParam};
 use crate::DbPool;
 
@@ -78,7 +78,7 @@ pub fn infra_routes() -> impl HttpServiceFactory {
                     unlock,
                     get_speed_limit_tags,
                     get_voltages,
-                    get_switch_types,
+                    get_track_node_types,
                 ))
                 .service((
                     errors::routes(),
@@ -358,13 +358,13 @@ async fn rename(
     Ok(Json(infra))
 }
 
-/// Return the railjson list of switch types
-#[get("/switch_types")]
-async fn get_switch_types(
+/// Return the railjson list of track node types
+#[get("/track_node_types")]
+async fn get_track_node_types(
     infra: Path<i64>,
     db_pool: Data<DbPool>,
     infra_caches: Data<CHashMap<i64, InfraCache>>,
-) -> Result<Json<Vec<SwitchType>>> {
+) -> Result<Json<Vec<TrackNodeType>>> {
     let infra_id = infra.into_inner();
     let infra = Infra::retrieve(db_pool.clone(), infra_id)
         .await?
@@ -374,9 +374,9 @@ async fn get_switch_types(
     let infra = InfraCache::get_or_load(&mut conn, &infra_caches, &infra).await?;
     Ok(Json(
         infra
-            .switch_types()
+            .track_node_types()
             .values()
-            .map(ObjectCache::unwrap_switch_type)
+            .map(ObjectCache::unwrap_track_node_type)
             .cloned()
             .collect(),
     ))
@@ -543,7 +543,7 @@ pub mod tests {
     use crate::generated_data;
     use crate::modelsv2::{get_geometry_layer_table, get_table};
     use crate::schema::operation::{Operation, RailjsonObject};
-    use crate::schema::{Electrification, ObjectType, SpeedSection, SwitchType};
+    use crate::schema::{Electrification, ObjectType, SpeedSection, TrackNodeType};
     use crate::views::tests::{create_test_service, create_test_service_with_core_client};
     use actix_http::Request;
     use actix_web::http::StatusCode;
@@ -610,15 +610,15 @@ pub mod tests {
             .await
             .unwrap();
 
-        let switch_type: RailjsonObject = SwitchType {
-            id: "test_switch_type".into(),
+        let track_node_type: RailjsonObject = TrackNodeType {
+            id: "test_track_node_type".into(),
             ..Default::default()
         }
         .into();
 
         let create_operation = TestRequest::post()
             .uri(format!("/infra/{small_infra_id}/").as_str())
-            .set_json(json!([Operation::Create(Box::new(switch_type))]))
+            .set_json(json!([Operation::Create(Box::new(track_node_type))]))
             .to_request();
 
         assert_eq!(
@@ -893,17 +893,17 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn infra_get_switch_types(#[future] empty_infra: TestFixture<Infra>) {
+    async fn infra_get_track_node_types(#[future] empty_infra: TestFixture<Infra>) {
         let empty_infra = empty_infra.await;
         let app = create_test_service().await;
 
         let req = TestRequest::get()
-            .uri(format!("/infra/{}/switch_types/", empty_infra.id()).as_str())
+            .uri(format!("/infra/{}/track_node_types/", empty_infra.id()).as_str())
             .to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
-        let switch_types: Vec<SwitchType> = read_body_json(response).await;
-        assert_eq!(switch_types.len(), 5);
+        let track_node_types: Vec<TrackNodeType> = read_body_json(response).await;
+        assert_eq!(track_node_types.len(), 5);
     }
 
     #[rstest]

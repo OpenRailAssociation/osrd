@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 from osrd_schemas import infra
-from osrd_schemas.switch_type import (
+from osrd_schemas.track_node_type import (
     CROSSING,
     DOUBLE_SLIP_SWITCH,
     LINK,
@@ -14,28 +14,28 @@ from railjson_generator.schema.infra.direction import Direction
 from railjson_generator.schema.infra.endpoint import Endpoint, TrackEndpoint
 
 
-def _switch_id():
+def _track_node_id():
     # pytype: disable=name-error
-    res = f"switch.{Switch._INDEX}"
-    Switch._INDEX += 1
+    res = f"track_node.{TrackNode._INDEX}"
+    TrackNode._INDEX += 1
     # pytype: enable=name-error
     return res
 
 
 @dataclass
-class SwitchGroup:
-    switch: "Switch"
+class TrackNodeGroup:
+    track_node: "TrackNode"
     group: str
 
 
 @dataclass
-class Switch:
+class TrackNode:
     _INDEX = 0
     # overridden by subclasses
     PORT_NAMES = []
-    SWITCH_TYPE = ""
+    TRACK_NODE_TYPE = ""
 
-    label: str = field(default_factory=_switch_id)
+    label: str = field(default_factory=_track_node_id)
     delay: float = field(default=0)
 
     def set_coords(self, x: float, y: float):
@@ -43,7 +43,7 @@ class Switch:
             getattr(self, port_name).set_coords(x, y)
 
     def group(self, group_id: str):
-        return SwitchGroup(self, group_id)
+        return TrackNodeGroup(self, group_id)
 
     def add_signal_on_port(self, port_name, port_distance, *args, **kwargs):
         port: TrackEndpoint = getattr(self, port_name)
@@ -77,9 +77,9 @@ class Switch:
         return track_section.add_detector(*args, position=position, **kwargs)
 
     def to_rjs(self):
-        return infra.Switch(
+        return infra.TrackNode(
             id=self.label,
-            switch_type=self.SWITCH_TYPE,
+            track_node_type=self.TRACK_NODE_TYPE,
             group_change_delay=self.delay,
             ports={port_name: getattr(self, port_name).to_rjs() for port_name in self.PORT_NAMES},
             extensions={"sncf": {"label": self.label}},
@@ -87,52 +87,52 @@ class Switch:
 
 
 @dataclass
-class Link(Switch):
+class Link(TrackNode):
     A: Optional[TrackEndpoint] = None
     B: Optional[TrackEndpoint] = None
 
     PORT_NAMES = LINK.ports
-    SWITCH_TYPE = LINK.id
+    TRACK_NODE_TYPE = LINK.id
 
 
 @dataclass
-class PointSwitch(Switch):
+class PointSwitch(TrackNode):
     A: Optional[TrackEndpoint] = None
     B1: Optional[TrackEndpoint] = None
     B2: Optional[TrackEndpoint] = None
 
     PORT_NAMES = POINT_SWITCH.ports
-    SWITCH_TYPE = POINT_SWITCH.id
+    TRACK_NODE_TYPE = POINT_SWITCH.id
 
 
 @dataclass
-class Crossing(Switch):
+class Crossing(TrackNode):
     A1: Optional[TrackEndpoint] = None
     B1: Optional[TrackEndpoint] = None
     A2: Optional[TrackEndpoint] = None
     B2: Optional[TrackEndpoint] = None
 
     PORT_NAMES = CROSSING.ports
-    SWITCH_TYPE = CROSSING.id
+    TRACK_NODE_TYPE = CROSSING.id
 
 
 @dataclass
-class DoubleSlipSwitch(Switch):
+class DoubleSlipSwitch(TrackNode):
     A1: Optional[TrackEndpoint] = None
     A2: Optional[TrackEndpoint] = None
     B1: Optional[TrackEndpoint] = None
     B2: Optional[TrackEndpoint] = None
 
     PORT_NAMES = DOUBLE_SLIP_SWITCH.ports
-    SWITCH_TYPE = DOUBLE_SLIP_SWITCH.id
+    TRACK_NODE_TYPE = DOUBLE_SLIP_SWITCH.id
 
 
 @dataclass
-class SingleSlipSwitch(Switch):
+class SingleSlipSwitch(TrackNode):
     A1: Optional[TrackEndpoint] = None
     A2: Optional[TrackEndpoint] = None
     B1: Optional[TrackEndpoint] = None
     B2: Optional[TrackEndpoint] = None
 
     PORT_NAMES = SINGLE_SLIP_SWITCH.ports
-    SWITCH_TYPE = SINGLE_SLIP_SWITCH.id
+    TRACK_NODE_TYPE = SINGLE_SLIP_SWITCH.id

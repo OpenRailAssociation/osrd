@@ -71,7 +71,7 @@ pub fn check_electrification_track_ranges(
 
 /// Checks that electrifications don't overlap
 pub fn check_overlapping(infra_cache: &InfraCache, _: &Graph) -> Vec<InfraError> {
-    let mut overlapping_cat = HashSet::new();
+    let mut overlapping_cat: HashSet<(String, String)> = HashSet::new();
     // Key: (Track, Voltage)
     // Value: RangeMap<Range, ElectrificationId>
     let mut range_maps: HashMap<String, RangeMap<u64, String>> = Default::default();

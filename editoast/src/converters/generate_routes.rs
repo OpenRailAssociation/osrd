@@ -26,12 +26,12 @@ impl Node {
 }
 
 /// An edge connects two nodes
-/// This connection can be between two tracks (switch)
+/// This connection can be between two tracks (track node)
 /// Or traversing a whole track
 /// Or along a track (detector and buffer stops)
 #[derive(Clone, Debug)]
 enum EdgeType {
-    Switch { id: Identifier, port: Identifier },
+    TrackNode { id: Identifier, port: Identifier },
     Track,
     Buffer(Direction),
     ToDetector,
@@ -48,10 +48,10 @@ struct Graph {
 }
 
 impl Graph {
-    /* Part 2: build the graph from track sections, switches, buffers and detectors */
+    /* Part 2: build the graph from track sections, track nodes, buffers and detectors */
     fn load(&mut self, railjson: &RailJson) {
         self.edges_from_track_sections(railjson);
-        self.edges_from_switches(railjson);
+        self.edges_from_track_nodes(railjson);
     }
 
     fn edges_from_track_sections(&mut self, railjson: &RailJson) {
@@ -115,32 +115,32 @@ impl Graph {
         }
     }
 
-    fn edges_from_switches(&mut self, railjson: &RailJson) {
-        for switch in &railjson.switches {
+    fn edges_from_track_nodes(&mut self, railjson: &RailJson) {
+        for track_node in &railjson.track_nodes {
             let builtin_node_types = builtin_node_types_list();
-            let switch_type = builtin_node_types
+            let track_node_type = builtin_node_types
                 .iter()
-                .find(|t| t.id == switch.switch_type)
-                .expect("Switch must have associated type");
+                .find(|t| t.id == track_node.track_node_type)
+                .expect("Track Node must have associated type");
 
-            for (port_id, switch_ports) in switch_type.groups.iter() {
-                for switch_port in switch_ports {
+            for (port_id, track_node_ports) in track_node_type.groups.iter() {
+                for track_node_port in track_node_ports {
                     let u = Node::TrackEndpoint(
-                        switch
+                        track_node
                             .ports
-                            .get(&switch_port.src)
-                            .expect("Switch must have all ports set")
+                            .get(&track_node_port.src)
+                            .expect("Track Node must have all ports set")
                             .clone(),
                     );
                     let v = Node::TrackEndpoint(
-                        switch
+                        track_node
                             .ports
-                            .get(&switch_port.dst)
-                            .expect("Switch must have all ports set")
+                            .get(&track_node_port.dst)
+                            .expect("Track Node must have all ports set")
                             .clone(),
                     );
-                    let edge_type = EdgeType::Switch {
-                        id: switch.id.clone(),
+                    let edge_type = EdgeType::TrackNode {
+                        id: track_node.id.clone(),
                         port: port_id.clone(),
                     };
                     self.add_symmetrical_edge(u, v, edge_type);
@@ -207,8 +207,8 @@ impl Graph {
             .get(current)
             .and_then(|&p| self.edges.get(&(p.clone(), current.clone())));
 
-        let switch_u_turn = matches!(edge, EdgeType::Switch { .. })
-            && matches!(previous_edge, Some(EdgeType::Switch { .. }));
+        let track_node_u_turn = matches!(edge, EdgeType::TrackNode { .. })
+            && matches!(previous_edge, Some(EdgeType::TrackNode { .. }));
 
         // Don’t make a U-turn on a detector
         // -o---d>--o- The detector is only in one direction
@@ -224,22 +224,22 @@ impl Graph {
 
         !parent.contains_key(&succ) // Don’t explore nodes that have already been visited
             && succ != start // Don’t pass again through the start
-            && !switch_u_turn
+            && !track_node_u_turn
             && !detector_u_turn
     }
 
     // Once we found a route, we must build by scanning the predecessors
     fn build_route(&self, count: u64, end: &Node, pred: &HashMap<&Node, &Node>) -> Route {
-        let mut switches_directions = HashMap::new();
+        let mut track_nodes_directions = HashMap::new();
 
         let mut last_direction = Direction::StartToStop;
         // We go back from the end all the way to the start
-        // We store every switch we encounter on the way
+        // We store every track node we encounter on the way
         let mut current = end;
         while let Some(&pred) = pred.get(&current) {
             match self.edges.get(&(pred.clone(), current.clone())) {
-                Some(EdgeType::Switch { id, port }) => {
-                    switches_directions.insert(id.clone(), port.clone());
+                Some(EdgeType::TrackNode { id, port }) => {
+                    track_nodes_directions.insert(id.clone(), port.clone());
                 }
                 Some(EdgeType::FromDetector(direction)) | Some(EdgeType::Buffer(direction)) => {
                     last_direction = *direction;
@@ -266,7 +266,7 @@ impl Graph {
             entry_point_direction,
             entry_point,
             exit_point,
-            switches_directions,
+            track_nodes_directions,
             release_detectors: vec![],
         }
     }
@@ -351,8 +351,8 @@ mod tests {
             .insert((start.clone(), t1.clone()), EdgeType::Track);
         graph.edges.insert(
             (t1.clone(), t2.clone()),
-            EdgeType::Switch {
-                id: "switch".into(),
+            EdgeType::TrackNode {
+                id: "track_node".into(),
                 port: "port".into(),
             },
         );
@@ -368,7 +368,7 @@ mod tests {
         let route = graph.build_route(0, &end, &pred);
         assert!(route.entry_point.is_buffer_stop());
         assert!(route.exit_point.is_buffer_stop());
-        assert_eq!(1, route.switches_directions.len());
+        assert_eq!(1, route.track_nodes_directions.len());
     }
 
     #[test]
@@ -381,7 +381,7 @@ mod tests {
     #[test]
     /* ----o---d---
             \------
-        The test case has one switch and one detector
+        The test case has one track node and one detector
     */
     fn generate_routes() {
         let railjson =
@@ -389,10 +389,10 @@ mod tests {
                 .unwrap();
         let routes = super::routes(&railjson);
         assert_eq!(6, routes.len());
-        let routes_with_switches_count = routes
+        let routes_with_track_nodes_count = routes
             .iter()
-            .filter(|r| r.switches_directions.len() == 1)
+            .filter(|r| r.track_nodes_directions.len() == 1)
             .count();
-        assert_eq!(4, routes_with_switches_count);
+        assert_eq!(4, routes_with_track_nodes_count);
     }
 }

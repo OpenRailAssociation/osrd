@@ -27,10 +27,10 @@ poetry run python3 -m railjson_generator /tmp/all_infras scripts/*.py
 
 - `__init__(self) -> InfraBuilder`: Instantiates an infra builder.
 - `add_track_section(self, length, label="track.X", waypoints=[], signals=[], operational_points=[]) -> TrackSection`: Add a track section.
-- `add_point_switch(self, base, left, right, label="switch.X", delay=0) -> Switch`: Add a point.
-- `add_crossing(self, north, south, east, west, label="switch.X", delay=0) -> Switch`: Add a cross switch.
-- `add_double_slip_switch(self, north_1, north_2, south_1, south_2, label="switch.X", delay=0) -> Switch`: Add a double cross switch.
-- `add_link(self, source, destination) -> Switch`: Add a link switch.
+- `add_point_switch(self, base, left, right, label="track_node.X", delay=0) -> TrackNode`: Add a point switch.
+- `add_crossing(self, north, south, east, west, label="track_node.X", delay=0) -> TrackNode`: Add a crossing.
+- `add_double_slip_switch(self, north_1, north_2, south_1, south_2, label="track_node.X", delay=0) -> TrackNode`: Add a double cross slip switch.
+- `add_link(self, source, destination) -> TrackNode`: Add a link.
 - `add_operational_point(self, label) -> OperationPoint`: Add an operation point.
 - `generate_routes(self, progressive_release=True) -> Iterable[Route]`: Automatically generate routes, which must then be registered manually. When progressive_release is true, release points are added for all intermediate zones.
 - `register_route(self, route: Route)`: Register a route
@@ -47,7 +47,7 @@ poetry run python3 -m railjson_generator /tmp/all_infras scripts/*.py
 
 - `add_logical_signal(self, signaling_system: str, next_signaling_systems: List[str], settings: List[str]) -> LogicalSignal`: Add a logical signal to a signal.
 
-### Switch / TrackEndpoint
+### TrackNode / TrackEndpoint
 
 - `set_coords(self, x, y)`: Set a geometry coordinates of the point
 
@@ -58,7 +58,7 @@ Route can either be manually created, or generated using `generate_routes`, and 
 - `waypoints: List[Waypoint]`
 - `release_waypoints: List[Waypoint]`
 - `entry_point_direction: Direction`
-- `switches_directions: Mapping[str, str]`
+- `track_nodes_directions: Mapping[str, str]`
 - `label: str`
 - `entry_point: Waypoint` is a getter for `waypoints[0]`
 - `exit_point: Waypoint` is a getter for `waypoints[-1]`

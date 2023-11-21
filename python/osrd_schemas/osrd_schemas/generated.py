@@ -34,7 +34,7 @@ class InvalidReference(InfraErrorTrait):
 class InvalidGroup(InfraErrorTrait):
     error_type: Literal["invalid_group"] = Field(default="invalid_group")
     group: str
-    switch_type: str
+    track_node_type: str
 
 
 class OutOfRange(InfraErrorTrait):
@@ -61,12 +61,12 @@ class UnknownPortName(InfraErrorTrait):
     port_name: str
 
 
-class InvalidSwitchPorts(InfraErrorTrait):
-    error_type: Literal["invalid_switch_ports"] = Field(default="invalid_switch_ports")
+class InvalidTrackNodePorts(InfraErrorTrait):
+    error_type: Literal["invalid_track_node_ports"] = Field(default="invalid_track_node_ports")
 
 
-class OverlappingSwitches(InfraErrorTrait):
-    error_type: Literal["overlapping_switches"] = Field(default="overlapping_switches")
+class OverlappingTrackNodes(InfraErrorTrait):
+    error_type: Literal["overlapping_track_nodes"] = Field(default="overlapping_track_nodes")
     reference: ObjectReference
 
 
@@ -114,7 +114,7 @@ InfraError = Annotated[
         InvalidGroup,
         InvalidReference,
         InvalidRoute,
-        InvalidSwitchPorts,
+        InvalidTrackNodePorts,
         MissingRoute,
         MissingBufferStop,
         NodeEndpointsNotUnique,
@@ -123,7 +123,7 @@ InfraError = Annotated[
         OutOfRange,
         OverlappingElectrifications,
         OverlappingSpeedSections,
-        OverlappingSwitches,
+        OverlappingTrackNodes,
         UnknownPortName,
         UnusedPort,
     ],

@@ -106,7 +106,7 @@ mod tests {
     use crate::error::EditoastError;
     use crate::models::infra::tests::test_infra_transaction;
     use crate::schema::operation::create::tests::{
-        create_signal, create_speed, create_switch, create_track,
+        create_signal, create_speed, create_track_node, create_track,
     };
     use crate::schema::operation::OperationError;
     use crate::schema::{OSRDIdentified, ObjectType};
@@ -218,31 +218,31 @@ mod tests {
     }
 
     #[actix_test]
-    async fn valid_update_switch_extension() {
+    async fn valid_update_track_node_extension() {
         test_infra_transaction(|conn, infra| async move {
-            let switch = create_switch(conn, infra.id.unwrap(), Default::default()).await;
+            let track_node = create_track_node(conn, infra.id.unwrap(), Default::default()).await;
 
-            let update_switch = UpdateOperation {
-                obj_id: switch.get_id().clone(),
-                obj_type: ObjectType::Switch,
+            let update_track_node = UpdateOperation {
+                obj_id: track_node.get_id().clone(),
+                obj_type: ObjectType::TrackNode,
                 railjson_patch: from_str(
                     r#"[
-                        { "op": "add", "path": "/extensions/sncf", "value": {"label": "Switch Label"} }
+                        { "op": "add", "path": "/extensions/sncf", "value": {"label": "Track Node Label"} }
                   ]"#,
                 )
                 .unwrap(),
             };
 
-            assert!(update_switch.apply(infra.id.unwrap(), conn).await.is_ok());
+            assert!(update_track_node.apply(infra.id.unwrap(), conn).await.is_ok());
 
             let updated_comment = sql_query(format!(
-                "SELECT (data->'extensions'->'sncf'->>'label') as label FROM infra_object_switch WHERE obj_id = '{}' AND infra_id = {}",
-                switch.get_id(),
+                "SELECT (data->'extensions'->'sncf'->>'label') as label FROM infra_object_track_node WHERE obj_id = '{}' AND infra_id = {}",
+                track_node.get_id(),
                 infra.id.unwrap()
             ))
             .get_result::<Label>(conn).await.unwrap();
 
-            assert_eq!(updated_comment.label, "Switch Label");
+            assert_eq!(updated_comment.label, "Track Node Label");
         }.scope_boxed()).await;
     }
 

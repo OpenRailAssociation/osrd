@@ -14,7 +14,7 @@ from railjson_generator.schema.infra.range_elements import (
     Slope,
 )
 from railjson_generator.schema.infra.signal import Signal
-from railjson_generator.schema.infra.switch import SwitchGroup
+from railjson_generator.railjson_generator.schema.infra.track_node import TrackNodeGroup
 from railjson_generator.schema.infra.waypoint import BufferStop, Detector, Waypoint
 
 
@@ -43,8 +43,8 @@ class TrackSection:
     coordinates: List[Tuple[Optional[float], Optional[float]]] = field(
         default_factory=lambda: [(None, None), (None, None)]
     )
-    begining_links: List[Tuple[TrackEndpoint, Optional[SwitchGroup]]] = field(default_factory=list, repr=False)
-    end_links: List[Tuple[TrackEndpoint, Optional[SwitchGroup]]] = field(default_factory=list, repr=False)
+    begining_links: List[Tuple[TrackEndpoint, Optional[TrackNodeGroup]]] = field(default_factory=list, repr=False)
+    end_links: List[Tuple[TrackEndpoint, Optional[TrackNodeGroup]]] = field(default_factory=list, repr=False)
     slopes: List[Slope] = field(default_factory=list)
     curves: List[Curve] = field(default_factory=list)
     loading_gauge_limits: List[LoadingGaugeLimit] = field(default_factory=list)

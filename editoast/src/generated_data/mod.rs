@@ -9,7 +9,7 @@ mod operational_point;
 mod psl_sign;
 mod signal;
 mod speed_section;
-mod switch;
+mod track_node;
 mod track_section;
 
 pub use error::generate_infra_errors;
@@ -24,7 +24,7 @@ use operational_point::OperationalPointLayer;
 use psl_sign::PSLSignLayer;
 use signal::SignalLayer;
 use speed_section::SpeedSectionLayer;
-use switch::SwitchLayer;
+use track_node::TrackNodeLayer;
 use track_section::TrackSectionLayer;
 
 use crate::error::Result;
@@ -94,7 +94,7 @@ pub async fn refresh_all(
     futures::try_join!(
         SpeedSectionLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
         SignalLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
-        SwitchLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
+        TrackNodeLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
         BufferStopLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
         ElectrificationLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
         DetectorLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
@@ -114,7 +114,7 @@ pub async fn clear_all(conn: &mut PgConnection, infra: i64) -> Result<()> {
     TrackSectionLayer::clear(conn, infra).await?;
     SpeedSectionLayer::clear(conn, infra).await?;
     SignalLayer::clear(conn, infra).await?;
-    SwitchLayer::clear(conn, infra).await?;
+    TrackNodeLayer::clear(conn, infra).await?;
     BufferStopLayer::clear(conn, infra).await?;
     ElectrificationLayer::clear(conn, infra).await?;
     DetectorLayer::clear(conn, infra).await?;
@@ -135,7 +135,7 @@ pub async fn update_all(
     TrackSectionLayer::update(conn, infra, operations, infra_cache).await?;
     SpeedSectionLayer::update(conn, infra, operations, infra_cache).await?;
     SignalLayer::update(conn, infra, operations, infra_cache).await?;
-    SwitchLayer::update(conn, infra, operations, infra_cache).await?;
+    TrackNodeLayer::update(conn, infra, operations, infra_cache).await?;
     BufferStopLayer::update(conn, infra, operations, infra_cache).await?;
     ElectrificationLayer::update(conn, infra, operations, infra_cache).await?;
     DetectorLayer::update(conn, infra, operations, infra_cache).await?;

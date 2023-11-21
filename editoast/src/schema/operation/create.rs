@@ -2,7 +2,7 @@ use crate::error::Result;
 use crate::modelsv2::get_table;
 use crate::schema::{
     BufferStop, Detector, Electrification, NeutralSection, OSRDIdentified, OSRDObject, ObjectType,
-    OperationalPoint, Route, Signal, SpeedSection, Switch, SwitchType, TrackSection,
+    OperationalPoint, Route, Signal, SpeedSection, TrackNode, TrackNodeType, TrackSection,
 };
 use diesel::sql_query;
 use diesel::sql_types::{BigInt, Json, Text};
@@ -20,8 +20,8 @@ pub enum RailjsonObject {
     Signal { railjson: Signal },
     NeutralSection { railjson: NeutralSection },
     SpeedSection { railjson: SpeedSection },
-    Switch { railjson: Switch },
-    SwitchType { railjson: SwitchType },
+    TrackNode { railjson: TrackNode },
+    TrackNodeType { railjson: TrackNodeType },
     Detector { railjson: Detector },
     BufferStop { railjson: BufferStop },
     Route { railjson: Route },
@@ -69,8 +69,8 @@ impl RailjsonObject {
             RailjsonObject::Signal { railjson: obj } => obj,
             RailjsonObject::NeutralSection { railjson: obj } => obj,
             RailjsonObject::SpeedSection { railjson: obj } => obj,
-            RailjsonObject::Switch { railjson: obj } => obj,
-            RailjsonObject::SwitchType { railjson: obj } => obj,
+            RailjsonObject::TrackNode { railjson: obj } => obj,
+            RailjsonObject::TrackNodeType { railjson: obj } => obj,
             RailjsonObject::Detector { railjson: obj } => obj,
             RailjsonObject::BufferStop { railjson: obj } => obj,
             RailjsonObject::Route { railjson: obj } => obj,
@@ -85,8 +85,8 @@ impl RailjsonObject {
             RailjsonObject::Signal { railjson: obj } => serde_json::to_value(obj),
             RailjsonObject::SpeedSection { railjson: obj } => serde_json::to_value(obj),
             RailjsonObject::NeutralSection { railjson: obj } => serde_json::to_value(obj),
-            RailjsonObject::Switch { railjson: obj } => serde_json::to_value(obj),
-            RailjsonObject::SwitchType { railjson: obj } => serde_json::to_value(obj),
+            RailjsonObject::TrackNode { railjson: obj } => serde_json::to_value(obj),
+            RailjsonObject::TrackNodeType { railjson: obj } => serde_json::to_value(obj),
             RailjsonObject::Detector { railjson: obj } => serde_json::to_value(obj),
             RailjsonObject::BufferStop { railjson: obj } => serde_json::to_value(obj),
             RailjsonObject::Route { railjson: obj } => serde_json::to_value(obj),
@@ -109,8 +109,8 @@ impl RailjsonObject {
             RailjsonObject::Signal { railjson } => serde_json::to_value(railjson)?,
             RailjsonObject::NeutralSection { railjson } => serde_json::to_value(railjson)?,
             RailjsonObject::SpeedSection { railjson } => serde_json::to_value(railjson)?,
-            RailjsonObject::Switch { railjson } => serde_json::to_value(railjson)?,
-            RailjsonObject::SwitchType { railjson } => serde_json::to_value(railjson)?,
+            RailjsonObject::TrackNode { railjson } => serde_json::to_value(railjson)?,
+            RailjsonObject::TrackNodeType { railjson } => serde_json::to_value(railjson)?,
             RailjsonObject::Detector { railjson } => serde_json::to_value(railjson)?,
             RailjsonObject::BufferStop { railjson } => serde_json::to_value(railjson)?,
             RailjsonObject::Route { railjson } => serde_json::to_value(railjson)?,
@@ -134,10 +134,10 @@ impl RailjsonObject {
             ObjectType::NeutralSection => RailjsonObject::NeutralSection {
                 railjson: serde_json::from_value(value)?,
             },
-            ObjectType::Switch => RailjsonObject::Switch {
+            ObjectType::TrackNode => RailjsonObject::TrackNode {
                 railjson: serde_json::from_value(value)?,
             },
-            ObjectType::SwitchType => RailjsonObject::SwitchType {
+            ObjectType::TrackNodeType => RailjsonObject::TrackNodeType {
                 railjson: serde_json::from_value(value)?,
             },
             ObjectType::BufferStop => RailjsonObject::BufferStop {
@@ -185,16 +185,16 @@ impl From<SpeedSection> for RailjsonObject {
     }
 }
 
-impl From<Switch> for RailjsonObject {
-    fn from(switch: Switch) -> Self {
-        RailjsonObject::Switch { railjson: switch }
+impl From<TrackNode> for RailjsonObject {
+    fn from(track_node: TrackNode) -> Self {
+        RailjsonObject::TrackNode { railjson: track_node }
     }
 }
 
-impl From<SwitchType> for RailjsonObject {
-    fn from(switchtype: SwitchType) -> Self {
-        RailjsonObject::SwitchType {
-            railjson: switchtype,
+impl From<TrackNodeType> for RailjsonObject {
+    fn from(track_node_type: TrackNodeType) -> Self {
+        RailjsonObject::TrackNodeType {
+            railjson: track_node_type,
         }
     }
 }
@@ -237,7 +237,7 @@ pub mod tests {
     use crate::schema::operation::create::{apply_create_operation, RailjsonObject};
     use crate::schema::{
         BufferStop, Detector, Electrification, OperationalPoint, Route, Signal, SpeedSection,
-        Switch, SwitchType, TrackSection,
+        TrackNode, TrackNodeType, TrackSection,
     };
 
     pub async fn create_track(
@@ -270,12 +270,12 @@ pub mod tests {
         obj
     }
 
-    pub async fn create_switch(
+    pub async fn create_track_node(
         conn: &mut PgConnection,
         infra_id: i64,
-        switch: Switch,
+        track_node: TrackNode,
     ) -> RailjsonObject {
-        let obj = RailjsonObject::Switch { railjson: switch };
+        let obj = RailjsonObject::TrackNode { railjson: track_node };
         assert!(apply_create_operation(&obj, infra_id, conn).await.is_ok());
         obj
     }
@@ -322,12 +322,12 @@ pub mod tests {
         obj
     }
 
-    pub async fn create_switch_type(
+    pub async fn create_track_node_type(
         conn: &mut PgConnection,
         infra_id: i64,
-        st: SwitchType,
+        st: TrackNodeType,
     ) -> RailjsonObject {
-        let obj = RailjsonObject::SwitchType { railjson: st };
+        let obj = RailjsonObject::TrackNodeType { railjson: st };
         assert!(apply_create_operation(&obj, infra_id, conn).await.is_ok());
         obj
     }
@@ -378,10 +378,10 @@ pub mod tests {
     }
 
     #[actix_test]
-    async fn create_switch_test() {
+    async fn create_track_node_test() {
         test_infra_transaction(|conn, infra| {
             async move {
-                create_switch(conn, infra.id.unwrap(), Default::default()).await;
+                create_track_node(conn, infra.id.unwrap(), Default::default()).await;
             }
             .scope_boxed()
         })
@@ -433,10 +433,10 @@ pub mod tests {
     }
 
     #[actix_test]
-    async fn create_switch_type_test() {
+    async fn create_track_node_type_test() {
         test_infra_transaction(|conn, infra| {
             async move {
-                create_switch_type(conn, infra.id.unwrap(), Default::default()).await;
+                create_track_node_type(conn, infra.id.unwrap(), Default::default()).await;
             }
             .scope_boxed()
         })

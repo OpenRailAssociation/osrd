@@ -1,12 +1,12 @@
 use super::{
     BufferStop, Detector, Electrification, NeutralSection, OperationalPoint, Route, Signal,
-    SpeedSection, Switch, SwitchType, TrackSection,
+    SpeedSection, TrackNode, TrackNodeType, TrackSection,
 };
 
 use derivative::Derivative;
 use serde::{Deserialize, Serialize};
 
-pub const RAILJSON_VERSION: &str = "3.4.8";
+pub const RAILJSON_VERSION: &str = "3.4.9";
 
 #[derive(Deserialize, Derivative, Serialize, Clone, Debug)]
 #[derivative(Default)]
@@ -16,8 +16,8 @@ pub struct RailJson {
     pub version: String,
     pub operational_points: Vec<OperationalPoint>,
     pub routes: Vec<Route>,
-    pub extended_switch_types: Vec<SwitchType>,
-    pub switches: Vec<Switch>,
+    pub extended_track_node_types: Vec<TrackNodeType>,
+    pub track_nodes: Vec<TrackNode>,
     pub track_sections: Vec<TrackSection>,
     pub speed_sections: Vec<SpeedSection>,
     pub neutral_sections: Vec<NeutralSection>,

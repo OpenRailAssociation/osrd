@@ -12,7 +12,7 @@ class Route:
     waypoints: List[Waypoint]
     release_waypoints: List[Waypoint]
     entry_point_direction: Direction
-    switches_directions: Mapping[str, str] = field(default_factory=dict)
+    track_nodes_directions: Mapping[str, str] = field(default_factory=dict)
     label: Optional[str] = field(default=None)
 
     def __hash__(self):
@@ -40,5 +40,5 @@ class Route:
             entry_point_direction=infra.Direction[self.entry_point_direction.name],
             exit_point=self.exit_point.get_waypoint_ref(),
             release_detectors=[w.id for w in self.release_waypoints],
-            switches_directions=self.switches_directions,
+            track_nodes_directions=self.track_nodes_directions,
         )

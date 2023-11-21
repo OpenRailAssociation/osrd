@@ -9,7 +9,7 @@ from railjson_generator.schema.infra.neutral_section import NeutralSection
 from railjson_generator.schema.infra.operational_point import OperationalPoint
 from railjson_generator.schema.infra.route import Route
 from railjson_generator.schema.infra.speed_section import SpeedSection
-from railjson_generator.schema.infra.switch import Switch
+from railjson_generator.railjson_generator.schema.infra.track_node import TrackNode
 from railjson_generator.schema.infra.track_section import TrackSection
 from railjson_generator.schema.infra.waypoint import BufferStop, Detector
 
@@ -17,14 +17,14 @@ from railjson_generator.schema.infra.waypoint import BufferStop, Detector
 @dataclass
 class Infra:
     track_sections: List[TrackSection] = field(default_factory=list)
-    switches: List[Switch] = field(default_factory=list)
+    track_nodes: List[TrackNode] = field(default_factory=list)
     operational_points: List[OperationalPoint] = field(default_factory=list)
     routes: List[Route] = field(default_factory=list)
     speed_sections: List[SpeedSection] = field(default_factory=list)
     electrifications: List[Electrification] = field(default_factory=list)
     neutral_sections: List[NeutralSection] = field(default_factory=list)
 
-    VERSION = "3.4.8"
+    VERSION = "3.4.9"
 
     def add_route(self, *args, **kwargs):
         self.routes.append(Route(*args, **kwargs))
@@ -34,13 +34,13 @@ class Infra:
         return infra.RailJsonInfra(
             version=self.VERSION,
             track_sections=[track.to_rjs() for track in self.track_sections],
-            switches=[switch.to_rjs() for switch in self.switches],
+            track_nodes=[track_node.to_rjs() for track_node in self.track_nodes],
             routes=[route.to_rjs() for route in self.routes],
             signals=self.make_rjs_signals(),
             buffer_stops=self.make_rjs_buffer_stops(),
             detectors=self.make_rjs_detectors(),
             operational_points=self.make_rjs_operational_points(),
-            extended_switch_types=[],
+            extended_track_node_types=[],
             speed_sections=[speed_section.to_rjs() for speed_section in self.speed_sections],
             electrifications=[electrification.to_rjs() for electrification in self.electrifications],
             neutral_sections=[neutral_section.to_rjs() for neutral_section in self.neutral_sections],
@@ -99,7 +99,7 @@ class Infra:
         duplicates = []
         for instance_list in [
             self.track_sections,
-            self.switches,
+            self.track_nodes,
             self.operational_points,
             self.routes,
             self.speed_sections,

@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, List, Optional, Tuple
 from osrd_schemas import infra
 
 if TYPE_CHECKING:
-    from .switch import SwitchGroup
+    from .track_node import TrackNodeGroup
     from .track_section import TrackSection
 
 
@@ -32,7 +32,7 @@ class TrackEndpoint:
             return self.track_section.index * 2
         return self.track_section.index * 2 + 1
 
-    def get_neighbors(self) -> List[Tuple["TrackEndpoint", Optional[SwitchGroup]]]:
+    def get_neighbors(self) -> List[Tuple["TrackEndpoint", Optional[TrackNodeGroup]]]:
         if self.endpoint == Endpoint.BEGIN:
             return self.track_section.begining_links
         return self.track_section.end_links

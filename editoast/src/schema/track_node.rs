@@ -16,34 +16,34 @@ use std::collections::HashMap;
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 #[derivative(Default)]
-pub struct Switch {
+pub struct TrackNode {
     pub id: Identifier,
-    pub switch_type: Identifier,
+    pub track_node_type: Identifier,
     pub group_change_delay: f64,
     pub ports: HashMap<Identifier, TrackEndpoint>,
     #[serde(default)]
-    pub extensions: SwitchExtensions,
+    pub extensions: TrackNodeExtensions,
 }
 
 #[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
-pub struct SwitchExtensions {
-    sncf: Option<SwitchSncfExtension>,
+pub struct TrackNodeExtensions {
+    sncf: Option<TrackNodeSncfExtension>,
 }
 
 #[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
-pub struct SwitchSncfExtension {
+pub struct TrackNodeSncfExtension {
     pub label: NonBlankString,
 }
 
-impl OSRDTyped for Switch {
+impl OSRDTyped for TrackNode {
     fn get_type() -> ObjectType {
-        ObjectType::Switch
+        ObjectType::TrackNode
     }
 }
 
-impl OSRDIdentified for Switch {
+impl OSRDIdentified for TrackNode {
     fn get_id(&self) -> &String {
         &self.id
     }
@@ -51,51 +51,51 @@ impl OSRDIdentified for Switch {
 
 #[derive(Debug, Clone, Derivative)]
 #[derivative(Hash, PartialEq)]
-pub struct SwitchCache {
+pub struct TrackNodeCache {
     pub obj_id: String,
-    pub switch_type: String,
+    pub track_node_type: String,
     #[derivative(Hash = "ignore", PartialEq = "ignore")]
     pub ports: HashMap<String, TrackEndpoint>,
 }
 
-impl SwitchCache {
-    pub fn new(obj_id: String, switch_type: String, ports: HashMap<String, TrackEndpoint>) -> Self {
+impl TrackNodeCache {
+    pub fn new(obj_id: String, track_node_type: String, ports: HashMap<String, TrackEndpoint>) -> Self {
         Self {
             obj_id,
-            switch_type,
+            track_node_type,
             ports,
         }
     }
 }
 
-impl From<Switch> for SwitchCache {
-    fn from(switch: Switch) -> Self {
+impl From<TrackNode> for TrackNodeCache {
+    fn from(track_node: TrackNode) -> Self {
         Self::new(
-            switch.id.0,
-            switch.switch_type.0,
-            switch.ports.into_iter().map(|(k, v)| (k.0, v)).collect(),
+            track_node.id.0,
+            track_node.track_node_type.0,
+            track_node.ports.into_iter().map(|(k, v)| (k.0, v)).collect(),
         )
     }
 }
 
-impl OSRDTyped for SwitchCache {
+impl OSRDTyped for TrackNodeCache {
     fn get_type() -> ObjectType {
-        ObjectType::Switch
+        ObjectType::TrackNode
     }
 }
 
-impl OSRDIdentified for SwitchCache {
+impl OSRDIdentified for TrackNodeCache {
     fn get_id(&self) -> &String {
         &self.obj_id
     }
 }
 
-impl Cache for SwitchCache {
+impl Cache for TrackNodeCache {
     fn get_track_referenced_id(&self) -> Vec<&String> {
         self.ports.iter().map(|port| &*port.1.track).collect()
     }
 
     fn get_object_cache(&self) -> ObjectCache {
-        ObjectCache::Switch(self.clone())
+        ObjectCache::TrackNode(self.clone())
     }
 }

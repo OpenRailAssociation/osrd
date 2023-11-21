@@ -61,7 +61,7 @@ async fn get_objects(
     }
 
     // Prepare query
-    let query = if [ObjectType::SwitchType, ObjectType::Route].contains(&obj_type) {
+    let query = if [ObjectType::TrackNodeType, ObjectType::Route].contains(&obj_type) {
         format!(
             "SELECT obj_id as obj_id, data as railjson, NULL as geographic, NULL as schematic
                 FROM {} WHERE infra_id = $1 AND obj_id = ANY($2) ",
@@ -126,7 +126,7 @@ mod tests {
     use crate::models::Infra;
     use crate::schema::operation::Operation;
     use crate::schema::OSRDIdentified;
-    use crate::schema::{Switch, SwitchType};
+    use crate::schema::{TrackNode, TrackNodeType};
     use crate::views::infra::objects::ObjectQueryable;
     use crate::views::infra::tests::create_object_request;
     use crate::views::tests::create_test_service;
@@ -158,19 +158,19 @@ mod tests {
     }
 
     #[rstest]
-    async fn get_objects_should_return_switch() {
+    async fn get_objects_should_return_track_node() {
         // GIVEN
         let app = create_test_service().await;
         let empty_infra = empty_infra(db_pool()).await;
         let empty_infra_id = empty_infra.id();
 
-        let switch = Switch {
-            id: "switch_001".into(),
-            switch_type: "switch_type_001".into(),
+        let track_node = TrackNode {
+            id: "track_node_001".into(),
+            track_node_type: "track_node_type_001".into(),
             ..Default::default()
         };
 
-        let create_operation = Operation::Create(Box::new(switch.clone().into()));
+        let create_operation = Operation::Create(Box::new(track_node.clone().into()));
         let request = TestRequest::post()
             .uri(format!("/infra/{empty_infra_id}/").as_str())
             .set_json(json!([create_operation]))
@@ -180,29 +180,29 @@ mod tests {
 
         // WHEN
         let req = TestRequest::post()
-            .uri(format!("/infra/{empty_infra_id}/objects/Switch").as_str())
-            .set_json(vec!["switch_001"])
+            .uri(format!("/infra/{empty_infra_id}/objects/TrackNode").as_str())
+            .set_json(vec!["track_node_001"])
             .to_request();
         let response = call_service(&app, req).await;
 
         // THEN
         assert_eq!(response.status(), StatusCode::OK);
-        let switch_object: Vec<ObjectQueryable> = read_body_json(response).await;
-        let expected_switch_object = vec![ObjectQueryable {
-            obj_id: switch.get_id().to_string(),
+        let track_node_object: Vec<ObjectQueryable> = read_body_json(response).await;
+        let expected_track_node_object = vec![ObjectQueryable {
+            obj_id: track_node.get_id().to_string(),
             railjson: json!({
                 "extensions": {
                     "sncf": JsonValue::Null
                 },
                 "group_change_delay": 0.0,
-                "id": switch.get_id().to_string(),
+                "id": track_node.get_id().to_string(),
                 "ports": {},
-                "switch_type": switch.switch_type
+                "track_node_type": track_node.track_node_type
             }),
             geographic: None,
             schematic: None,
         }];
-        assert_eq!(switch_object, expected_switch_object);
+        assert_eq!(track_node_object, expected_track_node_object);
     }
 
     #[rstest]
@@ -219,19 +219,19 @@ mod tests {
     }
 
     #[rstest]
-    async fn get_switch_types(#[future] empty_infra: TestFixture<Infra>) {
+    async fn get_track_node_types(#[future] empty_infra: TestFixture<Infra>) {
         let empty_infra = empty_infra.await;
         let app = create_test_service().await;
 
-        // Add a switch type
-        let switch_type = SwitchType::default();
-        let switch_id = switch_type.id.clone();
-        let req = create_object_request(empty_infra.id(), switch_type.into());
+        // Add a track node type
+        let track_node_type = TrackNodeType::default();
+        let track_node_id = track_node_type.id.clone();
+        let req = create_object_request(empty_infra.id(), track_node_type.into());
         assert_eq!(call_service(&app, req).await.status(), StatusCode::OK);
 
         let req = TestRequest::post()
-            .uri(format!("/infra/{}/objects/SwitchType", empty_infra.id()).as_str())
-            .set_json(vec![switch_id])
+            .uri(format!("/infra/{}/objects/TrackNodeType", empty_infra.id()).as_str())
+            .set_json(vec![track_node_id])
             .to_request();
         assert_eq!(call_service(&app, req).await.status(), StatusCode::OK);
     }

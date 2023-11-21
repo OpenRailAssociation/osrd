@@ -7,43 +7,43 @@ from .schema.infra.neutral_section import NeutralSection
 from .schema.infra.operational_point import OperationalPoint
 from .schema.infra.route import Route
 from .schema.infra.speed_section import SpeedSection
-from .schema.infra.switch import (
+from .schema.infra.track_node import (
     Crossing,
     DoubleSlipSwitch,
     Link,
     PointSwitch,
-    SwitchGroup,
+    TrackNodeGroup,
 )
 from .schema.infra.track_section import TrackSection
 from .utils import generate_routes
 
 
-def _check_connections(endpoint: TrackEndpoint, connections: Iterable[Tuple[TrackEndpoint, Optional[SwitchGroup]]]):
-    switches = []
-    for connected_endpoint, switch_group in connections:
+def _check_connections(endpoint: TrackEndpoint, connections: Iterable[Tuple[TrackEndpoint, Optional[TrackNodeGroup]]]):
+    track_nodes = []
+    for connected_endpoint, track_node_group in connections:
         if connected_endpoint == endpoint:
             raise RuntimeError("endpoint connected to itself")
-        switches.append(switch_group)
+        track_nodes.append(track_node_group)
 
-    if not switches:
+    if not track_nodes:
         return
 
-    switch = switches[0].switch
-    groups = {switches[0].group}
-    for switch_group in switches[1:]:
-        if switch_group.switch != switch:
-            raise RuntimeError("endpoint connected to multiple switches")
-        if switch_group.group in groups:
+    track_node = track_nodes[0].track_node
+    groups = {track_nodes[0].group}
+    for track_node_group in track_nodes[1:]:
+        if track_node_group.track_node != track_node:
+            raise RuntimeError("endpoint connected to multiple track_nodes")
+        if track_node_group.group in groups:
             raise RuntimeError("ambiguous endpoint connection")
-        groups.add(switch_group.group)
+        groups.add(track_node_group.group)
 
 
-def _register_connection(endpoint_a: TrackEndpoint, endpoint_b: TrackEndpoint, switch_group: SwitchGroup):
-    """Connect two track endpoints together."""
+def _register_connection(endpoint_a: TrackEndpoint, endpoint_b: TrackEndpoint, track_node_group: TrackNodeGroup):
+    """Connect two track endpoints together"""
     a_neighbors = endpoint_a.get_neighbors()
     b_neighbors = endpoint_b.get_neighbors()
-    a_neighbors.append((endpoint_b, switch_group))
-    b_neighbors.append((endpoint_a, switch_group))
+    a_neighbors.append((endpoint_b, track_node_group))
+    b_neighbors.append((endpoint_a, track_node_group))
     _check_connections(endpoint_a, a_neighbors)
     _check_connections(endpoint_b, b_neighbors)
 
@@ -64,43 +64,43 @@ class InfraBuilder:
 
     def add_point_switch(self, base: TrackEndpoint, left: TrackEndpoint, right: TrackEndpoint, **kwargs) -> PointSwitch:
         """Build a point switch, add it to the infra, and return it."""
-        switch = PointSwitch(A=base, B1=left, B2=right, **kwargs)
-        _register_connection(base, left, switch.group("A_B1"))
-        _register_connection(base, right, switch.group("A_B2"))
-        self.infra.switches.append(switch)
-        return switch
+        track_node = PointSwitch(A=base, B1=left, B2=right, **kwargs)
+        _register_connection(base, left, track_node.group("A_B1"))
+        _register_connection(base, right, track_node.group("A_B2"))
+        self.infra.track_nodes.append(track_node)
+        return track_node
 
     def add_crossing(
         self, north: TrackEndpoint, south: TrackEndpoint, east: TrackEndpoint, west: TrackEndpoint, **kwargs
     ) -> Crossing:
         """Build a crossing, add it to the infra, and return it."""
-        switch = Crossing(A1=north, B1=south, B2=east, A2=west, **kwargs)
-        _register_connection(north, south, switch.group("STATIC"))
-        _register_connection(east, west, switch.group("STATIC"))
-        self.infra.switches.append(switch)
-        return switch
+        track_node = Crossing(A1=north, B1=south, B2=east, A2=west, **kwargs)
+        _register_connection(north, south, track_node.group("STATIC"))
+        _register_connection(east, west, track_node.group("STATIC"))
+        self.infra.track_nodes.append(track_node)
+        return track_node
 
     def add_double_slip_switch(
         self, north_1: TrackEndpoint, north_2: TrackEndpoint, south_1: TrackEndpoint, south_2: TrackEndpoint, **kwargs
     ) -> DoubleSlipSwitch:
         """Build a double slip switch, add it to the infra, and return it."""
-        switch = DoubleSlipSwitch(A1=north_1, A2=north_2, B1=south_1, B2=south_2, **kwargs)
+        track_node = DoubleSlipSwitch(A1=north_1, A2=north_2, B1=south_1, B2=south_2, **kwargs)
         for (src, dst), group_name in [
             ((north_1, south_1), "A1_B1"),
             ((north_1, south_2), "A1_B2"),
             ((north_2, south_1), "A2_B1"),
             ((north_2, south_2), "A2_B2"),
         ]:
-            _register_connection(src, dst, switch.group(group_name))
-        self.infra.switches.append(switch)
-        return switch
+            _register_connection(src, dst, track_node.group(group_name))
+        self.infra.track_nodes.append(track_node)
+        return track_node
 
     def add_link(self, source: TrackEndpoint, destination: TrackEndpoint, **kwargs) -> Link:
         """Build a link, add it to the infra, and return it."""
-        switch = Link(A=source, B=destination, **kwargs)
-        self.infra.switches.append(switch)
-        _register_connection(source, destination, switch.group("STATIC"))
-        return switch
+        track_node = Link(A=source, B=destination, **kwargs)
+        self.infra.track_nodes.append(track_node)
+        _register_connection(source, destination, track_node.group("STATIC"))
+        return track_node
 
     def add_operational_point(self, *args, **kwargs) -> OperationalPoint:
         """Build an operational point, add it to the infra, and return it."""

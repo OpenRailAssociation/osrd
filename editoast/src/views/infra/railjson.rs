@@ -86,8 +86,8 @@ async fn get_railjson(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<impl Re
             "signals": {signals},
             "speed_sections": {speed_sections},
             "detectors": {detectors},
-            "switches": {switches},
-            "extended_switch_types": {switch_types},
+            "track_nodes": {track_nodes},
+            "extended_track_node_types": {track_node_types},
             "buffer_stops": {buffer_stops},
             "routes": {routes},
             "operational_points": {operational_points},
@@ -99,8 +99,8 @@ async fn get_railjson(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<impl Re
         signals = res[ObjectType::Signal],
         speed_sections = res[ObjectType::SpeedSection],
         detectors = res[ObjectType::Detector],
-        switches = res[ObjectType::Switch],
-        switch_types = res[ObjectType::SwitchType],
+        track_nodes = res[ObjectType::TrackNode],
+        track_node_types = res[ObjectType::TrackNodeType],
         buffer_stops = res[ObjectType::BufferStop],
         routes = res[ObjectType::Route],
         operational_points = res[ObjectType::OperationalPoint],
@@ -171,7 +171,7 @@ mod tests {
 
     use crate::fixtures::tests::{db_pool, empty_infra, TestFixture};
     use crate::models::Delete;
-    use crate::schema::SwitchType;
+    use crate::schema::TrackNodeType;
     use crate::views::infra::tests::create_object_request;
     use crate::views::tests::create_test_service;
     use rstest::*;
@@ -182,7 +182,7 @@ mod tests {
         let empty_infra = empty_infra.await;
         let app = create_test_service().await;
 
-        let req = create_object_request(empty_infra.id(), SwitchType::default().into());
+        let req = create_object_request(empty_infra.id(), TrackNodeType::default().into());
         let response = call_service(&app, req).await;
         assert!(response.status().is_success());
 
@@ -193,7 +193,7 @@ mod tests {
         assert_eq!(response.status(), StatusCode::OK);
         let railjson: RailJson = read_body_json(response).await;
         assert_eq!(railjson.version, RAILJSON_VERSION);
-        assert_eq!(railjson.extended_switch_types.len(), 1);
+        assert_eq!(railjson.extended_track_node_types.len(), 1);
     }
 
     #[rstest]
@@ -204,8 +204,8 @@ mod tests {
         let railjson = RailJson {
             buffer_stops: (0..10).map(|_| Default::default()).collect(),
             routes: (0..10).map(|_| Default::default()).collect(),
-            extended_switch_types: (0..10).map(|_| Default::default()).collect(),
-            switches: (0..10).map(|_| Default::default()).collect(),
+            extended_track_node_types: (0..10).map(|_| Default::default()).collect(),
+            track_nodes: (0..10).map(|_| Default::default()).collect(),
             track_sections: (0..10).map(|_| Default::default()).collect(),
             speed_sections: (0..10).map(|_| Default::default()).collect(),
             electrifications: (0..10).map(|_| Default::default()).collect(),
