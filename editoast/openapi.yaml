@@ -258,6 +258,38 @@ components:
         value:
           example: A
           type: string
+      required:
+      - value
+      - power_class
+      - track_ranges
+      type: object
+    ElectricalProfileSet:
+      properties:
+        data:
+          $ref: '#/components/schemas/ElectricalProfileSetData'
+        id:
+          format: int64
+          nullable: true
+          type: integer
+        name:
+          nullable: true
+          type: string
+      required:
+      - data
+      type: object
+    ElectricalProfileSetData:
+      properties:
+        level_order:
+          additionalProperties:
+            $ref: '#/components/schemas/LevelValues'
+          type: object
+        levels:
+          items:
+            $ref: '#/components/schemas/ElectricalProfile'
+          type: array
+      required:
+      - levels
+      - level_order
       type: object
     ElectrificationRange:
       properties:
@@ -706,6 +738,10 @@ components:
       - context
       - message
       type: object
+    LevelValues:
+      items:
+        type: string
+      type: array
     LightEffortCurves:
       properties:
         default_mode:
@@ -717,6 +753,17 @@ components:
       required:
       - modes
       - default_mode
+      type: object
+    LightElectricalProfileSet:
+      properties:
+        id:
+          format: int64
+          type: integer
+        name:
+          type: string
+      required:
+      - id
+      - name
       type: object
     LightModeEffortCurves:
       properties:
@@ -3040,18 +3087,20 @@ components:
           type: string
       type: object
     TrackRange:
-      description: Track range
       properties:
         begin:
-          format: float
+          format: double
           type: number
         end:
-          example: 100
-          format: float
+          format: double
           type: number
         track:
           example: 01234567-89ab-cdef-0123-456789abcdef
           type: string
+      required:
+      - track
+      - begin
+      - end
       type: object
     TrackSectionLocation:
       description: A track location (track section and offset)
@@ -3467,109 +3516,125 @@ paths:
       - documents
   /electrical_profile_set/:
     get:
+      description: Retrieve the list of ids and names of electrical profile sets available
       responses:
         '200':
           content:
             application/json:
               schema:
                 items:
-                  properties:
-                    id:
-                      type: integer
-                    name:
-                      example: France 2023
-                      type: string
-                  required:
-                  - id
-                  - name
-                  type: object
+                  $ref: '#/components/schemas/LightElectricalProfileSet'
                 type: array
           description: The list of ids and names of electrical profile sets available
       summary: Retrieve the list of ids and names of electrical profile sets available
       tags:
       - electrical_profiles
     post:
+      description: import a new electrical profile set
       parameters:
       - in: query
         name: name
         required: true
         schema:
           type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ElectricalProfileSetData'
+        required: true
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ElectricalProfile'
+                $ref: '#/components/schemas/ElectricalProfileSet'
           description: The list of ids and names of electrical profile sets available
       summary: import a new electrical profile set
       tags:
       - electrical_profiles
-  /electrical_profile_set/{id}/:
+  /electrical_profile_set/{electrical_profile_set_id}/:
     delete:
+      description: Delete an electrical profile set
       parameters:
-      - description: Electrical profile set ID
-        in: path
-        name: id
+      - in: path
+        name: electrical_profile_set_id
         required: true
         schema:
+          format: int64
           type: integer
       responses:
         '204':
-          description: No content
-      summary: Delete the set of electrical profiles with the given id
+          description: The electrical profile was deleted successfully
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalError'
+          description: The requested electrical profie was not found
+      summary: Delete an electrical profile set
       tags:
       - electrical_profiles
     get:
+      description: Return a specific set of electrical profiles
       parameters:
-      - description: Electrical profile set ID
-        in: path
-        name: id
+      - in: path
+        name: electrical_profile_set_id
         required: true
         schema:
+          format: int64
           type: integer
       responses:
         '200':
           content:
             application/json:
               schema:
-                items:
-                  $ref: '#/components/schemas/ElectricalProfile'
-                type: array
+                $ref: '#/components/schemas/ElectricalProfileSetData'
           description: The list of electrical profiles in the set
-      summary: Retrieve the set of electrical profiles with the given id
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalError'
+          description: The requested electrical profile set was not found
+      summary: Return a specific set of electrical profiles
       tags:
       - electrical_profiles
-  /electrical_profile_set/{id}/level_order/:
+  /electrical_profile_set/{electrical_profile_set_id}/level_order/:
     get:
+      description: Return the electrical profile value order for this set
       parameters:
-      - description: Electrical profile set ID
-        in: path
-        name: id
+      - in: path
+        name: electrical_profile_set_id
         required: true
         schema:
+          format: int64
           type: integer
       responses:
         '200':
           content:
             application/json:
+              example:
+                '1500':
+                - A
+                - B
+                - C
+                '25000':
+                - '25000'
+                - '22500'
+                - '20000'
               schema:
                 additionalProperties:
-                  items:
-                    type: string
-                  type: array
-                example:
-                  '1500':
-                  - A
-                  - B
-                  - C
-                  '25000':
-                  - '25000'
-                  - '22500'
-                  - '20000'
+                  $ref: '#/components/schemas/LevelValues'
                 type: object
           description: A dictionary mapping catenary modes to a list of electrical profiles ordered by decreasing strength
-      summary: Retrieve the order of strength of the electrical profiles in the set with the given id
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalError'
+          description: The requested electrical profile set was not found
+      summary: Return the electrical profile value order for this set
       tags:
       - electrical_profiles
   /health/:

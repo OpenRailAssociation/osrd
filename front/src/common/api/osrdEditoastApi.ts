@@ -61,29 +61,37 @@ const injectedRtkApi = api
         query: (queryArg) => ({
           url: `/electrical_profile_set/`,
           method: 'POST',
+          body: queryArg.electricalProfileSetData,
           params: { name: queryArg.name },
         }),
         invalidatesTags: ['electrical_profiles'],
       }),
-      deleteElectricalProfileSetById: build.mutation<
-        DeleteElectricalProfileSetByIdApiResponse,
-        DeleteElectricalProfileSetByIdApiArg
+      deleteElectricalProfileSetByElectricalProfileSetId: build.mutation<
+        DeleteElectricalProfileSetByElectricalProfileSetIdApiResponse,
+        DeleteElectricalProfileSetByElectricalProfileSetIdApiArg
       >({
-        query: (queryArg) => ({ url: `/electrical_profile_set/${queryArg.id}/`, method: 'DELETE' }),
+        query: (queryArg) => ({
+          url: `/electrical_profile_set/${queryArg.electricalProfileSetId}/`,
+          method: 'DELETE',
+        }),
         invalidatesTags: ['electrical_profiles'],
       }),
-      getElectricalProfileSetById: build.query<
-        GetElectricalProfileSetByIdApiResponse,
-        GetElectricalProfileSetByIdApiArg
+      getElectricalProfileSetByElectricalProfileSetId: build.query<
+        GetElectricalProfileSetByElectricalProfileSetIdApiResponse,
+        GetElectricalProfileSetByElectricalProfileSetIdApiArg
       >({
-        query: (queryArg) => ({ url: `/electrical_profile_set/${queryArg.id}/` }),
+        query: (queryArg) => ({
+          url: `/electrical_profile_set/${queryArg.electricalProfileSetId}/`,
+        }),
         providesTags: ['electrical_profiles'],
       }),
-      getElectricalProfileSetByIdLevelOrder: build.query<
-        GetElectricalProfileSetByIdLevelOrderApiResponse,
-        GetElectricalProfileSetByIdLevelOrderApiArg
+      getElectricalProfileSetByElectricalProfileSetIdLevelOrder: build.query<
+        GetElectricalProfileSetByElectricalProfileSetIdLevelOrderApiResponse,
+        GetElectricalProfileSetByElectricalProfileSetIdLevelOrderApiArg
       >({
-        query: (queryArg) => ({ url: `/electrical_profile_set/${queryArg.id}/level_order/` }),
+        query: (queryArg) => ({
+          url: `/electrical_profile_set/${queryArg.electricalProfileSetId}/level_order/`,
+        }),
         providesTags: ['electrical_profiles'],
       }),
       getHealth: build.query<GetHealthApiResponse, GetHealthApiArg>({
@@ -711,34 +719,30 @@ export type GetDocumentsByDocumentKeyApiArg = {
   documentKey: number;
 };
 export type GetElectricalProfileSetApiResponse =
-  /** status 200 The list of ids and names of electrical profile sets available */ {
-    id: number;
-    name: string;
-  }[];
+  /** status 200 The list of ids and names of electrical profile sets available */ LightElectricalProfileSet[];
 export type GetElectricalProfileSetApiArg = void;
 export type PostElectricalProfileSetApiResponse =
-  /** status 200 The list of ids and names of electrical profile sets available */ ElectricalProfile;
+  /** status 200 The list of ids and names of electrical profile sets available */ ElectricalProfileSet;
 export type PostElectricalProfileSetApiArg = {
   name: string;
+  electricalProfileSetData: ElectricalProfileSetData;
 };
-export type DeleteElectricalProfileSetByIdApiResponse = unknown;
-export type DeleteElectricalProfileSetByIdApiArg = {
-  /** Electrical profile set ID */
-  id: number;
+export type DeleteElectricalProfileSetByElectricalProfileSetIdApiResponse =
+  /** status 204 The electrical profile was deleted successfully */ undefined;
+export type DeleteElectricalProfileSetByElectricalProfileSetIdApiArg = {
+  electricalProfileSetId: number;
 };
-export type GetElectricalProfileSetByIdApiResponse =
-  /** status 200 The list of electrical profiles in the set */ ElectricalProfile[];
-export type GetElectricalProfileSetByIdApiArg = {
-  /** Electrical profile set ID */
-  id: number;
+export type GetElectricalProfileSetByElectricalProfileSetIdApiResponse =
+  /** status 200 The list of electrical profiles in the set */ ElectricalProfileSetData;
+export type GetElectricalProfileSetByElectricalProfileSetIdApiArg = {
+  electricalProfileSetId: number;
 };
-export type GetElectricalProfileSetByIdLevelOrderApiResponse =
+export type GetElectricalProfileSetByElectricalProfileSetIdLevelOrderApiResponse =
   /** status 200 A dictionary mapping catenary modes to a list of electrical profiles ordered by decreasing strength */ {
-    [key: string]: string[];
+    [key: string]: LevelValues;
   };
-export type GetElectricalProfileSetByIdLevelOrderApiArg = {
-  /** Electrical profile set ID */
-  id: number;
+export type GetElectricalProfileSetByElectricalProfileSetIdLevelOrderApiArg = {
+  electricalProfileSetId: number;
 };
 export type GetHealthApiResponse = unknown;
 export type GetHealthApiArg = void;
@@ -1293,15 +1297,31 @@ export type InternalError = {
   status?: number;
   type: string;
 };
+export type LightElectricalProfileSet = {
+  id: number;
+  name: string;
+};
+export type LevelValues = string[];
 export type TrackRange = {
-  begin?: number;
-  end?: number;
-  track?: string;
+  begin: number;
+  end: number;
+  track: string;
 };
 export type ElectricalProfile = {
-  power_class?: string;
-  track_ranges?: TrackRange[];
-  value?: string;
+  power_class: string;
+  track_ranges: TrackRange[];
+  value: string;
+};
+export type ElectricalProfileSetData = {
+  level_order: {
+    [key: string]: LevelValues;
+  };
+  levels: ElectricalProfile[];
+};
+export type ElectricalProfileSet = {
+  data: ElectricalProfileSetData;
+  id?: number | null;
+  name?: string | null;
 };
 export type Infra = {
   created: string;
