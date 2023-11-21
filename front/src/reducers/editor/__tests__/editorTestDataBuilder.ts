@@ -1,4 +1,4 @@
-import { LayerType, EditorState } from 'applications/editor/tools/types';
+import type { LayerType, EditorState } from 'applications/editor/tools/types';
 
 export default function editorTestDataBuilder() {
   return {
@@ -18,7 +18,7 @@ export default function editorTestDataBuilder() {
     buildFilterIssue: (
       filterLevel: EditorState['issues']['filterLevel'],
       filterType: EditorState['issues']['filterType']
-    ): Omit<EditorState['issues'], 'total' | 'filterTotal'> => ({
+    ): Pick<EditorState['issues'], 'filterLevel' | 'filterType'> => ({
       filterLevel,
       filterType,
     }),

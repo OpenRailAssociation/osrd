@@ -5,7 +5,7 @@ import { isNil, sortBy, uniqueId } from 'lodash';
 import { FaDiamondTurnRight } from 'react-icons/fa6';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { getEditorIssue } from 'reducers/editor/selectors';
+import { getEditorIssues } from 'reducers/editor/selectors';
 import { updateFiltersIssue } from 'reducers/editor';
 import { LoaderFill, Spinner } from 'common/Loader';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
@@ -31,7 +31,7 @@ const InfraErrorsList: React.FC<InfraErrorsListProps> = ({ infraID, onErrorClick
   const dispatch = useDispatch();
   const [total, setTotal] = useState<number | null>(null);
   const [next, setNext] = useState<number | null>(null);
-  const { filterLevel, filterType } = useSelector(getEditorIssue);
+  const { filterLevel, filterType } = useSelector(getEditorIssues);
   const [loading, setLoading] = useState<boolean>(false);
 
   // list of issues
