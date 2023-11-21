@@ -14,7 +14,6 @@ const drawElectricalProfile = (
   electricalConditionSegment: ElectricalConditionSegment,
   groupID: string,
   keyValues: DrawingKeys,
-  rotate: boolean,
   isStripe: boolean,
   isIncompatible: boolean,
   id: string
@@ -31,9 +30,9 @@ const drawElectricalProfile = (
 
   // Get the different axis values based on rotation
   // x
-  const xValues = getAxisValues(electricalConditionSegment, keyValues, rotate ? 1 : 0);
+  const xValues = getAxisValues(electricalConditionSegment, keyValues, 0);
   // y
-  const yValues = getAxisValues(electricalConditionSegment, keyValues, rotate ? 0 : 1);
+  const yValues = getAxisValues(electricalConditionSegment, keyValues, 1);
 
   const width = chart.x(xValues.end) - chart.x(xValues.start);
   const height = chart.y(yValues.end) - chart.y(yValues.start);
@@ -72,7 +71,7 @@ const drawElectricalProfile = (
 
   /**  Adds text to the main rect */
   const addTextZone = () => {
-    if ((rotate && height < -24) || (!rotate && width > 60)) {
+    if (width > 60) {
       const textZone = chart.drawZone.select(`#${groupID}`);
 
       // get the width of the text element and adding a few pixels for readability
@@ -85,13 +84,13 @@ const drawElectricalProfile = (
         .append('rect')
         .attr('class', `rect electricalProfileTextBlock ${classes}`)
         .attr('fill', '#FFF')
-        .attr('transform', rotate ? 'translate(-20, -10)' : `translate(-${svgWidth / 2}, -5.5)`)
+        .attr('transform', `translate(-${svgWidth / 2}, -5.5)`)
         .attr('rx', 2)
         .attr('ry', 2)
         .attr('x', chart.x(xValues.middle))
         .attr('y', chart.y(yValues.start - (yValues.end - yValues.middle)) + height)
-        .attr('width', rotate ? 40 : svgWidth)
-        .attr('height', rotate ? 20 : '0.6em');
+        .attr('width', svgWidth)
+        .attr('height', '0.6em');
 
       // add text to text zone
       textZone
@@ -103,10 +102,7 @@ const drawElectricalProfile = (
         .attr('fill', electricalConditionSegment.textColor)
         .attr('font-size', 8)
         .attr('font-weight', 'bold')
-        .attr(
-          'x',
-          chart.x(rotate ? xValues.start + (xValues.end - xValues.middle) : xValues.middle)
-        )
+        .attr('x', chart.x(xValues.middle))
         .attr('y', chart.y(yValues.start - (yValues.end - yValues.middle)) + height);
     }
   };
@@ -124,7 +120,6 @@ const drawElectricalProfile = (
     .on('mouseover', (event) => {
       const lastPosition = chart.x(electricalConditionSegment.lastPosition);
       const pointerPositionX = pointer(event, event.currentTarget)[0];
-      const pointerPositionY = pointer(event, event.currentTarget)[1];
       let popUpWidth;
 
       if (!electrificationProfile) {
@@ -140,19 +135,10 @@ const drawElectricalProfile = (
         popUpPosition = pointerPositionX + popUpWidth - lastPosition;
       }
 
-      if (rotate) {
-        drawZone
-          .select(`.${classes} `)
-          .attr('transform', 'translate(-4, 0)')
-          .attr('width', width + 8);
-      } else {
-        drawZone
-          .select(`.${classes} `)
-          .attr('transform', 'translate(0, -4)')
-          .attr('height', (height - 8) * -1);
-      }
-
       drawZone
+        .select(`.${classes} `)
+        .attr('transform', 'translate(0, -4)')
+        .attr('height', (height - 8) * -1)
         .append('rect')
         .attr('class', `rect data`)
         .attr('fill', '#FFF')
@@ -160,14 +146,12 @@ const drawElectricalProfile = (
         .attr('ry', 4)
         .attr(
           'transform',
-          rotate
-            ? 'translate(80, 0)'
-            : `translate(${0 - popUpPosition}, ${
-                isIncompatible || !electrificationProfile ? '-65' : '-45'
-              } )`
+          `translate(${0 - popUpPosition}, ${
+            isIncompatible || !electrificationProfile ? '-65' : '-45'
+          } )`
         )
         .attr('x', pointerPositionX)
-        .attr('y', rotate ? pointerPositionY : chart.y(yValues.start) + height)
+        .attr('y', chart.y(yValues.start) + height)
         .attr('width', popUpWidth)
         .attr('height', isIncompatible || !electrificationProfile ? 55 : 35);
 
@@ -180,14 +164,12 @@ const drawElectricalProfile = (
         .attr('stroke', isStripe ? `url(#${id})` : electricalConditionSegment.textColor)
         .attr(
           'transform',
-          rotate
-            ? `translate(88, ${isIncompatible || !electrificationProfile ? '16' : '8'})`
-            : `translate(${8 - popUpPosition}, ${
-                isIncompatible || !electrificationProfile ? '-47' : '-37'
-              } )`
+          `translate(${8 - popUpPosition}, ${
+            isIncompatible || !electrificationProfile ? '-47' : '-37'
+          } )`
         )
         .attr('x', pointerPositionX)
-        .attr('y', rotate ? pointerPositionY : chart.y(yValues.start) + height)
+        .attr('y', chart.y(yValues.start) + height)
         .attr('width', electrificationMode === '1500' ? 20 : 28)
         .attr('height', 20);
 
@@ -204,14 +186,12 @@ const drawElectricalProfile = (
           )
           .attr(
             'transform',
-            rotate
-              ? `translate(123,${isIncompatible || !electrificationProfile ? 18 : 20})`
-              : `translate(${48 - popUpPosition}, ${
-                  isIncompatible || !electrificationProfile ? '-37' : '-25'
-                })`
+            `translate(${48 - popUpPosition}, ${
+              isIncompatible || !electrificationProfile ? '-37' : '-25'
+            })`
           )
           .attr('x', pointerPositionX)
-          .attr('y', rotate ? pointerPositionY : chart.y(yValues.start) + height);
+          .attr('y', chart.y(yValues.start) + height);
       } else {
         drawZone
           .append('text')
@@ -226,14 +206,12 @@ const drawElectricalProfile = (
           )
           .attr(
             'transform',
-            rotate
-              ? `translate(123,${isIncompatible || !electrificationProfile ? 18 : 20})`
-              : `translate(${48 - popUpPosition}, ${
-                  isIncompatible || !electrificationProfile ? '-45' : '-25'
-                })`
+            `translate(${48 - popUpPosition}, ${
+              isIncompatible || !electrificationProfile ? '-45' : '-25'
+            })`
           )
           .attr('x', pointerPositionX)
-          .attr('y', rotate ? pointerPositionY : chart.y(yValues.start) + height);
+          .attr('y', chart.y(yValues.start) + height);
 
         if (isIncompatible || !electrificationProfile) {
           drawZone
@@ -249,12 +227,9 @@ const drawElectricalProfile = (
                     ns: 'simulation',
                   })}`
             )
-            .attr(
-              'transform',
-              rotate ? 'translate(123, 40)' : `translate(${48 - popUpPosition}, -25)`
-            )
+            .attr('transform', `translate(${48 - popUpPosition}, -25)`)
             .attr('x', pointerPositionX)
-            .attr('y', rotate ? pointerPositionY : chart.y(yValues.start) + height);
+            .attr('y', chart.y(yValues.start) + height);
         }
       }
     })

@@ -68,11 +68,9 @@ export default function SpeedSpaceChart({
   const [chart, setChart] = useState<SpeedSpaceChart | undefined>(undefined);
   const [chartBaseHeight, setChartBaseHeight] = useState(initialHeight);
   const [chartHeight, setChartHeight] = useState(initialHeight);
-  const [hasJustRotated, setHasJustRotated] = useState(false);
   const [isActive, setIsActive] = useState(false);
   const [localSettings, setLocalSettings] = useState(speedSpaceSettings);
   const [resetChart, setResetChart] = useState(false);
-  const [rotate, setRotate] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
 
   const ref = useRef<HTMLDivElement>(null);
@@ -92,7 +90,7 @@ export default function SpeedSpaceChart({
 
   const timeScaleRange: [Date, Date] = useMemo(() => {
     if (chart) {
-      const spaceScaleRange = rotate ? chart.y.domain() : chart.x.domain();
+      const spaceScaleRange = chart.x.domain();
       return spaceScaleRange.map((position) =>
         interpolateOnPosition(trainSimulation, position)
       ) as [Date, Date];
@@ -109,11 +107,11 @@ export default function SpeedSpaceChart({
   const { updateTimePosition } = useChartSynchronizer(
     (newTimePosition, positionValues) => {
       if (dateIsInRange(newTimePosition, timeScaleRange)) {
-        traceVerticalLine(chart, CHART_AXES.SPACE_SPEED, positionValues, rotate, newTimePosition);
+        traceVerticalLine(chart, CHART_AXES.SPACE_SPEED, positionValues, newTimePosition);
       }
     },
     'speed-space-chart',
-    [chart, rotate, timeScaleRange]
+    [chart, timeScaleRange]
   );
 
   /**
@@ -125,21 +123,14 @@ export default function SpeedSpaceChart({
       CHART_ID,
       resetChart,
       trainSimulation,
-      hasJustRotated,
       initialHeight,
       ref,
       chart
     ) as SpeedSpaceChart;
 
     setChart(localChart);
-    drawTrain(trainSimulation, rotate, localSettings, localChart);
-    setHasJustRotated(false);
+    drawTrain(trainSimulation, localSettings, localChart);
     setResetChart(false);
-  };
-
-  const toggleRotation = () => {
-    setRotate(!rotate);
-    setHasJustRotated(true);
   };
 
   /**
@@ -158,13 +149,12 @@ export default function SpeedSpaceChart({
 
   /**
    * redraw the train if:
-   * - the train must be rotated
    * - the local settings have been changed
    * - the chart has been resized (vertically only)
    */
   useEffect(() => {
     createChartAndTrain();
-  }, [rotate, localSettings, chartHeight]);
+  }, [localSettings, chartHeight]);
 
   useEffect(() => {
     if (chart && sharedXScaleDomain && sharedXScaleDomain.source !== CHART_ID) {
@@ -180,10 +170,7 @@ export default function SpeedSpaceChart({
    */
   useEffect(() => {
     if (resetChart) {
-      if (rotate) {
-        // cancel rotation and redraw the train
-        toggleRotation();
-      } else if (chart && setSharedXScaleDomain) {
+      if (chart && setSharedXScaleDomain) {
         setSharedXScaleDomain((prevState) => ({
           ...prevState,
           current: prevState.initial,
@@ -220,7 +207,7 @@ export default function SpeedSpaceChart({
       chart,
       trainSimulation,
       CHART_AXES.SPACE_SPEED,
-      rotate,
+      false,
       setChart,
       simulationIsPlaying,
       updateTimePosition,
@@ -245,7 +232,7 @@ export default function SpeedSpaceChart({
     return () => {
       window.removeEventListener('resize', debounceResize);
     };
-  }, [chart, trainSimulation, localSettings, resetChart, rotate]);
+  }, [chart, trainSimulation, localSettings, resetChart]);
 
   return (
     <Rnd
@@ -304,17 +291,10 @@ export default function SpeedSpaceChart({
         )}
         <button
           type="button"
-          className="btn-rounded btn-rounded-white box-shadow btn-rotate mr-5"
+          className="btn-rounded btn-rounded-white box-shadow btn-rotate"
           onClick={() => setResetChart(true)}
         >
           <GiResize />
-        </button>
-        <button
-          type="button"
-          className="btn-rounded btn-rounded-white box-shadow btn-rotate"
-          onClick={() => toggleRotation()}
-        >
-          <i className="icons-refresh" />
         </button>
         <div className="handle-tab-resize">
           <CgLoadbar />

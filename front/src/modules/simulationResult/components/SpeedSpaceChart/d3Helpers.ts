@@ -12,7 +12,7 @@ import { isEmpty } from 'lodash';
 import { Chart, SpeedSpaceChart, SpeedSpaceSettingsType } from 'reducers/osrdsimulation/types';
 import drawElectricalProfile from 'modules/simulationResult/components/ChartHelpers/drawElectricalProfile';
 import drawPowerRestriction from 'modules/simulationResult/components/ChartHelpers/drawPowerRestriction';
-import { POSITION, SPEED, CHART_AXES } from '../simulationResultsConsts';
+import { POSITION, SPEED, HEIGHT, CHART_AXES } from '../simulationResultsConsts';
 import { GevPreparedData } from './prepareData';
 
 /**
@@ -27,7 +27,6 @@ function createChart(
   CHART_ID: string,
   resetChart: boolean,
   trainSimulation: GevPreparedData,
-  hasJustRotated: boolean,
   initialHeight: number,
   ref: React.RefObject<HTMLDivElement>,
   chart?: SpeedSpaceChart
@@ -36,17 +35,29 @@ function createChart(
 
   let scaleX: d3.ScaleLinear<number, number, never>;
   let scaleY: d3.ScaleLinear<number, number, never>;
+  let scaleY2: d3.ScaleLinear<number, number, never> = defineLinear(0, 0, 0);
 
   if (chart === undefined || resetChart) {
     const maxX = d3.max(trainSimulation.speed, (speedObject) => speedObject[POSITION]) as number;
     scaleX = defineLinear(maxX + 100);
-    const maxY = d3.max(trainSimulation.speed, (speedObject) => speedObject[SPEED]) as number;
-    scaleY = defineLinear(maxY + 50);
-  } else {
-    scaleX = !hasJustRotated ? chart.x : chart.y;
-    scaleY = !hasJustRotated ? chart.y : chart.x;
-  }
 
+    const maxY = d3.max(trainSimulation.speed, (speedObject) => speedObject[SPEED]) as number;
+    scaleY = defineLinear(maxY);
+
+    const minY2 = d3.min(
+      trainSimulation.slopesCurve,
+      (speedObject) => speedObject[HEIGHT]
+    ) as number;
+    const maxY2 = d3.max(
+      trainSimulation.slopesCurve,
+      (speedObject) => speedObject[HEIGHT]
+    ) as number;
+    scaleY2 = chart === undefined ? defineLinear(maxY2, 0, minY2) : chart.y2;
+  } else {
+    scaleX = chart.x;
+    scaleY = chart.y;
+    scaleY2 = chart.y2;
+  }
   const width =
     d3.select(`#container-${CHART_ID}`) !== null
       ? parseInt(d3.select(`#container-${CHART_ID}`)?.style('width'), 10)
@@ -66,33 +77,31 @@ function createChart(
     ref,
     false, // not used for GEV
     CHART_AXES.SPACE_SPEED,
-    CHART_ID
+    CHART_ID,
+    scaleY2
   );
 }
 
-function drawAxisTitle(chart: Chart, rotate: boolean) {
+function drawAxisTitle(chart: Chart) {
   chart.drawZone
     .append('text')
     .attr('class', 'axis-unit')
     .attr('text-anchor', 'end')
-    .attr('transform', rotate ? 'rotate(0)' : 'rotate(-90)')
-    .attr('x', rotate ? chart.width - 10 : -10)
-    .attr('y', rotate ? chart.height - 10 : 20)
+    .attr('x', -10)
+    .attr('y', 20)
     .text('KM/H');
 
   chart.drawZone
     .append('text')
     .attr('class', 'axis-unit')
     .attr('text-anchor', 'end')
-    .attr('transform', rotate ? 'rotate(-90)' : 'rotate(0)')
-    .attr('x', rotate ? -10 : chart.width - 10)
-    .attr('y', rotate ? 20 : chart.height - 10)
+    .attr('x', chart.width - 10)
+    .attr('y', chart.height - 10)
     .text('M');
 }
 
 function drawTrain(
   dataSimulation: GevPreparedData,
-  rotate: boolean,
   speedSpaceSettings: SpeedSpaceSettingsType,
   chart: Chart
 ) {
@@ -100,16 +109,9 @@ function drawTrain(
     const chartLocal = chart;
     chartLocal.drawZone.select('g').remove();
     chartLocal.drawZone.append('g').attr('id', 'speedSpaceChart').attr('class', 'chartTrain');
-    drawAxisTitle(chartLocal, rotate);
+    drawAxisTitle(chartLocal);
 
-    drawArea(
-      chartLocal,
-      'area speed',
-      dataSimulation.areaBlock,
-      'speedSpaceChart',
-      'curveLinear',
-      rotate
-    );
+    drawArea(chartLocal, 'area speed', dataSimulation.areaBlock, 'speedSpaceChart', 'curveLinear');
 
     drawCurve(
       chartLocal,
@@ -118,8 +120,7 @@ function drawTrain(
       'speedSpaceChart',
       'curveLinear',
       CHART_AXES.SPACE_SPEED,
-      'speed',
-      rotate
+      'speed'
     );
     if (dataSimulation.margins_speed) {
       drawCurve(
@@ -129,8 +130,7 @@ function drawTrain(
         'speedSpaceChart',
         'curveLinear',
         CHART_AXES.SPACE_SPEED,
-        'margins_speed',
-        rotate
+        'margins_speed'
       );
     }
     if (dataSimulation.eco_speed) {
@@ -141,8 +141,7 @@ function drawTrain(
         'speedSpaceChart',
         'curveLinear',
         CHART_AXES.SPACE_SPEED,
-        'eco_speed',
-        rotate
+        'eco_speed'
       );
     }
     if (dataSimulation.vmax && speedSpaceSettings.maxSpeed) {
@@ -153,8 +152,7 @@ function drawTrain(
         'speedSpaceChart',
         'curveLinear',
         CHART_AXES.SPACE_SPEED,
-        'vmax',
-        rotate
+        'vmax'
       );
     }
     if (dataSimulation.slopesCurve && speedSpaceSettings.altitude) {
@@ -165,8 +163,7 @@ function drawTrain(
         'speedSpaceChart',
         'curveLinear',
         CHART_AXES.SPACE_HEIGHT,
-        'slopes',
-        rotate
+        'slopes'
       );
     }
     if (dataSimulation.slopesHistogram && speedSpaceSettings.slopes) {
@@ -177,16 +174,14 @@ function drawTrain(
         'speedSpaceChart',
         'curveMonotoneX',
         CHART_AXES.SPACE_GRADIENT,
-        'slopesHistogram',
-        rotate
+        'slopesHistogram'
       );
       drawArea(
         chartLocal,
         'area slopes',
         dataSimulation.areaSlopesHistogram,
         'speedSpaceChart',
-        'curveMonotoneX',
-        rotate
+        'curveMonotoneX'
       );
     }
     if (dataSimulation.curvesHistogram && speedSpaceSettings.curves) {
@@ -197,8 +192,7 @@ function drawTrain(
         'speedSpaceChart',
         'curveLinear',
         CHART_AXES.SPACE_RADIUS,
-        'curvesHistogram',
-        rotate
+        'curvesHistogram'
       );
     }
 
@@ -213,7 +207,6 @@ function drawTrain(
             segment,
             'speedSpaceChart',
             ['position', 'height'],
-            rotate,
             segment.isStriped,
             segment.isIncompatibleElectricalProfile,
             `electricalProfiles_${index}`
@@ -254,7 +247,6 @@ function drawTrain(
           source,
           'speedSpaceChart',
           DRAWING_KEYS,
-          rotate,
           source.isStriped,
           source.isIncompatiblePowerRestriction,
           source.isRestriction,

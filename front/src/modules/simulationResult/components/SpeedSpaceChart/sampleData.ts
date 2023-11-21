@@ -28,6 +28,15 @@ const ORSD_GRAPH_SAMPLE_DATA: OsrdSimulationState = {
       _groups: [[{}]],
       _parents: [null],
     } as unknown as d3.Selection<SVGGElement, unknown, null, undefined>,
+    y2: {} as unknown as d3.ScaleLinear<number, number>,
+    y2Axis: {
+      _groups: [[{}]],
+      _parents: [null],
+    } as unknown as d3.Selection<SVGGElement, unknown, null, undefined>,
+    y2AxisGrid: {
+      _groups: [[{}]],
+      _parents: [null],
+    } as unknown as d3.Selection<SVGGElement, unknown, null, undefined>,
     svg: {
       _groups: [
         [

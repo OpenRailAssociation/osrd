@@ -10,22 +10,14 @@ const drawArea = (
   classes: string,
   dataSimulation: AreaBlock[],
   groupID: string,
-  interpolation: 'curveMonotoneX' | 'curveLinear',
-  rotate: boolean
+  interpolation: 'curveMonotoneX' | 'curveLinear'
 ) => {
-  const dataDefinition = rotate
-    ? d3
-        .area<AreaBlock>()
-        .y((d) => chart.y(d.position))
-        .x0((d) => chart.x(d.value0))
-        .x1((d) => chart.x(d.value1))
-        .curve(d3[interpolation])
-    : d3
-        .area<AreaBlock>()
-        .x((d) => chart.x(d.position))
-        .y0((d) => chart.y(d.value0))
-        .y1(() => chart.y(0))
-        .curve(d3[interpolation]);
+  const dataDefinition = d3
+    .area<AreaBlock>()
+    .x((d) => chart.x(d.position))
+    .y0((d) => chart.y(d.value0))
+    .y1(() => chart.y(0))
+    .curve(d3[interpolation]);
 
   chart.drawZone
     .select(`#${groupID}`)

@@ -10,7 +10,6 @@ const drawPowerRestriction = (
   powerRestrictionSegment: PowerRestrictionSegment,
   groupID: string,
   keyValues: DrawingKeys,
-  rotate: boolean,
   isStripe: boolean,
   isIncompatible: boolean,
   isRestriction: boolean,
@@ -19,9 +18,9 @@ const drawPowerRestriction = (
 ) => {
   // Get the different axis values based on rotation
   // x
-  const xValues = getAxisValues(powerRestrictionSegment, keyValues, rotate ? 1 : 0);
+  const xValues = getAxisValues(powerRestrictionSegment, keyValues, 0);
   // y
-  const yValues = getAxisValues(powerRestrictionSegment, keyValues, rotate ? 0 : 1);
+  const yValues = getAxisValues(powerRestrictionSegment, keyValues, 1);
 
   const width = chart.x(xValues.end) - chart.x(xValues.start);
   const height = chart.y(yValues.end) - chart.y(yValues.start);
@@ -60,7 +59,7 @@ const drawPowerRestriction = (
 
   // add text to main rect
   const addTextZone = () => {
-    if ((rotate && height < -margin) || (!rotate && width > 60)) {
+    if (width > 60) {
       const textZone = chart.drawZone.select(`#${groupID}`);
 
       // add rect for text zone
@@ -68,13 +67,13 @@ const drawPowerRestriction = (
         .append('rect')
         .attr('class', `rect electricalProfileTextBlock ${classes}`)
         .attr('fill', '#FFF')
-        .attr('transform', rotate ? 'translate(-20, -10)' : 'translate(-25, -5.5)')
+        .attr('transform', 'translate(-25, -5.5)')
         .attr('rx', 2)
         .attr('ry', 2)
         .attr('x', chart.x(xValues.middle + margin))
         .attr('y', chart.y(yValues.start - (yValues.end - yValues.middle - margin)) + height)
-        .attr('width', rotate ? 40 : '3.2em')
-        .attr('height', rotate ? 20 : '0.6em');
+        .attr('width', '3.2em')
+        .attr('height', '0.6em');
 
       // add text to text zone
       textZone
@@ -86,14 +85,7 @@ const drawPowerRestriction = (
         .attr('fill', '#333')
         .attr('font-size', 8)
         .attr('font-weight', 'bold')
-        .attr(
-          'x',
-          chart.x(
-            rotate
-              ? xValues.start + (xValues.end - xValues.middle + margin)
-              : xValues.middle + margin
-          )
-        )
+        .attr('x', chart.x(xValues.middle + margin))
         .attr('y', chart.y(yValues.start - (yValues.end - yValues.middle - margin)) + height);
     }
   };
@@ -106,7 +98,6 @@ const drawPowerRestriction = (
     .on('mouseover', (event) => {
       const lastPosition = chart.x(powerRestrictionSegment.lastPosition);
       const pointerPositionX = pointer(event, event.currentTarget)[0];
-      const pointerPositionY = pointer(event, event.currentTarget)[1];
       let popUpWidth;
 
       if (isRestriction) {
@@ -120,27 +111,18 @@ const drawPowerRestriction = (
         popUpPosition = pointerPositionX + popUpWidth - lastPosition;
       }
 
-      if (rotate) {
-        drawZone
-          .select(`.${classes} `)
-          .attr('transform', 'translate(-4, 0)')
-          .attr('width', width + 8);
-      } else {
-        drawZone
-          .select(`.${classes} `)
-          .attr('transform', 'translate(0, -4)')
-          .attr('height', (height - 8) * -1);
-      }
-
       drawZone
+        .select(`.${classes} `)
+        .attr('transform', 'translate(0, -4)')
+        .attr('height', (height - 8) * -1)
         .append('rect')
         .attr('class', `rect data`)
         .attr('fill', '#FFF')
         .attr('rx', 4)
         .attr('ry', 4)
-        .attr('transform', rotate ? 'translate(80, 0)' : `translate(${0 - popUpPosition}, -45)`)
+        .attr('transform', `translate(${0 - popUpPosition}, -45)`)
         .attr('x', pointerPositionX)
-        .attr('y', rotate ? pointerPositionY + margin : chart.y(yValues.start + margin) + height)
+        .attr('y', chart.y(yValues.start + margin) + height)
         .attr('width', popUpWidth)
         .attr('height', 35);
 
@@ -162,9 +144,9 @@ const drawPowerRestriction = (
         .attr('class', `data`)
         .attr('dominant-baseline', 'middle')
         .text(text)
-        .attr('transform', rotate ? `translate(88, 19)` : `translate(${8 - popUpPosition}, -27)`)
+        .attr('transform', `translate(${8 - popUpPosition}, -27)`)
         .attr('x', pointerPositionX)
-        .attr('y', rotate ? pointerPositionY + margin : chart.y(yValues.start + margin) + height);
+        .attr('y', chart.y(yValues.start + margin) + height);
     })
     // add mouse-out interraction to remove pop-up
     .on('mouseout', () => {

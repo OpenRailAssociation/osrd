@@ -22,8 +22,10 @@ export type SimulationD3Scale = d3.ScaleTime<number, number> | d3.ScaleLinear<nu
 export interface SpeedSpaceChart extends Chart {
   x: d3.ScaleLinear<number, number>;
   y: d3.ScaleLinear<number, number>;
+  y2: d3.ScaleLinear<number, number>;
   originalScaleX?: d3.ScaleLinear<number, number>;
   originalScaleY?: d3.ScaleLinear<number, number>;
+  originalScaleY2?: d3.ScaleLinear<number, number>;
 }
 export interface Chart {
   width: number;
@@ -40,10 +42,14 @@ export interface Chart {
   y: SimulationD3Scale;
   yAxis: d3.Selection<SVGGElement, unknown, null, undefined>;
   yAxisGrid: d3.Selection<SVGGElement, unknown, null, undefined>;
+  y2?: SimulationD3Scale;
+  y2Axis?: d3.Selection<SVGGElement, unknown, null, undefined>;
+  y2AxisGrid?: d3.Selection<SVGGElement, unknown, null, undefined>;
   svg: d3.Selection<SVGGElement, unknown, null, undefined>;
   drawZone: d3.Selection<SVGGElement, unknown, null, undefined>;
   originalScaleX?: SimulationD3Scale;
   originalScaleY?: SimulationD3Scale;
+  originalScaleY2?: SimulationD3Scale;
   rotate?: boolean;
 }
 export interface AllowancesSetting {

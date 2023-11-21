@@ -37,7 +37,7 @@ import { useChartSynchronizer } from './ChartHelpers/ChartSynchronizer';
 
 const CHART_ID = 'SpaceCurvesSlopes';
 
-const drawAxisTitle = (chart: Chart) => {
+const drawAxisTitle = (chart: Chart, selectedTrain: Train) => {
   chart.drawZone
     .append('text')
     .attr('class', 'axis-unit')
@@ -55,6 +55,17 @@ const drawAxisTitle = (chart: Chart) => {
     .attr('x', chart.width - 10)
     .attr('y', chart.height - 10)
     .text('m');
+
+  if (selectedTrain && selectedTrain.slopes) {
+    chart.drawZone
+      .append('text')
+      .attr('class', 'axis-unit')
+      .attr('text-anchor', 'end')
+      .attr('transform', 'rotate(0)')
+      .attr('x', chart.width - 10)
+      .attr('y', 30)
+      .text('m');
+  }
 };
 
 const drawSpaceCurvesSlopesChartCurve = <
@@ -74,8 +85,7 @@ const drawSpaceCurvesSlopesChartCurve = <
     'curvesSlopesChart',
     interpolation,
     ['position', yAxisValue],
-    curveName,
-    false
+    curveName
   );
 };
 
@@ -108,7 +118,6 @@ const SpaceCurvesSlopes = ({
   const [initialYScaleDomain, setInitialYScaleDomain] = useState<number[]>([]);
 
   const ref = useRef<HTMLDivElement>(null);
-  const rotate = false;
 
   const trainData: SpaceCurvesSlopesData = useMemo(() => {
     // speeds (needed for enableInteractivity)
@@ -154,11 +163,11 @@ const SpaceCurvesSlopes = ({
   const { updateTimePosition } = useChartSynchronizer(
     (timePosition, positionValues) => {
       if (dateIsInRange(timePosition, timeScaleRange)) {
-        traceVerticalLine(chart, CHART_AXES.SPACE_GRADIENT, positionValues, rotate, timePosition);
+        traceVerticalLine(chart, CHART_AXES.SPACE_GRADIENT, positionValues, timePosition);
       }
     },
     'space-curve',
-    [chart, rotate, timeScaleRange]
+    [chart, timeScaleRange]
   );
 
   const createChart = (): SpeedSpaceChart => {
@@ -174,6 +183,16 @@ const SpaceCurvesSlopes = ({
     if (chart === undefined) {
       setInitialYScaleDomain(defineY.domain());
     }
+    let y2Min: number | undefined;
+    let y2Max: number | undefined;
+    let defineY2: d3.ScaleLinear<number, number, never> = defineLinear(0, 0, 0);
+
+    if (trainData.slopesCurve) {
+      y2Min = d3.min(trainData.slopesCurve, (d) => d.height);
+      y2Max = d3.max(trainData.slopesCurve, (d) => d.height) || 0;
+      defineY2 = chart === undefined ? defineLinear(y2Max, 0, y2Min) : chart.y2;
+    }
+
     const width = parseInt(d3.select(`#container-${CHART_ID}`).style('width'), 10);
     return defineChart(
       width,
@@ -183,7 +202,8 @@ const SpaceCurvesSlopes = ({
       ref as React.MutableRefObject<HTMLDivElement>,
       false,
       ['position', 'gradient'],
-      CHART_ID
+      CHART_ID,
+      defineY2
     ) as SpeedSpaceChart;
   };
 
@@ -218,7 +238,7 @@ const SpaceCurvesSlopes = ({
   const drawTrain = () => {
     const chartLocal = createChart();
     chartLocal.drawZone.append('g').attr('id', 'curvesSlopesChart').attr('class', 'chartTrain');
-    drawAxisTitle(chartLocal);
+    drawAxisTitle(chartLocal, selectedTrain);
     drawSpaceCurvesSlopesChartCurve(
       chartLocal,
       'speed slopesHistogram',
@@ -227,13 +247,13 @@ const SpaceCurvesSlopes = ({
       'gradient',
       'slopesHistogram'
     );
+    // TODO : figure out a more precise name for future refacto
     drawArea(
       chartLocal,
       'area slopes',
       trainData.areaSlopesHistogram,
       'curvesSlopesChart',
-      'curveMonotoneX',
-      rotate
+      'curveMonotoneX'
     );
     drawSpaceCurvesSlopesChartCurve(
       chartLocal,
@@ -259,7 +279,7 @@ const SpaceCurvesSlopes = ({
       chartLocal,
       trainData,
       CHART_AXES.SPACE_GRADIENT,
-      rotate,
+      false,
       setChart,
       simulationIsPlaying,
       updateTimePosition,
