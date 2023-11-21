@@ -41,7 +41,7 @@ export default function SimulationResults({
   isDisplayed,
   collapsedTimetable,
 }: SimulationResultsProps) {
-  const { t } = useTranslation('operationalStudies/scenario');
+  const { t } = useTranslation('simulation');
   const dispatch = useDispatch();
 
   const { chart } = useSelector(getOsrdSimulation);
@@ -107,7 +107,7 @@ export default function SimulationResults({
   }, [extViewport]);
 
   return simulation.trains.length === 0 && !isUpdating ? (
-    <h1 className="text-center mt-5">{t('simulation:noData')}</h1>
+    <h1 className="text-center mt-5">{t('noData')}</h1>
   ) : (
     <div className="simulation-results">
       {/* SIMULATION : STICKY BAR */}
