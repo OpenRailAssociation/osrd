@@ -60,5 +60,18 @@ jobs:
           shopt -s nullglob
           sed -i 's/--mount=type=cache,[^[:space:]]*//g' */{docker/,}{Dockerfile{,.*},*.dockerfile}
 
-          export OSRD_GIT_DESCRIBE="${DOCKER_METADATA_OUTPUT_VERSION} $(git rev-parse --short ${{ github.sha }})"
-          docker buildx bake --file=docker/docker-bake.hcl --file=bake-metadata.json --push
+          export OSRD_GIT_DESCRIBE="$(git rev-parse --short ${{ github.sha }})"
+
+          # Only push to ghcr if the version is specific enough
+          case "${DOCKER_METADATA_OUTPUT_VERSION}" in
+              commit-*)
+                  echo Building without push
+                  BAKE_ARGS=
+                  ;;
+              *)
+                  echo Building and pushing
+                  BAKE_ARGS='--push'
+                  OSRD_GIT_DESCRIBE="${DOCKER_METADATA_OUTPUT_VERSION} ${OSRD_GIT_DESCRIBE}"
+                  ;;
+          esac
+          docker buildx bake --file=docker/docker-bake.hcl --file=bake-metadata.json $BAKE_ARGS
