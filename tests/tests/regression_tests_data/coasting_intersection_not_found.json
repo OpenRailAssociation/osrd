@@ -1,0 +1,75 @@
+{
+    "error_type": "SCHEDULE",
+    "code": 500,
+    "error": "{\"status\":500,\"type\":\"assert_error\",\"context\":{\"url\":\"http://localhost:8080/standalone_simulation\",\"stack_trace\":[\"CoastingGenerator.java:90\",\"AcceleratingSlopeCoast.java:124\",\"MarecoAllowance.java:90\",\"AbstractAllowanceWithRanges.java:335\",\"AbstractAllowanceWithRanges.java:290\",\"AbstractAllowanceWithRanges.java:254\",\"AbstractAllowanceWithRanges.java:183\",\"AbstractAllowanceWithRanges.java:125\",\"StandaloneSim.java:170\",\"StandaloneSim.java:105\",\"StandaloneSim.java:148\",\"StandaloneSimulationEndpoint.java:69\",\"FkRegex.java:153\",\"FkRegex.java:217\",\"FkChain.java:72\",\"TkFork.java:98\",\"TkFallback.java:84\",\"TkFallback.java:66\",\"TkWrap.java:58\",\"TkSlf4j.java:110\",\"BkBasic.java:123\",\"BkBasic.java:99\",\"BkSafe.java:46\",\"BkWrap.java:51\",\"BkParallel.java:81\",\"ThreadPoolExecutor.java:1144\",\"ThreadPoolExecutor.java:642\",\"Thread.java:1589\"]},\"message\":\"assert check failed\"}",
+    "infra_name": "small_infra",
+    "path_payload": {
+        "infra": 5,
+        "name": "foo",
+        "steps": [
+            {
+                "duration": 587.025086816319,
+                "waypoints": [
+                    {
+                        "track_section": "TC2",
+                        "offset": 795.7767689729903
+                    }
+                ]
+            },
+            {
+                "duration": 949.7702937462118,
+                "waypoints": [
+                    {
+                        "track_section": "TC2",
+                        "offset": 272.4173611324721
+                    }
+                ]
+            },
+            {
+                "duration": 171.5452892774222,
+                "waypoints": [
+                    {
+                        "track_section": "TA5",
+                        "offset": 19.330370435577777
+                    }
+                ]
+            },
+            {
+                "duration": 1,
+                "waypoints": [
+                    {
+                        "track_section": "TB0",
+                        "offset": 2062.229786529248
+                    }
+                ]
+            }
+        ]
+    },
+    "schedule_payload": {
+        "timetable": 2114,
+        "path": 40728,
+        "schedules": [
+            {
+                "train_name": "foo",
+                "labels": [],
+                "departure_time": 81588,
+                "allowances": [
+                    {
+                        "allowance_type": "engineering",
+                        "begin_position": 857.7804119414809,
+                        "end_position": 5806.563236446253,
+                        "value": {
+                            "value_type": "time",
+                            "seconds": 10.106055882198516
+                        },
+                        "capacity_speed_limit": 8.454967504070353,
+                        "distribution": "MARECO"
+                    }
+                ],
+                "initial_speed": 0,
+                "rolling_stock_id": 494,
+                "speed_limit_category": "foo"
+            }
+        ]
+    }
+}
