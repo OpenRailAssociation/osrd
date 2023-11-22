@@ -956,20 +956,29 @@ export type GetInfraByIdVoltagesApiArg = {
   includeRollingStockModes?: boolean;
 };
 export type GetLayersLayerByLayerSlugMvtAndViewSlugApiResponse =
-  /** status 200 Successful Response */ ViewMetadata;
+  /** status 200 Successful Response */ {
+    attribution: string;
+    maxzoom: number;
+    minzoom: number;
+    name: string;
+    promoteId: object;
+    scheme: string;
+    tiles: string[];
+    type: string;
+  };
 export type GetLayersLayerByLayerSlugMvtAndViewSlugApiArg = {
+  infra: number;
   layerSlug: string;
   viewSlug: string;
-  infra: number;
 };
 export type GetLayersTileByLayerSlugAndViewSlugZXYApiResponse = unknown;
 export type GetLayersTileByLayerSlugAndViewSlugZXYApiArg = {
+  infra: number;
   layerSlug: string;
   viewSlug: string;
-  z: number;
   x: number;
   y: number;
-  infra: number;
+  z: number;
 };
 export type GetLightRollingStockApiResponse =
   /** status 200  */ PaginatedResponseOfLightRollingStockWithLiveries;
@@ -1482,16 +1491,6 @@ export type RouteTrackRangesCantComputePathError = {
 export type RouteTrackRangesComputed = {
   track_ranges: DirectionalTrackRange[];
   type: 'Computed';
-};
-export type ViewMetadata = {
-  attribution?: string;
-  maxzoom?: number;
-  minzoom?: number;
-  name?: string;
-  promotedId?: object;
-  scheme?: string;
-  tiles?: string[];
-  type?: string;
 };
 export type LightModeEffortCurves = {
   is_electric: boolean;

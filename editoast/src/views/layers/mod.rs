@@ -5,21 +5,27 @@ use crate::error::Result;
 use crate::map::redis_utils::RedisClient;
 use crate::map::{get, get_cache_tile_key, get_view_cache_prefix, set, Layer, MapLayers, Tile};
 use crate::DbPool;
-use actix_web::dev::HttpServiceFactory;
-use actix_web::web::{scope, Data, Json, Path, Query};
+use actix_web::web::{Data, Json, Path, Query};
 use actix_web::{get, HttpResponse};
 use diesel::sql_query;
 use diesel::sql_types::Integer;
 use diesel_async::RunQueryDsl;
 use editoast_derive::EditoastError;
 use mvt_utils::{create_and_fill_mvt_tile, get_geo_json_sql_query, GeoJsonAndData};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_json::{json, Value as JsonValue};
 use thiserror::Error;
+use utoipa::{IntoParams, ToSchema};
 
-/// Returns `/layers` routes
-pub fn routes() -> impl HttpServiceFactory {
-    scope("/layers").service((layer_view, cache_and_get_mvt_tile))
+crate::routes! {
+     "/layers" => {
+        "/layer/{layer_slug}/mvt/{view_slug}" => {
+            layer_view,
+        },
+        "/tile/{layer_slug}/{view_slug}/{z}/{x}/{y}" => {
+            cache_and_get_mvt_tile,
+        },
+    }
 }
 
 #[derive(Debug, Error, EditoastError)]
@@ -56,19 +62,53 @@ impl LayersError {
     }
 }
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Debug, Clone, IntoParams)]
+#[into_params(parameter_in = Query)]
 struct InfraQueryParam {
     infra: i64,
 }
 
+#[derive(Deserialize, IntoParams)]
+#[allow(unused)]
+struct LayerViewParams {
+    layer_slug: String,
+    view_slug: String,
+}
+
+#[derive(Serialize, ToSchema)]
+struct ViewMetadata {
+    #[serde(rename = "type")]
+    data_type: String,
+    #[schema(example = "track_sections")]
+    name: String,
+    #[serde(rename = "promoteId")]
+    #[schema(example = json!({track_sections: "id"}), value_type = Object)]
+    promote_id: JsonValue,
+    #[schema(example = "xyz")]
+    scheme: String,
+    #[schema(example = json!(["http://localhost:7070/tile/track_sections/geo/{z}/{x}/{y}/?infra=1"]))]
+    tiles: Vec<String>,
+    attribution: String,
+    minzoom: u64,
+    #[schema(example = 15)]
+    maxzoom: u64,
+}
+
 /// Returns layer view metadata to query tiles
-#[get("/layer/{layer_slug}/mvt/{view_slug}")]
+#[utoipa::path(
+    tag = "layers",
+    params(InfraQueryParam, LayerViewParams),
+    responses(
+        (status = 200, body = inline(ViewMetadata), description = "Successful Response"),
+    )
+)]
+#[get("")]
 async fn layer_view(
     path: Path<(String, String)>,
     params: Query<InfraQueryParam>,
     map_layers: Data<MapLayers>,
     map_layers_config: Data<MapLayersConfig>,
-) -> Result<Json<JsonValue>> {
+) -> Result<Json<ViewMetadata>> {
     let (layer_slug, view_slug) = path.into_inner();
     let infra = params.infra;
     let layer = match map_layers.layers.get(&layer_slug) {
@@ -88,20 +128,37 @@ async fn layer_view(
     let tiles_url_pattern =
         format!("{root_url}layers/tile/{layer_slug}/{view_slug}/{{z}}/{{x}}/{{y}}/?infra={infra}");
 
-    Ok(Json(json!({
-        "type": "vector",
-        "name": layer_slug,
-        "promoteId": {layer_slug: layer.id_field},
-        "scheme": "xyz",
-        "tiles": [tiles_url_pattern],
-        "attribution": layer.attribution.clone().unwrap_or_default(),
-        "minzoom": 5,
-        "maxzoom": map_layers_config.max_zoom,
-    })))
+    Ok(Json(ViewMetadata {
+        data_type: "vector".to_owned(),
+        name: layer_slug,
+        promote_id: json!({"layer_slug": layer.id_field}),
+        scheme: "xyz".to_owned(),
+        tiles: vec![tiles_url_pattern],
+        attribution: layer.attribution.clone().unwrap_or_default(),
+        minzoom: 5,
+        maxzoom: map_layers_config.max_zoom,
+    }))
 }
 
-/// Gets mvt tile from the cache if possible, otherwise gets data from the data base and caches it in redis
-#[get("/tile/{layer_slug}/{view_slug}/{z}/{x}/{y}")]
+#[derive(Deserialize, IntoParams)]
+#[allow(unused)]
+struct TileParams {
+    layer_slug: String,
+    view_slug: String,
+    x: u64,
+    y: u64,
+    z: u64,
+}
+
+/// Mvt tile from the cache if possible, otherwise gets data from the database and caches it in redis
+#[utoipa::path(
+    tag = "layers",
+    params(InfraQueryParam, TileParams),
+    responses(
+        (status = 200, body = Vec<u8>, description = "Successful Response"),
+    )
+)]
+#[get("")]
 async fn cache_and_get_mvt_tile(
     path: Path<(String, String, u64, u64, u64)>,
     params: Query<InfraQueryParam>,

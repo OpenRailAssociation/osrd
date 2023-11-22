@@ -51,6 +51,7 @@ fn routes_v2() -> Routes<impl HttpServiceFactory> {
         rolling_stocks::routes(),
         light_rolling_stocks::routes(),
         electrical_profiles::routes(),
+        layers::routes(),
     }
     routes()
 }
@@ -59,7 +60,6 @@ pub fn routes() -> impl HttpServiceFactory {
     services![
         routes_v2(),
         infra::routes(),
-        layers::routes(),
         pathfinding::routes_v1(),
         train_schedule::routes(),
         stdcm::routes(),

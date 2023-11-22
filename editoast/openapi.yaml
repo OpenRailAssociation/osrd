@@ -3383,33 +3383,6 @@ components:
       required:
       - git_describe
       type: object
-    ViewMetadata:
-      properties:
-        attribution:
-          type: string
-        maxzoom:
-          example: 18
-          type: integer
-        minzoom:
-          type: integer
-        name:
-          example: track_sections
-          type: string
-        promotedId:
-          example:
-            track_sections: id
-          type: object
-        scheme:
-          example: xyz
-          type: string
-        tiles:
-          items:
-            example: http://localhost:7070/tile/track_sections/geo/{z}/{x}/{y}/?infra=1
-            type: string
-          type: array
-        type:
-          example: vector
-          type: string
     Waypoint:
       items:
         properties:
@@ -4399,82 +4372,121 @@ paths:
       - infra
   /layers/layer/{layer_slug}/mvt/{view_slug}/:
     get:
+      description: Returns layer view metadata to query tiles
       parameters:
+      - in: query
+        name: infra
+        required: true
+        schema:
+          format: int64
+          type: integer
       - in: path
         name: layer_slug
         required: true
         schema:
-          title: Layer Slug
           type: string
       - in: path
         name: view_slug
         required: true
         schema:
-          title: View Slug
           type: string
-      - in: query
-        name: infra
-        required: true
-        schema:
-          title: Infra id
-          type: integer
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ViewMetadata'
+                properties:
+                  attribution:
+                    type: string
+                  maxzoom:
+                    example: 15
+                    format: int64
+                    minimum: 0
+                    type: integer
+                  minzoom:
+                    format: int64
+                    minimum: 0
+                    type: integer
+                  name:
+                    example: track_sections
+                    type: string
+                  promoteId:
+                    type: object
+                  scheme:
+                    example: xyz
+                    type: string
+                  tiles:
+                    example:
+                    - http://localhost:7070/tile/track_sections/geo/{z}/{x}/{y}/?infra=1
+                    items:
+                      type: string
+                    type: array
+                  type:
+                    type: string
+                required:
+                - type
+                - name
+                - promoteId
+                - scheme
+                - tiles
+                - attribution
+                - minzoom
+                - maxzoom
+                type: object
           description: Successful Response
-      summary: Mvt View Metadata
+      summary: Returns layer view metadata to query tiles
       tags:
       - layers
   /layers/tile/{layer_slug}/{view_slug}/{z}/{x}/{y}/:
     get:
+      description: Mvt tile from the cache if possible, otherwise gets data from the database and caches it in redis
       parameters:
+      - in: query
+        name: infra
+        required: true
+        schema:
+          format: int64
+          type: integer
       - in: path
         name: layer_slug
         required: true
         schema:
-          title: Layer Slug
           type: string
       - in: path
         name: view_slug
         required: true
         schema:
-          title: View Slug
           type: string
-      - in: path
-        name: z
-        required: true
-        schema:
-          title: Z
-          type: integer
       - in: path
         name: x
         required: true
         schema:
-          title: X
+          format: int64
+          minimum: 0
           type: integer
       - in: path
         name: y
         required: true
         schema:
-          title: Y
+          format: int64
+          minimum: 0
           type: integer
-      - in: query
-        name: infra
+      - in: path
+        name: z
         required: true
         schema:
-          title: Infra
+          format: int64
+          minimum: 0
           type: integer
       responses:
         '200':
           content:
-            application/x-octet-stream:
+            application/octet-stream:
               schema:
+                format: binary
                 type: string
           description: Successful Response
-      summary: Mvt tile from the cache or the database, cache data in redis if needed
+      summary: Mvt tile from the cache if possible, otherwise gets data from the database and caches it in redis
       tags:
       - layers
   /light_rolling_stock/:
