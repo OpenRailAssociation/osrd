@@ -49,6 +49,7 @@ use self::utils::{Identifier, NonBlankString};
 
 crate::schemas! {
     rolling_stock::schemas(),
+    operation::schemas(),
 }
 
 /// This trait should be implemented by all struct that represents an OSRD type.

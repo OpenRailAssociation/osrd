@@ -1,5 +1,5 @@
 mod attached;
-mod auto_fixes;
+pub mod auto_fixes;
 mod edition;
 mod errors;
 mod lines;
@@ -38,6 +38,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value as JsonValue};
 use std::collections::HashMap;
 use thiserror::Error;
+use utoipa::IntoParams;
 use uuid::Uuid;
 
 /// Return `/infra` routes
@@ -68,7 +69,6 @@ pub fn routes() -> impl HttpServiceFactory {
                 ))
                 .service((
                     errors::routes(),
-                    auto_fixes::routes(),
                     objects::routes(),
                     lines::routes(),
                     routes::routes(),
@@ -240,6 +240,13 @@ struct InfraWithState {
     #[serde(flatten)]
     pub infra: Infra,
     pub state: InfraState,
+}
+
+#[derive(IntoParams)]
+#[allow(unused)]
+struct InfraIdParam {
+    /// The ID of the infra to fix
+    infra_id: i64,
 }
 
 /// Return a specific infra

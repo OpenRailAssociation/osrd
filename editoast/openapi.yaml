@@ -1029,9 +1029,36 @@ components:
       type: string
     Operation:
       oneOf:
-      - $ref: '#/components/schemas/RailjsonObject'
-      - $ref: '#/components/schemas/DeleteOperation'
-      - $ref: '#/components/schemas/UpdateOperation'
+      - allOf:
+        - $ref: '#/components/schemas/RailjsonObject'
+        - properties:
+            operation_type:
+              enum:
+              - CREATE
+              type: string
+          required:
+          - operation_type
+          type: object
+      - allOf:
+        - $ref: '#/components/schemas/UpdateOperation'
+        - properties:
+            operation_type:
+              enum:
+              - UPDATE
+              type: string
+          required:
+          - operation_type
+          type: object
+      - allOf:
+        - $ref: '#/components/schemas/DeleteOperation'
+        - properties:
+            operation_type:
+              enum:
+              - DELETE
+              type: string
+          required:
+          - operation_type
+          type: object
     OperationObject:
       properties:
         obj_type:
@@ -3886,27 +3913,6 @@ paths:
                 type: object
           description: All objects attached to the given track (arranged by types)
       summary: Retrieve all objects attached to a given track
-  /infra/{id}/auto_fixes/:
-    get:
-      parameters:
-      - description: infra id
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/Operation'
-                type: array
-          description: A list of operations
-      summary: Retrieve a list of suggested operations to fix issues
-      tags:
-      - infra
   /infra/{id}/clone/:
     post:
       parameters:
@@ -4389,6 +4395,29 @@ paths:
                 type: array
           description: Voltages list
       summary: List all voltages
+      tags:
+      - infra
+  /infra/{infra_id}/auto_fixes/:
+    get:
+      description: Retrieve a list of operations to fix infra issues
+      parameters:
+      - description: The ID of the infra to fix
+        in: path
+        name: infra_id
+        required: true
+        schema:
+          format: int64
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Operation'
+                type: array
+          description: The list of suggested operations
+      summary: Retrieve a list of operations to fix infra issues
       tags:
       - infra
   /layers/layer/{layer_slug}/mvt/{view_slug}/:

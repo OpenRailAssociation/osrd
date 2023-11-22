@@ -312,28 +312,6 @@ paths:
                     items:
                       $ref: "#/components/schemas/InfraError"
 
-  /infra/{id}/auto_fixes/:
-    get:
-      tags:
-        - infra
-      summary: Retrieve a list of suggested operations to fix issues
-      parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          description: infra id
-          required: true
-      responses:
-        200:
-          description: A list of operations
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Operation"
-
   /infra/{id}/switch_types/:
     get:
       tags:
@@ -1115,12 +1093,6 @@ components:
           type: array
         detectors:
           type: array
-
-    Operation:
-      oneOf:
-        - $ref: "#/components/schemas/RailjsonObject"
-        - $ref: "#/components/schemas/DeleteOperation"
-        - $ref: "#/components/schemas/UpdateOperation"
 
     OperationResult:
       oneOf:
