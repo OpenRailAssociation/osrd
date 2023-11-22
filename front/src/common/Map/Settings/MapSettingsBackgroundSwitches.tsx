@@ -20,6 +20,7 @@ import {
   updateShowOSM,
   updateShowOSMtracksections,
   updateTerrain3DExaggeration,
+  updateSmoothTravel,
 } from 'reducers/map';
 
 const FormatSwitch: FC<{
@@ -47,8 +48,14 @@ const FormatSwitch: FC<{
 
 const MapSettingsBackgroundSwitches: FC<unknown> = () => {
   const { t } = useTranslation(['map-settings']);
-  const { showIGNBDORTHO, showIGNSCAN25, showIGNCadastre, showOSM, showOSMtracksections } =
-    useSelector(getMap);
+  const {
+    showIGNBDORTHO,
+    showIGNSCAN25,
+    showIGNCadastre,
+    showOSM,
+    showOSMtracksections,
+    smoothTravel,
+  } = useSelector(getMap);
   const terrain3DExaggeration = useSelector(getTerrain3DExaggeration);
   const dispatch = useDispatch();
 
@@ -111,6 +118,14 @@ const MapSettingsBackgroundSwitches: FC<unknown> = () => {
           />
         </div>
       </div>
+
+      <FormatSwitch
+        name="smoothTravel-switch"
+        onChange={() => dispatch(updateSmoothTravel(!smoothTravel))}
+        state={smoothTravel}
+        icon=""
+        label="smoothTravel"
+      />
     </>
   );
 };
