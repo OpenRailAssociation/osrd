@@ -287,7 +287,7 @@ function generatePointFromPSLSign(
   if (trackState?.type !== 'success') {
     return null;
   }
-  const track = trackState.track;
+  const { track } = trackState;
   const signPoint = along(
     track,
     (sign.position / track.properties.length) * length(track, { units: 'meters' }),
