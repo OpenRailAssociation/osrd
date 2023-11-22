@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Source, LayerProps } from 'react-map-gl/maplibre';
 
@@ -34,7 +34,7 @@ export function genOSMLayerProps(
   const osmStyle = getMapStyle(mapStyle);
   return osmStyle.map((layer) => ({
     ...layer,
-    key: layer.id,
+    key: `${layer.id}-${mapStyle}`,
     id: `osm/${layer.id}`,
     layerOrder,
   }));
@@ -47,11 +47,19 @@ export function genOSMLayers(mapStyle: string, layerOrder?: number) {
 function OSM(props: OSMProps) {
   const { mapStyle, layerOrder } = props;
 
-  return (
+  // Hack to full reload layers to avoid glitches
+  // when switching map style (see #5777)
+  const [reload, setReload] = useState(true);
+  useEffect(() => setReload(true), [mapStyle]);
+  useEffect(() => {
+    if (reload) setReload(false);
+  }, [reload]);
+
+  return !reload ? (
     <Source id="osm" type="vector" url={OSM_URL}>
       {genOSMLayers(mapStyle, layerOrder)}
     </Source>
-  );
+  ) : null;
 }
 
 OSM.propTypes = {
