@@ -1,6 +1,7 @@
 use crate::diesel::{delete, QueryDsl};
 use crate::error::Result;
-use crate::models::{Delete, Document, Identifiable};
+use crate::models::{Delete, Identifiable};
+use crate::modelsv2::Document;
 use crate::schema::rolling_stock::rolling_stock_livery::RollingStockLivery;
 use crate::tables::rolling_stock_livery;
 use async_trait::async_trait;
@@ -63,7 +64,8 @@ impl Delete for RollingStockLiveryModel {
         };
         // Delete compound_image if any
         if let Some(image_id) = livery.compound_image_id {
-            let _ = Document::delete_conn(conn, image_id).await;
+            use crate::modelsv2::DeleteStatic;
+            let _ = Document::delete_static(conn, image_id).await;
         };
         Ok(true)
     }

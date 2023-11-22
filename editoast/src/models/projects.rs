@@ -1,6 +1,7 @@
 use crate::error::Result;
 use crate::models::TextArray;
-use crate::models::{Delete, Document, Identifiable, Retrieve};
+use crate::models::{Delete, Identifiable, Retrieve};
+use crate::modelsv2::{DeleteStatic, Document};
 use crate::tables::project;
 use crate::views::pagination::{Paginate, PaginatedResponse};
 use crate::DbPool;
@@ -189,7 +190,7 @@ impl Project {
 
         if let Some(image) = image_to_delete {
             // We don't check the result. We don't want to throw an error if the image is used in another project.
-            let _ = Document::delete_conn(conn, image).await;
+            let _ = Document::delete_static(conn, image).await;
         }
 
         Ok(Some(project_obj))
@@ -212,7 +213,7 @@ impl Delete for Project {
         // Delete image if any
         if let Some(image) = project_obj.image.unwrap() {
             // We don't check the result. We don't want to throw an error if the image is used in another project.
-            let _ = Document::delete_conn(conn, image).await;
+            let _ = Document::delete_static(conn, image).await;
         };
         Ok(true)
     }
@@ -241,7 +242,7 @@ impl Update for Project {
 
         if let Some(image) = image_to_delete {
             // We don't check the result. We don't want to throw an error if the image is used in another project.
-            let _ = Document::delete_conn(conn, image).await;
+            let _ = Document::delete_static(conn, image).await;
         }
 
         Ok(Some(project_obj))

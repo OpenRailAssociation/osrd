@@ -1,13 +1,7 @@
 use crate::decl_paginated_response;
 use crate::error::Result;
-use crate::models::Create;
-use crate::models::Delete;
-use crate::models::Document;
-use crate::models::List;
-use crate::models::Ordering;
-use crate::models::Project;
-use crate::models::ProjectWithStudies;
-use crate::models::Retrieve;
+use crate::models::{Create, Delete, List, Ordering, Project, ProjectWithStudies, Retrieve};
+use crate::modelsv2::Document;
 use crate::views::pagination::{PaginatedResponse, PaginationQueryParam};
 use crate::DbPool;
 
@@ -17,8 +11,7 @@ use chrono::Utc;
 use derivative::Derivative;
 use editoast_derive::EditoastError;
 use image::ImageError;
-use serde::Deserialize;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
@@ -107,12 +100,14 @@ impl From<ProjectCreateForm> for Project {
 }
 
 async fn check_image_content(db_pool: Data<DbPool>, document_key: i64) -> Result<()> {
-    let doc = match Document::retrieve(db_pool, document_key).await? {
-        Some(doc) => doc,
-        None => return Err(ProjectError::ImageNotFound { document_key }.into()),
-    };
+    use crate::modelsv2::Retrieve;
+    let conn = &mut db_pool.get().await?;
+    let doc = Document::retrieve_or_fail(conn, document_key, || ProjectError::ImageNotFound {
+        document_key,
+    })
+    .await?;
 
-    if let Err(e) = image::load_from_memory(&doc.data.unwrap()) {
+    if let Err(e) = image::load_from_memory(&doc.data) {
         return Err(ProjectError::ImageError(e).into());
     }
     Ok(())
