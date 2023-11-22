@@ -71,6 +71,41 @@ function transformTheme(theme: Theme, reducer: (color: string) => string): Theme
 }
 
 /**
+ * Helper to check if some MapLibre filter contains some ExpressionFilterSpecification,
+ * or only LegacyFilterSpecification:
+ */
+const LEGACY_SIMPLE_OPERATORS = new Set([
+  'has',
+  '!has',
+  '==',
+  '!=',
+  '>',
+  '>=',
+  '<',
+  '<=',
+  'in',
+  '!in',
+]);
+const LEGACY_NESTED_OPERATORS = new Set(['all', 'any', 'none']);
+const LEGACY_VALUE_TYPES = new Set(['string', 'number', 'boolean']);
+function isLegacyFilter(filter: FilterSpecification | null): boolean {
+  if (!filter) return false;
+
+  if (typeof filter === 'boolean') return false;
+
+  if (Array.isArray(filter)) {
+    const [operator, ...args] = filter;
+    if (LEGACY_NESTED_OPERATORS.has(operator)) {
+      return args.every((value) => isLegacyFilter(value as FilterSpecification));
+    } else if (LEGACY_SIMPLE_OPERATORS.has(operator)) {
+      return args.every((value) => LEGACY_VALUE_TYPES.has(typeof value));
+    }
+  }
+
+  return false;
+}
+
+/**
  * Helper to add filters to existing LayerProps.filter values:
  */
 function adaptFilter(
@@ -86,12 +121,23 @@ function adaptFilter(
     : { ...layer };
   const conditions: FilterSpecification[] = layer.filter ? [layer.filter] : [];
 
-  // Get the field name of the id field. Default is 'id', but for example on error layers it's obj_id
+  // MapLibre does not allow combining in a logical tree expression filters and legacy filters.
+  // We have to check that the existing filters do not contain expression filters:
+  const hasExpressionFilters = !isLegacyFilter(layer.filter as FilterSpecification);
+
+  // Get the field name of the id field. Default is 'id', but for example on error layers its obj_id
   let fieldId = 'id';
   if (layer.id && ERROR_LAYERS_ID_SUFFIX.some((suffix) => layer.id?.endsWith(suffix)))
     fieldId = 'obj_id';
-  if (whiteList.length) conditions.push(['in', fieldId, ...whiteList]);
-  if (blackList.length) conditions.push(['!in', fieldId, ...blackList]);
+  if (hasExpressionFilters) {
+    // Add the conditions as ExpressionFilterSpecification:
+    if (whiteList.length) conditions.push(['in', ['get', fieldId], ['literal', whiteList]]);
+    if (blackList.length) conditions.push(['!', ['in', ['get', fieldId], ['literal', blackList]]]);
+  } else {
+    // Add the conditions as LegacyFilterSpecification:
+    if (whiteList.length) conditions.push(['in', fieldId, ...whiteList]);
+    if (blackList.length) conditions.push(['!in', fieldId, ...blackList]);
+  }
 
   switch (conditions.length) {
     case 0:
