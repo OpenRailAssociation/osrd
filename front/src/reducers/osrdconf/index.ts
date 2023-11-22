@@ -55,6 +55,7 @@ export const UPDATE_VIA_STOPTIME = 'osrdconf/UPDATE_VIA_STOPTIME';
 export const PERMUTE_VIAS = 'osrdconf/PERMUTE_VIAS';
 export const UPDATE_SUGGERED_VIAS = 'osrdconf/UPDATE_SUGGERED_VIAS';
 export const DELETE_VIAS = 'osrdconf/DELETE_VIAS';
+export const CLEAR_VIAS = 'osrdconf/CLEAR_VIAS';
 export const DELETE_ITINERARY = 'osrdconfDELETE_ITINERARY';
 export const UPDATE_DESTINATION = 'osrdconf/UPDATE_DESTINATION';
 export const UPDATE_DESTINATION_TIME = 'osrdconf/UPDATE_UPDATE_DESTINATION_TIME';
@@ -278,6 +279,9 @@ export default function reducer(inputState: OsrdMultiConfState | undefined, acti
         break;
       case DELETE_VIAS:
         draft[section].vias.splice(action.index, 1);
+        break;
+      case CLEAR_VIAS:
+        draft[section].vias = action.vias;
         break;
       case DELETE_ITINERARY:
         draft[section].origin = undefined;
@@ -607,6 +611,14 @@ export function deleteVias(index: number) {
     dispatch({
       type: DELETE_VIAS,
       index,
+    });
+  };
+}
+export function clearVias() {
+  return (dispatch: Dispatch) => {
+    dispatch({
+      type: CLEAR_VIAS,
+      vias: [],
     });
   };
 }

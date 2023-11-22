@@ -124,7 +124,7 @@ export function reducer(state: PathfindingState, action: Action): PathfindingSta
         state.running ||
         (action.type === 'INFRA_CHANGED' && action.params.pathfindingId)
       ) {
-        return state;
+        return { ...state };
       }
       const { origin, destination, rollingStockID } = action.params;
       if (!origin || !destination || !Number.isInteger(rollingStockID)) {

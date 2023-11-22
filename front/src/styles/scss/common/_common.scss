@@ -29,13 +29,12 @@
   padding: 0.5rem;
   height: 100%;
 
-  .floating-itinerary  {
+  .floating-itinerary {
     position: absolute;
     z-index: 1;
     top: 1rem;
     left: 1rem;
     max-height: calc(100% - 2rem);
-    overflow: auto;
   }
 
   // à creuser
@@ -157,7 +156,7 @@
 }
 
 .shadow {
-  box-shadow:  0 .5rem 1rem rgba(#000, .15);
+  box-shadow: 0 0.5rem 1rem rgba(#000, 0.15);
 }
 
 svg text {

@@ -2,18 +2,27 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { WebMercatorViewport } from 'viewport-mercator-project';
 
-import { replaceVias, updateDestination, updateOrigin } from 'reducers/osrdconf';
+import {
+  clearVias,
+  replaceVias,
+  updateDestination,
+  updateOrigin,
+  updatePathfindingID,
+} from 'reducers/osrdconf';
 import { updateFeatureInfoClick, updateViewport, Viewport } from 'reducers/map';
 import { Position } from 'geojson';
 
 import DisplayItinerary from 'modules/trainschedule/components/ManageTrainSchedule/Itinerary/DisplayItinerary';
-import ModalSugerredVias from 'modules/trainschedule/components/ManageTrainSchedule/Itinerary/ModalSuggeredVias';
-import { getOrigin, getDestination, getVias } from 'reducers/osrdconf/selectors';
+import ModalSuggerredVias from 'modules/trainschedule/components/ManageTrainSchedule/Itinerary/ModalSuggeredVias';
+import { getOrigin, getDestination, getVias, getGeojson } from 'reducers/osrdconf/selectors';
 import { getMap } from 'reducers/map/selectors';
 import Pathfinding from 'common/Pathfinding/Pathfinding';
-import TypeAndPath from 'common/Pathfinding/TypeAndPath';
-import { GoRocket } from 'react-icons/go';
 import { Path } from 'common/api/osrdEditoastApi';
+import { useTranslation } from 'react-i18next';
+import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
+import { GoArrowSwitch, GoPlus, GoRocket, GoTrash } from 'react-icons/go';
+import Tipped from 'applications/editor/components/Tipped';
+import TypeAndPath from 'common/Pathfinding/TypeAndPath';
 
 type ItineraryProps = {
   path?: Path;
@@ -23,10 +32,14 @@ function Itinerary({ path }: ItineraryProps) {
   const origin = useSelector(getOrigin);
   const destination = useSelector(getDestination);
   const vias = useSelector(getVias);
+  const geojson = useSelector(getGeojson);
+
   const [extViewport, setExtViewport] = useState<Viewport>();
   const [displayTypeAndPath, setDisplayTypeAndPath] = useState(false);
   const dispatch = useDispatch();
   const map = useSelector(getMap);
+  const { t } = useTranslation('operationalStudies/manageTrainSchedule');
+  const { openModal } = useModal();
 
   const zoomToFeature = (boundingBox: Position, id = undefined) => {
     const [minLng, minLat, maxLng, maxLat] = boundingBox;
@@ -80,10 +93,17 @@ function Itinerary({ path }: ItineraryProps) {
   };
 
   const removeAllVias = () => {
-    dispatch(replaceVias([]));
+    dispatch(clearVias());
   };
 
-  const viaModalContent = <ModalSugerredVias inverseOD={inverseOD} removeAllVias={removeAllVias} />;
+  const resetPathfinding = () => {
+    dispatch(clearVias());
+    dispatch(updateOrigin(undefined));
+    dispatch(updateDestination(undefined));
+    dispatch(updatePathfindingID(undefined));
+  };
+
+  const viaModalContent = <ModalSuggerredVias removeAllVias={removeAllVias} />;
 
   useEffect(() => {
     if (extViewport !== undefined) {
@@ -108,15 +128,40 @@ function Itinerary({ path }: ItineraryProps) {
         </button>
       </div>
       {displayTypeAndPath && (
-        <div className="mb-2">
+        <div className="mb-1">
           <TypeAndPath zoomToFeature={zoomToFeature} />
         </div>
       )}
+      {origin && destination && (
+        <div className="d-flex flex-row">
+          {geojson && (
+            <button
+              className="col my-1 text-white btn bg-info btn-sm"
+              type="button"
+              onClick={() => openModal(viaModalContent)}
+            >
+              <span className="mr-1">{t('addVias')}</span>
+              <GoPlus />
+            </button>
+          )}
+          <button className="col ml-1 my-1 btn bg-warning btn-sm" type="button" onClick={inverseOD}>
+            <span className="mr-1">{t('inverseOD')}</span>
+            <GoArrowSwitch />
+          </button>
+          <Tipped mode="right">
+            <button
+              className="ml-1 mt-1 btn-danger btn btn-sm"
+              type="button"
+              onClick={resetPathfinding}
+            >
+              <GoTrash />
+            </button>
+            <span>{t('deleteRoute')}</span>
+          </Tipped>
+        </div>
+      )}
       <div className="osrd-config-item-container pathfinding-details" data-testid="itinerary">
-        <DisplayItinerary
-          zoomToFeaturePoint={zoomToFeaturePoint}
-          viaModalContent={viaModalContent}
-        />
+        <DisplayItinerary zoomToFeaturePoint={zoomToFeaturePoint} />
       </div>
     </div>
   );
