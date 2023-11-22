@@ -95,23 +95,29 @@ function isLegacyFilter(filter: FilterSpecification | null): boolean {
 
   if (Array.isArray(filter)) {
     const [operator, ...args] = filter;
-    if (LEGACY_NESTED_OPERATORS.has(operator)) {
+    if (LEGACY_NESTED_OPERATORS.has(operator))
       return args.every((value) => isLegacyFilter(value as FilterSpecification));
-    } else if (LEGACY_SIMPLE_OPERATORS.has(operator)) {
+    if (LEGACY_SIMPLE_OPERATORS.has(operator))
       return args.every((value) => LEGACY_VALUE_TYPES.has(typeof value));
-    }
   }
 
   return false;
 }
 
 /**
- * Helper to add filters to existing LayerProps.filter values:
+ * Helper to add filters to existing LayerProps.filter values.
+ * @param layer
+ * @param idsToHide An array of entity IDs to hide
+ * @param onlyIdsToShow An array of only entity IDs to show (only considered
+ *                      when not empty)
+ * @param removeZoomContraint If true, the existing 'minzoom' filters from the
+ *                            input layer props are removed from the output
+ *                            result
  */
 function adaptFilter(
   layer: LayerProps,
-  blackList: string[],
-  whiteList: string[],
+  idsToHide: string[],
+  onlyIdsToShow: string[],
   removeZoomContraint?: boolean
 ): LayerProps {
   if (layer.type === 'background') return layer;
@@ -131,12 +137,12 @@ function adaptFilter(
     fieldId = 'obj_id';
   if (hasExpressionFilters) {
     // Add the conditions as ExpressionFilterSpecification:
-    if (whiteList.length) conditions.push(['in', ['get', fieldId], ['literal', whiteList]]);
-    if (blackList.length) conditions.push(['!', ['in', ['get', fieldId], ['literal', blackList]]]);
+    if (onlyIdsToShow.length) conditions.push(['in', ['get', fieldId], ['literal', onlyIdsToShow]]);
+    if (idsToHide.length) conditions.push(['!', ['in', ['get', fieldId], ['literal', idsToHide]]]);
   } else {
     // Add the conditions as LegacyFilterSpecification:
-    if (whiteList.length) conditions.push(['in', fieldId, ...whiteList]);
-    if (blackList.length) conditions.push(['!in', fieldId, ...blackList]);
+    if (onlyIdsToShow.length) conditions.push(['in', fieldId, ...onlyIdsToShow]);
+    if (idsToHide.length) conditions.push(['!in', fieldId, ...idsToHide]);
   }
 
   switch (conditions.length) {
