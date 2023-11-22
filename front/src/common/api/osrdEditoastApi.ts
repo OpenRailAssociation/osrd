@@ -159,13 +159,6 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({ url: `/infra/${queryArg.id}/attached/${queryArg.trackId}/` }),
       }),
-      getInfraByIdAutoFixes: build.query<
-        GetInfraByIdAutoFixesApiResponse,
-        GetInfraByIdAutoFixesApiArg
-      >({
-        query: (queryArg) => ({ url: `/infra/${queryArg.id}/auto_fixes/` }),
-        providesTags: ['infra'],
-      }),
       postInfraByIdClone: build.mutation<PostInfraByIdCloneApiResponse, PostInfraByIdCloneApiArg>({
         query: (queryArg) => ({
           url: `/infra/${queryArg.id}/clone/`,
@@ -280,6 +273,13 @@ const injectedRtkApi = api
           url: `/infra/${queryArg.id}/voltages/`,
           params: { include_rolling_stock_modes: queryArg.includeRollingStockModes },
         }),
+        providesTags: ['infra'],
+      }),
+      getInfraByInfraIdAutoFixes: build.query<
+        GetInfraByInfraIdAutoFixesApiResponse,
+        GetInfraByInfraIdAutoFixesApiArg
+      >({
+        query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/auto_fixes/` }),
         providesTags: ['infra'],
       }),
       getLayersLayerByLayerSlugMvtAndViewSlug: build.query<
@@ -829,11 +829,6 @@ export type GetInfraByIdAttachedAndTrackIdApiArg = {
   /** Track ID */
   trackId: string;
 };
-export type GetInfraByIdAutoFixesApiResponse = /** status 200 A list of operations */ Operation[];
-export type GetInfraByIdAutoFixesApiArg = {
-  /** infra id */
-  id: number;
-};
 export type PostInfraByIdCloneApiResponse = /** status 201 The duplicated infra id */ {
   id?: number;
 };
@@ -966,6 +961,12 @@ export type GetInfraByIdVoltagesApiArg = {
   id: number;
   /** include rolling stocks modes or not */
   includeRollingStockModes?: boolean;
+};
+export type GetInfraByInfraIdAutoFixesApiResponse =
+  /** status 200 The list of suggested operations */ Operation[];
+export type GetInfraByInfraIdAutoFixesApiArg = {
+  /** The ID of the infra to fix */
+  infraId: number;
 };
 export type GetLayersLayerByLayerSlugMvtAndViewSlugApiResponse =
   /** status 200 Successful Response */ {
@@ -1423,7 +1424,16 @@ export type UpdateOperation = {
   operation_type: 'UPDATE';
   railjson_patch: Patches;
 };
-export type Operation = RailjsonObject | DeleteOperation | UpdateOperation;
+export type Operation =
+  | (RailjsonObject & {
+      operation_type: 'CREATE';
+    })
+  | (UpdateOperation & {
+      operation_type: 'UPDATE';
+    })
+  | (DeleteOperation & {
+      operation_type: 'DELETE';
+    });
 export type Point3D = number[];
 export type Point = {
   coordinates: Point3D;

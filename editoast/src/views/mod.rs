@@ -31,6 +31,7 @@ use actix_web::dev::HttpServiceFactory;
 use actix_web::web::{Data, Json};
 use actix_web::{get, services};
 use diesel::sql_query;
+use infra::auto_fixes;
 use redis::cmd;
 use serde_derive::{Deserialize, Serialize};
 use utoipa::{OpenApi, ToSchema};
@@ -41,7 +42,7 @@ use utoipa::{OpenApi, ToSchema};
 fn routes_v2() -> Routes<impl HttpServiceFactory> {
     crate::routes! {
         (health, version, core_version),
-        timetable::routes(),
+        (timetable::routes(),
         documents::routes(),
         sprites::routes(),
         pathfinding::routes(),
@@ -52,6 +53,7 @@ fn routes_v2() -> Routes<impl HttpServiceFactory> {
         light_rolling_stocks::routes(),
         electrical_profiles::routes(),
         layers::routes(),
+        auto_fixes::routes()),
     }
     routes()
 }

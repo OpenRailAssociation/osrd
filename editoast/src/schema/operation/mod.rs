@@ -8,15 +8,19 @@ use diesel_async::AsyncPgConnection as PgConnection;
 use editoast_derive::EditoastError;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
+use utoipa::ToSchema;
 
 pub use self::delete::DeleteOperation;
 pub use create::RailjsonObject;
 pub use update::UpdateOperation;
 
-#[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
+crate::schemas! { Operation, }
+
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, ToSchema)]
 #[serde(tag = "operation_type", deny_unknown_fields)]
 pub enum Operation {
     #[serde(rename = "CREATE")]
+    #[schema(value_type = RailjsonObject)]
     Create(Box<RailjsonObject>),
     #[serde(rename = "UPDATE")]
     Update(UpdateOperation),

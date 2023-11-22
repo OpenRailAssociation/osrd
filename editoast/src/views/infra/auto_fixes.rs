@@ -8,8 +8,8 @@ use crate::schema::operation::{DeleteOperation, Operation};
 use crate::schema::{
     InfraError, InfraErrorType, OSRDIdentified, OSRDObject, ObjectRef, ObjectType,
 };
+use crate::views::infra::InfraIdParam;
 use crate::DbPool;
-use actix_web::dev::HttpServiceFactory;
 use actix_web::get;
 use actix_web::web::{Data, Json as WebJson, Path};
 use chashmap::CHashMap;
@@ -19,13 +19,18 @@ use thiserror::Error;
 
 const MAX_AUTO_FIXES_ITERATIONS: u8 = 5;
 
-/// Return `/infra/<infra_id>/auto_fixes` routes
-pub fn routes() -> impl HttpServiceFactory {
-    list_auto_fixes
-}
+// Return `/infra/<infra_id>/auto_fixes` routes
+crate::routes! {"/infra/{infra_id}/auto_fixes" => { list_auto_fixes, } } // TODO:  move it to infra when migrated (and un-pub module)
 
-/// Return the list of suggestions to fix infra errors
-#[get("/auto_fixes")]
+/// Retrieve a list of operations to fix infra issues
+#[utoipa::path(
+    tag = "infra",
+    params(InfraIdParam),
+    responses(
+        (status = 200, description = "The list of suggested operations", body = Vec<Operation>)
+    )
+)]
+#[get("")]
 async fn list_auto_fixes(
     infra: Path<i64>,
     infra_caches: Data<CHashMap<i64, InfraCache>>,
