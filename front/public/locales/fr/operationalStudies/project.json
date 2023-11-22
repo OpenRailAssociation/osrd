@@ -7,7 +7,15 @@
   "error": {
     "unableToDeleteProject": "Impossible de supprimer le projet",
     "unableToPostDocumentTitle": "Echec de l'upload de l'image",
-    "unableToPostDocument": "Impossible de charger l'image"
+    "unableToPostDocument": "Impossible de charger l'image",
+    "unableToUpdateProjectTitle": "Echec de la mise à jour du projet",
+    "unableToUpdateProject": "Impossible de mettre à jour le projet",
+    "unableToCreateProjectTitle": "Echec de la création du projet",
+    "unableToCreateProject": "Impossible de créer le projet",
+    "uploadImageSizeTitle": "L'image est trop volumineuse",
+    "uploadImageSize": "L'image ne doit pas dépasser 2Mo",
+    "uploadImageType": "Les formats supportés sont png, jpg et jpeg",
+    "uploadImageTypeTitle": "Format d'image non supporté"
   },
   "filterPlaceholder": "Rechercher…",
   "fundedBy": "Financement",

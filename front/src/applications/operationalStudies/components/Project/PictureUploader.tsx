@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, ChangeEvent } from 'react';
 import { AiOutlinePicture } from 'react-icons/ai';
 import { useTranslation } from 'react-i18next';
 import { TiDelete } from 'react-icons/ti';
@@ -14,8 +14,9 @@ import logoTiger from 'assets/pictures/misc/tiger.svg';
 import logoGhibli from 'assets/pictures/misc/ghibli.svg';
 import logoSNCF from 'assets/pictures/misc/sncf.svg';
 import { getDocument } from 'common/api/documentApi';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { getUserSafeWord } from 'reducers/user/userSelectors';
+import { setFailure } from 'reducers/main';
 
 type PropsPlaceholder = {
   image?: number | null;
@@ -33,6 +34,8 @@ type PropsButtons = {
   setTempProjectImage: (tempProjectImage: Blob | null | undefined) => void;
   safeWord: string;
 };
+
+const IMAGE_MAX_SIZE = 2 * 1024 * 1024; // 2MiB
 
 function displayNoImageMessages(isValid: boolean, t: (arg0: string) => string) {
   return (
@@ -181,16 +184,36 @@ function PicturePlaceholderButtons({ setTempProjectImage, safeWord }: PropsButto
 
 export default function PictureUploader({ image, setTempProjectImage, tempProjectImage }: Props) {
   const [isValid, setIsValid] = useState<boolean>(true);
+  const { t } = useTranslation('operationalStudies/project');
   const safeWord = useSelector(getUserSafeWord);
-  const handleUpload = async (file?: File) => {
-    if (file && file.type.startsWith('image/')) {
-      setTempProjectImage(file);
-      setIsValid(true);
-    } else {
-      setTempProjectImage(undefined);
-      setIsValid(false);
-    }
-  };
+  const dispatch = useDispatch();
+
+  const handleUpload = useCallback(
+    async (e: ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files ? e.target.files[0] : undefined;
+      const isSizeTooLarge =
+        file && file.type.startsWith('image/') && file.size && file.size > IMAGE_MAX_SIZE;
+      const isWrongType = file && !file.type.startsWith('image/');
+
+      if (isSizeTooLarge || isWrongType) {
+        dispatch(
+          setFailure({
+            name: isSizeTooLarge
+              ? t('error.uploadImageSizeTitle')
+              : t('error.uploadImageTypeTitle'),
+            message: isSizeTooLarge ? t('error.uploadImageSize') : t('error.uploadImageType'),
+          })
+        );
+        setIsValid(false);
+        setTempProjectImage(undefined);
+      } else {
+        setTempProjectImage(file);
+        setIsValid(true);
+      }
+    },
+    [setIsValid, setTempProjectImage]
+  );
+
   return (
     <div className="project-edition-modal-picture-placeholder">
       <label htmlFor="picture-upload">
@@ -199,7 +222,7 @@ export default function PictureUploader({ image, setTempProjectImage, tempProjec
           id="picture-upload"
           type="file"
           name="imageFile"
-          onChange={(e) => handleUpload(e.target.files ? e.target.files[0] : undefined)}
+          onChange={handleUpload}
           accept=".png, .jpg, .jpeg"
           className="d-none"
         />
