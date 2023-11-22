@@ -222,6 +222,7 @@ export const SpeedSectionEditionLayers: FC = () => {
         layers={editorLayers}
         selection={selection}
         fingerprint={renderingFingerprint}
+        hidden={entity.properties.id ? [entity.properties.id] : undefined}
         layersSettings={layersSettings}
         issuesSettings={issuesSettings}
         isEmphasized={false}
