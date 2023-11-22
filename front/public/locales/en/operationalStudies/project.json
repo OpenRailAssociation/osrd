@@ -7,7 +7,15 @@
   "error": {
     "unableToDeleteProject": "Unable to delete project",
     "unableToPostDocumentTitle": "Failure to upload the picture",
-    "unableToPostDocument": "Unable to load the picture"
+    "unableToPostDocument": "Unable to load the picture",
+    "unableToUpdateProjectTitle": "Failure to update the project",
+    "unableToUpdateProject": "Unable to update project",
+    "unableToCreateProjectTitle": "Failure to update the project",
+    "unableToCreateProject": "Unable to update project",
+    "uploadImageSizeTitle": "Image size is too large",
+    "uploadImageSize": "The maximum image size is 2MB",
+    "uploadImageTypeTitle": "Image type is not supported",
+    "uploadImageType": "Only jpg, jpeg and png formats are supported"
   },
   "filterPlaceholder": "Search...",
   "fundedBy": "Funding",

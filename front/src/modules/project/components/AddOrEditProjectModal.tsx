@@ -114,9 +114,18 @@ export default function AddOrEditProjectModal({
             navigate(`/operational-studies/projects/${projectCreated.id}`);
             closeModal();
           })
-          .catch((error) => console.error(error));
+          .catch((error) => {
+            dispatch(
+              setFailure({
+                name: t('error.unableToCreateProjectTitle'),
+                message: t('error.unableToCreateProject'),
+                cause: error,
+              })
+            );
+            console.error('Create project error', error);
+          });
       } catch (error) {
-        console.error(error);
+        console.error('Create project error', error);
       }
     }
   };
@@ -151,9 +160,18 @@ export default function AddOrEditProjectModal({
             if (getProject) getProject(true);
             closeModal();
           })
-          .catch((error) => console.error(error));
+          .catch((error) => {
+            dispatch(
+              setFailure({
+                name: t('error.unableToUpdateProjectTitle'),
+                message: t('error.unableToUpdateProject'),
+                cause: error,
+              })
+            );
+            console.error('Patch project error', error);
+          });
       } catch (error) {
-        console.error(error);
+        console.error('Update project error', error);
       }
     }
   };
