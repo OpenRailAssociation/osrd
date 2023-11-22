@@ -22,13 +22,13 @@
       border: none;
       background-color: transparent;
     }
-
     &.via {
       display: flex;
       align-items: center;
       margin-bottom: 0rem;
-      border-radius: 4px;
-      padding-left: 0.25rem;
+      padding: 0 0 0 0.65rem;
+      margin: 0 0.9rem 0 0.75rem;
+      border-right: 1px solid #30338375;
       .ring {
         position: relative;
         display: block;

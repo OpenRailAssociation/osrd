@@ -1,5 +1,5 @@
 {
-  "addVias": "Ajouter d'arrêts ou points de passage",
+  "addVias": "Ajout de vias",
   "addTrainSchedule": "Ajouter un ou plusieurs trains",
   "apply": "Appliquer",
   "blocktype": "Type de block",
@@ -10,6 +10,7 @@
   "cancelRequest": "Annuler la requête",
   "chooseOnMap": "Choisir sur la carte",
   "composition": "Composition",
+  "deleteRoute": "Supprimer l'itinéraire",
   "deleteVias": "Supprimer les étapes",
   "destination": "Destination",
   "errorMessages": {
@@ -54,7 +55,7 @@
   "infraLoading": "Infra en cours de chargement…",
   "inputOPTrigrams": "Entrez les trigrammes des points remarquables par lesquels vous voulez que l'itinéraire se fasse, séparés par un espace.",
   "inputOPTrigramsExample": "Ex : LSN CIG CCS",
-  "inverseOD": "Inverser origine/destination",
+  "inverseOD": "Inverser l'itinéraire",
   "launchSimulation": "Démarrer",
   "manageVias": "Gestion des étapes",
   "maximumRunTime": "Temps de parcours maximum",

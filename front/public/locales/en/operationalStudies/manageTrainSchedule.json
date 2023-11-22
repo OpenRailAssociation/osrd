@@ -1,5 +1,5 @@
 {
-  "addVias": "Add stops or waypoints",
+  "addVias": "Add waypoints",
   "addTrainSchedule": "Add one or several trains",
   "apply": "Apply",
   "blocktype": "Signalling block type",
@@ -11,6 +11,7 @@
   "chooseOnMap": "Choose on the map",
   "composition": "Composition",
   "deleteVias": "Delete steps",
+  "deleteRoute": "Delete the route",
   "destination": "Destination",
   "errorMessages": {
     "allowance_convergence": "We could not go slow enough in this setting to match the given allowance time",
@@ -54,7 +55,7 @@
   "infraLoading": "Infrastructure is loading…",
   "inputOPTrigrams": "Enter the trigrams of operational points you want to the path to go through, separated by a space.",
   "inputOPTrigramsExample": "Ex: LSN CIG CCS",
-  "inverseOD": "Reverse origin/destination",
+  "inverseOD": "Reverse itinerary",
   "launchSimulation": "Start",
   "manageVias": "Steps management",
   "maximumRunTime": "Maximum running time",

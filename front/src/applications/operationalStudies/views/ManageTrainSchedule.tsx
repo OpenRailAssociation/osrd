@@ -102,9 +102,9 @@ export default function ManageTrainSchedule() {
     label: t('tabs.pathFinding'),
     content: (
       <div className="osrd-config-item-container-map" data-testid="map">
-        <span className="floating-itinerary">
+        <div className="floating-itinerary">
           <Itinerary path={pathFinding} />
-        </span>
+        </div>
         <Map />
       </div>
     ),

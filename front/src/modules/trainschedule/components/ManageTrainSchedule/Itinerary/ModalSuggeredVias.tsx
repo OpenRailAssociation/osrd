@@ -1,8 +1,6 @@
 import React, { useContext } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { GoTrash } from 'react-icons/go';
-import { FaLongArrowAltUp, FaLongArrowAltDown, FaMinus } from 'react-icons/fa';
 
 import { replaceVias } from 'reducers/osrdconf';
 import { getSuggeredVias, getVias } from 'reducers/osrdconf/selectors';
@@ -14,9 +12,9 @@ import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { Spinner } from 'common/Loader';
 import { ArrayElement } from 'utils/types';
 import { Path, PathStep } from 'common/api/osrdEditoastApi';
+import { GoDash, GoPlus, GoTrash } from 'react-icons/go';
 
 type Props = {
-  inverseOD: () => void;
   removeAllVias: () => void;
   pathfindingInProgress?: boolean;
 };
@@ -25,11 +23,7 @@ function LoaderPathfindingInProgress() {
   return <Spinner className="loaderPathfindingInProgress" />;
 }
 
-export default function ModalSugerredVias({
-  inverseOD,
-  removeAllVias,
-  pathfindingInProgress,
-}: Props) {
+export default function ModalSugerredVias({ removeAllVias, pathfindingInProgress }: Props) {
   const dispatch = useDispatch();
   const suggeredVias = useSelector(getSuggeredVias) as PathStep[];
   const vias = useSelector(getVias);
@@ -81,7 +75,7 @@ export default function ModalSugerredVias({
           type="button"
           onClick={() => convertPathfindingVias(suggeredVias, idx - 1)}
         >
-          <i className="icons-add" />
+          <GoPlus />
         </button>
       ) : (
         <button
@@ -89,7 +83,7 @@ export default function ModalSugerredVias({
           type="button"
           onClick={() => removeViaFromPath(via)}
         >
-          <FaMinus color="white" />
+          <GoDash color="white" />
         </button>
       )}
     </div>
@@ -118,24 +112,15 @@ export default function ModalSugerredVias({
         </div>
       </ModalBodySNCF>
       <ModalFooterSNCF>
-        <div className="row">
-          <div className="col-12">
-            <button
-              className="btn btn-danger btn-sm btn-block mb-1"
-              type="button"
-              onClick={removeAllVias}
-            >
-              <GoTrash />
-              <span className="ml-2">{t('deleteVias')}</span>
-            </button>
-          </div>
-          <div className="col-12">
-            <button className="btn btn-warning btn-sm btn-block" type="button" onClick={inverseOD}>
-              <FaLongArrowAltUp />
-              <FaLongArrowAltDown />
-              <span className="ml-2">{t('inverseOD')}</span>
-            </button>
-          </div>
+        <div className="w-100 mt-2 mb-n2">
+          <button
+            className="btn btn-danger btn-sm btn-block mb-1"
+            type="button"
+            onClick={removeAllVias}
+          >
+            <GoTrash />
+            <span className="ml-2">{t('deleteVias')}</span>
+          </button>
         </div>
       </ModalFooterSNCF>
     </div>
