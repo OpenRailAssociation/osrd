@@ -44,9 +44,15 @@ pub enum TrainScheduleError {
     #[error("Train Schedule '{train_schedule_id}', could not be found")]
     #[editoast_error(status = 400)]
     NotFound { train_schedule_id: i64 },
+    #[error("Train schedule does not have an ID")]
+    #[editoast_error(status = 400)]
+    TrainScheduleWithoutId,
     #[error("Rolling Stock '{rolling_stock_id}', could not be found")]
     #[editoast_error(status = 400)]
     RollingStockNotFound { rolling_stock_id: i64 },
+    #[error("Rolling Stock '{rolling_stock_id}' does not have a name")]
+    #[editoast_error(status = 400)]
+    RollingStockWithoutName { rolling_stock_id: i64 },
     #[error("Path '{path_id}', could not be found")]
     #[editoast_error(status = 400)]
     PathNotFound { path_id: i64 },
@@ -62,6 +68,9 @@ pub enum TrainScheduleError {
     #[error("No simulation given")]
     #[editoast_error(status = 500)]
     NoSimulation,
+    #[error("No infra ID given")]
+    #[editoast_error(status = 400)]
+    NoInfraId,
 }
 
 crate::routes! {
@@ -350,7 +359,7 @@ async fn get_result(
 
     let scenario = timetable.get_scenario(db_pool.clone()).await?;
 
-    let infra = scenario.infra_id.expect("Scenario should have an infra id");
+    let infra = scenario.infra_id.ok_or(TrainScheduleError::NoInfraId)?;
 
     let simulation_output = fetch_simulation_output(&train_schedule, db_pool.clone()).await?;
     let simulation_output_cs = SimulationOutputChangeset::from(simulation_output);
@@ -420,7 +429,7 @@ async fn get_results(
 
     let scenario = timetable.get_scenario(db_pool.clone()).await?;
 
-    let infra = scenario.infra_id.expect("Scenario should have an infra id");
+    let infra = scenario.infra_id.ok_or(TrainScheduleError::NoInfraId)?;
     let mut res = Vec::new();
     for schedule in schedules {
         let simulation_output = fetch_simulation_output(&schedule, db_pool.clone()).await?;
@@ -564,7 +573,7 @@ async fn standalone_simulation(
                         .create_conn(conn)
                         .await?
                         .id
-                        .expect("Train schedule should have an id");
+                        .ok_or(TrainScheduleError::TrainScheduleWithoutId)?;
                     res_ids.push(id);
                 }
                 // Save outputs
@@ -585,7 +594,7 @@ async fn create_backend_request_payload(
     scenario: &Scenario,
     db_pool: Data<DbPool>,
 ) -> Result<SimulationRequest> {
-    let infra = scenario.infra_id.expect("Scenario should have an infra");
+    let infra = scenario.infra_id.ok_or(TrainScheduleError::NoInfraId)?;
     let rolling_stocks_ids = train_schedules
         .iter()
         .map(|ts| ts.rolling_stock_id)
@@ -601,7 +610,7 @@ async fn create_backend_request_payload(
             rolling_stock
                 .name
                 .clone()
-                .expect("Rolling stock shoud have a name"),
+                .ok_or(TrainScheduleError::RollingStockWithoutName { rolling_stock_id })?,
         );
         rolling_stocks.push(rolling_stock.into());
     }
