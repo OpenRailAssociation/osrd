@@ -64,6 +64,7 @@ pub enum AuthProvider {
         callback_url: Box<actix_auth::oidc::RedirectUrl>,
         client_id: String,
         client_secret: String,
+        profile_scope_override: Option<String>,
     },
 }
 

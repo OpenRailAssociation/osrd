@@ -21,6 +21,7 @@ pub struct OidcConfig {
     pub callback_url: Box<RedirectUrl>,
     pub client_id: ClientId,
     pub client_secret: Option<ClientSecret>,
+    pub profile_scope_override: Option<String>,
 }
 
 impl OidcConfig {
@@ -30,6 +31,7 @@ impl OidcConfig {
         callback_url: Box<RedirectUrl>,
         client_id: String,
         client_secret: String,
+        profile_scope_override: Option<String>,
     ) -> Self {
         Self {
             issuer_url,
@@ -37,6 +39,7 @@ impl OidcConfig {
             callback_url,
             client_id: ClientId::new(client_id),
             client_secret: Some(ClientSecret::new(client_secret)),
+            profile_scope_override,
         }
     }
 }
@@ -45,6 +48,7 @@ impl OidcConfig {
 pub struct OidcProvider {
     pub client: Box<CoreClient>,
     pub post_login_url: Box<url::Url>,
+    pub profile_scope_override: Option<String>,
 }
 
 impl OidcProvider {
@@ -69,6 +73,7 @@ impl OidcProvider {
         Ok(Self {
             client,
             post_login_url: config.post_login_url.clone(),
+            profile_scope_override: config.profile_scope_override.clone(),
         })
     }
 }
@@ -106,6 +111,7 @@ impl SessionProvider for OidcProvider {
         ctx: &mut ProviderContext<Self>,
         _: &HttpRequest,
     ) -> Result<LoginResponse, actix_web::Error> {
+        let scope = self.profile_scope_override.as_deref().unwrap_or("profile");
         // Generate the full authorization URL.
         let client_builder = self
             .client
@@ -114,7 +120,7 @@ impl SessionProvider for OidcProvider {
                 CsrfToken::new_random,
                 Nonce::new_random,
             )
-            .add_scope(Scope::new("profile".to_owned()));
+            .add_scope(Scope::new(scope.to_owned()));
 
         let (auth_url, csrf_token, nonce) = client_builder.url();
         // if we ever decide to store the nonce unencrypted, we should also change how it's checked:
