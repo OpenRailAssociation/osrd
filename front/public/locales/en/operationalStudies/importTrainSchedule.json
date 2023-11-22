@@ -37,7 +37,7 @@
     "pathComplete": "All route searches have been completed",
     "pathsFailed": "All route searches have failed",
     "ready": "Ready.",
-    "searchingPath": "27\n{{pathFindingsDoneCount}}/{{pathFindingsDoneCount}} Generate routes {{pathRef}}",
+    "searchingPath": "{{pathFindingsDoneCount}}/{{pathFindingsDoneCount}} Generate routes {{pathRef}}",
     "uicComplete": "All locations have been completed."
   },
   "to": "Destination",
