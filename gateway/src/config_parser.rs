@@ -115,6 +115,7 @@ pub async fn parse_auth_config(config: AuthConfig) -> AuthContext {
                 callback_url,
                 client_id,
                 client_secret,
+                profile_scope_override,
             } => {
                 let cfg = &OidcConfig::new(
                     issuer_url,
@@ -122,6 +123,7 @@ pub async fn parse_auth_config(config: AuthConfig) -> AuthContext {
                     callback_url,
                     client_id,
                     client_secret,
+                    profile_scope_override,
                 );
                 let provider = OidcProvider::from_config(cfg);
                 auth_context.add_session_provider(provider_id, provider.await.unwrap());
