@@ -25,6 +25,7 @@ export interface MapState {
   showOSM: boolean;
   showOSMtracksections: boolean;
   terrain3DExaggeration: number;
+  smoothTravel: boolean;
   viewport: Viewport;
   featureInfoClickID?: number;
   layersSettings: {
@@ -59,6 +60,7 @@ export const mapInitialState: MapState = {
   showOSM: true,
   showOSMtracksections: false,
   terrain3DExaggeration: 0,
+  smoothTravel: false,
   viewport: {
     latitude: 48.32,
     longitude: 2.44,
@@ -138,6 +140,9 @@ const mapSlice = createSlice({
     ) => {
       state.terrain3DExaggeration = action.payload;
     },
+    updateSmoothTravel: (state, action: PayloadAction<MapState['smoothTravel']>) => {
+      state.smoothTravel = action.payload;
+    },
   },
 });
 
@@ -177,6 +182,7 @@ export const {
   updateShowOSM,
   updateShowOSMtracksections,
   updateTerrain3DExaggeration,
+  updateSmoothTravel,
   updateViewportAction,
   updateIssuesSettings,
 } = mapSliceActions;

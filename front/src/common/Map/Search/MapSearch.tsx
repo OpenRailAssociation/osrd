@@ -22,10 +22,11 @@ type MapSearchProps = {
 
 const MapSearch: FC<MapSearchProps> = ({ map, closeMapSearchPopUp }) => {
   const dispatch = useDispatch();
+  const { smoothTravel } = useSelector(getMap);
 
   const updateViewportChange = useCallback(
     (value: Partial<Viewport>) => {
-      if (map) {
+      if (map && smoothTravel) {
         map.flyTo({
           center: {
             lng: value.longitude || map.getCenter().lng,
