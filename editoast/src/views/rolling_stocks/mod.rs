@@ -1,8 +1,9 @@
 use crate::error::Result;
-use crate::models::rolling_stock::RollingStockSeparatedImageModel;
 use crate::models::{
-    Create, Delete, Document, Retrieve, RollingStockLiveryModel, RollingStockModel, Update,
+    rolling_stock::RollingStockSeparatedImageModel, Create, Delete, Retrieve,
+    RollingStockLiveryModel, RollingStockModel, Update,
 };
+use crate::modelsv2::{Document, Model};
 use crate::schema::rolling_stock::rolling_stock_livery::RollingStockLivery;
 use crate::schema::rolling_stock::{
     RollingStock, RollingStockCommon, RollingStockMetadata, RollingStockWithLiveries,
@@ -421,7 +422,7 @@ async fn create_livery(
     let rolling_stock_livery = RollingStockLiveryModel {
         name: Some(form.name.into_inner()),
         rolling_stock_id: Some(rolling_stock_id),
-        compound_image_id: Some(compound_image.id),
+        compound_image_id: Some(Some(compound_image.id)),
         ..Default::default()
     };
     let rolling_stock_livery: RollingStockLivery =
@@ -433,11 +434,16 @@ async fn create_livery(
         let mut w = Cursor::new(Vec::new());
         image.write_to(&mut w, ImageOutputFormat::Png).unwrap();
 
-        let image = Document::new(String::from("image/png"), w.into_inner())
-            .create(db_pool.clone())
+        use crate::modelsv2::Create;
+        let conn = &mut db_pool.get().await?;
+        let image = Document::changeset()
+            .content_type(String::from("image/png"))
+            .data(w.into_inner())
+            .create(conn)
             .await?;
+
         let _ = RollingStockSeparatedImageModel {
-            image_id: Some(image.id.unwrap()),
+            image_id: Some(image.id),
             livery_id: Some(rolling_stock_livery.id),
             order: Some(index.try_into().unwrap()),
             ..Default::default()
@@ -537,8 +543,12 @@ async fn create_compound_image(
         .unwrap();
 
     // save the compound_image in the db
-    let compound_image = Document::new(String::from("image/png"), w.into_inner())
-        .create(db_pool.clone())
+    use crate::modelsv2::Create;
+    let conn = &mut db_pool.get().await?;
+    let compound_image = Document::changeset()
+        .content_type(String::from("image/png"))
+        .data(w.into_inner())
+        .create(conn)
         .await?;
     Ok(compound_image)
 }

@@ -1,5 +1,5 @@
 use crate::error::Result;
-use crate::models::{Create, Delete, Document, Retrieve};
+use crate::modelsv2::*;
 use crate::DbPool;
 use actix_http::StatusCode;
 use actix_web::http::header::ContentType;
@@ -44,13 +44,14 @@ pub enum DocumentErrors {
 #[get("/{document_key}")]
 async fn get(db_pool: Data<DbPool>, document_key: Path<i64>) -> Result<HttpResponse> {
     let document_key = document_key.into_inner();
-    let doc = match Document::retrieve(db_pool, document_key).await? {
-        Some(doc) => doc,
-        None => return Err(DocumentErrors::NotFound { document_key }.into()),
-    };
+    let conn = &mut db_pool.get().await?;
+    let doc = Document::retrieve_or_fail(conn, document_key, || DocumentErrors::NotFound {
+        document_key,
+    })
+    .await?;
     Ok(HttpResponse::build(StatusCode::OK)
-        .content_type(doc.content_type.unwrap())
-        .body(doc.data.unwrap()))
+        .content_type(doc.content_type)
+        .body(doc.data))
 }
 
 #[derive(Serialize, ToSchema)]
@@ -79,13 +80,16 @@ async fn post(
     let content_type = content_type.essence_str();
 
     // Create document
-    let doc = Document::new(content_type.to_string(), bytes.to_vec())
-        .create(db_pool)
+    let conn = &mut db_pool.get().await?;
+    let doc = Document::changeset()
+        .content_type(content_type.to_owned())
+        .data(bytes.to_vec())
+        .create(conn)
         .await?;
 
     // Response
     Ok(HttpResponse::Created().json(NewDocumentResponse {
-        document_key: doc.id.unwrap(),
+        document_key: doc.id,
     }))
 }
 
@@ -103,15 +107,18 @@ async fn post(
 #[delete("/{document_key}")]
 async fn delete(db_pool: Data<DbPool>, document_key: Path<i64>) -> Result<HttpResponse> {
     let document_key = document_key.into_inner();
-    if !Document::delete(db_pool, document_key).await? {
-        return Err(DocumentErrors::NotFound { document_key }.into());
-    }
+    let conn = &mut db_pool.get().await?;
+    Document::delete_static_or_fail(conn, document_key, || DocumentErrors::NotFound {
+        document_key,
+    })
+    .await?;
     Ok(HttpResponse::NoContent().finish())
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::models::{Delete, Document};
     use actix_web::test::{call_and_read_body_json, call_service, TestRequest};
     use rstest::rstest;
     use serde::Deserialize;
