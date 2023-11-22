@@ -385,8 +385,10 @@ export default function RollingStockEditorCurves({
     }
   };
 
-  const orderSpreadsheetValues = (e: Matrix<CellBase<string>>) => {
-    const orderedValuesByVelocity = e.sort((a, b) => Number(a[0]?.value) - Number(b[0]?.value));
+  const orderSpreadsheetValues = () => {
+    const orderedValuesByVelocity = curveForSpreadsheet.sort(
+      (a, b) => Number(a[0]?.value) - Number(b[0]?.value)
+    );
     updateSpreadsheet(orderedValuesByVelocity);
     updateCurrentRs(orderedValuesByVelocity);
   };
@@ -664,11 +666,12 @@ export default function RollingStockEditorCurves({
             <Spreadsheet
               data={curveForSpreadsheet}
               onChange={(e) => {
-                orderSpreadsheetValues(e);
+                updateSpreadsheet(e);
+                updateCurrentRs(e);
               }}
-              onBlur={() => orderSpreadsheetValues(curveForSpreadsheet)}
+              onBlur={orderSpreadsheetValues}
               onKeyDown={(e) => {
-                if (e.key === 'Enter') orderSpreadsheetValues(curveForSpreadsheet);
+                if (e.key === 'Enter') orderSpreadsheetValues();
               }}
               columnLabels={[t('speed'), t('effort')]}
             />
