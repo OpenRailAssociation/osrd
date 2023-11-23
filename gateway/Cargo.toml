@@ -44,7 +44,7 @@ percent-encoding = "2.3.0"
 # actix_auth
 reqwest = { version = "0.11.22", default-features = false, features = ["rustls-tls-native-roots"] }
 openidconnect = { version = "3.4.0", default-features = false }
-url = "2.4.1"
+url = "2.5.0"
 actix-web-httpauth = "0.8"
 
 
