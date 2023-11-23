@@ -242,6 +242,9 @@ function getPSLSignsLayers(context: LayerContext, prefix: string): LayerProps[] 
 
 function getPSLLayers(context: LayerContext, prefix: string): LayerProps[] {
   const filter = getPSLFilter(context.layersSettings);
+  const bgProps = getPSLSpeedLineBGLayerProps(context);
+  const layerProps = getPSLSpeedLineLayerProps(context);
+
   return [
     {
       ...getPSLSpeedValueLayerProps(context),
@@ -249,13 +252,17 @@ function getPSLLayers(context: LayerContext, prefix: string): LayerProps[] {
       filter,
     },
     {
-      ...getPSLSpeedLineBGLayerProps(context),
+      ...bgProps,
       id: `${prefix}geo/psl-line-bg`,
+      paint: context.isEmphasized ? bgProps.paint : { ...bgProps.paint, 'line-width': 1 },
       filter,
     },
     {
-      ...getPSLSpeedLineLayerProps(context),
+      ...layerProps,
       id: `${prefix}geo/psl-line`,
+      paint: context.isEmphasized
+        ? layerProps.paint
+        : { ...layerProps.paint, 'line-width': 1, 'line-opacity': 0.2 },
       filter,
     },
   ];
@@ -387,7 +394,10 @@ const GeoJSONs: FC<{
   const infraID = useSelector(getInfraID);
   const selectedPrefix = `${prefix}selected/`;
   const hiddenColors = useMemo(
-    () => transformTheme(colors, (color) => chroma(color).desaturate(50).brighten(1).hex()),
+    () =>
+      transformTheme(colors, (color) =>
+        chroma.average([color, colors.background.color], 'lab', [1.5, 1]).hex()
+      ),
     [colors]
   );
 

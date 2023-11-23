@@ -3,6 +3,14 @@ import { Theme } from '../../../types';
 const bpBg = '#405cb1';
 const bpMedium = '#98aedd';
 const bpLight = '#e4eaf6';
+const speedNone = '#b9b9b9';
+const speed30 = '#ef5151';
+const speed60 = '#fbb286';
+const speed100 = '#fdf479';
+const speed140 = '#e0fe64';
+const speed160 = '#9eff77';
+const speed220 = '#89f7d8';
+const speedOver220 = '#91d3ff';
 
 const colors: Record<string, Theme> = {
   normal: {
@@ -81,6 +89,7 @@ const colors: Record<string, Theme> = {
       detailhalo: '#ffffff',
       text: '#4d4f53',
       halo: '#ffffff',
+      color: '#747678',
     },
     radio: {
       text: '#5596c8',
@@ -116,6 +125,14 @@ const colors: Record<string, Theme> = {
       detailhalo: '#ffffff',
       text: '#4d4f53',
       halo: '#ffffff',
+      speedNone,
+      speed30,
+      speed60,
+      speed100,
+      speed140,
+      speed160,
+      speed220,
+      speedOver220,
     },
     station: {
       circle: '#555555',
@@ -233,6 +250,7 @@ const colors: Record<string, Theme> = {
       detailhalo: '#0b011d',
       text: '#3a86ff',
       halo: '#000000',
+      color: '#747678',
     },
     radio: {
       text: '#5596c8',
@@ -268,6 +286,14 @@ const colors: Record<string, Theme> = {
       detailhalo: '#0b011d',
       text: '#3a86ff',
       halo: '#000000',
+      speedNone,
+      speed30,
+      speed60,
+      speed100,
+      speed140,
+      speed160,
+      speed220,
+      speedOver220,
     },
     station: {
       circle: '#3a86ff',
@@ -377,6 +403,7 @@ const colors: Record<string, Theme> = {
       detailhalo: bpBg,
       text: bpLight,
       halo: bpBg,
+      color: '#747678',
     },
     radio: {
       text: bpMedium,
@@ -412,6 +439,14 @@ const colors: Record<string, Theme> = {
       detailhalo: bpBg,
       text: bpLight,
       halo: bpBg,
+      speedNone,
+      speed30,
+      speed60,
+      speed100,
+      speed140,
+      speed160,
+      speed220,
+      speedOver220,
     },
     station: {
       circle: bpLight,
@@ -521,6 +556,7 @@ const colors: Record<string, Theme> = {
       detailhalo: '#ffffff',
       text: '#4d4f53',
       halo: '#ffffff',
+      color: '#747678',
     },
     radio: {
       text: '#5596c8',
@@ -556,6 +592,14 @@ const colors: Record<string, Theme> = {
       detailhalo: '#ffffff',
       text: '#4d4f53',
       halo: '#ffffff',
+      speedNone,
+      speed30,
+      speed60,
+      speed100,
+      speed140,
+      speed160,
+      speed220,
+      speedOver220,
     },
     station: {
       circle: '#555555',

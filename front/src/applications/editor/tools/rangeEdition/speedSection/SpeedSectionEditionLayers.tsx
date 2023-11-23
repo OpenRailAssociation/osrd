@@ -40,21 +40,27 @@ export const SpeedSectionEditionLayers: FC = () => {
   const { mapStyle, layersSettings, issuesSettings, showIGNBDORTHO } = useSelector(getMap);
   const infraId = useSelector(getInfraID);
   const selection = useMemo(() => {
+    const res: string[] = [entity.properties.id];
+
     // Dragging an extremity:
-    if (interactionState.type === 'moveRangeExtremity')
-      return [(entity.properties.track_ranges || [])[interactionState.rangeIndex].track];
+    if (interactionState.type === 'moveRangeExtremity') {
+      res.push((entity.properties.track_ranges || [])[interactionState.rangeIndex].track);
+    }
 
     // Custom hovered element:
-    if (hoveredItem?.speedSectionItemType) return [hoveredItem.track.properties.id];
+    else if (hoveredItem?.speedSectionItemType) {
+      res.push(hoveredItem.track.properties.id);
+    }
 
     // EditorEntity hovered element:
-    if (
+    else if (
       hoveredItem?.type === 'TrackSection' &&
       !(entity.properties.track_ranges || []).find((range) => range.track === hoveredItem.id)
-    )
-      return [hoveredItem.id];
+    ) {
+      res.push(hoveredItem.id);
+    }
 
-    return undefined;
+    return res;
   }, [interactionState, hoveredItem, entity]);
 
   const speedSectionsFeature: FeatureCollection = useMemo(() => {
