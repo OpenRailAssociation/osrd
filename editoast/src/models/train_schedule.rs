@@ -12,7 +12,6 @@ use derivative::Derivative;
 use diesel::result::Error as DieselError;
 use diesel::{ExpressionMethods, QueryDsl};
 use diesel_async::RunQueryDsl;
-use serde_json::Value as JsonValue;
 
 use editoast_derive::Model;
 use serde::{Deserialize, Serialize};
@@ -24,12 +23,25 @@ use super::{
 
 crate::schemas! {
     TrainSchedule,
-    PowerRestrictionRange,
+    RjsPowerRestrictionRange,
     LightTrainSchedule,
     MechanicalEnergyConsumedBaseEco,
     TrainScheduleValidation,
     TrainScheduleSummary,
+    ResultSpeed,
+    ResultStops,
+    FullResultStops,
+    SignalSighting,
+    ZoneUpdate,
+    SpacingRequirement,
+    RoutingZoneRequirement,
+    RoutingRequirement,
     TrainScheduleOptions,
+    Mrsp,
+    MrspPoint,
+    ElectrificationUsage,
+    ElectrificationRange,
+    SimulationPowerRestrictionRange,
     AllowanceValue,
     AllowanceDistribution,
     RangeAllowance,
@@ -78,8 +90,8 @@ pub struct TrainSchedule {
     pub comfort: String,
     #[schema(required)]
     pub speed_limit_tags: Option<String>,
-    #[schema(required, value_type = Option<Vec<PowerRestrictionRange>>)]
-    pub power_restriction_ranges: Option<DieselJson<Vec<PowerRestrictionRange>>>,
+    #[schema(required, value_type = Option<Vec<RjsPowerRestrictionRange>>)]
+    pub power_restriction_ranges: Option<DieselJson<Vec<RjsPowerRestrictionRange>>>,
     #[schema(required, value_type = Option<TrainScheduleOptions>)]
     pub options: Option<DieselJson<TrainScheduleOptions>>,
     pub path_id: i64,
@@ -126,8 +138,8 @@ pub struct TrainScheduleChangeset {
     pub comfort: Option<String>,
     #[diesel(deserialize_as = Option<String>)]
     pub speed_limit_tags: Option<Option<String>>,
-    #[diesel(deserialize_as = Option<DieselJson<Vec<PowerRestrictionRange>>>)]
-    pub power_restriction_ranges: Option<Option<DieselJson<Vec<PowerRestrictionRange>>>>,
+    #[diesel(deserialize_as = Option<DieselJson<Vec<RjsPowerRestrictionRange>>>)]
+    pub power_restriction_ranges: Option<Option<DieselJson<Vec<RjsPowerRestrictionRange>>>>,
     #[diesel(deserialize_as = Option<DieselJson<TrainScheduleOptions>>)]
     pub options: Option<Option<DieselJson<TrainScheduleOptions>>>,
     #[diesel(deserialize_as = i64)]
@@ -207,7 +219,7 @@ pub struct TrainScheduleSummary {
     pub invalid_reasons: Vec<TrainScheduleValidation>,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 pub struct ResultSpeed {
     pub time: f64,
     pub position: f64,
@@ -222,22 +234,30 @@ pub struct ResultPosition {
     pub path_offset: f64,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default, ToSchema)]
 pub struct ResultStops {
     pub time: f64,
     pub position: f64,
     pub duration: f64,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default, ToSchema)]
 pub struct FullResultStops {
     #[serde(flatten)]
     pub result_stops: ResultStops,
+    /// The id of the operational point, null if not applicable
+    #[schema(required)]
     pub id: Option<String>,
+    /// The name of the operational point, null if not applicable
+    #[schema(required)]
     pub name: Option<String>,
+    #[schema(required)]
     pub line_code: Option<i32>,
+    #[schema(required)]
     pub track_number: Option<i32>,
+    #[schema(required)]
     pub line_name: Option<String>,
+    #[schema(required)]
     pub track_name: Option<String>,
 }
 
@@ -247,7 +267,7 @@ pub struct ResultOccupancyTiming {
     pub time_tail_free: f64,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 pub struct SignalSighting {
     pub signal: String,
     pub time: f64,
@@ -255,7 +275,7 @@ pub struct SignalSighting {
     pub state: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 pub struct ZoneUpdate {
     pub zone: String,
     pub time: f64,
@@ -265,14 +285,14 @@ pub struct ZoneUpdate {
     pub is_entry: bool,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 pub struct SpacingRequirement {
     pub zone: String,
     pub begin_time: f64,
     pub end_time: f64,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 pub struct RoutingZoneRequirement {
     pub zone: String,
     pub entry_detector: String,
@@ -281,7 +301,7 @@ pub struct RoutingZoneRequirement {
     pub end_time: f64,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 pub struct RoutingRequirement {
     pub route: String,
     pub begin_time: f64,
@@ -308,7 +328,7 @@ pub struct ResultTrain {
     "end_position": 1000.0,
     "power_restriction_code": "C1US"
 }))]
-pub struct PowerRestrictionRange {
+pub struct RjsPowerRestrictionRange {
     /// Offset from the start of the path, in meters.
     begin_position: f32,
     /// Offset from the start of the path, in meters.
@@ -345,12 +365,12 @@ pub struct TrainScheduleOptions {
 #[diesel(table_name = simulation_output)]
 pub struct SimulationOutput {
     pub id: i64,
-    pub mrsp: JsonValue,
+    pub mrsp: DieselJson<Mrsp>,
     pub base_simulation: DieselJson<ResultTrain>,
     pub eco_simulation: Option<DieselJson<ResultTrain>>,
-    pub electrification_ranges: JsonValue,
+    pub electrification_ranges: DieselJson<Vec<ElectrificationRange>>,
     pub train_schedule_id: Option<i64>,
-    pub power_restriction_ranges: JsonValue,
+    pub power_restriction_ranges: DieselJson<Vec<SimulationPowerRestrictionRange>>,
 }
 
 impl Identifiable for SimulationOutput {
@@ -370,18 +390,18 @@ impl Identifiable for SimulationOutput {
 pub struct SimulationOutputChangeset {
     #[diesel(deserialize_as = i64)]
     pub id: Option<i64>,
-    #[diesel(deserialize_as = JsonValue)]
-    pub mrsp: Option<JsonValue>,
+    #[diesel(deserialize_as = DieselJson<Mrsp>)]
+    pub mrsp: Option<DieselJson<Mrsp>>,
     #[diesel(deserialize_as = DieselJson<ResultTrain>)]
     pub base_simulation: Option<DieselJson<ResultTrain>>,
     #[diesel(deserialize_as = Option<DieselJson<ResultTrain>>)]
     pub eco_simulation: Option<Option<DieselJson<ResultTrain>>>,
-    #[diesel(deserialize_as = JsonValue)]
-    pub electrification_ranges: Option<JsonValue>,
+    #[diesel(deserialize_as = DieselJson<Vec<ElectrificationRange>>)]
+    pub electrification_ranges: Option<DieselJson<Vec<ElectrificationRange>>>,
     #[diesel(deserialize_as = Option<i64>)]
     pub train_schedule_id: Option<Option<i64>>,
-    #[diesel(deserialize_as = JsonValue)]
-    pub power_restriction_ranges: Option<JsonValue>,
+    #[diesel(deserialize_as = DieselJson<Vec<SimulationPowerRestrictionRange>>)]
+    pub power_restriction_ranges: Option<DieselJson<Vec<SimulationPowerRestrictionRange>>>,
 }
 
 impl From<SimulationOutput> for SimulationOutputChangeset {
@@ -414,6 +434,50 @@ impl From<SimulationOutputChangeset> for SimulationOutput {
             train_schedule_id: value.train_schedule_id.expect("invalid changeset result"),
         }
     }
+}
+
+/// A MRSP computation result (Most Restrictive Speed Profile)
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, ToSchema)]
+pub struct Mrsp(pub Vec<MrspPoint>);
+
+/// An MRSP point
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
+pub struct MrspPoint {
+    /// Relative position of the point on its track section (in meters)
+    pub position: f64,
+    /// Speed limit at this point (in m/s)
+    pub speed: f64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
+#[serde(tag = "object_type", rename_all = "PascalCase")]
+pub enum ElectrificationUsage {
+    Electrified {
+        mode: String,
+        mode_handled: bool,
+        profile: Option<String>,
+        profile_handled: bool,
+    },
+    Neutral {
+        lower_pantograph: bool,
+    },
+    NonElectrified,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
+pub struct ElectrificationRange {
+    start: f64,
+    stop: f64,
+    #[serde(rename = "electrificationUsage")]
+    electrification_usage: ElectrificationUsage,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
+pub struct SimulationPowerRestrictionRange {
+    start: f64,
+    stop: f64,
+    code: String,
+    handled: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
@@ -461,7 +525,7 @@ pub struct StandardAllowance {
     capacity_speed_limit: f64,
 }
 
-fn default_capacity_speed_limit() -> f64 {
+const fn default_capacity_speed_limit() -> f64 {
     -1.0
 }
 

@@ -1,13 +1,20 @@
 use super::{AsCoreRequest, Json};
-use crate::models::train_schedule::{PowerRestrictionRange, TrainScheduleOptions};
+use crate::models::train_schedule::{
+    ElectrificationRange, Mrsp, RjsPowerRestrictionRange, SimulationPowerRestrictionRange,
+    TrainScheduleOptions,
+};
 use crate::models::{
     Allowance, Pathfinding, PathfindingPayload, ResultTrain, RoutePath, ScheduledPoint,
     SignalSighting, ZoneUpdate,
 };
 use crate::schema::rolling_stock::{RollingStock, RollingStockComfortType};
 use crate::schema::TrackLocation;
-use geos::geojson::JsonValue;
 use serde_derive::{Deserialize, Serialize};
+use utoipa::ToSchema;
+
+crate::schemas! {
+    SignalUpdate,
+}
 
 #[derive(Debug, Serialize)]
 pub struct TrainPath {
@@ -41,7 +48,7 @@ pub struct CoreTrainSchedule {
     pub stops: Vec<TrainStop>,
     pub tag: Option<String>,
     pub comfort: RollingStockComfortType,
-    pub power_restriction_ranges: Option<Vec<PowerRestrictionRange>>,
+    pub power_restriction_ranges: Option<Vec<RjsPowerRestrictionRange>>,
     pub options: Option<TrainScheduleOptions>,
 }
 
@@ -71,10 +78,10 @@ impl AsCoreRequest<Json<SimulationResponse>> for SimulationRequest {
 pub struct SimulationResponse {
     pub base_simulations: Vec<ResultTrain>,
     pub eco_simulations: Vec<Option<ResultTrain>>,
-    pub speed_limits: Vec<Vec<JsonValue>>,
+    pub speed_limits: Vec<Mrsp>,
     pub warnings: Vec<String>, // TODO
-    pub electrification_ranges: Vec<Vec<JsonValue>>,
-    pub power_restriction_ranges: Vec<Vec<JsonValue>>,
+    pub electrification_ranges: Vec<Vec<ElectrificationRange>>,
+    pub power_restriction_ranges: Vec<Vec<SimulationPowerRestrictionRange>>,
 }
 
 impl SimulationResponse {
@@ -101,15 +108,25 @@ pub struct SignalProjectionResponse {
     pub signal_updates: Vec<SignalUpdate>,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, ToSchema)]
 pub struct SignalUpdate {
+    /// The id of the updated signal
     pub signal_id: String,
+    /// The aspects start being displayed at this time (number of seconds since 1970-01-01T00:00:00)
     pub time_start: f64,
+    /// The aspects stop being displayed at this time (number of seconds since 1970-01-01T00:00:00)
     pub time_end: Option<f64>,
+    /// The route starts at this position on the train path
     pub position_start: f64,
+    /// The route ends at this position on the train path
     pub position_end: Option<f64>,
+    /// The color of the aspect
+    ///
+    /// (Bits 24-31 are alpha, 16-23 are red, 8-15 are green, 0-7 are blue)
     pub color: i32,
+    /// Whether the signal is blinking
     pub blinking: bool,
+    /// The labels of the new aspect
     pub aspect_label: String,
     pub track: String,
     pub track_offset: Option<f64>,

@@ -751,109 +751,6 @@ paths:
                 properties:
                   id: { type: integer }
 
-  /stdcm/:
-    post:
-      tags:
-        - stdcm
-      summary: Find a stdcm and return a simulation result
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                [
-                  infra_id,
-                  timetable_id,
-                  steps,
-                  rolling_stocks,
-                  rolling_stock_id,
-                  comfort,
-                  maximum_departure_delay,
-                ]
-              properties:
-                infra_id:
-                  type: integer
-                timetable_id:
-                  type: integer
-                  description: timetable ID
-                start_time:
-                  type: number
-                  format: double
-                end_time:
-                  type: number
-                  format: double
-                steps:
-                  type: array
-                  minItems: 2
-                  items:
-                    type: object
-                    properties:
-                      duration:
-                        type: number
-                        format: float
-                      waypoints:
-                        $ref: "#/components/schemas/Waypoint"
-                    required: [duration, waypoints]
-                rolling_stocks:
-                  type: array
-                  items:
-                    type: integer
-                rolling_stock_id:
-                  type: integer
-                comfort:
-                  $ref: "#/components/schemas/Comfort"
-                maximum_departure_delay:
-                  type: number
-                  format: double
-                  description: By how long we can shift the departure time (s). Defaults to 2h if unspecified.
-                maximum_run_time:
-                  type: number
-                  format: double
-                  description: |
-                    Specifies how long the total run time can be in seconds.
-                    Defaults to 43200s if unspecified, meaning that the result can't exceed 12h.
-                speed_limit_tags:
-                  type: string
-                  description: Train category for speed limits
-                margin_before:
-                  type: number
-                  format: double
-                  description: |
-                    Margin of x seconds before the train passage, which means that the path used by the train should
-                    be free and available at least x seconds before its passage.
-                  default: 0
-                margin_after:
-                  type: number
-                  format: double
-                  description: |
-                    Margin of y seconds after the train passage, which means that the path used by the train should
-                    be free and available at least y seconds after its passage.
-                  default: 0
-                standard_allowance:
-                  $ref: "#/components/schemas/AllowanceValue"
-      responses:
-        200:
-          description: Simulation result
-          content:
-            application/json:
-              schema:
-                oneOf:
-                  - properties:
-                      simulation:
-                        $ref: "#/components/schemas/SimulationReport"
-                      path:
-                        $ref: "#/components/schemas/Path"
-                    required: [simulation, path]
-                  - type: object
-                    properties:
-                      error:
-                        type: string
-                        description: Error message
-                        example: No path could be found
-        400:
-          description: The request body is invalid
-
   /single_simulation/:
     post:
       summary: Runs a simulation with a single train, does not write anything to the database
@@ -891,29 +788,6 @@ components:
       type: string
       enum: ["AC", "HEATING", "STANDARD"]
       default: "STANDARD"
-
-    GeoJsonObject:
-      type: object
-      description: GeoJson format
-      properties:
-        coordinates:
-          type: array
-          items:
-            type: array
-            items: { type: number, format: float }
-        type: { type: string }
-      required: [coordinates, type]
-
-    GeoJsonPosition:
-      type: object
-      properties:
-        coordinates:
-          type: array
-          items: { type: number, format: float }
-          minItems: 2
-          maxItems: 2
-        type: { type: string }
-      required: [coordinates, type]
 
     Infra:
       properties:
@@ -1209,103 +1083,6 @@ components:
               type: string
             is_warning:
               type: boolean
-
-    Direction:
-      type: string
-      enum: [START_TO_STOP, STOP_TO_START]
-
-    DirectionalTrackRange:
-      type: object
-      description: Track range associated with a direction
-      required:
-        - track
-        - begin
-        - end
-        - direction
-      properties:
-        track:
-          type: string
-          example: 01234567-89ab-cdef-0123-456789abcdef
-        begin:
-          type: number
-          format: float
-        end:
-          type: number
-          format: float
-          example: 100.
-        direction:
-          $ref: "#/components/schemas/Direction"
-
-    Path:
-      properties:
-        id: { type: integer }
-        owner:
-          type: string
-          format: uuid
-        created:
-          type: string
-          format: date-time
-        length:
-          type: number
-          format: float
-          description: Length of the path
-        geographic:
-          $ref: "#/components/schemas/GeoJsonObject"
-        schematic:
-          $ref: "#/components/schemas/GeoJsonObject"
-        slopes:
-          description: Slopes on the path
-          type: array
-          items:
-            type: object
-            properties:
-              gradient: { type: number, format: float }
-              position: { type: number, format: float }
-            required: [gradient, position]
-        curves:
-          description: Curves on the path
-          type: array
-          items:
-            type: object
-            properties:
-              radius: { type: number, format: float }
-              position: { type: number, format: float }
-            required: [radius, position]
-        steps:
-          type: array
-          items:
-            $ref: "#/components/schemas/PathStep"
-      required:
-        [
-          id,
-          owner,
-          created,
-          length,
-          geographic,
-          schematic,
-          slopes,
-          curves,
-          steps,
-        ]
-
-    PathStep:
-      type: object
-      properties:
-        id: { type: string }
-        name: { type: string }
-        suggestion: { type: boolean }
-        duration: { type: number, format: float }
-        path_offset:
-          type: number
-          format: float
-          description: Offset of the step in the path
-        location:
-          $ref: "#/components/schemas/TrackLocation"
-        sch:
-          $ref: "#/components/schemas/GeoJsonPosition"
-        geo:
-          $ref: "#/components/schemas/GeoJsonPosition"
-      required: [suggestion, duration, path_offset, location, sch, geo]
 
     RouteTrackRangesComputed:
       type: object
@@ -1615,76 +1392,6 @@ components:
         position: { type: number, format: float }
       required: [time, position, speed]
 
-    SimulationReport:
-      properties:
-        id:
-          type: integer
-        name:
-          type: string
-        labels:
-          type: array
-          items:
-            type: string
-        path:
-          type: integer
-          description: id of the path used for projection
-        vmax:
-          type: array
-          minItems: 2
-          items:
-            type: object
-            properties:
-              position: { type: number }
-              speed: { type: number }
-            required: [position, speed]
-        slopes:
-          type: array
-          minItems: 2
-          items:
-            type: object
-            properties:
-              position: { type: number }
-              gradient: { type: number }
-            required: [position, gradient]
-        curves:
-          type: array
-          minItems: 2
-          items:
-            type: object
-            properties:
-              position: { type: number }
-              radius: { type: number }
-            required: [position, radius]
-        base:
-          $ref: "#/components/schemas/SimulationReportByTrain"
-        eco:
-          $ref: "#/components/schemas/SimulationReportByTrain"
-        speed_limit_tags:
-          type: string
-        electrification_ranges:
-          description: A list of ranges which should be contiguous and which describe the electrification on the path and if it is handled by the train
-          type: array
-          items:
-            $ref: "#/components/schemas/ElectrificationRange"
-          minItems: 1
-        power_restriction_ranges:
-          description: The list of ranges where power restrictions are applied
-          type: array
-          items:
-            $ref: "#/components/schemas/PowerRestrictionRangeItem"
-
-      required:
-        - id
-        - name
-        - labels
-        - path
-        - vmax
-        - slopes
-        - curves
-        - base
-        - electrification_ranges
-        - power_restriction_ranges
-
     PowerRestrictionRangeItem:
       properties:
         start:
@@ -1698,66 +1405,6 @@ components:
         handled:
           type: boolean
       required: [start, stop, code, handled]
-
-    ElectrificationRange:
-      properties:
-        start:
-          type: number
-          format: double
-        stop:
-          type: number
-          format: double
-        electrificationUsage:
-          oneOf:
-            - $ref: "#/components/schemas/Electrified"
-            - $ref: "#/components/schemas/Neutral"
-            - $ref: "#/components/schemas/NonElectrified"
-          discriminator:
-            propertyName: object_type
-      required: [start, stop, is_electrified, electrificationUsage]
-
-    Electrified:
-      properties:
-        mode:
-          type: string
-        mode_handled:
-          type: boolean
-        object_type:
-          type: string
-          enum: ["Electrified"]
-        profile:
-          type: string
-          nullable: true
-        profile_handled:
-          type: boolean
-      required: [mode, mode_handled, object_type, profile_handled]
-    Neutral:
-      properties:
-        lower_pantograph:
-          type: boolean
-        object_type:
-          type: string
-          enum: ["Neutral"]
-      required: [lower_pantograph, object_type]
-    NonElectrified:
-      properties:
-        object_type:
-          type: string
-          enum: ["NonElectrified"]
-      required: [object_type]
-
-    Waypoint:
-      type: array
-      items:
-        type: object
-        properties:
-          track_section:
-            type: string
-          geo_coordinate:
-            type: array
-            items: { type: number, format: float }
-            minItems: 2
-            maxItems: 2
 
     SingleSimulationRequest:
       type: object
@@ -1815,7 +1462,7 @@ components:
           description: A list of ranges along the train path where power restrictions apply.
           type: array
           items:
-            $ref: "#/components/schemas/PowerRestrictionRange"
+            $ref: "#/components/schemas/RjsPowerRestrictionRange"
           nullable: true
         options:
           allOf:

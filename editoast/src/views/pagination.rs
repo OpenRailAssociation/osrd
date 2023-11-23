@@ -64,7 +64,7 @@ pub struct PaginationQueryParam {
     pub page_size: Option<i64>,
 }
 
-fn default_page() -> i64 {
+const fn default_page() -> i64 {
     1
 }
 

@@ -20,6 +20,8 @@ use utoipa::ToSchema;
 crate::schemas! {
     Slope,
     Curve,
+    PathfindingPayload,
+    RoutePath,
     PathWaypoint,
 }
 
@@ -141,14 +143,20 @@ pub struct Curve {
     position: f64,
 }
 
-#[derive(Debug, Clone, PartialEq, Derivative, Deserialize, Serialize)]
+/// The "payload" of a path
+///
+/// It contains the route paths and the path waypoints that the simulation returned,
+/// but enhanced using data from the infra. Notably, path waypoints are reprojected
+/// onto their track section to obtain their geographic and schematic representations
+/// back.
+#[derive(Debug, Clone, PartialEq, Derivative, Deserialize, Serialize, ToSchema)]
 #[derivative(Default)]
 pub struct PathfindingPayload {
     pub route_paths: Vec<RoutePath>,
     pub path_waypoints: Vec<PathWaypoint>,
 }
 
-#[derive(Debug, Clone, Default, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Clone, Default, PartialEq, Deserialize, Serialize, ToSchema)]
 pub struct RoutePath {
     pub route: String,
     pub signaling_type: String,
@@ -168,14 +176,14 @@ pub struct PathWaypoint {
     pub path_offset: f64,
     pub suggestion: bool,
     #[derivative(Default(
-        value = "geojson::Geometry::new(geojson::Value::LineString(Default::default()))"
+        value = "geojson::Geometry::new(geojson::Value::Point(Default::default()))"
     ))]
-    #[schema(value_type = GeoJsonLineString)]
+    #[schema(value_type = GeoJsonPoint)]
     pub geo: geojson::Geometry,
     #[derivative(Default(
-        value = "geojson::Geometry::new(geojson::Value::LineString(Default::default()))"
+        value = "geojson::Geometry::new(geojson::Value::Point(Default::default()))"
     ))]
-    #[schema(value_type = GeoJsonLineString)]
+    #[schema(value_type = GeoJsonPoint)]
     pub sch: geojson::Geometry,
 }
 

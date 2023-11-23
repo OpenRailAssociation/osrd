@@ -3,6 +3,7 @@ pub mod tests {
     use std::io::Cursor;
 
     use crate::client::PostgresConfig;
+    use crate::models::train_schedule::Mrsp;
     use crate::models::{
         Create, Delete, Document, ElectricalProfileSet, Identifiable, Infra, Pathfinding,
         PathfindingChangeset, Project, ResultPosition, ResultStops, ResultTrain,
@@ -21,7 +22,6 @@ pub mod tests {
     use futures::executor;
     use postgis_diesel::types::LineString;
     use rstest::*;
-    use serde_json::json;
     use std::fmt;
 
     pub struct TestFixture<T: Delete + Identifiable + Send> {
@@ -452,11 +452,11 @@ pub mod tests {
         };
 
         let simulation_output = SimulationOutputChangeset {
-            mrsp: Some(json!({})),
+            mrsp: Some(diesel_json::Json(Mrsp::default())),
             base_simulation: Some(diesel_json::Json(result_train)),
             eco_simulation: Some(None),
-            electrification_ranges: Some(json!({})),
-            power_restriction_ranges: Some(json!({})),
+            electrification_ranges: Some(diesel_json::Json(Vec::default())),
+            power_restriction_ranges: Some(diesel_json::Json(Vec::default())),
             train_schedule_id: Some(train_schedule.id),
             ..Default::default()
         };

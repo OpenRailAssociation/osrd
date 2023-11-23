@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use crate::core::simulation::{SignalProjectionRequest, SignalUpdate};
 use crate::core::{AsCoreRequest, CoreClient};
 use crate::models::infra_objects::track_section::TrackSectionModel;
+use crate::models::train_schedule::{ElectrificationRange, Mrsp, SimulationPowerRestrictionRange};
 use crate::models::{
     Curve, FullResultStops, PathWaypoint, Pathfinding, PathfindingPayload, ResultPosition,
     ResultSpeed, ResultStops, ResultTrain, Retrieve, RollingStockModel, SimulationOutput,
@@ -15,31 +16,46 @@ use diesel::sql_types::{Array as SqlArray, BigInt, Text};
 use diesel::{sql_query, ExpressionMethods, QueryDsl};
 use diesel_async::RunQueryDsl;
 use futures::future::OptionFuture;
-use geos::geojson::JsonValue;
 use serde_derive::{Deserialize, Serialize};
+use utoipa::ToSchema;
 
 use crate::views::train_schedule::projection::Projection;
 use crate::views::train_schedule::TrainScheduleError::UnsimulatedTrainSchedule;
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
-pub struct SimulationReport {
-    // TODO: check if there is better way to do that than using Option
-    id: Option<i64>,
-    labels: Vec<String>,
-    path: i64,
-    name: String,
-    vmax: JsonValue,
-    slopes: Vec<Slope>,
-    curves: Vec<Curve>,
-    pub base: ReportTrain,
-    #[serde(skip_serializing_if = "std::option::Option::is_none")]
-    eco: Option<ReportTrain>,
-    speed_limit_tags: Option<String>,
-    electrification_ranges: Option<JsonValue>,
-    power_restriction_ranges: Option<JsonValue>,
+crate::schemas! {
+    SimulationReport,
+    ReportTrain,
+    GetCurvePoint,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, ToSchema)]
+pub struct SimulationReport {
+    // TODO: check if there is better way to do that than using Option
+    #[schema(value_type = i64)]
+    pub id: Option<i64>,
+    pub labels: Vec<String>,
+    /// The id of the path used for projection
+    pub path: i64,
+    pub name: String,
+    #[schema(min_items = 2)]
+    pub vmax: Mrsp,
+    pub slopes: Vec<Slope>,
+    pub curves: Vec<Curve>,
+    pub base: ReportTrain,
+    #[serde(skip_serializing_if = "std::option::Option::is_none")]
+    pub eco: Option<ReportTrain>,
+    #[schema(required)]
+    pub speed_limit_tags: Option<String>,
+    /// A list of ranges which should be contiguous and which describe the
+    /// electrification on the path and if it is handled by the train
+    #[schema(required)]
+    pub electrification_ranges: Vec<ElectrificationRange>,
+    /// The list of ranges where power restrictions are applied
+    #[schema(required)]
+    pub power_restriction_ranges: Vec<SimulationPowerRestrictionRange>,
+}
+
+#[derive(Debug, Serialize, Deserialize, PartialEq, ToSchema)]
 pub struct ReportTrain {
     pub head_positions: Vec<Vec<GetCurvePoint>>,
     pub tail_positions: Vec<Vec<GetCurvePoint>>,
@@ -49,7 +65,7 @@ pub struct ReportTrain {
     pub mechanical_energy_consumed: f64,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, ToSchema)]
 pub struct GetCurvePoint {
     time: f64,
     position: f64,
@@ -114,14 +130,20 @@ pub async fn create_simulation_report(
         labels: train_schedule.labels.0.to_vec(),
         path: train_schedule.path_id,
         name: train_schedule.train_name,
-        vmax: simulation_output_cs.mrsp.unwrap(),
+        vmax: simulation_output_cs.mrsp.unwrap().0,
         slopes: train_path.slopes.0, // diesel_json does not support into inner
         curves: train_path.curves.0,
         base,
         eco,
         speed_limit_tags: train_schedule.speed_limit_tags,
-        electrification_ranges: simulation_output_cs.electrification_ranges,
-        power_restriction_ranges: simulation_output_cs.power_restriction_ranges,
+        electrification_ranges: simulation_output_cs
+            .electrification_ranges
+            .map(|e| e.0)
+            .unwrap_or_default(),
+        power_restriction_ranges: simulation_output_cs
+            .power_restriction_ranges
+            .map(|p| p.0)
+            .unwrap_or_default(),
     })
 }
 
