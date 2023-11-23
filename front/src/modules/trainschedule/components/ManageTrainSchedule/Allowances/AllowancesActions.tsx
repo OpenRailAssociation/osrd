@@ -7,7 +7,7 @@ import { GoTrash } from 'react-icons/go';
 import { FaPlus, FaSearch } from 'react-icons/fa';
 import { CgArrowsShrinkH } from 'react-icons/cg';
 import { BiArrowFromLeft, BiArrowFromRight } from 'react-icons/bi';
-import { EngineeringAllowance, PathStep } from 'common/api/osrdEditoastApi';
+import { EngineeringAllowance, PathWaypoint } from 'common/api/osrdEditoastApi';
 import { BsCheckLg } from 'react-icons/bs';
 import { MdCancel } from 'react-icons/md';
 import cx from 'classnames';
@@ -37,7 +37,7 @@ interface Props<T extends RangeAllowanceForm | EngineeringAllowanceForm> {
   allowances: T[];
   defaultAllowance?: AllowanceValueForm;
   pathLength: number;
-  pathFindingSteps?: PathStep[];
+  pathFindingWaypoints?: PathWaypoint[];
   allowanceSelectedIndex?: number;
   updateAllowances: (allowances: T[]) => void;
   setAllowanceSelectedIndex: SetAllowanceSelectedIndexType;
@@ -49,7 +49,7 @@ interface Props<T extends RangeAllowanceForm | EngineeringAllowanceForm> {
 const AllowancesActions = <T extends RangeAllowanceForm | EngineeringAllowanceForm>({
   allowances,
   pathLength,
-  pathFindingSteps,
+  pathFindingWaypoints,
   allowanceSelectedIndex,
   setAllowanceSelectedIndex,
   setOverlapAllowancesIndexes,
@@ -273,14 +273,14 @@ const AllowancesActions = <T extends RangeAllowanceForm | EngineeringAllowanceFo
             value={beginPosition}
             onChange={(e) => handleInputFrom(+e.target.value)}
             appendOptions={
-              pathFindingSteps && {
+              pathFindingWaypoints && {
                 label: <FaSearch />,
                 name: 'op-begin-position',
                 onClick: () =>
                   openModal(
                     <AllowancesModalOP
                       setPosition={setBeginPosition}
-                      pathFindingSteps={pathFindingSteps}
+                      pathFindingWaypoints={pathFindingWaypoints}
                     />
                   ),
               }
@@ -312,14 +312,14 @@ const AllowancesActions = <T extends RangeAllowanceForm | EngineeringAllowanceFo
             value={endPosition}
             onChange={(e) => handleInputTo(+e.target.value)}
             appendOptions={
-              pathFindingSteps && {
+              pathFindingWaypoints && {
                 label: <FaSearch />,
                 name: 'op-end-position',
                 onClick: () =>
                   openModal(
                     <AllowancesModalOP
                       setPosition={setEndPosition}
-                      pathFindingSteps={pathFindingSteps}
+                      pathFindingWaypoints={pathFindingWaypoints}
                     />
                   ),
               }

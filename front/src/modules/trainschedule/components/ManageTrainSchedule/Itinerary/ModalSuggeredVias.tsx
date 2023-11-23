@@ -11,8 +11,8 @@ import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { Spinner } from 'common/Loader';
 import { ArrayElement } from 'utils/types';
-import { Path, PathStep } from 'common/api/osrdEditoastApi';
 import { GoDash, GoPlus, GoTrash } from 'react-icons/go';
+import { PathResponse, PathWaypoint } from 'common/api/osrdEditoastApi';
 
 type Props = {
   removeAllVias: () => void;
@@ -25,7 +25,7 @@ function LoaderPathfindingInProgress() {
 
 export default function ModalSugerredVias({ removeAllVias, pathfindingInProgress }: Props) {
   const dispatch = useDispatch();
-  const suggeredVias = useSelector(getSuggeredVias) as PathStep[];
+  const suggeredVias = useSelector(getSuggeredVias) as PathWaypoint[];
   const vias = useSelector(getVias);
 
   const { t } = useTranslation('operationalStudies/manageTrainSchedule');
@@ -33,7 +33,7 @@ export default function ModalSugerredVias({ removeAllVias, pathfindingInProgress
   const selectedViasTracks = vias.map((via) => via.id);
   const { closeModal } = useContext(ModalContext);
 
-  const removeViaFromPath = (step: ArrayElement<Path['steps']>) => {
+  const removeViaFromPath = (step: ArrayElement<PathResponse['steps']>) => {
     dispatch(
       replaceVias(
         vias.filter(
@@ -45,12 +45,19 @@ export default function ModalSugerredVias({ removeAllVias, pathfindingInProgress
     );
   };
 
-  const convertPathfindingVias = (steps: Path['steps'], idxToAdd: number) => {
+  const convertPathfindingVias = (steps: PathResponse['steps'], idxToAdd: number) => {
     if (steps) {
       const newVias = steps.slice(1, -1).flatMap((step, idx) => {
         if (!step.suggestion || idxToAdd === idx) {
           const viaCoordinates = step.geo?.coordinates;
-          return [{ ...step, coordinates: viaCoordinates }];
+          return [
+            {
+              ...step,
+              coordinates: viaCoordinates,
+              id: step.id || undefined,
+              name: step.name || undefined,
+            },
+          ];
         }
         return [];
       });
@@ -58,7 +65,7 @@ export default function ModalSugerredVias({ removeAllVias, pathfindingInProgress
     }
   };
 
-  const formatVia = (via: ArrayElement<Path['steps']>, idx: number, idxTrueVia: number) => (
+  const formatVia = (via: ArrayElement<PathResponse['steps']>, idx: number, idxTrueVia: number) => (
     <div
       key={`suggered-via-modal-${via.id}-${idx}`}
       className={`d-flex align-items-center p-1 ${via.suggestion && 'suggerred-via-clickable'}`}
@@ -69,7 +76,7 @@ export default function ModalSugerredVias({ removeAllVias, pathfindingInProgress
       <small className="ml-2">
         {via.path_offset && `KM ${Math.round(via.path_offset) / 1000}`}
       </small>
-      {via.suggestion && !selectedViasTracks.includes(via.id) ? (
+      {via.suggestion && via.id && !selectedViasTracks.includes(via.id) ? (
         <button
           className="btn btn-sm btn-only-icon ml-auto"
           type="button"

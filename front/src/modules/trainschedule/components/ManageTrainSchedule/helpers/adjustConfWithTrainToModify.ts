@@ -18,23 +18,26 @@ import {
 import { sec2time } from 'utils/timeManipulation';
 import { Dispatch } from 'redux';
 import { store } from 'Store';
-import { Allowance, Path, TrainSchedule } from 'common/api/osrdEditoastApi';
+import { Allowance, PathResponse, TrainSchedule } from 'common/api/osrdEditoastApi';
 import { ArrayElement } from 'utils/types';
 import { PointOnMap } from 'applications/operationalStudies/consts';
 import { compact } from 'lodash';
 import { ms2kmh } from 'utils/physics';
 
-function convertStepToPointOnMap(step?: ArrayElement<Path['steps']>): PointOnMap | undefined {
+function convertStepToPointOnMap(
+  step?: ArrayElement<PathResponse['steps']>
+): PointOnMap | undefined {
   return step
     ? {
         ...step,
         id: step.location.track_section,
+        name: step.name || undefined,
         coordinates: step.geo?.coordinates,
       }
     : undefined;
 }
 
-export function loadPathFinding(path: Path, dispatch: Dispatch) {
+export function loadPathFinding(path: PathResponse, dispatch: Dispatch) {
   if (path.steps && path.steps.length > 1) {
     dispatch(updatePathfindingID(path.id));
     dispatch(updateItinerary(path));
@@ -56,7 +59,7 @@ export function loadPathFinding(path: Path, dispatch: Dispatch) {
 
 export default function adjustConfWithTrainToModify(
   trainSchedule: TrainSchedule,
-  path: Path,
+  path: PathResponse,
   dispatch: Dispatch
 ) {
   const { osrdconf } = store.getState();

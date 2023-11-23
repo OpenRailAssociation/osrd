@@ -103,7 +103,7 @@ export default function SpeedSpaceChart({
     toggleSetting(settings);
   };
 
-  const trainSimulation = useMemo(() => prepareData(selectedTrain), [selectedTrain]);
+  const trainSimulation = useMemo(() => prepareData(selectedTrain as Train), [selectedTrain]);
 
   const timeScaleRange: [Date, Date] = useMemo(() => {
     if (chart) {

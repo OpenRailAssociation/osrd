@@ -3,7 +3,7 @@ import {
   PointOnMap,
   PowerRestrictionRange,
 } from 'applications/operationalStudies/consts';
-import { Allowance, Path } from 'common/api/osrdEditoastApi';
+import { Allowance, PathResponse } from 'common/api/osrdEditoastApi';
 import { Feature } from 'geojson';
 import { SwitchType } from 'types';
 
@@ -62,7 +62,7 @@ export default function commonConfBuilder() {
       name: 'point',
       ...fields,
     }),
-    buildGeoJson: (): Path => ({
+    buildGeoJson: (): PathResponse => ({
       created: '10/10/2023',
       curves: [{ position: 10, radius: 2 }],
       geographic: {
@@ -70,7 +70,7 @@ export default function commonConfBuilder() {
           [1, 2],
           [3, 4],
         ],
-        type: 'type-test',
+        type: 'LineString',
       },
       id: 1,
       length: 10,
@@ -80,7 +80,7 @@ export default function commonConfBuilder() {
           [1, 2],
           [3, 4],
         ],
-        type: 'type-test',
+        type: 'LineString',
       },
       slopes: [
         {
@@ -93,7 +93,7 @@ export default function commonConfBuilder() {
           duration: 2,
           geo: {
             coordinates: [1, 2],
-            type: 'type-test',
+            type: 'Point',
           },
           id: 'toto',
           location: {
@@ -104,7 +104,7 @@ export default function commonConfBuilder() {
           path_offset: 42,
           sch: {
             coordinates: [1, 2],
-            type: 'type-test',
+            type: 'Point',
           },
           suggestion: true,
         },

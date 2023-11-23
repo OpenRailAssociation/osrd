@@ -39,8 +39,8 @@ export default function Allowances() {
   const { t } = useTranslation('operationalStudies/allowances');
   const dispatch = useDispatch();
   const pathFindingID = useSelector(getPathfindingID);
-  const { data: pathFinding } = osrdEditoastApi.useGetPathfindingByIdQuery(
-    { id: pathFindingID as number },
+  const { data: pathFinding } = osrdEditoastApi.useGetPathfindingByPathfindingIdQuery(
+    { pathfindingId: pathFindingID as number },
     { skip: !pathFindingID }
   );
 
@@ -177,7 +177,7 @@ export default function Allowances() {
                   allowanceSelectedIndex={standardAllowanceSelectedIndex}
                   setAllowanceSelectedIndex={setStandardAllowanceSelectedIndex}
                   setOverlapAllowancesIndexes={setOverlapAllowancesIndexes}
-                  pathFindingSteps={pathFinding?.steps}
+                  pathFindingWaypoints={pathFinding?.steps}
                   updateAllowances={updateStandardAllowances}
                   defaultAllowance={standardAllowance.default_value}
                   overlapAllowancesIndexes={overlapAllowancesIndexes}
@@ -222,7 +222,7 @@ export default function Allowances() {
               type={AllowancesTypes.engineering}
               allowanceSelectedIndex={EngineeringAllowanceSelectedIndex}
               setAllowanceSelectedIndex={setEngineeringAllowanceSelectedIndex}
-              pathFindingSteps={pathFinding?.steps}
+              pathFindingWaypoints={pathFinding?.steps}
               overlapAllowancesIndexes={engineeringOverlapAllowancesIndexes}
               setOverlapAllowancesIndexes={setEngineeringOverlapAllowancesIndexes}
             />

@@ -2211,12 +2211,12 @@ export type ResultStops = {
   time: number;
 };
 export type FullResultStops = ResultStops & {
-  id?: string | null;
-  line_code?: number | null;
-  line_name?: string | null;
-  name?: string | null;
-  track_name?: string | null;
-  track_number?: number | null;
+  id: string | null;
+  line_code: number | null;
+  line_name: string | null;
+  name: string | null;
+  track_name: string | null;
+  track_number: number | null;
 };
 export type ReportTrain = {
   head_positions: GetCurvePoint[][];

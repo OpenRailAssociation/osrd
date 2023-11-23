@@ -12,8 +12,8 @@ import {
   PowerRestrictionRange,
 } from 'applications/operationalStudies/consts';
 import { formatIsoDate } from 'utils/date';
-import { Allowance, Path, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { SwitchType, ThunkAction } from 'types';
+import { Allowance, PathResponse, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { computeLinkedOriginTimes } from './helpers';
 
 /* eslint-disable default-case */
@@ -631,7 +631,7 @@ export function updateDestinationDate(destinationDate: string) {
     });
   };
 }
-export function updateItinerary(geojson?: Path) {
+export function updateItinerary(geojson?: PathResponse) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_ITINERARY,

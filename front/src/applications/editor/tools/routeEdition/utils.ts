@@ -236,12 +236,12 @@ export async function getCompatibleRoutesPayload(
 
   return {
     starting: {
-      track: entryPointEntity.properties.track as string,
-      position: entryPointEntity.properties.position as number,
+      track_section: entryPointEntity.properties.track as string,
+      offset: entryPointEntity.properties.position as number,
     },
     ending: {
-      track: exitPointEntity.properties.track as string,
-      position: exitPointEntity.properties.position as number,
+      track_section: exitPointEntity.properties.track as string,
+      offset: exitPointEntity.properties.position as number,
     },
   };
 }

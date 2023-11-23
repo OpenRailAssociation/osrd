@@ -17,15 +17,15 @@ import ModalSuggerredVias from 'modules/trainschedule/components/ManageTrainSche
 import { getOrigin, getDestination, getVias, getGeojson } from 'reducers/osrdconf/selectors';
 import { getMap } from 'reducers/map/selectors';
 import Pathfinding from 'common/Pathfinding/Pathfinding';
-import { Path } from 'common/api/osrdEditoastApi';
 import { useTranslation } from 'react-i18next';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { GoArrowSwitch, GoPlus, GoRocket, GoTrash } from 'react-icons/go';
 import Tipped from 'applications/editor/components/Tipped';
 import TypeAndPath from 'common/Pathfinding/TypeAndPath';
+import { PathResponse } from 'common/api/osrdEditoastApi';
 
 type ItineraryProps = {
-  path?: Path;
+  path?: PathResponse;
 };
 
 function Itinerary({ path }: ItineraryProps) {

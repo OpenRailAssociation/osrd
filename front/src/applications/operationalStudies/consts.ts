@@ -6,10 +6,8 @@ import {
   AllowanceValue,
   RollingStockComfortType,
   ElectrificationRange,
-  Electrified,
-  Neutral,
-  NonElectrified,
-  Path,
+  ElectrificationUsage,
+  PathResponse,
   PowerRestrictionRangeItem,
 } from 'common/api/osrdEditoastApi';
 import { LinearMetadataItem } from 'common/IntervalsDataViz/types';
@@ -174,9 +172,9 @@ export interface OsrdConfState {
   departureTime: string;
   destination?: PointOnMap;
   vias: PointOnMap[];
-  suggeredVias: Path['steps'] | PointOnMap[];
+  suggeredVias: PathResponse['steps'] | PointOnMap[];
   trainCompo: undefined;
-  geojson?: Path;
+  geojson?: PathResponse;
   originDate?: string;
   originTime?: string;
   originUpperBoundDate?: string;
@@ -223,7 +221,7 @@ export interface ElectricalConditionSegment {
   height_start: number;
   height_end: number;
   height_middle: number;
-  electrification: Electrified | Neutral | NonElectrified;
+  electrification: ElectrificationUsage;
   seenRestriction?: string;
   usedRestriction?: string;
   color: string;

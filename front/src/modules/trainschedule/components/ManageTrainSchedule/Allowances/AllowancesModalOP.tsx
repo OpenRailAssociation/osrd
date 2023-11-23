@@ -1,14 +1,14 @@
 import React, { useContext } from 'react';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import { PathStep } from 'common/api/osrdEditoastApi';
+import { PathWaypoint } from 'common/api/osrdEditoastApi';
 import { ModalBodySNCF, ModalHeaderSNCF } from 'common/BootstrapSNCF/ModalSNCF';
 
 export default function AllowancesModalOP({
   setPosition,
-  pathFindingSteps,
+  pathFindingWaypoints,
 }: {
   setPosition: (position: number) => void;
-  pathFindingSteps: PathStep[];
+  pathFindingWaypoints: PathWaypoint[];
 }) {
   const { closeModal } = useContext(ModalContext);
   return (
@@ -16,18 +16,18 @@ export default function AllowancesModalOP({
       <ModalHeaderSNCF withCloseButton />
       <ModalBodySNCF>
         <div className="allowances-op-list">
-          {pathFindingSteps.map((step) => (
+          {pathFindingWaypoints.map((waypoint) => (
             <button
               className="row allowances-op"
               type="button"
               onClick={() => {
-                setPosition(step.path_offset);
+                setPosition(waypoint.path_offset);
                 closeModal();
               }}
-              key={step.path_offset}
+              key={waypoint.path_offset}
             >
-              <div className="col-6">{step.path_offset}</div>
-              <div className="col-6">{step.name}</div>
+              <div className="col-6">{waypoint.path_offset}</div>
+              <div className="col-6">{waypoint.name}</div>
             </button>
           ))}
         </div>

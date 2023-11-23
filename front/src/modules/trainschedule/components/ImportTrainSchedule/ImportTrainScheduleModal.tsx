@@ -15,7 +15,7 @@ import {
 import { refactorUniquePaths } from 'modules/trainschedule/components/ImportTrainSchedule/ImportTrainScheduleHelpers';
 import {
   LightRollingStock,
-  Path,
+  PathResponse,
   TrainScheduleBatchItem,
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
@@ -199,7 +199,7 @@ const ImportTrainScheduleModal = ({
    */
   async function generatePaths(autocomplete = false) {
     const pathErrors: string[] = [];
-    const pathFindings: Record<string, { rollingStockId: number; pathFinding: Path }> = {};
+    const pathFindings: Record<string, { rollingStockId: number; pathFinding: PathResponse }> = {};
     const pathFindingsCount = pathsDictionnary.length;
     let pathFindingsDoneCount = 0;
 
@@ -225,7 +225,7 @@ const ImportTrainScheduleModal = ({
         })
       );
 
-      await postPathFinding({ pathQuery: payload })
+      await postPathFinding({ pathfindingRequest: payload })
         .unwrap()
         .then((pathFinding) => {
           pathFindings[pathRef] = { rollingStockId, pathFinding };

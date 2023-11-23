@@ -16,6 +16,7 @@ import {
   SPEED_SPACE_SETTINGS_KEYS,
   OsrdSimulationState,
   SimulationTrain,
+  Train,
 } from 'reducers/osrdsimulation/types';
 import { SimulationReport } from 'common/api/osrdEditoastApi';
 // TODO: Dependency cycle will be removed during the refactoring of store
@@ -127,14 +128,14 @@ export default function reducer(inputState: OsrdSimulationState | undefined, act
         // get only the present, thanks
         draft.simulation = undoableSimulation(state.simulation, action);
         draft.departureArrivalTimes = makeTrainListWithAllTrainsOffset(
-          draft.simulation.present.trains,
+          draft.simulation.present.trains as Train[], // TODO: remove Train interface
           0
         );
 
         draft.consolidatedSimulation = createTrain(
           noop,
           CHART_AXES.SPACE_TIME,
-          draft.simulation.present.trains,
+          draft.simulation.present.trains as Train[], // TODO: remove Train interface
           noop
         );
         draft.displaySimulation =
