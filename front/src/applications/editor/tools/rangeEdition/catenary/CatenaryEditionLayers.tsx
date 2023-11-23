@@ -36,7 +36,7 @@ export const CatenaryEditionLayers: FC = () => {
       return [(entity.properties.track_ranges || [])[interactionState.rangeIndex].track];
 
     // Custom hovered element:
-    if (hoveredItem?.speedSectionItemType) return [hoveredItem.track.properties.id];
+    if (hoveredItem?.itemType) return [hoveredItem.track.properties.id];
 
     // EditorEntity hovered element:
     if (
@@ -137,7 +137,7 @@ export const CatenaryEditionLayers: FC = () => {
 
   const popUps = !isOnModeMove(interactionState.type) ? (
     <>
-      {hoveredItem?.speedSectionItemType === 'TrackRangeExtremity' && (
+      {hoveredItem?.itemType === 'TrackRangeExtremity' && (
         <Popup
           className="popup"
           anchor="bottom"
@@ -149,7 +149,7 @@ export const CatenaryEditionLayers: FC = () => {
           <EntitySumUp entity={hoveredItem.track} />
         </Popup>
       )}
-      {hoveredItem?.speedSectionItemType === 'TrackRange' && (
+      {hoveredItem?.itemType === 'TrackRange' && (
         <Popup
           className="popup"
           anchor="bottom"
@@ -210,14 +210,22 @@ export const CatenaryEditionLayers: FC = () => {
   );
 };
 
-export const CatenaryMessages: FC = () => null;
+export const CatenaryMessages: FC = () => {
+  const { t } = useTranslation();
+  const { state } = useContext(EditorContext) as ExtendedEditorContextType<
+    RangeEditionState<CatenaryEntity>
+  >;
+  if (state.hoveredItem && state.hoveredItem.type === 'TrackSection')
+    return t('Editor.tools.catenary-edition.help.add-track', {
+      track: state.hoveredItem,
+      voltage: state.initialEntity.properties.voltage,
+    });
 
-// export const CatenaryMessages: FC = () => {
-//   const { t } = useTranslation();
-//   const {
-//     state: {
-//       /* TODO */
-//     },
-//   } = useContext(EditorContext) as ExtendedEditorContextType<SpeedSectionEditionState>;
-//   return null;
-// };
+  if (state.hoveredItem && state.hoveredItem.itemType === 'TrackRange')
+    return t('Editor.tools.catenary-edition.help.remove-range', {
+      range: state.hoveredItem,
+      voltage: state.initialEntity.properties.voltage,
+    });
+
+  return t('Editor.tools.catenary-edition.help.init');
+};

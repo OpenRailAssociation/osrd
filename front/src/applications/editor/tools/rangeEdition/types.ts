@@ -7,8 +7,8 @@ export type TrackRangeFeature = Feature<
   LineString,
   Pick<TrackRange, 'begin' | 'end' | 'track'> & {
     id: string;
-    speedSectionItemType: 'TrackRange';
-    speedSectionRangeIndex: number;
+    itemType: 'TrackRange';
+    rangeIndex: number;
   }
 >;
 export type TrackRangeExtremityFeature = Feature<
@@ -17,8 +17,8 @@ export type TrackRangeExtremityFeature = Feature<
     id: string;
     track: string;
     extremity: 'BEGIN' | 'END';
-    speedSectionItemType: 'TrackRangeExtremity';
-    speedSectionRangeIndex: number;
+    itemType: 'TrackRangeExtremity';
+    rangeIndex: number;
   }
 >;
 export type PslSignFeature = Feature<
@@ -31,14 +31,14 @@ export type PslSignFeature = Feature<
     track: string;
     type: string;
     value: string | null;
-    speedSectionItemType: 'PSLSign';
-    speedSectionSignIndex: number;
-    speedSectionSignType: PSL_SIGN_TYPE;
+    itemType: 'PSLSign';
+    signIndex: number;
+    signType: PSL_SIGN_TYPE;
   }
 >;
 
 export type HoveredExtremityState = {
-  speedSectionItemType: 'TrackRangeExtremity';
+  itemType: 'TrackRangeExtremity';
   track: TrackSectionEntity;
   extremity: 'BEGIN' | 'END';
   position: Position;
@@ -47,7 +47,7 @@ export type HoveredExtremityState = {
   id?: undefined;
 };
 export type HoveredRangeState = {
-  speedSectionItemType: 'TrackRange';
+  itemType: 'TrackRange';
   track: TrackSectionEntity;
   position: Position;
   // (trick to help dealing with heterogeneous types)
@@ -55,7 +55,7 @@ export type HoveredRangeState = {
   id?: undefined;
 };
 export type HoveredSignState = {
-  speedSectionItemType: 'PSLSign';
+  itemType: 'PSLSign';
   track: TrackSectionEntity;
   position: Position;
   signIndex: number;
@@ -89,7 +89,7 @@ export type RangeEditionState<E extends EditorEntity> = CommonToolState & {
     | HoveredExtremityState
     | HoveredRangeState
     | HoveredSignState
-    | (NonNullable<CommonToolState['hovered']> & { speedSectionItemType?: undefined });
+    | (NonNullable<CommonToolState['hovered']> & { itemType?: undefined });
   interactionState:
     | { type: 'idle' }
     | { type: 'moveRangeExtremity'; rangeIndex: number; extremity: 'BEGIN' | 'END' }

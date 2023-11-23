@@ -220,6 +220,11 @@
           "reset-catenary": "Annuler les modifications en cours",
           "delete-catenary": "Supprimer l'électrification"
         },
+        "help": {
+          "init":"Cliquez sur un tronçon d'itinéraire pour l'associer à l'électrification",
+          "add-track": "Ajouter le tronçon '{{track.id}}' à l'électrification {{voltage}}",
+          "remove-range": "Supprimer le tronçon de l'électrification {{voltage}}"
+        },
         "add-new-catenary": "Ajouter une nouvelle électrification",
         "catenaries": "Électrification",
         "catenary-default": "Électrification par défaut",
@@ -253,6 +258,7 @@
         "edit-track-range-start": "Modifier le point de départ",
         "edit-track-range-end": "Modifier le point d'arrivée",
         "linked-track-sections": "Tronçons d'itinéraire de voie associés",
+        "empty-linked-track-section": "Cliquez sur un tronçon d'itinéraire pour l'associer",
         "only-show-n": "Ne montrer que les {{count}} premières sections de lignes",
         "show-more-ranges_one": "Voir une section de ligne de plus",
         "show-more-ranges_other": "Voir {{count}} sections de lignes de plus"

@@ -46,12 +46,10 @@ export const SpeedSectionEditionLayers: FC = () => {
     if (interactionState.type === 'moveRangeExtremity') {
       res.push((entity.properties.track_ranges || [])[interactionState.rangeIndex].track);
     }
-
     // Custom hovered element:
-    else if (hoveredItem?.speedSectionItemType) {
+    else if (hoveredItem?.itemType) {
       res.push(hoveredItem.track.properties.id);
     }
-
     // EditorEntity hovered element:
     else if (
       hoveredItem?.type === 'TrackSection' &&
@@ -168,7 +166,7 @@ export const SpeedSectionEditionLayers: FC = () => {
 
   const popUps = !isOnModeMove(interactionState.type) ? (
     <>
-      {hoveredItem?.speedSectionItemType === 'TrackRangeExtremity' && (
+      {hoveredItem?.itemType === 'TrackRangeExtremity' && (
         <Popup
           className="popup"
           anchor="bottom"
@@ -180,7 +178,7 @@ export const SpeedSectionEditionLayers: FC = () => {
           <EntitySumUp entity={hoveredItem.track} />
         </Popup>
       )}
-      {hoveredItem?.speedSectionItemType === 'TrackRange' && (
+      {hoveredItem?.itemType === 'TrackRange' && (
         <Popup
           className="popup"
           anchor="bottom"
@@ -192,7 +190,7 @@ export const SpeedSectionEditionLayers: FC = () => {
           <EntitySumUp entity={hoveredItem.track} />
         </Popup>
       )}
-      {hoveredItem?.speedSectionItemType === 'PSLSign' && (
+      {hoveredItem?.itemType === 'PSLSign' && (
         <Popup
           className="popup"
           anchor="bottom"
