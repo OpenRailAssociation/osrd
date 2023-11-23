@@ -2,11 +2,13 @@ package fr.sncf.osrd.pathfinding.constraints
 
 import fr.sncf.osrd.api.pathfinding.constraints.ElectrificationConstraints
 import fr.sncf.osrd.graph.Pathfinding
+import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
+import fr.sncf.osrd.sim_infra.api.TrackChunk
 import fr.sncf.osrd.sim_infra.api.TrackChunkId
 import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.Helpers
-import fr.sncf.osrd.utils.units.Distance
+import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import org.assertj.core.api.AssertionsForClassTypes
 import org.junit.jupiter.api.BeforeAll
@@ -19,7 +21,7 @@ import java.util.stream.Stream
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ElectrificationConstraintsTest {
     private var electrificationConstraints: ElectrificationConstraints? = null
-    private var chunk0Length: Distance = 0.meters
+    private var chunk0Length: Offset<TrackChunk> = Offset(0.meters)
 
     @BeforeAll
     fun setUp() {
@@ -28,14 +30,14 @@ class ElectrificationConstraintsTest {
             infra.blockInfra, infra.rawInfra,
             listOf(TestTrains.FAST_ELECTRIC_TRAIN)
         )
-        chunk0Length = infra.rawInfra.getTrackChunkLength(TrackChunkId(0U)).distance
+        chunk0Length = infra.rawInfra.getTrackChunkLength(TrackChunkId(0U))
     }
 
     @ParameterizedTest
     @MethodSource("testDeadSectionArgs")
     fun testDeadSectionAndCatenaryBlockedRanges(
         blockId: BlockId,
-        expectedBlockedRanges: Collection<Pathfinding.Range>
+        expectedBlockedRanges: Collection<Pathfinding.Range<Block>>
     ) {
         val blockedRanges = electrificationConstraints!!.apply(blockId)
         AssertionsForClassTypes.assertThat(blockedRanges).isEqualTo(expectedBlockedRanges)
@@ -45,11 +47,11 @@ class ElectrificationConstraintsTest {
         return Stream.of( // No corresponding catenary ranges without dead sections
             Arguments.of(
                 0,
-                mutableSetOf(Pathfinding.Range(0.meters, chunk0Length))
+                mutableSetOf(Pathfinding.Range(Offset(0.meters), chunk0Length))
             ),  // Partially corresponding catenary ranges with dead section
             Arguments.of(
                 1,
-                mutableSetOf(Pathfinding.Range(0.meters, 30.meters))
+                mutableSetOf(Pathfinding.Range(Offset<Block>(0.meters), Offset(30.meters)))
             ),  // Fully corresponding catenary ranges without dead sections
             Arguments.of(2, HashSet<Any>())
         )

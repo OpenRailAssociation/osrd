@@ -1,7 +1,7 @@
 package fr.sncf.osrd.api.pathfinding
 
 import com.google.common.collect.Iterables
-import fr.sncf.osrd.graph.Pathfinding.EdgeRange
+import fr.sncf.osrd.graph.PathfindingEdgeRangeId
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSDirectionalTrackRange
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPath
@@ -25,7 +25,10 @@ fun makePathProps(
     beginOffset: Offset<Block> = Offset(0.meters),
     endOffset: Offset<Block> = blockInfra.getBlockLength(blockIdx)
 ): PathProperties {
-    return buildPathPropertiesFrom(rawInfra, blockInfra.getTrackChunksFromBlock(blockIdx), beginOffset, endOffset)
+    return buildPathPropertiesFrom(
+        rawInfra, blockInfra.getTrackChunksFromBlock(blockIdx),
+        beginOffset.cast(), endOffset.cast()
+    )
 }
 
 /**
@@ -38,10 +41,10 @@ fun makePathProps(
  */
 fun makePathProps(
     rawInfra: RawSignalingInfra, blockInfra: BlockInfra,
-    blockIds: List<BlockId>, offsetFirstBlock: Length<Block>
+    blockIds: List<BlockId>, offsetFirstBlock: Length<Path>
 ): PathProperties {
     val chunks = MutableDirStaticIdxArrayList<TrackChunk>()
-    var totalLength: Length<Block> = Length(0.meters)
+    var totalLength: Length<Path> = Length(0.meters)
     for (blockId in blockIds) {
         for (zoneId in blockInfra.getBlockPath(blockId)) {
             chunks.addAll(rawInfra.getZonePathChunks(zoneId))
@@ -54,7 +57,7 @@ fun makePathProps(
 /** Creates a `Path` instance from a list of block ranges  */
 fun makePathProps(
     rawInfra: RawSignalingInfra, blockInfra: BlockInfra,
-    blockRanges: List<EdgeRange<BlockId>>
+    blockRanges: List<PathfindingEdgeRangeId<Block>>
 ): PathProperties {
     val chunkPath = makeChunkPath(rawInfra, blockInfra, blockRanges)
     return makePathProperties(rawInfra, chunkPath)
@@ -69,10 +72,10 @@ fun makePathProps(rawInfra: RawSignalingInfra, rjsPath: RJSTrainPath): PathPrope
 /** Creates a ChunkPath from a list of block ranges  */
 fun makeChunkPath(
     rawInfra: RawSignalingInfra, blockInfra: BlockInfra,
-    blockRanges: List<EdgeRange<BlockId>>
+    blockRanges: List<PathfindingEdgeRangeId<Block>>
 ): ChunkPath {
     assert(blockRanges.isNotEmpty())
-    var totalBlockPathLength = 0.meters
+    var totalBlockPathLength: Length<Path> = Length(0.meters)
     val chunks = MutableDirStaticIdxArrayList<TrackChunk>()
     for (range in blockRanges) {
         val zonePaths = blockInfra.getBlockPath(range.edge)
@@ -82,11 +85,11 @@ fun makeChunkPath(
             totalBlockPathLength += zoneLength.distance
         }
     }
-    val startOffset = blockRanges[0].start
+    val startOffset: Offset<Path> = blockRanges[0].start.cast()
     val lastRange = blockRanges[blockRanges.size - 1]
     val lastBlockLength = blockInfra.getBlockLength(lastRange.edge)
-    val endOffset = totalBlockPathLength - lastBlockLength.distance + lastRange.end
-    return buildChunkPath(rawInfra, chunks, Length(startOffset), Length(endOffset))
+    val endOffset = totalBlockPathLength - lastBlockLength.distance + lastRange.end.distance
+    return buildChunkPath(rawInfra, chunks, startOffset, endOffset)
 }
 
 /** Builds a ChunkPath from an RJSTrainPath  */

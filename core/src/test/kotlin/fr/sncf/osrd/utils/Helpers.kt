@@ -4,6 +4,7 @@ import com.squareup.moshi.JsonAdapter
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.makeSignalingSimulator
 import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
+import fr.sncf.osrd.graph.PathfindingEdgeLocationId
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra
 import fr.sncf.osrd.infra.api.signaling.SignalingModule
 import fr.sncf.osrd.infra.implementation.signaling.SignalingInfraBuilder
@@ -25,7 +26,6 @@ import fr.sncf.osrd.utils.indexing.MutableStaticIdxArrayList
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.moshi.MoshiUtils
-import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 import java.io.File
 import java.io.IOException
@@ -158,14 +158,14 @@ object Helpers {
     fun convertRouteLocation(
         infra: FullInfra,
         routeName: String?,
-        offset: Distance
-    ): EdgeLocation<BlockId> {
+        offset: Offset<Route>
+    ): PathfindingEdgeLocationId<Block> {
         var mutOffset = offset
         val blocks = getBlocksOnRoutes(infra, listOf(routeName))
         for (block in blocks) {
             val blockLength = infra.blockInfra.getBlockLength(block)
-            if (mutOffset <= blockLength.distance)
-                return EdgeLocation(block, mutOffset)
+            if (mutOffset <= blockLength.cast())
+                return EdgeLocation(block, mutOffset.cast())
             mutOffset -= blockLength.distance
         }
         throw RuntimeException("Couldn't find route location")
@@ -188,6 +188,6 @@ object Helpers {
         }
         val startOffset = getOffsetOfTrackLocationOnChunks(infra, start, chunks)
         val endOffset = getOffsetOfTrackLocationOnChunks(infra, end, chunks)
-        return buildChunkPath(infra, chunks, Offset(startOffset!!), Offset(endOffset!!))
+        return buildChunkPath(infra, chunks, startOffset!!, endOffset!!)
     }
 }

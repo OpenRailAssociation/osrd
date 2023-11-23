@@ -1,22 +1,23 @@
 package fr.sncf.osrd.api.pathfinding
 
 import fr.sncf.osrd.geom.Point
-import fr.sncf.osrd.graph.AStarHeuristic
-import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
+import fr.sncf.osrd.graph.AStarHeuristicId
+import fr.sncf.osrd.graph.PathfindingEdgeLocationId
+import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.BlockInfra
 import fr.sncf.osrd.sim_infra.api.RawSignalingInfra
-import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Distance.Companion.fromMeters
+import fr.sncf.osrd.utils.units.Offset
 
 /** This is a function object that estimates the remaining distance to the closest target point,
  * using geo data. It is used as heuristic for A*.  */
 class RemainingDistanceEstimator(
     private val blockInfra: BlockInfra,
     private val rawInfra: RawSignalingInfra,
-    edgeLocations: Collection<EdgeLocation<BlockId>>,
+    edgeLocations: Collection<PathfindingEdgeLocationId<Block>>,
     remainingDistance: Double
-) : AStarHeuristic<BlockId> {
+) : AStarHeuristicId<Block> {
     private val targets: MutableCollection<Point>
     private val remainingDistance: Double
 
@@ -33,7 +34,7 @@ class RemainingDistanceEstimator(
         this.remainingDistance = remainingDistance
     }
 
-    override fun apply(edge: BlockId, offset: Distance): Double {
+    override fun apply(edge: BlockId, offset: Offset<Block>): Double {
         var resMeters = Double.POSITIVE_INFINITY
         val point = blockOffsetToPoint(blockInfra, rawInfra, edge, offset)
         for (target in targets)
@@ -47,16 +48,16 @@ class RemainingDistanceEstimator(
         /** Targets closer than this threshold will be merged together  */
         private const val DISTANCE_THRESHOLD = 1.0
 
-        /** Converts a route and offset from its start into a geo point  */
+        /** Converts a block and offset from its start into a geo point  */
         private fun blockOffsetToPoint(
             blockInfra: BlockInfra,
             rawInfra: RawSignalingInfra,
             blockIdx: BlockId,
-            pointOffset: Distance
+            pointOffset: Offset<Block>
         ): Point {
             val path = makePathProps(blockInfra, rawInfra, blockIdx)
             val lineString = path.getGeo()
-            val normalizedOffset = pointOffset.meters / path.getLength().meters
+            val normalizedOffset = pointOffset.distance.meters / path.getLength().distance.meters
             return lineString.interpolateNormalized(normalizedOffset)
         }
 
@@ -66,14 +67,14 @@ class RemainingDistanceEstimator(
         fun minDistanceBetweenSteps(
             blockInfra: BlockInfra,
             rawInfra: RawSignalingInfra,
-            step1: Collection<EdgeLocation<BlockId>>,
-            step2: Collection<EdgeLocation<BlockId>>
+            step1: Collection<PathfindingEdgeLocationId<Block>>,
+            step2: Collection<PathfindingEdgeLocationId<Block>>
         ): Double {
             val step1Points = step1.stream()
-                .map { loc: EdgeLocation<BlockId> -> blockOffsetToPoint(blockInfra, rawInfra, loc.edge, loc.offset) }
+                .map { loc: PathfindingEdgeLocationId<Block> -> blockOffsetToPoint(blockInfra, rawInfra, loc.edge, loc.offset) }
                 .toList()
             val step2Points = step2.stream()
-                .map { loc: EdgeLocation<BlockId> -> blockOffsetToPoint(blockInfra, rawInfra, loc.edge, loc.offset) }
+                .map { loc: PathfindingEdgeLocationId<Block> -> blockOffsetToPoint(blockInfra, rawInfra, loc.edge, loc.offset) }
                 .toList()
             var res = Double.POSITIVE_INFINITY
             for (point1 in step1Points) {

@@ -6,7 +6,10 @@ import fr.sncf.osrd.api.pathfinding.findWaypointBlocks
 import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
+import fr.sncf.osrd.graph.PathfindingEdgeLocationId
+import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
+import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.AssertionsForClassTypes
@@ -31,7 +34,7 @@ class PathfindingBlocksEndpointTest {
     @MethodSource("testFindWaypointBlocksArgs")
     fun testFindWaypointBlocks(
         pathfindingWaypoint: PathfindingWaypoint,
-        expectedEdgeLocations: Set<EdgeLocation<BlockId>>
+        expectedEdgeLocations: Set<PathfindingEdgeLocationId<Block>>
     ) {
         val blocks = findWaypointBlocks(smallInfra!!, pathfindingWaypoint)
         Assertions.assertThat(blocks).containsExactlyInAnyOrderElementsOf(expectedEdgeLocations)
@@ -51,13 +54,13 @@ class PathfindingBlocksEndpointTest {
             return Stream.of(
                 Arguments.of(
                     PathfindingWaypoint("TA3", 10.0, EdgeDirection.START_TO_STOP),
-                    mutableSetOf(EdgeLocation(BlockId(8U), 190.meters))
+                    mutableSetOf(EdgeLocation(BlockId(8U), Offset<Block>(190.meters)))
                 ),
                 Arguments.of(
                     PathfindingWaypoint("TA5", 20.0, EdgeDirection.STOP_TO_START),
                     mutableSetOf(
-                        EdgeLocation(BlockId(19U), 210.meters),
-                        EdgeLocation(BlockId(18U), 210.meters)
+                        EdgeLocation(BlockId(19U), Offset<Block>(210.meters)),
+                        EdgeLocation(BlockId(18U), Offset<Block>(210.meters))
                     )
                 )
             )

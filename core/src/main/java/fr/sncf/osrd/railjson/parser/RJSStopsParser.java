@@ -4,6 +4,7 @@ import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop;
 import fr.sncf.osrd.reporting.exceptions.ErrorType;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.sim_infra.api.PathProperties;
+import fr.sncf.osrd.sim_infra.api.PathPropertiesKt;
 import fr.sncf.osrd.sim_infra.api.RawSignalingInfra;
 import fr.sncf.osrd.train.TrainStop;
 import fr.sncf.osrd.utils.units.Distance;
@@ -27,10 +28,8 @@ public class RJSStopsParser {
             if (stop.position != null)
                 positionMM = Distance.fromMeters(stop.position);
             else {
-                var offset = path.getTrackLocationOffset(RJSTrackLocationParser.parse(infra, stop.location));
-                if (offset == null)
-                    throw new OSRDError(ErrorType.InvalidScheduleTrackLocationNotIncludedInPath);
-                positionMM = offset.getMillimeters();
+                positionMM = PathPropertiesKt.getTrackLocationOffsetOrThrow(path,
+                        RJSTrackLocationParser.parse(infra, stop.location));
             }
 
             if (positionMM > path.getLength())

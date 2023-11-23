@@ -2,10 +2,12 @@ package fr.sncf.osrd.stdcm
 
 import com.google.common.collect.ImmutableMultimap
 import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
+import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.stdcm.graph.simulateBlock
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.DummyInfra
+import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -34,13 +36,14 @@ class EngineeringAllowanceTests {
         val thirdBlock = infra.addBlock("c", "d", 100.meters, 30.0)
         val firstBlockEnvelope = simulateBlock(
             infra, infra,
-            firstBlock, 0.0, 0.meters,
+            firstBlock, 0.0, Offset(0.meters),
             TestTrains.REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2.0, null, null
         )!!
         val secondBlockEnvelope = simulateBlock(
             infra, infra,
             secondBlock, firstBlockEnvelope.endSpeed,
-            0.meters, TestTrains.REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2.0, null, null
+            Offset(0.meters), TestTrains.REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2.0,
+            null, null
         )!!
         val timeThirdBlockFree = firstBlockEnvelope.totalTime + secondBlockEnvelope.totalTime
         val occupancyGraph = ImmutableMultimap.of(
@@ -53,8 +56,8 @@ class EngineeringAllowanceTests {
         val timeStep = 2.0
         val res = STDCMPathfindingBuilder()
             .setInfra(infra.fullInfra())
-            .setStartLocations(setOf(EdgeLocation(firstBlock, 0.meters)))
-            .setEndLocations(setOf(EdgeLocation(thirdBlock, 1.meters)))
+            .setStartLocations(setOf(EdgeLocation(firstBlock, Offset<Block>(0.meters))))
+            .setEndLocations(setOf(EdgeLocation(thirdBlock, Offset<Block>(1.meters))))
             .setUnavailableTimes(occupancyGraph)
             .setTimeStep(timeStep)
             .run()!!
@@ -91,13 +94,14 @@ class EngineeringAllowanceTests {
         val lastBlock = infra.addBlock("e", "f", 1000.meters, 20.0)
         val firstBlockEnvelope = simulateBlock(
             infra, infra,
-            firstBlock, 0.0, 0.meters,
+            firstBlock, 0.0, Offset(0.meters),
             TestTrains.REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2.0, null, null
         )!!
         val secondBlockEnvelope = simulateBlock(
             infra, infra,
             secondBlock, firstBlockEnvelope.endSpeed,
-            0.meters, TestTrains.REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2.0, null, null
+            Offset(0.meters), TestTrains.REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2.0,
+            null, null
         )!!
         val timeLastBlockFree = firstBlockEnvelope.totalTime + 120 + secondBlockEnvelope.totalTime * 3
         val occupancyGraph = ImmutableMultimap.of(
@@ -109,8 +113,8 @@ class EngineeringAllowanceTests {
         )
         val res = STDCMPathfindingBuilder()
             .setInfra(infra.fullInfra())
-            .setStartLocations(setOf(EdgeLocation(firstBlock, 0.meters)))
-            .setEndLocations(setOf(EdgeLocation(lastBlock, 1000.meters)))
+            .setStartLocations(setOf(EdgeLocation(firstBlock, Offset<Block>(0.meters))))
+            .setEndLocations(setOf(EdgeLocation(lastBlock, Offset<Block>(1000.meters))))
             .setUnavailableTimes(occupancyGraph)
             .setTimeStep(timeStep)
             .run()!!
@@ -153,13 +157,13 @@ class EngineeringAllowanceTests {
         val lastBlock = infra.addBlock("e", "f", 1000.meters, 20.0)
         val firstBlockEnvelope = simulateBlock(
             infra, infra,
-            firstBlock, 0.0, 0.meters,
+            firstBlock, 0.0, Offset(0.meters),
             TestTrains.REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2.0, null, null
         )!!
         val secondBlockEnvelope = simulateBlock(
             infra, infra,
             secondBlock, firstBlockEnvelope.endSpeed,
-            0.meters, TestTrains.REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2.0, null, null
+            Offset(0.meters), TestTrains.REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2.0, null, null
         )!!
         val timeLastBlockFree = firstBlockEnvelope.totalTime + 120 + secondBlockEnvelope.totalTime * 3
         val timeThirdBlockOccupied = firstBlockEnvelope.totalTime + 5 + secondBlockEnvelope.totalTime * 2
@@ -176,8 +180,8 @@ class EngineeringAllowanceTests {
         )
         val res = STDCMPathfindingBuilder()
             .setInfra(infra.fullInfra())
-            .setStartLocations(setOf(EdgeLocation(firstBlock, 0.meters)))
-            .setEndLocations(setOf(EdgeLocation(lastBlock, 1000.meters)))
+            .setStartLocations(setOf(EdgeLocation(firstBlock, Offset<Block>(0.meters))))
+            .setEndLocations(setOf(EdgeLocation(lastBlock, Offset<Block>(1000.meters))))
             .setUnavailableTimes(occupancyGraph)
             .setTimeStep(timeStep)
             .run()!!
@@ -220,8 +224,8 @@ class EngineeringAllowanceTests {
         val timeStep = 2.0
         val res = STDCMPathfindingBuilder()
             .setInfra(infra.fullInfra())
-            .setStartLocations(setOf(EdgeLocation(firstBlock, 0.meters)))
-            .setEndLocations(setOf(EdgeLocation(thirdBlock, 1.meters)))
+            .setStartLocations(setOf(EdgeLocation(firstBlock, Offset<Block>(0.meters))))
+            .setEndLocations(setOf(EdgeLocation(thirdBlock, Offset<Block>(1.meters))))
             .setUnavailableTimes(occupancyGraph)
             .setTimeStep(timeStep)
             .run()!!
@@ -264,8 +268,8 @@ class EngineeringAllowanceTests {
         val timeStep = 2.0
         val res = STDCMPathfindingBuilder()
             .setInfra(infra.fullInfra())
-            .setStartLocations(setOf(EdgeLocation(firstBlock, 0.meters)))
-            .setEndLocations(setOf(EdgeLocation(forthBlock, 1.meters)))
+            .setStartLocations(setOf(EdgeLocation(firstBlock, Offset<Block>(0.meters))))
+            .setEndLocations(setOf(EdgeLocation(forthBlock, Offset<Block>(1.meters))))
             .setUnavailableTimes(occupancyGraph)
             .setTimeStep(timeStep)
             .run()!!
@@ -303,8 +307,8 @@ class EngineeringAllowanceTests {
         )
         val res = STDCMPathfindingBuilder()
             .setInfra(infra.fullInfra())
-            .setStartLocations(setOf(EdgeLocation(blocks[0], 0.meters)))
-            .setEndLocations(setOf(EdgeLocation(blocks[2], 1000.meters)))
+            .setStartLocations(setOf(EdgeLocation(blocks[0], Offset<Block>(0.meters))))
+            .setEndLocations(setOf(EdgeLocation(blocks[2], Offset<Block>(1000.meters))))
             .setUnavailableTimes(occupancyGraph)
             .setMaxDepartureDelay(Double.POSITIVE_INFINITY)
             .run()
@@ -340,8 +344,8 @@ class EngineeringAllowanceTests {
         val timeStep = 2.0
         val res = STDCMPathfindingBuilder()
             .setInfra(infra.fullInfra())
-            .setStartLocations(setOf(EdgeLocation(blocks[0], 0.meters)))
-            .setEndLocations(setOf(EdgeLocation(blocks[2], 100.meters)))
+            .setStartLocations(setOf(EdgeLocation(blocks[0], Offset<Block>(0.meters))))
+            .setEndLocations(setOf(EdgeLocation(blocks[2], Offset<Block>(100.meters))))
             .setUnavailableTimes(occupancyGraph)
             .setTimeStep(timeStep)
             .run()!!

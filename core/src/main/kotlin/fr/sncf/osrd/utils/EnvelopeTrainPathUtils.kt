@@ -14,7 +14,7 @@ import fr.sncf.osrd.utils.units.Distance
  */
 fun buildElectrificationMap(path: PathProperties): DistanceRangeMap<Electrification> {
     val res: DistanceRangeMap<Electrification> = DistanceRangeMapImpl()
-    res.put(Distance.ZERO, path.getLength(), NonElectrified())
+    res.put(Distance.ZERO, path.getLength().distance, NonElectrified())
     res.updateMap(
         path.getCatenary()
     ) { _: Electrification?, catenaryMode: String ->

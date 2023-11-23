@@ -11,6 +11,7 @@ import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue
 import fr.sncf.osrd.graph.Pathfinding.EdgeRange
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
+import fr.sncf.osrd.sim_infra.api.Path
 import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface.NotEnoughLookahead
@@ -19,6 +20,7 @@ import fr.sncf.osrd.train.RollingStock.Comfort
 import fr.sncf.osrd.train.TrainStop
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Distance.Companion.fromMeters
+import fr.sncf.osrd.utils.units.Offset
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
@@ -34,7 +36,7 @@ val logger: Logger = LoggerFactory.getLogger(STDCMStandardAllowance::class.java)
 fun applyAllowance(
     graph: STDCMGraph,
     envelope: Envelope,
-    ranges: List<EdgeRange<STDCMEdge>>,
+    ranges: List<EdgeRange<STDCMEdge, STDCMEdge>>,
     standardAllowance: AllowanceValue?,
     envelopeSimPath: EnvelopeSimPath?,
     rollingStock: RollingStock?,
@@ -93,10 +95,10 @@ private fun makeFallbackEnvelope(
 }
 
 /** Initiates the range transitions with one transition on each stop  */
-private fun initRangeTransitions(stops: List<TrainStop>): NavigableSet<Distance> {
-    val res = TreeSet<Distance>()
+private fun initRangeTransitions(stops: List<TrainStop>): NavigableSet<Offset<Path>> {
+    val res = TreeSet<Offset<Path>>()
     for (stop in stops)
-        res.add(fromMeters(stop.position))
+        res.add(Offset(fromMeters(stop.position)))
     return res
 }
 
@@ -106,35 +108,36 @@ private fun initRangeTransitions(stops: List<TrainStop>): NavigableSet<Distance>
 private fun findConflictOffsets(
     envelope: Envelope,
     blockAvailability: BlockAvailabilityInterface,
-    ranges: List<EdgeRange<STDCMEdge>>,
+    ranges: List<EdgeRange<STDCMEdge, STDCMEdge>>,
     departureTime: Double,
     stops: List<TrainStop>
-): Distance? {
+): Offset<Path>? {
     val envelopeWithStops = EnvelopeStopWrapper(envelope, stops)
     val startOffset = ranges[0].start
     val endOffset = startOffset + Distance(millimeters = ranges.stream()
-        .mapToLong { range: EdgeRange<STDCMEdge> -> (range.end - range.start).millimeters }
+        .mapToLong { range -> (range.end - range.start).millimeters }
         .sum())
     val blocks = ranges.stream()
-        .map { x: EdgeRange<STDCMEdge> -> x.edge.block }
+        .map { x -> x.edge.block }
         .toList()
     assert(TrainPhysicsIntegrator.arePositionsEqual(envelopeWithStops.endPos, (endOffset - startOffset).meters))
     val availability = blockAvailability.getAvailability(
         blocks,
-        startOffset,
-        endOffset,
+        startOffset.distance,
+        endOffset.distance,
         envelopeWithStops,
         departureTime
     )
     assert(availability.javaClass != NotEnoughLookahead::class.java)
-    return (availability as? BlockAvailabilityInterface.Unavailable)?.firstConflictOffset
+    val offsetDistance = (availability as? BlockAvailabilityInterface.Unavailable)?.firstConflictOffset ?: return null
+    return Offset(offsetDistance)
 }
 
 /** Applies the allowance to the final envelope, with range transitions at the given offsets  */
 private fun applyAllowanceWithTransitions(
     envelope: Envelope,
     standardAllowance: AllowanceValue,
-    rangeTransitions: NavigableSet<Distance>,
+    rangeTransitions: NavigableSet<Offset<Path>>,
     context: EnvelopeSimContext
 ): Envelope {
     val allowance = MarecoAllowance(
@@ -150,12 +153,12 @@ private fun applyAllowanceWithTransitions(
 private fun makeAllowanceRanges(
     allowance: AllowanceValue,
     envelopeLength: Double,
-    rangeTransitions: SortedSet<Distance>
+    rangeTransitions: SortedSet<Offset<Path>>
 ): List<AllowanceRange> {
     var transition = 0.0
     val res = ArrayList<AllowanceRange>()
     for (endMM in rangeTransitions) {
-        val end = endMM.meters
+        val end = endMM.distance.meters
         if (transition == end)
             continue
         assert(transition < end)

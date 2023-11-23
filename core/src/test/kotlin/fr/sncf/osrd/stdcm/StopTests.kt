@@ -8,6 +8,7 @@ import fr.sncf.osrd.stdcm.StandardAllowanceTests.Companion.runWithAndWithoutAllo
 import fr.sncf.osrd.train.TrainStop
 import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
 import fr.sncf.osrd.utils.DummyInfra
+import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -26,9 +27,9 @@ class StopTests {
         val secondBlock = infra.addBlock("b", "c")
         val res = STDCMPathfindingBuilder()
             .setInfra(infra.fullInfra())
-            .addStep(STDCMStep(setOf(EdgeLocation(firstBlock, 0.meters)), 0.0, true))
-            .addStep(STDCMStep(setOf(EdgeLocation(secondBlock, 50.meters)), 10000.0, true))
-            .addStep(STDCMStep(setOf(EdgeLocation(secondBlock, 100.meters)), 0.0, true))
+            .addStep(STDCMStep(setOf(EdgeLocation(firstBlock, Offset(0.meters))), 0.0, true))
+            .addStep(STDCMStep(setOf(EdgeLocation(secondBlock, Offset(50.meters))), 10000.0, true))
+            .addStep(STDCMStep(setOf(EdgeLocation(secondBlock, Offset(100.meters))), 0.0, true))
             .run()!!
         val expectedOffset = 150.0
 
@@ -60,9 +61,9 @@ class StopTests {
         val secondBlock = infra.addBlock("b", "c")
         val res = STDCMPathfindingBuilder()
             .setInfra(infra.fullInfra())
-            .addStep(STDCMStep(setOf(EdgeLocation(firstBlock, 0.meters)), 0.0, true))
-            .addStep(STDCMStep(setOf(EdgeLocation(secondBlock, 0.meters)), 10000.0, true))
-            .addStep(STDCMStep(setOf(EdgeLocation(secondBlock, 100.meters)), 0.0, true))
+            .addStep(STDCMStep(setOf(EdgeLocation(firstBlock, Offset(0.meters))), 0.0, true))
+            .addStep(STDCMStep(setOf(EdgeLocation(secondBlock, Offset(0.meters))), 10000.0, true))
+            .addStep(STDCMStep(setOf(EdgeLocation(secondBlock, Offset(100.meters))), 0.0, true))
             .run()!!
         checkStop(
             res, listOf(
@@ -82,9 +83,9 @@ class StopTests {
         val secondBlock = infra.addBlock("b", "c")
         val res = STDCMPathfindingBuilder()
             .setInfra(infra.fullInfra())
-            .addStep(STDCMStep(setOf(EdgeLocation(firstBlock, 0.meters)), 0.0, true))
-            .addStep(STDCMStep(setOf(EdgeLocation(firstBlock, 100.meters)), 10000.0, true))
-            .addStep(STDCMStep(setOf(EdgeLocation(secondBlock, 100.meters)), 0.0, true))
+            .addStep(STDCMStep(setOf(EdgeLocation(firstBlock, Offset(0.meters))), 0.0, true))
+            .addStep(STDCMStep(setOf(EdgeLocation(firstBlock, Offset(100.meters))), 10000.0, true))
+            .addStep(STDCMStep(setOf(EdgeLocation(secondBlock, Offset(100.meters))), 0.0, true))
             .run()!!
         checkStop(
             res, listOf(
@@ -120,9 +121,9 @@ class StopTests {
         val res = STDCMPathfindingBuilder()
             .setInfra(infra.fullInfra())
             .setStartTime(100.0)
-            .addStep(STDCMStep(setOf(EdgeLocation(blocksDirectPath[0], 0.meters)), 0.0, false))
-            .addStep(STDCMStep(setOf(EdgeLocation(detour[1], 1000.meters)), 0.0, stop))
-            .addStep(STDCMStep(setOf(EdgeLocation(blocksDirectPath[3], 0.meters)), 0.0, true))
+            .addStep(STDCMStep(setOf(EdgeLocation(blocksDirectPath[0], Offset(0.meters))), 0.0, false))
+            .addStep(STDCMStep(setOf(EdgeLocation(detour[1], Offset(1000.meters))), 0.0, stop))
+            .addStep(STDCMStep(setOf(EdgeLocation(blocksDirectPath[3], Offset(0.meters))), 0.0, true))
             .run()!!
         val blocks = res.blocks.ranges.stream()
             .map { edgeRange -> infra.blockPool[edgeRange.edge.index.toInt()].name }
@@ -153,9 +154,9 @@ class StopTests {
         )
         val res = STDCMPathfindingBuilder()
             .setInfra(infra.fullInfra())
-            .addStep(STDCMStep(setOf(EdgeLocation(firstBlock, 0.meters)), 0.0, true))
-            .addStep(STDCMStep(setOf(EdgeLocation(firstBlock, 10.meters)), 100000.0, true))
-            .addStep(STDCMStep(setOf(EdgeLocation(secondBlock, 100.meters)), 0.0, true))
+            .addStep(STDCMStep(setOf(EdgeLocation(firstBlock, Offset(0.meters))), 0.0, true))
+            .addStep(STDCMStep(setOf(EdgeLocation(firstBlock, Offset(10.meters))), 100000.0, true))
+            .addStep(STDCMStep(setOf(EdgeLocation(secondBlock, Offset(100.meters))), 0.0, true))
             .setUnavailableTimes(unavailableTimes)
             .run()
         Assertions.assertNull(res)
@@ -179,9 +180,9 @@ class StopTests {
         )
         val res = STDCMPathfindingBuilder()
             .setInfra(infra.fullInfra())
-            .addStep(STDCMStep(setOf(EdgeLocation(blocks[0], 0.meters)), 0.0, true))
-            .addStep(STDCMStep(setOf(EdgeLocation(blocks[0], 50.meters)), 10000.0, true))
-            .addStep(STDCMStep(setOf(EdgeLocation(blocks[2], 1.meters)), 0.0, true))
+            .addStep(STDCMStep(setOf(EdgeLocation(blocks[0], Offset(0.meters))), 0.0, true))
+            .addStep(STDCMStep(setOf(EdgeLocation(blocks[0], Offset(50.meters))), 10000.0, true))
+            .addStep(STDCMStep(setOf(EdgeLocation(blocks[2], Offset(1.meters))), 0.0, true))
             .setUnavailableTimes(occupancy)
             .run()!!
         checkStop(
@@ -230,9 +231,9 @@ class StopTests {
             .setInfra(infra.fullInfra())
             .setUnavailableTimes(occupancy)
             .setTimeStep(timeStep)
-            .addStep(STDCMStep(setOf(EdgeLocation(blocks[0], 0.meters)), 0.0, true))
-            .addStep(STDCMStep(setOf(EdgeLocation(blocks[1], 50.meters)), 1000.0, true))
-            .addStep(STDCMStep(setOf(EdgeLocation(blocks[3], 1.meters)), 0.0, true))
+            .addStep(STDCMStep(setOf(EdgeLocation(blocks[0], Offset(0.meters))), 0.0, true))
+            .addStep(STDCMStep(setOf(EdgeLocation(blocks[1], Offset(50.meters))), 1000.0, true))
+            .addStep(STDCMStep(setOf(EdgeLocation(blocks[3], Offset(1.meters))), 0.0, true))
             .run()!!
         checkStop(
             res, listOf(
@@ -280,9 +281,9 @@ class StopTests {
                 .setUnavailableTimes(occupancy)
                 .setTimeStep(timeStep)
                 .setStandardAllowance(allowance)
-                .addStep(STDCMStep(setOf(EdgeLocation(blocks[0], 0.meters)), 0.0, true))
-                .addStep(STDCMStep(setOf(EdgeLocation(blocks[1], 50.meters)), 1000.0, true))
-                .addStep(STDCMStep(setOf(EdgeLocation(blocks[3], 1.meters)), 0.0, true))
+                .addStep(STDCMStep(setOf(EdgeLocation(blocks[0], Offset(0.meters))), 0.0, true))
+                .addStep(STDCMStep(setOf(EdgeLocation(blocks[1], Offset(50.meters))), 1000.0, true))
+                .addStep(STDCMStep(setOf(EdgeLocation(blocks[3], Offset(1.meters))), 0.0, true))
         )
         val expectedStops = listOf(
             TrainStop(51.0, 1000.0)
@@ -335,9 +336,9 @@ class StopTests {
                 .setUnavailableTimes(occupancy)
                 .setTimeStep(timeStep)
                 .setStandardAllowance(allowance)
-                .addStep(STDCMStep(setOf(EdgeLocation(blocks[0], 0.meters)), 0.0, true))
-                .addStep(STDCMStep(setOf(EdgeLocation(blocks[1], 50.meters)), 1000.0, true))
-                .addStep(STDCMStep(setOf(EdgeLocation(blocks[3], 1.meters)), 0.0, true))
+                .addStep(STDCMStep(setOf(EdgeLocation(blocks[0], Offset(0.meters))), 0.0, true))
+                .addStep(STDCMStep(setOf(EdgeLocation(blocks[1], Offset(50.meters))), 1000.0, true))
+                .addStep(STDCMStep(setOf(EdgeLocation(blocks[3], Offset(1.meters))), 0.0, true))
         )
         val expectedStops = listOf(
             TrainStop(51.0, 1000.0)

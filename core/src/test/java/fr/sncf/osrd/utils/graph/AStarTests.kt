@@ -4,13 +4,13 @@ import fr.sncf.osrd.api.pathfinding.RemainingDistanceEstimator
 import fr.sncf.osrd.graph.AStarHeuristic
 import fr.sncf.osrd.graph.GraphAdapter
 import fr.sncf.osrd.graph.Pathfinding
-import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
+import fr.sncf.osrd.graph.PathfindingEdgeLocationId
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.utils.Helpers.convertRouteLocation
 import fr.sncf.osrd.utils.Helpers.fullInfraFromRJS
 import fr.sncf.osrd.utils.Helpers.getExampleInfra
-import fr.sncf.osrd.utils.indexing.StaticIdx
+import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -24,8 +24,8 @@ class AStarTests {
     @Throws(Exception::class)
     fun lessBlocksVisitedWithHeuristic() {
         val infra = fullInfraFromRJS(getExampleInfra("small_infra/infra.json"))
-        val origin = mutableSetOf(convertRouteLocation(infra, "rt.DA2->DA5", 0.meters))
-        val destination = mutableSetOf(convertRouteLocation(infra, "rt.DH2->buffer_stop.7", 0.meters))
+        val origin = mutableSetOf(convertRouteLocation(infra, "rt.DA2->DA5", Offset(0.meters)))
+        val destination = mutableSetOf(convertRouteLocation(infra, "rt.DH2->buffer_stop.7", Offset(0.meters)))
         val remainingDistanceEstimator = RemainingDistanceEstimator(
             infra.blockInfra, infra.rawInfra,
             destination, 0.0
@@ -36,7 +36,7 @@ class AStarTests {
             .setEdgeToLength { blockId ->
                 infra.blockInfra.getBlockLength(
                     blockId
-                ).distance
+                )
             }
             .setRemainingDistanceEstimator(
                 listOf(
@@ -45,12 +45,12 @@ class AStarTests {
                         remainingDistanceEstimator.apply(block, offset)
                     })
             )
-            .runPathfinding(listOf<Set<EdgeLocation<StaticIdx<Block>>>>(origin, destination))
+            .runPathfinding(listOf<Set<PathfindingEdgeLocationId<Block>>>(origin, destination))
         Pathfinding(GraphAdapter(infra.blockInfra, infra.rawInfra))
             .setEdgeToLength { blockId ->
                 infra.blockInfra.getBlockLength(
                     blockId
-                ).distance
+                )
             }
             .setRemainingDistanceEstimator(
                 listOf(
@@ -59,7 +59,7 @@ class AStarTests {
                         0.0
                     })
             )
-            .runPathfinding(listOf<Set<EdgeLocation<StaticIdx<Block>>>>(origin, destination))
+            .runPathfinding(listOf<Set<PathfindingEdgeLocationId<Block>>>(origin, destination))
         Assertions.assertTrue(seenWithHeuristic.size < seenWithoutHeuristic.size)
     }
 }

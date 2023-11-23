@@ -9,12 +9,14 @@ import fr.sncf.osrd.railjson.schema.infra.RJSOperationalPoint
 import fr.sncf.osrd.railjson.schema.infra.trackranges.*
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
 import fr.sncf.osrd.sim_infra.api.BlockId
+import fr.sncf.osrd.sim_infra.api.Path
 import fr.sncf.osrd.train.TestTrains.MAX_SPEED
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.Helpers
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.pathFromTracks
+import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.Speed.Companion.fromMetersPerSecond
 import fr.sncf.osrd.utils.units.meters
 import org.assertj.core.api.Assertions.assertThat
@@ -106,9 +108,9 @@ class PathPropertiesTests {
             .map { op -> Pair(infra.getOperationalPointPartName(op.value), op.offset) }
         assertEquals(
             listOf(
-                Pair("point1", 500.meters),
-                Pair("point1", 1_000.meters),
-                Pair("point2", 1_500.meters),
+                Pair("point1", Offset(500.meters)),
+                Pair("point1", Offset(1_000.meters)),
+                Pair("point2", Offset(1_500.meters)),
             ), opIdsIdxWithOffset
         )
 
@@ -117,10 +119,10 @@ class PathPropertiesTests {
             .map { op -> Pair(infra.getOperationalPointPartName(op.value), op.offset) }
         assertEquals(
             listOf(
-                Pair("point2", 0.meters),
-                Pair("point2", 1_950.meters),
-                Pair("point1", 2_450.meters),
-                Pair("point1", 2_950.meters),
+                Pair("point2", Offset(0.meters)),
+                Pair("point2", Offset(1_950.meters)),
+                Pair("point1", Offset(2_450.meters)),
+                Pair("point1", Offset(2_950.meters)),
             ), opIdsIdxWithOffsetBackward
         )
     }

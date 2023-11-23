@@ -5,12 +5,14 @@ import fr.sncf.osrd.graph.Pathfinding
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSLoadingGaugeLimit
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
+import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.TrackChunk
 import fr.sncf.osrd.sim_infra.api.TrackChunkId
 import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.Helpers
 import fr.sncf.osrd.utils.units.Length
+import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeAll
@@ -50,7 +52,7 @@ class LoadingGaugeConstraintsTest {
 
     @ParameterizedTest
     @MethodSource("testLoadingGaugeArgs")
-    fun testLoadingGaugeBlockedRanges(blockId: BlockId, expectedBlockedRanges: Collection<Pathfinding.Range>) {
+    fun testLoadingGaugeBlockedRanges(blockId: BlockId, expectedBlockedRanges: Collection<Pathfinding.Range<Block>>) {
         val blockedRanges = loadingGaugeConstraints!!.apply(blockId)
         Assertions.assertThat(blockedRanges).isEqualTo(expectedBlockedRanges)
     }
@@ -59,9 +61,9 @@ class LoadingGaugeConstraintsTest {
         return Stream.of( // Loading gauge constraints partially applied to block
             Arguments.of(
                 0,
-                setOf(Pathfinding.Range(0.meters, chunk0Length.distance))
+                setOf(Pathfinding.Range(Offset(0.meters), chunk0Length))
             ),  // Loading gauge constraints fully applied to block
-            Arguments.of(1, setOf(Pathfinding.Range(0.meters, chunk1Length.distance))),  // No loading gauge constraints
+            Arguments.of(1, setOf(Pathfinding.Range(Offset(0.meters), chunk1Length))),  // No loading gauge constraints
             Arguments.of(2, HashSet<Any>())
         )
     }

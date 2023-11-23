@@ -6,11 +6,14 @@ import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.pathfinding.RemainingDistanceEstimator
 import fr.sncf.osrd.api.pathfinding.makePathProps
 import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
+import fr.sncf.osrd.graph.PathfindingEdgeLocationId
+import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.PathProperties
 import fr.sncf.osrd.utils.Helpers
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Distance.Companion.fromMeters
+import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
@@ -40,10 +43,10 @@ class RemainingDistanceEstimatorTest {
     @ParameterizedTest
     @MethodSource("testRemainingDistanceEstimatorArgs")
     fun testRemainingDistanceEstimator(
-        edgeLocations: Collection<EdgeLocation<BlockId>>,
+        edgeLocations: Collection<PathfindingEdgeLocationId<Block>>,
         remainingDistance: Double,
         expectedDistance: Double,
-        blockOffset: Distance
+        blockOffset: Offset<Block>
     ) {
         val estimator = RemainingDistanceEstimator(
             smallInfra!!.blockInfra, smallInfra!!.rawInfra, edgeLocations,
@@ -57,13 +60,13 @@ class RemainingDistanceEstimatorTest {
         val points = path!!.getGeo().points
         return Stream.of( // Test same point
             Arguments.of(
-                listOf(EdgeLocation(block, 0.meters)),
+                listOf(EdgeLocation(block, Offset<Block>(0.meters))),
                 0,
                 0,
                 0
             ),  // Test same point with non-null remaining distance
             Arguments.of(
-                listOf(EdgeLocation(block, 0.meters)),
+                listOf(EdgeLocation(block, Offset<Block>(0.meters))),
                 10,
                 10,
                 0
@@ -76,7 +79,7 @@ class RemainingDistanceEstimatorTest {
             ),  // Test multiple targets
             Arguments.of(
                 listOf(
-                    EdgeLocation(block, 0.meters),
+                    EdgeLocation(block, Offset(0.meters)),
                     EdgeLocation(block, path!!.getLength())
                 ),
                 0,
@@ -89,7 +92,7 @@ class RemainingDistanceEstimatorTest {
                 ),
                 0,
                 0,
-                path!!.getLength().millimeters
+                path!!.getLength().distance.millimeters
             )
         )
     }

@@ -228,7 +228,7 @@ internal constructor(
             val builder = STDCMEdgeBuilder(blockId, graph)
             if (node.locationOnBlock != null) {
                 assert(blockId == node.locationOnBlock.edge)
-                builder.startOffset = Offset(node.locationOnBlock.offset)
+                builder.startOffset = node.locationOnBlock.offset
             } else assert(graph.blockInfra.getBlockEntry(graph.rawInfra, blockId) == node.detector)
             builder.startTime = node.time
             builder.startSpeed = node.speed
