@@ -43,7 +43,10 @@ export function selectProjection(
     const trainSchedulesIds = trainSchedules.map((train) => train.id);
 
     // if the projected train still exists, keep it
-    if (trainSchedulesIds.includes(currentProjection.id)) return;
+    if (trainSchedulesIds.includes(currentProjection.id)) {
+      if (!selectedTrainId) store.dispatch(updateSelectedTrainId(trainSchedules[0].id));
+      return;
+    }
 
     // if the projected train has been deleted but an other train has the same path,
     // keep the path and select this train
