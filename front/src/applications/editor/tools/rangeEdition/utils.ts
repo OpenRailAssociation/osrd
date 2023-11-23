@@ -198,24 +198,24 @@ export function getTrackRangeFeatures(
         ...properties,
         ...range,
         id: `speedSectionRangeExtremity::${rangeIndex}::${begin}::${end}`,
-        speedSectionItemType: 'TrackRange',
-        speedSectionRangeIndex: rangeIndex,
+        itemType: 'TrackRange',
+        rangeIndex,
       }),
       point(track.geometry.coordinates[0] as Position, {
         ...properties,
         id: `speedSectionRangeExtremity::${rangeIndex}::${begin}`,
         track: range.track,
         extremity: 'BEGIN',
-        speedSectionItemType: 'TrackRangeExtremity',
-        speedSectionRangeIndex: rangeIndex,
+        itemType: 'TrackRangeExtremity',
+        rangeIndex,
       }),
       point(last(track.geometry.coordinates) as Position, {
         ...properties,
         id: `speedSectionRangeExtremity::${rangeIndex}::${end}`,
         track: range.track,
         extremity: 'END',
-        speedSectionItemType: 'TrackRangeExtremity',
-        speedSectionRangeIndex: rangeIndex,
+        itemType: 'TrackRangeExtremity',
+        rangeIndex,
       }),
     ];
 
@@ -243,8 +243,8 @@ export function getTrackRangeFeatures(
         ...properties,
         ...range,
         id: `speedSectionRangeExtremity::${rangeIndex}::${adjustedBegin}::${adjustedEnd}`,
-        speedSectionItemType: 'TrackRange',
-        speedSectionRangeIndex: rangeIndex,
+        itemType: 'TrackRange',
+        rangeIndex,
       },
     },
     {
@@ -254,8 +254,8 @@ export function getTrackRangeFeatures(
         id: `speedSectionRangeExtremity::${rangeIndex}::${adjustedBegin}`,
         track: range.track,
         extremity: 'BEGIN',
-        speedSectionItemType: 'TrackRangeExtremity',
-        speedSectionRangeIndex: rangeIndex,
+        itemType: 'TrackRangeExtremity',
+        rangeIndex,
       },
     },
     {
@@ -265,8 +265,8 @@ export function getTrackRangeFeatures(
         id: `speedSectionRangeExtremity::${rangeIndex}::${adjustedEnd}`,
         track: range.track,
         extremity: 'END',
-        speedSectionItemType: 'TrackRangeExtremity',
-        speedSectionRangeIndex: rangeIndex,
+        itemType: 'TrackRangeExtremity',
+        rangeIndex,
       },
     },
   ];
@@ -297,9 +297,9 @@ function generatePointFromPSLSign(
   );
   signPoint.properties = {
     ...sign,
-    speedSectionItemType: 'PSLSign',
-    speedSectionSignIndex: signIndex,
-    speedSectionSignType: signType,
+    itemType: 'PSLSign',
+    signIndex,
+    signType,
   };
   return signPoint as PslSignFeature;
 }

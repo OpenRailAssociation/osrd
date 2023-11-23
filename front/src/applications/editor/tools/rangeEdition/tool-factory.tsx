@@ -156,33 +156,30 @@ function getRangeEditionTool<T extends EditorRange>({
       if (isOnModeMove(interactionState.type)) {
         setState({ interactionState: { type: 'idle' } });
       } else if (feature) {
-        if (feature.properties?.speedSectionItemType === 'TrackRangeExtremity') {
+        if (feature.properties?.itemType === 'TrackRangeExtremity') {
           const hoveredExtremity = feature as unknown as TrackRangeExtremityFeature;
           setState({
             hoveredItem: null,
             interactionState: {
               type: 'moveRangeExtremity',
-              rangeIndex: hoveredExtremity.properties.speedSectionRangeIndex,
+              rangeIndex: hoveredExtremity.properties.rangeIndex,
               extremity: hoveredExtremity.properties.extremity,
             },
           });
-        } else if (feature.properties?.speedSectionItemType === 'PSLSign') {
+        } else if (feature.properties?.itemType === 'PSLSign') {
           const {
-            properties: { speedSectionSignType, speedSectionSignIndex },
+            properties: { signType, signIndex },
           } = feature as unknown as PslSignFeature;
           selectPslSign(
-            { signType: speedSectionSignType, signIndex: speedSectionSignIndex },
+            { signType, signIndex },
             setState as (
               stateOrReducer: PartialOrReducer<RangeEditionState<SpeedSectionEntity>>
             ) => void
           );
-        } else if (feature.properties?.speedSectionItemType === 'TrackRange') {
+        } else if (feature.properties?.itemType === 'TrackRange') {
           const hoveredRange = feature as unknown as TrackRangeFeature;
           const newEntity = cloneDeep(entity);
-          newEntity.properties.track_ranges?.splice(
-            hoveredRange.properties.speedSectionRangeIndex,
-            1
-          );
+          newEntity.properties.track_ranges?.splice(hoveredRange.properties.rangeIndex, 1);
           setState({ entity: newEntity, hoveredItem: null });
         } else if (feature.sourceLayer === 'track_sections') {
           const clickedEntity = feature as unknown as TrackSectionEntity;
@@ -221,13 +218,13 @@ function getRangeEditionTool<T extends EditorRange>({
       }
 
       // Handle hovering custom elements:
-      if (feature.properties?.speedSectionItemType === 'TrackRangeExtremity') {
+      if (feature.properties?.itemType === 'TrackRangeExtremity') {
         const hoveredExtremity = feature as unknown as TrackRangeExtremityFeature;
         const trackState = trackSectionsCache[hoveredExtremity.properties.track];
         if (trackState?.type !== 'success') return;
 
         const newHoveredItem: HoveredExtremityState = {
-          speedSectionItemType: 'TrackRangeExtremity',
+          itemType: 'TrackRangeExtremity',
           extremity: hoveredExtremity.properties.extremity,
           position: hoveredExtremity.geometry.coordinates,
           track: trackState.track,
@@ -236,13 +233,13 @@ function getRangeEditionTool<T extends EditorRange>({
           setState({
             hoveredItem: newHoveredItem,
           });
-      } else if (feature.properties?.speedSectionItemType === 'TrackRange') {
+      } else if (feature.properties?.itemType === 'TrackRange') {
         const hoveredRange = feature as unknown as TrackRangeFeature;
         const trackState = trackSectionsCache[hoveredRange.properties.track];
         if (trackState?.type !== 'success') return;
 
         const newHoveredItem: HoveredRangeState = {
-          speedSectionItemType: 'TrackRange',
+          itemType: 'TrackRange',
           position: e.lngLat.toArray(),
           track: trackState.track,
         };
@@ -250,13 +247,13 @@ function getRangeEditionTool<T extends EditorRange>({
           setState({
             hoveredItem: newHoveredItem,
           });
-      } else if (feature.properties?.speedSectionItemType === 'PSLSign') {
+      } else if (feature.properties?.itemType === 'PSLSign') {
         const hoveredExtremity = feature as unknown as TrackRangeExtremityFeature;
         const trackState = trackSectionsCache[hoveredExtremity.properties.track];
         if (trackState?.type !== 'success') return;
 
         const newHoveredItem: HoveredSignState = {
-          speedSectionItemType: 'PSLSign',
+          itemType: 'PSLSign',
           position: hoveredExtremity.geometry.coordinates,
           track: trackState.track,
           signIndex: feature.properties?.speedSectionSignIndex as number,

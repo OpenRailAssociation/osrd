@@ -220,6 +220,11 @@
           "reset-catenary": "Cancel the current modifications",
           "delete-catenary": "Delete the catenary"
         },
+        "help": {
+          "init": "Click on a track section to link it to the catenary",
+          "add-track": "Link the track section '{{track.id}}' to the catenary {{voltage}}",
+          "remove-range": "Remove the track section from  the catenary {{voltage}}"
+        },
         "add-new-catenary": "Add new catenary",
         "catenaries": "Electrification",
         "catenary-default": "Default catenary",
@@ -253,6 +258,7 @@
         "edit-track-range-start": "Edit departure point",
         "edit-track-range-end": "Edit arrival point",
         "linked-track-sections": "Associated track sections",
+        "empty-linked-track-section": "Click on a track section to link it to the catenary",
         "only-show-n": "Only show the first {{count}} track sections",
         "show-more-ranges_one": "See an additional track section",
         "show-more-ranges_other": "See {{count}} additional track sections"
