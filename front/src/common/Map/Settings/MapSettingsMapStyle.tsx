@@ -16,7 +16,7 @@ const MapSettingsMapStyle: FC<unknown> = () => {
   const dispatch = useDispatch();
 
   return (
-    <div className="row ml-1">
+    <div className="row ml-1 mapstyle">
       <button
         className={cx('col-xs-4 mb-2 mapstyle-style-select', mapStyle === 'normal' && 'active')}
         type="button"

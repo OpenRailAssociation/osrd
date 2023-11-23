@@ -188,7 +188,7 @@
       "toggle-layers": "Choisir les types d'éléments à afficher",
       "osrd-layers": "Couches de données",
       "speed-limits": "Limitations de vitesse",
-      "map-layers": "Couches cartographiques"
+      "map-layers": "Paramètres cartographiques"
     },
     "obj-types": {
       "BufferStop": "Heurtoir",
