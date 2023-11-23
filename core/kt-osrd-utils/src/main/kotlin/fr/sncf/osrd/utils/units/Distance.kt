@@ -17,7 +17,6 @@
 package fr.sncf.osrd.utils.units
 
 import fr.sncf.osrd.fast_collections.PrimitiveWrapperCollections
-import kotlin.math.abs
 import kotlin.math.absoluteValue
 
 @JvmInline
@@ -89,6 +88,15 @@ value class Offset<T>(val distance: Distance) : Comparable<Offset<T>> {
 
     override fun toString(): String {
         return distance.toString()
+    }
+
+    /** Utility function to convert an offset type to another.
+     * It still needs to be called explicitly, but avoids verbose syntaxes on conversions */
+    fun <U> cast(): Offset<U> = Offset(distance)
+
+    companion object {
+        fun <T> min(a: Offset<T>, b: Offset<T>) = Offset<T>(Distance.min(a.distance, b.distance))
+        fun <T> max(a: Offset<T>, b: Offset<T>) = Offset<T>(Distance.max(a.distance, b.distance))
     }
 }
 

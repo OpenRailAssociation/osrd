@@ -1,10 +1,10 @@
 package fr.sncf.osrd.stdcm
 
-import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
-import fr.sncf.osrd.sim_infra.api.BlockId
+import fr.sncf.osrd.graph.PathfindingEdgeLocationId
+import fr.sncf.osrd.sim_infra.api.Block
 
 data class STDCMStep(
-    val locations: Collection<EdgeLocation<BlockId>>,
+    val locations: Collection<PathfindingEdgeLocationId<Block>>,
     val duration: Double?,
     val stop: Boolean
 )

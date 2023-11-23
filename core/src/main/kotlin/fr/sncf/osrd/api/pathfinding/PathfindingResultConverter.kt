@@ -6,8 +6,6 @@ import fr.sncf.osrd.api.pathfinding.response.PathWaypointResult
 import fr.sncf.osrd.api.pathfinding.response.PathWaypointResult.PathWaypointLocation
 import fr.sncf.osrd.api.pathfinding.response.PathfindingResult
 import fr.sncf.osrd.api.pathfinding.response.SlopeChartPointResult
-import fr.sncf.osrd.graph.Pathfinding
-import fr.sncf.osrd.graph.Pathfinding.EdgeRange
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.railjson.schema.geom.RJSLineString
 import fr.sncf.osrd.railjson.schema.infra.RJSRoutePath
@@ -17,8 +15,10 @@ import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.utils.recoverBlocks
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.DistanceRangeMap
+import fr.sncf.osrd.graph.PathfindingEdgeRangeId
+import fr.sncf.osrd.graph.PathfindingResultId
 import fr.sncf.osrd.utils.indexing.*
-import fr.sncf.osrd.utils.units.Distance
+import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import java.util.function.BiFunction
 import java.util.stream.Stream
@@ -33,11 +33,11 @@ import kotlin.math.abs
 fun convertPathfindingResult(
     blockInfra: BlockInfra,
     rawInfra: RawSignalingInfra,
-    rawPath: Pathfinding.Result<BlockId>,
+    rawPath: PathfindingResultId<Block>,
     warningRecorder: DiagnosticRecorderImpl
 ): PathfindingResult {
     val path = makePathProps(rawInfra, blockInfra, rawPath.ranges)
-    val result = PathfindingResult(path.getLength().meters)
+    val result = PathfindingResult(path.getLength().distance.meters)
     result.routePaths = makeRoutePath(blockInfra, rawInfra, rawPath.ranges)
     result.pathWaypoints = makePathWaypoint(path, rawPath, rawInfra, blockInfra)
     result.geographic = makeGeographic(path)
@@ -51,7 +51,7 @@ fun convertPathfindingResult(
 /** Make the list of waypoints on the path, in order. Both user-defined waypoints and operational points.  */
 fun makePathWaypoint(
     path: PathProperties,
-    rawPath: Pathfinding.Result<BlockId>,
+    rawPath: PathfindingResultId<Block>,
     infra: RawSignalingInfra,
     blockInfra: BlockInfra
 ): List<PathWaypointResult> {
@@ -66,21 +66,21 @@ private fun makeUserDefinedWaypoints(
     path: PathProperties,
     infra: RawSignalingInfra,
     blockInfra: BlockInfra,
-    rawPath: Pathfinding.Result<BlockId>
+    rawPath: PathfindingResultId<Block>
 ): Collection<PathWaypointResult> {
     // Builds a mapping between blocks and all user defined waypoints on the block
-    val userDefinedWaypointsPerBlock = HashMap<BlockId, MutableList<Distance>>()
+    val userDefinedWaypointsPerBlock = HashMap<BlockId, MutableList<Offset<Block>>>()
     for (waypoint in rawPath.waypoints) {
         val offsets = userDefinedWaypointsPerBlock.computeIfAbsent(waypoint.edge) { _ -> ArrayList() }
         offsets.add(waypoint.offset)
     }
     val res = ArrayList<PathWaypointResult>()
-    var lengthPrevBlocks = 0.meters
+    var lengthPrevBlocks: Offset<Path> = Offset(0.meters)
     val startFirstRange = rawPath.ranges[0].start
     for (blockRange in rawPath.ranges) {
         for (waypoint in userDefinedWaypointsPerBlock.getOrDefault(blockRange.edge, ArrayList())) {
             if (blockRange.start <= waypoint && waypoint <= blockRange.end) {
-                val pathOffset = lengthPrevBlocks + waypoint - startFirstRange
+                val pathOffset = lengthPrevBlocks + waypoint.distance - startFirstRange.distance
                 res.add(makePendingWaypoint(infra, path, false, pathOffset, null))
             }
         }
@@ -107,7 +107,7 @@ private fun makePendingWaypoint(
     infra: RawSignalingInfra,
     path: PathProperties,
     suggestion: Boolean,
-    pathOffset: Distance,
+    pathOffset: Offset<Path>,
     opName: String?
 ): PathWaypointResult {
     val (trackId, offset) = path.getTrackLocationAtOffset(pathOffset)
@@ -116,7 +116,7 @@ private fun makePendingWaypoint(
         trackName,
         offset.distance.meters
     )
-    return PathWaypointResult(location, pathOffset.meters, suggestion, opName)
+    return PathWaypointResult(location, pathOffset.distance.meters, suggestion, opName)
 }
 
 /** Sorts the waypoints on the path. When waypoints overlap, the user-defined one is kept.  */
@@ -183,7 +183,7 @@ private fun <T> generateChartPoints(
 private fun makeRoutePath(
     blockInfra: BlockInfra,
     rawInfra: RawSignalingInfra,
-    ranges: List<EdgeRange<BlockId>>
+    ranges: List<PathfindingEdgeRangeId<Block>>
 ): List<RJSRoutePath> {
     val blocks = ranges.stream()
         .map { x -> x.edge }
@@ -202,8 +202,8 @@ private fun makeRoutePath(
 private fun convertRoutesToRJS(
     infra: RawSignalingInfra,
     routes: StaticIdxList<Route>,
-    startOffset: Distance,
-    endOffset: Distance
+    startOffset: Offset<Route>,
+    endOffset: Offset<Route>
 ): List<RJSRoutePath> {
     if (routes.size == 0)
         return listOf()
@@ -221,15 +221,15 @@ private fun convertRoutesToRJS(
 private fun convertRouteToRJS(
     rawInfra: RawSignalingInfra,
     route: RouteId,
-    startOffset: Distance?,
-    endOffset: Distance?
+    startOffset: Offset<Route>?,
+    endOffset: Offset<Route>?
 ): RJSRoutePath {
     var mutStartOffset = startOffset
     var mutEndOffset = endOffset
     if (mutStartOffset == null)
-        mutStartOffset = 0.meters
+        mutStartOffset = Offset(0.meters)
     if (mutEndOffset == null)
-        mutEndOffset = rawInfra.getRouteLength(route).distance
+        mutEndOffset = rawInfra.getRouteLength(route)
     return RJSRoutePath(
         rawInfra.getRouteName(route),
         makeRJSTrackRanges(rawInfra, route, mutStartOffset, mutEndOffset),
@@ -241,24 +241,24 @@ private fun convertRouteToRJS(
 private fun makeRJSTrackRanges(
     infra: RawSignalingInfra,
     route: RouteId,
-    routeStartOffset: Distance,
-    routeEndOffset: Distance
+    routeStartOffset: Offset<Route>,
+    routeEndOffset: Offset<Route>
 ): List<RJSDirectionalTrackRange> {
     val res = ArrayList<RJSDirectionalTrackRange>()
-    var chunkStartPathOffset = 0.meters
+    var chunkStartPathOffset: Offset<Path> = Offset(0.meters)
     for (dirChunkId in infra.getChunksOnRoute(route)) {
-        val chunkLength = infra.getTrackChunkLength(dirChunkId.value).distance
+        val chunkLength = infra.getTrackChunkLength(dirChunkId.value)
         val trackId = infra.getTrackFromChunk(dirChunkId.value)
         val chunkTrackOffset = infra.getTrackChunkOffset(dirChunkId.value)
-        val dirTrackChunkOffset =
+        val dirTrackChunkOffset: Offset<TrackSection> =
             if (dirChunkId.direction == Direction.INCREASING)
-                chunkTrackOffset.distance
+                chunkTrackOffset
             else
-                infra.getTrackSectionLength(trackId) - chunkTrackOffset - chunkLength
-        val dirStartOfRouteRange = routeStartOffset + dirTrackChunkOffset - chunkStartPathOffset
-        val dirEndOfRouteRange = routeEndOffset + dirTrackChunkOffset - chunkStartPathOffset
-        val dirRangeStartOnTrack = Distance.max(dirTrackChunkOffset, dirStartOfRouteRange)
-        val dirRangeEndOnTrack = Distance.min(dirTrackChunkOffset + chunkLength, dirEndOfRouteRange)
+                Offset(infra.getTrackSectionLength(trackId) - chunkTrackOffset - chunkLength.distance)
+        val dirStartOfRouteRange = dirTrackChunkOffset + routeStartOffset.distance - chunkStartPathOffset.distance
+        val dirEndOfRouteRange = dirTrackChunkOffset + routeEndOffset.distance - chunkStartPathOffset.distance
+        val dirRangeStartOnTrack = Offset.max(dirTrackChunkOffset, dirStartOfRouteRange)
+        val dirRangeEndOnTrack = Offset.min(dirTrackChunkOffset + chunkLength.distance, dirEndOfRouteRange)
         if (dirRangeStartOnTrack < dirRangeEndOnTrack) {
             val trackName = infra.getTrackSectionName(trackId)
             val direction =
@@ -271,22 +271,22 @@ private fun makeRJSTrackRanges(
                 if (direction == EdgeDirection.START_TO_STOP)
                     dirRangeStartOnTrack
                 else
-                    trackLength.distance - dirRangeEndOnTrack
+                    Offset(trackLength.distance - dirRangeEndOnTrack.distance)
             val rangeEndOnTrack =
                 if (direction == EdgeDirection.START_TO_STOP)
                     dirRangeEndOnTrack
                 else
-                    trackLength.distance - dirRangeStartOnTrack
+                    Offset(trackLength.distance - dirRangeStartOnTrack.distance)
             res.add(
                 RJSDirectionalTrackRange(
                     trackName,
-                    rangeStartOnTrack.meters,
-                    rangeEndOnTrack.meters,
+                    rangeStartOnTrack.distance.meters,
+                    rangeEndOnTrack.distance.meters,
                     direction
                 )
             )
         }
-        chunkStartPathOffset += chunkLength
+        chunkStartPathOffset += chunkLength.distance
     }
 
     // Merge the adjacent ranges
@@ -314,10 +314,10 @@ private fun findStartOffset(
     rawInfra: RawSignalingInfra,
     firstChunk: DirTrackChunkId,
     routeStaticIdx: RouteId,
-    range: EdgeRange<BlockId>
-): Distance {
+    range: PathfindingEdgeRangeId<Block>
+): Offset<Route> {
     return getRouteChunkOffset(rawInfra, routeStaticIdx, firstChunk) -
-            getBlockChunkOffset(blockInfra, rawInfra, firstChunk, range) + range.start
+            getBlockChunkOffset(blockInfra, rawInfra, firstChunk, range).distance + range.start.distance
 }
 
 /** Returns the offset of the range end on the given route  */
@@ -326,17 +326,17 @@ private fun findEndOffset(
     rawInfra: RawSignalingInfra,
     lastChunk: DirTrackChunkId,
     routeStaticIdx: RouteId,
-    range: EdgeRange<BlockId>
-): Distance {
+    range: PathfindingEdgeRangeId<Block>
+): Offset<Route> {
     return getRouteChunkOffset(rawInfra, routeStaticIdx, lastChunk) -
-            getBlockChunkOffset(blockInfra, rawInfra, lastChunk, range) + range.end
+            getBlockChunkOffset(blockInfra, rawInfra, lastChunk, range).distance + range.end.distance
 }
 
 private fun getBlockChunkOffset(
     blockInfra: BlockInfra, rawInfra: RawSignalingInfra, chunk: DirTrackChunkId,
-    range: EdgeRange<BlockId>
-): Distance {
-    var offset = 0.meters
+    range: PathfindingEdgeRangeId<Block>
+): Offset<Block> {
+    var offset = Offset<Block>(0.meters)
     for (dirChunkId in blockInfra.getTrackChunksFromBlock(range.edge)) {
         if (dirChunkId == chunk)
             break
@@ -349,8 +349,8 @@ private fun getRouteChunkOffset(
     rawInfra: RawSignalingInfra,
     routeStaticIdx: RouteId,
     chunk: DirTrackChunkId
-): Distance {
-    var offset = 0.meters
+): Offset<Route> {
+    var offset = Offset<Route>(0.meters)
     for (dirChunkId in rawInfra.getChunksOnRoute(routeStaticIdx)) {
         if (dirChunkId == chunk)
             break

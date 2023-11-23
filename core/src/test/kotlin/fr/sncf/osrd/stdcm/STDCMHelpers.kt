@@ -9,6 +9,8 @@ import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
 import fr.sncf.osrd.graph.GraphAdapter
 import fr.sncf.osrd.graph.Pathfinding
 import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
+import fr.sncf.osrd.graph.PathfindingEdgeLocationId
+import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.makePathProperties
 import fr.sncf.osrd.sim_infra.impl.ChunkPath
@@ -21,6 +23,7 @@ import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.StandaloneTrainSchedule
 import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.train.TrainStop
+import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import org.junit.jupiter.api.Assertions
 import kotlin.math.max
@@ -31,8 +34,8 @@ import kotlin.math.min
  */
 fun makeRequirementsFromPath(
     infra: FullInfra,
-    startLocations: Set<EdgeLocation<BlockId>>,
-    endLocations: Set<EdgeLocation<BlockId>>,
+    startLocations: Set<PathfindingEdgeLocationId<Block>>,
+    endLocations: Set<PathfindingEdgeLocationId<Block>>,
     departureTime: Double
 ): List<SpacingRequirement> {
     val chunkPath = makeChunkPath(infra, startLocations, endLocations)
@@ -47,7 +50,7 @@ fun makeRequirementsFromPath(
                 TestTrains.REALISTIC_FAST_TRAIN,
                 0.0,
                 ArrayList(),
-                listOf(TrainStop(trainPath.getLength().meters, 1.0)), listOf(),
+                listOf(TrainStop(trainPath.getLength().distance.meters, 1.0)), listOf(),
                 null,
                 RollingStock.Comfort.STANDARD,
                 null,
@@ -89,11 +92,11 @@ fun makeOccupancyFromRequirements(
 /** Creates a chunk path object from start and end locations  */
 private fun makeChunkPath(
     infra: FullInfra,
-    startLocations: Set<EdgeLocation<BlockId>>,
-    endLocations: Set<EdgeLocation<BlockId>>
+    startLocations: Set<PathfindingEdgeLocationId<Block>>,
+    endLocations: Set<PathfindingEdgeLocationId<Block>>
 ): ChunkPath {
     val path = Pathfinding(GraphAdapter(infra.blockInfra, infra.rawInfra))
-        .setEdgeToLength { block -> infra.blockInfra.getBlockLength(block).distance }
+        .setEdgeToLength { block -> infra.blockInfra.getBlockLength(block) }
         .runPathfinding(listOf(startLocations, endLocations))!!
     return makeChunkPath(infra.rawInfra, infra.blockInfra, path.ranges)
 }
@@ -121,7 +124,7 @@ fun getBlocksRunTime(infra: FullInfra, blocks: List<BlockId>): Double {
     var speed = 0.0
     for (block in blocks) {
         val envelope = simulateBlock(
-            infra.rawInfra, infra.blockInfra, block, speed, 0.meters,
+            infra.rawInfra, infra.blockInfra, block, speed, Offset(0.meters),
             TestTrains.REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2.0, null, null
         )!!
         time += envelope.totalTime

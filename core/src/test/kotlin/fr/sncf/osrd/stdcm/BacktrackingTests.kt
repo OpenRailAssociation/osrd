@@ -2,10 +2,12 @@ package fr.sncf.osrd.stdcm
 
 import com.google.common.collect.ImmutableMultimap
 import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
+import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.stdcm.graph.simulateBlock
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.DummyInfra
+import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -23,7 +25,8 @@ class BacktrackingTests {
         val block = infra.addBlock("a", "b", 1000.meters)
         val firstBlockEnvelope = simulateBlock(
             infra, infra,
-            block, 0.0, 0.meters, TestTrains.REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2.0, null, null
+            block, 0.0, Offset(0.meters), TestTrains.REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD,
+            2.0, null, null
         )!!
         val runTime = firstBlockEnvelope.totalTime
         val occupancyGraph = ImmutableMultimap.of(
@@ -31,8 +34,8 @@ class BacktrackingTests {
         )
         val res = STDCMPathfindingBuilder()
             .setInfra(infra.fullInfra())
-            .setStartLocations(setOf(EdgeLocation(block, 0.meters)))
-            .setEndLocations(setOf(EdgeLocation(block, 1000.meters)))
+            .setStartLocations(setOf(EdgeLocation(block, Offset<Block>(0.meters))))
+            .setEndLocations(setOf(EdgeLocation(block, Offset<Block>(1000.meters))))
             .setUnavailableTimes(occupancyGraph)
             .run() ?: return
         occupancyTest(res, occupancyGraph)
@@ -51,7 +54,8 @@ class BacktrackingTests {
         val lastBlock = infra.addBlock("d", "e", 10.meters)
         val firstBlockEnvelope = simulateBlock(
             infra, infra,
-            firstBlock, 0.0, 0.meters, TestTrains.REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2.0, null, null
+            firstBlock, 0.0, Offset(0.meters), TestTrains.REALISTIC_FAST_TRAIN,
+            RollingStock.Comfort.STANDARD, 2.0, null, null
         )!!
         val runTime = firstBlockEnvelope.totalTime
         val occupancyGraph = ImmutableMultimap.of(
@@ -59,8 +63,8 @@ class BacktrackingTests {
         )
         val res = STDCMPathfindingBuilder()
             .setInfra(infra.fullInfra())
-            .setStartLocations(setOf(EdgeLocation(firstBlock, 0.meters)))
-            .setEndLocations(setOf(EdgeLocation(lastBlock, 5.meters)))
+            .setStartLocations(setOf(EdgeLocation(firstBlock, Offset<Block>(0.meters))))
+            .setEndLocations(setOf(EdgeLocation(lastBlock, Offset<Block>(5.meters))))
             .setUnavailableTimes(occupancyGraph)
             .run() ?: return
         occupancyTest(res, occupancyGraph)
@@ -77,7 +81,8 @@ class BacktrackingTests {
         val secondBlock = infra.addBlock("b", "c", 100.meters, 5.0)
         val firstBlockEnvelope = simulateBlock(
             infra, infra,
-            firstBlock, 0.0, 0.meters, TestTrains.REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2.0, null, null
+            firstBlock, 0.0, Offset(0.meters), TestTrains.REALISTIC_FAST_TRAIN,
+            RollingStock.Comfort.STANDARD, 2.0, null, null
         )!!
         val runTime = firstBlockEnvelope.totalTime
         val occupancyGraph = ImmutableMultimap.of(
@@ -85,8 +90,8 @@ class BacktrackingTests {
         )
         val res = STDCMPathfindingBuilder()
             .setInfra(infra.fullInfra())
-            .setStartLocations(setOf(EdgeLocation(firstBlock, 0.meters)))
-            .setEndLocations(setOf(EdgeLocation(secondBlock, 5.meters)))
+            .setStartLocations(setOf(EdgeLocation(firstBlock, Offset<Block>(0.meters))))
+            .setEndLocations(setOf(EdgeLocation(secondBlock, Offset<Block>(5.meters))))
             .setUnavailableTimes(occupancyGraph)
             .run() ?: return
         occupancyTest(res, occupancyGraph)
@@ -108,8 +113,8 @@ class BacktrackingTests {
         val lastBlock = infra.addBlock("e", "f", 1000.meters, 5.0)
         val res = STDCMPathfindingBuilder()
             .setInfra(infra.fullInfra())
-            .setStartLocations(setOf(EdgeLocation(firstBlock, 0.meters)))
-            .setEndLocations(setOf(EdgeLocation(lastBlock, 1000.meters)))
+            .setStartLocations(setOf(EdgeLocation(firstBlock, Offset<Block>(0.meters))))
+            .setEndLocations(setOf(EdgeLocation(lastBlock, Offset<Block>(1000.meters))))
             .run()!!
         Assertions.assertTrue(res.envelope.continuous)
     }

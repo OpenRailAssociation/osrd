@@ -5,7 +5,10 @@ import fr.sncf.osrd.graph.*
 import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
+import fr.sncf.osrd.utils.graph.PathfindingTests.SimpleGraphBuilder.*
 import fr.sncf.osrd.utils.units.Distance
+import fr.sncf.osrd.utils.units.Length
+import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import org.assertj.core.api.AssertionsForClassTypes
 import org.junit.jupiter.api.Assertions
@@ -15,17 +18,17 @@ import org.junit.jupiter.params.provider.CsvSource
 import java.util.stream.Collectors
 
 class PathfindingTests {
-    private class SimpleGraphBuilder {
-        data class Edge(val length: Distance, val label: String, val blockedRanges: Set<Pathfinding.Range>)
-        private class Node
+    class SimpleGraphBuilder {
+        data class Edge(val length: Length<Edge>, val label: String, val blockedRanges: Set<Pathfinding.Range<Edge>>)
+        class Node
 
         private val builder = NetworkBuilder
             .directed()
             .allowsParallelEdges(true)
             .immutable<Node, Edge>()
-        val edges: MutableMap<String, Edge> = HashMap()
-        val nodes: MutableList<Node> = ArrayList()
-        fun makeNode() {
+        private val edges: MutableMap<String, Edge> = HashMap()
+        private val nodes: MutableList<Node> = ArrayList()
+        private fun makeNode() {
             val res = Node()
             builder.addNode(res)
             nodes.add(res)
@@ -35,28 +38,28 @@ class PathfindingTests {
             for (i in 0 until n) makeNode()
         }
 
-        fun makeEdge(n1: Int, n2: Int, length: Distance, blockedRanges: Set<Pathfinding.Range> = setOf()) {
+        fun makeEdge(n1: Int, n2: Int, length: Distance, blockedRanges: Set<Pathfinding.Range<Edge>> = setOf()) {
             val label = String.format("%d-%s", n1, n2)
-            val res = Edge(length, label, blockedRanges)
+            val res = Edge(Length(length), label, blockedRanges)
             builder.addEdge(nodes[n1], nodes[n2], res)
             edges[label] = res
         }
 
-        fun build(): Graph<Node, Edge> {
+        fun build(): Graph<Node, Edge, Edge> {
             return NetworkGraphAdapter(builder.build())
         }
 
-        fun getEdgeLocation(id: String, offset: Distance): EdgeLocation<Edge> {
-            return EdgeLocation(edges[id]!!, offset)
+        fun getEdgeLocation(id: String, offset: Distance): EdgeLocation<Edge, Edge> {
+            return EdgeLocation(edges[id]!!, Offset(offset))
         }
 
-        fun getEdgeLocation(id: String): EdgeLocation<Edge> {
-            return EdgeLocation(edges[id]!!, 0.meters)
+        fun getEdgeLocation(id: String): EdgeLocation<Edge, Edge> {
+            return EdgeLocation(edges[id]!!, Offset(0.meters))
         }
     }
 
     /** A range where the edge is only referenced by its ID (for easier equality check)  */
-    data class SimpleRange(val id: String, val begin: Distance, val end: Distance)
+    data class SimpleRange(val id: String, val begin: Offset<Edge>, val end: Offset<Edge>)
 
     @Test
     fun pathfindingShortestTwoStepsTest() {
@@ -384,9 +387,9 @@ class PathfindingTests {
             )!!
         Assertions.assertEquals(
             listOf(
-                SimpleRange("0-1", 0.meters, 0.meters),
-                SimpleRange("1-4", 0.meters, 100.meters),
-                SimpleRange("4-5", 0.meters, 10.meters)
+                SimpleRange("0-1", Offset(0.meters), Offset(0.meters)),
+                SimpleRange("1-4", Offset(0.meters), Offset(100.meters)),
+                SimpleRange("4-5", Offset(0.meters), Offset(10.meters))
             ),
             convertRes(res)
         )
@@ -421,11 +424,11 @@ class PathfindingTests {
             )!!
         Assertions.assertEquals(
             listOf(
-                SimpleRange("0-1", 5.meters, 10.meters),
-                SimpleRange("1-4", 0.meters, 1000.meters),
-                SimpleRange("4-5", 0.meters, 10.meters),
-                SimpleRange("5-2", 0.meters, 1000.meters),
-                SimpleRange("2-3", 0.meters, 5.meters)
+                SimpleRange("0-1", Offset(5.meters), Offset(10.meters)),
+                SimpleRange("1-4", Offset(0.meters), Offset(1000.meters)),
+                SimpleRange("4-5", Offset(0.meters), Offset(10.meters)),
+                SimpleRange("5-2", Offset(0.meters), Offset(1000.meters)),
+                SimpleRange("2-3", Offset(0.meters), Offset(5.meters))
             ),
             convertRes(res)
         )
@@ -444,7 +447,8 @@ class PathfindingTests {
          */
         val builder = SimpleGraphBuilder()
         builder.makeNodes(7)
-        builder.makeEdge(0, 1, 100.meters, setOf(Pathfinding.Range(50.meters, 50.meters)))
+        builder.makeEdge(0, 1, 100.meters,
+            setOf(Pathfinding.Range(Offset(50.meters), Offset(50.meters))))
         builder.makeEdge(1, 4, 100.meters)
         builder.makeEdge(2, 3, 100.meters)
         builder.makeEdge(3, 4, 100000.meters)
@@ -482,7 +486,8 @@ class PathfindingTests {
          */
         val builder = SimpleGraphBuilder()
         builder.makeNodes(2)
-        builder.makeEdge(0, 1, 100.meters, setOf(Pathfinding.Range(0.meters, 10.meters)))
+        builder.makeEdge(0, 1, 100.meters,
+            setOf(Pathfinding.Range(Offset(0.meters), Offset(10.meters))))
         val g = builder.build()
         val res = Pathfinding(g)
             .setEdgeToLength { edge -> edge.length }
@@ -506,8 +511,8 @@ class PathfindingTests {
         builder.makeNodes(2)
         builder.makeEdge(
             0, 1, 100.meters, setOf(
-                Pathfinding.Range(0.meters, 30.meters),
-                Pathfinding.Range(70.meters, 100.meters)
+                Pathfinding.Range(Offset(0.meters), Offset(30.meters)),
+                Pathfinding.Range(Offset(70.meters), Offset(100.meters))
             )
         )
         val g = builder.build()
@@ -532,7 +537,8 @@ class PathfindingTests {
         val builder = SimpleGraphBuilder()
         builder.makeNodes(3)
         builder.makeEdge(0, 1, 100.meters)
-        builder.makeEdge(1, 2, 100.meters, setOf(Pathfinding.Range(70.meters, 100.meters)))
+        builder.makeEdge(1, 2, 100.meters,
+            setOf(Pathfinding.Range(Offset(70.meters), Offset(100.meters))))
         val g = builder.build()
         val res = Pathfinding(g)
             .setEdgeToLength { edge -> edge.length }
@@ -555,7 +561,8 @@ class PathfindingTests {
         val builder = SimpleGraphBuilder()
         builder.makeNodes(3)
         builder.makeEdge(0, 1, 100.meters)
-        builder.makeEdge(1, 2, 100.meters, setOf(Pathfinding.Range(10.meters, 20.meters)))
+        builder.makeEdge(1, 2, 100.meters,
+            setOf(Pathfinding.Range(Offset(10.meters), Offset(20.meters))))
         val g = builder.build()
         val res = Pathfinding(g)
             .setEdgeToLength { edge -> edge.length }
@@ -577,7 +584,8 @@ class PathfindingTests {
          */
         val builder = SimpleGraphBuilder()
         builder.makeNodes(2)
-        builder.makeEdge(0, 1, 100.meters, setOf(Pathfinding.Range(10.meters, 20.meters)))
+        builder.makeEdge(0, 1, 100.meters,
+            setOf(Pathfinding.Range(Offset(10.meters), Offset(20.meters))))
         val g = builder.build()
         val res = Pathfinding(g)
             .setEdgeToLength { edge -> edge.length }
@@ -606,8 +614,8 @@ class PathfindingTests {
         builder.makeNodes(2)
         builder.makeEdge(
             0, 1, 100.meters, setOf(
-                Pathfinding.Range(10.meters, 50.meters),
-                Pathfinding.Range(30.meters, 80.meters)
+                Pathfinding.Range(Offset(10.meters), Offset(50.meters)),
+                Pathfinding.Range(Offset(30.meters), Offset(80.meters))
             )
         )
         val g = builder.build()
@@ -696,7 +704,7 @@ class PathfindingTests {
     }
 
     companion object {
-        private fun convertRes(res: Pathfinding.Result<SimpleGraphBuilder.Edge>): List<SimpleRange> {
+        private fun convertRes(res: Pathfinding.Result<Edge, Edge>): List<SimpleRange> {
             return res.ranges.stream()
                 .map { x -> SimpleRange(x.edge.label, x.start, x.end) }
                 .collect(Collectors.toList())

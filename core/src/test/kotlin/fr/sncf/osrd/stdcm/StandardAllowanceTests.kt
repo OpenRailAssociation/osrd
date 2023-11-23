@@ -5,6 +5,7 @@ import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue
 import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.utils.DummyInfra
+import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -32,8 +33,8 @@ class StandardAllowanceTests {
         val res = runWithAndWithoutAllowance(
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
-                .setStartLocations(setOf(EdgeLocation(blocks[0], 0.meters)))
-                .setEndLocations(setOf(EdgeLocation(blocks[2], 1000.meters)))
+                .setStartLocations(setOf(EdgeLocation(blocks[0], Offset(0.meters))))
+                .setEndLocations(setOf(EdgeLocation(blocks[2], Offset(1000.meters))))
                 .setStandardAllowance(allowance)
         )
         Assertions.assertNotNull(res.withAllowance)
@@ -57,8 +58,8 @@ class StandardAllowanceTests {
         val res = runWithAndWithoutAllowance(
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
-                .setStartLocations(setOf(EdgeLocation(blocks[0], 0.meters)))
-                .setEndLocations(setOf(EdgeLocation(blocks[2], 1000.meters)))
+                .setStartLocations(setOf(EdgeLocation(blocks[0], Offset(0.meters))))
+                .setEndLocations(setOf(EdgeLocation(blocks[2], Offset(1000.meters))))
                 .setStandardAllowance(allowance)
         )
         Assertions.assertNotNull(res.withAllowance)
@@ -83,8 +84,8 @@ class StandardAllowanceTests {
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
                 .setUnavailableTimes(occupancyGraph)
-                .setStartLocations(setOf(EdgeLocation(firstBlock, 0.meters)))
-                .setEndLocations(setOf(EdgeLocation(secondBlock, 50.meters)))
+                .setStartLocations(setOf(EdgeLocation(firstBlock, Offset(0.meters))))
+                .setEndLocations(setOf(EdgeLocation(secondBlock, Offset(50.meters))))
                 .setStandardAllowance(allowance)
         )
         Assertions.assertNotNull(res.withoutAllowance!!)
@@ -114,8 +115,8 @@ class StandardAllowanceTests {
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
                 .setUnavailableTimes(occupancyGraph)
-                .setStartLocations(setOf(EdgeLocation(block, 0.meters)))
-                .setEndLocations(setOf(EdgeLocation(block, 10000.meters)))
+                .setStartLocations(setOf(EdgeLocation(block, Offset(0.meters))))
+                .setEndLocations(setOf(EdgeLocation(block, Offset(10000.meters))))
                 .setStandardAllowance(allowance)
         )
         Assertions.assertNotNull(res.withoutAllowance!!)
@@ -159,8 +160,8 @@ class StandardAllowanceTests {
         val res = STDCMPathfindingBuilder()
             .setInfra(infra.fullInfra())
             .setUnavailableTimes(occupancyGraph)
-            .setStartLocations(setOf(EdgeLocation(blocks[0], 0.meters)))
-            .setEndLocations(setOf(EdgeLocation(blocks[2], 1000.meters)))
+            .setStartLocations(setOf(EdgeLocation(blocks[0], Offset(0.meters))))
+            .setEndLocations(setOf(EdgeLocation(blocks[2], Offset(1000.meters))))
             .setStandardAllowance(allowance)
             .run()!!
         occupancyTest(res, occupancyGraph, TIME_STEP)
@@ -200,8 +201,8 @@ class StandardAllowanceTests {
         val res = STDCMPathfindingBuilder()
             .setInfra(infra.fullInfra())
             .setUnavailableTimes(occupancyGraph)
-            .setStartLocations(setOf(EdgeLocation(blocks[0], 0.meters)))
-            .setEndLocations(setOf(EdgeLocation(blocks[2], 1.meters)))
+            .setStartLocations(setOf(EdgeLocation(blocks[0], Offset(0.meters))))
+            .setEndLocations(setOf(EdgeLocation(blocks[2], Offset(1.meters))))
             .setStandardAllowance(allowance)
             .run()!!
         occupancyTest(res, occupancyGraph, TIME_STEP)
@@ -236,8 +237,8 @@ class StandardAllowanceTests {
         val res = runWithAndWithoutAllowance(
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
-                .setStartLocations(setOf(EdgeLocation(blocks[0], 0.meters)))
-                .setEndLocations(setOf(EdgeLocation(blocks[blocks.size - 1], 0.meters)))
+                .setStartLocations(setOf(EdgeLocation(blocks[0], Offset(0.meters))))
+                .setEndLocations(setOf(EdgeLocation(blocks[blocks.size - 1], Offset(0.meters))))
                 .setStandardAllowance(allowance)
         )
         Assertions.assertNotNull(res.withAllowance)
@@ -279,8 +280,8 @@ class StandardAllowanceTests {
         val res = runWithAndWithoutAllowance(
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
-                .setStartLocations(setOf(EdgeLocation(firstBlock, 0.meters)))
-                .setEndLocations(setOf(EdgeLocation(forthBlock, 1.meters)))
+                .setStartLocations(setOf(EdgeLocation(firstBlock, Offset(0.meters))))
+                .setEndLocations(setOf(EdgeLocation(forthBlock, Offset(1.meters))))
                 .setUnavailableTimes(occupancyGraph)
                 .setStandardAllowance(allowance)
         )
@@ -322,8 +323,8 @@ class StandardAllowanceTests {
         val res = STDCMPathfindingBuilder()
             .setInfra(infra.fullInfra())
             .setUnavailableTimes(occupancyGraph)
-            .setStartLocations(setOf(EdgeLocation(blocks[0], 0.meters)))
-            .setEndLocations(setOf(EdgeLocation(blocks[2], 1000.meters)))
+            .setStartLocations(setOf(EdgeLocation(blocks[0], Offset(0.meters))))
+            .setEndLocations(setOf(EdgeLocation(blocks[2], Offset(1000.meters))))
             .setStandardAllowance(allowance)
             .run()!!
         occupancyTest(res, occupancyGraph, TIME_STEP)
@@ -347,8 +348,8 @@ class StandardAllowanceTests {
         val res = runWithAndWithoutAllowance(
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
-                .setStartLocations(setOf(EdgeLocation(firstBlock, 0.meters)))
-                .setEndLocations(setOf(EdgeLocation(forthBlock, 100.meters)))
+                .setStartLocations(setOf(EdgeLocation(firstBlock, Offset(0.meters))))
+                .setEndLocations(setOf(EdgeLocation(forthBlock, Offset(100.meters))))
                 .setStandardAllowance(allowance)
         )
         Assertions.assertNotNull(res.withoutAllowance)
@@ -373,8 +374,8 @@ class StandardAllowanceTests {
         val res = runWithAndWithoutAllowance(
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
-                .setStartLocations(setOf(EdgeLocation(firstBlock, 0.meters)))
-                .setEndLocations(setOf(EdgeLocation(forthBlock, 100.meters)))
+                .setStartLocations(setOf(EdgeLocation(firstBlock, Offset(0.meters))))
+                .setEndLocations(setOf(EdgeLocation(forthBlock, Offset(100.meters))))
                 .setStandardAllowance(allowance)
         )
         Assertions.assertNotNull(res.withoutAllowance)
@@ -418,8 +419,8 @@ class StandardAllowanceTests {
         val res = runWithAndWithoutAllowance(
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
-                .setStartLocations(setOf(EdgeLocation(firstBlock, 0.meters)))
-                .setEndLocations(setOf(EdgeLocation(forthBlock, 100.meters)))
+                .setStartLocations(setOf(EdgeLocation(firstBlock, Offset(0.meters))))
+                .setEndLocations(setOf(EdgeLocation(forthBlock, Offset(100.meters))))
                 .setUnavailableTimes(occupancyGraph)
                 .setStandardAllowance(allowance)
         )
@@ -463,8 +464,8 @@ class StandardAllowanceTests {
         val res = runWithAndWithoutAllowance(
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
-                .setStartLocations(setOf(EdgeLocation(firstBlock, 0.meters)))
-                .setEndLocations(setOf(EdgeLocation(thirdBlock, 100.meters)))
+                .setStartLocations(setOf(EdgeLocation(firstBlock, Offset(0.meters))))
+                .setEndLocations(setOf(EdgeLocation(thirdBlock, Offset(100.meters))))
                 .setUnavailableTimes(occupancyGraph)
                 .setStandardAllowance(allowance)
         )

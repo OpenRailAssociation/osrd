@@ -6,6 +6,8 @@ import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue
 import fr.sncf.osrd.graph.Pathfinding
 import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
+import fr.sncf.osrd.graph.PathfindingEdgeLocationId
+import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.stdcm.graph.findPath
 import fr.sncf.osrd.stdcm.preprocessing.implementation.BlockAvailabilityLegacyAdapter
@@ -52,13 +54,13 @@ class STDCMPathfindingBuilder {
     }
 
     /** Sets the locations at which the train can start. Meant to be used for simple tests with no intermediate steps  */
-    fun setStartLocations(startLocations: Set<EdgeLocation<BlockId>>): STDCMPathfindingBuilder {
+    fun setStartLocations(startLocations: Set<PathfindingEdgeLocationId<Block>>): STDCMPathfindingBuilder {
         steps.add(0, STDCMStep(startLocations, 0.0, true))
         return this
     }
 
     /** Sets the locations the train must reach. Meant to be used for simple tests with no intermediate steps  */
-    fun setEndLocations(endLocations: Set<EdgeLocation<BlockId>>): STDCMPathfindingBuilder {
+    fun setEndLocations(endLocations: Set<PathfindingEdgeLocationId<Block>>): STDCMPathfindingBuilder {
         steps.add(STDCMStep(endLocations, 0.0, true))
         return this
     }

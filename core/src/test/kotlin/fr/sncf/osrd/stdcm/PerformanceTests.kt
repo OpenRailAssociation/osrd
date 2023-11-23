@@ -4,9 +4,11 @@ import com.google.common.collect.ImmutableMultimap
 import com.google.common.collect.Iterables
 import fr.sncf.osrd.geom.Point
 import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
+import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.utils.DummyInfra
 import fr.sncf.osrd.utils.units.Distance
+import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Disabled
@@ -53,8 +55,8 @@ class PerformanceTests {
         val timeStep = 2.0
         val res = STDCMPathfindingBuilder()
             .setInfra(infra.fullInfra())
-            .setStartLocations(setOf(EdgeLocation(blocks[0], 0.meters)))
-            .setEndLocations(setOf(EdgeLocation(Iterables.getLast(blocks), 0.meters)))
+            .setStartLocations(setOf(EdgeLocation(blocks[0], Offset<Block>(0.meters))))
+            .setEndLocations(setOf(EdgeLocation(Iterables.getLast(blocks), Offset<Block>(0.meters))))
             .setUnavailableTimes(occupancyGraph)
             .setTimeStep(timeStep)
             .run()!!
@@ -102,8 +104,8 @@ class PerformanceTests {
         val timeStep = 2.0
         val res = STDCMPathfindingBuilder()
             .setInfra(infra.fullInfra())
-            .setStartLocations(setOf(EdgeLocation(blocks[0], 0.meters)))
-            .setEndLocations(setOf(EdgeLocation(unreachable, 0.meters)))
+            .setStartLocations(setOf(EdgeLocation(blocks[0], Offset<Block>(0.meters))))
+            .setEndLocations(setOf(EdgeLocation(unreachable, Offset<Block>(0.meters))))
             .setUnavailableTimes(occupancyGraph)
             .setTimeStep(timeStep)
             .run()
@@ -156,8 +158,8 @@ class PerformanceTests {
         val timeStep = 2.0
         val res = STDCMPathfindingBuilder()
             .setInfra(infra.fullInfra())
-            .setStartLocations(setOf(EdgeLocation(blocks[0], 0.meters)))
-            .setEndLocations(setOf(EdgeLocation(Iterables.getLast(blocks), 0.meters)))
+            .setStartLocations(setOf(EdgeLocation(blocks[0], Offset<Block>(0.meters))))
+            .setEndLocations(setOf(EdgeLocation(Iterables.getLast(blocks), Offset<Block>(0.meters))))
             .setUnavailableTimes(occupancyGraph)
             .setTimeStep(timeStep) //TODO: remove this once the test runs in less than Pathfinding.TIMEOUT
             .setPathfindingTimeout(Double.POSITIVE_INFINITY)
@@ -225,7 +227,7 @@ class PerformanceTests {
                 setOf(
                     EdgeLocation(
                         BlockId(infra.getRouteFromName("25,25->25,26").index),
-                        0.meters
+                        Offset<Block>(0.meters)
                     )
                 )
             )
@@ -233,7 +235,7 @@ class PerformanceTests {
                 setOf(
                     EdgeLocation(
                         BlockId(infra.getRouteFromName("75,75->75,76").index),
-                        0.meters
+                        Offset<Block>(0.meters)
                     )
                 )
             )

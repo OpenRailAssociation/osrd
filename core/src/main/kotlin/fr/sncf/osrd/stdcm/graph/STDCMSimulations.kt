@@ -28,10 +28,7 @@ import fr.sncf.osrd.sim_infra.api.RawSignalingInfra
 import fr.sncf.osrd.stdcm.BacktrackingEnvelopeAttr
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.RollingStock.Comfort
-import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Distance.Companion.fromMeters
-import fr.sncf.osrd.utils.units.Distance.Companion.max
-import fr.sncf.osrd.utils.units.Distance.Companion.min
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 
@@ -58,7 +55,7 @@ class STDCMSimulations {
                 blockInfra,
                 blockParams.blockId,
                 blockParams.initialSpeed,
-                blockParams.start.distance,
+                blockParams.start,
                 rollingStock,
                 comfort,
                 timeStep,
@@ -83,7 +80,7 @@ fun makeSimContext(
     comfort: Comfort?,
     timeStep: Double
 ): EnvelopeSimContext {
-    val path = makePathProps(rawInfra, blockInfra, blocks, offsetFirstBlock)
+    val path = makePathProps(rawInfra, blockInfra, blocks, offsetFirstBlock.cast())
     val envelopePath = EnvelopeTrainPath.from(rawInfra, path)
     return build(rollingStock, envelopePath, timeStep, comfort)
 }
@@ -103,7 +100,7 @@ fun simulateBlock(
     blockInfra: BlockInfra,
     blockId: BlockId,
     initialSpeed: Double,
-    start: Distance,
+    start: Offset<Block>,
     rollingStock: RollingStock,
     comfort: Comfort?,
     timeStep: Double,
@@ -113,17 +110,17 @@ fun simulateBlock(
     if (stopPosition != null && stopPosition == Offset<Block>(0.meters))
         return makeSinglePointEnvelope(0.0)
     val blockLength = blockInfra.getBlockLength(blockId)
-    if (start >= blockLength.distance)
+    if (start >= blockLength)
         return makeSinglePointEnvelope(initialSpeed)
     val context =
-        makeSimContext(rawInfra, blockInfra, listOf(blockId), Offset(start), rollingStock, comfort, timeStep)
+        makeSimContext(rawInfra, blockInfra, listOf(blockId), start, rollingStock, comfort, timeStep)
     var stops = doubleArrayOf()
-    var simLength = blockLength.distance - start
+    var simLength : Offset<Block> = Offset(blockLength - start)
     if (stopPosition != null) {
         stops = doubleArrayOf(stopPosition.distance.meters)
-        simLength = min(simLength, stopPosition.distance)
+        simLength = Offset.min(simLength, stopPosition)
     }
-    val path = makePathProps(blockInfra, rawInfra, blockId, Offset(0.meters), Offset(simLength))
+    val path = makePathProps(blockInfra, rawInfra, blockId, Offset(0.meters), simLength)
     val mrsp = MRSP.computeMRSP(path, rollingStock, false, trainTag)
     return try {
         val maxSpeedEnvelope = MaxSpeedEnvelope.from(context, stops, mrsp)
@@ -148,18 +145,17 @@ private fun makeSinglePointEnvelope(speed: Double): Envelope {
 }
 
 /**
- * Returns the time at which the offset on the given block is reached
+ * Returns the time at which the offset on the given edge is reached
  */
 fun interpolateTime(
     envelope: Envelope,
-    envelopeStartOffset: Offset<Block>,
-    blockOffset: Offset<Block>,
+    edgeOffset: Offset<STDCMEdge>,
     startTime: Double,
     speedRatio: Double
 ): Double {
-    val envelopeOffset = max(0.meters, blockOffset - envelopeStartOffset)
-    assert(envelopeOffset <= fromMeters(envelope.endPos))
-    return startTime + envelope.interpolateTotalTime(envelopeOffset.meters) / speedRatio
+    assert(edgeOffset.distance <= fromMeters(envelope.endPos))
+    assert(edgeOffset.distance >= 0.meters)
+    return startTime + envelope.interpolateTotalTime(edgeOffset.distance.meters) / speedRatio
 }
 
 /**

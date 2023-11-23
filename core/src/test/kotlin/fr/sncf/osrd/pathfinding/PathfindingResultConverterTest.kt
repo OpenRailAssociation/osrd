@@ -7,11 +7,15 @@ import fr.sncf.osrd.api.pathfinding.makePathWaypoint
 import fr.sncf.osrd.graph.Pathfinding
 import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
 import fr.sncf.osrd.graph.Pathfinding.EdgeRange
+import fr.sncf.osrd.graph.PathfindingEdgeRangeId
+import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
+import fr.sncf.osrd.sim_infra.api.Path
 import fr.sncf.osrd.sim_infra.impl.ChunkPath
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.Helpers
 import fr.sncf.osrd.utils.units.Distance
+import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -27,19 +31,19 @@ class PathfindingResultConverterTest {
                 "rt.DA5->DC5"
             )
         )
-        val ranges = ArrayList<EdgeRange<BlockId>>()
+        val ranges = ArrayList<PathfindingEdgeRangeId<Block>>()
         for (block in blocks) {
             ranges.add(
                 EdgeRange(
-                    block, 0.meters,
-                    infra.blockInfra.getBlockLength(block).distance
+                    block, Offset(0.meters),
+                    infra.blockInfra.getBlockLength(block)
                 )
             )
         }
         val chunkPath = makeChunkPath(infra.rawInfra, infra.blockInfra, ranges)
         val expectedLength = 10000.meters + 1000.meters // length of route 1 + 2
-        Assertions.assertEquals(0.meters, chunkPath.beginOffset)
-        Assertions.assertEquals(expectedLength, chunkPath.endOffset)
+        Assertions.assertEquals(Offset<Path>(0.meters), chunkPath.beginOffset)
+        Assertions.assertEquals(expectedLength, chunkPath.endOffset.distance)
         checkBlocks(infra, chunkPath, setOf("TA0", "TA6", "TC1"), Direction.INCREASING, expectedLength)
     }
 
@@ -56,26 +60,27 @@ class PathfindingResultConverterTest {
         assert(blocks.size == 4)
         val ranges = listOf(
             EdgeRange(
-                blocks[0], 10.meters,
-                infra.blockInfra.getBlockLength(blocks[0]).distance
+                blocks[0], Offset(10.meters),
+                infra.blockInfra.getBlockLength(blocks[0])
             ),
             EdgeRange(
-                blocks[1], 0.meters,
-                infra.blockInfra.getBlockLength(blocks[1]).distance
+                blocks[1], Offset(0.meters),
+                infra.blockInfra.getBlockLength(blocks[1])
             ),
             EdgeRange(
-                blocks[2], 0.meters,
-                infra.blockInfra.getBlockLength(blocks[2]).distance
+                blocks[2], Offset(0.meters),
+                infra.blockInfra.getBlockLength(blocks[2])
             ),
             EdgeRange(
-                blocks[3], 0.meters,
-                infra.blockInfra.getBlockLength(blocks[3]).distance - 10.meters
+                blocks[3], Offset(0.meters),
+                infra.blockInfra.getBlockLength(blocks[3]) - 10.meters
             )
         )
         val chunkPath = makeChunkPath(infra.rawInfra, infra.blockInfra, ranges)
         val expectedBlockLength = 1050.meters + 10000.meters // length of route 1 + 2
-        Assertions.assertEquals(10.meters, chunkPath.beginOffset)
-        Assertions.assertEquals((expectedBlockLength - 10.meters), chunkPath.endOffset)
+        Assertions.assertEquals(
+            Offset<Path>(10.meters), chunkPath.beginOffset)
+        Assertions.assertEquals((expectedBlockLength - 10.meters), chunkPath.endOffset.distance)
         checkBlocks(infra, chunkPath, setOf("TC0", "TD0", "TA6"), Direction.DECREASING, expectedBlockLength)
     }
 
@@ -89,11 +94,11 @@ class PathfindingResultConverterTest {
             )
         )
         assert(blocks.size == 1)
-        val ranges = listOf(EdgeRange(blocks[0], 600.meters, 800.meters))
+        val ranges = listOf(EdgeRange(blocks[0], Offset<Block>(600.meters), Offset(800.meters)))
         val path = makePathProps(infra.rawInfra, infra.blockInfra, ranges)
         val rawResult = Pathfinding.Result(
             ranges, listOf(
-                EdgeLocation(ranges[0].edge, 650.meters)
+                EdgeLocation(ranges[0].edge, Offset(650.meters))
             )
         )
         val waypoints = makePathWaypoint(
@@ -122,15 +127,15 @@ class PathfindingResultConverterTest {
         )
         assert(blocks.size == 1)
         val blockId = blocks[0]
-        val blockLength = infra.blockInfra.getBlockLength(blockId).distance
+        val blockLength = infra.blockInfra.getBlockLength(blockId)
         val ranges = listOf(
-            EdgeRange(blockId, 600.meters, blockLength),
-            EdgeRange(blockId, 0.meters, 200.meters)
+            EdgeRange(blockId, Offset(600.meters), blockLength),
+            EdgeRange(blockId, Offset(0.meters), Offset(200.meters))
         )
         val rawResult = Pathfinding.Result(
             ranges, listOf(
-                EdgeLocation(ranges[0].edge, 600.meters),
-                EdgeLocation(ranges[0].edge, 200.meters)
+                EdgeLocation(ranges[0].edge, Offset(600.meters)),
+                EdgeLocation(ranges[0].edge, Offset(200.meters))
             )
         )
         val path = makePathProps(infra.rawInfra, infra.blockInfra, ranges)

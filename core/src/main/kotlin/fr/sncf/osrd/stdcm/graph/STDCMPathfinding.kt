@@ -5,11 +5,9 @@ import fr.sncf.osrd.api.pathfinding.constraints.ElectrificationConstraints
 import fr.sncf.osrd.api.pathfinding.constraints.LoadingGaugeConstraints
 import fr.sncf.osrd.api.pathfinding.makeHeuristics
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue
-import fr.sncf.osrd.graph.AStarHeuristic
-import fr.sncf.osrd.graph.Pathfinding
+import fr.sncf.osrd.graph.*
 import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
-import fr.sncf.osrd.graph.TargetsOnEdge
-import fr.sncf.osrd.sim_infra.api.BlockId
+import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.stdcm.STDCMResult
 import fr.sncf.osrd.stdcm.STDCMStep
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
@@ -67,11 +65,11 @@ fun findPath(
         .toList()
     val remainingDistanceEstimators = makeHeuristics(fullInfra, locations)
     val path = Pathfinding(graph)
-        .setEdgeToLength { edge: STDCMEdge? -> fullInfra.blockInfra.getBlockLength(edge!!.block).distance }
+        .setEdgeToLength { edge: STDCMEdge? -> fullInfra.blockInfra.getBlockLength(edge!!.block).cast() }
         .setRemainingDistanceEstimator(makeAStarHeuristic(remainingDistanceEstimators, rollingStock))
-        .setEdgeToLength { edge -> edge.length.distance }
-        .addBlockedRangeOnEdges { edge: STDCMEdge? -> loadingGaugeConstraints.apply(edge!!.block) }
-        .addBlockedRangeOnEdges { edge: STDCMEdge? -> electrificationConstraints.apply(edge!!.block) }
+        .setEdgeToLength { edge -> edge.length.cast() }
+        .addBlockedRangeOnEdges { edge: STDCMEdge? -> convertRanges(loadingGaugeConstraints.apply(edge!!.block)) }
+        .addBlockedRangeOnEdges { edge: STDCMEdge? -> convertRanges(electrificationConstraints.apply(edge!!.block)) }
         .setTotalCostUntilEdgeLocation { range ->
             totalCostUntilEdgeLocation(
                 range,
@@ -96,19 +94,26 @@ fun findPath(
     )
 }
 
+/** Converts ranges with block offsets to ranges with STDCMEdge offset */
+fun convertRanges(ranges: Collection<Pathfinding.Range<Block>>): Collection<Pathfinding.Range<STDCMEdge>> {
+    return ranges
+        .map { range -> Pathfinding.Range(range.start.cast(), range.end.cast()) }
+}
+
 /** Make the objective function from the edge locations  */
 private fun makeObjectiveFunction(
     steps: List<STDCMStep>
-): List<TargetsOnEdge<STDCMEdge>> {
-    val globalResult = ArrayList<TargetsOnEdge<STDCMEdge>>()
+): List<TargetsOnEdge<STDCMEdge, STDCMEdge>> {
+    val globalResult = ArrayList<TargetsOnEdge<STDCMEdge, STDCMEdge>>()
     for (i in 1 until steps.size) {
         val step = steps[i]
         globalResult.add { edge ->
-            val res = HashSet<EdgeLocation<STDCMEdge>>()
+            val res = HashSet<EdgeLocation<STDCMEdge, STDCMEdge>>()
             for (loc in step.locations)
                 if (loc.edge == edge.block) {
-                    val offsetOnEdge = loc.offset - edge.envelopeStartOffset.distance
-                    if (offsetOnEdge >= 0.meters && offsetOnEdge <= edge.length.distance)
+                    val offsetOnEdge: Offset<STDCMEdge> =
+                        loc.offset.cast<STDCMEdge>() - edge.envelopeStartOffset.distance
+                    if (offsetOnEdge >= Offset(0.meters) && offsetOnEdge <= edge.length)
                         res.add(EdgeLocation(edge, offsetOnEdge))
                 }
             res
@@ -132,14 +137,13 @@ private fun makeObjectiveFunction(
  * As we are looking for the fastest train, the first train should have the lightest weight, which is the case with
  * the formula above. */
 private fun totalCostUntilEdgeLocation(
-    range: EdgeLocation<STDCMEdge>,
+    range: EdgeLocation<STDCMEdge, STDCMEdge>,
     searchTimeRange: Double
 ): Double {
     val envelope = range.edge.envelope
     val timeEnd = interpolateTime(
         envelope,
-        range.edge.envelopeStartOffset,
-        Offset(range.offset),
+        range.offset,
         range.edge.timeStart,
         range.edge.standardAllowanceSpeedFactor
     )
@@ -150,13 +154,13 @@ private fun totalCostUntilEdgeLocation(
 /** Converts the "raw" heuristics based on physical blocks, returning the most optimistic distance,
  * into heuristics based on stdcm edges, returning the most optimistic time  */
 private fun makeAStarHeuristic(
-    baseBlockHeuristics: ArrayList<AStarHeuristic<BlockId>>,
+    baseBlockHeuristics: ArrayList<AStarHeuristicId<Block>>,
     rollingStock: RollingStock
-): List<AStarHeuristic<STDCMEdge>> {
-    val res = ArrayList<AStarHeuristic<STDCMEdge>>()
+): List<AStarHeuristic<STDCMEdge, STDCMEdge>> {
+    val res = ArrayList<AStarHeuristic<STDCMEdge, STDCMEdge>>()
     for (baseBlockHeuristic in baseBlockHeuristics) {
         res.add(AStarHeuristic { edge, offset ->
-            val distance = baseBlockHeuristic.apply(edge.block, offset)
+            val distance = baseBlockHeuristic.apply(edge.block, convertOffsetToBlock(offset, edge.envelopeStartOffset))
             distance / rollingStock.maxSpeed
         })
     }
@@ -166,19 +170,19 @@ private fun makeAStarHeuristic(
 /** Converts locations on a block id into a location on a STDCMGraph.Edge.  */
 private fun convertLocations(
     graph: STDCMGraph,
-    locations: Collection<EdgeLocation<BlockId>>,
+    locations: Collection<PathfindingEdgeLocationId<Block>>,
     startTime: Double,
     maxDepartureDelay: Double
-): Set<EdgeLocation<STDCMEdge>> {
-    val res = HashSet<EdgeLocation<STDCMEdge>>()
+): Set<EdgeLocation<STDCMEdge, STDCMEdge>> {
+    val res = HashSet<EdgeLocation<STDCMEdge, STDCMEdge>>()
     for (location in locations) {
         val edges = STDCMEdgeBuilder(location.edge, graph)
             .setStartTime(startTime)
-            .setStartOffset(Offset(location.offset))
+            .setStartOffset(location.offset)
             .setPrevMaximumAddedDelay(maxDepartureDelay)
             .makeAllEdges()
         for (edge in edges)
-            res.add(EdgeLocation(edge, 0.meters))
+            res.add(EdgeLocation(edge, Offset(0.meters)))
     }
     return res
 }

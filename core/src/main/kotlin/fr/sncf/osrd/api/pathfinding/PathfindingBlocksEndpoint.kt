@@ -10,10 +10,7 @@ import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint
 import fr.sncf.osrd.api.pathfinding.response.PathWaypointResult
 import fr.sncf.osrd.api.pathfinding.response.PathfindingResult
 import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator
-import fr.sncf.osrd.graph.AStarHeuristic
-import fr.sncf.osrd.graph.EdgeToRanges
-import fr.sncf.osrd.graph.GraphAdapter
-import fr.sncf.osrd.graph.Pathfinding
+import fr.sncf.osrd.graph.*
 import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
 import fr.sncf.osrd.infra.api.Direction
 import fr.sncf.osrd.railjson.parser.RJSRollingStockParser
@@ -218,11 +215,11 @@ fun runPathfinding(
     infra: FullInfra,
     reqWaypoints: Array<Array<PathfindingWaypoint>>,
     rollingStocks: Collection<RollingStock>?
-): Pathfinding.Result<BlockId> {
+): PathfindingResultId<Block> {
     // Parse the waypoints
-    val waypoints = ArrayList<Collection<EdgeLocation<BlockId>>>()
+    val waypoints = ArrayList<Collection<PathfindingEdgeLocationId<Block>>>()
     for (step in reqWaypoints) {
-        val allStarts = HashSet<EdgeLocation<BlockId>>()
+        val allStarts = HashSet<PathfindingEdgeLocationId<Block>>()
         for (waypoint in step)
             allStarts.addAll(findWaypointBlocks(infra, waypoint))
         waypoints.add(allStarts)
@@ -234,7 +231,9 @@ fun runPathfinding(
         infra.blockInfra, infra.rawInfra,
         rollingStocks
     )
-    val constraints = listOf<EdgeToRanges<BlockId>>(loadingGaugeConstraints, electrificationConstraints)
+    val constraints = listOf(
+        loadingGaugeConstraints, electrificationConstraints
+    )
     val remainingDistanceEstimators = makeHeuristics(infra, waypoints)
 
     // Compute the paths from the entry waypoint to the exit waypoint
@@ -244,8 +243,8 @@ fun runPathfinding(
 /** Initialize the heuristics  */
 fun makeHeuristics(
     infra: FullInfra,
-    waypoints: List<Collection<EdgeLocation<BlockId>>>
-): ArrayList<AStarHeuristic<BlockId>> {
+    waypoints: List<Collection<PathfindingEdgeLocationId<Block>>>
+): ArrayList<AStarHeuristicId<Block>> {
     // Compute the minimum distance between steps
     val stepMinDistance = DoubleArray(waypoints.size - 1)
     for (i in 0 until waypoints.size - 2) {
@@ -261,7 +260,7 @@ fun makeHeuristics(
     }
 
     // Setup estimators foreach intermediate steps
-    val remainingDistanceEstimators = ArrayList<AStarHeuristic<BlockId>>()
+    val remainingDistanceEstimators = ArrayList<AStarHeuristicId<Block>>()
     for (i in 0 until waypoints.size - 1) {
         remainingDistanceEstimators.add(
             RemainingDistanceEstimator(
@@ -278,12 +277,12 @@ fun makeHeuristics(
 @Throws(OSRDError::class)
 private fun computePaths(
     infra: FullInfra,
-    waypoints: ArrayList<Collection<EdgeLocation<BlockId>>>,
-    constraints: List<EdgeToRanges<BlockId>>,
-    remainingDistanceEstimators: List<AStarHeuristic<BlockId>>
-): Pathfinding.Result<BlockId> {
+    waypoints: ArrayList<Collection<PathfindingEdgeLocationId<Block>>>,
+    constraints: List<EdgeToRangesId<Block>>,
+    remainingDistanceEstimators: List<AStarHeuristicId<Block>>
+): PathfindingResultId<Block> {
     val pathFound = Pathfinding(GraphAdapter(infra.blockInfra, infra.rawInfra))
-        .setEdgeToLength { block: BlockId -> infra.blockInfra.getBlockLength(block).distance }
+        .setEdgeToLength { block: BlockId -> infra.blockInfra.getBlockLength(block) }
         .setRemainingDistanceEstimator(remainingDistanceEstimators)
         .addBlockedRangeOnEdges(constraints)
         .runPathfinding(waypoints)
@@ -293,14 +292,16 @@ private fun computePaths(
 
     // Handling errors
     // Check if pathfinding failed due to constraints
-    val possiblePathWithoutErrorNoConstraints = Pathfinding(GraphAdapter(infra.blockInfra, infra.rawInfra))
-        .setEdgeToLength { block: BlockId -> infra.blockInfra.getBlockLength(block).distance }
+    val possiblePathWithoutErrorNoConstraints = Pathfinding<DirDetectorId, BlockId, Block>(
+        GraphAdapter(infra.blockInfra, infra.rawInfra)
+    )
+        .setEdgeToLength { block -> infra.blockInfra.getBlockLength(block) }
         .setRemainingDistanceEstimator(remainingDistanceEstimators)
         .runPathfinding(waypoints)
     if (possiblePathWithoutErrorNoConstraints != null) {
         for (currentConstraint in constraints) {
             Pathfinding(GraphAdapter(infra.blockInfra, infra.rawInfra))
-                .setEdgeToLength { block: BlockId -> infra.blockInfra.getBlockLength(block).distance }
+                .setEdgeToLength { block: BlockId -> infra.blockInfra.getBlockLength(block) }
                 .addBlockedRangeOnEdges(currentConstraint)
                 .setRemainingDistanceEstimator(remainingDistanceEstimators)
                 .runPathfinding(waypoints)
@@ -320,7 +321,7 @@ private fun computePaths(
 fun findWaypointBlocks(
     infra: FullInfra,
     waypoints: Collection<PathfindingWaypoint>
-): Set<EdgeLocation<BlockId>> {
+): Set<PathfindingEdgeLocationId<Block>> {
     return waypoints.stream()
         .flatMap { waypoint: PathfindingWaypoint -> findWaypointBlocks(infra, waypoint).stream() }
         .collect(Collectors.toSet())
@@ -335,8 +336,8 @@ fun findWaypointBlocks(
 fun findWaypointBlocks(
     infra: FullInfra,
     waypoint: PathfindingWaypoint
-): Set<EdgeLocation<BlockId>> {
-    val res = HashSet<EdgeLocation<BlockId>>()
+): Set<PathfindingEdgeLocationId<Block>> {
+    val res = HashSet<PathfindingEdgeLocationId<Block>>()
     val trackSectionId = infra.rawInfra.getTrackSectionFromName(waypoint.trackSection)
         ?: throw OSRDError.newUnknownTrackSectionError(waypoint.trackSection)
     val trackChunkOnWaypoint = getTrackSectionChunkOnWaypoint(trackSectionId, waypoint.offset, infra.rawInfra)
@@ -352,7 +353,7 @@ fun findWaypointBlocks(
             waypoint.direction, infra
         )
         assert(offset <= infra.blockInfra.getBlockLength(block))
-        res.add(EdgeLocation(block, offset.distance))
+        res.add(EdgeLocation(block, offset))
     }
     return res
 }

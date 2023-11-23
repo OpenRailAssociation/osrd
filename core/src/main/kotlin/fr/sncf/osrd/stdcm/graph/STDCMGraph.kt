@@ -31,7 +31,7 @@ class STDCMGraph(
     steps: List<STDCMStep>,
     tag: String?,
     standardAllowance: AllowanceValue?
-) : Graph<STDCMNode, STDCMEdge> {
+) : Graph<STDCMNode, STDCMEdge, STDCMEdge> {
     var stdcmSimulations: STDCMSimulations = STDCMSimulations()
     val steps: List<STDCMStep>
     val delayManager: DelayManager

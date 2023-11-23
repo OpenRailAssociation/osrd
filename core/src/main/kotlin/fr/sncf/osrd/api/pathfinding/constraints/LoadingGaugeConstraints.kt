@@ -1,11 +1,12 @@
 package fr.sncf.osrd.api.pathfinding.constraints
 
 import fr.sncf.osrd.api.pathfinding.makePathProps
-import fr.sncf.osrd.graph.EdgeToRanges
+import fr.sncf.osrd.graph.EdgeToRangesId
 import fr.sncf.osrd.graph.Pathfinding
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.DistanceRangeMap
+import fr.sncf.osrd.utils.units.Offset
 import java.util.stream.Collectors
 
 @JvmRecord
@@ -13,9 +14,9 @@ data class LoadingGaugeConstraints(
     val blockInfra: BlockInfra,
     val infra: RawSignalingInfra,
     val rollingStocks: Collection<RollingStock>
-) : EdgeToRanges<BlockId> {
-    override fun apply(edge: BlockId): Collection<Pathfinding.Range> {
-        val res = HashSet<Pathfinding.Range>()
+) : EdgeToRangesId<Block> {
+    override fun apply(edge: BlockId): Collection<Pathfinding.Range<Block>> {
+        val res = HashSet<Pathfinding.Range<Block>>()
         val path = makePathProps(blockInfra, infra, edge)
         for (stock in rollingStocks)
             res.addAll(getBlockedRanges(stock, path))
@@ -25,7 +26,7 @@ data class LoadingGaugeConstraints(
     /**
      * Returns the sections of the given block that can't be used by the given rolling stock
      */
-    private fun getBlockedRanges(stock: RollingStock, path: PathProperties): Collection<Pathfinding.Range> {
+    private fun getBlockedRanges(stock: RollingStock, path: PathProperties): Collection<Pathfinding.Range<Block>> {
         return path.getLoadingGauge().asList().stream()
             .filter { (_, _, value): DistanceRangeMap.RangeMapEntry<LoadingGaugeConstraint> ->
                 !value.isCompatibleWith(
@@ -34,7 +35,7 @@ data class LoadingGaugeConstraints(
             }
             .map { (lower, upper): DistanceRangeMap.RangeMapEntry<LoadingGaugeConstraint> ->
                 Pathfinding.Range(
-                    lower, upper
+                    Offset<Block>(lower), Offset<Block>(upper)
                 )
             }
             .collect(Collectors.toSet())

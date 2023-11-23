@@ -75,7 +75,7 @@ data class STDCMEdge(
                 maximumAddedDelayAfter,
                 this,
                 newWaypointIndex,
-                EdgeLocation(block, envelopeStartOffset.distance + length.distance),
+                EdgeLocation(block, envelopeStartOffset + length.distance),
                 stopDuration
             )
         }
@@ -84,7 +84,7 @@ data class STDCMEdge(
     val totalTime: Double
         /** Returns how long it takes to go from the start to the end of the block, accounting standard allowance.  */
         get() = envelope.totalTime / standardAllowanceSpeedFactor
-    val length: Length<Block>
+    val length: Length<STDCMEdge>
         /** Returns the length of the edge  */
         get() = Length(fromMeters(envelope.endPos))
 }

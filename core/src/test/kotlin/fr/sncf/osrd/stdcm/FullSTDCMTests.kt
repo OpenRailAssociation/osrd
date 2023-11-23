@@ -9,6 +9,7 @@ import fr.sncf.osrd.standalone_sim.run
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.Helpers
+import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -31,7 +32,7 @@ class FullSTDCMTests {
                 setOf(
                     Helpers.convertRouteLocation(
                         infra,
-                        "rt.buffer_stop_b->tde.foo_b-switch_foo", 100.meters
+                        "rt.buffer_stop_b->tde.foo_b-switch_foo", Offset(100.meters)
                     )
                 )
             )
@@ -39,7 +40,7 @@ class FullSTDCMTests {
                 setOf(
                     Helpers.convertRouteLocation(
                         infra,
-                        "rt.tde.foo_b-switch_foo->buffer_stop_c", 10125.meters
+                        "rt.tde.foo_b-switch_foo->buffer_stop_c", Offset(10125.meters)
                     )
                 )
             )
@@ -56,13 +57,13 @@ class FullSTDCMTests {
         val start = setOf(
             Helpers.convertRouteLocation(
                 infra,
-                "rt.buffer_stop_b->tde.foo_b-switch_foo", 100.meters
+                "rt.buffer_stop_b->tde.foo_b-switch_foo", Offset(100.meters)
             )
         )
         val end = setOf(
             Helpers.convertRouteLocation(
                 infra,
-                "rt.tde.foo_b-switch_foo->buffer_stop_c", 10125.meters
+                "rt.tde.foo_b-switch_foo->buffer_stop_c", Offset(10125.meters)
             )
         )
         val requirements = makeRequirementsFromPath(infra, start, end, 0.0)
@@ -93,13 +94,13 @@ class FullSTDCMTests {
         val start = setOf(
             Helpers.convertRouteLocation(
                 infra,
-                "rt.buffer_stop.3->DB0", 1590.meters
+                "rt.buffer_stop.3->DB0", Offset(1590.meters)
             )
         )
         val end = setOf(
             Helpers.convertRouteLocation(
                 infra,
-                "rt.DH2->buffer_stop.7", 5000.meters
+                "rt.DH2->buffer_stop.7", Offset(5000.meters)
             )
         )
         val requirements = makeRequirementsFromPath(infra, start, end, 0.0).toMutableList()
@@ -124,13 +125,13 @@ class FullSTDCMTests {
         val start = setOf(
             Helpers.convertRouteLocation(
                 infra,
-                "rt.buffer_stop.3->DB0", 1590.meters
+                "rt.buffer_stop.3->DB0", Offset(1590.meters)
             )
         )
         val end = setOf(
             Helpers.convertRouteLocation(
                 infra,
-                "rt.DH2->buffer_stop.7", 5000.meters
+                "rt.DH2->buffer_stop.7", Offset(5000.meters)
             )
         )
         val requirements = makeRequirementsFromPath(infra, start, end, 0.0)
