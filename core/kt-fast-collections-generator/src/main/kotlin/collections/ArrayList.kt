@@ -215,6 +215,11 @@ private fun CollectionItemType.generateArrayList(context: GeneratorContext, curr
                 override fun toString(): String {
                     return joinToString(prefix = "[", separator = ", ", postfix = "]")
                 }
+
+                /** GENERATED CODE */
+                fun clear() {
+                    usedElements = 0
+                }
             }
 
             /** GENERATED CODE */
