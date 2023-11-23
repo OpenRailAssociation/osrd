@@ -44,10 +44,11 @@ export function getSpeedSectionsFilter(
 }
 
 export function getSpeedSectionsLineLayerProps({
+  colors,
   sourceTable,
   layersSettings,
 }: {
-  colors?: Theme;
+  colors: Theme;
   sourceTable?: string;
   layersSettings: MapState['layersSettings'];
 }): OmitLayer<LineLayer> {
@@ -68,20 +69,20 @@ export function getSpeedSectionsLineLayerProps({
         [
           'case',
           ['all', ['>', ['var', 'speed_limit'], 220]],
-          'rgba(145, 211, 255, 1)',
+          colors.speed.speedOver220,
           ['all', ['>', ['var', 'speed_limit'], 160], ['<=', ['var', 'speed_limit'], 220]],
-          'rgba(137, 247, 216, 1)',
+          colors.speed.speed220,
           ['all', ['>=', ['var', 'speed_limit'], 140], ['<=', ['var', 'speed_limit'], 160]],
-          'rgba(158, 255, 119, 1)',
+          colors.speed.speed160,
           ['all', ['>=', ['var', 'speed_limit'], 100], ['<', ['var', 'speed_limit'], 140]],
-          'rgba(224, 254, 100, 1)',
+          colors.speed.speed140,
           ['all', ['>', ['var', 'speed_limit'], 60], ['<', ['var', 'speed_limit'], 100]],
-          'rgba(253, 244, 121, 1)',
+          colors.speed.speed100,
           ['all', ['<=', ['var', 'speed_limit'], 60], ['>', ['var', 'speed_limit'], 30]],
-          'rgba(251, 178, 134, 1)',
+          colors.speed.speed60,
           ['all', ['<=', ['var', 'speed_limit'], 30]],
-          'rgba(239, 81, 81, 1)',
-          'rgba(185, 185, 185, 1)',
+          colors.speed.speed30,
+          colors.speed.speedNone,
         ],
       ],
       'line-width': 4,
