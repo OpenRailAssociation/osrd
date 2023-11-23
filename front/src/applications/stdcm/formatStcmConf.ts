@@ -1,6 +1,6 @@
 import { Dispatch } from 'redux';
 import { TFunction } from 'i18next';
-import { PathQuery, PostStdcmApiArg } from 'common/api/osrdEditoastApi';
+import { PathfindingRequest, PostStdcmApiArg } from 'common/api/osrdEditoastApi';
 
 import { createAllowanceValue } from 'applications/stdcm/components/allowancesConsts';
 import { OsrdStdcmConfState } from 'applications/operationalStudies/consts';
@@ -84,7 +84,7 @@ export default function formatStdcmConf(
     );
 
     // we already checked that everything is defined
-    const pathfindingQuery = getPathfindingQuery(osrdconf) as PathQuery;
+    const pathfindingQuery = getPathfindingQuery(osrdconf) as PathfindingRequest;
     const osrdConfStdcm = {
       body: {
         steps: pathfindingQuery.steps,

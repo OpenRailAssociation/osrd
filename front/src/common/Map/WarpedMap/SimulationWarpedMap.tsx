@@ -77,7 +77,7 @@ const SimulationWarpedMap: FC<{ collapsed?: boolean }> = ({ collapsed }) => {
         DataStatePayload)
   >({ type: 'idle' });
   const pathfindingID = useSelector(getSelectedProjection)?.path as number;
-  const [getPath] = osrdEditoastApi.endpoints.getPathfindingById.useLazyQuery();
+  const [getPath] = osrdEditoastApi.endpoints.getPathfindingByPathfindingId.useLazyQuery();
   const layers = useMemo(() => new Set<LayerType>(['track_sections']), []);
   const [mode, setMode] = useState<'manual' | 'auto'>('auto');
   const {
@@ -169,7 +169,7 @@ const SimulationWarpedMap: FC<{ collapsed?: boolean }> = ({ collapsed }) => {
   const itineraryState: AsyncMemoState<Feature<LineString> | null> = useAsyncMemo(async () => {
     if (!selectedTrain || state.type !== 'dataLoaded') return null;
 
-    const { data: path } = await getPath({ id: selectedTrain.path });
+    const { data: path } = await getPath({ pathfindingId: selectedTrain.path });
     if (!path) return null;
 
     return lineString(path.geographic.coordinates);
@@ -235,7 +235,7 @@ const SimulationWarpedMap: FC<{ collapsed?: boolean }> = ({ collapsed }) => {
    */
   useEffect(() => {
     setState({ type: 'loading' });
-    getPath({ id: pathfindingID })
+    getPath({ pathfindingId: pathfindingID })
       .then(({ data, isError, error }) => {
         if (isError) {
           setState({ type: 'error', message: error as string });

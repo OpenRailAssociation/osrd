@@ -1,16 +1,16 @@
 import { Step, TrainScheduleWithPath } from 'applications/operationalStudies/types';
-import { PathStep, TrainScheduleBatchItem } from 'common/api/osrdEditoastApi';
+import { PathWaypoint, TrainScheduleBatchItem } from 'common/api/osrdEditoastApi';
 import { time2sec } from 'utils/timeManipulation';
 
 // Hope for indexes are the same !
 // Synchronisation is done with indexes between pathfinding not suggered positions, and required steps from importation
-function mixPathPositionsAndTimes(requiredSteps: Step[], pathFindingSteps: PathStep[]) {
+function mixPathPositionsAndTimes(requiredSteps: Step[], pathFindingWaypoints: PathWaypoint[]) {
   const startTime = new Date(requiredSteps[0].departureTime);
-  const pathFindingStepsFiltered = pathFindingSteps.filter((step) => !step.suggestion);
+  const pathFindingStepsFiltered = pathFindingWaypoints.filter((waypoint) => !waypoint.suggestion);
   const scheduledPoints: { path_offset: number; time: number }[] = [];
-  requiredSteps.forEach((step, idx) => {
+  requiredSteps.forEach((waypoint, idx) => {
     if (idx !== 0) {
-      const arrivalTime = new Date(step.arrivalTime);
+      const arrivalTime = new Date(waypoint.arrivalTime);
       scheduledPoints.push({
         path_offset: pathFindingStepsFiltered[idx].path_offset,
         time: Math.round((arrivalTime.getTime() - startTime.getTime()) / 1000),

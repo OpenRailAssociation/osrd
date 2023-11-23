@@ -112,9 +112,9 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
     (offset: number) => {
       if (trainSimulations) {
         const trains = trainSimulations.map((train) =>
-          train.id === selectedTrain.id ? timeShiftTrain(train, offset) : train
+          train.id === selectedTrain.id ? timeShiftTrain(train as Train, offset) : train
         );
-        setTrainSimulations(trains);
+        setTrainSimulations(trains as Train[]);
         onOffsetTimeByDragging(trains, offset);
       }
     },
@@ -161,7 +161,7 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
   const redrawChart = () => {
     if (trainSimulations) {
       const trainsToDraw = trainSimulations.map((train) =>
-        createTrain(CHART_AXES.SPACE_TIME, train)
+        createTrain(CHART_AXES.SPACE_TIME, train as Train)
       );
       drawAllTrains(
         allowancesSettings,
@@ -176,10 +176,10 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
         resetChart,
         rotate,
         selectedProjection,
-        selectedTrain,
+        selectedTrain as Train,
         setChart,
         setDragOffset,
-        trainSimulations,
+        trainSimulations as Train[],
         trainsToDraw
       );
       setResetChart(false);
@@ -198,7 +198,7 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
   /* add behaviour on zoom and mousemove/mouseover/wheel on the new chart each time the chart changes */
   useEffect(() => {
     if (trainSimulations) {
-      const dataSimulation = createTrain(CHART_AXES.SPACE_TIME, selectedTrain);
+      const dataSimulation = createTrain(CHART_AXES.SPACE_TIME, selectedTrain as Train);
       enableInteractivity(
         chart,
         dataSimulation,

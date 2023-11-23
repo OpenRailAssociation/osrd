@@ -28,6 +28,7 @@ import { Spinner } from 'common/Loader';
 import { osrdEditoastApi, SimulationReport } from 'common/api/osrdEditoastApi';
 import { StdcmRequestStatus } from 'applications/stdcm/types';
 import { extractMessageFromError, extractStatusFromError } from 'utils/error';
+import { Train } from 'reducers/osrdsimulation/types';
 
 type StdcmRequestModalProps = {
   setCurrentStdcmRequestStatus: (currentStdcmRequestStatus: StdcmRequestStatus) => void;
@@ -82,7 +83,7 @@ export default function StdcmRequestModal(props: StdcmRequestModalProps) {
                 const consolidatedSimulation = createTrain(
                   dispatch,
                   CHART_AXES.SPACE_TIME,
-                  trains,
+                  trains as Train[], // TODO: remove Train interface
                   t
                 );
                 dispatch(updateConsolidatedSimulation(consolidatedSimulation));

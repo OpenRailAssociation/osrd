@@ -31,6 +31,7 @@ import SpaceCurvesSlopes from 'modules/simulationResult/components/SpaceCurvesSl
 import SpeedSpaceChart from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChart';
 import SpaceTimeChartIsolated from 'modules/simulationResult/components/SpaceTimeChart/withOSRDData';
 import type { PositionScaleDomain } from 'modules/simulationResult/components/simulationResultsConsts';
+import { Train } from 'reducers/osrdsimulation/types';
 
 const MAP_MIN_HEIGHT = 450;
 
@@ -229,7 +230,7 @@ export default function SimulationResults({
             >
               <SpaceCurvesSlopes
                 initialHeight={heightOfSpaceCurvesSlopesChart}
-                selectedTrain={selectedTrain}
+                selectedTrain={selectedTrain as Train} // TODO: remove Train interface
                 timePosition={timePosition}
                 positionValues={positionValues}
                 sharedXScaleDomain={positionScaleDomain}
@@ -243,7 +244,10 @@ export default function SimulationResults({
       {/* TRAIN : DRIVER TRAIN SCHEDULE */}
       {selectedTrain && selectedTrainRollingStock && (
         <div className="osrd-simulation-container mb-2">
-          <DriverTrainSchedule train={selectedTrain} rollingStock={selectedTrainRollingStock} />
+          <DriverTrainSchedule
+            train={selectedTrain as Train} // TODO: remove Train interface
+            rollingStock={selectedTrainRollingStock}
+          />
         </div>
       )}
 

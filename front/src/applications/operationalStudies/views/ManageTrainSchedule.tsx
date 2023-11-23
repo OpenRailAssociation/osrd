@@ -33,11 +33,13 @@ export default function ManageTrainSchedule() {
   const pathFindingID = useSelector(getPathfindingID);
   const trainScheduleIDsToModify = useSelector(getTrainScheduleIDsToModify);
   const [getTrainScheduleById] = osrdEditoastApi.endpoints.getTrainScheduleById.useLazyQuery({});
-  const [getPathfindingById] = osrdEditoastApi.endpoints.getPathfindingById.useLazyQuery({});
+  const [getPathfindingById] = osrdEditoastApi.endpoints.getPathfindingByPathfindingId.useLazyQuery(
+    {}
+  );
 
   // Details for tabs
-  const { data: pathFinding } = osrdEditoastApi.useGetPathfindingByIdQuery(
-    { id: pathFindingID as number },
+  const { data: pathFinding } = osrdEditoastApi.useGetPathfindingByPathfindingIdQuery(
+    { pathfindingId: pathFindingID as number },
     {
       skip: !pathFindingID,
     }
@@ -53,8 +55,8 @@ export default function ManageTrainSchedule() {
   );
 
   const { data: pathWithCatenaries = { catenary_ranges: [] as RangedValue[] } } =
-    osrdEditoastApi.endpoints.getPathfindingByPathIdCatenaries.useQuery(
-      { pathId: pathFindingID as number },
+    osrdEditoastApi.endpoints.getPathfindingByPathfindingIdCatenaries.useQuery(
+      { pathfindingId: pathFindingID as number },
       { skip: !pathFindingID }
     );
 
@@ -154,7 +156,7 @@ export default function ManageTrainSchedule() {
         .unwrap()
         .then((trainSchedule) => {
           if (trainSchedule.path_id) {
-            getPathfindingById({ id: trainSchedule.path_id })
+            getPathfindingById({ pathfindingId: trainSchedule.path_id })
               .unwrap()
               .then((path) => {
                 adjustConfWithTrainToModify(trainSchedule, path, dispatch);

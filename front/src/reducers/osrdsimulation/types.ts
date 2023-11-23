@@ -76,10 +76,10 @@ export interface Stop {
   time: number;
   duration: number;
   position: number;
-  line_code: number;
-  track_number: number;
-  line_name: string;
-  track_name: string;
+  line_code: number | null;
+  track_number: number | null;
+  line_name: string | null;
+  track_name: string | null;
 }
 
 export interface RouteAspect<Time = number, Color = number> {

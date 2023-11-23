@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Position } from 'geojson';
 import bbox from '@turf/bbox';
 import { useTranslation } from 'react-i18next';
-import { compact, isEqual } from 'lodash';
+import { compact, isEqual, omit } from 'lodash';
 import { GoAlert, GoCheckCircle, GoStop } from 'react-icons/go';
 
 import { setFailure } from 'reducers/main';
@@ -11,7 +11,12 @@ import { setFailure } from 'reducers/main';
 import { ArrayElement } from 'utils/types';
 import { conditionalStringConcat, formatKmValue } from 'utils/strings';
 
-import { Path, PathQuery, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import {
+  PathResponse,
+  PathfindingRequest,
+  PathfindingStep,
+  osrdEditoastApi,
+} from 'common/api/osrdEditoastApi';
 import { PointOnMap } from 'applications/operationalStudies/consts';
 
 import {
@@ -156,7 +161,7 @@ function init({
   rollingStockID,
 }: {
   pathfindingID?: number;
-  geojson?: Path;
+  geojson?: PathResponse;
   origin?: PointOnMap;
   destination?: PointOnMap;
   rollingStockID?: number;
@@ -172,7 +177,7 @@ function init({
 
 interface PathfindingProps {
   zoomToFeature: (lngLat: Position, id?: undefined, source?: undefined) => void;
-  path?: Path;
+  path?: PathResponse;
 }
 
 export function getPathfindingQuery({
@@ -187,7 +192,7 @@ export function getPathfindingQuery({
   origin?: PointOnMap;
   destination?: PointOnMap;
   vias: PointOnMap[];
-}): PathQuery | null {
+}): PathfindingRequest | null {
   if (
     origin &&
     destination &&
@@ -236,7 +241,7 @@ export function getPathfindingQuery({
                 },
           ],
         },
-        ...intermediateSteps,
+        ...(intermediateSteps as PathfindingStep[]),
         {
           duration: 1,
           waypoints: [
@@ -359,21 +364,34 @@ function Pathfinding({ zoomToFeature, path }: PathfindingProps) {
     </div>
   );
 
-  const transformVias = ({ steps }: Path) => {
+  const transformVias = ({ steps }: PathResponse) => {
     if (steps && steps.length >= 2) {
-      const newVias = steps.slice(1, -1).flatMap((step: ArrayElement<Path['steps']>) => {
+      const stepsAsPointOnMap: PointOnMap[] = steps.map((step) => ({
+        ...omit(step, ['geo']),
+        coordinates: step.geo?.coordinates,
+        id: step.id || undefined,
+        name: step.name || undefined,
+      }));
+      const newVias = steps.slice(1, -1).flatMap((step: ArrayElement<PathResponse['steps']>) => {
         const viaCoordinates = step.geo?.coordinates;
         if (!step.suggestion && viaCoordinates) {
-          return [{ ...step, coordinates: viaCoordinates }];
+          return [
+            {
+              ...omit(step, ['geo']),
+              coordinates: viaCoordinates,
+              id: step.id || undefined,
+              name: step.name || undefined,
+            },
+          ];
         }
         return [];
       });
       dispatch(replaceVias(newVias));
-      dispatch(updateSuggeredVias(steps));
+      dispatch(updateSuggeredVias(stepsAsPointOnMap));
     }
   };
 
-  const generatePathfindingParams = (): PathQuery | null => {
+  const generatePathfindingParams = (): PathfindingRequest | null => {
     dispatch(updateItinerary(undefined));
     return getPathfindingQuery({ infraID, rollingStockID, origin, destination, vias });
   };
@@ -392,11 +410,11 @@ function Pathfinding({ zoomToFeature, path }: PathfindingProps) {
         return;
       }
 
-      const request = postPathfinding({ pathQuery: params });
+      const request = postPathfinding({ pathfindingRequest: params });
       setPathfindingRequest(request);
       request
         .unwrap()
-        .then((itineraryCreated: Path) => {
+        .then((itineraryCreated: PathResponse) => {
           transformVias(itineraryCreated);
           dispatch(updateItinerary(itineraryCreated));
           dispatch(updatePathfindingID(itineraryCreated.id));

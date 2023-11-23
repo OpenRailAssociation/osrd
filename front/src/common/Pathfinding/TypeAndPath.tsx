@@ -1,6 +1,6 @@
 /* eslint-disable jsx-a11y/no-autofocus */
 import {
-  Path,
+  PathResponse,
   PostSearchApiArg,
   SearchResultItemOperationalPoint,
   osrdEditoastApi,
@@ -118,9 +118,9 @@ export default function TypeAndPath({ zoomToFeature }: PathfindingProps) {
             })),
           })),
       };
-      postPathfinding({ pathQuery: params })
+      postPathfinding({ pathfindingRequest: params })
         .unwrap()
-        .then((itineraryCreated: Path) => {
+        .then((itineraryCreated: PathResponse) => {
           zoomToFeature(bbox(itineraryCreated.geographic));
           loadPathFinding(itineraryCreated, dispatch);
         })

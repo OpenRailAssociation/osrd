@@ -84,7 +84,7 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
   const [selectedTrainHoverPosition, setTrainHoverPosition] = useState<TrainPosition>();
   const [otherTrainsHoverPosition, setOtherTrainsHoverPosition] = useState<TrainPosition[]>([]);
   const { urlLat = '', urlLon = '', urlZoom = '', urlBearing = '', urlPitch = '' } = useParams();
-  const [getPath] = osrdEditoastApi.useLazyGetPathfindingByIdQuery();
+  const [getPath] = osrdEditoastApi.useLazyGetPathfindingByPathfindingIdQuery();
   const dispatch = useDispatch();
 
   const updateViewportChange = useCallback(
@@ -112,7 +112,7 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
   };
 
   const getGeoJSONPath = async (pathID: number) => {
-    const { data: path, isError, error } = await getPath({ id: pathID });
+    const { data: path, isError, error } = await getPath({ pathfindingId: pathID });
     if (path && !isError) {
       const features = lineString(path.geographic.coordinates);
       setGeojsonPath(features);
@@ -354,7 +354,7 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
             geojsonPath={geojsonPath}
             layerOrder={LAYER_GROUPS_ORDER[LAYERS.TRAIN.GROUP]}
             viewport={viewport}
-            train={selectedTrain}
+            train={selectedTrain as Train} // TODO: remove Train interface
             allowancesSettings={allowancesSettings}
           />
         )}
