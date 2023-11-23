@@ -130,8 +130,8 @@ async fn layer_view(
 
     Ok(Json(ViewMetadata {
         data_type: "vector".to_owned(),
-        name: layer_slug,
-        promote_id: json!({"layer_slug": layer.id_field}),
+        name: layer_slug.to_owned(),
+        promote_id: json!({layer_slug: layer.id_field}),
         scheme: "xyz".to_owned(),
         tiles: vec![tiles_url_pattern],
         attribution: layer.attribution.clone().unwrap_or_default(),
