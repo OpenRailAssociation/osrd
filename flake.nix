@@ -108,6 +108,7 @@
                 poetry
 
                 # Core
+                gradle
                 jdk17
 
                 # Front
