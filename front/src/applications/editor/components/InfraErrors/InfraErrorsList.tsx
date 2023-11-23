@@ -88,86 +88,89 @@ const InfraErrorsList: React.FC<InfraErrorsListProps> = ({ infraID, onErrorClick
   }, [infraID, fetch, filterType, filterLevel]);
 
   return (
-    <div>
-      <div className="rounded bg-light d-flex justify-content-between align-items-center p-3 mt-3">
-        <OptionsSNCF
-          name="filterLevel"
-          options={InfraErrorLevelList.map((item) => ({
-            value: item || '',
-            label: t(`Editor.infra-errors.error-level.${item}`),
-          }))}
-          selectedValue={filterLevel || 'all'}
-          onChange={(e) => {
-            dispatch(
-              updateFiltersIssue(infraID, { filterLevel: e.target.value as InfraErrorLevel })
-            );
-          }}
-        />
-        <div className="ml-3 row flex-grow-1 d-flex align-items-center rounded bg-white p-2 m-1">
-          <div className="flex-grow-1 ml-2">
-            <select
-              aria-label={t('Editor.infra-errors.list.filter-type')}
-              id="filterType"
-              className="form-control"
-              value={filterType || 'all'}
-              onChange={(e) => {
-                dispatch(
-                  updateFiltersIssue(infraID, {
-                    filterType:
-                      e.target.value !== 'all' ? (e.target.value as InfraErrorType) : null,
-                  })
-                );
-              }}
-            >
-              <option value="all">{t(`Editor.infra-errors.error-type.all`)}</option>
-              {errorTypeList.map((item, i) => (
-                <option value={item} key={i}>
-                  {t(`Editor.infra-errors.error-type.${item}.name`)}
-                </option>
-              ))}
-            </select>
-          </div>
+    <div className="editor-infra-errors-list">
+      <div className="row align-items-center">
+        <div className="col-md-6 pb-3 pb-md-0">
+          <OptionsSNCF
+            name="filterLevel"
+            options={InfraErrorLevelList.map((item) => ({
+              value: item || '',
+              label: t(`Editor.infra-errors.error-level.${item}`),
+            }))}
+            selectedValue={filterLevel || 'all'}
+            onChange={(e) => {
+              dispatch(
+                updateFiltersIssue(infraID, { filterLevel: e.target.value as InfraErrorLevel })
+              );
+            }}
+          />
+        </div>
+        <div className="col-md-6">
+          <select
+            aria-label={t('Editor.infra-errors.list.filter-type')}
+            id="filterType"
+            className="form-control"
+            value={filterType || 'all'}
+            onChange={(e) => {
+              dispatch(
+                updateFiltersIssue(infraID, {
+                  filterType: e.target.value !== 'all' ? (e.target.value as InfraErrorType) : null,
+                })
+              );
+            }}
+          >
+            <option value="all">{t(`Editor.infra-errors.error-type.all`)}</option>
+            {errorTypeList.map((item, i) => (
+              <option value={item} key={i}>
+                {t(`Editor.infra-errors.error-type.${item}.name`)}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
-      {!loading && (
-        <p className="text-center text-info my-3">
-          {t('Editor.infra-errors.list.total-error', { count: total || 0 })}
-        </p>
-      )}
-      <InfiniteScroll
-        loader={<Spinner className="text-center p-3" />}
-        style={{ overflow: 'hidden' }}
-        dataLength={errors.length}
-        hasMore={next !== null}
-        scrollableTarget="modal-body"
-        next={() => fetch(infraID, next ?? 1, filterLevel, filterType ?? undefined)}
-      >
-        {errors && (
-          <ul className="list-group">
-            {errors.map((item, index) => (
-              <li key={uniqueId()} className="list-group-item management-item">
-                <InfraErrorBox error={item.information} index={index + 1}>
-                  {EDITOAST_TYPES.includes(item.information.obj_type) && (
-                    <button
-                      className="dropdown-item no-close-modal"
-                      type="button"
-                      title={t('Editor.infra-errors.list.goto-error')}
-                      onClick={() => {
-                        onErrorClick(infraID, item);
-                      }}
-                    >
-                      <FaDiamondTurnRight size={30} />
-                    </button>
-                  )}
-                </InfraErrorBox>
-              </li>
-            ))}
-          </ul>
+      <div className="error-count my-3">
+        {!loading ? (
+          <p className="text-center text-info">
+            {t('Editor.infra-errors.list.total-error', { count: total || 0 })}
+          </p>
+        ) : (
+          <LoaderFill />
         )}
-      </InfiniteScroll>
-
-      {loading && <LoaderFill />}
+      </div>
+      <div className="mb-2" id="errors-list-container">
+        <InfiniteScroll
+          loader={<Spinner className="text-center p-3" />}
+          style={{ overflow: 'hidden' }}
+          dataLength={errors.length}
+          hasMore={next !== null}
+          scrollableTarget="errors-list-container"
+          next={() => fetch(infraID, next ?? 1, filterLevel, filterType ?? undefined)}
+        >
+          {errors && (
+            <ul className="list-group">
+              {errors.map((item, index) => (
+                <li key={uniqueId()} className="list-group-item management-item">
+                  <InfraErrorBox error={item.information} index={index + 1}>
+                    {EDITOAST_TYPES.includes(item.information.obj_type) && (
+                      <button
+                        className="dropdown-item no-close-modal"
+                        type="button"
+                        title={t('Editor.infra-errors.list.goto-error')}
+                        onClick={() => {
+                          onErrorClick(infraID, item);
+                        }}
+                      >
+                        <FaDiamondTurnRight size={30} />
+                      </button>
+                    )}
+                  </InfraErrorBox>
+                </li>
+              ))}
+            </ul>
+          )}
+        </InfiniteScroll>
+      </div>
     </div>
   );
 };
