@@ -24,8 +24,9 @@ function getFill(isSelectedTrain: boolean, ecoBlocks: boolean) {
   return '#333';
 }
 
-function getSpeedLabel(isSelectedTrain: boolean, ecoBlocks: boolean, point: TrainPosition) {
+function getSpeedTimeLabel(isSelectedTrain: boolean, ecoBlocks: boolean, point: TrainPosition) {
   if (isSelectedTrain) {
+    console.log(point.speedTime);
     return (
       <>
         <span
@@ -34,6 +35,7 @@ function getSpeedLabel(isSelectedTrain: boolean, ecoBlocks: boolean, point: Trai
           {Math.round(point?.speedTime?.speed ?? 0)}
           km/h
         </span>
+        {point.speedTime && <span className="ml-2 small">{`${point.speedTime.time}`}</span>}
       </>
     );
   }
@@ -204,7 +206,7 @@ function TrainHoverPosition(props: TrainHoverPositionProps) {
   ) {
     const { ecoBlocks } = get(allowancesSettings, train.id, {} as AllowancesSetting);
     const fill = getFill(isSelectedTrain as boolean, ecoBlocks);
-    const label = getSpeedLabel(isSelectedTrain, ecoBlocks, point);
+    const label = getSpeedTimeLabel(isSelectedTrain, ecoBlocks, point);
 
     const zoomLengthFactor = getzoomPowerOf2LengthFactor(viewport);
     const [trainGeoJsonPath, headTriangle, rearTriangle] = getTrainPieces(
