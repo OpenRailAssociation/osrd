@@ -57,6 +57,8 @@ use utoipa::ToSchema;
 
 crate::schemas! {
     TrackLocation,
+    DirectionalTrackRange,
+    Direction,
     utils::schemas(),
     rolling_stock::schemas(),
     operation::schemas(),
@@ -238,7 +240,7 @@ impl TrackRange {
     }
 }
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
 #[serde(deny_unknown_fields)]
 #[derivative(Default)]
 pub struct DirectionalTrackRange {
@@ -313,7 +315,7 @@ impl ApplicableDirectionsTrackRange {
     }
 }
 
-#[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq, Hash, ToSchema)]
 #[serde(deny_unknown_fields, rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Direction {
     StartToStop,

@@ -9,7 +9,7 @@ use uuid::Uuid;
 
 /// A wrapper around a String that ensures that the string is not empty and not longer than 255 characters.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, utoipa::ToSchema)]
-pub struct Identifier(pub String);
+pub struct Identifier(#[schema(max_length = 255)] pub String);
 
 impl<'de> Deserialize<'de> for Identifier {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>

@@ -9,7 +9,7 @@ use actix_web::{
     web::{Data, Json, Path},
     HttpResponse, Responder,
 };
-use chrono::NaiveDateTime;
+use chrono::{DateTime, Utc};
 use derivative::Derivative;
 use diesel::{ExpressionMethods, QueryDsl};
 use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
@@ -25,7 +25,7 @@ use crate::{
     core::{
         pathfinding::{
             PathfindingRequest as CorePathfindingRequest, PathfindingResponse,
-            PathfindingWaypoints, Waypoint,
+            PathfindingWaypoints, Waypoint as CoreWaypoint,
         },
         AsCoreRequest, CoreClient,
     },
@@ -61,8 +61,8 @@ crate::routes! {
 crate::schemas! {
     PathResponse,
     PathfindingRequest,
-    StepPayload,
-    WaypointPayload,
+    PathfindingStep,
+    Waypoint,
     WaypointLocation,
     catenaries::schemas(),
     electrical_profiles::schemas(),
@@ -99,18 +99,20 @@ enum PathfindingError {
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, ToSchema)]
-struct PathResponse {
-    id: i64,
-    owner: uuid::Uuid,
-    length: f64,
-    created: NaiveDateTime,
-    slopes: Vec<Slope>,
-    curves: Vec<Curve>,
+pub(super) struct PathResponse {
+    pub(super) id: i64,
+    pub(super) owner: uuid::Uuid,
+    pub(super) length: f64,
+    pub(super) created: DateTime<Utc>,
+    pub(super) slopes: Vec<Slope>,
+    pub(super) curves: Vec<Curve>,
     #[schema(value_type = GeoJsonLineString)]
-    geographic: Geometry,
+    // #[derivative(Default(value = "Geometry::new(LineString(Default::default()))"))]
+    pub(super) geographic: Geometry,
     #[schema(value_type = GeoJsonLineString)]
-    schematic: Geometry,
-    steps: Vec<PathWaypoint>,
+    // #[derivative(Default(value = "Geometry::new(LineString(Default::default()))"))]
+    pub(super) schematic: Geometry,
+    pub(super) steps: Vec<PathWaypoint>,
 }
 
 impl From<Pathfinding> for PathResponse {
@@ -131,7 +133,7 @@ impl From<Pathfinding> for PathResponse {
             id,
             owner,
             length,
-            created,
+            created: DateTime::from_naive_utc_and_offset(created, Utc),
             slopes: slopes.0,
             curves: curves.0,
             geographic: diesel_linestring_to_geojson(geographic),
@@ -144,19 +146,19 @@ impl From<Pathfinding> for PathResponse {
 #[derive(Debug, Default, Deserialize, ToSchema)]
 struct PathfindingRequest {
     infra: i64,
-    steps: Vec<StepPayload>,
+    steps: Vec<PathfindingStep>,
     #[serde(default)]
     rolling_stocks: Vec<i64>,
 }
 
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq, Clone, ToSchema)]
-pub struct StepPayload {
+pub struct PathfindingStep {
     pub duration: f64,
-    pub waypoints: Vec<WaypointPayload>,
+    pub waypoints: Vec<Waypoint>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, ToSchema)]
-pub struct WaypointPayload {
+pub struct Waypoint {
     /// A track section UUID
     track_section: String,
     /// The location of the waypoint on the track section
@@ -175,10 +177,10 @@ enum WaypointLocation {
     GeoCoordinate((f64, f64)),
 }
 
-impl WaypointPayload {
+impl Waypoint {
     /// Projects the waypoint onto the tracksection and builds a bidirectional Core
     /// waypoint payload
-    fn compute_waypoints(&self, track_map: &TrackMap) -> Vec<Waypoint> {
+    fn compute_waypoints(&self, track_map: &TrackMap) -> Vec<CoreWaypoint> {
         let track = track_map.get(&self.track_section).unwrap();
         let offset = match self.location {
             WaypointLocation::GeoCoordinate((lon, lat)) => {
@@ -195,7 +197,7 @@ impl WaypointPayload {
             }
             WaypointLocation::Offset(offset) => offset,
         };
-        let [wp, wp2] = Waypoint::bidirectional(&track.id, offset);
+        let [wp, wp2] = CoreWaypoint::bidirectional(&track.id, offset);
         vec![wp, wp2]
     }
 }
@@ -296,7 +298,7 @@ impl PathfindingRequest {
 pub async fn fetch_pathfinding_payload_track_map(
     conn: &mut PgConnection,
     infra: i64,
-    steps: &[StepPayload],
+    steps: &[PathfindingStep],
 ) -> Result<TrackMap> {
     make_track_map(
         conn,
@@ -310,7 +312,7 @@ pub async fn fetch_pathfinding_payload_track_map(
 }
 
 pub fn parse_pathfinding_payload_waypoints(
-    steps: &[StepPayload],
+    steps: &[PathfindingStep],
     track_map: &TrackMap,
 ) -> Result<PathfindingWaypoints> {
     let waypoints = steps

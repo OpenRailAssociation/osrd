@@ -5,7 +5,8 @@ use crate::core::{AsCoreRequest, CoreClient};
 use crate::error::{InternalError, Result};
 use crate::models::electrical_profiles::ElectricalProfileSet;
 use crate::models::train_schedule::{
-    Allowance, PowerRestrictionRange, ResultTrain, ScheduledPoint, TrainScheduleOptions,
+    Allowance, ElectrificationRange, Mrsp, ResultTrain, RjsPowerRestrictionRange, ScheduledPoint,
+    SimulationPowerRestrictionRange, TrainScheduleOptions,
 };
 use crate::models::{Pathfinding, Retrieve, RollingStockModel};
 use crate::schema::rolling_stock::RollingStockComfortType;
@@ -15,7 +16,6 @@ use actix_web::post;
 use actix_web::web::{scope, Data, Json};
 use editoast_derive::EditoastError;
 use serde_derive::{Deserialize, Serialize};
-use serde_json::Value;
 use thiserror::Error;
 
 #[derive(Debug, Error, EditoastError)]
@@ -54,7 +54,7 @@ struct ScheduleArgs {
     #[serde(default)]
     pub comfort: RollingStockComfortType,
     #[serde(default)]
-    pub power_restriction_ranges: Option<Vec<PowerRestrictionRange>>,
+    pub power_restriction_ranges: Option<Vec<RjsPowerRestrictionRange>>,
     #[serde(default)]
     pub options: Option<TrainScheduleOptions>,
 }
@@ -90,10 +90,10 @@ struct SingleSimulationRequest {
 struct SingleSimulationResponse {
     pub base_simulation: ResultTrain,
     pub eco_simulation: Option<ResultTrain>,
-    pub speed_limits: Vec<Value>,
+    pub speed_limits: Mrsp,
     pub warnings: Vec<String>,
-    pub electrification_ranges: Vec<Value>,
-    pub power_restriction_ranges: Vec<Value>,
+    pub electrification_ranges: Vec<ElectrificationRange>,
+    pub power_restriction_ranges: Vec<SimulationPowerRestrictionRange>,
 }
 
 fn get_first_from_core_vec<T>(core_vec: Vec<T>) -> Result<T> {
@@ -303,7 +303,7 @@ mod tests {
         )
         .await;
 
-        let request_body: Value = json!({
+        let request_body: serde_json::Value = json!({
             "rolling_stock_id": rs.id(),
             "path_id": pf.id(),
         });

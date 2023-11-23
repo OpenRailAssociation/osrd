@@ -27,6 +27,10 @@ use thiserror::Error;
 #[cfg(test)]
 use crate::core::mocking::MockingError;
 
+crate::schemas! {
+    simulation::schemas(),
+}
+
 const MAX_RETRIES: u8 = 5;
 
 fn colored_method(method: &reqwest::Method) -> ColoredString {

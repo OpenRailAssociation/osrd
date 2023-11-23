@@ -1222,33 +1222,25 @@ export type GetSpritesBySignalingSystemAndFileNameApiArg = {
   /** File name (json, png or svg) */
   fileName: string;
 };
-export type PostStdcmApiResponse =
-  /** status 200 Simulation result */
-  | {
-      path: Path;
-      simulation: SimulationReport;
-    }
-  | {
-      error?: string;
-    };
+export type PostStdcmApiResponse = /** status 201 The simulation result */ {
+  path: PathResponse;
+  path_payload: PathfindingPayload;
+  simulation: SimulationReport;
+};
 export type PostStdcmApiArg = {
   body: {
-    comfort: Comfort;
-    end_time?: number;
+    comfort: RollingStockComfortType;
+    end_time?: number | null;
     infra_id: number;
     margin_after?: number;
     margin_before?: number;
-    maximum_departure_delay: number;
+    maximum_departure_delay?: number;
     maximum_run_time?: number;
     rolling_stock_id: number;
-    rolling_stocks: number[];
-    speed_limit_tags?: string;
-    standard_allowance?: AllowanceValue;
-    start_time?: number;
-    steps: {
-      duration: number;
-      waypoints: Waypoint;
-    }[];
+    speed_limit_tags?: string | null;
+    standard_allowance?: AllowanceValue | null;
+    start_time?: number | null;
+    steps: PathfindingStep[];
     timetable_id: number;
   };
 };
@@ -1503,13 +1495,13 @@ export type Zone = {
   sch?: BoundingBox;
 };
 export type Direction = 'START_TO_STOP' | 'STOP_TO_START';
+export type Identifier = string;
 export type DirectionalTrackRange = {
   begin: number;
   direction: Direction;
   end: number;
-  track: string;
+  track: Identifier;
 };
-export type Identifier = string;
 export type TrackLocation = {
   offset: number;
   track_section: Identifier;
@@ -1652,14 +1644,18 @@ export type Slope = {
   gradient: number;
   position: number;
 };
+export type GeoJsonPoint = {
+  coordinates: GeoJsonPointValue;
+  type: 'Point';
+};
 export type PathWaypoint = {
   duration: number;
-  geo: GeoJsonLineString;
+  geo: GeoJsonPoint;
   id: string | null;
   location: TrackLocation;
   name: string | null;
   path_offset: number;
-  sch: GeoJsonLineString;
+  sch: GeoJsonPoint;
   suggestion: boolean;
 };
 export type PathResponse = {
@@ -1680,17 +1676,17 @@ export type WaypointLocation =
   | {
       geo_coordinate: (number & number)[];
     };
-export type WaypointPayload = WaypointLocation & {
+export type Waypoint = WaypointLocation & {
   track_section: string;
 };
-export type StepPayload = {
+export type PathfindingStep = {
   duration: number;
-  waypoints: WaypointPayload[];
+  waypoints: Waypoint[];
 };
 export type PathfindingRequest = {
   infra: number;
   rolling_stocks?: number[];
-  steps: StepPayload[];
+  steps: PathfindingStep[];
 };
 export type RangedValue = {
   begin: number;
@@ -1968,10 +1964,6 @@ export type SearchResultItemTrack = {
   line_code: number;
   line_name: string;
 };
-export type GeoJsonPoint = {
-  coordinates: GeoJsonPointValue;
-  type: 'Point';
-};
 export type SearchResultItemOperationalPoint = {
   ch: string;
   geographic: GeoJsonPoint;
@@ -2081,31 +2073,23 @@ export type SimulationReportByTrain = {
   }[];
   tail_positions: SpaceTimePosition[][];
 };
-export type Electrified = {
-  mode: string;
-  mode_handled: boolean;
-  object_type: 'Electrified';
-  profile?: string | null;
-  profile_handled: boolean;
-};
-export type Neutral = {
-  lower_pantograph: boolean;
-  object_type: 'Neutral';
-};
-export type NonElectrified = {
-  object_type: 'NonElectrified';
-};
+export type ElectrificationUsage =
+  | {
+      mode: string;
+      mode_handled: boolean;
+      object_type: 'Electrified';
+      profile?: string | null;
+      profile_handled: boolean;
+    }
+  | {
+      lower_pantograph: boolean;
+      object_type: 'Neutral';
+    }
+  | {
+      object_type: 'NonElectrified';
+    };
 export type ElectrificationRange = {
-  electrificationUsage:
-    | ({
-        object_type: 'Electrified';
-      } & Electrified)
-    | ({
-        object_type: 'Neutral';
-      } & Neutral)
-    | ({
-        object_type: 'NonElectrified';
-      } & NonElectrified);
+  electrificationUsage: ElectrificationUsage;
   start: number;
   stop: number;
 };
@@ -2166,7 +2150,7 @@ export type Comfort = 'AC' | 'HEATING' | 'STANDARD';
 export type TrainScheduleOptions = {
   ignore_electrical_profiles?: boolean | null;
 };
-export type PowerRestrictionRange = {
+export type RjsPowerRestrictionRange = {
   begin_position: number;
   end_position: number;
   power_restriction_code: string;
@@ -2178,7 +2162,7 @@ export type SingleSimulationRequest = {
   initial_speed?: number;
   options?: TrainScheduleOptions | null;
   path_id: number;
-  power_restriction_ranges?: PowerRestrictionRange[] | null;
+  power_restriction_ranges?: RjsPowerRestrictionRange[] | null;
   rolling_stock_id: number;
   scheduled_points?: {
     path_offset: number;
@@ -2191,68 +2175,82 @@ export type SingleSimulationRequest = {
   }[];
   tag?: string;
 };
-export type GeoJsonObject = {
-  coordinates: number[][];
-  type: string;
+export type RoutePath = {
+  route: string;
+  signaling_type: string;
+  track_sections: DirectionalTrackRange[];
 };
-export type GeoJsonPosition = {
-  coordinates: number[];
-  type: string;
+export type PathfindingPayload = {
+  path_waypoints: PathWaypoint[];
+  route_paths: RoutePath[];
 };
-export type PathStep = {
+export type GetCurvePoint = {
+  position: number;
+  time: number;
+};
+export type SignalUpdate = {
+  aspect_label: string;
+  blinking: boolean;
+  color: number;
+  position_end?: number | null;
+  position_start: number;
+  signal_id: string;
+  time_end?: number | null;
+  time_start: number;
+  track: string;
+  track_offset?: number | null;
+};
+export type ResultSpeed = {
+  position: number;
+  speed: number;
+  time: number;
+};
+export type ResultStops = {
   duration: number;
-  geo: GeoJsonPosition;
-  id?: string;
-  location: TrackLocation;
-  name?: string;
-  path_offset: number;
-  sch: GeoJsonPosition;
-  suggestion: boolean;
+  position: number;
+  time: number;
 };
-export type Path = {
-  created: string;
-  curves: {
-    position: number;
-    radius: number;
-  }[];
-  geographic: GeoJsonObject;
-  id: number;
-  length: number;
-  owner: string;
-  schematic: GeoJsonObject;
-  slopes: {
-    gradient: number;
-    position: number;
-  }[];
-  steps: PathStep[];
+export type FullResultStops = ResultStops & {
+  id?: string | null;
+  line_code?: number | null;
+  line_name?: string | null;
+  name?: string | null;
+  track_name?: string | null;
+  track_number?: number | null;
 };
+export type ReportTrain = {
+  head_positions: GetCurvePoint[][];
+  mechanical_energy_consumed: number;
+  route_aspects: SignalUpdate[];
+  speeds: ResultSpeed[];
+  stops: FullResultStops[];
+  tail_positions: GetCurvePoint[][];
+};
+export type SimulationPowerRestrictionRange = {
+  code: string;
+  handled: boolean;
+  start: number;
+  stop: number;
+};
+export type MrspPoint = {
+  position: number;
+  speed: number;
+};
+export type Mrsp = MrspPoint[];
 export type SimulationReport = {
-  base: SimulationReportByTrain;
-  curves: {
-    position: number;
-    radius: number;
-  }[];
-  eco?: SimulationReportByTrain;
+  base: ReportTrain;
+  curves: Curve[];
+  eco?: ReportTrain | null;
   electrification_ranges: ElectrificationRange[];
   id: number;
   labels: string[];
   name: string;
   path: number;
-  power_restriction_ranges: PowerRestrictionRangeItem[];
-  slopes: {
-    gradient: number;
-    position: number;
-  }[];
-  speed_limit_tags?: string;
-  vmax: {
-    position: number;
-    speed: number;
-  }[];
+  power_restriction_ranges: SimulationPowerRestrictionRange[];
+  slopes: Slope[];
+  speed_limit_tags: string | null;
+  vmax: Mrsp;
 };
-export type Waypoint = {
-  geo_coordinate?: number[];
-  track_section?: string;
-}[];
 export type Timetable = {
   id: number;
   name: string;
@@ -2270,7 +2268,7 @@ export type TrainSchedule = {
   labels: string[];
   options: TrainScheduleOptions | null;
   path_id: number;
-  power_restriction_ranges: PowerRestrictionRange[] | null;
+  power_restriction_ranges: RjsPowerRestrictionRange[] | null;
   rolling_stock_id: number;
   scheduled_points: ScheduledPoint[];
   speed_limit_tags: string | null;
@@ -2338,7 +2336,7 @@ export type TrainSchedulePatch = {
   labels?: string[] | null;
   options?: TrainScheduleOptions | null;
   path_id?: number | null;
-  power_restriction_ranges?: PowerRestrictionRange[] | null;
+  power_restriction_ranges?: RjsPowerRestrictionRange[] | null;
   rolling_stock_id?: number | null;
   scheduled_points?: ScheduledPoint[] | null;
   speed_limit_tags?: string | null;
@@ -2351,7 +2349,7 @@ export type TrainScheduleBatchItem = {
   initial_speed: number;
   labels?: string[];
   options?: TrainScheduleOptions | null;
-  power_restriction_ranges?: PowerRestrictionRange[] | null;
+  power_restriction_ranges?: RjsPowerRestrictionRange[] | null;
   rolling_stock_id: number;
   scheduled_points?: ScheduledPoint[];
   speed_limit_tags?: string | null;

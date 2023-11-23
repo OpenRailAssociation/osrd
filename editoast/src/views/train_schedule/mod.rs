@@ -3,24 +3,28 @@ pub mod simulation_report;
 
 use self::projection::Projection;
 use super::electrical_profiles::ElectricalProfilesError;
-use crate::core::simulation::{
-    CoreTrainSchedule, SimulationRequest, SimulationResponse, TrainStop,
+
+use crate::{
+    core::{
+        simulation::{CoreTrainSchedule, SimulationRequest, SimulationResponse, TrainStop},
+        AsCoreRequest, CoreClient,
+    },
+    error::{InternalError, Result},
+    models::{
+        electrical_profiles::ElectricalProfileSet,
+        train_schedule::{
+            filter_invalid_trains, Allowance, RjsPowerRestrictionRange, ScheduledPoint,
+            TrainScheduleOptions,
+        },
+        Create, Delete, Infra, LightRollingStockModel, Pathfinding, Retrieve, RollingStockModel,
+        Scenario, SimulationOutputChangeset, Timetable, TrainSchedule, TrainScheduleChangeset,
+        Update,
+    },
+    schema::rolling_stock::RollingStockComfortType,
+    views::train_schedule::simulation_report::fetch_simulation_output,
+    DbPool, DieselJson,
 };
-use crate::core::{AsCoreRequest, CoreClient};
-use crate::error::{InternalError, Result};
-use crate::models::electrical_profiles::ElectricalProfileSet;
-use crate::models::train_schedule::{
-    filter_invalid_trains, Allowance, PowerRestrictionRange, ScheduledPoint, TrainScheduleOptions,
-};
-use crate::models::{
-    Create, Delete, Infra, LightRollingStockModel, Pathfinding, Retrieve, RollingStockModel,
-    Scenario, SimulationOutputChangeset, TrainScheduleChangeset, Update,
-};
-use crate::models::{Timetable, TrainSchedule};
-use crate::schema::rolling_stock::RollingStockComfortType;
-use crate::views::train_schedule::simulation_report::fetch_simulation_output;
-use crate::DbPool;
-use crate::DieselJson;
+
 use actix_web::web::{Data, Json, Path, Query};
 use actix_web::{delete, get, patch, post, HttpResponse};
 use diesel::{ExpressionMethods, QueryDsl};
@@ -29,11 +33,30 @@ use diesel_async::{AsyncConnection, RunQueryDsl};
 use editoast_derive::EditoastError;
 use itertools::izip;
 use serde_derive::Deserialize;
-use serde_json::to_value;
 use simulation_report::SimulationReport;
 use std::collections::{HashMap, HashSet};
 use thiserror::Error;
 use utoipa::{IntoParams, ToSchema};
+
+crate::routes! {
+    "/train_schedule" => {
+        get_results,
+        standalone_simulation,
+        delete_multiple,
+        patch_multiple,
+        "/{id}" => {
+            delete,
+            get_result,
+            get,
+        }
+    },
+}
+
+crate::schemas! {
+    TrainScheduleBatchItem,
+    TrainSchedulePatch,
+    simulation_report::schemas(),
+}
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "train_schedule")]
@@ -62,25 +85,6 @@ pub enum TrainScheduleError {
     #[error("No simulation given")]
     #[editoast_error(status = 500)]
     NoSimulation,
-}
-
-crate::routes! {
-    "/train_schedule" => {
-        get_results,
-        standalone_simulation,
-        delete_multiple,
-        patch_multiple,
-        "/{id}" => {
-            delete,
-            get_result,
-            get,
-        }
-    },
-}
-
-crate::schemas! {
-    TrainScheduleBatchItem,
-    TrainSchedulePatch,
 }
 
 #[derive(IntoParams)]
@@ -168,7 +172,7 @@ struct TrainSchedulePatch {
     scheduled_points: Option<Vec<ScheduledPoint>>,
     comfort: Option<RollingStockComfortType>,
     speed_limit_tags: Option<String>,
-    power_restriction_ranges: Option<Vec<PowerRestrictionRange>>,
+    power_restriction_ranges: Option<Vec<RjsPowerRestrictionRange>>,
     options: Option<TrainScheduleOptions>,
     path_id: Option<i64>,
     rolling_stock_id: Option<i64>,
@@ -464,7 +468,7 @@ struct TrainScheduleBatchItem {
     #[serde(default)]
     comfort: RollingStockComfortType,
     speed_limit_tags: Option<String>,
-    power_restriction_ranges: Option<Vec<PowerRestrictionRange>>,
+    power_restriction_ranges: Option<Vec<RjsPowerRestrictionRange>>,
     options: Option<TrainScheduleOptions>,
     rolling_stock_id: i64,
     // Filled later by the endpoint
@@ -698,18 +702,12 @@ pub fn process_simulation_response(
     let power_restriction_ranges =
         empty_range_to_range_of_none(power_restriction_ranges, base_simulations.len());
 
-    for (
-        base_simulation,
-        eco_simulation,
-        speed_limits,
-        electrification_ranges,
-        power_restriction_ranges,
-    ) in izip!(
+    for (base_simulation, eco_simulation, mrsp, elec_ranges, prr) in izip!(
         base_simulations,
         eco_simulations,
         speed_limits,
         electrification_ranges,
-        power_restriction_ranges
+        power_restriction_ranges,
     ) {
         let eco_simulation = match eco_simulation {
             Some(eco) => Some(Some(DieselJson(eco))),
@@ -717,11 +715,11 @@ pub fn process_simulation_response(
         };
         let simulation_output = SimulationOutputChangeset {
             id: None,
-            mrsp: Some(to_value(speed_limits).unwrap()),
+            mrsp: Some(DieselJson(mrsp)),
             base_simulation: Some(DieselJson(base_simulation)),
             eco_simulation,
-            electrification_ranges: electrification_ranges.map(|er| to_value(er).unwrap()),
-            power_restriction_ranges: power_restriction_ranges.map(|prr| to_value(prr).unwrap()),
+            electrification_ranges: elec_ranges.map(DieselJson),
+            power_restriction_ranges: prr.map(DieselJson),
             train_schedule_id: Some(None), // To be filled once the train schedule is inserted
         };
         simulation_outputs.push(simulation_output);

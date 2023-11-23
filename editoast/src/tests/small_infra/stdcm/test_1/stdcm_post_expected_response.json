@@ -325,7 +325,7 @@
         },
         "eco": null,
         "speed_limit_tags": null,
-        "electrification_ranges": null,
-        "power_restriction_ranges": null
+        "electrification_ranges": [],
+        "power_restriction_ranges": []
     }
 }

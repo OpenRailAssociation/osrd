@@ -21,7 +21,7 @@ pub mod train_schedule;
 use self::openapi::{merge_path_items, remove_discriminator, OpenApiMerger, Routes};
 use crate::client::get_app_version;
 use crate::core::version::CoreVersionRequest;
-use crate::core::{AsCoreRequest, CoreClient};
+use crate::core::{self, AsCoreRequest, CoreClient};
 use crate::error::{self, Result};
 use crate::map::redis_utils::RedisClient;
 use crate::models;
@@ -42,35 +42,29 @@ use utoipa::{OpenApi, ToSchema};
 fn routes_v2() -> Routes<impl HttpServiceFactory> {
     crate::routes! {
         (health, version, core_version),
-        (timetable::routes(),
+        (rolling_stocks::routes(), light_rolling_stocks::routes()),
+        (pathfinding::routes(), stdcm::routes(), train_schedule::routes()),
+        timetable::routes(),
         documents::routes(),
         sprites::routes(),
-        pathfinding::routes(),
         projects::routes(),
         search::routes(),
-        train_schedule::routes(),
-        rolling_stocks::routes(),
-        light_rolling_stocks::routes(),
         electrical_profiles::routes(),
         layers::routes(),
-        auto_fixes::routes()),
+        auto_fixes::routes(),
     }
     routes()
 }
 
 pub fn routes() -> impl HttpServiceFactory {
-    services![
-        routes_v2(),
-        infra::routes(),
-        stdcm::routes(),
-        single_simulation::routes(),
-    ]
+    services![routes_v2(), infra::routes(), single_simulation::routes(),]
 }
 
 schemas! {
     error::schemas(),
     models::schemas(),
     schema::schemas(),
+    core::schemas(),
     Version,
     timetable::schemas(),
     documents::schemas(),

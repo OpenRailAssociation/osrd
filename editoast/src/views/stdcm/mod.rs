@@ -1,110 +1,110 @@
-use crate::core::stdcm::{STDCMCoreRequest, STDCMCoreResponse, STDCMCoreStep};
-use crate::core::{AsCoreRequest, CoreClient};
-
-use crate::error::Result;
-pub use crate::models::train_schedule::AllowanceValue;
-use crate::models::{Create, SpacingRequirement};
-use crate::models::{
-    CurveGraph, Infra, PathWaypoint, Pathfinding, PathfindingChangeset, PathfindingPayload,
-    Retrieve, SlopeGraph, TrainSchedule,
+use super::{
+    pathfinding::{
+        fetch_pathfinding_payload_track_map, parse_pathfinding_payload_waypoints, PathResponse,
+        PathfindingStep,
+    },
+    timetable::get_simulated_schedules_from_timetable,
+    train_schedule::{
+        process_simulation_response,
+        projection::Projection,
+        simulation_report::{create_simulation_report, SimulationReport},
+    },
 };
-use crate::views::rolling_stocks::retrieve_existing_rolling_stock;
-use crate::DbPool;
-use actix_web::dev::HttpServiceFactory;
-use actix_web::web::{self, Data, Json};
-use actix_web::{post, HttpResponse, Responder};
+use crate::{
+    core::{
+        stdcm::{STDCMCoreRequest, STDCMCoreResponse, STDCMCoreStep},
+        AsCoreRequest, CoreClient,
+    },
+    error::Result,
+    models::{
+        Create, Infra, Pathfinding, PathfindingChangeset, PathfindingPayload, Retrieve,
+        SpacingRequirement, TrainSchedule,
+    },
+    schema::rolling_stock::RollingStockComfortType,
+    views::rolling_stocks::retrieve_existing_rolling_stock,
+    DbPool,
+};
 
+pub use crate::models::train_schedule::AllowanceValue;
+
+use actix_web::web::{Data, Json};
+use actix_web::{post, HttpResponse, Responder};
+use derivative::Derivative;
 use editoast_derive::EditoastError;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
+use utoipa::ToSchema;
 
-use super::pathfinding::{
-    fetch_pathfinding_payload_track_map, parse_pathfinding_payload_waypoints, StepPayload,
-};
-use super::timetable::get_simulated_schedules_from_timetable;
-use super::train_schedule::process_simulation_response;
-use super::train_schedule::projection::Projection;
-use super::train_schedule::simulation_report::{create_simulation_report, SimulationReport};
-
-use crate::schema::utils::geometry::diesel_linestring_to_geojson;
-use chrono::{DateTime, TimeZone, Utc};
-use derivative::Derivative;
-use geos::geojson::Geometry;
-use uuid::Uuid;
-
-use crate::schema::rolling_stock::RollingStockComfortType;
-
-pub fn routes() -> impl HttpServiceFactory {
-    web::scope("/stdcm").service(create)
+crate::routes! {
+    "/stdcm" => {
+        create
+    }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct STDCMRequestPayload {
-    pub infra_id: i64,
-    pub timetable_id: i64,
-    pub start_time: Option<f64>,
-    pub end_time: Option<f64>,
-    pub steps: Vec<StepPayload>,
-    pub rolling_stock_id: i64,
-    pub comfort: RollingStockComfortType,
-    pub maximum_departure_delay: Option<f64>,
-    pub maximum_run_time: f64,
-    pub speed_limit_tags: Option<String>,
+/// An STDCM request
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
+struct STDCMRequestPayload {
+    infra_id: i64,
+    timetable_id: i64,
+    start_time: Option<f64>,
+    end_time: Option<f64>,
+    steps: Vec<PathfindingStep>,
+    rolling_stock_id: i64,
+    comfort: RollingStockComfortType,
+    /// By how long we can shift the departure time in seconds
+    #[serde(default = "default_maximum_departure_delay")]
+    #[schema(default = default_maximum_departure_delay)]
+    maximum_departure_delay: f64,
+    /// Specifies how long the total run time can be in seconds
+    #[serde(default = "default_maximum_run_time")]
+    #[schema(default = default_maximum_run_time)]
+    maximum_run_time: f64,
+    /// Train categories for speed limits
+    speed_limit_tags: Option<String>,
+    /// Margin before the train passage in seconds
+    ///
+    /// Enforces that the path used by the train should be free and
+    /// available at least that many seconds before its passage.
     #[serde(default)]
-    pub margin_before: f64,
+    margin_before: f64,
+    /// Margin after the train passage in seconds
+    ///
+    /// Enforces that the path used by the train should be free and
+    /// available at least that many seconds after its passage.
     #[serde(default)]
-    pub margin_after: f64,
-    pub standard_allowance: Option<AllowanceValue>,
+    margin_after: f64,
+    standard_allowance: Option<AllowanceValue>,
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
-pub struct STDCMResponse {
-    pub path: STDCMPath,
-    pub simulation: SimulationReport,
+const TWO_HOURS_IN_SECONDS: f64 = 2.0_f64 * 60.0_f64 * 60.0_f64;
+const fn default_maximum_departure_delay() -> f64 {
+    TWO_HOURS_IN_SECONDS
 }
 
-#[derive(Serialize, Deserialize, Debug, Derivative)]
+const TWELVE_HOURS_IN_SECONDS: f64 = 12.0_f64 * 60.0_f64 * 60.0_f64;
+const fn default_maximum_run_time() -> f64 {
+    TWELVE_HOURS_IN_SECONDS
+}
+
+/// The response issued after an STDCM calculation
+#[derive(Serialize, Deserialize, Debug, Derivative, ToSchema)]
 #[derivative(PartialEq)]
-pub struct STDCMPath {
-    #[derivative(PartialEq = "ignore")]
-    pub id: i64,
-    pub owner: Uuid,
-    #[derivative(PartialEq = "ignore")]
-    pub created: DateTime<Utc>,
-    pub length: Option<f64>,
-    pub slopes: SlopeGraph,
-    pub curves: CurveGraph,
-    #[derivative(Default(value = "Geometry::new(LineString(Default::default()))"))]
-    pub geographic: Geometry,
-    #[derivative(Default(value = "Geometry::new(LineString(Default::default()))"))]
-    pub schematic: Geometry,
-    pub steps: Vec<PathWaypoint>,
-    #[serde(skip)]
-    #[derivative(PartialEq = "ignore")]
-    pub payload: PathfindingPayload,
+pub(super) struct STDCMResponse {
+    /// The path of the train
+    pub(super) path: PathResponse,
+    /// The "payload" of the path
+    pub(super) path_payload: PathfindingPayload,
+    /// The simulation report
+    pub(super) simulation: SimulationReport,
 }
 
-impl From<PathfindingChangeset> for STDCMPath {
-    fn from(changeset: PathfindingChangeset) -> Self {
-        let payload = changeset.payload.unwrap();
+impl STDCMResponse {
+    fn new(path: Pathfinding, simulation: SimulationReport) -> Self {
+        let path_payload = path.payload.clone().0;
         Self {
-            id: changeset.id.expect("id is missing"),
-            owner: changeset.owner.expect("owner is missing"),
-            created: Utc
-                .from_utc_datetime(&changeset.created.expect("created timestamp is missing")),
-            length: changeset.length,
-            slopes: changeset
-                .slopes
-                .unwrap_or_else(|| diesel_json::Json(Vec::new()))
-                .to_vec(),
-            curves: changeset
-                .curves
-                .unwrap_or_else(|| diesel_json::Json(Vec::new()))
-                .to_vec(),
-            geographic: diesel_linestring_to_geojson(changeset.geographic.unwrap()),
-            schematic: diesel_linestring_to_geojson(changeset.schematic.unwrap()),
-            steps: payload.path_waypoints.clone(),
-            payload: payload.0,
+            path: path.into(),
+            path_payload,
+            simulation,
         }
     }
 }
@@ -118,6 +118,14 @@ enum StdcmError {
     InfraNotFound { infra_id: i64 },
 }
 
+/// Compute a STDCM and return the simulation result
+#[utoipa::path(
+    tag = "stdcm",
+    request_body = inline(STDCMRequestPayload),
+    responses(
+        (status = 201, body = inline(STDCMResponse), description = "The simulation result"),
+    )
+)]
 #[post("")]
 async fn create(
     db_pool: Data<DbPool>,
@@ -137,7 +145,7 @@ async fn compute_stdcm(
     let path = create_path_from_core_response(db_pool.clone(), &core_output, &data).await?;
     let simulation =
         create_simulation_from_core_response(db_pool, &core, &data, &core_output, &path).await?;
-    Ok(STDCMResponse { path, simulation })
+    Ok(STDCMResponse::new(path, simulation))
 }
 
 async fn call_core_stdcm(
@@ -168,7 +176,7 @@ async fn call_core_stdcm(
             Some(_) => None,
             None => data.end_time,
         },
-        maximum_departure_delay: data.maximum_departure_delay,
+        maximum_departure_delay: Some(data.maximum_departure_delay),
         maximum_run_time: data.maximum_run_time,
         speed_limit_tags: data.speed_limit_tags.clone(),
         margin_before: data.margin_before,
@@ -196,7 +204,7 @@ async fn parse_stdcm_steps(
         .unwrap()
         .iter()
         .zip(steps.iter())
-        .map(|(wp, StepPayload { duration, .. })| STDCMCoreStep {
+        .map(|(wp, PathfindingStep { duration, .. })| STDCMCoreStep {
             stop_duration: *duration,
             stop: *duration > 0.,
             waypoints: wp.to_vec(),
@@ -240,7 +248,7 @@ async fn create_path_from_core_response(
     db_pool: Data<DbPool>,
     core_output: &STDCMCoreResponse,
     data: &Json<STDCMRequestPayload>,
-) -> Result<STDCMPath> {
+) -> Result<Pathfinding> {
     let core_path_response = core_output.path.clone();
     let steps_duration = data.steps.iter().map(|step| step.duration).collect();
     let infra_id = data.infra_id;
@@ -266,7 +274,7 @@ async fn create_simulation_from_core_response(
     core: &Data<CoreClient>,
     data: &Json<STDCMRequestPayload>,
     core_output: &STDCMCoreResponse,
-    path: &STDCMPath,
+    path: &Pathfinding,
 ) -> Result<SimulationReport> {
     let schedule = TrainSchedule {
         id: None,
@@ -293,7 +301,7 @@ async fn create_simulation_from_core_response(
 }
 
 #[cfg(test)]
-pub mod tests {
+mod tests {
     use super::STDCMResponse;
     use crate::assert_status_and_read;
     use crate::core::mocking::MockingClient;
@@ -301,10 +309,14 @@ pub mod tests {
         db_pool, named_fast_rolling_stock, small_infra, timetable, TestFixture,
     };
     use crate::models::Timetable;
+    use crate::views::pathfinding::PathResponse;
     use crate::views::tests::{create_test_service, create_test_service_with_core_client};
+    use crate::views::train_schedule::simulation_report::SimulationReport;
     use actix_http::StatusCode;
     use actix_web::test::{call_service, TestRequest};
-    use serde_json::{from_str, from_value, json, Value};
+    use pretty_assertions::assert_eq;
+    use serde_derive::Deserialize;
+    use serde_json::{from_str, json, Value};
 
     /// conditions: one train scheduled for 8:00
     /// stdcm looks for a spot between 8:00 and 10:00
@@ -354,18 +366,25 @@ pub mod tests {
         // THEN
         let stdcm_response: STDCMResponse =
             assert_status_and_read!(service_response, StatusCode::CREATED);
-        let mut expected_response: Value = from_str(include_str!(
+        #[derive(Deserialize)]
+        struct ExpectedResponse {
+            path: PathResponse,
+            simulation: SimulationReport,
+        }
+        let ExpectedResponse {
+            mut path,
+            mut simulation,
+        } = from_str(include_str!(
             "../../tests/small_infra/stdcm/test_1/stdcm_post_expected_response.json"
         ))
         .unwrap();
-        *expected_response
-            .get_mut("simulation")
-            .unwrap()
-            .get_mut("path")
-            .unwrap() = json!(stdcm_response.path.id);
-        let expected_response: STDCMResponse = from_value(expected_response).unwrap();
-        assert_eq!(stdcm_response.path, expected_response.path);
-        assert_eq!(stdcm_response.simulation, expected_response.simulation);
+        path.id = stdcm_response.path.id;
+        path.owner = stdcm_response.path.owner;
+        path.created = stdcm_response.path.created;
+        simulation.id = stdcm_response.simulation.id;
+        simulation.path = stdcm_response.simulation.path;
+        assert_eq!(stdcm_response.path, path);
+        assert_eq!(stdcm_response.simulation, simulation);
     }
 
     ///
