@@ -287,6 +287,7 @@ export const SwitchEditionLayers: FC = () => {
         fingerprint={renderingFingerprint}
         layersSettings={layersSettings}
         issuesSettings={issuesSettings}
+        editor
       />
 
       {/* Edited switch */}

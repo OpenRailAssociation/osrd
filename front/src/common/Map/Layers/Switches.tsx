@@ -30,13 +30,25 @@ export function getSwitchesLayerProps(params: {
 export function getSwitchesNameLayerProps(params: {
   colors: Theme;
   sourceTable?: string;
+  editor?: boolean;
 }): OmitLayer<SymbolLayer> {
   const res: OmitLayer<SymbolLayer> = {
     type: 'symbol',
     minzoom: 8,
     layout: {
-      'text-field': '{label}',
+      'text-field': !params.editor
+        ? '{extensions_sncf_label}'
+        : [
+            'format',
+            ['get', 'id'],
+            { 'font-scale': 1 },
+            '\n',
+            {},
+            ['get', 'extensions_sncf_label'],
+            { 'font-scale': 0.8 },
+          ],
       'text-font': ['Roboto Condensed'],
+      'text-justify': 'left',
       'text-size': 12,
       'text-anchor': 'left',
       'text-allow-overlap': false,

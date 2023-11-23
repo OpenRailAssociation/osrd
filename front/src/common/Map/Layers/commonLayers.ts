@@ -7,6 +7,7 @@ export function trackNameLayer(colors: Theme): OmitLayer<SymbolLayer> {
     layout: {
       'text-font': ['Roboto Condensed'],
       'symbol-placement': 'line',
+      'symbol-spacing': 750,
       'text-size': 12,
       // [jacomyal]
       // According to TS types, 'text-allow-overlap' should be a boolean or
@@ -35,6 +36,7 @@ export function lineNameLayer(colors: Theme): OmitLayer<SymbolLayer> {
     layout: {
       'text-font': ['Roboto Condensed'],
       'symbol-placement': 'line-center',
+      'symbol-spacing': 750,
       'text-field': '{line_name}',
       'text-size': 10,
       'text-offset': [0, 0.75],
@@ -55,6 +57,7 @@ export function lineNumberLayer(colors: Theme): OmitLayer<SymbolLayer> {
     layout: {
       'text-font': ['Roboto Condensed'],
       'symbol-placement': 'line',
+      'symbol-spacing': 750,
       'text-size': 10,
       'text-offset': [0, 0.5],
     },

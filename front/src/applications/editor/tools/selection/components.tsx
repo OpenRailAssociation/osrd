@@ -67,6 +67,7 @@ export const SelectionLayers: FC = () => {
         fingerprint={renderingFingerprint}
         layersSettings={layersSettings}
         issuesSettings={issuesSettings}
+        editor
       />
       <SelectionZone newZone={selectionZone} />
       {state.mousePosition && state.selectionState.type === 'single' && state.hovered && (

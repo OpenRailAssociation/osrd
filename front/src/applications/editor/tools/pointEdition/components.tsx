@@ -428,6 +428,7 @@ export const BasePointEditionLayers: FC<{
         fingerprint={renderingFingerprint}
         layersSettings={layersSettings}
         issuesSettings={issuesSettings}
+        editor
       />
 
       {/* Edited entity */}

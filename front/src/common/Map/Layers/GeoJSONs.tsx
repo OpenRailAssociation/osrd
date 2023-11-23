@@ -371,6 +371,8 @@ const GeoJSONs: FC<{
   beforeId?: string;
   // When true, all layers are rendered (ie "minZoom" restrictions are ignored)
   renderAll?: boolean;
+  // Is used in the editor ?
+  editor?: boolean;
 }> = ({
   colors,
   layersSettings,
@@ -383,6 +385,7 @@ const GeoJSONs: FC<{
   isEmphasized = true,
   beforeId,
   renderAll,
+  editor,
 }) => {
   const infraID = useSelector(getInfraID);
   const selectedPrefix = `${prefix}selected/`;
@@ -434,7 +437,10 @@ const GeoJSONs: FC<{
                 url: `${MAP_URL}/layer/${source.entityType}/mvt/geo/?infra=${infraID}`,
                 layerOrder: LAYER_ENTITIES_ORDERS[source.entityType],
                 layers: source
-                  .getLayers({ ...hiddenLayerContext, sourceTable: source.entityType }, prefix)
+                  .getLayers(
+                    { ...hiddenLayerContext, sourceTable: source.entityType, editor },
+                    prefix
+                  )
                   .map((layer) =>
                     adaptFilter(layer, (hidden || []).concat(selection || []), [], renderAll)
                   ),
@@ -444,7 +450,10 @@ const GeoJSONs: FC<{
                 url: `${MAP_URL}/layer/${source.entityType}/mvt/geo/?infra=${infraID}`,
                 layerOrder: LAYER_ENTITIES_ORDERS[source.entityType],
                 layers: source
-                  .getLayers({ ...layerContext, sourceTable: source.entityType }, selectedPrefix)
+                  .getLayers(
+                    { ...layerContext, sourceTable: source.entityType, editor },
+                    selectedPrefix
+                  )
                   .map((layer) => adaptFilter(layer, hidden || [], selection || [], renderAll)),
               },
             ]
@@ -466,6 +475,7 @@ const GeoJSONs: FC<{
   if (skipSources) {
     return null;
   }
+
   return (
     <>
       {sources.map((source) => (

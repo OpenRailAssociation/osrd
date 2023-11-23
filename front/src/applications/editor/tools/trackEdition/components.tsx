@@ -245,6 +245,7 @@ export const TrackEditionLayers: FC = () => {
         fingerprint={renderingFingerprint}
         layersSettings={layersSettings}
         issuesSettings={issuesSettings}
+        editor
       />
 
       {/* Track path */}

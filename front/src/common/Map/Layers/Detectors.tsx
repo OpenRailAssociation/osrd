@@ -29,14 +29,26 @@ export function getDetectorsLayerProps(params: {
 export function getDetectorsNameLayerProps(params: {
   colors: Theme;
   sourceTable?: string;
+  editor?: boolean;
 }): OmitLayer<SymbolLayer> {
   const res: OmitLayer<SymbolLayer> = {
     type: 'symbol',
     minzoom: 8,
     layout: {
-      'text-field': '{extensions_sncf_kp}',
+      'text-field': !params.editor
+        ? '{extensions_sncf_kp}'
+        : [
+            'format',
+            ['get', 'id'],
+            { 'font-scale': 1 },
+            '\n',
+            {},
+            ['get', 'extensions_sncf_kp'],
+            { 'font-scale': 0.8 },
+          ],
       'text-font': ['Roboto Condensed'],
       'text-size': 10,
+      'text-justify': 'left',
       'text-anchor': 'left',
       'text-allow-overlap': false,
       'text-ignore-placement': false,

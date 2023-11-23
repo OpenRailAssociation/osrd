@@ -60,6 +60,7 @@ export const RouteEditionLayers: FC = () => {
         fingerprint={renderingFingerprint}
         layersSettings={layersSettings}
         issuesSettings={issuesSettings}
+        editor
       />
       {state.type === 'editRoutePath' ? (
         <EditRoutePathEditionLayers key="editRoutePath" state={state} />

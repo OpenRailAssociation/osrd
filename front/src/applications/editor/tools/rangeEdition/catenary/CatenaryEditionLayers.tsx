@@ -189,6 +189,7 @@ export const CatenaryEditionLayers: FC = () => {
         layersSettings={layersSettings}
         issuesSettings={issuesSettings}
         isEmphasized={false}
+        editor
       />
       <Source type="geojson" data={catenariesFeature} key="catenaries">
         {layersProps.map((props, i) => (

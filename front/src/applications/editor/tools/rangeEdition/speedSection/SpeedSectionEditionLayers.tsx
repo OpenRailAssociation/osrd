@@ -225,6 +225,7 @@ export const SpeedSectionEditionLayers: FC = () => {
         layersSettings={layersSettings}
         issuesSettings={issuesSettings}
         isEmphasized={false}
+        editor
       />
       <Source type="geojson" data={speedSectionsFeature} key={isPSL ? 'psl' : 'speed-section'}>
         {layersProps.map((props, i) => (
