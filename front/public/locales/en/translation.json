@@ -188,7 +188,7 @@
       "toggle-layers": "Choose the types of elements to display",
       "osrd-layers": "Data layers",
       "speed-limits": "Speed limits",
-      "map-layers": "Map layers"
+      "map-layers": "Map settings"
     },
     "obj-types": {
       "BufferStop": "Buffer stop",

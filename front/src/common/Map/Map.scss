@@ -33,29 +33,6 @@
   @media screen and (min-width: 640px) {
     max-width: 50%;
   }
-  button.mapstyle-style-select {
-    border: none;
-    background-color: #f2f2f2;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    text-align: left;
-    border-radius: 8px;
-    margin-right: 1rem;
-    padding-right: 0.5rem;
-    img {
-      width: 5rem;
-      border-radius: 8px 0 0 8px;
-      margin-right: 0.5rem;
-    }
-    font-size: 0.9rem;
-    &:hover,
-    &.active {
-      background-color: #333;
-      color: #fff;
-    }
-  }
-
   .sub-section-title {
     cursor: pointer;
     i {
@@ -122,6 +99,32 @@
     border-color: var(--coolgray13);
   }
 }
+
+.mapstyle {
+  button.mapstyle-style-select {
+    border: none;
+    background-color: #f2f2f2;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    text-align: left;
+    border-radius: 8px;
+    margin-right: 1rem;
+    padding-right: 0.5rem;
+    img {
+      width: 5rem;
+      border-radius: 8px 0 0 8px;
+      margin-right: 0.5rem;
+    }
+    font-size: 0.9rem;
+    &:hover,
+    &.active {
+      background-color: #333;
+      color: #fff;
+    }
+  }
+}
+
 .map-search-marker {
   /* Circle center */
   margin-left: -16px;

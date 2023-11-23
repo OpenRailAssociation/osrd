@@ -23,6 +23,7 @@ import { getMap } from 'reducers/map/selectors';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { updateLayersSettings } from 'reducers/map';
+import MapSettingsMapStyle from 'common/Map/Settings/MapSettingsMapStyle';
 
 export const LAYERS: Array<{ layers: LayerType[]; icon: string | JSX.Element }> = [
   { layers: ['track_sections'], icon: trackSectionsIcon },
@@ -198,6 +199,7 @@ const LayersModal: FC<LayersModalProps> = ({
         <div>
           <h4>{t('Editor.nav.map-layers')}</h4>
         </div>
+        <MapSettingsMapStyle />
         <MapSettingsBackgroundSwitches />
       </div>
 

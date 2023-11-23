@@ -23,6 +23,10 @@ const colors: Record<string, Theme> = {
     electricbox: {
       text: '#b42222',
     },
+    error: {
+      color: '#ff0000',
+      text: '#ff0000',
+    },
     kp: {
       circle: '#162873',
       text: '#4d4f53',
@@ -143,10 +147,6 @@ const colors: Record<string, Theme> = {
       color: '#4b4b4b',
       text: '#164721',
     },
-    error: {
-      color: '#ff0000',
-      text: '#ff0000',
-    },
     warning: {
       color: '#FF8C00',
       text: '#FF8C00',
@@ -174,6 +174,10 @@ const colors: Record<string, Theme> = {
     },
     electricbox: {
       text: '#b42222',
+    },
+    error: {
+      color: '#ff0000',
+      text: '#ff0000',
     },
     kp: {
       circle: '#8338ec',
@@ -295,6 +299,10 @@ const colors: Record<string, Theme> = {
       color: '#ffbe0b',
       text: '#ffbe0b',
     },
+    warning: {
+      color: '#FF8C00',
+      text: '#FF8C00',
+    },
   },
   /* ***************************************************************************
    *
@@ -318,6 +326,10 @@ const colors: Record<string, Theme> = {
     },
     electricbox: {
       text: bpLight,
+    },
+    error: {
+      color: '#ff0000',
+      text: '#ff0000',
     },
     kp: {
       circle: bpLight,
@@ -439,6 +451,10 @@ const colors: Record<string, Theme> = {
       color: bpMedium,
       text: bpMedium,
     },
+    warning: {
+      color: '#FF8C00',
+      text: '#FF8C00',
+    },
   },
   /* ***************************************************************************
    *
@@ -462,6 +478,10 @@ const colors: Record<string, Theme> = {
     },
     electricbox: {
       text: '#b42222',
+    },
+    error: {
+      color: '#ff0000',
+      text: '#ff0000',
     },
     kp: {
       circle: '#162873',
@@ -582,10 +602,6 @@ const colors: Record<string, Theme> = {
     tunnel: {
       color: '#4b4b4b',
       text: '#164721',
-    },
-    error: {
-      color: '#ff0000',
-      text: '#ff0000',
     },
     warning: {
       color: '#FF8C00',
