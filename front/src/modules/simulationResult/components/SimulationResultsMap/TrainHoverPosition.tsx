@@ -15,6 +15,7 @@ import { AllowancesSetting, AllowancesSettings, Train } from 'reducers/osrdsimul
 import { boundedValue } from 'utils/numbers';
 import { getCurrentBearing } from 'utils/geometry';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
+import { datetime2time } from 'utils/timeManipulation';
 import { TrainPosition } from './types';
 
 function getFill(isSelectedTrain: boolean, ecoBlocks: boolean) {
@@ -26,16 +27,24 @@ function getFill(isSelectedTrain: boolean, ecoBlocks: boolean) {
 
 function getSpeedTimeLabel(isSelectedTrain: boolean, ecoBlocks: boolean, point: TrainPosition) {
   if (isSelectedTrain) {
-    console.log(point.speedTime);
     return (
       <>
         <span
-          className={cx('small', 'train-speed-label', 'font-weight-bold', ecoBlocks ? 'text-secondary' : 'text-primary')}
+          className={cx(
+            'small',
+            'train-speed-label',
+            'font-weight-bold',
+            ecoBlocks ? 'text-secondary' : 'text-primary'
+          )}
         >
           {Math.round(point?.speedTime?.speed ?? 0)}
           km/h
         </span>
-        {point.speedTime && <span className="ml-2 small">{`${point.speedTime.time}`}</span>}
+        {point.speedTime?.time && (
+          <span className="ml-2 small train-speed-label">{`${datetime2time(
+            point.speedTime.time
+          )}`}</span>
+        )}
       </>
     );
   }
