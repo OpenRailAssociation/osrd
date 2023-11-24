@@ -405,17 +405,23 @@ export const EditorSource: FC<{
   data: Feature | FeatureCollection;
   layers: AnyLayer[];
   layerOrder?: number;
-}> = ({ id, data, layers, layerOrder }) => (
-  <Source type="geojson" id={id} data={data}>
-    {layers.map((layer) =>
-      typeof layerOrder === 'number' ? (
-        <OrderedLayer key={layer.id} {...layer} layerOrder={layerOrder} />
-      ) : (
-        <Layer key={layer.id} {...layer} />
-      )
-    )}
-  </Source>
-);
+}> = ({ id, data, layers, layerOrder }) => {
+  const dataFingerPrint =
+    data.type === 'FeatureCollection'
+      ? data.features.map((f) => f.properties?.id).concat()
+      : data.properties?.id;
+  return (
+    <Source type="geojson" id={id} data={data}>
+      {layers.map((layer) =>
+        typeof layerOrder === 'number' ? (
+          <OrderedLayer key={`${layer.id}-${dataFingerPrint}`} {...layer} layerOrder={layerOrder} />
+        ) : (
+          <Layer key={`${layer.id}-${dataFingerPrint}`} {...layer} />
+        )
+      )}
+    </Source>
+  );
+};
 
 const GeoJSONs: FC<{
   colors: Theme;
