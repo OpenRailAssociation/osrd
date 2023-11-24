@@ -97,6 +97,8 @@ diesel::table! {
         schematic -> Nullable<Geometry>,
         information -> Jsonb,
         infra_id -> Int8,
+        #[max_length = 40]
+        info_hash -> Varchar,
     }
 }
 
