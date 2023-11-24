@@ -63,7 +63,7 @@ serde_yaml = "0.9.25"
 strum = "0.25.0"
 strum_macros = "0.25.3"
 thiserror = "1.0.50"
-enum-map = "2.7.0"
+enum-map = "2.7.3"
 editoast_derive = { path = "./editoast_derive" }
 osrd_containers = { path = "./osrd_containers" }
 mvt = "0.8.1"
