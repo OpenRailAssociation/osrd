@@ -1,4 +1,3 @@
-import * as d3 from 'd3';
 import { noop } from 'lodash';
 import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import {
@@ -57,7 +56,7 @@ export type SpaceTimeChartProps = {
   dispatchUpdateMustRedraw?: DispatchUpdateMustRedraw;
   dispatchUpdateSelectedTrainId?: DispatchUpdateSelectedTrainId;
   dispatchUpdateTimePositionValues?: DispatchUpdateTimePositionValues;
-  initialHeightOfSpaceTimeChart?: number;
+  initialHeight?: number;
   inputSelectedTrain?: Train;
   positionValues?: PositionsSpeedTimes<Date>;
   selectedProjection?: OsrdSimulationState['selectedProjection'];
@@ -65,7 +64,7 @@ export type SpaceTimeChartProps = {
   simulationIsPlaying?: boolean;
   timePosition?: OsrdSimulationState['timePosition'];
   onOffsetTimeByDragging?: (trains: Train[], offset: number) => void;
-  onSetBaseHeightOfSpaceTimeChart?: (newHeight: number) => void;
+  onSetBaseHeight?: (newHeight: number) => void;
   isDisplayed?: boolean;
 };
 
@@ -80,7 +79,7 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
     dispatchUpdateSelectedTrainId = noop,
     dispatchUpdateTimePositionValues = noop,
     dispatchUpdateChart = noop,
-    initialHeightOfSpaceTimeChart = 400,
+    initialHeight = 400,
     inputSelectedTrain = ORSD_GRAPH_SAMPLE_DATA.simulation.present.trains[0],
     positionValues = ORSD_GRAPH_SAMPLE_DATA.positionValues,
     selectedProjection,
@@ -89,17 +88,13 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
     timePosition = ORSD_GRAPH_SAMPLE_DATA.timePosition,
     isDisplayed = true,
     onOffsetTimeByDragging = noop,
-    onSetBaseHeightOfSpaceTimeChart = noop,
+    onSetBaseHeight = noop,
   } = props;
 
-  const [baseHeightOfSpaceTimeChart, setBaseHeightOfSpaceTimeChart] = useState(
-    initialHeightOfSpaceTimeChart
-  );
+  const [baseHeight, setBaseHeight] = useState(initialHeight);
   const [chart, setChart] = useState<Chart | undefined>(undefined);
   const [dragOffset, setDragOffset] = useState(0);
-  const [heightOfSpaceTimeChart, setHeightOfSpaceTimeChart] = useState(
-    initialHeightOfSpaceTimeChart
-  );
+  const [height, setHeight] = useState(initialHeight);
   const [resetChart, setResetChart] = useState(false);
   const [rotate, setRotate] = useState(false);
   const [selectedTrain, setSelectedTrain] = useState(inputSelectedTrain);
@@ -126,7 +121,7 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
     [trainSimulations, selectedTrain, onOffsetTimeByDragging]
   );
 
-  /**
+  /*
    * INPUT UPDATES
    *
    * take into account an input update
@@ -142,7 +137,7 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
     }
   }, [inputSelectedTrain.id]);
 
-  /**
+  /*
    * ACTIONS HANDLE
    *
    * everything should be done by Hoc, has no direct effect on Comp behavior
@@ -163,13 +158,7 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
     dragShiftTrain(dragOffset);
   }, [dragOffset]);
 
-  /*
-   * redraw the trains if
-   * - the simulation trains or the selected train have changed
-   * - the chart is rotated or centered (reset)
-   * - the window or the chart have been resized (heightOfSpaceTimeChart)
-   */
-  useEffect(() => {
+  const redrawChart = () => {
     if (trainSimulations) {
       const trainsToDraw = trainSimulations.map((train) =>
         createTrain(CHART_AXES.SPACE_TIME, train)
@@ -182,7 +171,7 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
         dispatchUpdateDepartureArrivalTimes,
         dispatchUpdateMustRedraw,
         dispatchUpdateSelectedTrainId,
-        heightOfSpaceTimeChart,
+        height,
         ref,
         resetChart,
         rotate,
@@ -195,11 +184,18 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
       );
       setResetChart(false);
     }
-  }, [resetChart, rotate, selectedTrain, trainSimulations, heightOfSpaceTimeChart]);
+  };
 
-  /**
-   * add behaviour on zoom and mousemove/mouseover/wheel on the new chart each time the chart changes
+  /* redraw the trains if
+   * - the simulation trains or the selected train have changed
+   * - the chart is rotated or centered (reset)
+   * - the window or the chart have been resized (height)
    */
+  useEffect(() => {
+    redrawChart();
+  }, [resetChart, rotate, selectedTrain, trainSimulations, height]);
+
+  /* add behaviour on zoom and mousemove/mouseover/wheel on the new chart each time the chart changes */
   useEffect(() => {
     if (trainSimulations) {
       const dataSimulation = createTrain(CHART_AXES.SPACE_TIME, selectedTrain);
@@ -219,9 +215,7 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
     dispatchUpdateChart(chart);
   }, [chart]);
 
-  /**
-   * coordinates the vertical cursors with other graphs (GEV for instance)
-   */
+  /* coordinate the vertical cursors with other graphs (GEV for instance) */
   useEffect(() => {
     if (dateIsInRange(timePosition, timeScaleRange)) {
       traceVerticalLine(chart, CHART_AXES.SPACE_TIME, positionValues, rotate, timePosition);
@@ -235,21 +229,25 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
   };
 
   const debounceResize = () => {
-    const height = (d3.select(`#container-${CHART_ID}`)?.node() as HTMLDivElement).clientHeight;
-    setHeightOfSpaceTimeChart(height);
+    let debounceTimeoutId;
+    clearTimeout(debounceTimeoutId);
+    debounceTimeoutId = setTimeout(() => {
+      redrawChart();
+    }, 15);
   };
 
-  /**
-   * add behaviour: Type " + " or " - " to update departure time by second
+  /* add behaviours:
+   * - redraw the graph when resized horizontally (window resized)
+   * - type " + " or " - " to update departure time by second
    */
   useEffect(() => {
-    window.addEventListener('keydown', handleKey);
     window.addEventListener('resize', debounceResize);
+    window.addEventListener('keydown', handleKey);
     return () => {
-      window.removeEventListener('keydown', handleKey);
       window.removeEventListener('resize', debounceResize);
+      window.removeEventListener('keydown', handleKey);
     };
-  }, [isDisplayed]);
+  }, [chart]);
 
   return (
     <Rnd
@@ -258,7 +256,7 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
         x: 0,
         y: 0,
         width: '100%',
-        height: `${heightOfSpaceTimeChart}px`,
+        height: `${height}px`,
       }}
       minHeight={CHART_MIN_HEIGHT}
       disableDragging
@@ -266,12 +264,12 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
         bottom: true,
       }}
       onResizeStart={() => {
-        setBaseHeightOfSpaceTimeChart(heightOfSpaceTimeChart);
-        onSetBaseHeightOfSpaceTimeChart(heightOfSpaceTimeChart);
+        setBaseHeight(height);
+        onSetBaseHeight(height);
       }}
       onResize={(_e, _dir, _refToElement, delta) => {
-        setHeightOfSpaceTimeChart(baseHeightOfSpaceTimeChart + delta.height);
-        onSetBaseHeightOfSpaceTimeChart(baseHeightOfSpaceTimeChart + delta.height);
+        setHeight(baseHeight + delta.height);
+        onSetBaseHeight(baseHeight + delta.height);
       }}
     >
       <div

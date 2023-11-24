@@ -55,8 +55,8 @@ const OSRDStcdmResults = () => {
             <div className="chart-container mt-2" style={{ height: `${spaceTimeChartHeight}px` }}>
               <SpaceTimeChart
                 allowancesSettings={allowancesSettings}
-                initialHeightOfSpaceTimeChart={450}
-                onSetBaseHeightOfSpaceTimeChart={setSpaceTimeChartHeight}
+                initialHeight={450}
+                onSetBaseHeight={setSpaceTimeChartHeight}
               />
             </div>
           </div>
