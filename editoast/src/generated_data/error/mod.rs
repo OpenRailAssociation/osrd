@@ -9,13 +9,14 @@ pub mod switch_types;
 pub mod switches;
 pub mod track_sections;
 
-use std::collections::HashMap;
-
 use async_trait::async_trait;
 use diesel::sql_query;
 use diesel::sql_types::{Array, BigInt, Json};
 use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
+use futures_util::Future;
 use serde_json::to_value;
+use std::collections::HashMap;
+use std::pin::Pin;
 
 use super::GeneratedData;
 use crate::error::Result;
@@ -89,10 +90,10 @@ impl<Ctx> GlobalErrorGenerator<Ctx> {
 /// Generate errors given static object and global error generators.
 /// This function assume that object error generators list isn't empty and sorted by priority.
 /// Global errors are generated at the end.
-fn generate_errors<Ctx: Default>(
+async fn generate_errors<Ctx: Default>(
     object_type: ObjectType,
     infra_cache: &InfraCache,
-    graph: &Graph,
+    graph: &Graph<'_>,
     object_err_generators: &'static ObjectErrorGenerators<Ctx>,
     global_err_generators: &'static GlobalErrorGenerators<Ctx>,
 ) -> Vec<InfraError> {
@@ -143,90 +144,88 @@ fn generate_errors<Ctx: Default>(
     errors
 }
 
-pub fn generate_infra_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
+pub async fn generate_infra_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
     // Create a graph for topological errors
     let graph = Graph::load(infra_cache);
-
     // Generate the errors
-    let mut infra_errors = generate_errors(
-        ObjectType::TrackSection,
-        infra_cache,
-        &graph,
-        &track_sections::OBJECT_GENERATORS,
-        &[],
-    );
-    infra_errors.extend(generate_errors(
-        ObjectType::Signal,
-        infra_cache,
-        &graph,
-        &signals::OBJECT_GENERATORS,
-        &[],
-    ));
-    infra_errors.extend(generate_errors(
-        ObjectType::SpeedSection,
-        infra_cache,
-        &graph,
-        &speed_sections::OBJECT_GENERATORS,
-        &speed_sections::GLOBAL_GENERATORS,
-    ));
+    let futures: Vec<Pin<Box<dyn Future<Output = _> + Send>>> = vec![
+        Box::pin(generate_errors(
+            ObjectType::TrackSection,
+            infra_cache,
+            &graph,
+            &track_sections::OBJECT_GENERATORS,
+            &[],
+        )),
+        Box::pin(generate_errors(
+            ObjectType::Signal,
+            infra_cache,
+            &graph,
+            &signals::OBJECT_GENERATORS,
+            &[],
+        )),
+        Box::pin(generate_errors(
+            ObjectType::SpeedSection,
+            infra_cache,
+            &graph,
+            &speed_sections::OBJECT_GENERATORS,
+            &speed_sections::GLOBAL_GENERATORS,
+        )),
+        Box::pin(generate_errors(
+            ObjectType::Route,
+            infra_cache,
+            &graph,
+            &routes::OBJECT_GENERATORS,
+            &routes::GLOBAL_GENERATORS,
+        )),
+        Box::pin(generate_errors(
+            ObjectType::SwitchType,
+            infra_cache,
+            &graph,
+            &switch_types::OBJECT_GENERATORS,
+            &[],
+        )),
+        Box::pin(generate_errors(
+            ObjectType::Detector,
+            infra_cache,
+            &graph,
+            &detectors::OBJECT_GENERATORS,
+            &[],
+        )),
+        Box::pin(generate_errors(
+            ObjectType::BufferStop,
+            infra_cache,
+            &graph,
+            &buffer_stops::OBJECT_GENERATORS,
+            &buffer_stops::GLOBAL_GENERATORS,
+        )),
+        Box::pin(generate_errors(
+            ObjectType::OperationalPoint,
+            infra_cache,
+            &graph,
+            &operational_points::OBJECT_GENERATORS,
+            &[],
+        )),
+        Box::pin(generate_errors(
+            ObjectType::Switch,
+            infra_cache,
+            &graph,
+            &switches::OBJECT_GENERATORS,
+            &[],
+        )),
+        Box::pin(generate_errors(
+            ObjectType::Catenary,
+            infra_cache,
+            &graph,
+            &catenaries::OBJECT_GENERATORS,
+            &catenaries::GLOBAL_GENERATORS,
+        )),
+    ];
 
-    infra_errors.extend(generate_errors(
-        ObjectType::SwitchType,
-        infra_cache,
-        &graph,
-        &switch_types::OBJECT_GENERATORS,
-        &[],
-    ));
-
-    infra_errors.extend(generate_errors(
-        ObjectType::Detector,
-        infra_cache,
-        &graph,
-        &detectors::OBJECT_GENERATORS,
-        &[],
-    ));
-    infra_errors.extend(generate_errors(
-        ObjectType::BufferStop,
-        infra_cache,
-        &graph,
-        &buffer_stops::OBJECT_GENERATORS,
-        &buffer_stops::GLOBAL_GENERATORS,
-    ));
-
-    infra_errors.extend(generate_errors(
-        ObjectType::OperationalPoint,
-        infra_cache,
-        &graph,
-        &operational_points::OBJECT_GENERATORS,
-        &[],
-    ));
-
-    infra_errors.extend(generate_errors(
-        ObjectType::Route,
-        infra_cache,
-        &graph,
-        &routes::OBJECT_GENERATORS,
-        &routes::GLOBAL_GENERATORS,
-    ));
-
-    infra_errors.extend(generate_errors(
-        ObjectType::Switch,
-        infra_cache,
-        &graph,
-        &switches::OBJECT_GENERATORS,
-        &[],
-    ));
-    infra_errors.extend(generate_errors(
-        ObjectType::Catenary,
-        infra_cache,
-        &graph,
-        &catenaries::OBJECT_GENERATORS,
-        &catenaries::GLOBAL_GENERATORS,
-    ));
-
-    // TODO: generate neutralSections errors
-
-    infra_errors
+    futures::future::join_all(futures)
+        .await
+        .into_iter()
+        .flatten()
+        .collect()
 }
 
 /// Get sql query that insert errors given an object type
@@ -284,11 +283,10 @@ impl GeneratedData for ErrorLayer {
         infra_id: i64,
         infra_cache: &InfraCache,
     ) -> Result<()> {
-        let infra_errors = generate_infra_errors(infra_cache);
+        let infra_errors = generate_infra_errors(infra_cache).await;
 
         // Insert errors in DB
         insert_errors(conn, infra_id, infra_errors).await?;
-
         Ok(())
     }
 
@@ -305,6 +303,8 @@ impl GeneratedData for ErrorLayer {
 
 #[cfg(test)]
 mod test {
+    use rstest::rstest;
+
     use super::{
         buffer_stops, catenaries, detectors, generate_errors, operational_points, routes, signals,
         speed_sections, switch_types, switches, track_sections, Graph,
@@ -314,8 +314,8 @@ mod test {
 
     use crate::schema::ObjectType;
 
-    #[test]
-    fn small_infra_cache_validation() {
+    #[rstest]
+    async fn small_infra_cache_validation() {
         let small_infra_cache = create_small_infra_cache();
 
         let graph = Graph::load(&small_infra_cache);
@@ -328,6 +328,7 @@ mod test {
             &track_sections::OBJECT_GENERATORS,
             &[],
         )
+        .await
         .is_empty());
         assert!(generate_errors(
             ObjectType::Signal,
@@ -336,6 +337,7 @@ mod test {
             &signals::OBJECT_GENERATORS,
             &[],
         )
+        .await
         .is_empty());
         assert!(generate_errors(
             ObjectType::SpeedSection,
@@ -344,6 +346,7 @@ mod test {
             &speed_sections::OBJECT_GENERATORS,
             &speed_sections::GLOBAL_GENERATORS,
         )
+        .await
         .is_empty());
         assert!(generate_errors(
             ObjectType::SwitchType,
@@ -352,6 +355,7 @@ mod test {
             &switch_types::OBJECT_GENERATORS,
             &[],
         )
+        .await
         .is_empty());
         assert!(generate_errors(
             ObjectType::Detector,
@@ -360,6 +364,7 @@ mod test {
             &detectors::OBJECT_GENERATORS,
             &[],
         )
+        .await
         .is_empty());
         assert!(generate_errors(
             ObjectType::BufferStop,
@@ -368,6 +373,7 @@ mod test {
             &buffer_stops::OBJECT_GENERATORS,
             &buffer_stops::GLOBAL_GENERATORS,
         )
+        .await
         .is_empty());
         assert!(generate_errors(
             ObjectType::Route,
@@ -376,6 +382,7 @@ mod test {
             &routes::OBJECT_GENERATORS,
             &routes::GLOBAL_GENERATORS,
         )
+        .await
         .is_empty());
         assert!(generate_errors(
             ObjectType::OperationalPoint,
@@ -384,6 +391,7 @@ mod test {
             &operational_points::OBJECT_GENERATORS,
             &[],
         )
+        .await
         .is_empty());
         assert!(generate_errors(
             ObjectType::Switch,
@@ -392,6 +400,7 @@ mod test {
             &switches::OBJECT_GENERATORS,
             &[],
         )
+        .await
         .is_empty());
         assert!(generate_errors(
             ObjectType::Catenary,
@@ -400,11 +409,12 @@ mod test {
             &catenaries::OBJECT_GENERATORS,
             &catenaries::GLOBAL_GENERATORS,
         )
+        .await
         .is_empty());
     }
 
-    #[test]
-    fn error_priority_check() {
+    #[rstest]
+    async fn error_priority_check() {
         let mut small_infra_cache = create_small_infra_cache();
         let bf = create_buffer_stop_cache("BF_error", "E", 530.0);
         small_infra_cache.add(bf);
@@ -416,7 +426,8 @@ mod test {
             &graph,
             &buffer_stops::OBJECT_GENERATORS,
             &[],
-        );
+        )
+        .await;
         assert_eq!(1, errors.len());
     }
 }

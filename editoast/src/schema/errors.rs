@@ -3,7 +3,7 @@ use crate::schema::ObjectRef;
 use serde::{Deserialize, Serialize};
 use strum_macros::EnumVariantNames;
 
-#[derive(Serialize, Deserialize, PartialEq, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 #[serde(deny_unknown_fields)]
 pub struct InfraError {
     obj_id: String,
@@ -14,7 +14,7 @@ pub struct InfraError {
     sub_type: InfraErrorType,
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Debug, EnumVariantNames)]
+#[derive(Serialize, Deserialize, PartialEq, Debug, EnumVariantNames, Clone)]
 #[strum(serialize_all = "snake_case")]
 #[serde(tag = "error_type", rename_all = "snake_case", deny_unknown_fields)]
 pub enum InfraErrorType {
