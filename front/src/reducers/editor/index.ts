@@ -135,7 +135,7 @@ export function updateTotalsIssue(
             id: infraID,
             level: 'all',
             errorType: undefined,
-            pageSize: 0,
+            pageSize: 1,
             page: 1,
           })
         );
@@ -149,7 +149,7 @@ export function updateTotalsIssue(
             id: infraID,
             level: editor.issues.filterLevel,
             errorType: editor.issues.filterType ?? undefined,
-            pageSize: 0,
+            pageSize: 1,
             page: 1,
           })
         );
