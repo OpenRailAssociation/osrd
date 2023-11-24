@@ -320,6 +320,7 @@ export const RangeEditionLeftPanel: FC = () => {
                 id="is-psl-checkbox"
                 name="is-psl-checkbox"
                 checked={isPSL}
+                disabled={entity.properties.track_ranges?.length === 0}
                 label={t('Editor.tools.speed-edition.toggle-psl')}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                   let newExtension: SpeedSectionEntity['properties']['extensions'] = {
@@ -339,7 +340,8 @@ export const RangeEditionLeftPanel: FC = () => {
                           side: 'LEFT',
                           track: firstRange.track,
                           type: 'Z',
-                          value: null,
+                          value: '',
+                          kp: '',
                         },
                       },
                     };
@@ -348,6 +350,9 @@ export const RangeEditionLeftPanel: FC = () => {
                 }}
               />
             </div>
+            {entity.properties.track_ranges?.length === 0 && (
+              <p className="mt-3 font-size-1">{t('Editor.tools.speed-edition.toggle-psl-help')}</p>
+            )}
             {isPSL && (
               <EditPSLSection
                 entity={entity as SpeedSectionPslEntity}

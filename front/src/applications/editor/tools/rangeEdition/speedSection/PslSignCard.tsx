@@ -80,6 +80,21 @@ const PslSignCard = ({
         </div>
         <div className="my-2">
           <InputSNCF
+            type="text"
+            id="psl-kp"
+            label={t('Editor.tools.speed-edition.sign-kp')}
+            value={sign.kp ?? ''}
+            onChange={(e) => {
+              updateSign(signInfo, {
+                ...sign,
+                kp: String(e.target.value),
+              });
+            }}
+            sm
+          />
+        </div>
+        <div className="my-2">
+          <InputSNCF
             type="number"
             id="psl-position-from-the-beginning"
             label={t('Editor.tools.speed-edition.sign-position')}

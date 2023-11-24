@@ -381,6 +381,7 @@
         "sign-angle-geo": "Angle Geo",
         "sign-angle-sch": "Angle Sch",
         "sign-category": "Panneau(x) {{signType}}",
+        "sign-kp": "Point kilométrique",
         "sign-select": "Sélectionner",
         "sign-remove": "Supprimer le panneau",
         "sign-position": "Position",
@@ -393,7 +394,8 @@
         "save-existing-speed-section": "Sauvegarder les modifications",
         "save-new-speed-section": "Sauvegarder la nouvelle limite de vitesse",
         "speed-limits": "Limitations de vitesses",
-        "toggle-psl": "Limite permanente de vitesse"
+        "toggle-psl": "Limite permanente de vitesse",
+        "toggle-psl-help": "Cliquez d'abord sur un tronçon d'itinéraire pour pouvoir activer cette option"
       },
       "switch-edition": {
         "actions": {

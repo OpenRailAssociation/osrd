@@ -47,7 +47,8 @@ export interface PSLSign {
   side: 'LEFT' | 'RIGHT' | 'CENTER';
   track: string;
   type: string;
-  value: string | null;
+  value: string;
+  kp: string;
 }
 
 export interface PSLExtension {
