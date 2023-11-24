@@ -77,7 +77,7 @@ async fn apply_edit(
     let invalid_zone = Zone::compute(infra_cache, &operation_results);
 
     // Apply operations to infra cache
-    infra_cache.apply_operations(&operation_results);
+    infra_cache.apply_operations(&operation_results)?;
     // Refresh layers if needed
     generated_data::update_all(conn, infra_id, &operation_results, infra_cache)
         .await

@@ -198,7 +198,7 @@ pub mod tests {
     fn simple_missing_buffer_stop() {
         let mut infra_cache = create_small_infra_cache();
         let obj_ref = ObjectRef::new(ObjectType::BufferStop, "BF1");
-        infra_cache.apply_delete(&obj_ref);
+        infra_cache.apply_delete(&obj_ref).unwrap();
         let graph = Graph::load(&infra_cache);
         let errors = check_missing(&infra_cache, &graph);
         assert_eq!(1, errors.len());

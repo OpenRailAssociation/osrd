@@ -9,9 +9,11 @@ use chashmap::{CHashMap, ReadGuard, WriteGuard};
 use diesel::sql_types::{BigInt, Double, Integer, Nullable, Text};
 use diesel::{sql_query, QueryableByName};
 use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
+use editoast_derive::EditoastError;
 use enum_map::EnumMap;
 use geos::geojson::Geometry;
 use std::collections::{HashMap, HashSet};
+use thiserror::Error;
 
 pub use graph::Graph;
 
@@ -474,27 +476,35 @@ impl InfraCache {
     }
 
     /// Apply delete operation to the infra cache
-    pub fn apply_delete(&mut self, object_ref: &ObjectRef) {
+    pub fn apply_delete(&mut self, object_ref: &ObjectRef) -> Result<()> {
         let obj_cache = self.objects[object_ref.obj_type]
             .remove(&object_ref.obj_id)
-            .unwrap();
+            .ok_or_else(|| OperationResultError::ObjectNotFound {
+                obj_type: object_ref.obj_type.to_string(),
+                obj_id: object_ref.obj_id.to_owned(),
+            })?;
 
         for track_id in obj_cache.get_track_referenced_id() {
             self.track_sections_refs
                 .get_mut(track_id)
-                .unwrap()
+                .ok_or_else(|| OperationResultError::ObjectNotFound {
+                    obj_type: object_ref.obj_type.to_string(),
+                    obj_id: object_ref.obj_id.to_owned(),
+                })?
                 .remove(object_ref);
         }
+        Ok(())
     }
 
     /// Apply update operation to the infra cache
-    fn apply_update(&mut self, railjson_obj: &RailjsonObject) {
-        self.apply_delete(&railjson_obj.get_ref());
-        self.apply_create(railjson_obj);
+    fn apply_update(&mut self, railjson_obj: &RailjsonObject) -> Result<()> {
+        self.apply_delete(&railjson_obj.get_ref())?;
+        self.apply_create(railjson_obj)?;
+        Ok(())
     }
 
     /// Apply create operation to the infra cache
-    fn apply_create(&mut self, railjson_obj: &RailjsonObject) {
+    fn apply_create(&mut self, railjson_obj: &RailjsonObject) -> Result<()> {
         match railjson_obj {
             RailjsonObject::TrackSection { railjson } => {
                 self.add::<TrackSectionCache>(railjson.clone().into())
@@ -518,18 +528,28 @@ impl InfraCache {
             }
             RailjsonObject::Catenary { railjson } => self.add::<Catenary>(railjson.clone()),
         }
+        Ok(())
     }
 
     /// Apply an operation to the infra cache
-    pub fn apply_operations(&mut self, operations: &Vec<OperationResult>) {
+    pub fn apply_operations(&mut self, operations: &Vec<OperationResult>) -> Result<()> {
         for op_res in operations {
             match op_res {
-                OperationResult::Delete(obj_ref) => self.apply_delete(obj_ref),
-                OperationResult::Update(railjson_obj) => self.apply_update(railjson_obj),
-                OperationResult::Create(railjson_obj) => self.apply_create(railjson_obj),
+                OperationResult::Delete(obj_ref) => self.apply_delete(obj_ref)?,
+                OperationResult::Update(railjson_obj) => self.apply_update(railjson_obj)?,
+                OperationResult::Create(railjson_obj) => self.apply_create(railjson_obj)?,
             }
         }
+        Ok(())
     }
+}
+
+#[derive(Debug, Error, EditoastError)]
+#[editoast_error(base_id = "operation_result")]
+pub enum OperationResultError {
+    #[error("{obj_type} '{obj_id}', could not be found everywhere in the infrastructure cache")]
+    #[editoast_error(status = 404)]
+    ObjectNotFound { obj_type: String, obj_id: String },
 }
 
 #[cfg(test)]
