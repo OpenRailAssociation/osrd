@@ -23,6 +23,7 @@ const getNewAnnouncementSign = (
     track: firstRange.track,
     type: 'TIV_D',
     value: `${speedMultipleOfFive}`,
+    kp: '',
   } as PSLSign;
 };
 
@@ -37,7 +38,8 @@ const getNewRSign = (
     side: 'LEFT',
     track: lastRange.track,
     type: 'R',
-    value: null,
+    value: '',
+    kp: '',
   } as PSLSign;
 };
 
