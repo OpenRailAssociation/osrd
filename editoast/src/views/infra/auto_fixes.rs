@@ -49,7 +49,7 @@ async fn list_auto_fixes(
 
     let mut fixes = vec![];
     for _ in 0..MAX_AUTO_FIXES_ITERATIONS {
-        let new_fixes = fix_infra(&mut infra_cache_clone)?;
+        let new_fixes = fix_infra(&mut infra_cache_clone).await?;
         if new_fixes.is_empty() {
             // Every possible error is fixed
             return Ok(WebJson(fixes));
@@ -63,8 +63,8 @@ async fn list_auto_fixes(
     Err(AutoFixesEditoastError::MaximumIterationReached().into())
 }
 
-fn fix_infra(infra_cache: &mut InfraCache) -> Result<Vec<Operation>> {
-    let infra_errors = generate_infra_errors(infra_cache);
+async fn fix_infra(infra_cache: &mut InfraCache) -> Result<Vec<Operation>> {
+    let infra_errors = generate_infra_errors(infra_cache).await;
 
     let mut delete_fixes_already_retained = HashSet::new();
     let mut all_fixes = vec![];
