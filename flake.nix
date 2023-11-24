@@ -127,8 +127,6 @@
               ++ scriptBins;
 
             RUST_SRC_PATH = "${rustPlatform.rustLibSrc}";
-            OSRD_DEV = "True";
-            OSRD_BACKEND_URL = "http://localhost:8080";
           };
         }
     );
