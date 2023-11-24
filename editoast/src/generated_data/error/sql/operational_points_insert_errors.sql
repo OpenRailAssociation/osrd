@@ -1,16 +1,27 @@
 WITH errors AS (
-    SELECT unnest($2) AS information
+    SELECT unnest($2) AS information,
+        unnest($3) AS error_hash
+),
+errors_geometry AS (
+    SELECT error_hash,
+        ST_Collect(layer.geographic) AS geo,
+        ST_Collect(layer.schematic) AS sch
+    FROM errors
+        LEFT JOIN infra_layer_operational_point AS layer ON layer.obj_id = information->>'obj_id'
+        AND layer.infra_id = $1
+    GROUP BY error_hash
 )
 INSERT INTO infra_layer_error (
         infra_id,
         geographic,
         schematic,
-        information
+        information,
+        info_hash
     )
 SELECT $1 AS infra_id,
-    ops.geographic,
-    ops.schematic,
-    errors.information
+    err_geom.geo,
+    err_geom.sch,
+    information,
+    errors.error_hash
 FROM errors
-    LEFT JOIN infra_layer_operational_point AS ops ON ops.obj_id = information->>'obj_id'
-    AND ops.infra_id = $1
+    INNER JOIN errors_geometry AS err_geom ON err_geom.error_hash = errors.error_hash

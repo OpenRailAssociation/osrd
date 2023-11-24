@@ -1159,6 +1159,7 @@ dependencies = [
  "serde_derive",
  "serde_json",
  "serde_yaml",
+ "sha1",
  "strum",
  "strum_macros",
  "tempfile",

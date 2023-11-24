@@ -9,13 +9,18 @@ pub mod switch_types;
 pub mod switches;
 pub mod track_sections;
 
+use std::collections::{HashMap, HashSet};
+
 use async_trait::async_trait;
+use diesel::prelude::*;
 use diesel::sql_query;
-use diesel::sql_types::{Array, BigInt, Json};
+use diesel::sql_types::{Array, BigInt, Json, Text};
 use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
 use futures_util::Future;
+use itertools::Itertools;
+use log::warn;
 use serde_json::to_value;
-use std::collections::HashMap;
+use sha1::{Digest, Sha1};
 use std::pin::Pin;
 
 use super::GeneratedData;
@@ -84,6 +89,23 @@ impl<Ctx> GlobalErrorGenerator<Ctx> {
 
     pub const fn new_ctx(check_function: FnGlobalErrorGeneratorContext<Ctx>) -> Self {
         GlobalErrorGenerator::WithContext(check_function)
+    }
+}
+
+/// An infra error with its hash
+struct ErrorWithHash {
+    error: InfraError,
+    /// Sha1 of the serialized error
+    hash: String,
+}
+
+impl From<InfraError> for ErrorWithHash {
+    fn from(error: InfraError) -> Self {
+        let mut hasher = Sha1::new();
+        hasher.update(&serde_json::to_vec(&error).unwrap());
+        let hash = hasher.finalize();
+        let hash = format!("{:x}", hash);
+        ErrorWithHash { error, hash }
     }
 }
 
@@ -246,28 +268,115 @@ fn get_insert_errors_query(obj_type: ObjectType) -> &'static str {
     }
 }
 
-/// Insert a heterogeneous list of infra errors in DB with a minimum number of queries
-async fn insert_errors(
+/// This function dispatch errors to the right layer
+fn dispatch_errors_to_layers(
+    errors: Vec<ErrorWithHash>,
+) -> HashMap<ObjectType, Vec<ErrorWithHash>> {
+    let mut errors_by_layer: HashMap<_, Vec<_>> = Default::default();
+    for error in errors {
+        errors_by_layer
+            .entry(error.error.get_type())
+            .or_default()
+            .push(error);
+    }
+    errors_by_layer
+}
+
+/// Retrieve the current errors hash for a given infra
+async fn retrieve_current_errors_hash(
+    conn: &mut PgConnection,
+    infra_id: i64,
+) -> Result<Vec<String>> {
+    use crate::tables::infra_layer_error::dsl;
+    Ok(dsl::infra_layer_error
+        .filter(dsl::infra_id.eq(infra_id))
+        .select(dsl::info_hash)
+        .load(conn)
+        .await?)
+}
+
+/// Remove a list of errors given an infra and a list of error hashes
+async fn remove_errors_from_hashes(
+    conn: &mut PgConnection,
+    infra_id: i64,
+    errors_hash: &Vec<&String>,
+) -> Result<()> {
+    use crate::tables::infra_layer_error::dsl;
+    let nb_deleted = diesel::delete(
+        dsl::infra_layer_error
+            .filter(dsl::infra_id.eq(infra_id))
+            .filter(dsl::info_hash.eq_any(errors_hash)),
+    )
+    .execute(conn)
+    .await?;
+    assert_eq!(nb_deleted, errors_hash.len());
+    Ok(())
+}
+
+/// Remove a list of errors given an infra and a list of error hashes
+async fn create_errors(
+    conn: &mut PgConnection,
+    infra_id: i64,
+    errors: Vec<ErrorWithHash>,
+) -> Result<()> {
+    let errors_by_type = dispatch_errors_to_layers(errors);
+    for (obj_type, errors) in errors_by_type {
+        let mut errors_information = vec![];
+        let mut errors_hash = vec![];
+        for error in errors.iter() {
+            errors_information.push(to_value(&error.error).unwrap());
+            errors_hash.push(&error.hash);
+        }
+
+        let count = sql_query(get_insert_errors_query(obj_type))
+            .bind::<BigInt, _>(infra_id)
+            .bind::<Array<Json>, _>(&errors_information)
+            .bind::<Array<Text>, _>(&errors_hash)
+            .execute(conn)
+            .await?;
+        assert_eq!(count, errors_hash.len());
+    }
+    Ok(())
+}
+
+/// Insert a heterogeneous list of infra errors in DB with a minimum number of queries and operations
+/// This function retrieve the existing errors in DB, compare them with the new ones and insert only
+/// the new ones. It also remove the errors that are not present anymore.
+async fn update_errors(
     conn: &mut PgConnection,
     infra_id: i64,
     errors: Vec<InfraError>,
 ) -> Result<()> {
-    let mut errors_by_type: HashMap<_, Vec<_>> = Default::default();
-    for error in errors {
-        errors_by_type
-            .entry(error.get_type())
-            .or_default()
-            .push(to_value(error).unwrap());
+    let new_errors_with_hash: Vec<ErrorWithHash> = errors.into_iter().map_into().collect();
+    let new_errors_hash = new_errors_with_hash
+        .iter()
+        .map(|e| e.hash.clone())
+        .collect::<HashSet<_>>();
+
+    let current_errors_hash = retrieve_current_errors_hash(conn, infra_id).await?;
+    let current_errors_hash = current_errors_hash.into_iter().collect::<HashSet<_>>();
+
+    // Filter errors that must be removed
+    let to_remove = current_errors_hash
+        .difference(&new_errors_hash)
+        .collect_vec();
+    remove_errors_from_hashes(conn, infra_id, &to_remove).await?;
+
+    // Filter errors that must be created
+    let errors_hash_to_create = new_errors_hash
+        .difference(&current_errors_hash)
+        .collect_vec();
+    let mut errors_to_create: Vec<_> = new_errors_with_hash
+        .into_iter()
+        .filter(|e| errors_hash_to_create.contains(&&e.hash))
+        .collect();
+    if errors_hash_to_create.len() != errors_to_create.len() {
+        // Deduplicate errors with same hahs
+        errors_to_create.sort_by(|e1, e2| e1.hash.cmp(&e2.hash));
+        errors_to_create.dedup_by(|e1, e2| e1.hash.eq(&e2.hash));
+        warn!("Duplicate errors are generated.");
     }
-    for (obj_type, errors) in errors_by_type {
-        let count = sql_query(get_insert_errors_query(obj_type))
-            .bind::<BigInt, _>(infra_id)
-            .bind::<Array<Json>, _>(&errors)
-            .execute(conn)
-            .await?;
-        debug_assert_eq!(count, errors.len());
-    }
-    Ok(())
+    create_errors(conn, infra_id, errors_to_create).await
 }
 
 pub struct ErrorLayer;
@@ -283,21 +392,21 @@ impl GeneratedData for ErrorLayer {
         infra_id: i64,
         infra_cache: &InfraCache,
     ) -> Result<()> {
+        // Compute current errors
         let infra_errors = generate_infra_errors(infra_cache).await;
 
-        // Insert errors in DB
-        insert_errors(conn, infra_id, infra_errors).await?;
-        Ok(())
+        // Insert new errors and remove old ones in DB
+        update_errors(conn, infra_id, infra_errors).await
     }
 
     async fn update(
         conn: &mut PgConnection,
-        infra: i64,
-        _operations: &[crate::schema::operation::OperationResult],
+        infra_id: i64,
+        _: &[crate::schema::operation::OperationResult],
         infra_cache: &InfraCache,
     ) -> Result<()> {
-        // Clear the whole layer and regenerate it
-        Self::refresh(conn, infra, infra_cache).await
+        // Generate already act like an update
+        Self::generate(conn, infra_id, infra_cache).await
     }
 }
 
