@@ -156,8 +156,8 @@ export default function SimulationResults({
           <div className="chart-container" style={{ height: `${heightOfSpaceTimeChart}px` }}>
             {displaySimulation && (
               <SpaceTimeChartIsolated
-                initialHeightOfSpaceTimeChart={heightOfSpaceTimeChart}
-                onSetBaseHeightOfSpaceTimeChart={setHeightOfSpaceTimeChart}
+                initialHeight={heightOfSpaceTimeChart}
+                onSetBaseHeight={setHeightOfSpaceTimeChart}
                 isDisplayed={isDisplayed}
               />
             )}
