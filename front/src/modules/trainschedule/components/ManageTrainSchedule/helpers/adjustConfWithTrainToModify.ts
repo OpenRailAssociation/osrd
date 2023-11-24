@@ -22,6 +22,7 @@ import { Allowance, Path, TrainSchedule } from 'common/api/osrdEditoastApi';
 import { ArrayElement } from 'utils/types';
 import { PointOnMap } from 'applications/operationalStudies/consts';
 import { compact } from 'lodash';
+import { ms2kmh } from 'utils/physics';
 
 function convertStepToPointOnMap(step?: ArrayElement<Path['steps']>): PointOnMap | undefined {
   return step
@@ -53,7 +54,7 @@ export default function adjustConfWithTrainToModify(
   if (trainSchedule.train_name) dispatch(updateName(trainSchedule.train_name));
   if (trainSchedule.departure_time)
     dispatch(updateDepartureTime(sec2time(trainSchedule.departure_time)));
-  dispatch(updateInitialSpeed(trainSchedule.initial_speed || 0));
+  dispatch(updateInitialSpeed(ms2kmh(trainSchedule.initial_speed) || 0));
 
   if (trainSchedule.allowances) dispatch(updateAllowances(trainSchedule.allowances as Allowance[]));
 
