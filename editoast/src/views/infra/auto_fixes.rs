@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use crate::error::Result;
+use crate::error::{InternalError, Result};
 use crate::generated_data::generate_infra_errors;
 use crate::infra_cache::InfraCache;
 use crate::models::{self, Infra, Retrieve};
@@ -82,7 +82,9 @@ async fn fix_infra(infra_cache: &mut InfraCache) -> Result<Vec<Operation>> {
     }
 
     let operation_results = all_fixes.iter().map_into().collect();
-    infra_cache.apply_operations(&operation_results);
+    infra_cache
+        .apply_operations(&operation_results)
+        .map_err(|source| AutoFixesEditoastError::FixTrialFailure { source })?;
 
     Ok(all_fixes)
 }
@@ -127,6 +129,9 @@ pub enum AutoFixesEditoastError {
     )]
     #[editoast_error(status = 500)]
     MaximumIterationReached(),
+    #[error("Failed trying to apply fixes")]
+    #[editoast_error(status = 500)]
+    FixTrialFailure { source: InternalError },
 }
 
 #[cfg(test)]
