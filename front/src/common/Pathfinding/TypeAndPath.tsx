@@ -5,7 +5,7 @@ import {
   SearchResultItemOperationalPoint,
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { getInfraID, getRollingStockID } from 'reducers/osrdconf/selectors';
@@ -52,28 +52,29 @@ function OpTooltips({ opList }: { opList: SearchResultItemOperationalPoint[] }) 
 
 export default function TypeAndPath({ zoomToFeature }: PathfindingProps) {
   const dispatch = useDispatch();
-  const [inputText, setInputText] = useState<string>('');
+  const [inputText, setInputText] = useState('');
   const [opList, setOpList] = useState<SearchResultItemOperationalPoint[]>([]);
   const infraId = useSelector(getInfraID);
   const rollingStockId = useSelector(getRollingStockID);
-  const [postSearch] = osrdEditoastApi.usePostSearchMutation();
-  const [postPathfinding] = osrdEditoastApi.usePostPathfindingMutation();
+  const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
+  const [postPathfinding] = osrdEditoastApi.endpoints.postPathfinding.useMutation();
   const { t } = useTranslation('operationalStudies/manageTrainSchedule');
 
   const debouncedInputText = useDebounce(inputText.trimEnd(), 500);
 
   const handleInput = (text: string) => {
-    // setInputText(text.trimStart().toUpperCase());
     setInputText(text.trimStart());
   };
 
   function getOpNames() {
     if (infraId !== undefined) {
-      const opTrigrams = inputText.toUpperCase().split(' ');
+      const opTrigrams = inputText.toUpperCase().trimEnd().split(' ');
       const constraint = opTrigrams.reduce(
         (res, trigram) => [...res, ['=', ['trigram'], trigram]],
         ['or'] as (string | SearchConstraintType)[]
       );
+      // SNCF trigrams come with a yard name, for main station it could be nothing '',
+      // 'BV' (as Bâtiment Voyageurs) or '00', all are the same signification: this is the main station.
       const limitToMainStationConstraint = [
         'or',
         ['=', ['ch'], ''],
@@ -100,7 +101,7 @@ export default function TypeAndPath({ zoomToFeature }: PathfindingProps) {
     }
   }
 
-  const isInvalid = !opList.every((op) => op.name || op.trigram === '');
+  const isInvalid = useMemo(() => opList.some((op) => !op.name && op.trigram !== ''), [opList]);
 
   function launchPathFinding() {
     if (infraId && rollingStockId && opList.length > 0) {
@@ -169,7 +170,7 @@ export default function TypeAndPath({ zoomToFeature }: PathfindingProps) {
           className="btn btn-sm btn-success"
           type="button"
           onClick={launchPathFinding}
-          disabled={isInvalid}
+          disabled={isInvalid || opList.length < 2}
         >
           <GoTriangleRight />
         </button>

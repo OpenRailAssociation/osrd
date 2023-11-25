@@ -4,16 +4,14 @@ import { Position } from 'geojson';
 import bbox from '@turf/bbox';
 import { useTranslation } from 'react-i18next';
 import { compact, isEqual } from 'lodash';
-import { BiCheckCircle, BiXCircle, BiErrorCircle } from 'react-icons/bi';
+import { GoAlert, GoCheckCircle, GoStop } from 'react-icons/go';
 
 import { setFailure } from 'reducers/main';
 
 import { ArrayElement } from 'utils/types';
 import { conditionalStringConcat, formatKmValue } from 'utils/strings';
-import { lengthFromLineCoordinates } from 'utils/geometry';
 
 import { Path, PathQuery, osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { PointOnMap } from 'applications/operationalStudies/consts';
 
 import {
@@ -31,8 +29,6 @@ import {
   getPathfindingID,
   getGeojson,
 } from 'reducers/osrdconf/selectors';
-
-import ModalPathJSONDetail from 'modules/trainschedule/components/ManageTrainSchedule/Itinerary/ModalPathJSONDetail';
 import infraLogo from 'assets/pictures/components/tracks.svg';
 import InfraLoadingState from 'applications/operationalStudies/components/Scenario/InfraLoadingState';
 import { Spinner } from '../Loader';
@@ -265,7 +261,6 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const [pathfindingRequest, setPathfindingRequest] =
     useState<ReturnType<typeof postPathfinding>>();
-  const { openModal } = useModal();
   const dispatch = useDispatch();
   const infraID = useSelector(getInfraID, isEqual);
   const origin = useSelector(getOrigin, isEqual);
@@ -345,7 +340,7 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
   const displayInfraSoftError = () => (
     <div className="content pathfinding-error my-2">
       <span className="lead">
-        <BiXCircle />
+        <GoStop />
       </span>
       {reloadCount <= 5 ? (
         <span className="flex-grow-1">{t('errorMessages.unableToLoadInfra', { reloadCount })}</span>
@@ -358,7 +353,7 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
   const displayInfraHardError = () => (
     <div className="content pathfinding-error my-2">
       <span className="lead">
-        <BiXCircle />
+        <GoStop />
       </span>
       <span className="flex-grow-1">{t('errorMessages.hardErrorInfra')}</span>
     </div>
@@ -475,17 +470,6 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
     }
   }, [origin, destination, rollingStockID]);
 
-  const pathDetailsToggleButton = (
-    <button
-      type="button"
-      onClick={() => openModal(<ModalPathJSONDetail />, 'lg')}
-      className="btn btn-link details"
-      data-testid="result-pathfinding-distance"
-    >
-      {formatKmValue(lengthFromLineCoordinates(geojson?.geographic?.coordinates))}
-    </button>
-  );
-
   const loaderPathfindingInProgress = (
     <div className="pathfinding-in-progress">
       <div className="pathfinding-in-progress-card">
@@ -543,10 +527,12 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
           {pathfindingState.done && !pathfindingState.error && (
             <div className="content pathfinding-done">
               <span className="lead">
-                <BiCheckCircle />
+                <GoCheckCircle />
               </span>
               <span className="flex-grow-1">{t('pathfindingDone')}</span>
-              {pathDetailsToggleButton}
+              <small className="text-secondary">
+                {geojson?.length && formatKmValue(geojson?.length / 1000, 3)}
+              </small>
             </div>
           )}
           {pathfindingState.error && (
@@ -554,7 +540,7 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
               className={`content pathfinding-error ${infra && infra.state !== 'CACHED' && 'mt-2'}`}
             >
               <span className="lead">
-                <BiXCircle />
+                <GoStop />
               </span>
               <span className="flex-grow-1">
                 {t('pathfindingError', { errorMessage: t(pathfindingState.error) })}
@@ -564,7 +550,7 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
           {pathfindingState.missingParam && (
             <div className="content missing-params">
               <span className="lead">
-                <BiErrorCircle />
+                <GoAlert />
               </span>
               <span className="flex-grow-1">
                 {t('pathfindingMissingParams', { missingElements })}
