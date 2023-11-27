@@ -27,6 +27,8 @@ import {
 import { ExtendedEditorContextType } from 'applications/editor/tools/editorContextTypes';
 import EntitySumUp from 'applications/editor/components/EntitySumUp';
 
+const emptyFeatureCollection = featureCollection([]);
+
 export const SpeedSectionEditionLayers: FC = () => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
@@ -83,7 +85,7 @@ export const SpeedSectionEditionLayers: FC = () => {
     return featureCollection([...trackRangeFeatures, ...pslSignFeatures]);
   }, [entity, trackSectionsCache]);
 
-  const layersProps = useMemo(() => {
+  const { speedSectionLayerProps, pslLayerProps } = useMemo(() => {
     const context = {
       prefix: mapStyle === 'blueprint' ? 'SCHB ' : '',
       colors: colors[mapStyle],
@@ -94,16 +96,20 @@ export const SpeedSectionEditionLayers: FC = () => {
       layersSettings,
       issuesSettings,
     };
-    if (!isPSL) {
-      return SourcesDefinitionsIndex.speed_sections(context, 'speedSectionsEditor/speedSection/');
-    }
+    const speedSectionLayers = SourcesDefinitionsIndex.speed_sections(
+      context,
+      'speedSectionsEditor/speedSection/'
+    );
     const pslLayers = SourcesDefinitionsIndex.psl(context, 'speedSectionsEditor/psl/');
     const pslSignLayers = SourcesDefinitionsIndex.psl_signs(
       context,
       'speedSectionsEditor/psl_signs/'
     );
-    return [...pslLayers, ...pslSignLayers];
-  }, [isPSL, mapStyle, showIGNBDORTHO, layersSettings, issuesSettings]);
+    return {
+      speedSectionLayerProps: speedSectionLayers,
+      pslLayerProps: [...pslLayers, ...pslSignLayers],
+    };
+  }, [mapStyle, showIGNBDORTHO, layersSettings, issuesSettings]);
 
   // Here is where we handle loading the TrackSections attached to the speed section:
   useEffect(() => {
@@ -231,8 +237,27 @@ export const SpeedSectionEditionLayers: FC = () => {
         issuesSettings={issuesSettings}
         isEmphasized={false}
       />
-      <Source type="geojson" data={speedSectionsFeature} key={isPSL ? 'psl' : 'speed-section'}>
-        {layersProps.map((props, i) => (
+      <Source
+        type="geojson"
+        data={!isPSL ? speedSectionsFeature : emptyFeatureCollection}
+        key="speed-section"
+      >
+        {speedSectionLayerProps.map((props, i) => (
+          <Layer {...props} key={i} />
+        ))}
+        <Layer
+          type="circle"
+          paint={{
+            'circle-radius': 4,
+            'circle-color': '#fff',
+            'circle-stroke-color': '#000000',
+            'circle-stroke-width': 2,
+          }}
+          filter={['has', 'extremity']}
+        />
+      </Source>
+      <Source type="geojson" data={isPSL ? speedSectionsFeature : emptyFeatureCollection} key="psl">
+        {pslLayerProps.map((props, i) => (
           <Layer {...props} key={i} />
         ))}
         <Layer

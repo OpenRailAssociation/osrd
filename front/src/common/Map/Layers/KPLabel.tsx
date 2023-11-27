@@ -1,28 +1,26 @@
 import { ExpressionFilterSpecification } from 'maplibre-gl';
-import { LayerProps } from 'react-map-gl/maplibre';
+import { LayerProps, SymbolLayer } from 'react-map-gl/maplibre';
 
-import { Theme } from 'types';
+import { OmitLayer, Theme } from 'types';
 
-interface PlatformProps {
+export default function getKPLabelLayerProps(params: {
+  sourceTable?: string;
+  isSignalisation?: boolean;
   bottomOffset?: number;
+  PKFieldName?: string;
   colors: Theme;
-  fieldName?: string;
   maxzoom?: number;
   minzoom?: number;
-  isSignalisation?: boolean;
-  sourceLayer: string;
-}
-
-export default function configKPLabelLayer(props: PlatformProps) {
+}): OmitLayer<SymbolLayer> {
   const {
     bottomOffset = 2.5,
     colors,
-    fieldName = 'kp',
+    PKFieldName = 'kp',
     maxzoom = 24,
     minzoom = 7,
     isSignalisation,
-    sourceLayer,
-  } = props;
+    sourceTable,
+  } = params;
 
   // Will have to be removed when backend will be updated with consistent fieldnames
   const testSideExpression = (side: 'LEFT' | 'RIGHT' | 'CENTER') => [
@@ -57,14 +55,17 @@ export default function configKPLabelLayer(props: PlatformProps) {
         'text-offset': ['literal', [-1, 0.1]],
       };
 
-  const kpValue: LayerProps = {
+  const res: OmitLayer<SymbolLayer> = {
     type: 'symbol',
-    'source-layer': sourceLayer,
-    filter: ['all', ['!=', ['literal', null], ['get', fieldName]], ['!=', '', ['get', fieldName]]],
+    filter: [
+      'all',
+      ['!=', ['literal', null], ['get', PKFieldName]],
+      ['!=', '', ['get', PKFieldName]],
+    ],
     maxzoom,
     minzoom,
     layout: {
-      'text-field': ['get', fieldName],
+      'text-field': ['get', PKFieldName],
       'text-font': ['Roboto Medium'],
       'text-size': 9,
       'text-anchor': 'right',
@@ -81,5 +82,7 @@ export default function configKPLabelLayer(props: PlatformProps) {
     },
   };
 
-  return kpValue;
+  if (typeof sourceTable === 'string') res['source-layer'] = sourceTable;
+
+  return res;
 }

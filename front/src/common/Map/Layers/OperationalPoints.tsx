@@ -7,7 +7,7 @@ import { Theme } from 'types';
 import { MAP_URL } from 'common/Map/const';
 
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
-import configKPLabelLayer from 'common/Map/Layers/configKPLabelLayer';
+import getKPLabelLayerProps from 'common/Map/Layers/KPLabel';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 
 interface Props {
@@ -145,11 +145,10 @@ export default function OperationalPoints(props: Props) {
           layerOrder={layerOrder}
         />
         <OrderedLayer
-          {...configKPLabelLayer({
+          {...getKPLabelLayerProps({
             colors,
-            fieldName: 'kp',
             minzoom: 9.5,
-            sourceLayer: 'operational_points',
+            sourceTable: 'operational_points',
           })}
           id="chartis/osrd_operational_point_kp/geo"
           layerOrder={layerOrder}
