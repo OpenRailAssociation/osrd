@@ -59,7 +59,7 @@ function Itinerary({ path }: ItineraryProps) {
       ...map.viewport,
       longitude,
       latitude,
-      zoom,
+      zoom: zoom < 5 ? 5 : zoom,
     };
     setExtViewport(newViewport);
     if (id) updateFeatureInfoClick(Number(id));
