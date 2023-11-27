@@ -1,8 +1,8 @@
 .modal {
   .modal-content {
     position: relative;
+    overflow-y: auto;
     .modal-body {
-      overflow: auto;
       max-height: 90vh;
     }
     .modal-footer {
