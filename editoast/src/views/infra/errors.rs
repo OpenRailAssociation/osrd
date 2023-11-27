@@ -64,9 +64,9 @@ enum ListErrorsErrors {
     WrongErrorTypeProvided,
 }
 
-#[derive(QueryableByName, Debug, Clone, Serialize)]
+#[derive(QueryableByName, Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(deny_unknown_fields)]
-struct InfraError {
+pub struct InfraError {
     #[diesel(sql_type = Json)]
     pub information: JsonValue,
 }

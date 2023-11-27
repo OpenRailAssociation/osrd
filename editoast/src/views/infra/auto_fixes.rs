@@ -197,10 +197,36 @@ mod test {
         Route, Signal, SignalCache, Slope, SpeedSection, Switch, TrackEndpoint, TrackSection,
         Waypoint,
     };
+    use crate::views::pagination::PaginatedResponse;
     use crate::views::tests::create_test_service;
     use actix_http::{Request, StatusCode};
     use actix_web::test::{call_service, read_body_json, TestRequest};
     use serde_json::json;
+
+    async fn get_infra_cache(infra: &Infra) -> InfraCache {
+        InfraCache::load(&mut db_pool().get().await.unwrap(), infra)
+            .await
+            .unwrap()
+    }
+
+    async fn force_refresh(infra: &Infra) {
+        infra
+            .refresh(db_pool(), true, &get_infra_cache(infra).await)
+            .await
+            .unwrap();
+    }
+
+    fn errors_request(infra_id: i64) -> Request {
+        TestRequest::get()
+            .uri(format!("/infra/{infra_id}/errors").as_str())
+            .to_request()
+    }
+
+    fn auto_fixes_request(infra_id: i64) -> Request {
+        TestRequest::get()
+            .uri(format!("/infra/{infra_id}/auto_fixes").as_str())
+            .to_request()
+    }
 
     #[rstest::rstest]
     async fn test_no_fix() {
@@ -208,10 +234,7 @@ mod test {
         let small_infra = small_infra(db_pool()).await;
         let small_infra_id = small_infra.id();
 
-        let req_fix = TestRequest::get()
-            .uri(format!("/infra/{small_infra_id}/auto_fixes").as_str())
-            .to_request();
-        let response = call_service(&app, req_fix).await;
+        let response = call_service(&app, auto_fixes_request(small_infra_id)).await;
 
         assert_eq!(response.status(), StatusCode::OK);
         let operations: Vec<Operation> = read_body_json(response).await;
@@ -220,9 +243,21 @@ mod test {
 
     #[rstest::rstest]
     async fn test_fix_invalid_ref_signal_buffer_stop() {
+        // GIVEN
         let app = create_test_service().await;
         let small_infra = small_infra(db_pool()).await;
         let small_infra_id = small_infra.id();
+        force_refresh(&small_infra.model).await;
+
+        // Check the only initial issues are "overlapping_speed_sections" warnings
+        let infra_errors_before_all: PaginatedResponse<crate::views::infra::errors::InfraError> =
+            read_body_json(call_service(&app, errors_request(small_infra_id)).await).await;
+        assert!(infra_errors_before_all.results.iter().all(|e| e
+            .information
+            .get("error_type")
+            .unwrap()
+            == "overlapping_speed_sections"));
+
         // Remove a track
         let deletion = Operation::Delete(DeleteOperation {
             obj_id: "TA1".to_string(),
@@ -234,10 +269,18 @@ mod test {
             .to_request();
         assert_eq!(call_service(&app, req_del).await.status(), StatusCode::OK);
 
-        let req_fix = TestRequest::get()
-            .uri(format!("/infra/{small_infra_id}/auto_fixes").as_str())
-            .to_request();
-        let response = call_service(&app, req_fix).await;
+        let infra_errors_before_fix: PaginatedResponse<crate::views::infra::errors::InfraError> =
+            read_body_json(call_service(&app, errors_request(small_infra_id)).await).await;
+        // Check that some new issues appeared
+        assert!(infra_errors_before_fix.count > infra_errors_before_all.count);
+
+        // WHEN
+        let response = call_service(&app, auto_fixes_request(small_infra_id)).await;
+
+        // THEN
+        let infra_errors_after_fix: PaginatedResponse<crate::views::infra::errors::InfraError> =
+            read_body_json(call_service(&app, errors_request(small_infra_id)).await).await;
+        assert_eq!(infra_errors_after_fix, infra_errors_before_fix);
 
         assert_eq!(response.status(), StatusCode::OK);
         let operations: Vec<Operation> = read_body_json(response).await;
@@ -271,10 +314,7 @@ mod test {
             .to_request();
         assert_eq!(call_service(&app, req_del).await.status(), StatusCode::OK);
 
-        let req_fix = TestRequest::get()
-            .uri(format!("/infra/{small_infra_id}/auto_fixes").as_str())
-            .to_request();
-        let response = call_service(&app, req_fix).await;
+        let response = call_service(&app, auto_fixes_request(small_infra_id)).await;
 
         assert_eq!(response.status(), StatusCode::OK);
         let operations: Vec<Operation> = read_body_json(response).await;
@@ -492,11 +532,7 @@ mod test {
             StatusCode::OK
         );
 
-        let req_fix = TestRequest::get()
-            .uri(format!("/infra/{small_infra_id}/auto_fixes").as_str())
-            .to_request();
-        let response = call_service(&app, req_fix).await;
-
+        let response = call_service(&app, auto_fixes_request(small_infra_id)).await;
         assert_eq!(response.status(), StatusCode::OK);
 
         let operations: Vec<Operation> = read_body_json(response).await;
@@ -548,10 +584,7 @@ mod test {
             );
         }
 
-        let req_fix = TestRequest::get()
-            .uri(format!("/infra/{empty_infra_id}/auto_fixes").as_str())
-            .to_request();
-        let response = call_service(&app, req_fix).await;
+        let response = call_service(&app, auto_fixes_request(empty_infra_id)).await;
 
         assert_eq!(response.status(), StatusCode::OK);
 
@@ -589,11 +622,7 @@ mod test {
             StatusCode::OK
         );
 
-        let req_fix = TestRequest::get()
-            .uri(format!("/infra/{small_infra_id}/auto_fixes").as_str())
-            .to_request();
-        let response = call_service(&app, req_fix).await;
-
+        let response = call_service(&app, auto_fixes_request(small_infra_id)).await;
         assert_eq!(response.status(), StatusCode::OK);
 
         let operations: Vec<Operation> = read_body_json(response).await;
@@ -676,10 +705,7 @@ mod test {
             StatusCode::OK
         );
 
-        let req_fix = TestRequest::get()
-            .uri(format!("/infra/{small_infra_id}/auto_fixes").as_str())
-            .to_request();
-        let response = call_service(&app, req_fix).await;
+        let response = call_service(&app, auto_fixes_request(small_infra_id)).await;
 
         assert_eq!(response.status(), StatusCode::OK);
 
@@ -744,10 +770,7 @@ mod test {
             StatusCode::OK
         );
 
-        let req_fix = TestRequest::get()
-            .uri(format!("/infra/{small_infra_id}/auto_fixes").as_str())
-            .to_request();
-        let response = call_service(&app, req_fix).await;
+        let response = call_service(&app, auto_fixes_request(small_infra_id)).await;
 
         assert_eq!(response.status(), StatusCode::OK);
 
