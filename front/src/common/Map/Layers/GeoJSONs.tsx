@@ -44,7 +44,7 @@ import {
 import { getPSLSignsLayerProps, getPSLSignsMastLayerProps } from './extensions/SNCF/SNCF_PSL_SIGNS';
 import { LayerContext } from './types';
 import { getCatenariesProps, getCatenariesTextParams } from './Catenaries';
-import configKPLabelLayer from './configKPLabelLayer';
+import getKPLabelLayerProps from './KPLabel';
 import OrderedLayer from './OrderedLayer';
 import { Platforms } from './Platforms';
 
@@ -213,13 +213,12 @@ function getSignalLayers(context: LayerContext, prefix: string): LayerProps[] {
     { ...getSignalMatLayerProps(context), id: `${prefix}geo/signal-mat` },
     { ...getPointLayerProps(context), id: `${prefix}geo/signal-point` },
     {
-      ...configKPLabelLayer({
+      ...getKPLabelLayerProps({
+        ...context,
         bottomOffset: 6.5,
-        colors: context.colors,
-        fieldName: 'extensions_sncf_kp',
+        PKFieldName: 'extensions_sncf_kp',
         minzoom: 12,
         isSignalisation: true,
-        sourceLayer: context.sourceTable || '',
       }),
       id: `${prefix}geo/signal-kp`,
     },
@@ -281,11 +280,10 @@ function getPSLSignsLayers(context: LayerContext, prefix: string): LayerProps[] 
       minzoom: POINT_ENTITIES_MIN_ZOOM,
     },
     {
-      ...configKPLabelLayer({
+      ...getKPLabelLayerProps({
         colors: context.colors,
         minzoom: 9.5,
         isSignalisation: true,
-        sourceLayer: 'psl_signs',
       }),
       id: `${prefix}geo/psl-signs-kp`,
     },

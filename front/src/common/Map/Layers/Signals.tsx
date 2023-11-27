@@ -15,7 +15,7 @@ import {
   getSignalMatLayerProps,
   SignalContext,
 } from './geoSignalsLayers';
-import configKPLabelLayer from './configKPLabelLayer';
+import getKPLabelLayerProps from './KPLabel';
 
 interface PlatformProps {
   colors: Theme;
@@ -56,13 +56,13 @@ function Signals(props: PlatformProps) {
         layerOrder={layerOrder}
       />
       <OrderedLayer
-        {...configKPLabelLayer({
+        {...getKPLabelLayerProps({
           bottomOffset: 6.5,
           colors,
-          fieldName: 'extensions_sncf_kp',
+          PKFieldName: 'extensions_sncf_kp',
           minzoom: 12,
           isSignalisation: true,
-          sourceLayer: sourceTable,
+          sourceTable,
         })}
         id="chartis/signal/kp"
         layerOrder={layerOrder}

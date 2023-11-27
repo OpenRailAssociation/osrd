@@ -8,7 +8,7 @@ import { isNil } from 'lodash';
 import { getMap } from 'reducers/map/selectors';
 import OrderedLayer from '../../OrderedLayer';
 import { LayerContext } from '../../types';
-import configKPLabelLayer from '../../configKPLabelLayer';
+import getKPLabelLayerProps from '../../KPLabel';
 
 interface SNCF_PSL_SignsProps {
   colors: Theme;
@@ -110,6 +110,13 @@ export default function SNCF_PSL_Signs(props: SNCF_PSL_SignsProps) {
     sourceTable: 'psl_signs',
   });
 
+  const KPLabelsParams: LayerProps = getKPLabelLayerProps({
+    colors,
+    minzoom: 9.5,
+    isSignalisation: true,
+    sourceTable: 'psl_signs',
+  });
+
   return (
     <Source
       id="osrd_sncf_psl_signs_geo"
@@ -119,12 +126,7 @@ export default function SNCF_PSL_Signs(props: SNCF_PSL_SignsProps) {
       <OrderedLayer {...mastsParams} layerOrder={layerOrder} />
       <OrderedLayer {...signsParams} layerOrder={layerOrder} />
       <OrderedLayer
-        {...configKPLabelLayer({
-          colors,
-          minzoom: 9.5,
-          isSignalisation: true,
-          sourceLayer: 'psl_signs',
-        })}
+        {...KPLabelsParams}
         id="chartis/osrd_psl_signs_kp/geo"
         layerOrder={layerOrder}
       />

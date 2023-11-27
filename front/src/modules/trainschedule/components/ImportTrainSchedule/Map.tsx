@@ -20,7 +20,7 @@ import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 
 import 'common/Map/Map.scss';
 import OperationalPoints from 'common/Map/Layers/OperationalPoints';
-import Platforms from 'common/Map/Layers/Platforms';
+import { Platforms } from 'common/Map/Layers/Platforms';
 import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
 import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
 import { getMapStyle } from 'reducers/map/selectors';
