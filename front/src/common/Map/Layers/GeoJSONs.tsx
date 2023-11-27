@@ -40,8 +40,8 @@ import {
   getPSLSpeedLineBGLayerProps,
   getPSLSpeedLineLayerProps,
   getPSLSpeedValueLayerProps,
-} from './extensions/SNCF/SNCF_PSL';
-import { getPSLSignsLayerProps, getPSLSignsMastLayerProps } from './extensions/SNCF/SNCF_PSL_SIGNS';
+} from './extensions/SNCF/PSL';
+import { getPSLSignsLayerProps, getPSLSignsMastLayerProps } from './extensions/SNCF/PSLSigns';
 import { LayerContext } from './types';
 import { getCatenariesProps, getCatenariesTextParams } from './Catenaries';
 import getKPLabelLayerProps from './KPLabel';
