@@ -22,7 +22,7 @@ function TracksOSM(props: TracksOSMProps) {
     type: 'line',
     source: 'openmaptiles',
     'source-layer': 'transportation',
-    filter: ['all', ['==', 'class', 'rail'], ['==', 'service', 'yard']],
+    filter: ['all', ['==', ['get', 'class'], 'rail'], ['==', ['get', 'service'], 'yard']],
     layout: {
       visibility: 'visible',
     },
@@ -36,7 +36,7 @@ function TracksOSM(props: TracksOSMProps) {
     type: 'line',
     source: 'openmaptiles',
     'source-layer': 'transportation',
-    filter: ['all', ['==', 'class', 'rail'], ['!=', 'service', 'yard']],
+    filter: ['all', ['==', ['get', 'class'], 'rail'], ['!=', ['get', 'service'], 'yard']],
     layout: {
       visibility: 'visible',
     },

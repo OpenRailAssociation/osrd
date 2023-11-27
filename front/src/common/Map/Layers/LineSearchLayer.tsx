@@ -32,7 +32,7 @@ const LineSearchLayer = ({ layerOrder, infraID }: TracksGeographicProps) => {
             'line-color': '#ffb612',
             'line-width': 4,
           }}
-          filter={['==', 'extensions_sncf_line_code', lineSearchCode]}
+          filter={['==', ['get', 'extensions_sncf_line_code'], lineSearchCode]}
         />
       )}
     </Source>

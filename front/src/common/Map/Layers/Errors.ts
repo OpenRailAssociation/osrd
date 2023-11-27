@@ -9,7 +9,11 @@ export function getLineErrorsLayerProps(context: LayerContext): OmitLayer<LineLa
   const enableErrorTypes = context.issuesSettings?.types || INFRA_ERRORS;
   const res: OmitLayer<LineLayer> = {
     type: 'line',
-    filter: ['all', ['in', 'obj_type', ...LINE_OBJECT], ['in', 'error_type', ...enableErrorTypes]],
+    filter: [
+      'all',
+      ['in', ['get', 'obj_type'], ['literal', LINE_OBJECT]],
+      ['in', ['get', 'error_type'], ['literal', enableErrorTypes]],
+    ],
     paint: {
       'line-color': [
         'case',
@@ -30,7 +34,11 @@ export function getLineTextErrorsLayerProps(context: LayerContext): OmitLayer<Sy
   const enableErrorTypes = context.issuesSettings?.types || INFRA_ERRORS;
   const res: OmitLayer<SymbolLayer> = {
     type: 'symbol',
-    filter: ['all', ['in', 'obj_type', ...LINE_OBJECT], ['in', 'error_type', ...enableErrorTypes]],
+    filter: [
+      'all',
+      ['in', ['get', 'obj_type'], ['literal', LINE_OBJECT]],
+      ['in', ['get', 'error_type'], ['literal', enableErrorTypes]],
+    ],
     layout: {
       'symbol-placement': 'line',
       'text-font': ['Roboto Condensed'],
@@ -56,7 +64,11 @@ export function getPointErrorsLayerProps(context: LayerContext): OmitLayer<Circl
   const enableErrorTypes = context.issuesSettings?.types || INFRA_ERRORS;
   const res: OmitLayer<CircleLayer> = {
     type: 'circle',
-    filter: ['all', ['!in', 'obj_type', ...LINE_OBJECT], ['in', 'error_type', ...enableErrorTypes]],
+    filter: [
+      'all',
+      ['!', ['in', ['get', 'obj_type'], ['literal', LINE_OBJECT]]],
+      ['in', ['get', 'error_type'], ['literal', enableErrorTypes]],
+    ],
     paint: {
       'circle-color': [
         'case',
@@ -76,7 +88,11 @@ export function getPointTextErrorsLayerProps(context: LayerContext): OmitLayer<S
   const enableErrorTypes = context.issuesSettings?.types || INFRA_ERRORS;
   const res: OmitLayer<SymbolLayer> = {
     type: 'symbol',
-    filter: ['all', ['!in', 'obj_type', ...LINE_OBJECT], ['in', 'error_type', ...enableErrorTypes]],
+    filter: [
+      'all',
+      ['!', ['in', ['get', 'obj_type'], ['literal', LINE_OBJECT]]],
+      ['in', ['get', 'error_type'], ['literal', enableErrorTypes]],
+    ],
     layout: {
       'symbol-placement': 'point',
       'text-font': ['Roboto Condensed'],

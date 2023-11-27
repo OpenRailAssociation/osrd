@@ -74,11 +74,11 @@ function transformTheme(theme: Theme, reducer: (color: string) => string): Theme
 }
 
 /**
- * Helper to check if some MapLibre filter contains some ExpressionFilterSpecification,
- * or only LegacyFilterSpecification:
+ * Helper to check if some MapLibre filter is not a valid
+ * ExpressionFilterSpecification (in which case it is a
+ * LegacyFilterSpecification):
  */
-const LEGACY_SIMPLE_OPERATORS = new Set([
-  'has',
+const LEGACY_ONLY_SIMPLE_OPERATORS = new Set([
   '!has',
   '==',
   '!=',
@@ -88,20 +88,26 @@ const LEGACY_SIMPLE_OPERATORS = new Set([
   '<=',
   'in',
   '!in',
+  // The 'has' operator is also a valid ExpressionFilterSpecification operator,
+  // so it is not a LEGACY_ONLY_SIMPLE_OPERATORS.
+  // 'has',
 ]);
-const LEGACY_NESTED_OPERATORS = new Set(['all', 'any', 'none']);
-const LEGACY_VALUE_TYPES = new Set(['string', 'number', 'boolean']);
-function isLegacyFilter(filter: FilterSpecification | null): boolean {
+const LEGACY_ONLY_NESTED_OPERATORS = new Set(['all', 'any', 'none']);
+const LEGACY_ONLY_VALUE_TYPES = new Set(['string', 'number', 'boolean']);
+function isLegacyOnlyFilter(filter: FilterSpecification | null): boolean {
   if (!filter) return false;
 
   if (typeof filter === 'boolean') return false;
 
   if (Array.isArray(filter)) {
-    const [operator, ...args] = filter;
-    if (LEGACY_NESTED_OPERATORS.has(operator))
-      return args.every((value) => isLegacyFilter(value as FilterSpecification));
-    if (LEGACY_SIMPLE_OPERATORS.has(operator))
-      return args.every((value) => LEGACY_VALUE_TYPES.has(typeof value));
+    const [operator, firstArg, ...args] = filter;
+    if (LEGACY_ONLY_NESTED_OPERATORS.has(operator))
+      return args.every((value) => isLegacyOnlyFilter(value as FilterSpecification));
+    if (LEGACY_ONLY_SIMPLE_OPERATORS.has(operator))
+      return (
+        typeof firstArg === 'string' &&
+        args.every((value) => LEGACY_ONLY_VALUE_TYPES.has(typeof value))
+      );
   }
 
   return false;
@@ -132,7 +138,7 @@ function adaptFilter(
 
   // MapLibre does not allow combining in a logical tree expression filters and legacy filters.
   // We have to check that the existing filters do not contain expression filters:
-  const hasExpressionFilters = !isLegacyFilter(layer.filter as FilterSpecification);
+  const hasExpressionFilters = !isLegacyOnlyFilter(layer.filter as FilterSpecification);
 
   // Get the field name of the id field. Default is 'id', but for example on error layers its obj_id
   let fieldId = 'id';
@@ -143,6 +149,16 @@ function adaptFilter(
     if (onlyIdsToShow.length) conditions.push(['in', ['get', fieldId], ['literal', onlyIdsToShow]]);
     if (idsToHide.length) conditions.push(['!', ['in', ['get', fieldId], ['literal', idsToHide]]]);
   } else {
+    // For various reasons (detailed in #5850), we should stop using
+    // LegacyFilterSpecification. So, in case there are some, it logs a warning
+    // so that we can clean it later:
+    console.warn(
+      `The filter "${
+        layer.id || JSON.stringify(layer)
+      }" is a LegacyFilterSpecification. It should be an ExpressionFilterSpecification instead.`,
+      layer.filter
+    );
+
     // Add the conditions as LegacyFilterSpecification:
     if (onlyIdsToShow.length) conditions.push(['in', fieldId, ...onlyIdsToShow]);
     if (idsToHide.length) conditions.push(['!in', fieldId, ...idsToHide]);
