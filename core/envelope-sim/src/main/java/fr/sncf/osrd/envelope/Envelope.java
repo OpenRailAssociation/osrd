@@ -1,5 +1,7 @@
 package fr.sncf.osrd.envelope;
 
+import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.areSpeedsEqual;
+
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.reporting.exceptions.ErrorType;
@@ -43,7 +45,7 @@ public final class Envelope implements Iterable<EnvelopePart>, SearchableEnvelop
         for (int i = 0; i < parts.length - 1; i++) {
             if (parts[i].getEndPos() != parts[i + 1].getBeginPos())
                 throw new OSRDError(ErrorType.EnvelopePartsNotContiguous);
-            if (parts[i].getEndSpeed() != parts[i + 1].getBeginSpeed())
+            if (!areSpeedsEqual(parts[i].getEndSpeed(), parts[i + 1].getBeginSpeed()))
                 continuous = false;
         }
 

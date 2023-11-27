@@ -575,6 +575,9 @@ public final class EnvelopePart implements SearchableEnvelope {
             int beginStepIndex, double beginPosition, double beginSpeed,
             int endStepIndex, double endPosition, double endSpeed
     ) {
+        if (stepCount() == 0)
+            return null;
+
         assert endStepIndex >= 0 && endStepIndex < stepCount();
         assert beginStepIndex >= 0 && beginStepIndex < stepCount();
 
