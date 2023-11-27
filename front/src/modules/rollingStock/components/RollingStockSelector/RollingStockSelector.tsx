@@ -6,11 +6,11 @@ import {
   RollingStockInfo,
 } from 'modules/rollingStock/components/RollingStockSelector/RollingStockHelpers';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
-import { Comfort, RollingStock } from 'common/api/osrdEditoastApi';
+import { RollingStockComfortType, RollingStock } from 'common/api/osrdEditoastApi';
 
 type RollingStockProps = {
   rollingStockSelected?: RollingStock;
-  rollingStockComfort?: Comfort;
+  rollingStockComfort?: RollingStockComfortType;
   image?: JSX.Element;
   comfort?: string;
   comfortType?: string;

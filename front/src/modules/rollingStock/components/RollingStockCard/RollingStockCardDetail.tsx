@@ -3,7 +3,7 @@ import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 
-import { Comfort, RollingStock, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { RollingStockComfortType, RollingStock, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import Loader from 'common/Loader';
 import { setFailure } from 'reducers/main';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
@@ -13,12 +13,12 @@ type RollingStockCardDetailProps = {
   id: number;
   hideCurves?: boolean;
   form?: string;
-  curvesComfortList: Comfort[];
-  setCurvesComfortList: (curvesComfortList: Comfort[]) => void;
+  curvesComfortList: RollingStockComfortType[];
+  setCurvesComfortList: (curvesComfortList: RollingStockComfortType[]) => void;
 };
 
 export const listCurvesComfort = (curvesData: RollingStock['effort_curves']) => {
-  const comfortList: Comfort[] = ['STANDARD'];
+  const comfortList: RollingStockComfortType[] = ['STANDARD'];
   Object.keys(curvesData.modes).forEach((mode) => {
     curvesData.modes[mode].curves.forEach((curve) => {
       if (curve.cond?.comfort) {

@@ -1,5 +1,5 @@
 import {
-  Comfort,
+  RollingStockComfortType,
   ConditionalEffortCurve,
   RollingStock,
   RollingStockForm,
@@ -203,7 +203,7 @@ export const checkRollingStockFormValidity = (
 };
 
 export const createEmptyCurve = (
-  comfort: Comfort,
+  comfort: RollingStockComfortType,
   electricalProfile: string | null = null,
   powerRestriction: string | null = null
 ) => ({
@@ -216,7 +216,7 @@ export const createEmptyCurve = (
 });
 
 /** given a tractionMode and a list of comfort, return empty EffortCurves */
-export const createEmptyCurves = (tractionMode: string, comforts: Comfort[]) => ({
+export const createEmptyCurves = (tractionMode: string, comforts: RollingStockComfortType[]) => ({
   curves: comforts.map((comfort) => createEmptyCurve(comfort)),
   default_curve: { speeds: [0], max_efforts: [0] },
   is_electric: tractionMode !== THERMAL_TRACTION_IDENTIFIER,

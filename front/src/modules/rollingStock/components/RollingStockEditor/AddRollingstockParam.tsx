@@ -1,5 +1,5 @@
 import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
-import { Comfort } from 'common/api/osrdEditoastApi';
+import { RollingStockComfortType } from 'common/api/osrdEditoastApi';
 import { RollingStockSelectorParams } from 'modules/rollingStock/consts';
 import React, { useState } from 'react';
 import cx from 'classnames';
@@ -35,7 +35,9 @@ export default function AddRollingstockParam({
   const optionsList = compact(allOptionsList)
     .filter(
       (option) =>
-        !displayedLists[listName as keyof RollingStockSelectorParams].includes(option as Comfort)
+        !displayedLists[listName as keyof RollingStockSelectorParams].includes(
+          option as RollingStockComfortType
+        )
     )
     .map((option) => {
       if (listName === COMFORT_LEVELS_KEY) {
