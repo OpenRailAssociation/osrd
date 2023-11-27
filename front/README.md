@@ -5,6 +5,8 @@
 ## How to launch project for developpement purpose ?
 
 - go inside `/front/` from OSRD main project
+- you'll need [`npm`](https://nodejs.org/en/download/package-manager) and
+  [`yarn`](https://classic.yarnpkg.com/lang/en/docs/install/)
 - exec `yarn` (hope you have a good connexion and a good cup of tea)
 - exec `yarn start` (perhaps you'll need `NODE_OPTIONS="--openssl-legacy-provider"` if your node
   version is too new)
@@ -39,36 +41,27 @@ Launches end to end tests.
 
 It requires:
 
-- Backend containers to be up: `docker compose build core redis editoast postgres`
-- Running front
-- [`poetry`](https://python-poetry.org/docs/#installation) to be installed
+- Install playwright dependencies `cd ./front/ && yarn playwright install --with-deps`
+- Backend containers to be up: `docker compose up --no-build --detach redis postgres gateway core editoast`
+- Running front with `docker compose up --build --detach front`
 
-Locally, to use the same configuration as the CI, you must change the environment variable to
-`CI=true`.
+Now you can run the test with `cd front/ && yarn e2e-tests`.
 
-This command will execute all tests defined. The command can be changed in
-[`test_e2e.py`](../tests/tests/test_e2e.py) to execute only one test with or without debug mode.
-`test_e2e.py` is executing [playwright command](https://playwright.dev/docs/test-cli) in a python
-subprocess. Example of modification to apply to launch only `stdcm-page.spec.ts` in debug mode with
-chromium:
+> [!CAUTION]
+> If you try to run `yarn start` instead of running it through docker, you'll notice it doesn't
+> work because the gateway can't access your local port from inside a container. 2 solutions: 
+> 
+> - run all the components locally (you might keep Postgres and Redis in containers)
+> - if on Linux, you can also launch all the containers on the host network: you can replace the
+> `docker compose <something>` above with `osrd/scripts/osrd-compose.sh <something>`
 
-```diff
-    result = subprocess.run(
-        [
-            "yarn",
-            "--cwd",
-            "front",
-            "playwright",
-            "test"
-+           "stdcm-page.spec.ts",
-            "--reporter=line",
-+           "--debug",
-+           "--project=chromium"
-        ],
-        cwd=Path(__file__).parents[2],
-        check=False,
-    )
-```
+If the tests fail, you'll find a `front/test-results` folder that will contain videos of the fail
+test executions. They might be of help to understand what's going on. Note that the CI also exports
+these videos as artifacts.
+
+You may also want to explore the documentation of the test framework [Playwright](https://playwright.dev/).
+For example, try launching each test independently using `yarn playwright test --ui`, or debug a
+test with `yarn playwright test --debug`.
 
 ## Design rules
 
