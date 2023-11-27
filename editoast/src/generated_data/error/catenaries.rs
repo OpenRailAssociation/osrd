@@ -10,7 +10,7 @@ use crate::schema::{InfraError, OSRDIdentified, ObjectRef, ObjectType};
 
 pub const OBJECT_GENERATORS: [ObjectErrorGenerator<NoContext>; 2] = [
     ObjectErrorGenerator::new(1, check_empty),
-    ObjectErrorGenerator::new(1, check_catenary_track_ranges),
+    ObjectErrorGenerator::new(2, check_catenary_track_ranges),
 ];
 
 pub const GLOBAL_GENERATORS: [GlobalErrorGenerator<NoContext>; 1] =

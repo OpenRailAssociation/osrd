@@ -12,7 +12,7 @@ use crate::schema::{
 
 pub const OBJECT_GENERATORS: [ObjectErrorGenerator<NoContext>; 2] = [
     ObjectErrorGenerator::new(1, check_empty),
-    ObjectErrorGenerator::new(1, check_speed_section_track_ranges),
+    ObjectErrorGenerator::new(2, check_speed_section_track_ranges),
 ];
 pub const GLOBAL_GENERATORS: [GlobalErrorGenerator<NoContext>; 1] =
     [GlobalErrorGenerator::new(check_overlapping)];
