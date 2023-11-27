@@ -23,9 +23,9 @@ export function Platforms(props: PlatformsProps) {
     'source-layer': 'transportation',
     filter: [
       'all',
-      ['==', '$type', 'Polygon'],
-      ['==', 'class', 'path'],
-      ['==', 'subclass', 'platform'],
+      ['==', ['get', '$type'], 'Polygon'],
+      ['==', ['get', 'class'], 'path'],
+      ['==', ['get', 'subclass'], 'platform'],
     ],
     paint: {
       'fill-color': colors.platform.fill,

@@ -39,8 +39,8 @@ export function getFilterBySpeedSectionsTag(
   layersSettings: MapState['layersSettings']
 ): FilterSpecification {
   return isNil(layersSettings.speedlimittag)
-    ? ['all', ['has', 'speed_limit']]
-    : ['all', ['has', getSpeedSectionsTag(layersSettings)]];
+    ? ['has', 'speed_limit']
+    : ['has', getSpeedSectionsTag(layersSettings)];
 }
 
 export function getSpeedSectionsLineLayerProps({
