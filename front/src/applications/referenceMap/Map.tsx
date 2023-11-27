@@ -31,7 +31,7 @@ import Routes from 'common/Map/Layers/Routes';
 import SearchMarker from 'common/Map/Layers/SearchMarker';
 import Signals from 'common/Map/Layers/Signals';
 import SpeedLimits from 'common/Map/Layers/SpeedLimits';
-import SNCF_PSL from 'common/Map/Layers/extensions/SNCF/SNCF_PSL';
+import SNCF_PSL from 'common/Map/Layers/extensions/SNCF/PSL';
 import Switches from 'common/Map/Layers/Switches';
 import TracksGeographic from 'common/Map/Layers/TracksGeographic';
 import TracksOSM from 'common/Map/Layers/TracksOSM';

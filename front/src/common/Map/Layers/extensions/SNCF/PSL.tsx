@@ -14,7 +14,7 @@ import { getInfraID } from 'reducers/osrdconf/selectors';
 import { MapState } from 'reducers/map';
 import { getSpeedSectionsTag, getSpeedSectionsName } from '../../SpeedLimits';
 import { Theme, OmitLayer } from '../../../../../types';
-import SNCF_PSL_Signs from './SNCF_PSL_SIGNS';
+import SNCF_PSL_Signs from './PSLSigns';
 
 interface SNCF_PSLProps {
   colors: Theme;
