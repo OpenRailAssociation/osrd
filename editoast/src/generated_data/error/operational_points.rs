@@ -6,7 +6,7 @@ use crate::schema::{InfraError, ObjectRef, ObjectType};
 
 pub const OBJECT_GENERATORS: [ObjectErrorGenerator<NoContext>; 2] = [
     ObjectErrorGenerator::new(1, check_empty),
-    ObjectErrorGenerator::new(1, check_op_parts),
+    ObjectErrorGenerator::new(2, check_op_parts),
 ];
 
 /// Check if operational point is empty
