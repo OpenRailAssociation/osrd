@@ -1,6 +1,6 @@
 import { listCurvesComfort } from 'modules/rollingStock/components/RollingStockCard/RollingStockCardDetail';
 import {
-  Comfort,
+  RollingStockComfortType,
   ConditionalEffortCurve,
   RollingStock,
   RollingStockWithLiveries,
@@ -126,7 +126,7 @@ export default function RollingStockEditorCurves({
   const [selectedCurves, setSelectedCurves] = useState(EmptySelectedCurves);
 
   const dispatchComfortLvl = (value: string) => {
-    dispatch(updateComfortLvl(value as Comfort));
+    dispatch(updateComfortLvl(value as RollingStockComfortType));
   };
   const dispatchTractionMode = (value: string | null) => {
     dispatch(updateTractionMode(value));
@@ -398,7 +398,7 @@ export default function RollingStockEditorCurves({
     if (!currentRsEffortCurve) return;
     const updatedModesCurves = Object.keys(currentRsEffortCurve.modes).reduce((acc, key) => {
       const currentMode = currentRsEffortCurve.modes[key];
-      const newEmptyCurve = createEmptyCurve(value as Comfort);
+      const newEmptyCurve = createEmptyCurve(value as RollingStockComfortType);
       return {
         ...acc,
         [key]: {
@@ -412,7 +412,7 @@ export default function RollingStockEditorCurves({
       default_mode: prevState !== null ? prevState.default_mode : currentRsEffortCurve.default_mode,
       modes: updatedModesCurves,
     }));
-    dispatchComfortLvl(value as Comfort);
+    dispatchComfortLvl(value as RollingStockComfortType);
   };
 
   const updateTractionModesList = (newTractionMode: string) => {

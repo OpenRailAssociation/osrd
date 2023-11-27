@@ -1,7 +1,11 @@
 import React from 'react';
 import { IoIosSnow } from 'react-icons/io';
 import { ImFire } from 'react-icons/im';
-import { Comfort, LightRollingStock, RollingStock } from 'common/api/osrdEditoastApi';
+import {
+  RollingStockComfortType,
+  LightRollingStock,
+  RollingStock,
+} from 'common/api/osrdEditoastApi';
 import { BiLockAlt } from 'react-icons/bi';
 
 const RollingStockUnit = ({ unit, detail }: { unit: string; detail: string }) => {
@@ -63,7 +67,7 @@ export const RollingStockInfo = ({
   );
 };
 
-export function comfort2pictogram(comfort: Comfort | undefined) {
+export function comfort2pictogram(comfort: RollingStockComfortType | undefined) {
   switch (comfort) {
     case 'AC':
       return (

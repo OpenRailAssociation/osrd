@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { PointTooltipProps, ResponsiveLine } from '@nivo/line';
 import { useTranslation } from 'react-i18next';
-import { Comfort, RollingStock } from 'common/api/osrdEditoastApi';
+import { RollingStockComfortType, RollingStock } from 'common/api/osrdEditoastApi';
 import { useSelector } from 'react-redux';
 import { getElectricalProfile, getPowerRestriction } from 'reducers/rollingstockEditor/selectors';
 import { STANDARD_COMFORT_LEVEL, THERMAL_TRACTION_IDENTIFIER } from 'modules/rollingStock/consts';
@@ -13,7 +13,7 @@ type EffortCurvesModes = RollingStock['effort_curves']['modes'];
 type TransformedCurves = {
   [index: string]: {
     mode: string;
-    comfort: Comfort;
+    comfort: RollingStockComfortType;
     speeds: number[];
     max_efforts: number[];
     electricalProfile: string | null;
@@ -22,7 +22,7 @@ type TransformedCurves = {
 };
 type ParsedCurves = {
   color: string;
-  comfort: Comfort;
+  comfort: RollingStockComfortType;
   data: {
     x: number;
     y: number;
@@ -63,7 +63,7 @@ const parseData = (
 };
 
 function LegendComfortSwitches(props: {
-  curvesComfortList: Comfort[];
+  curvesComfortList: RollingStockComfortType[];
   comfortsStates: { [key: string]: boolean };
   onComfortsStatesChange: (comfort: string) => void;
 }) {
@@ -182,7 +182,7 @@ export default function RollingStockCurve({
   hoveredElectricalParam,
 }: {
   data: EffortCurvesModes;
-  curvesComfortList: Comfort[];
+  curvesComfortList: RollingStockComfortType[];
   isOnEditionMode?: boolean;
   showPowerRestriction?: boolean;
   hoveredElectricalParam?: string | null;

@@ -1,5 +1,5 @@
 import { STANDARD_COMFORT_LEVEL } from 'modules/rollingStock/consts';
-import { Comfort } from 'common/api/osrdEditoastApi';
+import { RollingStockComfortType } from 'common/api/osrdEditoastApi';
 import produce from 'immer';
 import { AnyAction, Dispatch } from 'redux';
 
@@ -10,7 +10,7 @@ export const POWER_RESTRICTION = 'rollingstock/POWER_RESTRICTION';
 export const TRACTION_MODE = 'rollingstock/TRACTION_MODE';
 
 export interface RsEditorCurvesState {
-  comfortLvl: Comfort;
+  comfortLvl: RollingStockComfortType;
   electricalProfile: string | null;
   powerRestriction: string | null;
   tractionMode: string | null;
@@ -45,7 +45,7 @@ export default function reducer(inputState: RsEditorCurvesState | undefined, act
   });
 }
 
-export function updateComfortLvl(comfortLvl: Comfort) {
+export function updateComfortLvl(comfortLvl: RollingStockComfortType) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: COMFORT_LEVEL,

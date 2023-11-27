@@ -4,7 +4,7 @@ import { ObjectFieldsTypes } from 'utils/types';
 import { Position, Feature } from 'geojson';
 import {
   AllowanceValue,
-  Comfort,
+  RollingStockComfortType,
   ElectrificationRange,
   Electrified,
   Neutral,
@@ -157,7 +157,7 @@ export const studyTypes = Object.keys(STUDY_TYPES) as StudyType[];
 export type PowerRestrictionRange = LinearMetadataItem<{ value: string }>;
 
 export interface OsrdConfState {
-  rollingStockComfort: Comfort;
+  rollingStockComfort: RollingStockComfortType;
   name: string;
   trainCount: number;
   trainStep: number;
