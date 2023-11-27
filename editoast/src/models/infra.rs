@@ -208,8 +208,9 @@ impl Infra {
                     format!(
                     "INSERT INTO {layer_table}(obj_id,geographic,schematic,infra_id) SELECT obj_id,geographic,schematic,$1 FROM {layer_table} WHERE infra_id=$2")
                 } else {
+                    // TODO: we should test this behavior
                     format!(
-                    "INSERT INTO {layer_table}(obj_id,geographic,schematic,infra_id, angle_geo, angle_sch) SELECT obj_id,geographic,schematic,$1,angle_geo,angle_sch FROM {layer_table} WHERE infra_id = $2"
+                    "INSERT INTO {layer_table}(obj_id,geographic,schematic,infra_id, angle_geo, angle_sch, signaling_system, sprite) SELECT obj_id,geographic,schematic,$1,angle_geo,angle_sch, signaling_system, sprite FROM {layer_table} WHERE infra_id = $2"
                 )
                 };
 
