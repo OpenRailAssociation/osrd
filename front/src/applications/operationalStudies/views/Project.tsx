@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import nextId from 'react-id-generator';
 import StudyCard from 'modules/study/components/StudyCard';
 import StudyCardEmpty from 'modules/study/components/StudyCardEmpty';
-import Loader from 'common/Loader';
+import Loader, { Spinner } from 'common/Loader';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import { BiTargetLock } from 'react-icons/bi';
 import { GoPencil } from 'react-icons/go';
@@ -28,28 +28,6 @@ type SortOptions =
   | 'LastModifiedAsc'
   | 'LastModifiedDesc';
 
-function displayStudiesList(
-  studiesList: StudyWithScenarios[],
-  setFilterChips: (filterchips: string) => void
-) {
-  return studiesList ? (
-    <div className="row no-gutters">
-      <div className="col-hdp-3 col-hd-4 col-lg-6">
-        <StudyCardEmpty />
-      </div>
-      {studiesList.map((study) => (
-        <div className="col-hdp-3 col-hd-4 col-lg-6" key={`project-displayStudiesList-${study.id}`}>
-          <StudyCard study={study} setFilterChips={setFilterChips} />
-        </div>
-      ))}
-    </div>
-  ) : (
-    <span className="mt-5">
-      <Loader position="center" />
-    </span>
-  );
-}
-
 type ProjectParams = {
   projectId: string;
 };
@@ -64,6 +42,7 @@ export default function Project() {
   const { projectId: urlProjectId } = useParams() as ProjectParams;
   const [postSearch] = osrdEditoastApi.usePostSearchMutation();
   const [getStudies] = osrdEditoastApi.useLazyGetProjectsByProjectIdStudiesQuery();
+  const [isLoading, setIsLoading] = useState(true);
 
   const { projectId } = useMemo(
     () => ({
@@ -87,7 +66,7 @@ export default function Project() {
     data: project,
     isError: isProjectError,
     error: projectError,
-  } = osrdEditoastApi.useGetProjectsByProjectIdQuery(
+  } = osrdEditoastApi.endpoints.getProjectsByProjectId.useQuery(
     { projectId: +projectId! },
     {
       skip: !projectId,
@@ -102,6 +81,7 @@ export default function Project() {
   };
 
   const getStudiesList = async () => {
+    setIsLoading(true);
     if (projectId) {
       if (filter) {
         const payload: PostSearchApiArg = {
@@ -151,10 +131,34 @@ export default function Project() {
           if (data?.results) setStudiesList(data.results);
         } catch (error) {
           console.error(error);
+        } finally {
+          setIsLoading(false);
         }
       }
     }
   };
+
+  function displayStudiesList() {
+    return !isLoading ? (
+      <div className="row no-gutters">
+        <div className="col-hdp-3 col-hd-4 col-lg-6">
+          <StudyCardEmpty />
+        </div>
+        {studiesList.map((study) => (
+          <div
+            className="col-hdp-3 col-hd-4 col-lg-6"
+            key={`project-displayStudiesList-${study.id}`}
+          >
+            <StudyCard study={study} setFilterChips={setFilterChips} />
+          </div>
+        ))}
+      </div>
+    ) : (
+      <span className="mt-5 text-center">
+        <Spinner displayDelay={500} />
+      </span>
+    );
+  }
 
   const handleSortOptions = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSortOption(e.target.value as SortOptions);
@@ -282,9 +286,7 @@ export default function Project() {
             />
           </div>
 
-          <div className="studies-list">
-            {useMemo(() => displayStudiesList(studiesList, setFilterChips), [studiesList])}
-          </div>
+          <div className="studies-list">{useMemo(() => displayStudiesList(), [studiesList])}</div>
         </div>
       </main>
     </>
