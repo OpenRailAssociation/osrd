@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import logo from 'assets/pictures/views/study.svg';
 import { useTranslation } from 'react-i18next';
-import Loader from 'common/Loader';
+import Loader, { Spinner } from 'common/Loader';
 import nextId from 'react-id-generator';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import ScenarioCard from 'modules/scenario/components/ScenarioCard';
@@ -31,30 +31,6 @@ type SortOptions =
   | 'LastModifiedAsc'
   | 'LastModifiedDesc';
 
-function displayScenariosList(
-  scenariosList: ScenarioWithCountTrains[],
-  setFilterChips: (filterChips: string) => void
-) {
-  return scenariosList ? (
-    <div className="row no-gutters">
-      <div className="col-hdp-3 col-hd-4 col-lg-6">
-        <ScenarioCardEmpty />
-      </div>
-      {scenariosList.map((scenario) => (
-        <div
-          className="col-hdp-3 col-hd-4 col-lg-6"
-          key={`study-displayScenariosList-${scenario.id}`}
-        >
-          <ScenarioCard scenario={scenario} setFilterChips={setFilterChips} />
-        </div>
-      ))}
-    </div>
-  ) : (
-    <span className="mt-5">
-      <Loader position="center" />
-    </span>
-  );
-}
 type studyParams = {
   projectId: string;
   studyId: string;
@@ -68,6 +44,7 @@ export default function Study() {
   const [filterChips, setFilterChips] = useState('');
   const [sortOption, setSortOption] = useState<SortOptions>('LastModifiedDesc');
   const { projectId: urlProjectId, studyId: urlStudyId } = useParams() as studyParams;
+  const [isLoading, setIsLoading] = useState(true);
 
   const { projectId, studyId } = useMemo(
     () => ({
@@ -133,6 +110,7 @@ export default function Study() {
   };
 
   const getScenarioList = async () => {
+    setIsLoading(true);
     if (projectId && studyId) {
       if (filter) {
         const payload: PostSearchApiArg = {
@@ -183,10 +161,34 @@ export default function Study() {
           if (data?.results) setScenariosList(data.results);
         } catch (error) {
           console.error(error);
+        } finally {
+          setIsLoading(false);
         }
       }
     }
   };
+
+  function displayScenariosList() {
+    return !isLoading ? (
+      <div className="row no-gutters">
+        <div className="col-hdp-3 col-hd-4 col-lg-6">
+          <ScenarioCardEmpty />
+        </div>
+        {scenariosList.map((scenario) => (
+          <div
+            className="col-hdp-3 col-hd-4 col-lg-6"
+            key={`study-displayScenariosList-${scenario.id}`}
+          >
+            <ScenarioCard scenario={scenario} setFilterChips={setFilterChips} />
+          </div>
+        ))}
+      </div>
+    ) : (
+      <span className="mt-5 text-center">
+        <Spinner displayDelay={500} />
+      </span>
+    );
+  }
 
   useEffect(() => {
     if (studyId) getScenarioList();
@@ -336,7 +338,7 @@ export default function Study() {
           </div>
 
           <div className="scenarios-list">
-            {useMemo(() => displayScenariosList(scenariosList, setFilterChips), [scenariosList])}
+            {useMemo(() => displayScenariosList(), [scenariosList])}
           </div>
         </div>
       </main>

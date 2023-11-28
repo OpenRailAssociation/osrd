@@ -7,7 +7,7 @@ import osrdLogo from 'assets/pictures/osrd.png';
 import logo from 'assets/pictures/views/projects.svg';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
-import Loader from 'common/Loader';
+import { Spinner } from 'common/Loader';
 import { useTranslation } from 'react-i18next';
 import {
   PostSearchApiArg,
@@ -38,6 +38,7 @@ export default function HomeOperationalStudies() {
   const [filterChips, setFilterChips] = useState('');
   const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
   const [getProjects] = osrdEditoastApi.endpoints.getProjects.useLazyQuery();
+  const [isLoading, setIsLoading] = useState(true);
 
   const sortOptions = [
     {
@@ -51,6 +52,7 @@ export default function HomeOperationalStudies() {
   ];
 
   const getProjectList = async () => {
+    setIsLoading(true);
     if (filter || safeWord !== '') {
       const payload: PostSearchApiArg = {
         pageSize: 1000,
@@ -97,6 +99,8 @@ export default function HomeOperationalStudies() {
         }
       } catch (error) {
         console.error(error);
+      } finally {
+        setIsLoading(false);
       }
     }
   };
@@ -116,7 +120,7 @@ export default function HomeOperationalStudies() {
   };
 
   function displayCards() {
-    return projectsList ? (
+    return !isLoading ? (
       <div className="projects-list row">
         <div className="col-hdp-2 col-lg-3 col-md-4 col-sm-6">
           <ProjectCardEmpty />
@@ -136,9 +140,9 @@ export default function HomeOperationalStudies() {
         ))}
       </div>
     ) : (
-      <div className="mt-5">
-        <Loader position="center" />
-      </div>
+      <span className="mt-5 text-center">
+        <Spinner displayDelay={500} />
+      </span>
     );
   }
 
