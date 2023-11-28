@@ -14,7 +14,20 @@ type attributionsLicensesType = {
 const LicenseAttributions = () => {
   const { t } = useTranslation('home/navbar');
 
-  const attributionsArray = Object.values(attributionsLicenses) as attributionsLicensesType[];
+  // mglTraffic is not a lib from package.json, so we add it manually
+  const mglTrafficAttribution: attributionsLicensesType = {
+    licenses: 'CC-BY-NC-SA 3.0',
+    publisher: 'Marc Le Gad',
+    copyright: '',
+    version: '',
+    name: 'MGL Traffic',
+    url: 'http://www.mlgtraffic.net',
+  };
+
+  const attributionsArray = [
+    ...(Object.values(attributionsLicenses) as attributionsLicensesType[]),
+    mglTrafficAttribution,
+  ];
 
   const attributions = attributionsArray
     .map((licence) => ({ ...licence, name: licence.name.replace('@', '') }))
