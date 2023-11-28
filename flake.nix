@@ -96,7 +96,6 @@
                 # Tools & Libs
                 diesel-cli
                 cargo-watch
-                cargo-tarpaulin
                 osmium-tool
                 geos
                 openssl

@@ -1,0 +1,513 @@
+name: build
+
+on:
+  pull_request:
+  workflow_dispatch:
+  merge_group:
+  push:
+    branches:
+      - dev
+      - staging
+      - prod
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    outputs:
+      stable_tags: ${{ steps.bake-metadata.outputs.stable_tags }}
+      stable_version: ${{ steps.bake-metadata.outputs.stable_version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Make bake metadata
+        id: bake-metadata
+        run: '.github/scripts/bake-metadata.py | tee bake-metadata.json'
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          version: v0.12.0
+          driver-opts: image=moby/buildkit:v0.12.3
+          buildkitd-flags: --debug
+
+      - name: Login to ghcr.io
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: '$' # special user for authenticating as a gh actions worker
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        run: >
+          docker buildx bake
+          --file=docker/docker-bake.hcl
+          --file=bake-metadata.json
+          --push
+
+  generate_railjson:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install poetry
+        run: pipx install poetry
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+          cache: "poetry"
+
+      - name: Install railjson_generator dependencies
+        run: |
+          cd python/railjson_generator
+          poetry install
+      - name: Generate railjson
+        run: |
+          cd python/railjson_generator
+          mkdir /tmp/artifact
+          poetry run python -m railjson_generator /tmp/artifact
+          cp -rv railjson_generator/examples/* /tmp/artifact
+      - name: Archive railjson examples artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: railjson-examples
+          path: /tmp/artifact/**/*
+          if-no-files-found: error
+
+  check_railjson_generator:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install poetry
+        run: pipx install poetry
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+          cache: "poetry"
+
+      - name: Install railjson_generator dependencies
+        run: |
+          cd python/railjson_generator
+          poetry install
+
+      - name: Flake8
+        run: |
+          cd python/railjson_generator
+          poetry run pflake8 --config ./pyproject.toml --output-file flake8.xml --format junit-xml
+
+      - name: Publish flake8 report
+        uses: mikepenz/action-junit-report@v4
+        if: failure()
+        with:
+          report_paths: flake8.xml
+
+      - name: Black
+        run: |
+          cd python/railjson_generator
+          poetry run black . --check
+
+      - name: Isort
+        run: |
+          cd python/railjson_generator
+          poetry run isort . --check
+
+      - name: Pytype
+        run: |
+          cd python/railjson_generator
+          poetry run pytype -j auto
+
+  check_integration_tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install poetry
+        run: pipx install poetry
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+          cache: "poetry"
+      - name: Install dependencies
+        run: |
+          cd tests
+          poetry install
+      - name: Flake8
+        run: |
+          cd tests
+          poetry run pflake8 --config ./pyproject.toml
+      - name: Black
+        run: |
+          cd tests
+          poetry run black . --check
+      - name: Isort
+        run: |
+          cd tests
+          poetry run isort . --check
+      - name: Pytype
+        run: |
+          cd tests
+          poetry run pytype -j auto
+
+  check_osrd_schema:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install poetry
+        run: pipx install poetry
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+          cache: "poetry"
+      - name: Install dependencies
+        run: |
+          cd python/osrd_schemas
+          poetry install
+      - name: Flake8
+        run: |
+          cd python/osrd_schemas
+          poetry run pflake8 --config ./pyproject.toml --output-file flake8.xml --format junit-xml
+      - name: Publish flake8 report
+        uses: mikepenz/action-junit-report@v4
+        if: failure()
+        with:
+          report_paths: flake8.xml
+      - name: Black
+        run: |
+          cd python/osrd_schemas
+          poetry run black . --check
+      - name: Isort
+        run: |
+          cd python/osrd_schemas
+          poetry run isort . --check
+      - name: Pytype
+        run: |
+          cd python/osrd_schemas
+          poetry run pytype -j auto
+
+  check_infra_schema_sync:
+    runs-on: ubuntu-latest
+    steps:
+        - name: Checkout
+          uses: actions/checkout@v4
+        - name: Install poetry
+          run: pipx install poetry
+        - uses: actions/setup-python@v4
+          with:
+            python-version: "3.11"
+            cache: "poetry"
+        - name: Check infra_schema.json sync
+          run: |
+            cd python/osrd_schemas
+            poetry install --no-interaction --no-root
+            poetry run python -m osrd_schemas.infra_editor > current_infra_schema.json
+            diff current_infra_schema.json ../../front/src/reducers/osrdconf/infra_schema.json
+
+  check_front_rtk_sync:
+    runs-on: ubuntu-latest
+    needs:
+      - build
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate rtk bindings
+        run: >
+          docker run --rm --net=host -v $PWD/output:/app/tests/unit
+          -v $PWD/editoast:/editoast
+          -v $PWD/gateway:/gateway
+          -v $PWD/front/src/common/api:/app/src/common/api
+          ${{ fromJSON(needs.build.outputs.stable_tags).front-build }}
+          yarn generate-types
+
+      - name: Check for unexpected changes
+        run: |
+          git diff --exit-code front
+
+  check_core:
+    runs-on: ubuntu-latest
+    needs:
+      - generate_railjson
+      - build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download railjson examples
+        uses: actions/download-artifact@v3
+        with:
+          name: railjson-examples
+          path: railjson_generated_examples
+
+      - name: List railjson examples
+        run: |
+          ls -l railjson_generated_examples
+
+      - name: Execute tests within container
+        run: |
+          docker run --name core-test \
+            -v $PWD/railjson_generated_examples:/railjson_generated_examples \
+            -e EXAMPLES_PATH=/railjson_generated_examples \
+            -v $PWD/core/build:/output ${{ fromJSON(needs.build.outputs.stable_tags).core-build }} \
+            /bin/bash -c "gradle -Pspotbugs_report_xml --continue check; cp -r build/* /output/"
+          exit $(docker wait core-test)
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          name: codecov
+          flags: core
+          directory: ./core/build/reports/jacoco/testCodeCoverageReport
+          files: testCodeCoverageReport.xml
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
+          verbose: true
+
+      - name: Report JUnit failures
+        uses: mikepenz/action-junit-report@v4
+        if: failure()
+        with:
+          report_paths: "./core/build/test-results/test/TEST-*.xml"
+          require_tests: true
+
+      - name: Report checkstyle lints
+        if: failure()
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        run: |
+          for report_path in ./core/build/reports/checkstyle/*.xml; do
+              report="${report_path##*/}"
+              sourceset_name="${report%.xml}"
+              report_name="Checkstyle ${sourceset_name}"
+              echo "Uploading ${report_name}"
+              reviewdog -name "${report_name}" -reporter=github-pr-check -f=checkstyle < "${report_path}"
+          done
+
+      - name: Report spotbugs lints
+        if: failure()
+        uses: jwgmeligmeyling/spotbugs-github-action@v1.2
+        with:
+          path: "./output/reports/spotbugs/*.xml"
+
+  check_editoast_tests:
+    runs-on: ubuntu-latest
+
+    needs:
+      - build
+
+    services:
+      postgres:
+        image: postgis/postgis
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+        ports:
+          - 5432:5432
+        # needed because the postgres container does not provide a healthcheck
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Execute tests within container
+        run: |
+          docker run --rm --net=host \
+            -v $PWD/docker/init_db.sql:/init_db.sql \
+            postgis/postgis:latest \
+            psql postgresql://postgres:password@localhost:5432 -f /init_db.sql
+
+          docker run --name=editoast-test --net=host -v $PWD/output:/output \
+            -e DATABASE_URL="postgres://osrd:password@localhost:5432/osrd" \
+            ${{ fromJSON(needs.build.outputs.stable_tags).editoast-test }} \
+            /bin/bash -c "diesel migration run --locked-schema; cargo test --verbose; grcov . --binary-path ./target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore "/*" -o /output/lcov.info"
+            exit $(docker wait editoast-test)
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          name: codecov
+          flags: editoast
+          fail_ci_if_error: true
+          verbose: true
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./output/lcov.info
+
+  check_editoast_lints:
+    # lints runs in a separate job, as it takes about 1m30 for the documentation
+    # check to complete. As editoast tests take while to run, we don't want this to
+    # be on the hot path
+    runs-on: ubuntu-latest
+
+    needs:
+      - build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Documentation check
+        run: |
+          docker run --name=editoast-doc --net=host -v $PWD/output:/output \
+            -e RUSTDOCFLAGS="-D warnings" \
+            ${{ fromJSON(needs.build.outputs.stable_tags).editoast-test }} \
+            cargo doc --manifest-path ./Cargo.toml --no-deps
+            exit $(docker wait editoast-doc)
+
+      - name: Format check
+        run: |
+          docker run --name=editoast-format --net=host -v $PWD/output:/output \
+            ${{ fromJSON(needs.build.outputs.stable_tags).editoast-test }} \
+            cargo fmt --check
+            exit $(docker wait editoast-format)
+
+  check_gateway:
+    runs-on: ubuntu-latest
+    needs:
+      - build
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Execute tests within container
+        run: |
+          docker run --name=gateway-test --net=host -v $PWD/output:/output \
+            ${{ fromJSON(needs.build.outputs.stable_tags).gateway-test }} \
+            /bin/bash -c "cargo test --verbose; grcov . --binary-path ./target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore "/*" -o /output/lcov.info"
+          exit $(docker wait gateway-test)
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          name: codecov
+          flags: gateway
+          fail_ci_if_error: true
+          verbose: true
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./output/lcov.info
+
+      - name: Documentation check
+        run: |
+          docker run --name=gateway-doc --net=host -v $PWD/output:/output \
+            -e RUSTDOCFLAGS="-D warnings" \
+            ${{ fromJSON(needs.build.outputs.stable_tags).gateway-test }} \
+            cargo doc --manifest-path ./Cargo.toml --no-deps
+          exit $(docker wait gateway-doc)
+
+      - name: Format check
+        run: |
+          docker run --name=gateway-format --net=host -v $PWD/output:/output \
+            ${{ fromJSON(needs.build.outputs.stable_tags).gateway-test }} \
+            cargo fmt --check
+          exit $(docker wait gateway-format)
+
+  check_front:
+    runs-on: ubuntu-latest
+    needs:
+      - build
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Execute tests within container
+        run: |
+          docker run --name=front-test --net=host -v $PWD/output:/app/tests/unit \
+            ${{ fromJSON(needs.build.outputs.stable_tags).front-build }} \
+            yarn test-coverage
+          exit $(docker wait front-test)
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          name: codecov
+          flags: front
+          fail_ci_if_error: true
+          verbose: true
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./output/coverage/clover.xml
+
+  integration_tests:
+    runs-on: ubuntu-latest
+    needs:
+      - build
+    steps:
+      # TODO: check if we can deduplicate the base steps from integration_tests_quality
+      # https://www.jameskerr.blog/posts/sharing-steps-in-github-action-workflows/
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install poetry
+        run: pipx install poetry
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+          cache: "poetry"
+      - name: Install dependencies
+        run: |
+          cd tests
+          poetry install
+
+      - name: Startup the test infrastructure
+        id: start_playwright_worker
+        run: |
+          set -e
+          export OSRD_FRONT_MODE=nginx
+          export TAG='${{ needs.build.outputs.stable_version }}'
+          services='editoast core front gateway'
+          docker compose pull $services
+          docker compose up --no-build -d $services
+        env:
+          DOCKER_BUILDKIT: 1
+          COMPOSE_DOCKER_CLI_BUILD: 1
+
+      - name: Run pytest
+        run: |
+          poetry -C tests run pytest -m "not e2e"
+
+      - name: Run Playwright tests
+        run: |
+            docker run --init --name=playwright-test --net=host \
+              -e CI=true \
+              -v $PWD/front/test-results:/app/test-results \
+              ${{ fromJSON(needs.build.outputs.stable_tags).front-build }} \
+              /bin/sh -c "npx playwright install --with-deps && yarn e2e-tests"
+            exit $(docker wait playwright-test)
+
+      - uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: intregration-videos
+          path: front/test-results/
+          retention-days: 30
+
+      - name: Save container logs
+        run: docker compose logs > container-logs
+        if: always()
+
+      - uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: intregration-container-logs
+          path: container-logs
+          retention-days: 30

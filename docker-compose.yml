@@ -35,7 +35,7 @@ services:
       interval: 5s
 
   core:
-    image: ghcr.io/osrd-project/unstable/osrd-core:${TAG-dev}
+    image: ghcr.io/osrd-project/edge/osrd-core:${TAG-dev}
     container_name: osrd-core
     build:
       context: core
@@ -51,11 +51,11 @@ services:
       interval: 5s
 
   front:
-    image: ghcr.io/osrd-project/unstable/osrd-front-dev:${TAG-dev}
+    image: ghcr.io/osrd-project/edge/osrd-front:${TAG-dev}-${OSRD_FRONT_MODE-devel}
     container_name: osrd-front
     build:
       context: front
-      dockerfile: docker/Dockerfile.${OSRD_FRONT_MODE:-dev}
+      dockerfile: docker/Dockerfile.${OSRD_FRONT_MODE-devel}
       args:
         OSRD_GIT_DESCRIBE: ${OSRD_GIT_DESCRIBE}
     environment:
@@ -71,7 +71,7 @@ services:
       interval: 5s
 
   editoast:
-    image: ghcr.io/osrd-project/unstable/osrd-editoast:${TAG-dev}
+    image: ghcr.io/osrd-project/edge/osrd-editoast:${TAG-dev}
     container_name: osrd-editoast
     depends_on:
       postgres: {condition: service_healthy}
@@ -99,7 +99,7 @@ services:
       interval: 5s
 
   gateway:
-    image: ghcr.io/osrd-project/unstable/osrd-gateway:${TAG-dev}
+    image: ghcr.io/osrd-project/edge/osrd-gateway:${TAG-dev}-standalone
     container_name: osrd-gateway
     build:
       context: gateway

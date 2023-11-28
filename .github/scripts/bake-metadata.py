@@ -4,98 +4,295 @@ Generates a bake for multiple containers, given tags and labels
 as produced by the docker/metadata-action action.
 """
 
+import os
 import sys
 import json
-
-from argparse import ArgumentParser, FileType
-
-
-def _parser():
-    parser = ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "--container", dest="containers", action="append", help="input container names"
-    )
-
-    pat_doc = ", where {container} is the base container name"
-    parser.add_argument(
-        "--image-pattern",
-        dest="image_patterns",
-        action="append",
-        help="output image patterns" + pat_doc,
-    )
-    parser.add_argument(
-        "--cache-to-pattern",
-        dest="cache_to_patterns",
-        action="append",
-        help="cache-to target patterns" + pat_doc,
-    )
-    parser.add_argument(
-        "--cache-from-pattern",
-        dest="cache_from_patterns",
-        action="append",
-        help="cache-from target patterns" + pat_doc,
-    )
-    parser.add_argument("target_pattern", help="output target name pattern" + pat_doc)
-    parser.add_argument(
-        "input_metadata",
-        type=FileType("r"),
-        help="tags and labels Json file input, as produced by docker/metadata-action",
-    )
-    return parser
+import subprocess
+from dataclasses import dataclass
+from typing import Optional, Union, List, Tuple, Callable, TypeAlias
+from abc import ABC, abstractmethod
 
 
-def container_tags(container, image_patterns, input_tags):
-    """Make a list of tags to apply to a container"""
-    container_images = (pat.format(container=container) for pat in image_patterns)
-    return [f"{image}:{tag}" for image in container_images for tag in input_tags]
+EDGE_PREFIX = "ghcr.io/osrd-project/edge/"
+RELEASE_PREFIX = "ghcr.io/osrd-project/stable/"
 
 
-def generate_bake_file(
-    input_metadata,
-    containers,
-    target_pattern,
-    image_patterns,
-    cache_to_patterns,
-    cache_from_patterns,
-):
-    input_labels = input_metadata["labels"]
-    input_tags = [tag.split(":")[1] for tag in input_metadata["tags"]]
+PROTECTED_BRANCHES = {"dev", "staging", "prod"}
 
+
+@dataclass
+class Target:
+    name: str
+    image: str
+    variant: Optional[str] = None
+    release: bool = False
+
+    @property
+    def suffix(self):
+        if self.variant is None:
+            return ""
+        return f"-{self.variant}"
+
+
+TARGETS = [
+    Target(name="core", image="core", release=True),
+    Target(name="core-build", image="core", variant="build"),
+    Target(name="editoast", image="editoast", release=True),
+    Target(name="editoast-test", image="editoast", variant="test"),
+    Target(name="front-devel", image="front", variant="devel"),
+    Target(name="front-nginx", image="front", variant="nginx"),
+    Target(name="front-build", image="front", variant="build"),
+    Target(name="gateway-standalone", image="gateway", variant="standalone"),
+    Target(name="gateway-test", image="gateway", variant="test"),
+    Target(name="gateway-front", image="gateway", variant="front", release=True),
+]
+
+
+def short_hash(commit_hash: str) -> str:
+    args = ["git", "rev-parse", "--short", commit_hash]
+    res = subprocess.run(args, check=True, stdout=subprocess.PIPE)
+    return res.stdout.decode().strip()
+
+
+def parse_merge_commit(ref) -> Tuple[str, str]:
+    args = ["git", "log", "-1", "--pretty=format:%s", ref]
+    res = subprocess.run(args, check=True, stdout=subprocess.PIPE)
+    merge_title = res.stdout.decode().strip()
+    # expect "Merge XXX into YYY"
+    merge, pr_commit, into, base_commit = merge_title.split()
+    assert ("Merge", "into") == (merge, into)
+    return (pr_commit, base_commit)
+
+
+def registry_cache(image: str) -> str:
+    return f"type=registry,mode=max,ref={image}-cache"
+
+
+def edge_image(target: Target) -> str:
+    return f"{EDGE_PREFIX}osrd-{target.image}"
+
+
+def release_image(target: Target) -> str:
+    return f"{RELEASE_PREFIX}osrd-{target.image}"
+
+
+ImageNamer = Callable[[Target], str]
+
+
+def tag(target: Target, version: str, namer: ImageNamer = edge_image) -> str:
+    return f"{namer(target)}:{version}{target.suffix}"
+
+
+class BaseEvent(ABC):
+    @abstractmethod
+    def version_string(self) -> str:
+        pass
+
+    @abstractmethod
+    def get_stable_version(self) -> str:
+        pass
+
+    def get_stable_image_namer(self) -> ImageNamer:
+        return edge_image
+
+    def get_stable_tag(self, target: Target) -> str:
+        version = self.get_stable_version()
+        namer = self.get_stable_image_namer()
+        return tag(target, version, namer)
+
+    def get_tags(self, target: Target) -> List[str]:
+        return [self.get_stable_tag(target)]
+
+    def get_cache_to(self, target: Target) -> List[str]:
+        return []
+
+    def get_cache_from(self, target: Target) -> List[str]:
+        return []
+
+
+@dataclass
+class PullRequestEvent(BaseEvent):
+    pr_id: str
+    pr_branch: str
+    # the target branch name
+    target_branch: str
+    # whether the target branch is protected
+    target_protected: bool
+
+    # the merge commit the CI runs on
+    merge_hash: str
+    # the head of the PR
+    orig_hash: str
+    # the target branch commit hash
+    target_hash: str
+
+    def version_string(self):
+        return (
+            f"pr {self.pr_id} ("
+            f"merge of {self.pr_branch}@{short_hash(self.orig_hash)} "
+            f"into {self.target_branch}@{short_hash(self.target_hash)})"
+        )
+
+    def get_stable_version(self) -> str:
+        # edge/osrd-front:pr-42-HASH-nginx
+        return f"pr-{self.pr_id}-{self.merge_hash}"
+
+    def pr_tag(self, target: Target) -> str:
+        # edge/osrd-front:pr-42-nginx  # pr-42 (merge of XXXX into XXXX)
+        return tag(target, f"pr-{self.pr_id}")
+
+    def get_tags(self, target: Target) -> List[str]:
+        return [*super().get_tags(target), self.pr_tag(target)]
+
+    def get_cache_to(self, target: Target) -> List[str]:
+        return [registry_cache(self.pr_tag(target))]
+
+    def get_cache_from(self, target: Target) -> List[str]:
+        return [
+            registry_cache(tag(target, self.target_branch)),
+            registry_cache(self.pr_tag(target)),
+        ]
+
+
+@dataclass
+class MergeGroupEvent(BaseEvent):
+    # the merge commit the CI runs on
+    merge_hash: str
+    # the ref the PR is merged into
+    target_branch: str
+
+    def version_string(self):
+        return f"merge queue {self.merge_hash}"
+
+    def get_stable_version(self) -> str:
+        # edge/osrd-front:merge-queue-HASH
+        return f"merge-queue-{self.merge_hash}"
+
+    def get_cache_from(self, target: Target) -> List[str]:
+        # we can't easily cache from the PRs, as multiple PRs
+        # can be grouped into one merge group batch, and there's
+        # no obvious way to figure out which ones
+        return [registry_cache(tag(target, self.target_branch))]
+
+
+@dataclass
+class BranchEvent(BaseEvent):
+    branch_name: str
+    protected: bool
+    commit_hash: str
+
+    def version_string(self):
+        return f"{self.branch_name} {short_hash(self.commit_hash)}"
+
+    def get_stable_version(self) -> str:
+        # edge/osrd-front:dev-HASH-nginx
+        return f"{self.branch_name}-{self.commit_hash}"
+
+    def branch_tag(self, target: Target) -> str:
+        # edge/osrd-front:dev-nginx  # dev XXXX
+        return tag(target, self.branch_name)
+
+    def get_tags(self, target: Target) -> List[str]:
+        return [*super().get_tags(target), self.branch_tag(target)]
+
+    def get_cache_to(self, target: Target) -> List[str]:
+        return [registry_cache(self.branch_tag(target))]
+
+    def get_cache_from(self, target: Target) -> List[str]:
+        return [registry_cache(self.branch_tag(target))]
+
+
+@dataclass
+class ReleaseEvent(BaseEvent):
+    release_name: str
+    commit_hash: str
+
+    def version_string(self):
+        return f"{self.release_name} {short_hash(self.commit_hash)}"
+
+    def get_stable_version(self) -> str:
+        # stable/osrd-front:1.0-devel  # 1.0 XXXX
+        return self.release_name
+
+    def get_stable_image_namer(self) -> ImageNamer:
+        return release_image
+
+    def get_tags(self, target: Target) -> List[str]:
+        if not target.release:
+            return []
+        return super().get_tags(target)
+
+
+Event: TypeAlias = Union[PullRequestEvent, MergeGroupEvent, BranchEvent, ReleaseEvent]
+
+
+def parse_pr_id(ref: str) -> str:
+    # refs/pull/<pr_number>/merge
+    refs, pull, pr_number, merge = ref.split("/")
+    assert (refs, pull, merge) == ("refs", "pull", "merge")
+    return pr_number
+
+
+def parse_event() -> Event:
+    event_name = os.environ["GITHUB_EVENT_NAME"]
+    commit_hash = os.environ["GITHUB_SHA"]
+    ref = os.environ["GITHUB_REF"]
+    ref_name = os.environ["GITHUB_REF_NAME"]
+    protected = os.environ["GITHUB_REF_PROTECTED"] == "true"
+
+    if event_name == "merge_group":
+        target_branch = os.environ["GITHUB_BASE_REF"]
+        return MergeGroupEvent(commit_hash, target_branch)
+
+    if event_name == "release":
+        return ReleaseEvent(ref, commit_hash)
+
+    if event_name in ("workflow_dispatch", "push"):
+        return BranchEvent(ref_name, protected, commit_hash)
+
+    if event_name == "pull_request":
+        target_branch = os.environ["GITHUB_BASE_REF"]
+        orig_hash, target_hash = parse_merge_commit(commit_hash)
+        return PullRequestEvent(
+            pr_id=parse_pr_id(ref),
+            pr_branch=os.environ["GITHUB_HEAD_REF"],
+            target_branch=target_branch,
+            target_protected=target_branch in PROTECTED_BRANCHES,
+            merge_hash=commit_hash,
+            orig_hash=orig_hash,
+            target_hash=target_hash,
+        )
+    raise ValueError(f"unknown event type: {event_name}")
+
+
+def generate_bake_file(event, targets):
     bake_targets = {}
-    for container in containers:
-        target_manifest = {
-            "tags": container_tags(container, image_patterns, input_tags),
-            "labels": input_labels,
-        }
+    for target in targets:
+        # TODO: add labels
+        target_manifest = {"tags": event.get_tags(target)}
+        if cache_to := event.get_cache_to(target):
+            target_manifest["cache-to"] = cache_to
+        if cache_from := event.get_cache_from(target):
+            target_manifest["cache-from"] = cache_from
+        bake_targets[f"base-{target.name}"] = target_manifest
 
-        if cache_to_patterns:
-            target_manifest["cache-to"] = [
-                pat.format(container=container) for pat in cache_to_patterns
-            ]
-
-        if cache_from_patterns:
-            target_manifest["cache-from"] = [
-                pat.format(container=container) for pat in cache_from_patterns
-            ]
-
-        target = target_pattern.format(container=container)
-        bake_targets[target] = target_manifest
-
+    version = event.version_string()
+    bake_targets["base"] = {"args": {"OSRD_GIT_DESCRIBE": version}}
     return {"target": bake_targets}
 
 
-def main(args=None):
-    args = _parser().parse_args(args)
-    input_metadata = json.load(args.input_metadata)
-    bake_file = generate_bake_file(
-        input_metadata,
-        args.containers,
-        args.target_pattern,
-        args.image_patterns,
-        args.cache_to_patterns,
-        args.cache_from_patterns,
-    )
-    json.dump(bake_file, sys.stdout)
+def main():
+    event = parse_event()
+    bake_file = generate_bake_file(event, TARGETS)
+    json.dump(bake_file, sys.stdout, indent=2)
+
+    gh_output_path = os.environ["GITHUB_OUTPUT"]
+    with open(gh_output_path, "a", encoding="utf-8") as f:
+        stable_tags = {}
+        for target in TARGETS:
+            stable_tags[target.name] = event.get_stable_tag(target)
+        print(f"stable_version={event.get_stable_version()}", file=f)
+        print(f"stable_tags={json.dumps(stable_tags)}", file=f)
 
 
 if __name__ == "__main__":
