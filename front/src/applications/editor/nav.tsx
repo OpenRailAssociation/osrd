@@ -3,7 +3,6 @@ import { Dispatch } from 'redux';
 import { IconType } from 'react-icons';
 import { BiTargetLock } from 'react-icons/bi';
 import { BsFillExclamationOctagonFill } from 'react-icons/bs';
-import { FiLayers, FiZoomIn, FiZoomOut } from 'react-icons/fi';
 import { FaCompass } from 'react-icons/fa';
 import { GiRailway } from 'react-icons/gi';
 import { isNil } from 'lodash';
@@ -15,6 +14,7 @@ import { selectLayers } from 'reducers/editor';
 import { Shortcut } from 'utils/hooks/useKeyboardShortcuts';
 import { ModalContextType } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import InfraSelectorModal from 'common/InfraSelector/InfraSelectorModal';
+import { GoSearch, GoStack, GoZoomIn, GoZoomOut } from 'react-icons/go';
 import { EditorState, EDITOAST_TO_LAYER_DICT, EditoastType } from './tools/types';
 import LayersModal from './components/LayersModal';
 import { SelectionState } from './tools/selection/types';
@@ -52,6 +52,7 @@ export interface NavButton {
       setViewport: (newViewport: Partial<Viewport>) => void;
       openModal: ModalContextType['openModal'];
       closeModal: ModalContextType['closeModal'];
+      setIsSearchToolOpened: React.Dispatch<React.SetStateAction<boolean>>;
       mapRef: MapRef;
     },
     toolContext: {
@@ -66,8 +67,16 @@ export interface NavButton {
 const NavButtons: NavButton[][] = [
   [
     {
+      id: 'search',
+      icon: GoSearch,
+      labelTranslationKey: 'common.search',
+      onClick({ setIsSearchToolOpened }) {
+        setIsSearchToolOpened((state) => !state);
+      },
+    },
+    {
       id: 'zoom-in',
-      icon: FiZoomIn,
+      icon: GoZoomIn,
       labelTranslationKey: 'common.zoom-in',
       onClick({ setViewport, viewport }) {
         setViewport({
@@ -78,7 +87,7 @@ const NavButtons: NavButton[][] = [
     },
     {
       id: 'zoom-out',
-      icon: FiZoomOut,
+      icon: GoZoomOut,
       labelTranslationKey: 'common.zoom-out',
       onClick({ setViewport, viewport }) {
         setViewport({
@@ -114,7 +123,7 @@ const NavButtons: NavButton[][] = [
   [
     {
       id: 'layers',
-      icon: FiLayers,
+      icon: GoStack,
       labelTranslationKey: 'Editor.nav.toggle-layers',
       shortcut: { code: 'KeyL', optionalKeys: { ctrlKey: true, shiftKey: true } },
       onClick({ openModal, editorState }, { activeTool, toolState, setToolState }) {
