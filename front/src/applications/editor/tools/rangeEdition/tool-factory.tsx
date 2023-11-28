@@ -2,7 +2,7 @@ import React, { ComponentType } from 'react';
 import { Map } from 'maplibre-gl';
 import { cloneDeep, isEqual } from 'lodash';
 import { BiReset } from 'react-icons/bi';
-import { BsTrash } from 'react-icons/bs';
+import { GoTrash } from 'react-icons/go';
 import { IconType } from 'react-icons';
 import { IoMdAddCircleOutline } from 'react-icons/io';
 
@@ -111,7 +111,7 @@ function getRangeEditionTool<T extends EditorRange>({
       [
         {
           id: 'delete-entity',
-          icon: BsTrash,
+          icon: GoTrash,
           labelTranslationKey: `Editor.tools.${objectTypeEdition}-edition.actions.delete-${objectTypeAction}`,
           // Show button only if we are editing
           isDisabled({ state }) {

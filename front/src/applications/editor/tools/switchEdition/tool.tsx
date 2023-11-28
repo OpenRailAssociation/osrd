@@ -1,7 +1,7 @@
 import React from 'react';
 import { TbSwitch2 } from 'react-icons/tb';
 import { IoMdAddCircleOutline } from 'react-icons/io';
-import { BsTrash } from 'react-icons/bs';
+import { GoTrash } from 'react-icons/go';
 
 import { save } from 'reducers/editor';
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
@@ -64,7 +64,7 @@ const SwitchEditionTool: Tool<SwitchEditionState> = {
     [
       {
         id: 'delete-switch',
-        icon: BsTrash,
+        icon: GoTrash,
         labelTranslationKey: `Editor.tools.switch-edition.actions.delete-switch`,
         // Show button only if we are editing
         isDisabled({ state }) {

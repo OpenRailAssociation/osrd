@@ -4,7 +4,8 @@ import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { BsFillExclamationTriangleFill } from 'react-icons/bs';
 import { useTranslation } from 'react-i18next';
-import { FaDownload, FaPlus, FaTrash } from 'react-icons/fa';
+import { GoTrash } from 'react-icons/go';
+import { FaDownload, FaPlus } from 'react-icons/fa';
 import { BiSelectMultiple } from 'react-icons/bi';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
@@ -260,7 +261,7 @@ export default function Timetable({
               )
             }
           >
-            <FaTrash />
+            <GoTrash />
           </button>
         )}
       </div>

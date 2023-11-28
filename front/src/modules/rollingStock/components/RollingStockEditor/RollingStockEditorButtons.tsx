@@ -1,6 +1,5 @@
 import React from 'react';
-import { BiDuplicate, BiTrash } from 'react-icons/bi';
-import { FaPencilAlt } from 'react-icons/fa';
+import { GoDuplicate, GoPencil, GoTrash } from 'react-icons/go';
 import { RollingStock, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
@@ -124,7 +123,7 @@ function RollingStockEditorButtons({
         disabled={isRollingStockLocked}
         onClick={() => setIsEditing(true)}
       >
-        <FaPencilAlt />
+        <GoPencil />
       </button>
       <button
         type="button"
@@ -132,7 +131,7 @@ function RollingStockEditorButtons({
         tabIndex={0}
         onClick={() => duplicateRollingStock()}
       >
-        <BiDuplicate />
+        <GoDuplicate />
       </button>
       <button
         type="button"
@@ -141,7 +140,7 @@ function RollingStockEditorButtons({
         disabled={isRollingStockLocked}
         onClick={() => confirmDelete()}
       >
-        <BiTrash />
+        <GoTrash />
       </button>
     </div>
   );

@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { Route, Routes } from 'react-router-dom';
-import { FaLock } from 'react-icons/fa';
+import { GoLock } from 'react-icons/go';
 
 import logo from 'assets/pictures/home/editor.svg';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
@@ -37,7 +37,7 @@ export default function HomeEditorUnplugged() {
                 <span>{t('referenceMap:infrastructure', { name: infra.name })}</span>
                 {infra.locked && (
                   <span className="ml-2">
-                    <FaLock />
+                    <GoLock />
                   </span>
                 )}
               </span>

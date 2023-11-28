@@ -1,6 +1,7 @@
 import React, { FC, useCallback, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
+import { GoTrash } from 'react-icons/go';
 import { FaMapMarkedAlt, FaTimesCircle } from 'react-icons/fa';
 import { Position } from 'geojson';
 
@@ -12,7 +13,6 @@ import Tipped from 'applications/editor/components/Tipped';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import { ExtendedEditorContextType } from 'applications/editor/tools/editorContextTypes';
 import { EndPoint, WayPoint, WayPointEntity } from 'types';
-import { BsTrash } from 'react-icons/bs';
 
 const WayPointInput: FC<{
   endPoint: EndPoint;
@@ -79,7 +79,7 @@ const WayPointInput: FC<{
   }, [endPoint, isPicking, onChange, setState, state]);
 
   const getButtonIcon = () => {
-    if (!isPicking && isWayPointSelected) return <BsTrash />;
+    if (!isPicking && isWayPointSelected) return <GoTrash />;
     return isPicking ? <FaTimesCircle /> : <FaMapMarkedAlt />;
   };
 

@@ -2,7 +2,7 @@ import React, { FC, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Route, Routes } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { FaLock } from 'react-icons/fa';
+import { GoLock } from 'react-icons/go';
 
 import logo from 'assets/pictures/home/map.svg';
 import { getInfraID } from 'reducers/osrdconf/selectors';
@@ -35,7 +35,7 @@ const HomeReferenceMap: FC = () => {
             {infra ? (
               <span className="ml-2 text-muted">
                 {t('referenceMap:infrastructure', { name: infra.name })}
-                <span className="ml-2">{infra.locked && <FaLock />}</span>
+                <span className="ml-2">{infra.locked && <GoLock />}</span>
               </span>
             ) : (
               <span className="ml-2 text-orange">{t('referenceMap:mapNoInfraSelected')}</span>

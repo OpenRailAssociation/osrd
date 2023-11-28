@@ -1,6 +1,6 @@
 import React from 'react';
 import { cloneDeep, isEmpty, isEqual } from 'lodash';
-import { BsTrash } from 'react-icons/bs';
+import { GoTrash } from 'react-icons/go';
 import { MdShowChart } from 'react-icons/md';
 import { RiDragMoveLine } from 'react-icons/ri';
 import { CgAdd, CgRemove } from 'react-icons/cg';
@@ -164,7 +164,7 @@ const TrackEditionTool: Tool<TrackEditionState> = {
       },
       {
         id: 'delete-line',
-        icon: BsTrash,
+        icon: GoTrash,
         labelTranslationKey: 'Editor.tools.track-edition.actions.delete-line',
         // Show button only if we are editing
         isDisabled({ state }) {

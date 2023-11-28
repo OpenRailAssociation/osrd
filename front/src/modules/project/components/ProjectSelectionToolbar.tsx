@@ -7,7 +7,7 @@ import {
 } from 'common/api/osrdEditoastApi';
 import { useTranslation } from 'react-i18next';
 import { AiFillCheckCircle } from 'react-icons/ai';
-import { FaTrash } from 'react-icons/fa';
+import { GoTrash } from 'react-icons/go';
 import { MdOutlineDeselect } from 'react-icons/md';
 import DeleteProjectsModal from './DeleteProjectsModal';
 
@@ -66,7 +66,7 @@ export default function ProjectSelectionToolbar({
               )
             }
           >
-            <FaTrash />
+            <GoTrash />
             <span className="ml-2">{t('deleteProjects')}</span>
           </button>
         </>

@@ -1,7 +1,8 @@
 import React, { useContext } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { FaLongArrowAltUp, FaLongArrowAltDown, FaTrash, FaMinus } from 'react-icons/fa';
+import { GoTrash } from 'react-icons/go';
+import { FaLongArrowAltUp, FaLongArrowAltDown, FaMinus } from 'react-icons/fa';
 
 import { replaceVias } from 'reducers/osrdconf';
 import { getSuggeredVias, getVias } from 'reducers/osrdconf/selectors';
@@ -124,7 +125,7 @@ export default function ModalSugerredVias({
               type="button"
               onClick={removeAllVias}
             >
-              <FaTrash />
+              <GoTrash />
               <span className="ml-2">{t('deleteVias')}</span>
             </button>
           </div>

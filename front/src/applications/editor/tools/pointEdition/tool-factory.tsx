@@ -3,7 +3,7 @@ import { cloneDeep, isEqual, omit } from 'lodash';
 import { Feature, LineString, Point } from 'geojson';
 import { BiReset } from 'react-icons/bi';
 import { AiOutlinePlus } from 'react-icons/ai';
-import { BsTrash } from 'react-icons/bs';
+import { GoTrash } from 'react-icons/go';
 import { IconType } from 'react-icons';
 import nearestPointOnLine from '@turf/nearest-point-on-line';
 import { Map } from 'maplibre-gl';
@@ -101,7 +101,7 @@ function getPointEditionTool<T extends EditorPoint>({
       [
         {
           id: 'delete-entity',
-          icon: BsTrash,
+          icon: GoTrash,
           labelTranslationKey: `Editor.tools.${id}-edition.actions.delete-entity`,
           // Show button only if we are editing
           isDisabled({ state }) {
