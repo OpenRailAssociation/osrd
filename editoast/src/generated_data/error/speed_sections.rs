@@ -150,7 +150,7 @@ mod tests {
         let mut infra_cache = create_small_infra_cache();
         let track_ranges_error = vec![("A", 20., 500.), ("E", 0., 500.), ("B", 0., 250.)];
         let speed_section = create_speed_section_cache("SP_error", track_ranges_error);
-        infra_cache.add(speed_section.clone());
+        infra_cache.add(speed_section.clone()).unwrap();
         let errors = check_speed_section_track_ranges(
             &speed_section.clone().into(),
             &infra_cache,
@@ -168,7 +168,7 @@ mod tests {
         let mut infra_cache = create_small_infra_cache();
         let track_ranges_error = vec![("A", 20., 530.), ("B", 0., 250.)];
         let speed_section = create_speed_section_cache("SP_error", track_ranges_error);
-        infra_cache.add(speed_section.clone());
+        infra_cache.add(speed_section.clone()).unwrap();
         let errors = check_speed_section_track_ranges(
             &speed_section.clone().into(),
             &infra_cache,
@@ -186,11 +186,11 @@ mod tests {
         let track_ranges_1 = vec![("A", 20., 220.)];
         let mut speed_section_1 = create_speed_section_cache("SP_error_1", track_ranges_1);
         speed_section_1.speed_limit = Some(42.);
-        infra_cache.add(speed_section_1);
+        infra_cache.add(speed_section_1).unwrap();
         let track_ranges_2 = vec![("A", 100., 150.), ("A", 200., 480.)];
         let mut speed_section_2 = create_speed_section_cache("SP_error_2", track_ranges_2);
         speed_section_2.speed_limit = Some(100.);
-        infra_cache.add(speed_section_2);
+        infra_cache.add(speed_section_2).unwrap();
         let errors = check_overlapping(&infra_cache, &Graph::load(&infra_cache));
         assert_eq!(1, errors.len());
         let infra_error = InfraError::new_overlapping_speed_sections("SP_error_1", "SP_error_2");
@@ -205,13 +205,13 @@ mod tests {
         speed_section_1
             .speed_limit_by_tag
             .insert("my_tag".into(), 42.);
-        infra_cache.add(speed_section_1);
+        infra_cache.add(speed_section_1).unwrap();
         let track_ranges_2 = vec![("A", 100., 150.), ("A", 200., 480.)];
         let mut speed_section_2 = create_speed_section_cache("SP_error_2", track_ranges_2);
         speed_section_2
             .speed_limit_by_tag
             .insert("my_tag".into(), 100.);
-        infra_cache.add(speed_section_2);
+        infra_cache.add(speed_section_2).unwrap();
         let errors = check_overlapping(&infra_cache, &Graph::load(&infra_cache));
         assert_eq!(1, errors.len());
         let infra_error = InfraError::new_overlapping_speed_sections("SP_error_1", "SP_error_2");
@@ -227,13 +227,13 @@ mod tests {
         speed_section_1
             .speed_limit_by_tag
             .insert("my_tag_2".into(), 42.);
-        infra_cache.add(speed_section_1);
+        infra_cache.add(speed_section_1).unwrap();
         let track_ranges_2 = vec![("A", 100., 150.), ("A", 200., 480.)];
         let mut speed_section_2 = create_speed_section_cache("SP_error_2", track_ranges_2);
         speed_section_2
             .speed_limit_by_tag
             .insert("my_tag".into(), 100.);
-        infra_cache.add(speed_section_2);
+        infra_cache.add(speed_section_2).unwrap();
         let errors = check_overlapping(&infra_cache, &Graph::load(&infra_cache));
         assert_eq!(0, errors.len());
     }

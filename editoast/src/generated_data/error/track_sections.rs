@@ -69,7 +69,7 @@ mod tests {
             end: pos,
             gradient: 0.1,
         }];
-        infra_cache.add(track.clone());
+        infra_cache.add(track.clone()).unwrap();
         let errors = check_slope_out_of_range(
             &track.clone().into(),
             &infra_cache,
@@ -95,7 +95,7 @@ mod tests {
             end: pos,
             radius: 0.1,
         }];
-        infra_cache.add(track.clone());
+        infra_cache.add(track.clone()).unwrap();
         let errors = check_curve_out_of_range(
             &track.clone().into(),
             &infra_cache,

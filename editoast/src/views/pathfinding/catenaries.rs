@@ -237,13 +237,15 @@ pub mod tests {
         let mut infra_cache = InfraCache::load(&mut conn, &infra_with_catenaries.model)
             .await
             .expect("Could not load infra_cache");
-        infra_cache.add(CatenarySchema {
-            track_ranges: vec![ApplicableDirectionsTrackRange::new(
-                "track_1", 0.0, 10.0, Both,
-            )],
-            voltage: "25kV".into(),
-            id: "catenary_that_overlaps".into(),
-        });
+        infra_cache
+            .add(CatenarySchema {
+                track_ranges: vec![ApplicableDirectionsTrackRange::new(
+                    "track_1", 0.0, 10.0, Both,
+                )],
+                voltage: "25kV".into(),
+                id: "catenary_that_overlaps".into(),
+            })
+            .unwrap();
         let track_sections: HashSet<_> =
             vec!["track_1", "track_2", "track_3", "track_4", "track_5"]
                 .into_iter()

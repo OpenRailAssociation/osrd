@@ -136,7 +136,7 @@ mod tests {
             ("B2", create_track_endpoint(Endpoint::Begin, "D")),
             "point_switch".into(),
         );
-        infra_cache.add(switch.clone());
+        infra_cache.add(switch.clone()).unwrap();
         let errors =
             check_invalid_ref_ports(&switch.clone().into(), &infra_cache, &Default::default());
         assert_eq!(1, errors.len());
@@ -155,7 +155,7 @@ mod tests {
             ("B2", create_track_endpoint(Endpoint::Begin, "D")),
             "non_existing_switch_type".into(),
         );
-        infra_cache.add(switch.clone());
+        infra_cache.add(switch.clone()).unwrap();
         let errors = check_invalid_ref_switch_type(
             &switch.clone().into(),
             &infra_cache,
@@ -177,7 +177,7 @@ mod tests {
             ("B2", create_track_endpoint(Endpoint::Begin, "D")),
             "point_switch".into(),
         );
-        infra_cache.add(switch.clone());
+        infra_cache.add(switch.clone()).unwrap();
         let errors =
             check_match_ports_type(&switch.clone().into(), &infra_cache, &Default::default());
         assert_eq!(1, errors.len());
@@ -196,7 +196,7 @@ mod tests {
             ("B2", create_track_endpoint(Endpoint::Begin, "D")),
             "point".into(),
         );
-        infra_cache.add(switch.clone());
+        infra_cache.add(switch.clone()).unwrap();
 
         let switch_cache = &mut context.endpoint_to_switch;
         for port in switch.ports.values() {

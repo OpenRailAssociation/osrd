@@ -12,6 +12,7 @@ use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
 use editoast_derive::EditoastError;
 use enum_map::EnumMap;
 use geos::geojson::Geometry;
+use std::collections::hash_map::Entry;
 use std::collections::{HashMap, HashSet};
 use thiserror::Error;
 
@@ -265,8 +266,8 @@ impl From<OperationalPointQueryable> for OperationalPointCache {
 
 impl InfraCache {
     /// Add an object to the cache.
-    /// If the object already exists, it will fails.
-    pub fn add<T: Cache>(&mut self, obj: T) {
+    /// If the object already exists, it will fail (without inserting).
+    pub fn add<T: Cache>(&mut self, obj: T) -> Result<()> {
         for track_id in obj.get_track_referenced_id() {
             self.track_sections_refs
                 .entry(track_id.clone())
@@ -274,9 +275,18 @@ impl InfraCache {
                 .insert(obj.get_ref());
         }
 
-        assert!(self.objects[obj.get_type()]
-            .insert(obj.get_id().clone(), obj.get_object_cache())
-            .is_none());
+        let entry = self.objects[obj.get_type()].entry(obj.get_id().clone());
+        match entry {
+            Entry::Occupied(_) => Err(OperationResultError::DuplicateIdsProvided {
+                obj_type: obj.get_type().to_string(),
+                obj_id: obj.get_id().to_owned(),
+            }
+            .into()),
+            Entry::Vacant(v) => {
+                v.insert(obj.get_object_cache());
+                Ok(())
+            }
+        }
     }
 
     /// Retrieve the cache of track sections
@@ -354,78 +364,78 @@ impl InfraCache {
         .load::<TrackQueryable>(conn)
         .await?
         .into_iter()
-        .for_each(|track| infra_cache.add::<TrackSectionCache>(track.into()));
+        .try_for_each(|track| infra_cache.add::<TrackSectionCache>(track.into()))?;
 
         // Load signal tracks references
         sql_query(
             "SELECT obj_id, data->>'track' AS track, (data->>'position')::float AS position, data->'logical_signals' as logical_signals FROM infra_object_signal WHERE infra_id = $1")
         .bind::<BigInt, _>(infra_id)
-        .load::<SignalCache>(conn).await?.into_iter().for_each(|signal|
+        .load::<SignalCache>(conn).await?.into_iter().try_for_each(|signal|
             infra_cache.add(signal)
-        );
+        )?;
 
         // Load speed sections tracks references
         find_objects(conn, infra_id)
             .await
             .into_iter()
-            .for_each(|speed| infra_cache.add::<SpeedSection>(speed));
+            .try_for_each(|speed| infra_cache.add::<SpeedSection>(speed))?;
 
         // Load routes tracks references
         find_objects(conn, infra_id)
             .await
             .into_iter()
-            .for_each(|route| infra_cache.add::<Route>(route));
+            .try_for_each(|route| infra_cache.add::<Route>(route))?;
 
         // Load operational points tracks references
         sql_query(
             "SELECT obj_id, data->>'parts' AS parts FROM infra_object_operational_point WHERE infra_id = $1")
         .bind::<BigInt, _>(infra_id)
-        .load::<OperationalPointQueryable>(conn).await?.into_iter().for_each(|op|
+        .load::<OperationalPointQueryable>(conn).await?.into_iter().try_for_each(|op|
             infra_cache.add::<OperationalPointCache>(op.into())
-        );
+        )?;
 
         // Load switch tracks references
         sql_query(
             "SELECT obj_id, data->>'switch_type' AS switch_type, data->>'ports' AS ports FROM infra_object_switch WHERE infra_id = $1")
         .bind::<BigInt, _>(infra_id)
-        .load::<SwitchQueryable>(conn).await?.into_iter().for_each(|switch| {
-            infra_cache.add::<SwitchCache>(switch.into());
-        });
+        .load::<SwitchQueryable>(conn).await?.into_iter().try_for_each(|switch|
+            infra_cache.add::<SwitchCache>(switch.into())
+        )?;
 
         // Load switch types references
         find_objects(conn, infra_id)
             .await
             .into_iter()
-            .for_each(|switch_type| infra_cache.add::<SwitchType>(switch_type));
+            .try_for_each(|switch_type| infra_cache.add::<SwitchType>(switch_type))?;
 
         // Add builtin switch nodes
-        infra_cache.add::<SwitchType>(Link.into());
-        infra_cache.add::<SwitchType>(PointSwitch.into());
-        infra_cache.add::<SwitchType>(Crossing.into());
-        infra_cache.add::<SwitchType>(SingleSlipSwitch.into());
-        infra_cache.add::<SwitchType>(DoubleSlipSwitch.into());
+        infra_cache.add::<SwitchType>(Link.into())?;
+        infra_cache.add::<SwitchType>(PointSwitch.into())?;
+        infra_cache.add::<SwitchType>(Crossing.into())?;
+        infra_cache.add::<SwitchType>(SingleSlipSwitch.into())?;
+        infra_cache.add::<SwitchType>(DoubleSlipSwitch.into())?;
 
         // Load detector tracks references
         sql_query(
             "SELECT obj_id, data->>'track' AS track, (data->>'position')::float AS position FROM infra_object_detector WHERE infra_id = $1")
         .bind::<BigInt, _>(infra_id)
-        .load::<DetectorCache>(conn).await?.into_iter().for_each(|detector|
+        .load::<DetectorCache>(conn).await?.into_iter().try_for_each(|detector|
             infra_cache.add(detector)
-        );
+        )?;
 
         // Load buffer stop tracks references
         sql_query(
             "SELECT obj_id, data->>'track' AS track, (data->>'position')::float AS position FROM infra_object_buffer_stop WHERE infra_id = $1")
         .bind::<BigInt, _>(infra_id)
-        .load::<BufferStopCache>(conn).await?.into_iter().for_each(|buffer_stop|
+        .load::<BufferStopCache>(conn).await?.into_iter().try_for_each(|buffer_stop|
             infra_cache.add(buffer_stop)
-        );
+        )?;
 
         // Load catenary tracks references
         find_objects(conn, infra_id)
             .await
             .into_iter()
-            .for_each(|catenary| infra_cache.add::<Catenary>(catenary));
+            .try_for_each(|catenary| infra_cache.add::<Catenary>(catenary))?;
 
         Ok(infra_cache)
     }
@@ -507,26 +517,30 @@ impl InfraCache {
     fn apply_create(&mut self, railjson_obj: &RailjsonObject) -> Result<()> {
         match railjson_obj {
             RailjsonObject::TrackSection { railjson } => {
-                self.add::<TrackSectionCache>(railjson.clone().into())
+                self.add::<TrackSectionCache>(railjson.clone().into())?
             }
-            RailjsonObject::Signal { railjson } => self.add::<SignalCache>(railjson.clone().into()),
-            RailjsonObject::SpeedSection { railjson } => self.add(railjson.clone()),
+            RailjsonObject::Signal { railjson } => {
+                self.add::<SignalCache>(railjson.clone().into())?
+            }
+            RailjsonObject::SpeedSection { railjson } => self.add(railjson.clone())?,
             RailjsonObject::NeutralSection { railjson: _ } => {
                 // TODO
             }
-            RailjsonObject::Switch { railjson } => self.add::<SwitchCache>(railjson.clone().into()),
-            RailjsonObject::SwitchType { railjson } => self.add::<SwitchType>(railjson.clone()),
+            RailjsonObject::Switch { railjson } => {
+                self.add::<SwitchCache>(railjson.clone().into())?
+            }
+            RailjsonObject::SwitchType { railjson } => self.add::<SwitchType>(railjson.clone())?,
             RailjsonObject::Detector { railjson } => {
-                self.add::<DetectorCache>(railjson.clone().into())
+                self.add::<DetectorCache>(railjson.clone().into())?
             }
             RailjsonObject::BufferStop { railjson } => {
-                self.add::<BufferStopCache>(railjson.clone().into())
+                self.add::<BufferStopCache>(railjson.clone().into())?
             }
-            RailjsonObject::Route { railjson } => self.add::<Route>(railjson.clone()),
+            RailjsonObject::Route { railjson } => self.add::<Route>(railjson.clone())?,
             RailjsonObject::OperationalPoint { railjson } => {
-                self.add::<OperationalPointCache>(railjson.clone().into())
+                self.add::<OperationalPointCache>(railjson.clone().into())?
             }
-            RailjsonObject::Catenary { railjson } => self.add::<Catenary>(railjson.clone()),
+            RailjsonObject::Catenary { railjson } => self.add::<Catenary>(railjson.clone())?,
         }
         Ok(())
     }
@@ -550,6 +564,9 @@ pub enum OperationResultError {
     #[error("{obj_type} '{obj_id}', could not be found everywhere in the infrastructure cache")]
     #[editoast_error(status = 404)]
     ObjectNotFound { obj_type: String, obj_id: String },
+    #[error("{obj_type} '{obj_id}', a duplicate already exists")]
+    #[editoast_error(status = 404)]
+    DuplicateIdsProvided { obj_type: String, obj_id: String },
 }
 
 #[cfg(test)]
@@ -951,45 +968,63 @@ pub mod tests {
         let mut infra_cache = InfraCache::default();
 
         for id in 'A'..='D' {
-            infra_cache.add(create_track_section_cache(id.to_string(), 500.))
+            infra_cache
+                .add(create_track_section_cache(id.to_string(), 500.))
+                .unwrap()
         }
 
-        infra_cache.add(create_detector_cache("D1", "B", 250.));
+        infra_cache
+            .add(create_detector_cache("D1", "B", 250.))
+            .unwrap();
 
-        infra_cache.add(create_buffer_stop_cache("BF1", "A", 20.));
-        infra_cache.add(create_buffer_stop_cache("BF2", "C", 480.));
-        infra_cache.add(create_buffer_stop_cache("BF3", "D", 480.));
+        infra_cache
+            .add(create_buffer_stop_cache("BF1", "A", 20.))
+            .unwrap();
+        infra_cache
+            .add(create_buffer_stop_cache("BF2", "C", 480.))
+            .unwrap();
+        infra_cache
+            .add(create_buffer_stop_cache("BF3", "D", 480.))
+            .unwrap();
 
-        infra_cache.add(create_route_cache(
-            "R1",
-            Waypoint::new_buffer_stop("BF1"),
-            Direction::StartToStop,
-            Waypoint::new_detector("D1"),
-            vec![],
-            [("link".into(), "LINK".into())].into(),
-        ));
-        infra_cache.add(create_route_cache(
-            "R2",
-            Waypoint::new_detector("D1"),
-            Direction::StartToStop,
-            Waypoint::new_buffer_stop("BF2"),
-            vec![],
-            [("switch".into(), "A_B1".into())].into(),
-        ));
-        infra_cache.add(create_route_cache(
-            "R3",
-            Waypoint::new_detector("D1"),
-            Direction::StartToStop,
-            Waypoint::new_buffer_stop("BF3"),
-            vec![],
-            [("switch".into(), "A_B2".into())].into(),
-        ));
+        infra_cache
+            .add(create_route_cache(
+                "R1",
+                Waypoint::new_buffer_stop("BF1"),
+                Direction::StartToStop,
+                Waypoint::new_detector("D1"),
+                vec![],
+                [("link".into(), "LINK".into())].into(),
+            ))
+            .unwrap();
+        infra_cache
+            .add(create_route_cache(
+                "R2",
+                Waypoint::new_detector("D1"),
+                Direction::StartToStop,
+                Waypoint::new_buffer_stop("BF2"),
+                vec![],
+                [("switch".into(), "A_B1".into())].into(),
+            ))
+            .unwrap();
+        infra_cache
+            .add(create_route_cache(
+                "R3",
+                Waypoint::new_detector("D1"),
+                Direction::StartToStop,
+                Waypoint::new_buffer_stop("BF3"),
+                vec![],
+                [("switch".into(), "A_B2".into())].into(),
+            ))
+            .unwrap();
 
-        infra_cache.add(create_switch_type_cache(
-            "link",
-            vec!["A".into(), "B".into()],
-            HashMap::from([("LINK".into(), vec![create_switch_connection("A", "B")])]),
-        ));
+        infra_cache
+            .add(create_switch_type_cache(
+                "link",
+                vec!["A".into(), "B".into()],
+                HashMap::from([("LINK".into(), vec![create_switch_connection("A", "B")])]),
+            ))
+            .unwrap();
 
         let link = create_switch_cache_link(
             "link".into(),
@@ -997,16 +1032,18 @@ pub mod tests {
             ("B", create_track_endpoint(Endpoint::Begin, "B")),
             "link".into(),
         );
-        infra_cache.add(link);
+        infra_cache.add(link).unwrap();
 
-        infra_cache.add(create_switch_type_cache(
-            "point_switch",
-            vec!["A".into(), "B1".into(), "B2".into()],
-            HashMap::from([
-                ("A_B1".into(), vec![create_switch_connection("A", "B1")]),
-                ("A_B2".into(), vec![create_switch_connection("A", "B2")]),
-            ]),
-        ));
+        infra_cache
+            .add(create_switch_type_cache(
+                "point_switch",
+                vec!["A".into(), "B1".into(), "B2".into()],
+                HashMap::from([
+                    ("A_B1".into(), vec![create_switch_connection("A", "B1")]),
+                    ("A_B2".into(), vec![create_switch_connection("A", "B2")]),
+                ]),
+            ))
+            .unwrap();
 
         let switch = create_switch_cache_point(
             "switch".into(),
@@ -1015,7 +1052,7 @@ pub mod tests {
             ("B2", create_track_endpoint(Endpoint::Begin, "D")),
             "point_switch".into(),
         );
-        infra_cache.add(switch);
+        infra_cache.add(switch).unwrap();
 
         infra_cache
     }

@@ -173,7 +173,7 @@ pub mod tests {
         let mut infra_cache = create_small_infra_cache();
 
         let bf = create_buffer_stop_cache("BF_error", "E", 250.);
-        infra_cache.add(bf.clone());
+        infra_cache.add(bf.clone()).unwrap();
         let errors =
             check_invalid_ref(&bf.clone().into(), &infra_cache, &Graph::load(&infra_cache));
         assert_eq!(1, errors.len());
@@ -186,7 +186,7 @@ pub mod tests {
     fn out_of_range() {
         let mut infra_cache = create_small_infra_cache();
         let bf = create_buffer_stop_cache("BF_error", "A", 530.);
-        infra_cache.add(bf.clone());
+        infra_cache.add(bf.clone()).unwrap();
         let errors =
             check_out_of_range(&bf.clone().into(), &infra_cache, &Graph::load(&infra_cache));
         assert_eq!(1, errors.len());
@@ -215,9 +215,9 @@ pub mod tests {
     fn complex_missing_buffer_stop(#[case] pos: f64) {
         let mut infra_cache = create_small_infra_cache();
         let track = create_track_section_cache("test", 200.);
-        infra_cache.add(track.clone());
+        infra_cache.add(track.clone()).unwrap();
         let bs = create_buffer_stop_cache("bs_test", &track.obj_id, pos);
-        infra_cache.add(bs);
+        infra_cache.add(bs).unwrap();
         let graph = Graph::load(&infra_cache);
         let errors = check_missing(&infra_cache, &graph);
         assert_eq!(1, errors.len());
@@ -234,7 +234,7 @@ pub mod tests {
     fn missing_two_buffer_stop() {
         let mut infra_cache = create_small_infra_cache();
         let track = create_track_section_cache("test", 200.);
-        infra_cache.add(track.clone());
+        infra_cache.add(track.clone()).unwrap();
         let graph = Graph::load(&infra_cache);
         let errors = check_missing(&infra_cache, &graph);
         assert_eq!(2, errors.len());
@@ -251,7 +251,7 @@ pub mod tests {
     fn odd_location(#[case] track: &str, #[case] pos: f64) {
         let mut infra_cache = create_small_infra_cache();
         let bs = create_buffer_stop_cache("bs_test", track, pos);
-        infra_cache.add(bs.clone());
+        infra_cache.add(bs.clone()).unwrap();
         let graph = Graph::load(&infra_cache);
         let errors = check_odd_location(&bs.clone().into(), &infra_cache, &graph);
         assert_eq!(1, errors.len());
@@ -263,13 +263,13 @@ pub mod tests {
     fn odd_location_complex() {
         let mut infra_cache = create_small_infra_cache();
         let track = create_track_section_cache("track_test", 200.);
-        infra_cache.add(track);
+        infra_cache.add(track).unwrap();
         let valid_begin = create_buffer_stop_cache("valid_begin", "track_test", 10.);
-        infra_cache.add(valid_begin.clone());
+        infra_cache.add(valid_begin.clone()).unwrap();
         let valid_end = create_buffer_stop_cache("valid_end", "track_test", 190.);
-        infra_cache.add(valid_end.clone());
+        infra_cache.add(valid_end.clone()).unwrap();
         let bs = create_buffer_stop_cache("invalid", "track_test", 100.);
-        infra_cache.add(bs.clone());
+        infra_cache.add(bs.clone()).unwrap();
         let graph = Graph::load(&infra_cache);
 
         // Verify that the valid buffer stops doesn't generate any errors

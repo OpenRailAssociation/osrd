@@ -66,7 +66,7 @@ mod tests {
     fn invalid_ref() {
         let mut infra_cache = create_small_infra_cache();
         let op = create_operational_point_cache("OP_error", "E", 250.);
-        infra_cache.add(op.clone());
+        infra_cache.add(op.clone()).unwrap();
         let errors = check_op_parts(&op.clone().into(), &infra_cache, &Graph::load(&infra_cache));
         assert_eq!(1, errors.len());
         let obj_ref = ObjectRef::new(ObjectType::TrackSection, "E");
@@ -78,7 +78,7 @@ mod tests {
     fn out_of_range() {
         let mut infra_cache = create_small_infra_cache();
         let op = create_operational_point_cache("OP_error", "A", 530.);
-        infra_cache.add(op.clone());
+        infra_cache.add(op.clone()).unwrap();
         let errors = check_op_parts(&op.clone().into(), &infra_cache, &Graph::load(&infra_cache));
         assert_eq!(1, errors.len());
         let infra_error = InfraError::new_out_of_range(&op, "parts.0.position", 530., [0.0, 500.]);
