@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FaPencilAlt, FaPlus, FaTrash } from 'react-icons/fa';
+import { GoPencil, GoTrash } from 'react-icons/go';
+import { FaPlus } from 'react-icons/fa';
 import { GiElectric } from 'react-icons/gi';
 import { MdDescription, MdTitle } from 'react-icons/md';
 import { useDispatch, useSelector } from 'react-redux';
@@ -307,7 +308,7 @@ export default function AddOrEditScenarioModal({
               onClick={removeScenario}
             >
               <span className="mr-2">
-                <FaTrash />
+                <GoTrash />
               </span>
               {t('scenarioDeleteButton')}
             </button>
@@ -323,7 +324,7 @@ export default function AddOrEditScenarioModal({
               onClick={updateScenario}
             >
               <span className="mr-2">
-                <FaPencilAlt />
+                <GoPencil />
               </span>
               {t('scenarioModifyButton')}
             </button>

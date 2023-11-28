@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { FaTrash, FaPencilAlt } from 'react-icons/fa';
+import { GoPencil, GoTrash } from 'react-icons/go';
 import { GiPathDistance } from 'react-icons/gi';
 import { MdAvTimer, MdContentCopy } from 'react-icons/md';
 import invalidInfra from 'assets/pictures/components/missing_tracks.svg';
@@ -297,7 +297,7 @@ function TimetableTrainCard({
                 title={t('timetable.update')}
                 onClick={editTrainSchedule}
               >
-                <FaPencilAlt />
+                <GoPencil />
               </button>
             </>
           )}
@@ -307,7 +307,7 @@ function TimetableTrainCard({
             onClick={deleteTrain}
             title={t('timetable.delete')}
           >
-            <FaTrash />
+            <GoTrash />
           </button>
         </div>
       </div>

@@ -9,7 +9,8 @@ import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
 import { useTranslation } from 'react-i18next';
 import { BiTargetLock } from 'react-icons/bi';
-import { FaPencilAlt, FaPlus, FaTrash } from 'react-icons/fa';
+import { GoPencil, GoTrash } from 'react-icons/go';
+import { FaPlus } from 'react-icons/fa';
 import { MdBusinessCenter, MdDescription, MdTitle } from 'react-icons/md';
 import { RiMoneyEuroCircleLine } from 'react-icons/ri';
 import { ReactMarkdown } from 'react-markdown/lib/react-markdown';
@@ -374,7 +375,7 @@ export default function AddOrEditProjectModal({
               onClick={removeProject}
             >
               <span className="mr-2">
-                <FaTrash />
+                <GoTrash />
               </span>
               {t('projectDeleteButton')}
             </button>
@@ -390,7 +391,7 @@ export default function AddOrEditProjectModal({
               onClick={updateProject}
             >
               <span className="mr-2">
-                <FaPencilAlt />
+                <GoPencil />
               </span>
               {t('projectModifyButton')}
             </button>

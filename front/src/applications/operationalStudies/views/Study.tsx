@@ -8,7 +8,7 @@ import nextId from 'react-id-generator';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import ScenarioCard from 'modules/scenario/components/ScenarioCard';
 import ScenarioCardEmpty from 'modules/scenario/components/ScenarioCardEmpty';
-import { FaPencilAlt } from 'react-icons/fa';
+import { GoPencil } from 'react-icons/go';
 import { budgetFormat } from 'utils/numbers';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import DateBox from 'applications/operationalStudies/components/Study/DateBox';
@@ -241,7 +241,7 @@ export default function Study() {
                     }
                   >
                     <span className="study-details-modify-button-text">{t('modifyStudy')}</span>
-                    <FaPencilAlt />
+                    <GoPencil />
                   </button>
                 </div>
                 {study.study_type && (

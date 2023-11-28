@@ -9,8 +9,8 @@ import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
 import { useTranslation } from 'react-i18next';
-import { FaPencilAlt, FaPlus, FaTasks, FaTrash } from 'react-icons/fa';
-import { GoNote } from 'react-icons/go';
+import { FaPlus, FaTasks } from 'react-icons/fa';
+import { GoNote, GoPencil, GoTrash } from 'react-icons/go';
 import { MdBusinessCenter, MdTitle } from 'react-icons/md';
 import { RiCalendarLine, RiMoneyEuroCircleLine, RiQuestionLine } from 'react-icons/ri';
 import { useDispatch } from 'react-redux';
@@ -388,7 +388,7 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
               onClick={deleteStudy}
             >
               <span className="mr-2">
-                <FaTrash />
+                <GoTrash />
               </span>
               {t('studyDeleteButton')}
             </button>
@@ -405,7 +405,7 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
               disabled={!isExpectedEndDateValid || !isActualEndDateValid}
             >
               <span className="mr-2">
-                <FaPencilAlt />
+                <GoPencil />
               </span>
               {t('studyModifyButton')}
             </button>

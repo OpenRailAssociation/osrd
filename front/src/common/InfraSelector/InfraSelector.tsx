@@ -6,7 +6,7 @@ import icon from 'assets/pictures/components/tracks.svg';
 import InfraSelectorModal from 'common/InfraSelector/InfraSelectorModal';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { getInfraID } from 'reducers/osrdconf/selectors';
-import { FaLock } from 'react-icons/fa';
+import { GoLock } from 'react-icons/go';
 import './InfraSelector.scss';
 import { Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 
@@ -62,7 +62,7 @@ const InfraSelector = ({ isModalOnly = false }: InfraSelectorProps) => {
               <span className="ml-1 small align-self-center">({selectedInfra.id})</span>
               {selectedInfra.locked && (
                 <span className="infra-lock ml-auto">
-                  <FaLock />
+                  <GoLock />
                 </span>
               )}
             </>

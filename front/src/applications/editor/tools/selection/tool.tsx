@@ -1,21 +1,23 @@
 import React from 'react';
+import { GoTrash } from 'react-icons/go';
 import { BiLoader, BiSelection } from 'react-icons/bi';
-import { BsCursor, BsTrash } from 'react-icons/bs';
+import { BsCursor } from 'react-icons/bs';
 import { FaDrawPolygon } from 'react-icons/fa';
 import { FiEdit } from 'react-icons/fi';
 import { PointLike } from 'maplibre-gl';
 import { isEqual, max, min } from 'lodash';
 
+import { getMixedEntities } from 'applications/editor/data/api';
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF/ConfirmModal';
-import { LAYER_TO_EDITOAST_DICT, LayerType } from '../types';
-import { save } from '../../../../reducers/editor';
-import { SelectionState } from './types';
+import { save } from 'reducers/editor';
+import { selectInZone } from 'utils/mapHelper';
+import { LAYER_TO_EDITOAST_DICT, LayerType } from 'applications/editor/tools/types';
+import { DEFAULT_COMMON_TOOL_STATE } from 'applications/editor/tools/commonToolState';
+import { Tool } from 'applications/editor/tools/editorContextTypes';
+import { openEntityEditionPanel } from 'applications/editor/tools/utils';
+
 import { SelectionLayers, SelectionMessages, SelectionLeftPanel } from './components';
-import { getMixedEntities } from '../../data/api';
-import { selectInZone } from '../../../../utils/mapHelper';
-import { DEFAULT_COMMON_TOOL_STATE } from '../commonToolState';
-import { Tool } from '../editorContextTypes';
-import { openEntityEditionPanel } from '../utils';
+import { SelectionState } from './types';
 
 const SelectionTool: Tool<SelectionState> = {
   id: 'select-items',
@@ -108,7 +110,7 @@ const SelectionTool: Tool<SelectionState> = {
       },
       {
         id: 'delete-selection',
-        icon: BsTrash,
+        icon: GoTrash,
         labelTranslationKey: 'Editor.tools.select-items.actions.delete-selection',
         isDisabled({ state }) {
           return !state.selection.length;

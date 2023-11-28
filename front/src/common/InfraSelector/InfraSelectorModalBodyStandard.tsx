@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import nextId from 'react-id-generator';
-import { FaLock } from 'react-icons/fa';
+import { GoLock } from 'react-icons/go';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useDispatch, useSelector } from 'react-redux';
 import { getInfraID } from 'reducers/osrdconf/selectors';
@@ -84,7 +84,7 @@ export default function InfraSelectorModalBodyStandard({
               {infra.locked ? (
                 <span className="infra-lock">
                   <small>{t('infraManagement:locked')}</small>
-                  <FaLock />
+                  <GoLock />
                 </span>
               ) : null}
             </div>

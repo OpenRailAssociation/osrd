@@ -11,7 +11,8 @@ import TimetableManageTrainSchedule from 'modules/trainschedule/components/Timet
 import BreadCrumbs from 'applications/operationalStudies/components/BreadCrumbs';
 import { getInfraID, getTimetableID } from 'reducers/osrdconf/selectors';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
-import { FaEye, FaEyeSlash, FaPencilAlt } from 'react-icons/fa';
+import { GoPencil } from 'react-icons/go';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { GiElectric } from 'react-icons/gi';
 import { useParams } from 'react-router-dom';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
@@ -227,7 +228,7 @@ export default function Scenario() {
                         }
                         title={t('editScenario')}
                       >
-                        <FaPencilAlt />
+                        <GoPencil />
                       </button>
                       <button
                         type="button"

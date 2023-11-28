@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FaCopy, FaDownload, FaLock, FaLockOpen, FaPencilAlt } from 'react-icons/fa';
+import { GoDuplicate, GoPencil, GoDownload, GoLock, GoUnlock } from 'react-icons/go';
 import { useTranslation } from 'react-i18next';
 import { MdCancel, MdCheck } from 'react-icons/md';
 import fileDownload from 'js-file-download';
@@ -155,7 +155,7 @@ export default function ActionsBar({ infra, isFocused, setIsFocused, inputValue 
           title={t('infraManagement:actions.unlock')}
           onClick={() => handleLockedState(InfraLockState.UNLOCK)}
         >
-          <FaLockOpen />
+          <GoUnlock />
         </button>
       ) : (
         <button
@@ -164,7 +164,7 @@ export default function ActionsBar({ infra, isFocused, setIsFocused, inputValue 
           title={t('infraManagement:actions.lock')}
           onClick={() => handleLockedState(InfraLockState.LOCK)}
         >
-          <FaLock />
+          <GoLock />
         </button>
       )}
       <button
@@ -173,7 +173,7 @@ export default function ActionsBar({ infra, isFocused, setIsFocused, inputValue 
         onClick={() => setIsFocused(infra.id)}
         title={t('infraManagement:actions.rename')}
       >
-        <FaPencilAlt />
+        <GoPencil />
       </button>
       <button
         className="infraslist-item-action copy"
@@ -181,7 +181,7 @@ export default function ActionsBar({ infra, isFocused, setIsFocused, inputValue 
         title={t('infraManagement:actions.copy')}
         onClick={handleDuplicate}
       >
-        <FaCopy />
+        <GoDuplicate />
       </button>
       <button
         className="infraslist-item-action export"
@@ -189,7 +189,7 @@ export default function ActionsBar({ infra, isFocused, setIsFocused, inputValue 
         title={t('infraManagement:actions.export')}
         onClick={handleExport}
       >
-        <FaDownload />
+        <GoDownload />
       </button>
     </>
   );

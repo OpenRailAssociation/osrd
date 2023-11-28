@@ -3,7 +3,8 @@ import { useTranslation } from 'react-i18next';
 import InputGroupSNCF, { InputGroupSNCFValue } from 'common/BootstrapSNCF/InputGroupSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
-import { FaPlus, FaSearch, FaTrash } from 'react-icons/fa';
+import { GoTrash } from 'react-icons/go';
+import { FaPlus, FaSearch } from 'react-icons/fa';
 import { CgArrowsShrinkH } from 'react-icons/cg';
 import { BiArrowFromLeft, BiArrowFromRight } from 'react-icons/bi';
 import { EngineeringAllowance, PathStep } from 'common/api/osrdEditoastApi';
@@ -394,7 +395,7 @@ const AllowancesActions = <T extends RangeAllowanceForm | EngineeringAllowanceFo
                   type="button"
                   onClick={() => handleManageAllowance(ActionOnAllowance.delete)}
                 >
-                  <FaTrash />
+                  <GoTrash />
                 </button>
               )}
             <button

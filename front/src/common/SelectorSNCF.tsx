@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { MdArrowRight } from 'react-icons/md';
 import { getTranslationKey } from 'utils/strings';
 import cx from 'classnames';
-import { FaTrash } from 'react-icons/fa';
+import { GoTrash } from 'react-icons/go';
 import InputSNCF from './BootstrapSNCF/InputSNCF';
 
 const DEFAULT_SELECTORS_CLASSNAME = 'selector-SNCF';
@@ -111,7 +111,7 @@ export default function SelectorSNCF<
                         onClick={() => onItemRemoved(item, title)}
                         className={`${mainClass}-trash-icon `}
                       >
-                        <FaTrash />
+                        <GoTrash />
                       </button>
                     )}
                 </div>

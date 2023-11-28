@@ -8,7 +8,7 @@ import StudyCardEmpty from 'modules/study/components/StudyCardEmpty';
 import Loader from 'common/Loader';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import { BiTargetLock } from 'react-icons/bi';
-import { FaPencilAlt } from 'react-icons/fa';
+import { GoPencil } from 'react-icons/go';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { budgetFormat } from 'utils/numbers';
@@ -204,7 +204,7 @@ export default function Project() {
                           <span className="project-details-title-modify-button-text">
                             {t('modifyProject')}
                           </span>
-                          <FaPencilAlt />
+                          <GoPencil />
                         </button>
                       </div>
                       <div className="row">
