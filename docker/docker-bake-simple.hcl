@@ -1,7 +1,6 @@
 variable "OSRD_GIT_DESCRIBE" {}
 
 variable "TAG_PATTERNS" {
-  default = "ghcr.io/osrd-project/unstable/osrd-%s:latest"
 }
 
 function "tags" {
@@ -11,6 +10,10 @@ function "tags" {
 
 target "base-core" {
   tags = tags("core")
+}
+
+target "base-core-build" {
+  tags = tags("core-build")
 }
 
 target "base-editoast" {
@@ -25,10 +28,18 @@ target "base-front-nginx" {
   tags = tags("front-nginx")
 }
 
-target "base-gateway" {
-  tags = tags("gateway")
+target "base-front-build" {
+  tags = tags("front-build")
 }
 
-target "base-gateway-embedded-front" {
-  tags = tags("gateway-embedded-front")
+target "base-gateway-standalone" {
+  tags = tags("gateway-standalone")
+}
+
+target "base-gateway-test" {
+  tags = tags("gateway-test")
+}
+
+target "base-gateway-front" {
+  tags = tags("gateway-front")
 }

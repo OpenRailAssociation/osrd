@@ -3,11 +3,23 @@ variable "OSRD_GIT_DESCRIBE" {}
 group "default" {
   targets = [
     "core",
+    "core-build",
     "editoast",
-    "front-dev",
+    "editoast-test",
+    "front-devel",
     "front-nginx",
-    "gateway",
-    "gateway-embedded-front",
+    "front-build",
+    "gateway-standalone",
+    "gateway-test",
+    "gateway-front",
+  ]
+}
+
+group "release" {
+  targets = [
+    "core",
+    "editoast",
+    "gateway-front",
   ]
 }
 
@@ -17,11 +29,38 @@ target "base" {
   }
 }
 
+########
+# Core #
+########
+
+target "base-core-build" {}
+
+target "core-build" {
+  inherits = ["base", "base-core-build"]
+  context = "core"
+  dockerfile = "Dockerfile"
+  target = "build_env"
+}
+
 target "base-core" {}
+
 target "core" {
   inherits = ["base", "base-core"]
   context = "core"
   dockerfile = "Dockerfile"
+  target = "running_env"
+}
+
+############
+# Editoast #
+############
+
+target "base-editoast-test" {}
+target "editoast-test" {
+  inherits = ["base", "base-editoast-test"]
+  context = "editoast"
+  dockerfile = "Dockerfile"
+  target = "test_builder"
 }
 
 target "base-editoast" {}
@@ -29,13 +68,18 @@ target "editoast" {
   inherits = ["base", "base-editoast"]
   context = "editoast"
   dockerfile = "Dockerfile"
+  target = "running_env"
 }
 
-target "base-front-dev" {}
-target "front-dev" {
-  inherits = ["base", "base-front-dev"]
+#########
+# Front #
+#########
+
+target "base-front-devel" {}
+target "front-devel" {
+  inherits = ["base", "base-front-devel"]
   context = "front"
-  dockerfile = "docker/Dockerfile.dev"
+  dockerfile = "docker/Dockerfile.devel"
 }
 
 target "base-front-nginx" {}
@@ -45,20 +89,42 @@ target "front-nginx" {
   dockerfile = "docker/Dockerfile.nginx"
 }
 
-target "base-gateway" {}
-target "gateway" {
-  inherits = ["base", "base-gateway"]
-  context = "gateway"
-  dockerfile = "Dockerfile"
+target "base-front-build" {}
+target "front-build" {
+  inherits = ["base", "base-front-build"]
+  context = "front"
+  dockerfile = "docker/Dockerfile.nginx"
+  target = "build"
 }
 
-target "base-gateway-embedded-front" {}
-target "gateway-embedded-front" {
-  inherits = ["base", "base-gateway-embedded-front"]
-  dockerfile = "gateway-embedded-front.dockerfile"
+###########
+# Gateway #
+###########
+
+target "base-gateway-standalone" {}
+target "gateway-standalone" {
+  inherits = ["base", "base-gateway-standalone"]
+  context = "gateway"
+  dockerfile = "Dockerfile"
+  target = "running_env"
+}
+
+target "base-gateway-test" {}
+target "gateway-test" {
+  inherits = ["base", "base-gateway-test"]
+  context = "gateway"
+  dockerfile = "Dockerfile"
+  target = "testing_env"
+}
+
+target "base-gateway-front" {}
+target "gateway-front" {
+  inherits = ["base", "base-gateway-front"]
+  dockerfile = "gateway-front.dockerfile"
   context = "docker"
   contexts = {
-    front = "./front"
-    gateway = "./gateway"
+    gateway_src = "./gateway"
+    gateway_build = "target:gateway-standalone"
+    front_build = "target:front-build"
   }
 }
