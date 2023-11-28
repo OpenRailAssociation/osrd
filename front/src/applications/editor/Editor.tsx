@@ -16,6 +16,7 @@ import { updateInfraID } from 'reducers/osrdconf';
 import { updateViewport, Viewport } from 'reducers/map';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import useKeyboardShortcuts from 'utils/hooks/useKeyboardShortcuts';
+import MapSearch from 'common/Map/Search/MapSearch';
 import Tipped from './components/Tipped';
 import Map from './Map';
 import NavButtons from './nav';
@@ -50,6 +51,7 @@ const Editor: FC = () => {
     tool: TOOLS[TOOL_TYPES.SELECTION],
     state: TOOLS[TOOL_TYPES.SELECTION].getInitialState({ infraID, switchTypes }),
   });
+  const [isSearchToolOpened, setIsSearchToolOpened] = useState(false);
   const [renderingFingerprint, setRenderingFingerprint] = useState(Date.now());
   const forceRender = useCallback(() => {
     setRenderingFingerprint(Date.now());
@@ -283,6 +285,12 @@ const Editor: FC = () => {
                   setToolState,
                 }}
               />
+              {isSearchToolOpened && (
+                <MapSearch
+                  map={mapRef.current!}
+                  closeMapSearchPopUp={() => setIsSearchToolOpened(false)}
+                />
+              )}
 
               <div className="nav-box">
                 {NavButtons.flatMap((navButtons, i, a) => {
@@ -308,6 +316,7 @@ const Editor: FC = () => {
                             viewport,
                             openModal,
                             closeModal,
+                            setIsSearchToolOpened,
                             editorState,
                             mapRef: mapRef.current,
                           },

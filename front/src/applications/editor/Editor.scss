@@ -103,7 +103,7 @@
     overflow-y: auto;
   }
 
-  .nav-box  {
+  .nav-box {
     position: absolute;
     right: 0;
     top: 0;
@@ -141,6 +141,10 @@
 
     & > .map {
       flex-grow: 1;
+
+      .map-modal {
+        width: clamp(25%, 50%, 100%);
+    }
 
       .popup {
         text-align: center;
