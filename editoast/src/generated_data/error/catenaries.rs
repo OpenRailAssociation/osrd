@@ -115,7 +115,7 @@ mod tests {
         let mut infra_cache = create_small_infra_cache();
         let track_ranges_error = vec![("A", 20., 500.), ("E", 0., 500.), ("B", 0., 250.)];
         let catenary = create_catenary_cache("Cat_error", track_ranges_error);
-        infra_cache.add(catenary.clone());
+        infra_cache.add(catenary.clone()).unwrap();
         let errors = check_catenary_track_ranges(
             &catenary.clone().into(),
             &infra_cache,
@@ -132,7 +132,7 @@ mod tests {
         let mut infra_cache = create_small_infra_cache();
         let track_ranges_error = vec![("A", 20., 530.), ("B", 0., 250.)];
         let catenary = create_catenary_cache("Cat_error", track_ranges_error);
-        infra_cache.add(catenary.clone());
+        infra_cache.add(catenary.clone()).unwrap();
         let errors = check_catenary_track_ranges(
             &catenary.clone().into(),
             &infra_cache,
@@ -150,11 +150,11 @@ mod tests {
         let track_ranges_1 = vec![("A", 20., 220.)];
         let mut catenary_1 = create_catenary_cache("Cat_error_1", track_ranges_1);
         catenary_1.voltage = "1500".into();
-        infra_cache.add(catenary_1);
+        infra_cache.add(catenary_1).unwrap();
         let track_ranges_2 = vec![("A", 100., 150.), ("A", 200., 480.)];
         let mut catenary_2 = create_catenary_cache("Cat_error_2", track_ranges_2);
         catenary_2.voltage = "25000".into();
-        infra_cache.add(catenary_2);
+        infra_cache.add(catenary_2).unwrap();
         let errors = check_overlapping(&infra_cache, &Graph::load(&infra_cache));
         assert_eq!(1, errors.len());
         let infra_error = InfraError::new_overlapping_catenaries("Cat_error_1", "Cat_error_2");

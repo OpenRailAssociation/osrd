@@ -407,7 +407,7 @@ mod test {
     fn error_priority_check() {
         let mut small_infra_cache = create_small_infra_cache();
         let bf = create_buffer_stop_cache("BF_error", "E", 530.0);
-        small_infra_cache.add(bf);
+        small_infra_cache.add(bf).unwrap();
 
         let graph = Graph::load(&small_infra_cache);
         let errors = generate_errors(
