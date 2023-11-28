@@ -43,7 +43,9 @@ const StdcmAllowances = () => {
     const processedType: StandardAllowance = {
       type: newTypeValue.type as AllowanceValue['value_type'],
       value:
-        newTypeValue.value === '' || newTypeValue.value === undefined ? 0 : +newTypeValue.value,
+        newTypeValue.value === '' || newTypeValue.value === undefined
+          ? 0
+          : Math.abs(+newTypeValue.value),
     };
 
     dispatch(updateStdcmStandardAllowance(processedType));
@@ -58,7 +60,7 @@ const StdcmAllowances = () => {
           value={gridMarginBefore || ''}
           unit={ALLOWANCE_UNITS_KEYS.time}
           onChange={(e) =>
-            dispatch(updateGridMarginBefore(convertInputStringToNumber(e.target.value)))
+            dispatch(updateGridMarginBefore(Math.abs(convertInputStringToNumber(e.target.value)!)))
           }
           sm
           noMargin
@@ -73,7 +75,7 @@ const StdcmAllowances = () => {
           value={gridMarginAfter || ''}
           unit={ALLOWANCE_UNITS_KEYS.time}
           onChange={(e) =>
-            dispatch(updateGridMarginAfter(convertInputStringToNumber(e.target.value)))
+            dispatch(updateGridMarginAfter(Math.abs(convertInputStringToNumber(e.target.value)!)))
           }
           sm
           noMargin
