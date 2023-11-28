@@ -83,7 +83,7 @@ impl PaginationQueryParam {
 
     pub fn warn_page_size(self, warn_page_size: i64) -> PaginationQueryParam {
         let page_size = self.page_size.unwrap_or(DEFAULT_PAGE_SIZE);
-        if page_size < warn_page_size {
+        if page_size > warn_page_size {
             warn!(
                 "Too many elements per page, should be lower or equal to {}.",
                 warn_page_size
