@@ -4,6 +4,6 @@
 import { OperationObject } from '../common/api/osrdEditoastApi';
 
 // For the response of the patch
-// export type EntityDeleteOperationResult = DeleteOperation;
-export type EntityObjectOperationResult = OperationObject & { railjson: object & { id: string } };
-// export type EntityOperationResult = EntityDeleteOperationResult | EntityObjectOperationResult;
+// export type EntityDeleteCacheOperation = DeleteOperation;
+export type EntityObjectCacheOperation = OperationObject & { railjson: object & { id: string } };
+// export type EntityCacheOperation = EntityDeleteCacheOperation | EntityObjectCacheOperation;

@@ -403,8 +403,8 @@ impl GeneratedData for ErrorLayer {
 
     async fn update(
         conn: &mut PgConnection,
-        infra_id: i64,
-        _: &[crate::schema::operation::OperationResult],
+        infra: i64,
+        _operations: &[crate::schema::operation::CacheOperation],
         infra_cache: &InfraCache,
     ) -> Result<()> {
         // Generate already act like an update

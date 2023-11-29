@@ -29,7 +29,7 @@ use track_section::TrackSectionLayer;
 
 use crate::error::Result;
 use crate::infra_cache::InfraCache;
-use crate::schema::operation::OperationResult;
+use crate::schema::operation::CacheOperation;
 use diesel::sql_query;
 use diesel::sql_types::BigInt;
 use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
@@ -70,7 +70,7 @@ pub trait GeneratedData {
     async fn update(
         conn: &mut PgConnection,
         infra: i64,
-        operations: &[OperationResult],
+        operations: &[CacheOperation],
         infra_cache: &InfraCache,
     ) -> Result<()>;
 }
@@ -129,7 +129,7 @@ pub async fn clear_all(conn: &mut PgConnection, infra: i64) -> Result<()> {
 pub async fn update_all(
     conn: &mut PgConnection,
     infra: i64,
-    operations: &[OperationResult],
+    operations: &[CacheOperation],
     infra_cache: &InfraCache,
 ) -> Result<()> {
     TrackSectionLayer::update(conn, infra, operations, infra_cache).await?;

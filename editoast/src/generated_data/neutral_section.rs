@@ -26,7 +26,7 @@ impl GeneratedData for NeutralSectionLayer {
     async fn update(
         _conn: &mut PgConnection,
         _infra: i64,
-        _operations: &[crate::schema::operation::OperationResult],
+        _operations: &[crate::schema::operation::CacheOperation],
         _infra_cache: &crate::infra_cache::InfraCache,
     ) -> Result<()> {
         // TODO: we don't manage the update of the neutral_section layer for the moment

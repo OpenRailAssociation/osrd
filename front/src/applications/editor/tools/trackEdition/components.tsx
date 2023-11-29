@@ -27,7 +27,7 @@ import { getMap } from 'reducers/map/selectors';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import {
   CatenaryEntity,
-  EntityObjectOperationResult,
+  EntityObjectCacheOperation,
   SpeedSectionEntity,
   TrackSectionEntity,
 } from 'types';
@@ -393,7 +393,7 @@ export const TrackEditionLeftPanel: FC = () => {
                 : { create: [injectGeometry(savedEntity)] }
             )
           );
-          const operation = res[0] as EntityObjectOperationResult;
+          const operation = res[0] as EntityObjectCacheOperation;
           const savedTrack = {
             objType: 'TrackSection',
             type: 'Feature',

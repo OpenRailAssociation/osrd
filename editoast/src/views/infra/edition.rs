@@ -10,7 +10,7 @@ use thiserror::Error;
 use crate::infra_cache::InfraCache;
 use crate::map::{self, MapLayers};
 use crate::models::{Infra, Update};
-use crate::schema::operation::{Operation, OperationResult};
+use crate::schema::operation::{CacheOperation, Operation};
 use crate::{generated_data, DbPool};
 use editoast_derive::EditoastError;
 
@@ -23,7 +23,7 @@ pub async fn edit<'a>(
     infra_caches: Data<CHashMap<i64, InfraCache>>,
     redis_client: Data<RedisClient>,
     map_layers: Data<MapLayers>,
-) -> Result<Json<Vec<OperationResult>>> {
+) -> Result<Json<Vec<CacheOperation>>> {
     let infra_id = infra.into_inner();
 
     let mut conn = db_pool.get().await?;
@@ -49,7 +49,7 @@ async fn apply_edit(
     infra: &Infra,
     operations: &[Operation],
     infra_cache: &mut InfraCache,
-) -> Result<Vec<OperationResult>> {
+) -> Result<Vec<CacheOperation>> {
     let infra_id = infra.id.unwrap();
     // Check if the infra is locked
     if infra.locked.unwrap() {

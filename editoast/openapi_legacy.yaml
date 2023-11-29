@@ -141,7 +141,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/OperationResult"
+                  $ref: "#/components/schemas/CacheOperation"
 
     put:
       tags:
@@ -888,7 +888,7 @@ components:
         detectors:
           type: array
 
-    OperationResult:
+    CacheOperation:
       oneOf:
         - $ref: "#/components/schemas/DeleteOperation"
         - $ref: "#/components/schemas/OperationObject"
