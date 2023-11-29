@@ -136,14 +136,21 @@ export default function RollingStockCardDetail({
                 </tbody>
               </table>
             )}
-          <div>
-            <div className={form ? 'formResistance ml-2' : ''}>{t('rollingResistance')}</div>
-            <div className={`text-primary text-muted ${form ? 'formResistance ml-4' : ''}`}>
-              {t('rollingResistanceFormula')}
-            </div>
-          </div>
           <table className="rollingstock-details-table ml-2">
             <tbody>
+              <tr>
+                <td colSpan={2} className={form ? 'formResistance ml-2' : ''}>
+                  {t('rollingResistance')}
+                </td>
+              </tr>
+              <tr>
+                <td
+                  colSpan={2}
+                  className={`text-primary text-muted ${form ? 'formResistance ml-4' : ''}`}
+                >
+                  {t('rollingResistanceFormula')}
+                </td>
+              </tr>
               <tr>
                 <td>
                   {Math.floor(

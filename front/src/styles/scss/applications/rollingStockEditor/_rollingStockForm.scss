@@ -269,10 +269,6 @@
   }
 
   .selector-SNCF {
-    width: 13rem;
-    &-with-extra-column {
-      width: 18rem;
-    }
     &-title {
       width: 90%;
       white-space: nowrap;
@@ -282,8 +278,8 @@
       cursor: pointer;
       background-color: var(--coolgray1);
       border-radius: 0.3rem 0.3rem 0 0;
-      height: 10.5rem;
-      width: 90%;
+      height: 7.5rem;
+      width: 100%;
       .extra-column {
         width: 4rem;
 
@@ -311,7 +307,7 @@
         text-overflow: ellipsis;
       }
       &.with-extra-column {
-        width: 11rem;
+        flex: 1;
       }
       &.selected {
         &.selector-blue {
@@ -342,14 +338,17 @@
         }
       }
     }
-    &-arrow {
+
+    &-itemslist-wrapper::after {
+      --size: 30px;
+      content: '';
       position: absolute;
-      display: flex;
-      align-items: center;
-      right: -2.7rem;
-      height: 100%;
-      font-size: 7rem;
-      color: var(--coolgray1);
+      display: block;
+      width: var(--size);
+      height: var(--size);
+      transform: rotate(45deg);
+      right: calc((var(--size) / 2) * -1);
+      background-color: var(--coolgray1);
     }
 
     .selector-select {
@@ -359,22 +358,30 @@
     }
   }
 
+  .rollingstock-editor-effort-speed-curves {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    row-gap: 1.5rem;
+    column-gap: 2.1rem;
+    padding-top: 0;
+    padding-left: 1rem;
+    padding-right: 2rem;
+    padding-bottom: 1rem;
+  }
+
   .selector-container {
-    margin-right: 1rem;
     &:last-child {
-      .selector-SNCF-arrow {
+      .selector-SNCF-itemslist-wrapper::after {
         visibility: hidden;
       }
     }
     &:first-child {
-      margin-right: 2rem;
-      .selector-SNCF-arrow {
+      .selector-SNCF-itemslist-wrapper::after {
         visibility: hidden;
       }
     }
     &:nth-child(4) {
       .selector-SNCF-itemslist {
-        height: 12.75rem;
         border-radius: 0.3rem;
       }
     }
@@ -385,7 +392,7 @@
     cursor: pointer;
     background-color: #82be00;
     border-radius: 0 0 0.3rem 0.3rem;
-    width: 90%;
+    width: 100%;
     text-align: center;
     font-size: x-large;
     &.disabled {
