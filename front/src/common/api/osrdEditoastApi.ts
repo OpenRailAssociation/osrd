@@ -814,7 +814,7 @@ export type GetInfraByIdApiArg = {
   id: number;
 };
 export type PostInfraByIdApiResponse =
-  /** status 200 An array containing infos about the operations processed */ OperationResult[];
+  /** status 200 An array containing infos about the operations processed */ CacheOperation[];
 export type PostInfraByIdApiArg = {
   /** infra id */
   id: number;
@@ -1406,7 +1406,7 @@ export type OperationObject = {
   operation_type: 'CREATE' | 'UPDATE';
   railjson: Railjson;
 };
-export type OperationResult = DeleteOperation | OperationObject;
+export type CacheOperation = DeleteOperation | OperationObject;
 export type RailjsonObject = {
   obj_type: ObjectType;
   operation_type: 'CREATE';

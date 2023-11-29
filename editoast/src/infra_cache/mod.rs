@@ -3,7 +3,7 @@ mod graph;
 use crate::error::Result;
 use crate::map::BoundingBox;
 use crate::models::Infra;
-use crate::schema::operation::{OperationResult, RailjsonObject};
+use crate::schema::operation::{CacheOperation, RailjsonObject};
 use crate::schema::*;
 use chashmap::{CHashMap, ReadGuard, WriteGuard};
 use diesel::sql_types::{BigInt, Double, Integer, Nullable, Text};
@@ -277,7 +277,7 @@ impl InfraCache {
 
         let entry = self.objects[obj.get_type()].entry(obj.get_id().clone());
         match entry {
-            Entry::Occupied(_) => Err(OperationResultError::DuplicateIdsProvided {
+            Entry::Occupied(_) => Err(CacheOperationError::DuplicateIdsProvided {
                 obj_type: obj.get_type().to_string(),
                 obj_id: obj.get_id().to_owned(),
             }
@@ -489,7 +489,7 @@ impl InfraCache {
     pub fn apply_delete(&mut self, object_ref: &ObjectRef) -> Result<()> {
         let obj_cache = self.objects[object_ref.obj_type]
             .remove(&object_ref.obj_id)
-            .ok_or_else(|| OperationResultError::ObjectNotFound {
+            .ok_or_else(|| CacheOperationError::ObjectNotFound {
                 obj_type: object_ref.obj_type.to_string(),
                 obj_id: object_ref.obj_id.to_owned(),
             })?;
@@ -497,7 +497,7 @@ impl InfraCache {
         for track_id in obj_cache.get_track_referenced_id() {
             self.track_sections_refs
                 .get_mut(track_id)
-                .ok_or_else(|| OperationResultError::ObjectNotFound {
+                .ok_or_else(|| CacheOperationError::ObjectNotFound {
                     obj_type: object_ref.obj_type.to_string(),
                     obj_id: object_ref.obj_id.to_owned(),
                 })?
@@ -546,12 +546,12 @@ impl InfraCache {
     }
 
     /// Apply an operation to the infra cache
-    pub fn apply_operations(&mut self, operations: &Vec<OperationResult>) -> Result<()> {
+    pub fn apply_operations(&mut self, operations: &Vec<CacheOperation>) -> Result<()> {
         for op_res in operations {
             match op_res {
-                OperationResult::Delete(obj_ref) => self.apply_delete(obj_ref)?,
-                OperationResult::Update(railjson_obj) => self.apply_update(railjson_obj)?,
-                OperationResult::Create(railjson_obj) => self.apply_create(railjson_obj)?,
+                CacheOperation::Delete(obj_ref) => self.apply_delete(obj_ref)?,
+                CacheOperation::Update(railjson_obj) => self.apply_update(railjson_obj)?,
+                CacheOperation::Create(railjson_obj) => self.apply_create(railjson_obj)?,
             }
         }
         Ok(())
@@ -581,8 +581,8 @@ impl InfraCache {
 }
 
 #[derive(Debug, Error, EditoastError)]
-#[editoast_error(base_id = "operation_result")]
-pub enum OperationResultError {
+#[editoast_error(base_id = "cache_operation")]
+pub enum CacheOperationError {
     #[error("{obj_type} '{obj_id}', could not be found everywhere in the infrastructure cache")]
     #[editoast_error(status = 404)]
     ObjectNotFound { obj_type: String, obj_id: String },

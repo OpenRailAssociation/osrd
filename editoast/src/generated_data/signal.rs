@@ -103,7 +103,7 @@ impl GeneratedData for SignalLayer {
     async fn update(
         conn: &mut PgConnection,
         infra: i64,
-        operations: &[crate::schema::operation::OperationResult],
+        operations: &[crate::schema::operation::CacheOperation],
         infra_cache: &crate::infra_cache::InfraCache,
     ) -> Result<()> {
         use diesel_async::RunQueryDsl;

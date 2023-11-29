@@ -33,7 +33,7 @@ impl GeneratedData for OperationalPointLayer {
     async fn update(
         conn: &mut PgConnection,
         infra: i64,
-        operations: &[crate::schema::operation::OperationResult],
+        operations: &[crate::schema::operation::CacheOperation],
         infra_cache: &crate::infra_cache::InfraCache,
     ) -> Result<()> {
         let involved_objects =

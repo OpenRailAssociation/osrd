@@ -30,7 +30,7 @@ pub enum Operation {
 
 #[derive(Clone, Serialize)]
 #[serde(tag = "operation_type")]
-pub enum OperationResult {
+pub enum CacheOperation {
     #[serde(rename = "CREATE")]
     Create(RailjsonObject),
     #[serde(rename = "UPDATE")]
@@ -40,19 +40,19 @@ pub enum OperationResult {
 }
 
 impl Operation {
-    pub async fn apply(&self, infra_id: i64, conn: &mut PgConnection) -> Result<OperationResult> {
+    pub async fn apply(&self, infra_id: i64, conn: &mut PgConnection) -> Result<CacheOperation> {
         match self {
             Operation::Delete(deletion) => {
                 deletion.apply(infra_id, conn).await?;
-                Ok(OperationResult::Delete(deletion.clone().into()))
+                Ok(CacheOperation::Delete(deletion.clone().into()))
             }
             Operation::Create(railjson_object) => {
                 create::apply_create_operation(railjson_object, infra_id, conn).await?;
-                Ok(OperationResult::Create(*railjson_object.clone()))
+                Ok(CacheOperation::Create(*railjson_object.clone()))
             }
             Operation::Update(update) => {
                 let obj_railjson = update.apply(infra_id, conn).await?;
-                Ok(OperationResult::Update(obj_railjson))
+                Ok(CacheOperation::Update(obj_railjson))
             }
         }
     }
@@ -73,11 +73,11 @@ enum OperationError {
     InvalidPatch(String),
 }
 
-impl From<&Operation> for OperationResult {
+impl From<&Operation> for CacheOperation {
     fn from(op: &Operation) -> Self {
         match op {
-            Operation::Delete(deletion) => OperationResult::Delete(deletion.clone().into()),
-            Operation::Create(railjson_object) => OperationResult::Create(*railjson_object.clone()),
+            Operation::Delete(deletion) => CacheOperation::Delete(deletion.clone().into()),
+            Operation::Create(railjson_object) => CacheOperation::Create(*railjson_object.clone()),
             Operation::Update(_update) => todo!(),
         }
     }
