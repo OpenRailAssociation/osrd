@@ -192,7 +192,6 @@ const SearchRollingStock = ({
           noMargin
           unit={<i className="icons-search" />}
           sm
-          whiteBG
         />
       </div>
       <div className="col-md-5 ml-2 mb-3 d-flex align-items-center flex-wrap">
