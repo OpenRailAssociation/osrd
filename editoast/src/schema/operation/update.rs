@@ -16,7 +16,7 @@ use super::OperationError;
 pub struct UpdateOperation {
     pub obj_id: String,
     pub obj_type: ObjectType,
-    railjson_patch: Patch,
+    pub railjson_patch: Patch,
 }
 
 impl UpdateOperation {
