@@ -129,12 +129,8 @@ fn get_operations_fixing_invalid_reference(
         }
         ObjectType::Route => {
             let route = infra_cache
-                .routes()
-                .get(error.get_id())
-                .ok_or_else(|| AutoFixesEditoastError::MissingErrorObject {
-                    error: error.clone(),
-                })?
-                .unwrap_route();
+                .get_route(error.get_id().as_str())
+                .map_err(|source| AutoFixesEditoastError::MissingErrorObject { source })?;
             if matches!(
                 reference.obj_type,
                 ObjectType::BufferStop | ObjectType::Detector
@@ -180,7 +176,7 @@ pub enum AutoFixesEditoastError {
     FixTrialFailure { source: InternalError },
     #[error("Failed to find the error's object")]
     #[editoast_error(status = 500)]
-    MissingErrorObject { error: InfraError },
+    MissingErrorObject { source: InternalError },
 }
 
 #[cfg(test)]
@@ -189,6 +185,7 @@ mod test {
 
     use super::*;
     use crate::fixtures::tests::{db_pool, empty_infra, small_infra};
+    use crate::infra_cache::InfraCacheEditoastError;
     use crate::schema::operation::{DeleteOperation, Operation, RailjsonObject};
     use crate::schema::utils::Identifier;
     use crate::schema::{
@@ -420,7 +417,14 @@ mod test {
         // Error: the route is not in the cache.
         assert_eq!(
             get_operations_fixing_error(&error, &cache).unwrap_err(),
-            AutoFixesEditoastError::MissingErrorObject { error }.into()
+            AutoFixesEditoastError::MissingErrorObject {
+                source: InfraCacheEditoastError::ObjectNotFound {
+                    obj_type: ObjectType::Route.to_string(),
+                    obj_id: route.get_id().to_string()
+                }
+                .into()
+            }
+            .into()
         );
     }
 
