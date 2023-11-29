@@ -1,10 +1,7 @@
 import React from 'react';
 import { cloneDeep, isEmpty, isEqual } from 'lodash';
-import { GoTrash } from 'react-icons/go';
 import { MdShowChart } from 'react-icons/md';
 import { RiDragMoveLine } from 'react-icons/ri';
-import { CgAdd, CgRemove } from 'react-icons/cg';
-import { TiDeleteOutline } from 'react-icons/ti';
 import { BiAnchor, BiArrowFromLeft, BiArrowToRight } from 'react-icons/bi';
 import { Feature, LineString } from 'geojson';
 import getNearestPoint from '@turf/nearest-point';
@@ -16,6 +13,8 @@ import { entityDoUpdate, getLineStringDistance } from 'common/IntervalsDataViz/d
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
+import { GoNoEntry, GoPlusCircle, GoTrash, GoXCircle } from 'react-icons/go';
+import { AiFillSave } from 'react-icons/ai';
 import { Tool } from '../editorContextTypes';
 import { DEFAULT_COMMON_TOOL_STATE } from '../commonToolState';
 import {
@@ -54,6 +53,21 @@ const TrackEditionTool: Tool<TrackEditionState> = {
   actions: [
     [
       {
+        id: 'save-line',
+        icon: AiFillSave,
+        labelTranslationKey: 'Editor.tools.track-edition.actions.save-line',
+        isDisabled({ isLoading, state }) {
+          return isLoading || state.track.geometry.coordinates.length < 2 || false;
+        },
+        async onClick({ setIsFormSubmited }) {
+          if (setIsFormSubmited) {
+            setIsFormSubmited(true);
+          }
+        },
+      },
+    ],
+    [
+      {
         id: 'mode-move-point',
         icon: RiDragMoveLine,
         labelTranslationKey: 'Editor.tools.track-edition.actions.mode-move-point',
@@ -71,7 +85,7 @@ const TrackEditionTool: Tool<TrackEditionState> = {
       },
       {
         id: 'mode-add-point',
-        icon: CgAdd,
+        icon: GoPlusCircle,
         labelTranslationKey: 'Editor.tools.track-edition.actions.mode-add-point',
         onClick({ setState, state }) {
           setState({
@@ -85,7 +99,7 @@ const TrackEditionTool: Tool<TrackEditionState> = {
       },
       {
         id: 'mode-delete-point',
-        icon: TiDeleteOutline,
+        icon: GoXCircle,
         labelTranslationKey: 'Editor.tools.track-edition.actions.mode-delete-point',
         onClick({ setState, state }) {
           setState({
@@ -99,8 +113,6 @@ const TrackEditionTool: Tool<TrackEditionState> = {
           return state.editionState.type === 'deletePoint';
         },
       },
-    ],
-    [
       {
         id: 'toggle-anchoring',
         icon: BiAnchor,
@@ -149,7 +161,7 @@ const TrackEditionTool: Tool<TrackEditionState> = {
       },
       {
         id: 'cancel-line',
-        icon: CgRemove,
+        icon: GoNoEntry,
         labelTranslationKey: 'Editor.tools.track-edition.actions.cancel-line',
         onClick({ setState, state }) {
           if (state.track.geometry.coordinates.length) {
@@ -162,6 +174,8 @@ const TrackEditionTool: Tool<TrackEditionState> = {
           return !state.track.geometry.coordinates.length;
         },
       },
+    ],
+    [
       {
         id: 'delete-line',
         icon: GoTrash,

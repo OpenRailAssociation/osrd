@@ -1,12 +1,12 @@
 import React, { ComponentType } from 'react';
 import { cloneDeep, isEqual, omit } from 'lodash';
-import { Feature, LineString, Point } from 'geojson';
-import { BiReset } from 'react-icons/bi';
-import { AiOutlinePlus } from 'react-icons/ai';
-import { GoTrash } from 'react-icons/go';
 import { IconType } from 'react-icons';
-import nearestPointOnLine from '@turf/nearest-point-on-line';
+import { BiReset } from 'react-icons/bi';
+import { AiFillSave } from 'react-icons/ai';
+import { GoPlusCircle, GoTrash } from 'react-icons/go';
 import { Map } from 'maplibre-gl';
+import { Feature, LineString, Point } from 'geojson';
+import nearestPointOnLine from '@turf/nearest-point-on-line';
 
 import { save } from 'reducers/editor';
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
@@ -18,14 +18,14 @@ import {
   SignalEntity,
   TrackSectionEntity,
 } from 'types';
+import { getNearestPoint } from 'utils/mapHelper';
 import { LAYER_TO_EDITOAST_DICT, LayerType } from '../types';
-import { getNearestPoint } from '../../../../utils/mapHelper';
-import { getPointEditionLeftPanel, POINT_LAYER_ID, PointEditionMessages } from './components';
-import { PointEditionState } from './types';
-import { getEntity } from '../../data/api';
 import { Tool } from '../editorContextTypes';
+import { getEntity } from '../../data/api';
+import { PointEditionState } from './types';
 import { DEFAULT_COMMON_TOOL_STATE } from '../commonToolState';
 import { approximateDistanceWithEditoastData } from '../utils';
+import { getPointEditionLeftPanel, POINT_LAYER_ID, PointEditionMessages } from './components';
 
 type EditorPoint = BufferStopEntity | DetectorEntity | SignalEntity;
 interface PointEditionToolParams<T extends EditorPoint> {
@@ -77,11 +77,16 @@ function getPointEditionTool<T extends EditorPoint>({
     actions: [
       [
         {
-          id: 'new-entity',
-          icon: AiOutlinePlus,
-          labelTranslationKey: `Editor.tools.${id}-edition.actions.new-entity`,
-          onClick({ setState }) {
-            setState(getInitialState());
+          id: 'save-entity',
+          icon: AiFillSave,
+          labelTranslationKey: `Editor.tools.${id}-edition.actions.save-entity`,
+          isDisabled({ isLoading, state }) {
+            return !state.entity.properties?.track || !state.entity.geometry || isLoading || false;
+          },
+          async onClick({ setIsFormSubmited }) {
+            if (setIsFormSubmited) {
+              setIsFormSubmited(true);
+            }
           },
         },
         {
@@ -95,6 +100,16 @@ function getPointEditionTool<T extends EditorPoint>({
             setState({
               entity: cloneDeep(initialEntity),
             });
+          },
+        },
+      ],
+      [
+        {
+          id: 'new-entity',
+          icon: GoPlusCircle,
+          labelTranslationKey: `Editor.tools.${id}-edition.actions.new-entity`,
+          onClick({ setState }) {
+            setState(getInitialState());
           },
         },
       ],

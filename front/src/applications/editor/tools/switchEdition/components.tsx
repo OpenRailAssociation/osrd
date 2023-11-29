@@ -1,4 +1,4 @@
-import React, { FC, useContext, useEffect, useMemo, useState } from 'react';
+import React, { FC, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import Select from 'react-select';
@@ -21,10 +21,9 @@ import { getSwitchesLayerProps, getSwitchesNameLayerProps } from 'common/Map/Lay
 import { save } from 'reducers/editor';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import { getMap } from 'reducers/map/selectors';
-import { getIsLoading } from 'reducers/main/mainSelector';
 import { EntityObjectOperationResult, SwitchEntity, TrackSectionEntity } from 'types';
 
-import { FlatSwitchEntity, flatSwitchToSwitch, getNewSwitch, isSwitchValid } from './utils';
+import { FlatSwitchEntity, flatSwitchToSwitch, getNewSwitch } from './utils';
 import { SwitchEditionState } from './types';
 import useSwitch from './useSwitch';
 import { CustomSchemaField } from './components/CustomSchemaField';
@@ -33,10 +32,10 @@ export const SwitchEditionLeftPanel: FC = () => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const infraID = useSelector(getInfraID);
-  const isLoading = useSelector(getIsLoading);
-  const { state, setState } = useContext(
+  const { state, setState, isFormSubmited, setIsFormSubmited } = useContext(
     EditorContext
   ) as ExtendedEditorContextType<SwitchEditionState>;
+  const submitBtnRef = useRef<HTMLButtonElement>(null);
 
   // Retrieve proper data
   const {
@@ -53,6 +52,16 @@ export const SwitchEditionLeftPanel: FC = () => {
   if (!switchType || !flatSwitchEntity) {
     return null;
   }
+
+  // Hack to be able to launch the submit event from the rjsf form by using
+  // the toolbar button instead of the form one.
+  // See https://github.com/rjsf-team/react-jsonschema-form/issues/500
+  useEffect(() => {
+    if (isFormSubmited && setIsFormSubmited && submitBtnRef.current) {
+      submitBtnRef.current.click();
+      setIsFormSubmited(false);
+    }
+  }, [isFormSubmited]);
 
   return (
     <div>
@@ -125,17 +134,9 @@ export const SwitchEditionLeftPanel: FC = () => {
           });
         }, 200)}
       >
-        <div className="text-right">
-          <button
-            type="submit"
-            className="btn btn-primary"
-            disabled={
-              !switchType ||
-              !isSwitchValid(switchEntity, switchType) ||
-              state.portEditionState.type !== 'idle' ||
-              isLoading
-            }
-          >
+        <div>
+          {/* We don't want to see the button but just be able to click on it */}
+          <button type="submit" ref={submitBtnRef} style={{ display: 'none' }}>
             {t('common.save')}
           </button>
         </div>

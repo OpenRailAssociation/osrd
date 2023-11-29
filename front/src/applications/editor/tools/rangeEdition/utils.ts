@@ -382,3 +382,6 @@ export const getObjTypeEdition = (objType: 'SpeedSection' | 'Catenary') =>
 
 export const getObjTypeAction = (objType: 'SpeedSection' | 'Catenary') =>
   objType === 'SpeedSection' ? 'speed-section' : 'catenary';
+
+export const isNew = (entity: SpeedSectionEntity | CatenaryEntity) =>
+  entity.properties.id === NEW_ENTITY_ID;

@@ -226,16 +226,18 @@
           "confirm-delete-entity": "Are you sure you want to remove the buffer stop?",
           "delete-entity": "Delete the buffer stop",
           "new-entity": "Create a new buffer stop",
-          "reset-entity": "Reset data"
+          "reset-entity": "Reset data",
+          "save-entity": "Save the buffer stop"
         },
         "label": "Buffer stop tool"
       },
       "catenary-edition": {
         "actions": {
           "confirm-delete-catenary": "Are you sure you want to remove the catenary?",
+          "delete-catenary": "Delete the catenary",
           "new-catenary": "Create a new catenary",
           "reset-catenary": "Cancel the current modifications",
-          "delete-catenary": "Delete the catenary"
+          "save-catenary": "Save the catenary"
         },
         "help": {
           "init": "Click on a track section to link it to the catenary",
@@ -246,8 +248,6 @@
         "catenaries": "Electrification",
         "catenary-default": "Default catenary",
         "label": "Catenary tool",
-        "save-existing-catenary": "Save modifications",
-        "save-new-catenary": "Save the new catenary",
         "voltage": "{{voltage}}V"
       },
       "detector-edition": {
@@ -255,7 +255,8 @@
           "confirm-delete-entity": "Are you sure you want to remove the detector?",
           "delete-entity": "Delete the detector",
           "new-entity": "Create a new detector",
-          "reset-entity": "Reset data"
+          "reset-entity": "Reset data",
+          "save-entity": "Save the detector"
         },
         "label": "Detector tool"
       },
@@ -375,16 +376,18 @@
           "confirm-delete-entity": "Are you sure you want to remove the signal?",
           "delete-entity": "Delete the signal",
           "new-entity": "Create a new signal",
-          "reset-entity": "Reset data"
+          "reset-entity": "Reset data",
+          "save-entity": "Save the signal"
         },
         "label": "Signal tool"
       },
       "speed-edition": {
         "actions": {
           "confirm-delete-speed-section": "Are you sure you want to remove the speed limit?",
+          "delete-speed-section": "Delete the speed limit",
           "new-speed-section": "Create a new speed limit",
           "reset-speed-section": "Cancel the current modifications",
-          "delete-speed-section": "Delete the speed limit"
+          "save-speed-section": "Save the speed limit"
         },
         "add-new-speed-limit": "Add new speed limit",
         "add-sign": "Add a sign from {{signType}} type",
@@ -408,8 +411,6 @@
         "sign-value": "Speed",
         "signs-section-list": "Section signs list",
         "remove-track-range": "Click to detatch from:",
-        "save-existing-speed-section": "Save modifications",
-        "save-new-speed-section": "Save the new speed limit",
         "speed-limits": "Speed limits",
         "toggle-psl": "Permanent speed limit",
         "toggle-psl-help": "Click on a track section first to be able to activate this option"
@@ -420,7 +421,8 @@
           "delete-switch": "Delete the switch",
           "new-switch": "Create a new switch",
           "pick-track": "Track selection tool on the map",
-          "pick-track-cancel": "Undo line selection"
+          "pick-track-cancel": "Undo line selection",
+          "save-switch": "Save the switch"
         },
         "endpoint": "Endpoint:",
         "help": {
@@ -442,7 +444,8 @@
           "mode-add-point": "Add a point",
           "mode-delete-point": "Delete points",
           "mode-move-point": "Move points",
-          "toggle-anchoring": "Toggle anchoring on/off"
+          "toggle-anchoring": "Toggle anchoring on/off",
+          "save-line": "Save the line"
         },
         "help": {
           "add-anchor-point": "Click to add a point at the end of the track section. Click on the track to add an intermediate point.",

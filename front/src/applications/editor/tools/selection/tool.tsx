@@ -1,9 +1,9 @@
 import React from 'react';
+import { FiEdit } from 'react-icons/fi';
 import { GoTrash } from 'react-icons/go';
-import { BiLoader, BiSelection } from 'react-icons/bi';
 import { BsCursor } from 'react-icons/bs';
 import { FaDrawPolygon } from 'react-icons/fa';
-import { FiEdit } from 'react-icons/fi';
+import { BiLoader, BiSelection } from 'react-icons/bi';
 import { PointLike } from 'maplibre-gl';
 import { isEqual, max, min } from 'lodash';
 

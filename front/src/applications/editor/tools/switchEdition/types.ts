@@ -25,10 +25,25 @@ export type SwitchEditionState = CommonToolState & {
       };
 };
 
+// Client prefered order
+const trackNodeTypeOrder = [
+  'link',
+  'point_switch',
+  'crossing',
+  'single_slip_switch',
+  'double_slip_switch',
+];
+
 export const useSwitchTypes = (infraID: number | undefined) => {
   const { data } = osrdEditoastApi.endpoints.getInfraByIdSwitchTypes.useQuery(
     { id: infraID as number },
     { skip: !infraID }
   );
-  return (data || []) as SwitchType[];
+  let orderedData = [] as SwitchType[];
+  if (data) {
+    orderedData = ([...data] as SwitchType[]).sort(
+      (a, b) => trackNodeTypeOrder.indexOf(a.id) - trackNodeTypeOrder.indexOf(b.id)
+    );
+  }
+  return orderedData;
 };

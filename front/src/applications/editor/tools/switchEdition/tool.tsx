@@ -1,17 +1,17 @@
 import React from 'react';
 import { TbSwitch2 } from 'react-icons/tb';
-import { IoMdAddCircleOutline } from 'react-icons/io';
-import { GoTrash } from 'react-icons/go';
+import { AiFillSave } from 'react-icons/ai';
+import { GoPlusCircle, GoTrash } from 'react-icons/go';
 
 import { save } from 'reducers/editor';
-import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { SwitchEntity, SwitchType } from 'types';
+import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
-import { SwitchEditionState } from './types';
 import { getNewSwitch } from './utils';
-import { SwitchEditionLayers, SwitchEditionLeftPanel, SwitchMessages } from './components';
 import { Tool } from '../editorContextTypes';
+import { SwitchEditionState } from './types';
 import { DEFAULT_COMMON_TOOL_STATE } from '../commonToolState';
+import { SwitchEditionLayers, SwitchEditionLeftPanel, SwitchMessages } from './components';
 
 function getInitialState({
   switchTypes,
@@ -44,8 +44,23 @@ const SwitchEditionTool: Tool<SwitchEditionState> = {
   actions: [
     [
       {
+        id: 'save-switch',
+        icon: AiFillSave,
+        labelTranslationKey: 'Editor.tools.switch-edition.actions.save-switch',
+        isDisabled({ isLoading, state }) {
+          return state.portEditionState.type !== 'idle' || isLoading || false;
+        },
+        async onClick({ setIsFormSubmited }) {
+          if (setIsFormSubmited) {
+            setIsFormSubmited(true);
+          }
+        },
+      },
+    ],
+    [
+      {
         id: 'new-switch',
-        icon: IoMdAddCircleOutline,
+        icon: GoPlusCircle,
         labelTranslationKey: 'Editor.tools.switch-edition.actions.new-switch',
         onClick({ setState, switchTypes }) {
           if (!switchTypes?.length) throw new Error('There is no switch type yet.');

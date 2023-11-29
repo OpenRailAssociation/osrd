@@ -1,4 +1,4 @@
-import React, { FC, useContext, useEffect, useState } from 'react';
+import React, { FC, useContext, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Layer, Source } from 'react-map-gl/maplibre';
 import { useTranslation } from 'react-i18next';
@@ -23,7 +23,6 @@ import { Spinner } from 'common/Loader';
 import GeoJSONs from 'common/Map/Layers/GeoJSONs';
 import colors from 'common/Map/Consts/colors';
 import { save } from 'reducers/editor';
-import { getIsLoading } from 'reducers/main/mainSelector';
 import { getMap } from 'reducers/map/selectors';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import {
@@ -356,12 +355,22 @@ export const TrackEditionLeftPanel: FC = () => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const infraID = useSelector(getInfraID);
-  const isLoading = useSelector(getIsLoading);
-  const { state, setState } = useContext(
+  const { state, setState, isFormSubmited, setIsFormSubmited } = useContext(
     EditorContext
   ) as ExtendedEditorContextType<TrackEditionState>;
+  const submitBtnRef = useRef<HTMLButtonElement>(null);
   const { track } = state;
   const isNew = track.properties.id === NEW_ENTITY_ID;
+
+  // Hack to be able to launch the submit event from the rjsf form by using
+  // the toolbar button instead of the form one.
+  // See https://github.com/rjsf-team/react-jsonschema-form/issues/500
+  useEffect(() => {
+    if (isFormSubmited && setIsFormSubmited && submitBtnRef.current) {
+      submitBtnRef.current.click();
+      setIsFormSubmited(false);
+    }
+  }, [isFormSubmited]);
 
   return (
     <>
@@ -384,7 +393,6 @@ export const TrackEditionLeftPanel: FC = () => {
                 : { create: [injectGeometry(savedEntity)] }
             )
           );
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const operation = res[0] as EntityObjectOperationResult;
           const savedTrack = {
             objType: 'TrackSection',
@@ -403,12 +411,9 @@ export const TrackEditionLeftPanel: FC = () => {
           setState({ ...state, track: newTrack as TrackSectionEntity });
         }}
       >
-        <div className="text-right">
-          <button
-            type="submit"
-            className="btn btn-primary"
-            disabled={state.track.geometry.coordinates.length < 2 || isLoading}
-          >
+        <div>
+          {/* We don't want to see the button but just be able to click on it */}
+          <button type="submit" ref={submitBtnRef} style={{ display: 'none' }}>
             {t('common.save')}
           </button>
         </div>

@@ -1,9 +1,8 @@
-import { cloneDeep, isEqual } from 'lodash';
-import { useDispatch, useSelector } from 'react-redux';
+import { cloneDeep } from 'lodash';
+import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import React, { FC, useContext, useState } from 'react';
 import { BsArrowBarRight } from 'react-icons/bs';
-import { AiFillSave } from 'react-icons/ai';
 import { MdShowChart } from 'react-icons/md';
 import { FaFlagCheckered, FaTimes } from 'react-icons/fa';
 
@@ -18,14 +17,11 @@ import {
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 import { LoaderFill } from 'common/Loader';
-import { save } from 'reducers/editor';
-import { getIsLoading } from 'reducers/main/mainSelector';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import {
   APPLICABLE_DIRECTIONS,
   ApplicableDirection,
   CatenaryEntity,
-  EntityObjectOperationResult,
   SpeedSectionEntity,
   SpeedSectionPslEntity,
 } from 'types';
@@ -215,7 +211,6 @@ export const TrackRangesList: FC = () => {
 };
 
 export const RangeEditionLeftPanel: FC = () => {
-  const dispatch = useDispatch();
   const { t } = useTranslation();
   const {
     setState,
@@ -223,7 +218,6 @@ export const RangeEditionLeftPanel: FC = () => {
   } = useContext(EditorContext) as ExtendedEditorContextType<
     RangeEditionState<SpeedSectionEntity | CatenaryEntity>
   >;
-  const isLoading = useSelector(getIsLoading);
 
   const isNew = entity.properties.id === NEW_ENTITY_ID;
   const isPSL = speedSectionIsPsl(entity as SpeedSectionEntity);
@@ -247,64 +241,11 @@ export const RangeEditionLeftPanel: FC = () => {
     });
   };
 
-  let saveMessage;
-  if (entity.objType === 'SpeedSection') {
-    saveMessage = isNew
-      ? t('Editor.tools.speed-edition.save-new-speed-section')
-      : t('Editor.tools.speed-edition.save-existing-speed-section');
-  } else {
-    saveMessage = isNew
-      ? t('Editor.tools.catenary-edition.save-new-catenary')
-      : t('Editor.tools.catenary-edition.save-existing-catenary');
-  }
-
   return (
     <div>
-      <legend>
+      <legend className="mb-4">
         {t(`Editor.obj-types.${entity.objType === 'SpeedSection' ? 'SpeedSection' : 'Catenary'}`)}
       </legend>
-      <div className="my-4">
-        <button
-          type="button"
-          className="btn btn-primary w-100 text-wrap"
-          disabled={isLoading || isEqual(entity, initialEntity)}
-          onClick={async () => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const res: any = await dispatch(
-              save(
-                infraID,
-                !isNew
-                  ? {
-                      update: [
-                        {
-                          source: initialEntity,
-                          target: entity,
-                        },
-                      ],
-                    }
-                  : { create: [entity] }
-              )
-            );
-            const operation = res[0] as EntityObjectOperationResult;
-            const { id } = operation.railjson;
-
-            const savedEntity =
-              id && id !== entity.properties.id
-                ? {
-                    ...entity,
-                    properties: { ...entity.properties, id: `${id}` },
-                  }
-                : entity;
-            setState({
-              entity: cloneDeep(savedEntity),
-              initialEntity: cloneDeep(savedEntity),
-            });
-          }}
-        >
-          <AiFillSave className="mr-2" />
-          {saveMessage}
-        </button>
-      </div>
       {initialEntity.objType === 'SpeedSection' ? (
         <SpeedSectionMetadataForm />
       ) : (

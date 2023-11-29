@@ -1,5 +1,5 @@
 import { Map } from 'maplibre-gl';
-import React, { ComponentType, FC, useContext, useEffect, useMemo, useState } from 'react';
+import React, { ComponentType, FC, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Popup } from 'react-map-gl/maplibre';
 import { useTranslation } from 'react-i18next';
@@ -39,7 +39,6 @@ import {
 import { getEditRouteState } from 'applications/editor/tools/routeEdition/utils';
 import TOOL_TYPES from 'applications/editor/tools/toolTypes';
 import { EditoastType } from 'applications/editor/tools/types';
-import { getIsLoading } from 'reducers/main/mainSelector';
 import length from '@turf/length';
 import { CustomFlagSignalCheckbox } from './CustomFlagSignalCheckbox';
 import { PointEditionState } from './types';
@@ -199,10 +198,11 @@ export const PointEditionLeftPanel: FC<{ type: EditoastType }> = <Entity extends
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const infraID = useSelector(getInfraID);
-  const isLoading = useSelector(getIsLoading);
-  const { state, setState } = useContext(EditorContext) as ExtendedEditorContextType<
-    PointEditionState<Entity>
-  >;
+  const { state, setState, isFormSubmited, setIsFormSubmited } = useContext(
+    EditorContext
+  ) as ExtendedEditorContextType<PointEditionState<Entity>>;
+  const submitBtnRef = useRef<HTMLButtonElement>(null);
+
   const isWayPoint = type === 'BufferStop' || type === 'Detector';
   const isNew = state.entity.properties.id === NEW_ENTITY_ID;
 
@@ -211,6 +211,16 @@ export const PointEditionLeftPanel: FC<{ type: EditoastType }> = <Entity extends
     | { type: 'isLoading'; id: string; track?: undefined }
     | { type: 'ready'; id: string; track: TrackSectionEntity }
   >({ type: 'idle' });
+
+  // Hack to be able to launch the submit event from the rjsf form by using
+  // the toolbar button instead of the form one.
+  // See https://github.com/rjsf-team/react-jsonschema-form/issues/500
+  useEffect(() => {
+    if (isFormSubmited && setIsFormSubmited && submitBtnRef.current) {
+      submitBtnRef.current.click();
+      setIsFormSubmited(false);
+    }
+  }, [isFormSubmited]);
 
   useEffect(() => {
     const firstLoading = trackState.type === 'idle';
@@ -343,12 +353,9 @@ export const PointEditionLeftPanel: FC<{ type: EditoastType }> = <Entity extends
           });
         }}
       >
-        <div className="text-right">
-          <button
-            type="submit"
-            className="btn btn-primary"
-            disabled={!state.entity.properties?.track || !state.entity.geometry || isLoading}
-          >
+        <div>
+          {/* We don't want to see the button but just be able to click on it */}
+          <button type="submit" ref={submitBtnRef} style={{ display: 'none' }}>
             {t('common.save')}
           </button>
         </div>
