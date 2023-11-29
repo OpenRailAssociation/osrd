@@ -86,7 +86,7 @@ export default function TypeAndPath({ zoomToFeature }: PathfindingProps) {
           object: 'operationalpoint',
           query: ['and', constraint, ['=', ['infra_id'], infraId], limitToMainStationConstraint],
         },
-        pageSize: 1000,
+        pageSize: 100,
       };
       postSearch(payload)
         .unwrap()
