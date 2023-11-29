@@ -100,6 +100,7 @@ type SearchRollingStockProps = {
   isSuccess?: boolean;
   mustResetFilters?: boolean;
   setMustResetFilters?: (mustResetFilters: boolean) => void;
+  hasWhiteBackground?: boolean;
 };
 
 const SearchRollingStock = ({
@@ -110,7 +111,7 @@ const SearchRollingStock = ({
   isSuccess,
   mustResetFilters,
   setMustResetFilters,
-  hasWhiteBackround,
+  hasWhiteBackground,
 }: SearchRollingStockProps) => {
   const { t } = useTranslation('rollingstock');
 
@@ -192,7 +193,7 @@ const SearchRollingStock = ({
           placeholder={t('translation:common.search')}
           noMargin
           unit={<i className="icons-search" />}
-          whiteBG={hasWhiteBackround}
+          whiteBG={hasWhiteBackground}
           sm
         />
       </div>
