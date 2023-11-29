@@ -42,14 +42,6 @@ enum PathfindingViewErrors {
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(deny_unknown_fields)]
-struct PathfindingTrackLocationDirInput {
-    track: Identifier,
-    position: f64,
-    direction: Direction,
-}
-
-#[derive(Debug, Clone, Deserialize)]
-#[serde(deny_unknown_fields)]
 struct PathfindingTrackLocationInput {
     track: Identifier,
     position: f64,
@@ -57,7 +49,7 @@ struct PathfindingTrackLocationInput {
 
 #[derive(Debug, Clone, Deserialize)]
 struct PathfindingInput {
-    starting: PathfindingTrackLocationDirInput,
+    starting: PathfindingTrackLocationInput,
     ending: PathfindingTrackLocationInput,
 }
 
@@ -128,11 +120,11 @@ struct PathfindingStep {
 }
 
 impl PathfindingStep {
-    fn new_init(track: String, position: f64, direction: Direction) -> Self {
+    fn new_init(track: String, position: f64) -> Self {
         Self {
             track,
             position,
-            direction,
+            direction: Direction::StartToStop, // Ignored for initial node
             switch_direction: None,
             found: false,
             starting_step: true,
@@ -185,7 +177,7 @@ fn compute_path(
     k: u8,
 ) -> Vec<PathfindingOutput> {
     let start = &input.starting;
-    let start = PathfindingStep::new_init(start.track.0.clone(), start.position, start.direction);
+    let start = PathfindingStep::new_init(start.track.0.clone(), start.position);
 
     let track_sections = infra_cache.track_sections();
     // Transform a length (in m) into a cost (in mm). This provide the Ord implementation for our cost using u64.
@@ -377,9 +369,7 @@ mod tests {
     use crate::infra_cache::Graph;
     use crate::schema::utils::Identifier;
     use crate::schema::{Direction, DirectionalTrackRange};
-    use crate::views::infra::pathfinding::{
-        PathfindingInput, PathfindingTrackLocationDirInput, PathfindingTrackLocationInput,
-    };
+    use crate::views::infra::pathfinding::{PathfindingInput, PathfindingTrackLocationInput};
 
     fn expected_path() -> Vec<DirectionalTrackRange> {
         vec![
@@ -400,10 +390,9 @@ mod tests {
         let infra_cache = create_small_infra_cache();
         let graph = Graph::load(&infra_cache);
         let input = PathfindingInput {
-            starting: PathfindingTrackLocationDirInput {
+            starting: PathfindingTrackLocationInput {
                 track: "A".into(),
                 position: 30.0,
-                direction: Direction::StartToStop,
             },
             ending: PathfindingTrackLocationInput {
                 track: "C".into(),
@@ -424,10 +413,9 @@ mod tests {
         let infra_cache = create_small_infra_cache();
         let graph = Graph::load(&infra_cache);
         let input = PathfindingInput {
-            starting: PathfindingTrackLocationDirInput {
+            starting: PathfindingTrackLocationInput {
                 track: "A".into(),
                 position: 30.0,
-                direction: Direction::StopToStart,
             },
             ending: PathfindingTrackLocationInput {
                 track: "C".into(),

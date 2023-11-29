@@ -9,7 +9,6 @@ import { getEntities, getEntity, getMixedEntities } from 'applications/editor/da
 import { DEFAULT_COMMON_TOOL_STATE } from 'applications/editor/tools/commonToolState';
 import { RouteCandidate, RouteEditionState } from 'applications/editor/tools/routeEdition/types';
 import {
-  Direction,
   PartialButFor,
   RouteEntity,
   TrackRange,
@@ -220,7 +219,6 @@ export async function getRouteGeometries(
 export async function getCompatibleRoutesPayload(
   infra: number,
   entryPoint: WayPoint,
-  entryPointDirection: Direction,
   exitPoint: WayPoint,
   dispatch: Dispatch
 ) {
@@ -240,7 +238,6 @@ export async function getCompatibleRoutesPayload(
     starting: {
       track: entryPointEntity.properties.track as string,
       position: entryPointEntity.properties.position as number,
-      direction: entryPointDirection,
     },
     ending: {
       track: exitPointEntity.properties.track as string,
