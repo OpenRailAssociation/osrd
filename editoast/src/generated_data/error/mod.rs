@@ -92,11 +92,13 @@ impl<Ctx> GlobalErrorGenerator<Ctx> {
     }
 }
 
+type ErrorHash = String;
+
 /// An infra error with its hash
 struct ErrorWithHash {
     error: InfraError,
     /// Sha1 of the serialized error
-    hash: String,
+    hash: ErrorHash,
 }
 
 impl From<InfraError> for ErrorWithHash {
@@ -104,7 +106,7 @@ impl From<InfraError> for ErrorWithHash {
         let mut hasher = Sha1::new();
         hasher.update(&serde_json::to_vec(&error).unwrap());
         let hash = hasher.finalize();
-        let hash = format!("{:x}", hash);
+        let hash: ErrorHash = format!("{:x}", hash);
         ErrorWithHash { error, hash }
     }
 }
@@ -268,25 +270,25 @@ fn get_insert_errors_query(obj_type: ObjectType) -> &'static str {
     }
 }
 
-/// This function dispatch errors to the right layer
-fn dispatch_errors_to_layers(
+/// This function dispatch errors by their object type
+fn dispatch_errors_by_object_type(
     errors: Vec<ErrorWithHash>,
 ) -> HashMap<ObjectType, Vec<ErrorWithHash>> {
-    let mut errors_by_layer: HashMap<_, Vec<_>> = Default::default();
+    let mut errors_by_type: HashMap<_, Vec<_>> = Default::default();
     for error in errors {
-        errors_by_layer
+        errors_by_type
             .entry(error.error.get_type())
             .or_default()
             .push(error);
     }
-    errors_by_layer
+    errors_by_type
 }
 
 /// Retrieve the current errors hash for a given infra
 async fn retrieve_current_errors_hash(
     conn: &mut PgConnection,
     infra_id: i64,
-) -> Result<Vec<String>> {
+) -> Result<Vec<ErrorHash>> {
     use crate::tables::infra_layer_error::dsl;
     Ok(dsl::infra_layer_error
         .filter(dsl::infra_id.eq(infra_id))
@@ -299,7 +301,7 @@ async fn retrieve_current_errors_hash(
 async fn remove_errors_from_hashes(
     conn: &mut PgConnection,
     infra_id: i64,
-    errors_hash: &Vec<&String>,
+    errors_hash: &Vec<&ErrorHash>,
 ) -> Result<()> {
     use crate::tables::infra_layer_error::dsl;
     let nb_deleted = diesel::delete(
@@ -309,7 +311,7 @@ async fn remove_errors_from_hashes(
     )
     .execute(conn)
     .await?;
-    assert_eq!(nb_deleted, errors_hash.len());
+    debug_assert_eq!(nb_deleted, errors_hash.len());
     Ok(())
 }
 
@@ -319,7 +321,7 @@ async fn create_errors(
     infra_id: i64,
     errors: Vec<ErrorWithHash>,
 ) -> Result<()> {
-    let errors_by_type = dispatch_errors_to_layers(errors);
+    let errors_by_type = dispatch_errors_by_object_type(errors);
     for (obj_type, errors) in errors_by_type {
         let mut errors_information = vec![];
         let mut errors_hash = vec![];
