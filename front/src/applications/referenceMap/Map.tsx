@@ -39,6 +39,8 @@ import colors from 'common/Map/Consts/colors';
 import { useMapBlankStyle } from 'common/Map/Layers/blankStyle';
 import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
 import LineSearchLayer from 'common/Map/Layers/LineSearchLayer';
+/* Animation */
+import AnimateCamera from './AnimateCamera';
 
 import 'common/Map/Map.scss';
 
@@ -105,6 +107,7 @@ function Map() {
         withInfraButton
         withFullscreenButton
       />
+      <AnimateCamera map={mapRef.current ?? undefined} />
       <ReactMapGL
         {...viewport}
         ref={mapRef}

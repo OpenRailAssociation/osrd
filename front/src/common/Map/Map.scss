@@ -12,6 +12,17 @@
     margin-bottom: 0.5rem;
   }
 }
+.btn-map-animate {
+  position: absolute;
+  z-index: 2;
+  right: 25px;
+  bottom: 1rem;
+  button {
+    display: block;
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+}
 
 /* Map Settings */
 .map-modal {
