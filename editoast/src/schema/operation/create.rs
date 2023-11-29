@@ -6,6 +6,7 @@ use crate::schema::{
 use diesel::sql_query;
 use diesel::sql_types::{BigInt, Json, Text};
 use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
+use json_patch::Patch;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
@@ -92,6 +93,69 @@ impl RailjsonObject {
             RailjsonObject::Electrification { railjson: obj } => serde_json::to_value(obj),
         }
         .unwrap()
+    }
+
+    pub fn patch(self, json_patch: &Patch) -> Result<Self> {
+        // `json_patch::patch()` operates on `serde_json::Value`.
+        // Therefore, we have to:
+        // (1) serialize `RailjsonObject`,
+        // (2) deserialize it into `serde_json::Value`,
+        // (3) patch the object,
+        // (4) serialize patched `serde_json::Value`, and
+        // (5) deserialize it back into a `RailjsonObject`.
+        // The code below is explicitely typed (even if not needed) to help understand this dance.
+        let object_type = self.get_type();
+        let json = match &self {
+            RailjsonObject::TrackSection { railjson } => serde_json::to_string(railjson)?,
+            RailjsonObject::Signal { railjson } => serde_json::to_string(railjson)?,
+            RailjsonObject::NeutralSection { railjson } => serde_json::to_string(railjson)?,
+            RailjsonObject::SpeedSection { railjson } => serde_json::to_string(railjson)?,
+            RailjsonObject::Switch { railjson } => serde_json::to_string(railjson)?,
+            RailjsonObject::SwitchType { railjson } => serde_json::to_string(railjson)?,
+            RailjsonObject::Detector { railjson } => serde_json::to_string(railjson)?,
+            RailjsonObject::BufferStop { railjson } => serde_json::to_string(railjson)?,
+            RailjsonObject::Route { railjson } => serde_json::to_string(railjson)?,
+            RailjsonObject::OperationalPoint { railjson } => serde_json::to_string(railjson)?,
+            RailjsonObject::Electrification { railjson } => serde_json::to_string(railjson)?,
+        };
+        let mut value: serde_json::Value = serde_json::from_str(&json)?;
+        json_patch::patch(&mut value, json_patch)?;
+        let railjson_object = match object_type {
+            ObjectType::TrackSection => RailjsonObject::TrackSection {
+                railjson: serde_json::from_value(value)?,
+            },
+            ObjectType::Signal => RailjsonObject::Signal {
+                railjson: serde_json::from_value(value)?,
+            },
+            ObjectType::SpeedSection => RailjsonObject::SpeedSection {
+                railjson: serde_json::from_value(value)?,
+            },
+            ObjectType::Detector => RailjsonObject::Detector {
+                railjson: serde_json::from_value(value)?,
+            },
+            ObjectType::NeutralSection => RailjsonObject::NeutralSection {
+                railjson: serde_json::from_value(value)?,
+            },
+            ObjectType::Switch => RailjsonObject::Switch {
+                railjson: serde_json::from_value(value)?,
+            },
+            ObjectType::SwitchType => RailjsonObject::SwitchType {
+                railjson: serde_json::from_value(value)?,
+            },
+            ObjectType::BufferStop => RailjsonObject::BufferStop {
+                railjson: serde_json::from_value(value)?,
+            },
+            ObjectType::Route => RailjsonObject::Route {
+                railjson: serde_json::from_value(value)?,
+            },
+            ObjectType::OperationalPoint => RailjsonObject::OperationalPoint {
+                railjson: serde_json::from_value(value)?,
+            },
+            ObjectType::Electrification => RailjsonObject::Electrification {
+                railjson: serde_json::from_value(value)?,
+            },
+        };
+        Ok(railjson_object)
     }
 }
 

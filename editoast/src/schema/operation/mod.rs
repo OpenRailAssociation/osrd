@@ -2,7 +2,7 @@ pub mod create;
 mod delete;
 mod update;
 
-use super::ObjectRef;
+use super::{OSRDObject as _, ObjectRef};
 use crate::{error::Result, infra_cache::ObjectCache};
 use diesel_async::AsyncPgConnection as PgConnection;
 use editoast_derive::EditoastError;
@@ -34,6 +34,25 @@ pub enum CacheOperation {
     Create(ObjectCache),
     Update(ObjectCache),
     Delete(ObjectRef),
+}
+
+impl CacheOperation {
+    pub fn try_from_operation(
+        operation: &Operation,
+        railjson_object: RailjsonObject,
+    ) -> Result<Self> {
+        let cache_operation = match operation {
+            Operation::Create(railjson_object) => {
+                CacheOperation::Create(ObjectCache::from(railjson_object.deref().clone()))
+            }
+            Operation::Update(UpdateOperation { railjson_patch, .. }) => {
+                let railjson_object = railjson_object.patch(railjson_patch)?;
+                CacheOperation::Update(ObjectCache::from(railjson_object))
+            }
+            Operation::Delete(_) => CacheOperation::Delete(railjson_object.get_ref()),
+        };
+        Ok(cache_operation)
+    }
 }
 
 impl Operation {

@@ -198,3 +198,23 @@ impl EditoastError for reqwest::Error {
         "editoast:ReqwestError"
     }
 }
+
+impl EditoastError for serde_json::Error {
+    fn get_status(&self) -> StatusCode {
+        StatusCode::INTERNAL_SERVER_ERROR
+    }
+
+    fn get_type(&self) -> &str {
+        "editoast:SerdeJsonError"
+    }
+}
+
+impl EditoastError for json_patch::PatchError {
+    fn get_status(&self) -> StatusCode {
+        StatusCode::INTERNAL_SERVER_ERROR
+    }
+
+    fn get_type(&self) -> &str {
+        "editoast:JsonPatchError"
+    }
+}

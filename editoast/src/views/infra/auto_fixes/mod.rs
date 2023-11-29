@@ -1,12 +1,11 @@
-use std::collections::hash_map::Entry;
-use std::collections::HashMap;
-
 use crate::error::{InternalError, Result};
 use crate::generated_data::generate_infra_errors;
 use crate::infra_cache::{InfraCache, ObjectCache};
 use crate::models::{self, Infra, Retrieve};
-use crate::schema::operation::{CacheOperation, DeleteOperation, Operation, RailjsonObject};
-use crate::schema::{InfraError, OSRDObject, ObjectRef, ObjectType};
+use crate::schema::operation::{
+    CacheOperation, DeleteOperation, Operation, RailjsonObject, UpdateOperation,
+};
+use crate::schema::{InfraError, OSRDIdentified as _, OSRDObject, ObjectRef, ObjectType};
 use crate::views::infra::InfraIdParam;
 use crate::DbPool;
 use actix_web::get;
@@ -15,6 +14,7 @@ use chashmap::CHashMap;
 use editoast_derive::EditoastError;
 use itertools::Itertools as _;
 use log::{debug, error};
+use std::collections::hash_map::{Entry, HashMap};
 use thiserror::Error;
 
 mod buffer_stop;
@@ -42,6 +42,12 @@ fn new_ref_fix_create_pair(object: RailjsonObject) -> (ObjectRef, Fix) {
     let operation = Operation::Create(Box::new(object.clone()));
     let cache_operation = CacheOperation::Create(ObjectCache::from(object));
     (object_ref, (operation, cache_operation))
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub enum OrderedOperation {
+    RemoveTrackRange { track_range_idx: usize },
+    Delete,
 }
 
 // Return `/infra/<infra_id>/auto_fixes` routes
@@ -186,6 +192,90 @@ fn fix_infra(
     Ok(operations)
 }
 
+// 'reduce_operation' needs to produce an `Option` since combining two existing `Operation`
+// might result in no `Operation`.
+// Since `reduce_operation` is used as input of `Iterator::reduce`, the input arguments are also
+// `Option<Operation>`.
+fn reduce_operation(
+    early_operation: Option<Operation>,
+    late_operation: Option<Operation>,
+) -> Option<Operation> {
+    match (early_operation, late_operation) {
+        (Some(Operation::Create(_)), Some(Operation::Create(_)))
+        | (Some(Operation::Create(_)), Some(Operation::Delete(_)))
+        | (Some(Operation::Update(_)), Some(Operation::Create(_)))
+        | (Some(Operation::Delete(_)), Some(Operation::Create(_))) => {
+            error!("cannot reduce these 2 operations, it should never happen");
+            None
+        }
+        (Some(Operation::Create(railjson_object)), Some(Operation::Update(update))) => {
+            let UpdateOperation {
+                obj_id,
+                obj_type,
+                railjson_patch,
+                ..
+            } = update;
+            debug_assert_eq!(railjson_object.get_id(), &obj_id);
+            debug_assert_eq!(railjson_object.get_type(), obj_type);
+            railjson_object
+                .patch(&railjson_patch)
+                .map(|railjson_object: RailjsonObject| Operation::Create(Box::new(railjson_object)))
+                .ok()
+                .or_else(|| {
+                    error!("failed to apply patch when reducing CREATE+UPDATE");
+                    None
+                })
+        }
+        (Some(Operation::Delete(delete1)), Some(Operation::Delete(delete2))) => {
+            let DeleteOperation {
+                obj_id: obj_id1,
+                obj_type: obj_type1,
+            } = delete1;
+            let DeleteOperation {
+                obj_id: obj_id2,
+                obj_type: obj_type2,
+            } = delete2;
+            debug_assert_eq!(obj_id1, obj_id2);
+            debug_assert_eq!(obj_type1, obj_type2);
+            Some(Operation::Delete(DeleteOperation {
+                obj_id: obj_id1,
+                obj_type: obj_type1,
+            }))
+        }
+        (Some(Operation::Delete(delete)), Some(Operation::Update(update)))
+        | (Some(Operation::Update(update)), Some(Operation::Delete(delete))) => {
+            let DeleteOperation { obj_id, obj_type } = delete;
+            debug_assert_eq!(obj_id, update.obj_id);
+            debug_assert_eq!(obj_type, update.obj_type);
+            Some(Operation::Delete(DeleteOperation { obj_id, obj_type }))
+        }
+        (Some(Operation::Update(update1)), Some(Operation::Update(update2))) => {
+            let UpdateOperation {
+                obj_id: obj_id1,
+                obj_type: obj_type1,
+                railjson_patch: mut railjson_patch1,
+            } = update1;
+            let UpdateOperation {
+                obj_id: obj_id2,
+                obj_type: obj_type2,
+                railjson_patch: railjson_patch2,
+            } = update2;
+            debug_assert_eq!(obj_id1, obj_id2);
+            debug_assert_eq!(obj_type1, obj_type2);
+            railjson_patch1.0.extend(railjson_patch2.0);
+            Some(Operation::Update(UpdateOperation {
+                obj_id: obj_id1,
+                obj_type: obj_type1,
+                railjson_patch: railjson_patch1,
+            }))
+        }
+        (None, _) | (_, None) => {
+            error!("something produced an empty operation, ignoring all other operations");
+            None
+        }
+    }
+}
+
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "auto_fixes")]
 pub enum AutoFixesEditoastError {
@@ -216,10 +306,10 @@ mod tests {
     use crate::schema::operation::{DeleteOperation, Operation, RailjsonObject};
     use crate::schema::utils::Identifier;
     use crate::schema::{
-        ApplicableDirectionsTrackRange, BufferStop, BufferStopCache, BufferStopExtension, Detector,
-        DetectorCache, Electrification, Endpoint, OSRDIdentified as _, ObjectRef, ObjectType,
-        OperationalPoint, OperationalPointPart, Route, Signal, SignalCache, Slope, SpeedSection,
-        Switch, TrackEndpoint, TrackSection, Waypoint,
+        ApplicableDirectionsTrackRange, BufferStop, BufferStopCache, BufferStopExtension, Electrification,
+        Detector, DetectorCache, Endpoint, ObjectRef, ObjectType, OperationalPoint,
+        OperationalPointPart, Route, Signal, SignalCache, Slope, SpeedSection, Switch,
+        TrackEndpoint, TrackSection, Waypoint,
     };
     use crate::views::pagination::PaginatedResponse;
     use crate::views::tests::create_test_service;
