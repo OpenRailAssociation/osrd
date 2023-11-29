@@ -124,6 +124,7 @@ struct PathfindingStep {
     starting_step: bool,
     #[derivative(Hash = "ignore", PartialEq = "ignore")]
     previous: Option<Box<PathfindingStep>>,
+    total_length: u64,
 }
 
 impl PathfindingStep {
@@ -136,6 +137,7 @@ impl PathfindingStep {
             found: false,
             starting_step: true,
             previous: None,
+            total_length: 0,
         }
     }
 
@@ -146,7 +148,9 @@ impl PathfindingStep {
         switch_direction: Option<(Identifier, Identifier)>,
         found: bool,
         previous: PathfindingStep,
+        length: u64,
     ) -> Self {
+        let total_length = previous.total_length + length;
         Self {
             track,
             position,
@@ -155,6 +159,7 @@ impl PathfindingStep {
             found,
             starting_step: false,
             previous: Some(Box::new(previous)),
+            total_length,
         }
     }
 
@@ -187,6 +192,7 @@ fn compute_path(
     let into_cost = |length: f64| (length * 100.).round() as u64;
     let get_length = |track: &String| track_sections[track].unwrap_track_section().length;
     let success = |step: &PathfindingStep| step.found;
+    let mut best_distance = u64::MAX;
     let successors = |step: &PathfindingStep| {
         // We initially don’t know in which direction start searching the path
         // So the first step as two successors, at the same track-position, but in opposite directions
@@ -200,6 +206,7 @@ fn compute_path(
                         None,
                         false,
                         step.clone(),
+                        0,
                     ),
                     0,
                 ),
@@ -211,6 +218,7 @@ fn compute_path(
                         None,
                         false,
                         step.clone(),
+                        0,
                     ),
                     0,
                 ),
@@ -224,6 +232,8 @@ fn compute_path(
             {
                 return vec![];
             }
+            let cost = into_cost((step.position - input.ending.position).abs());
+            best_distance = best_distance.min(step.total_length + cost);
             return vec![(
                 PathfindingStep::new(
                     step.track.clone(),
@@ -232,8 +242,9 @@ fn compute_path(
                     None,
                     true,
                     step.clone(),
+                    cost,
                 ),
-                into_cost((step.position - input.ending.position).abs()),
+                cost,
             )];
         }
 
@@ -244,6 +255,11 @@ fn compute_path(
         } else {
             into_cost(step.position)
         };
+        // We search for k-shortest path. However, we want to prune routes that are too long compared to the shortest
+        // We can’t do best_distance * 3, as initially it is u64::MAX
+        if (step.total_length + cost) / 3 > best_distance {
+            return vec![];
+        }
 
         // Find neighbours
         let mut successors = vec![];
@@ -275,6 +291,7 @@ fn compute_path(
                         switch.map(|s| (s.obj_id.clone().into(), neighbour_group.clone())),
                         false,
                         step.clone(),
+                        cost,
                     ),
                     cost,
                 ));
