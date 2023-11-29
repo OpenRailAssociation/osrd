@@ -70,7 +70,7 @@ async fn fix_infra(infra_cache: &mut InfraCache) -> Result<Vec<Operation>> {
     let mut all_fixes = vec![];
 
     for error in infra_errors {
-        for operation in get_operations_fixing_error(&error)? {
+        for operation in get_operations_fixing_error(&error, infra_cache)? {
             let mut must_retain = true;
             if let Operation::Delete(ref delete_operation) = operation {
                 must_retain = delete_fixes_already_retained.insert(delete_operation.to_owned());
@@ -89,10 +89,13 @@ async fn fix_infra(infra_cache: &mut InfraCache) -> Result<Vec<Operation>> {
     Ok(all_fixes)
 }
 
-fn get_operations_fixing_error(error: &InfraError) -> Result<Vec<Operation>> {
+fn get_operations_fixing_error(
+    error: &InfraError,
+    infra_cache: &InfraCache,
+) -> Result<Vec<Operation>> {
     match error.get_sub_type() {
         InfraErrorType::InvalidReference { reference } => {
-            get_operations_fixing_invalid_reference(error, reference)
+            get_operations_fixing_invalid_reference(error, reference, infra_cache)
         }
         _ => Ok(vec![]), // Default: nothing is done to fix error
     }
@@ -101,24 +104,46 @@ fn get_operations_fixing_error(error: &InfraError) -> Result<Vec<Operation>> {
 fn get_operations_fixing_invalid_reference(
     error: &InfraError,
     reference: &ObjectRef,
+    infra_cache: &InfraCache,
 ) -> Result<Vec<Operation>> {
     // BufferStop or Signal invalid-reference on track
-    if [
-        ObjectType::BufferStop,
-        ObjectType::Signal,
-        ObjectType::Detector,
-    ]
-    .contains(&error.get_type())
-        && reference.obj_type == ObjectType::TrackSection
-    {
-        return Ok([Operation::Delete(DeleteOperation {
-            obj_id: error.get_id().to_string(),
-            obj_type: error.get_type(),
-        })]
-        .to_vec());
+    match &error.get_type() {
+        ObjectType::BufferStop | ObjectType::Signal | ObjectType::Detector => {
+            if reference.obj_type == ObjectType::TrackSection {
+                Ok([Operation::Delete(DeleteOperation {
+                    obj_id: error.get_id().to_string(),
+                    obj_type: error.get_type(),
+                })]
+                .to_vec())
+            } else {
+                Ok(vec![])
+            }
+        }
+        ObjectType::Route => {
+            let route = infra_cache
+                .routes()
+                .get(error.get_id())
+                .ok_or_else(|| AutoFixesEditoastError::MissingErrorObject {
+                    error: error.clone(),
+                })?
+                .unwrap_route();
+            if matches!(
+                reference.obj_type,
+                ObjectType::BufferStop | ObjectType::Detector
+            ) && (reference.obj_id.eq(route.entry_point.get_id())
+                || reference.obj_id.eq(route.exit_point.get_id()))
+            {
+                Ok([Operation::Delete(DeleteOperation {
+                    obj_id: error.get_id().to_string(),
+                    obj_type: ObjectType::Route,
+                })]
+                .to_vec())
+            } else {
+                Ok(vec![])
+            }
+        }
+        _ => Ok(vec![]),
     }
-
-    Ok(vec![])
 }
 
 #[derive(Debug, Error, EditoastError)]
@@ -132,6 +157,9 @@ pub enum AutoFixesEditoastError {
     #[error("Failed trying to apply fixes")]
     #[editoast_error(status = 500)]
     FixTrialFailure { source: InternalError },
+    #[error("Failed to find the error's object")]
+    #[editoast_error(status = 500)]
+    MissingErrorObject { error: InfraError },
 }
 
 #[cfg(test)]
@@ -139,7 +167,10 @@ mod test {
     use super::*;
     use crate::fixtures::tests::{db_pool, small_infra};
     use crate::schema::operation::{DeleteOperation, Operation};
-    use crate::schema::{ObjectRef, ObjectType, SignalCache};
+    use crate::schema::utils::Identifier;
+    use crate::schema::{
+        BufferStopCache, DetectorCache, ObjectRef, ObjectType, Route, SignalCache, Waypoint,
+    };
     use crate::views::tests::create_test_service;
     use actix_http::StatusCode;
     use actix_web::test::{call_service, read_body_json, TestRequest};
@@ -198,6 +229,39 @@ mod test {
         })));
     }
 
+    #[rstest::rstest]
+    async fn test_fix_invalid_ref_route_entry_exit() {
+        let app = create_test_service().await;
+        let small_infra = small_infra(db_pool()).await;
+        let small_infra_id = small_infra.id();
+        // Remove a buffer stop
+        let deletion = Operation::Delete(DeleteOperation {
+            obj_id: "buffer_stop.4".to_string(),
+            obj_type: ObjectType::BufferStop,
+        });
+        let req_del = TestRequest::post()
+            .uri(format!("/infra/{small_infra_id}/").as_str())
+            .set_json(json!([deletion]))
+            .to_request();
+        assert_eq!(call_service(&app, req_del).await.status(), StatusCode::OK);
+
+        let req_fix = TestRequest::get()
+            .uri(format!("/infra/{small_infra_id}/auto_fixes").as_str())
+            .to_request();
+        let response = call_service(&app, req_fix).await;
+
+        assert_eq!(response.status(), StatusCode::OK);
+        let operations: Vec<Operation> = read_body_json(response).await;
+        assert!(operations.contains(&Operation::Delete(DeleteOperation {
+            obj_id: "rt.DE0->buffer_stop.4".to_string(),
+            obj_type: ObjectType::Route,
+        })));
+        assert!(operations.contains(&Operation::Delete(DeleteOperation {
+            obj_id: "rt.buffer_stop.4->DF0".to_string(),
+            obj_type: ObjectType::Route,
+        })));
+    }
+
     #[test]
     fn test_invalid_ref_signal_fix() {
         let error = InfraError::new_invalid_reference(
@@ -207,7 +271,7 @@ mod test {
         );
 
         assert_eq!(
-            get_operations_fixing_error(&error).unwrap(),
+            get_operations_fixing_error(&error, &InfraCache::default()).unwrap(),
             vec![Operation::Delete(DeleteOperation {
                 obj_id: "SA0".to_string(),
                 obj_type: ObjectType::Signal,
@@ -223,6 +287,150 @@ mod test {
             ObjectRef::new(ObjectType::Detector, "TA1"),
         );
 
-        assert!(get_operations_fixing_error(&error).unwrap().is_empty());
+        assert!(get_operations_fixing_error(&error, &InfraCache::default())
+            .unwrap()
+            .is_empty());
+    }
+
+    #[test]
+    fn test_invalid_ref_route_fix_entry() {
+        let missing_bs_id = "missing_bs_id";
+        let exit_bs_id = "exit_bs_id";
+        let route = Route {
+            id: Identifier::from("route_id"),
+            entry_point: Waypoint::new_buffer_stop(missing_bs_id),
+            exit_point: Waypoint::new_buffer_stop(exit_bs_id),
+            ..Default::default()
+        };
+        let error = InfraError::new_invalid_reference(
+            &route,
+            "entry_point",
+            ObjectRef::new(ObjectType::BufferStop, missing_bs_id),
+        );
+        let mut cache = InfraCache::default();
+        cache
+            .add(BufferStopCache::new(
+                exit_bs_id.to_string(),
+                "track_id".to_string(),
+                0.0,
+            ))
+            .unwrap();
+        cache.add(route).unwrap();
+
+        // Delete the route: the entry point doesn't exist.
+        assert_eq!(
+            get_operations_fixing_error(&error, &cache).unwrap(),
+            vec![Operation::Delete(DeleteOperation {
+                obj_id: "route_id".to_string(),
+                obj_type: ObjectType::Route,
+            })]
+        );
+    }
+
+    #[test]
+    fn test_invalid_ref_route_missing() {
+        let missing_bs_id = "missing_bs_id";
+        let exit_bs_id = "exit_bs_id";
+        let route = Route {
+            id: Identifier::from("route_id"),
+            entry_point: Waypoint::new_buffer_stop(missing_bs_id),
+            exit_point: Waypoint::new_buffer_stop(exit_bs_id),
+            ..Default::default()
+        };
+        let error = InfraError::new_invalid_reference(
+            &route,
+            "entry_point",
+            ObjectRef::new(ObjectType::BufferStop, missing_bs_id),
+        );
+        let mut cache = InfraCache::default();
+        cache
+            .add(BufferStopCache::new(
+                exit_bs_id.to_string(),
+                "track_id".to_string(),
+                0.0,
+            ))
+            .unwrap();
+
+        // Error: the route is not in the cache.
+        assert_eq!(
+            get_operations_fixing_error(&error, &cache).unwrap_err(),
+            AutoFixesEditoastError::MissingErrorObject { error }.into()
+        );
+    }
+
+    #[test]
+    fn test_invalid_ref_route_fix_exit() {
+        let missing_detector_id = "missing_detector_id";
+        let entry_detector_id = "entry_detector_id";
+        let route = Route {
+            id: Identifier::from("route_id"),
+            entry_point: Waypoint::new_detector(entry_detector_id),
+            exit_point: Waypoint::new_detector(missing_detector_id),
+            ..Default::default()
+        };
+        let error = InfraError::new_invalid_reference(
+            &route,
+            "exit_point",
+            ObjectRef::new(ObjectType::Detector, missing_detector_id),
+        );
+        let mut cache = InfraCache::default();
+        cache
+            .add(DetectorCache::new(
+                entry_detector_id.to_string(),
+                "track_id".to_string(),
+                0.0,
+            ))
+            .unwrap();
+        cache.add(route).unwrap();
+
+        // Delete the route: the exit point doesn't exist.
+        assert_eq!(
+            get_operations_fixing_error(&error, &cache).unwrap(),
+            vec![Operation::Delete(DeleteOperation {
+                obj_id: "route_id".to_string(),
+                obj_type: ObjectType::Route,
+            })]
+        );
+    }
+
+    #[test]
+    fn test_invalid_ref_route_nofix() {
+        let entry_detector_id = "entry_detector_id";
+        let exit_detector_id = "exit_detector_id";
+        let missing_detector_id = "missing_detector_id";
+        let track_id = "track_id";
+        let route = Route {
+            id: Identifier::from("route_id"),
+            entry_point: Waypoint::new_detector(entry_detector_id),
+            exit_point: Waypoint::new_detector(exit_detector_id),
+            release_detectors: vec![Identifier::from(missing_detector_id)],
+            ..Default::default()
+        };
+        let error = InfraError::new_invalid_reference(
+            &route,
+            "release_detectors",
+            ObjectRef::new(ObjectType::Detector, missing_detector_id),
+        );
+        let mut cache = InfraCache::default();
+        cache
+            .add(DetectorCache::new(
+                entry_detector_id.to_string(),
+                track_id.to_string(),
+                0.0,
+            ))
+            .unwrap();
+        cache
+            .add(DetectorCache::new(
+                exit_detector_id.to_string(),
+                track_id.to_string(),
+                1000.0,
+            ))
+            .unwrap();
+        cache.add(route).unwrap();
+
+        // Don't delete the route: entry and exit points are fine.
+        assert!(get_operations_fixing_error(&error, &cache)
+            .unwrap()
+            .is_empty());
     }
 }
