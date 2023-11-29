@@ -15,7 +15,7 @@
 /python                                                  @osrd-project/editoast-maintainers
 
 # --- INTEGRATION TESTS  ---
-/tests                                                   @eckter @bloussou @shenriotpro
+/tests                                                   @osrd-project/test-maintainers
 
 # --- CORE ---
 /core                                                    @osrd-project/core-maintainers
