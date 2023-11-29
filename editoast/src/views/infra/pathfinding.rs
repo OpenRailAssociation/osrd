@@ -184,7 +184,19 @@ fn compute_path(
     let into_cost = |length: f64| (length * 100.).round() as u64;
     let get_length = |track: &String| track_sections[track].unwrap_track_section().length;
     let success = |step: &PathfindingStep| step.found;
-    let mut best_distance = u64::MAX;
+
+    let starting_track = track_sections[&input.starting.track.0].unwrap_track_section();
+    let ending_track = track_sections[&input.ending.track.0].unwrap_track_section();
+    let best_distance = starting_track
+        .bbox_geo
+        .clone()
+        .union(&ending_track.bbox_geo)
+        .diagonal_length();
+    // We build an upper bound that is the diagonal of the bounding box covering start and end
+    // During the path search, we prune any route that is twice that distance
+    // We set an upper bound of at least 10 km to avoid problems on very short distances
+    let mut best_distance = into_cost(best_distance.max(10_000.0));
+
     let successors = |step: &PathfindingStep| {
         // We initially don’t know in which direction start searching the path
         // So the first step as two successors, at the same track-position, but in opposite directions
