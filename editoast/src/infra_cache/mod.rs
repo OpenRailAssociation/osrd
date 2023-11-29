@@ -556,6 +556,17 @@ impl InfraCache {
         }
         Ok(())
     }
+
+    pub fn get_route(&self, route_id: &str) -> Result<&Route> {
+        Ok(self
+            .routes()
+            .get(route_id)
+            .ok_or_else(|| InfraCacheEditoastError::ObjectNotFound {
+                obj_type: ObjectType::Route.to_string(),
+                obj_id: route_id.to_string(),
+            })?
+            .unwrap_route())
+    }
 }
 
 #[derive(Debug, Error, EditoastError)]
@@ -567,6 +578,14 @@ pub enum OperationResultError {
     #[error("{obj_type} '{obj_id}', a duplicate already exists")]
     #[editoast_error(status = 404)]
     DuplicateIdsProvided { obj_type: String, obj_id: String },
+}
+
+#[derive(Debug, Error, EditoastError)]
+#[editoast_error(base_id = "infra_cache")]
+pub enum InfraCacheEditoastError {
+    #[error("{obj_type} '{obj_id}', could not be found in the infrastructure cache")]
+    #[editoast_error(status = 404)]
+    ObjectNotFound { obj_type: String, obj_id: String },
 }
 
 #[cfg(test)]
