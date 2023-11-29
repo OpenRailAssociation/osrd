@@ -17,7 +17,7 @@ const animation = [
   '48.8091/2.4235/17.3858/-16.8/72/8000',
   '48.8228/2.4087/17.3858/-40.8/71.5',
   '48.8408/2.381/17.3858/-57.6/72',
-  '48.8416/2.3757/15.7157/-44.8/0'
+  '48.8416/2.3757/15.7157/-44.8/0',
 ];
 
 export default function AnimateCamera({ map }: MapSearchProps) {
@@ -34,6 +34,8 @@ export default function AnimateCamera({ map }: MapSearchProps) {
         zoom,
         bearing,
         pitch,
+        essential: true,
+        freezeElevation: true,
         easing: (x) => x,
         duration,
       });
@@ -44,10 +46,14 @@ export default function AnimateCamera({ map }: MapSearchProps) {
   }
 
   async function launchAnimation() {
-    await animation.reduce(async (promiseChain, step, idx) => {
-      await promiseChain;
-      await animationStep(step, idx === 0 ? 1 : 4000);
-    }, Promise.resolve());
+    if (map?.once('move')) {
+      map.stop();
+    } else {
+      await animation.reduce(async (promiseChain, step, idx) => {
+        await promiseChain;
+        await animationStep(step, idx === 0 ? 1 : 4000);
+      }, Promise.resolve());
+    }
   }
 
   return (
