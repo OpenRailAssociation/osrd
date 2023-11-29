@@ -1,26 +1,48 @@
-use std::collections::HashSet;
-use std::ops::Deref as _;
+use std::collections::hash_map::Entry;
+use std::collections::HashMap;
 
 use crate::error::{InternalError, Result};
 use crate::generated_data::generate_infra_errors;
-use crate::infra_cache::InfraCache;
+use crate::infra_cache::{InfraCache, ObjectCache};
 use crate::models::{self, Infra, Retrieve};
 use crate::schema::operation::{CacheOperation, DeleteOperation, Operation, RailjsonObject};
-use crate::schema::utils::Identifier;
-use crate::schema::{
-    BufferStop, Endpoint, InfraError, InfraErrorType, OSRDIdentified, OSRDObject, ObjectRef,
-    ObjectType,
-};
+use crate::schema::{InfraError, OSRDObject, ObjectRef, ObjectType};
 use crate::views::infra::InfraIdParam;
 use crate::DbPool;
 use actix_web::get;
 use actix_web::web::{Data, Json as WebJson, Path};
 use chashmap::CHashMap;
 use editoast_derive::EditoastError;
+use itertools::Itertools as _;
+use log::{debug, error};
 use thiserror::Error;
-use uuid::Uuid;
+
+mod buffer_stop;
+mod catenary;
+mod detector;
+mod operational_point;
+mod route;
+mod signal;
+mod speed_section;
+mod switch;
+mod track_section;
 
 const MAX_AUTO_FIXES_ITERATIONS: u8 = 5;
+
+type Fix = (Operation, CacheOperation);
+
+fn new_ref_fix_delete_pair(object: &impl OSRDObject) -> (ObjectRef, Fix) {
+    let operation = Operation::Delete(DeleteOperation::from(object.get_ref()));
+    let cache_operation = CacheOperation::Delete(object.get_ref());
+    (object.get_ref(), (operation, cache_operation))
+}
+
+fn new_ref_fix_create_pair(object: RailjsonObject) -> (ObjectRef, Fix) {
+    let object_ref = object.get_ref();
+    let operation = Operation::Create(Box::new(object.clone()));
+    let cache_operation = CacheOperation::Create(ObjectCache::from(object));
+    (object_ref, (operation, cache_operation))
+}
 
 // Return `/infra/<infra_id>/auto_fixes` routes
 crate::routes! {"/infra/{infra_id}/auto_fixes" => { list_auto_fixes, } } // TODO:  move it to infra when migrated (and un-pub module)
@@ -52,7 +74,8 @@ async fn list_auto_fixes(
 
     let mut fixes = vec![];
     for _ in 0..MAX_AUTO_FIXES_ITERATIONS {
-        let new_fixes = fix_infra(&mut infra_cache_clone).await?;
+        let infra_errors = generate_infra_errors(&infra_cache_clone).await;
+        let new_fixes = fix_infra(&mut infra_cache_clone, infra_errors)?;
         if new_fixes.is_empty() {
             // Every possible error is fixed
             return Ok(WebJson(fixes));
@@ -63,139 +86,100 @@ async fn list_auto_fixes(
     // Reapplying an auto-fix should do nothing.
     // And few iterations are supposed to provide every possible fix.
     // Yet after reaching the maximum number of iterations, there are still fixes available.
-    Err(AutoFixesEditoastError::MaximumIterationReached().into())
+    Err(AutoFixesEditoastError::MaximumIterationReached.into())
 }
 
-async fn fix_infra(infra_cache: &mut InfraCache) -> Result<Vec<Operation>> {
-    let infra_errors = generate_infra_errors(infra_cache).await;
-
-    let mut delete_fixes_already_retained = HashSet::new();
-    let mut all_fixes = vec![];
-
-    for error in infra_errors {
-        for operation in get_operations_fixing_error(&error, infra_cache)? {
-            let mut must_retain = true;
-            if let Operation::Delete(ref delete_operation) = operation {
-                must_retain = delete_fixes_already_retained.insert(delete_operation.to_owned());
+fn fix_infra(
+    infra_cache: &mut InfraCache,
+    infra_errors: Vec<InfraError>,
+) -> Result<Vec<Operation>> {
+    let mut fixes: HashMap<ObjectRef, Fix> = HashMap::new();
+    for (object_ref, errors) in &infra_errors.into_iter().group_by(OSRDObject::get_ref) {
+        let fixes_for_object_errors = match object_ref.obj_type {
+            ObjectType::TrackSection => {
+                let track_section = infra_cache
+                    .get_track_section(&object_ref.obj_id)
+                    .map_err(|e| AutoFixesEditoastError::MissingErrorObject { source: e })?;
+                track_section::fix_track_section(track_section, errors)
             }
-            if must_retain {
-                all_fixes.push(operation);
+            ObjectType::Signal => {
+                let signal = infra_cache
+                    .get_signal(&object_ref.obj_id)
+                    .map_err(|e| AutoFixesEditoastError::MissingErrorObject { source: e })?;
+                signal::fix_signal(signal, errors)
             }
-        }
+            ObjectType::SpeedSection => {
+                let speed_section = infra_cache
+                    .get_speed_section(&object_ref.obj_id)
+                    .map_err(|e| AutoFixesEditoastError::MissingErrorObject { source: e })?;
+                speed_section::fix_speed_section(speed_section, errors)
+            }
+            ObjectType::Detector => {
+                let detector = infra_cache
+                    .get_detector(&object_ref.obj_id)
+                    .map_err(|e| AutoFixesEditoastError::MissingErrorObject { source: e })?;
+                detector::fix_detector(detector, errors)
+            }
+            ObjectType::Switch => {
+                let switch = infra_cache
+                    .get_switch(&object_ref.obj_id)
+                    .map_err(|e| AutoFixesEditoastError::MissingErrorObject { source: e })?;
+                switch::fix_switch(switch, errors)
+            }
+            ObjectType::BufferStop => {
+                let buffer_stop = infra_cache
+                    .get_buffer_stop(&object_ref.obj_id)
+                    .map_err(|e| AutoFixesEditoastError::MissingErrorObject { source: e })?;
+                buffer_stop::fix_buffer_stop(buffer_stop, errors)
+            }
+            ObjectType::Route => {
+                let route = infra_cache
+                    .get_route(&object_ref.obj_id)
+                    .map_err(|e| AutoFixesEditoastError::MissingErrorObject { source: e })?;
+                route::fix_route(route, errors)
+            }
+            ObjectType::OperationalPoint => {
+                let operational_point = infra_cache
+                    .get_operational_point(&object_ref.obj_id)
+                    .map_err(|e| AutoFixesEditoastError::MissingErrorObject { source: e })?;
+                operational_point::fix_operational_point(operational_point, errors)
+            }
+            ObjectType::Catenary => {
+                let catenary = infra_cache
+                    .get_catenary(&object_ref.obj_id)
+                    .map_err(|e| AutoFixesEditoastError::MissingErrorObject { source: e })?;
+                catenary::fix_catenary(catenary, errors)
+            }
+            object_type => {
+                debug!("error not (yet) fixable on '{}'", object_type);
+                HashMap::default()
+            }
+        };
+
+        fixes = fixes_for_object_errors.into_iter().try_fold(
+            fixes,
+            |mut fixes, (object_ref, fix)| {
+                // cannot use `fixes.insert()` because we want to detect before inserting
+                // `Entry` doesn't have an API to return an error if key already exists
+                match fixes.entry(object_ref) {
+                    Entry::Occupied(entry) => {
+                        return Err(AutoFixesEditoastError::ConflictingFixesOnSameObject {
+                            object: entry.key().clone(),
+                            fixes: vec![entry.get().0.clone(), fix.0],
+                        })
+                    }
+                    Entry::Vacant(entry) => entry.insert(fix),
+                };
+                Ok(fixes)
+            },
+        )?;
     }
-
-    let cache_operations = all_fixes
-        .iter()
-        .map(|operation| match operation {
-            Operation::Create(railjson) => CacheOperation::Create(railjson.deref().clone().into()),
-            Operation::Update(_) => unimplemented!("not possible at the moment, wait for refactor"),
-            Operation::Delete(delete_operation) => {
-                CacheOperation::Delete(delete_operation.clone().into())
-            }
-        })
-        .collect::<Vec<_>>();
+    let (operations, cache_operations): (Vec<Operation>, Vec<CacheOperation>) =
+        fixes.into_values().unzip();
     infra_cache
         .apply_operations(&cache_operations)
         .map_err(|source| AutoFixesEditoastError::FixTrialFailure { source })?;
-
-    Ok(all_fixes)
-}
-
-fn get_operations_fixing_error(
-    error: &InfraError,
-    infra_cache: &InfraCache,
-) -> Result<Vec<Operation>> {
-    match error.get_sub_type() {
-        InfraErrorType::InvalidReference { reference } => {
-            get_operations_fixing_invalid_reference(error, reference, infra_cache)
-        }
-        InfraErrorType::OutOfRange { .. } => get_operations_fixing_out_of_range(error),
-        InfraErrorType::InvalidSwitchPorts
-        | InfraErrorType::EmptyObject
-        | InfraErrorType::OddBufferStopLocation => Ok([Operation::Delete(DeleteOperation {
-            obj_id: error.get_id().to_string(),
-            obj_type: error.get_type(),
-        })]
-        .to_vec()),
-        InfraErrorType::MissingBufferStop { endpoint } => {
-            let track_id = error.get_id();
-            let position =
-                if *endpoint == Endpoint::Begin {
-                    0.
-                } else {
-                    infra_cache
-                        .get_track_section(track_id)
-                        .map_err(|source: InternalError| {
-                            AutoFixesEditoastError::MissingErrorObject { source }
-                        })?
-                        .length
-                };
-            Ok([Operation::Create(Box::new(RailjsonObject::BufferStop {
-                railjson: (BufferStop {
-                    id: Identifier::from(Uuid::new_v4()),
-                    track: track_id.to_string().into(),
-                    position,
-                    extensions: Default::default(),
-                }),
-            }))]
-            .to_vec())
-        }
-        _ => Ok(vec![]), // Default: nothing is done to fix error
-    }
-}
-
-fn get_operations_fixing_invalid_reference(
-    error: &InfraError,
-    reference: &ObjectRef,
-    infra_cache: &InfraCache,
-) -> Result<Vec<Operation>> {
-    // BufferStop or Signal invalid-reference on track
-    match &error.get_type() {
-        ObjectType::BufferStop | ObjectType::Signal | ObjectType::Detector | ObjectType::Switch => {
-            if reference.obj_type == ObjectType::TrackSection {
-                Ok([Operation::Delete(DeleteOperation {
-                    obj_id: error.get_id().to_string(),
-                    obj_type: error.get_type(),
-                })]
-                .to_vec())
-            } else {
-                Ok(vec![])
-            }
-        }
-        ObjectType::Route => {
-            let route = infra_cache
-                .get_route(error.get_id().as_str())
-                .map_err(|source| AutoFixesEditoastError::MissingErrorObject { source })?;
-            if matches!(
-                reference.obj_type,
-                ObjectType::BufferStop | ObjectType::Detector
-            ) && (reference.obj_id.eq(route.entry_point.get_id())
-                || reference.obj_id.eq(route.exit_point.get_id()))
-            {
-                Ok([Operation::Delete(DeleteOperation {
-                    obj_id: error.get_id().to_string(),
-                    obj_type: ObjectType::Route,
-                })]
-                .to_vec())
-            } else {
-                Ok(vec![])
-            }
-        }
-        _ => Ok(vec![]),
-    }
-}
-
-fn get_operations_fixing_out_of_range(error: &InfraError) -> Result<Vec<Operation>> {
-    match &error.get_type() {
-        ObjectType::BufferStop | ObjectType::Signal | ObjectType::Detector => {
-            Ok([Operation::Delete(DeleteOperation {
-                obj_id: error.get_id().to_string(),
-                obj_type: error.get_type(),
-            })]
-            .to_vec())
-        }
-        _ => Ok(vec![]),
-    }
+    Ok(operations)
 }
 
 #[derive(Debug, Error, EditoastError)]
@@ -205,19 +189,23 @@ pub enum AutoFixesEditoastError {
         "Reached maximum number of iterations to fix infra without providing every possible fixe"
     )]
     #[editoast_error(status = 500)]
-    MaximumIterationReached(),
+    MaximumIterationReached,
     #[error("Failed trying to apply fixes")]
     #[editoast_error(status = 500)]
     FixTrialFailure { source: InternalError },
+    #[error("Conflicting fixes for the same object on the same fix-iteration")]
+    #[editoast_error(status = 500)]
+    ConflictingFixesOnSameObject {
+        object: ObjectRef,
+        fixes: Vec<Operation>,
+    },
     #[error("Failed to find the error's object")]
     #[editoast_error(status = 500)]
     MissingErrorObject { source: InternalError },
 }
 
 #[cfg(test)]
-mod test {
-    use std::collections::HashMap;
-
+mod tests {
     use super::*;
     use crate::fixtures::tests::{db_pool, empty_infra, small_infra};
     use crate::infra_cache::InfraCacheEditoastError;
@@ -225,15 +213,16 @@ mod test {
     use crate::schema::utils::Identifier;
     use crate::schema::{
         ApplicableDirectionsTrackRange, BufferStop, BufferStopCache, BufferStopExtension, Catenary,
-        Detector, DetectorCache, Endpoint, ObjectRef, ObjectType, OperationalPoint,
-        OperationalPointPart, Route, Signal, SignalCache, Slope, SpeedSection, Switch,
-        TrackEndpoint, TrackSection, Waypoint,
+        Detector, DetectorCache, Endpoint, OSRDIdentified as _, ObjectRef, ObjectType,
+        OperationalPoint, OperationalPointPart, Route, Signal, SignalCache, Slope, SpeedSection,
+        Switch, TrackEndpoint, TrackSection, Waypoint,
     };
     use crate::views::pagination::PaginatedResponse;
     use crate::views::tests::create_test_service;
     use actix_http::{Request, StatusCode};
     use actix_web::test::{call_service, read_body_json, TestRequest};
     use serde_json::json;
+    use std::collections::HashMap;
 
     async fn get_infra_cache(infra: &Infra) -> InfraCache {
         InfraCache::load(&mut db_pool().get().await.unwrap(), infra)
@@ -366,32 +355,49 @@ mod test {
 
     #[test]
     fn test_invalid_ref_signal_fix() {
+        let signal = SignalCache::new("SA0".to_string(), "TA1".to_string(), 0.0, vec![]);
         let error = InfraError::new_invalid_reference(
-            &SignalCache::new("SA0".to_string(), "TA1".to_string(), 0.0, vec![]),
+            &signal,
             "track",
             ObjectRef::new(ObjectType::TrackSection, "TA1"),
         );
 
+        let mut infra_cache = InfraCache::default();
+        infra_cache.add(signal.clone()).unwrap();
+        let operations = fix_infra(&mut infra_cache, vec![error]).unwrap();
+        let operation = operations.first().unwrap();
         assert_eq!(
-            get_operations_fixing_error(&error, &InfraCache::default()).unwrap(),
-            vec![Operation::Delete(DeleteOperation {
-                obj_id: "SA0".to_string(),
+            operation,
+            &Operation::Delete(DeleteOperation {
+                obj_id: signal.get_id().to_string(),
                 obj_type: ObjectType::Signal,
-            })]
+            })
         );
+        assert!(!infra_cache.signals().contains_key(signal.get_id()));
     }
 
-    #[test]
-    fn test_wrong_invalid_ref_signal_fix() {
+    #[rstest::rstest]
+    async fn test_wrong_invalid_ref_signal_fix() {
+        let signal = SignalCache::new("SA0".to_string(), "TA1".to_string(), 0.0, vec![]);
         let error = InfraError::new_invalid_reference(
-            &SignalCache::new("SA0".to_string(), "TA1".to_string(), 0.0, vec![]),
+            &signal,
             "track",
             ObjectRef::new(ObjectType::Detector, "TA1"),
         );
 
-        assert!(get_operations_fixing_error(&error, &InfraCache::default())
-            .unwrap()
-            .is_empty());
+        let mut infra_cache = InfraCache::default();
+        let error = fix_infra(&mut infra_cache, vec![error]).unwrap_err();
+        assert_eq!(
+            error,
+            AutoFixesEditoastError::MissingErrorObject {
+                source: InfraCacheEditoastError::ObjectNotFound {
+                    obj_type: ObjectType::Signal.to_string(),
+                    obj_id: signal.get_id().to_string()
+                }
+                .into()
+            }
+            .into()
+        );
     }
 
     #[test]
@@ -409,24 +415,27 @@ mod test {
             "entry_point",
             ObjectRef::new(ObjectType::BufferStop, missing_bs_id),
         );
-        let mut cache = InfraCache::default();
-        cache
+        let mut infra_cache = InfraCache::default();
+        infra_cache
             .add(BufferStopCache::new(
                 exit_bs_id.to_string(),
                 "track_id".to_string(),
                 0.0,
             ))
             .unwrap();
-        cache.add(route).unwrap();
+        infra_cache.add(route.clone()).unwrap();
 
         // Delete the route: the entry point doesn't exist.
+        let operations = fix_infra(&mut infra_cache, vec![error]).unwrap();
+        let operation = operations.first().unwrap();
         assert_eq!(
-            get_operations_fixing_error(&error, &cache).unwrap(),
-            vec![Operation::Delete(DeleteOperation {
-                obj_id: "route_id".to_string(),
+            operation,
+            &Operation::Delete(DeleteOperation {
+                obj_id: route.get_id().to_string(),
                 obj_type: ObjectType::Route,
-            })]
+            })
         );
+        assert!(!infra_cache.routes().contains_key(route.get_id()));
     }
 
     #[test]
@@ -444,8 +453,8 @@ mod test {
             "entry_point",
             ObjectRef::new(ObjectType::BufferStop, missing_bs_id),
         );
-        let mut cache = InfraCache::default();
-        cache
+        let mut infra_cache = InfraCache::default();
+        infra_cache
             .add(BufferStopCache::new(
                 exit_bs_id.to_string(),
                 "track_id".to_string(),
@@ -454,8 +463,9 @@ mod test {
             .unwrap();
 
         // Error: the route is not in the cache.
+        let error = fix_infra(&mut infra_cache, vec![error]).unwrap_err();
         assert_eq!(
-            get_operations_fixing_error(&error, &cache).unwrap_err(),
+            error,
             AutoFixesEditoastError::MissingErrorObject {
                 source: InfraCacheEditoastError::ObjectNotFound {
                     obj_type: ObjectType::Route.to_string(),
@@ -482,24 +492,27 @@ mod test {
             "exit_point",
             ObjectRef::new(ObjectType::Detector, missing_detector_id),
         );
-        let mut cache = InfraCache::default();
-        cache
+        let mut infra_cache = InfraCache::default();
+        infra_cache
             .add(DetectorCache::new(
                 entry_detector_id.to_string(),
                 "track_id".to_string(),
                 0.0,
             ))
             .unwrap();
-        cache.add(route).unwrap();
+        infra_cache.add(route.clone()).unwrap();
 
         // Delete the route: the exit point doesn't exist.
+        let operations = fix_infra(&mut infra_cache, vec![error]).unwrap();
+        let operation = operations.first().unwrap();
         assert_eq!(
-            get_operations_fixing_error(&error, &cache).unwrap(),
-            vec![Operation::Delete(DeleteOperation {
-                obj_id: "route_id".to_string(),
+            operation,
+            &Operation::Delete(DeleteOperation {
+                obj_id: route.get_id().to_string(),
                 obj_type: ObjectType::Route,
-            })]
+            })
         );
+        assert!(!infra_cache.routes().contains_key(route.get_id()));
     }
 
     #[test]
@@ -520,27 +533,26 @@ mod test {
             "release_detectors",
             ObjectRef::new(ObjectType::Detector, missing_detector_id),
         );
-        let mut cache = InfraCache::default();
-        cache
+        let mut infra_cache = InfraCache::default();
+        infra_cache
             .add(DetectorCache::new(
                 entry_detector_id.to_string(),
                 track_id.to_string(),
                 0.0,
             ))
             .unwrap();
-        cache
+        infra_cache
             .add(DetectorCache::new(
                 exit_detector_id.to_string(),
                 track_id.to_string(),
                 1000.0,
             ))
             .unwrap();
-        cache.add(route).unwrap();
+        infra_cache.add(route).unwrap();
 
         // Don't delete the route: entry and exit points are fine.
-        assert!(get_operations_fixing_error(&error, &cache)
-            .unwrap()
-            .is_empty());
+        let operations = fix_infra(&mut infra_cache, vec![error]).unwrap();
+        assert!(operations.is_empty());
     }
 
     fn get_create_operation_request(railjson: RailjsonObject, infra_id: i64) -> Request {
@@ -600,21 +612,21 @@ mod test {
         .into();
         let bs_start = BufferStop {
             id: "bs_start".into(),
-            track: "test_track".into(),
+            track: track.get_id().as_str().into(),
             position: 0.0,
             ..Default::default()
         }
         .into();
         let bs_stop = BufferStop {
             id: "bs_stop".into(),
-            track: "test_track".into(),
+            track: track.get_id().as_str().into(),
             position: 1_000.0,
             ..Default::default()
         }
         .into();
         let bs_odd = BufferStop {
             id: "bs_odd".into(),
-            track: "test_track".into(),
+            track: track.get_id().as_str().into(),
             position: 800.0,
             ..Default::default()
         }
@@ -689,7 +701,7 @@ mod test {
 
         let catenary: RailjsonObject = Catenary {
             track_ranges: vec![ApplicableDirectionsTrackRange {
-                track: "test_track".into(),
+                track: track.get_id().as_str().into(),
                 begin: 250.0,
                 end: 1250.0,
                 ..Default::default()
@@ -700,7 +712,7 @@ mod test {
 
         let operational_point: RailjsonObject = OperationalPoint {
             parts: vec![OperationalPointPart {
-                track: "test_track".into(),
+                track: track.get_id().as_str().into(),
                 position: 1250.0,
                 ..Default::default()
             }],
@@ -710,7 +722,7 @@ mod test {
 
         let speed_section: RailjsonObject = SpeedSection {
             track_ranges: vec![ApplicableDirectionsTrackRange {
-                track: "test_track".into(),
+                track: track.get_id().as_str().into(),
                 begin: 250.0,
                 end: 1250.0,
                 ..Default::default()
@@ -765,21 +777,21 @@ mod test {
 
         let signal: RailjsonObject = Signal {
             position: pos,
-            track: "test_track".into(),
+            track: track.get_id().as_str().into(),
             ..Default::default()
         }
         .into();
 
         let detector: RailjsonObject = Detector {
             position: pos,
-            track: "test_track".into(),
+            track: track.get_id().as_str().into(),
             ..Default::default()
         }
         .into();
 
         let buffer_stop: RailjsonObject = BufferStop {
             position: pos,
-            track: "test_track".into(),
+            track: track.get_id().as_str().into(),
             ..Default::default()
         }
         .into();
