@@ -1,10 +1,10 @@
 import React, { ComponentType } from 'react';
 import { Map } from 'maplibre-gl';
 import { cloneDeep, isEqual } from 'lodash';
-import { BiReset } from 'react-icons/bi';
-import { GoTrash } from 'react-icons/go';
 import { IconType } from 'react-icons';
-import { IoMdAddCircleOutline } from 'react-icons/io';
+import { BiReset } from 'react-icons/bi';
+import { AiFillSave } from 'react-icons/ai';
+import { GoPlusCircle, GoTrash } from 'react-icons/go';
 
 import { save } from 'reducers/editor';
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
@@ -15,6 +15,7 @@ import {
   TrackSectionEntity,
 } from 'types/editor';
 import { getNearestPoint } from 'utils/mapHelper';
+import { EntityObjectOperationResult } from 'types';
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import { PartialOrReducer, Tool } from '../editorContextTypes';
 import { DEFAULT_COMMON_TOOL_STATE } from '../commonToolState';
@@ -37,6 +38,7 @@ import {
   selectPslSign,
   getObjTypeAction,
   getObjTypeEdition,
+  isNew,
 } from './utils';
 
 type EditorRange = SpeedSectionEntity | CatenaryEntity;
@@ -87,11 +89,46 @@ function getRangeEditionTool<T extends EditorRange>({
     actions: [
       [
         {
-          id: `new-${objectTypeAction}`,
-          icon: IoMdAddCircleOutline,
-          labelTranslationKey: `Editor.tools.${objectTypeEdition}-edition.actions.new-${objectTypeAction}`,
-          onClick({ setState }) {
-            setState(getInitialState());
+          id: `save-${objectTypeAction}`,
+          icon: AiFillSave,
+          labelTranslationKey: `Editor.tools.${objectTypeEdition}-edition.actions.save-${objectTypeAction}`,
+          isDisabled({ isLoading }) {
+            return isLoading || false;
+          },
+          async onClick({ state, setState, dispatch, infraID }) {
+            const { initialEntity, entity } = state;
+            if (!isEqual(entity, initialEntity)) {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const res: any = await dispatch(
+                save(
+                  infraID,
+                  !isNew(entity)
+                    ? {
+                        update: [
+                          {
+                            source: initialEntity,
+                            target: entity,
+                          },
+                        ],
+                      }
+                    : { create: [entity] }
+                )
+              );
+              const operation = res[0] as EntityObjectOperationResult;
+              const { entityId } = operation.railjson;
+
+              const savedEntity =
+                entityId && entityId !== entity.properties.id
+                  ? {
+                      ...entity,
+                      properties: { ...entity.properties, id: `${entityId}` },
+                    }
+                  : entity;
+              setState({
+                entity: cloneDeep(savedEntity),
+                initialEntity: cloneDeep(savedEntity),
+              });
+            }
           },
         },
         {
@@ -105,6 +142,16 @@ function getRangeEditionTool<T extends EditorRange>({
             setState({
               entity: cloneDeep(initialEntity),
             });
+          },
+        },
+      ],
+      [
+        {
+          id: `new-${objectTypeAction}`,
+          icon: GoPlusCircle,
+          labelTranslationKey: `Editor.tools.${objectTypeEdition}-edition.actions.new-${objectTypeAction}`,
+          onClick({ setState }) {
+            setState(getInitialState());
           },
         },
       ],

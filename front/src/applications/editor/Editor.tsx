@@ -15,6 +15,7 @@ import { loadDataModel, selectLayers, updateTotalsIssue } from 'reducers/editor'
 import { updateInfraID } from 'reducers/osrdconf';
 import { updateViewport, Viewport } from 'reducers/map';
 import { getInfraID } from 'reducers/osrdconf/selectors';
+import { getIsLoading } from 'reducers/main/mainSelector';
 import useKeyboardShortcuts from 'utils/hooks/useKeyboardShortcuts';
 import MapSearch from 'common/Map/Search/MapSearch';
 import Tipped from './components/Tipped';
@@ -44,6 +45,7 @@ const Editor: FC = () => {
   const mapRef = useRef<MapRef>(null);
   const { urlInfra } = useParams();
   const infraID = useSelector(getInfraID);
+  const isLoading = useSelector(getIsLoading);
   const editorState = useSelector((state: { editor: EditorState }) => state.editor);
   const switchTypes = useSwitchTypes(infraID);
   const { register } = useKeyboardShortcuts();
@@ -57,6 +59,8 @@ const Editor: FC = () => {
   const forceRender = useCallback(() => {
     setRenderingFingerprint(Date.now());
   }, [setRenderingFingerprint]);
+
+  const [isFormSubmited, setIsFormSubmited] = useState(false);
 
   const switchTool = useCallback(
     ({ toolType, toolState }: switchProps) => {
@@ -128,13 +132,27 @@ const Editor: FC = () => {
       dispatch,
       editorState,
       infraID,
+      isLoading,
+      isFormSubmited,
+      setIsFormSubmited,
       switchTypes,
       mapState: {
         viewport,
         mapStyle,
       },
     }),
-    [context, dispatch, editorState, mapStyle, infraID, switchTypes, viewport]
+    [
+      context,
+      dispatch,
+      editorState,
+      mapStyle,
+      infraID,
+      switchTypes,
+      viewport,
+      isLoading,
+      isFormSubmited,
+      setIsFormSubmited,
+    ]
   );
 
   const actionsGroups = useMemo(

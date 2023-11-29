@@ -48,6 +48,9 @@ export interface ExtendedEditorContextType<S> extends EditorContextType<S> {
   mapState: MapState;
   infraID: number | undefined;
   switchTypes: SwitchType[] | undefined;
+  isLoading?: boolean;
+  isFormSubmited?: boolean;
+  setIsFormSubmited?: (isSubmit: boolean) => void;
 }
 
 export type ReadOnlyEditorContextType<S> = Omit<

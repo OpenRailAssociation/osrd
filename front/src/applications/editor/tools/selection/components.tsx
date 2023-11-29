@@ -2,20 +2,20 @@ import React, { FC, useContext } from 'react';
 import { Layer, Popup, Source } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
 import { groupBy, map } from 'lodash';
-import { IoMdRemoveCircleOutline } from 'react-icons/io';
+import { GoNoEntry } from 'react-icons/go';
 import { RiFocus3Line } from 'react-icons/ri';
 import { useTranslation } from 'react-i18next';
 
-import EditorContext from '../../context';
+import { Zone } from 'types';
+import colors from 'common/Map/Consts/colors';
+import { getMap } from 'reducers/map/selectors';
+import { zoneToFeature } from 'utils/mapHelper';
+import GeoJSONs from 'common/Map/Layers/GeoJSONs';
 import { SelectionState } from './types';
-import { Zone } from '../../../../types';
-import GeoJSONs from '../../../../common/Map/Layers/GeoJSONs';
-import colors from '../../../../common/Map/Consts/colors';
+import EditorContext from '../../context';
 import EntitySumUp from '../../components/EntitySumUp';
 
 import './styles.scss';
-import { zoneToFeature } from '../../../../utils/mapHelper';
-import { getMap } from '../../../../reducers/map/selectors';
 import { EditorContextType, ExtendedEditorContextType } from '../editorContextTypes';
 
 export const SelectionMessages = () => {
@@ -134,7 +134,7 @@ export const SelectionLeftPanel: FC = () => {
                     setState({ ...state, selection: selection.filter((i) => i.objType !== type) })
                   }
                 >
-                  <IoMdRemoveCircleOutline /> {t('Editor.tools.select-items.unselect')}
+                  <GoNoEntry /> {t('Editor.tools.select-items.unselect')}
                 </button>
               </div>
             </li>
@@ -173,7 +173,7 @@ export const SelectionLeftPanel: FC = () => {
                   })
                 }
               >
-                <IoMdRemoveCircleOutline /> {t('Editor.tools.select-items.unselect')}
+                <GoNoEntry /> {t('Editor.tools.select-items.unselect')}
               </button>
             </div>
           </li>

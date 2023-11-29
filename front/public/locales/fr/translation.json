@@ -228,16 +228,18 @@
           "confirm-delete-entity": "Êtes-vous sûr(e) de vouloir supprimer le heurtoir ?",
           "delete-entity": "Supprimer le heurtoir",
           "new-entity": "Créer un nouveau heurtoir",
-          "reset-entity": "Réinitialiser les données"
+          "reset-entity": "Réinitialiser les données",
+          "save-entity": "Sauvegarder le heurtoir"
         },
         "label": "Outil \"Heurtoir\""
       },
       "catenary-edition": {
         "actions": {
           "confirm-delete-catenary": "Êtes-vous sûr(e) de vouloir supprimer l'électrification ?",
+          "delete-catenary": "Supprimer l'électrification",
           "new-catenary": "Créer une nouvelle électrification",
           "reset-catenary": "Annuler les modifications en cours",
-          "delete-catenary": "Supprimer l'électrification"
+          "save-catenary": "Sauvegarder l'électrification"
         },
         "help": {
           "init": "Cliquez sur un tronçon d'itinéraire pour l'associer à l'électrification",
@@ -248,8 +250,6 @@
         "catenaries": "Électrification",
         "catenary-default": "Électrification par défaut",
         "label": "Outil \"Électrification\"",
-        "save-existing-catenary": "Sauvegarder les modifications",
-        "save-new-catenary": "Sauvegarder la nouvelle électrification",
         "voltage": "{{voltage}}V"
       },
       "detector-edition": {
@@ -257,7 +257,8 @@
           "confirm-delete-entity": "Êtes-vous sûr(e) de vouloir supprimer le détecteur ?",
           "delete-entity": "Supprimer le détecteur",
           "new-entity": "Créer un nouveau détecteur",
-          "reset-entity": "Réinitialiser les données"
+          "reset-entity": "Réinitialiser les données",
+          "save-entity": "Sauvegarder le détecteur"
         },
         "label": "Outil \"Détecteur\""
       },
@@ -377,16 +378,18 @@
           "confirm-delete-entity": "Êtes-vous sûr(e) de vouloir supprimer le signal ?",
           "delete-entity": "Supprimer le signal",
           "new-entity": "Créer un nouveau signal",
-          "reset-entity": "Réinitialiser les données"
+          "reset-entity": "Réinitialiser les données",
+          "save-entity": "Sauvegarder le signal"
         },
         "label": "Outil \"Signal\""
       },
       "speed-edition": {
         "actions": {
           "confirm-delete-speed-section": "Êtes-vous sûr(e) de vouloir supprimer la vitesse limite ?",
+          "delete-speed-section": "Supprimer la vitesse limite",
           "new-speed-section": "Créer une nouvelle vitesse limite",
           "reset-speed-section": "Annuler les modifications en cours",
-          "delete-speed-section": "Supprimer la vitesse limite"
+          "save-speed-section": "Sauvegarder la vitesse limite"
         },
         "add-new-speed-limit": "Ajouter une nouvelle limitation",
         "add-sign": "Ajouter un panneau de type {{signType}}",
@@ -410,8 +413,6 @@
         "sign-value": "Vitesse",
         "signs-section-list": "Liste des panneaux de la section",
         "remove-track-range": "Cliquer pour détacher de :",
-        "save-existing-speed-section": "Sauvegarder les modifications",
-        "save-new-speed-section": "Sauvegarder la nouvelle limite de vitesse",
         "speed-limits": "Limitations de vitesses",
         "toggle-psl": "Limite permanente de vitesse",
         "toggle-psl-help": "Cliquez d'abord sur un tronçon d'itinéraire pour pouvoir activer cette option"
@@ -422,7 +423,8 @@
           "delete-switch": "Supprimer l'aiguillage",
           "new-switch": "Créer un nouvel aiguillage",
           "pick-track": "Outil de sélection d'une ligne sur la carte",
-          "pick-track-cancel": "Annuler la sélection d'une ligne"
+          "pick-track-cancel": "Annuler la sélection d'une ligne",
+          "save-switch": "Sauvegarder l'aiguillage"
         },
         "endpoint": "Extrémité :",
         "help": {
@@ -444,7 +446,8 @@
           "mode-add-point": "Ajouter un point",
           "mode-delete-point": "Supprimer des points",
           "mode-move-point": "Déplacer les points",
-          "toggle-anchoring": "Activer / désactiver l'ancrage automatique"
+          "toggle-anchoring": "Activer / désactiver l'ancrage automatique",
+          "save-line": "Sauvegarder la ligne"
         },
         "help": {
           "add-anchor-point": "Cliquez pour ajouter un point au bout de la section de ligne. Cliquez sur la ligne pour ajouter un point intermédiaire.",
