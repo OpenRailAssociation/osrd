@@ -121,6 +121,7 @@ struct PathfindingStep {
     direction: Direction,
     switch_direction: Option<(Identifier, Identifier)>,
     found: bool,
+    starting_step: bool,
     #[derivative(Hash = "ignore", PartialEq = "ignore")]
     previous: Option<Box<PathfindingStep>>,
 }
@@ -133,6 +134,7 @@ impl PathfindingStep {
             direction,
             switch_direction: None,
             found: false,
+            starting_step: true,
             previous: None,
         }
     }
@@ -151,6 +153,7 @@ impl PathfindingStep {
             direction,
             switch_direction,
             found,
+            starting_step: false,
             previous: Some(Box::new(previous)),
         }
     }
@@ -185,6 +188,34 @@ fn compute_path(
     let get_length = |track: &String| track_sections[track].unwrap_track_section().length;
     let success = |step: &PathfindingStep| step.found;
     let successors = |step: &PathfindingStep| {
+        // We initially don’t know in which direction start searching the path
+        // So the first step as two successors, at the same track-position, but in opposite directions
+        if step.starting_step {
+            return vec![
+                (
+                    PathfindingStep::new(
+                        step.track.clone(),
+                        step.position,
+                        Direction::StartToStop,
+                        None,
+                        false,
+                        step.clone(),
+                    ),
+                    0,
+                ),
+                (
+                    PathfindingStep::new(
+                        step.track.clone(),
+                        step.position,
+                        Direction::StopToStart,
+                        None,
+                        false,
+                        step.clone(),
+                    ),
+                    0,
+                ),
+            ];
+        }
         // The successor is our on ending track
         if step.track == input.ending.track.0 {
             // If we aren't in the good direction to reach the ending position, it's a dead end
@@ -264,7 +295,8 @@ fn compute_path(
 fn build_path_output(path: &Vec<PathfindingStep>, infra_cache: &InfraCache) -> PathfindingOutput {
     // Fill track ranges
     let mut track_ranges = Vec::new();
-    (0..(path.len() - 2)).for_each(|i| {
+    // We ignore the first element of path, as it is a virtual step to handle going in both directions
+    (1..(path.len() - 2)).for_each(|i| {
         let end = if path[i].direction == Direction::StartToStop {
             infra_cache.track_sections()[&path[i].track]
                 .unwrap_track_section()
@@ -326,10 +358,25 @@ mod tests {
     use super::compute_path;
     use crate::infra_cache::tests::create_small_infra_cache;
     use crate::infra_cache::Graph;
+    use crate::schema::utils::Identifier;
     use crate::schema::{Direction, DirectionalTrackRange};
     use crate::views::infra::pathfinding::{
         PathfindingInput, PathfindingTrackLocationDirInput, PathfindingTrackLocationInput,
     };
+
+    fn expected_path() -> Vec<DirectionalTrackRange> {
+        vec![
+            DirectionalTrackRange::new("A", 30., 500., Direction::StartToStop),
+            DirectionalTrackRange::new("B", 0., 500., Direction::StartToStop),
+            DirectionalTrackRange::new("C", 0., 470., Direction::StartToStop),
+        ]
+    }
+    fn expected_switches() -> HashMap<Identifier, Identifier> {
+        HashMap::from([
+            ("link".into(), "LINK".into()),
+            ("switch".into(), "A_B1".into()),
+        ])
+    }
 
     #[test]
     fn test_compute_path() {
@@ -350,21 +397,32 @@ mod tests {
 
         assert_eq!(paths.len(), 1);
         let path = paths.pop().unwrap();
-        assert_eq!(
-            path.track_ranges,
-            vec![
-                DirectionalTrackRange::new("A", 30., 500., Direction::StartToStop),
-                DirectionalTrackRange::new("B", 0., 500., Direction::StartToStop),
-                DirectionalTrackRange::new("C", 0., 470., Direction::StartToStop),
-            ]
-        );
+        assert_eq!(path.track_ranges, expected_path());
         assert_eq!(path.detectors, vec!["D1".into()]);
-        assert_eq!(
-            path.switches_directions,
-            HashMap::from([
-                ("link".into(), "LINK".into()),
-                ("switch".into(), "A_B1".into())
-            ])
-        );
+        assert_eq!(path.switches_directions, expected_switches());
+    }
+
+    #[test]
+    fn test_compute_path_opposite_direction() {
+        let infra_cache = create_small_infra_cache();
+        let graph = Graph::load(&infra_cache);
+        let input = PathfindingInput {
+            starting: PathfindingTrackLocationDirInput {
+                track: "A".into(),
+                position: 30.0,
+                direction: Direction::StopToStart,
+            },
+            ending: PathfindingTrackLocationInput {
+                track: "C".into(),
+                position: 470.0,
+            },
+        };
+        let mut paths = compute_path(&input, &infra_cache, &graph, 1);
+
+        assert_eq!(paths.len(), 1);
+        let path = paths.pop().unwrap();
+        assert_eq!(path.track_ranges, expected_path());
+        assert_eq!(path.detectors, vec!["D1".into()]);
+        assert_eq!(path.switches_directions, expected_switches());
     }
 }
