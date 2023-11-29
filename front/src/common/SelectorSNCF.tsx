@@ -1,7 +1,6 @@
 import { isNull } from 'lodash';
-import React from 'react';
+import React, { PropsWithChildren } from 'react';
 import { useTranslation } from 'react-i18next';
-import { MdArrowRight } from 'react-icons/md';
 import { getTranslationKey } from 'utils/strings';
 import cx from 'classnames';
 import { GoTrash } from 'react-icons/go';
@@ -20,22 +19,24 @@ export default function SelectorSNCF<
     };
     updateData: (datas: U['data']) => void;
   }
->(props: {
-  mainClass?: string;
-  borderClass: string;
-  title: K;
-  itemsList: T[];
-  permanentItems?: T[];
-  selectedItem?: T;
-  hoveredItem?: string | null;
-  onItemSelected?: (value: T) => void;
-  onItemHovered?: (value: string | null) => void;
-  onItemRemoved?: (value: T, key: K) => void;
-  translationFile: string;
-  translationList?: string;
-  // Define in case we use the selector to display [power restriction code, power class] tupple
-  extraColumn?: U;
-}) {
+>(
+  props: PropsWithChildren<{
+    mainClass?: string;
+    borderClass: string;
+    title: K;
+    itemsList: T[];
+    permanentItems?: T[];
+    selectedItem?: T;
+    hoveredItem?: string | null;
+    onItemSelected?: (value: T) => void;
+    onItemHovered?: (value: string | null) => void;
+    onItemRemoved?: (value: T, key: K) => void;
+    translationFile: string;
+    translationList?: string;
+    // Define in case we use the selector to display [power restriction code, power class] tupple
+    extraColumn?: U;
+  }>
+) {
   const {
     mainClass = DEFAULT_SELECTORS_CLASSNAME,
     borderClass,
@@ -50,6 +51,7 @@ export default function SelectorSNCF<
     translationFile,
     translationList = '',
     extraColumn,
+    children,
   } = props;
   const { t } = useTranslation(translationFile);
 
@@ -58,7 +60,7 @@ export default function SelectorSNCF<
       <div className={`${mainClass}-title ${borderClass} pl-1 pb-1`}>
         <h2 className="mb-0 text-blue">{t(title)}</h2>
       </div>
-      <div className="d-flex align-items-center position-relative">
+      <div className={`d-flex align-items-center position-relative ${mainClass}-itemslist-wrapper`}>
         <div className={`${mainClass}-itemslist ${borderClass} overflow-auto p-2`}>
           {itemsList.map(
             (item, index: number) => (
@@ -145,10 +147,8 @@ export default function SelectorSNCF<
             [itemsList, selectedItem, hoveredItem]
           )}
         </div>
-        <div className={`${mainClass}-arrow`}>
-          <MdArrowRight />
-        </div>
       </div>
+      {children}
     </div>
   );
 }

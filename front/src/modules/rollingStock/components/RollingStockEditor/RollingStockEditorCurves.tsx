@@ -566,7 +566,7 @@ export default function RollingStockEditorCurves({
   return (
     <>
       {rollingstockParams && (
-        <div className="d-flex flex-wrap px-3 pb-2">
+        <div className="rollingstock-editor-effort-speed-curves">
           <div className="selector-container">
             <SelectorSNCF
               key="comfort-level-selector"
@@ -581,14 +581,15 @@ export default function RollingStockEditorCurves({
               onItemRemoved={confirmRsParamRemoval}
               translationFile="rollingstock"
               translationList="comfortTypes"
-            />
-            <AddRollingstockParam
-              disabled={rollingstockParams.tractionModes.length === 0}
-              displayedLists={rollingstockParams}
-              updateDisplayedLists={updateComfortLevelsList}
-              allOptionsList={comfortOptions}
-              listName="comfortLevels"
-            />
+            >
+              <AddRollingstockParam
+                disabled={rollingstockParams.tractionModes.length === 0}
+                displayedLists={rollingstockParams}
+                updateDisplayedLists={updateComfortLevelsList}
+                allOptionsList={comfortOptions}
+                listName="comfortLevels"
+              />
+            </SelectorSNCF>
           </div>
           <div className="selector-container">
             <SelectorSNCF
@@ -602,15 +603,16 @@ export default function RollingStockEditorCurves({
               onItemHovered={setHoveredRollingstockTractionParam}
               onItemRemoved={confirmRsParamRemoval}
               translationFile="rollingstock"
-            />
-            {availableModes && (
-              <AddRollingstockParam
-                displayedLists={rollingstockParams}
-                updateDisplayedLists={updateTractionModesList}
-                allOptionsList={[...availableModes, 'thermal']}
-                listName="tractionModes"
-              />
-            )}
+            >
+              {availableModes && (
+                <AddRollingstockParam
+                  displayedLists={rollingstockParams}
+                  updateDisplayedLists={updateTractionModesList}
+                  allOptionsList={[...availableModes, 'thermal']}
+                  listName="tractionModes"
+                />
+              )}
+            </SelectorSNCF>
           </div>
           {selectedTractionMode && selectedTractionMode !== THERMAL_TRACTION_IDENTIFIER && (
             <>
@@ -626,15 +628,18 @@ export default function RollingStockEditorCurves({
                   onItemHovered={setHoveredRollingstockParam}
                   onItemRemoved={confirmRsParamRemoval}
                   translationFile="rollingstock"
-                />
-                <AddRollingstockParam
-                  displayedLists={rollingstockParams}
-                  updateDisplayedLists={updateElectricalProfilesList}
-                  allOptionsList={
-                    electricalProfilesByMode[selectedTractionMode as keyof ElectricalProfileByMode]
-                  }
-                  listName="electricalProfiles"
-                />
+                >
+                  <AddRollingstockParam
+                    displayedLists={rollingstockParams}
+                    updateDisplayedLists={updateElectricalProfilesList}
+                    allOptionsList={
+                      electricalProfilesByMode[
+                        selectedTractionMode as keyof ElectricalProfileByMode
+                      ]
+                    }
+                    listName="electricalProfiles"
+                  />
+                </SelectorSNCF>
               </div>
               <div className="selector-container">
                 <SelectorSNCF
@@ -649,13 +654,14 @@ export default function RollingStockEditorCurves({
                   onItemRemoved={confirmRsParamRemoval}
                   translationFile="rollingstock"
                   extraColumn={extraColumnData}
-                />
-                <AddRollingstockParam
-                  displayedLists={rollingstockParams}
-                  updateDisplayedLists={updatePowerRestrictionList}
-                  allOptionsList={powerRestrictionList}
-                  listName="powerRestrictions"
-                />
+                >
+                  <AddRollingstockParam
+                    displayedLists={rollingstockParams}
+                    updateDisplayedLists={updatePowerRestrictionList}
+                    allOptionsList={powerRestrictionList}
+                    listName="powerRestrictions"
+                  />
+                </SelectorSNCF>
               </div>
             </>
           )}
