@@ -15,11 +15,11 @@ import {
 } from './types';
 import { CHART_AXES } from '../simulationResultsConsts';
 
-function drawOPs(chartLocal: Chart, selectedTrainSimulation: Train, rotate: boolean) {
+function drawOPs(chartLocal: Chart, projectedTrainSimulation: Train, rotate: boolean) {
   const operationalPointsZone = chartLocal.drawZone
     .append('g')
     .attr('id', 'get-operationalPointsZone');
-  selectedTrainSimulation.base.stops.forEach((stop) => {
+  projectedTrainSimulation.base.stops.forEach((stop) => {
     operationalPointsZone
       .append('line')
       .datum(stop.position)
@@ -83,8 +83,12 @@ const drawAllTrains = (
     rotate
   );
 
-  if (selectedTrain) {
-    drawOPs(chartLocal, selectedTrain, rotate);
+  const projectedSimulationTrain = simulationTrains.find(
+    (train) => train.id === selectedProjection?.id
+  );
+
+  if (projectedSimulationTrain) {
+    drawOPs(chartLocal, projectedSimulationTrain, rotate);
   }
 
   drawAxisTitle(chartLocal, rotate);
