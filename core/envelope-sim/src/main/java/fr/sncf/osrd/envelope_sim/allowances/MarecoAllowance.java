@@ -10,6 +10,9 @@ import fr.sncf.osrd.envelope_sim.allowances.mareco_impl.CoastingOpportunity;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange;
 import java.util.*;
 
+/** Applies the allowance while maximizing the energy saved.
+ * The algorithm and formulas are described in the MARECO paper, which can be read
+ * <a href="https://osrd.fr/pdf/MARECO.pdf">here</a> */
 public class MarecoAllowance extends AbstractAllowanceWithRanges {
 
     /** Constructor */
