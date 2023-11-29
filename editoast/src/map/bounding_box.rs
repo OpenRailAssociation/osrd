@@ -54,6 +54,20 @@ impl BoundingBox {
     pub fn from_geometry(value: Geometry) -> Result<Self> {
         Self::from_geojson(value.value)
     }
+
+    /// Computes the length (in meters) of the diagonal
+    /// It represents the longest distance as the crow flies between two points in the box
+    pub fn diagonal_length(&self) -> f64 {
+        let a = osm4routing::Coord {
+            lon: self.0 .0,
+            lat: self.0 .1,
+        };
+        let b = osm4routing::Coord {
+            lon: self.1 .0,
+            lat: self.1 .1,
+        };
+        a.distance_to(b)
+    }
 }
 
 #[derive(Debug, Error, EditoastError)]
