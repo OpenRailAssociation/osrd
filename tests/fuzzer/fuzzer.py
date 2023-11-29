@@ -488,7 +488,7 @@ def create_scenario(editoast_url: str, infra_id: int) -> Scenario:
     project_url = f"projects/{project_id}"
 
     # Create the study
-    study_payload = {"name": "fuzzer_study"}
+    study_payload = {"name": "fuzzer_study", "state": "Starting"}
     r = post_with_timeout(editoast_url + f"{project_url}/studies/", json=study_payload)
     r.raise_for_status()
     study_id = r.json()["id"]
