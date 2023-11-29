@@ -19,10 +19,7 @@ public class ExceptionHandler {
         else if (ex instanceof AssertionError)
             return toResponse(OSRDError.newAssertionWrapper((AssertionError) ex));
         else {
-            return new RsWithStatus(
-                    new RsWithBody(ex.toString()),
-                    500
-            );
+            return toResponse(OSRDError.newUnknownError(ex));
         }
     }
 

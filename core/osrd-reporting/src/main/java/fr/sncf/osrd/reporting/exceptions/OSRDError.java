@@ -103,6 +103,20 @@ public final class OSRDError extends RuntimeException {
     }
 
     /**
+     * Creates a new OSRDError from an unknown Throwable.
+     *
+     * @param error the throwable error
+     * @return a new OSRDError instance
+     */
+    public static OSRDError newUnknownError(Throwable error) {
+        var wrapper = new OSRDError(ErrorType.UnknownError);
+        wrapper.context.put("message", error.getMessage());
+        wrapper.context.put("exception_type", error.getClass().toString());
+        wrapper.context.put("stack_trace", convertStackTrace(error.getStackTrace()));
+        return wrapper;
+    }
+
+    /**
      * Creates a new OSRDError for an infrastructure loading error.
      *
      * @param errorType       the error type

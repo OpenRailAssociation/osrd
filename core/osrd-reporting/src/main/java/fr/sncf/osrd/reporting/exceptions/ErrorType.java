@@ -45,6 +45,11 @@ public enum ErrorType {
             "assert check failed",
             ErrorCause.INTERNAL
     ),
+    UnknownError(
+            "unknown_error",
+            "An unknown exception was thrown",
+            ErrorCause.INTERNAL
+    ),
     InfraSoftLoadingError(
             "infra_loading:soft_error",
             "soft error while loading new infra",
