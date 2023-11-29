@@ -42,13 +42,12 @@ export const EditRoutePathLeftPanel: FC<{ state: EditRoutePathState }> = ({ stat
   const infraID = useSelector(getInfraID);
   const [isSaving, setIsSaving] = useState(false);
   const [includeReleaseDetectors, setIncludeReleaseDetectors] = useState(true);
-  const { entryPoint, exitPoint, entryPointDirection } = state.routeState;
+  const { entryPoint, exitPoint } = state.routeState;
 
   const [postPathfinding] = osrdEditoastApi.endpoints.postInfraByIdPathfinding.useMutation();
 
   const searchCandidates = useCallback(async () => {
-    if (!entryPoint || !exitPoint || !entryPointDirection || state.optionsState.type === 'loading')
-      return;
+    if (!entryPoint || !exitPoint || state.optionsState.type === 'loading') return;
 
     setState({
       optionsState: { type: 'loading' },
@@ -57,7 +56,6 @@ export const EditRoutePathLeftPanel: FC<{ state: EditRoutePathState }> = ({ stat
     const payload = await getCompatibleRoutesPayload(
       infraID as number,
       entryPoint,
-      entryPointDirection,
       exitPoint,
       dispatch
     );
@@ -87,7 +85,7 @@ export const EditRoutePathLeftPanel: FC<{ state: EditRoutePathState }> = ({ stat
         })),
       },
     });
-  }, [entryPoint, entryPointDirection, exitPoint, infraID, setState, state.optionsState.type]);
+  }, [entryPoint, exitPoint, infraID, setState, state.optionsState.type]);
 
   const focusedOptionIndex =
     state.optionsState.type === 'options' ? state.optionsState.focusedOptionIndex : null;
@@ -108,12 +106,7 @@ export const EditRoutePathLeftPanel: FC<{ state: EditRoutePathState }> = ({ stat
         <button
           className="btn btn-primary btn-sm mr-2 d-block w-100 text-center"
           type="submit"
-          disabled={
-            !entryPoint ||
-            !entryPointDirection ||
-            !exitPoint ||
-            state.optionsState.type === 'loading'
-          }
+          disabled={!entryPoint || !exitPoint || state.optionsState.type === 'loading'}
         >
           <FiSearch /> {t('Editor.tools.routes-edition.search-routes')}
         </button>
@@ -222,7 +215,6 @@ export const EditRoutePathLeftPanel: FC<{ state: EditRoutePathState }> = ({ stat
                           id: '', // will be replaced by entityToCreateOperation
                           entry_point: omit(entryPoint, 'position'),
                           exit_point: omit(exitPoint, 'position'),
-                          entry_point_direction: entryPointDirection,
                           switches_directions: candidate.data.switches_directions,
                           release_detectors: includeReleaseDetectors
                             ? candidate.data.detectors

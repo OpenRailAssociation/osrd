@@ -4144,12 +4144,7 @@ paths:
                 ending:
                   $ref: '#/components/schemas/TrackLocation'
                 starting:
-                  allOf:
-                  - $ref: '#/components/schemas/TrackLocation'
-                  - properties:
-                      direction:
-                        $ref: '#/components/schemas/Direction'
-                    type: object
+                  $ref: '#/components/schemas/TrackLocation'
               type: object
         description: Starting and ending track location
       responses:

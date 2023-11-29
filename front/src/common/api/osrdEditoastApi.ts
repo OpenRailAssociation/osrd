@@ -905,9 +905,7 @@ export type PostInfraByIdPathfindingApiArg = {
   /** Starting and ending track location */
   body: {
     ending?: TrackLocation;
-    starting?: TrackLocation & {
-      direction?: Direction;
-    };
+    starting?: TrackLocation;
   };
 };
 export type GetInfraByIdRailjsonApiResponse =

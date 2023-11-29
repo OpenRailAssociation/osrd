@@ -1,5 +1,4 @@
-import Select from 'react-select';
-import React, { FC, useContext, useMemo } from 'react';
+import React, { FC, useContext } from 'react';
 import { BsArrowBarRight, BsBoxArrowInRight } from 'react-icons/bs';
 import { HiSwitchVertical } from 'react-icons/hi';
 import { FaFlagCheckered } from 'react-icons/fa';
@@ -7,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { getInfraID } from 'reducers/osrdconf/selectors';
-import { BufferStopEntity, DetectorEntity, DIRECTIONS, WayPoint, WayPointEntity } from 'types';
+import { BufferStopEntity, DetectorEntity, WayPoint, WayPointEntity } from 'types';
 import EditorContext from 'applications/editor/context';
 import { getEntity } from 'applications/editor/data/api';
 import EntitySumUp from 'applications/editor/components/EntitySumUp';
@@ -20,20 +19,7 @@ export const EditEndpoints: FC<{ state: RouteState; onChange: (newState: RouteSt
   onChange,
 }) => {
   const { t } = useTranslation();
-  const { entryPoint, exitPoint, entryPointDirection } = state;
-
-  const options = useMemo(
-    () =>
-      DIRECTIONS.map((s) => ({
-        value: s,
-        label: t(`Editor.tools.routes-edition.directions.${s}`),
-      })),
-    [t]
-  );
-  const option = useMemo(
-    () => options.find((o) => o.value === entryPointDirection) || options[0],
-    [options, entryPointDirection]
-  );
+  const { entryPoint, exitPoint } = state;
 
   return (
     <>
@@ -45,22 +31,6 @@ export const EditEndpoints: FC<{ state: RouteState; onChange: (newState: RouteSt
         wayPoint={entryPoint}
         onChange={(wayPoint) => onChange({ ...state, entryPoint: wayPoint })}
       />
-      {entryPoint && (
-        <div className="d-flex flex-row align-items-baseline justify-content-center mb-2">
-          <span className="mr-2">{t('Editor.tools.routes-edition.start_direction')}</span>
-          <Select
-            value={option}
-            options={options}
-            onChange={(o) => {
-              if (o)
-                onChange({
-                  ...state,
-                  entryPointDirection: o.value,
-                });
-            }}
-          />
-        </div>
-      )}
       <div className="text-center">
         <button
           type="button"

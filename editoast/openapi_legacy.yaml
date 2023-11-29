@@ -642,12 +642,7 @@ paths:
               type: object
               properties:
                 starting:
-                  allOf:
-                    - $ref: "#/components/schemas/TrackLocation"
-                    - type: object
-                      properties:
-                        direction:
-                          $ref: "#/components/schemas/Direction"
+                  $ref: "#/components/schemas/TrackLocation"
                 ending:
                   $ref: "#/components/schemas/TrackLocation"
       responses:
