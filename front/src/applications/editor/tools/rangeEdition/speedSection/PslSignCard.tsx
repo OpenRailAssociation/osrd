@@ -105,6 +105,7 @@ const PslSignCard = ({
                 position: Number(e.target.value !== '' ? e.target.value : ''),
               });
             }}
+            min={0}
             sm
           />
         </div>
