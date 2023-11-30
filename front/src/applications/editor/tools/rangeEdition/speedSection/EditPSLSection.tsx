@@ -1,8 +1,15 @@
-import React from 'react';
-import { cloneDeep } from 'lodash';
-import { PSLExtension, PSLSign, SpeedSectionEntity, SpeedSectionPslEntity } from 'types';
+import React, { useMemo } from 'react';
+import { cloneDeep, compact } from 'lodash';
+import {
+  PSLExtension,
+  PSLSign,
+  SpeedSectionEntity,
+  SpeedSectionPslEntity,
+  TrackSectionEntity,
+} from 'types';
 import { useTranslation } from 'react-i18next';
-import { PslSignInformation, PSL_SIGN_TYPES, RangeEditionState } from '../types';
+import { removeDuplicates } from 'utils/array';
+import { PslSignInformation, PSL_SIGN_TYPES, RangeEditionState, TrackState } from '../types';
 import PslSignCard from './PslSignCard';
 import PslSignSubSection from './PslSignSubSection';
 import { msToKmh, selectPslSign } from '../utils';
@@ -43,15 +50,47 @@ const getNewRSign = (
   } as PSLSign;
 };
 
+const validateSignPosition = (sign: PSLSign, tracks: TrackSectionEntity[]) => {
+  const validSign = cloneDeep(sign);
+  const signTrack = tracks.find((track) => track.properties.id === sign.track);
+  if (signTrack && sign.position > signTrack.properties.length) {
+    return {
+      ...validSign,
+      position: signTrack.properties.length,
+    };
+  }
+  if (sign.position < 0) {
+    return {
+      ...validSign,
+      position: 0,
+    };
+  }
+  return validSign;
+};
+
 const EditPSLSection = ({
   entity,
+  trackSectionsCache,
   setState,
 }: {
   entity: SpeedSectionPslEntity;
+  trackSectionsCache: Record<string, TrackState>;
   setState: (stateOrReducer: PartialOrReducer<RangeEditionState<SpeedSectionEntity>>) => void;
 }) => {
   const { t } = useTranslation();
   const pslExtension = entity.properties.extensions.psl_sncf;
+
+  const tracks = useMemo(() => {
+    const { psl_sncf: pslExtensionSigns } = entity.properties.extensions;
+    const signs = [pslExtensionSigns.z, ...pslExtensionSigns.r, ...pslExtensionSigns.announcement];
+    const signTrackIds = removeDuplicates(signs.map((sign) => sign.track));
+    return compact(
+      signTrackIds.map((trackId) => {
+        const track = trackSectionsCache[trackId];
+        return track?.type !== 'success' ? null : track.track;
+      })
+    );
+  }, [entity.properties.extensions.psl_sncf]);
 
   const selectSign = (signInformation: PslSignInformation) => {
     selectPslSign(signInformation, setState);
@@ -80,15 +119,17 @@ const EditPSLSection = ({
 
   const updateSign = (signInfo: PslSignInformation, sign: PSLSign) => {
     const newPslExtension = cloneDeep(pslExtension);
+    const newSign = validateSignPosition(sign, tracks);
+
     const { signType } = signInfo;
     if (signType === PSL_SIGN_TYPES.Z) {
-      newPslExtension.z = sign;
+      newPslExtension.z = newSign;
     } else {
       const { signIndex } = signInfo;
       if (signType === PSL_SIGN_TYPES.ANNOUNCEMENT) {
-        newPslExtension.announcement[signIndex] = sign;
+        newPslExtension.announcement[signIndex] = newSign;
       } else {
-        newPslExtension.r[signIndex] = sign;
+        newPslExtension.r[signIndex] = newSign;
       }
     }
     updateEntity(newPslExtension);

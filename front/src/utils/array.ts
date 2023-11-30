@@ -33,3 +33,5 @@ export const replaceElementAtIndex = <T>(array: T[], indexToRemove: number, newE
   result.splice(indexToRemove, 1, newElement);
   return result;
 };
+
+export const removeDuplicates = <T>(array: T[]) => [...new Set(array)];

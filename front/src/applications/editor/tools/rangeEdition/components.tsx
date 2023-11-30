@@ -219,7 +219,7 @@ export const RangeEditionLeftPanel: FC = () => {
   const { t } = useTranslation();
   const {
     setState,
-    state: { entity, initialEntity },
+    state: { entity, initialEntity, trackSectionsCache },
   } = useContext(EditorContext) as ExtendedEditorContextType<
     RangeEditionState<SpeedSectionEntity | CatenaryEntity>
   >;
@@ -361,6 +361,7 @@ export const RangeEditionLeftPanel: FC = () => {
                     stateOrReducer: PartialOrReducer<RangeEditionState<SpeedSectionEntity>>
                   ) => void
                 }
+                trackSectionsCache={trackSectionsCache}
               />
             )}
           </div>
