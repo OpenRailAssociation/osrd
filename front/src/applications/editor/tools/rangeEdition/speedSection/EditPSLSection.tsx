@@ -18,8 +18,8 @@ const getNewAnnouncementSign = (
   return {
     angle_geo: 0,
     angle_sch: 0,
-    position: firstRange.end,
-    side: 'RIGHT',
+    position: firstRange.begin,
+    side: 'LEFT',
     track: firstRange.track,
     type: 'TIV_D',
     value: `${speedMultipleOfFive}`,
@@ -67,7 +67,7 @@ const EditPSLSection = ({
     const newPslExtension = cloneDeep(pslExtension);
     const trackRanges = entity.properties.track_ranges || [];
     if (signType === PSL_SIGN_TYPES.ANNOUNCEMENT) {
-      const speedLimit = entity.properties.speed_limit || 30;
+      const speedLimit = entity.properties.speed_limit || 30; // We should not have the value 30, 0 seems more accurate but we can't display it.
       newPslExtension.announcement = [
         ...pslExtension.announcement,
         getNewAnnouncementSign(trackRanges, speedLimit),
