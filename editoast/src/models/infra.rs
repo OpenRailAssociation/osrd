@@ -223,7 +223,7 @@ impl Infra {
         }
 
         // Add error layers
-        let error_layer = sql_query("INSERT INTO infra_layer_error(geographic, schematic, information, infra_id) SELECT geographic, schematic, information, $1 FROM infra_layer_error WHERE infra_id = $2")
+        let error_layer = sql_query("INSERT INTO infra_layer_error(geographic, schematic, information, infra_id, info_hash) SELECT geographic, schematic, information, $1, info_hash FROM infra_layer_error WHERE infra_id = $2")
         .bind::<BigInt, _>(cloned_infra.id.unwrap())
         .bind::<BigInt, _>(infra_id)
         .execute(&mut conn);
