@@ -173,6 +173,12 @@ export default function Scenario() {
       }
     );
 
+  const { data: conflicts = [], refetch: refetchConflicts } =
+    osrdEditoastApi.endpoints.getTimetableByIdConflicts.useQuery(
+      { id: timetable?.id as number },
+      { skip: !timetable }
+    );
+
   useEffect(() => {
     if (timetable && infra?.state === 'CACHED' && timetable.train_schedule_summaries.length > 0) {
       selectProjection(timetable.train_schedule_summaries, selectedProjection, selectedTrainId);
@@ -290,6 +296,7 @@ export default function Scenario() {
                     setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
                     infraState={infra.state}
                     refetchTimetable={refetchTimetable}
+                    refetchConflicts={refetchConflicts}
                   />
                 )}
                 {infra && (
@@ -300,6 +307,7 @@ export default function Scenario() {
                     timetable={timetable}
                     selectedTrainId={selectedTrainId}
                     refetchTimetable={refetchTimetable}
+                    conflicts={conflicts}
                   />
                 )}
               </div>
