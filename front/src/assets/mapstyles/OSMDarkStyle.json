@@ -806,7 +806,8 @@
             22
           ]
         ]
-      }
+      },
+      "text-allow-overlap": false
     },
     "paint": {
       "text-color": "hsl(206, 18%, 49%)"
@@ -872,7 +873,8 @@
         ]
       },
       "text-transform": "uppercase",
-      "text-ignore-placement": true
+      "text-ignore-placement": false,
+      "text-allow-overlap": false
     },
     "paint": {
       "text-color": "#e0e1dd",

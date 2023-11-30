@@ -802,7 +802,8 @@
             22
           ]
         ]
-      }
+      },
+      "text-allow-overlap": false
     },
     "paint": {
       "text-color": "#98aedd"
@@ -868,7 +869,8 @@
         ]
       },
       "text-transform": "uppercase",
-      "text-ignore-placement": true
+      "text-ignore-placement": false,
+      "text-allow-overlap": false
     },
     "paint": {
       "text-color": "#e4eaf6",
