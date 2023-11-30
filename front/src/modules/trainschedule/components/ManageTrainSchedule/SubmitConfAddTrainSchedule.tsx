@@ -12,6 +12,7 @@ import { Infra, TrainScheduleBatchItem, osrdEditoastApi } from 'common/api/osrdE
 type Props = {
   infraState?: Infra['state'];
   refetchTimetable: () => void;
+  refetchConflicts: () => void;
   setIsWorking: (isWorking: boolean) => void;
 };
 
@@ -29,6 +30,7 @@ type error400 = {
 export default function SubmitConfAddTrainSchedule({
   infraState,
   refetchTimetable,
+  refetchConflicts,
   setIsWorking,
 }: Props) {
   const [postTrainSchedule] =
@@ -93,6 +95,7 @@ export default function SubmitConfAddTrainSchedule({
         );
         setIsWorking(false);
         refetchTimetable();
+        refetchConflicts();
       } catch (e: unknown) {
         setIsWorking(false);
         if (e instanceof Error) {

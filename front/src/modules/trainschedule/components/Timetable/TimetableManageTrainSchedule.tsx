@@ -16,6 +16,7 @@ type Props = {
   setDisplayTrainScheduleManagement: (type: string) => void;
   infraState?: Infra['state'];
   refetchTimetable: () => void;
+  refetchConflicts: () => void;
 };
 
 export default function TimetableManageTrainSchedule({
@@ -23,6 +24,7 @@ export default function TimetableManageTrainSchedule({
   setDisplayTrainScheduleManagement,
   infraState,
   refetchTimetable,
+  refetchConflicts,
 }: Props) {
   const { t } = useTranslation('operationalStudies/manageTrainSchedule');
   const dispatch = useDispatch();
@@ -54,6 +56,7 @@ export default function TimetableManageTrainSchedule({
                 infraState={infraState}
                 refetchTimetable={refetchTimetable}
                 setIsWorking={setIsWorking}
+                refetchConflicts={refetchConflicts}
               />
             )}
             <TrainAddingSettings />

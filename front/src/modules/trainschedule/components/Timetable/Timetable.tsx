@@ -15,7 +15,12 @@ import { getTrainScheduleIDsToModify } from 'reducers/osrdconf/selectors';
 import { ScheduledTrain } from 'reducers/osrdsimulation/types';
 import { updateTrainScheduleIDsToModify } from 'reducers/osrdconf';
 import { valueToInterval } from 'utils/numbers';
-import { Infra, TimetableWithSchedulesDetails, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import {
+  Conflict,
+  Infra,
+  TimetableWithSchedulesDetails,
+  osrdEditoastApi,
+} from 'common/api/osrdEditoastApi';
 import { durationInSeconds } from 'utils/timeManipulation';
 import { getSelectedProjection } from 'reducers/osrdsimulation/selectors';
 import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
@@ -32,6 +37,7 @@ type Props = {
   timetable: TimetableWithSchedulesDetails | undefined;
   selectedTrainId?: number;
   refetchTimetable: () => void;
+  conflicts?: Conflict[];
 };
 
 export default function Timetable({
@@ -41,6 +47,7 @@ export default function Timetable({
   timetable,
   selectedTrainId,
   refetchTimetable,
+  conflicts,
 }: Props) {
   const selectedProjection = useSelector(getSelectedProjection);
   const trainScheduleIDsToModify = useSelector(getTrainScheduleIDsToModify);
@@ -57,11 +64,6 @@ export default function Timetable({
   const debouncedTerm = useDebounce(filter, 500) as string;
 
   const [deleteTrainSchedules] = osrdEditoastApi.endpoints.deleteTrainSchedule.useMutation();
-
-  const { data: conflicts = [] } = osrdEditoastApi.endpoints.getTimetableByIdConflicts.useQuery(
-    { id: timetable?.id as number },
-    { skip: !timetable }
-  );
 
   useEffect(() => {
     setMultiselectOn(false);
@@ -300,11 +302,13 @@ export default function Timetable({
             <span className="flex-grow-1">{t('timetable.invalidTrains')}</span>
           </div>
         )}
-        <ConflictsList
-          conflicts={conflicts}
-          expanded={conflictsListExpanded}
-          toggleConflictsList={toggleConflictsListExpanded}
-        />
+        {conflicts && (
+          <ConflictsList
+            conflicts={conflicts}
+            expanded={conflictsListExpanded}
+            toggleConflictsList={toggleConflictsListExpanded}
+          />
+        )}
       </div>
     </div>
   );
