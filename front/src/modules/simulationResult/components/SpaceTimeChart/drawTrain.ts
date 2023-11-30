@@ -93,11 +93,7 @@ export default function drawTrain(
     });
 
   const dragSelectionAppliance = (selection: d3.Selection<Element, unknown, null, undefined>) => {
-    selection
-      .attr('id', groupID)
-      .attr('class', 'chartTrain')
-      .attr('filter', () => (trainToDraw?.isStdcm ? `url(#stdcmFilter)` : null))
-      .call(drag);
+    selection.attr('id', groupID).attr('class', 'chartTrain').call(drag);
   };
 
   chart.drawZone.append<Element>('g').call(dragSelectionAppliance);
