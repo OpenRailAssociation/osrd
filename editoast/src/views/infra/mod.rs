@@ -516,18 +516,22 @@ async fn cache_status(
 #[cfg(test)]
 pub mod tests {
     use super::*;
+    use crate::client::PostgresConfig;
     use crate::core::mocking::MockingClient;
     use crate::fixtures::tests::{
         db_pool, empty_infra, named_other_rolling_stock, small_infra, TestFixture,
     };
+    use crate::generated_data;
     use crate::schema::operation::{Operation, RailjsonObject};
-    use crate::schema::{Catenary, SpeedSection, SwitchType};
+    use crate::schema::{Catenary, ObjectType, SpeedSection, SwitchType};
     use crate::views::tests::{create_test_service, create_test_service_with_core_client};
     use actix_http::Request;
     use actix_web::http::StatusCode;
     use actix_web::test as actix_test;
     use actix_web::test::{call_and_read_body_json, call_service, read_body_json, TestRequest};
+    use diesel_async::{AsyncConnection, AsyncPgConnection as PgConnection};
     use rstest::*;
+    use strum::IntoEnumIterator;
 
     fn delete_infra_request(infra_id: i64) -> Request {
         TestRequest::delete()
@@ -544,7 +548,7 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn infra_clone(db_pool: Data<DbPool>, #[future] empty_infra: TestFixture<Infra>) {
+    async fn infra_clone_empty(db_pool: Data<DbPool>, #[future] empty_infra: TestFixture<Infra>) {
         let app = create_test_service().await;
         let infra = empty_infra.await;
         let req = TestRequest::post()
@@ -558,6 +562,94 @@ pub mod tests {
             .unwrap()
             .unwrap();
         assert_eq!(cloned_infra.name.unwrap(), "cloned_infra");
+        assert!(Infra::delete(db_pool, cloned_infra_id).await.unwrap());
+    }
+
+    #[derive(QueryableByName)]
+    struct Count {
+        #[diesel(sql_type = BigInt)]
+        nb: i64,
+    }
+
+    #[rstest]
+    async fn infra_clone(db_pool: Data<DbPool>) {
+        let app = create_test_service().await;
+        let small_infra = &small_infra(db_pool.clone()).await.model;
+        let small_infra_id = small_infra.id.unwrap();
+
+        let pg_config = PostgresConfig::default();
+        let pg_config_url = pg_config.url().expect("cannot get postgres config url");
+        let mut conn = PgConnection::establish(pg_config_url.as_str())
+            .await
+            .expect("Error while connecting DB");
+
+        let infra_cache = InfraCache::load(&mut conn, small_infra).await.unwrap();
+
+        generated_data::refresh_all(db_pool.clone(), small_infra_id, &infra_cache)
+            .await
+            .unwrap();
+
+        let switch_type: RailjsonObject = SwitchType {
+            id: "test_switch_type".into(),
+            ..Default::default()
+        }
+        .into();
+
+        let create_operation = TestRequest::post()
+            .uri(format!("/infra/{small_infra_id}/").as_str())
+            .set_json(json!([Operation::Create(Box::new(switch_type))]))
+            .to_request();
+
+        assert_eq!(
+            call_service(&app, create_operation).await.status(),
+            StatusCode::OK
+        );
+
+        let req_clone = TestRequest::post()
+            .uri(format!("/infra/{}/clone/?name=cloned_infra", small_infra_id).as_str())
+            .to_request();
+        let response = call_service(&app, req_clone).await;
+        assert_eq!(response.status(), StatusCode::OK);
+
+        let cloned_infra_id: i64 = read_body_json(response).await;
+
+        let mut tables = vec!["infra_layer_error"];
+        for object in ObjectType::iter() {
+            tables.push(object.get_table());
+            if let Some(layer_table) = object.get_geometry_layer_table() {
+                tables.push(layer_table);
+            }
+        }
+
+        let mut table_content = HashMap::new();
+
+        for table in tables {
+            for inf_id in [small_infra_id, cloned_infra_id] {
+                let count_object = sql_query(format!(
+                    "SELECT COUNT (*) as nb from {} where infra_id = $1",
+                    table
+                ))
+                .bind::<BigInt, _>(inf_id)
+                .get_result::<Count>(&mut conn)
+                .await
+                .unwrap();
+
+                table_content
+                    .entry(table)
+                    .or_insert_with(Vec::new)
+                    .push(count_object.nb);
+            }
+        }
+
+        for val in table_content.values() {
+            // check that with have values for small infra and values for the cloned infra
+            assert_eq!(val.len(), 2);
+            // check that we have at least one object in each table to ensure we have something to clone for each table
+            assert!(val[0] > 0);
+            // check that we have the same number of objects in each table for both infras
+            assert_eq!(val[0], val[1]);
+        }
+
         assert!(Infra::delete(db_pool, cloned_infra_id).await.unwrap());
     }
 
