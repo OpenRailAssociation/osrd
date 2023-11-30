@@ -1103,25 +1103,6 @@ components:
           required:
           - operation_type
           type: object
-    OperationObject:
-      properties:
-        obj_type:
-          $ref: '#/components/schemas/ObjectType'
-        operation_type:
-          enum:
-          - CREATE
-          - UPDATE
-          type: string
-        railjson:
-          $ref: '#/components/schemas/Railjson'
-      required:
-      - operation_type
-      - obj_type
-      - railjson
-    CacheOperation:
-      oneOf:
-      - $ref: '#/components/schemas/DeleteOperation'
-      - $ref: '#/components/schemas/OperationObject'
     Ordering:
       enum:
       - NameAsc
@@ -4152,7 +4133,7 @@ paths:
             application/json:
               schema:
                 items:
-                  $ref: '#/components/schemas/CacheOperation'
+                  $ref: '#/components/schemas/Railjson'
                 type: array
           description: An array containing infos about the operations processed
       summary: Update/Create/Delete an object of the infra

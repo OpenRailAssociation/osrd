@@ -15,7 +15,6 @@ import { save } from 'reducers/editor';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import {
   NULL_GEOMETRY,
-  EntityObjectCacheOperation,
   EditorEntity,
   TrackSectionEntity,
   RouteEntity,
@@ -300,15 +299,15 @@ export const PointEditionLeftPanel: FC<{ type: EditoastType }> = <Entity extends
                 : { create: [savedEntity] }
             )
           );
-          const operation = res[0] as EntityObjectCacheOperation;
-          const { id } = operation.railjson;
+          const railjson = res[0];
+          const { id } = railjson;
           if (id && id !== savedEntity.properties.id) {
             const saveEntity = {
               ...state.entity,
               id,
               properties: {
                 ...state.entity.properties,
-                ...operation.railjson,
+                ...railjson,
               },
             };
             setState({

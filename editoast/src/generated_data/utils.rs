@@ -1,11 +1,8 @@
 use std::collections::HashSet;
 
 use crate::{
-    infra_cache::InfraCache,
-    schema::{
-        operation::{CacheOperation, RailjsonObject},
-        OSRDIdentified, OSRDObject, ObjectType,
-    },
+    infra_cache::{InfraCache, ObjectCache},
+    schema::{operation::CacheOperation, OSRDIdentified, OSRDObject, ObjectType},
 };
 
 /// This struct gives a set of objects that needs to be updated or deleted given a list of operations.
@@ -29,16 +26,16 @@ impl<'a> InvolvedObjects<'a> {
         let mut res = Self::default();
         for op in operations {
             match op {
-                CacheOperation::Create(railjson) | CacheOperation::Update(railjson)
-                    if railjson.get_type() == obj_type =>
+                CacheOperation::Create(object_cache) | CacheOperation::Update(object_cache)
+                    if object_cache.get_type() == obj_type =>
                 {
-                    res.updated.insert(railjson.get_id());
+                    res.updated.insert(object_cache.get_id());
                 }
-                CacheOperation::Create(RailjsonObject::TrackSection { railjson })
-                | CacheOperation::Update(RailjsonObject::TrackSection { railjson }) => {
+                CacheOperation::Create(ObjectCache::TrackSection(track_section))
+                | CacheOperation::Update(ObjectCache::TrackSection(track_section)) => {
                     // Retrieve all the objects that are linked to the track section
                     infra_cache
-                        .get_track_refs_type(&railjson.id, obj_type)
+                        .get_track_refs_type(track_section.get_id(), obj_type)
                         .iter()
                         .for_each(|obj_ref| {
                             res.updated.insert(&obj_ref.obj_id);
@@ -66,9 +63,9 @@ mod test {
     use super::InvolvedObjects;
 
     use crate::infra_cache::tests::create_small_infra_cache;
-    use crate::schema::operation::{CacheOperation, RailjsonObject};
-    use crate::schema::utils::Identifier;
-    use crate::schema::{Detector, ObjectRef, ObjectType, TrackSection};
+    use crate::infra_cache::ObjectCache;
+    use crate::schema::operation::CacheOperation;
+    use crate::schema::{DetectorCache, ObjectRef, ObjectType, TrackSectionCache};
 
     #[test]
     fn track_section_deleted() {
@@ -89,19 +86,16 @@ mod test {
         let infra_cache = create_small_infra_cache();
         let track = String::from("B");
         let operations = vec![
-            CacheOperation::Update(RailjsonObject::TrackSection {
-                railjson: TrackSection {
-                    id: track.into(),
-                    length: 420.,
-                    ..Default::default()
-                },
-            }),
-            CacheOperation::Create(RailjsonObject::Detector {
-                railjson: Detector {
-                    id: Identifier::from("D2"),
-                    ..Default::default()
-                },
-            }),
+            CacheOperation::Update(ObjectCache::TrackSection(TrackSectionCache {
+                obj_id: track,
+                length: 420.,
+                ..Default::default()
+            })),
+            CacheOperation::Create(ObjectCache::Detector(DetectorCache {
+                obj_id: "D2".to_string(),
+                track: "TA1".to_string(),
+                position: 42.0,
+            })),
         ];
         let involved_objects =
             InvolvedObjects::from_operations(&operations, &infra_cache, ObjectType::Detector);

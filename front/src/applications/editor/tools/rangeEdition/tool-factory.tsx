@@ -15,7 +15,6 @@ import {
   TrackSectionEntity,
 } from 'types/editor';
 import { getNearestPoint } from 'utils/mapHelper';
-import { EntityObjectCacheOperation } from 'types';
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import { PartialOrReducer, Tool } from '../editorContextTypes';
 import { DEFAULT_COMMON_TOOL_STATE } from '../commonToolState';
@@ -114,8 +113,7 @@ function getRangeEditionTool<T extends EditorRange>({
                     : { create: [entity] }
                 )
               );
-              const operation = res[0] as EntityObjectCacheOperation;
-              const { entityId } = operation.railjson;
+              const { entityId } = res[0];
 
               const savedEntity =
                 entityId && entityId !== entity.properties.id

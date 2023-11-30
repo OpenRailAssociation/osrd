@@ -12,6 +12,7 @@ use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
 use editoast_derive::EditoastError;
 use enum_map::EnumMap;
 use geos::geojson::Geometry;
+use itertools::Itertools as _;
 use std::collections::hash_map::Entry;
 use std::collections::{HashMap, HashSet};
 use thiserror::Error;
@@ -49,6 +50,26 @@ pub enum ObjectCache {
     OperationalPoint(OperationalPointCache),
     SwitchType(SwitchType),
     Catenary(Catenary),
+}
+
+impl From<RailjsonObject> for ObjectCache {
+    fn from(railjson: RailjsonObject) -> Self {
+        match railjson {
+            RailjsonObject::TrackSection { railjson } => ObjectCache::TrackSection(railjson.into()),
+            RailjsonObject::Signal { railjson } => ObjectCache::Signal(railjson.into()),
+            RailjsonObject::NeutralSection { .. } => unimplemented!(),
+            RailjsonObject::SpeedSection { railjson } => ObjectCache::SpeedSection(railjson),
+            RailjsonObject::Switch { railjson } => ObjectCache::Switch(railjson.into()),
+            RailjsonObject::SwitchType { railjson } => ObjectCache::SwitchType(railjson),
+            RailjsonObject::Detector { railjson } => ObjectCache::Detector(railjson.into()),
+            RailjsonObject::BufferStop { railjson } => ObjectCache::BufferStop(railjson.into()),
+            RailjsonObject::Route { railjson } => ObjectCache::Route(railjson),
+            RailjsonObject::OperationalPoint { railjson } => {
+                ObjectCache::OperationalPoint(railjson.into())
+            }
+            RailjsonObject::Catenary { railjson } => ObjectCache::Catenary(railjson),
+        }
+    }
 }
 
 impl<T: Cache> From<T> for ObjectCache {
@@ -259,7 +280,7 @@ impl From<OperationalPointQueryable> for OperationalPointCache {
         let parts: Vec<OperationalPointPart> = serde_json::from_str(&op.parts).unwrap();
         Self {
             obj_id: op.obj_id,
-            parts: parts.into_iter().map(|p| p.into()).collect(),
+            parts: parts.into_iter().map_into().collect(),
         }
     }
 }
@@ -279,7 +300,7 @@ impl InfraCache {
         match entry {
             Entry::Occupied(_) => Err(CacheOperationError::DuplicateIdsProvided {
                 obj_type: obj.get_type().to_string(),
-                obj_id: obj.get_id().to_owned(),
+                obj_id: obj.get_id().clone(),
             }
             .into()),
             Entry::Vacant(v) => {
@@ -491,7 +512,7 @@ impl InfraCache {
             .remove(&object_ref.obj_id)
             .ok_or_else(|| CacheOperationError::ObjectNotFound {
                 obj_type: object_ref.obj_type.to_string(),
-                obj_id: object_ref.obj_id.to_owned(),
+                obj_id: object_ref.obj_id.clone(),
             })?;
 
         for track_id in obj_cache.get_track_referenced_id() {
@@ -499,7 +520,7 @@ impl InfraCache {
                 .get_mut(track_id)
                 .ok_or_else(|| CacheOperationError::ObjectNotFound {
                     obj_type: object_ref.obj_type.to_string(),
-                    obj_id: object_ref.obj_id.to_owned(),
+                    obj_id: object_ref.obj_id.clone(),
                 })?
                 .remove(object_ref);
         }
@@ -507,40 +528,29 @@ impl InfraCache {
     }
 
     /// Apply update operation to the infra cache
-    fn apply_update(&mut self, railjson_obj: &RailjsonObject) -> Result<()> {
-        self.apply_delete(&railjson_obj.get_ref())?;
-        self.apply_create(railjson_obj)?;
+    fn apply_update(&mut self, object_cache: ObjectCache) -> Result<()> {
+        self.apply_delete(&object_cache.get_ref())?;
+        self.apply_create(object_cache)?;
         Ok(())
     }
 
     /// Apply create operation to the infra cache
-    fn apply_create(&mut self, railjson_obj: &RailjsonObject) -> Result<()> {
-        match railjson_obj {
-            RailjsonObject::TrackSection { railjson } => {
-                self.add::<TrackSectionCache>(railjson.clone().into())?
+    fn apply_create(&mut self, object_cache: ObjectCache) -> Result<()> {
+        match object_cache {
+            ObjectCache::TrackSection(track_section) => {
+                self.add::<TrackSectionCache>(track_section)?;
             }
-            RailjsonObject::Signal { railjson } => {
-                self.add::<SignalCache>(railjson.clone().into())?
+            ObjectCache::Signal(signal) => self.add::<SignalCache>(signal)?,
+            ObjectCache::SpeedSection(speed_section) => self.add(speed_section)?,
+            ObjectCache::Switch(switch) => self.add::<SwitchCache>(switch)?,
+            ObjectCache::SwitchType(switch_type) => self.add::<SwitchType>(switch_type)?,
+            ObjectCache::Detector(detector) => self.add::<DetectorCache>(detector)?,
+            ObjectCache::BufferStop(buffer_stop) => self.add::<BufferStopCache>(buffer_stop)?,
+            ObjectCache::Route(route) => self.add::<Route>(route)?,
+            ObjectCache::OperationalPoint(operational_point) => {
+                self.add::<OperationalPointCache>(operational_point)?;
             }
-            RailjsonObject::SpeedSection { railjson } => self.add(railjson.clone())?,
-            RailjsonObject::NeutralSection { railjson: _ } => {
-                // TODO
-            }
-            RailjsonObject::Switch { railjson } => {
-                self.add::<SwitchCache>(railjson.clone().into())?
-            }
-            RailjsonObject::SwitchType { railjson } => self.add::<SwitchType>(railjson.clone())?,
-            RailjsonObject::Detector { railjson } => {
-                self.add::<DetectorCache>(railjson.clone().into())?
-            }
-            RailjsonObject::BufferStop { railjson } => {
-                self.add::<BufferStopCache>(railjson.clone().into())?
-            }
-            RailjsonObject::Route { railjson } => self.add::<Route>(railjson.clone())?,
-            RailjsonObject::OperationalPoint { railjson } => {
-                self.add::<OperationalPointCache>(railjson.clone().into())?
-            }
-            RailjsonObject::Catenary { railjson } => self.add::<Catenary>(railjson.clone())?,
+            ObjectCache::Catenary(catenary) => self.add::<Catenary>(catenary)?,
         }
         Ok(())
     }
@@ -550,8 +560,8 @@ impl InfraCache {
         for op_res in operations {
             match op_res {
                 CacheOperation::Delete(obj_ref) => self.apply_delete(obj_ref)?,
-                CacheOperation::Update(railjson_obj) => self.apply_update(railjson_obj)?,
-                CacheOperation::Create(railjson_obj) => self.apply_create(railjson_obj)?,
+                CacheOperation::Update(object_cache) => self.apply_update(object_cache.clone())?,
+                CacheOperation::Create(object_cache) => self.apply_create(object_cache.clone())?,
             }
         }
         Ok(())
@@ -1000,7 +1010,7 @@ pub mod tests {
         for id in 'A'..='D' {
             infra_cache
                 .add(create_track_section_cache(id.to_string(), 500.))
-                .unwrap()
+                .unwrap();
         }
 
         infra_cache

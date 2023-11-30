@@ -21,7 +21,7 @@ import { getSwitchesLayerProps, getSwitchesNameLayerProps } from 'common/Map/Lay
 import { save } from 'reducers/editor';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import { getMap } from 'reducers/map/selectors';
-import { EntityObjectCacheOperation, SwitchEntity, TrackSectionEntity } from 'types';
+import { SwitchEntity, TrackSectionEntity } from 'types';
 
 import { FlatSwitchEntity, flatSwitchToSwitch, getNewSwitch } from './utils';
 import { SwitchEditionState } from './types';
@@ -107,8 +107,7 @@ export const SwitchEditionLeftPanel: FC = () => {
                 : { create: [entityToSave] }
             )
           );
-          const operation = res[0] as EntityObjectCacheOperation;
-          const { id } = operation.railjson;
+          const { id } = res[0];
 
           if (id && id !== entityToSave.properties.id) {
             const savedEntity = {

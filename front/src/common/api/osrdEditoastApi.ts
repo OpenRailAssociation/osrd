@@ -814,7 +814,7 @@ export type GetInfraByIdApiArg = {
   id: number;
 };
 export type PostInfraByIdApiResponse =
-  /** status 200 An array containing infos about the operations processed */ CacheOperation[];
+  /** status 200 An array containing infos about the operations processed */ Railjson[];
 export type PostInfraByIdApiArg = {
   /** infra id */
   id: number;
@@ -1381,6 +1381,10 @@ export type RailjsonFile = {
   track_sections?: any;
   version?: string;
 };
+export type Railjson = {
+  id: string;
+  [key: string]: any;
+};
 export type ObjectType =
   | 'TrackSection'
   | 'Signal'
@@ -1392,21 +1396,6 @@ export type ObjectType =
   | 'Route'
   | 'OperationalPoint'
   | 'Catenary';
-export type DeleteOperation = {
-  obj_id: string;
-  obj_type: ObjectType;
-  operation_type: 'DELETE';
-};
-export type Railjson = {
-  id: string;
-  [key: string]: any;
-};
-export type OperationObject = {
-  obj_type: ObjectType;
-  operation_type: 'CREATE' | 'UPDATE';
-  railjson: Railjson;
-};
-export type CacheOperation = DeleteOperation | OperationObject;
 export type RailjsonObject = {
   obj_type: ObjectType;
   operation_type: 'CREATE';
@@ -1424,6 +1413,11 @@ export type UpdateOperation = {
   obj_type: ObjectType;
   operation_type: 'UPDATE';
   railjson_patch: Patches;
+};
+export type DeleteOperation = {
+  obj_id: string;
+  obj_type: ObjectType;
+  operation_type: 'DELETE';
 };
 export type Operation =
   | (RailjsonObject & {
