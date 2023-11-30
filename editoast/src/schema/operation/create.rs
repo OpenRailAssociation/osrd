@@ -27,11 +27,11 @@ pub enum RailjsonObject {
     Catenary { railjson: Catenary },
 }
 
-pub async fn apply_create_operation(
-    railjson_object: &RailjsonObject,
+pub async fn apply_create_operation<'r>(
+    railjson_object: &'r RailjsonObject,
     infra_id: i64,
     conn: &mut PgConnection,
-) -> Result<usize> {
+) -> Result<(usize, &'r RailjsonObject)> {
     if railjson_object.get_id().is_empty() {
         return Err(OperationError::EmptyId.into());
     }
@@ -44,6 +44,7 @@ pub async fn apply_create_operation(
     .bind::<Json, _>(railjson_object.get_data())
     .execute(conn)
     .await
+    .map(|idx| (idx, railjson_object))
     .map_err(|err| err.into())
 }
 

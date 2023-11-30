@@ -3,10 +3,11 @@ mod delete;
 mod update;
 
 use super::ObjectRef;
-use crate::error::Result;
+use crate::{error::Result, infra_cache::ObjectCache};
 use diesel_async::AsyncPgConnection as PgConnection;
 use editoast_derive::EditoastError;
 use serde::{Deserialize, Serialize};
+use std::ops::Deref as _;
 use thiserror::Error;
 use utoipa::ToSchema;
 
@@ -28,31 +29,31 @@ pub enum Operation {
     Delete(DeleteOperation),
 }
 
-#[derive(Clone, Serialize)]
-#[serde(tag = "operation_type")]
+#[derive(Clone)]
 pub enum CacheOperation {
-    #[serde(rename = "CREATE")]
-    Create(RailjsonObject),
-    #[serde(rename = "UPDATE")]
-    Update(RailjsonObject),
-    #[serde(rename = "DELETE")]
+    Create(ObjectCache),
+    Update(ObjectCache),
     Delete(ObjectRef),
 }
 
 impl Operation {
-    pub async fn apply(&self, infra_id: i64, conn: &mut PgConnection) -> Result<CacheOperation> {
+    pub async fn apply(
+        &self,
+        infra_id: i64,
+        conn: &mut PgConnection,
+    ) -> Result<Option<RailjsonObject>> {
         match self {
             Operation::Delete(deletion) => {
                 deletion.apply(infra_id, conn).await?;
-                Ok(CacheOperation::Delete(deletion.clone().into()))
+                Ok(None)
             }
             Operation::Create(railjson_object) => {
                 create::apply_create_operation(railjson_object, infra_id, conn).await?;
-                Ok(CacheOperation::Create(*railjson_object.clone()))
+                Ok(Some(railjson_object.deref().clone()))
             }
             Operation::Update(update) => {
-                let obj_railjson = update.apply(infra_id, conn).await?;
-                Ok(CacheOperation::Update(obj_railjson))
+                let railjson_object = update.apply(infra_id, conn).await?;
+                Ok(Some(railjson_object))
             }
         }
     }
@@ -71,14 +72,4 @@ enum OperationError {
     ModifyId,
     #[error("A Json Patch error occurred: '{}'", .0)]
     InvalidPatch(String),
-}
-
-impl From<&Operation> for CacheOperation {
-    fn from(op: &Operation) -> Self {
-        match op {
-            Operation::Delete(deletion) => CacheOperation::Delete(deletion.clone().into()),
-            Operation::Create(railjson_object) => CacheOperation::Create(*railjson_object.clone()),
-            Operation::Update(_update) => todo!(),
-        }
-    }
 }

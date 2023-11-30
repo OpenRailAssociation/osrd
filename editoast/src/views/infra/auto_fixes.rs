@@ -1,10 +1,11 @@
 use std::collections::HashSet;
+use std::ops::Deref as _;
 
 use crate::error::{InternalError, Result};
 use crate::generated_data::generate_infra_errors;
 use crate::infra_cache::InfraCache;
 use crate::models::{self, Infra, Retrieve};
-use crate::schema::operation::{DeleteOperation, Operation, RailjsonObject};
+use crate::schema::operation::{CacheOperation, DeleteOperation, Operation, RailjsonObject};
 use crate::schema::utils::Identifier;
 use crate::schema::{
     BufferStop, Endpoint, InfraError, InfraErrorType, OSRDIdentified, OSRDObject, ObjectRef,
@@ -16,7 +17,6 @@ use actix_web::get;
 use actix_web::web::{Data, Json as WebJson, Path};
 use chashmap::CHashMap;
 use editoast_derive::EditoastError;
-use itertools::Itertools;
 use thiserror::Error;
 use uuid::Uuid;
 
@@ -84,9 +84,18 @@ async fn fix_infra(infra_cache: &mut InfraCache) -> Result<Vec<Operation>> {
         }
     }
 
-    let operation_results = all_fixes.iter().map_into().collect();
+    let cache_operations = all_fixes
+        .iter()
+        .map(|operation| match operation {
+            Operation::Create(railjson) => CacheOperation::Create(railjson.deref().clone().into()),
+            Operation::Update(_) => unimplemented!("not possible at the moment, wait for refactor"),
+            Operation::Delete(delete_operation) => {
+                CacheOperation::Delete(delete_operation.clone().into())
+            }
+        })
+        .collect();
     infra_cache
-        .apply_operations(&operation_results)
+        .apply_operations(&cache_operations)
         .map_err(|source| AutoFixesEditoastError::FixTrialFailure { source })?;
 
     Ok(all_fixes)

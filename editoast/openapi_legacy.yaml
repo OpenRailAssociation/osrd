@@ -141,7 +141,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/CacheOperation"
+                  $ref: "#/components/schemas/Railjson"
 
     put:
       tags:
@@ -888,11 +888,6 @@ components:
         detectors:
           type: array
 
-    CacheOperation:
-      oneOf:
-        - $ref: "#/components/schemas/DeleteOperation"
-        - $ref: "#/components/schemas/OperationObject"
-
     RailjsonObject:
       required:
         - operation_type
@@ -941,22 +936,6 @@ components:
           example: bd840b06-84ba-4566-98c1-ccf0196c5f16
         railjson_patch:
           $ref: "#/components/schemas/Patches"
-
-    OperationObject:
-      required:
-        - operation_type
-        - obj_type
-        - railjson
-      properties:
-        operation_type:
-          type: string
-          enum:
-            - CREATE
-            - UPDATE
-        obj_type:
-          $ref: "#/components/schemas/ObjectType"
-        railjson:
-          $ref: "#/components/schemas/Railjson"
 
     Patch:
       description: A JSONPatch document as defined by RFC 6902
