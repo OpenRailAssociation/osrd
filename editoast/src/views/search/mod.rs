@@ -399,7 +399,7 @@ pub async fn search(
     payload: Json<SearchPayload>,
     db_pool: Data<DbPool>,
 ) -> Result<impl Responder> {
-    let (page, per_page) = query_params.validate(100)?.warn_page_size(100).unpack();
+    let (page, per_page) = query_params.validate(1000)?.warn_page_size(100).unpack();
     let Json(SearchPayload { object, query, dry }) = payload;
     let search_config = SearchConfigFinder::find(&object)
         .ok_or_else(|| SearchError::ObjectType(object.to_owned()))?;
