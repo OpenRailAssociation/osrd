@@ -13,8 +13,13 @@ import { getMap } from 'reducers/map/selectors';
 import Pathfinding from 'common/Pathfinding/Pathfinding';
 import TypeAndPath from 'common/Pathfinding/TypeAndPath';
 import { GoRocket } from 'react-icons/go';
+import { Path } from 'common/api/osrdEditoastApi';
 
-function Itinerary() {
+type ItineraryProps = {
+  path?: Path;
+};
+
+function Itinerary({ path }: ItineraryProps) {
   const origin = useSelector(getOrigin);
   const destination = useSelector(getDestination);
   const vias = useSelector(getVias);
@@ -93,7 +98,7 @@ function Itinerary() {
   return (
     <div className="osrd-config-item">
       <div className="mb-2 d-flex">
-        <Pathfinding zoomToFeature={zoomToFeature} />
+        <Pathfinding zoomToFeature={zoomToFeature} path={path} />
         <button
           type="button"
           className="btn btn-sm btn-only-icon btn-white px-3 ml-2"
