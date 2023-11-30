@@ -79,7 +79,7 @@ async fn main() {
         Ok(_) => (),
         Err(e) => {
             if let Some(e) = e.downcast_ref::<CliError>() {
-                println!("{e}");
+                eprintln!("{e}");
                 exit(e.exit_code);
             } else {
                 error!("{e}");
@@ -128,14 +128,14 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
                 electrical_profile_set_delete(args, create_db_pool()?).await
             }
         },
-        Commands::Search(SearchCommands::List) => {
-            list_search_objects();
-            Ok(())
-        }
-        Commands::Search(SearchCommands::MakeMigration(args)) => make_search_migration(args),
-        Commands::Search(SearchCommands::Refresh(args)) => {
-            refresh_search_tables(args, create_db_pool()?).await
-        }
+        Commands::Search(subcommand) => match subcommand {
+            SearchCommands::List => {
+                list_search_objects();
+                Ok(())
+            }
+            SearchCommands::MakeMigration(args) => make_search_migration(args),
+            SearchCommands::Refresh(args) => refresh_search_tables(args, create_db_pool()?).await,
+        },
         Commands::Infra(subcommand) => match subcommand {
             InfraCommands::Clone(args) => clone_infra(args, create_db_pool()?).await,
             InfraCommands::Clear(args) => clear_infra(args, create_db_pool()?, redis_config).await,
@@ -184,7 +184,7 @@ fn log_received_request(req: &ServiceRequest) {
             req.version()
         )
     };
-    log::info!(target: "actix_logger", "{} RECEIVED", request_line);
+    info!(target: "actix_logger", "{} RECEIVED", request_line);
 }
 
 fn establish_connection(config: &str) -> BoxFuture<ConnectionResult<AsyncPgConnection>> {
@@ -199,7 +199,7 @@ fn establish_connection(config: &str) -> BoxFuture<ConnectionResult<AsyncPgConne
         // so spawn it off to run on its own.
         tokio::spawn(async move {
             if let Err(e) = conn.await {
-                eprintln!("connection error: {}", e);
+                error!("connection error: {}", e);
             }
         });
         AsyncPgConnection::try_from(client).await
@@ -389,14 +389,14 @@ async fn import_rolling_stock(
             serde_json::from_reader(BufReader::new(rolling_stock_file))?;
         match rolling_stock.validate() {
             Ok(()) => {
-                info!(
+                println!(
                     "🍞 Importing rolling stock {}",
                     rolling_stock.name.clone().unwrap().bold()
                 );
                 rolling_stock.locked = Some(false);
                 rolling_stock.version = Some(0);
                 let rolling_stock = rolling_stock.create(db_pool.clone()).await?;
-                info!(
+                println!(
                     "✅ Rolling stock {}[{}] saved!",
                     rolling_stock.name.clone().unwrap().bold(),
                     rolling_stock.id.unwrap()
@@ -518,7 +518,7 @@ async fn electrical_profile_set_import(
     let mut conn = db_pool.get().await?;
     let created_ep_set = ep_set.create_conn(&mut conn).await.unwrap();
     let ep_set_id = created_ep_set.id.unwrap();
-    info!("✅ Electrical profile set {ep_set_id} created");
+    println!("✅ Electrical profile set {ep_set_id} created");
     Ok(())
 }
 
@@ -549,9 +549,9 @@ async fn electrical_profile_set_delete(
             .await
             .unwrap();
         if !deleted {
-            println!("Electrical profile set {} not found", profile_set_id);
+            println!("❎ Electrical profile set {} not found", profile_set_id);
         } else {
-            println!("Electrical profile set {} deleted", profile_set_id);
+            println!("✅ Electrical profile set {} deleted", profile_set_id);
         }
     }
     Ok(())
