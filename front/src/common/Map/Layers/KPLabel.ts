@@ -69,7 +69,7 @@ export default function getKPLabelLayerProps(params: {
       'text-font': ['Roboto Medium'],
       'text-size': 9,
       'text-anchor': 'right',
-      'text-allow-overlap': true,
+      'text-allow-overlap': false,
       'text-ignore-placement': false,
 
       ...signallingLabeling,

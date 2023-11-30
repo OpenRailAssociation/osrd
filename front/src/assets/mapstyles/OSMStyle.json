@@ -1662,7 +1662,8 @@
         ]
       },
       "text-transform": "uppercase",
-      "text-ignore-placement": true
+      "text-ignore-placement": false,
+      "text-allow-overlap": false
     },
     "paint": {
       "text-color": "rgba(85, 85, 85, 1)",
