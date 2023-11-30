@@ -158,7 +158,6 @@ const NavButtons: NavButton[][] = [
       id: 'infras',
       icon: GiRailway,
       labelTranslationKey: 'Editor.nav.select-infra',
-      shortcut: { code: 'KeyI', optionalKeys: { ctrlKey: true, shiftKey: true } },
       isBlink: (_editorState, infraId) => isNil(infraId),
       async onClick({ navigate, openModal }) {
         openModal(<InfraSelectorModal onInfraChange={(id) => navigate(`/editor/${id}`)} />, 'lg');
