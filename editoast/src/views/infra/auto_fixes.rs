@@ -97,6 +97,11 @@ fn get_operations_fixing_error(
         InfraErrorType::InvalidReference { reference } => {
             get_operations_fixing_invalid_reference(error, reference, infra_cache)
         }
+        InfraErrorType::InvalidSwitchPorts => Ok([Operation::Delete(DeleteOperation {
+            obj_id: error.get_id().to_string(),
+            obj_type: error.get_type(),
+        })]
+        .to_vec()),
         _ => Ok(vec![]), // Default: nothing is done to fix error
     }
 }
@@ -164,12 +169,15 @@ pub enum AutoFixesEditoastError {
 
 #[cfg(test)]
 mod test {
+    use std::collections::HashMap;
+
     use super::*;
     use crate::fixtures::tests::{db_pool, small_infra};
-    use crate::schema::operation::{DeleteOperation, Operation};
+    use crate::schema::operation::{DeleteOperation, Operation, RailjsonObject};
     use crate::schema::utils::Identifier;
     use crate::schema::{
-        BufferStopCache, DetectorCache, ObjectRef, ObjectType, Route, SignalCache, Waypoint,
+        BufferStopCache, DetectorCache, Endpoint, ObjectRef, ObjectType, Route, SignalCache,
+        Switch, TrackEndpoint, Waypoint,
     };
     use crate::views::tests::create_test_service;
     use actix_http::StatusCode;
@@ -432,5 +440,67 @@ mod test {
         assert!(get_operations_fixing_error(&error, &cache)
             .unwrap()
             .is_empty());
+    }
+
+    #[rstest::rstest]
+    async fn invalid_switch_ports() {
+        let app = create_test_service().await;
+        let small_infra = small_infra(db_pool()).await;
+        let small_infra_id = small_infra.id();
+
+        let ports = HashMap::from([
+            (
+                "WRONG".into(),
+                TrackEndpoint {
+                    endpoint: Endpoint::End,
+                    track: "TA1".into(),
+                },
+            ),
+            (
+                "B1".into(),
+                TrackEndpoint {
+                    endpoint: Endpoint::Begin,
+                    track: "TA3".into(),
+                },
+            ),
+            (
+                "B2".into(),
+                TrackEndpoint {
+                    endpoint: Endpoint::Begin,
+                    track: "TA4".into(),
+                },
+            ),
+        ]);
+        let invalid_switch = Switch {
+            switch_type: "point_switch".into(),
+            ports,
+            ..Default::default()
+        };
+        let invalid_switch_railjson = RailjsonObject::Switch {
+            railjson: invalid_switch.clone(),
+        };
+        // Create an invalid switch
+        let create_operation = Operation::Create(Box::new(invalid_switch_railjson));
+        let req_create = TestRequest::post()
+            .uri(format!("/infra/{small_infra_id}/").as_str())
+            .set_json(json!([create_operation]))
+            .to_request();
+        assert_eq!(
+            call_service(&app, req_create).await.status(),
+            StatusCode::OK
+        );
+
+        let req_fix = TestRequest::get()
+            .uri(format!("/infra/{small_infra_id}/auto_fixes").as_str())
+            .to_request();
+        let response = call_service(&app, req_fix).await;
+
+        assert_eq!(response.status(), StatusCode::OK);
+
+        let operations: Vec<Operation> = read_body_json(response).await;
+        assert!(operations.contains(&Operation::Delete(DeleteOperation {
+            obj_id: invalid_switch.get_id().to_string(),
+            obj_type: ObjectType::Switch,
+        })));
     }
 }
