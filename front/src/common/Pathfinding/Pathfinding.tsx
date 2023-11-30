@@ -172,6 +172,7 @@ function init({
 
 interface PathfindingProps {
   zoomToFeature: (lngLat: Position, id?: undefined, source?: undefined) => void;
+  path?: Path;
 }
 
 export function getPathfindingQuery({
@@ -257,7 +258,7 @@ export function getPathfindingQuery({
   return null;
 }
 
-function Pathfinding({ zoomToFeature }: PathfindingProps) {
+function Pathfinding({ zoomToFeature, path }: PathfindingProps) {
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const [pathfindingRequest, setPathfindingRequest] =
     useState<ReturnType<typeof postPathfinding>>();
@@ -293,7 +294,6 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
     }
   );
   const [reloadInfra] = osrdEditoastApi.usePostInfraByIdLoadMutation();
-
   useEffect(() => {
     if (reloadCount <= 5 && infra && infra.state === 'TRANSIENT_ERROR') {
       setTimeout(() => {
@@ -518,23 +518,24 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
           ? displayInfraSoftError()
           : infra.state === 'ERROR' && displayInfraHardError())}
 
-      {isPathFindingActive ? (
+      {!pathfindingState.error && !pathfindingState.running && path && origin && destination && (
+        <div className="content pathfinding-done">
+          <span className="lead">
+            <GoCheckCircle />
+          </span>
+          <span className="flex-grow-1">{t('pathfindingDone')}</span>
+          <small className="text-secondary">
+            {geojson?.length && formatKmValue(geojson?.length / 1000, 3)}
+          </small>
+        </div>
+      )}
+
+      {!path && isPathFindingActive ? (
         <div className={`content pathfinding-none ${infra && infra.state !== 'CACHED' && 'mt-2'}`}>
           {t('pathfindingNoState')}
         </div>
       ) : (
         <>
-          {pathfindingState.done && !pathfindingState.error && (
-            <div className="content pathfinding-done">
-              <span className="lead">
-                <GoCheckCircle />
-              </span>
-              <span className="flex-grow-1">{t('pathfindingDone')}</span>
-              <small className="text-secondary">
-                {geojson?.length && formatKmValue(geojson?.length / 1000, 3)}
-              </small>
-            </div>
-          )}
           {pathfindingState.error && (
             <div
               className={`content pathfinding-error ${infra && infra.state !== 'CACHED' && 'mt-2'}`}

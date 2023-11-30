@@ -103,7 +103,7 @@ export default function ManageTrainSchedule() {
     content: (
       <div className="osrd-config-item-container-map" data-testid="map">
         <span className="floating-itinerary">
-          <Itinerary />
+          <Itinerary path={pathFinding} />
         </span>
         <Map />
       </div>
