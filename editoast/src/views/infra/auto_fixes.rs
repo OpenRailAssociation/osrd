@@ -97,11 +97,13 @@ fn get_operations_fixing_error(
         InfraErrorType::InvalidReference { reference } => {
             get_operations_fixing_invalid_reference(error, reference, infra_cache)
         }
-        InfraErrorType::InvalidSwitchPorts => Ok([Operation::Delete(DeleteOperation {
-            obj_id: error.get_id().to_string(),
-            obj_type: error.get_type(),
-        })]
-        .to_vec()),
+        InfraErrorType::InvalidSwitchPorts | InfraErrorType::EmptyObject => {
+            Ok([Operation::Delete(DeleteOperation {
+                obj_id: error.get_id().to_string(),
+                obj_type: error.get_type(),
+            })]
+            .to_vec())
+        }
         _ => Ok(vec![]), // Default: nothing is done to fix error
     }
 }
@@ -176,11 +178,11 @@ mod test {
     use crate::schema::operation::{DeleteOperation, Operation, RailjsonObject};
     use crate::schema::utils::Identifier;
     use crate::schema::{
-        BufferStopCache, DetectorCache, Endpoint, ObjectRef, ObjectType, Route, SignalCache,
-        Switch, TrackEndpoint, Waypoint,
+        BufferStopCache, Catenary, DetectorCache, Endpoint, ObjectRef, ObjectType,
+        OperationalPoint, Route, SignalCache, SpeedSection, Switch, TrackEndpoint, Waypoint,
     };
     use crate::views::tests::create_test_service;
-    use actix_http::StatusCode;
+    use actix_http::{Request, StatusCode};
     use actix_web::test::{call_service, read_body_json, TestRequest};
     use serde_json::json;
 
@@ -442,6 +444,14 @@ mod test {
             .is_empty());
     }
 
+    fn get_create_operation_request(railjson: RailjsonObject, infra_id: i64) -> Request {
+        let create_operation = Operation::Create(Box::new(railjson));
+        TestRequest::post()
+            .uri(format!("/infra/{infra_id}/").as_str())
+            .set_json(json!([create_operation]))
+            .to_request()
+    }
+
     #[rstest::rstest]
     async fn invalid_switch_ports() {
         let app = create_test_service().await;
@@ -480,11 +490,7 @@ mod test {
             railjson: invalid_switch.clone(),
         };
         // Create an invalid switch
-        let create_operation = Operation::Create(Box::new(invalid_switch_railjson));
-        let req_create = TestRequest::post()
-            .uri(format!("/infra/{small_infra_id}/").as_str())
-            .set_json(json!([create_operation]))
-            .to_request();
+        let req_create = get_create_operation_request(invalid_switch_railjson, small_infra_id);
         assert_eq!(
             call_service(&app, req_create).await.status(),
             StatusCode::OK
@@ -501,6 +507,55 @@ mod test {
         assert!(operations.contains(&Operation::Delete(DeleteOperation {
             obj_id: invalid_switch.get_id().to_string(),
             obj_type: ObjectType::Switch,
+        })));
+    }
+
+    #[rstest::rstest]
+    async fn empty_object() {
+        let app = create_test_service().await;
+        let small_infra = small_infra(db_pool()).await;
+        let small_infra_id = small_infra.id();
+
+        let catenary: RailjsonObject = Catenary::default().into();
+        let req_create = get_create_operation_request(catenary.clone(), small_infra_id);
+        assert_eq!(
+            call_service(&app, req_create).await.status(),
+            StatusCode::OK
+        );
+
+        let operational_point: RailjsonObject = OperationalPoint::default().into();
+        let req_create = get_create_operation_request(operational_point.clone(), small_infra_id);
+        assert_eq!(
+            call_service(&app, req_create).await.status(),
+            StatusCode::OK
+        );
+
+        let speed_section: RailjsonObject = SpeedSection::default().into();
+        let req_create = get_create_operation_request(speed_section.clone(), small_infra_id);
+        assert_eq!(
+            call_service(&app, req_create).await.status(),
+            StatusCode::OK
+        );
+
+        let req_fix = TestRequest::get()
+            .uri(format!("/infra/{small_infra_id}/auto_fixes").as_str())
+            .to_request();
+        let response = call_service(&app, req_fix).await;
+
+        assert_eq!(response.status(), StatusCode::OK);
+
+        let operations: Vec<Operation> = read_body_json(response).await;
+        assert!(operations.contains(&Operation::Delete(DeleteOperation {
+            obj_id: catenary.get_id().to_string(),
+            obj_type: ObjectType::Catenary,
+        })));
+        assert!(operations.contains(&Operation::Delete(DeleteOperation {
+            obj_id: operational_point.get_id().to_string(),
+            obj_type: ObjectType::OperationalPoint,
+        })));
+        assert!(operations.contains(&Operation::Delete(DeleteOperation {
+            obj_id: speed_section.get_id().to_string(),
+            obj_type: ObjectType::SpeedSection,
         })));
     }
 }
