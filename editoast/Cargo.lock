@@ -1119,6 +1119,7 @@ dependencies = [
  "actix-web",
  "async-std",
  "async-trait",
+ "cfg-if",
  "chashmap",
  "chrono",
  "clap",

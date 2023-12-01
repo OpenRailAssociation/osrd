@@ -5,7 +5,7 @@ use diesel::sql_types::BigInt;
 use diesel::sql_types::Untyped;
 use diesel::{QueryResult, QueryableByName};
 use diesel_async::methods::LoadQuery;
-use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
+use diesel_async::AsyncPgConnection as PgConnection;
 use log::warn;
 use serde::Deserialize;
 use serde::Serialize;
@@ -166,7 +166,10 @@ impl<T> Paginated<T> {
             .into());
         }
 
-        let results = self.load::<InternalPaginatedResult<R>>(conn).await?;
+        let results = {
+            use diesel_async::RunQueryDsl;
+            self.load::<InternalPaginatedResult<R>>(conn).await?
+        };
 
         // Check when no results
         if results.is_empty() {
@@ -182,7 +185,7 @@ impl<T> Paginated<T> {
             }
         }
 
-        let count = results.get(0).unwrap().count;
+        let count = results.first().unwrap().count;
         let previous = if page > 1 { Some(page - 1) } else { None };
         let next = if count > page * page_size {
             Some(page + 1)
