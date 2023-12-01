@@ -18,20 +18,15 @@ use async_trait::async_trait;
 use diesel_async::AsyncPgConnection as PgConnection;
 
 pub use self::pathfinding::*;
-pub use documents::Document;
 pub use electrical_profiles::ElectricalProfileSet;
 pub use infra::{Infra, RAILJSON_VERSION};
 pub use projects::{Ordering, Project, ProjectWithStudies};
-pub use rolling_stock::{
-    LightRollingStockModel, RollingStockLiveryModel, RollingStockModel,
-    RollingStockSeparatedImageModel,
-};
+pub use rolling_stock::{LightRollingStockModel, RollingStockLiveryModel, RollingStockModel};
 pub use scenario::{Scenario, ScenarioWithCountTrains, ScenarioWithDetails};
 pub use study::{Study, StudyWithScenarios};
 pub use text_array::TextArray;
 pub use timetable::{
-    check_train_validity, get_timetable_train_schedules, Timetable, TimetableWithSchedules,
-    TimetableWithSchedulesDetails,
+    check_train_validity, get_timetable_train_schedules, Timetable, TimetableWithSchedulesDetails,
 };
 pub use train_schedule::{
     Allowance, FullResultStops, ResultPosition, ResultSpeed, ResultStops, ResultTrain,
@@ -39,6 +34,9 @@ pub use train_schedule::{
     SimulationOutputChangeset, SpacingRequirement, TrainSchedule, TrainScheduleChangeset,
     ZoneUpdate,
 };
+
+#[cfg(test)]
+pub use documents::Document;
 
 crate::schemas! {
     projects::schemas(),

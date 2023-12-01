@@ -16,36 +16,44 @@ pub mod sprite_config;
 mod switch;
 mod switch_type;
 pub mod track_section;
-
 pub mod utils;
+
 pub use buffer_stop::{BufferStop, BufferStopCache};
 pub use catenary::Catenary;
-use derivative::Derivative;
 pub use detector::{Detector, DetectorCache};
-use enum_map::Enum;
 pub use errors::{InfraError, InfraErrorType};
 pub use geo_json::GeoJson;
 pub use neutral_section::NeutralSection;
 pub use operational_point::{
     OperationalPoint, OperationalPointCache, OperationalPointExtensions,
-    OperationalPointIdentifierExtension, OperationalPointPart, OperationalPointPartCache,
+    OperationalPointIdentifierExtension, OperationalPointPart,
 };
 pub use railjson::{find_objects, RailJson, RailjsonError};
 pub use route::Route;
-use serde::{Deserialize, Serialize};
 pub use signal::{LogicalSignal, Signal, SignalCache, SignalExtensions, SignalSncfExtension};
 pub use speed_section::SpeedSection;
-use strum_macros::Display;
-use strum_macros::EnumIter;
 pub use switch::{Switch, SwitchCache};
 pub use switch_type::{
     builtin_node_types_list, Crossing, DoubleSlipSwitch, Link, PointSwitch, SingleSlipSwitch,
-    SwitchPortConnection, SwitchType,
+    SwitchType,
 };
-pub use track_section::{Curve, Slope, TrackSection, TrackSectionCache};
-use utoipa::ToSchema;
+pub use track_section::{TrackSection, TrackSectionCache};
+
+cfg_if! {
+    if #[cfg(test)] {
+        pub use operational_point::OperationalPointPartCache;
+        pub use switch_type::SwitchPortConnection;
+        pub use track_section::{Curve, Slope};
+    }
+}
 
 use self::utils::{Identifier, NonBlankString};
+
+use derivative::Derivative;
+use enum_map::Enum;
+use serde::{Deserialize, Serialize};
+use strum_macros::{Display, EnumIter};
+use utoipa::ToSchema;
 
 crate::schemas! {
     rolling_stock::schemas(),

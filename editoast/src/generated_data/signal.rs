@@ -3,7 +3,7 @@ use diesel::delete;
 use diesel::query_dsl::methods::FilterDsl;
 use diesel::sql_query;
 use diesel::sql_types::{Array, BigInt, Nullable, Text};
-use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
+use diesel_async::AsyncPgConnection as PgConnection;
 use std::collections::HashMap;
 use std::iter::Iterator;
 
@@ -50,7 +50,7 @@ async fn generate_signaling_system_and_sprite<'a, T: Iterator<Item = &'a String>
             .signals()
             .get(signal_id)
             .expect("Cache out of sync");
-        let logical_signal = match signal.unwrap_signal().logical_signals.get(0) {
+        let logical_signal = match signal.unwrap_signal().logical_signals.first() {
             Some(logical_signal) => logical_signal,
             None => continue,
         };
@@ -65,6 +65,7 @@ async fn generate_signaling_system_and_sprite<'a, T: Iterator<Item = &'a String>
     }
 
     for ((signaling_system, sprite_id), signals) in group_by_sprite {
+        use diesel_async::RunQueryDsl;
         sql_query("UPDATE infra_layer_signal SET signaling_system = $2, sprite = $3 WHERE infra_id = $1 AND obj_id = ANY($4)")
             .bind::<BigInt, _>(infra)
             .bind::<Text, _>(signaling_system)
@@ -83,6 +84,8 @@ impl GeneratedData for SignalLayer {
     }
 
     async fn generate(conn: &mut PgConnection, infra: i64, infra_cache: &InfraCache) -> Result<()> {
+        use diesel_async::RunQueryDsl;
+
         sql_query(include_str!("sql/generate_signal_layer.sql"))
             .bind::<BigInt, _>(infra)
             .execute(conn)
@@ -103,6 +106,8 @@ impl GeneratedData for SignalLayer {
         operations: &[crate::schema::operation::OperationResult],
         infra_cache: &crate::infra_cache::InfraCache,
     ) -> Result<()> {
+        use diesel_async::RunQueryDsl;
+
         let involved_objects =
             InvolvedObjects::from_operations(operations, infra_cache, ObjectType::Signal);
 
