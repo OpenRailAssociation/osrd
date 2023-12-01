@@ -66,6 +66,10 @@
     padding: 0.25rem 0.25rem 0.25rem 0.5rem;
     font-size: 1.1rem;
     transition: 0.4s;
+    &-text {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
   }
   .scenario-card-description {
     padding: 0.5rem;

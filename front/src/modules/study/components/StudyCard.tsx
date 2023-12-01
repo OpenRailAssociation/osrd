@@ -34,7 +34,9 @@ export default function StudyCard({ setFilterChips, study }: Props) {
         <span className="mr-2">
           <img src={studyLogo} alt="study logo" height="24" />
         </span>
-        {study.name}
+        <span className="study-card-name-text" title={study.name}>
+          {study.name}
+        </span>
         <button
           data-testid="openStudy"
           className="btn btn-primary btn-sm"

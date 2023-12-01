@@ -64,6 +64,10 @@
     padding: 0.5rem 0.5rem 0.5rem;
     background-color: var(--coolgray3);
     color: var(--secondary);
+    &-text {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
   }
   .study-card-type {
     overflow: hidden;
