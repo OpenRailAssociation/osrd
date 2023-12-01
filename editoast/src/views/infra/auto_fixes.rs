@@ -475,38 +475,18 @@ mod test {
         let small_infra_id = small_infra.id();
 
         let ports = HashMap::from([
-            (
-                "WRONG".into(),
-                TrackEndpoint {
-                    endpoint: Endpoint::End,
-                    track: "TA1".into(),
-                },
-            ),
-            (
-                "B1".into(),
-                TrackEndpoint {
-                    endpoint: Endpoint::Begin,
-                    track: "TA3".into(),
-                },
-            ),
-            (
-                "B2".into(),
-                TrackEndpoint {
-                    endpoint: Endpoint::Begin,
-                    track: "TA4".into(),
-                },
-            ),
+            ("WRONG".into(), TrackEndpoint::new("TA1", Endpoint::End)),
+            ("B1".into(), TrackEndpoint::new("TA3", Endpoint::Begin)),
+            ("B2".into(), TrackEndpoint::new("TA4", Endpoint::Begin)),
         ]);
         let invalid_switch = Switch {
             switch_type: "point_switch".into(),
             ports,
             ..Default::default()
         };
-        let invalid_switch_railjson = RailjsonObject::Switch {
-            railjson: invalid_switch.clone(),
-        };
         // Create an invalid switch
-        let req_create = get_create_operation_request(invalid_switch_railjson, small_infra_id);
+        let req_create =
+            get_create_operation_request(invalid_switch.clone().into(), small_infra_id);
         assert_eq!(
             call_service(&app, req_create).await.status(),
             StatusCode::OK
