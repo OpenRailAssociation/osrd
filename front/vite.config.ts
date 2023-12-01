@@ -50,7 +50,8 @@ export default defineConfig(({ mode, command }) => {
       environment: 'happy-dom',
       coverage: {
         all: true,
-        reportsDirectory: './tests/unit/coverage',
+        reporter: 'lcov',
+        provider: 'istanbul',
       },
     },
   };

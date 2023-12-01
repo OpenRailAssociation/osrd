@@ -437,10 +437,10 @@ jobs:
 
       - name: Execute tests within container
         run: |
-          docker run --name=front-test --net=host -v $PWD/output:/app/tests/unit \
+          docker run --name=front-test --net=host -v $PWD/front:/app \
             ${{ fromJSON(needs.build.outputs.stable_tags).front-build }} \
             yarn test-coverage
-          
+
           exit $(docker wait front-test)
 
       - name: Upload coverage to Codecov
@@ -451,7 +451,7 @@ jobs:
           fail_ci_if_error: true
           verbose: true
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./output/coverage/clover.xml
+          files: ./front/coverage/lcov.info
 
   integration_tests:
     runs-on: ubuntu-latest
