@@ -132,19 +132,6 @@ export default function drawTrain(
   }
 
   if (currentAllowanceSettings?.base) {
-    trainToDraw.tailPosition.forEach((tailPositionSection) =>
-      drawCurve(
-        chart,
-        `${isSelected && 'selected'} tail`,
-        tailPositionSection,
-        groupID,
-        'curveLinear',
-        CHART_AXES.SPACE_TIME,
-        'tailPosition',
-        rotate,
-        isSelected
-      )
-    );
     trainToDraw.headPosition.forEach((headPositionSection) =>
       drawCurve(
         chart,
@@ -158,23 +145,54 @@ export default function drawTrain(
         isSelected
       )
     );
-  }
-
-  if (currentAllowanceSettings?.eco && trainToDraw.eco_headPosition) {
-    trainToDraw.eco_headPosition.forEach((tailPositionSection) =>
+    trainToDraw.tailPosition.forEach((tailPositionSection) =>
       drawCurve(
         chart,
-        `${isSelected && 'selected'} head eco`,
+        `${isSelected && 'selected'} tail`,
         tailPositionSection,
         groupID,
         'curveLinear',
         CHART_AXES.SPACE_TIME,
-        'eco_headPosition',
+        'tailPosition',
         rotate,
         isSelected
       )
     );
   }
+
+  if (currentAllowanceSettings?.eco) {
+    if (trainToDraw.eco_headPosition) {
+      trainToDraw.eco_headPosition.forEach((ecoHeadPosition) =>
+        drawCurve(
+          chart,
+          `${isSelected && 'selected'} head eco`,
+          ecoHeadPosition,
+          groupID,
+          'curveLinear',
+          CHART_AXES.SPACE_TIME,
+          'eco_headPosition',
+          rotate,
+          isSelected
+        )
+      );
+    }
+    if (trainToDraw.eco_tailPosition) {
+      trainToDraw.eco_tailPosition.forEach((ecoTailPosition) =>
+        drawCurve(
+          chart,
+          `${isSelected && 'selected'} head eco`,
+          ecoTailPosition,
+          groupID,
+          'curveLinear',
+          CHART_AXES.SPACE_TIME,
+          'eco_headPosition',
+          rotate,
+          isSelected
+        )
+      );
+    }
+  }
+
   const { headPosition } = trainToDraw;
   const firstHeadPos = headPosition.length && headPosition[0].length ? headPosition[0][0] : null;
   if (firstHeadPos && firstHeadPos.time != null) {
