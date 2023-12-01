@@ -192,7 +192,7 @@ export default function RollingStockEditor({ rollingStocks }: RollingStockEditor
           setIsLoading={setIsLoading}
           mustResetFilters={isDuplicating}
           setMustResetFilters={setIsDuplicating}
-
+          hasWhiteBackground
         />
         {displayList()}
       </div>
