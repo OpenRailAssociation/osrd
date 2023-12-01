@@ -29,7 +29,7 @@ const InfraErrorMapControl: FC<{
       ? t(`Editor.infra-errors.label.title`, { count: total })
       : t(`Editor.infra-errors.label.title-with-filter`, { count: filterTotal, total });
 
-  const dislayErrors = useCallback(() => {
+  const displayErrors = useCallback(() => {
     openModal(
       <InfraErrorsModal
         onErrorClick={async (infraID: number, item: InfraError) => {
@@ -71,15 +71,15 @@ const InfraErrorMapControl: FC<{
 
   // ctrl+E opens the modal
   useEffect(() => {
-    register({ code: 'KeyE', optionalKeys: { ctrlKey: true }, handler: dislayErrors });
-  }, [dislayErrors]);
+    register({ code: 'KeyE', optionalKeys: { ctrlKey: true }, handler: displayErrors });
+  }, [displayErrors]);
 
   return (
     <button
       type="button"
       title={t('Editor.nav.infra-errors-list')}
       className="btn btn-sm p-1 shadow d-flex align-items-center justify-content-center"
-      onClick={dislayErrors}
+      onClick={displayErrors}
       disabled={total === 0}
     >
       <span className="px-1">{label}</span>

@@ -63,3 +63,9 @@ export const LAYER_TO_EDITOAST_DICT = flatMap(EDITOAST_TO_LAYER_DICT, (values, k
   }),
   {}
 ) as Record<LayerType, EditoastType>;
+
+export enum OPERATION_TYPE {
+  CREATE = 'CREATE',
+  UPDATE = 'UPDATE',
+  DELETE = 'DELETE',
+}

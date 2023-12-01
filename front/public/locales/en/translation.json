@@ -33,7 +33,13 @@
     "yes": "Yes",
     "zoom-in": "Zoom in",
     "zoom-out": "Zoom out",
-    "zoom-reset": "Reset zoom"
+    "zoom-reset": "Reset zoom",
+    "success": {
+      "save": {
+        "title": "Modifications saved",
+        "text": "Your modifications have been published"
+      }
+    }
   },
   "Editor": {
     "entities": {
@@ -145,6 +151,16 @@
       },
       "modal": {
         "title": "Infrastructure {{id}} error list"
+      },
+      "corrector-modal": {
+        "title": "Automatic error corrector",
+        "loading-loader": "Computing possible fixes",
+        "saving-loader": "Applying fixes to infrastructure",
+        "text": "The following actions will be applied to correct some of the infrastructure's errors:",
+        "create-actions": "{{creation_count}} object creations",
+        "update-actions": "{{update_count}} existing object updates",
+        "delete-actions": "{{deletion_count}} object deletions",
+        "total-fixes_zero": "No fixes found."
       }
     },
     "item-statuses": {
@@ -183,6 +199,7 @@
       "infra-changed": "You are now editing the infra \"{{label}}\" (id \"{{id}}\").",
       "infra-errors": "Display current infrastructure issues on the map",
       "infra-errors-list": "Configure display of issues",
+      "infra-error-corrector": "Automatic error corrector",
       "recenter": "Recenter the map",
       "select-infra": "Select the infrastructure to edit",
       "toggle-layers": "Choose the types of elements to display",

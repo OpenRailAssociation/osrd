@@ -8,16 +8,20 @@ export interface ConfirmModalProps {
   title?: string;
   confirmLabel?: string;
   cancelLabel?: string;
+  confirmDisabled?: boolean;
   onConfirm: () => void | Promise<void>;
   onCancel?: () => void | Promise<void>;
+  withCloseButton?: boolean;
 }
 
 export const ConfirmModal: FC<PropsWithChildren<ConfirmModalProps>> = ({
   title,
   confirmLabel,
   cancelLabel,
+  confirmDisabled = false,
   onConfirm,
   onCancel,
+  withCloseButton = true,
   children,
 }) => {
   const { t } = useTranslation();
@@ -51,13 +55,13 @@ export const ConfirmModal: FC<PropsWithChildren<ConfirmModalProps>> = ({
   }, [onCancel, closeModal]);
 
   return (
-    <Modal title={title} withCloseButton>
+    <Modal title={title} withCloseButton={withCloseButton}>
       {children}
 
-      <div className="text-right m-auto">
+      <div className="d-flex ml-auto mt-3">
         <button
           type="button"
-          className="btn btn-primary mr-5"
+          className="btn btn-secondary flex-grow-1"
           onClick={() => cancel()}
           disabled={disabled}
         >
@@ -65,9 +69,9 @@ export const ConfirmModal: FC<PropsWithChildren<ConfirmModalProps>> = ({
         </button>
         <button
           type="button"
-          className="btn btn-danger"
+          className="btn btn-primary flex-grow-1 ml-2"
           onClick={() => confirm()}
-          disabled={disabled}
+          disabled={confirmDisabled || disabled}
         >
           {confirmLabel || t('common.confirm')}
         </button>

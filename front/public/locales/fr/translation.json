@@ -33,7 +33,13 @@
     "yes": "Oui",
     "zoom-in": "Zoomer",
     "zoom-out": "Dézoomer",
-    "zoom-reset": "Réinitialiser le zoom"
+    "zoom-reset": "Réinitialiser le zoom",
+    "success": {
+      "save": {
+        "title": "Modifications enregistrées",
+        "text": "Vos modifications ont été publiées"
+      }
+    }
   },
   "Editor": {
     "entities": {
@@ -145,6 +151,16 @@
       },
       "modal": {
         "title": "Anomalies de l'infrastructure {{id}}"
+      },
+      "corrector-modal": {
+        "title": "Correcteur automatique d’anomalies",
+        "loading-loader": "Calcul des corrections possibles",
+        "saving-loader": "Corrections en cours d'application sur l’infrastructure",
+        "text": "Les actions suivantes vont être appliquées pour corriger certaines anomalies d’infrastructure :",
+        "create-actions": "{{creation_count}} créations d’objets",
+        "update-actions": "{{update_count}} modifications d’objets existants",
+        "delete-actions": "{{deletion_count}} suppressions d’objets",
+        "total-fixes_zero": "Aucune correction trouvée"
       }
     },
     "item-statuses": {
@@ -183,6 +199,7 @@
       "infra-changed": "Vous éditez maintenant l'infra \"{{label}}\" (id \"{{id}}\").",
       "infra-errors-map": "Afficher/Masquer les anomalies d'infrastructure",
       "infra-errors-list": "Gestion et affichage des anomalies",
+      "infra-error-corrector": "Correcteur automatique d’anomalies",
       "recenter": "Recentrer la carte",
       "select-infra": "Choisir l'infrastructure à éditer",
       "toggle-layers": "Choisir les types d'éléments à afficher",
