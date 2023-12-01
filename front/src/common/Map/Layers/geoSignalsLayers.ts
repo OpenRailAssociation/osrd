@@ -89,7 +89,7 @@ export function getSignalLayerProps(context: SignalContext): OmitLayer<SymbolLay
         ['literal', signalCenteredTextOffset],
       ],
       'icon-offset': iconOffset,
-      'icon-image': ['concat', ['get', 'signaling_system'], ':', ['get', 'sprite']],
+      'icon-image': 'CARRE VL',
       'icon-size': 0.5,
       'text-anchor': 'center',
       'icon-rotation-alignment': 'map',

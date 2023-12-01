@@ -8,22 +8,18 @@ type MapSearchProps = {
 };
 
 const animation = [
-  '48.6728/2.3937/12.4703/0/0',
-  '48.6728/2.3937/12.4703/0/0',
-  '48.7399/2.4393/14.4744/-19.2/0/8000',
-  '48.7525/2.4434/16.3838/-12.8/42.5/4000',
-  '48.7692/2.4394/16.3838/-12.8/42.5/4000',
-  '48.7801/2.4344/17.3858/-16.8/72',
-  '48.8091/2.4235/17.3858/-16.8/72/8000',
-  '48.8228/2.4087/17.3858/-40.8/71.5',
-  '48.8408/2.381/17.3858/-57.6/72',
-  '48.8416/2.3757/15.7157/-44.8/0',
+  '45.6163/5.8854/15.1412/150.1267/0/1',
+  '45.6163/5.8854/15.1412/150.1267/0/4000',
+  '45.5685/5.9232/15.16/148.5267/60/16000 easeQuadIn',
+  // '45.5748/5.9274/15.3589/37.2121/81.9043/16000 easeCubicOut',
+  '45.5865/5.9256/14.8384/0/81.9043/17000 easeSinOut',
 ];
 
 export default function AnimateCamera({ map }: MapSearchProps) {
   function animationStep(cameraPosition: string, durationDefault: number) {
     if (map) {
-      const [lat, lng, zoom, bearing, pitch, duration = durationDefault] = cameraPosition
+      const [coordinates, easing = 'easeLinear' as any] = cameraPosition.split(' ');
+      const [lat, lng, zoom, bearing, pitch, duration = durationDefault] = coordinates
         .split('/')
         .map((number) => +number);
       map.easeTo({
@@ -36,7 +32,7 @@ export default function AnimateCamera({ map }: MapSearchProps) {
         pitch,
         essential: true,
         freezeElevation: true,
-        easing: (x) => x,
+        easing: (x) => d3[easing](x),
         duration,
       });
     }
@@ -46,24 +42,15 @@ export default function AnimateCamera({ map }: MapSearchProps) {
   }
 
   async function launchAnimation() {
-    if (map?.once('move')) {
-      map.stop();
-    } else {
-      await animation.reduce(async (promiseChain, step, idx) => {
-        await promiseChain;
-        await animationStep(step, idx === 0 ? 1 : 4000);
-      }, Promise.resolve());
-    }
+    await animation.reduce(async (promiseChain, step, idx) => {
+      await promiseChain;
+      await animationStep(step, idx === 0 ? 1 : 4000);
+    }, Promise.resolve());
   }
 
   return (
     <div className="btn-map-animate">
-      <button
-        type="button"
-        className="btn-rounded btn-rounded-white"
-        onClick={() => launchAnimation()}
-      >
-        <span className="sr-only">Reset north</span>
+      <button type="button" className="btn-rounded btn-rounded-white" onClick={launchAnimation}>
         <GoVideo />
       </button>
     </div>
