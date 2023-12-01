@@ -57,6 +57,7 @@ export default function StudyCard({ setFilterChips, scenario }: Props) {
               role="button"
               tabIndex={0}
               onClick={() => setFilterChips(tag)}
+              title={tag}
             >
               {tag}
             </div>

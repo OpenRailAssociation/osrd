@@ -120,7 +120,7 @@
   }
   .project-card-description {
     padding: 0 0.5rem;
-    height: 5rem;
+    height: 3.9rem;
     overflow: auto;
     font-size: 0.8rem;
     &::first-letter {
@@ -133,9 +133,11 @@
     flex-wrap: wrap;
     gap: 0.25rem;
     margin-top: 0.5rem;
-    padding: 0 0.5rem 0.5rem;
+    padding: 0.25rem 0.5rem;
+    height: 2.7rem;
+    overflow: auto;
+    font-weight: 500;
     font-size: 0.8rem;
-    min-height: 1.5rem;
     .project-card-tags-tag {
       color: var(--white);
       background-color: var(--purple);
@@ -144,6 +146,7 @@
       transition: 0.2s;
       max-width: 30%;
       overflow: hidden;
+      white-space: nowrap;
       text-overflow: ellipsis;
       cursor: pointer;
       &:hover {
