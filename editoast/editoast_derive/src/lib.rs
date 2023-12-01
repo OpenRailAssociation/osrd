@@ -241,6 +241,12 @@ pub fn search_config_store(input: proc_macro::TokenStream) -> proc_macro::TokenS
 /// * `#[model(changeset(type_name = "YourChangesetType"))]`: the name of the changeset struct (defaults to `ModelChangeset`)
 /// * `#[model(changeset(derive(ADDITIONAL_DERIVES*,)))]`: additional derives for the changeset struct (always implicitely derives `Default, Queryable, QueryableByName, AsChangeset, Insertable`)
 /// * `#[model(changeset(public))]`: make the changeset struct fields `pub` (private by default)
+/// * `#[model(identifier = IDENTIFIER)]` (multiple): just like `#[model(identifier)]` for fields, but at the struct level.
+///     `IDENTIFIER` can be a compound identifier with the syntax `(field1, field2, ...)` (e.g.: `#[model(identifier = (infra_id, obj_id))]`).
+///     This option can be specified multiple times. The same rules applies as for fields.
+/// * `#[model(preferred = PREFERRED)]`: just like `#[model(preferred)]` for fields, but at the struct level.
+///     Compound identifier syntax is supported. This option can be specified only once, including at field level.
+///     It is NOT NECESSARY to also specify `#[model(identifier = PREFERRED)]`.
 ///
 /// ### Field-level options
 ///
@@ -251,7 +257,9 @@ pub fn search_config_store(input: proc_macro::TokenStream) -> proc_macro::TokenS
 ///     This field will be excluded from the changeset and the changeset/patch builder.
 /// * `#[model(preferred)]`: implies `identifier` ; also generates `impl PreferredId<T> for Model`
 /// * `#[model(primary)]`: implies `identifier` ; marks the field as the primary key of the table
-/// * `#[model(json)]` **TODO**: wraps the row field with `diesel_jsonb::JsonValue`
+/// * `#[model(json)]`: wraps the row field with `diesel_jsonb::JsonValue` (diesel column type: `diesel_jsonb::Json<T>`)
+/// * `#[model(to_string)]`: calls `to_string()` before writing the field to the database and calls `String::from` after reading (diesel column type: String)
+/// * `#[model(remote = T)]`: calls `Into::<T>::into` before writing the field to the database and calls `T::from` after reading (diesel column type: T)
 /// * `#[model(geo)]` **TODO**: TBD
 ///
 /// #### A note on identifiers
