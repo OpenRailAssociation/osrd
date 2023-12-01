@@ -256,7 +256,7 @@ jobs:
             -v $PWD/railjson_generated_examples:/railjson_generated_examples \
             -e EXAMPLES_PATH=/railjson_generated_examples \
             -v $PWD/core/build:/output ${{ fromJSON(needs.build.outputs.stable_tags).core-build }} \
-            /bin/bash -c "gradle -Pspotbugs_report_xml --continue check; cp -r build/* /output/"
+            /bin/bash -c 'gradle -Pspotbugs_report_xml --continue check; status=$?; cp -r build/* /output/; exit $status'
           exit $(docker wait core-test)
 
       - name: Upload coverage to Codecov
@@ -340,8 +340,9 @@ jobs:
           docker run --name=editoast-test --net=host -v $PWD/output:/output \
             -e DATABASE_URL="postgres://osrd:password@localhost:5432/osrd" \
             ${{ fromJSON(needs.build.outputs.stable_tags).editoast-test }} \
-            /bin/bash -c "diesel migration run --locked-schema; cargo test --verbose; grcov . --binary-path ./target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore "/*" -o /output/lcov.info"
-            exit $(docker wait editoast-test)
+            /bin/bash -c "diesel migration run --locked-schema && cargo test --verbose && grcov . --binary-path ./target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore "/*" -o /output/lcov.info"
+          
+          exit $(docker wait editoast-test)
 
       - name: Upload coverage
         uses: codecov/codecov-action@v3
@@ -371,14 +372,16 @@ jobs:
             -e RUSTDOCFLAGS="-D warnings" \
             ${{ fromJSON(needs.build.outputs.stable_tags).editoast-test }} \
             cargo doc --manifest-path ./Cargo.toml --no-deps
-            exit $(docker wait editoast-doc)
+          
+          exit $(docker wait editoast-doc)
 
       - name: Format check
         run: |
           docker run --name=editoast-format --net=host -v $PWD/output:/output \
             ${{ fromJSON(needs.build.outputs.stable_tags).editoast-test }} \
             cargo fmt --check
-            exit $(docker wait editoast-format)
+          
+          exit $(docker wait editoast-format)
 
   check_gateway:
     runs-on: ubuntu-latest
@@ -393,7 +396,8 @@ jobs:
         run: |
           docker run --name=gateway-test --net=host -v $PWD/output:/output \
             ${{ fromJSON(needs.build.outputs.stable_tags).gateway-test }} \
-            /bin/bash -c "cargo test --verbose; grcov . --binary-path ./target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore "/*" -o /output/lcov.info"
+            /bin/bash -c "cargo test --verbose && grcov . --binary-path ./target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore "/*" -o /output/lcov.info"
+          
           exit $(docker wait gateway-test)
 
       - name: Upload coverage to Codecov
@@ -412,6 +416,7 @@ jobs:
             -e RUSTDOCFLAGS="-D warnings" \
             ${{ fromJSON(needs.build.outputs.stable_tags).gateway-test }} \
             cargo doc --manifest-path ./Cargo.toml --no-deps
+          
           exit $(docker wait gateway-doc)
 
       - name: Format check
@@ -435,6 +440,7 @@ jobs:
           docker run --name=front-test --net=host -v $PWD/output:/app/tests/unit \
             ${{ fromJSON(needs.build.outputs.stable_tags).front-build }} \
             yarn test-coverage
+          
           exit $(docker wait front-test)
 
       - name: Upload coverage to Codecov
@@ -492,6 +498,7 @@ jobs:
               -v $PWD/front/test-results:/app/test-results \
               ${{ fromJSON(needs.build.outputs.stable_tags).front-build }} \
               /bin/sh -c "npx playwright install --with-deps && yarn e2e-tests"
+
             exit $(docker wait playwright-test)
 
       - uses: actions/upload-artifact@v3
