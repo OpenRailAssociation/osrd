@@ -1,4 +1,4 @@
-import { Page } from '@playwright/test';
+import { Page } from '../baseFixtures';
 import rollingstockTranslation from '../../public/locales/fr/rollingstock.json';
 
 class PlaywrightCommonPage {

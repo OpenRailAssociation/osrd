@@ -55,7 +55,7 @@ services:
     container_name: osrd-front
     build:
       context: front
-      dockerfile: docker/Dockerfile.${OSRD_FRONT_MODE-devel}
+      dockerfile: docker/Dockerfile.devel
       args:
         OSRD_GIT_DESCRIBE: ${OSRD_GIT_DESCRIBE}
     environment:

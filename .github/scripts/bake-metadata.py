@@ -40,7 +40,7 @@ TARGETS = [
     Target(name="editoast", image="editoast", release=True),
     Target(name="editoast-test", image="editoast", variant="test"),
     Target(name="front-devel", image="front", variant="devel"),
-    Target(name="front-nginx", image="front", variant="nginx"),
+    Target(name="front-test", image="front", variant="test"),
     Target(name="front-build", image="front", variant="build"),
     Target(name="gateway-standalone", image="gateway", variant="standalone"),
     Target(name="gateway-test", image="gateway", variant="test"),

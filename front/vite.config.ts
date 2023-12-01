@@ -4,9 +4,10 @@ import react from '@vitejs/plugin-react-swc';
 import viteTsconfigPaths from 'vite-tsconfig-paths';
 import ImportMetaEnvPlugin from '@import-meta-env/unplugin';
 import checker from 'vite-plugin-checker';
+import IstanbulPlugin from 'vite-plugin-istanbul';
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ mode, command }) => {
   const env = loadEnv(mode, process.cwd(), '');
   return {
     plugins: [
@@ -14,6 +15,7 @@ export default defineConfig(({ mode }) => {
       viteTsconfigPaths(),
       ImportMetaEnvPlugin.vite({
         example: '.env.example',
+        transformMode: command === 'serve' ? 'compile-time' : 'runtime',
       }),
       checker({
         typescript: {
@@ -25,6 +27,14 @@ export default defineConfig(({ mode }) => {
         overlay: env.OSRD_VITE_OVERLAY !== 'false' && {
           initialIsOpen: env.OSRD_VITE_OVERLAY_OPEN_BY_DEFAULT === 'true',
         },
+      }),
+      IstanbulPlugin({
+        include: 'src/*',
+        exclude: ['node_modules', 'test/'],
+        extension: ['.js', '.jsx', '.ts', '.tsx'],
+        requireEnv: true,
+        checkProd: false,
+        forceBuildInstrument: mode === 'development' && env.VITE_COVERAGE === 'true',
       }),
     ],
     build: {

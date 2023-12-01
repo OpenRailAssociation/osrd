@@ -1,4 +1,4 @@
-import { Locator, Page, expect } from '@playwright/test';
+import { Locator, Page, expect } from '../baseFixtures';
 
 class PlaywrightScenarioPage {
   readonly getScenarioUpdateBtn: Locator;

@@ -1,5 +1,5 @@
 /* eslint-disable import/prefer-default-export */
-import { expect, Locator, Page } from '@playwright/test';
+import { expect, Locator, Page } from '../baseFixtures';
 import study from '../../public/locales/fr/operationalStudies/study.json';
 
 export class StudyPage {

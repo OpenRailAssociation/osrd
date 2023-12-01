@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './baseFixtures';
 import { PlaywrightHomePage } from './pages/home-page-model';
 
 // Describe the test suite for the home page of OSRD

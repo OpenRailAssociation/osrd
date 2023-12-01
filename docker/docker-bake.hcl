@@ -7,7 +7,7 @@ group "default" {
     "editoast",
     "editoast-test",
     "front-devel",
-    "front-nginx",
+    "front-test",
     "front-build",
     "gateway-standalone",
     "gateway-test",
@@ -34,7 +34,6 @@ target "base" {
 ########
 
 target "base-core-build" {}
-
 target "core-build" {
   inherits = ["base", "base-core-build"]
   context = "core"
@@ -43,7 +42,6 @@ target "core-build" {
 }
 
 target "base-core" {}
-
 target "core" {
   inherits = ["base", "base-core"]
   context = "core"
@@ -82,19 +80,20 @@ target "front-devel" {
   dockerfile = "docker/Dockerfile.devel"
 }
 
-target "base-front-nginx" {}
-target "front-nginx" {
-  inherits = ["base", "base-front-nginx"]
+target "base-front-test" {}
+target "front-test" {
+  inherits = ["base", "base-front-test"]
   context = "front"
-  dockerfile = "docker/Dockerfile.nginx"
+  dockerfile = "docker/Dockerfile"
+  target = "test_serve"
 }
 
 target "base-front-build" {}
 target "front-build" {
   inherits = ["base", "base-front-build"]
   context = "front"
-  dockerfile = "docker/Dockerfile.nginx"
-  target = "build"
+  dockerfile = "docker/Dockerfile"
+  target = "prod_build"
 }
 
 ###########

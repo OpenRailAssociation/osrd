@@ -1,4 +1,4 @@
-import { test } from '@playwright/test';
+import { test } from './baseFixtures';
 import { PlaywrightHomePage } from './pages/home-page-model';
 import { ProjectPage } from './pages/project-page-model';
 import { StudyPage } from './pages/study-page-model';

@@ -1,4 +1,4 @@
-import { expect, Page, request } from '@playwright/test';
+import { expect, Page, request } from '../baseFixtures';
 import { PlaywrightHomePage } from '../pages/home-page-model';
 import PlaywrightRollingstockModalPage from '../pages/rollingstock-modal-model';
 import PlaywrightMap, { selectPointOnMapProps } from '../pages/map-model';

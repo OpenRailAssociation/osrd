@@ -478,7 +478,7 @@ jobs:
         id: start_playwright_worker
         run: |
           set -e
-          export OSRD_FRONT_MODE=nginx
+          export OSRD_FRONT_MODE=test
           export TAG='${{ needs.build.outputs.stable_version }}'
           services='editoast core front gateway'
           docker compose pull $services
@@ -496,10 +496,21 @@ jobs:
             docker run --init --name=playwright-test --net=host \
               -e CI=true \
               -v $PWD/front/test-results:/app/test-results \
+              -v $PWD/front/coverage:/app/coverage \
               ${{ fromJSON(needs.build.outputs.stable_tags).front-build }} \
-              /bin/sh -c "npx playwright install --with-deps && yarn e2e-tests"
+              /bin/sh -c "npx playwright install --with-deps && yarn e2e-tests && npx nyc report --reporter=lcov"
 
             exit $(docker wait playwright-test)
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          name: codecov
+          flags: front
+          fail_ci_if_error: true
+          verbose: true
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./front/coverage/lcov.info
 
       - uses: actions/upload-artifact@v3
         if: always()

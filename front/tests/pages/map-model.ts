@@ -1,4 +1,4 @@
-import { Locator, Page } from '@playwright/test';
+import { Locator, Page } from '../baseFixtures';
 import { PlaywrightHomePage } from './home-page-model';
 
 export interface selectPointOnMapProps {

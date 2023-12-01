@@ -1,4 +1,4 @@
-import { expect, Locator, Page } from '@playwright/test';
+import { expect, Locator, Page } from '../baseFixtures';
 /* eslint-disable import/prefer-default-export */
 import infraManagement from '../../public/locales/fr/infraManagement.json';
 import rollingstockTranslation from '../../public/locales/fr/rollingstock.json';

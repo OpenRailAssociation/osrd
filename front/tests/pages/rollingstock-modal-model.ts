@@ -1,4 +1,4 @@
-import { Locator, Page, expect } from '@playwright/test';
+import { Locator, Page, expect } from '../baseFixtures';
 import PlaywrightCommonPage from './common-page-model';
 
 class PlaywrightRollingstockModalPage {

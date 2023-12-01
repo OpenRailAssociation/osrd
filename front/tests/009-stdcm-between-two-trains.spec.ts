@@ -1,4 +1,4 @@
-import { test } from '@playwright/test';
+import { test } from './baseFixtures';
 import { PlaywrightHomePage } from './pages/home-page-model';
 import PlaywrightRollingstockModalPage from './pages/rollingstock-modal-model';
 import { PlaywrightSTDCMPage } from './pages/stdcm-page-model';

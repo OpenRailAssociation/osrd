@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './baseFixtures';
 import { Infra, Project, Scenario, Study } from 'common/api/osrdEditoastApi';
 import { v4 as uuidv4 } from 'uuid';
 import { PlaywrightHomePage } from './pages/home-page-model';

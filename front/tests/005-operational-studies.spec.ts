@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './baseFixtures';
 import { PlaywrightHomePage } from './pages/home-page-model';
 import PlaywrightRollingstockModalPage from './pages/rollingstock-modal-model';
 import PlaywrightMap from './pages/map-model';
