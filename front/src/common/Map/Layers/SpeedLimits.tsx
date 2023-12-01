@@ -9,7 +9,7 @@ import { MAP_URL } from 'common/Map/const';
 import { Theme, OmitLayer } from 'types';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import { getInfraID } from 'reducers/osrdconf/selectors';
-import { MapState } from '../../../reducers/map';
+import { MapState } from 'reducers/map';
 
 interface SpeedLimitsProps {
   colors: Theme;
@@ -17,7 +17,7 @@ interface SpeedLimitsProps {
 }
 
 export function getSpeedSectionsTag({ speedlimittag }: MapState['layersSettings']): string {
-  return `speed_limit_by_tag_${speedlimittag}`;
+  return speedlimittag !== null ? `speed_limit_by_tag_${speedlimittag}` : 'null';
 }
 
 export function getSpeedSectionsNameString(rawSpeed: number) {
@@ -29,10 +29,7 @@ export function getSpeedSectionsName(
 ): ExpressionSpecification {
   const tag = getSpeedSectionsTag(layersSettings);
 
-  return [
-    'round',
-    ['*', 3.6, ['case', ['!=', ['get', tag], 'null'], ['get', tag], ['get', 'speed_limit']]],
-  ];
+  return ['round', ['*', 3.6, ['case', ['!=', tag, 'null'], ['get', tag], ['get', 'speed_limit']]]];
 }
 
 export function getSpeedSectionsFilter(

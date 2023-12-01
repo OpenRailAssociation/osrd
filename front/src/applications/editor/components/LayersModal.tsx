@@ -40,8 +40,6 @@ export const LAYERS: Array<{ layers: LayerType[]; icon: string | JSX.Element }> 
   },
 ];
 
-const NO_SPEED_LIMIT_TAG = 'undefined';
-
 interface LayersModalProps {
   initialLayers: Set<LayerType>;
   selection?: EditorEntity[];
@@ -59,9 +57,11 @@ const LayersModal: FC<LayersModalProps> = ({
   const { layersSettings } = useSelector(getMap);
   const [selectedLayers, setSelectedLayers] = useState<Set<LayerType>>(initialLayers);
   const infraID = useSelector(getInfraID);
+
   const { data: speedLimitTags } = osrdEditoastApi.endpoints.getInfraByIdSpeedLimitTags.useQuery({
     id: infraID as number,
   });
+  const DEFAULT_SPEED_LIMIT_TAG = useMemo(() => t('map-settings:noSpeedLimitByTag'), [t]);
   const selectionCounts = useMemo(
     () =>
       selection
@@ -110,7 +110,7 @@ const LayersModal: FC<LayersModalProps> = ({
   );
 
   const speedLimitOptions = useMemo(
-    () => uniq([NO_SPEED_LIMIT_TAG, ...(speedLimitTags || [])]),
+    () => uniq([DEFAULT_SPEED_LIMIT_TAG, ...(speedLimitTags || [])]),
     [speedLimitTags]
   );
 
@@ -177,20 +177,21 @@ const LayersModal: FC<LayersModalProps> = ({
           <select
             id="speedLimitTag"
             className="form-control"
-            value={layersSettings.speedlimittag}
+            value={layersSettings.speedlimittag || DEFAULT_SPEED_LIMIT_TAG}
             disabled={!isArray(speedLimitTags) || !selectedLayers.has('speed_sections')}
             onChange={(e) => {
+              const newTag = e.target.value !== DEFAULT_SPEED_LIMIT_TAG ? e.target.value : null;
               dispatch(
                 updateLayersSettings({
                   ...layersSettings,
-                  speedlimittag: e.target.value === NO_SPEED_LIMIT_TAG ? undefined : e.target.value,
+                  speedlimittag: newTag,
                 })
               );
             }}
           >
             {speedLimitOptions.map((tag) => (
               <option value={tag} key={tag}>
-                {tag === NO_SPEED_LIMIT_TAG ? t('Editor.layers-modal.no-speed-limit-tag') : tag}
+                {tag}
               </option>
             ))}
           </select>
