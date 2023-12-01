@@ -35,7 +35,9 @@ export default function StudyCard({ setFilterChips, scenario }: Props) {
         <span className="mr-2">
           <RiFolderChartLine />
         </span>
-        {scenario.name}
+        <span className="scenario-card-name-text" title={scenario.name}>
+          {scenario.name}
+        </span>
         <button
           data-testid="openScenario"
           className="btn btn-sm"
