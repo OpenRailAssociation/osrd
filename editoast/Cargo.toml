@@ -75,7 +75,7 @@ geos = { version = "8.3.0", features = ["json"] }
 rangemap.workspace = true
 actix-multipart = "0.6.1"
 reqwest = { version = "0.11.22", features = ["json"] }
-osm4routing = "0.5.8"
+osm4routing = "0.5.9"
 osmpbfreader = "0.16.0"
 itertools = "0.11.0"
 utoipa.workspace = true
