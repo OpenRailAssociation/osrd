@@ -6,7 +6,7 @@ use std::{
 use darling::{
     ast,
     util::{self, PathList},
-    FromDeriveInput, FromField, FromMeta, Result,
+    Error, FromDeriveInput, FromField, FromMeta, Result,
 };
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
@@ -145,6 +145,10 @@ struct ModelFieldOption {
     json: bool,
     #[darling(default)]
     geo: bool,
+    #[darling(default)]
+    to_string: bool,
+    #[darling(default)]
+    remote: Option<syn::Path>,
 }
 
 #[derive(Debug, PartialEq)]
@@ -169,16 +173,48 @@ struct ModelField {
     identifier: bool,
     preferred: bool,
     primary: bool,
-    json: bool,
-    geo: bool,
+    transform: Option<FieldTransformation>,
 }
 
-impl From<ModelFieldOption> for ModelField {
-    fn from(value: ModelFieldOption) -> Self {
-        let ident = value.ident.expect("Model only works for named structs");
+#[derive(Debug, PartialEq, Clone)]
+enum FieldTransformation {
+    Remote(syn::Path),
+    Json,
+    Geo,
+    ToString,
+}
+
+impl FieldTransformation {
+    fn from_args(
+        remote: Option<syn::Path>,
+        json: bool,
+        geo: bool,
+        to_string: bool,
+    ) -> Result<Option<Self>> {
+        match (remote, json, geo, to_string) {
+            (Some(ty), false, false, false) => Ok(Some(Self::Remote(ty))),
+            (None, true, false, false) => Ok(Some(Self::Json)),
+            (None, false, true, false) => Ok(Some(Self::Geo)),
+            (None, false, false, true) => Ok(Some(Self::ToString)),
+            (None, false, false, false) => Ok(None),
+            _ => Err(Error::custom(
+                "Model: remote, json, geo, and to_string attributes are mutually exclusive",
+            )),
+        }
+    }
+}
+
+impl ModelField {
+    fn from_macro_args(value: ModelFieldOption) -> Result<Self> {
+        let ident = value
+            .ident
+            .ok_or(Error::custom("Model: only works for named structs"))?;
         let column = value.column.unwrap_or_else(|| ident.to_string());
         let builder_ident = value.builder_fn.unwrap_or_else(|| ident.clone());
-        Self {
+        let transform =
+            FieldTransformation::from_args(value.remote, value.json, value.geo, value.to_string)
+                .map_err(|e| e.with_span(&ident))?;
+        Ok(Self {
             ident,
             builder_ident,
             column,
@@ -187,8 +223,43 @@ impl From<ModelFieldOption> for ModelField {
             identifier: value.identifier,
             preferred: value.preferred,
             primary: value.primary,
-            json: value.json,
-            geo: value.geo,
+            transform,
+        })
+    }
+
+    #[allow(clippy::wrong_self_convention)]
+    fn into_transformed(&self, expr: TokenStream) -> TokenStream {
+        match self.transform {
+            Some(FieldTransformation::Remote(_)) => {
+                let ty = &self.ty;
+                quote! {  Into::<#ty>::into(#expr) }
+            }
+            Some(FieldTransformation::Json) => quote! { diesel_json::Json(#expr) },
+            Some(FieldTransformation::Geo) => unimplemented!("to be designed"),
+            Some(FieldTransformation::ToString) => quote! { #expr.to_string() },
+            None => quote! { #expr },
+        }
+    }
+
+    #[allow(clippy::wrong_self_convention)]
+    fn from_transformed(&self, expr: TokenStream) -> TokenStream {
+        match self.transform {
+            Some(FieldTransformation::Remote(ref ty)) => quote! { #ty::from(#expr) },
+            Some(FieldTransformation::Json) => quote! { #expr.0 },
+            Some(FieldTransformation::Geo) => unimplemented!("to be designed"),
+            Some(FieldTransformation::ToString) => quote! { String::from(#expr.parse()) },
+            None => quote! { #expr },
+        }
+    }
+
+    fn transform_type(&self) -> TokenStream {
+        let ty = &self.ty;
+        match self.transform {
+            Some(FieldTransformation::Remote(ref ty)) => quote! { #ty },
+            Some(FieldTransformation::Json) => quote! { diesel_json::Json<#ty> },
+            Some(FieldTransformation::Geo) => unimplemented!("to be designed"),
+            Some(FieldTransformation::ToString) => quote! { String },
+            None => quote! { #ty },
         }
     }
 }
@@ -217,7 +288,7 @@ impl Fields {
 }
 
 impl ModelConfig {
-    fn new(options: ModelOptions, model_name: syn::Ident) -> Self {
+    fn from_macro_args(options: ModelOptions, model_name: syn::Ident) -> Result<Self> {
         let row = GeneratedType {
             type_name: options.row.type_name.or(Some(format!("{}Row", model_name))),
             ..options.row
@@ -231,19 +302,22 @@ impl ModelConfig {
         };
 
         // transform fields
-        let fields = Fields(
-            options
+        let fields = {
+            let mut acc = Error::accumulator();
+            let fields = options
                 .data
                 .take_struct()
-                .expect("Model: only named structs are supported")
+                .ok_or(Error::custom("Model: only named structs are supported"))?
                 .fields
                 .into_iter()
-                .map(Into::into)
-                .collect(),
-        );
+                .filter_map(|field| acc.handle(ModelField::from_macro_args(field)))
+                .collect();
+            acc.finish_with(fields)
+        }?;
+        let fields = Fields(fields);
         let first_field = &fields
             .first()
-            .expect("Model: at least one field is required")
+            .ok_or(Error::custom("Model: at least one field is required"))?
             .ident;
         let field_map: HashMap<_, _> = fields
             .iter()
@@ -281,7 +355,7 @@ impl ModelConfig {
                         .unwrap_or_else(|| first_field.clone()),
                 )
             }
-            _ => panic!("Model: multiple primary fields found"),
+            _ => return Err(Error::custom("Model: multiple primary fields found")),
         };
 
         // collect or infer the preferred identifier field
@@ -296,13 +370,17 @@ impl ModelConfig {
             (Some(id), []) => id.clone(),
             (None, [field]) => Identifier::Field(field.ident.clone()),
             (None, []) => primary_field.clone(),
-            _ => panic!("Model: conflicting preferred field declarations"),
+            _ => {
+                return Err(Error::custom(
+                    "Model: conflicting preferred field declarations",
+                ))
+            }
         };
 
         identifiers.insert(primary_field.clone());
         identifiers.insert(preferred_identifier.clone());
 
-        Self {
+        Ok(Self {
             model: model_name,
             table: options.table,
             fields,
@@ -311,7 +389,7 @@ impl ModelConfig {
             primary_field,
             row,
             changeset,
-        }
+        })
     }
 
     fn iter_fields(&self) -> impl Iterator<Item = &ModelField> {
@@ -339,12 +417,12 @@ impl ModelConfig {
         let table = &self.table;
         let (field, (ty, column)): (Vec<_>, (Vec<_>, Vec<_>)) = self
             .iter_fields()
-            .map(|field| (&field.ident, (&field.ty, &field.column)))
+            .map(|field| (&field.ident, (field.transform_type(), &field.column)))
             .unzip();
         let (cs_field, (cs_ty, cs_column)): (Vec<_>, (Vec<_>, Vec<_>)) = self
             .iter_fields()
             .filter(|f| !self.is_primary(f))
-            .map(|field| (&field.ident, (&field.ty, &field.column)))
+            .map(|field| (&field.ident, (field.transform_type(), &field.column)))
             .unzip();
         let cs_ident = self.changeset.ident();
         let cs_derive = &self.changeset.derive;
@@ -388,10 +466,11 @@ impl ModelConfig {
             .filter(|field| !field.builder_skip)
             .map(|field| {
                 let ident = &field.ident;
+                let expr = field.into_transformed(quote! { #ident });
                 let body = if changeset {
-                    quote! { self.#ident = Some(#ident) }
+                    quote! { self.#ident = Some(#expr) }
                 } else {
-                    quote! { self.changeset.#ident = Some(#ident) }
+                    quote! { self.changeset.#ident = Some(#expr) }
                 };
                 (ident, (&field.builder_ident, (&field.ty, body)))
             })
@@ -441,12 +520,21 @@ impl ModelConfig {
 
     fn make_from_impls(&self) -> TokenStream {
         let model = &self.model;
-        let field: Vec<_> = self.iter_fields().map(|field| &field.ident).collect();
-        let cs_field: Vec<_> = self
+        let (row_field, row_value): (Vec<_>, Vec<_>) = self
+            .iter_fields()
+            .map(|field| {
+                let ident = &field.ident;
+                (ident, field.from_transformed(quote! { row.#ident }))
+            })
+            .unzip();
+        let (cs_field, cs_value): (Vec<_>, Vec<_>) = self
             .iter_fields()
             .filter(|f| !self.is_primary(f))
-            .map(|field| &field.ident)
-            .collect();
+            .map(|field| {
+                let ident = &field.ident;
+                (ident, field.into_transformed(quote! { model.#ident }))
+            })
+            .unzip();
         let row_ident = self.row.ident();
         let cs_ident = self.changeset.ident();
         quote! {
@@ -454,7 +542,7 @@ impl ModelConfig {
             impl From<#row_ident> for #model {
                 fn from(row: #row_ident) -> Self {
                     Self {
-                        #( #field: row.#field ),*
+                        #( #row_field: #row_value ),*
                     }
                 }
             }
@@ -463,7 +551,7 @@ impl ModelConfig {
             impl From<#model> for #cs_ident {
                 fn from(model: #model) -> Self {
                     Self {
-                        #( #cs_field: Some(model.#cs_field) ),*
+                        #( #cs_field: Some(#cs_value) ),*
                     }
                 }
             }
@@ -607,7 +695,7 @@ pub fn model(input: &DeriveInput) -> Result<TokenStream> {
     let model_name = &input.ident;
     let model_vis = &input.vis;
     let options = ModelOptions::from_derive_input(input)?;
-    let config = ModelConfig::new(options, model_name.clone());
+    let config = ModelConfig::from_macro_args(options, model_name.clone())?;
 
     let identifiers_impls = config.make_identifiers_impls();
     let model_decl = config.make_model_decl(model_vis);
