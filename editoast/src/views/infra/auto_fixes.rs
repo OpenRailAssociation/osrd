@@ -98,13 +98,13 @@ fn get_operations_fixing_error(
             get_operations_fixing_invalid_reference(error, reference, infra_cache)
         }
         InfraErrorType::OutOfRange { .. } => get_operations_fixing_out_of_range(error),
-        InfraErrorType::InvalidSwitchPorts | InfraErrorType::EmptyObject => {
-            Ok([Operation::Delete(DeleteOperation {
-                obj_id: error.get_id().to_string(),
-                obj_type: error.get_type(),
-            })]
-            .to_vec())
-        }
+        InfraErrorType::InvalidSwitchPorts
+        | InfraErrorType::EmptyObject
+        | InfraErrorType::OddBufferStopLocation => Ok([Operation::Delete(DeleteOperation {
+            obj_id: error.get_id().to_string(),
+            obj_type: error.get_type(),
+        })]
+        .to_vec()),
         _ => Ok(vec![]), // Default: nothing is done to fix error
     }
 }
@@ -188,7 +188,7 @@ mod test {
     use std::collections::HashMap;
 
     use super::*;
-    use crate::fixtures::tests::{db_pool, small_infra};
+    use crate::fixtures::tests::{db_pool, empty_infra, small_infra};
     use crate::schema::operation::{DeleteOperation, Operation, RailjsonObject};
     use crate::schema::utils::Identifier;
     use crate::schema::{
@@ -503,6 +503,62 @@ mod test {
         assert!(operations.contains(&Operation::Delete(DeleteOperation {
             obj_id: invalid_switch.get_id().to_string(),
             obj_type: ObjectType::Switch,
+        })));
+    }
+
+    #[rstest::rstest]
+    async fn odd_buffer_stop_location() {
+        let app = create_test_service().await;
+        let empty_infra = empty_infra(db_pool()).await;
+        let empty_infra_id = empty_infra.id();
+
+        // Create an odd buffer stops (to a track endpoint linked by a switch)
+        let track: RailjsonObject = TrackSection {
+            id: "test_track".into(),
+            length: 1_000.0,
+            ..Default::default()
+        }
+        .into();
+        let bs_start = BufferStop {
+            id: "bs_start".into(),
+            track: "test_track".into(),
+            position: 0.0,
+            ..Default::default()
+        }
+        .into();
+        let bs_stop = BufferStop {
+            id: "bs_stop".into(),
+            track: "test_track".into(),
+            position: 1_000.0,
+            ..Default::default()
+        }
+        .into();
+        let bs_odd = BufferStop {
+            id: "bs_odd".into(),
+            track: "test_track".into(),
+            position: 800.0,
+            ..Default::default()
+        }
+        .into();
+        for obj in [&track, &bs_start, &bs_stop, &bs_odd] {
+            let req_create = get_create_operation_request(obj.clone(), empty_infra_id);
+            assert_eq!(
+                call_service(&app, req_create).await.status(),
+                StatusCode::OK
+            );
+        }
+
+        let req_fix = TestRequest::get()
+            .uri(format!("/infra/{empty_infra_id}/auto_fixes").as_str())
+            .to_request();
+        let response = call_service(&app, req_fix).await;
+
+        assert_eq!(response.status(), StatusCode::OK);
+
+        let operations: Vec<Operation> = read_body_json(response).await;
+        assert!(operations.contains(&Operation::Delete(DeleteOperation {
+            obj_id: bs_odd.get_id().clone(),
+            obj_type: ObjectType::BufferStop,
         })));
     }
 
