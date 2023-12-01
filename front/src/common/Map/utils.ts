@@ -5,7 +5,7 @@ import {
   SearchResultItemOperationalPoint,
   SearchResultItemSignal,
 } from 'common/api/osrdEditoastApi';
-import { MapState, Viewport, updateMapSearchMarker } from '../../reducers/map/index';
+import { MapState, Viewport, updateMapSearchMarker } from 'reducers/map/index';
 
 export const getCoordinates = (result: SearchResultItemSignal | SearchResultItemOperationalPoint) =>
   result.geographic;

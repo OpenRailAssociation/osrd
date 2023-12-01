@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { MapState, updateLayersSettings } from 'reducers/map';
@@ -26,7 +26,7 @@ type FormatSwitchProps = {
 
 const FormatSwitch = ({ name, icon: IconComponent, color = '', disabled }: FormatSwitchProps) => {
   const dispatch = useDispatch();
-  const { t } = useTranslation(['map-settings']);
+  const { t } = useTranslation(['operationalStudies/manageTrainSchedule', 'map-settings']);
   const { layersSettings } = useSelector(getMap);
   const infraID = useSelector(getInfraID);
   const {
@@ -40,7 +40,7 @@ const FormatSwitch = ({ name, icon: IconComponent, color = '', disabled }: Forma
     }
   );
 
-  const [speedLimitsTags, setSpeedLimitsTags] = useState<string[] | undefined>(undefined);
+  const DEFAULT_SPEED_LIMIT_TAG = useMemo(() => t('map-settings:noSpeedLimitByTag'), [t]);
 
   const setLayerSettings = (setting: keyof MapState['layersSettings']) => {
     dispatch(
@@ -51,20 +51,20 @@ const FormatSwitch = ({ name, icon: IconComponent, color = '', disabled }: Forma
     );
   };
 
-  const dispatchSetSpeedLimitsTags = (item?: string) => {
-    if (item)
-      dispatch(
-        updateLayersSettings({
-          ...layersSettings,
-          speedlimittag: item,
-        })
-      );
+  const dispatchSetSpeedLimitsTags = (item: string) => {
+    const newTag = item !== DEFAULT_SPEED_LIMIT_TAG ? item : null;
+    dispatch(
+      updateLayersSettings({
+        ...layersSettings,
+        speedlimittag: newTag,
+      })
+    );
   };
 
-  useEffect(() => {
-    if (tagsList) setSpeedLimitsTags([t('noSpeedLimitByTag').toString(), ...tagsList]);
-    else setSpeedLimitsTags(undefined);
-  }, [tagsList]);
+  const speedLimitsTags = useMemo(
+    () => (tagsList ? [DEFAULT_SPEED_LIMIT_TAG, ...tagsList] : undefined),
+    [tagsList]
+  );
 
   useEffect(() => {
     if (isGetSpeedLimitTagsError && getSpeedLimitTagsError) {
@@ -94,7 +94,7 @@ const FormatSwitch = ({ name, icon: IconComponent, color = '', disabled }: Forma
           <span className={`px-1 d-flex align-items-center ${color}`}>
             <IconComponent />
           </span>
-          <small>{t(name)}</small>
+          <small>{t(`map-settings:${name}`)}</small>
         </div>
       </div>
       <div className="col-lg-6 pt-1">
@@ -102,7 +102,7 @@ const FormatSwitch = ({ name, icon: IconComponent, color = '', disabled }: Forma
           <SelectImprovedSNCF
             sm
             withSearch
-            value={layersSettings.speedlimittag}
+            value={layersSettings.speedlimittag || DEFAULT_SPEED_LIMIT_TAG}
             options={speedLimitsTags}
             onChange={dispatchSetSpeedLimitsTags}
           />

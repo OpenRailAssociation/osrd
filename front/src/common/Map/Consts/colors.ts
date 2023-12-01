@@ -1,4 +1,4 @@
-import { Theme } from '../../../types';
+import { Theme } from 'types';
 
 const bpBg = '#405cb1';
 const bpMedium = '#98aedd';

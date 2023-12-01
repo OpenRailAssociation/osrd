@@ -10,7 +10,7 @@ interface SelectProps<T> {
   label?: ReactNode;
   options: T[];
   value?: T;
-  onChange: (value?: T) => void;
+  onChange: (value: T) => void;
   sm?: boolean;
   blockMenu?: boolean; // if false, the menu will cover the elements below the select
   withSearch?: boolean;
