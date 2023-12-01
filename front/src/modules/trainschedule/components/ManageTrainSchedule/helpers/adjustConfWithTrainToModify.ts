@@ -78,23 +78,7 @@ export default function adjustConfWithTrainToModify(
 
   if (trainSchedule.allowances) dispatch(updateAllowances(trainSchedule.allowances as Allowance[]));
 
-  if (path.steps && path.steps.length > 1) {
-    dispatch(updatePathfindingID(trainSchedule.path_id));
-    dispatch(updateItinerary(path));
-    dispatch(updateOrigin(convertStepToPointOnMap(path.steps[0])));
-    dispatch(updateDestination(convertStepToPointOnMap(path.steps.at(-1))));
-    if (path.steps.length > 2) {
-      const vias = path.steps
-        .filter(
-          (via, idx) => idx !== 0 && path.steps && idx < path.steps.length - 1 && !via.suggestion
-        )
-        .map((via) => convertStepToPointOnMap(via));
-      dispatch(replaceVias(compact(vias)));
-      dispatch(updateSuggeredVias(compact(path.steps.map((via) => convertStepToPointOnMap(via)))));
-    } else {
-      dispatch(replaceVias([]));
-    }
-  }
+  loadPathFinding(path, dispatch);
 
   if (trainSchedule.allowances) dispatch(updateAllowances(trainSchedule.allowances));
 
@@ -110,5 +94,4 @@ export default function adjustConfWithTrainToModify(
       )
     );
   }
-  loadPathFinding(path, dispatch);
 }
