@@ -214,6 +214,7 @@ export const EditRoutePathLeftPanel: FC<{ state: EditRoutePathState }> = ({ stat
                         properties: {
                           id: '', // will be replaced by entityToCreateOperation
                           entry_point: omit(entryPoint, 'position'),
+                          entry_point_direction: candidate.data.track_ranges[0].direction,
                           exit_point: omit(exitPoint, 'position'),
                           switches_directions: candidate.data.switches_directions,
                           release_detectors: includeReleaseDetectors
