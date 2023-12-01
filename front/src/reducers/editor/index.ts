@@ -5,7 +5,7 @@ import type { AnyAction, Dispatch, PayloadAction } from '@reduxjs/toolkit';
 import { createSlice } from '@reduxjs/toolkit';
 import { setLoading, setSuccess, setFailure, setSuccessWithoutMessage } from 'reducers/main';
 import { updateIssuesSettings } from 'reducers/map';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { Operation, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { ThunkAction, EditorSchema, EditorEntity } from 'types';
 import {
   allInfraErrorTypes,
@@ -17,6 +17,7 @@ import {
   entityToUpdateOperation,
   entityToDeleteOperation,
 } from 'applications/editor/data/utils';
+import i18next from 'i18next';
 import infra_schema from '../osrdconf/infra_schema.json';
 
 export const editorInitialState: EditorState = {
@@ -221,35 +222,29 @@ export interface ActionSave extends AnyAction {
     delete?: Array<Feature>;
   };
 }
-export function save(
+export function saveOperations(
   infraID: number | undefined,
-  operations: {
-    create?: Array<EditorEntity>;
-    update?: Array<{ source: EditorEntity; target: EditorEntity }>;
-    delete?: Array<EditorEntity>;
-  }
+  operations: Operation[],
+  shouldLoad: boolean = true
 ): ThunkAction<ActionSave> {
   return async (dispatch: Dispatch) => {
-    dispatch(setLoading());
+    if (shouldLoad) {
+      dispatch(setLoading());
+    }
     try {
-      const payload = [
-        ...(operations.create || []).map((e) => entityToCreateOperation(e)),
-        ...(operations.update || []).map((e) => entityToUpdateOperation(e.target, e.source)),
-        ...(operations.delete || []).map((e) => entityToDeleteOperation(e)),
-      ];
       if (isNil(infraID)) throw new Error('No infrastructure');
       const response = await dispatch(
         osrdEditoastApi.endpoints.postInfraById.initiate({
           id: infraID,
-          body: payload,
+          body: operations,
         })
       );
       if ('data' in response) {
         // success message
         dispatch(
           setSuccess({
-            title: 'Modifications enregistrées',
-            text: `Vos modifications ont été publiées`,
+            title: i18next.t('common.success.save.title'),
+            text: i18next.t('common.success.save.text'),
           })
         );
         return response.data;
@@ -262,6 +257,21 @@ export function save(
       dispatch(updateTotalsIssue(infraID));
     }
   };
+}
+export function save(
+  infraID: number | undefined,
+  operations: {
+    create?: Array<EditorEntity>;
+    update?: Array<{ source: EditorEntity; target: EditorEntity }>;
+    delete?: Array<EditorEntity>;
+  }
+): ThunkAction<ActionSave> {
+  const payload = [
+    ...(operations.create || []).map((e) => entityToCreateOperation(e)),
+    ...(operations.update || []).map((e) => entityToUpdateOperation(e.target, e.source)),
+    ...(operations.delete || []).map((e) => entityToDeleteOperation(e)),
+  ];
+  return saveOperations(infraID, payload);
 }
 
 export type EditorActions =

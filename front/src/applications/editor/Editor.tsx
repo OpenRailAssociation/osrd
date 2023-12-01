@@ -34,6 +34,7 @@ import { switchProps } from './tools/switchProps';
 import { CommonToolState } from './tools/commonToolState';
 import { useSwitchTypes } from './tools/switchEdition/types';
 import InfraErrorMapControl from './components/InfraErrors/InfraErrorMapControl';
+import InfraErrorCorrector from './components/InfraErrors/InfraErrorCorrector';
 
 const Editor: FC = () => {
   const { t } = useTranslation();
@@ -364,6 +365,7 @@ const Editor: FC = () => {
               {mapRef.current && editorState.editorLayers.has('errors') && (
                 <div className="error-box">
                   <InfraErrorMapControl mapRef={mapRef.current} switchTool={switchTool} />
+                  <InfraErrorCorrector />
                 </div>
               )}
             </div>
