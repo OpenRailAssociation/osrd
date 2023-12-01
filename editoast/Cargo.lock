@@ -2308,9 +2308,9 @@ dependencies = [
 
 [[package]]
 name = "osm4routing"
-version = "0.5.8"
+version = "0.5.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c3dc129b5257785c8df7fa69fb0e8ab48ed27ae759c3906166d1fde0f583c42b"
+checksum = "389e7e25f11c259224d74b39b6db2400084f58f3bc79dfb01d4e9121e7088f3b"
 dependencies = [
  "csv",
  "docopt",
@@ -2320,9 +2320,9 @@ dependencies = [
 
 [[package]]
 name = "osmpbfreader"
-version = "0.16.0"
+version = "0.16.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6107e8414aa4d74a38a97785baccafb57981e2c6ce3db467bf0d90a2192cd07d"
+checksum = "31a9a5652ee5d1ac97f64960117f9165d2d185034c5ccf22f6fadd3fcb78ccb2"
 dependencies = [
  "byteorder",
  "flat_map",
@@ -3092,9 +3092,9 @@ dependencies = [
 
 [[package]]
 name = "self_cell"
-version = "0.10.2"
+version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1ef965a420fe14fdac7dd018862966a4c14094f900e1650bbc71ddd7d580c8af"
+checksum = "e388332cd64eb80cd595a00941baf513caffae8dce9cfd0467fc9c66397dade6"
 
 [[package]]
 name = "semver"
