@@ -2,6 +2,11 @@
 /.github                                                 @osrd-project/devops
 /.github/CODEOWNERS                                      @flomonster @bloussou @nicolaswurtz
 
+# --- NIX ---
+/nix                                                     @osrd-project/devops
+/flake.lock                                              @osrd-project/devops
+*.nix                                                    @osrd-project/devops
+
 # --- FRONT ---
 /front                                                   @osrd-project/front-maintainers
 /front/src/common/api/osrdEditoastApi.ts
