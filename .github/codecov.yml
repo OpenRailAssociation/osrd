@@ -1,21 +1,27 @@
 coverage:
+  round: down
+  precision: 2
   status:
     project:
       default: off
       core:
-        target: auto
+        target: 75%
+        threshold: 0.5%
         flags:
           - core
       editoast:
-        target: auto
+        target: 70%
+        threshold: 0.5%
         flags:
           - editoast
       gateway:
         target: auto
+        threshold: 0.5%
         flags:
           - gateway
       front:
         target: auto
+        threshold: 0.5%
         flags:
           - front
     patch:
@@ -25,16 +31,12 @@ flags:
   core:
     paths:
       - core/
-    carryforward: true
   editoast:
     paths:
       - editoast/
-    carryforward: true
   gateway:
     paths:
       - gateway/
-    carryforward: true
   front:
     paths:
       - front/
-    carryforward: true
