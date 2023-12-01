@@ -78,8 +78,10 @@
     align-items: center;
     flex-wrap: wrap;
     gap: 0.25rem;
-    padding: 0.5rem;
-    height: 2rem;
+    padding: 0.25rem 0.5rem;
+    height: 6rem;
+    overflow: auto;
+    font-weight: 500;
     .scenario-card-tags-tag {
       font-size: 0.8rem;
       font-weight: 500;
@@ -90,6 +92,7 @@
       transition: 0.2s;
       max-width: 30%;
       overflow: hidden;
+      white-space: nowrap;
       text-overflow: ellipsis;
       cursor: pointer;
       &:hover {

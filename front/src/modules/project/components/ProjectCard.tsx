@@ -95,6 +95,7 @@ export default function ProjectCard({ setFilterChips, project, isSelected, toggl
               role="button"
               tabIndex={0}
               onClick={() => setFilterChips(tag)}
+              title={tag}
             >
               {tag}
             </div>
