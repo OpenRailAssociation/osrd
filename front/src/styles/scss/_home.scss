@@ -4,13 +4,20 @@
 }
 .cardscontainer {
   margin: 2rem;
-}
-.card {
-  cursor: pointer;
-  transition: .2s ease-in-out;
-}
-.card:hover {
-  opacity: .5;
+  .card {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: .2s ease-in-out;
+    img {
+      padding: 1rem;
+      width: 50%;
+    }
+  
+    &:hover {
+      opacity: .5;
+    }
+  }
 }
 
 .disabled-link {

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
-import logo from 'assets/pictures/views/studies.svg';
+import logo from 'assets/pictures/home/operationalStudies-white.svg';
 import { useTranslation } from 'react-i18next';
 import nextId from 'react-id-generator';
 import StudyCard from 'modules/study/components/StudyCard';

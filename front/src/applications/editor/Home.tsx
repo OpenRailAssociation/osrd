@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 import { Route, Routes } from 'react-router-dom';
 import { GoLock } from 'react-icons/go';
 
-import logo from 'assets/pictures/home/editor.svg';
+import logo from 'assets/pictures/home/editor-white.svg';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { getInfraID } from 'reducers/osrdconf/selectors';

@@ -3,8 +3,7 @@ import FilterTextField from 'applications/operationalStudies/components/FilterTe
 import ProjectSelectionToolbar from 'modules/project/components/ProjectSelectionToolbar';
 import ProjectCard from 'modules/project/components/ProjectCard';
 import ProjectCardEmpty from 'modules/project/components/ProjectCardEmpty';
-import osrdLogo from 'assets/pictures/osrd.png';
-import logo from 'assets/pictures/views/projects.svg';
+import logo from 'assets/pictures/home/operationalStudies-white.svg';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import { Spinner } from 'common/Loader';
@@ -155,10 +154,6 @@ export default function HomeOperationalStudies() {
       <NavBarSNCF appName={<div className="navbar-breadcrumbs">{t('projects')}</div>} logo={logo} />
       <main className="mastcontainer mastcontainer-no-mastnav">
         <div className="p-3">
-          <div className="application-title d-none">
-            <img src={osrdLogo} alt="OSRD logo" />
-            <h1>Open Source Railway Designer</h1>
-          </div>
           <div className="projects-toolbar">
             <div className="h1 mb-0">
               {t('projectsCount', { count: projectsList ? projectsList.length : 0 })}

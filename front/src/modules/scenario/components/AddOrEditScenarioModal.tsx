@@ -8,7 +8,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import { sortBy } from 'lodash';
 
-import scenarioLogo from 'assets/pictures/views/studies.svg';
 import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
@@ -205,7 +204,6 @@ export default function AddOrEditScenarioModal({
     <div className="scenario-edition-modal">
       <ModalHeaderSNCF withCloseButton withBorderBottom>
         <h1 className="scenario-edition-modal-title">
-          <img src={scenarioLogo} alt="scenario Logo" />
           {editionMode ? t('scenarioModificationTitle') : t('scenarioCreationTitle')}
         </h1>
       </ModalHeaderSNCF>

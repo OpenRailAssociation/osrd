@@ -1,5 +1,4 @@
 import React, { useContext, useEffect, useState } from 'react';
-import projectLogo from 'assets/pictures/views/projects.svg';
 import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
@@ -215,7 +214,6 @@ export default function AddOrEditProjectModal({
     <div className="project-edition-modal">
       <ModalHeaderSNCF withCloseButton withBorderBottom>
         <h1 className="project-edition-modal-title">
-          <img src={projectLogo} alt="Project Logo" />
           {editionMode ? t('projectModificationTitle') : t('projectCreationTitle')}
         </h1>
       </ModalHeaderSNCF>
