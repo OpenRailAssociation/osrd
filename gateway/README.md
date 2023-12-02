@@ -1,7 +1,4 @@
-# Gateway
-
-[![Gateway test status](https://github.com/osrd-project/osrd/actions/workflows/gateway.yml/badge.svg)](https://github.com/osrd-project/osrd/actions/workflows/gateway.yml)
-[![Codecov](https://codecov.io/gh/osrd-project/osrd/branch/dev/graph/badge.svg?token=O3NAHQ01NO&flag=gateway)](https://codecov.io/gh/osrd-project/osrd)
+# OSRD's Gateway
 
 Gateway is an authenticating reverse proxy. It's designed as:
 - a **gatekeeper**, which ensures all requests which require authentication are, and allows clients to authenticate
