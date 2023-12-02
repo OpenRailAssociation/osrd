@@ -1,8 +1,5 @@
 # OSRD's Simulation backend
 
-[![Core](https://github.com/osrd-project/osrd/actions/workflows/core.yml/badge.svg)](https://github.com/osrd-project/osrd/actions/workflows/core.yml)
-[![Codecov](https://codecov.io/gh/osrd-project/osrd/branch/dev/graph/badge.svg?token=O3NAHQ01NO&flag=core)](https://codecov.io/gh/osrd-project/osrd)
-
 ## Design Goals
 
 - **Microscopic**: The movement of trains should be accurately simulated, as well as their interactions with interlocking / signaling

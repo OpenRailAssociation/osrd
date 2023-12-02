@@ -1,7 +1,4 @@
-# Editoast
-
-[![Test Editoast](https://github.com/osrd-project/osrd/actions/workflows/editoast.yml/badge.svg)](https://github.com/osrd-project/osrd/actions/workflows/editoast.yml)
-[![Codecov](https://codecov.io/gh/osrd-project/osrd/branch/dev/graph/badge.svg?token=O3NAHQ01NO&flag=editoast)](https://codecov.io/gh/osrd-project/osrd)
+# OSRD's backend
 
 This service allow to edit an infrastructure using railjson schema.
 It will apply modification and update generated data such as object geometry.
