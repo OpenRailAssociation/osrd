@@ -8,7 +8,7 @@ import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
-import osrdLogo from 'assets/pictures/osrd.png';
+import osrdLogo from 'assets/fav-osrd-color.svg';
 import motriceParty from 'common/MotriceRelated/motriceParty';
 import LicenseAttributions from './LicenseAttributions';
 
@@ -46,7 +46,7 @@ function ReleaseInformations() {
                   rel="noreferrer"
                   onMouseEnter={motriceParty}
                 >
-                  <img src={osrdLogo} alt="OSRD logo" />
+                  <img src={osrdLogo} alt="OSRD logo" width={192} />
                 </a>
                 <h2>OSRD</h2>
                 <h3>Open Source Railway Designer</h3>

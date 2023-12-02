@@ -34,12 +34,12 @@ export class PlaywrightHomePage {
     this.page = page;
     // Initialize locators using roles and text content
     this.getOperationalStudiesLink = page.getByRole('link', { name: /Études d'exploitation/ });
-    this.getCartoLink = page.getByRole('link', { name: /Cartographie/ });
+    this.getSTDCMLink = page.getByRole('link', { name: /Sillons de dernière minute/ });
     this.getEditorLink = page.getByRole('link', { name: /Éditeur d'infrastructure/ });
     this.getRollingStockEditorLink = page.getByRole('link', {
       name: /Éditeur de matériel roulant/,
     });
-    this.getSTDCMLink = page.getByRole('link', { name: /Sillons de dernière minute/ });
+    this.getCartoLink = page.getByRole('link', { name: /Cartographie/ });
     this.getLinks = page.locator('h5');
     this.getBackHomeLogo = page.locator('.mastheader-logo');
     this.getBody = page.locator('body');
@@ -69,10 +69,10 @@ export class PlaywrightHomePage {
   async getDisplayLinks() {
     expect(this.getLinks).toHaveText([
       this.getTranslations('operationalStudies'),
-      this.getTranslations('map'),
+      this.getTranslations('stdcm'),
       this.getTranslations('editor'),
       this.getTranslations('rollingStockEditor'),
-      this.getTranslations('stdcm'),
+      this.getTranslations('map'),
     ]);
   }
 

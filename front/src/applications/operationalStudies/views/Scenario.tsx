@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
-import logo from 'assets/pictures/home/operationalStudies.svg';
+import logo from 'assets/pictures/home/operationalStudies-white.svg';
 import { useTranslation } from 'react-i18next';
 import Timetable from 'modules/trainschedule/components/Timetable/Timetable';
 import infraLogo from 'assets/pictures/components/tracks.svg';

@@ -2,7 +2,7 @@ import React, { FC } from 'react';
 import { useTranslation } from 'react-i18next';
 import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
 
-import logo from 'assets/pictures/home/rollingstockeditor.svg';
+import logo from 'assets/pictures/home/rollingstockeditor-white.svg';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import { ModalProvider } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import RollingStockEditor from './views/RollingStockEditor';
