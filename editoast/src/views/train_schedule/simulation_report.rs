@@ -358,7 +358,8 @@ fn project_head_positions(
             let loc = &train_locations[loc_index];
             let position =
                 projection.track_position(&Identifier(loc.track_section.clone()), loc.offset);
-            assert!(position.is_some());
+            let last_position = current_curve.last().unwrap().position;
+            assert!(position.is_some_and(|p| p > last_position));
             current_curve.push(GetCurvePoint {
                 position: position.unwrap(),
                 time: loc.time + departure_time,
@@ -373,7 +374,8 @@ fn project_head_positions(
                 end_loc.path_offset,
             );
             let end_position = projection.track_position(&end_loc.track, end_loc.offset);
-            assert!(end_position.is_some());
+            let last_position = current_curve.last().unwrap().position;
+            assert!(end_position.is_some_and(|p| p > last_position));
             current_curve.push(GetCurvePoint {
                 position: end_position.unwrap(),
                 time: end_time + departure_time,
