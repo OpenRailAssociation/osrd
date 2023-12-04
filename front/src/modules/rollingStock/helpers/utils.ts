@@ -14,6 +14,7 @@ import {
   RollingStockParametersValues,
   THERMAL_TRACTION_IDENTIFIER,
   RollingStockSchemaProperties,
+  electricalProfilesByMode,
 } from '../consts';
 import { isElectric } from './electric';
 
@@ -261,3 +262,15 @@ export function makeEffortCurve(selectedMode: string): ModeEffortCurves {
     is_electric: !(selectedMode === 'thermal'),
   };
 }
+export const orderElectricalProfils = (
+  electricalProfilesList: (string | null)[],
+  selectedTractionMode: string | null
+) => {
+  const isSelectedModeWithProfiles =
+    selectedTractionMode === '1500' || selectedTractionMode === '25000';
+  if (isSelectedModeWithProfiles) {
+    const refArray = electricalProfilesByMode[selectedTractionMode];
+    return electricalProfilesList.sort((a, b) => refArray.indexOf(a) - refArray.indexOf(b));
+  }
+  return electricalProfilesList;
+};

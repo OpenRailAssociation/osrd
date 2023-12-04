@@ -42,6 +42,7 @@ import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import {
   createEmptyCurve,
   createEmptyCurves,
+  orderElectricalProfils,
   orderSelectorList,
   sortSelectedModeCurves,
 } from 'modules/rollingStock/helpers/utils';
@@ -189,7 +190,10 @@ export default function RollingStockEditorCurves({
     const rollingstockParamsLists = {
       comfortLevels: [...new Set(rsComfortLevels)],
       tractionModes: [...new Set(tractionModes)],
-      electricalProfiles: orderSelectorList([...new Set(rsElectricalProfiles)]),
+      electricalProfiles: orderElectricalProfils(
+        [...new Set(rsElectricalProfiles)],
+        selectedTractionMode
+      ),
       powerRestrictions: orderSelectorList([...new Set(powerRestrictions)]),
     };
 

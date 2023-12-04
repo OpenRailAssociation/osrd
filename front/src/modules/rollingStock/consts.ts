@@ -373,8 +373,27 @@ export type ElectricalProfileByMode = {
 };
 
 export const electricalProfilesByMode: ElectricalProfileByMode = {
-  '1500': ['O', 'A', 'A1', 'B', 'C', 'D', 'E', 'F', 'G', null],
-  '25000': ['25000', '22500', '20000', null],
+  '1500': [
+    null,
+    'O',
+    'A',
+    'A1',
+    'B',
+    'B1',
+    'C',
+    'D',
+    'E',
+    'F',
+    'G',
+    'H',
+    'I',
+    'J',
+    'K',
+    'L',
+    'M',
+    'N',
+  ],
+  '25000': [null, '25000', '22500', '20000'],
   other: [null],
   thermal: [null],
 };
