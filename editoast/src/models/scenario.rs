@@ -39,6 +39,7 @@ use super::List;
 #[model(table = "scenario")]
 #[model(create, retrieve, update)]
 #[diesel(table_name = scenario)]
+#[serde(deny_unknown_fields)]
 pub struct Scenario {
     #[diesel(deserialize_as = i64)]
     #[schema(value_type = i64)]
@@ -108,14 +109,19 @@ pub struct ScenarioWithCountTrains {
 
 impl Scenario {
     pub async fn with_details(self, db_pool: Data<DbPool>) -> Result<ScenarioWithDetails> {
+        let mut conn = db_pool.get().await?;
+        self.with_details_conn(&mut conn).await
+    }
+
+    pub async fn with_details_conn(self, conn: &mut PgConnection) -> Result<ScenarioWithDetails> {
         use crate::tables::electrical_profile_set::dsl as elec_dsl;
         use crate::tables::infra::dsl as infra_dsl;
         use crate::tables::train_schedule::dsl::*;
-        let mut conn = db_pool.get().await?;
+
         let infra_name = infra_dsl::infra
             .filter(infra_dsl::id.eq(self.infra_id.unwrap()))
             .select(infra_dsl::name)
-            .first::<String>(&mut conn)
+            .first::<String>(conn)
             .await?;
 
         let electrical_profile_set_name = match self.electrical_profile_set_id.unwrap() {
@@ -123,7 +129,7 @@ impl Scenario {
                 elec_dsl::electrical_profile_set
                     .filter(elec_dsl::id.eq(electrical_profile_set))
                     .select(elec_dsl::name)
-                    .first::<String>(&mut conn)
+                    .first::<String>(conn)
                     .await?,
             ),
             None => None,
@@ -132,7 +138,7 @@ impl Scenario {
         let train_schedules = train_schedule
             .filter(timetable_id.eq(self.timetable_id.unwrap()))
             .select((id, train_name, departure_time, path_id))
-            .load::<LightTrainSchedule>(&mut conn)
+            .load::<LightTrainSchedule>(conn)
             .await?;
 
         let trains_count = train_schedules.len() as i64;

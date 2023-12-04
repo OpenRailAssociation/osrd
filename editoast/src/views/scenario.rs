@@ -1,5 +1,5 @@
 use crate::decl_paginated_response;
-use crate::error::Result;
+use crate::error::{InternalError, Result};
 use crate::models::train_schedule::LightTrainSchedule;
 use crate::models::{
     Create, Delete, List, Project, Retrieve, ScenarioWithCountTrains, ScenarioWithDetails, Study,
@@ -20,6 +20,9 @@ use actix_web::{
 };
 use chrono::Utc;
 use derivative::Derivative;
+use diesel_async::scoped_futures::ScopedFutureExt;
+use diesel_async::AsyncConnection;
+use diesel_async::AsyncPgConnection as PgConnection;
 use editoast_derive::EditoastError;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -46,6 +49,7 @@ crate::schemas! {
     ScenarioWithCountTrains,
     ScenarioWithDetails,
     PaginatedResponseOfScenarioWithCountTrains,
+    ScenarioResponse,
     LightTrainSchedule, // TODO: remove from here once train schedule is migrated
 }
 
@@ -89,17 +93,56 @@ impl ScenarioCreateForm {
     }
 }
 
+#[derive(Debug, Clone, Deserialize, Serialize, ToSchema)]
+pub struct ScenarioResponse {
+    #[serde(flatten)]
+    pub scenario: Scenario,
+    pub infra_name: String,
+    pub electrical_profile_set_name: Option<String>,
+    pub train_schedules: Vec<LightTrainSchedule>,
+    pub trains_count: i64,
+    pub project: Project,
+    pub study: Study,
+}
+
+impl ScenarioResponse {
+    pub fn new(
+        scenarios_with_details: ScenarioWithDetails,
+        project: Project,
+        study: Study,
+    ) -> Self {
+        Self {
+            scenario: scenarios_with_details.scenario,
+            infra_name: scenarios_with_details.infra_name,
+            electrical_profile_set_name: scenarios_with_details.electrical_profile_set_name,
+            train_schedules: scenarios_with_details.train_schedules,
+            trains_count: scenarios_with_details.trains_count,
+            project,
+            study,
+        }
+    }
+}
+
 /// Check if project and study exist given a study ID and a project ID
 async fn check_project_study(
     db_pool: Data<DbPool>,
     project_id: i64,
     study_id: i64,
 ) -> Result<(Project, Study)> {
-    let project = match Project::retrieve(db_pool.clone(), project_id).await? {
+    let mut conn = db_pool.get().await?;
+    check_project_study_conn(&mut conn, project_id, study_id).await
+}
+
+async fn check_project_study_conn(
+    conn: &mut PgConnection,
+    project_id: i64,
+    study_id: i64,
+) -> Result<(Project, Study)> {
+    let project = match Project::retrieve_conn(conn, project_id).await? {
         None => return Err(ProjectError::NotFound { project_id }.into()),
         Some(project) => project,
     };
-    let study = match Study::retrieve(db_pool.clone(), study_id).await? {
+    let study = match Study::retrieve_conn(conn, study_id).await? {
         None => return Err(StudyError::NotFound { study_id }.into()),
         Some(study) => study,
     };
@@ -124,36 +167,50 @@ async fn create(
     db_pool: Data<DbPool>,
     data: Json<ScenarioCreateForm>,
     path: Path<(i64, i64)>,
-) -> Result<Json<ScenarioWithDetails>> {
+) -> Result<Json<ScenarioResponse>> {
     let (project_id, study_id) = path.into_inner();
 
+    let mut conn = db_pool.get().await?;
     // Check if the project and the study exist
-    let (project, study) = check_project_study(db_pool.clone(), project_id, study_id).await?;
+    let (project, study) = check_project_study_conn(&mut conn, project_id, study_id).await?;
+    let (project, study, scenarios_with_details) = conn
+        .transaction::<_, InternalError, _>(|conn| {
+            async {
+                // Create timetable
+                let timetable = Timetable {
+                    id: None,
+                    name: Some("timetable".into()),
+                };
+                let timetable = timetable.create(db_pool.clone()).await?;
+                let timetable_id = timetable.id.unwrap();
 
-    // Create timetable
-    let timetable = Timetable {
-        id: None,
-        name: Some("timetable".into()),
-    };
-    let timetable = timetable.create(db_pool.clone()).await?;
-    let timetable_id = timetable.id.unwrap();
+                // Create Scenario
+                let scenario: Scenario = data.into_inner().into_scenario(study_id, timetable_id);
+                let scenario = scenario.create(db_pool.clone()).await?;
 
-    // Create Scenario
-    let scenario: Scenario = data.into_inner().into_scenario(study_id, timetable_id);
-    let scenario = scenario.create(db_pool.clone()).await?;
+                // Update study last_modification field
+                let study = study
+                    .clone()
+                    .update_last_modified_conn(conn)
+                    .await?
+                    .expect("Study should exist");
 
-    // Update study last_modification field
-    let study = study.update_last_modified(db_pool.clone()).await?;
-    study.expect("Study should exist");
+                // Update project last_modification field
+                let project = project
+                    .clone()
+                    .update_last_modified_conn(conn)
+                    .await?
+                    .expect("Project should exist");
 
-    // Update project last_modification field
-    let project = project.update_last_modified(db_pool.clone()).await?;
-    project.expect("Project should exist");
+                // Return study with list of scenarios
+                Ok((project, study, scenario.with_details_conn(conn).await?))
+            }
+            .scope_boxed()
+        })
+        .await?;
 
-    // Return study with list of scenarios
-    let scenarios_with_trains = scenario.with_details(db_pool).await?;
-
-    Ok(Json(scenarios_with_trains))
+    let scenarios_response = ScenarioResponse::new(scenarios_with_details, project, study);
+    Ok(Json(scenarios_response))
 }
 
 #[derive(IntoParams)]
@@ -231,31 +288,44 @@ async fn patch(
     data: Json<ScenarioPatchForm>,
     path: Path<(i64, i64, i64)>,
     db_pool: Data<DbPool>,
-) -> Result<Json<ScenarioWithDetails>> {
+) -> Result<Json<ScenarioResponse>> {
     let (project_id, study_id, scenario_id) = path.into_inner();
 
-    // Check if project and study exist
-    let (project, study) = check_project_study(db_pool.clone(), project_id, study_id)
-        .await
-        .unwrap();
+    let mut conn = db_pool.get().await?;
 
-    // Update a scenario
-    let scenario: Scenario = data.into_inner().into();
-    let scenario = match scenario.update(db_pool.clone(), scenario_id).await? {
-        Some(scenario) => scenario,
-        None => return Err(ScenarioError::NotFound { scenario_id }.into()),
-    };
+    let (project, study, scenario) = conn
+        .transaction::<_, InternalError, _>(|conn| {
+            async {
+                // Check if project and study exist
+                let (project, study) = check_project_study_conn(conn, project_id, study_id)
+                    .await
+                    .unwrap();
+                // Update the scenario
+                let scenario: Scenario = data.into_inner().into();
+                let scenario = match scenario.update_conn(conn, scenario_id).await? {
+                    Some(scenario) => scenario,
+                    None => return Err(ScenarioError::NotFound { scenario_id }.into()),
+                };
+                // Update study last_modification field
+                let study = study
+                    .clone()
+                    .update_last_modified_conn(conn)
+                    .await?
+                    .expect("Study should exist");
+                // Update project last_modification field
+                let project = project
+                    .clone()
+                    .update_last_modified_conn(conn)
+                    .await?
+                    .expect("Project should exist");
+                Ok((project, study, scenario.with_details_conn(conn).await?))
+            }
+            .scope_boxed()
+        })
+        .await?;
 
-    // Update study last_modification field
-    let study = study.update_last_modified(db_pool.clone()).await?;
-    study.expect("Study should exist");
-
-    // Update project last_modification field
-    let project = project.update_last_modified(db_pool.clone()).await?;
-    project.expect("Project should exist");
-
-    let scenarios_with_details = scenario.with_details(db_pool).await?;
-    Ok(Json(scenarios_with_details))
+    let scenarios_response = ScenarioResponse::new(scenario, project, study);
+    Ok(Json(scenarios_response))
 }
 
 /// Return a specific scenario
@@ -268,13 +338,9 @@ async fn patch(
     )
 )]
 #[get("")]
-async fn get(
-    db_pool: Data<DbPool>,
-    path: Path<(i64, i64, i64)>,
-) -> Result<Json<ScenarioWithDetails>> {
+async fn get(db_pool: Data<DbPool>, path: Path<(i64, i64, i64)>) -> Result<Json<ScenarioResponse>> {
     let (project_id, study_id, scenario_id) = path.into_inner();
-
-    let _ = check_project_study(db_pool.clone(), project_id, study_id).await?;
+    let (project, study) = check_project_study(db_pool.clone(), project_id, study_id).await?;
 
     // Return the scenarios
     let scenario = match Scenario::retrieve(db_pool.clone(), scenario_id).await? {
@@ -287,8 +353,9 @@ async fn get(
         return Err(ScenarioError::NotFound { scenario_id }.into());
     }
 
-    let scenario_with_trains = scenario.with_details(db_pool).await?;
-    Ok(Json(scenario_with_trains))
+    let scenarios_with_details = scenario.with_details(db_pool).await?;
+    let scenarios_response = ScenarioResponse::new(scenarios_with_details, project, study);
+    Ok(Json(scenarios_response))
 }
 
 decl_paginated_response!(
@@ -378,7 +445,8 @@ mod test {
         let response = call_service(&app, request).await;
         assert_eq!(response.status(), StatusCode::OK);
 
-        let scenario = TestFixture::<Scenario>::new(read_body_json(response).await, db_pool);
+        let scenario_response: ScenarioResponse = read_body_json(response).await;
+        let scenario = TestFixture::<Scenario>::new(scenario_response.scenario, db_pool);
         assert_eq!(scenario.model.name.clone().unwrap(), "scenario_test");
     }
 
