@@ -26,7 +26,7 @@ import SpaceCurvesSlopes from 'modules/simulationResult/components/SpaceCurvesSl
 import SpaceTimeChartIsolated from 'modules/simulationResult/components/SpaceTimeChart/withOSRDData';
 import SpeedSpaceChart from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChart';
 import TimeButtons from 'modules/simulationResult/components/TimeButtons';
-import TimeLine from 'modules/simulationResult/components/TimeLine/TimeLine';
+// TIMELINE DISABLED // import TimeLine from 'modules/simulationResult/components/TimeLine/TimeLine';
 import TrainDetails from 'modules/simulationResult/components/TrainDetails';
 import DriverTrainSchedule from 'modules/trainschedule/components/DriverTrainSchedule/DriverTrainSchedule';
 
@@ -44,7 +44,7 @@ export default function SimulationResults({
   const { t } = useTranslation('simulation');
   const dispatch = useDispatch();
 
-  const { chart } = useSelector(getOsrdSimulation);
+  // TIMELINE DISABLED // const { chart } = useSelector(getOsrdSimulation);
   const displaySimulation = useSelector(getDisplaySimulation);
   const selectedTrain = useSelector(getSelectedTrain);
   const { positionValues, timePosition } = useSelector(getOsrdSimulation);
@@ -131,7 +131,7 @@ export default function SimulationResults({
         </div>
       </div>
 
-      {/* SIMULATION : TIMELINE */}
+      {/* SIMULATION : TIMELINE — TEMPORARELY DESACTIVATED
       {simulation.trains.length && chart && (
         <TimeLine
           chart={chart}
@@ -139,7 +139,7 @@ export default function SimulationResults({
           trains={simulation.trains as SimulationReport[]}
           timePosition={timePosition}
         />
-      )}
+      )} */}
 
       {/* SIMULATION : SPACE TIME CHART */}
       <div className="simulation-warped-map d-flex flex-row align-items-stretch mb-2 bg-white">
