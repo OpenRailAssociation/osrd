@@ -20,7 +20,10 @@ jobs:
 
       - name: Make bake metadata
         id: bake-metadata
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
         run: |
+          set -eo pipefail
           .github/scripts/bake-metadata.py | tee bake-metadata.json
 
       - name: Set up Docker Buildx

@@ -174,6 +174,9 @@ class MergeGroupEvent(BaseEvent):
         # no obvious way to figure out which ones
         return [registry_cache(tag(target, self.target_branch))]
 
+    def get_cache_to(self, target: Target) -> List[str]:
+        return [registry_cache(tag(target, self.target_branch))]
+
 
 @dataclass
 class BranchEvent(BaseEvent):
@@ -233,15 +236,19 @@ def parse_pr_id(ref: str) -> str:
     return pr_number
 
 
-def parse_event() -> Event:
-    event_name = os.environ["GITHUB_EVENT_NAME"]
-    commit_hash = os.environ["GITHUB_SHA"]
-    ref = os.environ["GITHUB_REF"]
-    ref_name = os.environ["GITHUB_REF_NAME"]
-    protected = os.environ["GITHUB_REF_PROTECTED"] == "true"
+def parse_event(context) -> Event:
+    event_name = context["event_name"]
+    event = context["event"]
+    commit_hash = context["sha"]
+    ref = context["ref"]
+    ref_name = context["ref_name"]
+    protected = context["ref_protected"] == "true"
 
     if event_name == "merge_group":
-        target_branch = os.environ["GITHUB_BASE_REF"]
+        merge_group = event["merge_group"]
+        target_ref = merge_group["base_ref"]
+        assert target_ref.startswith("refs/heads/")
+        target_branch = target_ref.removeprefix("refs/heads/")
         return MergeGroupEvent(commit_hash, target_branch)
 
     if event_name == "release":
@@ -251,11 +258,11 @@ def parse_event() -> Event:
         return BranchEvent(ref_name, protected, commit_hash)
 
     if event_name == "pull_request":
-        target_branch = os.environ["GITHUB_BASE_REF"]
+        target_branch = context["base_ref"]
         orig_hash, target_hash = parse_merge_commit(commit_hash)
         return PullRequestEvent(
             pr_id=parse_pr_id(ref),
-            pr_branch=os.environ["GITHUB_HEAD_REF"],
+            pr_branch=context["head_ref"],
             target_branch=target_branch,
             target_protected=target_branch in PROTECTED_BRANCHES,
             merge_hash=commit_hash,
@@ -282,7 +289,8 @@ def generate_bake_file(event, targets):
 
 
 def main():
-    event = parse_event()
+    context = json.loads(os.environ["GITHUB_CONTEXT"])
+    event = parse_event(context)
     bake_file = generate_bake_file(event, TARGETS)
     json.dump(bake_file, sys.stdout, indent=2)
 
