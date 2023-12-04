@@ -283,7 +283,7 @@ mod test {
             obj_type: ObjectType::Route,
         })));
         assert!(operations.contains(&Operation::Delete(DeleteOperation {
-            obj_id: "rt.buffer_stop.4->DF0".to_string(),
+            obj_id: "rt.buffer_stop.4->DD5".to_string(),
             obj_type: ObjectType::Route,
         })));
     }
