@@ -49,6 +49,7 @@ crate::schemas! {
     StudyPatchForm,
     StudyWithScenarios,
     PaginatedResponseOfStudyWithScenarios,
+    StudyResponse,
     scenario::schemas(),
 }
 
@@ -111,6 +112,24 @@ impl StudyCreateForm {
     }
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+pub struct StudyResponse {
+    #[serde(flatten)]
+    pub study: Study,
+    pub scenarios_count: i64,
+    pub project: Project,
+}
+
+impl StudyResponse {
+    pub fn new(study_scenarios: StudyWithScenarios, project: Project) -> Self {
+        Self {
+            study: study_scenarios.study,
+            scenarios_count: study_scenarios.scenarios_count,
+            project,
+        }
+    }
+}
+
 #[utoipa::path(
     tag = "studies",
     params(ProjectIdParam),
@@ -124,29 +143,47 @@ async fn create(
     db_pool: Data<DbPool>,
     data: Json<StudyCreateForm>,
     project: Path<i64>,
-) -> Result<Json<StudyWithScenarios>> {
+) -> Result<Json<StudyResponse>> {
     let project_id = project.into_inner();
-    // Check if project exists
-    let project = match Project::retrieve(db_pool.clone(), project_id).await? {
-        None => return Err(ProjectError::NotFound { project_id }.into()),
-        Some(project) => project,
-    };
 
-    // Create study
-    let study: Study = data.into_inner().into_study(project_id)?;
-    let study = study.create(db_pool.clone()).await?;
+    let mut conn = db_pool.get().await?;
 
-    // Update project last_modification field
-    let project = project.update_last_modified(db_pool).await?;
-    project.expect("Project should exist");
+    let (study, project) = conn
+        .transaction::<_, InternalError, _>(|conn| {
+            async {
+                // Check if project exists
+                let Some(project) = Project::retrieve_conn(conn, project_id).await? else {
+                    return Err(ProjectError::NotFound { project_id }.into());
+                };
+
+                // Create study
+                let study: Study = data
+                    .into_inner()
+                    .into_study(project_id)?
+                    .create_conn(conn)
+                    .await?;
+
+                // Update project last_modification field
+                let project = project
+                    .clone()
+                    .update_last_modified_conn(conn)
+                    .await?
+                    .expect("Project should exist");
+
+                Ok((study, project))
+            }
+            .scope_boxed()
+        })
+        .await?;
 
     // Return study with list of scenarios
-    let study_with_scenarios = StudyWithScenarios {
+    let study_response = StudyResponse {
         study,
         scenarios_count: 0,
+        project,
     };
 
-    Ok(Json(study_with_scenarios))
+    Ok(Json(study_response))
 }
 
 #[derive(IntoParams)]
@@ -223,14 +260,11 @@ async fn list(
     )
 )]
 #[get("")]
-async fn get(db_pool: Data<DbPool>, path: Path<(i64, i64)>) -> Result<Json<StudyWithScenarios>> {
+async fn get(db_pool: Data<DbPool>, path: Path<(i64, i64)>) -> Result<Json<StudyResponse>> {
     let (project_id, study_id) = path.into_inner();
 
     // Check if project exists
-    if Project::retrieve(db_pool.clone(), project_id)
-        .await?
-        .is_none()
-    {
+    let Some(project) = Project::retrieve(db_pool.clone(), project_id).await? else {
         return Err(ProjectError::NotFound { project_id }.into());
     };
 
@@ -246,7 +280,8 @@ async fn get(db_pool: Data<DbPool>, path: Path<(i64, i64)>) -> Result<Json<Study
     }
 
     let study_scenarios = study.with_scenarios(db_pool).await?;
-    Ok(Json(study_scenarios))
+    let study_response = StudyResponse::new(study_scenarios, project);
+    Ok(Json(study_response))
 }
 
 /// This structure is used by the patch endpoint to patch a study
@@ -307,17 +342,15 @@ async fn patch(
     data: Json<StudyPatchForm>,
     path: Path<(i64, i64)>,
     db_pool: Data<DbPool>,
-) -> Result<Json<StudyWithScenarios>> {
+) -> Result<Json<StudyResponse>> {
     let (project_id, study_id) = path.into_inner();
-
     let mut conn = db_pool.get().await?;
-    let study_scenarios = conn
+    let (study_scenarios, project) = conn
         .transaction::<_, InternalError, _>(|conn| {
             async {
                 // Check if project exists
-                let project = match Project::retrieve_conn(conn, project_id).await? {
-                    None => return Err(ProjectError::NotFound { project_id }.into()),
-                    Some(project) => project,
+                let Some(project) = Project::retrieve_conn(conn, project_id).await? else {
+                    return Err(ProjectError::NotFound { project_id }.into());
                 };
 
                 // Update study
@@ -330,15 +363,19 @@ async fn patch(
                 study.validate()?;
 
                 // Update project last_modification field
-                let project = project.update_last_modified_conn(conn).await?;
-                project.expect("Project should exist");
+                let project = project
+                    .clone()
+                    .update_last_modified_conn(conn)
+                    .await?
+                    .expect("Project should exist");
 
-                study.with_scenarios_conn(conn).await
+                Ok((study.with_scenarios_conn(conn).await?, project))
             }
             .scope_boxed()
         })
         .await?;
-    Ok(Json(study_scenarios))
+    let study_response = StudyResponse::new(study_scenarios, project);
+    Ok(Json(study_response))
 }
 
 #[cfg(test)]
@@ -393,10 +430,9 @@ pub mod test {
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
 
-        let study: Study = read_body_json(response).await;
-        assert_eq!(study.name.unwrap(), "study_test");
-
-        assert!(Study::delete(db_pool, study.id.unwrap()).await.unwrap());
+        let study_response: StudyResponse = read_body_json(response).await;
+        let study = TestFixture::new(study_response.study, db_pool.clone());
+        assert_eq!(study.model.name.clone().unwrap(), "study_test");
     }
 
     #[rstest]

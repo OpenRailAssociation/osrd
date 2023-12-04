@@ -42,6 +42,7 @@ use super::List;
 #[model(table = "study")]
 #[model(create, delete, retrieve, update)]
 #[diesel(table_name = study)]
+#[serde(deny_unknown_fields)]
 pub struct Study {
     #[diesel(deserialize_as = i64)]
     #[schema(value_type = i64)]
@@ -113,10 +114,18 @@ pub struct StudyWithScenarios {
 }
 
 impl Study {
-    pub async fn update_last_modified(mut self, db_pool: Data<DbPool>) -> Result<Option<Study>> {
+    pub async fn update_last_modified(self, db_pool: Data<DbPool>) -> Result<Option<Study>> {
+        let mut conn = db_pool.get().await?;
+        self.update_last_modified_conn(&mut conn).await
+    }
+
+    pub async fn update_last_modified_conn(
+        mut self,
+        conn: &mut PgConnection,
+    ) -> Result<Option<Study>> {
         self.last_modification = Utc::now().naive_utc();
         let study_id = self.id.unwrap();
-        self.update(db_pool, study_id).await
+        self.update_conn(conn, study_id).await
     }
 
     /// This function adds the list of scenarios ID that are linked to the study
