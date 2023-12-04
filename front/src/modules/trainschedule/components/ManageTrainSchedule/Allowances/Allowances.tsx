@@ -227,7 +227,7 @@ export default function Allowances() {
               setOverlapAllowancesIndexes={setEngineeringOverlapAllowancesIndexes}
             />
             {/*
-              * Temporary desactivated until new version with overlap
+              * Temporarily disabled until new version with overlap
               *
               <AllowancesLinearView
                 allowances={engineeringAllowances}

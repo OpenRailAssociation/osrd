@@ -119,6 +119,8 @@ export default function Project() {
           setStudiesList(filteredStudies);
         } catch (error) {
           console.error(error);
+        } finally {
+          setIsLoading(false);
         }
       } else {
         try {

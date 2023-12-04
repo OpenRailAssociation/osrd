@@ -19,7 +19,7 @@ export default function Home() {
       <main className="mastcontainer mastcontainer-no-mastnav">
         <div className="cardscontainer">
           <div className="row justify-content-center mb-2">
-            <div className="col-6 col-md-5 col-lg-4 col-xl-3 col-fhd-2">
+            <div className="col-6 col-md-5 col-lg-4 col-xl-3">
               <Card
                 img={operationalStudiesImg}
                 title={t('operationalStudies')}
@@ -27,12 +27,12 @@ export default function Home() {
                 data-testid="operationalStudies"
               />
             </div>
-            <div className="col-6 col-md-5 col-lg-4 col-xl-3 col-fhd-2">
+            <div className="col-6 col-md-5 col-lg-4 col-xl-3">
               <Card img={stdcmImg} title={t('stdcm')} link="/stdcm" />
             </div>
           </div>
           <div className="row justify-content-center">
-            <div className="col-12 col-md-10 col-lg-8 col-xl-6 col-fhd-4">
+            <div className="col-12 col-md-10 col-lg-8 col-xl-6">
               <div className="row">
                 <div className="col-6 col-sm-4 ">
                   <Card img={editorImg} title={t('editor')} link="/editor" />

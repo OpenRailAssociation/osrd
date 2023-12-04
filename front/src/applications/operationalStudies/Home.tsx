@@ -88,6 +88,8 @@ export default function HomeOperationalStudies() {
         setProjectsList(filteredData);
       } catch (error) {
         console.error('filter projetcs error : ', error);
+      } finally {
+        setIsLoading(false);
       }
     } else {
       try {
