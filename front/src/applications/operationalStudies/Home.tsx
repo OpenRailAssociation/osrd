@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import FilterTextField from 'applications/operationalStudies/components/FilterTextField';
 import ProjectSelectionToolbar from 'modules/project/components/ProjectSelectionToolbar';
 import ProjectCard from 'modules/project/components/ProjectCard';
@@ -9,12 +9,14 @@ import { Spinner } from 'common/Loader';
 import { useTranslation } from 'react-i18next';
 import {
   PostSearchApiArg,
+  Project,
   ProjectWithStudies,
   SearchResultItemProject,
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
 import { useSelector } from 'react-redux';
 import { getUserSafeWord } from 'reducers/user/userSelectors';
+import InfiniteScroll from 'react-infinite-scroll-component';
 
 type SortOptions =
   | 'NameAsc'
@@ -37,6 +39,9 @@ export default function HomeOperationalStudies() {
   const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
   const [getProjects] = osrdEditoastApi.endpoints.getProjects.useLazyQuery();
   const [isLoading, setIsLoading] = useState(true);
+  const [total, setTotal] = useState<number | null>(null);
+  const [next, setNext] = useState<number | null>(null);
+  const [projectsCards, setProjectsCards] = useState<Array<Project>>([]);
 
   const sortOptions = [
     {
@@ -138,6 +143,28 @@ export default function HomeOperationalStudies() {
     );
   }
 
+  const fetch = useCallback(
+    async (page: number) => {
+      setIsLoading(true);
+      try {
+        const response = await getProjects({
+          page,
+        });
+        setProjectsCards((prev) => {
+          const apiProjects = response.data ? response.data.results || [] : [];
+          return page === 1 ? apiProjects : [...prev, ...apiProjects];
+        });
+        setTotal(response.data ? response.data.count || 0 : null);
+        setNext(response.data ? response.data.next ?? null : null);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [getProjects]
+  );
+
   useEffect(() => {
     getProjectList();
   }, [sortOption, filter, safeWord]);
@@ -171,7 +198,21 @@ export default function HomeOperationalStudies() {
             setProjectsList={setProjectsList}
             projectsList={projectsList}
           />
-          {useMemo(() => displayCards(), [projectsList, selectedProjectIds])}
+          <div id="projects-list-container">
+            <InfiniteScroll
+              loader={<Spinner className="text-center p-3" />}
+              style={{ overflow: 'hidden' }}
+              dataLength={projectsList.length}
+              hasMore={next !== null}
+              scrollableTarget="projects-list-container"
+              next={() => {
+                console.log('Fetching more data...');
+                fetch(next ?? 1);
+              }}
+            >
+              {useMemo(() => displayCards(), [projectsList, selectedProjectIds])}
+            </InfiniteScroll>
+          </div>
         </div>
       </main>
     </>
