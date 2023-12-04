@@ -97,6 +97,7 @@ fn get_operations_fixing_error(
         InfraErrorType::InvalidReference { reference } => {
             get_operations_fixing_invalid_reference(error, reference, infra_cache)
         }
+        InfraErrorType::OutOfRange { .. } => get_operations_fixing_out_of_range(error),
         InfraErrorType::InvalidSwitchPorts | InfraErrorType::EmptyObject => {
             Ok([Operation::Delete(DeleteOperation {
                 obj_id: error.get_id().to_string(),
@@ -153,6 +154,19 @@ fn get_operations_fixing_invalid_reference(
     }
 }
 
+fn get_operations_fixing_out_of_range(error: &InfraError) -> Result<Vec<Operation>> {
+    match &error.get_type() {
+        ObjectType::BufferStop | ObjectType::Signal | ObjectType::Detector => {
+            Ok([Operation::Delete(DeleteOperation {
+                obj_id: error.get_id().to_string(),
+                obj_type: error.get_type(),
+            })]
+            .to_vec())
+        }
+        _ => Ok(vec![]),
+    }
+}
+
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "auto_fixes")]
 pub enum AutoFixesEditoastError {
@@ -178,8 +192,10 @@ mod test {
     use crate::schema::operation::{DeleteOperation, Operation, RailjsonObject};
     use crate::schema::utils::Identifier;
     use crate::schema::{
-        BufferStopCache, Catenary, DetectorCache, Endpoint, ObjectRef, ObjectType,
-        OperationalPoint, Route, SignalCache, SpeedSection, Switch, TrackEndpoint, Waypoint,
+        ApplicableDirectionsTrackRange, BufferStop, BufferStopCache, Catenary, Detector,
+        DetectorCache, Endpoint, ObjectRef, ObjectType, OperationalPoint, OperationalPointPart,
+        Route, Signal, SignalCache, Slope, SpeedSection, Switch, TrackEndpoint, TrackSection,
+        Waypoint,
     };
     use crate::views::tests::create_test_service;
     use actix_http::{Request, StatusCode};
@@ -556,6 +572,161 @@ mod test {
         assert!(operations.contains(&Operation::Delete(DeleteOperation {
             obj_id: speed_section.get_id().to_string(),
             obj_type: ObjectType::SpeedSection,
+        })));
+    }
+
+    #[rstest::rstest]
+    async fn out_of_range_must_be_ignored() {
+        let app = create_test_service().await;
+        let small_infra = small_infra(db_pool()).await;
+        let small_infra_id = small_infra.id();
+
+        let catenary: RailjsonObject = Catenary {
+            track_ranges: vec![ApplicableDirectionsTrackRange {
+                begin: 100000000000.0,
+                end: 100000000001.0,
+                ..Default::default()
+            }],
+            ..Default::default()
+        }
+        .into();
+        let req_create = get_create_operation_request(catenary.clone(), small_infra_id);
+        assert_eq!(
+            call_service(&app, req_create).await.status(),
+            StatusCode::OK
+        );
+
+        let operational_point: RailjsonObject = OperationalPoint {
+            parts: vec![OperationalPointPart {
+                position: 10000000000000.0,
+                ..Default::default()
+            }],
+            ..Default::default()
+        }
+        .into();
+        let req_create = get_create_operation_request(operational_point.clone(), small_infra_id);
+        assert_eq!(
+            call_service(&app, req_create).await.status(),
+            StatusCode::OK
+        );
+
+        let speed_section: RailjsonObject = SpeedSection {
+            track_ranges: vec![ApplicableDirectionsTrackRange {
+                begin: 100000000000.0,
+                end: 100000000001.0,
+                ..Default::default()
+            }],
+            ..Default::default()
+        }
+        .into();
+        let req_create = get_create_operation_request(speed_section.clone(), small_infra_id);
+        assert_eq!(
+            call_service(&app, req_create).await.status(),
+            StatusCode::OK
+        );
+
+        let track_section: RailjsonObject = TrackSection {
+            slopes: vec![Slope {
+                begin: 100000000000.0,
+                end: 100000000001.0,
+                gradient: 0.1,
+            }],
+            ..Default::default()
+        }
+        .into();
+        let req_create = get_create_operation_request(track_section.clone(), small_infra_id);
+        assert_eq!(
+            call_service(&app, req_create).await.status(),
+            StatusCode::OK
+        );
+
+        let req_fix = TestRequest::get()
+            .uri(format!("/infra/{small_infra_id}/auto_fixes").as_str())
+            .to_request();
+        let response = call_service(&app, req_fix).await;
+
+        assert_eq!(response.status(), StatusCode::OK);
+
+        let operations: Vec<Operation> = read_body_json(response).await;
+        assert!(!operations.contains(&Operation::Delete(DeleteOperation {
+            obj_id: catenary.get_id().to_string(),
+            obj_type: ObjectType::Catenary,
+        })));
+        assert!(!operations.contains(&Operation::Delete(DeleteOperation {
+            obj_id: operational_point.get_id().to_string(),
+            obj_type: ObjectType::OperationalPoint,
+        })));
+        assert!(!operations.contains(&Operation::Delete(DeleteOperation {
+            obj_id: speed_section.get_id().to_string(),
+            obj_type: ObjectType::SpeedSection,
+        })));
+        assert!(!operations.contains(&Operation::Delete(DeleteOperation {
+            obj_id: track_section.get_id().to_string(),
+            obj_type: ObjectType::TrackSection,
+        })));
+    }
+
+    #[rstest::rstest]
+    async fn out_of_range_must_be_deleted() {
+        let app = create_test_service().await;
+        let small_infra = small_infra(db_pool()).await;
+        let small_infra_id = small_infra.id();
+
+        let signal: RailjsonObject = Signal {
+            position: 10000000000000.0,
+            track: "TC0".into(),
+            ..Default::default()
+        }
+        .into();
+        let req_create = get_create_operation_request(signal.clone(), small_infra_id);
+        assert_eq!(
+            call_service(&app, req_create).await.status(),
+            StatusCode::OK
+        );
+
+        let detector: RailjsonObject = Detector {
+            position: 10000000000000.0,
+            track: "TC0".into(),
+            ..Default::default()
+        }
+        .into();
+        let req_create = get_create_operation_request(detector.clone(), small_infra_id);
+        assert_eq!(
+            call_service(&app, req_create).await.status(),
+            StatusCode::OK
+        );
+
+        let buffer_stop: RailjsonObject = BufferStop {
+            position: 10000000000000.0,
+            track: "TC0".into(),
+            ..Default::default()
+        }
+        .into();
+        let req_create = get_create_operation_request(buffer_stop.clone(), small_infra_id);
+        assert_eq!(
+            call_service(&app, req_create).await.status(),
+            StatusCode::OK
+        );
+
+        let req_fix = TestRequest::get()
+            .uri(format!("/infra/{small_infra_id}/auto_fixes").as_str())
+            .to_request();
+        let response = call_service(&app, req_fix).await;
+
+        assert_eq!(response.status(), StatusCode::OK);
+
+        let operations: Vec<Operation> = read_body_json(response).await;
+        assert!(operations.contains(&Operation::Delete(DeleteOperation {
+            obj_id: signal.get_id().to_string(),
+            obj_type: ObjectType::Signal,
+        })));
+        assert!(operations.contains(&Operation::Delete(DeleteOperation {
+            obj_id: detector.get_id().to_string(),
+            obj_type: ObjectType::Detector,
+        })));
+        assert!(operations.contains(&Operation::Delete(DeleteOperation {
+            obj_id: buffer_stop.get_id().to_string(),
+            obj_type: ObjectType::BufferStop,
         })));
     }
 }
