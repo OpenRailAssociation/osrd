@@ -148,6 +148,8 @@ export default function Study() {
           setScenariosList(filteredScenarios as ScenarioWithCountTrains[]);
         } catch (error) {
           console.error(error);
+        } finally {
+          setIsLoading(false);
         }
       } else {
         try {

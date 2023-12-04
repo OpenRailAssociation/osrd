@@ -131,7 +131,7 @@ export default function SimulationResults({
         </div>
       </div>
 
-      {/* SIMULATION : TIMELINE — TEMPORARELY DESACTIVATED
+      {/* SIMULATION: TIMELINE — TEMPORARILY DISABLED
       {simulation.trains.length && chart && (
         <TimeLine
           chart={chart}
