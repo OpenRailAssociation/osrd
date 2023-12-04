@@ -417,7 +417,8 @@ export default function RollingStockEditorCurves({
 
   const updateTractionModesList = (newTractionMode: string) => {
     setCurrentRsEffortCurve((prevState) => ({
-      default_mode: prevState ? prevState.default_mode : newTractionMode,
+      default_mode:
+        prevState && newTractionMode !== 'thermal' ? prevState.default_mode : newTractionMode,
       modes: {
         ...(prevState ? prevState.modes : {}),
         [newTractionMode]: createEmptyCurves(newTractionMode, rollingstockParams.comfortLevels),
