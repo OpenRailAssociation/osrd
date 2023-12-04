@@ -1,4 +1,4 @@
-use super::{OSRDIdentified, OSRDTyped, ObjectType};
+use super::{OSRDIdentified, OSRDTyped, ObjectType, TrackLocation};
 
 use super::utils::Identifier;
 use crate::infra_cache::{Cache, ObjectCache};
@@ -80,6 +80,15 @@ impl BufferStopCache {
 impl From<BufferStop> for BufferStopCache {
     fn from(stop: BufferStop) -> Self {
         Self::new(stop.id.0, stop.track.0, stop.position)
+    }
+}
+
+impl From<&BufferStopCache> for TrackLocation {
+    fn from(buffer_stop: &BufferStopCache) -> Self {
+        Self {
+            track_section: buffer_stop.track.to_owned().into(),
+            offset: buffer_stop.position,
+        }
     }
 }
 

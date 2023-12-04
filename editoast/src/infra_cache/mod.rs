@@ -683,6 +683,13 @@ impl InfraCache {
             })?
             .unwrap_electrification())
     }
+
+    pub fn get_track_location(&self, waypoint: &Waypoint) -> Result<TrackLocation> {
+        match waypoint {
+            Waypoint::BufferStop { id } => Ok(self.get_buffer_stop(id.as_str())?.into()),
+            Waypoint::Detector { id } => Ok(self.get_detector(id.as_str())?.into()),
+        }
+    }
 }
 
 #[derive(Debug, Error, EditoastError)]

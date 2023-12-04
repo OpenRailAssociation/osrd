@@ -24,7 +24,7 @@ pub fn routes() -> impl HttpServiceFactory {
 }
 
 const DEFAULT_NUMBER_OF_PATHS: u8 = 5;
-const MAX_NUMBER_OF_PATHS: u8 = 5;
+pub const MAX_NUMBER_OF_PATHS: u8 = 5;
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "infra:pathfinding")]
@@ -42,22 +42,22 @@ enum PathfindingViewErrors {
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(deny_unknown_fields)]
-struct PathfindingTrackLocationInput {
-    track: Identifier,
-    position: f64,
+pub struct PathfindingTrackLocationInput {
+    pub track: Identifier,
+    pub position: f64,
 }
 
 #[derive(Debug, Clone, Deserialize)]
-struct PathfindingInput {
-    starting: PathfindingTrackLocationInput,
-    ending: PathfindingTrackLocationInput,
+pub struct PathfindingInput {
+    pub starting: PathfindingTrackLocationInput,
+    pub ending: PathfindingTrackLocationInput,
 }
 
 #[derive(Debug, Default, Clone, Serialize)]
-struct PathfindingOutput {
-    track_ranges: Vec<DirectionalTrackRange>,
-    detectors: Vec<Identifier>,
-    switches_directions: HashMap<Identifier, Identifier>,
+pub struct PathfindingOutput {
+    pub track_ranges: Vec<DirectionalTrackRange>,
+    pub detectors: Vec<Identifier>,
+    pub switches_directions: HashMap<Identifier, Identifier>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -170,7 +170,7 @@ impl PathfindingStep {
 }
 
 /// Compute the path between starting and ending locations using Dijkstra (return at most `number_result` paths)
-fn compute_path(
+pub fn compute_path(
     input: &PathfindingInput,
     infra_cache: &InfraCache,
     graph: &Graph,

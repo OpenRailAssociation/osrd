@@ -146,7 +146,7 @@ fn fix_infra(
                 let route = infra_cache
                     .get_route(&object_ref.obj_id)
                     .map_err(|e| AutoFixesEditoastError::MissingErrorObject { source: e })?;
-                route::fix_route(route, errors)
+                route::fix_route(route, errors, infra_cache)
             }
             ObjectType::OperationalPoint => {
                 let operational_point = infra_cache
@@ -912,6 +912,98 @@ mod tests {
                 })))
             }
         }
+    }
+
+    #[rstest::rstest]
+    async fn test_fix_invalid_ref_route_switch() {
+        println!();
+        // GIVEN
+        let app = create_test_service().await;
+        let small_infra_fixture = small_infra(db_pool()).await;
+        let small_infra_id = small_infra_fixture.id();
+
+        // let infra_errors_before_all: PaginatedResponse<crate::views::infra::errors::InfraError> =
+        //     read_body_json(call_service(&app, errors_request(small_infra_id)).await).await;
+        // println!("PEBtrace {:?}", infra_errors_before_all);
+
+        // let infra_cache = InfraCache::load(
+        //     &mut db_pool().get().await.unwrap(),
+        //     &small_infra_fixture.model,
+        // )
+        // .await
+        // .unwrap();
+        // println!("PEBtrace {:?}", generate_infra_errors(&infra_cache).await);
+
+        // let pa1 = infra_cache.switches().get("PA1").unwrap().unwrap_switch();
+        // println!("PEBtrace: {:?}", pa1);
+
+        // Remove switch PA1
+        let deletion = Operation::Delete(DeleteOperation {
+            obj_id: "PA1".to_string(),
+            obj_type: ObjectType::Switch,
+        });
+        let req_del = TestRequest::post()
+            .uri(format!("/infra/{small_infra_id}/").as_str())
+            .set_json(json!([deletion]))
+            .to_request();
+        assert_eq!(call_service(&app, req_del).await.status(), StatusCode::OK);
+        // Add switch PA1bis
+        let replacement_switch = Switch {
+            id: "PA1bis".into(),
+            switch_type: "point_switch".into(),
+            ports: HashMap::from([
+                ("A".into(), TrackEndpoint::new("TA5", Endpoint::Begin)),
+                ("B1".into(), TrackEndpoint::new("TB0", Endpoint::End)),
+                ("B2".into(), TrackEndpoint::new("TA2", Endpoint::End)),
+            ]),
+            ..Default::default()
+        };
+        let req_create =
+            get_create_operation_request(replacement_switch.clone().into(), small_infra_id);
+        assert_eq!(
+            call_service(&app, req_create).await.status(),
+            StatusCode::OK
+        );
+
+        // let infra_cache = InfraCache::load(
+        //     &mut db_pool().get().await.unwrap(),
+        //     &small_infra_fixture.model,
+        // )
+        // .await
+        // .unwrap();
+        // let pa1bis = infra_cache
+        //     .switches()
+        //     .get("PA1bis")
+        //     .unwrap()
+        //     .unwrap_switch();
+        // println!("PEBtrace: {:?}", pa1bis);
+
+        // let infra_errors_before_fix: PaginatedResponse<crate::views::infra::errors::InfraError> =
+        //     read_body_json(call_service(&app, errors_request(small_infra_id)).await).await;
+        // println!("PEBtrace {:?}", infra_errors_before_fix);
+
+        // WHEN
+        let response = call_service(&app, auto_fixes_request(small_infra_id)).await;
+
+        // THEN
+        // let infra_errors_after_fix: PaginatedResponse<crate::views::infra::errors::InfraError> =
+        //     read_body_json(call_service(&app, errors_request(small_infra_id)).await).await;
+        // assert_eq!(infra_errors_after_fix, infra_errors_before_fix);
+
+        assert_eq!(response.status(), StatusCode::OK);
+        let operations: Vec<Operation> = read_body_json(response).await;
+        // assert!(operations.contains(&Operation::Delete(DeleteOperation {
+        //     obj_id: "SA0".to_string(),
+        //     obj_type: ObjectType::Signal,
+        // })));
+        // assert!(operations.contains(&Operation::Delete(DeleteOperation {
+        //     obj_id: "buffer_stop.1".to_string(),
+        //     obj_type: ObjectType::BufferStop,
+        // })));
+        // assert!(operations.contains(&Operation::Delete(DeleteOperation {
+        //     obj_id: "DA0".to_string(),
+        //     obj_type: ObjectType::Detector,
+        // })));
     }
 
     #[rstest::rstest]

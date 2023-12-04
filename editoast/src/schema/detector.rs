@@ -3,6 +3,7 @@ use super::OSRDIdentified;
 use super::utils::Identifier;
 use super::OSRDTyped;
 use super::ObjectType;
+use super::TrackLocation;
 
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
@@ -64,6 +65,15 @@ impl DetectorCache {
 impl From<Detector> for DetectorCache {
     fn from(detector: Detector) -> Self {
         Self::new(detector.id.0, detector.track.0, detector.position)
+    }
+}
+
+impl From<&DetectorCache> for TrackLocation {
+    fn from(detector: &DetectorCache) -> Self {
+        Self {
+            track_section: detector.track.to_owned().into(),
+            offset: detector.position,
+        }
     }
 }
 
