@@ -147,31 +147,44 @@ public class LineString {
     private Point interpolate(double distance) {
         assert distance >= 0.;
         assert distance <= cumulativeLengths[cumulativeLengths.length - 1];
-        var interval = Arrays.binarySearch(cumulativeLengths, distance);
 
-        // binarySearch returns a negative position if it doesn't find the element
-        if (interval < 0)
-            interval = - interval - 1;
+        // if we're at the first point
+        if (distance == 0.)
+            return new Point(bufferX[0], bufferY[0]);
 
-        var x1 = bufferX[interval];
-        var y1 = bufferY[interval];
-        var x2 = bufferX[interval + 1];
-        var y2 = bufferY[interval + 1];
+        var intervalIndex = Arrays.binarySearch(cumulativeLengths, distance);
 
-        double ratio = distance / cumulativeLengths[0];
+        // if we're exactly on any other point
+        if (intervalIndex >= 0)
+            return new Point(bufferX[intervalIndex + 1], bufferY[intervalIndex + 1]);
 
-        if (cumulativeLengths[0] == 0) {
-            // Avoids NaNs
-            assert distance == 0;
-            ratio = 0;
-        }
+        // if we're in-between points
+        intervalIndex = - intervalIndex - 1;
 
-        if (interval > 0) {
-            ratio = (distance - cumulativeLengths[interval - 1])
-                    / (cumulativeLengths[interval] - cumulativeLengths[interval - 1]);
-        }
+        // A -- P ---- B
+        double startToA = intervalIndex > 0 ? cumulativeLengths[intervalIndex - 1] : 0;
+        double startToB = cumulativeLengths[intervalIndex];
+        double ab = startToB - startToA;
+        double ap = distance - startToA;
+        assert !Double.isNaN(ap);
+        double ratio = ap / ab;
 
-        return new Point(x1 + ratio * (x2 - x1), y1 + ratio * (y2 - y1));
+        var aX = bufferX[intervalIndex];
+        var aY = bufferY[intervalIndex];
+
+        // if ratio is undefined, A and B are the same point
+        if (Double.isNaN(ratio))
+            return new Point(aX, aY);
+
+        // clamp the linear interpolation ratio
+        if (ratio < 0.)
+            ratio = 0.;
+        if (ratio > 1.)
+            ratio = 1.;
+
+        var bX = bufferX[intervalIndex + 1];
+        var bY = bufferY[intervalIndex + 1];
+        return new Point(aX + ratio * (bX - aX), aY + ratio * (bY - aY));
     }
 
     /**
@@ -186,7 +199,7 @@ public class LineString {
     }
 
     /**
-     * A troncate a LineString from begin to end
+     * Truncate a LineString from the provided begin and end offsets
      * begin and end are distance on the LineString
      * begin and end are between 0.0 and 1.0
      */
