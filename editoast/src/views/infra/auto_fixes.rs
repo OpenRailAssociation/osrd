@@ -632,195 +632,171 @@ mod test {
     #[rstest::rstest]
     async fn empty_object() {
         let app = create_test_service().await;
-        let small_infra = small_infra(db_pool()).await;
-        let small_infra_id = small_infra.id();
+        let empty_infra = empty_infra(db_pool()).await;
+        let empty_infra_id = empty_infra.id();
 
         let catenary: RailjsonObject = Catenary::default().into();
-        let req_create = get_create_operation_request(catenary.clone(), small_infra_id);
-        assert_eq!(
-            call_service(&app, req_create).await.status(),
-            StatusCode::OK
-        );
+        let operational_point = OperationalPoint::default().into();
+        let speed_section = SpeedSection::default().into();
 
-        let operational_point: RailjsonObject = OperationalPoint::default().into();
-        let req_create = get_create_operation_request(operational_point.clone(), small_infra_id);
-        assert_eq!(
-            call_service(&app, req_create).await.status(),
-            StatusCode::OK
-        );
+        for obj in [&catenary, &operational_point, &speed_section] {
+            let req_create = get_create_operation_request(obj.clone(), empty_infra_id);
+            assert_eq!(
+                call_service(&app, req_create).await.status(),
+                StatusCode::OK
+            );
+        }
 
-        let speed_section: RailjsonObject = SpeedSection::default().into();
-        let req_create = get_create_operation_request(speed_section.clone(), small_infra_id);
-        assert_eq!(
-            call_service(&app, req_create).await.status(),
-            StatusCode::OK
-        );
-
-        let response = call_service(&app, auto_fixes_request(small_infra_id)).await;
+        let response = call_service(&app, auto_fixes_request(empty_infra_id)).await;
         assert_eq!(response.status(), StatusCode::OK);
 
         let operations: Vec<Operation> = read_body_json(response).await;
-        assert!(operations.contains(&Operation::Delete(DeleteOperation {
-            obj_id: catenary.get_id().to_string(),
-            obj_type: ObjectType::Catenary,
-        })));
-        assert!(operations.contains(&Operation::Delete(DeleteOperation {
-            obj_id: operational_point.get_id().to_string(),
-            obj_type: ObjectType::OperationalPoint,
-        })));
-        assert!(operations.contains(&Operation::Delete(DeleteOperation {
-            obj_id: speed_section.get_id().to_string(),
-            obj_type: ObjectType::SpeedSection,
-        })));
+
+        for obj in [&catenary, &operational_point, &speed_section] {
+            assert!(operations.contains(&Operation::Delete(DeleteOperation {
+                obj_id: obj.get_id().to_string(),
+                obj_type: obj.get_type(),
+            })))
+        }
     }
 
     #[rstest::rstest]
     async fn out_of_range_must_be_ignored() {
         let app = create_test_service().await;
-        let small_infra = small_infra(db_pool()).await;
-        let small_infra_id = small_infra.id();
+        let empty_infra = empty_infra(db_pool()).await;
+        let empty_infra_id = empty_infra.id();
+
+        let track: RailjsonObject = TrackSection {
+            id: "test_track".into(),
+            length: 1_000.0,
+            slopes: vec![Slope {
+                begin: 250.0,
+                end: 1250.0,
+                gradient: 0.,
+            }],
+            ..Default::default()
+        }
+        .into();
 
         let catenary: RailjsonObject = Catenary {
             track_ranges: vec![ApplicableDirectionsTrackRange {
-                begin: 100000000000.0,
-                end: 100000000001.0,
+                track: "test_track".into(),
+                begin: 250.0,
+                end: 1250.0,
                 ..Default::default()
             }],
             ..Default::default()
         }
         .into();
-        let req_create = get_create_operation_request(catenary.clone(), small_infra_id);
-        assert_eq!(
-            call_service(&app, req_create).await.status(),
-            StatusCode::OK
-        );
 
         let operational_point: RailjsonObject = OperationalPoint {
             parts: vec![OperationalPointPart {
-                position: 10000000000000.0,
+                track: "test_track".into(),
+                position: 1250.0,
                 ..Default::default()
             }],
             ..Default::default()
         }
         .into();
-        let req_create = get_create_operation_request(operational_point.clone(), small_infra_id);
-        assert_eq!(
-            call_service(&app, req_create).await.status(),
-            StatusCode::OK
-        );
 
         let speed_section: RailjsonObject = SpeedSection {
             track_ranges: vec![ApplicableDirectionsTrackRange {
-                begin: 100000000000.0,
-                end: 100000000001.0,
+                track: "test_track".into(),
+                begin: 250.0,
+                end: 1250.0,
                 ..Default::default()
             }],
             ..Default::default()
         }
         .into();
-        let req_create = get_create_operation_request(speed_section.clone(), small_infra_id);
-        assert_eq!(
-            call_service(&app, req_create).await.status(),
-            StatusCode::OK
-        );
 
-        let track_section: RailjsonObject = TrackSection {
-            slopes: vec![Slope {
-                begin: 100000000000.0,
-                end: 100000000001.0,
-                gradient: 0.1,
-            }],
-            ..Default::default()
+        for obj in [&track, &catenary, &operational_point, &speed_section] {
+            let req_create = get_create_operation_request(obj.clone(), empty_infra_id);
+            assert_eq!(
+                call_service(&app, req_create).await.status(),
+                StatusCode::OK
+            );
         }
-        .into();
-        let req_create = get_create_operation_request(track_section.clone(), small_infra_id);
-        assert_eq!(
-            call_service(&app, req_create).await.status(),
-            StatusCode::OK
-        );
 
-        let response = call_service(&app, auto_fixes_request(small_infra_id)).await;
-
+        let response = call_service(&app, auto_fixes_request(empty_infra_id)).await;
         assert_eq!(response.status(), StatusCode::OK);
 
         let operations: Vec<Operation> = read_body_json(response).await;
-        assert!(!operations.contains(&Operation::Delete(DeleteOperation {
-            obj_id: catenary.get_id().to_string(),
-            obj_type: ObjectType::Catenary,
-        })));
-        assert!(!operations.contains(&Operation::Delete(DeleteOperation {
-            obj_id: operational_point.get_id().to_string(),
-            obj_type: ObjectType::OperationalPoint,
-        })));
-        assert!(!operations.contains(&Operation::Delete(DeleteOperation {
-            obj_id: speed_section.get_id().to_string(),
-            obj_type: ObjectType::SpeedSection,
-        })));
-        assert!(!operations.contains(&Operation::Delete(DeleteOperation {
-            obj_id: track_section.get_id().to_string(),
-            obj_type: ObjectType::TrackSection,
-        })));
+
+        for obj in [&track, &catenary, &operational_point, &speed_section] {
+            assert!(!operations.contains(&Operation::Delete(DeleteOperation {
+                obj_id: obj.get_id().to_string(),
+                obj_type: obj.get_type(),
+            })))
+        }
     }
 
     #[rstest::rstest]
-    async fn out_of_range_must_be_deleted() {
+    #[case(250., 1)]
+    #[case(1250., 5)]
+    async fn out_of_range_must_be_deleted(#[case] pos: f64, #[case] error_count: usize) {
         let app = create_test_service().await;
-        let small_infra = small_infra(db_pool()).await;
-        let small_infra_id = small_infra.id();
+        let empty_infra = empty_infra(db_pool()).await;
+        let empty_infra_id = empty_infra.id();
+
+        let track: RailjsonObject = TrackSection {
+            id: "test_track".into(),
+            length: 1_000.0,
+            geo: geos::geojson::Geometry::new(geos::geojson::Value::LineString(vec![
+                vec![0.0, 0.0],
+                vec![1.0, 1.0],
+            ])),
+            sch: geos::geojson::Geometry::new(geos::geojson::Value::LineString(vec![
+                vec![0.0, 0.0],
+                vec![1.0, 1.0],
+            ])),
+            ..Default::default()
+        }
+        .into();
 
         let signal: RailjsonObject = Signal {
-            position: 10000000000000.0,
-            track: "TC0".into(),
+            position: pos,
+            track: "test_track".into(),
             ..Default::default()
         }
         .into();
-        let req_create = get_create_operation_request(signal.clone(), small_infra_id);
-        assert_eq!(
-            call_service(&app, req_create).await.status(),
-            StatusCode::OK
-        );
 
         let detector: RailjsonObject = Detector {
-            position: 10000000000000.0,
-            track: "TC0".into(),
+            position: pos,
+            track: "test_track".into(),
             ..Default::default()
         }
         .into();
-        let req_create = get_create_operation_request(detector.clone(), small_infra_id);
-        assert_eq!(
-            call_service(&app, req_create).await.status(),
-            StatusCode::OK
-        );
 
         let buffer_stop: RailjsonObject = BufferStop {
-            position: 10000000000000.0,
-            track: "TC0".into(),
+            position: pos,
+            track: "test_track".into(),
             ..Default::default()
         }
         .into();
-        let req_create = get_create_operation_request(buffer_stop.clone(), small_infra_id);
-        assert_eq!(
-            call_service(&app, req_create).await.status(),
-            StatusCode::OK
-        );
 
-        let response = call_service(&app, auto_fixes_request(small_infra_id)).await;
+        for obj in [&track, &signal, &detector, &buffer_stop] {
+            let req_create = get_create_operation_request(obj.clone(), empty_infra_id);
+            assert_eq!(
+                call_service(&app, req_create).await.status(),
+                StatusCode::OK
+            );
+        }
 
+        let response = call_service(&app, auto_fixes_request(empty_infra_id)).await;
         assert_eq!(response.status(), StatusCode::OK);
 
         let operations: Vec<Operation> = read_body_json(response).await;
-        assert!(operations.contains(&Operation::Delete(DeleteOperation {
-            obj_id: signal.get_id().to_string(),
-            obj_type: ObjectType::Signal,
-        })));
-        assert!(operations.contains(&Operation::Delete(DeleteOperation {
-            obj_id: detector.get_id().to_string(),
-            obj_type: ObjectType::Detector,
-        })));
-        assert!(operations.contains(&Operation::Delete(DeleteOperation {
-            obj_id: buffer_stop.get_id().to_string(),
-            obj_type: ObjectType::BufferStop,
-        })));
+        assert_eq!(operations.len(), error_count);
+
+        if !operations.len() == 5 {
+            for obj in [&signal, &detector, &buffer_stop] {
+                assert!(operations.contains(&Operation::Delete(DeleteOperation {
+                    obj_id: obj.get_id().to_string(),
+                    obj_type: obj.get_type(),
+                })))
+            }
+        }
     }
 
     #[rstest::rstest]
