@@ -17,30 +17,6 @@ pub use self::layer_cache::{
 };
 pub use self::redis_utils::{delete, get, keys, set};
 
-/// Invalidates layer cache for a specific infra and view if provided
-///
-/// # Arguments
-///
-/// * `redis_pool` - Pool to use to connect to the redis
-/// * `infra_id` - Infra to on which the layer must be invalidated
-/// * `layer_name` - Layer to invalidate
-/// * `view_name` - Specific view to invalidate, if not provided all layer's views are invalidated
-///
-/// Returns the number of deleted keys
-async fn invalidate_full_layer_cache<C: ConnectionLike>(
-    redis: &mut C,
-    infra_id: i64,
-    layer_name: &str,
-    view_name: Option<&str>,
-) -> Result<u64> {
-    let prefix: String = view_name.map_or(get_layer_cache_prefix(layer_name, infra_id), |view| {
-        get_view_cache_prefix(layer_name, infra_id, view)
-    });
-    let matching_keys = keys(redis, &format!("{prefix}.*")).await?;
-    let number_of_deleted_keys = delete(redis, matching_keys).await?;
-    Ok(number_of_deleted_keys)
-}
-
 /// Invalidates cache for specific
 ///
 /// # Arguments
@@ -61,64 +37,79 @@ async fn invalidate_cache_tiles<C: ConnectionLike>(
     Ok(number_of_deleted_keys)
 }
 
-/// Invalidates a infra specific layer zone
+/// Invalidate a zone of an infra view
 ///
 /// # Arguments
 ///
 /// * `redis_pool` - Pool to use to connect to the redis
 /// * `infra_id` - Infra to on which the layer must be invalidated
 /// * `layer_name` - Layer on which invalidation must be done
-/// * `zone` - Zone to invalidate
-async fn invalidate_layer_zone<C: ConnectionLike>(
+/// * `view_name` - Layer on which invalidation must be done
+/// * `bbox` - Bounding Box to invalidate (full view if None)
+#[allow(dead_code)]
+async fn invalidate_view_bbox<C: ConnectionLike>(
     redis: &mut C,
     infra_id: i64,
     layer_name: &str,
-    zone: &Zone,
+    view_name: &str,
+    bbox: &BoundingBox,
     map_config: &MapLayersConfig,
 ) -> Result<()> {
     let max_zoom = map_config.max_zoom;
     let max_tiles = map_config.max_tiles;
-    let mut affected_tiles: HashMap<String, Vec<Tile>> = HashMap::new();
-    for (view_name, bbox) in [("geo", &zone.geo), ("sch", &zone.sch)] {
-        if count_tiles(max_zoom, bbox) > max_tiles {
-            invalidate_full_layer_cache(redis, infra_id, layer_name, Some(view_name)).await?;
-        } else {
-            affected_tiles.insert(
-                get_view_cache_prefix(layer_name, infra_id, view_name),
-                get_tiles_to_invalidate(max_zoom, bbox),
-            );
-        }
+    if count_tiles(max_zoom, bbox) > max_tiles {
+        invalidate_full_view_cache(redis, infra_id, layer_name, view_name).await?;
+        return Ok(());
     }
-    if !affected_tiles.is_empty() {
-        invalidate_cache_tiles(redis, affected_tiles).await?;
-    }
+
+    let affected_tiles: HashMap<String, Vec<Tile>> = HashMap::from([(
+        get_view_cache_prefix(layer_name, infra_id, view_name),
+        get_tiles_to_invalidate(max_zoom, bbox),
+    )]);
+    invalidate_cache_tiles(redis, affected_tiles).await?;
     Ok(())
 }
 
-/// Invalidates a zone for all map layers
-/// If the zone is invalide nothing is done
+/// Invalidates layer cache for a specific infra and view if provided
 ///
 /// # Arguments
 ///
 /// * `redis_pool` - Pool to use to connect to the redis
-/// * `layers` - Layers to invalidate
-/// * `infra_id` - Infra to on which layers must be invalidated
-/// * `zone` - Zone to invalidate
+/// * `infra_id` - Infra on which the layer must be invalidated
+/// * `layer_name` - Layer to invalidate
 ///
-/// Panics if fail
-pub async fn invalidate_zone<C: ConnectionLike>(
+/// Returns the number of deleted keys
+async fn invalidate_full_layer_cache<C: ConnectionLike>(
     redis: &mut C,
-    layers: &Vec<String>,
     infra_id: i64,
-    zone: &Zone,
-    map_config: &MapLayersConfig,
-) -> Result<()> {
-    if zone.is_valid() {
-        for layer in layers {
-            invalidate_layer_zone(redis, infra_id, layer, zone, map_config).await?;
-        }
-    }
-    Ok(())
+    layer_name: &str,
+) -> Result<u64> {
+    let prefix: String = get_layer_cache_prefix(layer_name, infra_id);
+    let matching_keys = keys(redis, &format!("{prefix}.*")).await?;
+    let number_of_deleted_keys = delete(redis, matching_keys).await?;
+    Ok(number_of_deleted_keys)
+}
+
+/// Invalidates layer cache for a specific infra and view if provided
+///
+/// # Arguments
+///
+/// * `redis_pool` - Pool to use to connect to the redis
+/// * `infra_id` - Infra on which the layer must be invalidated
+/// * `layer_name` - Layer to invalidate
+/// * `view_name` - Specific view to invalidate
+///
+/// Returns the number of deleted keys
+async fn invalidate_full_view_cache<C: ConnectionLike>(
+    redis: &mut C,
+    infra_id: i64,
+    layer_name: &str,
+    view_name: &str,
+) -> Result<u64> {
+    let prefix: String = get_view_cache_prefix(layer_name, infra_id, view_name);
+    let matching_keys = keys(redis, &format!("{prefix}.*")).await?;
+    let number_of_deleted_keys = delete(redis, matching_keys).await?;
+    Ok(number_of_deleted_keys)
 }
 
 /// Invalidates all map layers of a specific infra
@@ -130,11 +121,13 @@ pub async fn invalidate_zone<C: ConnectionLike>(
 /// * `infra_id` - Infra to on which layers must be invalidated
 ///
 /// Panics if fail
-pub async fn invalidate_all<C: ConnectionLike>(redis: &mut C, layers: &Vec<String>, infra_id: i64) {
+pub async fn invalidate_all<C: ConnectionLike>(
+    redis: &mut C,
+    layers: &Vec<String>,
+    infra_id: i64,
+) -> Result<()> {
     for layer_name in layers {
-        let result = invalidate_full_layer_cache(redis, infra_id, layer_name, None).await;
-        if result.is_err() {
-            panic!("Failed to invalidate map layer: {}", result.unwrap_err());
-        }
+        invalidate_full_layer_cache(redis, infra_id, layer_name).await?;
     }
+    Ok(())
 }

@@ -177,7 +177,7 @@ async fn refresh(
             &map_layers.layers.keys().cloned().collect(),
             *infra_id,
         )
-        .await;
+        .await?;
     }
 
     Ok(Json(json!({ "infra_refreshed": refreshed_infra })))

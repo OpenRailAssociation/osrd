@@ -7,9 +7,8 @@ use chashmap::CHashMap;
 use diesel_async::AsyncPgConnection as PgConnection;
 use thiserror::Error;
 
-use crate::client::MapLayersConfig;
 use crate::infra_cache::InfraCache;
-use crate::map::{self, MapLayers, Zone};
+use crate::map::{self, MapLayers};
 use crate::models::{Infra, Update};
 use crate::schema::operation::{Operation, OperationResult};
 use crate::{generated_data, DbPool};
@@ -24,7 +23,6 @@ pub async fn edit<'a>(
     infra_caches: Data<CHashMap<i64, InfraCache>>,
     redis_client: Data<RedisClient>,
     map_layers: Data<MapLayers>,
-    map_layers_config: Data<MapLayersConfig>,
 ) -> Result<Json<Vec<OperationResult>>> {
     let infra_id = infra.into_inner();
 
@@ -33,16 +31,13 @@ pub async fn edit<'a>(
         .await
         .map_err(|_| InfraApiError::NotFound { infra_id })?;
     let mut infra_cache = InfraCache::get_or_load_mut(&mut conn, &infra_caches, &infra).await?;
-    let (operation_results, invalid_zone) =
-        apply_edit(&mut conn, &infra, &operations, &mut infra_cache).await?;
+    let operation_results = apply_edit(&mut conn, &infra, &operations, &mut infra_cache).await?;
 
     let mut conn = redis_client.get_connection().await?;
-    map::invalidate_zone(
+    map::invalidate_all(
         &mut conn,
         &map_layers.layers.keys().cloned().collect(),
         infra_id,
-        &invalid_zone,
-        &map_layers_config,
     )
     .await?;
 
@@ -54,7 +49,7 @@ async fn apply_edit(
     infra: &Infra,
     operations: &[Operation],
     infra_cache: &mut InfraCache,
-) -> Result<(Vec<OperationResult>, Zone)> {
+) -> Result<Vec<OperationResult>> {
     let infra_id = infra.id.unwrap();
     // Check if the infra is locked
     if infra.locked.unwrap() {
@@ -73,9 +68,6 @@ async fn apply_edit(
         .await
         .map_err(|_| InfraApiError::NotFound { infra_id })?;
 
-    // Compute cache invalidation zone
-    let invalid_zone = Zone::compute(infra_cache, &operation_results);
-
     // Apply operations to infra cache
     infra_cache.apply_operations(&operation_results)?;
     // Refresh layers if needed
@@ -91,7 +83,7 @@ async fn apply_edit(
         .await
         .map_err(|_| InfraApiError::NotFound { infra_id })?;
 
-    Ok((operation_results, invalid_zone))
+    Ok(operation_results)
 }
 
 #[derive(Debug, Clone, Error, EditoastError)]
