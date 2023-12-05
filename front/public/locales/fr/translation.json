@@ -450,8 +450,9 @@
           "mode-add-point": "Ajouter un point",
           "mode-delete-point": "Supprimer des points",
           "mode-move-point": "Déplacer les points",
-          "toggle-anchoring": "Activer / désactiver l'ancrage automatique",
-          "save-line": "Sauvegarder la ligne"
+          "reset-line": "Réinitialiser les données",
+          "save-line": "Sauvegarder la ligne",
+          "toggle-anchoring": "Activer / désactiver l'ancrage automatique"
         },
         "help": {
           "add-anchor-point": "Cliquez pour ajouter un point au bout de la section de ligne. Cliquez sur la ligne pour ajouter un point intermédiaire.",

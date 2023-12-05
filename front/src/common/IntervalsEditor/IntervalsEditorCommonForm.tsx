@@ -75,6 +75,8 @@ const IntervalsEditorCommonForm = ({
         label={t('begin')}
         setInput={setBegin}
         max={interval.end}
+        sm
+        showFlex
       />
       <DebouncedNumberInputSNCF
         id="item-end-input"
@@ -83,6 +85,8 @@ const IntervalsEditorCommonForm = ({
         setInput={setEnd}
         min={interval.begin}
         max={Math.round(totalLength)}
+        sm
+        showFlex
       />
     </div>
   );

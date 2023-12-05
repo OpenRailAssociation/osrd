@@ -1,6 +1,11 @@
 import { JSONSchema7 } from 'json-schema';
 import { Feature, GeoJsonProperties, Geometry, Point, LineString, MultiLineString } from 'geojson';
-import { Direction, DirectionalTrackRange, ObjectType } from 'common/api/osrdEditoastApi';
+import {
+  Direction,
+  DirectionalTrackRange,
+  LoadingGaugeType,
+  ObjectType,
+} from 'common/api/osrdEditoastApi';
 import { LinearMetadataItem } from 'common/IntervalsDataViz/types';
 import { NullGeometry } from './geospatial';
 
@@ -24,6 +29,7 @@ export interface TrackSectionEntity
     {
       length: number;
       slopes: LinearMetadataItem<{ gradient: number }>[];
+      loading_gauge_limits: LinearMetadataItem<{ category: LoadingGaugeType }>[];
       curves: LinearMetadataItem<{ radius: number }>[];
       extensions?: {
         sncf?: {

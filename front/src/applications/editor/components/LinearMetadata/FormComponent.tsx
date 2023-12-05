@@ -30,11 +30,10 @@ import { LinearMetadataTooltip } from './tooltip';
 import { FormBeginEndWidget } from './FormBeginEndWidget';
 import 'common/IntervalsDataViz/style.scss';
 
-export const FormComponent: React.FC<FieldProps> = (props) => {
+const IntervalEditorComponent: React.FC<FieldProps> = (props) => {
   const { name, formContext, formData, schema, onChange, registry } = props;
   const { openModal, closeModal } = useModal();
   const { t } = useTranslation();
-  const Fields = utils.getDefaultRegistry().fields;
 
   // Wich segment area is visible
   const [viewBox, setViewBox] = useState<[number, number] | null>(null);
@@ -144,9 +143,6 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
   useEffect(() => {
     setSelectedData(selected !== null && data[selected] ? data[selected] : null);
   }, [selected, data]);
-
-  if (!LINEAR_METADATA_FIELDS.includes(name))
-    return <Fields.ArrayField {...props} schema={jsonSchema} />;
 
   return (
     <div className="linear-metadata">
@@ -425,6 +421,62 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
       </div>
     </div>
   );
+};
+
+export const FormComponent: React.FC<FieldProps> = (props) => {
+  const { name, formContext, schema, registry } = props;
+  const Fields = utils.getDefaultRegistry().fields;
+
+  // Get the distance of the geometry
+  const distance = useMemo(() => {
+    if (!isNil(formContext.length)) {
+      return formContext.length as number;
+    }
+    if (formContext.geometry?.type === 'LineString') {
+      return getLineStringDistance(formContext.geometry);
+    }
+    return 0;
+  }, [formContext]);
+
+  // Remove the 'valueField' required field because it is required by the backend. However,
+  // the segment with missing values is filtered in 'customOnChange' before being sent to the backend,
+  // and then re-added by 'fixLinearMetadataItems'.
+  const requiredFilter = (requireds: string[]) =>
+    requireds.filter((r) => ['end', 'begin'].includes(r));
+
+  // Compute the JSON schema of the linear metadata item
+  const jsonSchema = useMemo(
+    () =>
+      getFieldJsonSchema(
+        schema,
+        registry.rootSchema,
+        requiredFilter,
+        distance
+          ? {
+              begin: {
+                minimum: 0,
+                maximum: distance,
+              },
+              end: {
+                minimum: 0,
+                maximum: distance,
+              },
+            }
+          : {}
+      ),
+    [schema, registry.rootSchema, distance]
+  );
+
+  if (LINEAR_METADATA_FIELDS.includes(name))
+    return (
+      <IntervalEditorComponent
+        jsonSchema={jsonSchema}
+        distance={distance}
+        requiredFilter={requiredFilter}
+        {...props}
+      />
+    );
+  return <Fields.ArrayField {...props} schema={jsonSchema} />;
 };
 
 export default FormComponent;

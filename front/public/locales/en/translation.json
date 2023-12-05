@@ -450,8 +450,9 @@
           "mode-add-point": "Add a point",
           "mode-delete-point": "Delete points",
           "mode-move-point": "Move points",
-          "toggle-anchoring": "Toggle anchoring on/off",
-          "save-line": "Save the line"
+          "reset-line": "Reset data",
+          "save-line": "Save the line",
+          "toggle-anchoring": "Toggle anchoring on/off"
         },
         "help": {
           "add-anchor-point": "Click to add a point at the end of the track section. Click on the track to add an intermediate point.",

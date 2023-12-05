@@ -26,9 +26,10 @@ import { save } from 'reducers/editor';
 import { getMap } from 'reducers/map/selectors';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import { CatenaryEntity, SpeedSectionEntity, TrackSectionEntity } from 'types';
-
+import DebouncedNumberInputSNCF from 'common/BootstrapSNCF/FormSNCF/DebouncedNumberInputSNCF';
+import { WidgetProps } from '@rjsf/core';
 import { TrackEditionState } from './types';
-import { injectGeometry } from './utils';
+import { injectGeometry, removeInvalidRanges } from './utils';
 
 export const TRACK_LAYER_ID = 'trackEditionTool/new-track-path';
 export const POINTS_LAYER_ID = 'trackEditionTool/new-track-points';
@@ -346,6 +347,14 @@ export const TrackEditionLayers: FC = () => {
   );
 };
 
+export const CustomLengthInput: React.FC<WidgetProps> = (props) => {
+  const { onChange, value } = props;
+
+  return (
+    <DebouncedNumberInputSNCF debouncedDelay={1500} input={value} setInput={onChange} label="" />
+  );
+};
+
 export const TrackEditionLeftPanel: FC = () => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
@@ -354,7 +363,7 @@ export const TrackEditionLeftPanel: FC = () => {
     EditorContext
   ) as ExtendedEditorContextType<TrackEditionState>;
   const submitBtnRef = useRef<HTMLButtonElement>(null);
-  const { track } = state;
+  const { track, initialTrack } = state;
   const isNew = track.properties.id === NEW_ENTITY_ID;
 
   // Hack to be able to launch the submit event from the rjsf form by using
@@ -371,6 +380,11 @@ export const TrackEditionLeftPanel: FC = () => {
     <>
       <EditorForm
         data={track}
+        overrideUiSchema={{
+          length: {
+            'ui:widget': CustomLengthInput,
+          },
+        }}
         onSubmit={async (savedEntity) => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const res: any = await dispatch(
@@ -403,7 +417,26 @@ export const TrackEditionLeftPanel: FC = () => {
           });
         }}
         onChange={(newTrack) => {
-          setState({ ...state, track: newTrack as TrackSectionEntity });
+          let checkedTrack = { ...newTrack };
+          if (initialTrack.properties.length !== newTrack.properties.length) {
+            const { loading_gauge_limits, slopes, curves, length: newLength } = newTrack.properties;
+            const validLoadingGaugeLimits = removeInvalidRanges(loading_gauge_limits, newLength);
+            const validCurves = removeInvalidRanges(curves, newLength);
+            const validSlopes = removeInvalidRanges(slopes, newLength);
+            checkedTrack = {
+              ...checkedTrack,
+              properties: {
+                ...checkedTrack.properties,
+                loading_gauge_limits: validLoadingGaugeLimits,
+                slopes: validSlopes,
+                curves: validCurves,
+              },
+            };
+          }
+          setState({
+            ...state,
+            track: checkedTrack as TrackSectionEntity,
+          });
         }}
       >
         <div>

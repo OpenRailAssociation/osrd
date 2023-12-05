@@ -5,6 +5,7 @@ import { utils } from '@rjsf/core';
 import lineSplit from '@turf/line-split';
 import fnLength from '@turf/length';
 import { EditorEntity } from 'types/editor';
+import { removeInvalidRanges } from 'applications/editor/tools/trackEdition/utils';
 import { LinearMetadataItem, OperationalPoint } from './types';
 
 export const LINEAR_METADATA_FIELDS = ['slopes', 'curves'];
@@ -219,17 +220,17 @@ export function mergeIn<T>(
  * - if empty it generate one
  * - if there is a gap at begin/end or inside, it is created
  * - if there is an overlaps, remove it
- * @param value The linear metadata
+ * @param items The linear metadata
  * @param lineLength The full length of the linearmetadata (should be computed from the LineString or given by the user)
  * @param opts If defined, it allows the function to fill gaps with default field value
  */
 export function fixLinearMetadataItems<T>(
-  value: Array<LinearMetadataItem<T>> | undefined,
+  items: Array<LinearMetadataItem<T>> | undefined,
   lineLength: number,
   opts?: { fieldName: string; defaultValue: unknown }
 ): Array<LinearMetadataItem<T>> {
   // simple scenario
-  if (!value || value.length === 0) {
+  if (!items || items.length === 0) {
     return [
       {
         begin: 0,
@@ -238,6 +239,7 @@ export function fixLinearMetadataItems<T>(
       } as LinearMetadataItem<T>,
     ];
   }
+  const filteredItems = removeInvalidRanges(items, lineLength);
 
   function haveAdditionalKeys(item: LinearMetadataItem, itemToCompare: LinearMetadataItem) {
     const keys = Object.keys(item);
@@ -249,7 +251,7 @@ export function fixLinearMetadataItems<T>(
   }
 
   // merge empty adjacent items
-  let fixedLinearMetadata: Array<LinearMetadataItem<T>> = sortBy(value, ['begin']);
+  let fixedLinearMetadata: Array<LinearMetadataItem<T>> = sortBy(filteredItems, ['begin']);
 
   // Order the array and fix it by filling gaps if there are some
   fixedLinearMetadata = fixedLinearMetadata.flatMap((item, index, array) => {
@@ -362,7 +364,6 @@ export function update<T>(
   linearMetadata: Array<LinearMetadataItem<T>>
 ): Array<LinearMetadataItem<T>> {
   if (linearMetadata.length === 0) return [];
-
   // Compute the source coordinates of the changed point
   // by doing
   // - a diff between source & target for change
@@ -660,9 +661,12 @@ export function getClosestOperationalPoint(
  * @param sourceLine The original LineString (before the change)
  * @returns The entity modified in adquation
  */
+
 export function entityDoUpdate<T extends EditorEntity>(entity: T, sourceLine: LineString): T {
-  if (entity.geometry.type === 'LineString' && !isNil(entity.properties)) {
-    const newProps: EditorEntity['properties'] = { id: entity.properties.id };
+  const newProps: EditorEntity['properties'] = { id: entity.properties.id };
+  // The modification of the linestring modifies the entity real properties only during initialization.
+  const isInitialization = sourceLine.coordinates.length === 0;
+  if (entity.geometry.type === 'LineString' && !isNil(entity.properties) && isInitialization) {
     Object.keys(entity.properties).forEach((name) => {
       const value = (entity.properties as { [key: string]: unknown })[name];
       // is a LM ?
@@ -672,9 +676,7 @@ export function entityDoUpdate<T extends EditorEntity>(entity: T, sourceLine: Li
         newProps[name] = value;
       }
     });
-    // eslint-disable-next-line dot-notation
-    newProps['length'] = getLineStringDistance(entity.geometry as LineString);
-
+    newProps.length = getLineStringDistance(entity.geometry as LineString);
     return { ...entity, properties: newProps };
   }
   return entity;
