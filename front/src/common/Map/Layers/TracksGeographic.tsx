@@ -6,7 +6,7 @@ import { RootState } from 'reducers';
 import { Theme } from 'types';
 
 import { MAP_TRACK_SOURCES, MAP_URL } from 'common/Map/const';
-import { geoMainLayer } from 'common/Map/Layers/geographiclayers';
+import geoMainLayer from 'common/Map/Layers/geographiclayers';
 import { lineNameLayer, lineNumberLayer, trackNameLayer } from 'common/Map/Layers/commonLayers';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import { getInfraID } from 'reducers/osrdconf/selectors';
@@ -44,23 +44,8 @@ function TracksGeographic(props: TracksGeographicProps) {
             'text-size': 11,
           },
         }}
-        id="chartis/tracks-geo/name"
+        id="chartis/tracks-geo/track-name"
         source-layer={MAP_TRACK_SOURCES.geographic}
-        filter={['==', 'type_voie', 'VP']}
-        layerOrder={layerOrder}
-      />
-      <OrderedLayer
-        {...{
-          ...trackNameLayer(colors),
-          layout: {
-            ...trackNameLayer(colors).layout,
-            'text-field': '{extensions_sncf_track_name}',
-            'text-size': 10,
-          },
-        }}
-        id="chartis/tracks-geo/name"
-        source-layer={MAP_TRACK_SOURCES.geographic}
-        filter={['!=', 'type_voie', 'VP']}
         layerOrder={layerOrder}
       />
       <OrderedLayer
@@ -71,7 +56,7 @@ function TracksGeographic(props: TracksGeographicProps) {
             'text-field': '{extensions_sncf_line_code}',
           },
         }}
-        id="chartis/tracks-geo/number"
+        id="chartis/tracks-geo/line-number"
         source-layer={MAP_TRACK_SOURCES.geographic}
         layerOrder={layerOrder}
       />
@@ -83,6 +68,7 @@ function TracksGeographic(props: TracksGeographicProps) {
             'text-field': '{extensions_sncf_line_name}',
           },
         }}
+        id="chartis/tracks-geo/line-name"
         source-layer={MAP_TRACK_SOURCES.geographic}
         layerOrder={layerOrder}
       />
