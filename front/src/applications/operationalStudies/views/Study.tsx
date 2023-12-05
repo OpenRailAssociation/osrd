@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
-import logo from 'assets/pictures/home/operationalStudies-white.svg';
 import { useTranslation } from 'react-i18next';
 import Loader, { Spinner } from 'common/Loader';
 import nextId from 'react-id-generator';
@@ -197,7 +196,7 @@ export default function Study() {
 
   return (
     <>
-      <NavBarSNCF appName={<BreadCrumbs project={project} study={study} />} logo={logo} />
+      <NavBarSNCF appName={<BreadCrumbs project={project} study={study} />} />
       <main className="mastcontainer mastcontainer-no-mastnav">
         <div className="p-3 study-view">
           {project && study ? (

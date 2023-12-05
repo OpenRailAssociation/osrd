@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
-import logo from 'assets/pictures/home/operationalStudies-white.svg';
 import { useTranslation } from 'react-i18next';
 import nextId from 'react-id-generator';
 import StudyCard from 'modules/study/components/StudyCard';
@@ -182,7 +181,7 @@ export default function Project() {
 
   return (
     <>
-      <NavBarSNCF appName={<BreadCrumbs project={project} />} logo={logo} />
+      <NavBarSNCF appName={<BreadCrumbs project={project} />} />
       <main className="mastcontainer mastcontainer-no-mastnav">
         <div className="p-3 project-view">
           {project ? (

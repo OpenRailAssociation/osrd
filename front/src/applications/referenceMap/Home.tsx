@@ -4,7 +4,6 @@ import { Route, Routes } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { GoLock } from 'react-icons/go';
 
-import logo from 'assets/pictures/home/map-white.svg';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
@@ -42,7 +41,6 @@ const HomeReferenceMap: FC = () => {
             )}
           </>
         }
-        logo={logo}
       />
       <div className="no-mastnav">
         <Routes>
