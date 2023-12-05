@@ -209,6 +209,7 @@ pub async fn get_timetable_train_schedules(
     let mut conn = db_pool.get().await?;
     Ok(train_schedule::table
         .filter(train_schedule::timetable_id.eq(timetable_id))
+        .order_by(train_schedule::departure_time)
         .load(&mut conn)
         .await?)
 }
