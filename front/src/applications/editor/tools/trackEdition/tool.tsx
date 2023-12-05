@@ -2,7 +2,7 @@ import React from 'react';
 import { cloneDeep, isEmpty, isEqual } from 'lodash';
 import { MdShowChart } from 'react-icons/md';
 import { RiDragMoveLine } from 'react-icons/ri';
-import { BiAnchor, BiArrowFromLeft, BiArrowToRight } from 'react-icons/bi';
+import { BiAnchor, BiArrowFromLeft, BiArrowToRight, BiReset } from 'react-icons/bi';
 import { Feature, LineString } from 'geojson';
 import getNearestPoint from '@turf/nearest-point';
 import { featureCollection } from '@turf/helpers';
@@ -63,6 +63,19 @@ const TrackEditionTool: Tool<TrackEditionState> = {
           if (setIsFormSubmited) {
             setIsFormSubmited(true);
           }
+        },
+      },
+      {
+        id: 'reset-entity',
+        icon: BiReset,
+        labelTranslationKey: `Editor.tools.track-edition.actions.reset-line`,
+        isDisabled({ state: { track, initialTrack } }) {
+          return isEqual(track, initialTrack);
+        },
+        onClick({ setState, state: { initialTrack } }) {
+          setState({
+            track: cloneDeep(initialTrack),
+          });
         },
       },
     ],
@@ -219,7 +232,6 @@ const TrackEditionTool: Tool<TrackEditionState> = {
         const position = nearestPoint.geometry.coordinates as [number, number];
         const index = nearestPoint.properties.sectionIndex;
         const newState = cloneDeep(state);
-
         newState.track.geometry.coordinates.splice(index + 1, 0, position);
         newState.track = entityDoUpdate(newState.track, state.track.geometry);
         newState.nearestPoint = null;
