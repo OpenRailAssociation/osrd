@@ -12,7 +12,7 @@ import { ModalProvider } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import Editor from './Editor';
 
 export default function HomeEditorUnplugged() {
-  const { t } = useTranslation(['referenceMap']);
+  const { t } = useTranslation(['home/home', 'referenceMap']);
   const infraID = useSelector(getInfraID);
   const [getInfraById, { data: infra }] = osrdEditoastApi.endpoints.getInfraById.useLazyQuery({});
 

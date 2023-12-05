@@ -27,12 +27,12 @@
   "infraDeleted": "L'infrastructure {{name}} a bien été supprimée.",
   "infraManagement": "Gestion des infrastructures",
   "infraName": "Nom de l'infrastructure",
-  "infrasFound_zero": "Aucune insfrastructure trouvée",
-  "infrasFound_one": "{{count}} insfrastructure trouvée",
-  "infrasFound_other": "{{count}} insfrastructures trouvées",
+  "infrasFound_zero": "Aucune infrastructure trouvée",
+  "infrasFound_one": "{{count}} infrastructure trouvée",
+  "infrasFound_other": "{{count}} infrastructures trouvées",
   "infrastructure": "Infrastructure",
   "locked": "Verrouillée",
   "no": "Non",
-  "noInfra": "Veuillez choisir une insfrastructure",
+  "noInfra": "Veuillez choisir une infrastructure",
   "yes": "Oui"
 }
