@@ -12,7 +12,7 @@ import { MapState } from 'reducers/map';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import { LAYERS, LAYER_ENTITIES_ORDERS, LAYER_GROUPS_ORDER } from 'config/layerOrder';
 import { Theme } from 'types';
-import { geoMainLayer, geoServiceLayer } from './geographiclayers';
+import geoMainLayer from './geographiclayers';
 import {
   getPointLayerProps,
   getSignalLayerProps,
@@ -167,28 +167,13 @@ function getTrackSectionLayers(context: LayerContext, prefix: string): LayerProp
       id: `${prefix}geo/track-main`,
     },
     {
-      ...geoServiceLayer(context.colors),
-      id: `${prefix}geo/track-service`,
-    },
-    {
       ...trackNameLayer(context.colors),
-      filter: ['==', 'type_voie', 'VP'],
       layout: {
         ...trackNameLayer(context.colors).layout,
         'text-field': '{extensions_sncf_track_name}',
         'text-size': 11,
       },
-      id: `${prefix}geo/track-vp-names`,
-    },
-    {
-      ...trackNameLayer(context.colors),
-      filter: ['!=', 'type_voie', 'VP'],
-      layout: {
-        ...trackNameLayer(context.colors).layout,
-        'text-field': '{extensions_sncf_track_name}',
-        'text-size': 10,
-      },
-      id: `${prefix}geo/track-other-names`,
+      id: `${prefix}geo/track-name`,
     },
     {
       ...lineNumberLayer(context.colors),
@@ -196,11 +181,15 @@ function getTrackSectionLayers(context: LayerContext, prefix: string): LayerProp
         ...lineNumberLayer(context.colors).layout,
         'text-field': '{extensions_sncf_line_code}',
       },
-      id: `${prefix}geo/track-numbers`,
+      id: `${prefix}geo/line-number`,
     },
     {
       ...lineNameLayer(context.colors),
-      id: `${prefix}geo/line-names`,
+      layout: {
+        ...lineNameLayer(context.colors).layout,
+        'text-field': '{extensions_sncf_line_name}',
+      },
+      id: `${prefix}geo/line-name`,
     },
   ];
 }
