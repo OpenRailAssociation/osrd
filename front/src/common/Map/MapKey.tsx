@@ -33,7 +33,7 @@ const MapSettings = ({ closeMapKeyPopUp }: MapKeyProps) => {
         />
       </div>
       <div className="mapkey-text">
-        {`${key.text} ${key.current ? t(`map-key:${key.current}`) : null}`}
+        {`${key.text} ${key.current && t(`map-key:${key.current}`)}`}
       </div>
     </div>
   ));
