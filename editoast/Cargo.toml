@@ -47,7 +47,7 @@ actix-http = "3.4.0"
 actix-cors = "0.6.4"
 env_logger = "0.10.1"
 log = "0.4.20"
-redis = { version = "0.23.3", features = [
+redis = { version = "0.24.0", features = [
     "tokio-comp",
     "connection-manager",
     "cluster-async",
