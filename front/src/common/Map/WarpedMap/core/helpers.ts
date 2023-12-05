@@ -2,16 +2,18 @@
 import { Feature, FeatureCollection, LineString, Point, Polygon, Position } from 'geojson';
 import _, { first, last, mapValues } from 'lodash';
 import length from '@turf/length';
-import { point } from '@turf/helpers';
+import { point, BBox } from '@turf/helpers';
 import along from '@turf/along';
 import distance from '@turf/distance';
 import { MapGeoJSONFeature } from 'maplibre-gl';
+import WebMercatorViewport from 'viewport-mercator-project';
 
 import { EditoastType, LAYER_TO_EDITOAST_DICT, LayerType } from 'applications/editor/tools/types';
 import { getMixedEntities } from 'applications/editor/data/api';
 import { flattenEntity } from 'applications/editor/data/utils';
 import vec, { Vec2 } from 'common/Map/WarpedMap/core/vec-lib';
 import { Dispatch } from 'redux';
+import { Viewport } from 'reducers/map';
 
 /*
  * Useful types:
@@ -174,4 +176,32 @@ export function simplifyFeature(feature: MapGeoJSONFeature): Feature {
     // eslint-disable-next-line no-underscore-dangle
     geometry: feature.geometry || feature._geometry,
   };
+}
+
+/**
+ * Zoom helpers:
+ */
+
+export function zoomToFeature(
+  boundingBox: BBox | Position,
+  mapViewport: Viewport,
+  updateExtViewport: (viewport: Viewport) => void
+) {
+  const [minLng, minLat, maxLng, maxLat] = boundingBox;
+  const viewportTemp = new WebMercatorViewport({ ...mapViewport, width: 600, height: 400 });
+  const { longitude, latitude, zoom } = viewportTemp.fitBounds(
+    [
+      [minLng, minLat],
+      [maxLng, maxLat],
+    ],
+    { padding: 40 }
+  );
+
+  const newViewport = {
+    ...mapViewport,
+    longitude,
+    latitude,
+    zoom: zoom > 5 ? zoom : 5,
+  };
+  updateExtViewport(newViewport);
 }

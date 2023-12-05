@@ -3,17 +3,16 @@ import { getMap } from 'reducers/map/selectors';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { updateLineSearchCode, updateMapSearchMarker } from 'reducers/map';
 import { useDebounce } from 'utils/helpers';
+import { zoomToFeature } from 'common/Map/WarpedMap/core/helpers';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import bbox from '@turf/bbox';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import LineCard from 'common/Map/Search/LineCard';
 import nextId from 'react-id-generator';
-import WebMercatorViewport from 'viewport-mercator-project';
 
 import type { Viewport } from 'reducers/map';
 import type { Zone, SearchResultItemTrack, SearchPayload } from 'common/api/osrdEditoastApi';
-import type { BBox } from '@turf/helpers';
 import { useInfraID } from 'common/osrdContext';
 
 type MapSearchLineProps = {
@@ -33,26 +32,6 @@ const MapSearchLine = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchLine
   );
   const [getTrackZones, { data: trackZones }] =
     osrdEditoastApi.endpoints.getInfraByInfraIdLinesAndLineCodeBbox.useLazyQuery({});
-
-  const zoomToFeature = (boundingBox: BBox) => {
-    const [minLng, minLat, maxLng, maxLat] = boundingBox;
-    const viewportTemp = new WebMercatorViewport({ ...map.viewport, width: 600, height: 400 });
-    const { longitude, latitude, zoom } = viewportTemp.fitBounds(
-      [
-        [minLng, minLat],
-        [maxLng, maxLat],
-      ],
-      { padding: 40 }
-    );
-
-    const newViewport = {
-      ...map.viewport,
-      longitude,
-      latitude,
-      zoom,
-    };
-    updateExtViewport(newViewport);
-  };
 
   const debouncedSearchTerm = useDebounce(searchState, 300);
 
@@ -100,7 +79,7 @@ const MapSearchLine = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchLine
         type: 'LineString',
         coordinates: coordinates(trackZones),
       });
-      zoomToFeature(tempBbox);
+      zoomToFeature(tempBbox, map.viewport, updateExtViewport);
       closeMapSearchPopUp();
     }
   }, [trackZones]);

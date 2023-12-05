@@ -1,13 +1,11 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { FC, useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import type { MapLayerMouseEvent } from 'maplibre-gl';
-import WebMercatorViewport from 'viewport-mercator-project';
 import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl/maplibre';
 import type { MapRef } from 'react-map-gl/maplibre';
 import type { Feature, LineString } from 'geojson';
 import { lineString, point } from '@turf/helpers';
-import type { BBox } from '@turf/helpers';
 import bbox from '@turf/bbox';
 import lineLength from '@turf/length';
 import lineSlice from '@turf/line-slice';
@@ -62,6 +60,7 @@ import 'common/Map/Map.scss';
 import Terrain from 'common/Map/Layers/Terrain';
 import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
 import { useInfraID } from 'common/osrdContext';
+import { zoomToFeature } from 'common/Map/WarpedMap/core/helpers';
 import IGN_SCAN25 from 'common/Map/Layers/IGN_SCAN25';
 import IGN_CADASTRE from 'common/Map/Layers/IGN_CADASTRE';
 import IGN_BD_ORTHO from 'common/Map/Layers/IGN_BD_ORTHO';
@@ -76,7 +75,7 @@ interface MapProps {
   setExtViewport: (viewport: Viewport) => void;
 }
 
-const Map = ({ setExtViewport }: MapProps) => {
+const Map: FC<MapProps> = () => {
   const mapBlankStyle = useMapBlankStyle();
   const [mapLoaded, setMapLoaded] = useState(false);
   const { viewport, mapSearchMarker, mapStyle, showOSM } = useSelector(
@@ -122,30 +121,12 @@ const Map = ({ setExtViewport }: MapProps) => {
 
   const infraID = useInfraID();
 
-  const zoomToFeature = (boundingBox: BBox) => {
-    const [minLng, minLat, maxLng, maxLat] = boundingBox;
-    const viewportTemp = new WebMercatorViewport({ ...viewport, width: 600, height: 400 });
-    const { longitude, latitude, zoom } = viewportTemp.fitBounds(
-      [
-        [minLng, minLat],
-        [maxLng, maxLat],
-      ],
-      { padding: 40 }
-    );
-    setExtViewport({
-      ...viewport,
-      longitude,
-      latitude,
-      zoom,
-    });
-  };
-
   const getGeoJSONPath = async (pathID: number) => {
     const { data: path, isError, error } = await getPath({ pathfindingId: pathID });
     if (path && !isError) {
       const features = lineString(path.geographic.coordinates);
       setGeojsonPath(features);
-      zoomToFeature(bbox(features));
+      zoomToFeature(bbox(features), viewport, updateViewportChange);
     } else if (isError) {
       console.info('ERROR', error);
     }

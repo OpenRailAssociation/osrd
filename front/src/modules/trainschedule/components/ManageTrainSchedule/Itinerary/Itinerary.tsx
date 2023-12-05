@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
-import { WebMercatorViewport } from 'viewport-mercator-project';
 import { GoArrowSwitch, GoPlus, GoRocket, GoTrash } from 'react-icons/go';
 import type { Position } from 'geojson';
 
@@ -12,8 +11,11 @@ import ModalSuggerredVias from 'modules/trainschedule/components/ManageTrainSche
 import Pathfinding from 'common/Pathfinding/Pathfinding';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import TypeAndPath from 'common/Pathfinding/TypeAndPath';
+
 import { PathResponse } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
+
+import { zoomToFeature } from 'common/Map/WarpedMap/core/helpers';
 
 import type { Viewport } from 'reducers/map';
 import { getMap } from 'reducers/map/selectors';
@@ -39,27 +41,8 @@ function Itinerary({ path }: ItineraryProps) {
   const { t } = useTranslation('operationalStudies/manageTrainSchedule');
   const { openModal } = useModal();
 
-  const zoomToFeature = (boundingBox: Position) => {
-    const [minLng, minLat, maxLng, maxLat] = boundingBox;
-
-    const viewport = new WebMercatorViewport({ ...map.viewport, width: 600, height: 400 });
-
-    const { longitude, latitude, zoom } = viewport.fitBounds(
-      [
-        [minLng, minLat],
-        [maxLng, maxLat],
-      ],
-      {
-        padding: 40,
-      }
-    );
-    const newViewport = {
-      ...map.viewport,
-      longitude,
-      latitude,
-      zoom: zoom < 5 ? 5 : zoom,
-    };
-    setExtViewport(newViewport);
+  const zoomToFeatureInItinerary = (boundingBox: Position) => {
+    zoomToFeature(boundingBox, map.viewport, setExtViewport);
   };
 
   const zoomToFeaturePoint = (lngLat?: Position) => {
@@ -112,7 +95,7 @@ function Itinerary({ path }: ItineraryProps) {
   return (
     <div className="osrd-config-item">
       <div className="mb-2 d-flex">
-        <Pathfinding zoomToFeature={zoomToFeature} path={path} />
+        <Pathfinding zoomToFeature={zoomToFeatureInItinerary} path={path} />
         <button
           type="button"
           className="btn btn-sm btn-only-icon btn-white px-3 ml-2"
@@ -122,8 +105,8 @@ function Itinerary({ path }: ItineraryProps) {
         </button>
       </div>
       {displayTypeAndPath && (
-        <div className="mb-1">
-          <TypeAndPath zoomToFeature={zoomToFeature} />
+        <div className="mb-2">
+          <TypeAndPath zoomToFeature={zoomToFeatureInItinerary} />
         </div>
       )}
       {origin && destination && (
