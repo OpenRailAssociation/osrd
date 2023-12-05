@@ -298,15 +298,24 @@ async fn runserver(
     Ok(())
 }
 
-async fn build_redis_pool_and_invalidate_all_cache(redis_config: RedisConfig, infra_id: i64) {
+async fn build_redis_pool_and_invalidate_all_cache(
+    redis_config: RedisConfig,
+    infra_id: i64,
+) -> Result<(), Box<dyn Error + Send + Sync>> {
     let redis = RedisClient::new(redis_config).unwrap();
     let mut conn = redis.get_connection().await.unwrap();
-    map::invalidate_all(
+    Ok(map::invalidate_all(
         &mut conn,
         &MapLayers::parse().layers.keys().cloned().collect(),
         infra_id,
     )
-    .await;
+    .await
+    .map_err(|e| {
+        Box::new(CliError::new(
+            1,
+            format!("Couldn't refresh redis cache layers: {e}"),
+        ))
+    })?)
 }
 
 /// Run the generate sub command
@@ -349,7 +358,7 @@ async fn generate_infra(
             .await?
         {
             build_redis_pool_and_invalidate_all_cache(redis_config.clone(), infra.id.unwrap())
-                .await;
+                .await?;
             println!(
                 "✅ Infra {}[{}] generated!",
                 infra.name.unwrap().bold(),
@@ -581,7 +590,7 @@ async fn clear_infra(
             infra.name.clone().unwrap().bold(),
             infra.id.unwrap()
         );
-        build_redis_pool_and_invalidate_all_cache(redis_config.clone(), infra.id.unwrap()).await;
+        build_redis_pool_and_invalidate_all_cache(redis_config.clone(), infra.id.unwrap()).await?;
         infra.clear(&mut conn).await?;
         println!(
             "✅ Infra {}[{}] cleared!",
