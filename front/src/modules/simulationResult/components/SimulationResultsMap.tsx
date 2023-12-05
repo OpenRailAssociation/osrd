@@ -14,7 +14,7 @@ import { keyBy } from 'lodash';
 import { updateTimePositionValues } from 'reducers/osrdsimulation/actions';
 import { getPresentSimulation, getSelectedTrain } from 'reducers/osrdsimulation/selectors';
 import { Train } from 'reducers/osrdsimulation/types';
-import { updateViewport, Viewport } from 'reducers/map';
+import { updateMapSearchMarker, updateViewport, Viewport } from 'reducers/map';
 import { RootState } from 'reducers';
 import { TrainPosition } from 'modules/simulationResult/components/SimulationResultsMap/types';
 
@@ -244,6 +244,9 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
             height: e.target.getContainer().offsetHeight,
           });
         }}
+        onClick={() => {
+          dispatch(updateMapSearchMarker(undefined));
+        }}
         interactiveLayerIds={interactiveLayerIds}
         touchZoomRotate
         maxPitch={85}
@@ -336,9 +339,7 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.SIGNALS.GROUP]}
         />
 
-        {mapSearchMarker !== undefined ? (
-          <SearchMarker data={mapSearchMarker} colors={colors[mapStyle]} />
-        ) : null}
+        {mapSearchMarker && <SearchMarker data={mapSearchMarker} colors={colors[mapStyle]} />}
 
         {geojsonPath && (
           <RenderItinerary

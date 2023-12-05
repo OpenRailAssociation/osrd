@@ -1,11 +1,10 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
-import { Source } from 'react-map-gl/maplibre';
-
-import { MAP_TRACK_SOURCES, MAP_URL } from 'common/Map/const';
-import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import { getMap } from 'reducers/map/selectors';
+import { MAP_TRACK_SOURCES, MAP_URL } from 'common/Map/const';
+import { useSelector } from 'react-redux';
+import { Source } from 'react-map-gl/maplibre';
+import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 
 interface TracksGeographicProps {
   layerOrder?: number;

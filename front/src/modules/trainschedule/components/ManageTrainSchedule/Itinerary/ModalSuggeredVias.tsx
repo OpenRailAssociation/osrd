@@ -1,18 +1,16 @@
 import React, { useContext } from 'react';
+import { getSuggeredVias, getVias } from 'reducers/osrdconf/selectors';
+import { replaceVias } from 'reducers/osrdconf';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-
-import { replaceVias } from 'reducers/osrdconf';
-import { getSuggeredVias, getVias } from 'reducers/osrdconf/selectors';
-
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
+import { GoDash, GoPlus, GoTrash } from 'react-icons/go';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { Spinner } from 'common/Loader';
-import { ArrayElement } from 'utils/types';
-import { GoDash, GoPlus, GoTrash } from 'react-icons/go';
-import { PathResponse, PathWaypoint } from 'common/api/osrdEditoastApi';
+import type { ArrayElement } from 'utils/types';
+import type { PathResponse, PathWaypoint } from 'common/api/osrdEditoastApi';
 
 type Props = {
   removeAllVias: () => void;

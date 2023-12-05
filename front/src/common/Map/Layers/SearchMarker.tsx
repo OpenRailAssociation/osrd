@@ -1,8 +1,8 @@
 import React from 'react';
 import { Marker } from 'react-map-gl/maplibre';
 
-import { Theme } from 'types';
-import { MapSearchMarker } from 'reducers/map';
+import type { MapSearchMarker } from 'reducers/map';
+import type { Theme } from 'types';
 
 interface SearchMarkerProps {
   data: MapSearchMarker;

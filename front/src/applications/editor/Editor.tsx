@@ -1,43 +1,45 @@
-import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useTranslation } from 'react-i18next';
-import { useNavigate, useParams } from 'react-router-dom';
 import cx from 'classnames';
 import { isNil, toInteger } from 'lodash';
-import { MapRef } from 'react-map-gl/maplibre';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
-import './Editor.scss';
+import 'applications/editor/Editor.scss';
 import 'common/Map/Map.scss';
 
-import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
+import { getInfraID } from 'reducers/osrdconf/selectors';
+import { getIsLoading } from 'reducers/main/mainSelector';
 import { LoaderState } from 'common/Loader';
 import { loadDataModel, selectLayers, updateTotalsIssue } from 'reducers/editor';
 import { updateInfraID } from 'reducers/osrdconf';
-import { updateViewport, Viewport } from 'reducers/map';
-import { getInfraID } from 'reducers/osrdconf/selectors';
-import { getIsLoading } from 'reducers/main/mainSelector';
-import useKeyboardShortcuts from 'utils/hooks/useKeyboardShortcuts';
+import { updateViewport } from 'reducers/map';
+import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
+import { useSwitchTypes } from 'applications/editor/tools/switchEdition/types';
+import EditorContext from 'applications/editor/context';
+import InfraErrorCorrector from 'applications/editor/components/InfraErrors/InfraErrorCorrector';
+import InfraErrorMapControl from 'applications/editor/components/InfraErrors/InfraErrorMapControl';
+import Map from 'applications/editor/Map';
 import MapSearch from 'common/Map/Search/MapSearch';
-import Tipped from './components/Tipped';
-import Map from './Map';
-import NavButtons from './nav';
-import EditorContext from './context';
-import TOOLS from './tools/tools';
-import TOOL_TYPES from './tools/toolTypes';
-import { EditorState } from './tools/types';
-import {
+import NavButtons from 'applications/editor/nav';
+import useKeyboardShortcuts from 'utils/hooks/useKeyboardShortcuts';
+import Tipped from 'applications/editor/components/Tipped';
+import TOOLS from 'applications/editor/tools/tools';
+import TOOL_TYPES from 'applications/editor/tools/toolTypes';
+
+import type { CommonToolState } from 'applications/editor/tools/commonToolState';
+import type { EditorState } from 'applications/editor/tools/types';
+import type { MapRef } from 'react-map-gl/maplibre';
+import type {
   EditorContextType,
   ExtendedEditorContextType,
   FullTool,
   Reducer,
-} from './tools/editorContextTypes';
-import { switchProps } from './tools/switchProps';
-import { CommonToolState } from './tools/commonToolState';
-import { useSwitchTypes } from './tools/switchEdition/types';
-import InfraErrorMapControl from './components/InfraErrors/InfraErrorMapControl';
-import InfraErrorCorrector from './components/InfraErrors/InfraErrorCorrector';
+} from 'applications/editor/tools/editorContextTypes';
+import type { Viewport } from 'reducers/map';
+import type { switchProps } from 'applications/editor/tools/switchProps';
 
-const Editor: FC = () => {
+const Editor = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
