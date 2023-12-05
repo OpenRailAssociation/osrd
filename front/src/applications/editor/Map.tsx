@@ -1,39 +1,50 @@
-import React, { FC, PropsWithChildren, useContext, useMemo, useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import ReactMapGL, { AttributionControl, MapRef, ScaleControl } from 'react-map-gl/maplibre';
-import { withTranslation } from 'react-i18next';
-import { TFunction } from 'i18next';
+import React, { useContext, useMemo, useState } from 'react';
+import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl/maplibre';
 import { isEmpty, isEqual } from 'lodash';
+import { TFunction } from 'i18next';
+import { useSelector, useDispatch } from 'react-redux';
+import { withTranslation } from 'react-i18next';
 
-import VirtualLayers from 'modules/simulationResult/components/SimulationResultsMap/VirtualLayers';
-import colors from 'common/Map/Consts/colors';
 import 'common/Map/Map.scss';
+import colors from 'common/Map/Consts/colors';
 
 /* Main data & layers */
-import IGN_SCAN25 from 'common/Map/Layers/IGN_SCAN25';
-import IGN_CADASTRE from 'common/Map/Layers/IGN_CADASTRE';
-import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
-import TracksOSM from 'common/Map/Layers/TracksOSM';
-import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
-import Terrain from 'common/Map/Layers/Terrain';
-
 import Background from 'common/Map/Layers/Background';
-import OSM from 'common/Map/Layers/OSM';
 import Hillshade from 'common/Map/Layers/Hillshade';
-import PlatformsLayer from 'common/Map/Layers/Platforms';
-import { useMapBlankStyle } from 'common/Map/Layers/blankStyle';
 import IGN_BD_ORTHO from 'common/Map/Layers/IGN_BD_ORTHO';
-import { Viewport } from 'reducers/map';
+import IGN_CADASTRE from 'common/Map/Layers/IGN_CADASTRE';
+import IGN_SCAN25 from 'common/Map/Layers/IGN_SCAN25';
+import LineSearchLayer from 'common/Map/Layers/LineSearchLayer';
+import OSM from 'common/Map/Layers/OSM';
+import PlatformsLayer from 'common/Map/Layers/Platforms';
+import SearchMarker from 'common/Map/Layers/SearchMarker';
+import Terrain from 'common/Map/Layers/Terrain';
+import TracksOSM from 'common/Map/Layers/TracksOSM';
+import VirtualLayers from 'modules/simulationResult/components/SimulationResultsMap/VirtualLayers';
+
+import EditorContext from 'applications/editor/context';
+import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
+import { getEntity } from 'applications/editor/data/api';
 import { getInfraID } from 'reducers/osrdconf/selectors';
-import { getShowOSM, getTerrain3DExaggeration } from 'reducers/map/selectors';
 import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
-import { InfraError } from './components/InfraErrors/types';
-import EditorContext from './context';
-import { EditorState, LAYER_TO_EDITOAST_DICT, LAYERS_SET, LayerType } from './tools/types';
-import { getEntity } from './data/api';
-import { CommonToolState } from './tools/commonToolState';
-import { EditorContextType, ExtendedEditorContextType, Tool } from './tools/editorContextTypes';
-import { useSwitchTypes } from './tools/switchEdition/types';
+import { getMap, getShowOSM, getTerrain3DExaggeration } from 'reducers/map/selectors';
+import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
+import { LAYER_TO_EDITOAST_DICT, LAYERS_SET } from 'applications/editor/tools/types';
+import { updateMapSearchMarker } from 'reducers/map';
+import { useMapBlankStyle } from 'common/Map/Layers/blankStyle';
+import { useSwitchTypes } from 'applications/editor/tools/switchEdition/types';
+
+import type { CommonToolState } from 'applications/editor/tools/commonToolState';
+import type {
+  EditorContextType,
+  ExtendedEditorContextType,
+  Tool,
+} from 'applications/editor/tools/editorContextTypes';
+import type { EditorState, LayerType } from 'applications/editor/tools/types';
+import type { InfraError } from 'applications/editor/components/InfraErrors/types';
+import type { MapRef } from 'react-map-gl/maplibre';
+import type { PropsWithChildren } from 'react';
+import type { Viewport } from 'reducers/map';
 
 interface MapProps<S extends CommonToolState = CommonToolState> {
   t: TFunction;
@@ -52,7 +63,7 @@ interface MapState {
   isHovering: boolean;
 }
 
-const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
+const MapUnplugged = ({
   mapRef,
   toolState,
   setToolState,
@@ -61,7 +72,7 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
   viewport,
   setViewport,
   children,
-}) => {
+}: PropsWithChildren<MapProps>) => {
   const dispatch = useDispatch();
   const mapBlankStyle = useMapBlankStyle();
   const [mapState, setMapState] = useState<MapState>({
@@ -99,6 +110,8 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
     () => (activeTool.getCursor ? activeTool.getCursor(extendedContext, mapState) : 'default'),
     [activeTool, extendedContext, mapState]
   );
+
+  const { mapSearchMarker } = useSelector(getMap);
 
   return (
     <>
@@ -250,6 +263,7 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
             if (activeTool.onClickMap) {
               activeTool.onClickMap(eventWithFeature, extendedContext);
             }
+            dispatch(updateMapSearchMarker(undefined));
           }}
         >
           <VirtualLayers />
@@ -289,6 +303,8 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
             </>
           )}
 
+          <LineSearchLayer layerOrder={LAYER_GROUPS_ORDER[LAYERS.LINE_SEARCH.GROUP]} />
+
           <PlatformsLayer
             colors={colors[mapStyle]}
             layerOrder={LAYER_GROUPS_ORDER[LAYERS.PLATFORMS.GROUP]}
@@ -298,6 +314,7 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
           {activeTool.layersComponent && mapRef.current && (
             <activeTool.layersComponent map={mapRef.current.getMap()} />
           )}
+          {mapSearchMarker && <SearchMarker data={mapSearchMarker} colors={colors[mapStyle]} />}
         </ReactMapGL>
       </div>
       ;{children}

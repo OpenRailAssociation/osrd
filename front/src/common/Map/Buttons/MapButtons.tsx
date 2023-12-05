@@ -1,6 +1,6 @@
 import React, { useRef, useState, useContext, useEffect } from 'react';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import { MapRef } from 'react-map-gl/maplibre';
+import type { MapRef } from 'react-map-gl/maplibre';
 // Buttons
 import ButtonMapSearch from 'common/Map/Buttons/ButtonMapSearch';
 import ButtonMapSettings from 'common/Map/Buttons/ButtonMapSettings';
@@ -10,19 +10,17 @@ import ButtonZoomIn from 'common/Map/Buttons/ButtonZoomIn';
 import ButtonZoomOut from 'common/Map/Buttons/ButtonZoomOut';
 
 // Viewport
-
 import { updateViewport } from 'reducers/map';
 
 // Map modals
+import ButtonMapInfras from 'common/Map/Buttons/ButtonMapInfras';
+import MapKey from 'common/Map/MapKey';
 import MapSearch from 'common/Map/Search/MapSearch';
 import MapSettings from 'common/Map/Settings/MapSettings';
-import MapKey from 'common/Map/MapKey';
+import { getFeatureInfoClick } from 'reducers/osrdconf/selectors';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateFeatureInfoClickOSRD } from 'reducers/osrdconf';
-
-import { getFeatureInfoClick } from 'reducers/osrdconf/selectors';
 import useOutsideClick from 'utils/hooks/useOutsideClick';
-import ButtonMapInfras from './ButtonMapInfras';
 
 type MapButtonsProps = {
   map?: MapRef;

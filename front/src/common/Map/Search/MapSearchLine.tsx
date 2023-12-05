@@ -1,32 +1,27 @@
 import React, { useEffect, useState } from 'react';
-import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import { useTranslation } from 'react-i18next';
+import { getMap } from 'reducers/map/selectors';
+import { getInfraID } from 'reducers/osrdconf/selectors';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { updateLineSearchCode, updateMapSearchMarker } from 'reducers/map';
 import { useDebounce } from 'utils/helpers';
 import { useSelector, useDispatch } from 'react-redux';
-import { getInfraID } from 'reducers/osrdconf/selectors';
-import { Viewport, updateLineSearchCode, updateMapSearchMarker } from 'reducers/map';
-import nextId from 'react-id-generator';
-import { BBox } from '@turf/helpers';
+import { useTranslation } from 'react-i18next';
 import bbox from '@turf/bbox';
+import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import LineCard from 'common/Map/Search/LineCard';
+import nextId from 'react-id-generator';
 import WebMercatorViewport from 'viewport-mercator-project';
-import {
-  Zone,
-  osrdEditoastApi,
-  SearchResultItemTrack,
-  SearchPayload,
-} from 'common/api/osrdEditoastApi';
-import { getMap } from 'reducers/map/selectors';
-import LineCard from './LineCard';
+
+import type { Viewport } from 'reducers/map';
+import type { Zone, SearchResultItemTrack, SearchPayload } from 'common/api/osrdEditoastApi';
+import type { BBox } from '@turf/helpers';
 
 type MapSearchLineProps = {
   updateExtViewport: (viewport: Partial<Viewport>) => void;
   closeMapSearchPopUp: () => void;
 };
 
-const MapSearchLine: React.FC<MapSearchLineProps> = ({
-  updateExtViewport,
-  closeMapSearchPopUp,
-}) => {
+const MapSearchLine = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchLineProps) => {
   const infraID = useSelector(getInfraID);
   const map = useSelector(getMap);
   const { t } = useTranslation(['map-search']);

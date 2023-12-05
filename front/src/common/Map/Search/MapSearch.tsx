@@ -1,26 +1,23 @@
-import React, { FC, useCallback } from 'react';
+import React, { useCallback } from 'react';
+import { getMap } from 'reducers/map/selectors';
 import { useDispatch, useSelector } from 'react-redux';
-import { MapRef } from 'react-map-gl/maplibre';
-import {
-  updateViewport,
-  updateLineSearchCode,
-  updateMapSearchMarker,
-  Viewport,
-} from 'reducers/map';
+import { updateViewport, updateLineSearchCode, updateMapSearchMarker } from 'reducers/map';
 import { useTranslation } from 'react-i18next';
 import MapSearchStation from 'common/Map/Search/MapSearchStation';
 import Tabs from 'common/Tabs';
-import { getMap } from 'reducers/map/selectors';
-import MapSearchLine from './MapSearchLine';
-import HearderPopUp from '../HeaderPopUp';
-import MapSearchSignal from './MapSearchSignal';
+import HearderPopUp from 'common/Map/HeaderPopUp';
+import MapSearchLine from 'common/Map/Search/MapSearchLine';
+import MapSearchSignal from 'common/Map/Search/MapSearchSignal';
+
+import type { MapRef } from 'react-map-gl/maplibre';
+import type { Viewport } from 'reducers/map';
 
 type MapSearchProps = {
   map?: MapRef;
   closeMapSearchPopUp: () => void;
 };
 
-const MapSearch: FC<MapSearchProps> = ({ map, closeMapSearchPopUp }) => {
+const MapSearch = ({ map, closeMapSearchPopUp }: MapSearchProps) => {
   const dispatch = useDispatch();
   const { smoothTravel } = useSelector(getMap);
 

@@ -1,19 +1,18 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { Viewport, updateMapSearchMarker } from 'reducers/map';
-import { useTranslation } from 'react-i18next';
-import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import { useDebounce } from 'utils/helpers';
-import nextId from 'react-id-generator';
-import StationCard from 'common/StationCard';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import { getMap } from 'reducers/map/selectors';
-import {
-  osrdEditoastApi,
-  SearchQuery,
-  SearchResultItemOperationalPoint,
-} from 'common/api/osrdEditoastApi';
-import { onResultSearchClick } from '../utils';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { onResultSearchClick } from 'common/Map/utils';
+import { updateMapSearchMarker } from 'reducers/map';
+import { useDebounce } from 'utils/helpers';
+import { useSelector, useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
+import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import nextId from 'react-id-generator';
+import StationCard from 'common/StationCard';
+
+import type { SearchQuery, SearchResultItemOperationalPoint } from 'common/api/osrdEditoastApi';
+import type { Viewport } from 'reducers/map';
 
 type MapSearchStationProps = {
   updateExtViewport: (viewport: Partial<Viewport>) => void;

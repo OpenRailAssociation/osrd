@@ -1,51 +1,55 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { MapLayerMouseEvent } from 'maplibre-gl';
-import ReactMapGL, { AttributionControl, ScaleControl, MapRef } from 'react-map-gl/maplibre';
-import { useDispatch, useSelector } from 'react-redux';
-import { NearestPointOnLine } from '@turf/nearest-point-on-line';
-import { useParams } from 'react-router-dom';
-import { RootState } from 'reducers';
+import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl/maplibre';
 import { updateFeatureInfoClickOSRD } from 'reducers/osrdconf';
-import { updateViewport, Viewport } from 'reducers/map';
+import { updateMapSearchMarker, updateViewport } from 'reducers/map';
+import { useDispatch, useSelector } from 'react-redux';
+import { useParams } from 'react-router-dom';
+
+import type { MapLayerMouseEvent } from 'maplibre-gl';
+import type { MapRef } from 'react-map-gl/maplibre';
+import type { NearestPointOnLine } from '@turf/nearest-point-on-line';
+import type { RootState } from 'reducers';
+import type { Viewport } from 'reducers/map';
+
 /* Main data & layers */
 import Background from 'common/Map/Layers/Background';
 import VirtualLayers from 'modules/simulationResult/components/SimulationResultsMap/VirtualLayers';
 /* Settings & Buttons */
-import MapButtons from 'common/Map/Buttons/MapButtons';
 import Catenaries from 'common/Map/Layers/Catenaries';
-import NeutralSections from 'common/Map/Layers/NeutralSections';
 import Hillshade from 'common/Map/Layers/Hillshade';
-import OSM from 'common/Map/Layers/OSM';
+import MapButtons from 'common/Map/Buttons/MapButtons';
+import NeutralSections from 'common/Map/Layers/NeutralSections';
 import OperationalPoints from 'common/Map/Layers/OperationalPoints';
+import OSM from 'common/Map/Layers/OSM';
 import PlatformsLayer from 'common/Map/Layers/Platforms';
 import Itinerary from 'modules/trainschedule/components/ManageTrainSchedule/ManageTrainScheduleMap/Itinerary';
 import ItineraryMarkers from 'modules/trainschedule/components/ManageTrainSchedule/ManageTrainScheduleMap/ItineraryMarkers';
 /* Interactions */
+import BufferStops from 'common/Map/Layers/BufferStops';
+import Detectors from 'common/Map/Layers/Detectors';
 import RenderPopup from 'modules/trainschedule/components/ManageTrainSchedule/ManageTrainScheduleMap/RenderPopup';
 import Routes from 'common/Map/Layers/Routes';
 import SearchMarker from 'common/Map/Layers/SearchMarker';
 import Signals from 'common/Map/Layers/Signals';
 import SnappedMarker from 'common/Map/Layers/SnappedMarker';
 import SpeedLimits from 'common/Map/Layers/SpeedLimits';
-import BufferStops from 'common/Map/Layers/BufferStops';
-import Detectors from 'common/Map/Layers/Detectors';
 import Switches from 'common/Map/Layers/Switches';
 import TracksOSM from 'common/Map/Layers/TracksOSM';
 /* Objects & various */
-import TracksGeographic from 'common/Map/Layers/TracksGeographic';
-import colors from 'common/Map/Consts/colors';
-import { useMapBlankStyle } from 'common/Map/Layers/blankStyle';
+import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
+import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
+import { getTerrain3DExaggeration } from 'reducers/map/selectors';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
-import 'common/Map/Map.scss';
-import SNCF_PSL from 'common/Map/Layers/extensions/SNCF/PSL';
+import { useMapBlankStyle } from 'common/Map/Layers/blankStyle';
+import colors from 'common/Map/Consts/colors';
 import IGN_BD_ORTHO from 'common/Map/Layers/IGN_BD_ORTHO';
 import IGN_SCAN25 from 'common/Map/Layers/IGN_SCAN25';
 import IGN_CADASTRE from 'common/Map/Layers/IGN_CADASTRE';
-import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
 import LineSearchLayer from 'common/Map/Layers/LineSearchLayer';
+import SNCF_PSL from 'common/Map/Layers/extensions/SNCF/PSL';
 import Terrain from 'common/Map/Layers/Terrain';
-import { getTerrain3DExaggeration } from 'reducers/map/selectors';
-import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
+import TracksGeographic from 'common/Map/Layers/TracksGeographic';
+import 'common/Map/Map.scss';
 
 const Map = () => {
   const { viewport, mapSearchMarker, mapStyle, showOSM, layersSettings } = useSelector(
@@ -101,6 +105,7 @@ const Map = () => {
         })
       );
     }
+    dispatch(updateMapSearchMarker(undefined));
   };
 
   const onMoveGetFeature = (e: MapLayerMouseEvent) => {
@@ -271,9 +276,7 @@ const Map = () => {
             {mapRef.current && <ItineraryMarkers map={mapRef.current.getMap()} />}
           </>
         )}
-        {mapSearchMarker !== undefined && (
-          <SearchMarker data={mapSearchMarker} colors={colors[mapStyle]} />
-        )}
+        {mapSearchMarker && <SearchMarker data={mapSearchMarker} colors={colors[mapStyle]} />}
         {snappedPoint !== undefined && <SnappedMarker geojson={snappedPoint} />}
       </ReactMapGL>
     </>
