@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
-import logo from 'assets/pictures/home/operationalStudies-white.svg';
 import { useTranslation } from 'react-i18next';
 import Timetable from 'modules/trainschedule/components/Timetable/Timetable';
 import infraLogo from 'assets/pictures/components/tracks.svg';
@@ -212,10 +211,7 @@ export default function Scenario() {
 
   return scenario && infraId && timetableId ? (
     <>
-      <NavBarSNCF
-        appName={<BreadCrumbs project={project} study={study} scenario={scenario} />}
-        logo={logo}
-      />
+      <NavBarSNCF appName={<BreadCrumbs project={project} study={study} scenario={scenario} />} />
       <main className="mastcontainer mastcontainer-no-mastnav">
         <div className="scenario">
           <div className="row scenario-container">

@@ -13,15 +13,16 @@ import ChangeLanguageModal from 'common/ChangeLanguageModal';
 import UserSettings from 'common/UserSettings';
 import getUnicodeFlagIcon from 'country-flag-icons/unicode';
 import { language2flag } from 'utils/strings';
+import logoOSRD from 'assets/fav-osrd-color.svg';
 import DropdownSNCF, { DROPDOWN_STYLE_TYPES } from './DropdownSNCF';
 import { useModal } from './ModalSNCF';
 
 type Props = {
   appName: string | ReactElement;
-  logo: string;
+  logo?: string;
 };
 
-export default function LegacyNavBarSNCF({ appName, logo }: Props) {
+export default function LegacyNavBarSNCF({ appName, logo = logoOSRD }: Props) {
   const { openModal } = useModal();
   const safeWord = useSelector(getUserSafeWord);
   const { t } = useTranslation('home/navbar');

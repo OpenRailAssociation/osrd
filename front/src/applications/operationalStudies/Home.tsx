@@ -3,7 +3,6 @@ import FilterTextField from 'applications/operationalStudies/components/FilterTe
 import ProjectSelectionToolbar from 'modules/project/components/ProjectSelectionToolbar';
 import ProjectCard from 'modules/project/components/ProjectCard';
 import ProjectCardEmpty from 'modules/project/components/ProjectCardEmpty';
-import logo from 'assets/pictures/home/operationalStudies-white.svg';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import { Spinner } from 'common/Loader';
@@ -151,7 +150,7 @@ export default function HomeOperationalStudies() {
 
   return (
     <>
-      <NavBarSNCF appName={<div className="navbar-breadcrumbs">{t('projects')}</div>} logo={logo} />
+      <NavBarSNCF appName={<div className="navbar-breadcrumbs">{t('projects')}</div>} />
       <main className="mastcontainer mastcontainer-no-mastnav">
         <div className="p-3">
           <div className="projects-toolbar">
