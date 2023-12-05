@@ -116,7 +116,7 @@ fn get_operations_fixing_invalid_reference(
 ) -> Result<Vec<Operation>> {
     // BufferStop or Signal invalid-reference on track
     match &error.get_type() {
-        ObjectType::BufferStop | ObjectType::Signal | ObjectType::Detector => {
+        ObjectType::BufferStop | ObjectType::Signal | ObjectType::Detector | ObjectType::Switch => {
             if reference.obj_type == ObjectType::TrackSection {
                 Ok([Operation::Delete(DeleteOperation {
                     obj_id: error.get_id().to_string(),
@@ -239,7 +239,7 @@ mod test {
     }
 
     #[rstest::rstest]
-    async fn test_fix_invalid_ref_signal_buffer_stop() {
+    async fn test_fix_invalid_ref_puntual_objects() {
         // GIVEN
         let app = create_test_service().await;
         let small_infra = small_infra(db_pool()).await;
@@ -292,6 +292,10 @@ mod test {
         assert!(operations.contains(&Operation::Delete(DeleteOperation {
             obj_id: "DA0".to_string(),
             obj_type: ObjectType::Detector,
+        })));
+        assert!(operations.contains(&Operation::Delete(DeleteOperation {
+            obj_id: "PA0".to_string(),
+            obj_type: ObjectType::Switch,
         })));
     }
 
