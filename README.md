@@ -1,9 +1,13 @@
 <p align="center">
   <a href="https://osrd.fr/en/">
-    <img src="assets/branding/osrd_small.svg" width="200px" alt="OSRD logo"/>
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="/assets/branding/osrd_small_dark.svg">
+      <img width="340px" style="max-width: 100%;" src="/assets/branding/osrd_small.svg" alt="OSRD Logo" alt="OSRD logo">
+    </picture>
   </a>
+&nbsp;&nbsp;
   <a href="https://publiccode.eu/">
-    <img src="assets/PMPC_badge.svg" width="200px" alt="Public Money Public Code"/>
+    <img src="assets/PMPC_badge.svg" width="110px" alt="Public Money Public Code"/>
   </a>
 </p>
 
