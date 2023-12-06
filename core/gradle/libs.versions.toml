@@ -15,7 +15,7 @@
 
 [versions]
 kotlin = '1.8.0'
-ksp = '1.8.0-1.0.8'
+ksp = '1.9.21-1.0.15'
 kotlinx-coroutines = '1.6.+'
 logback = '1.4.+'
 moshi = '1.14.0'
