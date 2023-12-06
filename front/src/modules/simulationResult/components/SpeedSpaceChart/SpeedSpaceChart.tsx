@@ -8,10 +8,10 @@ import {
   enableInteractivity,
   traceVerticalLine,
 } from 'modules/simulationResult/components/ChartHelpers/enableInteractivity';
-import {
-  CHART_AXES,
-  ChartAxes,
+import { CHART_AXES } from 'modules/simulationResult/components/simulationResultsConsts';
+import type {
   PositionScaleDomain,
+  ChartAxes,
 } from 'modules/simulationResult/components/simulationResultsConsts';
 import {
   createChart,
