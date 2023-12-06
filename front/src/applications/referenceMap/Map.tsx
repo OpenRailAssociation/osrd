@@ -1,5 +1,5 @@
 import { isNil } from 'lodash';
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import ReactMapGL, { AttributionControl, ScaleControl, MapRef } from 'react-map-gl/maplibre';
 import { useDispatch, useSelector } from 'react-redux';
@@ -48,6 +48,7 @@ function Map() {
   const { viewport, mapSearchMarker, mapStyle, showOSM, layersSettings } = useSelector(
     (state: RootState) => state.map
   );
+  const [mapLoaded, setMapLoaded] = useState(false);
   const terrain3DExaggeration = useSelector(getTerrain3DExaggeration);
   const mapRef = useRef<MapRef | null>(null);
   const { urlLat, urlLon, urlZoom, urlBearing, urlPitch } = useParams();
@@ -127,6 +128,9 @@ function Map() {
             ? { source: 'terrain', exaggeration: terrain3DExaggeration }
             : undefined
         }
+        onLoad={() => {
+          setMapLoaded(true);
+        }}
       >
         <VirtualLayers />
         <AttributionControl customAttribution={CUSTOM_ATTRIBUTION} />
@@ -144,7 +148,11 @@ function Map() {
 
         {!showOSM ? null : (
           <>
-            <OSM mapStyle={mapStyle} layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]} />
+            <OSM
+              mapStyle={mapStyle}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]}
+              mapIsLoaded={mapLoaded}
+            />
             <Hillshade
               mapStyle={mapStyle}
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]}

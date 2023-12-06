@@ -60,6 +60,9 @@ function Map() {
     (value: Partial<Viewport>) => dispatch(updateViewport(value, undefined)),
     [dispatch]
   );
+
+  const [mapLoaded, setMapLoaded] = useState(false);
+
   const mapRef = useRef<MapRef | null>(null);
 
   const scaleControlStyle = {
@@ -149,6 +152,10 @@ function Map() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const handleLoadFinished = () => {
+    setMapLoaded(true);
+  };
+
   return (
     <>
       <MapButtons map={mapRef.current ?? undefined} resetPitchBearing={resetPitchBearing} />
@@ -176,6 +183,7 @@ function Map() {
             ? { source: 'terrain', exaggeration: terrain3DExaggeration }
             : undefined
         }
+        onLoad={handleLoadFinished}
       >
         <VirtualLayers />
         <AttributionControl position="bottom-right" customAttribution={CUSTOM_ATTRIBUTION} />
@@ -193,7 +201,11 @@ function Map() {
 
         {!showOSM ? null : (
           <>
-            <OSM mapStyle={mapStyle} layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]} />
+            <OSM
+              mapStyle={mapStyle}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]}
+              mapIsLoaded={mapLoaded}
+            />
             <Hillshade
               mapStyle={mapStyle}
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]}
