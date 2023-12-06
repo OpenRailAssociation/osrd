@@ -4,9 +4,11 @@ use crate::error::{InternalError, Result};
 use crate::generated_data::generate_infra_errors;
 use crate::infra_cache::InfraCache;
 use crate::models::{self, Infra, Retrieve};
-use crate::schema::operation::{DeleteOperation, Operation};
+use crate::schema::operation::{DeleteOperation, Operation, RailjsonObject};
+use crate::schema::utils::Identifier;
 use crate::schema::{
-    InfraError, InfraErrorType, OSRDIdentified, OSRDObject, ObjectRef, ObjectType,
+    BufferStop, Endpoint, InfraError, InfraErrorType, OSRDIdentified, OSRDObject, ObjectRef,
+    ObjectType,
 };
 use crate::views::infra::InfraIdParam;
 use crate::DbPool;
@@ -16,6 +18,7 @@ use chashmap::CHashMap;
 use editoast_derive::EditoastError;
 use itertools::Itertools;
 use thiserror::Error;
+use uuid::Uuid;
 
 const MAX_AUTO_FIXES_ITERATIONS: u8 = 5;
 
@@ -105,6 +108,29 @@ fn get_operations_fixing_error(
             obj_type: error.get_type(),
         })]
         .to_vec()),
+        InfraErrorType::MissingBufferStop { endpoint } => {
+            let track_id = error.get_id();
+            let position =
+                if *endpoint == Endpoint::Begin {
+                    0.
+                } else {
+                    infra_cache
+                        .get_track_section(track_id)
+                        .map_err(|source: InternalError| {
+                            AutoFixesEditoastError::MissingErrorObject { source }
+                        })?
+                        .length
+                };
+            Ok([Operation::Create(Box::new(RailjsonObject::BufferStop {
+                railjson: (BufferStop {
+                    id: Identifier::from(Uuid::new_v4()),
+                    track: track_id.to_string().into(),
+                    position,
+                    extensions: Default::default(),
+                }),
+            }))]
+            .to_vec())
+        }
         _ => Ok(vec![]), // Default: nothing is done to fix error
     }
 }
@@ -189,10 +215,10 @@ mod test {
     use crate::schema::operation::{DeleteOperation, Operation, RailjsonObject};
     use crate::schema::utils::Identifier;
     use crate::schema::{
-        ApplicableDirectionsTrackRange, BufferStop, BufferStopCache, Catenary, Detector,
-        DetectorCache, Endpoint, ObjectRef, ObjectType, OperationalPoint, OperationalPointPart,
-        Route, Signal, SignalCache, Slope, SpeedSection, Switch, TrackEndpoint, TrackSection,
-        Waypoint,
+        ApplicableDirectionsTrackRange, BufferStop, BufferStopCache, BufferStopExtension, Catenary,
+        Detector, DetectorCache, Endpoint, ObjectRef, ObjectType, OperationalPoint,
+        OperationalPointPart, Route, Signal, SignalCache, Slope, SpeedSection, Switch,
+        TrackEndpoint, TrackSection, Waypoint,
     };
     use crate::views::pagination::PaginatedResponse;
     use crate::views::tests::create_test_service;
@@ -791,5 +817,51 @@ mod test {
             obj_id: buffer_stop.get_id().to_string(),
             obj_type: ObjectType::BufferStop,
         })));
+    }
+
+    #[rstest::rstest]
+    async fn missing_track_extremity_buffer_stop_fix() {
+        // GIVEN
+        let app = create_test_service().await;
+        let empty_infra = empty_infra(db_pool()).await;
+        let empty_infra_id = empty_infra.id();
+
+        let track: RailjsonObject = TrackSection {
+            id: "track_with_no_buffer_stops".into(),
+            length: 1_000.0,
+            ..Default::default()
+        }
+        .into();
+        let req_create = get_create_operation_request(track.clone(), empty_infra_id);
+        assert_eq!(
+            call_service(&app, req_create).await.status(),
+            StatusCode::OK
+        );
+
+        // WHEN
+        let response = call_service(&app, auto_fixes_request(empty_infra_id)).await;
+
+        // THEN
+        assert_eq!(response.status(), StatusCode::OK);
+
+        let operations: Vec<Operation> = read_body_json(response).await;
+        assert_eq!(operations.len(), 2);
+        let mut positions = vec![];
+        for operation in operations {
+            let Operation::Create(boxed_buffer_stop) = operation else {
+                panic!("Unexpected Operation type.")
+            };
+            let RailjsonObject::BufferStop {
+                railjson: buffer_stop,
+            } = *boxed_buffer_stop
+            else {
+                panic!("Unexpected RailjsonObject type.")
+            };
+            assert_eq!(buffer_stop.track, Identifier::from(track.get_id().as_str()));
+            assert_eq!(buffer_stop.extensions, BufferStopExtension::default());
+            positions.push(buffer_stop.position);
+        }
+        positions.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        assert_eq!(positions, vec![0., 1_000.0]);
     }
 }

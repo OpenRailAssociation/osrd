@@ -18,7 +18,7 @@ mod switch_type;
 pub mod track_section;
 pub mod utils;
 
-pub use buffer_stop::{BufferStop, BufferStopCache};
+pub use buffer_stop::{BufferStop, BufferStopCache, BufferStopExtension};
 pub use catenary::Catenary;
 pub use detector::{Detector, DetectorCache};
 pub use errors::{InfraError, InfraErrorType};

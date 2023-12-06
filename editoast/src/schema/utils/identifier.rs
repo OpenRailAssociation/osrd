@@ -5,6 +5,7 @@ use std::{
 
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use uuid::Uuid;
 
 /// A wrapper around a String that ensures that the string is not empty and not longer than 255 characters.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -61,6 +62,12 @@ impl From<&str> for Identifier {
     fn from(s: &str) -> Self {
         assert!((1..256).contains(&s.len()));
         Identifier(s.into())
+    }
+}
+
+impl From<Uuid> for Identifier {
+    fn from(uuid: Uuid) -> Self {
+        uuid.to_string().into()
     }
 }
 
