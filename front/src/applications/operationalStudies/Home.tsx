@@ -71,19 +71,11 @@ export default function HomeOperationalStudies() {
       try {
         let filteredData = (await postSearch(payload).unwrap()) as SearchResultItemProject[];
         if (sortOption === 'LastModifiedDesc') {
-          filteredData = filteredData.sort((a, b) => {
-            if (a.last_modification && b.last_modification) {
-              return b.last_modification.localeCompare(a.last_modification);
-            }
-            return 0;
-          });
+          filteredData = [...filteredData].sort((a, b) =>
+            b.last_modification.localeCompare(a.last_modification)
+          );
         } else if (sortOption === 'NameAsc') {
-          filteredData = filteredData.sort((a, b) => {
-            if (a.name && b.name) {
-              return a.name.localeCompare(b.name);
-            }
-            return 0;
-          });
+          filteredData = [...filteredData].sort((a, b) => a.name.localeCompare(b.name));
         }
         setProjectsList(filteredData);
       } catch (error) {

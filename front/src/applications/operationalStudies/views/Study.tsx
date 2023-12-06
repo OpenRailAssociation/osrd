@@ -131,19 +131,11 @@ export default function Study() {
         try {
           let filteredScenarios = (await postSearch(payload).unwrap()) as ScenarioWithCountTrains[];
           if (sortOption === 'LastModifiedDesc') {
-            filteredScenarios = filteredScenarios.sort((a, b) => {
-              if (a.last_modification && b.last_modification) {
-                return b.last_modification.localeCompare(a.last_modification);
-              }
-              return 0;
-            });
+            filteredScenarios = [...filteredScenarios].sort((a, b) =>
+              b.last_modification.localeCompare(a.last_modification)
+            );
           } else if (sortOption === 'NameAsc') {
-            filteredScenarios = filteredScenarios.sort((a, b) => {
-              if (a.name && b.name) {
-                return a.name.localeCompare(b.name);
-              }
-              return 0;
-            });
+            filteredScenarios = [...filteredScenarios].sort((a, b) => a.name.localeCompare(b.name));
           }
           setScenariosList(filteredScenarios as ScenarioWithCountTrains[]);
         } catch (error) {

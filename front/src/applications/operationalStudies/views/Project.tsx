@@ -102,19 +102,11 @@ export default function Project() {
         try {
           let filteredStudies = (await postSearch(payload).unwrap()) as StudyWithScenarios[];
           if (sortOption === 'LastModifiedDesc') {
-            filteredStudies = filteredStudies.sort((a, b) => {
-              if (a.last_modification && b.last_modification) {
-                return b.last_modification.localeCompare(a.last_modification);
-              }
-              return 0;
-            });
+            filteredStudies = [...filteredStudies].sort((a, b) =>
+              b.last_modification.localeCompare(a.last_modification)
+            );
           } else if (sortOption === 'NameAsc') {
-            filteredStudies = filteredStudies.sort((a, b) => {
-              if (a.name && b.name) {
-                return a.name.localeCompare(b.name);
-              }
-              return 0;
-            });
+            filteredStudies = [...filteredStudies].sort((a, b) => a.name.localeCompare(b.name));
           }
           setStudiesList(filteredStudies);
         } catch (error) {
