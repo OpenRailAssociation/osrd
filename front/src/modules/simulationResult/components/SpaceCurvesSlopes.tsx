@@ -3,7 +3,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import * as d3 from 'd3';
 import { CgLoadbar } from 'react-icons/cg';
 
-import { CHART_AXES } from 'modules/simulationResult/components/simulationResultsConsts';
+import {
+  CHART_AXES,
+  PositionScaleDomain,
+} from 'modules/simulationResult/components/simulationResultsConsts';
 import {
   defineLinear,
   interpolateOnPosition,
@@ -93,6 +96,8 @@ type SpaceCurvesSlopesProps = {
   positionValues: PositionsSpeedTimes<Date>;
   selectedTrain: Train;
   timePosition: Date;
+  sharedXScaleDomain?: PositionScaleDomain;
+  setSharedXScaleDomain?: React.Dispatch<React.SetStateAction<PositionScaleDomain>>;
 };
 
 const SpaceCurvesSlopes = ({
@@ -100,12 +105,15 @@ const SpaceCurvesSlopes = ({
   positionValues,
   selectedTrain,
   timePosition,
+  sharedXScaleDomain,
+  setSharedXScaleDomain,
 }: SpaceCurvesSlopesProps) => {
   const dispatch = useDispatch();
   const simulationIsPlaying = useSelector(getIsPlaying);
 
   const [chart, setChart] = useState<SpeedSpaceChart | undefined>(undefined);
   const [height, setHeight] = useState(initialHeight);
+  const [initialYScaleDomain, setInitialYScaleDomain] = useState<number[]>([]);
 
   const ref = useRef<HTMLDivElement>(null);
   const rotate = false;
@@ -165,6 +173,9 @@ const SpaceCurvesSlopes = ({
     const yMax = d3.max(trainData.slopesHistogram, (d) => d.gradient) || 0;
     const defineY = chart === undefined ? defineLinear(yMax, 0, yMin) : chart.y;
 
+    if (chart === undefined) {
+      setInitialYScaleDomain(defineY.domain());
+    }
     const width = parseInt(d3.select(`#container-${CHART_ID}`).style('width'), 10);
     return defineChart(
       width,
@@ -255,8 +266,10 @@ const SpaceCurvesSlopes = ({
       simulationIsPlaying,
       dispatchUpdateTimePositionValues,
       timeScaleRange,
+      setSharedXScaleDomain,
       [CHART_AXES.SPACE_GRADIENT, CHART_AXES.SPACE_RADIUS, CHART_AXES.SPACE_HEIGHT]
     );
+
     setChart(chartLocal);
   };
 
@@ -265,7 +278,21 @@ const SpaceCurvesSlopes = ({
     setHeight(newHeight);
   };
 
-  useEffect(() => drawTrain(), [trainData, height]);
+  useEffect(() => {
+    drawTrain();
+  }, [trainData, height]);
+
+  useEffect(() => {
+    if (chart && sharedXScaleDomain && sharedXScaleDomain.source !== CHART_ID) {
+      const newChart = { ...chart };
+      newChart.x.domain(sharedXScaleDomain.current);
+      if (sharedXScaleDomain.initial === sharedXScaleDomain.current) {
+        newChart.y.domain(initialYScaleDomain);
+      }
+      setChart(newChart);
+      drawTrain();
+    }
+  }, [sharedXScaleDomain]);
 
   useEffect(() => setHeight(initialHeight), [initialHeight]);
 

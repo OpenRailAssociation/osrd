@@ -8,7 +8,11 @@ import {
   enableInteractivity,
   traceVerticalLine,
 } from 'modules/simulationResult/components/ChartHelpers/enableInteractivity';
-import { CHART_AXES, ChartAxes } from 'modules/simulationResult/components/simulationResultsConsts';
+import {
+  CHART_AXES,
+  ChartAxes,
+  PositionScaleDomain,
+} from 'modules/simulationResult/components/simulationResultsConsts';
 import {
   createChart,
   drawTrain,
@@ -46,6 +50,8 @@ export type SpeedSpaceChartProps = {
   selectedTrain: SimulationReport | Train;
   timePosition: Date;
   trainRollingStock?: LightRollingStock;
+  sharedXScaleDomain?: PositionScaleDomain;
+  setSharedXScaleDomain?: React.Dispatch<React.SetStateAction<PositionScaleDomain>>;
 };
 
 /**
@@ -64,6 +70,8 @@ export default function SpeedSpaceChart({
   timePosition,
   positionValues,
   trainRollingStock,
+  sharedXScaleDomain,
+  setSharedXScaleDomain,
 }: SpeedSpaceChartProps) {
   const simulationIsPlaying = useSelector(getIsPlaying);
   const speedSpaceSettings = useSelector(getSpeedSpaceSettings);
@@ -121,6 +129,7 @@ export default function SpeedSpaceChart({
       ref,
       chart
     ) as SpeedSpaceChart;
+
     setChart(localChart);
     drawTrain(trainSimulation, rotate, localSettings, localChart);
     setHasJustRotated(false);
@@ -156,6 +165,15 @@ export default function SpeedSpaceChart({
     createChartAndTrain();
   }, [rotate, localSettings, chartHeight]);
 
+  useEffect(() => {
+    if (chart && sharedXScaleDomain && sharedXScaleDomain.source !== CHART_ID) {
+      const newChart = { ...chart };
+      newChart.x.domain(sharedXScaleDomain.current);
+      setChart(newChart);
+      createChartAndTrain();
+    }
+  }, [sharedXScaleDomain]);
+
   /**
    * reset chart (only if resetChart is true)
    */
@@ -164,6 +182,12 @@ export default function SpeedSpaceChart({
       if (rotate) {
         // cancel rotation and redraw the train
         toggleRotation();
+      } else if (chart && setSharedXScaleDomain) {
+        setSharedXScaleDomain((prevState) => ({
+          ...prevState,
+          current: prevState.initial,
+          source: undefined,
+        }));
       } else {
         createChartAndTrain();
       }
@@ -200,6 +224,7 @@ export default function SpeedSpaceChart({
       simulationIsPlaying,
       dispatchUpdateTimePositionValues,
       timeScaleRange,
+      setSharedXScaleDomain,
       additionalAxes
     );
   }, [chart, additionalAxes]);

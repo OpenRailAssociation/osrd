@@ -22,13 +22,15 @@ import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
 import { osrdEditoastApi, SimulationReport } from 'common/api/osrdEditoastApi';
 
 import SimulationResultsMap from 'modules/simulationResult/components/SimulationResultsMap';
-import SpaceCurvesSlopes from 'modules/simulationResult/components/SpaceCurvesSlopes';
-import SpaceTimeChartIsolated from 'modules/simulationResult/components/SpaceTimeChart/withOSRDData';
-import SpeedSpaceChart from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChart';
 import TimeButtons from 'modules/simulationResult/components/TimeButtons';
 // TIMELINE DISABLED // import TimeLine from 'modules/simulationResult/components/TimeLine/TimeLine';
 import TrainDetails from 'modules/simulationResult/components/TrainDetails';
 import DriverTrainSchedule from 'modules/trainschedule/components/DriverTrainSchedule/DriverTrainSchedule';
+import getScaleDomainFromValues from 'modules/simulationResult/components/ChartHelpers/getScaleDomainFromValues';
+import SpaceCurvesSlopes from 'modules/simulationResult/components/SpaceCurvesSlopes';
+import SpeedSpaceChart from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChart';
+import SpaceTimeChartIsolated from 'modules/simulationResult/components/SpaceTimeChart/withOSRDData';
+import { PositionScaleDomain } from 'modules/simulationResult/components/simulationResultsConsts';
 
 const MAP_MIN_HEIGHT = 450;
 
@@ -61,6 +63,13 @@ export default function SimulationResults({
   const [heightOfSpaceCurvesSlopesChart, setHeightOfSpaceCurvesSlopesChart] = useState(150);
   const [initialHeightOfSpaceCurvesSlopesChart, setInitialHeightOfSpaceCurvesSlopesChart] =
     useState(heightOfSpaceCurvesSlopesChart);
+
+  // X scale domain shared between SpeedSpace and SpaceCurvesSlopes charts.
+  const [positionScaleDomain, setPositionScaleDomain] = useState<PositionScaleDomain>({
+    initial: [],
+    current: [],
+    source: undefined,
+  });
 
   const { data: selectedTrainSchedule } = osrdEditoastApi.endpoints.getTrainScheduleById.useQuery(
     {
@@ -105,6 +114,17 @@ export default function SimulationResults({
       );
     }
   }, [extViewport]);
+
+  useEffect(() => {
+    if (selectedTrain) {
+      const positions = selectedTrain.base.speeds.map((speed) => speed.position);
+      const newPositionsScaleDomain = getScaleDomainFromValues(positions);
+      setPositionScaleDomain({
+        initial: newPositionsScaleDomain,
+        current: newPositionsScaleDomain,
+      });
+    }
+  }, [selectedTrain]);
 
   return simulation.trains.length === 0 && !isUpdating ? (
     <h1 className="text-center mt-5">{t('noData')}</h1>
@@ -176,6 +196,8 @@ export default function SimulationResults({
               selectedTrain={selectedTrain}
               timePosition={timePosition}
               trainRollingStock={selectedTrainRollingStock}
+              sharedXScaleDomain={positionScaleDomain}
+              setSharedXScaleDomain={setPositionScaleDomain}
             />
           </div>
         </div>
@@ -210,6 +232,8 @@ export default function SimulationResults({
                 selectedTrain={selectedTrain}
                 timePosition={timePosition}
                 positionValues={positionValues}
+                sharedXScaleDomain={positionScaleDomain}
+                setSharedXScaleDomain={setPositionScaleDomain}
               />
             </Rnd>
           )}
