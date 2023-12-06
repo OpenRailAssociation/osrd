@@ -270,7 +270,11 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
 
         {!showOSM ? null : (
           <>
-            <OSM mapStyle={mapStyle} layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]} />
+            <OSM
+              mapStyle={mapStyle}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]}
+              mapIsLoaded={mapLoaded}
+            />
             <Hillshade
               mapStyle={mapStyle}
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]}

@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
 import { LayerProps, Source } from 'react-map-gl/maplibre';
 
 import mapStyleBluePrintJson from 'assets/mapstyles/OSMBluePrintStyle.json';
@@ -12,6 +11,7 @@ import OrderedLayer, { OrderedLayerProps } from 'common/Map/Layers/OrderedLayer'
 
 interface OSMProps {
   mapStyle: string;
+  mapIsLoaded?: boolean;
   layerOrder?: number;
 }
 
@@ -47,13 +47,12 @@ export function genOSMLayers(mapStyle: string, layerOrder?: number) {
   return genOSMLayerProps(mapStyle, layerOrder).map((props) => <OrderedLayer {...props} />);
 }
 
-function OSM(props: OSMProps) {
-  const { mapStyle, layerOrder } = props;
-
+function OSM({ mapStyle, layerOrder, mapIsLoaded }: OSMProps) {
   // Hack to full reload layers to avoid glitches
   // when switching map style (see #5777)
   const [reload, setReload] = useState(true);
-  useEffect(() => setReload(true), [mapStyle]);
+
+  useEffect(() => setReload(true), [mapStyle, mapIsLoaded]);
   useEffect(() => {
     if (reload) setReload(false);
   }, [reload]);
@@ -64,9 +63,5 @@ function OSM(props: OSMProps) {
     </Source>
   ) : null;
 }
-
-OSM.propTypes = {
-  mapStyle: PropTypes.string.isRequired,
-};
 
 export default OSM;
