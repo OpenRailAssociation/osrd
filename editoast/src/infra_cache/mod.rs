@@ -567,6 +567,17 @@ impl InfraCache {
             })?
             .unwrap_route())
     }
+
+    pub fn get_track_section(&self, track_id: &str) -> Result<&TrackSectionCache> {
+        Ok(self
+            .track_sections()
+            .get(track_id)
+            .ok_or_else(|| InfraCacheEditoastError::ObjectNotFound {
+                obj_type: ObjectType::TrackSection.to_string(),
+                obj_id: track_id.to_string(),
+            })?
+            .unwrap_track_section())
+    }
 }
 
 #[derive(Debug, Error, EditoastError)]
