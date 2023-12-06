@@ -44,3 +44,9 @@ export type AllListValues = ArrayElement<ListValues>;
 export const SIGNAL_BASE_DEFAULT = 'BAL3';
 
 export const LIST_VALUES_SIGNAL_BASE = ['BAL3'];
+
+export type PositionScaleDomain = {
+  initial: number[];
+  current: number[];
+  source?: 'SpeedSpaceChart' | 'SpaceCurvesSlopes';
+};
