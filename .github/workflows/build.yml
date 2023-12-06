@@ -51,12 +51,45 @@ jobs:
           username: '$' # special user for authenticating as a gh actions worker
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # This action happens to randomly fail, so we retry it 3 times.
+      # Whitelisted messages are:
+      #
+      # - `failed to solve: failed to compute cache key`
+      #   full message: `failed to solve: failed to compute cache key: failed to get state for index 0 on XXXXXX`
+      #
+      # - `httpReadSeeker: failed open: failed to authorize: no active session`
+      #   full message: `ERROR: failed to solve: DeadlineExceeded: failed to compute cache key: failed to copy: httpReadSeeker: failed open: failed to authorize: no active session for XXXXX: context deadline exceeded`
       - name: Build and push
-        run: >
-          docker buildx bake
-          --file=docker/docker-bake.hcl
-          --file=bake-metadata.json
-          --push
+        run: |
+          set -eo pipefail
+          
+          TRANSIENT_FAILURES=(
+            "failed to solve: failed to compute cache key"
+            "httpReadSeeker: failed open: failed to authorize: no active session"
+          )
+          BAKEFILE="--file=docker/docker-bake.hcl"
+          METADATA="--file=bake-metadata.json"
+
+          for i in $(seq 1 3); do
+            echo "::group::Try $i"
+            if docker buildx bake $BAKEFILE $METADATA --push | tee docker-build.log; then
+              echo "::endgroup::"
+              exit 0
+            fi
+            echo "::endgroup::"
+
+            for failure_msg in "${TRANSIENT_FAILURES[@]}"; do
+              if grep -q "$failure_msg" docker-build.log; then
+                echo "Transient failure detected, retrying..."
+                continue 2
+              fi
+            done
+
+            echo "Build failed for non-transient cause, exiting."
+            exit 1
+          done
+          echo "All retries failed, exiting."
+          exit 1
 
   generate_railjson:
     runs-on: ubuntu-latest
