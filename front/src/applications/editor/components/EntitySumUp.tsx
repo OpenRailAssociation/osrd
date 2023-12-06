@@ -71,7 +71,17 @@ async function getAdditionalEntities(
       const trackIDs = flatMap((entity as SwitchEntity).properties.ports, (port) =>
         port.track ? [port.track] : []
       );
-      return getEntities<TrackSectionEntity>(infra, trackIDs, 'TrackSection', dispatch);
+      try {
+        const results = await getEntities<TrackSectionEntity>(
+          infra,
+          trackIDs,
+          'TrackSection',
+          dispatch
+        );
+        return results;
+      } catch (e) {
+        return {};
+      }
     }
     case 'Route': {
       const route = entity as RouteEntity;
