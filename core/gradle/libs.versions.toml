@@ -20,7 +20,7 @@ kotlinx-coroutines = '1.6.+'
 logback = '1.4.+'
 moshi = '1.14.0'
 junit = '5.9.+'
-mockito = '4.11.+'
+mockito = '5.2.+'
 
 [libraries]
 # kotlin stuff
