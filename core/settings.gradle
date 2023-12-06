@@ -14,9 +14,5 @@ include 'osrd-reporting'
 
 
 dependencyResolutionManagement {
-    versionCatalogs {
-        libs {
-            from(files("./libs.versions.toml"))
-        }
-    }
+    versionCatalogs
 }
