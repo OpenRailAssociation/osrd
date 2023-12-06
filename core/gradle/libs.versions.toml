@@ -25,7 +25,7 @@ mockito = '4.11.+'
 [libraries]
 # kotlin stuff
 kotlin-stdlib = { module = 'org.jetbrains.kotlin:kotlin-stdlib', version.ref = 'kotlin' }  # Apache 2.0
-kotlin-logging = { module = 'io.github.microutils:kotlin-logging', version = '3.0.4' }  # Apache 2.0
+kotlin-logging = { module = 'io.github.microutils:kotlin-logging', version = '3.0.5' }  # Apache 2.0
 kotlin-reflect = { module = 'org.jetbrains.kotlin:kotlin-reflect', version.ref = 'kotlin' }  # Apache 2.0
 kotlin-test = { module = 'org.jetbrains.kotlin:kotlin-test', version.ref = 'kotlin' }  # Apache 2.0
 kotlinx-coroutines-core = { module = 'org.jetbrains.kotlinx:kotlinx-coroutines-core', version.ref = 'kotlinx-coroutines' }  # Apache 2.0
