@@ -13,8 +13,10 @@ import {
 } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
 import {
   CHART_AXES,
-  ChartAxes,
   LIST_VALUES,
+} from 'modules/simulationResult/components/simulationResultsConsts';
+import type {
+  ChartAxes,
   PositionScaleDomain,
 } from 'modules/simulationResult/components/simulationResultsConsts';
 import drawGuideLines from 'modules/simulationResult/components/ChartHelpers/drawGuideLines';
