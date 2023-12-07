@@ -86,7 +86,7 @@ export function IsolatedSpeedLimitByTagSelector({
           condensed ? 'd-flex align-items-center gap-10' : ''
         }`}
       >
-        <img width="32px" className="mr-2" src={icon} alt="infraIcon" />
+        <img width="32px" src={icon} alt="speedometer" />
         <span className="text-muted">{t('speedLimitByTag')}</span>
         <SelectImprovedSNCF
           sm
