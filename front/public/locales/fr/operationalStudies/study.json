@@ -45,7 +45,7 @@
   "studyRealEndingDate": "Fin réalisée",
   "studyServiceCode": "Code service",
   "studyStartDate": "Début de l'étude",
-  "studyState": "Status",
+  "studyState": "Statut",
   "studyStates": {
     "nothingSelected": "— Aucun —",
     "finish": "Terminée",
