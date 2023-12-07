@@ -81,7 +81,7 @@ private fun makeUserDefinedWaypoints(
         for (waypoint in userDefinedWaypointsPerBlock.getOrDefault(blockRange.edge, ArrayList())) {
             if (blockRange.start <= waypoint && waypoint <= blockRange.end) {
                 val pathOffset = lengthPrevBlocks + waypoint.distance - startFirstRange.distance
-                res.add(makePendingWaypoint(infra, path, false, pathOffset, null))
+                res.add(makePendingUserDefinedWaypoint(infra, path, pathOffset))
             }
         }
         lengthPrevBlocks += blockInfra.getBlockLength(blockRange.edge).distance
@@ -96,19 +96,35 @@ fun makeOperationalPoints(
 ): Collection<PathWaypointResult> {
     val res = ArrayList<PathWaypointResult>()
     for ((opId, offset) in path.getOperationalPointParts()) {
-        val opName = infra.getOperationalPointPartName(opId)
-        res.add(makePendingWaypoint(infra, path, true, offset, opName))
+        res.add(makePendingOPWaypoint(infra, offset, opId))
     }
     return res
 }
 
+/** Creates a pending waypoint from an operational point part  */
+private fun makePendingOPWaypoint(
+    infra: RawSignalingInfra,
+    pathOffset: Offset<Path>,
+    opId: OperationalPointPartId
+): PathWaypointResult {
+    val partChunk = infra.getOperationalPointPartChunk(opId)
+    val partChunkOffset = infra.getOperationalPointPartChunkOffset(opId)
+    val opName = infra.getOperationalPointPartName(opId)
+    val trackId = infra.getTrackFromChunk(partChunk)
+    val trackOffset = partChunkOffset + infra.getTrackChunkOffset(partChunk).distance
+    val trackName = infra.getTrackSectionName(trackId)
+    val location = PathWaypointLocation(
+        trackName,
+        trackOffset.distance.meters
+    )
+    return PathWaypointResult(location, pathOffset.distance.meters, true, opName)
+}
+
 /** Creates a pending waypoint from a path and its offset  */
-private fun makePendingWaypoint(
+private fun makePendingUserDefinedWaypoint(
     infra: RawSignalingInfra,
     path: PathProperties,
-    suggestion: Boolean,
-    pathOffset: Offset<Path>,
-    opName: String?
+    pathOffset: Offset<Path>
 ): PathWaypointResult {
     val (trackId, offset) = path.getTrackLocationAtOffset(pathOffset)
     val trackName = infra.getTrackSectionName(trackId)
@@ -116,7 +132,7 @@ private fun makePendingWaypoint(
         trackName,
         offset.distance.meters
     )
-    return PathWaypointResult(location, pathOffset.distance.meters, suggestion, opName)
+    return PathWaypointResult(location, pathOffset.distance.meters, false, null)
 }
 
 /** Sorts the waypoints on the path. When waypoints overlap, the user-defined one is kept.  */
@@ -259,7 +275,7 @@ private fun makeRJSTrackRanges(
         val dirEndOfRouteRange = dirTrackChunkOffset + routeEndOffset.distance - chunkStartPathOffset.distance
         val dirRangeStartOnTrack = Offset.max(dirTrackChunkOffset, dirStartOfRouteRange)
         val dirRangeEndOnTrack = Offset.min(dirTrackChunkOffset + chunkLength.distance, dirEndOfRouteRange)
-        if (dirRangeStartOnTrack < dirRangeEndOnTrack) {
+        if (dirRangeStartOnTrack <= dirRangeEndOnTrack) {
             val trackName = infra.getTrackSectionName(trackId)
             val direction =
                 if (dirChunkId.direction === Direction.INCREASING)

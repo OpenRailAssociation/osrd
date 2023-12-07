@@ -255,14 +255,13 @@ fun buildChunkPath(
     var mutBeginOffset = pathBeginOffset
     var mutEndOffset = pathEndOffset
     for (dirChunkId in chunks) {
-        if (totalBlocksLength >= pathEndOffset)
+        if (totalBlocksLength > pathEndOffset)
             break
         val length = infra.getTrackChunkLength(dirChunkId.value)
         val blockEndOffset = totalBlocksLength + length.distance
 
         // if the block ends before the path starts, it can be safely skipped
-        // If a block ends where the path starts, it can be skipped too
-        if (pathBeginOffset >= blockEndOffset) {
+        if (pathBeginOffset > blockEndOffset) {
             mutBeginOffset -= length.distance
             mutEndOffset -= length.distance
         } else {
