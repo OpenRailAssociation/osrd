@@ -38,7 +38,7 @@ function RunningTime({ dispatch = noop }: RunningTimeProps) {
 
   return (
     <div className="d-flex mb-2 align-items-center osrd-config-item-container">
-      <div className="text-orange mr-2 ml-1">
+      <div className="text-orange mr-2">
         <RxLapTimer />
       </div>
       <div className="font-weight-bold mr-2 flex-grow-1">{t('maximumRunTime')}</div>

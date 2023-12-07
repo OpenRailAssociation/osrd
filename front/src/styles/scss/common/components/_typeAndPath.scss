@@ -1,5 +1,6 @@
 .type-and-path {
   position: relative;
+
   background-color: var(--white);
   padding: 0.5rem;
   border-radius: var(--border-radius);
@@ -7,7 +8,6 @@
     position: relative;
     display: flex;
     align-items: center;
-    justify-content: center;
     height: 5rem;
     max-width: 21vw;
     overflow: auto;

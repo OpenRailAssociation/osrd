@@ -52,7 +52,7 @@ const StdcmAllowances = () => {
   };
 
   return (
-    <div className="d-flex mb-2 osrd-config-item-container">
+    <div className="d-flex mb-2 osrd-config-item-container px-0">
       <div className="col-3">
         <InputSNCF
           id="standardAllowanceTypeGridMarginBefore"
