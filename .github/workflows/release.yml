@@ -24,7 +24,13 @@ jobs:
           GITHUB_CONTEXT: ${{ toJson(github) }}
         run: |
           set -eo pipefail
+          echo ::group::Github context
+          python3 -m json.tool <<< "${GITHUB_CONTEXT}"
+          echo ::endgroup::
+
+          echo ::group::Bake metadata
           .github/scripts/bake-metadata.py | tee bake-metadata.json
+          echo ::endgroup::
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3

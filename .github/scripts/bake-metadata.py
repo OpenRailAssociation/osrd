@@ -207,15 +207,19 @@ class BranchEvent(BaseEvent):
 
 @dataclass
 class ReleaseEvent(BaseEvent):
-    release_name: str
+    tag_name: str
     commit_hash: str
+    draft: bool
 
     def version_string(self):
-        return f"{self.release_name} {short_hash(self.commit_hash)}"
+        return f"{self.get_stable_version()} {short_hash(self.commit_hash)}"
 
     def get_stable_version(self) -> str:
         # stable/osrd-front:1.0-devel  # 1.0 XXXX
-        return self.release_name
+        name = self.tag_name
+        if self.draft:
+            name = f"{name}-draft"
+        return name
 
     def get_stable_image_namer(self) -> ImageNamer:
         return release_image
@@ -252,7 +256,12 @@ def parse_event(context) -> Event:
         return MergeGroupEvent(commit_hash, target_branch)
 
     if event_name == "release":
-        return ReleaseEvent(ref, commit_hash)
+        release = event["release"]
+        return ReleaseEvent(
+            release["tag_name"],
+            commit_hash,
+            release["draft"],
+        )
 
     if event_name in ("workflow_dispatch", "push"):
         return BranchEvent(ref_name, protected, commit_hash)
