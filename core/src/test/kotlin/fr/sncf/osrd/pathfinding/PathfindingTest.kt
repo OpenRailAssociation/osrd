@@ -2,6 +2,7 @@ package fr.sncf.osrd.pathfinding
 
 import fr.sncf.osrd.api.ApiTest
 import fr.sncf.osrd.api.pathfinding.PathfindingBlocksEndpoint
+import fr.sncf.osrd.api.pathfinding.convertPathfindingResult
 import fr.sncf.osrd.api.pathfinding.request.PathfindingRequest
 import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint
 import fr.sncf.osrd.api.pathfinding.response.CurveChartPointResult
@@ -10,18 +11,18 @@ import fr.sncf.osrd.api.pathfinding.response.PathWaypointResult.PathWaypointLoca
 import fr.sncf.osrd.api.pathfinding.response.PathfindingResult
 import fr.sncf.osrd.api.pathfinding.response.SlopeChartPointResult
 import fr.sncf.osrd.api.pathfinding.runPathfinding
+import fr.sncf.osrd.api.pathfinding.validatePathfindingResult
 import fr.sncf.osrd.cli.StandaloneSimulationCommand
 import fr.sncf.osrd.railjson.schema.common.graph.ApplicableDirection
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
+import fr.sncf.osrd.railjson.schema.infra.RJSOperationalPoint
 import fr.sncf.osrd.railjson.schema.infra.RJSRoutePath
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection
-import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSApplicableDirectionsTrackRange
-import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSCatenary
-import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSDirectionalTrackRange
-import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSLoadingGaugeLimit
+import fr.sncf.osrd.railjson.schema.infra.trackranges.*
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
+import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl
 import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.Helpers
 import fr.sncf.osrd.utils.moshi.MoshiUtils
@@ -43,6 +44,7 @@ import java.util.stream.Collectors
 import java.util.stream.Stream
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.test.assertEquals
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class PathfindingTest : ApiTest() {
@@ -621,6 +623,60 @@ class PathfindingTest : ApiTest() {
                 SlopeChartPointResult(25000.0, 0.0)
             ),
             response.slopes
+        )
+    }
+
+    @Test
+    fun pathStartingAtTrackEdge() {
+        /*
+        foo_a   foo_to_bar   bar_a
+        ------>|----------->|------>
+              ^             ^
+           new_op_1      new_op_2
+         */
+        val waypointStart = PathfindingWaypoint("ne.micro.foo_a", 200.0, EdgeDirection.START_TO_STOP)
+        val waypointEnd = PathfindingWaypoint("ne.micro.bar_a", 0.0, EdgeDirection.START_TO_STOP)
+        val waypoints = Array(2) { Array(1) { waypointStart } }
+        waypoints[1][0] = waypointEnd
+        val rjsInfra = Helpers.getExampleInfra("tiny_infra/infra.json")
+        rjsInfra.operationalPoints.add(
+            RJSOperationalPoint(
+                "new_op_1", listOf(
+                    RJSOperationalPointPart("ne.micro.foo_a", 200.0)
+                )
+            )
+        )
+        rjsInfra.operationalPoints.add(
+            RJSOperationalPoint(
+                "new_op_2", listOf(
+                    RJSOperationalPointPart("ne.micro.bar_a", 0.0)
+                )
+            )
+        )
+        val infra = Helpers.fullInfraFromRJS(rjsInfra)
+
+        val path = runPathfinding(
+            infra,
+            waypoints,
+            listOf(TestTrains.REALISTIC_FAST_TRAIN)
+        )
+        val res = convertPathfindingResult(
+            infra.blockInfra, infra.rawInfra,
+            path, DiagnosticRecorderImpl(true)
+        )
+        validatePathfindingResult(res, waypoints, infra.rawInfra)
+        assertEquals(
+            listOf(
+                PathWaypointResult(
+                    PathWaypointLocation("ne.micro.foo_a", 200.0),
+                    0.0, false, "new_op_1"
+                ),
+                PathWaypointResult(
+                    PathWaypointLocation("ne.micro.bar_a", 0.0),
+                    10_000.0, false, "new_op_2"
+                ),
+            ),
+            res.pathWaypoints
         )
     }
 

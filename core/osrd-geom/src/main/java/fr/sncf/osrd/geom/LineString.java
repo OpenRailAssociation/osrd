@@ -206,7 +206,6 @@ public class LineString {
     public LineString slice(double begin, double end) {
         assert begin >= 0 && begin <= 1;
         assert end >= 0 && end <= 1;
-        assert Double.compare(begin, end) != 0;
 
         if (begin > end)
             return slice(end, begin).reverse();

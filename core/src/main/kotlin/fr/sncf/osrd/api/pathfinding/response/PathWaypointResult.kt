@@ -46,6 +46,7 @@ class PathWaypointResult(
             return
         pathOffset = other.pathOffset
         id = other.id
+        location = other.location
     }
 
     override fun equals(other: Any?): Boolean {

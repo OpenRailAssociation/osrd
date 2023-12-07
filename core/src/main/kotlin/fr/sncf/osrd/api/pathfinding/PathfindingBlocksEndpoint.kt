@@ -96,7 +96,7 @@ private fun getRouteDirTracks(rawInfra: RawSignalingInfra, routeId: RouteId): Di
     return res
 }
 
-private fun validatePathfindingResult(
+fun validatePathfindingResult(
     res: PathfindingResult, reqWaypoints: Array<Array<PathfindingWaypoint>>,
     rawInfra: RawSignalingInfra
 ) {
@@ -112,7 +112,6 @@ private fun validatePathfindingResult(
         .flatMap { route: RJSRoutePath? -> route!!.trackSections.stream() }
         .toList()
     assertPathTracksAreComplete(tracksOnPath, rawInfra)
-    assertRequiredWaypointsOnPathTracks(reqWaypoints, tracksOnPath, res.pathWaypoints)
 }
 
 private fun assertPathRoutesAreAdjacent(routeTracks: DirStaticIdxList<TrackSection>, rawInfra: RawSignalingInfra) {
@@ -170,33 +169,6 @@ private fun assertPathTracksAreComplete(tracksOnPath: List<RJSDirectionalTrackRa
                 )
             }
         }
-    }
-}
-
-private fun assertRequiredWaypointsOnPathTracks(
-    reqWaypoints: Array<Array<PathfindingWaypoint>>,
-    tracksOnPath: List<RJSDirectionalTrackRange>,
-    pathWaypoints: List<PathWaypointResult>
-) {
-    // Checks that at least one waypoint of each step is on the path
-    assert(Arrays.stream(reqWaypoints).allMatch { step: Array<PathfindingWaypoint>? ->
-        Arrays.stream(step)
-            .anyMatch { waypoint: PathfindingWaypoint ->
-                tracksOnPath.stream()
-                    .anyMatch { trackOnPath: RJSDirectionalTrackRange -> isWaypointOnTrack(waypoint, trackOnPath) }
-            }
-    }) { "The path does not contain one of the wanted steps" }
-    for (waypoint in pathWaypoints) {
-        val loc = waypoint.location
-        assert(tracksOnPath.stream()
-            .filter { range: RJSDirectionalTrackRange -> range.trackSectionID == loc.trackSection }
-            .anyMatch { range: RJSDirectionalTrackRange ->
-                ((loc.offset > range.begin || TrainPhysicsIntegrator.arePositionsEqual(loc.offset, range.begin))
-                        && (loc.offset < range.end || TrainPhysicsIntegrator.arePositionsEqual(
-                    loc.offset,
-                    range.end
-                )))
-            }) { "A waypoint isn't included in the track path" }
     }
 }
 
