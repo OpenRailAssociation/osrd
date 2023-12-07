@@ -120,6 +120,17 @@ export default function SimulationResults({
     }
   }, [extViewport]);
 
+  useEffect(() => {
+    if (selectedTrain) {
+      const positions = selectedTrain.base.speeds.map((speed) => speed.position);
+      const newPositionsScaleDomain = getScaleDomainFromValues(positions);
+      setPositionScaleDomain({
+        initial: newPositionsScaleDomain,
+        current: newPositionsScaleDomain,
+      });
+    }
+  }, [selectedTrain]);
+
   return simulation.trains.length === 0 && !isUpdating ? (
     <h1 className="text-center mt-5">{t('noData')}</h1>
   ) : (
