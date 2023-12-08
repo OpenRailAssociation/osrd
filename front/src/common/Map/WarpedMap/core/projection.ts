@@ -150,19 +150,22 @@ export function projectGeometry<G extends Geometry = Geometry>(
 export function clipAndProjectGeoJSON<T extends Geometry | Feature | FeatureCollection>(
   geojson: T,
   projection: Projection,
-  zone: Zone
+  zone: Zone,
+  shouldClip: boolean
 ): T | null {
   if (geojson.type === 'FeatureCollection')
     return {
       ...geojson,
       features: geojson.features.flatMap((f) => {
-        const res = clipAndProjectGeoJSON(f, projection, zone);
+        const res = clipAndProjectGeoJSON(f, projection, zone, shouldClip);
         return res ? [res] : [];
       }),
     };
 
   if (geojson.type === 'Feature') {
-    const clippedFeature = clip(geojson, zone) as Feature | null;
+    const clippedFeature = shouldClip
+      ? (clip(geojson, zone) as Feature | null)
+      : (geojson as Feature);
 
     if (clippedFeature) {
       const newGeometry = projectGeometry(clippedFeature.geometry, projection);
