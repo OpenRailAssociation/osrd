@@ -15,6 +15,8 @@ public final class TrainPhysicsIntegrator {
     private static final double POSITION_EPSILON = 1E-2;
     // A speed lower than this value will be considered zero
     private static final double SPEED_EPSILON = 1E-5;
+    // An acceleration lower than this value will be considered zero
+    private static final double ACCELERATION_EPSILON = 1E-5;
 
     private final PhysicsRollingStock rollingStock;
     private final PhysicsPath path;
@@ -180,6 +182,11 @@ public final class TrainPhysicsIntegrator {
     /** Returns true if the speeds' difference is lower than an epsilon */
     public static boolean areSpeedsEqual(double a, double b) {
         return areDoublesEqual(a, b, SPEED_EPSILON);
+    }
+
+    /** Returns true if the accelerations' difference is lower than an epsilon */
+    public static boolean areAccelerationsEqual(double a, double b) {
+        return areDoublesEqual(a, b, ACCELERATION_EPSILON);
     }
 
     private static boolean areDoublesEqual(double a, double b, double delta) {
