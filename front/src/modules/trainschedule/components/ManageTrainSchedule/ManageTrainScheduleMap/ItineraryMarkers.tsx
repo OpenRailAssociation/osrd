@@ -1,90 +1,135 @@
-import React, { FC, useMemo } from 'react';
+import { Map } from 'maplibre-gl';
+import React, { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { Marker } from 'react-map-gl/maplibre';
-import nextId from 'react-id-generator';
 import originSVG from 'assets/pictures/origin.svg';
 import destinationSVG from 'assets/pictures/destination.svg';
 import viaSVG from 'assets/pictures/via.svg';
 import { getVias, getOrigin, getDestination } from 'reducers/osrdconf/selectors';
+import { getNearestTrack } from 'utils/mapHelper';
 import { PointOnMap } from 'applications/operationalStudies/consts';
+import { Position } from '@turf/helpers';
 
-const ItineraryMarkers: FC = () => {
+enum MARKER_TYPE {
+  ORIGIN = 'origin',
+  VIA = 'via',
+  DESTINATION = 'destination',
+}
+
+type MarkerInformation = {
+  coordinates: number[] | Position;
+  name: string | null | JSX.Element;
+  imageSource: string;
+} & (
+  | {
+      type: MARKER_TYPE.ORIGIN | MARKER_TYPE.DESTINATION;
+    }
+  | {
+      type: MARKER_TYPE.VIA;
+      index: number;
+    }
+);
+
+const formatPointWithNoName = (lineCode: number, lineName: string, trackName: string) => (
+  <>
+    <div className="main-line">
+      <div className="track-name">{trackName}</div>
+      <div className="line-code">{lineCode}</div>
+    </div>
+    <div className="second-line">{lineName}</div>
+  </>
+);
+
+const getMarkerName = (marker: PointOnMap, coordinates: number[] | Position, map: Map) => {
+  if (marker.name) return marker.name;
+  let {
+    extensions_sncf_line_code: lineCode,
+    extensions_sncf_line_name: lineName,
+    extensions_sncf_track_name: trackName,
+  } = marker;
+  if (!lineCode || !lineName || !trackName) {
+    const trackResult = getNearestTrack(coordinates, map);
+    if (trackResult) {
+      const { track } = trackResult;
+      if (track && track.properties) {
+        if (track.properties.extensions_sncf_line_code)
+          lineCode = track.properties.extensions_sncf_line_code;
+        if (track.properties.extensions_sncf_line_name)
+          lineName = track.properties.extensions_sncf_line_name;
+        if (track.properties.extensions_sncf_track_name)
+          trackName = track.properties.extensions_sncf_track_name;
+      }
+    }
+  }
+  if (lineCode && lineName && trackName)
+    return formatPointWithNoName(lineCode, lineName, trackName);
+  return null;
+};
+
+const ItineraryMarkers = ({ map }: { map: Map }) => {
   const vias = useSelector(getVias);
   const origin = useSelector(getOrigin);
   const destination = useSelector(getDestination);
 
-  const formatPointWithNoName = (pointData: PointOnMap) => (
-    <>
-      <div className="main-line">
-        <div className="track-name">{pointData.extensions_sncf_track_name}</div>
-        <div className="line-code">{pointData.extensions_sncf_line_code}</div>
-      </div>
-      <div className="second-line">{pointData.extensions_sncf_line_name}</div>
-    </>
-  );
-
-  const markers = useMemo(() => {
-    const result = [];
-    if (origin?.coordinates) {
-      result.push(
-        <Marker
-          longitude={origin.coordinates[0]}
-          latitude={origin.coordinates[1]}
-          offset={[0, -12]}
-          key={nextId()}
-        >
-          <img src={originSVG} alt="Origin" style={{ height: '1.5rem' }} />
-          <div className="map-pathfinding-marker origin-name">
-            {origin.name || formatPointWithNoName(origin)}
-          </div>
-        </Marker>
-      );
+  const markersInformation = useMemo(() => {
+    const result = [] as MarkerInformation[];
+    if (origin && origin.coordinates) {
+      result.push({
+        coordinates: origin.coordinates,
+        type: MARKER_TYPE.ORIGIN,
+        name: getMarkerName(origin, origin.coordinates, map),
+        imageSource: originSVG,
+      });
     }
-    if (destination?.coordinates) {
-      result.push(
-        <Marker
-          longitude={destination.coordinates[0]}
-          latitude={destination.coordinates[1]}
-          offset={[0, -24]}
-          key={nextId()}
-        >
-          <img src={destinationSVG} alt="Destination" style={{ height: '3rem' }} />
-          <div className="map-pathfinding-marker destination-name">
-            {destination.name || formatPointWithNoName(destination)}
-          </div>
-        </Marker>
-      );
-    }
-    if (vias.length > 0) {
-      vias.forEach((via, idx) => {
-        if (via.coordinates) {
-          result.push(
-            <Marker
-              longitude={via.coordinates[0]}
-              latitude={via.coordinates[1]}
-              offset={[0, -12]}
-              key={nextId()}
-            >
-              <img src={viaSVG} alt="Destination" style={{ height: '1.5rem' }} />
-              <span className="map-pathfinding-marker via-number">{idx + 1}</span>
-              <div
-                className={`map-pathfinding-marker via-name ${
-                  via.duration === 0 ? '' : 'via-with-stop'
-                }`}
-              >
-                {via.name ||
-                  (via?.path_offset && `KM ${Math.round(via.path_offset) / 1000}`) ||
-                  'N/A'}
-              </div>
-            </Marker>
-          );
-        }
+    vias.forEach((via, index) => {
+      if (via.coordinates)
+        result.push({
+          coordinates: via.coordinates,
+          type: MARKER_TYPE.VIA,
+          name: getMarkerName(via, via.coordinates, map),
+          imageSource: viaSVG,
+          index,
+        });
+    });
+    if (destination && destination.coordinates) {
+      result.push({
+        coordinates: destination.coordinates,
+        type: MARKER_TYPE.DESTINATION,
+        name: getMarkerName(destination, destination.coordinates, map),
+        imageSource: destinationSVG,
       });
     }
     return result;
-  }, [origin, destination, vias]);
+  }, [origin, vias, destination, map]);
 
-  return <>{markers.map((marker) => marker)}</>;
+  const Markers = useMemo(
+    () =>
+      markersInformation.map((marker) => {
+        const isDestination = marker.type === MARKER_TYPE.DESTINATION;
+        const isVia = marker.type === MARKER_TYPE.VIA;
+        return (
+          <Marker
+            longitude={marker.coordinates[0]}
+            latitude={marker.coordinates[1]}
+            offset={isDestination ? [0, -24] : [0, -12]}
+            key={isVia ? `via-${marker.index}` : marker.type}
+          >
+            <img
+              src={marker.imageSource}
+              alt={marker.type}
+              style={{ height: isDestination ? '3rem' : '1.5rem' }}
+            />
+            {isVia && <span className="map-pathfinding-marker via-number">{marker.index + 1}</span>}
+            {marker.name && (
+              <div className={`map-pathfinding-marker ${marker.type}-name`}>{marker.name}</div>
+            )}
+          </Marker>
+        );
+      }),
+    [markersInformation]
+  );
+
+  return Markers;
 };
 
 export default ItineraryMarkers;

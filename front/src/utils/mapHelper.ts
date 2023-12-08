@@ -8,7 +8,7 @@ import lineSlice from '@turf/line-slice';
 import WebMercatorViewport from 'viewport-mercator-project';
 import { ViewState } from 'react-map-gl/maplibre';
 import { BBox, Coord, featureCollection, lineString } from '@turf/helpers';
-import { MapLayerMouseEvent, MapGeoJSONFeature } from 'maplibre-gl';
+import { Map, MapLayerMouseEvent, MapGeoJSONFeature } from 'maplibre-gl';
 import {
   Feature,
   FeatureCollection,
@@ -405,6 +405,41 @@ export function getMapMouseEventNearestFeature(
         }
         return {
           feature,
+          nearest: nearestFeaturePoint ? nearestFeaturePoint.geometry.coordinates : [0, 0],
+          distance,
+        };
+      }),
+      ['distance']
+    )
+  );
+
+  if (!result) return null;
+  return result;
+}
+
+/**
+ * Given coordinates, get the nearest track
+ * Does not work with the editor map (different layers name)
+ */
+export function getNearestTrack(
+  coordinates: number[] | Position,
+  map: Map
+): { track: Feature<LineString>; nearest: number[]; distance: number } | null {
+  const tolerance = 50;
+  const tracks = map.queryRenderedFeatures(
+    [
+      [coordinates[0] - tolerance / 2, coordinates[1] - tolerance / 2],
+      [coordinates[0] + tolerance / 2, coordinates[1] + tolerance / 2],
+    ],
+    { layers: ['chartis/tracks-geo/main'] }
+  ) as Feature<LineString>[];
+  const result = head(
+    sortBy(
+      tracks.map((track) => {
+        const nearestFeaturePoint = nearestPointOnLine(track.geometry, coordinates);
+        const distance = fnDistance(coordinates, nearestFeaturePoint.geometry.coordinates);
+        return {
+          track,
           nearest: nearestFeaturePoint ? nearestFeaturePoint.geometry.coordinates : [0, 0],
           distance,
         };
