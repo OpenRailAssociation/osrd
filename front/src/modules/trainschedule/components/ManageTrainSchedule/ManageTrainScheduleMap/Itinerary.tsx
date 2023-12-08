@@ -6,11 +6,11 @@ import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import { getGeojson, getOrigin, getDestination } from 'reducers/osrdconf/selectors';
 import { GeoJSONFeature } from 'maplibre-gl';
 
-interface RenderItineraryProps {
+interface ItineraryProps {
   layerOrder: number;
 }
 
-export default function RenderItinerary(props: RenderItineraryProps) {
+export default function Itinerary(props: ItineraryProps) {
   const { layerOrder } = props;
   const geojson = useSelector(getGeojson);
   const origin = useSelector(getOrigin);

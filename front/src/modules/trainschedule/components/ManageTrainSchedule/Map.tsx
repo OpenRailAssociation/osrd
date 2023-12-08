@@ -18,8 +18,8 @@ import Hillshade from 'common/Map/Layers/Hillshade';
 import OSM from 'common/Map/Layers/OSM';
 import OperationalPoints from 'common/Map/Layers/OperationalPoints';
 import PlatformsLayer from 'common/Map/Layers/Platforms';
-import RenderItinerary from 'modules/trainschedule/components/ManageTrainSchedule/ManageTrainScheduleMap/RenderItinerary';
-import RenderItineraryMarkers from 'modules/trainschedule/components/ManageTrainSchedule/ManageTrainScheduleMap/RenderItineraryMarkers';
+import Itinerary from 'modules/trainschedule/components/ManageTrainSchedule/ManageTrainScheduleMap/Itinerary';
+import ItineraryMarkers from 'modules/trainschedule/components/ManageTrainSchedule/ManageTrainScheduleMap/ItineraryMarkers';
 /* Interactions */
 import RenderPopup from 'modules/trainschedule/components/ManageTrainSchedule/ManageTrainScheduleMap/RenderPopup';
 import Routes from 'common/Map/Layers/Routes';
@@ -267,8 +267,8 @@ function Map() {
         <LineSearchLayer layerOrder={LAYER_GROUPS_ORDER[LAYERS.LINE_SEARCH.GROUP]} />
 
         <RenderPopup />
-        <RenderItinerary layerOrder={LAYER_GROUPS_ORDER[LAYERS.ITINERARY.GROUP]} />
-        <RenderItineraryMarkers />
+        <Itinerary layerOrder={LAYER_GROUPS_ORDER[LAYERS.ITINERARY.GROUP]} />
+        <ItineraryMarkers />
         {mapSearchMarker !== undefined && (
           <SearchMarker data={mapSearchMarker} colors={colors[mapStyle]} />
         )}
