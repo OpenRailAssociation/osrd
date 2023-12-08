@@ -16,7 +16,7 @@ import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import ReactModal from 'react-modal';
 // OSRD helpers
-import createTrain from 'modules/simulationResult/components/SpaceTimeChart/createTrain';
+import createSimulationTrain from 'modules/simulationResult/components/SpaceTimeChart/createTrain';
 import formatStdcmConf from 'applications/stdcm/formatStcmConf';
 // Static Data and Assets
 import { setFailure } from 'reducers/main';
@@ -79,7 +79,7 @@ export default function StdcmRequestModal(props: StdcmRequestModalProps) {
               .unwrap()
               .then((timetableTrains) => {
                 const trains: SimulationReport[] = [...timetableTrains, fakedNewTrain];
-                const consolidatedSimulation = createTrain(
+                const consolidatedSimulation = createSimulationTrain(
                   dispatch,
                   CHART_AXES.SPACE_TIME,
                   trains,
@@ -129,7 +129,7 @@ export default function StdcmRequestModal(props: StdcmRequestModalProps) {
     setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.canceled);
 
     const emptySimulation = { trains: [] };
-    const consolidatedSimulation = createTrain(
+    const consolidatedSimulation = createSimulationTrain(
       dispatch,
       CHART_AXES.SPACE_TIME,
       emptySimulation.trains,

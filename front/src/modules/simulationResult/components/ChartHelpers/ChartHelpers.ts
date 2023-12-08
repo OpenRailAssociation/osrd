@@ -25,8 +25,13 @@ import {
   YAxis,
 } from 'modules/simulationResult/components/simulationResultsConsts';
 
-export function sec2d3datetime(time: number) {
-  return d3.timeParse('%H:%M:%S')(sec2time(time));
+const scale = d3
+  .scaleTime()
+  .domain([new Date(2023, 0, 1, 0, 0, 0), new Date(2023, 0, 3, 0, 0, 0)])
+  .range([-86400, 86400]);
+
+export function secToD3DateTime(time: number) {
+  return scale.invert(time);
 }
 
 /* eslint-disable no-bitwise */
@@ -64,19 +69,19 @@ export function defineLinear(max: number, pctMarge = 0, origin = 0) {
 }
 
 export function formatStepsWithTime<T extends { time: number }>(data: Array<T> = []) {
-  return data.map((step) => ({ ...step, time: sec2d3datetime(step.time) }));
+  return data.map((step) => ({ ...step, time: secToD3DateTime(step.time) }));
 }
 
 export const formatStepsWithTimeMulti = (data: Position[][]): Position<Date | null>[][] =>
   data.map((section) =>
-    section.map((step) => ({ time: sec2d3datetime(step.time), position: step.position }))
+    section.map((step) => ({ time: secToD3DateTime(step.time), position: step.position }))
   );
 
 export const formatRouteAspects = (data: RouteAspect[] = []): ConsolidatedRouteAspect[] =>
   data.map((step) => ({
     ...step,
-    time_start: sec2d3datetime(step.time_start),
-    time_end: sec2d3datetime(step.time_end),
+    time_start: secToD3DateTime(step.time_start),
+    time_end: secToD3DateTime(step.time_end),
     color: colorModelToHex(step.color),
   }));
 
@@ -91,8 +96,8 @@ export const formatSignalAspects = (
 ): SignalAspect<Date | null, string>[] =>
   data.map((step) => ({
     ...step,
-    time_start: sec2d3datetime(step.time_start),
-    time_end: sec2d3datetime(step.time_end),
+    time_start: secToD3DateTime(step.time_start),
+    time_end: secToD3DateTime(step.time_end),
     color: colorModelToHex(step.color),
   }));
 
@@ -273,7 +278,7 @@ export const interpolateOnPosition = (
     const distance = bisection[1].position - bisection[0].position;
     const distanceFromPosition = positionLocal - bisection[0].position;
     const proportion = distanceFromPosition / distance;
-    return sec2d3datetime(d3.interpolateNumber(bisection[0].time, bisection[1].time)(proportion));
+    return secToD3DateTime(d3.interpolateNumber(bisection[0].time, bisection[1].time)(proportion));
   }
   return null;
 };
@@ -349,8 +354,8 @@ export const isSpaceTimeChart = (keyValues: ChartAxes) => keyValues[0] === TIME;
 export function trainWithDepartureAndArrivalTimes(train: Train, dragOffset = 0) {
   const firstStop = train.base.stops[0];
   const lastStop = last(train.base.stops) as Stop;
-  const departure = offsetSeconds(firstStop.time + dragOffset);
-  const arrival = offsetSeconds(lastStop.time + dragOffset);
+  const departure = firstStop.time + dragOffset;
+  const arrival = lastStop.time + dragOffset;
   const mechanicalEnergyConsumed = {
     base: train.base?.mechanical_energy_consumed,
     eco: train.eco?.mechanical_energy_consumed,

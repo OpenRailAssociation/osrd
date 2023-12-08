@@ -69,13 +69,13 @@ const drawAllTrains = (
   selectedTrain: Train,
   setChart: React.Dispatch<React.SetStateAction<Chart | undefined>>,
   setDragOffset: React.Dispatch<React.SetStateAction<number>>,
-  simulationTrains: Train[],
-  trainsToDraw: SimulationTrain[]
+  trains: Train[],
+  simulationTrains: SimulationTrain[]
 ) => {
   const chartLocal = createSpaceTimeChart(
     chart,
     CHART_ID,
-    trainsToDraw,
+    simulationTrains,
     heightOfSpaceTimeChart,
     CHART_AXES.SPACE_TIME,
     ref,
@@ -83,16 +83,14 @@ const drawAllTrains = (
     rotate
   );
 
-  const projectedSimulationTrain = simulationTrains.find(
-    (train) => train.id === selectedProjection?.id
-  );
+  const projectedSimulationTrain = trains.find((train) => train.id === selectedProjection?.id);
 
   if (projectedSimulationTrain) {
     drawOPs(chartLocal, projectedSimulationTrain, rotate);
   }
 
   drawAxisTitle(chartLocal, rotate);
-  trainsToDraw.forEach((train) => {
+  simulationTrains.forEach((train) => {
     drawTrain(
       allowancesSettings,
       chartLocal,
@@ -103,7 +101,7 @@ const drawAllTrains = (
       train.id === selectedTrain?.id,
       rotate,
       setDragOffset,
-      simulationTrains,
+      trains,
       train
     );
   });

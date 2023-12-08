@@ -2,7 +2,7 @@ import { AnyAction } from 'redux';
 import produce from 'immer';
 import { noop } from 'lodash';
 
-import createTrain from 'modules/simulationResult/components/SpaceTimeChart/createTrain';
+import createSimulationTrain from 'modules/simulationResult/components/SpaceTimeChart/createTrain';
 import {
   LIST_VALUES,
   SIGNAL_BASE_DEFAULT,
@@ -131,7 +131,7 @@ export default function reducer(inputState: OsrdSimulationState | undefined, act
           0
         );
 
-        draft.consolidatedSimulation = createTrain(
+        draft.consolidatedSimulation = createSimulationTrain(
           noop,
           CHART_AXES.SPACE_TIME,
           draft.simulation.present.trains,

@@ -17,20 +17,20 @@ import { ChartAxes } from '../simulationResultsConsts';
  * Will do some formating & computation to get a trains to be displayed. Stored then with currentSimulation splitted reducer
  * @param {*} dispatch react action dispatcher
  * @param {*} keyValues what do we compare (times vs position vs speed vs slope etc...)
- * @param {*} simulationTrains simulation raw data
+ * @param {*} trains simulation raw data
  * @param {*} t translation middle
  * @returns
  *
  * called with keyValues ['time', 'position']
  */
-export default function createTrain(
+export default function createSimulationTrain(
   dispatch: Dispatch,
   keyValues: ChartAxes,
-  simulationTrains: Train[],
+  trains: Train[],
   t: TFunction<Namespace<string>, undefined>
 ): SimulationTrain[] {
   // Prepare data
-  const dataSimulation = simulationTrains.map((train: Train) => {
+  const dataSimulation = trains.map((train: Train) => {
     const dataSimulationTrain: SimulationTrain = {
       id: train.id,
       isStdcm: train.isStdcm,
@@ -78,7 +78,7 @@ export default function createTrain(
  * @param {*} train simulation raw data
  * @returns
  */
-export function isolatedCreateTrain(keyValues: ChartAxes, train: Train): SimulationTrain {
+export function isolatedCreateSimulationTrain(keyValues: ChartAxes, train: Train): SimulationTrain {
   const dataSimulationTrain: SimulationTrain = {
     id: train.id,
     isStdcm: train.isStdcm,

@@ -13,7 +13,7 @@ import { ChartAxes } from '../simulationResultsConsts';
 export default function createSpaceTimeChart<T extends number | Date>(
   chart: Chart | undefined,
   chartID: string,
-  dataSimulation: SimulationTrain[],
+  simulationTrains: SimulationTrain[],
   heightOfSpaceTimeChart: number,
   keyValues: ChartAxes,
   ref: React.MutableRefObject<HTMLDivElement> | React.RefObject<HTMLDivElement>,
@@ -22,7 +22,7 @@ export default function createSpaceTimeChart<T extends number | Date>(
 ): Chart {
   d3select(`#${chartID}`).remove();
 
-  const xValues: T[] = dataSimulation
+  const xValues: T[] = simulationTrains
     .map((train) =>
       train.headPosition.map((section) =>
         section.map((position) => (isSpaceTimeChart(keyValues) ? position.time : position.position))
@@ -32,7 +32,7 @@ export default function createSpaceTimeChart<T extends number | Date>(
 
   function getMax(pos: 'tailPosition' | 'headPosition') {
     return d3.max(
-      dataSimulation.flatMap(
+      simulationTrains.flatMap(
         (train) =>
           d3.max(
             train[pos].map(

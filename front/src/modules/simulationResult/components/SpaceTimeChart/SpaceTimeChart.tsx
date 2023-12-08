@@ -10,7 +10,7 @@ import ORSD_GRAPH_SAMPLE_DATA from 'modules/simulationResult/components/SpeedSpa
 import { CgLoadbar } from 'react-icons/cg';
 import { GiResize } from 'react-icons/gi';
 import { CHART_AXES } from 'modules/simulationResult/components/simulationResultsConsts';
-import { isolatedCreateTrain as createTrain } from 'modules/simulationResult/components/SpaceTimeChart/createTrain';
+import { isolatedCreateSimulationTrain as createTrain } from 'modules/simulationResult/components/SpaceTimeChart/createTrain';
 
 import { drawAllTrains } from 'modules/simulationResult/components/SpaceTimeChart/d3Helpers';
 import {
@@ -99,9 +99,9 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
   const [rotate, setRotate] = useState(false);
   const [selectedTrain, setSelectedTrain] = useState(inputSelectedTrain);
   const [showModal, setShowModal] = useState<'+' | '-' | ''>('');
-  const [trainSimulations, setTrainSimulations] = useState<
-    SimulationSnapshot['trains'] | undefined
-  >(undefined);
+  const [trains, setTrainSimulations] = useState<SimulationSnapshot['trains'] | undefined>(
+    undefined
+  );
 
   const timeScaleRange: [Date, Date] = useMemo(() => {
     if (chart) return (rotate ? chart.y.domain() : chart.x.domain()) as [Date, Date];
@@ -110,15 +110,15 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
 
   const dragShiftTrain = useCallback(
     (offset: number) => {
-      if (trainSimulations) {
-        const trains = trainSimulations.map((train) =>
+      if (trains) {
+        const trains = trains.map((train) =>
           train.id === selectedTrain.id ? timeShiftTrain(train, offset) : train
         );
         setTrainSimulations(trains);
         onOffsetTimeByDragging(trains, offset);
       }
     },
-    [trainSimulations, selectedTrain, onOffsetTimeByDragging]
+    [trains, selectedTrain, onOffsetTimeByDragging]
   );
 
   /*
@@ -159,10 +159,9 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
   }, [dragOffset]);
 
   const redrawChart = () => {
-    if (trainSimulations) {
-      const trainsToDraw = trainSimulations.map((train) =>
-        createTrain(CHART_AXES.SPACE_TIME, train)
-      );
+    if (trains) {
+      console.log(trains);
+      const simulationTrains = trains.map((train) => createTrain(CHART_AXES.SPACE_TIME, train));
       drawAllTrains(
         allowancesSettings,
         chart,
@@ -179,8 +178,8 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
         selectedTrain,
         setChart,
         setDragOffset,
-        trainSimulations,
-        trainsToDraw
+        trains,
+        simulationTrains
       );
       setResetChart(false);
     }
@@ -193,11 +192,11 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
    */
   useEffect(() => {
     redrawChart();
-  }, [resetChart, rotate, selectedTrain, trainSimulations, height]);
+  }, [resetChart, rotate, selectedTrain, trains, height]);
 
   /* add behaviour on zoom and mousemove/mouseover/wheel on the new chart each time the chart changes */
   useEffect(() => {
-    if (trainSimulations) {
+    if (trains) {
       const dataSimulation = createTrain(CHART_AXES.SPACE_TIME, selectedTrain);
       enableInteractivity(
         chart,
