@@ -8,7 +8,7 @@ import viaSVG from 'assets/pictures/via.svg';
 import { getVias, getOrigin, getDestination } from 'reducers/osrdconf/selectors';
 import { PointOnMap } from 'applications/operationalStudies/consts';
 
-const RenderItineraryMarkers: FC = () => {
+const ItineraryMarkers: FC = () => {
   const vias = useSelector(getVias);
   const origin = useSelector(getOrigin);
   const destination = useSelector(getDestination);
@@ -87,4 +87,4 @@ const RenderItineraryMarkers: FC = () => {
   return <>{markers.map((marker) => marker)}</>;
 };
 
-export default RenderItineraryMarkers;
+export default ItineraryMarkers;
