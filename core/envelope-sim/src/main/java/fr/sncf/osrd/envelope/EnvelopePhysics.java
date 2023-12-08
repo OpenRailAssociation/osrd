@@ -1,5 +1,7 @@
 package fr.sncf.osrd.envelope;
 
+import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.areAccelerationsEqual;
+import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.areSpeedsEqual;
 import static java.lang.Math.max;
 
 import fr.sncf.osrd.envelope.part.EnvelopePart;
@@ -43,7 +45,7 @@ public class EnvelopePhysics {
             double positionDelta
     ) {
         var acceleration = stepAcceleration(lastPos, nextPos, lastSpeed, nextSpeed);
-        if (acceleration == 0.0)
+        if (areAccelerationsEqual(acceleration, 0.0))
             return Math.abs(positionDelta / lastSpeed);
         var interpolatedSpeed = interpolateStepSpeed(acceleration, lastSpeed, positionDelta);
         return Math.abs((interpolatedSpeed - lastSpeed) / acceleration);

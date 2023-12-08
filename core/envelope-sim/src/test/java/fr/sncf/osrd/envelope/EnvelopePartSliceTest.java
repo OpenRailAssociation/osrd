@@ -106,4 +106,15 @@ public class EnvelopePartSliceTest {
         );
         assertEquals(expectedSlice, slice);
     }
+
+    /** Reproduces a bug where the sliced part would have negative time deltas */
+    @Test
+    void sliceWithEpsilonAcceleration() {
+        var ep = EnvelopePart.generateTimes(
+                List.of(TestAttr.A, EnvelopeProfile.ACCELERATING),
+                new double[] {0, 100},
+                new double[] {10, 10 + 1e-8}
+        );
+        ep.slice(50, 100); // The relevant assertions are made in `EnvelopePart.runSanityChecks`
+    }
 }
