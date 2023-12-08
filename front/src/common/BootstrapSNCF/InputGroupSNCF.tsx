@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import nextId from 'react-id-generator';
 import './InputGroupSNCF.scss';
 import cx from 'classnames';
+import { isFloat, stripDecimalDigits } from 'utils/numbers';
+import { isNil } from 'lodash';
 
 type Option = {
   id: string;
@@ -32,6 +34,12 @@ type Props = {
   textRight?: boolean;
   disabled?: boolean;
   disableUnitSelector?: boolean;
+  limitDecimal?: number;
+};
+
+const isNeedStripDecimalDigits = (inputValue: string, limit: number) => {
+  const eventValue = Number(inputValue);
+  return !isNil(limit) && limit > 0 && inputValue !== '' && isFloat(eventValue);
 };
 
 export default function InputGroupSNCF({
@@ -55,6 +63,7 @@ export default function InputGroupSNCF({
   textRight = false,
   disabled = false,
   disableUnitSelector = false,
+  limitDecimal = 10,
 }: Props) {
   const [isDropdownShown, setIsDropdownShown] = useState(false);
   const [selected, setSelected] = useState(
@@ -76,6 +85,29 @@ export default function InputGroupSNCF({
     });
   }, [type, options]);
 
+  const handleOnChange = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      const eventValue = Number(event.target.value);
+      if (limitDecimal && isNeedStripDecimalDigits(event.target.value, limitDecimal)) {
+        const limitedValue = stripDecimalDigits(eventValue, limitDecimal);
+        handleType({ type: selected.id, value: limitedValue });
+      } else {
+        handleType({ type: selected.id, value: event.target.value });
+      }
+    },
+    [handleType, selected, limitDecimal]
+  );
+
+  const inputValue = useMemo(() => {
+    if (value !== undefined && !disabled) {
+      if (limitDecimal && isNeedStripDecimalDigits(value.toString(), limitDecimal)) {
+        return stripDecimalDigits(Number(value), limitDecimal);
+      }
+      return value;
+    }
+    return '';
+  }, [value, limitDecimal, disabled]);
+
   const inputField = (
     <div
       className={cx(
@@ -89,8 +121,8 @@ export default function InputGroupSNCF({
         className={cx('form-control h-100', condensed && 'px-2', textAlignmentClass)}
         title={placeholder}
         placeholder={placeholder}
-        onChange={(e) => handleType({ type: selected.id, value: e.target.value })}
-        value={value !== undefined && !disabled ? value : ''}
+        onChange={handleOnChange}
+        value={inputValue}
         min={min}
         max={max}
         data-testid="input-group-first-field"

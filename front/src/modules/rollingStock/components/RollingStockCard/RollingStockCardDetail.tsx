@@ -1,4 +1,4 @@
-import { isEmpty } from 'lodash';
+import { floor, isEmpty } from 'lodash';
 import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
@@ -174,12 +174,8 @@ export default function RollingStockCardDetail({
                 <td className="text-primary">{t('rollingResistanceB')}</td>
               </tr>
               <tr>
-                <td>
-                  {Math.floor(
-                    rollingStock.rolling_resistance?.C
-                      ? (rollingStock.rolling_resistance.C * 10000) / 10000
-                      : 0
-                  )}
+                <td title={rollingStock.rolling_resistance?.C.toString()}>
+                  {floor(rollingStock.rolling_resistance?.C ?? 0, 2)}
                   <span className="small ml-1 text-muted">N/(m/s)²</span>
                 </td>
                 <td className="text-primary">{t('rollingResistanceC')}</td>
