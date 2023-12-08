@@ -8,8 +8,9 @@ import fr.sncf.osrd.api.FullInfra;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimPath;
+import fr.sncf.osrd.envelope_sim.allowances.AbstractAllowanceWithRanges;
 import fr.sncf.osrd.envelope_sim.allowances.Allowance;
-import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;
+import fr.sncf.osrd.envelope_sim.allowances.LinearAllowance;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope;
@@ -157,10 +158,10 @@ public class StandaloneSim {
     }
 
     /**
-     * Generate a mareco Allowance given a list of scheduled points. Return an empty value: - if no
+     * Generate an Allowance given a list of scheduled points. Return an empty value: - if no
      * scheduled point is given - if we cannot respect any scheduled points.
      */
-    public static Optional<MarecoAllowance> generateAllowanceFromScheduledPoints(
+    public static Optional<AbstractAllowanceWithRanges> generateAllowanceFromScheduledPoints(
             EnvelopeStopWrapper maxEffortEnvelope, List<ScheduledPoint> scheduledPoints) {
         scheduledPoints.sort(Comparator.comparingDouble(sp -> sp.pathOffset));
         var ranges = new ArrayList<AllowanceRange>();
@@ -183,7 +184,7 @@ public class StandaloneSim {
 
         // Set minimum capacity limit
         double capacityLimit = 1.0;
-        return Optional.of(new MarecoAllowance(0., rangeBeginPos, capacityLimit, ranges));
+        return Optional.of(new LinearAllowance(0., rangeBeginPos, capacityLimit, ranges));
     }
 
     /** Apply a list of scheduled points */
