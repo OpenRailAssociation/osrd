@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { MapLayerMouseEvent } from 'maplibre-gl';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { MapLayerMouseEvent } from 'maplibre-gl';
 import ReactMapGL, { AttributionControl, ScaleControl, MapRef } from 'react-map-gl/maplibre';
 import { useDispatch, useSelector } from 'react-redux';
 import { NearestPointOnLine } from '@turf/nearest-point-on-line';
@@ -45,9 +45,9 @@ import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
 import LineSearchLayer from 'common/Map/Layers/LineSearchLayer';
 import Terrain from 'common/Map/Layers/Terrain';
 import { getTerrain3DExaggeration } from 'reducers/map/selectors';
-import { getMapMouseEventNearestFeature } from '../../../../utils/mapHelper';
+import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
 
-function Map() {
+const Map = () => {
   const { viewport, mapSearchMarker, mapStyle, showOSM, layersSettings } = useSelector(
     (state: RootState) => state.map
   );
@@ -61,7 +61,7 @@ function Map() {
     [dispatch]
   );
 
-  const [mapLoaded, setMapLoaded] = useState(false);
+  const [mapIsLoaded, setMapIsLoaded] = useState(false);
 
   const mapRef = useRef<MapRef | null>(null);
 
@@ -126,17 +126,17 @@ function Map() {
     }
   };
 
-  const defineInteractiveLayers = () => {
-    const interactiveLayersLocal: Array<string> = [];
-    interactiveLayersLocal.push('chartis/tracks-geo/main');
+  const interactiveLayerIds = useMemo(() => {
+    const result: Array<string> = [];
+    result.push('chartis/tracks-geo/main');
     if (layersSettings.operationalpoints) {
-      interactiveLayersLocal.push('chartis/osrd_operational_point/geo');
+      result.push('chartis/osrd_operational_point/geo');
     }
     if (layersSettings.tvds) {
-      interactiveLayersLocal.push('chartis/osrd_tvd_section/geo');
+      result.push('chartis/osrd_tvd_section/geo');
     }
-    return interactiveLayersLocal;
-  };
+    return result;
+  }, [layersSettings]);
 
   useEffect(() => {
     if (urlLat) {
@@ -152,10 +152,6 @@ function Map() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleLoadFinished = () => {
-    setMapLoaded(true);
-  };
-
   return (
     <>
       <MapButtons map={mapRef.current ?? undefined} resetPitchBearing={resetPitchBearing} />
@@ -166,7 +162,7 @@ function Map() {
         cursor="pointer"
         mapStyle={mapBlankStyle}
         onMove={(e) => updateViewportChange(e.viewState)}
-        onMouseMove={(e) => onMoveGetFeature(e)}
+        onMouseMove={onMoveGetFeature}
         attributionControl={false} // Defined below
         onClick={onFeatureClick}
         onResize={(e) => {
@@ -175,7 +171,7 @@ function Map() {
             height: e.target.getContainer().offsetHeight,
           });
         }}
-        interactiveLayerIds={defineInteractiveLayers()}
+        interactiveLayerIds={interactiveLayerIds}
         touchZoomRotate
         maxPitch={85}
         terrain={
@@ -183,7 +179,9 @@ function Map() {
             ? { source: 'terrain', exaggeration: terrain3DExaggeration }
             : undefined
         }
-        onLoad={handleLoadFinished}
+        onLoad={() => {
+          setMapIsLoaded(true);
+        }}
       >
         <VirtualLayers />
         <AttributionControl position="bottom-right" customAttribution={CUSTOM_ATTRIBUTION} />
@@ -204,7 +202,7 @@ function Map() {
             <OSM
               mapStyle={mapStyle}
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]}
-              mapIsLoaded={mapLoaded}
+              mapIsLoaded={mapIsLoaded}
             />
             <Hillshade
               mapStyle={mapStyle}
@@ -267,8 +265,12 @@ function Map() {
         <LineSearchLayer layerOrder={LAYER_GROUPS_ORDER[LAYERS.LINE_SEARCH.GROUP]} />
 
         <RenderPopup />
-        <Itinerary layerOrder={LAYER_GROUPS_ORDER[LAYERS.ITINERARY.GROUP]} />
-        <ItineraryMarkers />
+        {mapIsLoaded && (
+          <>
+            <Itinerary layerOrder={LAYER_GROUPS_ORDER[LAYERS.ITINERARY.GROUP]} />
+            {mapRef.current && <ItineraryMarkers map={mapRef.current.getMap()} />}
+          </>
+        )}
         {mapSearchMarker !== undefined && (
           <SearchMarker data={mapSearchMarker} colors={colors[mapStyle]} />
         )}
@@ -276,6 +278,6 @@ function Map() {
       </ReactMapGL>
     </>
   );
-}
+};
 
 export default Map;
