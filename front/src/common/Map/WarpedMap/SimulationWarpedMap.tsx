@@ -99,7 +99,8 @@ const SimulationWarpedMap: FC<{ collapsed?: boolean }> = ({ collapsed }) => {
       const chartEnd = !rotate ? y(l) : x(l);
       const size = !rotate ? height : width;
 
-      const transformedPath = transform(path) as typeof path;
+      // we don't clip the path
+      const transformedPath = transform(path, false) as typeof path;
       const latStart = (first(transformedPath.geometry.coordinates) as Position)[1];
       const latEnd = (last(transformedPath.geometry.coordinates) as Position)[1];
 
@@ -175,7 +176,9 @@ const SimulationWarpedMap: FC<{ collapsed?: boolean }> = ({ collapsed }) => {
   }, [selectedTrain, state.type, simulation]);
   const warpedItinerary = useMemo(() => {
     const itinerary = getAsyncMemoData(itineraryState);
-    if (itinerary && state.type === 'dataLoaded') return state.transform(itinerary) || undefined;
+    if (itinerary && state.type === 'dataLoaded')
+      // we don't clip the path
+      return state.transform(itinerary, false) || undefined;
     return undefined;
   }, [itineraryState, state]);
 
