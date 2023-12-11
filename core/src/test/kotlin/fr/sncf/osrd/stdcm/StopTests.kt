@@ -11,6 +11,7 @@ import fr.sncf.osrd.utils.DummyInfra
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
@@ -347,6 +348,46 @@ class StopTests {
         checkStop(res.withoutAllowance!!, expectedStops)
         occupancyTest(res.withAllowance, occupancy, 2 * timeStep)
         occupancyTest(res.withoutAllowance, occupancy, 2 * timeStep)
+    }
+
+    /** Checks that the stop itself is accounted for when detecting conflicts  */
+    @Test
+    fun conflictDuringStop() {
+        /*
+        a --> b --> c -> d
+                 ^
+                stop
+
+        space
+          ^
+        d |                 /
+          |                /
+        c |               /
+          |    ___####___/   <-- stop
+          |   /   ####
+        b |  /
+          | /
+        a |/____________________> time
+
+         */
+        val infra = DummyInfra()
+        val blocks = listOf(
+            infra.addBlock("a", "b"),
+            infra.addBlock("b", "c"),
+            infra.addBlock("c", "d", 1.meters)
+        )
+        val occupancy = ImmutableMultimap.of(
+            blocks[1], OccupancySegment(300.0, 600.0, 0.meters, 100.meters),
+        )
+        val res = STDCMPathfindingBuilder()
+            .setInfra(infra.fullInfra())
+            .addStep(STDCMStep(setOf(EdgeLocation(blocks[0], Offset(0.meters))), 0.0, true))
+            .addStep(STDCMStep(setOf(EdgeLocation(blocks[1], Offset(50.meters))), 10_000.0, true))
+            .addStep(STDCMStep(setOf(EdgeLocation(blocks[2], Offset(1.meters))), 0.0, true))
+            .setUnavailableTimes(occupancy)
+            .setMaxDepartureDelay(0.0) // Prevents the train from starting after the conflict
+            .run()
+        assertNull(res)
     }
 
     companion object {
