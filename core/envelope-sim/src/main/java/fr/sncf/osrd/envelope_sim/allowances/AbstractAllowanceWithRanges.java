@@ -52,6 +52,11 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
         this.endPos = endPos;
         this.capacitySpeedLimit = capacitySpeedLimit;
         this.ranges = ranges;
+        for (AllowanceRange range : ranges) {
+            if (range.beginPos < beginPos || range.endPos > endPos) {
+                throw new OSRDError(ErrorType.AllowanceRangeOutOfBounds);
+            }
+        }
     }
 
     protected abstract Envelope computeCore(Envelope base, EnvelopeSimContext context, double parameter);
@@ -114,6 +119,10 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
     /** Apply the allowance to a given envelope. */
     @Override
     public Envelope apply(Envelope base, EnvelopeSimContext context) {
+        if (base.getBeginPos() > beginPos || base.getEndPos() < endPos) {
+            throw new OSRDError(ErrorType.AllowanceOutOfBounds);
+        }
+
         assert base.continuous;
 
         // get only the region on which the allowance applies
