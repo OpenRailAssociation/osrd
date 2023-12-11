@@ -1079,7 +1079,7 @@ export type GetProjectsByProjectIdStudiesApiArg = {
   ordering?: Ordering;
 };
 export type PostProjectsByProjectIdStudiesApiResponse =
-  /** status 201 The created study */ StudyWithScenarios;
+  /** status 201 The created study */ StudyResponse;
 export type PostProjectsByProjectIdStudiesApiArg = {
   /** The id of a project */
   projectId: number;
@@ -1093,14 +1093,14 @@ export type DeleteProjectsByProjectIdStudiesAndStudyIdApiArg = {
   studyId: number;
 };
 export type GetProjectsByProjectIdStudiesAndStudyIdApiResponse =
-  /** status 200 The requested study */ StudyWithScenarios;
+  /** status 200 The requested study */ StudyResponse;
 export type GetProjectsByProjectIdStudiesAndStudyIdApiArg = {
   /** The id of a project */
   projectId: number;
   studyId: number;
 };
 export type PatchProjectsByProjectIdStudiesAndStudyIdApiResponse =
-  /** status 200 The updated study */ StudyWithScenarios;
+  /** status 200 The updated study */ StudyResponse;
 export type PatchProjectsByProjectIdStudiesAndStudyIdApiArg = {
   /** The id of a project */
   projectId: number;
@@ -1119,7 +1119,7 @@ export type GetProjectsByProjectIdStudiesAndStudyIdScenariosApiArg = {
   ordering?: Ordering;
 };
 export type PostProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse =
-  /** status 201 The created scenario */ ScenarioWithDetails;
+  /** status 201 The created scenario */ ScenarioResponse;
 export type PostProjectsByProjectIdStudiesAndStudyIdScenariosApiArg = {
   /** The id of a project */
   projectId: number;
@@ -1135,7 +1135,7 @@ export type DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg 
   scenarioId: number;
 };
 export type GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse =
-  /** status 200 The requested scenario */ ScenarioWithDetails;
+  /** status 200 The requested scenario */ ScenarioResponse;
 export type GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg = {
   /** The id of a project */
   projectId: number;
@@ -1143,7 +1143,7 @@ export type GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg = {
   scenarioId: number;
 };
 export type PatchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse =
-  /** status 204 The scenario was updated successfully */ undefined;
+  /** status 204 The scenario was updated successfully */ ScenarioResponse;
 export type PatchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg = {
   /** The id of a project */
   projectId: number;
@@ -1763,6 +1763,10 @@ export type PaginatedResponseOfStudyWithScenarios = {
   previous: number | null;
   results: StudyWithScenarios[];
 };
+export type StudyResponse = Study & {
+  project: Project;
+  scenarios_count: number;
+};
 export type StudyCreateForm = {
   actual_end_date?: string | null;
   budget?: number;
@@ -1817,9 +1821,11 @@ export type LightTrainSchedule = {
   train_name: string;
   train_path: number;
 };
-export type ScenarioWithDetails = Scenario & {
+export type ScenarioResponse = Scenario & {
   electrical_profile_set_name?: string | null;
   infra_name: string;
+  project: Project;
+  study: Study;
   train_schedules: LightTrainSchedule[];
   trains_count: number;
 };
