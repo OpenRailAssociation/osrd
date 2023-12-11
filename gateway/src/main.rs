@@ -6,7 +6,10 @@ use actix_proxy::Proxy;
 use actix_session::storage::CookieSessionStore;
 use actix_session::SessionMiddleware;
 use actix_web::cookie::SameSite;
-use actix_web::{middleware::Logger, App, HttpServer};
+use actix_web::{
+    middleware::{Compress, Logger},
+    App, HttpServer,
+};
 use actix_web::{web, HttpResponse};
 use config_parser::{
     parse_auth_config, parse_files_config, parse_secret_key, parse_targets, Files,
@@ -65,6 +68,7 @@ async fn main() -> std::io::Result<()> {
                 .build();
 
         let mut app = App::new()
+            .wrap(Compress::default()) // enable compress
             .route("/health", web::get().to(|| async { "OK" }))
             .wrap(AuthMiddleware::new(Rc::new(auth_context.clone())))
             .wrap(session_middleware)
