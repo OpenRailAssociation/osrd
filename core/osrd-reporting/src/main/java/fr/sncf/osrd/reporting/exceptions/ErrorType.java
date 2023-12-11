@@ -381,6 +381,16 @@ public enum ErrorType {
             "the path goes over the same track multiple times",
             ErrorCause.USER
     ),
+    AllowanceRangeOutOfBounds(
+            "allowance_range",
+            "Allowance ranges are out of bounds",
+            ErrorCause.USER
+    ),
+    AllowanceOutOfBounds(
+            "allowance",
+            "Allowance is out of bounds",
+            ErrorCause.USER
+    ),
     ;
 
     public final String type;
