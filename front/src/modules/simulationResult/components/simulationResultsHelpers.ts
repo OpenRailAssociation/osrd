@@ -21,7 +21,7 @@ export const getTrainDetailsForAPI = (
 ): Partial<TrainSchedule> => ({
   id: simulationTrain.id,
   departure_time: simulationTrain.base.stops[0].time,
-  train_name: simulationTrain.base.stops[0].name || simulationTrain.name,
+  train_name: simulationTrain.name,
 });
 // Nedded to load the namespace for i18n
 i18next.loadNamespaces('operationalStudies/manageTrainSchedule');
