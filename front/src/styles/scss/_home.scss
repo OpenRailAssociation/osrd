@@ -1,4 +1,8 @@
 .mastcontainer-no-mastnav {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between !important;
+  height: 100vh;
   padding-left: 0 !important;
   padding-bottom: 0 !important;
 }
@@ -16,6 +20,22 @@
   
     &:hover {
       opacity: .5;
+    }
+  }
+}
+
+.institutional-logos {
+  display: flex;
+  align-items: center;
+  justify-content: left;
+  padding: 1rem;
+  gap: 2rem;
+  opacity: 0.75;
+  img {
+    height: 2.5rem;
+    transition: opacity 0.3s;
+    &:hover {
+      opacity: 0.5;
     }
   }
 }

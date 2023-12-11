@@ -8,7 +8,7 @@ interface CardProps {
   link: string;
   img: string;
   title: string;
-  disabledLink: boolean;
+  disabledLink?: boolean;
 }
 const Card: FC<CardProps> = ({ link, img, title, disabledLink = false }) => (
   <Link to={link} className={cx('card overflow-hidden mb-2', disabledLink && 'disabled-link')}>

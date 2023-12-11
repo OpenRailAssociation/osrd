@@ -10,6 +10,10 @@ import logo from 'assets/logo-osrd-color-white.svg';
 import { useTranslation } from 'react-i18next';
 import { ModalProvider } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 
+import europeLogo from 'assets/pictures/institutionalLogos/logo-finance-par-union-europeenne.svg';
+import ministereTransportsLogo from 'assets/pictures/institutionalLogos/logo-ministere-de-la-transition-ecologique-et-de-la-cohesion-des-territoires.svg';
+import sncfReaseauLogo from 'assets/pictures/institutionalLogos/logo-sncf-reseau.svg';
+
 export default function Home() {
   const { t } = useTranslation('home/home');
 
@@ -50,6 +54,21 @@ export default function Home() {
               </div>
             </div>
           </div>
+        </div>
+        <div className="institutional-logos">
+          <a href="https://www.sncf-reseau.com" target="_blank" rel="noreferrer">
+            <img src={sncfReaseauLogo} alt="Logo Europe" />
+          </a>
+          <a
+            href="https://www.ecologie.gouv.fr/direction-generale-des-infrastructures-des-transports-et-des-mobilites-dgitm"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <img src={ministereTransportsLogo} alt="Logo Europe" />
+          </a>
+          <a href="https://european-union.europa.eu" target="_blank" rel="noreferrer">
+            <img src={europeLogo} alt="Logo Europe" />
+          </a>
         </div>
       </main>
     </ModalProvider>
