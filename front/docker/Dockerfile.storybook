@@ -7,7 +7,7 @@ ENV PATH /app/node_modules/.bin:$PATH
 
 # build dependencies
 COPY package.json yarn.lock /app/
-RUN yarn install
+RUN yarn install --frozen-lockfile
 
 # build the storybook
 COPY . /app
