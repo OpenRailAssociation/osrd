@@ -6,8 +6,10 @@ import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
+import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface.Availability
+import fr.sncf.osrd.train.TrainStop
 import fr.sncf.osrd.utils.units.Distance.Companion.fromMeters
 import fr.sncf.osrd.utils.units.Offset
 import java.util.*
@@ -27,7 +29,8 @@ class DelayManager internal constructor(
         blockId: BlockId,
         startTime: Double,
         envelope: Envelope,
-        startOffset: Offset<Block>
+        startOffset: Offset<Block>,
+        stopDurationAtEnd: Double?
     ): NavigableSet<Double> {
         // This is the margin used for the binary search, we need to add
         // this time before and after the train to avoid problems caused by the error margin
@@ -41,7 +44,8 @@ class DelayManager internal constructor(
                 startOffset,
                 endOffset,
                 envelope,
-                time
+                time,
+                stopDurationAtEnd
             )
             time += when (availability) {
                 is BlockAvailabilityInterface.Available -> {
@@ -61,14 +65,21 @@ class DelayManager internal constructor(
     }
 
     /** Returns the start time of the next occupancy for the block  */
-    fun findNextOccupancy(blockId: BlockId, time: Double, startOffset: Offset<Block>, envelope: Envelope): Double {
+    fun findNextOccupancy(
+        blockId: BlockId,
+        time: Double,
+        startOffset: Offset<Block>,
+        envelope: Envelope,
+        stopDurationAtEnd: Double?
+    ): Double {
         val endOffset = startOffset + fromMeters(envelope.endPos)
         val availability = getScaledAvailability(
             blockId,
             startOffset,
             endOffset,
             envelope,
-            time
+            time,
+            stopDurationAtEnd
         )
         assert(availability.javaClass == BlockAvailabilityInterface.Available::class.java)
         return (availability as BlockAvailabilityInterface.Available).timeOfNextConflict
@@ -91,11 +102,12 @@ class DelayManager internal constructor(
         blockId: BlockId,
         startTime: Double,
         startOffset: Offset<Block>,
-        envelope: Envelope
+        envelope: Envelope,
+        stopDurationAtEnd: Double?
     ): Double {
         val endOffset = startOffset + fromMeters(envelope.endPos)
         val availability = getScaledAvailability(
-            blockId, startOffset, endOffset, envelope, startTime
+            blockId, startOffset, endOffset, envelope, startTime, stopDurationAtEnd
         )
         assert(availability is BlockAvailabilityInterface.Available)
         return (availability as BlockAvailabilityInterface.Available).maximumDelay
@@ -107,7 +119,8 @@ class DelayManager internal constructor(
         startOffset: Offset<Block>,
         endOffset: Offset<Block>,
         envelope: Envelope,
-        startTime: Double
+        startTime: Double,
+        stopDurationAtEnd: Double?
     ): Availability {
         val speedRatio = graph.getStandardAllowanceSpeedRatio(envelope)
         val scaledEnvelope =
@@ -115,11 +128,15 @@ class DelayManager internal constructor(
                 envelope
             else
                 LinearAllowance.scaleEnvelope(envelope, speedRatio)
+        val envelopeWithStop = if (stopDurationAtEnd == null)
+            scaledEnvelope
+        else
+            EnvelopeStopWrapper(scaledEnvelope, listOf(TrainStop(envelope.endPos, stopDurationAtEnd)))
         return blockAvailability.getAvailability(
             listOf(blockId),
             startOffset.distance,
             endOffset.distance,
-            scaledEnvelope,
+            envelopeWithStop,
             startTime
         )
     }
