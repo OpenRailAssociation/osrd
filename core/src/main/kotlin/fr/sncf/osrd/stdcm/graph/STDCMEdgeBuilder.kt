@@ -111,7 +111,7 @@ internal constructor(
         return if (getEnvelope() == null)
             listOf()
         else
-            delaysPerOpening.stream()
+            getDelaysPerOpening().stream()
                 .map { delayNeeded -> makeSingleEdge(delayNeeded) }
                 .filter { obj -> Objects.nonNull(obj) }
                 .toList() as Collection<STDCMEdge>
@@ -125,7 +125,7 @@ internal constructor(
         if (getEnvelope() == null)
             return null
         // We look for the last possible delay that would start before the expected time of next occupancy
-        val delay = delaysPerOpening.stream()
+        val delay = getDelaysPerOpening().stream()
             .filter { x: Double -> startTime + x <= timeNextOccupancy }
             .max { obj: Double, anotherDouble: Double? -> obj.compareTo(anotherDouble!!) }
         return delay.map { delayNeeded: Double -> makeSingleEdge(delayNeeded) }.orElse(null)
@@ -150,18 +150,26 @@ internal constructor(
         return envelope
     }
 
-    private val delaysPerOpening: Set<Double>
-        /** Returns the set of delays to use to reach each opening.
-         * If the flag `forceMaxDelay` is set, returns the maximum delay that can be used without allowance.  */
-        get() = if (forceMaxDelay)
+    /** Returns the set of delays to use to reach each opening.
+     * If the flag `forceMaxDelay` is set, returns the maximum delay that can be used without allowance.  */
+    private fun getDelaysPerOpening(): Set<Double> {
+        return if (forceMaxDelay)
             findMaxDelay()
         else
-            graph.delayManager.minimumDelaysPerOpening(blockId, startTime, envelope!!, startOffset)
+            graph.delayManager.minimumDelaysPerOpening(
+                blockId, startTime, envelope!!,
+                startOffset, getEndStopDuration()
+            )
+    }
 
     /** Finds the maximum amount of delay that can be added by simply shifting the departure time
      * (no engineering allowance)  */
     private fun findMaxDelay(): Set<Double> {
-        val allDelays = graph.delayManager.minimumDelaysPerOpening(blockId, startTime, envelope!!, startOffset)
+        val endStopDuration = getEndStopDuration()
+        val allDelays = graph.delayManager.minimumDelaysPerOpening(
+            blockId, startTime, envelope!!,
+            startOffset, endStopDuration
+        )
         val lastOpeningDelay = allDelays.floor(prevMaximumAddedDelay)
             ?: return setOf()
         return mutableSetOf(
@@ -171,29 +179,45 @@ internal constructor(
                     blockId,
                     startTime + lastOpeningDelay,
                     startOffset,
-                    envelope!!
+                    envelope!!,
+                    endStopDuration
                 )
             )
         )
+    }
+
+    /** Returns the stop duration at the end of the edge being built, or null if there's no stop */
+    private fun getEndStopDuration(): Double? {
+        val endAtStop = getStopOnBlock(graph, blockId, startOffset, waypointIndex) != null
+        if (!endAtStop)
+            return null
+        return graph.steps[waypointIndex + 1].duration!!
     }
 
     /** Creates a single STDCM edge, adding the given amount of delay  */
     private fun makeSingleEdge(delayNeeded: Double): STDCMEdge? {
         if (java.lang.Double.isInfinite(delayNeeded))
             return null
+        val endStopDuration = getEndStopDuration()
         val maximumDelay = min(
             prevMaximumAddedDelay - delayNeeded,
-            graph.delayManager.findMaximumAddedDelay(blockId, startTime + delayNeeded, startOffset, envelope!!)
+            graph.delayManager.findMaximumAddedDelay(
+                blockId, startTime + delayNeeded,
+                startOffset, envelope!!, endStopDuration
+            )
         )
         val actualStartTime = startTime + delayNeeded
-        val endAtStop = getStopOnBlock(graph, blockId, startOffset, waypointIndex) != null
+        val endAtStop = endStopDuration != null
         var res: STDCMEdge? = STDCMEdge(
             blockId,
             envelope!!,
             actualStartTime,
             maximumDelay,
             delayNeeded,
-            graph.delayManager.findNextOccupancy(blockId, startTime + delayNeeded, startOffset, envelope!!),
+            graph.delayManager.findNextOccupancy(
+                blockId, startTime + delayNeeded,
+                startOffset, envelope!!, endStopDuration
+            ),
             prevAddedDelay + delayNeeded,
             prevNode,
             startOffset, (actualStartTime / 60).toInt(),
