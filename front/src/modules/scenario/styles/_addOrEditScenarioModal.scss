@@ -1,4 +1,10 @@
 .scenario-edition-modal {
+  max-height: calc(100vh - 3.5rem);
+  display: flex;
+  flex-direction: column;
+  .modal-body {
+    overflow-y: auto;
+  }
   .scenario-edition-modal-title {
     display: flex;
     align-items: center;
