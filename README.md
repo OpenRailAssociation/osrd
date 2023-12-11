@@ -47,7 +47,7 @@ poetry --directory=python/railjson_generator shell
 ./scripts/generate-infra.sh small_infra
 
 # open the web app
-xdg-open http://localhost:3000/
+xdg-open http://localhost:4000/
 ```
 
 (Linux users can use `docker-compose-host.yml` to enable host networking)
