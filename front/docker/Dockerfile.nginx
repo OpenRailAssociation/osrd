@@ -6,7 +6,7 @@ WORKDIR /app
 
 # Build dependencies
 COPY package.json yarn.lock /app/
-RUN yarn install
+RUN yarn install --frozen-lockfile
 
 # Generate the licenses file and build
 COPY . /app
