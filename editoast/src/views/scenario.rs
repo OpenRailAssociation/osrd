@@ -159,7 +159,7 @@ async fn check_project_study_conn(
     params(ProjectIdParam, StudyIdParam),
     request_body = ScenarioCreateForm,
     responses(
-        (status = 201, body = ScenarioWithDetails, description = "The created scenario"),
+        (status = 201, body = ScenarioResponse, description = "The created scenario"),
     )
 )]
 #[post("")]
@@ -279,7 +279,7 @@ impl From<ScenarioPatchForm> for Scenario {
     params(ProjectIdParam, StudyIdParam, ScenarioIdParam),
     request_body = ScenarioPatchForm,
     responses(
-        (status = 204, description = "The scenario was updated successfully"),
+        (status = 204, body = ScenarioResponse, description = "The scenario was updated successfully"),
         (status = 404, body = InternalError, description = "The requested scenario was not found"),
     )
 )]
@@ -333,7 +333,7 @@ async fn patch(
     tag = "scenarios",
     params(ProjectIdParam, StudyIdParam, ScenarioIdParam),
     responses(
-        (status = 200, body = ScenarioWithDetails, description = "The requested scenario"),
+        (status = 200, body = ScenarioResponse, description = "The requested scenario"),
         (status = 404, body = InternalError, description = "The requested scenario was not found"),
     )
 )]

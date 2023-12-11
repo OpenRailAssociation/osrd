@@ -2121,6 +2121,33 @@ components:
           nullable: true
           type: array
       type: object
+    ScenarioResponse:
+      allOf:
+      - $ref: '#/components/schemas/Scenario'
+      - properties:
+          electrical_profile_set_name:
+            nullable: true
+            type: string
+          infra_name:
+            type: string
+          project:
+            $ref: '#/components/schemas/Project'
+          study:
+            $ref: '#/components/schemas/Study'
+          train_schedules:
+            items:
+              $ref: '#/components/schemas/LightTrainSchedule'
+            type: array
+          trains_count:
+            format: int64
+            type: integer
+        required:
+        - infra_name
+        - train_schedules
+        - trains_count
+        - project
+        - study
+        type: object
     ScenarioWithCountTrains:
       allOf:
       - $ref: '#/components/schemas/Scenario'
@@ -2982,6 +3009,19 @@ components:
           nullable: true
           type: array
       type: object
+    StudyResponse:
+      allOf:
+      - $ref: '#/components/schemas/Study'
+      - properties:
+          project:
+            $ref: '#/components/schemas/Project'
+          scenarios_count:
+            format: int64
+            type: integer
+        required:
+        - scenarios_count
+        - project
+        type: object
     StudyWithScenarios:
       allOf:
       - $ref: '#/components/schemas/Study'
@@ -4914,7 +4954,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StudyWithScenarios'
+                $ref: '#/components/schemas/StudyResponse'
           description: The created study
       tags:
       - studies
@@ -4968,7 +5008,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StudyWithScenarios'
+                $ref: '#/components/schemas/StudyResponse'
           description: The requested study
         '404':
           content:
@@ -5007,7 +5047,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StudyWithScenarios'
+                $ref: '#/components/schemas/StudyResponse'
           description: The updated study
         '404':
           content:
@@ -5094,7 +5134,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ScenarioWithDetails'
+                $ref: '#/components/schemas/ScenarioResponse'
           description: The created scenario
       summary: Create a scenario
       tags:
@@ -5161,7 +5201,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ScenarioWithDetails'
+                $ref: '#/components/schemas/ScenarioResponse'
           description: The requested scenario
         '404':
           content:
@@ -5202,6 +5242,10 @@ paths:
         required: true
       responses:
         '204':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScenarioResponse'
           description: The scenario was updated successfully
         '404':
           content:

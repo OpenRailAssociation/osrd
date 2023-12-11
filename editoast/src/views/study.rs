@@ -135,7 +135,7 @@ impl StudyResponse {
     params(ProjectIdParam),
     request_body = StudyCreateForm,
     responses(
-        (status = 201, body = StudyWithScenarios, description = "The created study"),
+        (status = 201, body = StudyResponse, description = "The created study"),
     )
 )]
 #[post("")]
@@ -255,7 +255,7 @@ async fn list(
     tag = "studies",
     params(ProjectIdParam, StudyIdParam),
     responses(
-        (status = 200, body = StudyWithScenarios, description = "The requested study"),
+        (status = 200, body = StudyResponse, description = "The requested study"),
         (status = 404, body = InternalError, description = "The requested study was not found"),
     )
 )]
@@ -333,7 +333,7 @@ impl TryFrom<StudyPatchForm> for Study {
         description = "The fields to update"
     ),
     responses(
-        (status = 200, body = StudyWithScenarios, description = "The updated study"),
+        (status = 200, body = StudyResponse, description = "The updated study"),
         (status = 404, body = InternalError, description = "The requested study was not found"),
     )
 )]
