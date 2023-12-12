@@ -6,6 +6,8 @@ To run tests `poetry run pytest` after starting docker containers (`docker compo
 
 To run a list of specific tests, run `poetry run pytest -k test_name_1 test_name_2 ...`.
 
+To setup end-to-end (e2e) tests, please see [front readme](../front/README.md#yarn-e2e-tests).
+
 ### Create new integration tests
 
 To add a test, follow [pytest doc](https://docs.pytest.org/).
