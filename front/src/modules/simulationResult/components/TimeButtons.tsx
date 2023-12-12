@@ -24,7 +24,9 @@ const TimeButtons = ({ selectedTrain }: TimeButtonsProps) => {
 
   const [playInterval, setPlayInterval] = useState<NodeJS.Timeout | undefined>(undefined);
   const [playReverse, setPlayReverse] = useState(false);
-  const [simulationSpeed, setSimulationSpeed] = useState(1);
+
+  const [simulationSpeed, setSimulationSpeed] = useState<number | null>(1);
+
   const [localTimePosition, setLocalTimePosition] = useState<Date>(new Date());
 
   const { updateTimePosition } = useChartSynchronizer(
@@ -50,7 +52,7 @@ const TimeButtons = ({ selectedTrain }: TimeButtonsProps) => {
     dispatch(updateIsPlaying(false));
   };
 
-  const play = (playReverseLocal: boolean, simulationSpeedLocal = simulationSpeed) => {
+  const play = (playReverseLocal: boolean, simulationSpeedLocal = simulationSpeed ?? 1) => {
     clearInterval(playInterval); // Kill interval playing if concerned
     setPlayInterval(undefined);
     const factor = factor2ms(simulationSpeedLocal);
@@ -74,10 +76,21 @@ const TimeButtons = ({ selectedTrain }: TimeButtonsProps) => {
     }
   };
 
-  const changeSimulationSpeed = (speedFactor: number) => {
-    setSimulationSpeed(speedFactor);
+  const changeSimulationSpeed = (value: string) => {
+    const numberValue = value === '' ? null : Number(value);
+
+    if (value.charAt(0) === '0') {
+      setSimulationSpeed(null);
+      return;
+    }
+
+    if (numberValue && numberValue < 0) {
+      return;
+    }
+
+    setSimulationSpeed(numberValue);
     if (playInterval) {
-      play(playReverse, speedFactor);
+      play(playReverse, numberValue ?? 1);
     }
   };
 
@@ -126,9 +139,10 @@ const TimeButtons = ({ selectedTrain }: TimeButtonsProps) => {
       <InputSNCF
         noMargin
         type="number"
+        min={1}
         id="simulation-speed"
-        value={simulationSpeed}
-        onChange={(e) => changeSimulationSpeed(Number(e.target.value))}
+        value={simulationSpeed ?? ''}
+        onChange={(e) => changeSimulationSpeed(e.target.value)}
         sm
       />
     </div>
