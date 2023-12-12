@@ -1,5 +1,5 @@
 import { OsrdStdcmConfState, StandardAllowance } from 'applications/operationalStudies/consts';
-import { createStoreWithoutMiddleware } from 'Store';
+import { createStoreWithoutMiddleware } from 'store';
 
 import { describe, expect } from 'vitest';
 import { stdcmConfInitialState, stdcmConfSlice, stdcmConfSliceActions } from '.';

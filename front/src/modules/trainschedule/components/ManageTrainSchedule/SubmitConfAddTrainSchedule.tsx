@@ -1,5 +1,5 @@
 import React from 'react';
-import { store } from 'Store';
+import { store } from 'store';
 import { FaPlus } from 'react-icons/fa';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';

@@ -11,11 +11,9 @@ export const getIsPlaying = makeOsrdSimulationSelector('isPlaying');
 export const getIsUpdating = makeOsrdSimulationSelector('isUpdating');
 export const getAllowancesSettings = makeOsrdSimulationSelector('allowancesSettings');
 export const getMustRedraw = makeOsrdSimulationSelector('mustRedraw');
-export const getPositionValues = makeOsrdSimulationSelector('positionValues');
 export const getSelectedProjection = makeOsrdSimulationSelector('selectedProjection');
 export const getSelectedTrainId = makeOsrdSimulationSelector('selectedTrainId');
 export const getSpeedSpaceSettings = makeOsrdSimulationSelector('speedSpaceSettings');
-export const getTimePosition = makeOsrdSimulationSelector('timePosition');
 export const getConsolidatedSimulation = makeOsrdSimulationSelector('consolidatedSimulation');
 export const getDisplaySimulation = makeOsrdSimulationSelector('displaySimulation');
 

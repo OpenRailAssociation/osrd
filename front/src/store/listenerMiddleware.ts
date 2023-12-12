@@ -2,7 +2,7 @@ import { createListenerMiddleware, addListener } from '@reduxjs/toolkit';
 import type { TypedStartListening, TypedAddListener, ListenerEffectAPI } from '@reduxjs/toolkit';
 
 import type { RootState } from 'reducers';
-import type { AppDispatch } from 'Store';
+import type { AppDispatch } from 'store';
 import addUserListeners from 'reducers/user/listener';
 
 export const listenerMiddleware = createListenerMiddleware();

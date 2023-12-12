@@ -19,7 +19,6 @@ import {
   OsrdSimulationState,
   SimulationSnapshot,
   Train,
-  PositionsSpeedTimes,
 } from 'reducers/osrdsimulation/types';
 import ChartModal from 'modules/simulationResult/components/SpaceTimeChart/ChartModal';
 import { dateIsInRange } from 'utils/date';
@@ -30,6 +29,7 @@ import {
   DispatchUpdateSelectedTrainId,
   DispatchUpdateTimePositionValues,
 } from './types';
+import { useChartSynchronizer } from '../ChartHelpers/ChartSynchronizer';
 
 const CHART_ID = 'SpaceTimeChart';
 const CHART_MIN_HEIGHT = 250;
@@ -55,15 +55,13 @@ export type SpaceTimeChartProps = {
   dispatchUpdateChart?: DispatchUpdateChart;
   dispatchUpdateMustRedraw?: DispatchUpdateMustRedraw;
   dispatchUpdateSelectedTrainId?: DispatchUpdateSelectedTrainId;
-  dispatchUpdateTimePositionValues?: DispatchUpdateTimePositionValues;
+  updateTimePosition?: DispatchUpdateTimePositionValues;
   initialHeight?: number;
   inputSelectedTrain?: Train;
-  positionValues?: PositionsSpeedTimes<Date>;
   selectedProjection?: OsrdSimulationState['selectedProjection'];
   simulation?: SimulationSnapshot;
   simulationIsPlaying?: boolean;
-  timePosition?: OsrdSimulationState['timePosition'];
-  onOffsetTimeByDragging?: (trains: Train[], offset: number) => void;
+  onOffsetTimeByDragging?: (trains: Train[], offset: number, timePosition: Date) => void;
   onSetBaseHeight?: (newHeight: number) => void;
   isDisplayed?: boolean;
 };
@@ -77,15 +75,13 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
     dispatchUpdateDepartureArrivalTimes = noop,
     dispatchUpdateMustRedraw = noop,
     dispatchUpdateSelectedTrainId = noop,
-    dispatchUpdateTimePositionValues = noop,
+    updateTimePosition = noop,
     dispatchUpdateChart = noop,
     initialHeight = 400,
     inputSelectedTrain = ORSD_GRAPH_SAMPLE_DATA.simulation.present.trains[0],
-    positionValues = ORSD_GRAPH_SAMPLE_DATA.positionValues,
     selectedProjection,
     simulation = ORSD_GRAPH_SAMPLE_DATA.simulation.present,
     simulationIsPlaying = false,
-    timePosition = ORSD_GRAPH_SAMPLE_DATA.timePosition,
     isDisplayed = true,
     onOffsetTimeByDragging = noop,
     onSetBaseHeight = noop,
@@ -108,6 +104,17 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
     return [new Date(), new Date()];
   }, [chart]);
 
+  /* coordinate the vertical cursors with other graphs (GEV for instance) */
+  const { timePosition } = useChartSynchronizer(
+    (newTimePosition, positionValues) => {
+      if (dateIsInRange(newTimePosition, timeScaleRange)) {
+        traceVerticalLine(chart, CHART_AXES.SPACE_TIME, positionValues, rotate, newTimePosition);
+      }
+    },
+    'space-time',
+    [chart]
+  );
+
   const dragShiftTrain = useCallback(
     (offset: number) => {
       if (trainSimulations) {
@@ -115,7 +122,7 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
           train.id === selectedTrain.id ? timeShiftTrain(train as Train, offset) : train
         );
         setTrainSimulations(trains as Train[]);
-        onOffsetTimeByDragging(trains, offset);
+        onOffsetTimeByDragging(trains, offset, timePosition);
       }
     },
     [trainSimulations, selectedTrain, onOffsetTimeByDragging]
@@ -206,7 +213,7 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
         rotate,
         setChart,
         simulationIsPlaying,
-        dispatchUpdateTimePositionValues,
+        updateTimePosition,
         timeScaleRange
       );
     }
@@ -214,13 +221,6 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
     // Required to sync the camera in SimulationWarpedMap:
     dispatchUpdateChart(chart);
   }, [chart]);
-
-  /* coordinate the vertical cursors with other graphs (GEV for instance) */
-  useEffect(() => {
-    if (dateIsInRange(timePosition, timeScaleRange)) {
-      traceVerticalLine(chart, CHART_AXES.SPACE_TIME, positionValues, rotate, timePosition);
-    }
-  }, [chart, positionValues, timePosition]);
 
   const handleKey = ({ key }: KeyboardEvent) => {
     if (isDisplayed && ['+', '-'].includes(key)) {

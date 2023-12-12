@@ -10,7 +10,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import 'styles/styles.scss';
 
 import { SENTRY_CONFIG } from 'config/config';
-import { persistor, store } from 'Store';
+import { persistor, store } from 'store';
 
 // Components
 import App from 'main/app';

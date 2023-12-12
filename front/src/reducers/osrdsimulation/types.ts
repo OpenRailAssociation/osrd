@@ -244,14 +244,12 @@ export interface OsrdSimulationState {
   isUpdating: boolean;
   allowancesSettings?: AllowancesSettings;
   mustRedraw: boolean;
-  positionValues: PositionsSpeedTimes<Date>;
   selectedProjection?: Projection;
   selectedTrainId?: number;
   speedSpaceSettings: {
     [key in SpeedSpaceSettingKey]: boolean;
   };
   signalBase: typeof SIGNAL_BASE_DEFAULT;
-  timePosition: Date;
   consolidatedSimulation: SimulationTrain[];
   departureArrivalTimes: TrainsWithArrivalAndDepartureTimes[];
   simulation: {

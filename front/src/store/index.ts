@@ -1,6 +1,5 @@
 import { legacy_createStore as createStore, combineReducers } from 'redux';
 import { configureStore, Middleware } from '@reduxjs/toolkit';
-import thunk from 'redux-thunk';
 import { persistStore, getStoredState } from 'redux-persist';
 import { Config } from '@redux-devtools/extension';
 
@@ -13,7 +12,8 @@ import persistedReducer, {
   RootState,
   persistConfig,
 } from 'reducers';
-import { listenerMiddleware } from 'listenerMiddleware';
+import { ChartSynchronizer } from 'modules/simulationResult/components/ChartHelpers/ChartSynchronizer';
+import { listenerMiddleware } from './listenerMiddleware';
 
 const reduxDevToolsOptions: Config = {
   serialize: {
@@ -23,18 +23,31 @@ const reduxDevToolsOptions: Config = {
   },
 };
 
-const middlewares: Middleware[] = [thunk, osrdEditoastApi.middleware, osrdGatewayApi.middleware];
+const middlewares: Middleware[] = [osrdEditoastApi.middleware, osrdGatewayApi.middleware];
 
 const store = configureStore({
   reducer: persistedReducer,
   devTools: reduxDevToolsOptions,
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware({ serializableCheck: false })
+    getDefaultMiddleware({
+      serializableCheck: false,
+      thunk: {
+        extraArgument: ChartSynchronizer.getInstance(),
+      },
+    })
       .prepend(listenerMiddleware.middleware)
       .concat(...middlewares),
 });
 
+// workaround for the dependency cycle
+// thunk needs chart sychronizer for side effects
+// chart synchronizer needs store
+// store needs thunk
+ChartSynchronizer.getInstance().setReduxStore(store);
+
 export type AppDispatch = typeof store.dispatch;
+export type GetState = typeof store.getState;
+export type Store = typeof store;
 
 const persistor = persistStore(store);
 

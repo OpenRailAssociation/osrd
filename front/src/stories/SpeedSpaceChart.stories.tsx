@@ -6,7 +6,7 @@ import SpeedSpaceChart, {
 } from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChart';
 import 'stories/storybook.css';
 import { Provider } from 'react-redux';
-import { store } from 'Store';
+import { store } from 'store';
 import ORSD_GRAPH_SAMPLE_DATA from 'modules/simulationResult/components/SpeedSpaceChart/sampleData';
 
 export default {

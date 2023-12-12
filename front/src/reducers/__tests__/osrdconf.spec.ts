@@ -1,5 +1,5 @@
 import { MODES, OsrdConfState } from 'applications/operationalStudies/consts';
-import { createStoreWithoutMiddleware } from 'Store';
+import { createStoreWithoutMiddleware } from 'store';
 import {
   initialState,
   updateOriginTime,

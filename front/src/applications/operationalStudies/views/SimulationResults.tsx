@@ -12,7 +12,6 @@ import {
 import {
   getDisplaySimulation,
   getIsUpdating,
-  getOsrdSimulation,
   getPresentSimulation,
   getSelectedTrain,
 } from 'reducers/osrdsimulation/selectors';
@@ -50,7 +49,6 @@ export default function SimulationResults({
   // TIMELINE DISABLED // const { chart } = useSelector(getOsrdSimulation);
   const displaySimulation = useSelector(getDisplaySimulation);
   const selectedTrain = useSelector(getSelectedTrain);
-  const { positionValues, timePosition } = useSelector(getOsrdSimulation);
   const simulation = useSelector(getPresentSimulation);
   const isUpdating = useSelector(getIsUpdating);
 
@@ -139,12 +137,7 @@ export default function SimulationResults({
       >
         <div className="row">
           <div className="col-xl-4">
-            {selectedTrain && (
-              <TimeButtons
-                selectedTrain={selectedTrain as SimulationReport}
-                timePosition={timePosition}
-              />
-            )}
+            {selectedTrain && <TimeButtons selectedTrain={selectedTrain as SimulationReport} />}
           </div>
           <div className="col-xl-8 d-flex justify-content-end mt-2 mt-xl-0">
             <TrainDetails />
@@ -158,7 +151,6 @@ export default function SimulationResults({
           chart={chart}
           selectedTrainId={selectedTrain?.id || simulation.trains[0].id}
           trains={simulation.trains as SimulationReport[]}
-          timePosition={timePosition}
         />
       )} */}
 
@@ -193,9 +185,7 @@ export default function SimulationResults({
             <SpeedSpaceChart
               initialHeight={heightOfSpeedSpaceChart}
               onSetChartBaseHeight={setHeightOfSpeedSpaceChart}
-              positionValues={positionValues}
               selectedTrain={selectedTrain}
-              timePosition={timePosition}
               trainRollingStock={selectedTrainRollingStock}
               sharedXScaleDomain={positionScaleDomain}
               setSharedXScaleDomain={setPositionScaleDomain}
@@ -231,8 +221,6 @@ export default function SimulationResults({
               <SpaceCurvesSlopes
                 initialHeight={heightOfSpaceCurvesSlopesChart}
                 selectedTrain={selectedTrain as Train} // TODO: remove Train interface
-                timePosition={timePosition}
-                positionValues={positionValues}
                 sharedXScaleDomain={positionScaleDomain}
                 setSharedXScaleDomain={setPositionScaleDomain}
               />

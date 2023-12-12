@@ -17,7 +17,7 @@ import {
 } from 'reducers/osrdconf';
 import { sec2time } from 'utils/timeManipulation';
 import { Dispatch } from 'redux';
-import { store } from 'Store';
+import { store } from 'store';
 import { Allowance, PathResponse, TrainSchedule } from 'common/api/osrdEditoastApi';
 import { ArrayElement } from 'utils/types';
 import { PointOnMap } from 'applications/operationalStudies/consts';

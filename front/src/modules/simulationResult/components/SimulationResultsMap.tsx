@@ -11,7 +11,6 @@ import lineLength from '@turf/length';
 import lineSlice from '@turf/line-slice';
 import { keyBy } from 'lodash';
 
-import { updateTimePositionValues } from 'reducers/osrdsimulation/actions';
 import { getPresentSimulation, getSelectedTrain } from 'reducers/osrdsimulation/selectors';
 import { Train } from 'reducers/osrdsimulation/types';
 import { updateMapSearchMarker, updateViewport, Viewport } from 'reducers/map';
@@ -61,6 +60,7 @@ import { SimulationReport, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import Terrain from 'common/Map/Layers/Terrain';
 import { getTerrain3DExaggeration } from 'reducers/map/selectors';
 import { getRegimeKey, getSimulationHoverPositions } from './SimulationResultsMap/helpers';
+import { useChartSynchronizer } from './ChartHelpers/ChartSynchronizer';
 
 interface MapProps {
   setExtViewport: (viewport: Viewport) => void;
@@ -72,9 +72,7 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
   const { viewport, mapSearchMarker, mapStyle, showOSM } = useSelector(
     (state: RootState) => state.map
   );
-  const { isPlaying, positionValues, timePosition, allowancesSettings } = useSelector(
-    (state: RootState) => state.osrdsimulation
-  );
+  const { isPlaying, allowancesSettings } = useSelector((state: RootState) => state.osrdsimulation);
   const simulation = useSelector(getPresentSimulation);
   const trains = useMemo(() => keyBy(simulation.trains, 'id'), [simulation.trains]);
   const selectedTrain = useSelector(getSelectedTrain);
@@ -86,6 +84,25 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
   const { urlLat = '', urlLon = '', urlZoom = '', urlBearing = '', urlPitch = '' } = useParams();
   const [getPath] = osrdEditoastApi.useLazyGetPathfindingByPathfindingIdQuery();
   const dispatch = useDispatch();
+
+  const { updateTimePosition } = useChartSynchronizer(
+    (timePosition, positionValues) => {
+      if (timePosition && geojsonPath) {
+        const positions = getSimulationHoverPositions(
+          geojsonPath,
+          simulation,
+          timePosition,
+          positionValues,
+          selectedTrain?.id,
+          allowancesSettings
+        );
+        setTrainHoverPosition(positions.find((train) => train.isSelected));
+        setOtherTrainsHoverPosition(positions.filter((train) => !train.isSelected));
+      }
+    },
+    'simulation-result-map',
+    [geojsonPath, simulation, selectedTrain, allowancesSettings]
+  );
 
   const updateViewportChange = useCallback(
     (value: Partial<Viewport>) => dispatch(updateViewport(value, undefined)),
@@ -152,7 +169,7 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
         const positionLocal = lineLength(sliced, { units: 'kilometers' }) * 1000;
         const timePositionLocal = interpolateOnPosition({ speed: train.speeds }, positionLocal);
         if (timePositionLocal instanceof Date) {
-          dispatch(updateTimePositionValues(timePositionLocal));
+          updateTimePosition(timePositionLocal);
         } else {
           throw new Error(
             'Map onFeatureHover, try to update TimePositionValue with incorrect imput'
@@ -205,22 +222,6 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTrain]);
-
-  useEffect(() => {
-    if (timePosition && geojsonPath) {
-      const positions = getSimulationHoverPositions(
-        geojsonPath,
-        simulation,
-        timePosition,
-        positionValues,
-        selectedTrain?.id,
-        allowancesSettings
-      );
-      setTrainHoverPosition(positions.find((train) => train.isSelected));
-      setOtherTrainsHoverPosition(positions.filter((train) => !train.isSelected));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [timePosition]);
 
   const handleLoadFinished = () => {
     setMapLoaded(true);

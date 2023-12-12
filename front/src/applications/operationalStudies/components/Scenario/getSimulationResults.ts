@@ -6,7 +6,7 @@ import {
   updateSimulation,
 } from 'reducers/osrdsimulation/actions';
 import { setFailure } from 'reducers/main';
-import { store } from 'Store';
+import { store } from 'store';
 import i18n from 'i18next';
 import {
   SimulationReport,

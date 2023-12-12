@@ -1,7 +1,7 @@
 import React from 'react';
 import formatConf from 'modules/trainschedule/components/ManageTrainSchedule/helpers/formatConf';
 import { setFailure, setSuccess } from 'reducers/main';
-import { store } from 'Store';
+import { store } from 'store';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import { updateTrainScheduleIDsToModify } from 'reducers/osrdconf';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
