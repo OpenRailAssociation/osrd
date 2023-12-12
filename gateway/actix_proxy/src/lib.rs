@@ -13,10 +13,20 @@ use actix_web::{
     web, FromRequest, HttpRequest, HttpResponse, ResponseError,
 };
 use actix_web_actors::ws;
+use actix_web_opentelemetry::ClientExt;
 use awc::Client;
 use either::Either;
 use futures_util::future::LocalBoxFuture;
 use log::{debug, warn};
+use opentelemetry::{
+    global::{self, BoxedTracer},
+    trace::Tracer,
+    Context,
+};
+use opentelemetry::{
+    trace::{TraceContextExt, TracerProvider},
+    KeyValue,
+};
 use percent_encoding::{utf8_percent_encode, AsciiSet};
 
 use awc::error::{ConnectError, SendRequestError as AwcSendRequestError};
@@ -67,6 +77,7 @@ pub struct Proxy {
     upstream_authority: Authority,
     upstream_path_prefix: String,
     timeout: Option<Duration>,
+    tracing_name: Option<String>,
 }
 
 /// The set of characters that have to be percent encoded in the path.
@@ -93,6 +104,15 @@ const REQUIRES_PATH_ENCODING: &AsciiSet = &percent_encoding::CONTROLS
     .add(b'>')
     .add(b'?');
 
+fn get_tracer() -> BoxedTracer {
+    global::tracer_provider().versioned_tracer(
+        "actix_proxy",
+        Some(env!("CARGO_PKG_VERSION")),
+        Some("https://opentelemetry.io/schemas/1.17.0"),
+        None,
+    )
+}
+
 impl Proxy {
     pub fn new(
         mount_path: Option<String>,
@@ -101,6 +121,7 @@ impl Proxy {
         forwarded_headers: Option<Vec<HeaderName>>,
         request_modifier: Option<Box<dyn RequestModifier + Send>>,
         timeout: Option<Duration>,
+        tracing_name: Option<String>,
     ) -> Self {
         let upstream_scheme = upstream.scheme_str().unwrap().to_owned();
         let upstream_authority = upstream
@@ -113,6 +134,7 @@ impl Proxy {
         }
 
         Self {
+            tracing_name,
             mount_path: match mount_path {
                 Some(prefix) => prefix.trim_end_matches('/').to_owned(),
                 None => "/".to_owned(),
@@ -177,13 +199,11 @@ impl ServiceFactory<ServiceRequest> for Proxy {
             client = client.timeout(timeout);
         }
 
-        ready(Ok(ProxyService {
-            inner: Rc::new(InnerProxyService {
-                client: client.finish(),
-                proxy: self.clone(),
-                request_modifier: self.request_modifier.clone(),
-            }),
-        }))
+        ready(Ok(ProxyService::new(
+            client.finish(),
+            self.clone(),
+            self.request_modifier.clone(),
+        )))
     }
 }
 
@@ -236,13 +256,17 @@ impl InnerProxyService {
         stream: web::Payload,
         unprocessed_path: &str,
         query: &str,
+        context: Context,
     ) -> Result<HttpResponse, actix_web::Error> {
         match req.headers().get(&header::UPGRADE) {
             Some(header) if header.as_bytes() == b"websocket" => {
-                self.handle_websocket(req, stream, unprocessed_path, query)
+                self.handle_websocket(req, stream, unprocessed_path, query, context)
                     .await
             }
-            _ => self.handle_http(req, stream, unprocessed_path, query).await,
+            _ => {
+                self.handle_http(req, stream, unprocessed_path, query, context)
+                    .await
+            }
         }
     }
 
@@ -290,8 +314,15 @@ impl InnerProxyService {
         stream: web::Payload,
         unprocessed_path: &str,
         query: &str,
+        context: Context,
     ) -> Result<HttpResponse, actix_web::Error> {
         let back_uri = self.proxy.rebase_uri(Some("ws"), unprocessed_path, query);
+        context
+            .span()
+            .set_attribute(KeyValue::new("proxy.upstream_uri", back_uri.to_string()));
+        context
+            .span()
+            .set_attribute(KeyValue::new("proxy.type", "ws"));
 
         debug!("proxy: websocket - received request forwarded to {back_uri}");
         // open a websocket connection to the backend
@@ -354,8 +385,15 @@ impl InnerProxyService {
         stream: web::Payload,
         unprocessed_path: &str,
         query: &str,
+        context: Context,
     ) -> Result<HttpResponse, actix_web::Error> {
         let back_uri = self.proxy.rebase_uri(None, unprocessed_path, query);
+        context
+            .span()
+            .set_attribute(KeyValue::new("proxy.upstream_uri", back_uri.to_string()));
+        context
+            .span()
+            .set_attribute(KeyValue::new("proxy.type", "http"));
 
         debug!("proxy: http - received request forwarded to {back_uri}");
         let mut back_request = self.client.request(req.method().clone(), back_uri);
@@ -394,9 +432,11 @@ impl InnerProxyService {
         }
 
         let back_response = back_request
+            .trace_request()
             .send_stream(stream)
             .await
             .map_err(SendRequestError)?;
+
         let mut response = HttpResponse::build(back_response.status());
 
         {
@@ -408,7 +448,24 @@ impl InnerProxyService {
                 }
             }
         }
+
         Ok(response.streaming(back_response))
+    }
+}
+
+impl ProxyService {
+    pub fn new(
+        client: Client,
+        proxy: Proxy,
+        request_modifier: Option<Box<dyn RequestModifier + Send>>,
+    ) -> Self {
+        Self {
+            inner: Rc::new(InnerProxyService {
+                client,
+                proxy,
+                request_modifier,
+            }),
+        }
     }
 }
 
@@ -421,22 +478,41 @@ impl Service<ServiceRequest> for ProxyService {
 
     fn call(&self, mut req: ServiceRequest) -> Self::Future {
         let proxy_service = self.inner.clone();
-        Box::pin(async move {
-            let (http_request, payload) = req.parts_mut();
-            let stream = web::Payload::from_request(http_request, payload).await?;
-            let unprocessed_path = http_request.match_info().unprocessed();
-            let query = http_request.query_string();
 
-            match proxy_service
-                .handle(http_request, stream, unprocessed_path, query)
+        Box::pin(async move {
+            get_tracer()
+                .in_span("Proxying request", |cx| async move {
+                    // set tracing attributes
+                    cx.span().set_attribute(KeyValue::new(
+                        "proxy.name",
+                        proxy_service
+                            .proxy
+                            .tracing_name
+                            .clone()
+                            .unwrap_or("unnamed".to_owned()),
+                    ));
+                    cx.span().set_attribute(KeyValue::new(
+                        "proxy.mount_path",
+                        proxy_service.proxy.mount_path.clone(),
+                    ));
+
+                    // forward request
+                    let (http_request, payload) = req.parts_mut();
+                    let unprocessed_path = http_request.match_info().unprocessed();
+                    let query = http_request.query_string();
+                    let stream = web::Payload::from_request(http_request, payload).await?;
+                    match proxy_service
+                        .handle(http_request, stream, unprocessed_path, query, cx)
+                        .await
+                    {
+                        Ok(resp) => Ok(req.into_response(resp)),
+                        Err(e) => {
+                            warn!("proxy: error forwarding request: {}", e);
+                            Err(e)
+                        }
+                    }
+                })
                 .await
-            {
-                Ok(resp) => Ok(req.into_response(resp)),
-                Err(e) => {
-                    warn!("proxy: error forwarding request: {}", e);
-                    Err(e)
-                }
-            }
         })
     }
 }

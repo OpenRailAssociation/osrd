@@ -31,6 +31,10 @@ actix-web = "4.4.0"
 actix-session = "0.8"
 actix-files = "0.6.2"
 base64ct = "1.6.0"
+opentelemetry = "0.21.0"
+opentelemetry_sdk = { version = "0.21.1", features = ["rt-tokio-current-thread", "metrics"] }
+opentelemetry-otlp = { version = "0.14.0" }
+actix-web-opentelemetry = { version = "0.16.0", features = ["awc", "metrics"] }
 
 # reverse proxy dependencies
 ipnet = "2.9"
@@ -66,3 +70,9 @@ actix-files.workspace = true
 actix-session = { workspace = true, features = ["cookie-session"] }
 actix_auth = { path = "./actix_auth" }
 actix_proxy = { path = "./actix_proxy" }
+
+# tracing / metrics
+opentelemetry.workspace = true
+opentelemetry_sdk.workspace = true
+opentelemetry-otlp.workspace = true
+actix-web-opentelemetry.workspace = true

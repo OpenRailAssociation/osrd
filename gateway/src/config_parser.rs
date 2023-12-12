@@ -68,6 +68,7 @@ pub fn parse_targets(
                 None
             },
             target.timeout,
+            target.tracing_name.clone(),
         );
 
         match &target.prefix {
