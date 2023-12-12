@@ -33,6 +33,7 @@ You'll need:
 - Java 17
 - Python >= 3.9 (For generating example / test files)
 - Install the `python/railjson_generator` library using poetry:
+
   ```sh
   poetry --directory=../python/railjson_generator install
   ```
@@ -47,7 +48,7 @@ You'll need:
 gradlew.bat processTestResources shadowJar
 
 # Run as service
-java -jar build/libs/osrd-all.jar api --url http://localhost:8090/ -p 8080
+java -jar build/libs/osrd-all.jar api --editoast-url http://localhost:8090/ -p 8080
 
 # Check that an infra can be loaded
 java -jar build/libs/osrd-all.jar load-infra --path RAILJSON_INFRA
@@ -66,4 +67,18 @@ gradlew.bat processTestResources shadowJar
 # in ./build/generated_examples/small_infra for an example of the formats used.
 java -jar build/libs/osrd-all.jar standalone-simulation --infra_path example/infra.json \
       --sim_path example/simulation.json --res_path example/results.json
+```
+
+### Tests and tooling
+
+To launch all the checks on core (tests and code quality), run:
+
+```sh
+./gradlew check
+```
+
+To launch tests only, run:
+
+```sh
+./gradlew test
 ```
