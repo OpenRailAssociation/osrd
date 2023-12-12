@@ -546,7 +546,7 @@ jobs:
           export TAG='${{ needs.build.outputs.stable_version }}'
           services='editoast core front gateway'
           docker compose pull $services
-          docker compose up --no-build -d $services
+          docker compose up --no-build -d $services jaeger
         env:
           DOCKER_BUILDKIT: 1
           COMPOSE_DOCKER_CLI_BUILD: 1

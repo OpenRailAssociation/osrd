@@ -6,12 +6,18 @@ secret_key = "NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECR
 
 listen_addr = "0.0.0.0"
 
+[telemetry.tracing]
+enable = true
+endpoint = "http://localhost:4317"
+
 [[targets]]
+tracing_name = "editoast"
 prefix = "/api"
 upstream = "http://localhost:8090"
 require_auth = true
 
 [[targets]]
+tracing_name = "front"
 upstream = "http://localhost:3000"
 require_auth = false
 

@@ -4,7 +4,58 @@ use figment::{
     providers::{Env, Format, Serialized, Toml},
     Figment,
 };
+use log::info;
+use opentelemetry::global;
+use opentelemetry_otlp::WithExportConfig;
+use opentelemetry_sdk::{runtime::TokioCurrentThread, trace::TracerProvider};
 use serde::{Deserialize, Serialize};
+
+#[derive(Deserialize, Serialize, Clone)]
+pub struct Telemetry {
+    tracing: TracingTelemetry,
+}
+
+impl Telemetry {
+    pub fn enable(self) {
+        self.tracing.enable_providers();
+    }
+}
+
+#[derive(Deserialize, Serialize, Clone)]
+#[serde(tag = "type")]
+pub struct TracingTelemetry {
+    enable: bool,
+    endpoint: String,
+}
+
+impl TracingTelemetry {
+    pub fn enable_providers(self) {
+        if !self.enable {
+            info!("Tracing disabled");
+            return;
+        }
+
+        let exporter = opentelemetry_otlp::new_exporter()
+            .tonic()
+            .with_endpoint(self.endpoint)
+            .build_span_exporter()
+            .expect("Failed to initialize otlp exporter");
+
+        info!("Tracing enabled with otlp");
+
+        let provider = TracerProvider::builder()
+            .with_config(opentelemetry_sdk::trace::Config::default().with_resource(
+                opentelemetry_sdk::Resource::new(vec![opentelemetry::KeyValue::new(
+                    "service.name",
+                    "gateway",
+                )]),
+            ))
+            .with_batch_exporter(exporter, TokioCurrentThread)
+            .build();
+
+        global::set_tracer_provider(provider);
+    }
+}
 
 /// A proxy route
 #[derive(Deserialize, Serialize, Clone)]
@@ -23,6 +74,8 @@ pub struct ProxyTarget {
     /// A connection, send and read timeout
     #[serde(default, with = "humantime_serde")]
     pub timeout: Option<Duration>,
+    /// The tracing name for this target
+    pub tracing_name: Option<String>,
 }
 
 #[derive(Deserialize, Serialize, Clone)]
@@ -85,6 +138,8 @@ pub struct ProxyConfig {
     pub trusted_proxies: Vec<String>,
     /// Authentication configuration
     pub auth: AuthConfig,
+    /// Telemetry configuration
+    pub telemetry: Option<Telemetry>,
 }
 
 #[derive(Deserialize, Serialize, Clone)]
@@ -108,6 +163,7 @@ impl Default for ProxyConfig {
                 secure_cookies: true,
                 providers: vec![],
             },
+            telemetry: None,
         }
     }
 }

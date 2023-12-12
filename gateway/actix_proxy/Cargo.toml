@@ -29,3 +29,7 @@ actix.workspace = true
 actix-web-actors.workspace = true
 bytestring.workspace = true
 
+# tracing / metrics
+opentelemetry.workspace = true
+actix-web-opentelemetry.workspace = true
+opentelemetry_sdk.workspace = true

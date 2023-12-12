@@ -35,6 +35,10 @@ services:
     volumes:
       - "./docker/gateway.dev.host.toml:/gateway.toml"
 
+  jaeger:
+    ports: []
+    network_mode: host
+
   wait-healthy:
     depends_on:
       editoast: {condition: service_healthy}

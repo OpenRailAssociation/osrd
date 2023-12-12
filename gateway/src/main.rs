@@ -11,6 +11,7 @@ use actix_web::{
     App, HttpServer,
 };
 use actix_web::{web, HttpResponse};
+use actix_web_opentelemetry::RequestTracing;
 use config_parser::{
     parse_auth_config, parse_files_config, parse_secret_key, parse_targets, Files,
 };
@@ -57,6 +58,11 @@ async fn main() -> std::io::Result<()> {
         (None, None) => None,
     };
 
+    // Enable telemetry
+    if let Some(telemetry) = config.telemetry {
+        telemetry.enable();
+    }
+
     // Start server
     HttpServer::new(move || {
         let session_middleware =
@@ -68,6 +74,7 @@ async fn main() -> std::io::Result<()> {
                 .build();
 
         let mut app = App::new()
+            .wrap(RequestTracing::new())
             .wrap(Compress::default()) // enable compress
             .route("/health", web::get().to(|| async { "OK" }))
             .wrap(AuthMiddleware::new(Rc::new(auth_context.clone())))

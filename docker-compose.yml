@@ -111,6 +111,14 @@ services:
     restart: unless-stopped
     ports: ["4000:4000"]
 
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: osrd-jaeger
+    restart: unless-stopped
+    ports:
+      - "4317:4317"
+      - "16686:16686"
+
   wait-healthy:
     depends_on:
       editoast: {condition: service_healthy}
