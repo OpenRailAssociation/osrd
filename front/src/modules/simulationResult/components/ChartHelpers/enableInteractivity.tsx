@@ -264,7 +264,7 @@ export const enableInteractivity = <
   rotate: boolean,
   setChart: React.Dispatch<React.SetStateAction<T | undefined>>,
   simulationIsPlaying: boolean,
-  dispatchUpdateTimePositionValues: (newTimePositionValues: Date) => void,
+  updateTimePosition: (newTimePositionValues: Date) => void,
   chartDimensions: [Date, Date],
   setSharedXScaleDomain?: React.Dispatch<React.SetStateAction<PositionScaleDomain>>,
   additionalValues: ChartAxes[] = [] // more values to display on the same chart
@@ -292,15 +292,6 @@ export const enableInteractivity = <
     .filter(
       (event) => (event.button === 0 || event.button === 1) && (event.ctrlKey || event.shiftKey)
     );
-
-  // TODO: actually a number as we’re not in node.js
-  let debounceTimeoutId: NodeJS.Timeout;
-  function debounceUpdateTimePositionValues(timePositionLocal: Date, interval: number) {
-    clearTimeout(debounceTimeoutId);
-    debounceTimeoutId = setTimeout(() => {
-      dispatchUpdateTimePositionValues(timePositionLocal);
-    }, interval);
-  }
 
   const mousemove = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     if (!simulationIsPlaying) {
@@ -355,7 +346,7 @@ export const enableInteractivity = <
         });
       }
 
-      debounceUpdateTimePositionValues(timePositionLocal, 15);
+      updateTimePosition(timePositionLocal);
       if (chart.svg && dateIsInRange(timePositionLocal, chartDimensions)) {
         const verticalMark = pointer(event, event.currentTarget)[0];
         const horizontalMark = pointer(event, event.currentTarget)[1];

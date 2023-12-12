@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import { useDispatch, useSelector } from 'react-redux';
 import React, { FC, useEffect, useMemo, useState } from 'react';
-import { clamp, first, isEmpty, isNil, keyBy, last, mapValues, omitBy } from 'lodash';
+import { clamp, first, isEmpty, isNil, keyBy, last, mapValues, omitBy, debounce } from 'lodash';
 import { PiLinkBold, PiLinkBreakBold } from 'react-icons/pi';
 
 import bbox from '@turf/bbox';
@@ -25,12 +25,13 @@ import {
   getSelectedProjection,
   getSelectedTrain,
 } from 'reducers/osrdsimulation/selectors';
-import { Train } from 'reducers/osrdsimulation/types';
+import type { PositionsSpeedTimes, Train } from 'reducers/osrdsimulation/types';
 import { AsyncMemoState, getAsyncMemoData, useAsyncMemo } from 'utils/useAsyncMemo';
 import { getSimulationHoverPositions } from 'modules/simulationResult/components/SimulationResultsMap/helpers';
 import { clip } from 'utils/mapHelper';
 
 import './SimulationWarpedMap.scss';
+import { useChartSynchronizer } from 'modules/simulationResult/components/ChartHelpers/ChartSynchronizer';
 
 const TIME_LABEL = 'Warping OSRD and OSM data';
 const WIDTH = 300;
@@ -82,11 +83,21 @@ const SimulationWarpedMap: FC<{ collapsed?: boolean }> = ({ collapsed }) => {
   const [mode, setMode] = useState<'manual' | 'auto'>('auto');
   const {
     chart,
-    positionValues,
-    timePosition,
     allowancesSettings,
     simulation: { present: simulation },
   } = useSelector(getOsrdSimulation);
+  const [localTimePosition, setLocalTimePosition] = useState<Date>(new Date());
+  const [localPositionValues, setLocalPositionValues] = useState<PositionsSpeedTimes<Date>>(
+    {} as PositionsSpeedTimes<Date>
+  );
+  useChartSynchronizer(
+    debounce((timePosition, positionValues) => {
+      setLocalTimePosition(timePosition);
+      setLocalPositionValues(positionValues);
+    }, 1),
+    'warped-map',
+    []
+  );
 
   // Boundaries handling (ie zoom sync):
   const syncedBoundingBox: LngLatBoundsLike = useMemo(() => {
@@ -197,8 +208,8 @@ const SimulationWarpedMap: FC<{ collapsed?: boolean }> = ({ collapsed }) => {
     return getSimulationHoverPositions(
       path,
       simulation,
-      timePosition,
-      positionValues,
+      localTimePosition,
+      localPositionValues,
       selectedTrain?.id,
       allowancesSettings
     ).map((position) => {
@@ -223,8 +234,8 @@ const SimulationWarpedMap: FC<{ collapsed?: boolean }> = ({ collapsed }) => {
   }, [
     itineraryState,
     simulation,
-    timePosition,
-    positionValues,
+    localTimePosition,
+    localPositionValues,
     selectedTrain,
     allowancesSettings,
     state,

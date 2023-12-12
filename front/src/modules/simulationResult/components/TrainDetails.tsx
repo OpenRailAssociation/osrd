@@ -1,8 +1,9 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { ConsolidatedRouteAspect } from 'reducers/osrdsimulation/types';
+import { ConsolidatedRouteAspect, PositionsSpeedTimes } from 'reducers/osrdsimulation/types';
 import { RootState } from 'reducers';
+import { useChartSynchronizer } from './ChartHelpers/ChartSynchronizer';
 
 /**
  * Given the routeAspects and a timePosition, returns the bounds [start, end]
@@ -30,8 +31,19 @@ const getOccupancyBounds = (
 };
 
 export default function TrainDetails() {
-  const { positionValues, timePosition, consolidatedSimulation, selectedTrainId } = useSelector(
+  const { consolidatedSimulation, selectedTrainId } = useSelector(
     (state: RootState) => state.osrdsimulation
+  );
+
+  const [{ headPosition, tailPosition, speed }, setLocalPositionValues] = useState<
+    PositionsSpeedTimes<Date>
+  >({} as PositionsSpeedTimes<Date>);
+  useChartSynchronizer(
+    (_, positionValues) => {
+      setLocalPositionValues(positionValues);
+    },
+    'train-detail',
+    []
   );
 
   const { t } = useTranslation(['simulation']);
@@ -39,24 +51,21 @@ export default function TrainDetails() {
   const occupancyBounds = useMemo(() => {
     const foundTrain = consolidatedSimulation.find((train) => train.id === selectedTrainId);
 
-    return (
-      foundTrain &&
-      getOccupancyBounds(foundTrain.routeAspects, new Date(positionValues?.headPosition?.time))
-    );
-  }, [consolidatedSimulation, positionValues, selectedTrainId]);
+    return foundTrain && getOccupancyBounds(foundTrain.routeAspects, new Date(headPosition?.time));
+  }, [consolidatedSimulation, headPosition, tailPosition, speed, selectedTrainId]);
 
   return (
     <div className="d-flex">
-      {positionValues.headPosition && timePosition && (
+      {headPosition && (
         <>
           <div className="rounded px-1 train-detail small bg-blue text-white text-nowrap mr-2">
             <div className="font-weight-bold text-uppercase">{t('trainDetails.headPosition')}</div>
-            {positionValues.headPosition && Math.round(positionValues.headPosition.position) / 1000}
+            {headPosition && Math.round(headPosition.position) / 1000}
             km
           </div>
           <div className="rounded px-1 train-detail small bg-cyan text-white text-nowrap mr-2">
             <div className="font-weight-bold text-uppercase">{t('trainDetails.tailPosition')}</div>
-            {positionValues.tailPosition && Math.round(positionValues.tailPosition.position) / 1000}
+            {tailPosition && Math.round(tailPosition.position) / 1000}
             km
           </div>
           {occupancyBounds && (
@@ -86,7 +95,7 @@ export default function TrainDetails() {
           )}
           <div className="rounded px-1 train-detail small bg-pink text-white">
             <div className="font-weight-bold text-uppercase">{t('trainDetails.speed')}</div>
-            {positionValues.speed && Math.round(positionValues.speed.speed)}
+            {speed && Math.round(speed.speed)}
             km/h
           </div>
         </>

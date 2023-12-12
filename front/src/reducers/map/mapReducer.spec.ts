@@ -15,7 +15,7 @@ import {
   updateLayersSettings,
   updateTerrain3DExaggeration,
 } from 'reducers/map';
-import { createStoreWithoutMiddleware } from 'Store';
+import { createStoreWithoutMiddleware } from 'store';
 
 import { describe, expect } from 'vitest';
 

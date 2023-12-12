@@ -4,15 +4,12 @@ import { useDispatch, useSelector } from 'react-redux';
 import {
   updateMustRedraw,
   updateChart,
-  updateTimePositionValues,
   updateSelectedTrainId,
   updateDepartureArrivalTimes,
 } from 'reducers/osrdsimulation/actions';
 import {
   getAllowancesSettings,
-  getPositionValues,
   getSelectedProjection,
-  getTimePosition,
   getPresentSimulation,
   getIsPlaying,
   getSelectedTrain,
@@ -27,8 +24,8 @@ import {
   DispatchUpdateDepartureArrivalTimes,
   DispatchUpdateMustRedraw,
   DispatchUpdateSelectedTrainId,
-  DispatchUpdateTimePositionValues,
 } from './types';
+import { useChartSynchronizer } from '../ChartHelpers/ChartSynchronizer';
 
 /**
  * HOC to provide store data
@@ -40,29 +37,27 @@ function withOSRDData<T extends SpaceTimeChartProps>(
 ): React.ComponentType<T> {
   return (props: T) => {
     const allowancesSettings = useSelector(getAllowancesSettings);
-    const positionValues = useSelector(getPositionValues);
     const selectedTrain = useSelector(getSelectedTrain);
     // implement selector for all selected trains ids
     const selectedProjection = useSelector(getSelectedProjection);
-    const timePosition = useSelector(getTimePosition);
     const simulation = useSelector(getPresentSimulation);
     const isPlaying = useSelector(getIsPlaying);
 
     const dispatch = useDispatch();
 
+    const { updateTimePosition } = useChartSynchronizer();
+
     // Consequence of direct actions by component
-    const onOffsetTimeByDragging = (trains: SimulationReport[], offset: number) => {
+    const onOffsetTimeByDragging = (
+      trains: SimulationReport[],
+      offset: number,
+      timePosition: Date
+    ) => {
       dispatch(persistentUpdateSimulation({ ...simulation, trains }));
       if (timePosition && offset) {
-        const newTimePositionSec = datetime2sec(timePosition) + offset;
-        dispatch(updateTimePositionValues(sec2datetime(newTimePositionSec)));
+        const newTimePosition = sec2datetime(datetime2sec(timePosition) + offset);
+        updateTimePosition(newTimePosition);
       }
-    };
-
-    const dispatchUpdateTimePositionValues: DispatchUpdateTimePositionValues = (
-      newTimePositionValues: Date
-    ) => {
-      dispatch(updateTimePositionValues(newTimePositionValues));
     };
 
     const dispatchUpdateMustRedraw: DispatchUpdateMustRedraw = (newMustRedraw: boolean) => {
@@ -92,15 +87,13 @@ function withOSRDData<T extends SpaceTimeChartProps>(
         dispatchUpdateDepartureArrivalTimes={dispatchUpdateDepartureArrivalTimes}
         dispatchUpdateMustRedraw={dispatchUpdateMustRedraw}
         dispatchUpdateSelectedTrainId={dispatchUpdateSelectedTrainId}
-        dispatchUpdateTimePositionValues={dispatchUpdateTimePositionValues}
+        updateTimePosition={updateTimePosition}
         inputSelectedTrain={selectedTrain}
         // add selected trains ids
         onOffsetTimeByDragging={onOffsetTimeByDragging}
-        positionValues={positionValues}
         selectedProjection={selectedProjection}
         simulation={simulation}
         simulationIsPlaying={isPlaying}
-        timePosition={timePosition}
         {...props}
       />
     );

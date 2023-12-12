@@ -7,6 +7,7 @@ import { updateChart } from 'reducers/osrdsimulation/actions';
 import { SimulationReport } from 'common/api/osrdEditoastApi';
 import { Chart, SimulationD3Scale } from 'reducers/osrdsimulation/types';
 import { getDirection, gridX } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
+import { useChartSynchronizer } from '../ChartHelpers/ChartSynchronizer';
 
 const drawTrain = (
   train: SimulationReport,
@@ -35,10 +36,9 @@ type TimeLineProps = {
   chart: Chart;
   selectedTrainId: number;
   trains: SimulationReport[];
-  timePosition: Date;
 };
 
-const TimeLine = ({ chart, selectedTrainId, trains, timePosition }: TimeLineProps) => {
+const TimeLine = ({ chart, selectedTrainId, trains }: TimeLineProps) => {
   const dispatch = useDispatch();
 
   const ref = useRef<HTMLDivElement>(null);
@@ -72,13 +72,24 @@ const TimeLine = ({ chart, selectedTrainId, trains, timePosition }: TimeLineProp
     [ref]
   );
 
+  const [localTimePosition, setLocalTimePosition] = useState(new Date());
+  useChartSynchronizer(
+    (timePosition) => {
+      setLocalTimePosition(timePosition);
+    },
+    'timeline',
+    []
+  );
+
   const moveTimePosition = (svg: d3.Selection<SVGGElement, unknown, null, undefined>) => {
     const xScale = d3
       .scaleTime()
       .domain(dataRange)
       .range([dimensions.margin.left, dimensions.width - dimensions.margin.right]);
 
-    svg.select('#timePositionTimeLine').attr('transform', `translate(${xScale(timePosition)},0)`);
+    svg
+      .select('#timePositionTimeLine')
+      .attr('transform', `translate(${xScale(localTimePosition)},0)`);
   };
 
   const drawChart = () => {
@@ -142,7 +153,9 @@ const TimeLine = ({ chart, selectedTrainId, trains, timePosition }: TimeLineProp
       .attr('d', d3.symbol().type(d3.symbolTriangle).size(40))
       .attr('transform', `translate(0,${dimensions.height + 8})`);
 
-    svg.select('#timePositionTimeLine').attr('transform', `translate(${xScale(timePosition)},0)`);
+    svg
+      .select('#timePositionTimeLine')
+      .attr('transform', `translate(${xScale(localTimePosition)},0)`);
 
     // draw trains
     trains.map((train) => drawTrain(train, selectedTrainId, xScale, svg, dimensions.height));
@@ -182,7 +195,7 @@ const TimeLine = ({ chart, selectedTrainId, trains, timePosition }: TimeLineProp
     if (svgState) {
       moveTimePosition(svgState);
     }
-  }, [timePosition]);
+  }, [localTimePosition]);
 
   return (
     <div className="timeline">

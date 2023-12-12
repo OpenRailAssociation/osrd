@@ -1,4 +1,4 @@
-import { store } from 'Store';
+import { store } from 'store';
 import { updateFeatureInfoClick } from 'reducers/map';
 import {
   updateOrigin,

@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { createStoreWithoutMiddleware } from 'Store';
+import { createStoreWithoutMiddleware } from 'store';
 import {
   userInitialState,
   loginSuccess,

@@ -2,10 +2,11 @@ import { FaBackward, FaPause, FaPlay, FaStop } from 'react-icons/fa';
 import React, { useState } from 'react';
 import { datetime2time, sec2datetime, time2datetime } from 'utils/timeManipulation';
 import { useDispatch } from 'react-redux';
-import { updateIsPlaying, updateTimePositionValues } from 'reducers/osrdsimulation/actions';
+import { updateIsPlaying } from 'reducers/osrdsimulation/actions';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { SimulationReport } from 'common/api/osrdEditoastApi';
+import { useChartSynchronizer } from './ChartHelpers/ChartSynchronizer';
 
 // transform a speed ratio (X2 X10 X20, etc.) to interval time & step to bypass
 const factor2ms = (factor: number) => {
@@ -16,22 +17,29 @@ const factor2ms = (factor: number) => {
 
 type TimeButtonsProps = {
   selectedTrain: SimulationReport;
-  timePosition: Date;
 };
 
-const TimeButtons = ({ selectedTrain, timePosition }: TimeButtonsProps) => {
+const TimeButtons = ({ selectedTrain }: TimeButtonsProps) => {
   const dispatch = useDispatch();
 
   const [playInterval, setPlayInterval] = useState<NodeJS.Timeout | undefined>(undefined);
   const [playReverse, setPlayReverse] = useState(false);
   const [simulationSpeed, setSimulationSpeed] = useState(1);
+  const [localTimePosition, setLocalTimePosition] = useState<Date>(new Date());
+
+  const { updateTimePosition } = useChartSynchronizer(
+    (timePosition) => {
+      setLocalTimePosition(timePosition);
+    },
+    'time-buttons',
+    []
+  );
 
   const stop = () => {
     clearInterval(playInterval);
     setPlayInterval(undefined);
     if (selectedTrain) {
-      const finalDate = sec2datetime(selectedTrain.base.stops[0].time);
-      dispatch(updateTimePositionValues(finalDate));
+      updateTimePosition(sec2datetime(selectedTrain.base.stops[0].time));
     }
     dispatch(updateIsPlaying(false));
   };
@@ -46,14 +54,14 @@ const TimeButtons = ({ selectedTrain, timePosition }: TimeButtonsProps) => {
     clearInterval(playInterval); // Kill interval playing if concerned
     setPlayInterval(undefined);
     const factor = factor2ms(simulationSpeedLocal);
-    let i = timePosition.getTime() / 1000;
+    let i = localTimePosition.getTime() / 1000;
     const playIntervalLocal = setInterval(() => {
       if (playReverseLocal) {
         i -= factor.steps;
       } else {
         i += factor.steps;
       }
-      dispatch(updateTimePositionValues(new Date(i * 1000)));
+      updateTimePosition(new Date(i * 1000));
     }, factor.ms);
     setPlayInterval(playIntervalLocal);
     dispatch(updateIsPlaying(true));
@@ -76,7 +84,7 @@ const TimeButtons = ({ selectedTrain, timePosition }: TimeButtonsProps) => {
   const changeTimePosition = (newTimePosition: string) => {
     const newTimePositionDate = time2datetime(newTimePosition);
     if (newTimePositionDate) {
-      dispatch(updateTimePositionValues(newTimePositionDate));
+      updateTimePosition(newTimePositionDate);
     }
   };
 
@@ -87,7 +95,7 @@ const TimeButtons = ({ selectedTrain, timePosition }: TimeButtonsProps) => {
           noMargin
           type="time"
           id="simulation-time"
-          value={datetime2time(timePosition)}
+          value={datetime2time(localTimePosition)}
           onChange={(e) => changeTimePosition(e.target.value)}
           sm
         />

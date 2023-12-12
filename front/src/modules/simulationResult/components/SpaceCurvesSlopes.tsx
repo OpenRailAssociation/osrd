@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import * as d3 from 'd3';
 import { CgLoadbar } from 'react-icons/cg';
 
@@ -30,11 +30,10 @@ import {
   SpeedSpaceChart,
   PositionSpeedTime,
   Train,
-  PositionsSpeedTimes,
 } from 'reducers/osrdsimulation/types';
 import { dateIsInRange } from 'utils/date';
-import { updateTimePositionValues } from 'reducers/osrdsimulation/actions';
 import { getIsPlaying } from 'reducers/osrdsimulation/selectors';
+import { useChartSynchronizer } from './ChartHelpers/ChartSynchronizer';
 
 const CHART_ID = 'SpaceCurvesSlopes';
 
@@ -91,22 +90,17 @@ export type SpaceCurvesSlopesData = {
 
 type SpaceCurvesSlopesProps = {
   initialHeight: number;
-  positionValues: PositionsSpeedTimes<Date>;
   selectedTrain: Train;
-  timePosition: Date;
   sharedXScaleDomain?: PositionScaleDomain;
   setSharedXScaleDomain?: React.Dispatch<React.SetStateAction<PositionScaleDomain>>;
 };
 
 const SpaceCurvesSlopes = ({
   initialHeight,
-  positionValues,
   selectedTrain,
-  timePosition,
   sharedXScaleDomain,
   setSharedXScaleDomain,
 }: SpaceCurvesSlopesProps) => {
-  const dispatch = useDispatch();
   const simulationIsPlaying = useSelector(getIsPlaying);
 
   const [chart, setChart] = useState<SpeedSpaceChart | undefined>(undefined);
@@ -115,10 +109,6 @@ const SpaceCurvesSlopes = ({
 
   const ref = useRef<HTMLDivElement>(null);
   const rotate = false;
-
-  const dispatchUpdateTimePositionValues = (newTimePositionValue: Date) => {
-    dispatch(updateTimePositionValues(newTimePositionValue));
-  };
 
   const trainData: SpaceCurvesSlopesData = useMemo(() => {
     // speeds (needed for enableInteractivity)
@@ -160,6 +150,16 @@ const SpaceCurvesSlopes = ({
     }
     return [new Date(), new Date()];
   }, [chart]);
+
+  const { updateTimePosition } = useChartSynchronizer(
+    (timePosition, positionValues) => {
+      if (dateIsInRange(timePosition, timeScaleRange)) {
+        traceVerticalLine(chart, CHART_AXES.SPACE_GRADIENT, positionValues, rotate, timePosition);
+      }
+    },
+    'space-curve',
+    [chart, rotate, timeScaleRange]
+  );
 
   const createChart = (): SpeedSpaceChart => {
     d3.select(`#${CHART_ID}`).remove();
@@ -262,7 +262,7 @@ const SpaceCurvesSlopes = ({
       rotate,
       setChart,
       simulationIsPlaying,
-      dispatchUpdateTimePositionValues,
+      updateTimePosition,
       timeScaleRange,
       setSharedXScaleDomain,
       [CHART_AXES.SPACE_GRADIENT, CHART_AXES.SPACE_RADIUS, CHART_AXES.SPACE_HEIGHT]
@@ -293,12 +293,6 @@ const SpaceCurvesSlopes = ({
   }, [sharedXScaleDomain]);
 
   useEffect(() => setHeight(initialHeight), [initialHeight]);
-
-  useEffect(() => {
-    if (dateIsInRange(timePosition, timeScaleRange)) {
-      traceVerticalLine(chart, CHART_AXES.SPACE_GRADIENT, positionValues, rotate, timePosition);
-    }
-  }, [positionValues, timePosition]);
 
   useEffect(() => {
     window.addEventListener('resize', windowResize);

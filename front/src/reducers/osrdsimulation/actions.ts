@@ -1,4 +1,7 @@
 import { Dispatch } from 'redux';
+
+import type { GetState } from 'store';
+import type { ChartSynchronizer } from 'modules/simulationResult/components/ChartHelpers/ChartSynchronizer';
 import { SimulationSnapshot, OsrdSimulationState, Chart } from './types';
 
 // Action Types
@@ -74,14 +77,6 @@ export function updateMustRedraw(mustRedraw: OsrdSimulationState['mustRedraw']) 
     });
   };
 }
-export function updatePositionValues(positionValues: OsrdSimulationState['positionValues']) {
-  return (dispatch: Dispatch) => {
-    dispatch({
-      type: UPDATE_POSITION_VALUES,
-      positionValues,
-    });
-  };
-}
 export function updateSelectedProjection(
   selectedProjection: OsrdSimulationState['selectedProjection']
 ) {
@@ -92,14 +87,17 @@ export function updateSelectedProjection(
     });
   };
 }
+
 export function updateSelectedTrainId(selectedTrainId: OsrdSimulationState['selectedTrainId']) {
-  return (dispatch: Dispatch) => {
+  return (dispatch: Dispatch, _: GetState, chartSynchronizer: ChartSynchronizer) => {
+    chartSynchronizer.computePositionValues(selectedTrainId);
     dispatch({
       type: UPDATE_SELECTED_TRAIN_ID,
       selectedTrainId,
     });
   };
 }
+
 export function updateSimulation(simulation: SimulationSnapshot) {
   return (dispatch: Dispatch) => {
     dispatch({
@@ -126,14 +124,7 @@ export function updateSignalBase(signalBase: OsrdSimulationState['signalBase']) 
     });
   };
 }
-export function updateTimePosition(timePosition: OsrdSimulationState['timePosition']) {
-  return (dispatch: Dispatch) => {
-    dispatch({
-      type: UPDATE_TIME_POSITION,
-      timePosition,
-    });
-  };
-}
+
 export function updateDepartureArrivalTimes(
   newDepartureArrivalTimes: OsrdSimulationState['departureArrivalTimes']
 ) {
@@ -151,18 +142,6 @@ export function updateConsolidatedSimulation(
     dispatch({
       type: UPDATE_CONSOLIDATED_SIMULATION,
       consolidatedSimulation,
-    });
-  };
-}
-
-/**
- * Update timePosition in the store and interpolate positionValue from timePosition
- */
-export function updateTimePositionValues(timePosition: OsrdSimulationState['timePosition']) {
-  return (dispatch: Dispatch) => {
-    dispatch({
-      type: UPDATE_TIME_POSITION_VALUES,
-      timePosition,
     });
   };
 }

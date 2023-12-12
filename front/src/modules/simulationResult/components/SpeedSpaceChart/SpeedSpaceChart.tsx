@@ -17,23 +17,16 @@ import {
   createChart,
   drawTrain,
 } from 'modules/simulationResult/components/SpeedSpaceChart/d3Helpers';
-import type {
-  PositionsSpeedTimes,
-  SpeedSpaceChart,
-  SpeedSpaceSettingsType,
-  Train,
-} from 'reducers/osrdsimulation/types';
+import type { SpeedSpaceChart, SpeedSpaceSettingsType, Train } from 'reducers/osrdsimulation/types';
 import { getIsPlaying, getSpeedSpaceSettings } from 'reducers/osrdsimulation/selectors';
-import {
-  updateSpeedSpaceSettings,
-  updateTimePositionValues,
-} from 'reducers/osrdsimulation/actions';
+import { updateSpeedSpaceSettings } from 'reducers/osrdsimulation/actions';
 import { LightRollingStock, SimulationReport } from 'common/api/osrdEditoastApi';
 import { dateIsInRange } from 'utils/date';
 import SpeedSpaceSettings from './SpeedSpaceSettings';
 import ElectricalProfilesLegend from './ElectricalProfilesLegend';
 import prepareData from './prepareData';
 import { interpolateOnPosition } from '../ChartHelpers/ChartHelpers';
+import { useChartSynchronizer } from '../ChartHelpers/ChartSynchronizer';
 
 const CHART_ID = 'SpeedSpaceChart';
 const CHART_MIN_HEIGHT = 250;
@@ -46,9 +39,7 @@ const SETTINGS_TO_AXIS = {
 export type SpeedSpaceChartProps = {
   initialHeight: number;
   onSetChartBaseHeight: (chartBaseHeight: number) => void;
-  positionValues: PositionsSpeedTimes<Date>;
   selectedTrain: SimulationReport | Train;
-  timePosition: Date;
   trainRollingStock?: LightRollingStock;
   sharedXScaleDomain?: PositionScaleDomain;
   setSharedXScaleDomain?: React.Dispatch<React.SetStateAction<PositionScaleDomain>>;
@@ -67,8 +58,6 @@ export default function SpeedSpaceChart({
   initialHeight,
   onSetChartBaseHeight,
   selectedTrain,
-  timePosition,
-  positionValues,
   trainRollingStock,
   sharedXScaleDomain,
   setSharedXScaleDomain,
@@ -90,10 +79,6 @@ export default function SpeedSpaceChart({
 
   const dispatch = useDispatch();
 
-  const dispatchUpdateTimePositionValues = (newTimePositionValues: Date) => {
-    dispatch(updateTimePositionValues(newTimePositionValues));
-  };
-
   const toggleSetting = (settings: SpeedSpaceSettingsType) => {
     dispatch(updateSpeedSpaceSettings(settings));
   };
@@ -114,6 +99,22 @@ export default function SpeedSpaceChart({
     }
     return [new Date(), new Date()];
   }, [chart]);
+
+  /**
+   * coordinate guidelines and pointers with other graphs
+   *
+   * when timePosition or positionValues are updated by moving the mouse on an other graph,
+   * the guidelines and pointers are updated on the SpeedSpaceChart too
+   */
+  const { updateTimePosition } = useChartSynchronizer(
+    (newTimePosition, positionValues) => {
+      if (dateIsInRange(newTimePosition, timeScaleRange)) {
+        traceVerticalLine(chart, CHART_AXES.SPACE_SPEED, positionValues, rotate, newTimePosition);
+      }
+    },
+    'speed-space-chart',
+    [chart, rotate, timeScaleRange]
+  );
 
   /**
    * DRAW AND REDRAW TRAIN
@@ -222,24 +223,12 @@ export default function SpeedSpaceChart({
       rotate,
       setChart,
       simulationIsPlaying,
-      dispatchUpdateTimePositionValues,
+      updateTimePosition,
       timeScaleRange,
       setSharedXScaleDomain,
       additionalAxes
     );
   }, [chart, additionalAxes]);
-
-  /**
-   * coordinate guidelines and pointers with other graphs
-   *
-   * when timePosition or positionValues are updated by moving the mouse on an other graph,
-   * the guidelines and pointers are updated on the SpeedSpaceChart too
-   */
-  useEffect(() => {
-    if (dateIsInRange(timePosition, timeScaleRange)) {
-      traceVerticalLine(chart, CHART_AXES.SPACE_SPEED, positionValues, rotate, timePosition);
-    }
-  }, [chart, positionValues, timePosition]);
 
   /**
    * redraw the graph when resized horizontally (window resized)

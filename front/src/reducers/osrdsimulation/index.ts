@@ -4,18 +4,13 @@ import { noop } from 'lodash';
 
 import createTrain from 'modules/simulationResult/components/SpaceTimeChart/createTrain';
 import {
-  LIST_VALUES,
   SIGNAL_BASE_DEFAULT,
   CHART_AXES,
 } from 'modules/simulationResult/components/simulationResultsConsts';
-import {
-  interpolateOnTime,
-  makeTrainListWithAllTrainsOffset,
-} from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
+import { makeTrainListWithAllTrainsOffset } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
 import {
   SPEED_SPACE_SETTINGS_KEYS,
   OsrdSimulationState,
-  SimulationTrain,
   Train,
 } from 'reducers/osrdsimulation/types';
 import { SimulationReport } from 'common/api/osrdEditoastApi';
@@ -30,16 +25,13 @@ import {
   UPDATE_IS_UPDATING,
   UPDATE_ALLOWANCES_SETTINGS,
   UPDATE_MUST_REDRAW,
-  UPDATE_POSITION_VALUES,
   UPDATE_SELECTED_PROJECTION,
   UPDATE_SELECTED_TRAIN_ID,
   UPDATE_SIMULATION,
   UPDATE_SPEEDSPACE_SETTINGS,
   UPDATE_SIGNAL_BASE,
-  UPDATE_TIME_POSITION,
   UPDATE_DEPARTURE_ARRIVAL_TIMES,
   UPDATE_CONSOLIDATED_SIMULATION,
-  UPDATE_TIME_POSITION_VALUES,
   REDO_SIMULATION,
   UNDO_SIMULATION,
 } from './actions';
@@ -52,7 +44,6 @@ export const initialState: OsrdSimulationState = {
   isUpdating: false,
   allowancesSettings: undefined,
   mustRedraw: true,
-  positionValues: {} as OsrdSimulationState['positionValues'],
   selectedProjection: undefined,
   selectedTrainId: undefined,
   speedSpaceSettings: {
@@ -64,7 +55,6 @@ export const initialState: OsrdSimulationState = {
     [SPEED_SPACE_SETTINGS_KEYS.POWER_RESTRICTION]: false,
   },
   signalBase: SIGNAL_BASE_DEFAULT,
-  timePosition: new Date(),
   consolidatedSimulation: [],
   departureArrivalTimes: [],
   displaySimulation: false,
@@ -78,7 +68,6 @@ export const initialState: OsrdSimulationState = {
 // eslint-disable-next-line default-param-last
 export default function reducer(inputState: OsrdSimulationState | undefined, action: AnyAction) {
   const state = inputState || initialState;
-  let currentTrainSimulation;
   return produce(state, (draft) => {
     if (!state.simulation) draft.simulation = undoableSimulation(state.simulation, action);
     switch (action.type) {
@@ -100,24 +89,11 @@ export default function reducer(inputState: OsrdSimulationState | undefined, act
       case UPDATE_MUST_REDRAW:
         draft.mustRedraw = action.mustRedraw;
         break;
-      case UPDATE_POSITION_VALUES:
-        draft.positionValues = action.positionValues;
-        break;
       case UPDATE_SELECTED_PROJECTION:
         draft.selectedProjection = action.selectedProjection;
         break;
       case UPDATE_SELECTED_TRAIN_ID:
         draft.selectedTrainId = action.selectedTrainId;
-        currentTrainSimulation = state.consolidatedSimulation.find(
-          (consolidatedSimulation: SimulationTrain) =>
-            consolidatedSimulation.id === draft.selectedTrainId
-        );
-        draft.positionValues = interpolateOnTime(
-          currentTrainSimulation,
-          CHART_AXES.SPACE_TIME,
-          LIST_VALUES.SPACE_TIME,
-          state.timePosition
-        );
         break;
       case UPDATE_DEPARTURE_ARRIVAL_TIMES:
         draft.departureArrivalTimes = action.departureArrivalTimes;
@@ -152,27 +128,9 @@ export default function reducer(inputState: OsrdSimulationState | undefined, act
       case UPDATE_SIGNAL_BASE:
         draft.signalBase = action.signalBase;
         break;
-      case UPDATE_TIME_POSITION:
-        draft.timePosition = action.timePosition;
-        break;
       case UPDATE_CONSOLIDATED_SIMULATION:
         draft.consolidatedSimulation = action.consolidatedSimulation;
         break;
-      case UPDATE_TIME_POSITION_VALUES: {
-        draft.timePosition = action.timePosition;
-        // position value will be computed depending on current data simulation
-        currentTrainSimulation = state.consolidatedSimulation.find(
-          (consolidatedSimulation: SimulationTrain) =>
-            consolidatedSimulation.id === state.selectedTrainId
-        );
-        draft.positionValues = interpolateOnTime(
-          currentTrainSimulation,
-          CHART_AXES.SPACE_TIME,
-          LIST_VALUES.SPACE_TIME,
-          action.timePosition
-        );
-        break;
-      }
       default:
         break;
     }

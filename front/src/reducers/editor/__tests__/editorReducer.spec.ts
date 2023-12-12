@@ -1,5 +1,5 @@
 import { EditorState } from 'applications/editor/tools/types';
-import { createStoreWithoutMiddleware } from 'Store';
+import { createStoreWithoutMiddleware } from 'store';
 import editorTestDataBuilder from './editorTestDataBuilder';
 import {
   editorInitialState,

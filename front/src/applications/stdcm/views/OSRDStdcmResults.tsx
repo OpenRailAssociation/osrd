@@ -3,18 +3,13 @@ import SpaceTimeChart from 'modules/simulationResult/components/SpaceTimeChart/w
 import SpeedSpaceChart from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChart';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
-import {
-  getOsrdSimulation,
-  getPresentSimulation,
-  getSelectedTrain,
-} from 'reducers/osrdsimulation/selectors';
+import { getPresentSimulation, getSelectedTrain } from 'reducers/osrdsimulation/selectors';
 import { AllowancesSettings } from 'reducers/osrdsimulation/types';
 import { SimulationReport } from 'common/api/osrdEditoastApi';
 
 const OSRDStcdmResults = () => {
   const { t } = useTranslation(['translation', 'operationalStudies/manageTrainSchedule']);
 
-  const { positionValues, timePosition } = useSelector(getOsrdSimulation);
   const selectedTrain = useSelector(getSelectedTrain);
   const simulation = useSelector(getPresentSimulation);
 
@@ -83,8 +78,6 @@ const OSRDStcdmResults = () => {
                   initialHeight={450}
                   onSetChartBaseHeight={setSpeedSpaceChartHeight}
                   selectedTrain={selectedTrain}
-                  positionValues={positionValues}
-                  timePosition={timePosition}
                 />
               </div>
             )}

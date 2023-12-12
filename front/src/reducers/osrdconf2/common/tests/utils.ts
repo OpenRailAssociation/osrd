@@ -1,7 +1,7 @@
 import { OsrdConfState, PointOnMap } from 'applications/operationalStudies/consts';
 import { Allowance } from 'common/api/osrdEditoastApi';
 import { omit } from 'lodash';
-import { createStoreWithoutMiddleware } from 'Store';
+import { createStoreWithoutMiddleware } from 'store';
 import { defaultCommonConf } from '..';
 import { simulationConfSliceType } from '../../simulationConf';
 import { stdcmConfSliceType } from '../../stdcmConf';
