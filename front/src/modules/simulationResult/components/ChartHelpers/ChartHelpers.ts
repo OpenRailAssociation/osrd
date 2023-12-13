@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import * as d3 from 'd3';
-import { has, last } from 'lodash';
+import { has, last, memoize } from 'lodash';
 
-import { durationInSeconds, sec2time } from 'utils/timeManipulation';
+import { datetime2time, durationInSeconds, sec2time } from 'utils/timeManipulation';
 // import/no-cycle is disabled because this func call will be removed by refacto
 // eslint-disable-next-line
 import {
@@ -15,9 +15,9 @@ import {
   Train,
   Stop,
   SimulationD3Scale,
+  PositionsSpeedTimes,
 } from 'reducers/osrdsimulation/types';
 import {
-  AllListValues,
   ChartAxes,
   ListValues,
   TIME,
@@ -280,69 +280,99 @@ export const interpolateOnPosition = (
 
 // Interpolation of cursor based on time position
 // backend is giving only a few number of points. we need to interpolate values between these points.
+const interpolateCache = new WeakMap();
 export const interpolateOnTime = <
   SimulationData extends Partial<{ [Key in ListValues[number]]: unknown }>,
   Time extends Date | number
 >(
   dataSimulation: SimulationData | undefined,
   keyValues: ChartAxes,
-  listValues: ListValues,
-  timePositionLocal: Time
+  listValues: ListValues
 ) => {
-  const xAxis = getAxis(keyValues, 'x', false);
-
-  type ObjectWithXAxis = {
-    [K in XAxis]?: K extends 'time' ? Time : number;
-  } & {
-    [K in string]?: K extends XAxis ? never : unknown;
-  };
-  const bisect = d3.bisector<ObjectWithXAxis, Time>((d) => d[xAxis]! as Time).left;
-  const positionInterpolated = {} as Record<AllListValues, PositionSpeedTime<Time>>;
-
-  listValues.forEach((listValue) => {
-    let bisection: [ObjectWithXAxis, ObjectWithXAxis] | undefined;
-    if (dataSimulation && has(dataSimulation, listValue)) {
-      // not array of array
-      if (listValue === 'speed' || listValue === 'speeds') {
-        const currentData = dataSimulation[listValue] as ObjectWithXAxis[];
-        if (currentData[0]) {
-          const timeBisect = d3.bisector<ObjectWithXAxis, Time>((d) => d.time as Time).left;
-          const index = timeBisect(currentData, timePositionLocal, 1);
-          bisection = [currentData[index - 1], currentData[index]];
-        }
-      } else {
-        // Array of array
-        const currentData = dataSimulation[listValue] as ObjectWithXAxis[][];
-        currentData.forEach((section) => {
-          const index = bisect(section, timePositionLocal, 1);
-          const firstXValue = section[0] ? section[0][xAxis] : undefined;
-          if (index !== section.length && firstXValue && timePositionLocal >= firstXValue) {
-            bisection = [section[index - 1], section[index]];
+  if (dataSimulation) {
+    if (!interpolateCache.has(dataSimulation)) {
+      const newInterpolate = memoize(
+        specificInterpolateOnTime(dataSimulation, keyValues, listValues),
+        (timePosition: Date | number) => {
+          if (typeof timePosition === 'number') {
+            return timePosition;
           }
-        });
-      }
-      if (bisection && bisection[1] && bisection[1].time) {
-        const bisec0 = bisection[0];
-        const bisec1 = bisection[1];
-        if (bisec0.time && bisec0.position && bisec1.time && bisec1.position) {
-          const duration = Number(bisec1.time) - Number(bisec0.time);
-          const timePositionFromTime = Number(timePositionLocal) - Number(bisec0.time);
-          const proportion = timePositionFromTime / duration;
-          positionInterpolated[listValue] = {
-            position: d3.interpolateNumber(bisec0.position, bisec1.position)(proportion),
-            speed:
-              bisec0.speed && bisec1.speed
-                ? d3.interpolateNumber(bisec0.speed as number, bisec1.speed as number)(proportion) *
-                  3.6
-                : NaN,
-            time: timePositionLocal,
-          };
+          return datetime2time(timePosition);
+        }
+      );
+      interpolateCache.set(dataSimulation, newInterpolate);
+    }
+    return interpolateCache.get(dataSimulation) as (time: Time) => PositionsSpeedTimes<Time>;
+  }
+  return specificInterpolateOnTime(dataSimulation, keyValues, listValues);
+};
+
+const specificInterpolateOnTime =
+  <
+    SimulationData extends Partial<{ [Key in ListValues[number]]: unknown }>,
+    Time extends Date | number
+  >(
+    dataSimulation: SimulationData | undefined,
+    keyValues: ChartAxes,
+    listValues: ListValues
+  ) =>
+  (timePositionLocal: Time) => {
+    const xAxis = getAxis(keyValues, 'x', false);
+
+    type ObjectWithXAxis = {
+      [K in XAxis]?: K extends 'time' ? Time : number;
+    } & {
+      [K in string]?: K extends XAxis ? never : unknown;
+    };
+    const bisect = d3.bisector<ObjectWithXAxis, Time>((d) => d[xAxis]! as Time).left;
+    const positionInterpolated = {} as PositionsSpeedTimes<Time>;
+
+    listValues.forEach((listValue) => {
+      let bisection: [ObjectWithXAxis, ObjectWithXAxis] | undefined;
+      if (dataSimulation && has(dataSimulation, listValue)) {
+        // not array of array
+        if (listValue === 'speed' || listValue === 'speeds') {
+          const currentData = dataSimulation[listValue] as ObjectWithXAxis[];
+          if (currentData[0]) {
+            const timeBisect = d3.bisector<ObjectWithXAxis, Time>((d) => d.time as Time).left;
+            const index = timeBisect(currentData, timePositionLocal, 1);
+            bisection = [currentData[index - 1], currentData[index]];
+          }
+        } else {
+          // Array of array
+          const currentData = dataSimulation[listValue] as ObjectWithXAxis[][];
+          currentData.forEach((section) => {
+            const index = bisect(section, timePositionLocal, 1);
+            const firstXValue = section[0] ? section[0][xAxis] : undefined;
+            if (index !== section.length && firstXValue && timePositionLocal >= firstXValue) {
+              bisection = [section[index - 1], section[index]];
+            }
+          });
+        }
+        if (bisection && bisection[1] && bisection[1].time) {
+          const bisec0 = bisection[0];
+          const bisec1 = bisection[1];
+          if (bisec0.time && bisec0.position && bisec1.time && bisec1.position) {
+            const duration = Number(bisec1.time) - Number(bisec0.time);
+            const timePositionFromTime = Number(timePositionLocal) - Number(bisec0.time);
+            const proportion = timePositionFromTime / duration;
+            positionInterpolated[listValue] = {
+              position: d3.interpolateNumber(bisec0.position, bisec1.position)(proportion),
+              speed:
+                bisec0.speed && bisec1.speed
+                  ? d3.interpolateNumber(
+                      bisec0.speed as number,
+                      bisec1.speed as number
+                    )(proportion) * 3.6
+                  : NaN,
+              time: timePositionLocal,
+            };
+          }
         }
       }
-    }
-  });
-  return positionInterpolated;
-};
+    });
+    return positionInterpolated;
+  };
 
 export const isSpaceTimeChart = (keyValues: ChartAxes) => keyValues[0] === TIME;
 

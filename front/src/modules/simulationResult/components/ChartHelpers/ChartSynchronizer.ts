@@ -62,9 +62,8 @@ export class ChartSynchronizer {
     this.positionValues = interpolateOnTime(
       currentTrainSimulation,
       CHART_AXES.SPACE_TIME,
-      LIST_VALUES.SPACE_TIME,
-      this.timePosition
-    );
+      LIST_VALUES.SPACE_TIME
+    )(this.timePosition) as PositionValues;
   }
 
   notifyAll(timePosition: Date) {

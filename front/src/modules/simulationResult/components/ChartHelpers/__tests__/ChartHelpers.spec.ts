@@ -27,9 +27,8 @@ describe('interpolateOnTime', () => {
       const result = interpolateOnTime(
         dataSimulation,
         CHART_AXES.SPACE_TIME,
-        LIST_VALUES.REGIME,
-        time
-      );
+        LIST_VALUES.REGIME
+      )(time);
       expect(result).toStrictEqual({
         head_positions: { position: 1870.9890488984856, speed: NaN, time },
         tail_positions: { position: 1471.3290488984856, speed: NaN, time },
@@ -48,9 +47,8 @@ describe('interpolateOnTime', () => {
       const result = interpolateOnTime(
         dataSimulation,
         CHART_AXES.SPACE_TIME,
-        LIST_VALUES.SPACE_TIME,
-        time
-      );
+        LIST_VALUES.SPACE_TIME
+      )(time);
       expect(result).toStrictEqual({
         headPosition: {
           position: 16662.376939865702,
