@@ -295,7 +295,7 @@ export const enableInteractivity = <
 
   const mousemove = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     if (!simulationIsPlaying) {
-      let immediatePositionsValuesForPointer: ReturnType<typeof interpolateOnTime>;
+      let immediatePositionsValuesForPointer: ReturnType<ReturnType<typeof interpolateOnTime>>;
       let timePositionLocal: Date | null;
       if (isSpaceTimeChart(keyValues)) {
         // SpaceTimeChart
@@ -308,9 +308,8 @@ export const enableInteractivity = <
         immediatePositionsValuesForPointer = interpolateOnTime(
           selectedTrainData,
           keyValues,
-          LIST_VALUES.SPACE_TIME,
-          timePositionLocal
-        );
+          LIST_VALUES.SPACE_TIME
+        )(timePositionLocal);
       } else {
         // SpeedSpaceChart or SpaceCurvesSlopesChart
         const positionLocal = (
@@ -331,9 +330,8 @@ export const enableInteractivity = <
         immediatePositionsValuesForPointer = interpolateOnTime(
           selectedTrainData,
           keyValues,
-          LIST_VALUES.SPACE_SPEED,
-          timePositionLocal
-        );
+          LIST_VALUES.SPACE_SPEED
+        )(timePositionLocal);
 
         // GEV prepareData func multiply speeds by 3.6. We need to normalize that to make a convenitn pointer update
         LIST_VALUES.SPACE_SPEED.forEach((name) => {

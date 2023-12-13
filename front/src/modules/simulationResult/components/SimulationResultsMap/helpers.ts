@@ -108,9 +108,8 @@ export function getSimulationHoverPositions(
         const interpolation = interpolateOnTime(
           trainRegime,
           CHART_AXES.SPACE_TIME,
-          LIST_VALUES.REGIME,
-          timePosition
-        ) as Record<string, PositionSpeedTime<Date>>;
+          LIST_VALUES.REGIME
+        )(timePosition) as Record<string, PositionSpeedTime<Date>>;
         if (interpolation.head_positions && interpolation.speeds) {
           concernedTrains.push({
             ...interpolation,
