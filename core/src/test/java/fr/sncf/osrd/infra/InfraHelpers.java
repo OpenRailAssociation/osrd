@@ -6,10 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.*;
-import com.google.common.graph.ImmutableNetwork;
-import com.google.common.graph.Network;
-import com.google.common.graph.NetworkBuilder;
-import com.google.common.graph.Traverser;
+import com.google.common.graph.*;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.reservation.DiDetector;
@@ -46,8 +43,10 @@ public class InfraHelpers {
                 .immutable();
         for (var n : g.nodes())
             builder.addNode(n);
-        for (var e : g.edges())
-            builder.addEdge(g.incidentNodes(e), e);
+        for (var e : g.edges()) {
+            var pair = g.incidentNodes(e);
+            builder.addEdge(EndpointPair.unordered(pair.nodeU(), pair.nodeV()), e);
+        }
         return builder.build();
     }
 
