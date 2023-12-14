@@ -66,7 +66,7 @@ public class InfraManager extends APIClient {
         }
 
         public final boolean isStable;
-        private InfraStatus[] transitions;
+        private InfraStatus[] transitions = new InfraStatus[]{};
 
         boolean canTransitionTo(InfraStatus newStatus) {
             for (var status : transitions)

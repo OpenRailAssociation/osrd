@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /** An oriented view on a track range. Can be used to iterate over its content */
-public class TrackRangeView {
+public final class TrackRangeView {
     /** Start of the range on the original undirected track (begin &lt; end) */
     public final double begin;
     /** End of the range on the original undirected track (begin &lt; end) */

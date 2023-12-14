@@ -67,7 +67,7 @@ public class ResultTrain {
     /** A SpacingRequirement represents a requirement for a zone to be free between
      * the given times in order for the train to process unimpeded.
      */
-    public static class SpacingRequirement {
+    public static final class SpacingRequirement {
         public String zone;
         @Json(name = "begin_time")
         public double beginTime;

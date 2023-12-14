@@ -1,6 +1,7 @@
 package fr.sncf.osrd.api;
 
 import com.squareup.moshi.JsonDataException;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.external_generated_inputs.ElectricalProfileMapping;
 import fr.sncf.osrd.railjson.schema.external_generated_inputs.RJSElectricalProfileSet;
 import fr.sncf.osrd.reporting.exceptions.ErrorType;
@@ -91,6 +92,7 @@ public class ElectricalProfileSetManager extends APIClient {
     }
 
 
+    @SuppressFBWarnings("UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR")
     protected static class CacheEntry {
         protected CacheStatus status;
         private ElectricalProfileMapping mapping;
@@ -106,6 +108,7 @@ public class ElectricalProfileSetManager extends APIClient {
         }
     }
 
+    @SuppressFBWarnings("UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR")
     protected enum CacheStatus {
         INITIALIZING,
         DOWNLOADING,

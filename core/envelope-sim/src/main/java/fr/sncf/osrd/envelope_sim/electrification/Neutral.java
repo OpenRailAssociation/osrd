@@ -5,7 +5,7 @@ import java.util.Objects;
 /**
  * Neutral electrification conditions at a point in the path
  */
-public non-sealed class Neutral implements Electrification {
+public final class Neutral implements Electrification {
     /** Whether the pantograph should be lowered */
     public boolean lowerPantograph;
 

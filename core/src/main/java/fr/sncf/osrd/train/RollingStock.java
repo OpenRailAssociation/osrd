@@ -21,7 +21,7 @@ import java.util.Set;
  * There must be a RollingStock instance per train on the network.
  */
 @SuppressFBWarnings({ "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD" })
-public class RollingStock implements PhysicsRollingStock {
+public final class RollingStock implements PhysicsRollingStock {
     private static final TractiveEffortPoint[] COASTING_CURVE =
             { new TractiveEffortPoint(0, 0), new TractiveEffortPoint(1, 0) };
 
@@ -93,7 +93,7 @@ public class RollingStock implements PhysicsRollingStock {
      * Associates a speed to a force.
      * https://en.wikipedia.org/wiki/Tractive_force#Tractive_effort_curves
      */
-    protected final Map<String, ModeEffortCurves> modes;
+    private final Map<String, ModeEffortCurves> modes;
 
     private final String defaultMode;
     public final String basePowerClass;

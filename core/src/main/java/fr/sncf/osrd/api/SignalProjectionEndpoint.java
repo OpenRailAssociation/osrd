@@ -5,6 +5,7 @@ import static fr.sncf.osrd.api.pathfinding.PathPropUtilsKt.makeChunkPath;
 import com.squareup.moshi.Json;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
@@ -75,6 +76,7 @@ public class SignalProjectionEndpoint implements Take {
 
     }
 
+    @SuppressFBWarnings("UWF_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD")
     public static class SignalProjectionRequest {
         /**
          * Infra id
@@ -100,6 +102,7 @@ public class SignalProjectionEndpoint implements Take {
         public List<ResultTrain.ZoneUpdate> zoneUpdates;
     }
 
+    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     public static class SignalProjectionResult {
         public static final JsonAdapter<SignalProjectionResult> adapter = new Moshi
                 .Builder()
