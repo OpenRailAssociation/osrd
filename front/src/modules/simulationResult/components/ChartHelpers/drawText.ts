@@ -15,6 +15,7 @@ const drawText = (
     .attr('class', `curve-label ${isSelected && 'selected'}`)
     .attr('x', chart.x(x))
     .attr('y', direction ? chart.y(y) + 15 : chart.y(y) - 5)
+    .datum({ x, y, direction })
     .text(text);
 };
 
