@@ -198,7 +198,12 @@ const updateChart = <
       .attr('x', (d) => newX(d as number));
   }
 
-  chart.drawZone.selectAll('.curve-label').attr('transform', event.transform.toString());
+  chart.drawZone
+    .selectAll<SVGTextElement, { x: Date; y: number; direction: boolean }>('.curve-label')
+    .attr('x', (d) => newX(d.x))
+    .attr('y', (d) =>
+      d.direction ? newY(d.y) + event.transform.k * 15 : newY(d.y) - event.transform.k * 5
+    );
 
   return { newX, newY };
 };
