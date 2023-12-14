@@ -18,7 +18,7 @@ mod switch_type;
 pub mod track_section;
 pub mod utils;
 
-pub use buffer_stop::{BufferStop, BufferStopCache, BufferStopExtension};
+pub use buffer_stop::{BufferStop, BufferStopCache};
 pub use catenary::Catenary;
 pub use detector::{Detector, DetectorCache};
 pub use errors::{InfraError, InfraErrorType};
@@ -44,6 +44,7 @@ cfg_if! {
         pub use operational_point::OperationalPointPartCache;
         pub use switch_type::SwitchPortConnection;
         pub use track_section::{Curve, Slope};
+        pub use buffer_stop::BufferStopExtension;
     }
 }
 
