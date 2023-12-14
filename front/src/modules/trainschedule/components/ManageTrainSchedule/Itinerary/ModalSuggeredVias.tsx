@@ -1,19 +1,18 @@
-import React, { useContext } from 'react';
+import React, { useContext, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { useTranslation } from 'react-i18next';
 import { GoDash, GoPlus, GoTrash } from 'react-icons/go';
-
-import type { ArrayElement } from 'utils/types';
-
-import { Spinner } from 'common/Loader';
-import type { PathResponse, PathWaypoint } from 'common/api/osrdEditoastApi';
+import { useTranslation } from 'react-i18next';
 import { formatUicToCi } from 'utils/strings';
 import cx from 'classnames';
+import { uniqBy } from 'lodash';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
-import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
-import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
+import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
+import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import { Spinner } from 'common/Loader';
+import type { ArrayElement } from 'utils/types';
+import type { PathResponse, PathWaypoint } from 'common/api/osrdEditoastApi';
 
 type ModalSugerredViasProps = {
   removeAllVias: () => void;
@@ -35,9 +34,11 @@ export default function ModalSugerredVias({
   const suggeredVias = useSelector(getSuggeredVias) as PathWaypoint[];
   const { t } = useTranslation('operationalStudies/manageTrainSchedule');
 
-  const nbVias = suggeredVias ? suggeredVias.length - 1 : 0;
   const selectedViasTracks = vias.map((via) => via.id);
   const { closeModal } = useContext(ModalContext);
+
+  const uniqueSuggeredVias = useMemo(() => uniqBy(suggeredVias, (op) => op.id), [suggeredVias]);
+  const nbVias = uniqueSuggeredVias ? uniqueSuggeredVias.length - 1 : 0;
 
   const removeViaFromPath = (step: ArrayElement<PathResponse['steps']>) => {
     dispatch(
@@ -90,7 +91,7 @@ export default function ModalSugerredVias({
           <button
             className="btn btn-sm btn-only-icon"
             type="button"
-            onClick={() => convertPathfindingVias(suggeredVias, idx - 1)}
+            onClick={() => convertPathfindingVias(uniqueSuggeredVias, idx - 1)}
           >
             <GoPlus />
           </button>
@@ -119,8 +120,8 @@ export default function ModalSugerredVias({
       <ModalBodySNCF>
         <div className="suggested-vias">
           {pathfindingInProgress && <LoaderPathfindingInProgress />}
-          {suggeredVias &&
-            suggeredVias.map((via, idx) => {
+          {uniqueSuggeredVias &&
+            uniqueSuggeredVias.map((via, idx) => {
               if (idx !== 0 && idx !== nbVias) {
                 if (!via.suggestion) idxTrueVia += 1;
                 return formatVia(via, idx, idxTrueVia);
