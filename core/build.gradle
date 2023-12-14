@@ -165,6 +165,9 @@ sourceSets {
 
 // region CODE_QUALITY
 
+import com.github.spotbugs.snom.Confidence
+import com.github.spotbugs.snom.Effort
+
 allprojects {
 
     apply plugin: 'checkstyle'
@@ -194,9 +197,9 @@ allprojects {
         showStackTraces = true
         showProgress = true
         // can also be 'more' or 'default'
-        effort = 'max'
+        effort = Effort.valueOf('MAX')
         // report all diagnosed bugs
-        reportLevel = 'low'
+        reportLevel = Confidence.valueOf('LOW')
         maxHeapSize = '1g'
         excludeFilter = rootProject.file('config/spotbugs/exclude.xml')
     }
