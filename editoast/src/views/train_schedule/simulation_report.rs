@@ -1,16 +1,23 @@
+use crate::{
+    core::{
+        simulation::{SignalProjectionRequest, SignalUpdate},
+        AsCoreRequest, CoreClient,
+    },
+    error,
+    models::{
+        train_schedule::{ElectrificationRange, Mrsp, SimulationPowerRestrictionRange},
+        Curve, FullResultStops, PathWaypoint, Pathfinding, PathfindingPayload, ResultPosition,
+        ResultSpeed, ResultStops, ResultTrain, Retrieve, RollingStockModel, SimulationOutput,
+        SimulationOutputChangeset, Slope, TrainSchedule,
+    },
+    modelsv2::{infra_objects::TrackSectionModel, Model as ModelV2},
+    schema::utils::Identifier,
+    views::train_schedule::{projection::Projection, TrainScheduleError::UnsimulatedTrainSchedule},
+    DbPool,
+};
+
 use std::collections::HashMap;
 
-use crate::core::simulation::{SignalProjectionRequest, SignalUpdate};
-use crate::core::{AsCoreRequest, CoreClient};
-use crate::models::infra_objects::track_section::TrackSectionModel;
-use crate::models::train_schedule::{ElectrificationRange, Mrsp, SimulationPowerRestrictionRange};
-use crate::models::{
-    Curve, FullResultStops, PathWaypoint, Pathfinding, PathfindingPayload, ResultPosition,
-    ResultSpeed, ResultStops, ResultTrain, Retrieve, RollingStockModel, SimulationOutput,
-    SimulationOutputChangeset, Slope, TrainSchedule,
-};
-use crate::schema::utils::Identifier;
-use crate::{error, DbPool};
 use actix_web::web::Data;
 use diesel::sql_types::{Array as SqlArray, BigInt, Text};
 use diesel::{sql_query, ExpressionMethods, QueryDsl};
@@ -18,9 +25,6 @@ use diesel_async::RunQueryDsl;
 use futures::future::OptionFuture;
 use serde_derive::{Deserialize, Serialize};
 use utoipa::ToSchema;
-
-use crate::views::train_schedule::projection::Projection;
-use crate::views::train_schedule::TrainScheduleError::UnsimulatedTrainSchedule;
 
 crate::schemas! {
     SimulationReport,
@@ -237,13 +241,17 @@ async fn add_stops_additional_information(
         .iter()
         .map(|pw| pw.location.track_section.0.clone())
         .collect();
-    let track_sections: Vec<TrackSectionModel> = sql_query(
+    // TODO: use BatchRetrieve once it's implemented
+    let track_sections: Vec<_> = sql_query(
         "SELECT * FROM infra_object_track_section WHERE infra_id = $1 AND obj_id = ANY($2);",
     )
     .bind::<BigInt, _>(infra_id)
     .bind::<SqlArray<Text>, _>(&track_ids)
     .load(&mut conn)
-    .await?;
+    .await?
+    .into_iter()
+    .map(<TrackSectionModel as ModelV2>::from_row)
+    .collect();
     let track_sections_map: HashMap<String, TrackSectionModel> = HashMap::from_iter(
         track_sections
             .iter()
