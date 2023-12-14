@@ -1,4 +1,5 @@
 pub mod documents;
+pub mod infra_objects;
 
 pub use documents::Document;
 

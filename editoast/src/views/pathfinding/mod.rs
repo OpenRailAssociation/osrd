@@ -31,12 +31,11 @@ use crate::{
     },
     error::Result,
     models::{
-        infra_objects::{
-            operational_point::OperationalPointModel, track_section::TrackSectionModel,
-        },
-        Create, Curve, Delete, Infra, PathWaypoint, Pathfinding, PathfindingChangeset,
-        PathfindingPayload, Retrieve, RollingStockModel, Slope, Update,
+        infra_objects::operational_point::OperationalPointModel, Create, Curve, Delete, Infra,
+        PathWaypoint, Pathfinding, PathfindingChangeset, PathfindingPayload, Retrieve,
+        RollingStockModel, Slope, Update,
     },
+    modelsv2::{infra_objects::TrackSectionModel, Model as ModelV2},
     schema::{
         rolling_stock::RollingStock,
         utils::geometry::{diesel_linestring_to_geojson, geojson_to_diesel_linestring},
@@ -215,25 +214,25 @@ async fn make_track_map<I: Iterator<Item = String>>(
     // TODO: implement a BatchRetrieve trait for tracksections for a better error handling + check all tracksections are there
     let ids = it.collect::<HashSet<_>>().into_iter().collect::<Vec<_>>();
     let expected_count = ids.len();
-    let tracksections: Vec<_> = match dsl::infra_object_track_section
+    let tracksections: Vec<_> = dsl::infra_object_track_section
         .filter(dsl::infra_id.eq(infra_id))
         .filter(dsl::obj_id.eq_any(&ids))
-        .get_results::<TrackSectionModel>(conn)
-        .await
-    {
-        Ok(ts) if ts.len() != expected_count => {
-            let got = HashSet::<String>::from_iter(ts.into_iter().map(|ts| ts.obj_id));
-            let expected = HashSet::<String>::from_iter(ids);
-            let diff = expected.difference(&got).collect::<HashSet<_>>();
-            return Err(PathfindingError::TrackSectionsNotFound {
-                track_sections: diff.into_iter().map(|s| s.to_owned()).collect(),
-            }
-            .into());
+        .get_results(conn)
+        .await?
+        .into_iter()
+        .map(<TrackSectionModel as ModelV2>::from_row)
+        .collect();
+    if tracksections.len() != expected_count {
+        let got = HashSet::<String>::from_iter(tracksections.iter().map(|ts| ts.obj_id.clone()));
+        let expected = HashSet::<String>::from_iter(ids);
+        let diff = expected.difference(&got).collect::<HashSet<_>>();
+        return Err(PathfindingError::TrackSectionsNotFound {
+            track_sections: diff.into_iter().map(|s| s.to_owned()).collect(),
         }
-        res => res,
-    }?;
+        .into());
+    }
     Ok(HashMap::from_iter(
-        tracksections.into_iter().map(|ts| (ts.obj_id, ts.data.0)),
+        tracksections.into_iter().map(|ts| (ts.obj_id, ts.data)),
     ))
 }
 
