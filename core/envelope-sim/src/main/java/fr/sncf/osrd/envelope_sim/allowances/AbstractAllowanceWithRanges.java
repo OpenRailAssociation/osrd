@@ -7,6 +7,7 @@ import static java.lang.Double.NaN;
 import static java.lang.Math.abs;
 
 import com.carrotsearch.hppc.DoubleArrayList;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope.*;
 import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
@@ -31,6 +32,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
+@SuppressFBWarnings("CT_CONSTRUCTOR_THROW")
 public abstract class AbstractAllowanceWithRanges implements Allowance {
     public static final Logger logger = LoggerFactory.getLogger(Allowance.class);
 

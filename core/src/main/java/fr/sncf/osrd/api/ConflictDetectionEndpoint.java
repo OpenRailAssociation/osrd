@@ -65,6 +65,7 @@ public class ConflictDetectionEndpoint implements Take {
         }
     }
 
+    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     public static class ConflictDetectionResult {
         public static final JsonAdapter<ConflictDetectionResult> adapter = new Moshi
                 .Builder()

@@ -8,8 +8,8 @@ import java.util.List;
 
 public class DiagnosticRecorderImpl implements DiagnosticRecorder {
 
-    public final List<Warning> warnings = new ArrayList<>();
-    public final List<OSRDError> errors = new ArrayList<>();
+    public List<Warning> warnings = new ArrayList<>();
+    public List<OSRDError> errors = new ArrayList<>();
     private final boolean strict;
 
     public DiagnosticRecorderImpl(boolean strict) {

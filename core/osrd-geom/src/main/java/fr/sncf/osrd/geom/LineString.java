@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class LineString {
+public final class LineString {
 
     /** A list of N coordinates (X component, longitude) */
     private final double[] bufferX;

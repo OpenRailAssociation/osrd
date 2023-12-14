@@ -4,6 +4,7 @@ import com.squareup.moshi.Json;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.Types;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.api.InfraManager.InfraCacheEntry;
 import fr.sncf.osrd.api.InfraManager.InfraStatus;
 import org.takes.Request;
@@ -65,6 +66,7 @@ public final class InfraCacheStatusEndpoint implements Take {
         }
     }
 
+    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     public static final class SerializedInfraCache {
         public InfraStatus status;
 

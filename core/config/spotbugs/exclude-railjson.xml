@@ -1,6 +1,6 @@
 <FindBugsFilter>
   <Match>
-    <Bug code="EI2,EI,THROWS,UrF,UuF" />
+    <Bug code="EI2,EI,THROWS,PA,UrF,UuF,UwF" />
   </Match>
   <Match>
     <Source name="~.*\.kt"/>

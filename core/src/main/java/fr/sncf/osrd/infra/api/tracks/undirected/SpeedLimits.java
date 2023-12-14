@@ -7,7 +7,7 @@ import fr.sncf.osrd.sim_infra.impl.SpeedSection;
 import fr.sncf.osrd.utils.units.Speed;
 import java.util.HashMap;
 
-public class SpeedLimits {
+public final class SpeedLimits {
 
     public final double defaultSpeedLimit;
     public final ImmutableMap<String, Double> speedLimitByTag;

@@ -2,7 +2,7 @@ package fr.sncf.osrd.envelope_sim;
 
 import com.google.common.collect.RangeMap;
 
-public class EnvelopeSimContext {
+public final class EnvelopeSimContext {
     public final PhysicsRollingStock rollingStock;
     public final PhysicsPath path;
     public final double timeStep;
