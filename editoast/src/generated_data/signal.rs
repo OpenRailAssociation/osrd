@@ -13,7 +13,8 @@ use crate::error::Result;
 use crate::infra_cache::InfraCache;
 use crate::schema::sprite_config::{SpriteConfig, SpriteConfigs};
 use crate::schema::{LogicalSignal, ObjectType};
-use crate::tables::infra_layer_signal::dsl;
+use crate::tables::infra_layer_signal::dsl as layer_dsl;
+use crate::tables::search_signal::dsl as search_dsl;
 
 pub struct SignalLayer;
 
@@ -82,10 +83,30 @@ impl GeneratedData for SignalLayer {
         "infra_layer_signal"
     }
 
+    async fn clear(conn: &mut PgConnection, infra: i64) -> Result<()> {
+        use diesel_async::RunQueryDsl;
+        sql_query(format!(
+            "DELETE FROM {} WHERE infra_id = $1",
+            Self::table_name()
+        ))
+        .bind::<BigInt, _>(infra)
+        .execute(conn)
+        .await?;
+        sql_query("DELETE FROM search_signal WHERE infra_id = $1")
+            .bind::<BigInt, _>(infra)
+            .execute(conn)
+            .await?;
+        Ok(())
+    }
+
     async fn generate(conn: &mut PgConnection, infra: i64, infra_cache: &InfraCache) -> Result<()> {
         use diesel_async::RunQueryDsl;
 
         sql_query(include_str!("sql/generate_signal_layer.sql"))
+            .bind::<BigInt, _>(infra)
+            .execute(conn)
+            .await?;
+        sql_query(include_str!("sql/generate_search_signal.sql"))
             .bind::<BigInt, _>(infra)
             .execute(conn)
             .await?;
@@ -113,9 +134,16 @@ impl GeneratedData for SignalLayer {
         // Delete elements
         if !involved_objects.deleted.is_empty() {
             delete(
-                dsl::infra_layer_signal
-                    .filter(dsl::infra_id.eq(infra))
-                    .filter(dsl::obj_id.eq_any(involved_objects.deleted)),
+                layer_dsl::infra_layer_signal
+                    .filter(layer_dsl::infra_id.eq(infra))
+                    .filter(layer_dsl::obj_id.eq_any(involved_objects.clone().deleted)),
+            )
+            .execute(conn)
+            .await?;
+            delete(
+                search_dsl::search_signal
+                    .filter(search_dsl::infra_id.eq(Some(infra as i32)))
+                    .filter(search_dsl::obj_id.eq_any(involved_objects.deleted)),
             )
             .execute(conn)
             .await?;
@@ -125,6 +153,11 @@ impl GeneratedData for SignalLayer {
         if !involved_objects.updated.is_empty() {
             let updated_signals = involved_objects.updated.into_iter().collect::<Vec<_>>();
             sql_query(include_str!("sql/insert_update_signal_layer.sql"))
+                .bind::<BigInt, _>(infra)
+                .bind::<Array<Text>, _>(&updated_signals)
+                .execute(conn)
+                .await?;
+            sql_query(include_str!("sql/insert_update_search_signal.sql"))
                 .bind::<BigInt, _>(infra)
                 .bind::<Array<Text>, _>(&updated_signals)
                 .execute(conn)

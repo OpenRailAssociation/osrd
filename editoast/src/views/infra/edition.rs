@@ -11,7 +11,7 @@ use crate::infra_cache::{InfraCache, ObjectCache};
 use crate::map::{self, MapLayers};
 use crate::models::{Infra, Update};
 use crate::schema::operation::{CacheOperation, Operation, RailjsonObject};
-use crate::{generated_data, DbPool};
+use crate::{generated_data, refresh_search_tables_per_infra, DbPool};
 use editoast_derive::EditoastError;
 
 /// CRUD for edit an infrastructure. Takes a batch of operations.
@@ -26,7 +26,7 @@ pub async fn edit<'a>(
 ) -> Result<Json<Vec<RailjsonObject>>> {
     let infra_id = infra.into_inner();
 
-    let mut conn = db_pool.get().await?;
+    let mut conn = db_pool.clone().get().await?;
     let infra = Infra::retrieve_for_update(&mut conn, infra_id)
         .await
         .map_err(|_| InfraApiError::NotFound { infra_id })?;
@@ -40,6 +40,8 @@ pub async fn edit<'a>(
         infra_id,
     )
     .await?;
+
+    let _ = refresh_search_tables_per_infra(db_pool, infra_id).await;
 
     Ok(Json(operation_results))
 }

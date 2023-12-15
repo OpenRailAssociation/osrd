@@ -199,6 +199,13 @@ DROP FUNCTION IF EXISTS {update_trigger_function};
         format!("DELETE FROM \"{table}\";", table = self.table)
     }
 
+    pub fn clear_sql_per_id(&self, infra_id: i64) -> String {
+        format!(
+            "DELETE FROM \"{table}\" WHERE infra_id = {infra_id};",
+            table = self.table,
+        )
+    }
+
     pub fn refresh_table_sql(&self) -> String {
         let Migration {
             src_table,
@@ -219,6 +226,29 @@ SELECT
     {select_terms}
 FROM "{src_table}"
     {query_joins};"#
+        )
+    }
+
+    pub fn refresh_table_sql_per_id(&self, infra_id: i64) -> String {
+        let Migration {
+            src_table,
+            src_primary_key: pk,
+            query_joins,
+            ..
+        } = self
+            .migration
+            .as_ref()
+            .expect("no migration for search config");
+        let table = &self.table;
+        let select_terms = self.select_terms();
+        format!(
+            r#"
+INSERT INTO "{table}"
+SELECT
+    "{src_table}"."{pk}" AS id,
+    {select_terms}
+FROM "{src_table}"
+    {query_joins} WHERE {src_table}.infra_id = {infra_id};"#
         )
     }
 }

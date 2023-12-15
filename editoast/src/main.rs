@@ -914,6 +914,53 @@ async fn refresh_search_tables(
     Ok(())
 }
 
+async fn refresh_search_tables_per_infra(
+    db_pool: Data<DbPool>,
+    infra_id: i64,
+) -> Result<(), Box<dyn Error + Send + Sync>> {
+    let objects: Vec<String> = vec!["signal".into(), "operationalpoint".into(), "track".into()];
+    dbg!(objects.clone());
+    let mut conn = db_pool.get().await?;
+    for object in objects {
+        let Some(search_config) = SearchConfigFinder::find(&object) else {
+            eprintln!("❌ No search object found for {object}");
+            continue;
+        };
+
+        println!("🤖 Refreshing search table for {}", object);
+        println!("🚮 Dropping {} content", search_config.table);
+        sql_query(search_config.clear_sql_per_id(infra_id))
+            .execute(&mut conn)
+            .await?;
+        println!("♻️  Regenerating {}", search_config.table);
+        if object != "track" {
+            assert!(search_config.has_migration());
+            sql_query(search_config.refresh_table_sql_per_id(infra_id))
+                .execute(&mut conn)
+                .await?;
+        } else {
+            let query = format!(
+                "WITH grouped_track_sections AS (
+                    SELECT DISTINCT 
+                        model.infra_id,
+                        (model.data#>>'{{extensions,sncf,line_code}}')::integer AS line_code,
+                        osrd_prepare_for_search(model.data#>>'{{extensions,sncf,line_name}}') AS line_name,
+                        model.data#>>'{{extensions,sncf,line_name}}' AS unprocessed_line_name
+                    FROM infra_object_track_section AS model WHERE infra_id = {infra_id}
+                )
+                INSERT INTO search_track 
+                SELECT *
+                FROM grouped_track_sections
+                WHERE line_code IS NOT NULL AND line_name IS NOT NULL;
+            "
+            );
+            sql_query(query).execute(&mut conn).await?;
+        }
+        println!("✅ Search table for {} refreshed!", object);
+    }
+    Ok(())
+}
+
 #[derive(Debug, Error, PartialEq)]
 pub struct CliError {
     exit_code: i32,
