@@ -54,6 +54,16 @@ rustup component add rustfmt clippy
 
 To setup `grcov`, please see [its documentation](https://github.com/mozilla/grcov#how-to-get-grcov)
 
+## For M1 MacOS users
+
+Our `docker-compose.yml` at the root of the project uses the `postgis` image by default.
+For M1 macs, it requires emulation since it's not compiled for arm platforms, which results
+in a significant slowdown. Define this variable in your environment or in a `.env` file somewhere:
+
+```sh
+export OSRD_POSTGIS_IMAGE='nickblah/postgis:15-postgis-3'
+```
+
 ## OpenApi generation
 
 We have to keep the OpenApi of the service statically in the repository.
