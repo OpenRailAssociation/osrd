@@ -80,11 +80,9 @@
         scriptBins =
           map (
             scriptFile:
-              pkgs.writeShellScriptBin
-              (pkgs.lib.strings.removeSuffix ".sh" scriptFile)
-              (pkgs.lib.strings.replaceStrings
-                ["#!/bin/sh"] [""]
-                (builtins.readFile ./scripts/${scriptFile}))
+              pkgs.writeScriptBin
+              (pkgs.lib.foldl (fileName: extension: pkgs.lib.strings.removeSuffix extension fileName) scriptFile [".sh" ".py"])
+              (builtins.readFile ./scripts/${scriptFile})
           )
           scriptFiles;
       in
