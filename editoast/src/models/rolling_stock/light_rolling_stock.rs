@@ -14,7 +14,7 @@ use diesel_async::RunQueryDsl;
 use diesel_json::Json as DieselJson;
 use editoast_derive::Model;
 use serde::Serialize;
-use serde_json::Value as JsonValue;
+use std::collections::HashMap;
 use utoipa::ToSchema;
 
 #[derive(Debug, Model, Queryable, QueryableByName, Serialize, ToSchema)]
@@ -44,7 +44,7 @@ pub struct LightRollingStockModel {
     #[schema(value_type = LoadingGaugeType)]
     loading_gauge: String,
     #[schema(value_type = HashMap<String, String>)]
-    power_restrictions: Option<JsonValue>,
+    power_restrictions: Option<DieselJson<HashMap<String, String>>>,
     #[schema(value_type = Vec<EnergySource>)]
     energy_sources: DieselJson<Vec<EnergySource>>,
     locked: bool,

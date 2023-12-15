@@ -35,7 +35,6 @@ use diesel::{sql_query, QueryableByName};
 use diesel_async::RunQueryDsl;
 use editoast_derive::EditoastError;
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value as JsonValue};
 use std::collections::HashMap;
 use thiserror::Error;
 use utoipa::IntoParams;
@@ -128,6 +127,11 @@ struct RefreshQueryParams {
     infras: List<i64>,
 }
 
+#[derive(Debug, Serialize)]
+struct RefreshResponse {
+    infra_refreshed: Vec<i64>,
+}
+
 /// Refresh infra generated data
 #[post("/refresh")]
 async fn refresh(
@@ -136,7 +140,7 @@ async fn refresh(
     query_params: Query<RefreshQueryParams>,
     infra_caches: Data<CHashMap<i64, InfraCache>>,
     map_layers: Data<MapLayers>,
-) -> Result<Json<JsonValue>> {
+) -> Result<Json<RefreshResponse>> {
     let mut conn = db_pool.get().await?;
     // Use a transaction to give scope to infra list lock
     let mut infras_list = vec![];
@@ -158,7 +162,7 @@ async fn refresh(
     }
 
     // Refresh each infras
-    let mut refreshed_infra = vec![];
+    let mut infra_refreshed = vec![];
 
     for infra in infras_list {
         let infra_cache = InfraCache::get_or_load(&mut conn, &infra_caches, &infra).await?;
@@ -166,12 +170,12 @@ async fn refresh(
             .refresh(db_pool.clone(), query_params.force, &infra_cache)
             .await?
         {
-            refreshed_infra.push(infra.id.unwrap());
+            infra_refreshed.push(infra.id.unwrap());
         }
     }
 
     let mut conn = redis_client.get_connection().await?;
-    for infra_id in refreshed_infra.iter() {
+    for infra_id in infra_refreshed.iter() {
         map::invalidate_all(
             &mut conn,
             &map_layers.layers.keys().cloned().collect(),
@@ -180,7 +184,7 @@ async fn refresh(
         .await?;
     }
 
-    Ok(Json(json!({ "infra_refreshed": refreshed_infra })))
+    Ok(Json(RefreshResponse { infra_refreshed }))
 }
 
 /// Return a list of infras
@@ -531,6 +535,7 @@ pub mod tests {
     use actix_web::test::{call_and_read_body_json, call_service, read_body_json, TestRequest};
     use diesel_async::{AsyncConnection, AsyncPgConnection as PgConnection};
     use rstest::*;
+    use serde_json::json;
     use strum::IntoEnumIterator;
 
     fn delete_infra_request(infra_id: i64) -> Request {

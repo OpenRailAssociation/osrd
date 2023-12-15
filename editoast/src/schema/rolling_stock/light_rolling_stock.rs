@@ -1,7 +1,6 @@
 use diesel::sql_types::{Array, BigInt, Bool, Double, Jsonb, Nullable, Text};
 use diesel_json::Json as DieselJson;
 use serde::{Deserialize, Serialize};
-use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 use utoipa::ToSchema;
 
@@ -61,7 +60,7 @@ pub struct LightRollingStock {
     pub metadata: DieselJson<RollingStockMetadata>,
     #[diesel(sql_type = Nullable<Jsonb>)]
     #[schema(value_type = HashMap<String, String>)]
-    pub power_restrictions: Option<JsonValue>,
+    pub power_restrictions: Option<DieselJson<HashMap<String, String>>>,
     #[diesel(sql_type = Jsonb)]
     #[schema(value_type = Vec<EnergySource>)]
     pub energy_sources: DieselJson<Vec<EnergySource>>,

@@ -983,7 +983,9 @@ export type GetLayersLayerByLayerSlugMvtAndViewSlugApiResponse =
     maxzoom: number;
     minzoom: number;
     name: string;
-    promoteId: object;
+    promoteId: {
+      [key: string]: string;
+    };
     scheme: string;
     tiles: string[];
     type: string;

@@ -6,12 +6,13 @@ use actix_web::web::{Data, Json, Path};
 use diesel::sql_types::{Array, BigInt, Jsonb, Nullable, Text};
 use diesel::{sql_query, QueryableByName};
 use diesel_async::RunQueryDsl;
+use diesel_json::Json as DieselJson;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use thiserror::Error;
 
 use crate::error::Result;
-use crate::schema::ObjectType;
+use crate::schema::{GeoJson, ObjectType};
 use crate::DbPool;
 use editoast_derive::EditoastError;
 
@@ -37,17 +38,16 @@ fn has_unique_ids(obj_ids: &Vec<String>) -> bool {
     obj_ids_2.len() == obj_ids.len()
 }
 
-#[derive(QueryableByName, Debug, Clone, Serialize, Deserialize)]
+#[derive(QueryableByName, Debug, Clone, Serialize, Deserialize, PartialEq)]
 struct ObjectQueryable {
     #[diesel(sql_type = Text)]
-    #[serde(skip_serializing)]
     obj_id: String,
     #[diesel(sql_type = Jsonb)]
     railjson: JsonValue,
     #[diesel(sql_type = Nullable<Jsonb>)]
-    geographic: Option<JsonValue>,
+    geographic: Option<DieselJson<GeoJson>>,
     #[diesel(sql_type = Nullable<Jsonb>)]
-    schematic: Option<JsonValue>,
+    schematic: Option<DieselJson<GeoJson>>,
 }
 
 /// Return the railjson list of a specific OSRD object
@@ -121,11 +121,15 @@ async fn get_objects(
 #[cfg(test)]
 mod tests {
     use actix_web::http::StatusCode;
-    use actix_web::test::{call_service, TestRequest};
+    use actix_web::test::{call_service, read_body_json, TestRequest};
+    use serde_json::{json, Value as JsonValue};
 
-    use crate::fixtures::tests::{empty_infra, TestFixture};
+    use crate::fixtures::tests::{db_pool, empty_infra, TestFixture};
     use crate::models::Infra;
-    use crate::schema::SwitchType;
+    use crate::schema::operation::Operation;
+    use crate::schema::OSRDIdentified;
+    use crate::schema::{Switch, SwitchType};
+    use crate::views::infra::objects::ObjectQueryable;
     use crate::views::infra::tests::create_object_request;
     use crate::views::tests::create_test_service;
     use rstest::*;
@@ -153,6 +157,54 @@ mod tests {
             .set_json(vec![""; 0])
             .to_request();
         assert_eq!(call_service(&app, req).await.status(), StatusCode::OK);
+    }
+
+    #[rstest]
+    async fn get_objects_should_return_switch() {
+        // GIVEN
+        let app = create_test_service().await;
+        let empty_infra = empty_infra(db_pool()).await;
+        let empty_infra_id = empty_infra.id();
+
+        let switch = Switch {
+            id: "switch_001".into(),
+            switch_type: "switch_type_001".into(),
+            ..Default::default()
+        };
+
+        let create_operation = Operation::Create(Box::new(switch.clone().into()));
+        let request = TestRequest::post()
+            .uri(format!("/infra/{empty_infra_id}/").as_str())
+            .set_json(json!([create_operation]))
+            .to_request();
+        let response = call_service(&app, request).await;
+        assert_eq!(response.status(), StatusCode::OK);
+
+        // WHEN
+        let req = TestRequest::post()
+            .uri(format!("/infra/{empty_infra_id}/objects/Switch").as_str())
+            .set_json(vec!["switch_001"])
+            .to_request();
+        let response = call_service(&app, req).await;
+
+        // THEN
+        assert_eq!(response.status(), StatusCode::OK);
+        let switch_object: Vec<ObjectQueryable> = read_body_json(response).await;
+        let expected_switch_object = vec![ObjectQueryable {
+            obj_id: switch.get_id().to_string(),
+            railjson: json!({
+                "extensions": {
+                    "sncf": JsonValue::Null
+                },
+                "group_change_delay": 0.0,
+                "id": switch.get_id().to_string(),
+                "ports": {},
+                "switch_type": switch.switch_type
+            }),
+            geographic: None,
+            schematic: None,
+        }];
+        assert_eq!(switch_object, expected_switch_object);
     }
 
     #[rstest]

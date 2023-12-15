@@ -4758,6 +4758,8 @@ paths:
                     example: track_sections
                     type: string
                   promoteId:
+                    additionalProperties:
+                      type: string
                     type: object
                   scheme:
                     example: xyz

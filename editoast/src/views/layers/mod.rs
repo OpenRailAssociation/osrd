@@ -1,5 +1,7 @@
 mod mvt_utils;
 
+use std::collections::HashMap;
+
 use crate::client::{get_root_url, MapLayersConfig};
 use crate::error::Result;
 use crate::map::redis_utils::RedisClient;
@@ -13,7 +15,6 @@ use diesel_async::RunQueryDsl;
 use editoast_derive::EditoastError;
 use mvt_utils::{create_and_fill_mvt_tile, get_geo_json_sql_query, GeoJsonAndData};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value as JsonValue};
 use thiserror::Error;
 use utoipa::{IntoParams, ToSchema};
 
@@ -75,15 +76,15 @@ struct LayerViewParams {
     view_slug: String,
 }
 
-#[derive(Serialize, ToSchema)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, ToSchema)]
 struct ViewMetadata {
     #[serde(rename = "type")]
     data_type: String,
     #[schema(example = "track_sections")]
     name: String,
     #[serde(rename = "promoteId")]
-    #[schema(example = json!({track_sections: "id"}), value_type = Object)]
-    promote_id: JsonValue,
+    #[schema(value_type = HashMap<String, String>)]
+    promote_id: HashMap<String, String>,
     #[schema(example = "xyz")]
     scheme: String,
     #[schema(example = json!(["http://localhost:7070/tile/track_sections/geo/{z}/{x}/{y}/?infra=1"]))]
@@ -131,7 +132,7 @@ async fn layer_view(
     Ok(Json(ViewMetadata {
         data_type: "vector".to_owned(),
         name: layer_slug.to_owned(),
-        promote_id: json!({layer_slug: layer.id_field}),
+        promote_id: HashMap::from([(layer_slug, layer.id_field.clone().unwrap_or_default())]),
         scheme: "xyz".to_owned(),
         tiles: vec![tiles_url_pattern],
         attribution: layer.attribution.clone().unwrap_or_default(),
@@ -218,25 +219,32 @@ async fn cache_and_get_mvt_tile(
 
 #[cfg(test)]
 mod tests {
-    use crate::error::InternalError;
+    use std::collections::HashMap;
+
     use crate::map::MapLayers;
     use crate::views::tests::create_test_service;
+    use crate::{error::InternalError, views::layers::ViewMetadata};
     use actix_web::{
         http::StatusCode,
         test::{call_service, read_body_json, TestRequest},
     };
     use rstest::rstest;
-    use serde_json::{json, to_value, Value as JsonValue};
+    use serde::de::DeserializeOwned;
+    use serde_json::to_value;
 
     use super::LayersError;
 
     /// Run a simple get query on `uri` and check the status code and json body
-    async fn test_get_query(uri: &str, expected_status: StatusCode, expected_body: JsonValue) {
+    async fn test_get_query<T: DeserializeOwned + PartialEq + std::fmt::Debug>(
+        uri: &str,
+        expected_status: StatusCode,
+        expected_body: T,
+    ) {
         let app = create_test_service().await;
         let req = TestRequest::get().uri(uri).to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), expected_status);
-        let body: JsonValue = read_body_json(response).await;
+        let body: T = read_body_json(response).await;
         assert_eq!(expected_body, body)
     }
 
@@ -245,18 +253,16 @@ mod tests {
         test_get_query(
             "/layers/layer/track_sections/mvt/geo?infra=2",
             StatusCode::OK,
-            json!({
-                "type": "vector",
-                "name": "track_sections",
-                "promoteId": {
-                    "track_sections": "id"
-                },
-                "scheme": "xyz",
-                "tiles": [tiles],
-                "attribution": "",
-                "minzoom": 5,
-                "maxzoom": 18
-            }),
+            ViewMetadata {
+                data_type: "vector".to_string(),
+                name: "track_sections".to_string(),
+                promote_id: HashMap::from([("track_sections".to_string(), "id".to_string())]),
+                scheme: "xyz".to_string(),
+                tiles: vec![tiles],
+                attribution: "".to_string(),
+                minzoom: 5,
+                maxzoom: 18,
+            },
         )
         .await;
     }
