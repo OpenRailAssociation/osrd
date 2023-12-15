@@ -1,8 +1,8 @@
 pub mod light_rolling_stock;
 pub mod rolling_stock_livery;
 
+use diesel_json::Json as DieselJson;
 use serde::{Deserialize, Deserializer, Serialize};
-use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 use strum_macros::{Display, EnumString};
 use utoipa::ToSchema;
@@ -53,7 +53,7 @@ pub struct RollingStockCommon {
     pub loading_gauge: String,
     /// Mapping of power restriction code to power class
     #[schema(value_type = HashMap<String, String>)]
-    pub power_restrictions: Option<JsonValue>,
+    pub power_restrictions: Option<DieselJson<HashMap<String, String>>>,
     #[serde(default)]
     pub energy_sources: Vec<EnergySource>,
     /// The time the train takes before actually using electrical power (in seconds). Is null if the train is not electric.

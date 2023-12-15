@@ -1008,12 +1008,7 @@ pub mod tests {
         let rolling_stock =
             named_fast_rolling_stock("fast_rolling_stock_get_power_restrictions_list", db_pool)
                 .await;
-        let power_restrictions = rolling_stock
-            .model
-            .power_restrictions
-            .clone()
-            .unwrap()
-            .unwrap();
+        let power_restrictions = rolling_stock.model.power_restrictions.clone().unwrap();
 
         // WHEN
         let response = call_service(
@@ -1025,8 +1020,12 @@ pub mod tests {
         .await;
 
         // THEN
-        assert!(power_restrictions.to_string().contains(&"C2".to_string()));
+        let power_restrictions = serde_json::to_string(&power_restrictions)
+            .expect("Failed to convert power_restrictions to string");
+        assert!(power_restrictions.contains(&"C2".to_string()));
+        assert!(power_restrictions.contains(&"C5".to_string()));
         let response_body: Vec<String> = read_body_json(response).await;
         assert!(response_body.contains(&"C2".to_string()));
+        assert!(response_body.contains(&"C5".to_string()));
     }
 }

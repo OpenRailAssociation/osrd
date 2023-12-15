@@ -3,7 +3,7 @@ use mvt::GeomType;
 use serde::{Deserialize, Serialize};
 
 /// GeoJson representation
-#[derive(Clone, Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug, PartialEq)]
 #[serde(tag = "type")]
 pub enum GeoJson {
     Point { coordinates: (f64, f64) },

@@ -27,7 +27,7 @@ use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
 use diesel_json::Json as DieselJson;
 use editoast_derive::Model;
 use serde::{Deserialize, Serialize};
-use serde_json::Value as JsonValue;
+use std::collections::HashMap;
 use validator::{Validate, ValidationError};
 
 crate::schemas! {
@@ -109,9 +109,9 @@ pub struct RollingStockModel {
     #[diesel(deserialize_as = String)]
     #[schema(value_type = LoadingGaugeType)]
     pub loading_gauge: Option<String>,
-    #[diesel(deserialize_as = Option<JsonValue>)]
+    #[diesel(deserialize_as = Option<DieselJson<HashMap<String, String>>>)]
     #[schema(value_type = Option<HashMap<String, String>>)]
-    pub power_restrictions: Option<Option<JsonValue>>,
+    pub power_restrictions: Option<Option<DieselJson<HashMap<String, String>>>>,
     #[diesel(deserialize_as = DieselJson<Vec<EnergySource>>)]
     #[schema(value_type = EnergySource)]
     pub energy_sources: Option<DieselJson<Vec<EnergySource>>>,
