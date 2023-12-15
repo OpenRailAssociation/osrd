@@ -10,6 +10,7 @@ use diesel::sql_types::{BigInt, Json, Text};
 use editoast_derive::EditoastError;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
+use std::fmt::{Display, Formatter};
 use strum::VariantNames;
 use thiserror::Error;
 
@@ -80,6 +81,16 @@ pub enum Level {
     All,
 }
 
+impl Display for Level {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Level::Warnings => write!(f, "warnings"),
+            Level::Errors => write!(f, "errors"),
+            Level::All => write!(f, "all"),
+        }
+    }
+}
+
 async fn get_paginated_infra_errors(
     db_pool: Data<DbPool>,
     infra: i64,
@@ -116,11 +127,15 @@ async fn get_paginated_infra_errors(
 mod tests {
     use crate::fixtures::tests::{empty_infra, TestFixture};
     use crate::models::Infra;
-    use crate::views::infra::errors::check_error_type_query;
+    use crate::schema::operation::{Operation, RailjsonObject};
+    use crate::schema::{Endpoint, InfraErrorType, ObjectRef, TrackSection};
+    use crate::views::infra::errors::{check_error_type_query, InfraError, Level};
+    use crate::views::pagination::PaginatedResponse;
     use crate::views::tests::create_test_service;
     use actix_http::StatusCode;
-    use actix_web::test::{call_service, TestRequest};
+    use actix_web::test::{call_service, read_body_json, TestRequest};
     use rstest::rstest;
+    use serde_json::json;
 
     #[test]
     fn check_error_type() {
@@ -132,8 +147,10 @@ mod tests {
     async fn list_errors_get(#[future] empty_infra: TestFixture<Infra>) {
         let empty_infra = empty_infra.await;
 
-        let error_type = "overlapping_catenaries";
-        let level = "warnings";
+        let error_type = InfraErrorType::OverlappingCatenaries {
+            reference: ObjectRef::default(),
+        };
+        let level = Level::Warnings;
 
         let app = create_test_service().await;
 
@@ -150,5 +167,39 @@ mod tests {
             .to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
+    }
+
+    #[rstest]
+    async fn get_errors_must_return_buffer_stop_errors(#[future] empty_infra: TestFixture<Infra>) {
+        let empty_infra = empty_infra.await;
+        let app = create_test_service().await;
+
+        let track_section: RailjsonObject = TrackSection::default().into();
+        let create_operation = Operation::Create(Box::new(track_section));
+        let request = TestRequest::post()
+            .uri(format!("/infra/{}/", empty_infra.id()).as_str())
+            .set_json(json!([create_operation]))
+            .to_request();
+        call_service(&app, request).await;
+
+        let error_type = InfraErrorType::MissingBufferStop {
+            endpoint: Endpoint::Begin,
+        };
+        let level = Level::Warnings;
+        let req = TestRequest::get()
+            .uri(
+                format!(
+                    "/infra/{}/errors?error_type={}&level={}",
+                    empty_infra.id(),
+                    error_type,
+                    level
+                )
+                .as_str(),
+            )
+            .to_request();
+        let response = call_service(&app, req).await;
+        assert_eq!(response.status(), StatusCode::OK);
+        let body: PaginatedResponse<InfraError> = read_body_json(response).await;
+        assert_eq!(body.count, 2);
     }
 }

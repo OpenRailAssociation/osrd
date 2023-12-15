@@ -60,6 +60,31 @@ pub enum InfraErrorType {
     },
 }
 
+impl std::fmt::Display for InfraErrorType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let variant_name = match self {
+            InfraErrorType::DuplicatedGroup { .. } => "duplicated_group",
+            InfraErrorType::EmptyObject => "empty_object",
+            InfraErrorType::InvalidGroup { .. } => "invalid_group",
+            InfraErrorType::InvalidReference { .. } => "invalid_reference",
+            InfraErrorType::InvalidRoute => "invalid_route",
+            InfraErrorType::InvalidSwitchPorts => "invalid_switch_ports",
+            InfraErrorType::MissingRoute => "missing_route",
+            InfraErrorType::MissingBufferStop { .. } => "missing_buffer_stop",
+            InfraErrorType::ObjectOutOfPath { .. } => "object_out_of_path",
+            InfraErrorType::OddBufferStopLocation => "odd_buffer_stop_location",
+            InfraErrorType::OutOfRange { .. } => "out_of_range",
+            InfraErrorType::OverlappingCatenaries { .. } => "overlapping_catenaries",
+            InfraErrorType::OverlappingSpeedSections { .. } => "overlapping_speed_sections",
+            InfraErrorType::OverlappingSwitches { .. } => "overlapping_switches",
+            InfraErrorType::UnknownPortName { .. } => "unknown_port_name",
+            InfraErrorType::UnusedPort { .. } => "unused_port",
+        };
+
+        write!(f, "{}", variant_name)
+    }
+}
+
 impl InfraError {
     pub fn new_invalid_reference<T: AsRef<str>, O: OSRDObject>(
         obj: &O,
