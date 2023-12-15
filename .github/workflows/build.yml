@@ -62,7 +62,7 @@ jobs:
       - name: Build and push
         run: |
           set -eo pipefail
-          
+
           TRANSIENT_FAILURES=(
             "failed to solve: failed to compute cache key"
             "httpReadSeeker: failed open: failed to authorize: no active session"
@@ -385,7 +385,7 @@ jobs:
             -e DATABASE_URL="postgres://osrd:password@localhost:5432/osrd" \
             ${{ fromJSON(needs.build.outputs.stable_tags).editoast-test }} \
             /bin/bash -c "diesel migration run --locked-schema && cargo test --verbose -- --test-threads=1 && grcov . --binary-path ./target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore "/*" -o /output/lcov.info"
-          
+
           exit $(docker wait editoast-test)
 
       - name: Upload coverage
@@ -416,7 +416,7 @@ jobs:
             -e RUSTDOCFLAGS="-D warnings" \
             ${{ fromJSON(needs.build.outputs.stable_tags).editoast-test }} \
             cargo doc --manifest-path ./Cargo.toml --no-deps
-          
+
           exit $(docker wait editoast-doc)
 
       - name: Format check
@@ -424,8 +424,16 @@ jobs:
           docker run --name=editoast-format --net=host -v $PWD/output:/output \
             ${{ fromJSON(needs.build.outputs.stable_tags).editoast-test }} \
             cargo fmt --check
-          
+
           exit $(docker wait editoast-format)
+
+      - name: Clippy check
+        run: |
+          docker run --name=editoast-clippy --net=host -v $PWD/output:/output \
+            ${{ fromJSON(needs.build.outputs.stable_tags).editoast-test }} \
+            cargo clippy --all-features --all-targets -- -D warnings
+
+          exit $(docker wait editoast-clippy)
 
   check_editoast_openapi:
     # for the same reason as check_editoast_lints, we run this in a separate job
@@ -461,7 +469,7 @@ jobs:
           docker run --name=gateway-test --net=host -v $PWD/output:/output \
             ${{ fromJSON(needs.build.outputs.stable_tags).gateway-test }} \
             /bin/bash -c "cargo test --verbose && grcov . --binary-path ./target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore "/*" -o /output/lcov.info"
-          
+
           exit $(docker wait gateway-test)
 
       - name: Upload coverage to Codecov
@@ -480,7 +488,7 @@ jobs:
             -e RUSTDOCFLAGS="-D warnings" \
             ${{ fromJSON(needs.build.outputs.stable_tags).gateway-test }} \
             cargo doc --manifest-path ./Cargo.toml --no-deps
-          
+
           exit $(docker wait gateway-doc)
 
       - name: Format check
@@ -504,7 +512,7 @@ jobs:
           docker run --name=front-test --net=host -v $PWD/output:/app/tests/unit \
             ${{ fromJSON(needs.build.outputs.stable_tags).front-build }} \
             yarn test-coverage
-          
+
           exit $(docker wait front-test)
 
       - name: Upload coverage to Codecov
