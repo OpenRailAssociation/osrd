@@ -14,7 +14,7 @@ import {
 import {
   DeleteOperation,
   UpdateOperation,
-  RailjsonObject,
+  Operation,
   PostInfraByIdObjectsAndObjectTypeApiResponse,
 } from 'common/api/osrdEditoastApi';
 import { EditoastType } from '../tools/types';
@@ -149,7 +149,7 @@ export function nestEntity(entity: EditorEntity, type: EditoastType): EditorEnti
   };
 }
 
-export function entityToCreateOperation(entity: EditorEntity): RailjsonObject {
+export function entityToCreateOperation(entity: EditorEntity): Operation {
   return {
     operation_type: 'CREATE',
     obj_type: entity.objType,

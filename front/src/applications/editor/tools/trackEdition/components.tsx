@@ -25,11 +25,7 @@ import colors from 'common/Map/Consts/colors';
 import { save } from 'reducers/editor';
 import { getMap } from 'reducers/map/selectors';
 import { getInfraID } from 'reducers/osrdconf/selectors';
-import {
-  CatenaryEntity,
-  SpeedSectionEntity,
-  TrackSectionEntity,
-} from 'types';
+import { CatenaryEntity, SpeedSectionEntity, TrackSectionEntity } from 'types';
 
 import { TrackEditionState } from './types';
 import { injectGeometry } from './utils';
@@ -392,7 +388,7 @@ export const TrackEditionLeftPanel: FC = () => {
                 : { create: [injectGeometry(savedEntity)] }
             )
           );
-          const railjson = res[0];
+          const { railjson } = res[0];
           const savedTrack = {
             objType: 'TrackSection',
             type: 'Feature',

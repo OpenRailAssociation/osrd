@@ -1638,14 +1638,9 @@ components:
       properties:
         obj_type:
           $ref: '#/components/schemas/ObjectType'
-        operation_type:
-          enum:
-          - CREATE
-          type: string
         railjson:
           $ref: '#/components/schemas/Railjson'
       required:
-      - operation_type
       - obj_type
       - railjson
     RangeAllowance:
@@ -4133,7 +4128,7 @@ paths:
             application/json:
               schema:
                 items:
-                  $ref: '#/components/schemas/Railjson'
+                  $ref: '#/components/schemas/RailjsonObject'
                 type: array
           description: An array containing infos about the operations processed
       summary: Update/Create/Delete an object of the infra
