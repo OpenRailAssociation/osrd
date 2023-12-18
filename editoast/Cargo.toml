@@ -53,7 +53,7 @@ redis = { version = "0.23.3", features = [
     "cluster-async",
     "tokio-native-tls-comp",
 ] }
-sentry = "0.32.0"
+sentry = "0.32.1"
 sentry-actix = "0.32.0"
 serde.workspace = true
 serde_derive.workspace = true
