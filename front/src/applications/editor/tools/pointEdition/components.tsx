@@ -299,7 +299,7 @@ export const PointEditionLeftPanel: FC<{ type: EditoastType }> = <Entity extends
                 : { create: [savedEntity] }
             )
           );
-          const railjson = res[0];
+          const { railjson } = res[0];
           const { id } = railjson;
           if (id && id !== savedEntity.properties.id) {
             const saveEntity = {

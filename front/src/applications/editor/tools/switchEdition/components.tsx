@@ -107,7 +107,8 @@ export const SwitchEditionLeftPanel: FC = () => {
                 : { create: [entityToSave] }
             )
           );
-          const { id } = res[0];
+          const { railjson } = res[0];
+          const { id } = railjson;
 
           if (id && id !== entityToSave.properties.id) {
             const savedEntity = {

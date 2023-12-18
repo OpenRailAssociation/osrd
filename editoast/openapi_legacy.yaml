@@ -141,7 +141,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Railjson"
+                  $ref: "#/components/schemas/RailjsonObject"
 
     put:
       tags:
@@ -890,14 +890,9 @@ components:
 
     RailjsonObject:
       required:
-        - operation_type
         - obj_type
         - railjson
       properties:
-        operation_type:
-          type: string
-          enum:
-            - CREATE
         obj_type:
           $ref: "#/components/schemas/ObjectType"
         railjson:
