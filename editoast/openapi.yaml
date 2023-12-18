@@ -2388,6 +2388,10 @@ components:
       properties:
         ch:
           type: string
+        ci:
+          format: int64
+          minimum: 0
+          type: integer
         geographic:
           $ref: '#/components/schemas/GeoJsonPoint'
         infra_id:
@@ -2424,6 +2428,7 @@ components:
       - name
       - trigram
       - ch
+      - ci
       - geographic
       - schematic
       - track_sections

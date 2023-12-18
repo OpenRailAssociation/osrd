@@ -1960,6 +1960,7 @@ export type SearchResultItemTrack = {
 };
 export type SearchResultItemOperationalPoint = {
   ch: string;
+  ci: number;
   geographic: GeoJsonPoint;
   infra_id: number;
   name: string;

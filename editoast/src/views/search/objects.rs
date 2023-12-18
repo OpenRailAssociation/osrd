@@ -38,16 +38,47 @@ pub(super) struct SearchResultItemTrack {
 #[search(
     name = "operationalpoint",
     table = "search_operational_point",
+    migration(src_table = "infra_object_operational_point"),
     joins = "
         INNER JOIN infra_object_operational_point AS OP ON OP.id = search_operational_point.id
         INNER JOIN (SELECT DISTINCT ON (infra_id, obj_id) * FROM infra_layer_operational_point)
             AS lay ON OP.obj_id = lay.obj_id AND OP.infra_id = lay.infra_id",
-    column(name = "obj_id", data_type = "string"),
-    column(name = "infra_id", data_type = "integer"),
-    column(name = "name", data_type = "string"),
-    column(name = "uic", data_type = "integer"),
-    column(name = "ch", data_type = "string"),
-    column(name = "trigram", data_type = "string")
+    column(
+        name = "obj_id",
+        data_type = "varchar(255)",
+        sql = "infra_object_operational_point.obj_id",
+    ),
+    column(
+        name = "infra_id",
+        data_type = "integer",
+        sql = "infra_object_operational_point.infra_id",
+    ),
+    column(
+        name = "uic",
+        data_type = "integer",
+        sql = "(infra_object_operational_point.data->'extensions'->'identifier'->>'uic')::integer",
+    ),
+    column(
+        name = "trigram",
+        data_type = "varchar(3)",
+        sql = "infra_object_operational_point.data->'extensions'->'sncf'->>'trigram'",
+    ),
+    column(
+        name = "ci",
+        data_type = "integer",
+        sql = "(infra_object_operational_point.data->'extensions'->'sncf'->>'ci')::integer",
+    ),
+    column(
+        name = "ch",
+        data_type = "text",
+        sql = "infra_object_operational_point.data->'extensions'->'sncf'->>'ch'",
+    ),
+    column(
+        name = "name",
+        data_type = "text",
+        sql = "infra_object_operational_point.data->'extensions'->'identifier'->>'name'",
+        textual_search,
+    )
 )]
 #[allow(unused)]
 /// A search result item for a query with `object = "operationalpoint"`
@@ -64,6 +95,8 @@ pub(super) struct SearchResultItemOperationalPoint {
     trigram: String,
     #[search(sql = "OP.data#>>'{extensions,sncf,ch}'")]
     ch: String,
+    #[search(sql = "OP.data#>>'{extensions,sncf,ci}'")]
+    ci: u64,
     #[search(sql = "ST_AsGeoJSON(ST_Transform(lay.geographic, 4326))::json")]
     geographic: GeoJsonPoint,
     #[search(sql = "ST_AsGeoJSON(ST_Transform(lay.schematic, 4326))::json")]
