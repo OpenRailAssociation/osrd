@@ -477,14 +477,15 @@ diesel::table! {
 
     search_operational_point (id) {
         id -> Int8,
-        name -> Nullable<Text>,
-        infra_id -> Nullable<Int4>,
         #[max_length = 255]
         obj_id -> Nullable<Varchar>,
+        infra_id -> Nullable<Int4>,
         uic -> Nullable<Int4>,
-        ch -> Nullable<Text>,
         #[max_length = 3]
         trigram -> Nullable<Varchar>,
+        ci -> Nullable<Int4>,
+        ch -> Nullable<Text>,
+        name -> Nullable<Text>,
     }
 }
 

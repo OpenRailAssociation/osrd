@@ -113,6 +113,8 @@ impl SearchConfig {
         };
         let insert_trigger_name = format!("{table}__ins_trig");
         let update_trigger_name = format!("{table}__upd_trig");
+        let insert_trigger_function = format!("{table}__ins_trig_fun");
+        let update_trigger_function = format!("{table}__upd_trig_fun");
         let insert_trigger = format!(
             include_str!("sql/insert_trigger_template.sql"),
             trigger = insert_trigger_name,
@@ -166,8 +168,8 @@ CREATE TABLE "{table}" (
 DROP TABLE IF EXISTS "{table}";
 DROP TRIGGER IF EXISTS {insert_trigger_name} ON "{src_table}";
 DROP TRIGGER IF EXISTS {update_trigger_name} ON "{src_table}";
-DROP FUNCTION IF EXISTS {insert_trigger_name};
-DROP FUNCTION IF EXISTS {update_trigger_name};
+DROP FUNCTION IF EXISTS {insert_trigger_function};
+DROP FUNCTION IF EXISTS {update_trigger_function};
 {append_down}"#
         );
         (up, down)
