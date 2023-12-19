@@ -20,7 +20,7 @@ pub struct PathfindingRequest {
     rolling_stocks: Vec<RollingStock>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Waypoint {
     track_section: String,
     offset: f64,

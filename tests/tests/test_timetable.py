@@ -160,3 +160,95 @@ def test_get_timetable(
     ]
     actual_results = [_TrainScheduleSummary(**train_schedule) for train_schedule in timetable.train_schedule_summaries]
     recursive_approx([x.__dict__ for x in expected_schedules], [x.__dict__ for x in actual_results])
+
+
+def test_timetable_import(small_scenario: Scenario, fast_rolling_stock: int):
+    del fast_rolling_stock  # We use it by name
+    requests.post(f"{EDITOAST_URL}infra/{small_scenario.infra}/load").raise_for_status()
+    payload = [
+        {
+            "path": [
+                {
+                    "location": {"type": "operational_point", "uic": 1},
+                    "schedule": {
+                        "TRAIN1": {"arrival_time": "2024-01-19T08:01:00Z", "departure_time": "2024-01-19T08:01:00Z"}
+                    },
+                },
+                {
+                    "location": {"type": "operational_point", "uic": 2},
+                    "schedule": {
+                        "TRAIN1": {"arrival_time": "2024-01-19T08:10:40Z", "departure_time": "2024-01-19T08:11:30Z"}
+                    },
+                },
+            ],
+            "trains": [{"name": "TRAIN1", "departure_time": "2024-01-19T08:01:00Z"}],
+            "rolling_stock": "fast_rolling_stock",
+        },
+        {
+            "path": [
+                {
+                    "location": {"type": "operational_point", "uic": 1},
+                    "schedule": {
+                        "TRAIN2": {"arrival_time": "2024-01-19T08:01:00Z", "departure_time": "2024-01-19T08:01:00Z"}
+                    },
+                },
+                {
+                    "location": {"type": "operational_point", "uic": 2},
+                    "schedule": {
+                        "TRAIN2": {"arrival_time": "2024-01-19T08:10:40Z", "departure_time": "2024-01-19T08:11:30Z"}
+                    },
+                },
+            ],
+            "trains": [{"name": "TRAIN2", "departure_time": "2024-01-19T08:01:00Z"}],
+            "rolling_stock": "THIS_ROLLING_STOCK_DOES_NOT_EXIST_HIJSADIJLHWUDIFHUIOUIOUIO",
+        },
+        {
+            "path": [
+                {
+                    "location": {"type": "operational_point", "uic": 32867},
+                    "schedule": {
+                        "TRAIN3": {"arrival_time": "2024-01-19T08:01:00Z", "departure_time": "2024-01-19T08:01:00Z"}
+                    },
+                },
+                {
+                    "location": {"type": "operational_point", "uic": 2},
+                    "schedule": {
+                        "TRAIN3": {"arrival_time": "2024-01-19T08:10:40Z", "departure_time": "2024-01-19T08:11:30Z"}
+                    },
+                },
+            ],
+            "trains": [{"name": "TRAIN3", "departure_time": "2024-01-19T08:01:00Z"}],
+            "rolling_stock": "fast_rolling_stock",
+        },
+        {
+            "path": [
+                {
+                    "location": {"type": "operational_point", "uic": 1},
+                    "schedule": {
+                        "TRAIN4": {"arrival_time": "2024-01-19T08:01:00Z", "departure_time": "2024-01-19T08:01:00Z"}
+                    },
+                },
+                {
+                    "location": {"type": "operational_point", "uic": 3},
+                    "schedule": {
+                        "TRAIN4": {"arrival_time": "2024-01-19T08:10:40Z", "departure_time": "2024-01-19T08:11:30Z"}
+                    },
+                },
+            ],
+            "trains": [{"name": "TRAIN4", "departure_time": "2024-01-19T08:01:00Z"}],
+            "rolling_stock": "fast_rolling_stock",
+        },
+    ]
+
+    r = requests.post(
+        f"{EDITOAST_URL}timetable/{small_scenario.timetable}/",
+        json=payload,
+    )
+    r.raise_for_status()
+    errors = r.json()["errors"]
+
+    assert "PathfindingError" in errors["TRAIN1"]
+    assert "RollingStockNotFound" in errors["TRAIN2"]
+    assert "OperationalPointNotFound" in errors["TRAIN3"]
+    assert errors["TRAIN3"]["OperationalPointNotFound"]["missing_uics"] == [32867]
+    assert "TRAIN4" not in errors

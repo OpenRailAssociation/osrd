@@ -1252,7 +1252,7 @@ export type GetTimetableByIdApiArg = {
   /** Timetable id */
   id: number;
 };
-export type PostTimetableByIdApiResponse = unknown;
+export type PostTimetableByIdApiResponse = /** status 200 Import report */ TimetableImportReport;
 export type PostTimetableByIdApiArg = {
   /** Timetable id */
   id: number;
@@ -2295,6 +2295,32 @@ export type TrainScheduleSummary = TrainSchedule & {
 };
 export type TimetableWithSchedulesDetails = Timetable & {
   train_schedule_summaries: TrainScheduleSummary[];
+};
+export type TimetableImportError =
+  | {
+      RollingStockNotFound: {
+        name: string;
+      };
+    }
+  | {
+      OperationalPointNotFound: {
+        missing_uics: number[];
+      };
+    }
+  | {
+      PathfindingError: {
+        cause: InternalError;
+      };
+    }
+  | {
+      SimulationError: {
+        cause: InternalError;
+      };
+    };
+export type TimetableImportReport = {
+  errors: {
+    [key: string]: TimetableImportError;
+  };
 };
 export type TimetableImportPathLocation =
   | {

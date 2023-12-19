@@ -28,7 +28,7 @@ impl OperationalPointModel {
     pub async fn retrieve_from_uic(
         conn: &mut PgConnection,
         infra_id: i64,
-        uic: Vec<i64>,
+        uic: &[i64],
     ) -> Result<Vec<Self>> {
         let query = "SELECT * FROM infra_object_operational_point
                                 WHERE infra_id = $1 AND (data->'extensions'->'identifier'->'uic')::integer = ANY($2)".to_string();

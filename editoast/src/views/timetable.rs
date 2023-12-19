@@ -1,4 +1,3 @@
-use std::cmp::Ordering;
 use std::collections::HashMap;
 
 use crate::core::conflicts::{ConflicDetectionRequest, TrainRequirement};
