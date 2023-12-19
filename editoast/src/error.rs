@@ -45,7 +45,7 @@ fn default_status_code() -> StatusCode {
     StatusCode::INTERNAL_SERVER_ERROR
 }
 
-#[derive(Debug, Serialize, Deserialize, ToSchema, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema, PartialEq)]
 pub struct InternalError {
     #[serde(with = "StatusCodeRemoteDef", default = "default_status_code")]
     #[schema(value_type = u16, minimum = 100, maximum = 599)]

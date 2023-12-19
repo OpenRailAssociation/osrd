@@ -3308,6 +3308,55 @@ components:
       - id
       - name
       type: object
+    TimetableImportError:
+      oneOf:
+      - properties:
+          RollingStockNotFound:
+            properties:
+              name:
+                type: string
+            required:
+            - name
+            type: object
+        required:
+        - RollingStockNotFound
+        type: object
+      - properties:
+          OperationalPointNotFound:
+            properties:
+              missing_uics:
+                items:
+                  format: int64
+                  type: integer
+                type: array
+            required:
+            - missing_uics
+            type: object
+        required:
+        - OperationalPointNotFound
+        type: object
+      - properties:
+          PathfindingError:
+            properties:
+              cause:
+                $ref: '#/components/schemas/InternalError'
+            required:
+            - cause
+            type: object
+        required:
+        - PathfindingError
+        type: object
+      - properties:
+          SimulationError:
+            properties:
+              cause:
+                $ref: '#/components/schemas/InternalError'
+            required:
+            - cause
+            type: object
+        required:
+        - SimulationError
+        type: object
     TimetableImportItem:
       properties:
         path:
@@ -3381,6 +3430,15 @@ components:
           type: object
       required:
       - location
+      type: object
+    TimetableImportReport:
+      properties:
+        errors:
+          additionalProperties:
+            $ref: '#/components/schemas/TimetableImportError'
+          type: object
+      required:
+      - errors
       type: object
     TimetableImportTrain:
       properties:
@@ -6001,8 +6059,12 @@ paths:
         description: ''
         required: true
       responses:
-        '204':
-          description: Timetable was successfully imported
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimetableImportReport'
+          description: Import report
       summary: Import a timetable
       tags:
       - timetable

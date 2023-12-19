@@ -460,7 +460,7 @@ async fn call_core_pf_and_save_result(
     let steps_duration = payload.steps.iter().map(|step| step.duration).collect();
     run_pathfinding(
         &path_request,
-        core,
+        core.as_ref(),
         conn,
         infra_id,
         update_id,
@@ -473,14 +473,14 @@ async fn call_core_pf_and_save_result(
 /// If `update_id` is provided then update the corresponding path instead of creating a new one
 pub async fn run_pathfinding(
     path_request: &CorePathfindingRequest,
-    core: Data<CoreClient>,
+    core: &CoreClient,
     conn: &mut PgConnection,
     infra_id: i64,
     update_id: Option<i64>,
     steps_duration: Vec<f64>,
 ) -> Result<Pathfinding> {
     assert_eq!(steps_duration.len(), path_request.nb_waypoints());
-    let response = path_request.fetch(core.as_ref()).await?;
+    let response = path_request.fetch(core).await?;
     let response_track_map = response.fetch_track_map(infra_id, conn).await?;
     let response_op_map = response.fetch_op_map(infra_id, conn).await?;
     let pathfinding = Pathfinding::from_core_response(
