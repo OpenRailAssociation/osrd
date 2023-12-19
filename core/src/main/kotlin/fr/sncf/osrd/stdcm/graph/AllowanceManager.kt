@@ -33,7 +33,7 @@ class AllowanceManager(private val graph: STDCMGraph) {
             ?: return null
         // The new edges are invalid, conflicts shouldn't happen here but it can be too slow
         val newPreviousNode = newPreviousEdge.getEdgeEnd(graph)
-        return STDCMEdgeBuilder.fromNode(graph, newPreviousNode, oldEdge.block)
+        return STDCMEdgeBuilder.fromNode(graph, newPreviousNode, oldEdge.infraExplorer)
             .findEdgeSameNextOccupancy(oldEdge.timeNextOccupancy)
     }
 
@@ -62,7 +62,7 @@ class AllowanceManager(private val graph: STDCMGraph) {
             var maxAddedDelayAfter = edge.maximumAddedDelayAfter + edge.addedDelay
             if (node != null)
                 maxAddedDelayAfter = node.maximumAddedDelay
-            prevEdge = STDCMEdgeBuilder(edge.block, graph)
+            prevEdge = STDCMEdgeBuilder(edge.infraExplorer, graph)
                 .setStartTime(node?.time ?: edge.timeStart)
                 .setStartSpeed(edge.envelope.beginSpeed)
                 .setStartOffset(edge.envelopeStartOffset)
@@ -93,11 +93,11 @@ class AllowanceManager(private val graph: STDCMGraph) {
         return offset
     }
 
+
     /** Creates the EnvelopeSimContext to run an allowance on the given edges  */
     private fun makeAllowanceContext(edges: List<STDCMEdge>): EnvelopeSimContext {
         val blocks = ArrayList<BlockId>()
-        val firstOffset = (graph.blockInfra.getBlockLength(edges[0].block)
-                - fromMeters(edges[0].envelope.endPos))
+        val firstOffset = edges[0].envelopeStartOffset
         for (edge in edges)
             blocks.add(edge.block)
         return makeSimContext(

@@ -8,16 +8,15 @@ import fr.sncf.osrd.api.pathfinding.makeChunkPath
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
 import fr.sncf.osrd.graph.GraphAdapter
 import fr.sncf.osrd.graph.Pathfinding
-import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
 import fr.sncf.osrd.graph.PathfindingEdgeLocationId
-import fr.sncf.osrd.sim_infra.api.Block
-import fr.sncf.osrd.sim_infra.api.BlockId
-import fr.sncf.osrd.sim_infra.api.makePathProperties
+import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.ChunkPath
 import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper
 import fr.sncf.osrd.standalone_sim.StandaloneSim
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
 import fr.sncf.osrd.stdcm.graph.simulateBlock
+import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
+import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorer
 import fr.sncf.osrd.stdcm.preprocessing.implementation.computeUnavailableSpace
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.StandaloneTrainSchedule
@@ -124,7 +123,7 @@ fun getBlocksRunTime(infra: FullInfra, blocks: List<BlockId>): Double {
     var speed = 0.0
     for (block in blocks) {
         val envelope = simulateBlock(
-            infra.rawInfra, infra.blockInfra, block, speed, Offset(0.meters),
+            infra.rawInfra, infraExplorerFromBlock(infra.rawInfra, infra.blockInfra, block), speed, Offset(0.meters),
             TestTrains.REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2.0, null, null
         )!!
         time += envelope.totalTime
@@ -159,4 +158,12 @@ fun occupancyTest(
             )
         }
     }
+}
+
+/** Returns an infra explorer that contains the given block */
+fun infraExplorerFromBlock(rawInfra: RawInfra, blockInfra: BlockInfra, block: BlockId): InfraExplorer {
+    return initInfraExplorer(
+        rawInfra, blockInfra,
+        PathfindingEdgeLocationId(block, Offset(0.meters))
+    ).elementAt(0)
 }

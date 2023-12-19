@@ -5,8 +5,8 @@ import fr.sncf.osrd.envelope_sim.allowances.LinearAllowance
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.Block
-import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper
+import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface.Availability
 import fr.sncf.osrd.train.TrainStop
@@ -26,7 +26,7 @@ class DelayManager internal constructor(
     /** Returns one value per "opening" (interval between two unavailable times).
      * Always returns the shortest delay to add to enter this opening.  */
     fun minimumDelaysPerOpening(
-        blockId: BlockId,
+        infraExplorer: InfraExplorer,
         startTime: Double,
         envelope: Envelope,
         startOffset: Offset<Block>,
@@ -40,7 +40,7 @@ class DelayManager internal constructor(
         var time = startTime
         while (java.lang.Double.isFinite(time)) {
             val availability = getScaledAvailability(
-                blockId,
+                infraExplorer,
                 startOffset,
                 endOffset,
                 envelope,
@@ -66,7 +66,7 @@ class DelayManager internal constructor(
 
     /** Returns the start time of the next occupancy for the block  */
     fun findNextOccupancy(
-        blockId: BlockId,
+        infraExplorer: InfraExplorer,
         time: Double,
         startOffset: Offset<Block>,
         envelope: Envelope,
@@ -74,7 +74,7 @@ class DelayManager internal constructor(
     ): Double {
         val endOffset = startOffset + fromMeters(envelope.endPos)
         val availability = getScaledAvailability(
-            blockId,
+            infraExplorer,
             startOffset,
             endOffset,
             envelope,
@@ -99,7 +99,7 @@ class DelayManager internal constructor(
      * e.g. if the train takes 42s to go through the block, enters the block at t=10s,
      * and we need to leave the block at t=60s, this will return 8s.  */
     fun findMaximumAddedDelay(
-        blockId: BlockId,
+        infraExplorer: InfraExplorer,
         startTime: Double,
         startOffset: Offset<Block>,
         envelope: Envelope,
@@ -107,7 +107,7 @@ class DelayManager internal constructor(
     ): Double {
         val endOffset = startOffset + fromMeters(envelope.endPos)
         val availability = getScaledAvailability(
-            blockId, startOffset, endOffset, envelope, startTime, stopDurationAtEnd
+            infraExplorer, startOffset, endOffset, envelope, startTime, stopDurationAtEnd
         )
         assert(availability is BlockAvailabilityInterface.Available)
         return (availability as BlockAvailabilityInterface.Available).maximumDelay
@@ -115,7 +115,7 @@ class DelayManager internal constructor(
 
     /** Calls `blockAvailability.getAvailability`, on an envelope scaled to account for the standard allowance.  */
     private fun getScaledAvailability(
-        blockId: BlockId,
+        infraExplorer: InfraExplorer,
         startOffset: Offset<Block>,
         endOffset: Offset<Block>,
         envelope: Envelope,
@@ -133,7 +133,7 @@ class DelayManager internal constructor(
         else
             EnvelopeStopWrapper(scaledEnvelope, listOf(TrainStop(envelope.endPos, stopDurationAtEnd)))
         return blockAvailability.getAvailability(
-            listOf(blockId),
+            listOf(infraExplorer.getCurrentBlock()),
             startOffset.distance,
             endOffset.distance,
             envelopeWithStop,

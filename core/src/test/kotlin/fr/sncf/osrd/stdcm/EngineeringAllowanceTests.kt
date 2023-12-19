@@ -35,13 +35,13 @@ class EngineeringAllowanceTests {
         val secondBlock = infra.addBlock("b", "c", 10000.meters, 30.0)
         val thirdBlock = infra.addBlock("c", "d", 100.meters, 30.0)
         val firstBlockEnvelope = simulateBlock(
-            infra, infra,
-            firstBlock, 0.0, Offset(0.meters),
+            infra, infraExplorerFromBlock(infra, infra, firstBlock),
+            0.0, Offset(0.meters),
             TestTrains.REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2.0, null, null
         )!!
         val secondBlockEnvelope = simulateBlock(
-            infra, infra,
-            secondBlock, firstBlockEnvelope.endSpeed,
+            infra, infraExplorerFromBlock(infra, infra, secondBlock),
+            firstBlockEnvelope.endSpeed,
             Offset(0.meters), TestTrains.REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2.0,
             null, null
         )!!
@@ -93,13 +93,13 @@ class EngineeringAllowanceTests {
         infra.addBlock("d", "e", 1000.meters, 20.0)
         val lastBlock = infra.addBlock("e", "f", 1000.meters, 20.0)
         val firstBlockEnvelope = simulateBlock(
-            infra, infra,
-            firstBlock, 0.0, Offset(0.meters),
+            infra, infraExplorerFromBlock(infra, infra, firstBlock),
+            0.0, Offset(0.meters),
             TestTrains.REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2.0, null, null
         )!!
         val secondBlockEnvelope = simulateBlock(
-            infra, infra,
-            secondBlock, firstBlockEnvelope.endSpeed,
+            infra, infraExplorerFromBlock(infra, infra, secondBlock),
+            firstBlockEnvelope.endSpeed,
             Offset(0.meters), TestTrains.REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2.0,
             null, null
         )!!
@@ -156,13 +156,13 @@ class EngineeringAllowanceTests {
         infra.addBlock("d", "e", 1000.meters, 20.0)
         val lastBlock = infra.addBlock("e", "f", 1000.meters, 20.0)
         val firstBlockEnvelope = simulateBlock(
-            infra, infra,
-            firstBlock, 0.0, Offset(0.meters),
+            infra, infraExplorerFromBlock(infra, infra, firstBlock),
+            0.0, Offset(0.meters),
             TestTrains.REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2.0, null, null
         )!!
         val secondBlockEnvelope = simulateBlock(
-            infra, infra,
-            secondBlock, firstBlockEnvelope.endSpeed,
+            infra, infraExplorerFromBlock(infra, infra, secondBlock),
+            firstBlockEnvelope.endSpeed,
             Offset(0.meters), TestTrains.REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2.0, null, null
         )!!
         val timeLastBlockFree = firstBlockEnvelope.totalTime + 120 + secondBlockEnvelope.totalTime * 3

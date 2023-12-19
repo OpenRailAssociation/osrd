@@ -10,6 +10,7 @@ import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.stdcm.STDCMResult
 import fr.sncf.osrd.stdcm.STDCMStep
+import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorer
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.RollingStock.Comfort
@@ -65,11 +66,11 @@ fun findPath(
         .toList()
     val remainingDistanceEstimators = makeHeuristics(fullInfra, locations)
     val path = Pathfinding(graph)
-        .setEdgeToLength { edge: STDCMEdge? -> fullInfra.blockInfra.getBlockLength(edge!!.block).cast() }
+        .setEdgeToLength { edge -> edge.infraExplorer.getCurrentBlockLength().cast() }
         .setRemainingDistanceEstimator(makeAStarHeuristic(remainingDistanceEstimators, rollingStock))
         .setEdgeToLength { edge -> edge.length.cast() }
-        .addBlockedRangeOnEdges { edge: STDCMEdge? -> convertRanges(loadingGaugeConstraints.apply(edge!!.block)) }
-        .addBlockedRangeOnEdges { edge: STDCMEdge? -> convertRanges(electrificationConstraints.apply(edge!!.block)) }
+        .addBlockedRangeOnEdges { edge -> convertRanges(loadingGaugeConstraints.apply(edge.block)) }
+        .addBlockedRangeOnEdges { edge -> convertRanges(electrificationConstraints.apply(edge.block)) }
         .setTotalCostUntilEdgeLocation { range ->
             totalCostUntilEdgeLocation(
                 range,
@@ -160,7 +161,8 @@ private fun makeAStarHeuristic(
     val res = ArrayList<AStarHeuristic<STDCMEdge, STDCMEdge>>()
     for (baseBlockHeuristic in baseBlockHeuristics) {
         res.add(AStarHeuristic { edge, offset ->
-            val distance = baseBlockHeuristic.apply(edge.block, convertOffsetToBlock(offset, edge.envelopeStartOffset))
+            val distance = baseBlockHeuristic.apply(edge.block,
+                convertOffsetToBlock(offset, edge.envelopeStartOffset))
             distance / rollingStock.maxSpeed
         })
     }
@@ -176,13 +178,16 @@ private fun convertLocations(
 ): Set<EdgeLocation<STDCMEdge, STDCMEdge>> {
     val res = HashSet<EdgeLocation<STDCMEdge, STDCMEdge>>()
     for (location in locations) {
-        val edges = STDCMEdgeBuilder(location.edge, graph)
-            .setStartTime(startTime)
-            .setStartOffset(location.offset)
-            .setPrevMaximumAddedDelay(maxDepartureDelay)
-            .makeAllEdges()
-        for (edge in edges)
-            res.add(EdgeLocation(edge, Offset(0.meters)))
+        val infraExplorers = initInfraExplorer(graph.rawInfra, graph.blockInfra, location)
+        for (explorer in infraExplorers) {
+            val edges = STDCMEdgeBuilder(explorer, graph)
+                .setStartTime(startTime)
+                .setStartOffset(location.offset)
+                .setPrevMaximumAddedDelay(maxDepartureDelay)
+                .makeAllEdges()
+            for (edge in edges)
+                res.add(EdgeLocation(edge, Offset(0.meters)))
+        }
     }
     return res
 }

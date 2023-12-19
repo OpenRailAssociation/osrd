@@ -164,8 +164,8 @@ class DepartureTimeShiftTests {
         val firstBlock = infra.addBlock("a", "b")
         val secondBlock = infra.addBlock("b", "c")
         val firstBlockEnvelope = simulateBlock(
-            infra, infra,
-            firstBlock, 0.0, Offset(0.meters),
+            infra, infraExplorerFromBlock(infra, infra, firstBlock),
+            0.0, Offset(0.meters),
             TestTrains.REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2.0, null, null
         )!!
         val occupancyGraph = ImmutableMultimap.of(
