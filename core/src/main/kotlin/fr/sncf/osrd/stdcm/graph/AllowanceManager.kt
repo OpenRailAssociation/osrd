@@ -4,7 +4,6 @@ import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
 import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator
 import fr.sncf.osrd.sim_infra.api.BlockId
-import fr.sncf.osrd.utils.units.Distance.Companion.fromMeters
 import java.util.*
 
 /**
@@ -29,7 +28,7 @@ class AllowanceManager(private val graph: STDCMGraph) {
         val newPreviousEdge = makeNewEdges(affectedEdges, newEnvelope) ?: return null
         // The new edges are invalid, conflicts shouldn't happen here but it can be too slow
         val newPreviousNode = newPreviousEdge.getEdgeEnd(graph)
-        return STDCMEdgeBuilder.fromNode(graph, newPreviousNode, oldEdge.block)
+        return STDCMEdgeBuilder.fromNode(graph, newPreviousNode, oldEdge.infraExplorer)
             .findEdgeSameNextOccupancy(oldEdge.timeNextOccupancy)
     }
 
@@ -57,7 +56,7 @@ class AllowanceManager(private val graph: STDCMGraph) {
             var maxAddedDelayAfter = edge.maximumAddedDelayAfter + edge.addedDelay
             if (node != null) maxAddedDelayAfter = node.maximumAddedDelay
             prevEdge =
-                STDCMEdgeBuilder(edge.block, graph)
+                STDCMEdgeBuilder(edge.infraExplorer, graph)
                     .setStartTime(node?.time ?: edge.timeStart)
                     .setStartSpeed(edge.envelope.beginSpeed)
                     .setStartOffset(edge.envelopeStartOffset)
@@ -91,8 +90,7 @@ class AllowanceManager(private val graph: STDCMGraph) {
     /** Creates the EnvelopeSimContext to run an allowance on the given edges */
     private fun makeAllowanceContext(edges: List<STDCMEdge>): EnvelopeSimContext {
         val blocks = ArrayList<BlockId>()
-        val firstOffset =
-            (graph.blockInfra.getBlockLength(edges[0].block) - fromMeters(edges[0].envelope.endPos))
+        val firstOffset = edges[0].envelopeStartOffset
         for (edge in edges) blocks.add(edge.block)
         return makeSimContext(
             graph.rawInfra,
@@ -124,8 +122,7 @@ class AllowanceManager(private val graph: STDCMGraph) {
             res.addFirst(mutEdge)
             if (mutEdge.previousNode == null) {
                 // We've reached the start of the path, this should only happen because of the max
-                // delay
-                // parameter
+                // delay parameter
                 return ArrayList(res)
             }
             mutDelayNeeded += mutEdge.addedDelay
