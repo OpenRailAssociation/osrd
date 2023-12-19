@@ -240,6 +240,7 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
             noMargin
             sm
             list="line"
+            focus
           />
           <datalist id="line" className="overflow-hidden">
             {searchLineState &&
