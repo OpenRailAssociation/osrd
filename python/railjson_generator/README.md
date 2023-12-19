@@ -1,5 +1,20 @@
 # RAILJSON GENERATOR
 
+## Running generation scripts
+
+To run a generation script, pass its output directory as its first argument:
+
+```sh
+mkdir small_infra_out
+poetry run scripts/small_infra.py small_infra_out
+```
+
+This library provides an helper to generate multiple infrastructures at once:
+
+```sh
+poetry run python3 -m railjson_generator /tmp/all_infras scripts/*.py
+```
+
 ## How to use
 
 ### Infra Builder
@@ -67,10 +82,3 @@ Route can either be manually created, or generated using `generate_routes`, and 
 ## Example
 
 You can find a complete example [here](./railjson_generator/scripts/examples/example_script.py).
-
-## Run the generation script
-
-In order to run a generation script, you must place it inside [the script directory](./railjson_generator/scripts), and then run [generate.py](./railjson_generator/scripts/generate.py) by passing it two arguments:
-
-- The output folder where to write the railjson and the simulation json.
-- The name of the script (without the extension nor the parent directory) that you want to run.

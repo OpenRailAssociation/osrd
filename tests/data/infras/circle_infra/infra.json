@@ -1,0 +1,244 @@
+{
+    "version": "3.4.6",
+    "operational_points": [],
+    "routes": [],
+    "extended_switch_types": [],
+    "switches": [
+        {
+            "id": "switch.0",
+            "switch_type": "link",
+            "group_change_delay": 0.0,
+            "ports": {
+                "A": {
+                    "endpoint": "END",
+                    "track": "track_d"
+                },
+                "B": {
+                    "endpoint": "BEGIN",
+                    "track": "track_a"
+                }
+            },
+            "extensions": {
+                "sncf": {
+                    "label": "switch.0"
+                }
+            }
+        },
+        {
+            "id": "switch1",
+            "switch_type": "point_switch",
+            "group_change_delay": 0.0,
+            "ports": {
+                "A": {
+                    "endpoint": "END",
+                    "track": "track_a"
+                },
+                "B1": {
+                    "endpoint": "BEGIN",
+                    "track": "track_b"
+                },
+                "B2": {
+                    "endpoint": "BEGIN",
+                    "track": "track_c"
+                }
+            },
+            "extensions": {
+                "sncf": {
+                    "label": "switch1"
+                }
+            }
+        },
+        {
+            "id": "switch2",
+            "switch_type": "point_switch",
+            "group_change_delay": 0.0,
+            "ports": {
+                "A": {
+                    "endpoint": "BEGIN",
+                    "track": "track_d"
+                },
+                "B1": {
+                    "endpoint": "END",
+                    "track": "track_b"
+                },
+                "B2": {
+                    "endpoint": "END",
+                    "track": "track_c"
+                }
+            },
+            "extensions": {
+                "sncf": {
+                    "label": "switch2"
+                }
+            }
+        }
+    ],
+    "track_sections": [
+        {
+            "geo": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ]
+                ]
+            },
+            "sch": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ]
+                ]
+            },
+            "id": "track_a",
+            "length": 200.0,
+            "slopes": [],
+            "curves": [],
+            "extensions": {
+                "sncf": {
+                    "line_code": 0,
+                    "line_name": "placeholder_line",
+                    "track_number": 0,
+                    "track_name": "placeholder_track"
+                }
+            }
+        },
+        {
+            "geo": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ]
+                ]
+            },
+            "sch": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ]
+                ]
+            },
+            "id": "track_b",
+            "length": 200.0,
+            "slopes": [],
+            "curves": [],
+            "extensions": {
+                "sncf": {
+                    "line_code": 0,
+                    "line_name": "placeholder_line",
+                    "track_number": 0,
+                    "track_name": "placeholder_track"
+                }
+            }
+        },
+        {
+            "geo": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ]
+                ]
+            },
+            "sch": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ]
+                ]
+            },
+            "id": "track_c",
+            "length": 200.0,
+            "slopes": [],
+            "curves": [],
+            "extensions": {
+                "sncf": {
+                    "line_code": 0,
+                    "line_name": "placeholder_line",
+                    "track_number": 0,
+                    "track_name": "placeholder_track"
+                }
+            }
+        },
+        {
+            "geo": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ]
+                ]
+            },
+            "sch": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ]
+                ]
+            },
+            "id": "track_d",
+            "length": 200.0,
+            "slopes": [],
+            "curves": [],
+            "extensions": {
+                "sncf": {
+                    "line_code": 0,
+                    "line_name": "placeholder_line",
+                    "track_number": 0,
+                    "track_name": "placeholder_track"
+                }
+            }
+        }
+    ],
+    "speed_sections": [],
+    "catenaries": [],
+    "signals": [],
+    "buffer_stops": [],
+    "detectors": [],
+    "neutral_sections": []
+}

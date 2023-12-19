@@ -382,8 +382,10 @@ pub mod tests {
     }
 
     async fn make_small_infra(db_pool: Data<DbPool>) -> Infra {
-        let railjson: RailJson =
-            serde_json::from_str(include_str!("tests/small_infra/small_infra.json")).unwrap();
+        let railjson: RailJson = serde_json::from_str(include_str!(
+            "../../tests/data/infras/small_infra/infra.json"
+        ))
+        .unwrap();
         let infra = Infra::from(InfraForm {
             name: "small_infra".to_owned(),
         });

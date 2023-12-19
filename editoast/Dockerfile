@@ -30,6 +30,7 @@ RUN rustup component add llvm-tools && \
     cargo install grcov
 COPY --from=planner /app/recipe.json recipe.json
 COPY --from=planner /app/editoast_derive/ editoast_derive
+COPY --from=test_data . /tests/data
 
 ENV RUSTFLAGS="-Cinstrument-coverage -C link-arg=-fuse-ld=mold"
 ENV LLVM_PROFILE_FILE="editoast-%p-%m.profraw"

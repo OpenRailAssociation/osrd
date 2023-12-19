@@ -126,37 +126,11 @@ test {
     }
 }
 
-def genExamplesDir = "$buildDir/generated_examples"
-
-def genExamples = tasks.register("genExamples", Exec) {
-    commandLine "poetry", "--directory", "../python/railjson_generator/",  "run", "python", "-m", "railjson_generator", genExamplesDir
-}
-
-genExamples.configure {
-    onlyIf {
-        // Do not execute if 'GENERATED_EXAMPLES' environment variable is set
-        System.getenv('EXAMPLES_PATH') == null
-    }
-}
-processTestResources.configure {
-    dependsOn genExamples
-}
 
 sourceSets {
     test {
         resources {
-            // TODO: figure out the proper way to add generated resources to a source set
-            //  https://docs.gradle.org/current/dsl/org.gradle.api.tasks.SourceSetOutput.html
-            if (System.getenv('EXAMPLES_PATH')) {
-                srcDirs = [
-                    System.getenv('EXAMPLES_PATH')
-                ]
-            } else {
-                srcDirs = [
-                    "../python/railjson_generator/railjson_generator/examples",
-                    genExamplesDir
-                ]
-            }
+            srcDirs = ["../tests/data"]
         }
     }
 }
