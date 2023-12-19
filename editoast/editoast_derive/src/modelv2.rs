@@ -287,6 +287,24 @@ impl Fields {
     }
 }
 
+/// Nested pair macro
+///
+/// Helps when using `unzip()` on lot of values.
+macro_rules! np {
+    (vec2) => { np!(Vec<_>, Vec<_>) };
+    (vec3) => { np!(Vec<_>, Vec<_>, Vec<_>) };
+    (vec4) => { np!(Vec<_>, Vec<_>, Vec<_>, Vec<_>) };
+    (vec5) => { np!(Vec<_>, Vec<_>, Vec<_>, Vec<_>, Vec<_>) };
+    (vec6) => { np!(Vec<_>, Vec<_>, Vec<_>, Vec<_>, Vec<_>, Vec<_>) };
+    (vec7) => { np!(Vec<_>, Vec<_>, Vec<_>, Vec<_>, Vec<_>, Vec<_>, Vec<_>) };
+    ($id:ident, $($rest:ident),+) => { ($id, np!($($rest),+)) };
+    ($id:ident) => { $id };
+    ($t:ty, $($rest:ty),+) => { ($t, np!($($rest),+)) };
+    ($t:ty) => { $t };
+    ($e:expr, $($rest:expr),+) => { ($e, np!($($rest),+)) };
+    ($e:expr) => { $e };
+}
+
 impl ModelConfig {
     fn from_macro_args(options: ModelOptions, model_name: syn::Ident) -> Result<Self> {
         let row = GeneratedType {
@@ -415,14 +433,14 @@ impl ModelConfig {
     fn make_model_decl(&self, vis: &syn::Visibility) -> TokenStream {
         let model = &self.model;
         let table = &self.table;
-        let (field, (ty, column)): (Vec<_>, (Vec<_>, Vec<_>)) = self
+        let np!(field, ty, column): np!(vec3) = self
             .iter_fields()
-            .map(|field| (&field.ident, (field.transform_type(), &field.column)))
+            .map(|field| np!(&field.ident, field.transform_type(), &field.column))
             .unzip();
-        let (cs_field, (cs_ty, cs_column)): (Vec<_>, (Vec<_>, Vec<_>)) = self
+        let np!(cs_field, cs_ty, cs_column): np!(vec3) = self
             .iter_fields()
             .filter(|f| !self.is_primary(f))
-            .map(|field| (&field.ident, (field.transform_type(), &field.column)))
+            .map(|field| np!(&field.ident, field.transform_type(), &field.column))
             .unzip();
         let cs_ident = self.changeset.ident();
         let cs_derive = &self.changeset.derive;
@@ -460,7 +478,7 @@ impl ModelConfig {
     }
 
     fn make_builder(&self, changeset: bool) -> TokenStream {
-        let (fields, (fns, (types, bodies))): (Vec<_>, (Vec<_>, (Vec<_>, Vec<_>))) = self
+        let np!(fields, fns, types, bodies): np!(vec4) = self
             .iter_fields()
             .filter(|f| !self.is_primary(f))
             .filter(|field| !field.builder_skip)
@@ -472,7 +490,7 @@ impl ModelConfig {
                 } else {
                     quote! { self.changeset.#ident = Some(#expr) }
                 };
-                (ident, (&field.builder_ident, (&field.ty, body)))
+                np!(ident, &field.builder_ident, &field.ty, body)
             })
             .unzip();
 
@@ -564,10 +582,24 @@ impl ModelConfig {
         let table_name = self.table_name();
         let row_ident = self.row.ident();
         let cs_ident = self.changeset.ident();
-        let (ty, (ident, filter)): (Vec<_>, (Vec<_>, Vec<_>)) = self
+        let field_count = self.fields.len();
+        let (pk_ident, pk_column) = match &self.primary_field {
+            Identifier::Field(ident) => (
+                ident,
+                Ident::new(&self.fields.get(ident).unwrap().column, Span::call_site()),
+            ),
+            Identifier::Compound(_) => {
+                unreachable!("primary annotation is always put on a single field")
+            }
+        };
+
+        let np!(ty, ident, filter, batch_filter, batch_param_count): np!(vec5) = self
             .identifiers
             .iter()
             .map(|id| {
+                let type_expr = id.type_expr(self);
+                let lvalue = id.get_ident_lvalue();
+
                 let (ident, column): (Vec<_>, Vec<_>) = id
                     .get_idents()
                     .into_iter()
@@ -577,13 +609,27 @@ impl ModelConfig {
                         (ident, column)
                     })
                     .unzip();
+
+                // Single row access
                 let filters = quote! { #(filter(dsl::#column.eq(#ident))).* };
-                (id.type_expr(self), (id.get_ident_lvalue(), filters))
+
+                // Batched row access (batch_filter is the argument of a .or_filter())
+                let batch_filter = {
+                    let mut idents = ident.iter().zip(column.iter()).rev();
+                    let (first_ident, first_column) = idents.next().unwrap();
+                    idents.fold(
+                        quote! { dsl::#first_column.eq(#first_ident) },
+                        |acc, (ident, column)| {
+                            quote! { dsl::#column.eq(#ident).and(#acc) }
+                        },
+                    )
+                };
+                let param_count = ident.len();
+
+                np!(type_expr, lvalue, filters, batch_filter, param_count)
             })
             .unzip();
-        let Identifier::Field(pk) = &self.primary_field else {
-            panic!("Model: primary field must be a single field - should not happen");
-        };
+
         quote! {
             #(
                 #[automatically_derived]
@@ -673,7 +719,7 @@ impl ModelConfig {
                     use diesel::prelude::*;
                     use diesel_async::RunQueryDsl;
                     use #table_mod::dsl;
-                    let id = self.#pk;
+                    let id = self.#pk_ident;
                     diesel::delete(#table_mod::table.find(id))
                         .execute(conn)
                         .await
@@ -681,6 +727,250 @@ impl ModelConfig {
                         .map_err(Into::into)
                 }
             }
+
+            #(
+                #[automatically_derived]
+                #[async_trait::async_trait]
+                impl crate::modelsv2::CreateBatch<#cs_ident, #ty> for #model {
+                    async fn create_batch<
+                        I: std::iter::IntoIterator<Item = #cs_ident> + Send + 'async_trait,
+                        C: Default + std::iter::Extend<Self> + Send,
+                    >(
+                        conn: &mut diesel_async::AsyncPgConnection,
+                        values: I,
+                    ) -> crate::error::Result<C> {
+                        use crate::modelsv2::Model;
+                        use #table_mod::dsl;
+                        use diesel::prelude::*;
+                        use diesel_async::RunQueryDsl;
+                        use futures_util::stream::TryStreamExt;
+                        Ok(crate::chunked_for_libpq! {
+                            #field_count,
+                            values,
+                            C::default(),
+                            chunk => {
+                                diesel::insert_into(dsl::#table_name)
+                                    .values(chunk)
+                                    .load_stream::<#row_ident>(conn)
+                                    .await
+                                    .map(|s| s.map_ok(<#model as Model>::from_row).try_collect::<Vec<_>>())?
+                                    .await?
+                            }
+                        })
+                    }
+
+                    async fn create_batch_with_key<
+                        I: std::iter::IntoIterator<Item = #cs_ident> + Send + 'async_trait,
+                        C: Default + std::iter::Extend<(#ty, Self)> + Send,
+                    >(
+                        conn: &mut diesel_async::AsyncPgConnection,
+                        values: I,
+                    ) -> crate::error::Result<C> {
+                        use crate::models::Identifiable;
+                        use crate::modelsv2::Model;
+                        use #table_mod::dsl;
+                        use diesel::prelude::*;
+                        use diesel_async::RunQueryDsl;
+                        use futures_util::stream::TryStreamExt;
+                        Ok(crate::chunked_for_libpq! {
+                            #field_count,
+                            values,
+                            C::default(),
+                            chunk => {
+                                diesel::insert_into(dsl::#table_name)
+                                    .values(chunk)
+                                    .load_stream::<#row_ident>(conn)
+                                    .await
+                                    .map(|s| {
+                                        s.map_ok(|row| {
+                                            let model = <#model as Model>::from_row(row);
+                                            (model.get_id(), model)
+                                        })
+                                        .try_collect::<Vec<_>>()
+                                    })?
+                                    .await?
+                            }
+                        })
+                    }
+                }
+
+                #[automatically_derived]
+                #[async_trait::async_trait]
+                impl crate::modelsv2::RetrieveBatchUnchecked<#ty> for #model {
+                    async fn retrieve_batch_unchecked<
+                        I: std::iter::IntoIterator<Item = #ty> + Send + 'async_trait,
+                        C: Default + std::iter::Extend<#model> + Send,
+                    >(
+                        conn: &mut diesel_async::AsyncPgConnection,
+                        ids: I,
+                    ) -> crate::error::Result<C> {
+                        use crate::modelsv2::Model;
+                        use #table_mod::dsl;
+                        use diesel::prelude::*;
+                        use diesel_async::RunQueryDsl;
+                        use futures_util::stream::TryStreamExt;
+                        Ok(crate::chunked_for_libpq! {
+                            #batch_param_count,
+                            ids,
+                            C::default(),
+                            chunk => {
+                                // Diesel doesn't allow `(col1, col2).eq_any(iterator<(&T, &U)>)` because it imposes restrictions
+                                // on tuple usage. Doing it this way is the suggested workaround (https://github.com/diesel-rs/diesel/issues/3222#issuecomment-1177433434).
+                                // eq_any reallocates its argument anyway so the additional cost with this method are the boxing and the diesel wrappers.
+                                let mut query = dsl::#table_name.into_boxed();
+                                for #ident in chunk.into_iter() {
+                                    query = query.or_filter(#batch_filter);
+                                }
+                                query
+                                    .load_stream::<#row_ident>(conn)
+                                    .await
+                                    .map(|s| s.map_ok(<#model as Model>::from_row).try_collect::<Vec<_>>())?
+                                    .await?
+                            }
+                        })
+                    }
+
+                    async fn retrieve_batch_with_key_unchecked<
+                        I: std::iter::IntoIterator<Item = #ty> + Send + 'async_trait,
+                        C: Default + std::iter::Extend<(#ty, #model)> + Send,
+                    >(
+                        conn: &mut diesel_async::AsyncPgConnection,
+                        ids: I,
+                    ) -> crate::error::Result<C> {
+                        use crate::models::Identifiable;
+                        use crate::modelsv2::Model;
+                        use #table_mod::dsl;
+                        use diesel::prelude::*;
+                        use diesel_async::RunQueryDsl;
+                        use futures_util::stream::TryStreamExt;
+                        Ok(crate::chunked_for_libpq! {
+                            #batch_param_count,
+                            ids,
+                            C::default(),
+                            chunk => {
+                                let mut query = dsl::#table_name.into_boxed();
+                                for #ident in chunk.into_iter() {
+                                    query = query.or_filter(#batch_filter);
+                                }
+                                query
+                                    .load_stream::<#row_ident>(conn)
+                                    .await
+                                    .map(|s| {
+                                        s.map_ok(|row| {
+                                            let model = <#model as Model>::from_row(row);
+                                            (model.get_id(), model)
+                                        })
+                                        .try_collect::<Vec<_>>()
+                                    })?
+                                    .await?
+                            }
+                        })
+                    }
+                }
+
+                #[automatically_derived]
+                #[async_trait::async_trait]
+                impl crate::modelsv2::UpdateBatchUnchecked<#model, #ty> for #cs_ident {
+                    async fn update_batch_unchecked<
+                        I: std::iter::IntoIterator<Item = #ty> + Send + 'async_trait,
+                        C: Default + std::iter::Extend<#model> + Send,
+                    >(
+                        self,
+                        conn: &mut diesel_async::AsyncPgConnection,
+                        ids: I,
+                    ) -> crate::error::Result<C> {
+                        use crate::modelsv2::Model;
+                        use #table_mod::dsl;
+                        use diesel::prelude::*;
+                        use diesel_async::RunQueryDsl;
+                        use futures_util::stream::TryStreamExt;
+                        Ok(crate::chunked_for_libpq! {
+                            #batch_param_count,
+                            ids,
+                            C::default(),
+                            chunk => {
+                                // We have to do it this way because we can't .or_filter() on a boxed update statement
+                                let mut query = dsl::#table_name.select(dsl::#pk_column).into_boxed();
+                                for #ident in chunk.into_iter() {
+                                    query = query.or_filter(#batch_filter);
+                                }
+                                diesel::update(dsl::#table_name)
+                                    .filter(dsl::#pk_column.eq_any(query))
+                                    .set(&self)
+                                    .load_stream::<#row_ident>(conn)
+                                    .await
+                                    .map(|s| s.map_ok(<#model as Model>::from_row).try_collect::<Vec<_>>())?
+                                    .await?
+                            }
+                        })
+                    }
+
+                    async fn update_batch_with_key_unchecked<
+                        I: std::iter::IntoIterator<Item = #ty> + Send + 'async_trait,
+                        C: Default + std::iter::Extend<(#ty, #model)> + Send,
+                    >(
+                        self,
+                        conn: &mut diesel_async::AsyncPgConnection,
+                        ids: I,
+                    ) -> crate::error::Result<C> {
+                        use crate::models::Identifiable;
+                        use crate::modelsv2::Model;
+                        use #table_mod::dsl;
+                        use diesel::prelude::*;
+                        use diesel_async::RunQueryDsl;
+                        use futures_util::stream::TryStreamExt;
+                        Ok(crate::chunked_for_libpq! {
+                            #batch_param_count,
+                            ids,
+                            C::default(),
+                            chunk => {
+                                let mut query = dsl::#table_name.select(dsl::#pk_column).into_boxed();
+                                for #ident in chunk.into_iter() {
+                                    query = query.or_filter(#batch_filter);
+                                }
+                                diesel::update(dsl::#table_name)
+                                    .filter(dsl::#pk_column.eq_any(query))
+                                    .set(&self)
+                                    .load_stream::<#row_ident>(conn)
+                                    .await
+                                    .map(|s| {
+                                        s.map_ok(|row| {
+                                            let model = <#model as Model>::from_row(row);
+                                            (model.get_id(), model)
+                                        })
+                                        .try_collect::<Vec<_>>()
+                                    })?
+                                    .await?
+                            }
+                        })
+                    }
+                }
+
+                #[automatically_derived]
+                #[async_trait::async_trait]
+                impl crate::modelsv2::DeleteBatch<#ty> for #model {
+                    async fn delete_batch<I: std::iter::IntoIterator<Item = #ty> + Send + 'async_trait>(
+                        conn: &mut diesel_async::AsyncPgConnection,
+                        ids: I,
+                    ) -> crate::error::Result<usize> {
+                        use #table_mod::dsl;
+                        use diesel::prelude::*;
+                        use diesel_async::RunQueryDsl;
+                        let counts = crate::chunked_for_libpq! {
+                            #batch_param_count,
+                            ids,
+                            chunk => {
+                                let mut query = diesel::delete(dsl::#table_name).into_boxed();
+                                for #ident in chunk.into_iter() {
+                                    query = query.or_filter(#batch_filter);
+                                }
+                                query.execute(conn).await?
+                            }
+                        };
+                        Ok(counts.into_iter().sum())
+                    }
+                }
+            )*
         }
     }
 }

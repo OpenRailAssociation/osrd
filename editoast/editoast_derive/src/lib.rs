@@ -230,6 +230,10 @@ pub fn search_config_store(input: proc_macro::TokenStream) -> proc_macro::TokenS
 /// * `impl Update<T, Model> for ModelChangeset`: if `Model: Identifiable<T>`
 /// * `impl Delete for Model`
 /// * `impl DeleteStatic<T> for Model`: if `Model: Identifiable<T>`
+/// * `impl RetrieveBatchUnchecked<T> for Model`: if `Model: Identifiable<T>`
+/// * `impl UpdateBatchUnchecked<T, Model> for ModelChangeset`: if `Model: Identifiable<T>`
+/// * `impl CreateBatch<T, ModelChangeset> for Model`: if `Model: Identifiable<T>`
+/// * `impl DeleteBatch<T> for Model`: if `Model: Identifiable<T>`
 ///
 /// ## Options
 /// ### Struct-level options
