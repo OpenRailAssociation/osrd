@@ -314,7 +314,7 @@ pub mod test {
             id: None,
             ..project.model.clone()
         };
-        let _project_2 = TestFixture::create(project_2, db_pool.clone()).await;
+        let _project_2 = TestFixture::create_legacy(project_2, db_pool.clone()).await;
 
         let projects = ProjectWithStudies::list(db_pool.clone(), 1, 25, Ordering::NameDesc)
             .await

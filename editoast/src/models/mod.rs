@@ -1,4 +1,3 @@
-mod documents;
 pub mod electrical_profiles;
 pub mod infra;
 pub mod infra_objects;
@@ -34,9 +33,6 @@ pub use train_schedule::{
     SimulationOutputChangeset, SpacingRequirement, TrainSchedule, TrainScheduleChangeset,
     ZoneUpdate,
 };
-
-#[cfg(test)]
-pub use documents::Document;
 
 crate::schemas! {
     projects::schemas(),

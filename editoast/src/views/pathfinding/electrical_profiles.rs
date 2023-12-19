@@ -201,7 +201,7 @@ mod tests {
             data: Some(DieselJson::new(ep_data)),
         };
 
-        TestFixture::create(electrical_profile_set, db_pool).await
+        TestFixture::create_legacy(electrical_profile_set, db_pool).await
     }
 
     #[rstest]

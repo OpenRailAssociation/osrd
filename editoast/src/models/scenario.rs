@@ -262,7 +262,7 @@ pub mod test {
         } = scenario_fixture_set().await;
 
         // Create second timetable
-        let timetable_2 = TestFixture::create(
+        let timetable_2 = TestFixture::create_legacy(
             Timetable {
                 id: None,
                 name: Some(timetable.model.name.clone().unwrap() + "_bis"),
@@ -278,7 +278,7 @@ pub mod test {
             timetable_id: Some(timetable_2.id()),
             ..scenario.model.clone()
         };
-        let _scenario_2 = TestFixture::create(scenario_2, db_pool.clone());
+        let _scenario_2 = TestFixture::create_legacy(scenario_2, db_pool.clone());
 
         let scenarios =
             ScenarioWithCountTrains::list(db_pool.clone(), 1, 25, (study.id(), Ordering::NameDesc))

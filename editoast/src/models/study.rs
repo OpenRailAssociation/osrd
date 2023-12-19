@@ -238,7 +238,7 @@ pub mod test {
             name: Some(study.model.name.clone().unwrap() + "_bis"),
             ..study.model.clone()
         };
-        TestFixture::create(study_2, db_pool.clone()).await;
+        TestFixture::create_legacy(study_2, db_pool.clone()).await;
 
         let studies =
             StudyWithScenarios::list(db_pool.clone(), 1, 25, (project.id(), Ordering::NameDesc))
