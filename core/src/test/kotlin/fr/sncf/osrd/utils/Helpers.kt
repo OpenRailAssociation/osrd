@@ -61,7 +61,7 @@ object Helpers {
     @JvmStatic
     @Throws(IOException::class, URISyntaxException::class)
     fun getExampleInfra(infraPath: String): RJSInfra {
-        return deserializeResource(RJSInfra.adapter, infraPath)
+        return deserializeResource(RJSInfra.adapter, "infras/$infraPath")
     }
 
     @JvmStatic
@@ -69,7 +69,7 @@ object Helpers {
     fun getExampleElectricalProfiles(
         externalGeneratedInputsPath: String
     ): RJSElectricalProfileSet {
-        return deserializeResource(RJSElectricalProfileSet.adapter, externalGeneratedInputsPath)
+        return deserializeResource(RJSElectricalProfileSet.adapter, "infras/" + externalGeneratedInputsPath)
     }
 
     @Throws(IOException::class, URISyntaxException::class)

@@ -91,7 +91,7 @@ jobs:
           echo "All retries failed, exiting."
           exit 1
 
-  generate_railjson:
+  check_generated_railjson_sync:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -106,20 +106,15 @@ jobs:
 
       - name: Install railjson_generator dependencies
         run: |
-          cd python/railjson_generator
-          poetry install
+          poetry -C python/railjson_generator install
+
       - name: Generate railjson
         run: |
-          cd python/railjson_generator
-          mkdir /tmp/artifact
-          poetry run python -m railjson_generator /tmp/artifact
-          cp -rv railjson_generator/examples/* /tmp/artifact
-      - name: Archive railjson examples artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: railjson-examples
-          path: /tmp/artifact/**/*
-          if-no-files-found: error
+          mkdir /tmp/generated_infras
+          poetry -C python/railjson_generator run python -m railjson_generator /tmp/generated_infras tests/infra-scripts/*.py
+
+      - name: Ensure generated infrastructures are up to date
+        run: diff -r -u tests/data/infras /tmp/generated_infras
 
   check_railjson_generator:
     runs-on: ubuntu-latest
@@ -278,27 +273,14 @@ jobs:
   check_core:
     runs-on: ubuntu-latest
     needs:
-      - generate_railjson
       - build
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Download railjson examples
-        uses: actions/download-artifact@v3
-        with:
-          name: railjson-examples
-          path: railjson_generated_examples
-
-      - name: List railjson examples
-        run: |
-          ls -l railjson_generated_examples
-
       - name: Execute tests within container
         run: |
           docker run --name core-test \
-            -v $PWD/railjson_generated_examples:/railjson_generated_examples \
-            -e EXAMPLES_PATH=/railjson_generated_examples \
             -v $PWD/core/build:/output ${{ fromJSON(needs.build.outputs.stable_tags).core-build }} \
             /bin/bash -c 'gradle -Pspotbugs_report_xml --continue check; status=$?; cp -r build/* /output/; exit $status'
           exit $(docker wait core-test)

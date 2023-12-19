@@ -4,7 +4,6 @@ from typing import Any, Dict, Iterable, Iterator, List, Optional
 
 import pytest
 import requests
-from railjson_generator.scripts.generate import main
 
 from tests.infra import Infra
 from tests.path import Path as TrainPath
@@ -15,11 +14,10 @@ from tests.utils.timetable import create_scenario
 
 
 def _load_generated_infra(name: str) -> int:
-    output = Path("/tmp/osrd-generated-examples")
-    infra = output / f"{name}/infra.json"
-    main([name], output)
-    with open(infra) as json_infra:
-        res = requests.post(EDITOAST_URL + f"infra/railjson?name={name}&generate_data=true", json=json.load(json_infra))
+    infra_path = Path(__file__).parent / f"data/infras/{name}/infra.json"
+    with infra_path.open() as json_infra:
+        infra_json = json.load(json_infra)
+    res = requests.post(EDITOAST_URL + f"infra/railjson?name={name}&generate_data=true", json=infra_json)
     res.raise_for_status()
     return res.json()["infra"]
 

@@ -2,6 +2,7 @@
 FROM gradle:8.0-jdk17 AS build_env
 
 WORKDIR /home/gradle/src
+COPY --from=test_data . /home/gradle/tests/data
 COPY --chown=gradle:gradle . .
 # Remove broken symlink (to prevent kaniko from crashing)
 RUN gradle shadowJar --no-daemon && \

@@ -40,6 +40,9 @@ target "core-build" {
   context = "core"
   dockerfile = "Dockerfile"
   target = "build_env"
+  contexts = {
+    test_data = "./tests/data"
+  }
 }
 
 target "base-core" {}
@@ -49,6 +52,9 @@ target "core" {
   context = "core"
   dockerfile = "Dockerfile"
   target = "running_env"
+  contexts = {
+    test_data = "./tests/data"
+  }
 }
 
 ############
@@ -61,6 +67,9 @@ target "editoast-test" {
   context = "editoast"
   dockerfile = "Dockerfile"
   target = "test_builder"
+  contexts = {
+    test_data = "./tests/data"
+  }
 }
 
 target "base-editoast" {}
@@ -69,6 +78,9 @@ target "editoast" {
   context = "editoast"
   dockerfile = "Dockerfile"
   target = "running_env"
+  contexts = {
+    test_data = "./tests/data"
+  }
 }
 
 #########

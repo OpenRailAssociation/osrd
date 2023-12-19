@@ -453,31 +453,6 @@ class PathfindingTest : ApiTest() {
         expectWaypointInPathResult(response, waypointEnd)
     }
 
-    @ParameterizedTest
-    @MethodSource("provideInfraParameters")
-    @Throws(Exception::class)
-    fun tinyInfraTest(path: String, inverted: Boolean) {
-        runTestOnExampleInfra(path, inverted)
-    }
-
-    /** Runs a pathfinding on a given infra. Looks into the simulation file to find a possible path  */
-    @Throws(Exception::class)
-    private fun runTestOnExampleInfra(rootPath: String, inverted: Boolean) {
-        val req = requestFromExampleInfra(
-            "$rootPath/infra.json",
-            "$rootPath/simulation.json",
-            inverted
-        )
-        val requestBody = PathfindingRequest.adapter.toJson(req)
-        val result = TakesUtils.readBodyResponse(
-            PathfindingBlocksEndpoint(infraManager).act(
-                RqFake("POST", "/pathfinding/routes", requestBody)
-            )
-        )
-        val response = PathfindingResult.adapterResult.fromJson(result)!!
-        Assertions.assertTrue(response.pathWaypoints.size >= 2)
-    }
-
     @Test
     @Throws(IOException::class)
     fun testCurveGraph() {
@@ -778,8 +753,6 @@ class PathfindingTest : ApiTest() {
                     "three_trains"
                 )
             )
-            for (i in 0..9)
-                infraPaths.add("generated/$i")
             for (inverted in booleanArrayOf(true, false))
                 for (path in infraPaths)
                     res.add(Arguments.of(path, inverted))
@@ -796,7 +769,7 @@ class PathfindingTest : ApiTest() {
         ): PathfindingRequest {
             val simulation = MoshiUtils.deserialize(
                 StandaloneSimulationCommand.Input.adapter,
-                Helpers.getResourcePath(simPath)
+                Helpers.getResourcePath("infras/" + simPath)
             )
             val scheduleGroup = simulation.trainScheduleGroups[0]
             val waypoints: Array<Array<PathfindingWaypoint>> = Array(2) { Array(2) { scheduleGroup.waypoints[0][0] } }

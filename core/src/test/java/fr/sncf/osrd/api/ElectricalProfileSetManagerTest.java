@@ -41,7 +41,7 @@ public class ElectricalProfileSetManagerTest extends ApiTest {
 
     @Test
     public void failAndRetryTest() throws IOException {
-        var path = Helpers.getResourcePath("small_infra/external_generated_inputs.json");
+        var path = Helpers.getResourcePath("infras/small_infra/external_generated_inputs.json");
         var newPath = path.resolveSibling("external_generated_inputs.json.tmp");
         var testID = "small_infra/external_generated_inputs.json.tmp";
 

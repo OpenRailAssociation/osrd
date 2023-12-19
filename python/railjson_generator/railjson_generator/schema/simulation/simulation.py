@@ -6,10 +6,13 @@ from typing import List
 from railjson_generator.schema.simulation.train_schedule import TrainScheduleGroup
 
 ROLLING_STOCKS = {}
-for path in Path(__file__).parents[2].joinpath("examples/rolling_stocks").iterdir():
-    with open(path) as f:
-        rs = json.load(f)
-        ROLLING_STOCKS[rs["name"]] = rs
+
+
+def register_rolling_stocks(directory_path: Path):
+    for path in directory_path.iterdir():
+        with open(path) as f:
+            rs = json.load(f)
+            ROLLING_STOCKS[rs["name"]] = rs
 
 
 @dataclass
