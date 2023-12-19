@@ -118,7 +118,6 @@ async fn delete(db_pool: Data<DbPool>, document_key: Path<i64>) -> Result<HttpRe
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::models::{Delete, Document};
     use actix_web::test::{call_and_read_body_json, call_service, TestRequest};
     use rstest::rstest;
     use serde::Deserialize;
@@ -143,7 +142,11 @@ mod tests {
         assert!(response.status().is_success());
 
         // Delete the document
-        assert!(Document::delete(db_pool, doc_key).await.unwrap());
+        assert!(doc
+            .model
+            .delete(&mut db_pool.get().await.unwrap())
+            .await
+            .unwrap());
 
         // Should fail
         let request = TestRequest::get().uri(&url).to_request();
@@ -169,9 +172,11 @@ mod tests {
         let response: PostDocumentResponse = call_and_read_body_json(&service, request).await;
 
         // Delete the document
-        assert!(Document::delete(db_pool, response.document_key)
-            .await
-            .unwrap());
+        assert!(
+            Document::delete_static(&mut db_pool.get().await.unwrap(), response.document_key)
+                .await
+                .unwrap()
+        );
     }
 
     #[rstest]

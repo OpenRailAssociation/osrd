@@ -100,7 +100,8 @@ pub struct RollingStockLiveryMetadata {
 pub mod tests {
     use super::RollingStockLiveryModel;
     use crate::fixtures::tests::{db_pool, rolling_stock_livery};
-    use crate::models::{Delete, Document, Retrieve};
+    use crate::models::{Delete, Retrieve};
+    use crate::modelsv2::{self, Document};
     use actix_web::web::Data;
     use rstest::*;
 
@@ -120,7 +121,12 @@ pub mod tests {
                 .await
                 .is_ok()
         );
-        assert!(Document::retrieve(db_pool.clone(), image_id).await.is_ok());
+        assert!(<Document as modelsv2::Retrieve<i64>>::retrieve(
+            &mut db_pool.get().await.unwrap(),
+            image_id
+        )
+        .await
+        .is_ok());
 
         // delete RollingStockLivery
         assert!(RollingStockLiveryModel::delete(db_pool.clone(), livery_id)
@@ -133,9 +139,12 @@ pub mod tests {
                 .unwrap()
                 .is_none(),
         );
-        assert!(Document::retrieve(db_pool.clone(), image_id)
-            .await
-            .unwrap()
-            .is_none(),);
+        assert!(<Document as modelsv2::Retrieve<i64>>::retrieve(
+            &mut db_pool.get().await.unwrap(),
+            image_id
+        )
+        .await
+        .unwrap()
+        .is_none(),);
     }
 }

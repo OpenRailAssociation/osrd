@@ -5,11 +5,12 @@ pub mod tests {
     use crate::client::PostgresConfig;
     use crate::models::train_schedule::Mrsp;
     use crate::models::{
-        Create, Delete, Document, ElectricalProfileSet, Identifiable, Infra, Pathfinding,
-        PathfindingChangeset, Project, ResultPosition, ResultStops, ResultTrain,
-        RollingStockLiveryModel, RollingStockModel, Scenario, SimulationOutput,
-        SimulationOutputChangeset, Study, Timetable, TrainSchedule,
+        self, ElectricalProfileSet, Identifiable, Infra, Pathfinding, PathfindingChangeset,
+        Project, ResultPosition, ResultStops, ResultTrain, RollingStockLiveryModel,
+        RollingStockModel, Scenario, SimulationOutput, SimulationOutputChangeset, Study, Timetable,
+        TrainSchedule,
     };
+    use crate::modelsv2::{self, Document, Model};
     use crate::schema::electrical_profiles::{ElectricalProfile, ElectricalProfileSetData};
     use crate::schema::{RailJson, TrackRange};
     use crate::views::infra::InfraForm;
@@ -24,19 +25,21 @@ pub mod tests {
     use rstest::*;
     use std::fmt;
 
-    pub struct TestFixture<T: Delete + Identifiable + Send> {
+    pub struct TestFixture<T: modelsv2::DeleteStatic<i64> + Identifiable + Send> {
         pub model: T,
         pub db_pool: Data<DbPool>,
         pub infra: Option<Infra>,
     }
 
-    impl<T: fmt::Debug + Delete + Identifiable + Send> fmt::Debug for TestFixture<T> {
+    impl<T: modelsv2::DeleteStatic<i64> + Identifiable + Send + fmt::Debug> fmt::Debug
+        for TestFixture<T>
+    {
         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
             write!(f, "Fixture {:?} {:?}", self.model, self.infra)
         }
     }
 
-    impl<T: Delete + Identifiable + Send> TestFixture<T> {
+    impl<T: modelsv2::DeleteStatic<i64> + Identifiable + Send> TestFixture<T> {
         pub fn id(&self) -> i64 {
             self.model.get_id()
         }
@@ -50,8 +53,8 @@ pub mod tests {
         }
     }
 
-    impl<T: Create + Delete + Identifiable + Send> TestFixture<T> {
-        pub async fn create(model: T, db_pool: Data<DbPool>) -> Self {
+    impl<T: modelsv2::DeleteStatic<i64> + models::Create + Identifiable + Send> TestFixture<T> {
+        pub async fn create_legacy(model: T, db_pool: Data<DbPool>) -> Self {
             TestFixture {
                 model: model.create(db_pool.clone()).await.unwrap(),
                 db_pool,
@@ -60,12 +63,42 @@ pub mod tests {
         }
     }
 
-    impl<T: Delete + Identifiable + Send> Drop for TestFixture<T> {
-        fn drop(&mut self) {
-            let _ = executor::block_on(T::delete(self.db_pool.clone(), self.id()));
-            if let Some(infra) = &self.infra {
-                let _ = executor::block_on(Infra::delete(self.db_pool.clone(), infra.id.unwrap()));
+    impl<T> TestFixture<T>
+    where
+        T: modelsv2::Model + modelsv2::DeleteStatic<i64> + Identifiable + Send,
+        T::Changeset: modelsv2::Create<T> + Send,
+    {
+        pub async fn create(cs: T::Changeset, db_pool: Data<DbPool>) -> Self {
+            use modelsv2::Create;
+            let conn = &mut db_pool.get().await.unwrap();
+            TestFixture {
+                model: cs.create(conn).await.unwrap(),
+                db_pool,
+                infra: None,
             }
+        }
+    }
+
+    impl<T: modelsv2::DeleteStatic<i64> + Identifiable + Send> Drop for TestFixture<T> {
+        fn drop(&mut self) {
+            let mut conn = executor::block_on(self.db_pool.get()).unwrap();
+            let _ = executor::block_on(T::delete_static(&mut conn, self.id()));
+            if let Some(infra) = &self.infra {
+                let _ = executor::block_on(<Infra as models::Delete>::delete_conn(
+                    &mut conn,
+                    infra.id.unwrap(),
+                ));
+            }
+        }
+    }
+
+    #[async_trait::async_trait]
+    impl<T: models::Delete> modelsv2::DeleteStatic<i64> for T {
+        async fn delete_static(
+            conn: &mut diesel_async::AsyncPgConnection,
+            id: i64,
+        ) -> crate::error::Result<bool> {
+            T::delete_conn(conn, id).await
         }
     }
 
@@ -93,7 +126,7 @@ pub mod tests {
         db_pool: Data<DbPool>,
     ) -> TestFixture<RollingStockModel> {
         let rs = get_fast_rolling_stock(name);
-        TestFixture::create(rs, db_pool).await
+        TestFixture::create_legacy(rs, db_pool).await
     }
 
     pub fn get_other_rolling_stock(name: &str) -> RollingStockModel {
@@ -110,7 +143,7 @@ pub mod tests {
         db_pool: Data<DbPool>,
     ) -> TestFixture<RollingStockModel> {
         let rs = get_other_rolling_stock(name);
-        TestFixture::create(rs, db_pool).await
+        TestFixture::create_legacy(rs, db_pool).await
     }
 
     async fn make_train_schedule(
@@ -126,6 +159,7 @@ pub mod tests {
             ..serde_json::from_str::<TrainSchedule>(include_str!("./tests/train_schedule.json"))
                 .expect("Unable to parse")
         };
+        use models::Create;
         train_schedule.create(db_pool).await.unwrap()
     }
 
@@ -196,7 +230,7 @@ pub mod tests {
             creation_date: Some(Utc::now().naive_utc()),
             ..Scenario::default()
         };
-        let scenario = TestFixture::create(scenario_model, db_pool()).await;
+        let scenario = TestFixture::create_legacy(scenario_model, db_pool()).await;
         ScenarioFixtureSet {
             project,
             study,
@@ -232,7 +266,7 @@ pub mod tests {
         };
         StudyFixtureSet {
             project,
-            study: TestFixture::create(study_model, db_pool).await,
+            study: TestFixture::create_legacy(study_model, db_pool).await,
         }
     }
 
@@ -248,7 +282,7 @@ pub mod tests {
             creation_date: Some(Utc::now().naive_utc()),
             ..Default::default()
         };
-        TestFixture::create(project_model, db_pool).await
+        TestFixture::create_legacy(project_model, db_pool).await
     }
 
     #[fixture]
@@ -257,7 +291,7 @@ pub mod tests {
             id: None,
             name: Some(String::from("with_electrical_profiles")),
         };
-        TestFixture::create(timetable_model, db_pool).await
+        TestFixture::create_legacy(timetable_model, db_pool).await
     }
 
     #[fixture]
@@ -270,7 +304,13 @@ pub mod tests {
                 image::ImageOutputFormat::Png
             )
             .is_ok());
-        TestFixture::create(Document::new(String::from("image/png"), img_bytes), db_pool).await
+        TestFixture::create(
+            Document::changeset()
+                .content_type(String::from("img/png"))
+                .data(img_bytes),
+            db_pool,
+        )
+        .await
     }
     pub struct RollingStockLiveryFixture {
         pub rolling_stock_livery: TestFixture<RollingStockLiveryModel>,
@@ -293,7 +333,7 @@ pub mod tests {
             compound_image_id: Some(Some(image.id())),
         };
         RollingStockLiveryFixture {
-            rolling_stock_livery: TestFixture::create(rolling_stock_livery, db_pool).await,
+            rolling_stock_livery: TestFixture::create_legacy(rolling_stock_livery, db_pool).await,
             rolling_stock,
             image,
         }
@@ -303,7 +343,7 @@ pub mod tests {
     pub async fn electrical_profile_set(
         db_pool: Data<DbPool>,
     ) -> TestFixture<ElectricalProfileSet> {
-        TestFixture::create(
+        TestFixture::create_legacy(
             serde_json::from_str::<ElectricalProfileSet>(include_str!(
                 "./tests/electrical_profile_set.json"
             ))
@@ -330,7 +370,7 @@ pub mod tests {
             name: Some("test".to_string()),
             data: Some(DieselJson::new(ep_set_data.clone())),
         };
-        TestFixture::create(ep_set, db_pool).await
+        TestFixture::create_legacy(ep_set, db_pool).await
     }
 
     #[fixture]
@@ -338,7 +378,7 @@ pub mod tests {
         let infra_form = InfraForm {
             name: String::from("test_infra"),
         };
-        TestFixture::create(Infra::from(infra_form), db_pool).await
+        TestFixture::create_legacy(Infra::from(infra_form), db_pool).await
     }
 
     async fn make_small_infra(db_pool: Data<DbPool>) -> Infra {
@@ -385,6 +425,7 @@ pub mod tests {
             created: Some(Default::default()),
             ..Default::default()
         };
+        use models::Create;
         let pf = pf_cs.create(db_pool.clone()).await.unwrap().into();
         TestFixture {
             model: pf,
@@ -460,6 +501,7 @@ pub mod tests {
             train_schedule_id: Some(train_schedule.id),
             ..Default::default()
         };
+        use models::Create;
         let simulation_output: SimulationOutput = simulation_output
             .create(db_pool.clone())
             .await
