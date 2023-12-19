@@ -46,6 +46,6 @@ class ExternalGeneratedInputs:
         return external_generated_inputs.ElectricalProfileSet(
             levels=[profile.to_rjs() for profile in self.electrical_profiles],
             level_order={
-                "25000": ["25000", "22500", "20000"],
+                "25000V": ["25000V", "22500V", "20000V"],
             },
         )

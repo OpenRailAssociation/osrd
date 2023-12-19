@@ -189,7 +189,7 @@ export default function RollingStockCurve({
 }) {
   const { t, ready } = useTranslation(['rollingstock']);
   const mode2name = (mode: string) =>
-    mode !== THERMAL_TRACTION_IDENTIFIER ? `${mode}V` : t(THERMAL_TRACTION_IDENTIFIER);
+    mode !== THERMAL_TRACTION_IDENTIFIER ? mode : t(THERMAL_TRACTION_IDENTIFIER);
   const selectedElectricalParam = useSelector(
     showPowerRestriction ? getPowerRestriction : getElectricalProfile
   );

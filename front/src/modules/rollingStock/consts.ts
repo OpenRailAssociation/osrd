@@ -366,14 +366,14 @@ const ComfortLevels = {
 export const comfortOptions = Object.keys(ComfortLevels) as RollingStockComfortType[];
 
 export type ElectricalProfileByMode = {
-  '1500': (string | null)[];
-  '25000': (string | null)[];
+  '1500V': (string | null)[];
+  '25000V': (string | null)[];
   other: null[];
   thermal: null[];
 };
 
 export const electricalProfilesByMode: ElectricalProfileByMode = {
-  '1500': [
+  '1500V': [
     null,
     'O',
     'A',
@@ -393,7 +393,7 @@ export const electricalProfilesByMode: ElectricalProfileByMode = {
     'M',
     'N',
   ],
-  '25000': [null, '25000', '22500', '20000'],
+  '25000V': [null, '25000V', '22500V', '20000V'],
   other: [null],
   thermal: [null],
 };

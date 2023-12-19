@@ -250,7 +250,7 @@ class PathPropertiesTests {
         |------------------|-------------------|
         0                  2         3        3.95      km
         |----------------------------|---------|
-                      1500               25k
+                      1500V             25kV
 
             |----------------------------->             path forward (.5 to 3.5km)
                  <------------------------|             path backward (3.5 to 1km)
@@ -258,13 +258,13 @@ class PathPropertiesTests {
         val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
         rjsInfra.electrifications = listOf(
             RJSElectrification(
-                "1500", listOf(
+                "1500V", listOf(
                     RJSApplicableDirectionsTrackRange("TA0", ApplicableDirection.BOTH, 0.0, 2_000.0),
                     RJSApplicableDirectionsTrackRange("TA1", ApplicableDirection.BOTH, 0.0, 1_000.0)
                 )
             ),
             RJSElectrification(
-                "25000", listOf(
+                "25000V", listOf(
                     RJSApplicableDirectionsTrackRange("TA1", ApplicableDirection.BOTH, 1_000.0, 1_950.0)
                 )
             )
@@ -276,8 +276,8 @@ class PathPropertiesTests {
         val electrificationForward = path.getElectrification()
         assertEquals(
             listOf(
-                DistanceRangeMap.RangeMapEntry(0.meters, 2_500.meters, "1500"),
-                DistanceRangeMap.RangeMapEntry(2_500.meters, 3_000.meters, "25000"),
+                DistanceRangeMap.RangeMapEntry(0.meters, 2_500.meters, "1500V"),
+                DistanceRangeMap.RangeMapEntry(2_500.meters, 3_000.meters, "25000V"),
             ),
             electrificationForward.asList(),
         )
@@ -286,8 +286,8 @@ class PathPropertiesTests {
         val electrificationBackward = pathBackward.getElectrification()
         assertEquals(
             listOf(
-                DistanceRangeMap.RangeMapEntry(0.meters, 500.meters, "25000"),
-                DistanceRangeMap.RangeMapEntry(500.meters, 2_500.meters, "1500"),
+                DistanceRangeMap.RangeMapEntry(0.meters, 500.meters, "25000V"),
+                DistanceRangeMap.RangeMapEntry(500.meters, 2_500.meters, "1500V"),
             ),
             electrificationBackward.asList(),
         )

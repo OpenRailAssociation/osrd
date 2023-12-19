@@ -1,7 +1,7 @@
 {
   "levels": [
     {
-      "value": "25000",
+      "value": "25000V",
       "power_class": "1",
       "track_ranges": [
         {
@@ -12,7 +12,7 @@
       ]
     },
     {
-      "value": "25000",
+      "value": "25000V",
       "power_class": "2",
       "track_ranges": [
         {
@@ -23,7 +23,7 @@
       ]
     },
     {
-      "value": "22500",
+      "value": "22500V",
       "power_class": "2",
       "track_ranges": [
         {
@@ -34,7 +34,7 @@
       ]
     },
     {
-      "value": "25000",
+      "value": "25000V",
       "power_class": "2",
       "track_ranges": [
         {
@@ -45,7 +45,7 @@
       ]
     },
     {
-      "value": "25000",
+      "value": "25000V",
       "power_class": "3",
       "track_ranges": [
         {
@@ -56,7 +56,7 @@
       ]
     },
     {
-      "value": "22500",
+      "value": "22500V",
       "power_class": "3",
       "track_ranges": [
         {
@@ -67,7 +67,7 @@
       ]
     },
     {
-      "value": "25000",
+      "value": "25000V",
       "power_class": "3",
       "track_ranges": [
         {
@@ -78,7 +78,7 @@
       ]
     },
     {
-      "value": "25000",
+      "value": "25000V",
       "power_class": "4",
       "track_ranges": [
         {
@@ -89,7 +89,7 @@
       ]
     },
     {
-      "value": "22500",
+      "value": "22500V",
       "power_class": "4",
       "track_ranges": [
         {
@@ -100,7 +100,7 @@
       ]
     },
     {
-      "value": "20000",
+      "value": "20000V",
       "power_class": "4",
       "track_ranges": [
         {
@@ -111,7 +111,7 @@
       ]
     },
     {
-      "value": "22500",
+      "value": "22500V",
       "power_class": "4",
       "track_ranges": [
         {
@@ -122,7 +122,7 @@
       ]
     },
     {
-      "value": "25000",
+      "value": "25000V",
       "power_class": "4",
       "track_ranges": [
         {
@@ -133,7 +133,7 @@
       ]
     },
     {
-      "value": "25000",
+      "value": "25000V",
       "power_class": "5",
       "track_ranges": [
         {
@@ -144,7 +144,7 @@
       ]
     },
     {
-      "value": "22500",
+      "value": "22500V",
       "power_class": "5",
       "track_ranges": [
         {
@@ -155,7 +155,7 @@
       ]
     },
     {
-      "value": "20000",
+      "value": "20000V",
       "power_class": "5",
       "track_ranges": [
         {
@@ -166,7 +166,7 @@
       ]
     },
     {
-      "value": "22500",
+      "value": "22500V",
       "power_class": "5",
       "track_ranges": [
         {
@@ -177,7 +177,7 @@
       ]
     },
     {
-      "value": "25000",
+      "value": "25000V",
       "power_class": "5",
       "track_ranges": [
         {
@@ -199,7 +199,7 @@
       ]
     },
     {
-      "value": "25000",
+      "value": "25000V",
       "power_class": "1",
       "track_ranges": [
         {
@@ -345,7 +345,7 @@
       ]
     },
     {
-      "value": "25000",
+      "value": "25000V",
       "power_class": "2",
       "track_ranges": [
         {
@@ -491,7 +491,7 @@
       ]
     },
     {
-      "value": "25000",
+      "value": "25000V",
       "power_class": "3",
       "track_ranges": [
         {
@@ -637,7 +637,7 @@
       ]
     },
     {
-      "value": "25000",
+      "value": "25000V",
       "power_class": "4",
       "track_ranges": [
         {
@@ -783,7 +783,7 @@
       ]
     },
     {
-      "value": "25000",
+      "value": "25000V",
       "power_class": "5",
       "track_ranges": [
         {
@@ -930,10 +930,10 @@
     }
   ],
   "level_order": {
-    "25000": [
-      "25000",
-      "22500",
-      "20000"
+    "25000V": [
+      "25000V",
+      "22500V",
+      "20000V"
     ]
   }
 }

@@ -386,7 +386,7 @@ paths:
                 type: array
                 items:
                   type: string
-                example: ["750", "1500", "2500.5"]
+                example: ["750V", "1500V", "2500.5V"]
 
   /infra/{id}/lines/{line_code}/bbox/:
     get:
@@ -496,7 +496,7 @@ paths:
                 type: array
                 items:
                   type: string
-                example: ["750", "1500", "2500.5"]
+                example: ["750V", "1500V", "2500.5V"]
 
   /infra/{id}/attached/{track_id}/:
     get:

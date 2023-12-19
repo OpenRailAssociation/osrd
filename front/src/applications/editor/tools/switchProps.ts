@@ -20,7 +20,10 @@ export type switchProps =
       toolType: TOOL_TYPES.SPEED_SECTION_EDITION;
       toolState: Partial<RangeEditionState<SpeedSectionEntity>>;
     }
-  | { toolType: TOOL_TYPES.ELECTRIFICATION_EDITION; toolState: Partial<RangeEditionState<ElectrificationEntity>> }
+  | {
+      toolType: TOOL_TYPES.ELECTRIFICATION_EDITION;
+      toolState: Partial<RangeEditionState<ElectrificationEntity>>;
+    }
   | { toolType: TOOL_TYPES.SWITCH_EDITION; toolState: Partial<SwitchEditionState> }
   | { toolType: TOOL_TYPES.SIGNAL_EDITION; toolState: Partial<PointEditionState<SignalEntity>> }
   | { toolType: TOOL_TYPES.DETECTOR_EDITION; toolState: Partial<PointEditionState<DetectorEntity>> }

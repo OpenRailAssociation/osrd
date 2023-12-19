@@ -581,15 +581,15 @@ public class StandaloneSimulationTest extends ApiTest {
         var electrificationRanges = simResult.electrificationRanges.get(0);
 
         ElectrificationUsage[] expected = {
-                new ElectrifiedUsage("1500", true, "O", false),
+                new ElectrifiedUsage("1500V", true, "O", false),
                 new NeutralUsage(true),
-                new ElectrifiedUsage("25000", true, "25000", true),
-                new ElectrifiedUsage("25000", true, "22500", true),
-                new ElectrifiedUsage("25000", true, "20000", true),
-                new ElectrifiedUsage("25000", true, "22500", true),
+                new ElectrifiedUsage("25000V", true, "25000V", true),
+                new ElectrifiedUsage("25000V", true, "22500V", true),
+                new ElectrifiedUsage("25000V", true, "20000V", true),
+                new ElectrifiedUsage("25000V", true, "22500V", true),
                 new NeutralUsage(false),
-                new ElectrifiedUsage("25000", true, "22500", true),
-                new ElectrifiedUsage("25000", true, "25000", true),
+                new ElectrifiedUsage("25000V", true, "22500V", true),
+                new ElectrifiedUsage("25000V", true, "25000V", true),
         };
 
         assertArrayEquals(expected, electrificationRanges.stream().map(r -> r.electrificationUsage).toArray());
@@ -664,14 +664,14 @@ public class StandaloneSimulationTest extends ApiTest {
         var electrificationRanges = simResult.electrificationRanges.get(0);
 
         ElectrificationUsage[] expected = {
-                new ElectrifiedUsage("1500", true, "O", false),
+                new ElectrifiedUsage("1500V", true, "O", false),
                 new NeutralUsage(true),
-                new ElectrifiedUsage("25000", true, "25000", true),
-                new ElectrifiedUsage("25000", true, "20000", true),
-                new ElectrifiedUsage("25000", true, "22500", true),
+                new ElectrifiedUsage("25000V", true, "25000V", true),
+                new ElectrifiedUsage("25000V", true, "20000V", true),
+                new ElectrifiedUsage("25000V", true, "22500V", true),
                 new NeutralUsage(false),
-                new ElectrifiedUsage("25000", true, "22500", true),
-                new ElectrifiedUsage("25000", true, "25000", true),
+                new ElectrifiedUsage("25000V", true, "22500V", true),
+                new ElectrifiedUsage("25000V", true, "25000V", true),
         };
 
         assertArrayEquals(expected, electrificationRanges.stream().map(r -> r.electrificationUsage).toArray());
@@ -736,11 +736,11 @@ public class StandaloneSimulationTest extends ApiTest {
         var electrificationRanges = simResult.electrificationRanges.get(0);
 
         ElectrificationUsage[] expected = {
-                new ElectrifiedUsage("1500", false, null, true),
+                new ElectrifiedUsage("1500V", false, null, true),
                 new NeutralUsage(true),
-                new ElectrifiedUsage("25000", false, null, true),
+                new ElectrifiedUsage("25000V", false, null, true),
                 new NeutralUsage(false),
-                new ElectrifiedUsage("25000", false, null, true),
+                new ElectrifiedUsage("25000V", false, null, true),
         };
 
         assertArrayEquals(expected, electrificationRanges.stream().map(r -> r.electrificationUsage).toArray());

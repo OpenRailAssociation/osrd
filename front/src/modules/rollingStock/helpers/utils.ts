@@ -267,7 +267,7 @@ export const orderElectricalProfils = (
   selectedTractionMode: string | null
 ) => {
   const isSelectedModeWithProfiles =
-    selectedTractionMode === '1500' || selectedTractionMode === '25000';
+    selectedTractionMode === '1500V' || selectedTractionMode === '25000V';
   if (isSelectedModeWithProfiles) {
     const refArray = electricalProfilesByMode[selectedTractionMode];
     return electricalProfilesList.sort((a, b) => refArray.indexOf(a) - refArray.indexOf(b));

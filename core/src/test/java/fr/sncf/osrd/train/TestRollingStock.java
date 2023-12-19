@@ -87,17 +87,17 @@ public class TestRollingStock {
         // Check that the conditions are correct
         assertArrayEquals(new InfraConditions[] {
                 new InfraConditions("thermal", null, null), // 0
-                new InfraConditions("1500", null, null),    // 1
-                new InfraConditions("1500", null, null),    // 5 "Restrict1" invalid for 1500
+                new InfraConditions("1500V", null, null),    // 1
+                new InfraConditions("1500V", null, null),    // 5 "Restrict1" invalid for 1500V
                 new InfraConditions("thermal", null, null), // 8
-                new InfraConditions("25000", null, "Restrict2"),  // 8.1
-                new InfraConditions("25000", "25000", "Restrict2"), // 10
-                new InfraConditions("25000", "25000", null), // 11
-                new InfraConditions("25000", "22500", null), // 12
-                new InfraConditions("25000", "20000", null), // 14
-                new InfraConditions("25000", "22500", "Restrict1"), // 15
-                new InfraConditions("25000", "25000", "Restrict1"), // 17
-                new InfraConditions("25000", "25000", null), // 18 "UnknownRestrict" invalid for 25000
+                new InfraConditions("25000V", null, "Restrict2"),  // 8.1
+                new InfraConditions("25000V", "25000V", "Restrict2"), // 10
+                new InfraConditions("25000V", "25000V", null), // 11
+                new InfraConditions("25000V", "22500V", null), // 12
+                new InfraConditions("25000V", "20000V", null), // 14
+                new InfraConditions("25000V", "22500V", "Restrict1"), // 15
+                new InfraConditions("25000V", "25000V", "Restrict1"), // 17
+                new InfraConditions("25000V", "25000V", null), // 18 "UnknownRestrict" invalid for 25000V
                 new InfraConditions("thermal", null, null), // 20 No mode given
                 new InfraConditions("thermal", null, null)  // 30 Invalid mode
         },

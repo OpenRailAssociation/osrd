@@ -28,7 +28,7 @@ interface PowerRestrictionsSelectorProps {
 /**
  * Return the power restriction codes of the rolling stock by mode
  *
- * ex: { "1500": ["C1US", "C2US"], "2500": ["M1US"], "thermal": []}
+ * ex: { "1500V": ["C1US", "C2US"], "25000V": ["M1US"], "thermal": []}
  */
 const getRollingStockPowerRestrictionsByMode = (
   rollingStockModes: RollingStock['effort_curves']['modes']
@@ -84,7 +84,7 @@ const PowerRestrictionsSelector = ({
       pathElectrificationRanges.map((electrificationRange) => ({
         begin: electrificationRange.begin,
         end: electrificationRange.end,
-        value: `${electrificationRange.value}V`,
+        value: `${electrificationRange.value}`,
       })),
     [pathElectrificationRanges]
   );

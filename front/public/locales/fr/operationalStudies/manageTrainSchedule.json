@@ -120,7 +120,7 @@
   "vias": "Points de passage, arrêts",
   "warningMessages": {
     "electrification": "Électrification",
-    "powerRestrictionInvalidCombination": "Code {{powerRestrictionCode}} incompatible avec l'électrification à {{electrification}} V de l'itinéraire entre {{begin}}m et {{end}}m. ",
+    "powerRestrictionInvalidCombination": "Code {{powerRestrictionCode}} incompatible avec l'électrification à {{electrification}} de l'itinéraire entre {{begin}}m et {{end}}m. ",
     "missingPowerRestriction": "Restriction de puissance manquante entre {{begin}}m et {{end}}m. "
   }
 }

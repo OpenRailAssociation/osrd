@@ -295,7 +295,7 @@ class PathfindingTest : ApiTest() {
         )
 
         // Replace with custom electrifications
-        // Set voltage to 25000 everywhere except for trackSectionToBlock
+        // Set voltage to 25000V everywhere except for trackSectionToBlock
         val trackSectionToBlock = normalPath.ranges
             .map { range -> range.edge }
             .flatMap { block ->
@@ -315,7 +315,7 @@ class PathfindingTest : ApiTest() {
                 )
             }
             .collect(Collectors.toList())
-        val voltageElectrification = RJSElectrification("25000", voltageTrackRanges)
+        val voltageElectrification = RJSElectrification("25000V", voltageTrackRanges)
         val noVoltageElectrification = RJSElectrification("",
             listOf(RJSApplicableDirectionsTrackRange(trackSectionToBlock, ApplicableDirection.BOTH, 0.0,
                 rjsInfra.trackSections.stream()

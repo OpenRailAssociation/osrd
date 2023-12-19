@@ -253,8 +253,7 @@
         "add-new-electrification": "Ajouter une nouvelle électrification",
         "electrifications": "Électrification",
         "electrification-default": "Électrification par défaut",
-        "label": "Outil \"Électrification\"",
-        "voltage": "{{voltage}}V"
+        "label": "Outil \"Électrification\""
       },
       "detector-edition": {
         "actions": {

@@ -153,11 +153,11 @@ mod tests {
         let mut infra_cache = create_small_infra_cache();
         let track_ranges_1 = vec![("A", 20., 220.)];
         let mut electrification_1 = create_electrification_cache("Cat_error_1", track_ranges_1);
-        electrification_1.voltage = "1500".into();
+        electrification_1.voltage = "1500V".into();
         infra_cache.add(electrification_1).unwrap();
         let track_ranges_2 = vec![("A", 100., 150.), ("A", 200., 480.)];
         let mut electrification_2 = create_electrification_cache("Cat_error_2", track_ranges_2);
-        electrification_2.voltage = "25000".into();
+        electrification_2.voltage = "25000V".into();
         infra_cache.add(electrification_2).unwrap();
         let errors = check_overlapping(&infra_cache, &Graph::load(&infra_cache));
         assert_eq!(1, errors.len());

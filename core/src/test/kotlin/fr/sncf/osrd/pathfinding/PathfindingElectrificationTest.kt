@@ -58,9 +58,9 @@ class PathfindingElectrificationTest : ApiTest() {
             infra.fullInfra(), waypoints, listOf(TestTrains.REALISTIC_FAST_TRAIN)
         )
         Assertions.assertNotNull(normalPath)
-        assert(TestTrains.FAST_ELECTRIC_TRAIN.modeNames.contains("25000"))
+        assert(TestTrains.FAST_ELECTRIC_TRAIN.modeNames.contains("25000V"))
         for (block in infra.blockPool)
-            block.voltage = "25000"
+            block.voltage = "25000V"
 
         // Removes electrification in the section used by the normal train
         for (range in normalPath.ranges) {
@@ -130,9 +130,9 @@ class PathfindingElectrificationTest : ApiTest() {
             infra.fullInfra(), waypoints, listOf(TestTrains.REALISTIC_FAST_TRAIN)
         )
         Assertions.assertNotNull(normalPath)
-        assert(TestTrains.FAST_ELECTRIC_TRAIN.modeNames.contains("25000"))
+        assert(TestTrains.FAST_ELECTRIC_TRAIN.modeNames.contains("25000V"))
         for (block in infra.blockPool)
-            block.voltage = "25000"
+            block.voltage = "25000V"
         if (!withElectrification) {
             // Remove electrification in the middle of the path
             infra.blockPool[secondBlock.index.toInt()].voltage = ""

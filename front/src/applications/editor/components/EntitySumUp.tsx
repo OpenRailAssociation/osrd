@@ -260,11 +260,7 @@ function getSumUpContent(
               count: electrificationSection.properties.track_ranges?.length || 0,
             }).toString()}
           </span>
-          <span className={classes.muted}>
-            {t('Editor.tools.electrification-edition.voltage', {
-              voltage,
-            }).toString()}
-          </span>
+          <span className={classes.muted}>{voltage}</span>
         </>
       );
       break;

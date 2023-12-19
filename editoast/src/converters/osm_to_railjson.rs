@@ -235,7 +235,7 @@ mod tests {
     fn parse_electrifications() {
         let rj = parse_osm("src/tests/minimal_rail.osm.pbf".into()).unwrap();
         assert_eq!(1, rj.electrifications.len());
-        assert_eq!("15000", rj.electrifications[0].voltage);
+        assert_eq!("15000V", rj.electrifications[0].voltage);
     }
 
     #[test]
