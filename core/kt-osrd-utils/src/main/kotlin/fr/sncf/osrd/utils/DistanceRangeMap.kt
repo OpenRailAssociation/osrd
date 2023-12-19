@@ -54,6 +54,9 @@ interface DistanceRangeMap<T> : Iterable<DistanceRangeMap.RangeMapEntry<T>> {
      * ranges
      */
     fun <U> updateMap(update: DistanceRangeMap<U>, updateFunction: BiFunction<T, U, T>)
+
+    /** Returns true if there is no entry at all */
+    fun isEmpty(): Boolean
 }
 
 fun <T> distanceRangeMapOf(

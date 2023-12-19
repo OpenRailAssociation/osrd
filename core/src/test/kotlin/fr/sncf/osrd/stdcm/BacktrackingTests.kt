@@ -28,8 +28,7 @@ class BacktrackingTests {
         val firstBlockEnvelope =
             simulateBlock(
                 infra,
-                infra,
-                block,
+                infraExplorerFromBlock(infra, infra, block),
                 0.0,
                 Offset(0.meters),
                 TestTrains.REALISTIC_FAST_TRAIN,
@@ -71,8 +70,7 @@ class BacktrackingTests {
         val firstBlockEnvelope =
             simulateBlock(
                 infra,
-                infra,
-                firstBlock,
+                infraExplorerFromBlock(infra, infra, firstBlock),
                 0.0,
                 Offset(0.meters),
                 TestTrains.REALISTIC_FAST_TRAIN,
@@ -112,8 +110,7 @@ class BacktrackingTests {
         val firstBlockEnvelope =
             simulateBlock(
                 infra,
-                infra,
-                firstBlock,
+                infraExplorerFromBlock(infra, infra, firstBlock),
                 0.0,
                 Offset(0.meters),
                 TestTrains.REALISTIC_FAST_TRAIN,
