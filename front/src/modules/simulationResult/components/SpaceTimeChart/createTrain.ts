@@ -3,7 +3,6 @@ import { TFunction, Namespace } from 'react-i18next';
 
 import {
   formatRouteAspects,
-  formatSignalAspects,
   formatStepsWithTime,
   formatStepsWithTimeMulti,
   mergeDatasArea,
@@ -38,7 +37,6 @@ export default function createTrain(
       headPosition: formatStepsWithTimeMulti(train.base.head_positions),
       tailPosition: formatStepsWithTimeMulti(train.base.tail_positions),
       routeAspects: formatRouteAspects(train.base.route_aspects),
-      signalAspects: formatSignalAspects(train.base.signal_aspects),
       speed: formatStepsWithTime(train.base.speeds),
     };
 
@@ -49,7 +47,6 @@ export default function createTrain(
         eco_headPosition: formatStepsWithTimeMulti(train.eco.head_positions),
         eco_tailPosition: formatStepsWithTimeMulti(train.eco.tail_positions),
         eco_routeAspects: formatRouteAspects(train.eco.route_aspects),
-        eco_signalAspects: formatSignalAspects(train.eco.signal_aspects),
         eco_areaBlock: mergeDatasArea<Date | null>(
           dataSimulationTrain.eco_tailPosition,
           dataSimulationTrain.eco_headPosition,
@@ -86,7 +83,6 @@ export function isolatedCreateTrain(keyValues: ChartAxes, train: Train): Simulat
     headPosition: formatStepsWithTimeMulti(train.base.head_positions),
     tailPosition: formatStepsWithTimeMulti(train.base.tail_positions),
     routeAspects: formatRouteAspects(train.base.route_aspects),
-    signalAspects: formatSignalAspects(train.base.signal_aspects),
     speed: formatStepsWithTime(train.base.speeds),
   };
 
@@ -97,7 +93,6 @@ export function isolatedCreateTrain(keyValues: ChartAxes, train: Train): Simulat
         eco_headPosition: formatStepsWithTimeMulti(train.eco.head_positions),
         eco_tailPosition: formatStepsWithTimeMulti(train.eco.tail_positions),
         eco_routeAspects: formatRouteAspects(train.eco.route_aspects),
-        eco_signalAspects: formatSignalAspects(train.eco.signal_aspects),
         eco_areaBlock: mergeDatasArea<Date | null>(
           dataSimulationTrain.eco_tailPosition,
           dataSimulationTrain.eco_headPosition,

@@ -1670,7 +1670,6 @@ const ORSD_GRAPH_SAMPLE_DATA: OsrdSimulationState = {
           track_offset: 705,
         },
       ],
-      signalAspects: [],
       speed: [
         {
           time: new Date('1900-01-01T13:50:39.000Z'),
@@ -3777,7 +3776,6 @@ const ORSD_GRAPH_SAMPLE_DATA: OsrdSimulationState = {
           track_offset: 705,
         },
       ],
-      signalAspects: [],
       speed: [
         {
           time: new Date('1900-01-01T14:05:39.000Z'),
@@ -5884,7 +5882,6 @@ const ORSD_GRAPH_SAMPLE_DATA: OsrdSimulationState = {
           track_offset: 705,
         },
       ],
-      signalAspects: [],
       speed: [
         {
           time: new Date('1900-01-01T14:20:39.000Z'),

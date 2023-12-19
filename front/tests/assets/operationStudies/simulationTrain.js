@@ -680,7 +680,6 @@ export default {
         blinking: false,
       },
     ],
-    signalAspects: [],
     speed: [
       {
         time: new Date('1900-01-01T11:50:39.000Z'),

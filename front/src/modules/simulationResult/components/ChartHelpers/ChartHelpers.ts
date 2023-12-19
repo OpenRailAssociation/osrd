@@ -10,7 +10,6 @@ import {
   PositionSpeedTime,
   RouteAspect,
   ConsolidatedRouteAspect,
-  SignalAspect,
   MergedDataPoint,
   Train,
   Stop,
@@ -73,22 +72,6 @@ export const formatStepsWithTimeMulti = (data: Position[][]): Position<Date | nu
   );
 
 export const formatRouteAspects = (data: RouteAspect[] = []): ConsolidatedRouteAspect[] =>
-  data.map((step) => ({
-    ...step,
-    time_start: sec2d3datetime(step.time_start),
-    time_end: sec2d3datetime(step.time_end),
-    color: colorModelToHex(step.color),
-  }));
-
-/**
- * Signal Aspects (state of signals in the simulation depending on time)
- * need some formatting before inclusion in consolidatedSimulation
- * @param {Array} data
- * @returns
- */
-export const formatSignalAspects = (
-  data: SignalAspect[] = []
-): SignalAspect<Date | null, string>[] =>
   data.map((step) => ({
     ...step,
     time_start: sec2d3datetime(step.time_start),

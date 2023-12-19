@@ -97,23 +97,12 @@ export interface RouteAspect<Time = number, Color = number> {
 }
 export type ConsolidatedRouteAspect<DateType = Date> = RouteAspect<DateType | null, string>;
 
-export interface SignalAspect<Time = number, Color = number> {
-  signal_id: string;
-  time_start: Time;
-  time_end: Time;
-  color: Color;
-  blinking: boolean;
-  aspect_label: string;
-}
-export type ConsolidatedSignalAspect<DateType = Date> = SignalAspect<DateType | null, string>;
-
 export interface Regime {
   head_positions: Position[][];
   tail_positions: Position[][];
   speeds: PositionSpeedTime[];
   stops: Stop[];
   route_aspects: RouteAspect[];
-  signal_aspects?: SignalAspect[];
   error?: string;
   mechanical_energy_consumed: number;
 }
@@ -189,13 +178,11 @@ export interface SimulationTrain<DateType = Date> {
   headPosition: ConsolidatedPosition<DateType>[][];
   tailPosition: ConsolidatedPosition<DateType>[][];
   routeAspects: ConsolidatedRouteAspect<DateType>[];
-  signalAspects: ConsolidatedSignalAspect[];
   areaBlock?: ConsolidatedMergeDataPoint[][];
   speed: ConsolidatedPositionSpeedTime[];
   eco_headPosition?: ConsolidatedPosition<DateType>[][];
   eco_tailPosition?: ConsolidatedPosition<DateType>[][];
   eco_routeAspects?: ConsolidatedRouteAspect<DateType>[];
-  eco_signalAspects?: ConsolidatedSignalAspect[];
   eco_areaBlock?: ConsolidatedMergeDataPoint[][];
   eco_speed?: ConsolidatedPositionSpeedTime[];
 }
