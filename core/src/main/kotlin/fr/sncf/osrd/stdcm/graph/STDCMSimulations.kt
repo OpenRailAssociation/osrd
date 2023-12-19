@@ -26,8 +26,10 @@ import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.BlockInfra
 import fr.sncf.osrd.sim_infra.api.RawSignalingInfra
 import fr.sncf.osrd.stdcm.BacktrackingEnvelopeAttr
+import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.RollingStock.Comfort
+import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Distance.Companion.fromMeters
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
@@ -40,7 +42,6 @@ class STDCMSimulations {
      * otherwise computes the matching envelope and adds it to the STDCMGraph.  */
     fun simulateBlock(
         rawInfra: RawSignalingInfra,
-        blockInfra: BlockInfra,
         rollingStock: RollingStock,
         comfort: Comfort?,
         timeStep: Double,
@@ -52,8 +53,7 @@ class STDCMSimulations {
         } else {
             val simulatedEnvelope = simulateBlock(
                 rawInfra,
-                blockInfra,
-                blockParams.blockId,
+                blockParams.infraExplorer,
                 blockParams.initialSpeed,
                 blockParams.start,
                 rollingStock,
@@ -66,11 +66,9 @@ class STDCMSimulations {
             simulatedEnvelope
         }
     }
-
 }
 
-/** Create an EnvelopeSimContext instance from the blocks and extra parameters.
- * offsetFirstBlock is in millimeters.  */
+/** Create an EnvelopeSimContext instance from the blocks and extra parameters. */
 fun makeSimContext(
     rawInfra: RawSignalingInfra,
     blockInfra: BlockInfra,
@@ -87,8 +85,7 @@ fun makeSimContext(
 
 /**
  * Returns an envelope matching the given block. The envelope time starts when the train enters the block.
- * stopPosition specifies the position at which the train should stop, may be null (no stop)
- * start is in millimeters
+ * stopPosition specifies the position at which the train should stop, may be null (no stop).
  *
  *
  * Note: there are some approximations made here as we only "see" the tracks on the given blocks.
@@ -97,8 +94,7 @@ fun makeSimContext(
  */
 fun simulateBlock(
     rawInfra: RawSignalingInfra,
-    blockInfra: BlockInfra,
-    blockId: BlockId,
+    infraExplorer: InfraExplorer,
     initialSpeed: Double,
     start: Offset<Block>,
     rollingStock: RollingStock,
@@ -109,18 +105,18 @@ fun simulateBlock(
 ): Envelope? {
     if (stopPosition != null && stopPosition == Offset<Block>(0.meters))
         return makeSinglePointEnvelope(0.0)
-    val blockLength = blockInfra.getBlockLength(blockId)
+    val blockLength = infraExplorer.getCurrentBlockLength()
     if (start >= blockLength)
         return makeSinglePointEnvelope(initialSpeed)
-    val context =
-        makeSimContext(rawInfra, blockInfra, listOf(blockId), start, rollingStock, comfort, timeStep)
     var stops = doubleArrayOf()
-    var simLength : Offset<Block> = Offset(blockLength - start)
+    var simLength = blockLength.distance - start.distance
     if (stopPosition != null) {
         stops = doubleArrayOf(stopPosition.distance.meters)
-        simLength = Offset.min(simLength, stopPosition)
+        simLength = Distance.min(simLength, stopPosition.distance)
     }
-    val path = makePathProps(blockInfra, rawInfra, blockId, Offset(0.meters), simLength)
+    val path = infraExplorer.getCurrentEdgePathProperties(start, simLength)
+    val envelopePath = EnvelopeTrainPath.from(rawInfra, path)
+    val context = build(rollingStock, envelopePath, timeStep, comfort)
     val mrsp = MRSP.computeMRSP(path, rollingStock, false, trainTag)
     return try {
         val maxSpeedEnvelope = MaxSpeedEnvelope.from(context, stops, mrsp)
@@ -186,22 +182,15 @@ fun findEngineeringAllowance(
  */
 fun simulateBackwards(
     rawInfra: RawSignalingInfra,
-    blockInfra: BlockInfra,
-    blockId: BlockId,
+    infraExplorer: InfraExplorer,
     endSpeed: Double,
     start: Offset<Block>,
     oldEnvelope: Envelope,
     graph: STDCMGraph
 ): Envelope {
-    val context = makeSimContext(
-        rawInfra,
-        blockInfra,
-        listOf(blockId),
-        start,
-        graph.rollingStock,
-        graph.comfort,
-        graph.timeStep
-    )
+    val path = infraExplorer.getCurrentEdgePathProperties(start, null)
+    val envelopePath = EnvelopeTrainPath.from(rawInfra, path)
+    val context = build(graph.rollingStock, envelopePath, graph.timeStep, graph.comfort)
     val partBuilder = EnvelopePartBuilder()
     partBuilder.setAttr(EnvelopeProfile.BRAKING)
     partBuilder.setAttr(BacktrackingEnvelopeAttr())

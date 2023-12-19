@@ -2,8 +2,7 @@ package fr.sncf.osrd.stdcm.graph
 
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.sim_infra.api.Block
-import fr.sncf.osrd.sim_infra.api.BlockId
-import fr.sncf.osrd.sim_infra.impl.getBlockEntry
+import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import java.util.*
@@ -12,8 +11,8 @@ import kotlin.math.min
 /** This class handles the creation of new edges, handling the many optional parameters.  */
 class STDCMEdgeBuilder // region CONSTRUCTORS
 internal constructor(
-    /** Block considered for the new edge(s)  */
-    private val blockId: BlockId,
+    /** Instance used to explore the infra, contains the underlying edge */
+    private val infraExplorer: InfraExplorer,
     /** STDCM Graph, needed for most operations  */
     private val graph: STDCMGraph
 ) {
@@ -106,8 +105,6 @@ internal constructor(
     /** Creates all edges that can be accessed on the given block, using all the parameters specified.  */
     @Suppress("UNCHECKED_CAST")
     fun makeAllEdges(): Collection<STDCMEdge> {
-        if (hasDuplicateBlocks())
-            return listOf()
         return if (getEnvelope() == null)
             listOf()
         else
@@ -137,14 +134,13 @@ internal constructor(
         if (envelope == null)
             envelope = graph.stdcmSimulations.simulateBlock(
                 graph.rawInfra,
-                graph.blockInfra,
                 graph.rollingStock,
                 graph.comfort,
                 graph.timeStep,
                 graph.tag,
                 BlockSimulationParameters(
-                    blockId, startSpeed, startOffset,
-                    getStopOnBlock(graph, blockId, startOffset, waypointIndex)
+                    infraExplorer, startSpeed, startOffset,
+                    getStopOnBlock(graph, infraExplorer, startOffset, waypointIndex)
                 )
             )
         return envelope
@@ -157,7 +153,7 @@ internal constructor(
             findMaxDelay()
         else
             graph.delayManager.minimumDelaysPerOpening(
-                blockId, startTime, envelope!!,
+                infraExplorer, startTime, envelope!!,
                 startOffset, getEndStopDuration()
             )
     }
@@ -167,7 +163,7 @@ internal constructor(
     private fun findMaxDelay(): Set<Double> {
         val endStopDuration = getEndStopDuration()
         val allDelays = graph.delayManager.minimumDelaysPerOpening(
-            blockId, startTime, envelope!!,
+            infraExplorer, startTime, envelope!!,
             startOffset, endStopDuration
         )
         val lastOpeningDelay = allDelays.floor(prevMaximumAddedDelay)
@@ -176,7 +172,7 @@ internal constructor(
             min(
                 prevMaximumAddedDelay,
                 lastOpeningDelay + graph.delayManager.findMaximumAddedDelay(
-                    blockId,
+                    infraExplorer,
                     startTime + lastOpeningDelay,
                     startOffset,
                     envelope!!,
@@ -188,7 +184,7 @@ internal constructor(
 
     /** Returns the stop duration at the end of the edge being built, or null if there's no stop */
     private fun getEndStopDuration(): Double? {
-        val endAtStop = getStopOnBlock(graph, blockId, startOffset, waypointIndex) != null
+        val endAtStop = getStopOnBlock(graph, infraExplorer, startOffset, waypointIndex) != null
         if (!endAtStop)
             return null
         return graph.steps[waypointIndex + 1].duration!!
@@ -202,20 +198,20 @@ internal constructor(
         val maximumDelay = min(
             prevMaximumAddedDelay - delayNeeded,
             graph.delayManager.findMaximumAddedDelay(
-                blockId, startTime + delayNeeded,
+                infraExplorer, startTime + delayNeeded,
                 startOffset, envelope!!, endStopDuration
             )
         )
         val actualStartTime = startTime + delayNeeded
         val endAtStop = endStopDuration != null
         var res: STDCMEdge? = STDCMEdge(
-            blockId,
+            infraExplorer,
             envelope!!,
             actualStartTime,
             maximumDelay,
             delayNeeded,
             graph.delayManager.findNextOccupancy(
-                blockId, startTime + delayNeeded,
+                infraExplorer, startTime + delayNeeded,
                 startOffset, envelope!!, endStopDuration
             ),
             prevAddedDelay + delayNeeded,
@@ -234,26 +230,14 @@ internal constructor(
             null
         else
             res
-    }
-
-    /** Returns true if the current block is already present in the path to this edge  */
-    private fun hasDuplicateBlocks(): Boolean {
-        var node = prevNode
-        while (node != null) {
-            if (!node.previousEdge.endAtStop && node.previousEdge.block == blockId)
-                return true
-            node = node.previousEdge.previousNode
-        }
-        return false
-    } // endregion UTILITIES
+    }// endregion UTILITIES
 
     companion object {
-        fun fromNode(graph: STDCMGraph, node: STDCMNode, blockId: BlockId): STDCMEdgeBuilder {
-            val builder = STDCMEdgeBuilder(blockId, graph)
-            if (node.locationOnBlock != null) {
-                assert(blockId == node.locationOnBlock.edge)
-                builder.startOffset = node.locationOnBlock.offset
-            } else assert(graph.blockInfra.getBlockEntry(graph.rawInfra, blockId) == node.detector)
+        fun fromNode(graph: STDCMGraph, node: STDCMNode, infraExplorer: InfraExplorer): STDCMEdgeBuilder {
+            val builder = STDCMEdgeBuilder(infraExplorer, graph)
+            if (node.locationOnEdge != null) {
+                builder.startOffset = node.locationOnEdge
+            }
             builder.startTime = node.time
             builder.startSpeed = node.speed
             builder.prevMaximumAddedDelay = node.maximumAddedDelay

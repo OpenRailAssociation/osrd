@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMultimap
 import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.stdcm.graph.simulateBlock
+import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorer
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.DummyInfra
@@ -24,8 +25,8 @@ class BacktrackingTests {
         val infra = DummyInfra()
         val block = infra.addBlock("a", "b", 1000.meters)
         val firstBlockEnvelope = simulateBlock(
-            infra, infra,
-            block, 0.0, Offset(0.meters), TestTrains.REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD,
+            infra, infraExplorerFromBlock(infra, infra, block),
+            0.0, Offset(0.meters), TestTrains.REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD,
             2.0, null, null
         )!!
         val runTime = firstBlockEnvelope.totalTime
@@ -53,8 +54,8 @@ class BacktrackingTests {
         infra.addBlock("c", "d", 10.meters)
         val lastBlock = infra.addBlock("d", "e", 10.meters)
         val firstBlockEnvelope = simulateBlock(
-            infra, infra,
-            firstBlock, 0.0, Offset(0.meters), TestTrains.REALISTIC_FAST_TRAIN,
+            infra, infraExplorerFromBlock(infra, infra, firstBlock),
+            0.0, Offset(0.meters), TestTrains.REALISTIC_FAST_TRAIN,
             RollingStock.Comfort.STANDARD, 2.0, null, null
         )!!
         val runTime = firstBlockEnvelope.totalTime
@@ -80,8 +81,8 @@ class BacktrackingTests {
         val firstBlock = infra.addBlock("a", "b", 1000.meters)
         val secondBlock = infra.addBlock("b", "c", 100.meters, 5.0)
         val firstBlockEnvelope = simulateBlock(
-            infra, infra,
-            firstBlock, 0.0, Offset(0.meters), TestTrains.REALISTIC_FAST_TRAIN,
+            infra, infraExplorerFromBlock(infra, infra, firstBlock),
+            0.0, Offset(0.meters), TestTrains.REALISTIC_FAST_TRAIN,
             RollingStock.Comfort.STANDARD, 2.0, null, null
         )!!
         val runTime = firstBlockEnvelope.totalTime
