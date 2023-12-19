@@ -1,7 +1,7 @@
 package fr.sncf.osrd.graph
 
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.sim_infra.impl.getBlockExit
+import fr.sncf.osrd.sim_infra.utils.getBlockExit
 
 /** Implements the Graph interface for the Block infra where node = detector and edge = block */
 class GraphAdapter(
