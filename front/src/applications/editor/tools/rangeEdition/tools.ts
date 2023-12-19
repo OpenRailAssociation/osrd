@@ -8,7 +8,10 @@ import {
   SpeedSectionEditionLayers,
   SpeedSectionMessages,
 } from './speedSection/SpeedSectionEditionLayers';
-import { ElectrificationEditionLayers, ElectrificationMessages } from './electrification/ElectrificationEditionLayers';
+import {
+  ElectrificationEditionLayers,
+  ElectrificationMessages,
+} from './electrification/ElectrificationEditionLayers';
 
 export const SpeedEditionTool = getRangeEditionTool<SpeedSectionEntity | SpeedSectionPslEntity>({
   id: 'SpeedSection',

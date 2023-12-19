@@ -5,7 +5,7 @@ import {
   sortSelectedModeCurves,
 } from 'modules/rollingStock/helpers/utils';
 
-const emptyEffortCurves = createEmptyCurves('1500', ['STANDARD', 'AC', 'HEATING']);
+const emptyEffortCurves = createEmptyCurves('1500V', ['STANDARD', 'AC', 'HEATING']);
 const newCurveWithAllCond = createEmptyCurve('STANDARD', 'A1', 'C1US');
 const newCurveWithOnlyPR = createEmptyCurve('STANDARD', null, 'C1US');
 const newCurveWithOnlyEP = createEmptyCurve('STANDARD', 'B');
@@ -62,7 +62,7 @@ describe('sortSelectedModeCurves', () => {
 
 describe('orderElectricalProfils', () => {
   it('should order the list of electrical profiles', () => {
-    const result = orderElectricalProfils(electricalProfilesList1500, '1500');
+    const result = orderElectricalProfils(electricalProfilesList1500, '1500V');
     const expected = [null, 'O', 'A', 'B', 'C'];
 
     expect(result).toEqual(expected);

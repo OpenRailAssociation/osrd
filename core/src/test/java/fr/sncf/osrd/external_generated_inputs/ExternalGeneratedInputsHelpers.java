@@ -11,11 +11,11 @@ public class ExternalGeneratedInputsHelpers {
      * Return a short list of electrical profiles
      */
     public static RJSElectricalProfileSet getRjsElectricalProfileSet() {
-        return new RJSElectricalProfileSet(asList(new RJSElectricalProfileSet.RJSElectricalProfile("25000", "1",
+        return new RJSElectricalProfileSet(asList(new RJSElectricalProfileSet.RJSElectricalProfile("25000V", "1",
                         asList(new RJSTrackRange("track", 0, 10), new RJSTrackRange("track", 90, 100))),
-                new RJSElectricalProfileSet.RJSElectricalProfile("22500", "1",
+                new RJSElectricalProfileSet.RJSElectricalProfile("22500V", "1",
                         asList(new RJSTrackRange("track", 10, 30), new RJSTrackRange("track", 70, 90))),
-                new RJSElectricalProfileSet.RJSElectricalProfile("20000", "1",
+                new RJSElectricalProfileSet.RJSElectricalProfile("20000V", "1",
                         singletonList(new RJSTrackRange("track", 30, 70)))));
     }
 }

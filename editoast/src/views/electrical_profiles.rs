@@ -90,8 +90,8 @@ async fn get(
             body = HashMap<String, LevelValues>,
             description = "A dictionary mapping electrification modes to a list of electrical profiles ordered by decreasing strength",
             example = json!({
-                "1500": ["A", "B", "C"],
-                "25000": ["25000", "22500", "20000"]
+                "1500V": ["A", "B", "C"],
+                "25000V": ["25000V", "22500V", "20000V"]
             })
         ),
         (status = 404, body = InternalError, description = "The requested electrical profile set was not found"),
@@ -258,8 +258,8 @@ mod tests {
         let level_order = read_body_json::<HashMap<String, Vec<String>>, _>(response).await;
         assert_eq!(level_order.len(), 1);
         assert_eq!(
-            level_order.get("25000").unwrap(),
-            &vec!["25000", "22500", "20000"]
+            level_order.get("25000V").unwrap(),
+            &vec!["25000V", "22500V", "20000V"]
         );
     }
 

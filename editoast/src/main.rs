@@ -773,7 +773,7 @@ mod tests {
             "fast_rolling_stock_import_non_electric_rs_without_startup_and_panto_values";
         let mut non_electric_rolling_stock = get_fast_rolling_stock(rolling_stock_name);
         if let Some(ref mut effort_curves) = non_electric_rolling_stock.effort_curves {
-            effort_curves.modes.remove("25000");
+            effort_curves.modes.remove("25000V");
             non_electric_rolling_stock.electrical_power_startup_time = Some(None);
             non_electric_rolling_stock.raise_pantograph_time = Some(None);
         }
@@ -804,7 +804,7 @@ mod tests {
             "fast_rolling_stock_import_non_electric_rs_with_startup_and_panto_values";
         let mut non_electric_rolling_stock = get_fast_rolling_stock(rolling_stock_name);
         if let Some(ref mut effort_curves) = non_electric_rolling_stock.effort_curves {
-            effort_curves.modes.remove("25000");
+            effort_curves.modes.remove("25000V");
         }
         let file = generate_temp_file(&non_electric_rolling_stock);
         let args = ImportRollingStockArgs {

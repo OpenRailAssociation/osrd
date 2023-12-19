@@ -23,14 +23,14 @@
     "C": 12
   },
   "effort_curves": {
-    "default_mode": "1500",
+    "default_mode": "1500V",
     "modes": {
-      "1500": {
+      "1500V": {
         "curves": [
           {
             "cond": {
               "comfort": "STANDARD",
-              "electrical_profile_level": "1500",
+              "electrical_profile_level": "1500V",
               "power_restriction_code": "C1"
             },
             "curve": {
@@ -52,7 +52,7 @@
           {
             "cond": {
               "comfort": "STANDARD",
-              "electrical_profile_level": "1500",
+              "electrical_profile_level": "1500V",
               "power_restriction_code": "C2"
             },
             "curve": {
@@ -74,7 +74,7 @@
           {
             "cond": {
               "comfort": "STANDARD",
-              "electrical_profile_level": "1500",
+              "electrical_profile_level": "1500V",
               "power_restriction_code": null
             },
             "curve": {
@@ -96,7 +96,7 @@
           {
             "cond": {
               "comfort": "STANDARD",
-              "electrical_profile_level": "22500",
+              "electrical_profile_level": "22500V",
               "power_restriction_code": "C1"
             },
             "curve": {
@@ -118,7 +118,7 @@
           {
             "cond": {
               "comfort": "STANDARD",
-              "electrical_profile_level": "22500",
+              "electrical_profile_level": "22500V",
               "power_restriction_code": "C2"
             },
             "curve": {
@@ -140,7 +140,7 @@
           {
             "cond": {
               "comfort": "STANDARD",
-              "electrical_profile_level": "22500",
+              "electrical_profile_level": "22500V",
               "power_restriction_code": null
             },
             "curve": {
@@ -162,7 +162,7 @@
           {
             "cond": {
               "comfort": "STANDARD",
-              "electrical_profile_level": "20000",
+              "electrical_profile_level": "20000V",
               "power_restriction_code": "C1"
             },
             "curve": {
@@ -184,7 +184,7 @@
           {
             "cond": {
               "comfort": "STANDARD",
-              "electrical_profile_level": "20000",
+              "electrical_profile_level": "20000V",
               "power_restriction_code": "C2"
             },
             "curve": {
@@ -206,7 +206,7 @@
           {
             "cond": {
               "comfort": "STANDARD",
-              "electrical_profile_level": "20000",
+              "electrical_profile_level": "20000V",
               "power_restriction_code": null
             },
             "curve": {
@@ -294,7 +294,7 @@
           {
             "cond": {
               "comfort": "HEATING",
-              "electrical_profile_level": "1500",
+              "electrical_profile_level": "1500V",
               "power_restriction_code": "C1"
             },
             "curve": {
@@ -316,7 +316,7 @@
           {
             "cond": {
               "comfort": "HEATING",
-              "electrical_profile_level": "1500",
+              "electrical_profile_level": "1500V",
               "power_restriction_code": "C2"
             },
             "curve": {
@@ -338,7 +338,7 @@
           {
             "cond": {
               "comfort": "HEATING",
-              "electrical_profile_level": "1500",
+              "electrical_profile_level": "1500V",
               "power_restriction_code": null
             },
             "curve": {
@@ -360,7 +360,7 @@
           {
             "cond": {
               "comfort": "HEATING",
-              "electrical_profile_level": "22500",
+              "electrical_profile_level": "22500V",
               "power_restriction_code": "C1"
             },
             "curve": {
@@ -382,7 +382,7 @@
           {
             "cond": {
               "comfort": "HEATING",
-              "electrical_profile_level": "22500",
+              "electrical_profile_level": "22500V",
               "power_restriction_code": "C2"
             },
             "curve": {
@@ -404,7 +404,7 @@
           {
             "cond": {
               "comfort": "HEATING",
-              "electrical_profile_level": "22500",
+              "electrical_profile_level": "22500V",
               "power_restriction_code": null
             },
             "curve": {
@@ -426,7 +426,7 @@
           {
             "cond": {
               "comfort": "HEATING",
-              "electrical_profile_level": "20000",
+              "electrical_profile_level": "20000V",
               "power_restriction_code": "C1"
             },
             "curve": {
@@ -448,7 +448,7 @@
           {
             "cond": {
               "comfort": "HEATING",
-              "electrical_profile_level": "20000",
+              "electrical_profile_level": "20000V",
               "power_restriction_code": "C2"
             },
             "curve": {
@@ -470,7 +470,7 @@
           {
             "cond": {
               "comfort": "HEATING",
-              "electrical_profile_level": "20000",
+              "electrical_profile_level": "20000V",
               "power_restriction_code": null
             },
             "curve": {
@@ -558,7 +558,7 @@
           {
             "cond": {
               "comfort": "AC",
-              "electrical_profile_level": "1500",
+              "electrical_profile_level": "1500V",
               "power_restriction_code": "C1"
             },
             "curve": {
@@ -580,7 +580,7 @@
           {
             "cond": {
               "comfort": "AC",
-              "electrical_profile_level": "1500",
+              "electrical_profile_level": "1500V",
               "power_restriction_code": "C2"
             },
             "curve": {
@@ -602,7 +602,7 @@
           {
             "cond": {
               "comfort": "AC",
-              "electrical_profile_level": "1500",
+              "electrical_profile_level": "1500V",
               "power_restriction_code": null
             },
             "curve": {
@@ -624,7 +624,7 @@
           {
             "cond": {
               "comfort": "AC",
-              "electrical_profile_level": "22500",
+              "electrical_profile_level": "22500V",
               "power_restriction_code": "C1"
             },
             "curve": {
@@ -646,7 +646,7 @@
           {
             "cond": {
               "comfort": "AC",
-              "electrical_profile_level": "22500",
+              "electrical_profile_level": "22500V",
               "power_restriction_code": "C2"
             },
             "curve": {
@@ -668,7 +668,7 @@
           {
             "cond": {
               "comfort": "AC",
-              "electrical_profile_level": "22500",
+              "electrical_profile_level": "22500V",
               "power_restriction_code": null
             },
             "curve": {
@@ -690,7 +690,7 @@
           {
             "cond": {
               "comfort": "AC",
-              "electrical_profile_level": "20000",
+              "electrical_profile_level": "20000V",
               "power_restriction_code": "C1"
             },
             "curve": {
@@ -712,7 +712,7 @@
           {
             "cond": {
               "comfort": "AC",
-              "electrical_profile_level": "20000",
+              "electrical_profile_level": "20000V",
               "power_restriction_code": "C2"
             },
             "curve": {
@@ -734,7 +734,7 @@
           {
             "cond": {
               "comfort": "AC",
-              "electrical_profile_level": "20000",
+              "electrical_profile_level": "20000V",
               "power_restriction_code": null
             },
             "curve": {

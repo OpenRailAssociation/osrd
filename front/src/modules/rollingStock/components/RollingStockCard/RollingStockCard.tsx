@@ -127,7 +127,7 @@ const RollingStockCard = ({
                     <small>
                       {tractionModes.voltages.map((voltage) => (
                         <span className="mr-1" key={`${voltage}${rollingStock.id}`}>
-                          {voltage}V
+                          {voltage}
                         </span>
                       ))}
                     </small>

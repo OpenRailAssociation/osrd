@@ -23,9 +23,9 @@
         "C": 5000
     },
     "effort_curves": {
-        "default_mode": "25000",
+        "default_mode": "25000V",
         "modes": {
-            "25000": {
+            "25000V": {
                 "curves": [],
                 "default_curve": {
                     "speeds": [

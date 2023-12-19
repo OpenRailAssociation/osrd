@@ -228,9 +228,9 @@ export interface ElectricalConditionSegment {
 }
 
 interface AC {
-  25000: string;
-  22500: string;
-  20000: string;
+  '25000V': string;
+  '22500V': string;
+  '20000V': string;
 }
 interface DC {
   O: string;
@@ -246,16 +246,16 @@ interface DC {
 }
 
 interface Mode {
-  25000: AC | string;
-  1500: DC | string;
+  '25000V': AC | string;
+  '1500V': DC | string;
   thermal: string;
-  15000: string;
-  3000: string;
+  '15000V': string;
+  '3000V': string;
 }
 
 const electricalProfileColorsWithProfile: Mode = {
-  25000: { 25000: '#6E1E78', 22500: '#A453AD', 20000: '#DD87E5' },
-  1500: {
+  '25000V': { '25000V': '#6E1E78', '22500V': '#A453AD', '20000V': '#DD87E5' },
+  '1500V': {
     O: '#FF0037',
     A: '#FF335F',
     A1: '#FF335F',
@@ -268,28 +268,28 @@ const electricalProfileColorsWithProfile: Mode = {
     G: '#FFF',
   },
   thermal: '#333',
-  15000: '#009AA6',
-  3000: '#1FBE00',
+  '15000V': '#009AA6',
+  '3000V': '#1FBE00',
 };
 
 const electricalProfileColorsWithoutProfile: Mode = {
-  25000: '#6E1E78',
-  1500: '#FF0037',
+  '25000V': '#6E1E78',
+  '1500V': '#FF0037',
   thermal: '#333',
-  15000: '#009AA6',
-  3000: '#1FBE00',
+  '15000V': '#009AA6',
+  '3000V': '#1FBE00',
 };
 
 export const legend: Profile[] = [
-  { mode: '25000', color: ['25KA', '25KB'], isStriped: false },
-  { mode: '1500', color: ['1500A', '1500B', '1500C'], isStriped: false },
+  { mode: '25000V', color: ['25KA', '25KB'], isStriped: false },
+  { mode: '1500V', color: ['1500A', '1500B', '1500C'], isStriped: false },
   {
     mode: 'thermal',
     color: ['Thermal'],
     isStriped: false,
   },
-  { mode: '15000', color: ['15000'], isStriped: false },
-  { mode: '3000', color: ['3000'], isStriped: false },
+  { mode: '15000V', color: ['15000V'], isStriped: false },
+  { mode: '3000V', color: ['3000V'], isStriped: false },
   {
     mode: 'unused',
     color: ['noUsed'],
@@ -338,18 +338,18 @@ export const createProfileSegment = (
       if (profile) {
         if (profile_handled) {
           // compatible electric mode, with compatible profile
-          segment.text = `${mode}V ${profile}`;
+          segment.text = `${mode} ${profile}`;
         } else {
           // compatible electric mode, with uncompatible profile
           segment.isIncompatibleElectricalProfile = true;
           segment.isStriped = true;
-          segment.text = `${mode}V, ${i18n.t('electricalProfiles.incompatibleProfile', {
+          segment.text = `${mode}, ${i18n.t('electricalProfiles.incompatibleProfile', {
             ns: 'simulation',
           })}`;
         }
       } else {
         // compatible electric mode, but missing profile
-        segment.text = `${mode}V`;
+        segment.text = mode;
         segment.isStriped = true;
       }
     }

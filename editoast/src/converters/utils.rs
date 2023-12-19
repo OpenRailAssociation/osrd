@@ -369,15 +369,27 @@ pub fn edge_to_buffer(node: &NodeId, edge: &Edge, count: i64) -> BufferStop {
 }
 
 pub fn electrifications(edge: &Edge) -> Option<Electrification> {
-    edge.tags.get("voltage").map(|voltage| Electrification {
-        id: edge.id.clone().into(),
-        voltage: voltage.clone().into(),
-        track_ranges: vec![ApplicableDirectionsTrackRange::new(
-            edge.id.clone(),
-            0.,
-            edge.length(),
-            ApplicableDirections::Both,
-        )],
+    edge.tags.get("voltage").map(|voltage| {
+        let voltages: Vec<String> = voltage
+            .split(';')
+            .map(|v| {
+                if v.parse::<f64>().is_ok() {
+                    format!("{}V", v)
+                } else {
+                    v.to_string()
+                }
+            })
+            .collect();
+        Electrification {
+            id: edge.id.clone().into(),
+            voltage: voltages.join(";").into(),
+            track_ranges: vec![ApplicableDirectionsTrackRange::new(
+                edge.id.clone(),
+                0.,
+                edge.length(),
+                ApplicableDirections::Both,
+            )],
+        }
     })
 }
 

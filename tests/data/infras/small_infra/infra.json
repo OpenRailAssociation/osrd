@@ -3626,7 +3626,7 @@
     "electrifications": [
         {
             "id": "electrification_25k",
-            "voltage": "25000",
+            "voltage": "25000V",
             "track_ranges": [
                 {
                     "track": "TA1",
@@ -3806,7 +3806,7 @@
         },
         {
             "id": "electrification_1.5k",
-            "voltage": "1500",
+            "voltage": "1500V",
             "track_ranges": [
                 {
                     "track": "TA0",

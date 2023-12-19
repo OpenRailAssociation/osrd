@@ -34,7 +34,7 @@ public class TestTrains {
             var modeSpeed = maxSpeed;
             switch (mode) {
                 case "thermal" -> modeSpeed *= 0.92;
-                case "1500" -> modeSpeed *= 0.82;
+                case "1500V" -> modeSpeed *= 0.82;
                 default -> { }
             }
             var conditions = entry.getValue();
@@ -49,8 +49,8 @@ public class TestTrains {
                 }
                 if (condition.electricalProfile() != null)
                     switch (condition.electricalProfile()) {
-                        case "22500" -> speed *= 0.9;
-                        case "20000" -> speed *= .8;
+                        case "22500V" -> speed *= 0.9;
+                        case "20000V" -> speed *= .8;
                         default -> { }
                     }
                 if (condition.powerRestriction() != null)
@@ -81,11 +81,11 @@ public class TestTrains {
                         new RollingStock.EffortCurveConditions[] {
                                 new RollingStock.EffortCurveConditions(Comfort.AC, null, null),
                                 new RollingStock.EffortCurveConditions(Comfort.HEATING, null, null) },
-                        "1500", new RollingStock.EffortCurveConditions[0],
-                        "25000",
+                        "1500V", new RollingStock.EffortCurveConditions[0],
+                        "25000V",
                         Lists.cartesianProduct(
                             List.of(Comfort.STANDARD, Comfort.AC, Comfort.HEATING),
-                            List.of("25000", "22500", "20000", "null"),
+                            List.of("25000V", "22500V", "20000V", "null"),
                             List.of("Restrict1", "Restrict2", "null")
                         ).stream()
                         .map(triple -> new RollingStock.EffortCurveConditions(
@@ -194,8 +194,8 @@ public class TestTrains {
                 PhysicsRollingStock.GammaType.CONST,
                 RJSLoadingGaugeType.G1,
                 createModeEffortCurves(MAX_SPEED, CurveShape.LINEAR,
-                        Map.of("25000", new RollingStock.EffortCurveConditions[0])),
-                "25000",
+                        Map.of("25000V", new RollingStock.EffortCurveConditions[0])),
+                "25000V",
                 "1"
         );
 

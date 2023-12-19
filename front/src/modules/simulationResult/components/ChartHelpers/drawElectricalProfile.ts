@@ -124,7 +124,7 @@ const drawElectricalProfile = (
 
       if (!electrificationProfile) {
         popUpWidth = 175;
-      } else if (electrificationMode === '1500') {
+      } else if (electrificationMode === '1500V') {
         popUpWidth = 125;
       } else {
         popUpWidth = 165;
@@ -170,7 +170,7 @@ const drawElectricalProfile = (
         )
         .attr('x', pointerPositionX)
         .attr('y', chart.y(yValues.start) + height)
-        .attr('width', electrificationMode === '1500' ? 20 : 28)
+        .attr('width', electrificationMode === '1500V' ? 20 : 28)
         .attr('height', 20);
 
       // add profile pop-up text
@@ -199,10 +199,10 @@ const drawElectricalProfile = (
           .attr('dominant-baseline', 'middle')
           .text(
             isIncompatible || !electrificationProfile
-              ? `${electrificationMode}V ${i18n.t('electricalProfiles.used', {
+              ? `${electrificationMode} ${i18n.t('electricalProfiles.used', {
                   ns: 'simulation',
                 })}`
-              : `${electrificationMode}V ${electrificationProfile}`
+              : `${electrificationMode} ${electrificationProfile}`
           )
           .attr(
             'transform',

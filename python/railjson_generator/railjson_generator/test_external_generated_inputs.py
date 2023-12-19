@@ -51,7 +51,7 @@ class TestExternalGeneratedInputs:
                     track_ranges=[infra.TrackRange(track=track.id, begin=0, end=1)],
                 )
             ],
-            level_order={"25000": ["25000", "22500", "20000"]},
+            level_order={"25000V": ["25000V", "22500V", "20000V"]},
         )
 
     def test_save(self, tmp_path):

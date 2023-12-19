@@ -15264,7 +15264,7 @@ const ORSD_GRAPH_SAMPLE_DATA: OsrdSimulationState = {
           electrification_ranges: [
             {
               electrificationUsage: {
-                mode: '1500',
+                mode: '1500V',
                 mode_handled: true,
                 object_type: 'Electrified',
                 profile_handled: true,
@@ -15282,7 +15282,7 @@ const ORSD_GRAPH_SAMPLE_DATA: OsrdSimulationState = {
             },
             {
               electrificationUsage: {
-                mode: '25000',
+                mode: '25000V',
                 mode_handled: true,
                 object_type: 'Electrified',
                 profile_handled: true,
@@ -15300,7 +15300,7 @@ const ORSD_GRAPH_SAMPLE_DATA: OsrdSimulationState = {
             },
             {
               electrificationUsage: {
-                mode: '25000',
+                mode: '25000V',
                 mode_handled: true,
                 object_type: 'Electrified',
                 profile_handled: true,
@@ -15318,7 +15318,7 @@ const ORSD_GRAPH_SAMPLE_DATA: OsrdSimulationState = {
             },
             {
               electrificationUsage: {
-                mode: '25000',
+                mode: '25000V',
                 mode_handled: true,
                 object_type: 'Electrified',
                 profile_handled: true,
@@ -15336,7 +15336,7 @@ const ORSD_GRAPH_SAMPLE_DATA: OsrdSimulationState = {
             },
             {
               electrificationUsage: {
-                mode: '25000',
+                mode: '25000V',
                 mode_handled: true,
                 object_type: 'Electrified',
                 profile_handled: true,
@@ -15354,7 +15354,7 @@ const ORSD_GRAPH_SAMPLE_DATA: OsrdSimulationState = {
             },
             {
               electrificationUsage: {
-                mode: '25000',
+                mode: '25000V',
                 mode_handled: true,
                 object_type: 'Electrified',
                 profile_handled: true,
@@ -15372,7 +15372,7 @@ const ORSD_GRAPH_SAMPLE_DATA: OsrdSimulationState = {
             },
             {
               electrificationUsage: {
-                mode: '1500',
+                mode: '1500V',
                 mode_handled: true,
                 object_type: 'Electrified',
                 profile_handled: true,
@@ -24145,7 +24145,7 @@ const ORSD_GRAPH_SAMPLE_DATA: OsrdSimulationState = {
           electrification_ranges: [
             {
               electrificationUsage: {
-                mode: '1500',
+                mode: '1500V',
                 mode_handled: true,
                 object_type: 'Electrified',
                 profile_handled: true,
@@ -24163,7 +24163,7 @@ const ORSD_GRAPH_SAMPLE_DATA: OsrdSimulationState = {
             },
             {
               electrificationUsage: {
-                mode: '25000',
+                mode: '25000V',
                 mode_handled: true,
                 object_type: 'Electrified',
                 profile_handled: true,
@@ -24181,7 +24181,7 @@ const ORSD_GRAPH_SAMPLE_DATA: OsrdSimulationState = {
             },
             {
               electrificationUsage: {
-                mode: '25000',
+                mode: '25000V',
                 mode_handled: true,
                 object_type: 'Electrified',
                 profile_handled: true,
@@ -24199,7 +24199,7 @@ const ORSD_GRAPH_SAMPLE_DATA: OsrdSimulationState = {
             },
             {
               electrificationUsage: {
-                mode: '25000',
+                mode: '25000V',
                 mode_handled: true,
                 object_type: 'Electrified',
                 profile_handled: true,
@@ -24217,7 +24217,7 @@ const ORSD_GRAPH_SAMPLE_DATA: OsrdSimulationState = {
             },
             {
               electrificationUsage: {
-                mode: '25000',
+                mode: '25000V',
                 mode_handled: true,
                 object_type: 'Electrified',
                 profile_handled: true,
@@ -24235,7 +24235,7 @@ const ORSD_GRAPH_SAMPLE_DATA: OsrdSimulationState = {
             },
             {
               electrificationUsage: {
-                mode: '25000',
+                mode: '25000V',
                 mode_handled: true,
                 object_type: 'Electrified',
                 profile_handled: true,
@@ -24253,7 +24253,7 @@ const ORSD_GRAPH_SAMPLE_DATA: OsrdSimulationState = {
             },
             {
               electrificationUsage: {
-                mode: '1500',
+                mode: '1500V',
                 mode_handled: true,
                 object_type: 'Electrified',
                 profile_handled: true,
@@ -33026,7 +33026,7 @@ const ORSD_GRAPH_SAMPLE_DATA: OsrdSimulationState = {
           electrification_ranges: [
             {
               electrificationUsage: {
-                mode: '1500',
+                mode: '1500V',
                 mode_handled: true,
                 object_type: 'Electrified',
                 profile_handled: true,
@@ -33044,7 +33044,7 @@ const ORSD_GRAPH_SAMPLE_DATA: OsrdSimulationState = {
             },
             {
               electrificationUsage: {
-                mode: '25000',
+                mode: '25000V',
                 mode_handled: true,
                 object_type: 'Electrified',
                 profile_handled: true,
@@ -33062,7 +33062,7 @@ const ORSD_GRAPH_SAMPLE_DATA: OsrdSimulationState = {
             },
             {
               electrificationUsage: {
-                mode: '25000',
+                mode: '25000V',
                 mode_handled: true,
                 object_type: 'Electrified',
                 profile_handled: true,
@@ -33080,7 +33080,7 @@ const ORSD_GRAPH_SAMPLE_DATA: OsrdSimulationState = {
             },
             {
               electrificationUsage: {
-                mode: '25000',
+                mode: '25000V',
                 mode_handled: true,
                 object_type: 'Electrified',
                 profile_handled: true,
@@ -33098,7 +33098,7 @@ const ORSD_GRAPH_SAMPLE_DATA: OsrdSimulationState = {
             },
             {
               electrificationUsage: {
-                mode: '25000',
+                mode: '25000V',
                 mode_handled: true,
                 object_type: 'Electrified',
                 profile_handled: true,
@@ -33116,7 +33116,7 @@ const ORSD_GRAPH_SAMPLE_DATA: OsrdSimulationState = {
             },
             {
               electrificationUsage: {
-                mode: '25000',
+                mode: '25000V',
                 mode_handled: true,
                 object_type: 'Electrified',
                 profile_handled: true,
@@ -33134,7 +33134,7 @@ const ORSD_GRAPH_SAMPLE_DATA: OsrdSimulationState = {
             },
             {
               electrificationUsage: {
-                mode: '1500',
+                mode: '1500V',
                 mode_handled: true,
                 object_type: 'Electrified',
                 profile_handled: true,

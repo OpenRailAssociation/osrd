@@ -43,8 +43,8 @@ public class EnvelopeSimPathTest {
     void getElectrificationModeAndProfileOnlyModes() {
         var modes = TreeRangeMap.<Double, Electrification>create();
         modes.put(Range.closed(0.0, 10.0), new NonElectrified());
-        modes.put(Range.closed(3.0, 7.0), new Electrified("1500"));
-        modes.put(Range.closed(7.1, 10.0), new Electrified("25000"));
+        modes.put(Range.closed(3.0, 7.0), new Electrified("1500V"));
+        modes.put(Range.closed(7.1, 10.0), new Electrified("25000V"));
         var path = new EnvelopeSimPath(10, new double[] { 0, 10 }, new double[] { 0 }, ImmutableRangeMap.copyOf(modes),
                 new HashMap<>());
         var modeAndProfileMap = path.getElectrificationMap(null, null, null, true);
@@ -52,9 +52,9 @@ public class EnvelopeSimPathTest {
         assertTrue(fullyCovers(modeAndProfileMap, 10));
 
         assertEquals(modeAndProfileMap.get(0.), new NonElectrified());
-        assertEquals(modeAndProfileMap.get(4.), new Electrified("1500"));
+        assertEquals(modeAndProfileMap.get(4.), new Electrified("1500V"));
         assertEquals(modeAndProfileMap.get(7.05), new NonElectrified());
-        assertEquals(modeAndProfileMap.get(7.2), new Electrified("25000"));
+        assertEquals(modeAndProfileMap.get(7.2), new Electrified("25000V"));
     }
 
     @ParameterizedTest
@@ -72,10 +72,10 @@ public class EnvelopeSimPathTest {
 
         assertEquals(9, modeAndProfileMap.asMapOfRanges().size());
 
-        assertEquals(modeAndProfileMap.get(2.0), new Electrified("1500", null, null));
-        assertEquals(modeAndProfileMap.get(3.5), new Electrified("1500", "A", null));
-        assertEquals(modeAndProfileMap.get(5.5), new Electrified("1500", "C", null));
-        assertEquals(modeAndProfileMap.get(6.5), new Electrified("1500", "B", null));
+        assertEquals(modeAndProfileMap.get(2.0), new Electrified("1500V", null, null));
+        assertEquals(modeAndProfileMap.get(3.5), new Electrified("1500V", "A", null));
+        assertEquals(modeAndProfileMap.get(5.5), new Electrified("1500V", "C", null));
+        assertEquals(modeAndProfileMap.get(6.5), new Electrified("1500V", "B", null));
     }
 
     @Test
@@ -92,12 +92,12 @@ public class EnvelopeSimPathTest {
         assertEquals(10, modeAndProfileMap.asMapOfRanges().size());
 
         assertEquals(modeAndProfileMap.get(0.5), new NonElectrified());
-        assertEquals(modeAndProfileMap.get(2.75), new Electrified("1500", null, "Restrict2"));
-        assertEquals(modeAndProfileMap.get(3.25), new Electrified("1500", "A", "Restrict2"));
-        assertEquals(modeAndProfileMap.get(4.5), new Electrified("1500", "B", "Restrict2"));
-        assertEquals(modeAndProfileMap.get(5.5), new Electrified("1500", "C", "Restrict2"));
-        assertEquals(modeAndProfileMap.get(6.25), new Electrified("1500", "B", "Restrict2"));
-        assertEquals(modeAndProfileMap.get(6.75), new Electrified("1500", "A", null));
+        assertEquals(modeAndProfileMap.get(2.75), new Electrified("1500V", null, "Restrict2"));
+        assertEquals(modeAndProfileMap.get(3.25), new Electrified("1500V", "A", "Restrict2"));
+        assertEquals(modeAndProfileMap.get(4.5), new Electrified("1500V", "B", "Restrict2"));
+        assertEquals(modeAndProfileMap.get(5.5), new Electrified("1500V", "C", "Restrict2"));
+        assertEquals(modeAndProfileMap.get(6.25), new Electrified("1500V", "B", "Restrict2"));
+        assertEquals(modeAndProfileMap.get(6.75), new Electrified("1500V", "A", null));
     }
 
     @Test
@@ -111,12 +111,12 @@ public class EnvelopeSimPathTest {
 
         assertEquals(6, modeAndProfileMap.asMapOfRanges().size());
 
-        assertEquals(modeAndProfileMap.get(2.0), new Electrified("1500", null, null));
+        assertEquals(modeAndProfileMap.get(2.0), new Electrified("1500V", null, null));
         assertEquals(modeAndProfileMap.get(4.5),
-                new Electrified("1500", null, "Restrict2"));
+                new Electrified("1500V", null, "Restrict2"));
         assertSame(modeAndProfileMap.get(4.5), modeAndProfileMap.get(5.5));
         assertSame(modeAndProfileMap.get(5.5), modeAndProfileMap.get(6.25));
-        assertEquals(modeAndProfileMap.get(6.75), new Electrified("1500", null, null));
-        assertEquals(modeAndProfileMap.get(9.0), new Electrified("25000", null, null));
+        assertEquals(modeAndProfileMap.get(6.75), new Electrified("1500V", null, null));
+        assertEquals(modeAndProfileMap.get(9.0), new Electrified("25000V", null, null));
     }
 }

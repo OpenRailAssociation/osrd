@@ -812,12 +812,12 @@ pub mod tests {
         // Create electrifications
         let electrification_1 = Electrification {
             id: "test1".into(),
-            voltage: "0".into(),
+            voltage: "0V".into(),
             track_ranges: vec![],
         };
         let electrification_2 = Electrification {
             id: "test2".into(),
-            voltage: "1".into(),
+            voltage: "1V".into(),
             track_ranges: vec![],
         };
 
@@ -837,9 +837,9 @@ pub mod tests {
         assert_eq!(response.status(), StatusCode::OK);
         let voltages: Vec<String> = read_body_json(response).await;
         assert!(voltages.len() >= 3);
-        assert!(voltages.contains(&String::from("0")));
-        assert!(voltages.contains(&String::from("1")));
-        assert!(voltages.contains(&String::from("25000")));
+        assert!(voltages.contains(&String::from("0V")));
+        assert!(voltages.contains(&String::from("1V")));
+        assert!(voltages.contains(&String::from("25000V")));
     }
 
     #[rstest]
@@ -882,7 +882,7 @@ pub mod tests {
                 assert_eq!(voltages.len(), 1);
             } else {
                 let voltages: Vec<String> = read_body_json(response).await;
-                assert!(voltages.contains(&String::from("25000")));
+                assert!(voltages.contains(&String::from("25000V")));
                 assert!(voltages.len() >= 2);
             }
         }

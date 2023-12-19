@@ -22,8 +22,8 @@ public class EnvelopeSimPathBuilder {
     private static RangeMap<Double, Electrification> getModeMap(double length) {
         var electrificationMap = TreeRangeMap.<Double, Electrification>create();
         electrificationMap.put(Range.closed(0.0, length), new NonElectrified());
-        electrificationMap.put(Range.closed(1.0, 8.0), new Electrified("1500"));
-        electrificationMap.put(Range.closed(8.1, 20.), new Electrified("25000"));
+        electrificationMap.put(Range.closed(1.0, 8.0), new Electrified("1500V"));
+        electrificationMap.put(Range.closed(8.1, 20.), new Electrified("25000V"));
         electrificationMap.put(Range.closed(30., 50.), new Electrified("unhandled"));
         return electrificationMap.subRangeMap(Range.closed(0.0, length));
     }
@@ -52,7 +52,7 @@ public class EnvelopeSimPathBuilder {
     public static EnvelopeSimPath withElectricalProfiles1500() {
         RangeMap<Double, String> profiles1 = TreeRangeMap.create();
         profiles1.put(Range.closed(3.0, 8.0), "A");
-        profiles1.put(Range.closed(8.1, 10.5), "25000");
+        profiles1.put(Range.closed(8.1, 10.5), "25000V");
 
         RangeMap<Double, String> profiles2 = TreeRangeMap.create();
         profiles2.put(Range.closedOpen(3.0, 4.0), "A");
@@ -60,7 +60,7 @@ public class EnvelopeSimPathBuilder {
         profiles2.put(Range.closedOpen(5.0, 6.0), "C");
         profiles2.put(Range.closedOpen(6.0, 7.0), "B");
         profiles2.put(Range.closed(7.0, 8.0), "A");
-        profiles2.put(Range.closed(8.1, 10.5), "25000");
+        profiles2.put(Range.closed(8.1, 10.5), "25000V");
 
         var defaultElectrificationMap = getModeMap(10.);
         var byPowerClass = new HashMap<String, ImmutableRangeMap<Double, Electrification>>();
@@ -79,21 +79,21 @@ public class EnvelopeSimPathBuilder {
 
         HashMap<String, ImmutableRangeMap<Double, String>> electricalProfiles = new HashMap<>();
         electricalProfiles.put("5", new ImmutableRangeMap.Builder<Double, String>()
-                .put(Range.closedOpen(10., 12.), "25000")
-                .put(Range.closedOpen(12., 14.), "22500")
-                .put(Range.closedOpen(14., 16.), "20000")
-                .put(Range.closedOpen(16., 18.), "22500")
-                .put(Range.closed(18., 20.), "25000")
+                .put(Range.closedOpen(10., 12.), "25000V")
+                .put(Range.closedOpen(12., 14.), "22500V")
+                .put(Range.closedOpen(14., 16.), "20000V")
+                .put(Range.closedOpen(16., 18.), "22500V")
+                .put(Range.closed(18., 20.), "25000V")
                 .build());
 
         electricalProfiles.put("4", new ImmutableRangeMap.Builder<Double, String>()
-                .put(Range.closedOpen(10., 13.), "25000")
-                .put(Range.closedOpen(13., 17.), "22500")
-                .put(Range.closedOpen(17., 20.), "25000")
+                .put(Range.closedOpen(10., 13.), "25000V")
+                .put(Range.closedOpen(13., 17.), "22500V")
+                .put(Range.closedOpen(17., 20.), "25000V")
                 .build());
 
         electricalProfiles.put("3", new ImmutableRangeMap.Builder<Double, String>()
-                .put(Range.closedOpen(10., 20.), "25000")
+                .put(Range.closedOpen(10., 20.), "25000V")
                 .build());
 
         var byPowerClass = new HashMap<String, ImmutableRangeMap<Double, Electrification>>();

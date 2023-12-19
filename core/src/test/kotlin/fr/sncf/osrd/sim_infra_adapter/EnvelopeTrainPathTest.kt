@@ -68,13 +68,13 @@ class EnvelopeTrainPathTest {
                 )
             ),
             RJSElectrification(
-                "1500", listOf(
+                "1500V", listOf(
                     RJSApplicableDirectionsTrackRange("TA0", ApplicableDirection.BOTH, 800.0, 2_000.0),
                     RJSApplicableDirectionsTrackRange("TA1", ApplicableDirection.BOTH, 0.0, 1_000.0)
                 )
             ),
             RJSElectrification(
-                "25000", listOf(
+                "25000V", listOf(
                     RJSApplicableDirectionsTrackRange("TA1", ApplicableDirection.BOTH, 1_100.0, 1_950.0)
                 )
             )
@@ -98,13 +98,13 @@ class EnvelopeTrainPathTest {
                 )
             ),
             RJSElectrification(
-                "1500", listOf(
+                "1500V", listOf(
                     RJSApplicableDirectionsTrackRange("TA0", ApplicableDirection.BOTH, 1500.0, 2_000.0),
                     RJSApplicableDirectionsTrackRange("TA1", ApplicableDirection.BOTH, 0.0, 500.0)
                 )
             ),
             RJSElectrification(
-                "25000", listOf(
+                "25000V", listOf(
                     RJSApplicableDirectionsTrackRange("TA1", ApplicableDirection.BOTH, 500.0, 1_950.0)
                 )
             )
@@ -131,31 +131,31 @@ class EnvelopeTrainPathTest {
         )
         putInElectrificationMapByPowerClass(
             expected,
-            500.0, 600.0, Electrified("1500"), "A", false
+            500.0, 600.0, Electrified("1500V"), "A", false
         )
         putInElectrificationMapByPowerClass(
             expected,
-            600.0, 800.0, Electrified("1500"), "B", false
+            600.0, 800.0, Electrified("1500V"), "B", false
         )
         putInElectrificationMapByPowerClass(
             expected,
-            800.0, 850.0, Electrified("1500"), "A", false
+            800.0, 850.0, Electrified("1500V"), "A", false
         )
         putInElectrificationMapByPowerClass(
             expected,
-            850.0, 960.0, Neutral(true, Electrified("1500"), true), "A", false
+            850.0, 960.0, Neutral(true, Electrified("1500V"), true), "A", false
         )
         putInElectrificationMapByPowerClass(
             expected,
-            960.0, 1000.0, Neutral(true, Electrified("1500"), false), "A", false
+            960.0, 1000.0, Neutral(true, Electrified("1500V"), false), "A", false
         )
         putInElectrificationMapByPowerClass(
             expected,
-            1_000.0, 1_500.0, Electrified("1500"), "B", false
+            1_000.0, 1_500.0, Electrified("1500V"), "B", false
         )
         putInElectrificationMapByPowerClass(
             expected,
-            1_500.0, 2_500.0, Electrified("25000"), "B", true
+            1_500.0, 2_500.0, Electrified("25000V"), "B", true
         )
         assertThat(electrificationByPowerClass).isEqualTo(expected.build())
     }
@@ -165,7 +165,7 @@ class EnvelopeTrainPathTest {
         val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
         rjsInfra.electrifications = listOf(
             RJSElectrification(
-                "1500",
+                "1500V",
                 listOf(
                     RJSApplicableDirectionsTrackRange("TA0", ApplicableDirection.BOTH, 0.0, 2_000.0),
                     RJSApplicableDirectionsTrackRange("TA1", ApplicableDirection.BOTH, 0.0, 1_950.0),
@@ -192,19 +192,19 @@ class EnvelopeTrainPathTest {
         val expectedElectrificationPowerClass1 = ImmutableRangeMap.Builder<Double, Electrification>()
         putInElectrificationMapByPowerClass(
             expectedElectrificationPowerClass1,
-            0.0, 700.0, Electrified("1500"), "B", false
+            0.0, 700.0, Electrified("1500V"), "B", false
         )
         putInElectrificationMapByPowerClass(
             expectedElectrificationPowerClass1,
-            700.0, 2_600.0, Electrified("1500"), "A", false
+            700.0, 2_600.0, Electrified("1500V"), "A", false
         )
         putInElectrificationMapByPowerClass(
             expectedElectrificationPowerClass1,
-            2_600.0, 3_300.0, Electrified("1500"), "B", false
+            2_600.0, 3_300.0, Electrified("1500V"), "B", false
         )
         putInElectrificationMapByPowerClass(
             expectedElectrificationPowerClass1,
-            3_300.0, 4_000.0, Electrified("1500"), "A", true
+            3_300.0, 4_000.0, Electrified("1500V"), "A", true
         )
 
         assertThat(electrificationPowerClass1).isEqualTo(expectedElectrificationPowerClass1.build())
@@ -215,19 +215,19 @@ class EnvelopeTrainPathTest {
         val expectedElectrificationPowerClass2 = ImmutableRangeMap.Builder<Double, Electrification>()
         putInElectrificationMapByPowerClass(
             expectedElectrificationPowerClass2,
-            0.0, 950.0, Electrified("1500"), "C", false
+            0.0, 950.0, Electrified("1500V"), "C", false
         )
         putInElectrificationMapByPowerClass(
             expectedElectrificationPowerClass2,
-            950.0, 2_700.0, Electrified("1500"), "D", false
+            950.0, 2_700.0, Electrified("1500V"), "D", false
         )
         putInElectrificationMapByPowerClass(
             expectedElectrificationPowerClass2,
-            2_700.0, 3_000.0, Electrified("1500"), "C", false
+            2_700.0, 3_000.0, Electrified("1500V"), "C", false
         )
         putInElectrificationMapByPowerClass(
             expectedElectrificationPowerClass2,
-            3_000.0, 4_000.0, Electrified("1500"), "D", true
+            3_000.0, 4_000.0, Electrified("1500V"), "D", true
         )
 
         assertThat(electrificationPowerClass2).isEqualTo(expectedElectrificationPowerClass2.build())
@@ -242,21 +242,21 @@ class EnvelopeTrainPathTest {
                     Direction.INCREASING,
                     ImmutableRangeMap.Builder<Double, Electrification>()
                         .put(Range.closedOpen(0.0, 300.0), NonElectrified())
-                        .put(Range.closedOpen(300.0, 1350.0), Electrified("1500"))
-                        .put(Range.closedOpen(1350.0, 1460.0), Neutral(true, Electrified("1500"), true))
-                        .put(Range.closedOpen(1460.0, 1500.0), Neutral(true, Electrified("1500"), false))
-                        .put(Range.closedOpen(1500.0, 2500.0), Electrified("1500"))
+                        .put(Range.closedOpen(300.0, 1350.0), Electrified("1500V"))
+                        .put(Range.closedOpen(1350.0, 1460.0), Neutral(true, Electrified("1500V"), true))
+                        .put(Range.closedOpen(1460.0, 1500.0), Neutral(true, Electrified("1500V"), false))
+                        .put(Range.closedOpen(1500.0, 2500.0), Electrified("1500V"))
                         .put(Range.closedOpen(2500.0, 2600.0), NonElectrified())
-                        .put(Range.closed(2600.0, 3100.0), Electrified("25000"))
+                        .put(Range.closed(2600.0, 3100.0), Electrified("25000V"))
                         .build()
                 ),
                 Arguments.of(
                     listOf("TA1", "TA0"),
                     Direction.DECREASING,
                     ImmutableRangeMap.Builder<Double, Electrification>()
-                        .put(Range.closedOpen(0.0, 350.0), Electrified("25000"))
+                        .put(Range.closedOpen(0.0, 350.0), Electrified("25000V"))
                         .put(Range.closedOpen(350.0, 450.0), NonElectrified())
-                        .put(Range.closedOpen(450.0, 2650.0), Electrified("1500"))
+                        .put(Range.closedOpen(450.0, 2650.0), Electrified("1500V"))
                         .put(Range.closed(2650.0, 3100.0), NonElectrified())
                         .build()
                 ),

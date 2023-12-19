@@ -4276,7 +4276,7 @@ const train: Train = {
       stop: 54483.80299490723,
       start: 0,
       electrificationUsage: {
-        mode: '25000',
+        mode: '25000V',
         mode_handled: true,
         profile: 'αβ',
         profile_handled: true,

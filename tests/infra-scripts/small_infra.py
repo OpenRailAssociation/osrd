@@ -585,8 +585,8 @@ speed_2.add_track_range(th1, 3500, 4400, ApplicableDirection.BOTH)
 #  Electrifications
 # ================================
 electrified_tracks_25000 = [t for t in builder.infra.track_sections if t not in {td1, ta0}]
-builder.infra.electrifications.append(Electrification("electrification_25k", "25000", electrified_tracks_25000))
-builder.infra.electrifications.append(Electrification("electrification_1.5k", "1500", [ta0]))
+builder.infra.electrifications.append(Electrification("electrification_25k", "25000V", electrified_tracks_25000))
+builder.infra.electrifications.append(Electrification("electrification_1.5k", "1500V", [ta0]))
 
 # ================================
 #  Neutral sections
@@ -629,7 +629,7 @@ ep_boundaries = {
     "4": [(0, 2), (2, 4), (4, 6), (6, 8), (8, 10)],
     "5": [(0, 1), (1, 3), (3, 7), (7, 9), (9, 10)],
 }
-EP_VALUES = ["25000", "22500", "20000"]
+EP_VALUES = ["25000V", "22500V", "20000V"]
 
 for power_class, boundaries in ep_boundaries.items():
     for i, (start, end) in enumerate(boundaries):
@@ -642,7 +642,7 @@ ep_o = external_inputs.add_electrical_profile(value="O", power_class="5")
 ep_o.add_track_range(ta0, 0, ta0.length)
 # We voluntarily leave ta0 empty for other power classes
 
-other_eps = [external_inputs.add_electrical_profile(value="25000", power_class=str(i)) for i in range(1, 6)]
+other_eps = [external_inputs.add_electrical_profile(value="25000V", power_class=str(i)) for i in range(1, 6)]
 for track_section in electrified_tracks_25000:
     if track_section is ta6:
         continue
