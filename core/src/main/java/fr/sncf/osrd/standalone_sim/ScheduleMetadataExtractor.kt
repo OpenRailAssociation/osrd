@@ -3,7 +3,6 @@
 package fr.sncf.osrd.standalone_sim
 
 import fr.sncf.osrd.api.FullInfra
-import fr.sncf.osrd.api.pathfinding.chunksToRoutes
 import fr.sncf.osrd.conflicts.*
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.EnvelopePhysics
@@ -14,6 +13,7 @@ import fr.sncf.osrd.signaling.ZoneStatus
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.ChunkPath
 import fr.sncf.osrd.sim_infra.utils.BlockPathElement
+import fr.sncf.osrd.sim_infra.utils.chunksToRoutes
 import fr.sncf.osrd.sim_infra.utils.recoverBlocks
 import fr.sncf.osrd.sim_infra.utils.toList
 import fr.sncf.osrd.sim_infra_adapter.SimInfraAdapter
@@ -77,7 +77,7 @@ fun run(
     val simulator = fullInfra.signalingSimulator
 
     // get a new generation route path
-    val routePath = chunksToRoutes(rawInfra, fullInfra.blockInfra, chunkPath.chunks)
+    val routePath = fullInfra.blockInfra.chunksToRoutes(rawInfra, chunkPath.chunks)
 
     // recover blocks from the route paths
     val detailedBlockPath = recoverBlockPath(simulator, fullInfra, routePath)

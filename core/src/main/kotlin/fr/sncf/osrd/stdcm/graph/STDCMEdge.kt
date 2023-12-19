@@ -1,17 +1,17 @@
 package fr.sncf.osrd.stdcm.graph
 
 import fr.sncf.osrd.envelope.Envelope
-import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
 import fr.sncf.osrd.sim_infra.api.Block
-import fr.sncf.osrd.sim_infra.api.BlockId
-import fr.sncf.osrd.sim_infra.impl.getBlockExit
+import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
 import fr.sncf.osrd.utils.units.Distance.Companion.fromMeters
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import java.util.*
 
 data class STDCMEdge(
-    val block: BlockId, // Block considered for this edge
+    val infraExplorer:
+        InfraExplorer, // Instance used to explore the infra, contains the current underlying edge
+    // (block)
     val envelope:
         Envelope, // Envelope of the train going through the block (starts at t=0). Does not account
     // for allowances.
@@ -44,19 +44,22 @@ data class STDCMEdge(
     override fun equals(other: Any?): Boolean {
         if (other == null || other.javaClass != STDCMEdge::class.java) return false
         val otherEdge = other as STDCMEdge
-        return if (block != otherEdge.block) false else minuteTimeStart == otherEdge.minuteTimeStart
+        return if (
+            infraExplorer.getLastEdgeIdentifier() != otherEdge.infraExplorer.getLastEdgeIdentifier()
+        )
+            false
+        else minuteTimeStart == otherEdge.minuteTimeStart
 
         // We need to consider that the edges aren't equal if the times are different,
         // but if we do it "naively" we end up visiting the same places a near-infinite number of
         // times.
         // We handle it by discretizing the start time of the edge: we round the time down to the
-        // minute
-        // and compare
+        // minute and compare
         // this value.
     }
 
     override fun hashCode(): Int {
-        return Objects.hash(block, minuteTimeStart)
+        return Objects.hash(infraExplorer.getLastEdgeIdentifier(), minuteTimeStart)
     }
 
     /** Returns the node at the end of this edge */
@@ -66,7 +69,7 @@ data class STDCMEdge(
             STDCMNode(
                 totalTime + timeStart,
                 envelope.endSpeed,
-                graph.blockInfra.getBlockExit(graph.rawInfra, block),
+                infraExplorer,
                 totalDepartureTimeShift,
                 maximumAddedDelayAfter,
                 this,
@@ -84,17 +87,18 @@ data class STDCMEdge(
             STDCMNode(
                 totalTime + timeStart + stopDuration,
                 envelope.endSpeed,
-                null,
+                infraExplorer,
                 totalDepartureTimeShift,
                 maximumAddedDelayAfter,
                 this,
                 newWaypointIndex,
-                EdgeLocation(block, envelopeStartOffset + length.distance),
+                envelopeStartOffset + length.distance,
                 stopDuration
             )
         }
     }
 
+    val block = infraExplorer.getCurrentBlock()
     val totalTime: Double
         /**
          * Returns how long it takes to go from the start to the end of the block, accounting
