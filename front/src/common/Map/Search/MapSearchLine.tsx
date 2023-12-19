@@ -126,6 +126,7 @@ const MapSearchLine = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchLine
             clearButton
             noMargin
             sm
+            focus
           />
         </span>
       </div>

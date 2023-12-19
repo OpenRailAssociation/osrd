@@ -143,6 +143,7 @@ const MapSearchStation = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchS
             clearButton
             noMargin
             sm
+            focus
           />
         </span>
       </div>
