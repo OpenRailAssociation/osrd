@@ -78,7 +78,7 @@ export default function OperationalPoints(props: Props) {
       'text-justify': 'left',
       'text-allow-overlap': false,
       'text-ignore-placement': false,
-      'text-offset': [0.85, 1.1],
+      'text-offset': [0.85, 1.9],
       'text-max-width': 32,
     },
     paint: {
@@ -130,6 +130,11 @@ export default function OperationalPoints(props: Props) {
       >
         <OrderedLayer {...point} id="chartis/osrd_operational_point/geo" layerOrder={layerOrder} />
         <OrderedLayer
+          {...yardName}
+          id="chartis/osrd_operational_point_yardname/geo"
+          layerOrder={layerOrder}
+        />
+        <OrderedLayer
           {...name}
           id="chartis/osrd_operational_point_name_short/geo"
           layerOrder={layerOrder}
@@ -137,11 +142,6 @@ export default function OperationalPoints(props: Props) {
         <OrderedLayer
           {...trigram}
           id="chartis/osrd_operational_point_name/geo"
-          layerOrder={layerOrder}
-        />
-        <OrderedLayer
-          {...yardName}
-          id="chartis/osrd_operational_point_yardname/geo"
           layerOrder={layerOrder}
         />
         <OrderedLayer
