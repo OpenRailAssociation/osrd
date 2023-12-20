@@ -35,6 +35,7 @@ pub enum InfraErrorType {
     MissingBufferStop {
         endpoint: Endpoint,
     },
+    NodeEndpointsNotUnique,
     ObjectOutOfPath {
         reference: ObjectRef,
     },
@@ -134,6 +135,16 @@ impl InfraError {
             field: Default::default(),
             is_warning: true,
             sub_type: InfraErrorType::MissingRoute,
+        }
+    }
+
+    pub fn new_node_endpoint_not_unique<T: AsRef<str>>(switch_id: &T) -> Self {
+        Self {
+            obj_id: switch_id.as_ref().into(),
+            obj_type: ObjectType::Switch,
+            field: Default::default(),
+            is_warning: false,
+            sub_type: InfraErrorType::NodeEndpointsNotUnique,
         }
     }
 

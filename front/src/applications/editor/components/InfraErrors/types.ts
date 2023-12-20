@@ -23,6 +23,7 @@ export const infraErrorTypeList: Record<'errors' | 'warnings', Set<InfraErrorTyp
     'object_out_of_path',
     'out_of_range',
     'unknown_port_name',
+    'node_endpoints_not_unique',
   ]),
   warnings: new Set([
     'duplicated_group',
@@ -96,6 +97,9 @@ type InfraErrorUnusedPort = InfraErrorInformation & {
   error_type: 'unused_port';
   port_name: string;
 };
+type InfraErrorNodeEndpointsNotUnique = InfraErrorInformation & {
+  error_type: 'node_endpoints_not_unique';
+};
 
 // Type of an error
 export type InfraError = Omit<InfraErrorApiType, 'informations'> & {
@@ -116,5 +120,6 @@ export type InfraError = Omit<InfraErrorApiType, 'informations'> & {
     | InfraErrorOverlappingSpeedSections
     | InfraErrorOverlappingSwitches
     | InfraErrorOverlappingCatenaries
-    | InfraErrorUnusedPort;
+    | InfraErrorUnusedPort
+    | InfraErrorNodeEndpointsNotUnique;
 };

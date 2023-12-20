@@ -1,14 +1,15 @@
 use crate::infra_cache::{Graph, InfraCache, ObjectCache};
-use crate::schema::{InfraError, ObjectRef, ObjectType, TrackEndpoint};
+use crate::schema::{InfraError, OSRDIdentified, ObjectRef, ObjectType, TrackEndpoint};
 use std::collections::{HashMap, HashSet};
 
 use super::ObjectErrorGenerator;
 
-pub const OBJECT_GENERATORS: [ObjectErrorGenerator<Context>; 4] = [
+pub const OBJECT_GENERATORS: [ObjectErrorGenerator<Context>; 5] = [
     ObjectErrorGenerator::new(1, check_invalid_ref_ports),
     ObjectErrorGenerator::new(1, check_invalid_ref_switch_type),
     ObjectErrorGenerator::new(2, check_match_ports_type),
-    ObjectErrorGenerator::new_ctx(3, check_overlapping),
+    ObjectErrorGenerator::new(3, check_endpoints_unicity),
+    ObjectErrorGenerator::new_ctx(4, check_overlapping),
 ];
 
 /// Context for the switch error generators
@@ -86,6 +87,17 @@ pub fn check_match_ports_type(
     }
 }
 
+/// Check if node track endpoints are unique
+pub fn check_endpoints_unicity(switch: &ObjectCache, _: &InfraCache, _: &Graph) -> Vec<InfraError> {
+    let switch = switch.unwrap_switch();
+    let endpoints: HashSet<_> = switch.ports.values().collect();
+    if endpoints.len() != switch.ports.len() {
+        vec![InfraError::new_node_endpoint_not_unique(switch.get_id())]
+    } else {
+        vec![]
+    }
+}
+
 /// Check if the switch ports are not already used by another switch
 fn check_overlapping(
     switch: &ObjectCache,
@@ -114,11 +126,11 @@ fn check_overlapping(
 
 #[cfg(test)]
 mod tests {
-    use crate::generated_data::error::switches::Context;
+    use crate::generated_data::error::switches::{check_endpoints_unicity, Context};
     use crate::infra_cache::tests::{
         create_small_infra_cache, create_switch_cache_point, create_track_endpoint,
     };
-    use crate::schema::{Endpoint, ObjectRef, ObjectType};
+    use crate::schema::{Endpoint, OSRDIdentified, ObjectRef, ObjectType};
 
     use super::check_invalid_ref_ports;
     use super::check_invalid_ref_switch_type;
@@ -164,6 +176,25 @@ mod tests {
         assert_eq!(1, errors.len());
         let obj_ref = ObjectRef::new(ObjectType::SwitchType, "non_existing_switch_type");
         let infra_error = InfraError::new_invalid_reference(&switch, "switch_type", obj_ref);
+        assert_eq!(infra_error, errors[0]);
+    }
+
+    #[test]
+    fn not_unique_endpoints() {
+        let mut infra_cache = create_small_infra_cache();
+        // Ports A and B1 map the same endpoint
+        let switch = create_switch_cache_point(
+            "SW_error".into(),
+            ("A", create_track_endpoint(Endpoint::End, "B")),
+            ("B1", create_track_endpoint(Endpoint::End, "B")),
+            ("B2", create_track_endpoint(Endpoint::Begin, "D")),
+            "point_switch".into(),
+        );
+        infra_cache.add(switch.clone()).unwrap();
+        let errors =
+            check_endpoints_unicity(&switch.clone().into(), &infra_cache, &Default::default());
+        assert_eq!(1, errors.len());
+        let infra_error = InfraError::new_node_endpoint_not_unique(switch.get_id());
         assert_eq!(infra_error, errors[0]);
     }
 

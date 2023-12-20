@@ -139,6 +139,10 @@
         "unused_port": {
           "name": "Unused branch",
           "description": "Branch « {{port_name}} » of switch type « {{obj_id}} » is nerver used"
+        },
+        "node_endpoints_not_unique": {
+          "name": "Node endpoints not unique",
+          "description": "The « {{obj_id}} » node has a track endpoint used by several ports."
         }
       },
       "list": {
