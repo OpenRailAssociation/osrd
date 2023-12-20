@@ -353,8 +353,10 @@
           "unselect-all": "Deselect all"
         },
         "errors": {
+          "invalid-url": "Invalid URL",
           "no-heterogenous-edition": "It's not possible to edit multiple elements of different types at the same time.",
-          "no-multi-edition": "It's not possible yet to edit multiple elements (TODO)."
+          "no-multi-edition": "It's not possible yet to edit multiple elements (TODO).",
+          "unable-to-select": "Selection not possible"
         },
         "focus": "Focus",
         "help": {

@@ -147,11 +147,11 @@ export const ModalProvider: FC<PropsWithChildren<unknown>> = ({ children }) => {
 
   /**
    * When route change
-   * => close modal on route change
+   * => close modal on route change (not for search params change)
    */
   useEffect(() => {
     closeModal();
-  }, [location]);
+  }, [location.pathname]);
 
   return (
     <ModalContext.Provider value={modalContext}>
