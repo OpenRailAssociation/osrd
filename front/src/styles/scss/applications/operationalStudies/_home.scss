@@ -5,3 +5,13 @@
   gap: 1rem;
   padding: 1rem 0 1rem;
 }
+
+.projects-list-container {
+  .projects-count {
+    height: 1.5rem;
+  }
+  #projects-list-container {
+    height: 60vh;
+    overflow: auto;
+  }
+}

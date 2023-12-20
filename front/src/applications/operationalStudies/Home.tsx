@@ -39,7 +39,6 @@ export default function HomeOperationalStudies() {
   const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
   const [getProjects] = osrdEditoastApi.endpoints.getProjects.useLazyQuery();
   const [isLoading, setIsLoading] = useState(true);
-  const [total, setTotal] = useState<number | null>(null);
   const [next, setNext] = useState<number | null>(null);
   const [projectsCards, setProjectsCards] = useState<Array<Project>>([]);
 
@@ -147,14 +146,11 @@ export default function HomeOperationalStudies() {
     async (page: number) => {
       setIsLoading(true);
       try {
-        const response = await getProjects({
-          page,
-        });
+        const response = await getProjects({ ordering: sortOption, pageSize: 1000 });
         setProjectsCards((prev) => {
           const apiProjects = response.data ? response.data.results || [] : [];
           return page === 1 ? apiProjects : [...prev, ...apiProjects];
         });
-        setTotal(response.data ? response.data.count || 0 : null);
         setNext(response.data ? response.data.next ?? null : null);
       } catch (e) {
         console.error(e);
@@ -169,6 +165,9 @@ export default function HomeOperationalStudies() {
     getProjectList();
   }, [sortOption, filter, safeWord]);
 
+  useEffect(() => {
+    fetch(1);
+  }, [projectsList, fetch]);
   return (
     <>
       <NavBarSNCF appName={<div className="navbar-breadcrumbs">{t('projects')}</div>} />
@@ -202,11 +201,10 @@ export default function HomeOperationalStudies() {
             <InfiniteScroll
               loader={<Spinner className="text-center p-3" />}
               style={{ overflow: 'hidden' }}
-              dataLength={projectsList.length}
+              dataLength={projectsCards.length}
               hasMore={next !== null}
               scrollableTarget="projects-list-container"
               next={() => {
-                console.log('Fetching more data...');
                 fetch(next ?? 1);
               }}
             >
