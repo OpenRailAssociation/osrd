@@ -5,6 +5,8 @@
   "placeholderline": "Line name or number",
   "placeholdersignal": "Signal name",
   "placeholdername": "Name, label",
+  "placeholderchcode": "CH code",
+  "labelbvonly": "BV only",
   "pk": "PK",
   "resultsCount_zero": "No results",
   "resultsCount_one": "1 result",
