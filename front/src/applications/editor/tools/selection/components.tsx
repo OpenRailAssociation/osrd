@@ -1,10 +1,11 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { Layer, Popup, Source } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
 import { groupBy, map } from 'lodash';
 import { GoNoEntry } from 'react-icons/go';
 import { RiFocus3Line } from 'react-icons/ri';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router-dom';
 
 import type { Zone } from 'types';
 
@@ -109,6 +110,31 @@ export const SelectionLeftPanel = () => {
     EditorContext
   ) as ExtendedEditorContextType<SelectionState>;
   const { selection } = state;
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  useEffect(() => {
+    const currentUrlSelection = searchParams.get('selection');
+    // Remove the select param
+    if (currentUrlSelection && (selection.length === 0 || selection.length >= 100)) {
+      searchParams.delete('selection');
+      // Replace to avoid the user to be able to press "back" or "forward" on
+      // the browser because the selection wouldn't change
+      setSearchParams(searchParams, { replace: true });
+      // If selection is too large, we get an error because the url is too long
+    } else if (selection.length < 100) {
+      // For each object in the selection state, we build the selection params with a specific syntax
+      // and slice to remove the last | character
+      const newUrlSelection = selection
+        .reduce((acc, cur) => {
+          acc += `${cur.objType}~${cur.properties.id}|`;
+          return acc;
+        }, '')
+        .slice(0, -1);
+
+      if (newUrlSelection && newUrlSelection !== currentUrlSelection)
+        setSearchParams({ selection: newUrlSelection }, { replace: true });
+    }
+  }, [selection]);
 
   if (!selection.length)
     return <p className="text-center">{t('Editor.tools.select-items.no-selection')}</p>;

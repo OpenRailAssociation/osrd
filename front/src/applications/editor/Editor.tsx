@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import cx from 'classnames';
-import { isNil, toInteger } from 'lodash';
+import { isNil, toInteger, uniq } from 'lodash';
+import turfBbox from '@turf/bbox';
 
 import 'applications/editor/Editor.scss';
 import 'common/Map/Map.scss';
@@ -27,10 +28,15 @@ import TOOLS from 'applications/editor/tools/tools';
 import TOOL_TYPES from 'applications/editor/tools/toolTypes';
 
 import type { CommonToolState } from 'applications/editor/tools/commonToolState';
-import type { EditorState } from 'applications/editor/tools/types';
-import type { MapRef } from 'react-map-gl/maplibre';
 import { useInfraID, useOsrdActions } from 'common/osrdContext';
 import {
+  EDITOAST_TO_LAYER_DICT,
+  EditoastType,
+  type EditorState,
+} from 'applications/editor/tools/types';
+import { BBox } from '@turf/helpers';
+import type { LngLatBoundsLike, MapRef } from 'react-map-gl/maplibre';
+import type {
   EditorContextType,
   ExtendedEditorContextType,
   FullTool,
@@ -38,6 +44,15 @@ import {
 } from 'applications/editor/tools/editorContextTypes';
 import type { Viewport } from 'reducers/map';
 import type { switchProps } from 'applications/editor/tools/switchProps';
+import type { ObjectType } from 'common/api/osrdEditoastApi';
+import { setFailure } from 'reducers/main';
+import { extractMessageFromError } from 'utils/error';
+import { ApiError } from 'common/api/baseGeneratedApis';
+import { SerializedError } from '@reduxjs/toolkit';
+import { EditorEntity } from 'types';
+import { centerMapOnObject, selectEntities } from './tools/utils';
+import { getEntity, getMixedEntities } from './data/api';
+import { NEW_ENTITY_ID } from './data/utils';
 
 const Editor = () => {
   const { t } = useTranslation();
@@ -49,6 +64,7 @@ const Editor = () => {
   const mapRef = useRef<MapRef>(null);
   const { urlInfra } = useParams();
   const infraID = useInfraID();
+  const [searchParams, setSearchParams] = useSearchParams();
   const isLoading = useSelector(getIsLoading);
   const editorState = useSelector((state: { editor: EditorState }) => state.editor);
   const switchTypes = useSwitchTypes(infraID);
@@ -173,7 +189,7 @@ const Editor = () => {
   );
 
   /**
-   * When the component mount
+   * When the component mounts
    * => we load the data model
    * => we check if url has no infra and the store one => navigate to the good url
    */
@@ -182,6 +198,68 @@ const Editor = () => {
     dispatch(loadDataModel());
     if (isNil(urlInfra) && !isNil(infraID)) {
       navigate(`/editor/${infraID}`);
+    }
+  }, []);
+
+  /**
+   * When the component mounts
+   * => get the searchParams
+   * => if there is a selection param, select the entities and focus on them
+   */
+  useEffect(() => {
+    if (urlInfra) {
+      const params = searchParams.get('selection');
+      if (!params && searchParams.size !== 0) {
+        dispatch(
+          setFailure({
+            name: t('translation:Editor.tools.select-items.errors.unable-to-select'),
+            message: t('translation:Editor.tools.select-items.errors.invalid-url'),
+          })
+        );
+        navigate(`/editor/${urlInfra}`);
+      }
+      const paramsList = params?.split('|');
+
+      if (paramsList && paramsList.length) {
+        const selectedEntities = paramsList.map((param) => {
+          const [objType, entityId] = param.split('~');
+          return {
+            id: entityId,
+            type: objType as EditoastType,
+          };
+        });
+
+        const selectObjectsAndFocus = async (
+          entitiesInfos: { id: string; type: EditoastType }[]
+        ) => {
+          let entities: EditorEntity[];
+          if (!entitiesInfos.length) return;
+          try {
+            if (entitiesInfos.length === 1) {
+              const { type: objType, id: entityId } = selectedEntities[0];
+              const entity = await getEntity(+urlInfra, entityId, objType as ObjectType, dispatch);
+              entities = [entity];
+            } else {
+              const entitiesRecord = await getMixedEntities(+urlInfra, entitiesInfos, dispatch);
+              entities = Object.values(entitiesRecord);
+            }
+            selectEntities(entities, { switchTool, dispatch, editorState });
+
+            if (mapRef.current) centerMapOnObject(+urlInfra, entities, dispatch, mapRef.current);
+          } catch (e) {
+            dispatch(
+              setFailure({
+                name: t('translation:Editor.tools.select-items.errors.unable-to-select'),
+                message:
+                  extractMessageFromError(e as ApiError | SerializedError) !== 'undefined'
+                    ? extractMessageFromError(e as ApiError | SerializedError)
+                    : t('translation:Editor.tools.select-items.errors.invalid-url'),
+              })
+            );
+          }
+        };
+        selectObjectsAndFocus(selectedEntities);
+      }
     }
   }, []);
 
@@ -216,6 +294,31 @@ const Editor = () => {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [toolAndState.tool]);
+
+  /**
+   * When the current entity changes, update the search params accordingly.
+   * The replace in the setter nullifies the possibility for the user to "back" click on the browser
+   * to get the previous selection in the url because this feature is not possible right now.
+   * A solution would be to remove the auto zoom on object when sharing an url and
+   * add a "zoom" button in the selection panel to let the choice to the user.
+   */
+  useEffect(() => {
+    const currentEntity = toolAndState.state.entity as EditorEntity;
+    if (currentEntity) {
+      if (currentEntity.properties.id !== NEW_ENTITY_ID) {
+        setSearchParams(
+          { selection: `${currentEntity.objType}~${currentEntity.properties.id}` },
+          { replace: true }
+        );
+      } else {
+        const param = searchParams.get('selection');
+        if (param) {
+          searchParams.delete('selection');
+          setSearchParams(searchParams, { replace: true });
+        }
+      }
+    }
+  }, [toolAndState.state.entity?.properties.id]);
 
   return (
     <EditorContext.Provider value={extendedContext as EditorContextType<unknown>}>
