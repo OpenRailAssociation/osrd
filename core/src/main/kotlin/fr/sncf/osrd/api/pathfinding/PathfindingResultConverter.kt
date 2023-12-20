@@ -17,6 +17,8 @@ import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.graph.PathfindingEdgeRangeId
 import fr.sncf.osrd.graph.PathfindingResultId
+import fr.sncf.osrd.sim_infra.utils.chunksOnBlocks
+import fr.sncf.osrd.sim_infra.utils.chunksToRoutes
 import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
@@ -204,8 +206,8 @@ private fun makeRoutePath(
     val blocks = ranges.stream()
         .map { x -> x.edge }
         .toList()
-    val chunkPath = chunksOnBlocks(blockInfra, blocks)
-    val routes = chunksToRoutes(rawInfra, blockInfra, chunkPath)
+    val chunkPath = blockInfra.chunksOnBlocks(blocks)
+    val routes = blockInfra.chunksToRoutes(rawInfra, chunkPath)
     val startOffset = findStartOffset(blockInfra, rawInfra, chunkPath[0], routes[0], ranges[0])
     val endOffset = findEndOffset(
         blockInfra, rawInfra, Iterables.getLast(chunkPath),
@@ -373,101 +375,4 @@ private fun getRouteChunkOffset(
         offset += rawInfra.getTrackChunkLength(dirChunkId.value).distance
     }
     return offset
-}
-
-/** Returns the list of dir chunk id on the given block list  */
-private fun chunksOnBlocks(blockInfra: BlockInfra, blockIds: List<BlockId>): DirStaticIdxList<TrackChunk> {
-    val res = mutableDirStaticIdxArrayListOf<TrackChunk>()
-    for (block in blockIds)
-        for (chunk in blockInfra.getTrackChunksFromBlock(block))
-            res.add(chunk)
-    return res
-}
-
-/** Converts a list of dir chunks into a list of routes  */
-fun chunksToRoutes(
-    infra: RawSignalingInfra,
-    blockInfra: BlockInfra,
-    pathChunks: DirStaticIdxList<TrackChunk>
-): StaticIdxList<Route> {
-    var chunkStartIndex = 0
-    val res = mutableStaticIdxArrayListOf<Route>()
-    while (chunkStartIndex < pathChunks.size) {
-        val route = findRoute(infra, blockInfra, pathChunks, chunkStartIndex, chunkStartIndex != 0)
-        res.add(route)
-        val chunkSetOnRoute = infra.getChunksOnRoute(route).toSet()
-        while (chunkStartIndex < pathChunks.size && chunkSetOnRoute.contains(pathChunks[chunkStartIndex]))
-            chunkStartIndex++ // Increase the index in the chunk path, for as long as it is covered by the route
-    }
-    return res
-}
-
-/** Finds a valid route that follows the given path  */
-private fun findRoute(
-    infra: RawSignalingInfra,
-    blockInfra: BlockInfra,
-    chunks: DirStaticIdxList<TrackChunk>,
-    startIndex: Int,
-    routeMustIncludeStart: Boolean
-): RouteId {
-    val routes = infra.getRoutesOnTrackChunk(chunks[startIndex])
-
-    // We need to evaluate the longest route first, in case one route covers a subset of another
-    val sortedRoutes = routes.sortedBy { r -> -infra.getChunksOnRoute(r).size }
-    for (routeId in sortedRoutes)
-        if (routeMatchPath(infra, blockInfra, chunks, startIndex, routeMustIncludeStart, routeId))
-            return routeId
-    throw RuntimeException("Couldn't find a route matching the given chunk list")
-}
-
-/** Returns false if the route differs from the path  */
-private fun routeMatchPath(
-    infra: RawSignalingInfra,
-    blockInfra: BlockInfra,
-    chunks: DirStaticIdxList<TrackChunk>,
-    chunkIndex: Int,
-    routeMustIncludeStart: Boolean,
-    routeId: RouteId
-): Boolean {
-    var mutChunkIndex = chunkIndex
-    if (!routeHasBlockPath(infra, blockInfra, routeId))
-        return false // Filter out routes that don't have block, they would cause issues later on
-    val firstChunk = chunks[mutChunkIndex]
-    val routeChunks = infra.getChunksOnRoute(routeId)
-    var routeChunkIndex = 0
-    if (routeMustIncludeStart) {
-        if (routeChunks[0] != firstChunk)
-            return false
-    } else {
-        while (routeChunks[routeChunkIndex] != firstChunk) routeChunkIndex++
-    }
-    while (true) {
-        if (routeChunkIndex == routeChunks.size)
-            return true // end of route
-        if (mutChunkIndex == chunks.size)
-            return true // end of path
-        if (routeChunks[routeChunkIndex] != chunks[mutChunkIndex])
-            return false // route and path differ
-        routeChunkIndex++
-        mutChunkIndex++
-    }
-}
-
-/** Returns true if the route contains a valid block path.
- *
- * This should always be true, but it can be false on infrastructures with errors in its signaling data
- * (such as the ones imported from poor data sources).
- * At this step we know that there is at least one route with a valid block path,
- * we just need to filter out the ones that don't.  */
-private fun routeHasBlockPath(
-    infra: RawSignalingInfra,
-    blockInfra: BlockInfra,
-    routeId: RouteId
-): Boolean {
-    val routeIds = MutableStaticIdxArrayList<Route>()
-    routeIds.add(routeId)
-    val blockPaths = recoverBlocks(
-        infra, blockInfra, routeIds, null
-    )
-    return blockPaths.isNotEmpty()
 }
