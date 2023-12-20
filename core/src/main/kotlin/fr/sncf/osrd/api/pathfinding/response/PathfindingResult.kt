@@ -36,3 +36,17 @@ class PathfindingResult(@JvmField val length: Double) {
             .failOnUnknown()
     }
 }
+
+enum class Result {
+    SUCCESS, ERROR
+}
+class PathfindingResponse(val result: Result, val message: String?, val pathfindingResult: PathfindingResult?) {
+    companion object {
+        val adapterResult: JsonAdapter<PathfindingResponse> = Moshi.Builder()
+            .add(KotlinJsonAdapterFactory())
+            .add(ID.Adapter.FACTORY)
+            .build()
+            .adapter(PathfindingResponse::class.java)
+            .failOnUnknown()
+    }
+}
