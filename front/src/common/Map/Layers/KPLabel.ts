@@ -18,7 +18,7 @@ export default function getKPLabelLayerProps(params: {
     PKFieldName = 'kp',
     maxzoom = 24,
     minzoom = 7,
-    isSignalisation,
+    isSignalisation = false,
     sourceTable,
   } = params;
 
