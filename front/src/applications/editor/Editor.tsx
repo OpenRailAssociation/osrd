@@ -44,6 +44,7 @@ import { extractMessageFromError } from 'utils/error';
 import { ApiError } from 'common/api/baseGeneratedApis';
 import { SerializedError } from '@reduxjs/toolkit';
 import { EditorEntity } from 'types';
+import { getInfraLockStatus } from 'reducers/editor/selectors';
 import { centerMapOnObject, selectEntities } from './tools/utils';
 import { getEntity, getMixedEntities } from './data/api';
 import { NEW_ENTITY_ID } from './data/utils';
@@ -59,6 +60,7 @@ const Editor = () => {
   const { urlInfra } = useParams();
   const infraID = useInfraID();
   const [searchParams, setSearchParams] = useSearchParams();
+  const isLocked = useSelector(getInfraLockStatus);
   const isLoading = useSelector(getIsLoading);
   const editorState = useSelector((state: { editor: EditorState }) => state.editor);
   const switchTypes = useSwitchTypes(infraID);
@@ -149,6 +151,7 @@ const Editor = () => {
       dispatch,
       editorState,
       infraID,
+      isInfraLocked: isLocked,
       isLoading,
       isFormSubmited,
       setIsFormSubmited,
@@ -167,6 +170,7 @@ const Editor = () => {
       switchTypes,
       viewport,
       isLoading,
+      isLocked,
       isFormSubmited,
       setIsFormSubmited,
     ]
@@ -181,7 +185,6 @@ const Editor = () => {
         .filter((group) => group.length),
     [toolAndState.tool]
   );
-
   /**
    * When the component mounts
    * => we load the data model
@@ -388,11 +391,16 @@ const Editor = () => {
                 : actions;
             })}
           </div>
-          {toolAndState.tool.leftPanelComponent && (
-            <div className="panel-box">
-              <toolAndState.tool.leftPanelComponent />
-            </div>
-          )}
+          <div>
+            {isLocked && (
+              <div className="infra-locked bg-yellow">{t('Editor.infra-errors.infra-locked')}</div>
+            )}
+            {toolAndState.tool.leftPanelComponent && (
+              <div className="panel-box">
+                <toolAndState.tool.leftPanelComponent />
+              </div>
+            )}
+          </div>
           <div className="map-wrapper">
             <div className="map">
               <Map

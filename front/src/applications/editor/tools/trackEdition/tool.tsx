@@ -56,8 +56,8 @@ const TrackEditionTool: Tool<TrackEditionState> = {
         id: 'save-line',
         icon: AiFillSave,
         labelTranslationKey: 'Editor.tools.track-edition.actions.save-line',
-        isDisabled({ isLoading, state }) {
-          return isLoading || state.track.geometry.coordinates.length < 2 || false;
+        isDisabled({ isLoading, isInfraLocked, state }) {
+          return isLoading || state.track.geometry.coordinates.length < 2 || isInfraLocked || false;
         },
         async onClick({ setIsFormSubmited }) {
           if (setIsFormSubmited) {

@@ -77,7 +77,7 @@ export const useInfraID = () => {
   return infraId;
 };
 
-export const useUpdateInfraID = () => {
+export const useInfraActions = () => {
   const { slice } = useOsrdContext();
   if (!slice) {
     throw new Error('OsrdContext slice is not available');
@@ -87,7 +87,10 @@ export const useUpdateInfraID = () => {
     throw new Error('OsrdContext slice does not have any actions');
   }
 
-  return slice.actions.updateInfraID;
+  return {
+    updateInfraID: slice.actions.updateInfraID,
+    updateInfra: slice.actions.updateInfra,
+  };
 };
 
 type OsrdContextLayoutProps = {

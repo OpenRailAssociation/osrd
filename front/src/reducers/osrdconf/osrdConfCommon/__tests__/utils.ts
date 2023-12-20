@@ -2,7 +2,7 @@ import { omit } from 'lodash';
 import { createStoreWithoutMiddleware } from 'store';
 
 import type { PointOnMap } from 'applications/operationalStudies/consts';
-import type { Allowance } from 'common/api/osrdEditoastApi';
+import type { Allowance, Infra } from 'common/api/osrdEditoastApi';
 import { defaultCommonConf } from 'reducers/osrdconf/osrdConfCommon';
 import type { StdcmConfSlice } from 'reducers/osrdconf/stdcmConf';
 import type { OperationalStudiesConfSlice } from 'reducers/osrdconf/operationalStudiesConf';
@@ -117,12 +117,27 @@ const testCommonConfReducers = (slice: OperationalStudiesConfSlice | StdcmConfSl
     expect(state.scenarioID).toBe(newScenarioID);
   });
 
-  describe('should handle updateInfraID', () => {
-    it('should update infraID', () => {
-      const newInfraID = 5;
-      defaultStore.dispatch(slice.actions.updateInfraID(newInfraID));
+  it('should update infraID', () => {
+    const newInfraID = 5;
+    defaultStore.dispatch(slice.actions.updateInfraID(newInfraID));
+    const state = defaultStore.getState()[slice.name];
+    expect(state.infraID).toBe(newInfraID);
+  });
+
+  describe('should handle updateInfra', () => {
+    it('should update infraLockStatus to true', () => {
+      const newInfra = { id: 6, locked: false } as unknown as Infra;
+      defaultStore.dispatch(slice.actions.updateInfra(newInfra));
       const state = defaultStore.getState()[slice.name];
-      expect(state.infraID).toBe(newInfraID);
+      expect(state.infraIsLocked).toBe(newInfra.locked);
+      expect(state.infraID).toBe(newInfra.id);
+    });
+    it('should update infraLockStatus to false', () => {
+      const newInfra = { id: 6, locked: false } as unknown as Infra;
+      defaultStore.dispatch(slice.actions.updateInfra(newInfra));
+      const state = defaultStore.getState()[slice.name];
+      expect(state.infraIsLocked).toBe(newInfra.locked);
+      expect(state.infraID).toBe(newInfra.id);
     });
   });
 

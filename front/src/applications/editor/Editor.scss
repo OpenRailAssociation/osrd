@@ -48,6 +48,7 @@
 
   .tool-box,
   .actions-box,
+  .infra-locked,
   .panel-box {
     padding: 1rem;
 
@@ -97,9 +98,16 @@
       border: 3px solid $gray;
     }
   }
+
+  .infra-locked {
+    width: 400px;
+    overflow-y: auto;
+    height: auto;
+  }
+
   .panel-box {
     width: 400px;
-    height: 100%;
+    height: 85%;
     overflow-y: auto;
   }
 

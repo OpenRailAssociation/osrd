@@ -82,8 +82,14 @@ function getPointEditionTool<T extends EditorPoint>({
           id: 'save-entity',
           icon: AiFillSave,
           labelTranslationKey: `Editor.tools.${id}-edition.actions.save-entity`,
-          isDisabled({ isLoading, state }) {
-            return !state.entity.properties?.track || !state.entity.geometry || isLoading || false;
+          isDisabled({ isLoading, isInfraLocked, state }) {
+            return (
+              !state.entity.properties?.track ||
+              !state.entity.geometry ||
+              isLoading ||
+              isInfraLocked ||
+              false
+            );
           },
           async onClick({ setIsFormSubmited }) {
             if (setIsFormSubmited) {
