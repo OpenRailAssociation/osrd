@@ -11,11 +11,14 @@ const makeEditorSelector = makeSubSelector<EditorState>(getEditorState);
 
 export const getEditorIssues = makeEditorSelector('issues');
 
+export const getInfraLockStatus = makeEditorSelector('infraIsLocked');
+
 const selectors = {
   ...buildInfraStateSelectors(editorSlice),
   getEditorIssues: makeEditorSelector('issues'),
   getEditorLayers: makeEditorSelector('editorLayers'),
   getEditorSchema: makeEditorSelector('editorSchema'),
+  getInfraLockStatus: makeEditorSelector('infraIsLocked'),
 };
 
 export type EditorSelectors = typeof selectors;

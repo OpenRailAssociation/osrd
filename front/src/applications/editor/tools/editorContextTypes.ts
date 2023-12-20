@@ -50,6 +50,7 @@ export interface ExtendedEditorContextType<S> extends EditorContextType<S> {
   switchTypes: SwitchType[] | undefined;
   isLoading?: boolean;
   isFormSubmited?: boolean;
+  isInfraLocked?: boolean;
   setIsFormSubmited?: (isSubmit: boolean) => void;
 }
 

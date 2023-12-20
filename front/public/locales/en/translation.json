@@ -145,6 +145,7 @@
           "description": "The « {{obj_id}} » node has a track endpoint used by several ports."
         }
       },
+      "infra-locked": "Please note that you will not be able to save any changes.",
       "list": {
         "error": "An error occurred while loading the data",
         "filter-level": "Error level",

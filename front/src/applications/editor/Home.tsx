@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Route, Routes } from 'react-router-dom';
-import { GoLock } from 'react-icons/go';
+import { FaLock } from 'react-icons/fa6';
 
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
@@ -34,8 +34,8 @@ export default function HomeEditorUnplugged() {
               <span className="ml-2 text-muted">
                 <span>{t('referenceMap:infrastructure', { name: infra.name })}</span>
                 {infra.locked && (
-                  <span className="ml-2">
-                    <GoLock />
+                  <span className="ml-2 text-yellow">
+                    <FaLock />
                   </span>
                 )}
               </span>

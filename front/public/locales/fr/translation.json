@@ -145,6 +145,7 @@
           "description": "Une extrémité de voie est utilisée par plusieurs ports du nœud « {{obj_id}} »"
         }
       },
+      "infra-locked": "Attention, vous ne pourrez pas sauvegarder de modification.",
       "list": {
         "error": "Une erreur est survenue lors du chargement des données",
         "filter-level": "Niveau",

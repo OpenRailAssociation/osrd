@@ -9,10 +9,10 @@ import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import type { Infra } from 'common/api/osrdEditoastApi';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import {
+  useInfraActions,
   useInfraID,
   useOsrdConfActions,
   useOsrdContext,
-  useUpdateInfraID,
 } from 'common/osrdContext';
 import { MODES } from 'main/consts';
 
@@ -46,14 +46,14 @@ export default function InfraSelectorModalBodyStandard({
   const { t } = useTranslation(['translation', 'infraManagement']);
   const dispatch = useDispatch();
   const { mode } = useOsrdContext();
-  const updateInfraID = useUpdateInfraID();
+  const { updateInfra } = useInfraActions();
   const infraID = useInfraID();
   const { closeModal } = useContext(ModalContext);
   const { deleteItinerary } = useOsrdConfActions();
 
-  function setInfraID(id: number) {
-    dispatch(updateInfraID(id));
-    if (onInfraChange) onInfraChange(id);
+  function setInfraID(infra: Infra) {
+    dispatch(updateInfra(infra));
+    if (onInfraChange) onInfraChange(infra.id);
     if ([MODES.simulation, MODES.stdcm].includes(mode)) dispatch(deleteItinerary());
     if (!onlySelectionMode) {
       closeModal();
@@ -82,7 +82,7 @@ export default function InfraSelectorModalBodyStandard({
             data-testid={`infraslist-item-${infra.id}`}
             type="button"
             onClick={() => {
-              setInfraID(infra.id);
+              setInfraID(infra);
             }}
             className={cx('infraslist-item-choice', {
               locked: infra.locked,
