@@ -7,13 +7,14 @@ import { useDebounce } from 'utils/helpers';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import nextId from 'react-id-generator';
-
-import StationCard from 'common/StationCard';
 
 import type { SearchQuery, SearchResultItemOperationalPoint } from 'common/api/osrdEditoastApi';
 import type { Viewport } from 'reducers/map';
 import { useInfraID } from 'common/osrdContext';
+import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
+import StationCardsList from './StationCardList';
+
+const stationCHcodes = ['', '00', 'BV'];
 
 type MapSearchStationProps = {
   updateExtViewport: (viewport: Partial<Viewport>) => void;
@@ -22,15 +23,15 @@ type MapSearchStationProps = {
 
 const MapSearchStation = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchStationProps) => {
   const map = useSelector(getMap);
-  const [searchState, setSearch] = useState<string>('');
-  const [searchResults, setSearchResults] = useState<
-    SearchResultItemOperationalPoint[] | undefined
-  >(undefined);
+  const [searchState, setSearch] = useState('');
+  const [chCodeFilter, setChCodeFilter] = useState('');
+  const [bvOnly, toggleBvOnly] = useState(false);
+  const [searchResults, setSearchResults] = useState<SearchResultItemOperationalPoint[]>([]);
   const [trigramResults, setTrigramResults] = useState<SearchResultItemOperationalPoint[]>([]);
   const [nameResults, setNameResults] = useState<SearchResultItemOperationalPoint[]>([]);
   const infraID = useInfraID();
 
-  const [postSearch] = osrdEditoastApi.usePostSearchMutation();
+  const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
   const dispatch = useDispatch();
 
   const { t } = useTranslation(['map-search']);
@@ -106,8 +107,18 @@ const MapSearchStation = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchS
   }, [debouncedSearchTerm]);
 
   useEffect(() => {
-    setSearchResults([...trigramResults, ...nameResults]);
-  }, [trigramResults, nameResults]);
+    let results = [...trigramResults, ...nameResults];
+    if (bvOnly) {
+      results = results.filter((result) => stationCHcodes.includes(result.ch));
+    } else if (chCodeFilter?.trim().length > 0) {
+      results = results.filter((result) => result.ch.startsWith(chCodeFilter.toUpperCase()));
+    }
+    setSearchResults(results);
+  }, [trigramResults, nameResults, bvOnly, chCodeFilter]);
+
+  useEffect(() => {
+    if (bvOnly) setChCodeFilter('');
+  }, [bvOnly]);
 
   const onResultClick = (result: SearchResultItemOperationalPoint) => {
     onResultSearchClick({
@@ -124,14 +135,14 @@ const MapSearchStation = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchS
   const clearSearchResult = () => {
     setSearch('');
     resetSearchResult();
-    setSearchResults(undefined);
+    setSearchResults([]);
     dispatch(updateMapSearchMarker(undefined));
   };
 
   return (
     <>
       <div className="d-flex mb-2">
-        <span className="flex-grow-1">
+        <span className="flex-grow-1 pr-2">
           <InputSNCF
             type="text"
             placeholder={t('map-search:placeholdername')}
@@ -144,27 +155,44 @@ const MapSearchStation = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchS
             clearButton
             noMargin
             sm
-            focus
+          />
+        </span>
+        <span className="flex-grow-2 pr-2">
+          <InputSNCF
+            type="text"
+            placeholder={t('map-search:placeholderchcode')}
+            id="map-search-station-ch-code"
+            onChange={(e) => {
+              setChCodeFilter(e.target.value);
+            }}
+            onClear={() => setChCodeFilter('')}
+            value={chCodeFilter}
+            disabled={bvOnly}
+            clearButton
+            noMargin
+            sm
+          />
+        </span>
+        <span className="d-flex flex-grow-2">
+          <CheckboxRadioSNCF
+            type="checkbox"
+            label={t('map-search:labelbvonly')}
+            id="map-search-station-bv-only"
+            checked={bvOnly}
+            onChange={(e) => toggleBvOnly(e.target.checked)}
           />
         </span>
       </div>
       <h2 className="text-center mt-3">
-        {t('map-search:resultsCount', { count: searchResults ? searchResults.length : 0 })}
+        {t('map-search:resultsCount', {
+          count: searchResults.length,
+        })}
       </h2>
-      <div className="search-results">
-        {searchResults &&
-          searchResults.map((result) => (
-            <div
-              className="mb-1"
-              key={`mapSearchStation-${nextId()}-${result.trigram}${result.uic}`}
-            >
-              <StationCard
-                station={{ ...result, yardname: result.ch }}
-                onClick={() => onResultClick(result)}
-              />
-            </div>
-          ))}
-      </div>
+      <StationCardsList
+        operationalPoints={searchResults}
+        stationCHcodes={stationCHcodes}
+        onStationClick={onResultClick}
+      />
     </>
   );
 };
