@@ -172,11 +172,11 @@ class DummyInfra : RawInfra, BlockInfra {
     }
 
     override fun getChunksOnRoute(route: RouteId): DirStaticIdxList<TrackChunk> {
-        TODO("Not yet implemented")
+        return makeDirIndexList(route)
     }
 
     override fun getRoutesOnTrackChunk(trackChunk: DirTrackChunkId): StaticIdxList<Route> {
-        TODO("Not yet implemented")
+        return makeIndexList(trackChunk.value)
     }
 
     override fun getRoutesStartingAtDet(dirDetector: DirDetectorId): StaticIdxList<Route> {
