@@ -1470,7 +1470,8 @@ export type InfraErrorType =
   | 'overlapping_switches'
   | 'overlapping_catenaries'
   | 'unknown_port_name'
-  | 'unused_port';
+  | 'unused_port'
+  | 'node_endpoints_not_unique';
 export type InfraError = {
   geographic?: Geometry | null;
   information: {

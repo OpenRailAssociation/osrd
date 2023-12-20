@@ -761,6 +761,7 @@ components:
       - overlapping_catenaries
       - unknown_port_name
       - unused_port
+      - node_endpoints_not_unique
       type: string
     InternalError:
       properties:

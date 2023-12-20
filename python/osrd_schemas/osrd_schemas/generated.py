@@ -52,6 +52,10 @@ class InvalidRoute(InfraErrorTrait):
     error_type: Literal["invalid_route"] = Field(default="invalid_route")
 
 
+class NodeEndpointsNotUnique(InfraErrorTrait):
+    error_type: Literal["node_endpoints_not_unique"] = Field(default="node_endpoints_not_unique")
+
+
 class UnknownPortName(InfraErrorTrait):
     error_type: Literal["unknown_port_name"] = Field(default="unknown_port_name")
     port_name: str
@@ -113,6 +117,7 @@ InfraError = Annotated[
         InvalidSwitchPorts,
         MissingRoute,
         MissingBufferStop,
+        NodeEndpointsNotUnique,
         ObjectOutOfPath,
         OddBufferStopLocation,
         OutOfRange,

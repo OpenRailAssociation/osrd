@@ -139,6 +139,10 @@
         "unused_port": {
           "name": "Branche non utilisée",
           "description": "La branche « {{port_name}} » déclarée dans le type d’aiguille/nœud « {{obj_id}} » n’est pas utilisée dans les configurations de ce type"
+        },
+        "node_endpoints_not_unique": {
+          "name": "Extrémité de voie de nœud non unique",
+          "description": "Une extrémité de voie est utilisée par plusieurs ports du nœud « {{obj_id}} »"
         }
       },
       "list": {
