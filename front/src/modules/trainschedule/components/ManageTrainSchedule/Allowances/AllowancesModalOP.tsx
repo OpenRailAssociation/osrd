@@ -27,7 +27,10 @@ export default function AllowancesModalOP({
               key={waypoint.path_offset}
             >
               <div className="col-6">{waypoint.path_offset}</div>
-              <div className="col-6">{waypoint.name}</div>
+              <div className="col-6">
+                {waypoint.name}&nbsp;
+                {waypoint.ch === '00' || !waypoint.ch ? 'BV' : `${waypoint.ch}`}
+              </div>
             </button>
           ))}
         </div>

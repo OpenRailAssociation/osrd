@@ -239,6 +239,8 @@ pub struct ResultStops {
     pub time: f64,
     pub position: f64,
     pub duration: f64,
+    #[schema(required)]
+    pub ch: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default, ToSchema)]

@@ -34,7 +34,7 @@
 }
 
 .manage-vias-modal {
-  .suggered-vias {
+  .suggested-vias {
     max-height: 30vh;
     overflow-y: auto;
     .loaderPathfindingInProgress {
@@ -48,11 +48,20 @@
       border-radius: 0 0 4px 4px;
       background-color: rgba(242, 242, 242, 0.75);
     }
-    .suggerred-via-clickable {
-      cursor: pointer;
-      border-radius: 4px;
-      &:hover {
-        background-color: var(--coolgray1);
+    .suggested-via {
+      &-clickable {
+        cursor: pointer;
+        border-radius: 4px;
+        &:hover {
+          background-color: var(--coolgray1);
+        }
+      }
+
+      &-name {
+        max-width: 47%;
+        white-space: nowrap;
+        overflow: hidden;
+       text-overflow: ellipsis;
       }
     }
   }

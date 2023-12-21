@@ -185,6 +185,10 @@ pub struct PathWaypoint {
     ))]
     #[schema(value_type = GeoJsonPoint)]
     pub sch: geojson::Geometry,
+    #[schema(required)]
+    pub uic: Option<i64>,
+    #[schema(required)]
+    pub ch: Option<String>,
 }
 
 impl Pathfinding {

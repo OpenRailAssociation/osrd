@@ -107,6 +107,8 @@ export default function commonConfBuilder() {
             type: 'Point',
           },
           suggestion: true,
+          ch: null,
+          uic: null,
         },
       ],
     }),

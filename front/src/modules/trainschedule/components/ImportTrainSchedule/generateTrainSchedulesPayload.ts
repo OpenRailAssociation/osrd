@@ -3,7 +3,7 @@ import { PathWaypoint, TrainScheduleBatchItem } from 'common/api/osrdEditoastApi
 import { time2sec } from 'utils/timeManipulation';
 
 // Hope for indexes are the same !
-// Synchronisation is done with indexes between pathfinding not suggered positions, and required steps from importation
+// Synchronisation is done with indexes between pathfinding not suggested positions, and required steps from importation
 function mixPathPositionsAndTimes(requiredSteps: Step[], pathFindingWaypoints: PathWaypoint[]) {
   const startTime = new Date(requiredSteps[0].departureTime);
   const pathFindingStepsFiltered = pathFindingWaypoints.filter((waypoint) => !waypoint.suggestion);

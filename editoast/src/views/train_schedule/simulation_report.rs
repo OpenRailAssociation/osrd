@@ -273,6 +273,7 @@ async fn add_stops_additional_information(
                         time: s.time,
                         position: s.position,
                         duration: s.duration,
+                        ch: pw.ch.clone(),
                     },
                     id: pw.id.clone(),
                     name: pw.name.clone(),
@@ -286,6 +287,7 @@ async fn add_stops_additional_information(
                         time: s.time,
                         position: s.position,
                         duration: s.duration,
+                        ch: pw.ch.clone(),
                     },
                     ..Default::default()
                 },

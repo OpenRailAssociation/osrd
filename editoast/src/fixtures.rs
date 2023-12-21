@@ -478,11 +478,13 @@ pub mod tests {
                     time: 0.0,
                     duration: 0.0,
                     position: 0.0,
+                    ch: None,
                 },
                 ResultStops {
                     time: 110.90135448736316,
                     duration: 1.0,
                     position: 2417.6350658673214,
+                    ch: None,
                 },
             ],
             head_positions: vec![ResultPosition {

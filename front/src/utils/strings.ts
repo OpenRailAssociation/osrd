@@ -55,3 +55,13 @@ export function onlyDigit(str: string): string {
 export function convertInputStringToNumber(str: string) {
   return str !== '' && !Number.isNaN(str) ? +str : undefined;
 }
+
+/**
+ * Given an UIC number, check if it begins with 87,
+ * if true return the UIC without the 87,
+ * if false return the full UIC
+ * @param uic full UIC and CI code (8 digits)
+ */
+export function formatUicToCi(uic: number) {
+  return uic.toString().replace(/^87/, '');
+}

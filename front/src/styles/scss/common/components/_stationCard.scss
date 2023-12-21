@@ -34,6 +34,11 @@
       font-weight: 500;
       font-size: .8rem;
     }
+    .station-card-uic {
+      margin-left: auto;
+      font-size: .6rem;
+      color: var(--primary);    
+    }
   }
   .station-card-localization {
     display: flex;
@@ -57,11 +62,6 @@
     .station-card-region {
       text-transform: uppercase;
       font-size: .6rem;   
-    }
-    .station-card-uic {
-      margin-left: auto;
-      font-size: .6rem;
-      color: var(--primary);    
     }
   }
   .station-card-footer {

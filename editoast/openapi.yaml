@@ -1297,6 +1297,9 @@ components:
       type: object
     PathWaypoint:
       properties:
+        ch:
+          nullable: true
+          type: string
         duration:
           format: double
           type: number
@@ -1317,6 +1320,10 @@ components:
           $ref: '#/components/schemas/GeoJsonPoint'
         suggestion:
           type: boolean
+        uic:
+          format: int64
+          nullable: true
+          type: integer
       required:
       - id
       - name
@@ -1326,6 +1333,8 @@ components:
       - suggestion
       - geo
       - sch
+      - uic
+      - ch
       type: object
     PathfindingPayload:
       description: |-
@@ -1748,6 +1757,9 @@ components:
       type: object
     ResultStops:
       properties:
+        ch:
+          nullable: true
+          type: string
         duration:
           format: double
           type: number
@@ -1761,6 +1773,7 @@ components:
       - time
       - position
       - duration
+      - ch
       type: object
     RjsPowerRestrictionRange:
       description: A range along the train path where a power restriction is applied.

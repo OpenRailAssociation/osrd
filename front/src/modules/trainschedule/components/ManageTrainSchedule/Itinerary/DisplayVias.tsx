@@ -9,6 +9,7 @@ import cx from 'classnames';
 import { AnyAction, ThunkAction } from '@reduxjs/toolkit';
 import { Position } from 'geojson';
 import { RootState } from 'reducers';
+import { formatUicToCi } from 'utils/strings';
 
 type InputStopTimeProps = {
   index: number;
@@ -99,6 +100,10 @@ export default function DisplayVias({ zoomToFeaturePoint }: DisplayViasProps) {
                             `KM ${place.position && Math.round(place.position) / 1000}`
                           }`}
                         </small>
+                        <small className="">{place.ch}</small>
+                        {place.uic && (
+                          <small className="text-muted ml-3">{formatUicToCi(place.uic)}</small>
+                        )}
                       </div>
                       {index !== indexSelected && (
                         <div className="default-durations-button mr-1">

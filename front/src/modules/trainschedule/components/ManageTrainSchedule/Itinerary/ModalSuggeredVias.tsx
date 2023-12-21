@@ -11,6 +11,8 @@ import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { Spinner } from 'common/Loader';
 import type { ArrayElement } from 'utils/types';
 import type { PathResponse, PathWaypoint } from 'common/api/osrdEditoastApi';
+import { formatUicToCi } from 'utils/strings';
+import cx from 'classnames';
 
 type Props = {
   removeAllVias: () => void;
@@ -65,32 +67,37 @@ export default function ModalSugerredVias({ removeAllVias, pathfindingInProgress
 
   const formatVia = (via: ArrayElement<PathResponse['steps']>, idx: number, idxTrueVia: number) => (
     <div
-      key={`suggered-via-modal-${via.id}-${idx}`}
-      className={`d-flex align-items-center p-1 ${via.suggestion && 'suggerred-via-clickable'}`}
+      key={`suggested-via-modal-${via.id}-${idx}`}
+      className={cx('d-flex align-items-center p-1', via.suggestion && 'suggested-via-clickable')}
+      title={via.name!}
     >
       {!via.suggestion && <small className="pr-2">{idxTrueVia}</small>}
       <i className={`${via.suggestion ? 'text-muted' : 'text-info'} icons-itinerary-bullet mr-2`} />
-      {via.name || ''}
-      <small className="ml-2">
-        {via.path_offset && `KM ${Math.round(via.path_offset) / 1000}`}
-      </small>
-      {via.suggestion && via.id && !selectedViasTracks.includes(via.id) ? (
-        <button
-          className="btn btn-sm btn-only-icon ml-auto"
-          type="button"
-          onClick={() => convertPathfindingVias(suggeredVias, idx - 1)}
-        >
-          <GoPlus />
-        </button>
-      ) : (
-        <button
-          className="btn btn-sm btn-only-icon ml-auto bg-dark"
-          type="button"
-          onClick={() => removeViaFromPath(via)}
-        >
-          <GoDash color="white" />
-        </button>
-      )}
+      <span className="suggested-via-name">{via.name || ''}</span>&nbsp;
+      <span>{via.ch}</span>
+      {via.uic && <small className="text-muted ml-3">{formatUicToCi(via.uic)}</small>}
+      <div className="ml-auto">
+        {via.path_offset && (
+          <small className="mr-2">{`KM ${Math.round(via.path_offset) / 1000}`}</small>
+        )}
+        {via.suggestion && via.id && !selectedViasTracks.includes(via.id) ? (
+          <button
+            className="btn btn-sm btn-only-icon"
+            type="button"
+            onClick={() => convertPathfindingVias(suggeredVias, idx - 1)}
+          >
+            <GoPlus />
+          </button>
+        ) : (
+          <button
+            className="btn btn-sm btn-only-icon bg-dark"
+            type="button"
+            onClick={() => removeViaFromPath(via)}
+          >
+            <GoDash color="white" />
+          </button>
+        )}
+      </div>
     </div>
   );
 
@@ -104,7 +111,7 @@ export default function ModalSugerredVias({ removeAllVias, pathfindingInProgress
         </button>
       </ModalHeaderSNCF>
       <ModalBodySNCF>
-        <div className="suggered-vias">
+        <div className="suggested-vias">
           {pathfindingInProgress && <LoaderPathfindingInProgress />}
           {suggeredVias &&
             suggeredVias.map((via, idx) => {
