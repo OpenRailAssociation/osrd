@@ -113,6 +113,8 @@ export interface PointOnMap {
   track?: string;
   position?: number;
   path_offset?: number;
+  uic?: number | null;
+  ch?: string | null;
   location?: {
     track_section?: string;
     offset?: number;

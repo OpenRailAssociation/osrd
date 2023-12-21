@@ -52,7 +52,10 @@ export default function DriverTrainScheduleStop({ stop, idx, train }: Props) {
       <td className="d-flex justify-content-center">
         <div>{Number.isInteger(pk) ? `${pk}.0` : pk}</div>
       </td>
-      <td>{stop.name || 'Unknown'}</td>
+      <td>
+        {stop.name || 'Unknown'}&nbsp;
+        <small>{stop.ch}</small>
+      </td>
       <td className="stoptime-container">
         <div className="box">
           <div className="box-row">

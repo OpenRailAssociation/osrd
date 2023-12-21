@@ -1,4 +1,5 @@
 import React from 'react';
+import { formatUicToCi } from 'utils/strings';
 
 export interface ImportStation {
   trigram?: string;
@@ -33,17 +34,15 @@ export default function StationCard({ station, onClick, fixedHeight = false }: P
     >
       <div className="station-card-head">
         <span className="station-card-code">{trigram}</span>
-        <span className="station-card-name">{name}</span>
-        {yardname && !yardNamesToExclude.includes(yardname) && (
-          <span className="station-card-ch">{yardname}</span>
-        )}
+        <span className="station-card-name">{name}&nbsp;</span>
+        {yardname && !yardNamesToExclude.includes(yardname) && <small>{yardname}</small>}
+        {uic && <span className="station-card-uic ml-3">{formatUicToCi(uic)}</span>}
       </div>
       <div className="station-card-localization">
         <span className="station-card-city">{town}</span>
         <span className="station-card-department">{department}</span>
         {department && region && <div className="station-card-separator">/</div>}
         <span className="station-card-region">{region}</span>
-        <span className="station-card-uic">{uic}</span>
       </div>
       {linename && (
         <div className="station-card-footer">

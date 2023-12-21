@@ -1643,6 +1643,7 @@ export type GeoJsonPoint = {
   type: 'Point';
 };
 export type PathWaypoint = {
+  ch: string | null;
   duration: number;
   geo: GeoJsonPoint;
   id: string | null;
@@ -1651,6 +1652,7 @@ export type PathWaypoint = {
   path_offset: number;
   sch: GeoJsonPoint;
   suggestion: boolean;
+  uic: number | null;
 };
 export type PathResponse = {
   created: string;
@@ -2201,6 +2203,7 @@ export type ResultSpeed = {
   time: number;
 };
 export type ResultStops = {
+  ch: string | null;
   duration: number;
   position: number;
   time: number;

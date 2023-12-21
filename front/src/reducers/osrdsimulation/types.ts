@@ -80,6 +80,7 @@ export interface Stop {
   track_number: number | null;
   line_name: string | null;
   track_name: string | null;
+  ch?: string | null;
 }
 
 export interface RouteAspect<Time = number, Color = number> {

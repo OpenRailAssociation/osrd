@@ -375,12 +375,18 @@ impl Pathfinding {
                 } else {
                     steps_duration.next().unwrap()
                 };
-                let op_name = waypoint
-                    .id
-                    .as_ref()
-                    .map(|op_id| op_map.get(op_id).expect("unexpected OP id"))
-                    .and_then(|op| op.extensions.identifier.as_ref())
-                    .map(|ident| ident.name.as_ref().to_owned());
+                let op_info = waypoint.id.as_ref().map(|op_id| {
+                    let op = op_map.get(op_id).expect("unexpected OP id");
+                    let name = op
+                        .extensions
+                        .identifier
+                        .as_ref()
+                        .map(|ident| ident.name.as_ref().to_owned());
+                    let uic = op.extensions.identifier.as_ref().map(|ident| ident.uic);
+                    let ch = op.extensions.sncf.as_ref().map(|sncf| sncf.ch.to_owned());
+                    (name, uic, ch)
+                });
+                let (name, uic, ch) = op_info.unwrap_or_default();
                 let track = track_map
                     .get(&waypoint.location.track_section.0)
                     .expect("unexpected track id");
@@ -397,13 +403,15 @@ impl Pathfinding {
                 let sch = geos::geojson::Geometry::try_from(sch).unwrap();
                 PathWaypoint {
                     id: waypoint.id.clone(),
-                    name: op_name,
+                    name,
                     location: waypoint.location.clone(),
                     duration,
                     path_offset: waypoint.path_offset,
                     suggestion: waypoint.suggestion,
                     geo,
                     sch,
+                    uic,
+                    ch,
                 }
             })
             .collect();
