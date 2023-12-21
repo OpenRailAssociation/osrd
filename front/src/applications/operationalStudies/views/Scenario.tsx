@@ -73,26 +73,6 @@ export default function Scenario() {
   );
 
   const {
-    data: project,
-    isError: isProjectError,
-    error: errorProject,
-  } = osrdEditoastApi.endpoints.getProjectsByProjectId.useQuery(
-    {
-      projectId: projectId!,
-    },
-    { skip: !projectId }
-  );
-  const {
-    data: study,
-    isError: isStudyError,
-    error: errorStudy,
-  } = osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyId.useQuery(
-    { projectId: projectId!, studyId: studyId! },
-    {
-      skip: !projectId || !studyId,
-    }
-  );
-  const {
     data: scenario,
     isError: isScenarioError,
     error: errorScenario,
@@ -108,10 +88,8 @@ export default function Scenario() {
   );
 
   useEffect(() => {
-    if (isProjectError && errorProject) throw errorProject;
-    if (isStudyError && errorStudy) throw errorStudy;
     if (isScenarioError && errorScenario) throw errorScenario;
-  }, [isProjectError, isStudyError, isScenarioError, errorProject, errorStudy, errorScenario]);
+  }, [isScenarioError, errorScenario]);
 
   useEffect(() => {
     if (scenario) {
@@ -211,7 +189,11 @@ export default function Scenario() {
 
   return scenario && infraId && timetableId ? (
     <>
-      <NavBarSNCF appName={<BreadCrumbs project={project} study={study} scenario={scenario} />} />
+      <NavBarSNCF
+        appName={
+          <BreadCrumbs project={scenario?.project} study={scenario?.study} scenario={scenario} />
+        }
+      />
       <main className="mastcontainer mastcontainer-no-mastnav">
         <div className="scenario">
           <div className="row scenario-container">

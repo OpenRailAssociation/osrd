@@ -54,17 +54,6 @@ export default function Study() {
   );
 
   const {
-    data: project,
-    isError: isProjectError,
-    error: projectError,
-  } = osrdEditoastApi.useGetProjectsByProjectIdQuery(
-    { projectId: +projectId! },
-    {
-      skip: !projectId,
-    }
-  );
-
-  const {
     data: study,
     isError: isCurrentStudyError,
     error: studyError,
@@ -87,11 +76,8 @@ export default function Study() {
   }, [projectId, studyId]);
 
   useEffect(() => {
-    if (isProjectError && projectError) {
-      throw projectError;
-    }
     if (isCurrentStudyError && studyError) throw studyError;
-  }, [isProjectError, projectError, isCurrentStudyError, studyError]);
+  }, [isCurrentStudyError, studyError]);
 
   const sortOptions = [
     {
@@ -190,10 +176,10 @@ export default function Study() {
 
   return (
     <>
-      <NavBarSNCF appName={<BreadCrumbs project={project} study={study} />} />
+      <NavBarSNCF appName={<BreadCrumbs project={study?.project} study={study} />} />
       <main className="mastcontainer mastcontainer-no-mastnav">
         <div className="p-3 study-view">
-          {project && study ? (
+          {study ? (
             <div className="study-details">
               <div className="study-details-dates">
                 <DateBox
@@ -249,12 +235,12 @@ export default function Study() {
                   <div className="study-details-state">
                     {studyStates.map(
                       (state, idx) =>
-                        project.id &&
+                        study.project.id &&
                         study.id &&
                         study.state && (
                           <StateStep
                             key={nextId()}
-                            projectID={project.id}
+                            projectID={study.project.id}
                             studyID={study.id}
                             number={idx + 1}
                             studyName={study.name}
