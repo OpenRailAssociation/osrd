@@ -288,14 +288,16 @@
       },
       "routes-edition": {
         "actions": {
+          "save-route": "Sauvegarder le nouvel itinéraire",
+          "reset-route":"Réinitialiser l'itinéraire",
           "delete-route": "Supprimer l'itinéraire",
           "new-route": "Créer un nouvel itinéraire",
-          "pick-entrypoint": "Outil de sélection du point de départ",
-          "pick-entrypoint-cancel": "Annuler la sélection du point de départ",
-          "pick-entrypoint-delete": "Supprimer le point de départ sélectionné",
-          "pick-exitpoint": "Outil de sélection du point d'arrivée",
-          "pick-exitpoint-cancel": "Annuler la sélection du point d'arrivée",
-          "pick-exitpoint-delete": "Supprimer le point d'arrivée sélectionné"
+          "pick-entry_point": "Outil de sélection du point de départ",
+          "pick-entry_point-cancel-delete": "Annuler la sélection du point de départ",
+          "pick-entry_point-delete": "Modifier le point de départ sélectionné",
+          "pick-exit_point": "Outil de sélection du point d'arrivée",
+          "pick-exit_point-cancel-delete": "Annuler la sélection du point d'arrivée",
+          "pick-exit_point-delete": "Modifier le point d'arrivée sélectionné"
         },
         "alternative-routes": "Créer un itinéraire similaire",
         "confirm-delete-route": "Êtes-vous sûr(e) de vouloir supprimer cet itinéraire ?",
@@ -332,12 +334,11 @@
         "routes": "{{count}} itinéraires compatibles trouvés",
         "routes_one": "Un itinéraire compatible trouvé",
         "routes_zero": "Aucun itinéraire compatible trouvé",
-        "save-new-route": "Sauvegarder le nouvel itinéraire",
-        "save-route": "Sauvegarder les modifications",
         "save-route-success": "L'itinéraire a été sauvegardé avec succès.",
         "search-routes": "Rechercher des itinéraires compatibles",
+        "search-routes-alt": "Rechercher des itinéraires alternatifs",
         "start": "Départ",
-        "start_direction": "Direction au départ :",
+        "start_direction": "Direction au départ",
         "swap-endpoints": "Échanger les extrémités",
         "to": "à",
         "untitled-track": "Ligne sans nom"

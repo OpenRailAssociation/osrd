@@ -19,15 +19,14 @@ import type {
   SwitchEntity,
   TrackSectionEntity,
 } from 'types';
-
 import { getEntity } from 'applications/editor/data/api';
 import TOOL_TYPES from 'applications/editor/tools/toolTypes';
 import { EDITOAST_TO_LAYER_DICT } from 'applications/editor/tools/types';
 import type { TrackState } from 'applications/editor/tools/rangeEdition/types';
 import type { EditoastType, EditorState } from 'applications/editor/tools/types';
 import type { EditorContextType } from 'applications/editor/tools/editorContextTypes';
-
 import { editorSliceActions } from 'reducers/editor';
+import { getRouteEditionState } from './routeEdition/utils';
 
 /**
  * Since Turf and Editoast do not compute the lengths the same way (see #1751)
@@ -190,11 +189,7 @@ export function openEntityEditionPanel(
     case 'Route':
       switchTool({
         toolType: TOOL_TYPES.ROUTE_EDITION,
-        toolState: {
-          type: 'editRouteMetadata',
-          initialRouteEntity: entity as RouteEntity,
-          routeEntity: entity as RouteEntity,
-        },
+        toolState: getRouteEditionState(entity as RouteEntity),
       });
       break;
     default:

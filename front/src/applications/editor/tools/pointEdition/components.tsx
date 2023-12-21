@@ -22,13 +22,12 @@ import type { EditoastType } from 'applications/editor/tools/types';
 import EntityError from 'applications/editor/components/EntityError';
 import EntitySumUp from 'applications/editor/components/EntitySumUp';
 import { getEntities, getEntity } from 'applications/editor/data/api';
-import { getEditRouteState } from 'applications/editor/tools/routeEdition/utils';
+import { getRouteEditionState } from 'applications/editor/tools/routeEdition/utils';
 import type { PointEditionState } from 'applications/editor/tools/pointEdition/types';
 import { formatSignalingSystems } from 'applications/editor/tools/pointEdition/utils';
 import { CustomPosition } from 'applications/editor/tools/pointEdition/CustomPosition';
 import { NEW_ENTITY_ID, flattenEntity, cleanSymbolType } from 'applications/editor/data/utils';
 import { CustomFlagSignalCheckbox } from 'applications/editor/tools/pointEdition/CustomFlagSignalCheckbox';
-
 import type {
   EditorEntity,
   TrackSectionEntity,
@@ -38,10 +37,8 @@ import type {
   BufferStopEntity,
 } from 'types';
 import { NULL_GEOMETRY } from 'types';
-
 import { save } from 'reducers/editor';
 import { getMap } from 'reducers/map/selectors';
-
 import colors from 'common/Map/Consts/colors';
 import GeoJSONs, { EditorSource, SourcesDefinitionsIndex } from 'common/Map/Layers/GeoJSONs';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
@@ -142,7 +139,7 @@ export const RoutesList = ({ type, id }: RoutesListProps) => {
                     onClick={() => {
                       switchTool({
                         toolType: TOOL_TYPES.ROUTE_EDITION,
-                        toolState: getEditRouteState(route),
+                        toolState: getRouteEditionState(route),
                       });
                     }}
                   >
@@ -173,7 +170,7 @@ export const RoutesList = ({ type, id }: RoutesListProps) => {
                     onClick={() => {
                       switchTool({
                         toolType: TOOL_TYPES.ROUTE_EDITION,
-                        toolState: getEditRouteState(route),
+                        toolState: getRouteEditionState(route),
                       });
                     }}
                   >

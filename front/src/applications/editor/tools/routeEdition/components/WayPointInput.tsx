@@ -1,104 +1,108 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { FC, useCallback, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
-import { GoTrash } from 'react-icons/go';
+import { GoPencil } from 'react-icons/go';
 import { FaMapMarkedAlt, FaTimesCircle } from 'react-icons/fa';
-import type { Position } from 'geojson';
-
-import type { EndPoint, WayPoint, WayPointEntity } from 'types';
+import { isNil } from 'lodash';
 
 import EditorContext from 'applications/editor/context';
+import { type RouteEditionState, EndPointKeys } from 'applications/editor/tools/routeEdition/types';
 import { getEntity } from 'applications/editor/data/api';
-import Tipped from 'applications/editor/components/Tipped';
 import EntitySumUp from 'applications/editor/components/EntitySumUp';
-import { EndPointKeys } from 'applications/editor/tools/routeEdition/types';
-import type { EditRoutePathState } from 'applications/editor/tools/routeEdition/types';
-import type { ExtendedEditorContextType } from 'applications/editor/tools/editorContextTypes';
-
+import Tipped from 'applications/editor/components/Tipped';
+import { ExtendedEditorContextType } from 'applications/editor/tools/editorContextTypes';
+import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import { useInfraID } from 'common/osrdContext';
+import type { EndPoint, WayPoint, WayPointEntity } from 'types';
+import useKeyboardShortcuts from 'utils/hooks/useKeyboardShortcuts';
 
 interface WayPointInputProps {
   endPoint: EndPoint;
-  wayPoint: WayPoint | null;
-  onChange: (newWayPoint: WayPoint & { position: Position }) => void;
+  wayPoint?: WayPoint | null;
+  onChange: (entity: WayPointEntity | null) => void;
 }
-const WayPointInput = ({ endPoint, wayPoint, onChange }: WayPointInputProps) => {
+const WayPointInput: FC<WayPointInputProps> = ({ endPoint, wayPoint, onChange }) => {
   const dispatch = useDispatch();
   const { state, setState } = useContext(
     EditorContext
-  ) as ExtendedEditorContextType<EditRoutePathState>;
+  ) as ExtendedEditorContextType<RouteEditionState>;
   const { t } = useTranslation();
   const infraID = useInfraID();
   const [entityState, setEntityState] = useState<
     { type: 'data'; entity: WayPointEntity } | { type: 'loading' } | { type: 'empty' }
   >({ type: 'empty' });
+  // When escape is pressed => idle
+  useKeyboardShortcuts([
+    {
+      code: 'Escape',
+      handler: () =>
+        setState((prev) => ({
+          ...prev,
+          extremityState: { type: 'idle' },
+        })),
+    },
+  ]);
 
   const isPicking =
-    state.extremityEditionState.type === 'selection' &&
-    state.extremityEditionState.extremity === endPoint;
+    state.extremityState.type === 'selection' && state.extremityState.extremity === endPoint;
   const isDisabled =
-    state.extremityEditionState.type === 'selection' &&
+    state.extremityState.type === 'selection' &&
     !isPicking &&
-    state.extremityEditionState.extremity !== endPoint;
-  const isWayPointSelected = state.routeState[EndPointKeys[endPoint]] !== null;
+    state.extremityState.extremity !== endPoint;
 
-  const startPickingWayPoint = useCallback(() => {
+  const isWayPointSelected = !isNil(wayPoint);
+
+  const onBtnClick = useCallback(() => {
     // Cancel current selection:
     if (isPicking) {
       setState({
         ...state,
-        extremityEditionState: {
+        extremityState: {
           type: 'idle',
         },
       });
     }
     // Start selecting:
-    else if (!isWayPointSelected) {
+    else {
       setState({
         ...state,
-        extremityEditionState: {
+        isComplete: false,
+        extremityState: {
           type: 'selection',
           extremity: endPoint,
           hoveredPoint: null,
-          onSelect: (newWayPoint: WayPointEntity) => {
-            setState({ ...state, extremityEditionState: { type: 'idle' } });
-            onChange({
-              type: newWayPoint.objType,
-              id: newWayPoint.properties.id,
-              position: newWayPoint.geometry.coordinates,
-            });
-          },
+          onSelect: onChange,
         },
-      });
-    } else {
-      setState({
-        ...state,
-        routeState: {
-          ...state.routeState,
-          [EndPointKeys[endPoint]]: null,
-        },
-        optionsState: { type: 'idle' },
       });
     }
-  }, [endPoint, isPicking, onChange, setState, state]);
+  }, [endPoint, isPicking, setState, state]);
 
   const getButtonIcon = () => {
-    if (!isPicking && isWayPointSelected) return <GoTrash />;
+    if (!isPicking && isWayPointSelected) return <GoPencil />;
     return isPicking ? <FaTimesCircle /> : <FaMapMarkedAlt />;
   };
 
   useEffect(() => {
     if (
       entityState.type === 'empty' ||
-      (entityState.type === 'data' && entityState.entity.properties.id !== wayPoint?.id)
+      (entityState.type === 'data' && wayPoint?.id !== entityState.entity.properties.id)
     ) {
-      if (wayPoint) {
+      if (wayPoint && wayPoint.id !== NEW_ENTITY_ID) {
         setEntityState({ type: 'loading' });
-        getEntity<WayPointEntity>(infraID as number, wayPoint.id, wayPoint.type, dispatch).then(
-          (entity) => setEntityState({ type: 'data', entity })
-        );
+        getEntity<WayPointEntity>(infraID as number, wayPoint.id, wayPoint.type, dispatch)
+          .then((entity) => {
+            setEntityState({ type: 'data', entity });
+            // we call the onchange here to populate the state `extremitiesEntities`
+            onChange(entity);
+          })
+          .catch((e) => {
+            console.error(e);
+            setEntityState({ type: 'empty' });
+            onChange(null);
+          });
       } else {
         setEntityState({ type: 'empty' });
+        onChange(null);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -120,7 +124,7 @@ const WayPointInput = ({ endPoint, wayPoint, onChange }: WayPointInputProps) => 
           <button
             type="button"
             className="btn btn-primary px-3"
-            onClick={startPickingWayPoint}
+            onClick={onBtnClick}
             disabled={isDisabled}
           >
             {getButtonIcon()}
