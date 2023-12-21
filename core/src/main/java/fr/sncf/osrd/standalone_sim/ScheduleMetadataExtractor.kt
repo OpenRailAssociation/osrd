@@ -87,7 +87,7 @@ fun run(envelope: Envelope, trainPath: PathProperties, chunkPath: ChunkPath, sch
     val trainLength = schedule.rollingStock.length
     var speeds = ArrayList<ResultSpeed>()
     var headPositions = ArrayList<ResultPosition>()
-    for (point in envelopeWithStops.iterateCurve()) {
+    for (point in envelopeWithStops.iteratePoints()) {
         speeds.add(ResultSpeed(point.time, point.speed, point.position))
         headPositions.add(ResultPosition.from(point.time, point.position, trainPath, rawInfra))
     }

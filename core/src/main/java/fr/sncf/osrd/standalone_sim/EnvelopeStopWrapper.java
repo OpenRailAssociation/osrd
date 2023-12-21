@@ -1,16 +1,17 @@
 package fr.sncf.osrd.standalone_sim;
 
-import fr.sncf.osrd.envelope.Envelope;
+import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.arePositionsEqual;
+
 import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate;
 import fr.sncf.osrd.train.TrainStop;
 import java.util.ArrayList;
 import java.util.List;
 
 public class EnvelopeStopWrapper implements EnvelopeTimeInterpolate {
-    public final Envelope envelope;
+    public final EnvelopeTimeInterpolate envelope;
     public final List<TrainStop> stops;
 
-    public EnvelopeStopWrapper(Envelope envelope, List<TrainStop> stops) {
+    public EnvelopeStopWrapper(EnvelopeTimeInterpolate envelope, List<TrainStop> stops) {
         this.envelope = envelope;
         this.stops = stops;
     }
@@ -51,33 +52,22 @@ public class EnvelopeStopWrapper implements EnvelopeTimeInterpolate {
         return envelope.getTotalTime() + stops.stream().mapToDouble(stop -> stop.duration).sum();
     }
 
-    public record CurvePoint(double time, double speed, double position){}
-
     /** Returns all the points as (time, speed, position), with time adjusted for stop duration */
-    public List<CurvePoint> iterateCurve() {
-        var res = new ArrayList<CurvePoint>();
-        double time = 0;
-        for (var part : envelope) {
-            // Add head position points
-            for (int i = 0; i < part.pointCount(); i++) {
-                var pos = part.getPointPos(i);
-                var speed = part.getPointSpeed(i);
-                res.add(new CurvePoint(time, speed, pos));
-                if (i < part.stepCount())
-                    time += part.getStepTime(i);
-            }
-
-            if (part.getEndSpeed() > 0)
-                continue;
-
-            // Add stop duration
-            for (var stop : stops) {
-                if (stop.duration == 0. || stop.position < part.getEndPos())
-                    continue;
-                if (stop.position > part.getEndPos())
-                    break;
-                time += stop.duration;
-                res.add(new CurvePoint(time, 0, part.getEndPos()));
+    @Override
+    public List<EnvelopePoint> iteratePoints() {
+        var res = new ArrayList<EnvelopePoint>();
+        double sumPreviousStopDuration = 0;
+        int stopIndex = 0;
+        for (var point : envelope.iteratePoints()) {
+            var shiftedPoint = new EnvelopePoint(
+                    point.time() + sumPreviousStopDuration,
+                    point.speed(), point.position()
+            );
+            res.add(shiftedPoint);
+            if (stopIndex < stops.size() && arePositionsEqual(point.position(), stops.get(stopIndex).position)) {
+                var stopDuration = stops.get(stopIndex).duration;
+                stopIndex++;
+                sumPreviousStopDuration += stopDuration;
             }
         }
         return res;

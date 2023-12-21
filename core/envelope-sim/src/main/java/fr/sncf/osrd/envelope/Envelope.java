@@ -4,8 +4,10 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.reporting.exceptions.ErrorType;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Stream;
 
@@ -322,6 +324,23 @@ public final class Envelope implements Iterable<EnvelopePart>, SearchableEnvelop
                 return parts[i++];
             }
         };
+    }
+
+    @Override
+    public List<EnvelopePoint> iteratePoints() {
+        var res = new ArrayList<EnvelopePoint>();
+        double time = 0;
+        for (var part : this) {
+            // Add head position points
+            for (int i = 0; i < part.pointCount(); i++) {
+                var pos = part.getPointPos(i);
+                var speed = part.getPointSpeed(i);
+                res.add(new EnvelopePoint(time, speed, pos));
+                if (i < part.stepCount())
+                    time += part.getStepTime(i);
+            }
+        }
+        return res;
     }
 
     /** Makes a stream from the parts */

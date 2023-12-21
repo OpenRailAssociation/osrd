@@ -1,5 +1,7 @@
 package fr.sncf.osrd.envelope;
 
+import java.util.List;
+
 public interface EnvelopeTimeInterpolate {
 
     /** Computes the time required to get to a given point of the envelope */
@@ -20,4 +22,8 @@ public interface EnvelopeTimeInterpolate {
 
     /** Returns the total time of the envelope */
     double getTotalTime();
+
+    record EnvelopePoint(double time, double speed, double position){}
+
+    List<EnvelopePoint> iteratePoints();
 }
