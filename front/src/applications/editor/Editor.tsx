@@ -19,9 +19,9 @@ import EditorContext from 'applications/editor/context';
 import InfraErrorCorrector from 'applications/editor/components/InfraErrors/InfraErrorCorrector';
 import InfraErrorMapControl from 'applications/editor/components/InfraErrors/InfraErrorMapControl';
 import Map from 'applications/editor/Map';
+import MapButtons from 'common/Map/Buttons/MapButtons';
 import MapSearch from 'common/Map/Search/MapSearch';
-import NavButtons from 'applications/editor/nav';
-import useKeyboardShortcuts from 'utils/hooks/useKeyboardShortcuts';
+
 import Tipped from 'applications/editor/components/Tipped';
 import TOOLS from 'applications/editor/tools/tools';
 import TOOL_TYPES from 'applications/editor/tools/toolTypes';
@@ -53,7 +53,6 @@ const Editor = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { register } = useKeyboardShortcuts();
   const { openModal, closeModal } = useModal();
   const { updateInfraID, selectLayers } = useOsrdActions() as EditorSliceActions;
   const mapRef = useRef<MapRef>(null);
@@ -64,7 +63,6 @@ const Editor = () => {
   const isLoading = useSelector(getIsLoading);
   const editorState = useSelector((state: { editor: EditorState }) => state.editor);
   const switchTypes = useSwitchTypes(infraID);
-
   /* eslint-disable @typescript-eslint/no-explicit-any */
   const [toolAndState, setToolAndState] = useState<FullTool<any>>({
     tool: TOOLS[TOOL_TYPES.SELECTION],
@@ -121,6 +119,14 @@ const Editor = () => {
     },
     [dispatch]
   );
+
+  const resetPitchBearing = () => {
+    setViewport({
+      ...viewport,
+      bearing: 0,
+      pitch: 0,
+    });
+  };
 
   const context = useMemo<EditorContextType<CommonToolState>>(
     () => ({
@@ -422,67 +428,15 @@ const Editor = () => {
                 />
               )}
 
-              <div className="nav-box">
-                {NavButtons.flatMap((navButtons) => {
-                  const buttons = navButtons.map((navButton) => {
-                    const {
-                      id,
-                      icon: IconComponent,
-                      labelTranslationKey,
-                      shortcut,
-                      isDisabled,
-                      isActive,
-                      isBlink,
-                      onClick,
-                    } = navButton;
-                    const label = t(labelTranslationKey);
-                    const clickFunction = () => {
-                      if (onClick && mapRef.current !== null) {
-                        onClick(
-                          {
-                            navigate,
-                            dispatch,
-                            setViewport,
-                            viewport,
-                            openModal,
-                            closeModal,
-                            setIsSearchToolOpened,
-                            editorState,
-                            mapRef: mapRef.current,
-                          },
-                          {
-                            activeTool: toolAndState.tool,
-                            toolState: toolAndState.state,
-                            setToolState,
-                            switchTool,
-                          }
-                        );
-                      }
-                    };
-                    if (shortcut) register({ ...shortcut, handler: clickFunction });
-                    return (
-                      <Tipped key={id} mode="left">
-                        <button
-                          id={id}
-                          type="button"
-                          className={cx('editor-btn', 'btn-rounded', 'shadow', {
-                            active: isActive && isActive(editorState),
-                            'btn-map-infras-blinking': isBlink && isBlink(editorState, infraID),
-                          })}
-                          onClick={clickFunction}
-                          disabled={isDisabled && isDisabled(editorState)}
-                        >
-                          <span className="sr-only">{label}</span>
-                          <IconComponent />
-                        </button>
-                        <span>{label}</span>
-                      </Tipped>
-                    );
-                  });
-
-                  return buttons;
-                })}
-              </div>
+              <MapButtons
+                map={mapRef.current ?? undefined}
+                resetPitchBearing={resetPitchBearing}
+                withInfraButton
+                withInfraErrorsButton
+                bearing={viewport.bearing}
+                editorState={editorState}
+                isInEditor
+              />
 
               {mapRef.current &&
                 editorState.editorLayers.has('errors') &&
