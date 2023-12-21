@@ -17,7 +17,7 @@ utoipa = { version = "3.5.0", features = ["actix_extras", "chrono", "uuid"] }
 [dependencies]
 # For batch dependcy updates see https://osrd.fr/en/docs/guides/contribute/batch-updating-dependencies/
 
-async-trait = "0.1.74"
+async-trait = "0.1.75"
 chashmap = "2.2.2"
 clap = { version = "4.4.11", features = ["derive", "env"] }
 colored = "2.0.4"
