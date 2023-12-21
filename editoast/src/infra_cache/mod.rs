@@ -567,6 +567,83 @@ impl InfraCache {
         Ok(())
     }
 
+    pub fn get_track_section(&self, track_section_id: &str) -> Result<&TrackSectionCache> {
+        Ok(self
+            .track_sections()
+            .get(track_section_id)
+            .ok_or_else(|| InfraCacheEditoastError::ObjectNotFound {
+                obj_type: ObjectType::TrackSection.to_string(),
+                obj_id: track_section_id.to_string(),
+            })?
+            .unwrap_track_section())
+    }
+
+    pub fn get_signal(&self, signal_id: &str) -> Result<&SignalCache> {
+        Ok(self
+            .signals()
+            .get(signal_id)
+            .ok_or_else(|| InfraCacheEditoastError::ObjectNotFound {
+                obj_type: ObjectType::Signal.to_string(),
+                obj_id: signal_id.to_string(),
+            })?
+            .unwrap_signal())
+    }
+
+    pub fn get_speed_section(&self, speed_section_id: &str) -> Result<&SpeedSection> {
+        Ok(self
+            .speed_sections()
+            .get(speed_section_id)
+            .ok_or_else(|| InfraCacheEditoastError::ObjectNotFound {
+                obj_type: ObjectType::SpeedSection.to_string(),
+                obj_id: speed_section_id.to_string(),
+            })?
+            .unwrap_speed_section())
+    }
+
+    pub fn get_detector(&self, detector_id: &str) -> Result<&DetectorCache> {
+        Ok(self
+            .detectors()
+            .get(detector_id)
+            .ok_or_else(|| InfraCacheEditoastError::ObjectNotFound {
+                obj_type: ObjectType::Detector.to_string(),
+                obj_id: detector_id.to_string(),
+            })?
+            .unwrap_detector())
+    }
+
+    pub fn get_switch(&self, switch_id: &str) -> Result<&SwitchCache> {
+        Ok(self
+            .switches()
+            .get(switch_id)
+            .ok_or_else(|| InfraCacheEditoastError::ObjectNotFound {
+                obj_type: ObjectType::Switch.to_string(),
+                obj_id: switch_id.to_string(),
+            })?
+            .unwrap_switch())
+    }
+
+    pub fn get_switch_type(&self, switch_type_id: &str) -> Result<&SwitchType> {
+        Ok(self
+            .switch_types()
+            .get(switch_type_id)
+            .ok_or_else(|| InfraCacheEditoastError::ObjectNotFound {
+                obj_type: ObjectType::SwitchType.to_string(),
+                obj_id: switch_type_id.to_string(),
+            })?
+            .unwrap_switch_type())
+    }
+
+    pub fn get_buffer_stop(&self, buffer_stop_id: &str) -> Result<&BufferStopCache> {
+        Ok(self
+            .buffer_stops()
+            .get(buffer_stop_id)
+            .ok_or_else(|| InfraCacheEditoastError::ObjectNotFound {
+                obj_type: ObjectType::BufferStop.to_string(),
+                obj_id: buffer_stop_id.to_string(),
+            })?
+            .unwrap_buffer_stop())
+    }
+
     pub fn get_route(&self, route_id: &str) -> Result<&Route> {
         Ok(self
             .routes()
@@ -578,15 +655,29 @@ impl InfraCache {
             .unwrap_route())
     }
 
-    pub fn get_track_section(&self, track_id: &str) -> Result<&TrackSectionCache> {
+    pub fn get_operational_point(
+        &self,
+        operational_point_id: &str,
+    ) -> Result<&OperationalPointCache> {
         Ok(self
-            .track_sections()
-            .get(track_id)
+            .operational_points()
+            .get(operational_point_id)
             .ok_or_else(|| InfraCacheEditoastError::ObjectNotFound {
-                obj_type: ObjectType::TrackSection.to_string(),
-                obj_id: track_id.to_string(),
+                obj_type: ObjectType::OperationalPoint.to_string(),
+                obj_id: operational_point_id.to_string(),
             })?
-            .unwrap_track_section())
+            .unwrap_operational_point())
+    }
+
+    pub fn get_catenary(&self, catenary_id: &str) -> Result<&Catenary> {
+        Ok(self
+            .catenaries()
+            .get(catenary_id)
+            .ok_or_else(|| InfraCacheEditoastError::ObjectNotFound {
+                obj_type: ObjectType::Catenary.to_string(),
+                obj_id: catenary_id.to_string(),
+            })?
+            .unwrap_catenary())
     }
 }
 
@@ -1133,5 +1224,242 @@ pub mod tests {
             .scope_boxed()
         })
         .await;
+    }
+
+    mod getters {
+        use std::collections::HashMap;
+
+        use super::create_track_section_cache;
+        use crate::{
+            infra_cache::{
+                tests::{
+                    create_buffer_stop_cache, create_catenary_cache, create_detector_cache,
+                    create_operational_point_cache, create_route_cache, create_signal_cache,
+                    create_speed_section_cache, create_switch_cache_point,
+                    create_switch_type_cache,
+                },
+                InfraCache, InfraCacheEditoastError,
+            },
+            schema::{
+                utils::Identifier, Direction::StartToStop, ObjectType, TrackEndpoint,
+                Waypoint::BufferStop,
+            },
+        };
+
+        #[test]
+        fn track_section() {
+            const ID: &str = "track_section_id";
+
+            let mut infra_cache = InfraCache::default();
+
+            assert_eq!(
+                infra_cache.get_track_section(ID).unwrap_err(),
+                InfraCacheEditoastError::ObjectNotFound {
+                    obj_type: ObjectType::TrackSection.to_string(),
+                    obj_id: ID.to_string()
+                }
+                .into()
+            );
+            let track_section = create_track_section_cache(ID, 100.0);
+            infra_cache.add(track_section.clone()).unwrap();
+            assert_eq!(infra_cache.get_track_section(ID).unwrap(), &track_section);
+        }
+
+        #[test]
+        fn signal() {
+            const ID: &str = "signal_id";
+
+            let mut infra_cache = InfraCache::default();
+
+            assert_eq!(
+                infra_cache.get_signal(ID).unwrap_err(),
+                InfraCacheEditoastError::ObjectNotFound {
+                    obj_type: ObjectType::Signal.to_string(),
+                    obj_id: ID.to_string()
+                }
+                .into()
+            );
+            let signal = create_signal_cache(ID, "track_section_id", 0.0);
+            infra_cache.add(signal.clone()).unwrap();
+            assert_eq!(infra_cache.get_signal(ID).unwrap(), &signal);
+        }
+
+        #[test]
+        fn speed_section() {
+            const ID: &str = "speed_section_id";
+
+            let mut infra_cache = InfraCache::default();
+
+            assert_eq!(
+                infra_cache.get_speed_section(ID).unwrap_err(),
+                InfraCacheEditoastError::ObjectNotFound {
+                    obj_type: ObjectType::SpeedSection.to_string(),
+                    obj_id: ID.to_string()
+                }
+                .into()
+            );
+            let speed_section =
+                create_speed_section_cache(ID, vec![("track_section_id", 0.0, 100.0)]);
+            infra_cache.add(speed_section.clone()).unwrap();
+            assert_eq!(infra_cache.get_speed_section(ID).unwrap(), &speed_section);
+        }
+
+        #[test]
+        fn detector() {
+            const ID: &str = "detector_id";
+
+            let mut infra_cache = InfraCache::default();
+
+            assert_eq!(
+                infra_cache.get_detector(ID).unwrap_err(),
+                InfraCacheEditoastError::ObjectNotFound {
+                    obj_type: ObjectType::Detector.to_string(),
+                    obj_id: ID.to_string()
+                }
+                .into()
+            );
+            let detector = create_detector_cache(ID, "track_section_id", 0.0);
+            infra_cache.add(detector.clone()).unwrap();
+            assert_eq!(infra_cache.get_detector(ID).unwrap(), &detector);
+        }
+
+        #[test]
+        fn switch() {
+            const ID: &str = "switch_id";
+
+            let mut infra_cache = InfraCache::default();
+
+            assert_eq!(
+                infra_cache.get_switch(ID).unwrap_err(),
+                InfraCacheEditoastError::ObjectNotFound {
+                    obj_type: ObjectType::Switch.to_string(),
+                    obj_id: ID.to_string()
+                }
+                .into()
+            );
+            let switch = create_switch_cache_point(
+                ID.to_string(),
+                ("track_section_1_id", TrackEndpoint::default()),
+                ("track_section_2_id", TrackEndpoint::default()),
+                ("track_section_3_id", TrackEndpoint::default()),
+                "switch_type_id".to_string(),
+            );
+
+            infra_cache.add(switch.clone()).unwrap();
+            assert_eq!(infra_cache.get_switch(ID).unwrap(), &switch);
+        }
+
+        #[test]
+        fn switch_type() {
+            const ID: &str = "switch_type_id";
+
+            let mut infra_cache = InfraCache::default();
+
+            assert_eq!(
+                infra_cache.get_switch_type(ID).unwrap_err(),
+                InfraCacheEditoastError::ObjectNotFound {
+                    obj_type: ObjectType::SwitchType.to_string(),
+                    obj_id: ID.to_string()
+                }
+                .into()
+            );
+            let switch_type = create_switch_type_cache(ID, vec![], HashMap::default());
+            infra_cache.add(switch_type.clone()).unwrap();
+            assert_eq!(infra_cache.get_switch_type(ID).unwrap(), &switch_type);
+        }
+
+        #[test]
+        fn buffer_stop() {
+            const ID: &str = "buffer_stop_id";
+
+            let mut infra_cache = InfraCache::default();
+
+            assert_eq!(
+                infra_cache.get_buffer_stop(ID).unwrap_err(),
+                InfraCacheEditoastError::ObjectNotFound {
+                    obj_type: ObjectType::BufferStop.to_string(),
+                    obj_id: ID.to_string()
+                }
+                .into()
+            );
+            let buffer_stop = create_buffer_stop_cache(ID, "track_section_id", 0.0);
+
+            infra_cache.add(buffer_stop.clone()).unwrap();
+            assert_eq!(infra_cache.get_buffer_stop(ID).unwrap(), &buffer_stop);
+        }
+
+        #[test]
+        fn route() {
+            const ID: &str = "route_id";
+
+            let mut infra_cache = InfraCache::default();
+
+            assert_eq!(
+                infra_cache.get_route(ID).unwrap_err(),
+                InfraCacheEditoastError::ObjectNotFound {
+                    obj_type: ObjectType::Route.to_string(),
+                    obj_id: ID.to_string()
+                }
+                .into()
+            );
+            let route = create_route_cache(
+                ID,
+                BufferStop {
+                    id: Identifier::from("buffer_stop_start_id"),
+                },
+                StartToStop,
+                BufferStop {
+                    id: Identifier::from("buffer_stop_end_id"),
+                },
+                vec![],
+                HashMap::default(),
+            );
+
+            infra_cache.add(route.clone()).unwrap();
+            assert_eq!(infra_cache.get_route(ID).unwrap(), &route);
+        }
+
+        #[test]
+        fn operational_point() {
+            const ID: &str = "operational_point_id";
+
+            let mut infra_cache = InfraCache::default();
+
+            assert_eq!(
+                infra_cache.get_operational_point(ID).unwrap_err(),
+                InfraCacheEditoastError::ObjectNotFound {
+                    obj_type: ObjectType::OperationalPoint.to_string(),
+                    obj_id: ID.to_string()
+                }
+                .into()
+            );
+            let operational_point = create_operational_point_cache(ID, "track_section_id", 0.0);
+
+            infra_cache.add(operational_point.clone()).unwrap();
+            assert_eq!(
+                infra_cache.get_operational_point(ID).unwrap(),
+                &operational_point
+            );
+        }
+
+        #[test]
+        fn catenary() {
+            const ID: &str = "catenary_id";
+
+            let mut infra_cache = InfraCache::default();
+
+            assert_eq!(
+                infra_cache.get_catenary(ID).unwrap_err(),
+                InfraCacheEditoastError::ObjectNotFound {
+                    obj_type: ObjectType::Catenary.to_string(),
+                    obj_id: ID.to_string()
+                }
+                .into()
+            );
+            let catenary = create_catenary_cache(ID, vec![]);
+
+            infra_cache.add(catenary.clone()).unwrap();
+            assert_eq!(infra_cache.get_catenary(ID).unwrap(), &catenary);
+        }
     }
 }
