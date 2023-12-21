@@ -17,13 +17,10 @@ import InfraSelectorModalBodyStandard from './InfraSelectorModalBodyStandard';
 
 type InfraSelectorModalProps = {
   onlySelectionMode?: boolean;
-  onInfraChange?: (infraId: number) => void;
+  isInEditor?: boolean;
 };
 
-const InfraSelectorModal = ({
-  onInfraChange,
-  onlySelectionMode = false,
-}: InfraSelectorModalProps) => {
+const InfraSelectorModal = ({ onlySelectionMode = false, isInEditor }: InfraSelectorModalProps) => {
   const { t } = useTranslation(['translation', 'infraManagement']);
   const dispatch = useDispatch();
   const [filter, setFilter] = useState('');
@@ -125,7 +122,7 @@ const InfraSelectorModal = ({
             setFilter={setFilter}
             filter={filter}
             onlySelectionMode={onlySelectionMode}
-            onInfraChange={onInfraChange}
+            isInEditor={isInEditor}
           />
         )}
       </ModalBodySNCF>

@@ -79,6 +79,7 @@ const Map = () => {
 
   const { getFeatureInfoClick } = useOsrdConfSelectors();
   const featureInfoClick = useSelector(getFeatureInfoClick);
+
   const { updateFeatureInfoClick } = useOsrdConfActions();
 
   const closeFeatureInfoClickPopup = useCallback(() => {
@@ -181,6 +182,8 @@ const Map = () => {
         map={mapRef.current ?? undefined}
         resetPitchBearing={resetPitchBearing}
         closeFeatureInfoClickPopup={closeFeatureInfoClickPopup}
+        bearing={viewport.bearing}
+        withMapKeyButton
       />
       <ReactMapGL
         ref={mapRef}

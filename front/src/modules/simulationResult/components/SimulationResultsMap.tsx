@@ -222,7 +222,12 @@ const Map: FC<MapProps> = () => {
 
   return (
     <>
-      <MapButtons map={mapRef.current ?? undefined} resetPitchBearing={resetPitchBearing} />
+      <MapButtons
+        map={mapRef.current ?? undefined}
+        resetPitchBearing={resetPitchBearing}
+        bearing={viewport.bearing}
+        withMapKeyButton
+      />
       <ReactMapGL
         {...viewport}
         cursor="pointer"

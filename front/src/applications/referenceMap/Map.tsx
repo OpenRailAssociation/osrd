@@ -106,6 +106,9 @@ function Map() {
         map={mapRef.current ?? undefined}
         resetPitchBearing={resetPitchBearing}
         withInfraButton
+        withMapKeyButton
+        bearing={viewport.bearing}
+        isInEditor={false}
       />
       <ReactMapGL
         {...viewport}

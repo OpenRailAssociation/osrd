@@ -11,6 +11,9 @@
     font-size: 1.5rem;
     margin-bottom: 0.5rem;
   }
+  &.editor {
+    top: 1rem;
+  }
 }
 
 /* Map Settings */
@@ -123,6 +126,29 @@
       color: #fff;
     }
   }
+}
+
+.compass-container {
+  position: relative;
+  width: 24px;
+  height: 24px;
+}
+
+.compass-needle,
+.compass-cardinal {
+  position: absolute;
+  left: 60%;
+  transform: translate(-40%, 0);
+}
+
+.btn-map-resetviewport:hover .compass-needle,
+.btn-map-resetviewport:hover .compass-cardinal {
+  filter: brightness(0) invert(1);
+}
+
+.btn-map-resetviewport:focus .compass-needle,
+.btn-map-resetviewport:focus .compass-cardinal {
+  filter: brightness(0) invert(1);
 }
 
 .map-search-marker {

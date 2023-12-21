@@ -7,17 +7,16 @@ import cx from 'classnames';
 import Tipped from 'applications/editor/components/Tipped';
 import { useInfraID } from 'common/osrdContext';
 
-const ButtonMapInfras = () => {
+const ButtonMapInfras = ({ isInEditor }: { isInEditor?: boolean }) => {
   const { openModal } = useModal();
   const infraID = useInfraID();
   const { t } = useTranslation('translation');
-
   return (
     <Tipped mode="left">
       <button
         type="button"
         className={cx('btn-rounded', 'btn-rounded-white', { 'btn-map-infras-blinking': !infraID })}
-        onClick={() => openModal(<InfraSelector isModalOnly />, 'lg')}
+        onClick={() => openModal(<InfraSelector isInEditor={isInEditor} />, 'lg')}
       >
         <span className="sr-only">Infrastructures</span>
         <GiRailway />

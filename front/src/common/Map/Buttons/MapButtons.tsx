@@ -1,6 +1,8 @@
 import React, { useRef, useState, useContext, useEffect } from 'react';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import type { MapRef } from 'react-map-gl/maplibre';
+import cx from 'classnames';
+
 // Buttons
 import ButtonMapSearch from 'common/Map/Buttons/ButtonMapSearch';
 import ButtonMapSettings from 'common/Map/Buttons/ButtonMapSettings';
@@ -21,11 +23,20 @@ import { useDispatch } from 'react-redux';
 
 import useOutsideClick from 'utils/hooks/useOutsideClick';
 
+// Editor
+import type { EditorState } from 'applications/editor/tools/types';
+import ButtonMapInfraErrors from './ButtonMapInfraErrors';
+
 type MapButtonsProps = {
   map?: MapRef;
   resetPitchBearing: () => void;
   closeFeatureInfoClickPopup?: () => void;
   withInfraButton?: boolean;
+  withMapKeyButton?: boolean;
+  withInfraErrorsButton?: boolean;
+  bearing: number;
+  editorState?: EditorState;
+  isInEditor?: boolean;
 };
 
 const ZOOM_DEFAULT = 5;
@@ -44,6 +55,11 @@ export default function MapButtons({
   resetPitchBearing,
   closeFeatureInfoClickPopup,
   withInfraButton,
+  withMapKeyButton,
+  withInfraErrorsButton,
+  bearing,
+  editorState,
+  isInEditor,
 }: MapButtonsProps) {
   const dispatch = useDispatch();
   const { isOpen } = useContext(ModalContext);
@@ -94,17 +110,21 @@ export default function MapButtons({
       })
     );
   };
-
   return (
     <div ref={mapButtonsRef}>
-      <div className="btn-map-container">
+      <div
+        className={cx('btn-map-container', {
+          editor: isInEditor,
+        })}
+      >
         <ButtonZoomIn zoomIn={() => zoomIn()} />
         <ButtonZoomOut zoomOut={() => zoomOut()} />
-        <ButtonResetViewport updateLocalViewport={resetPitchBearing} />
+        <ButtonResetViewport updateLocalViewport={resetPitchBearing} bearing={bearing} />
         <ButtonMapSearch toggleMapSearch={() => toggleMapModal('SEARCH')} />
         <ButtonMapSettings toggleMapSettings={() => toggleMapModal('SETTINGS')} />
-        {withInfraButton && <ButtonMapInfras />}
-        <ButtonMapKey toggleMapKey={() => toggleMapModal('KEY')} />
+        {withInfraButton && <ButtonMapInfras isInEditor={isInEditor} />}
+        {withInfraErrorsButton && editorState && <ButtonMapInfraErrors editorState={editorState} />}
+        {withMapKeyButton && <ButtonMapKey toggleMapKey={() => toggleMapModal('KEY')} />}
       </div>
       {openedPopover === MAP_POPOVERS.SEARCH && (
         <MapSearch map={map} closeMapSearchPopUp={() => setOpenedPopover(undefined)} />

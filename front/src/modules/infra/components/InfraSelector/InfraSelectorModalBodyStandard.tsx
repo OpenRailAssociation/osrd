@@ -1,9 +1,10 @@
 import cx from 'classnames';
-import React, { useContext } from 'react';
+import React, { useCallback, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 import nextId from 'react-id-generator';
 import { GoLock } from 'react-icons/go';
+import { useNavigate } from 'react-router-dom';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import type { Infra } from 'common/api/osrdEditoastApi';
@@ -21,7 +22,7 @@ type InfraSelectorModalBodyStandardProps = {
   setFilter: (filterInput: string) => void;
   infrasList: Infra[];
   onlySelectionMode: boolean;
-  onInfraChange?: (infraId: number) => void;
+  isInEditor?: boolean;
 };
 
 // Test coherence between actual & generated version, eg. if editoast is up to date with data
@@ -41,24 +42,30 @@ export default function InfraSelectorModalBodyStandard({
   setFilter,
   infrasList,
   onlySelectionMode = false,
-  onInfraChange,
+  isInEditor,
 }: InfraSelectorModalBodyStandardProps) {
   const { t } = useTranslation(['translation', 'infraManagement']);
   const dispatch = useDispatch();
   const { mode } = useOsrdContext();
-  const { updateInfra } = useInfraActions();
+  const { updateInfraID } = useInfraActions();
   const infraID = useInfraID();
   const { closeModal } = useContext(ModalContext);
   const { deleteItinerary } = useOsrdConfActions();
+  const navigate = useNavigate();
 
-  function setInfraID(infra: Infra) {
-    dispatch(updateInfra(infra));
-    if (onInfraChange) onInfraChange(infra.id);
-    if ([MODES.simulation, MODES.stdcm].includes(mode)) dispatch(deleteItinerary());
-    if (!onlySelectionMode) {
-      closeModal();
-    }
-  }
+  const setInfraID = useCallback(
+    (id: number) => {
+      dispatch(updateInfraID(id));
+      if (isInEditor) {
+        navigate(`/editor/${id}`);
+      }
+      if ([MODES.simulation, MODES.stdcm].includes(mode)) dispatch(deleteItinerary());
+      if (!onlySelectionMode) {
+        closeModal();
+      }
+    },
+    [isInEditor]
+  );
 
   return (
     <>
@@ -82,7 +89,7 @@ export default function InfraSelectorModalBodyStandard({
             data-testid={`infraslist-item-${infra.id}`}
             type="button"
             onClick={() => {
-              setInfraID(infra);
+              setInfraID(infra.id);
             }}
             className={cx('infraslist-item-choice', {
               locked: infra.locked,
