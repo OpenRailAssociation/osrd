@@ -7,6 +7,7 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.railjson.schema.common.ID
 import fr.sncf.osrd.railjson.schema.geom.RJSLineString
 import fr.sncf.osrd.railjson.schema.infra.RJSRoutePath
+import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.reporting.warnings.Warning
 
 class PathfindingResult(@JvmField val length: Double) {
@@ -38,9 +39,10 @@ class PathfindingResult(@JvmField val length: Double) {
 }
 
 enum class Result {
-    SUCCESS, ERROR
+    SUCCESS, EXCEPTION
 }
-class PathfindingResponse(val result: Result, val message: String?, val pathfindingResult: PathfindingResult?) {
+
+class PathfindingResponse(val result: Result, val osrdError: OSRDError?, val pathfindingResult: PathfindingResult?) {
     companion object {
         val adapterResult: JsonAdapter<PathfindingResponse> = Moshi.Builder()
             .add(KotlinJsonAdapterFactory())
