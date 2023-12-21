@@ -1,44 +1,25 @@
-import React, { useContext } from 'react';
+import React, { FC, useContext } from 'react';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { compact } from 'lodash';
 
 import EditorContext from 'applications/editor/context';
 import type { ExtendedEditorContextType } from 'applications/editor/tools/editorContextTypes';
-import type {
-  EditRoutePathState,
-  RouteEditionState,
-} from 'applications/editor/tools/routeEdition/types';
-import {
-  EditRoutePathEditionLayers,
-  EditRoutePathLeftPanel,
-} from 'applications/editor/tools/routeEdition/components/EditRoutePath';
-import {
-  EditRouteMetadataLayers,
-  EditRouteMetadataPanel,
-} from 'applications/editor/tools/routeEdition/components/EditRouteMetadata';
-
+import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import colors from 'common/Map/Consts/colors';
 import GeoJSONs from 'common/Map/Layers/GeoJSONs';
-import { useInfraID } from 'common/osrdContext';
-
 import { getMap } from 'reducers/map/selectors';
+import { useInfraID } from 'common/osrdContext';
+import type { RouteEditionState } from './types';
+import { RouteEditionPanel } from './components/RouteEditionPanel';
+import { RouteEditionLayers } from './components/RouteEditionLayer';
 
-export const RouteEditionLeftPanel = () => {
+export const LeftPanel: FC = () => {
   const { state } = useContext(EditorContext) as ExtendedEditorContextType<RouteEditionState>;
-
-  return (
-    <div>
-      {state.type === 'editRoutePath' ? (
-        <EditRoutePathLeftPanel key="editRoutePath" state={state} />
-      ) : (
-        <EditRouteMetadataPanel key="editRouteMetadata" state={state} />
-      )}
-    </div>
-  );
+  return <RouteEditionPanel state={state} />;
 };
 
-export const RouteEditionLayers = () => {
+export const Layers: FC = () => {
   const {
     state,
     renderingFingerprint,
@@ -46,21 +27,25 @@ export const RouteEditionLayers = () => {
   } = useContext(EditorContext) as ExtendedEditorContextType<RouteEditionState>;
   const { mapStyle, layersSettings, issuesSettings } = useSelector(getMap);
   const infraID = useInfraID();
-  const { routeState, optionsState } = state as EditRoutePathState;
+  const { optionsState } = state as RouteEditionState;
+
   const selectedRouteIndex =
     optionsState.type === 'options' ? optionsState.focusedOptionIndex : undefined;
+
   const selectedRouteDetectors =
     selectedRouteIndex !== undefined
       ? optionsState.options![selectedRouteIndex].data.detectors
       : [];
+
   const selectedRouteSwitches =
     selectedRouteIndex !== undefined
       ? Object.keys(optionsState.options![selectedRouteIndex].data.switches_directions)
       : [];
-  const selectionList = compact([routeState.entryPoint?.id, routeState.exitPoint?.id]).concat(
-    selectedRouteDetectors,
-    selectedRouteSwitches
-  );
+
+  const selectionList = compact([
+    state.entity?.properties.entry_point.id,
+    state.entity?.properties.exit_point?.id,
+  ]).concat(selectedRouteDetectors, selectedRouteSwitches);
 
   return (
     <>
@@ -74,29 +59,24 @@ export const RouteEditionLayers = () => {
         issuesSettings={issuesSettings}
         infraID={infraID}
       />
-      {state.type === 'editRoutePath' ? (
-        <EditRoutePathEditionLayers key="editRoutePath" state={state} />
-      ) : (
-        <EditRouteMetadataLayers key="editRouteMetadata" state={state} />
-      )}
+      <RouteEditionLayers state={state} />
     </>
   );
 };
 
-export const RouteMessages = () => {
+export const Messages: FC = () => {
   const { t } = useTranslation();
   const { state } = useContext(EditorContext) as ExtendedEditorContextType<RouteEditionState>;
 
-  if (state.type === 'editRoutePath') {
-    if (state.extremityEditionState.type === 'selection')
-      return t('Editor.tools.routes-edition.help.select-waypoint');
-    if (!state.routeState.entryPoint || !state.routeState.exitPoint)
-      return t('Editor.tools.routes-edition.help.select-endpoints');
-    if (state.optionsState.type === 'options')
-      return t('Editor.tools.routes-edition.help.select-route');
-  } else {
-    return t('Editor.tools.routes-edition.help.actions-on-edit-route');
-  }
+  if (state.extremityState.type === 'selection')
+    return t('Editor.tools.routes-edition.help.select-waypoint');
+  if (
+    state.entity.properties.entry_point.id === NEW_ENTITY_ID ||
+    state.entity.properties.exit_point.id === NEW_ENTITY_ID
+  )
+    return t('Editor.tools.routes-edition.help.select-endpoints');
+  if (state.optionsState.type === 'options')
+    return t('Editor.tools.routes-edition.help.select-route');
 
   return null;
 };

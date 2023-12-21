@@ -1,6 +1,6 @@
-import { Feature, LineString, Position } from 'geojson';
+import { Feature, LineString } from 'geojson';
 
-import { Direction, EndPoint, RouteEntity, WayPoint, WayPointEntity } from 'types';
+import { BufferStopEntity, DetectorEntity, EndPoint, RouteEntity, WayPointEntity } from 'types';
 import { DirectionalTrackRange } from 'common/api/osrdEditoastApi';
 import { CommonToolState } from 'applications/editor/tools/commonToolState';
 
@@ -10,22 +10,10 @@ export interface RouteCandidate {
   switches_directions: Record<string, string>;
 }
 
-export interface RouteState {
-  entryPoint: (WayPoint & { position: Position }) | null;
-  entryPointDirection: Direction;
-  exitPoint: (WayPoint & { position: Position }) | null;
-}
-
 export enum EndPointKeys {
-  BEGIN = 'entryPoint',
-  END = 'exitPoint',
+  BEGIN = 'entry_point',
+  END = 'exit_point',
 }
-
-export type EditRouteMetadataState = CommonToolState & {
-  type: 'editRouteMetadata';
-  initialRouteEntity: RouteEntity;
-  routeEntity: RouteEntity;
-};
 
 export type OptionsStateType =
   | { type: 'idle'; options?: undefined }
@@ -40,12 +28,19 @@ export type OptionsStateType =
       }[];
     };
 
-export type EditRoutePathState = CommonToolState & {
-  type: 'editRoutePath';
-  initialRouteEntity?: RouteEntity;
-  routeState: RouteState;
-  optionsState: OptionsStateType;
-  extremityEditionState:
+export type RouteEditionState = CommonToolState & {
+  // Common entity state for tools
+  initialEntity?: RouteEntity;
+  entity: RouteEntity;
+  // To know if the entity is complete or not.
+  // At init route is 'empty', and there is now way from its data to know if it is complete or not.
+  isComplete: boolean;
+  // Used to store info about begin & end point of the route.
+  // (In the entity we only have a reference to it, ie. just the type+id)
+  // This value is set in the component WayPoint
+  extremitiesEntity: Partial<Record<EndPoint, DetectorEntity | BufferStopEntity>>;
+  // Extremity state for the selector component
+  extremityState:
     | { type: 'idle' }
     | {
         type: 'selection';
@@ -53,6 +48,6 @@ export type EditRoutePathState = CommonToolState & {
         onSelect: (track: WayPointEntity) => void;
         hoveredPoint: WayPointEntity | null;
       };
+  // List of compatible routes
+  optionsState: OptionsStateType;
 };
-
-export type RouteEditionState = EditRouteMetadataState | EditRoutePathState;

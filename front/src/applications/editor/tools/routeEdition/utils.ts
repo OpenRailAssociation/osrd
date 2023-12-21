@@ -1,4 +1,4 @@
-import { clone, first, isEqual, last } from 'lodash';
+import { cloneDeep, first, isEqual, isNil, last } from 'lodash';
 import { Feature, LineString, Position } from 'geojson';
 import { lineString, point } from '@turf/helpers';
 import lineSlice from '@turf/line-slice';
@@ -7,8 +7,13 @@ import { Dispatch } from 'redux';
 import { osrdEditoastApi, Identifier } from 'common/api/osrdEditoastApi';
 import { getEntities, getEntity, getMixedEntities } from 'applications/editor/data/api';
 import { DEFAULT_COMMON_TOOL_STATE } from 'applications/editor/tools/commonToolState';
-import { RouteCandidate, RouteEditionState } from 'applications/editor/tools/routeEdition/types';
 import {
+  OptionsStateType,
+  RouteCandidate,
+  RouteEditionState,
+} from 'applications/editor/tools/routeEdition/types';
+import {
+  NULL_GEOMETRY,
   PartialButFor,
   RouteEntity,
   TrackRange,
@@ -16,27 +21,50 @@ import {
   WayPoint,
   WayPointEntity,
 } from 'types';
+import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 
-export function getEmptyCreateRouteState(): RouteEditionState {
+/**
+ * Check if a route is valid or not.
+ * This is mainly used to enable/disable the save button
+ */
+export function routeHasExtremities(route: RouteEntity): boolean {
+  let isValid = true;
+  if (route.properties.entry_point.id === NEW_ENTITY_ID) isValid = false;
+  if (route.properties.exit_point.id === NEW_ENTITY_ID) isValid = false;
+  return isValid;
+}
+
+/**
+ * Get an empty route entity.
+ */
+export function getEmptyRoute(): RouteEntity {
   return {
-    ...DEFAULT_COMMON_TOOL_STATE,
-    type: 'editRoutePath',
-    routeState: {
-      entryPoint: null,
-      entryPointDirection: 'START_TO_STOP',
-      exitPoint: null,
+    type: 'Feature',
+    objType: 'Route',
+    geometry: NULL_GEOMETRY,
+    properties: {
+      id: NEW_ENTITY_ID,
+      entry_point: { type: 'Detector', id: NEW_ENTITY_ID },
+      entry_point_direction: 'START_TO_STOP',
+      exit_point: { type: 'Detector', id: NEW_ENTITY_ID },
+      switches_directions: {},
+      release_detectors: [],
     },
-    optionsState: { type: 'idle' },
-    extremityEditionState: { type: 'idle' },
   };
 }
 
-export function getEditRouteState(route: RouteEntity): RouteEditionState {
+/**
+ * Return the route edition state for the provided route.
+ */
+export function getRouteEditionState(route?: RouteEntity): RouteEditionState {
   return {
     ...DEFAULT_COMMON_TOOL_STATE,
-    type: 'editRouteMetadata',
-    routeEntity: clone(route),
-    initialRouteEntity: clone(route),
+    entity: !isNil(route) ? cloneDeep(route) : getEmptyRoute(),
+    initialEntity: !isNil(route) ? cloneDeep(route) : undefined,
+    isComplete: !isNil(route),
+    optionsState: { type: 'idle' },
+    extremityState: { type: 'idle' },
+    extremitiesEntity: {},
   };
 }
 
@@ -143,12 +171,14 @@ async function getRouteGeometryByRoute(
   route: RouteEntity,
   dispatch: Dispatch
 ): Promise<Feature<LineString, { id: string }>> {
-  const trackRangesResult = await dispatch(
+  const trackRangesResp = dispatch(
     osrdEditoastApi.endpoints.getInfraByInfraIdRoutesTrackRanges.initiate({
       infraId: infra as number,
       routes: route.properties.id,
     })
-  ).unwrap();
+  );
+  trackRangesResp.unsubscribe();
+  const trackRangesResult = (await trackRangesResp).data || [];
   if (trackRangesResult.length === 0 || trackRangesResult[0].type !== 'Computed') {
     throw new Error('Some track ranges could not be computed yet.');
   }
@@ -244,4 +274,14 @@ export async function getCompatibleRoutesPayload(
       position: exitPointEntity.properties.position as number,
     },
   };
+}
+
+export function getOptionsStateType(optionsStateType: OptionsStateType) {
+  if (optionsStateType.type !== 'options') {
+    return [];
+  }
+  if (typeof optionsStateType.focusedOptionIndex === 'number') {
+    return [optionsStateType.options[optionsStateType.focusedOptionIndex]];
+  }
+  return optionsStateType.options;
 }
