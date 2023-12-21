@@ -46,6 +46,7 @@ sealed interface TravelledPath
 
 interface IncrementalPath {
     fun extend(fragment: PathFragment)
+    fun clone(): IncrementalPath
 
     // TODO: implement trimming
     fun setLastRequiredBlock(blockIndex: Int)
@@ -96,21 +97,25 @@ fun incrementalPathOf(rawInfra: RawInfra, blockInfra: BlockInfra): IncrementalPa
     return IncrementalPathImpl(rawInfra, blockInfra)
 }
 
-private class IncrementalPathImpl(private val rawInfra: RawInfra, private val blockInfra: BlockInfra) : IncrementalPath {
+private class IncrementalPathImpl(
+    private val rawInfra: RawInfra,
+    private val blockInfra: BlockInfra,
+
     // objects
-    private var zonePaths = MutableStaticIdxRingBuffer<ZonePath>()
-    private var routes = MutableStaticIdxRingBuffer<Route>()
-    private var blocks = MutableStaticIdxRingBuffer<Block>()
+    private var zonePaths: MutableStaticIdxRingBuffer<ZonePath> = MutableStaticIdxRingBuffer(),
+    private var routes: MutableStaticIdxRingBuffer<Route> = MutableStaticIdxRingBuffer(),
+    private var blocks: MutableStaticIdxRingBuffer<Block> = MutableStaticIdxRingBuffer(),
 
     // lookup tables from blocks and routes to zone path bounds
-    private val blockZoneBounds = MutableIntRingBuffer()
-    private val routeZoneBounds = mutableIntRingBufferOf(0)
+    private val blockZoneBounds: MutableIntRingBuffer = MutableIntRingBuffer(),
+    private val routeZoneBounds: MutableIntRingBuffer = mutableIntRingBufferOf(0),
 
     // a lookup table from zone index to zone start path offset
-    private var zonePathBounds = mutableOffsetRingBufferOf<Path>(Offset(0.meters))
+    private var zonePathBounds: MutableOffsetRingBuffer<Path> = mutableOffsetRingBufferOf(Offset(0.meters)),
 
-    override var travelledPathBegin = Offset<Path>((-1).meters)
-    override var travelledPathEnd = Offset<Path>((-1).meters)
+    override var travelledPathBegin: Offset<Path> = Offset((-1).meters),
+    override var travelledPathEnd: Offset<Path> = Offset((-1).meters)
+) : IncrementalPath {
 
     override val pathStarted get() = travelledPathBegin != Offset<Path>((-1).meters)
     override val pathComplete get() = travelledPathEnd != Offset<Path>((-1).meters)
@@ -181,6 +186,21 @@ private class IncrementalPathImpl(private val rawInfra: RawInfra, private val bl
             val blockPathEnd = zonePathBounds[blockZoneBounds[blockZoneBounds.endIndex - 1]]
             travelledPathEnd = blockPathEnd - fragment.travelledPathEnd
         }
+    }
+
+    override fun clone(): IncrementalPath {
+        return IncrementalPathImpl(
+            this.rawInfra,
+            this.blockInfra,
+            this.zonePaths.clone(),
+            this.routes.clone(),
+            this.blocks.clone(),
+            this.blockZoneBounds.clone(),
+            this.routeZoneBounds.clone(),
+            this.zonePathBounds.clone(),
+            this.travelledPathBegin,
+            this.travelledPathEnd
+        )
     }
 
     override fun setLastRequiredBlock(blockIndex: Int) {

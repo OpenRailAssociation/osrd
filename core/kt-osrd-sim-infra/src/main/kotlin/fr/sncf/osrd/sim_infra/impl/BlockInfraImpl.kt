@@ -38,7 +38,7 @@ class BlockDescriptor(
 class BlockInfraImpl(
     private val blockPool: StaticPool<Block, BlockDescriptor>,
     private val loadedSignalInfra: LoadedSignalInfra,
-    private val rawInfra: RawInfra,
+    rawInfra: RawInfra,
 ) : BlockInfra {
     private val blockEntryDetectorMap = IdxMap<DirDetectorId, MutableStaticIdxList<Block>>()
     private val blockExitDetectorMap = IdxMap<DirDetectorId, MutableStaticIdxList<Block>>()
@@ -137,20 +137,4 @@ class BlockInfraImpl(
     override fun getBlockLength(block: BlockId): Length<Block> {
         return blockPool[block].length
     }
-}
-
-fun BlockInfra.getBlockEntry(rawInfra: RawInfra, block: BlockId): DirDetectorId {
-    val blockPath: StaticIdxList<ZonePath> = getBlockPath(block)
-    val firstZone: ZonePathId = blockPath[0]
-    return rawInfra.getZonePathEntry(firstZone)
-}
-
-fun BlockInfra.getBlockExit(rawInfra: RawInfra, block: BlockId): DirDetectorId {
-    val blockPath: StaticIdxList<ZonePath> = getBlockPath(block)
-    val lastZonePath: ZonePathId = blockPath[blockPath.size - 1]
-    return rawInfra.getZonePathExit(lastZonePath)
-}
-
-fun BlockInfra.getTrackChunksFromBlocks(blocks: List<BlockId>): List<DirStaticIdx<TrackChunk>> {
-    return blocks.flatMap { getTrackChunksFromBlock(it) }
 }
