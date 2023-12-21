@@ -8,7 +8,7 @@ import { cloneDeep, first, isEqual, last } from 'lodash';
 import { FaFlagCheckered } from 'react-icons/fa';
 import { BsArrowBarRight } from 'react-icons/bs';
 import { MdDelete, MdSave } from 'react-icons/md';
-import { FiSearch } from 'react-icons/fi';
+import { GoPlusCircle } from 'react-icons/go';
 import { EditorEntity, WayPointEntity } from 'types/editor';
 import { addFailureNotification, addSuccessNotification } from 'reducers/main';
 
@@ -155,7 +155,7 @@ export const EditRouteMetadataPanel: FC<{ state: EditRouteMetadataState }> = ({ 
             });
           }}
         >
-          <FiSearch /> {t('Editor.tools.routes-edition.alternative-routes')}
+          <GoPlusCircle /> {t('Editor.tools.routes-edition.alternative-routes')}
         </button>
         <button
           className="btn btn-primary btn-sm mt-1"

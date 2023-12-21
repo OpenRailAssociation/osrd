@@ -294,7 +294,7 @@
           "pick-exitpoint-cancel": "Undo exit point selection.",
           "pick-exitpoint-delete": "Delete the selected exit point"
         },
-        "alternative-routes": "Search for alternative routes",
+        "alternative-routes": "Create a similar route",
         "confirm-delete-route": "Are you sure to delete this route?",
         "create-route": "Create a new route",
         "crossed-detectors": "{{count}} detectors",
