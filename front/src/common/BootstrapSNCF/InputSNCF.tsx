@@ -1,4 +1,6 @@
+/* eslint-disable jsx-a11y/no-autofocus */
 import React, { InputHTMLAttributes, ReactNode } from 'react';
+import cx from 'classnames';
 
 export type InputSNCFProps = {
   id: string;
@@ -6,6 +8,7 @@ export type InputSNCFProps = {
   name?: string;
   label?: JSX.Element | string;
   placeholder?: string;
+  title?: string;
   onChange?: InputHTMLAttributes<HTMLInputElement>['onChange'];
   value?: string | number;
   readonly?: boolean;
@@ -39,32 +42,34 @@ export type InputSNCFProps = {
   condensed?: boolean;
   textRight?: boolean;
   disabled?: boolean;
+  ref?: React.MutableRefObject<HTMLInputElement>;
 };
 
 const InputSNCF = ({
   // Basic input props
   id,
   type,
-  name = undefined,
-  label = undefined,
-  placeholder = undefined,
-  onChange = undefined,
-  value = undefined,
+  name,
+  label,
+  placeholder,
+  title,
+  onChange,
+  value,
   readonly = false,
   inputProps = {},
-  list = undefined,
+  list,
   // Error handling
   isInvalid = false,
-  errorMsg = undefined,
+  errorMsg,
   // Clear button
   clearButton = false,
-  onClear = undefined,
+  onClear,
   // Options for the appened icon
-  appendOptions = undefined,
+  appendOptions,
   // Styling props
-  unit = undefined,
-  min = undefined,
-  max = undefined,
+  unit,
+  min,
+  max,
   sm = false,
   whiteBG = false,
   noMargin = false,
@@ -75,33 +80,19 @@ const InputSNCF = ({
   condensed = false,
   textRight = false,
   disabled = false,
+  ref = undefined,
 }: InputSNCFProps): JSX.Element => {
   // Build custom classes
-  const formSize = sm ? 'form-control-sm' : '';
-  const readOnlyFlag = readonly ? 'readonly' : '';
-  const backgroundColor = whiteBG ? 'bg-white' : '';
-  const clearOption = clearButton ? 'clear-option' : '';
-  const flex = isFlex ? 'd-flex align-items-center' : '';
-  const condensedIcon = condensed ? 'condensed-icon' : '';
-  const condensedInput = condensed ? 'px-2' : '';
   const textAlignmentClass = textRight ? 'right-alignment' : 'left-alignment';
-  // Test and adapt display if entry is invalid
-  let invalidClass = '';
-  let invalidMsg: JSX.Element | null = null;
-  if (isInvalid) {
-    invalidClass = 'is-invalid';
-    invalidMsg = <div className="invalid-feedback">{errorMsg}</div>;
-  }
 
-  // Appends a icon button right next to the input field
+  // Appends an icon button right next to the input field
   const appendButton = (small: boolean) => {
-    const newFormSize = small ? 'btn-sm' : '';
     if (appendOptions) {
       return (
         <div className="input-group-append input-group-last">
           <button
             type="button"
-            className={`${newFormSize} btn btn-primary btn-only-icon active`}
+            className={cx('btn', 'btn-primary', 'btn-only-icon', 'active', { 'btn-sm': small })}
             onClick={appendOptions.onClick}
             disabled={disabled}
           >
@@ -115,44 +106,48 @@ const InputSNCF = ({
   };
 
   // Displays a button at the end of the input field to clear the input
-  const addClearButton = () => {
-    const displayClearButton = clearButton && value;
-
-    // Returns null if the clear button is not used
-    if (!displayClearButton) return null;
-
-    // Else renders the button
-    return (
-      <button type="button" className="btn-clear btn-primary" onClick={onClear}>
-        <span className="sr-only">Supprimer le texte</span>
-        <i className="icons-close" aria-hidden="true" />
-      </button>
-    );
-  };
-
+  const addClearButton = () => (
+    <button type="button" className="btn-clear btn-primary" onClick={onClear}>
+      <span className="sr-only">Supprimer le texte</span>
+      <i className="icons-close" aria-hidden="true" />
+    </button>
+  );
   // Renders a basic input field without any underlying list
   const basicInput = () => {
     const inputComponent = (
       <>
         {label && (
           <label
-            className={flex ? 'font-weight-medium mb-0 mr-2' : 'font-weight-medium mb-2'}
+            className={cx('font-weight-medium', { 'mb-0 mr-2': isFlex, 'mb-2': !isFlex })}
             htmlFor={id}
           >
             {label}
           </label>
         )}
-        <div className={appendOptions ? 'input-group' : ''}>
-          <div className={`form-control-container ${invalidClass} ${unit ? 'has-right-icon' : ''}`}>
+        <div className={cx({ 'input-group': appendOptions })}>
+          <div
+            className={cx('form-control-container', {
+              'is-invalid': isInvalid,
+              'has-right-icon': unit,
+            })}
+          >
             <input
+              autoFocus={focus}
               type={type}
               onChange={onChange}
-              className={`form-control ${backgroundColor} ${formSize} ${readOnlyFlag} ${clearOption} ${condensedInput} ${textAlignmentClass}`}
+              className={cx('form-control', textAlignmentClass, {
+                'bg-white': whiteBG,
+                'clear-option': clearButton && value,
+                'form-control-sm': sm,
+                'px-2': condensed,
+                readonly,
+              })}
               id={id}
               name={name}
               value={disabled ? '' : value}
               placeholder={placeholder}
-              ref={(input) => (focus ? input && input.focus() : null)}
+              title={title}
+              ref={ref}
               min={min}
               max={max}
               disabled={disabled}
@@ -162,22 +157,27 @@ const InputSNCF = ({
               list={list}
             />
             <span className="form-control-state" />
-            {unit && <span className={`form-control-icon small ${condensedIcon}`}>{unit}</span>}
-            {addClearButton()}
+            {unit && (
+              <span className={cx('form-control-icon', 'small', { 'condensed-icon': condensed })}>
+                {unit}
+              </span>
+            )}
+            {clearButton && value && addClearButton()}
           </div>
           {sm && appendButton(sm)}
-          {invalidMsg}
+          {isInvalid && <div className="invalid-feedback">{errorMsg}</div>}
         </div>
       </>
     );
 
-    return flex ? <div className={flex}>{inputComponent}</div> : inputComponent;
+    return isFlex ? (
+      <div className="d-flex align-items-center">{inputComponent}</div>
+    ) : (
+      inputComponent
+    );
   };
 
-  // Build conditional classes
-  const containerMargin = noMargin ? '' : 'mb-4';
-
-  return containerMargin ? <div className={containerMargin}>{basicInput()}</div> : basicInput();
+  return noMargin ? basicInput() : <div className="mb-4">{basicInput()}</div>;
 };
 
 export default InputSNCF;

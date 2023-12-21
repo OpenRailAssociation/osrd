@@ -2,10 +2,10 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { getMap } from 'reducers/map/selectors';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { onResultSearchClick } from 'common/Map/utils';
-import { updateMapSearchMarker } from 'reducers/map';
 import { useDebounce } from 'utils/helpers';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 
 import type { SearchQuery, SearchResultItemOperationalPoint } from 'common/api/osrdEditoastApi';
@@ -23,10 +23,10 @@ type MapSearchStationProps = {
 
 const MapSearchStation = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchStationProps) => {
   const map = useSelector(getMap);
-  const [searchState, setSearch] = useState('');
   const [chCodeFilter, setChCodeFilter] = useState('');
   const [bvOnly, toggleBvOnly] = useState(false);
   const [searchResults, setSearchResults] = useState<SearchResultItemOperationalPoint[]>([]);
+  const [searchState, setSearch] = useState('');
   const [trigramResults, setTrigramResults] = useState<SearchResultItemOperationalPoint[]>([]);
   const [nameResults, setNameResults] = useState<SearchResultItemOperationalPoint[]>([]);
   const infraID = useInfraID();
@@ -37,6 +37,7 @@ const MapSearchStation = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchS
   const { t } = useTranslation(['map-search']);
 
   const debouncedSearchTerm = useDebounce(searchState, 300);
+  const isSearchingByName = (searchState.charCodeAt(0) ?? 0) > 57;
 
   const resetSearchResult = () => {
     setNameResults([]);
@@ -44,18 +45,25 @@ const MapSearchStation = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchS
   };
 
   // Create playload based on the type of search "name" or "trigram"
-
   const createPayload = (searchQuery: SearchQuery) => ({
     object: 'operationalpoint',
     query: ['and', searchQuery, infraID !== undefined ? ['=', ['infra_id'], infraID] : true],
   });
+
+  /** Builds the query */
+  const createQuery = (isSearchByTrigram?: boolean) => {
+    if (isSearchByTrigram) return ['=i', ['trigram'], searchState];
+    return isSearchingByName
+      ? ['search', ['name'], searchState]
+      : ['=', ['ci'], Number(searchState)];
+  };
 
   // Sort on name, and on yardname
   const orderResults = (results: SearchResultItemOperationalPoint[]) =>
     results.slice().sort((a, b) => a.name.localeCompare(b.name) || a.ch.localeCompare(b.ch));
 
   const searchByTrigrams = useCallback(async () => {
-    const searchQuery = ['=i', ['trigram'], searchState];
+    const searchQuery = createQuery(true);
     const payload = createPayload(searchQuery);
     await postSearch({
       searchPayload: payload,
@@ -69,9 +77,10 @@ const MapSearchStation = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchS
       });
   }, [searchState]);
 
-  const searchByNames = useCallback(async () => {
-    const searchQuery = ['search', ['name'], searchState];
+  const searchByCodesAndNames = async () => {
+    const searchQuery = createQuery();
     const payload = createPayload(searchQuery);
+
     await postSearch({
       searchPayload: payload,
     })
@@ -82,19 +91,20 @@ const MapSearchStation = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchS
       .catch(() => {
         resetSearchResult();
       });
-  }, [searchState]);
+  };
 
   const getResult = async () => {
-    if (searchState.length < 3) {
-      setNameResults([]);
-      searchByTrigrams();
+    if (!isSearchingByName && searchState.length !== 6) return;
+    if (searchState.length > 3) {
+      setTrigramResults([]);
+      searchByCodesAndNames();
     } else if (searchState.length === 3) {
       // The trigram search should always appear first, we need two api calls here.
       searchByTrigrams();
-      searchByNames();
-    } else if (searchState.length > 3) {
-      setTrigramResults([]);
-      searchByNames();
+      searchByCodesAndNames();
+    } else if (searchState.length > 0) {
+      setNameResults([]);
+      searchByTrigrams();
     }
   };
 
@@ -132,32 +142,27 @@ const MapSearchStation = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchS
     closeMapSearchPopUp();
   };
 
-  const clearSearchResult = () => {
-    setSearch('');
-    resetSearchResult();
-    setSearchResults([]);
-    dispatch(updateMapSearchMarker(undefined));
-  };
-
   return (
     <>
       <div className="d-flex mb-2">
-        <span className="flex-grow-1 pr-2">
+        <span className="flex-fill mr-2">
           <InputSNCF
-            type="text"
-            placeholder={t('map-search:placeholdername')}
             id="map-search-station"
+            name="map-search-station"
+            placeholder={t('map-search:placeholdername')}
+            title={t('map-search:placeholdername')}
+            type="text"
+            value={searchState}
             onChange={(e) => {
               setSearch(e.target.value);
             }}
-            onClear={clearSearchResult}
-            value={searchState}
+            onClear={() => setSearch('')}
             clearButton
             noMargin
             sm
           />
         </span>
-        <span className="flex-grow-2 pr-2">
+        <span className="flex-fill mr-2">
           <InputSNCF
             type="text"
             placeholder={t('map-search:placeholderchcode')}
@@ -173,7 +178,7 @@ const MapSearchStation = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchS
             sm
           />
         </span>
-        <span className="d-flex flex-grow-2">
+        <span className="d-flex flex-fill">
           <CheckboxRadioSNCF
             type="checkbox"
             label={t('map-search:labelbvonly')}

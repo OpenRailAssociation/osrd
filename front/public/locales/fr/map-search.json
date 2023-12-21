@@ -1,34 +1,34 @@
 {
+  "all": "Tous",
+  "aspects": "Aspects",
+  "errorMessages": {
+    "unableToSearchSignal": "Recherche du signal impossible"
+  },
+  "labelbvonly": "BV uniquement",
+  "line": "Ligne",
   "linecode": "Code ligne",
   "name": "Nom",
+  "noAspectSelected": "Aucun aspect sélectionné",
   "noresult": "Aucun résultat",
-  "placeholderline": "Nom ou numéro de ligne",
-  "placeholdersignal": "Nom du signal",
-  "placeholdername": "Nom, appelation, libellé",
-  "placeholderchcode": "Code CH",
-  "labelbvonly": "BV uniquement",
   "pk": "PK",
-  "resultsCount_zero": "Aucun résultat",
+  "placeholderchcode": "Code CH",
+  "placeholderline": "Nom ou numéro de ligne",
+  "placeholdername": "Nom, appelation, libellé, code CI",
+  "placeholdersignal": "Nom du signal",
+  "reset": "Réinitialiser",
   "resultsCount_one": "1 résultat",
   "resultsCount_other": "{{ count }} résultats",
+  "resultsCount_zero": "Aucun résultat",
   "search": "Rechercher",
   "signal": "Signal",
   "signalbox": "Poste",
   "station": "Gare",
-  "trackname": "Voie",
-  "type": "Type",
-  "line": "Ligne",
-  "reset": "Réinitialiser",
-  "aspects": "Aspects",
-  "noAspectSelected": "Aucun aspect sélectionné",
-  "signalSystem": "Système de signalisation",
-  "errorMessages": {
-    "unableToSearchSignal": "Recherche du signal impossible"
-  },
-  "all": "Tous",
   "signalSettings": {
-    "Nf": "Non franchissable",
     "distant": "Distant",
-    "is_430": "430"
-  }
+    "is_430": "430",
+    "Nf": "Non franchissable"
+  },
+  "signalSystem": "Système de signalisation",
+  "trackname": "Voie",
+  "type": "Type"
 }
