@@ -294,7 +294,7 @@
           "pick-exitpoint-cancel": "Annuler la sélection du point d'arrivée",
           "pick-exitpoint-delete": "Supprimer le point d'arrivée sélectionné"
         },
-        "alternative-routes": "Rechercher des itinéraires alternatifs",
+        "alternative-routes": "Créer un itinéraire similaire",
         "confirm-delete-route": "Êtes-vous sûr(e) de vouloir supprimer cet itinéraire ?",
         "create-route": "Création d'un nouvel itinéraire",
         "crossed-detectors": "{{count}} détecteurs",
