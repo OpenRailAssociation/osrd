@@ -14,7 +14,7 @@
 #  - CC Attribution
 
 [versions]
-kotlin = '1.9.21'
+kotlin = '1.9.22'
 ksp = '1.9.21-1.0.15'
 kotlinx-coroutines = '1.7.+'
 logback = '1.4.+'
