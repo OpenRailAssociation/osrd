@@ -54,6 +54,44 @@ fun BlockInfra.routesOnBlock(rawInfra: RawInfra, block: BlockId): StaticIdxList<
     return res
 }
 
+/** Returns the blocks that follow the given one  */
+fun BlockInfra.getNextBlocks(infra: RawSignalingInfra, blockId: BlockId): Set<BlockId> {
+    val entry = getBlockExit(infra, blockId)
+    return getBlocksStartingAtDetector(entry).toSet()
+}
+
+/** Returns the block's entry detector */
+fun BlockInfra.getBlockEntry(rawInfra: RawInfra, block: BlockId): DirDetectorId {
+    val blockPath: StaticIdxList<ZonePath> = getBlockPath(block)
+    val firstZone: ZonePathId = blockPath[0]
+    return rawInfra.getZonePathEntry(firstZone)
+}
+
+/** Returns the block's exit detector */
+fun BlockInfra.getBlockExit(rawInfra: RawInfra, block: BlockId): DirDetectorId {
+    val blockPath: StaticIdxList<ZonePath> = getBlockPath(block)
+    val lastZonePath: ZonePathId = blockPath[blockPath.size - 1]
+    return rawInfra.getZonePathExit(lastZonePath)
+}
+
+/** Returns the blocks that lead into the given one  */
+fun BlockInfra.getPreviousBlocks(infra: RawSignalingInfra, blockId: BlockId): Set<BlockId> {
+    val entry = getBlockEntry(infra, blockId)
+    return getBlocksEndingAtDetector(entry).toSet()
+}
+
+/** Returns the route's corresponding blocks */
+fun BlockInfra.getRouteBlocks(
+    rawInfra: RawInfra,
+    route: RouteId,
+    allowedSigSystems: StaticIdxList<SignalingSystem>? = null
+): StaticIdxList<Block> {
+    val blockPaths = recoverBlocks(rawInfra, this, mutableStaticIdxArrayListOf(route), allowedSigSystems)
+    // No signaling system for now, take the first block path possibility.
+    // Correct when signalisation is taken into account.
+    val blocks = blockPaths[0].toBlockList()
+    return blocks
+}
 
 /** Finds a valid route that follows the given path  */
 private fun findRoute(

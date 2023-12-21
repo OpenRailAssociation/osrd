@@ -5,8 +5,8 @@ import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.BlockInfra
 import fr.sncf.osrd.sim_infra.api.RawSignalingInfra
-import fr.sncf.osrd.sim_infra.impl.getBlockEntry
-import fr.sncf.osrd.sim_infra.impl.getBlockExit
+import fr.sncf.osrd.sim_infra.utils.getNextBlocks
+import fr.sncf.osrd.sim_infra.utils.getPreviousBlocks
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
 import fr.sncf.osrd.stdcm.OccupancySegment
 import fr.sncf.osrd.utils.units.Distance.Companion.fromMeters
@@ -24,7 +24,7 @@ private val SIGHT_DISTANCE = 400.meters
  * This is the first step to compute STDCM, the goal is to get rid of railway rules and extra complexity
  * as soon as possible. After this step we can look for a single curve that avoids unavailable segment.  */
 fun computeUnavailableSpace(
-    infra: RawSignalingInfra,
+    rawInfra: RawSignalingInfra,
     blockInfra: BlockInfra,
     spacingRequirements: Collection<SpacingRequirement>,
     rollingStock: PhysicsRollingStock,
@@ -33,7 +33,7 @@ fun computeUnavailableSpace(
 ): Multimap<BlockId, OccupancySegment> {
     val unavailableSpace: Multimap<BlockId, OccupancySegment> = HashMultimap.create()
     val blockUse = buildBlockUse(
-        infra, blockInfra, spacingRequirements,
+        rawInfra, blockInfra, spacingRequirements,
         marginToAddBeforeEachBlock, marginToAddAfterEachBlock
     )
     for ((blockId, useTimes) in blockUse) {
@@ -48,7 +48,7 @@ fun computeUnavailableSpace(
             )
 
             // Generate the warnings in blocks before the ones used by other trains
-            val predecessorBlocks = getPreviousBlocks(infra, blockInfra, blockId)
+            val predecessorBlocks = blockInfra.getPreviousBlocks(rawInfra, blockId)
             for (predecessorBlock in predecessorBlocks) {
                 val preBlockLength = blockInfra.getBlockLength(predecessorBlock)
                 unavailableSpace.put(
@@ -58,7 +58,7 @@ fun computeUnavailableSpace(
                 )
 
                 // Generate the sight distance requirements in the blocks before that
-                for (secondPredecessorBlock in getPreviousBlocks(infra, blockInfra, predecessorBlock)) {
+                for (secondPredecessorBlock in blockInfra.getPreviousBlocks(rawInfra, predecessorBlock)) {
                     val secPreBlockLength = blockInfra.getBlockLength(secondPredecessorBlock)
                     unavailableSpace.put(
                         secondPredecessorBlock, OccupancySegment(
@@ -70,7 +70,7 @@ fun computeUnavailableSpace(
             }
 
             // Generate train length occupancy
-            val successorBlocks = getNextBlocks(infra, blockInfra, blockId)
+            val successorBlocks = blockInfra.getNextBlocks(rawInfra, blockId)
             for (successorBlock in successorBlocks) {
                 val nextBlockLength = blockInfra.getBlockLength(successorBlock)
                 unavailableSpace.put(
@@ -97,7 +97,7 @@ fun computeUnavailableSpace(
  * This step is also used to merge together the small overlapping time intervals
  * across different zones or trains.  */
 private fun buildBlockUse(
-    infra: RawSignalingInfra,
+    rawInfra: RawSignalingInfra,
     blockInfra: BlockInfra,
     requirements: Collection<SpacingRequirement>,
     marginToAddBeforeEachBlock: Double,
@@ -105,7 +105,7 @@ private fun buildBlockUse(
 ): Map<BlockId, RangeSet<Double>> {
     val res = HashMap<BlockId, RangeSet<Double>>()
     for (requirement in requirements) {
-        val zoneId = infra.getZoneFromName(requirement.zone)
+        val zoneId = rawInfra.getZoneFromName(requirement.zone)
         val timeRange = Range.closed(
             requirement.beginTime - marginToAddBeforeEachBlock,
             requirement.endTime + marginToAddAfterEachBlock
@@ -116,16 +116,4 @@ private fun buildBlockUse(
         }
     }
     return res
-}
-
-/** Returns the blocks that lead into the given one  */
-private fun getPreviousBlocks(infra: RawSignalingInfra, blockInfra: BlockInfra, blockId: BlockId): Set<BlockId> {
-    val entry = blockInfra.getBlockEntry(infra, blockId)
-    return blockInfra.getBlocksEndingAtDetector(entry).toSet()
-}
-
-/** Returns the blocks that follow the given one  */
-private fun getNextBlocks(infra: RawSignalingInfra, blockInfra: BlockInfra, blockId: BlockId): Set<BlockId> {
-    val entry = blockInfra.getBlockExit(infra, blockId)
-    return blockInfra.getBlocksStartingAtDetector(entry).toSet()
 }
