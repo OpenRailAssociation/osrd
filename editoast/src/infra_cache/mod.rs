@@ -556,7 +556,7 @@ impl InfraCache {
     }
 
     /// Apply an operation to the infra cache
-    pub fn apply_operations(&mut self, operations: &Vec<CacheOperation>) -> Result<()> {
+    pub fn apply_operations(&mut self, operations: &[CacheOperation]) -> Result<()> {
         for op_res in operations {
             match op_res {
                 CacheOperation::Delete(obj_ref) => self.apply_delete(obj_ref)?,
