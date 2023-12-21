@@ -1,34 +1,34 @@
 {
+  "all": "All",
+  "aspects": "States",
+  "errorMessages": {
+    "unableToSearchSignal": "Signal search impossible"
+  },
+  "labelbvonly": "BV only",
+  "line": "Line",
   "linecode": "Line code",
   "name": "Name",
+  "noAspectSelected": "No state selected",
   "noresult": "No results",
-  "placeholderline": "Line name or number",
-  "placeholdersignal": "Signal name",
-  "placeholdername": "Name, label",
-  "placeholderchcode": "CH code",
-  "labelbvonly": "BV only",
   "pk": "PK",
-  "resultsCount_zero": "No results",
+  "placeholderchcode": "CH code",
+  "placeholderline": "Line name or number",
+  "placeholdername": "Name, label, CI code",
+  "placeholdersignal": "Signal name",
+  "reset": "Reset",
   "resultsCount_one": "1 result",
   "resultsCount_other": "{{ count }} results",
+  "resultsCount_zero": "No results",
   "search": "Search",
   "signal": "Signal",
   "signalbox": "Switchbox",
   "station": "Station",
-  "trackname": "Track",
-  "type": "Type",
-  "line": "Line",
-  "reset": "Reset",
-  "aspects": "States",
-  "noAspectSelected": "No state selected",
-  "signalSystem": "Signalling system",
-  "errorMessages": {
-    "unableToSearchSignal": "Signal search impossible"
-  },
-  "all": "All",
   "signalSettings": {
-    "Nf": "Not crossable",
     "distant": "Far",
-    "is_430": "430"
-  }
+    "is_430": "430",
+    "Nf": "Not crossable"
+  },
+  "signalSystem": "Signalling system",
+  "trackname": "Track",
+  "type": "Type"
 }
