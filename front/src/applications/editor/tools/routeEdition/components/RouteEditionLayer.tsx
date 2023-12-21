@@ -132,19 +132,20 @@ export const RouteEditionLayers: FC<{ state: RouteEditionState }> = ({ state }) 
    * => load its geometry
    */
   useEffect(() => {
+    // if there is an initial entity and enti
     if (
       !isNil(state.initialEntity) &&
       isEqual(state.initialEntity.properties, state.entity.properties)
     ) {
-      getRouteGeometry(state.initialEntity.properties.id).then((d) => {
+      getRouteGeometry(state.initialEntity.properties.id).then((d) =>
         setEntityGeo({
           ...d,
           properties: {
             ...d.properties,
             color: colors[mapStyle].routes.text,
           },
-        });
-      });
+        })
+      );
     }
     return () => {
       setEntityGeo({ type: 'Feature', properties: {}, geometry: NULL_GEOMETRY });
