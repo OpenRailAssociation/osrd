@@ -93,7 +93,7 @@ async fn fix_infra(infra_cache: &mut InfraCache) -> Result<Vec<Operation>> {
                 CacheOperation::Delete(delete_operation.clone().into())
             }
         })
-        .collect();
+        .collect::<Vec<_>>();
     infra_cache
         .apply_operations(&cache_operations)
         .map_err(|source| AutoFixesEditoastError::FixTrialFailure { source })?;
