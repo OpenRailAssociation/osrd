@@ -1,0 +1,805 @@
+{
+    "version": "3.4.7",
+    "operational_points": [
+        {
+            "id": "op.a1",
+            "parts": [
+                {
+                    "track": "t_a1",
+                    "position": 0.0
+                }
+            ],
+            "extensions": {
+                "sncf": {
+                    "ci": 0,
+                    "ch": "aa",
+                    "ch_short_label": "aa",
+                    "ch_long_label": "0",
+                    "trigram": "OP."
+                },
+                "identifier": {
+                    "name": "op.a1",
+                    "uic": 0
+                }
+            }
+        },
+        {
+            "id": "op.a2",
+            "parts": [
+                {
+                    "track": "t_a2",
+                    "position": 1000.0
+                }
+            ],
+            "extensions": {
+                "sncf": {
+                    "ci": 0,
+                    "ch": "aa",
+                    "ch_short_label": "aa",
+                    "ch_long_label": "0",
+                    "trigram": "OP."
+                },
+                "identifier": {
+                    "name": "op.a2",
+                    "uic": 0
+                }
+            }
+        },
+        {
+            "id": "op.b1",
+            "parts": [
+                {
+                    "track": "t_b1",
+                    "position": 0.0
+                }
+            ],
+            "extensions": {
+                "sncf": {
+                    "ci": 0,
+                    "ch": "aa",
+                    "ch_short_label": "aa",
+                    "ch_long_label": "0",
+                    "trigram": "OP."
+                },
+                "identifier": {
+                    "name": "op.b1",
+                    "uic": 0
+                }
+            }
+        },
+        {
+            "id": "op.b2",
+            "parts": [
+                {
+                    "track": "t_b2",
+                    "position": 1000.0
+                }
+            ],
+            "extensions": {
+                "sncf": {
+                    "ci": 0,
+                    "ch": "aa",
+                    "ch_short_label": "aa",
+                    "ch_long_label": "0",
+                    "trigram": "OP."
+                },
+                "identifier": {
+                    "name": "op.b2",
+                    "uic": 0
+                }
+            }
+        }
+    ],
+    "routes": [
+        {
+            "id": "rt.bf.a1->det.a1.nf",
+            "entry_point": {
+                "type": "BufferStop",
+                "id": "bf.a1"
+            },
+            "entry_point_direction": "START_TO_STOP",
+            "exit_point": {
+                "type": "Detector",
+                "id": "det.a1.nf"
+            },
+            "release_detectors": [],
+            "switches_directions": {}
+        },
+        {
+            "id": "rt.det.a1.nf->det.b2.nf",
+            "entry_point": {
+                "type": "Detector",
+                "id": "det.a1.nf"
+            },
+            "entry_point_direction": "START_TO_STOP",
+            "exit_point": {
+                "type": "Detector",
+                "id": "det.b2.nf"
+            },
+            "release_detectors": [
+                "det.center.1",
+                "det.center.2",
+                "det.center.3"
+            ],
+            "switches_directions": {
+                "s.a": "A_B1",
+                "s.b": "A_B2"
+            }
+        },
+        {
+            "id": "rt.det.a1.nf->det.b1.nf",
+            "entry_point": {
+                "type": "Detector",
+                "id": "det.a1.nf"
+            },
+            "entry_point_direction": "START_TO_STOP",
+            "exit_point": {
+                "type": "Detector",
+                "id": "det.b1.nf"
+            },
+            "release_detectors": [
+                "det.center.1",
+                "det.center.2",
+                "det.center.3"
+            ],
+            "switches_directions": {
+                "s.a": "A_B1",
+                "s.b": "A_B1"
+            }
+        },
+        {
+            "id": "rt.det.b1.nf->bf.b1",
+            "entry_point": {
+                "type": "Detector",
+                "id": "det.b1.nf"
+            },
+            "entry_point_direction": "START_TO_STOP",
+            "exit_point": {
+                "type": "BufferStop",
+                "id": "bf.b1"
+            },
+            "release_detectors": [],
+            "switches_directions": {}
+        },
+        {
+            "id": "rt.bf.b1->bf.a2",
+            "entry_point": {
+                "type": "BufferStop",
+                "id": "bf.b1"
+            },
+            "entry_point_direction": "STOP_TO_START",
+            "exit_point": {
+                "type": "BufferStop",
+                "id": "bf.a2"
+            },
+            "release_detectors": [
+                "det.b1.nf",
+                "det.center.3",
+                "det.center.2",
+                "det.center.1",
+                "det.a2.nf"
+            ],
+            "switches_directions": {
+                "s.b": "A_B1",
+                "s.a": "A_B2"
+            }
+        },
+        {
+            "id": "rt.bf.b1->bf.a1",
+            "entry_point": {
+                "type": "BufferStop",
+                "id": "bf.b1"
+            },
+            "entry_point_direction": "STOP_TO_START",
+            "exit_point": {
+                "type": "BufferStop",
+                "id": "bf.a1"
+            },
+            "release_detectors": [
+                "det.b1.nf",
+                "det.center.3",
+                "det.center.2",
+                "det.center.1",
+                "det.a1.nf"
+            ],
+            "switches_directions": {
+                "s.b": "A_B1",
+                "s.a": "A_B1"
+            }
+        },
+        {
+            "id": "rt.bf.a2->det.a2.nf",
+            "entry_point": {
+                "type": "BufferStop",
+                "id": "bf.a2"
+            },
+            "entry_point_direction": "START_TO_STOP",
+            "exit_point": {
+                "type": "Detector",
+                "id": "det.a2.nf"
+            },
+            "release_detectors": [],
+            "switches_directions": {}
+        },
+        {
+            "id": "rt.det.a2.nf->det.b2.nf",
+            "entry_point": {
+                "type": "Detector",
+                "id": "det.a2.nf"
+            },
+            "entry_point_direction": "START_TO_STOP",
+            "exit_point": {
+                "type": "Detector",
+                "id": "det.b2.nf"
+            },
+            "release_detectors": [
+                "det.center.1",
+                "det.center.2",
+                "det.center.3"
+            ],
+            "switches_directions": {
+                "s.a": "A_B2",
+                "s.b": "A_B2"
+            }
+        },
+        {
+            "id": "rt.det.a2.nf->det.b1.nf",
+            "entry_point": {
+                "type": "Detector",
+                "id": "det.a2.nf"
+            },
+            "entry_point_direction": "START_TO_STOP",
+            "exit_point": {
+                "type": "Detector",
+                "id": "det.b1.nf"
+            },
+            "release_detectors": [
+                "det.center.1",
+                "det.center.2",
+                "det.center.3"
+            ],
+            "switches_directions": {
+                "s.a": "A_B2",
+                "s.b": "A_B1"
+            }
+        },
+        {
+            "id": "rt.det.b2.nf->bf.b2",
+            "entry_point": {
+                "type": "Detector",
+                "id": "det.b2.nf"
+            },
+            "entry_point_direction": "START_TO_STOP",
+            "exit_point": {
+                "type": "BufferStop",
+                "id": "bf.b2"
+            },
+            "release_detectors": [],
+            "switches_directions": {}
+        },
+        {
+            "id": "rt.bf.b2->bf.a2",
+            "entry_point": {
+                "type": "BufferStop",
+                "id": "bf.b2"
+            },
+            "entry_point_direction": "STOP_TO_START",
+            "exit_point": {
+                "type": "BufferStop",
+                "id": "bf.a2"
+            },
+            "release_detectors": [
+                "det.b2.nf",
+                "det.center.3",
+                "det.center.2",
+                "det.center.1",
+                "det.a2.nf"
+            ],
+            "switches_directions": {
+                "s.b": "A_B2",
+                "s.a": "A_B2"
+            }
+        },
+        {
+            "id": "rt.bf.b2->bf.a1",
+            "entry_point": {
+                "type": "BufferStop",
+                "id": "bf.b2"
+            },
+            "entry_point_direction": "STOP_TO_START",
+            "exit_point": {
+                "type": "BufferStop",
+                "id": "bf.a1"
+            },
+            "release_detectors": [
+                "det.b2.nf",
+                "det.center.3",
+                "det.center.2",
+                "det.center.1",
+                "det.a1.nf"
+            ],
+            "switches_directions": {
+                "s.b": "A_B2",
+                "s.a": "A_B1"
+            }
+        }
+    ],
+    "extended_switch_types": [],
+    "switches": [
+        {
+            "id": "s.a",
+            "switch_type": "point_switch",
+            "group_change_delay": 0.0,
+            "ports": {
+                "A": {
+                    "endpoint": "BEGIN",
+                    "track": "t_center"
+                },
+                "B1": {
+                    "endpoint": "END",
+                    "track": "t_a1"
+                },
+                "B2": {
+                    "endpoint": "END",
+                    "track": "t_a2"
+                }
+            },
+            "extensions": {
+                "sncf": {
+                    "label": "s.a"
+                }
+            }
+        },
+        {
+            "id": "s.b",
+            "switch_type": "point_switch",
+            "group_change_delay": 0.0,
+            "ports": {
+                "A": {
+                    "endpoint": "END",
+                    "track": "t_center"
+                },
+                "B1": {
+                    "endpoint": "BEGIN",
+                    "track": "t_b1"
+                },
+                "B2": {
+                    "endpoint": "BEGIN",
+                    "track": "t_b2"
+                }
+            },
+            "extensions": {
+                "sncf": {
+                    "label": "s.b"
+                }
+            }
+        }
+    ],
+    "track_sections": [
+        {
+            "geo": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        -0.12,
+                        50.0
+                    ],
+                    [
+                        -0.1,
+                        49.98
+                    ]
+                ]
+            },
+            "sch": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        -0.12,
+                        50.0
+                    ],
+                    [
+                        -0.1,
+                        49.98
+                    ]
+                ]
+            },
+            "id": "t_a1",
+            "length": 1000.0,
+            "slopes": [],
+            "curves": [],
+            "extensions": {
+                "sncf": {
+                    "line_code": 0,
+                    "line_name": "placeholder_line",
+                    "track_number": 0,
+                    "track_name": "placeholder_track"
+                }
+            }
+        },
+        {
+            "geo": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        0.1,
+                        49.98
+                    ],
+                    [
+                        0.12,
+                        50.0
+                    ]
+                ]
+            },
+            "sch": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        0.1,
+                        49.98
+                    ],
+                    [
+                        0.12,
+                        50.0
+                    ]
+                ]
+            },
+            "id": "t_b1",
+            "length": 1000.0,
+            "slopes": [],
+            "curves": [],
+            "extensions": {
+                "sncf": {
+                    "line_code": 0,
+                    "line_name": "placeholder_line",
+                    "track_number": 0,
+                    "track_name": "placeholder_track"
+                }
+            }
+        },
+        {
+            "geo": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        -0.12,
+                        49.98
+                    ],
+                    [
+                        -0.1,
+                        49.98
+                    ]
+                ]
+            },
+            "sch": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        -0.12,
+                        49.98
+                    ],
+                    [
+                        -0.1,
+                        49.98
+                    ]
+                ]
+            },
+            "id": "t_a2",
+            "length": 1000.0,
+            "slopes": [],
+            "curves": [],
+            "extensions": {
+                "sncf": {
+                    "line_code": 0,
+                    "line_name": "placeholder_line",
+                    "track_number": 0,
+                    "track_name": "placeholder_track"
+                }
+            }
+        },
+        {
+            "geo": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        0.1,
+                        49.98
+                    ],
+                    [
+                        0.12,
+                        49.98
+                    ]
+                ]
+            },
+            "sch": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        0.1,
+                        49.98
+                    ],
+                    [
+                        0.12,
+                        49.98
+                    ]
+                ]
+            },
+            "id": "t_b2",
+            "length": 1000.0,
+            "slopes": [],
+            "curves": [],
+            "extensions": {
+                "sncf": {
+                    "line_code": 0,
+                    "line_name": "placeholder_line",
+                    "track_number": 0,
+                    "track_name": "placeholder_track"
+                }
+            }
+        },
+        {
+            "geo": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        -0.1,
+                        49.98
+                    ],
+                    [
+                        0.1,
+                        49.98
+                    ]
+                ]
+            },
+            "sch": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        -0.1,
+                        49.98
+                    ],
+                    [
+                        0.1,
+                        49.98
+                    ]
+                ]
+            },
+            "id": "t_center",
+            "length": 10000.0,
+            "slopes": [],
+            "curves": [],
+            "extensions": {
+                "sncf": {
+                    "line_code": 0,
+                    "line_name": "placeholder_line",
+                    "track_number": 0,
+                    "track_name": "placeholder_track"
+                }
+            }
+        }
+    ],
+    "speed_sections": [],
+    "electrifications": [],
+    "signals": [
+        {
+            "track": "t_a1",
+            "position": 900.0,
+            "id": "s.a1.nf",
+            "direction": "START_TO_STOP",
+            "sight_distance": 400.0,
+            "logical_signals": [
+                {
+                    "signaling_system": "BAL",
+                    "next_signaling_systems": [],
+                    "settings": {
+                        "Nf": "true"
+                    }
+                }
+            ],
+            "extensions": {
+                "sncf": {
+                    "label": "s.a1.nf",
+                    "side": "LEFT",
+                    "kp": ""
+                }
+            }
+        },
+        {
+            "track": "t_b1",
+            "position": 100.0,
+            "id": "s.b1.nf",
+            "direction": "START_TO_STOP",
+            "sight_distance": 400.0,
+            "logical_signals": [
+                {
+                    "signaling_system": "BAL",
+                    "next_signaling_systems": [],
+                    "settings": {
+                        "Nf": "true"
+                    }
+                }
+            ],
+            "extensions": {
+                "sncf": {
+                    "label": "s.b1.nf",
+                    "side": "LEFT",
+                    "kp": ""
+                }
+            }
+        },
+        {
+            "track": "t_a2",
+            "position": 900.0,
+            "id": "s.a2.nf",
+            "direction": "START_TO_STOP",
+            "sight_distance": 400.0,
+            "logical_signals": [
+                {
+                    "signaling_system": "BAL",
+                    "next_signaling_systems": [],
+                    "settings": {
+                        "Nf": "true"
+                    }
+                }
+            ],
+            "extensions": {
+                "sncf": {
+                    "label": "s.a2.nf",
+                    "side": "LEFT",
+                    "kp": ""
+                }
+            }
+        },
+        {
+            "track": "t_b2",
+            "position": 100.0,
+            "id": "s.b2.nf",
+            "direction": "START_TO_STOP",
+            "sight_distance": 400.0,
+            "logical_signals": [
+                {
+                    "signaling_system": "BAL",
+                    "next_signaling_systems": [],
+                    "settings": {
+                        "Nf": "true"
+                    }
+                }
+            ],
+            "extensions": {
+                "sncf": {
+                    "label": "s.b2.nf",
+                    "side": "LEFT",
+                    "kp": ""
+                }
+            }
+        },
+        {
+            "track": "t_center",
+            "position": 4000.0,
+            "id": "s.center.1",
+            "direction": "START_TO_STOP",
+            "sight_distance": 400.0,
+            "logical_signals": [
+                {
+                    "signaling_system": "BAL",
+                    "next_signaling_systems": [],
+                    "settings": {
+                        "Nf": "false"
+                    }
+                }
+            ],
+            "extensions": {
+                "sncf": {
+                    "label": "s.center.1",
+                    "side": "LEFT",
+                    "kp": ""
+                }
+            }
+        },
+        {
+            "track": "t_center",
+            "position": 6000.0,
+            "id": "s.center.2",
+            "direction": "START_TO_STOP",
+            "sight_distance": 400.0,
+            "logical_signals": [
+                {
+                    "signaling_system": "BAL",
+                    "next_signaling_systems": [],
+                    "settings": {
+                        "Nf": "false"
+                    }
+                }
+            ],
+            "extensions": {
+                "sncf": {
+                    "label": "s.center.2",
+                    "side": "LEFT",
+                    "kp": ""
+                }
+            }
+        },
+        {
+            "track": "t_center",
+            "position": 8000.0,
+            "id": "s.center.3",
+            "direction": "START_TO_STOP",
+            "sight_distance": 400.0,
+            "logical_signals": [
+                {
+                    "signaling_system": "BAL",
+                    "next_signaling_systems": [],
+                    "settings": {
+                        "Nf": "false"
+                    }
+                }
+            ],
+            "extensions": {
+                "sncf": {
+                    "label": "s.center.3",
+                    "side": "LEFT",
+                    "kp": ""
+                }
+            }
+        }
+    ],
+    "buffer_stops": [
+        {
+            "track": "t_a1",
+            "position": 0.0,
+            "id": "bf.a1"
+        },
+        {
+            "track": "t_b1",
+            "position": 1000.0,
+            "id": "bf.b1"
+        },
+        {
+            "track": "t_a2",
+            "position": 0.0,
+            "id": "bf.a2"
+        },
+        {
+            "track": "t_b2",
+            "position": 1000.0,
+            "id": "bf.b2"
+        }
+    ],
+    "detectors": [
+        {
+            "track": "t_a1",
+            "position": 900.0,
+            "id": "det.a1.nf"
+        },
+        {
+            "track": "t_b1",
+            "position": 100.0,
+            "id": "det.b1.nf"
+        },
+        {
+            "track": "t_a2",
+            "position": 900.0,
+            "id": "det.a2.nf"
+        },
+        {
+            "track": "t_b2",
+            "position": 100.0,
+            "id": "det.b2.nf"
+        },
+        {
+            "track": "t_center",
+            "position": 4000.0,
+            "id": "det.center.1"
+        },
+        {
+            "track": "t_center",
+            "position": 6000.0,
+            "id": "det.center.2"
+        },
+        {
+            "track": "t_center",
+            "position": 8000.0,
+            "id": "det.center.3"
+        }
+    ],
+    "neutral_sections": []
+}
