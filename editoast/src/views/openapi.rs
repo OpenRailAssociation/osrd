@@ -29,7 +29,7 @@ pub struct OpenApiPathScope {
 
 #[allow(unused)]
 pub enum Dispatch {
-    Path(&'static str, PathItem),
+    Path(String, PathItem),
     Scope(Box<OpenApiPathScope>),
 }
 
@@ -60,7 +60,7 @@ impl OpenApiPathScope {
         }
     }
 
-    pub fn route(mut self, openapi_path: &'static str, openapi_pathitem: PathItem) -> Self {
+    pub fn route(mut self, openapi_path: String, openapi_pathitem: PathItem) -> Self {
         self.paths
             .push_back(Dispatch::Path(openapi_path, openapi_pathitem));
         self
