@@ -71,7 +71,7 @@ impl RedisClient {
                 client.get_async_connection().await?,
             )),
             RedisClient::Tokio(client) => Ok(RedisConnection::Tokio(
-                client.get_tokio_connection_manager().await?,
+                client.get_connection_manager().await?,
             )),
         }
     }
@@ -149,7 +149,7 @@ mod tests {
             .url()
             .expect("cannot get redis config url");
         let redis = redis::Client::open(redis_url.to_string()).unwrap();
-        redis.get_tokio_connection_manager().await.unwrap()
+        redis.get_connection_manager().await.unwrap()
     }
 
     #[actix_test]

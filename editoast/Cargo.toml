@@ -17,10 +17,10 @@ utoipa = { version = "3.5.0", features = ["actix_extras", "chrono", "uuid"] }
 [dependencies]
 # For batch dependcy updates see https://osrd.fr/en/docs/guides/contribute/batch-updating-dependencies/
 
-async-trait = "0.1.74"
+async-trait = "0.1.75"
 chashmap = "2.2.2"
 clap = { version = "4.4.11", features = ["derive", "env"] }
-colored = "2.0.4"
+colored = "2.1.0"
 chrono = { version = "0.4.31", features = ["serde"] }
 derivative = "2.2.0"
 uuid = { version = "1.6.1", features = ["v4"] }
@@ -39,30 +39,30 @@ futures-util = "*"
 diesel_json = "0.2.1"
 image = "0.24.7"
 json-patch = "1.2.0"
-pathfinding = "4.4.0"
+pathfinding = "4.7.0"
 rand = "0.8.5"
 actix-files = "0.6.2"
 actix-web = "4.4.0"
 actix-http = "3.4.0"
-actix-cors = "0.6.4"
+actix-cors = "0.6.5"
 env_logger = "0.10.1"
 log = "0.4.20"
-redis = { version = "0.23.3", features = [
+redis = { version = "0.24.0", features = [
     "tokio-comp",
     "connection-manager",
     "cluster-async",
     "tokio-native-tls-comp",
 ] }
-sentry = "0.32.0"
-sentry-actix = "0.32.0"
+sentry = "0.32.1"
+sentry-actix = "0.32.1"
 serde.workspace = true
 serde_derive.workspace = true
 serde_json.workspace = true
-serde_yaml = "0.9.27"
+serde_yaml = "0.9.29"
 sha1 = "0.10"
 strum = "0.25.0"
 strum_macros = "0.25.3"
-thiserror = "1.0.50"
+thiserror = "1.0.51"
 enum-map = "2.7.3"
 editoast_derive = { path = "./editoast_derive" }
 osrd_containers = { path = "./osrd_containers" }
@@ -73,10 +73,10 @@ postgis_diesel = { version = "2.2.1", features = ["serde"] }
 geos = { version = "8.3.0", features = ["json"] }
 rangemap.workspace = true
 actix-multipart = "0.6.1"
-reqwest = { version = "0.11.22", features = ["json"] }
+reqwest = { version = "0.11.23", features = ["json"] }
 osm4routing = "0.5.9"
 osmpbfreader = "0.16.1"
-itertools = "0.11.0"
+itertools = "0.12.0"
 utoipa.workspace = true
 paste = "1.0.14"
 url = "2.5.0"
