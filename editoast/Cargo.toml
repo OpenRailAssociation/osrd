@@ -62,7 +62,7 @@ serde_yaml = "0.9.29"
 sha1 = "0.10"
 strum = "0.25.0"
 strum_macros = "0.25.3"
-thiserror = "1.0.51"
+thiserror = "1.0.52"
 enum-map = "2.7.3"
 editoast_derive = { path = "./editoast_derive" }
 osrd_containers = { path = "./osrd_containers" }
