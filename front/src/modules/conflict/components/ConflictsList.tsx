@@ -9,13 +9,14 @@ type ConflictTableProps = {
   conflicts: Conflict[];
   expanded: boolean;
   toggleConflictsList: () => void;
+  onClick: (conflict: Conflict) => void;
 };
 
-function ConflictCard({ conflict }: { conflict: Conflict }) {
+function ConflictCard({ conflict, onClick }: { conflict: Conflict; onClick: () => void }) {
   const { t } = useTranslation(['operationalStudies/scenario']);
 
   return (
-    <div className="conflict-card">
+    <div className="conflict-card" onClick={onClick} role="button" tabIndex={0}>
       <BsLightningFill color="red" />
       <div className="conflict-trains">
         {conflict.train_names.map((train_name, index) => (
@@ -39,6 +40,7 @@ export default function ConflictsList({
   conflicts,
   expanded,
   toggleConflictsList,
+  onClick,
 }: ConflictTableProps) {
   const { t } = useTranslation(['operationalStudies/scenario']);
 
@@ -66,6 +68,7 @@ export default function ConflictsList({
           <ConflictCard
             key={`${conflict.train_ids.join(', ')}-${conflict.conflict_type}-${index}`}
             conflict={conflict}
+            onClick={() => onClick(conflict)}
           />
         ))}
       </div>
