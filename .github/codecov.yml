@@ -24,6 +24,11 @@ coverage:
         threshold: 0.5%
         flags:
           - front
+      tests:
+        target: auto
+        threshold: 0.5%
+        flags:
+          - tests
     patch:
       default: off
 
@@ -40,3 +45,6 @@ flags:
   front:
     paths:
       - front/
+  tests:
+    paths:
+      - tests/
