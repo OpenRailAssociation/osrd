@@ -15,8 +15,8 @@ from railjson_generator.schema.infra.track_section import TrackSection
 from railjson_generator.schema.infra.waypoint import BufferStop, Waypoint
 
 
-def follow_track_link(connections) -> Optional[TrackEndpoint]:
-    """Follow a track link. If there is no track link on this endpoint, returns None"""
+def follow_track_link(connections: List[Tuple[TrackEndpoint, Optional[SwitchGroup]]]) -> Optional[TrackEndpoint]:
+    """Follow a track link. If there is no track link on this endpoint, return None."""
     if not connections:
         return None
     (endpoint, switch_group) = connections[0]
@@ -28,7 +28,7 @@ def follow_track_link(connections) -> Optional[TrackEndpoint]:
 def _explore_signals(
     track: TrackSection, det_i: Optional[int], signal_direction: Direction
 ) -> Iterable[Tuple[TrackSection, Signal]]:
-    """Find signals which are associated with a given detector"""
+    """Find signals which are associated with a given detector."""
     signal_iterator = reversed(track.signals) if signal_direction == Direction.START_TO_STOP else iter(track.signals)
 
     pos_filter: Callable[[float], bool]
@@ -39,19 +39,19 @@ def _explore_signals(
         if not track.waypoints:
             continue_exploring = True
 
-            def pos_filter(pos):
+            def pos_filter(pos: float) -> bool:
                 return True
 
         else:
             continue_exploring = False
             if signal_direction == Direction.START_TO_STOP:
 
-                def pos_filter(pos):
+                def pos_filter(pos: float) -> bool:
                     return pos > track.waypoints[-1].position
 
             else:
 
-                def pos_filter(pos):
+                def pos_filter(pos: float) -> bool:
                     return pos < track.waypoints[0].position
 
     else:
@@ -65,7 +65,7 @@ def _explore_signals(
                 continue_exploring = False
                 prev_waypoint_pos = track.waypoints[det_i - 1].position
 
-            def pos_filter(pos):
+            def pos_filter(pos: float) -> bool:
                 return prev_waypoint_pos < pos <= waypoint_pos
 
         else:
@@ -76,7 +76,7 @@ def _explore_signals(
                 continue_exploring = False
                 prev_waypoint_pos = track.waypoints[det_i + 1].position
 
-            def pos_filter(pos):
+            def pos_filter(pos: float) -> bool:
                 return waypoint_pos <= pos < prev_waypoint_pos
 
     # explore the signals in range on the track
@@ -107,7 +107,7 @@ class DetectorProps:
     decr_signals: List[Signal]
 
 
-def find_detector_properties(infra: Infra):
+def find_detector_properties(infra: Infra) -> Dict[str, DetectorProps]:
     det_props: Dict[str, DetectorProps] = {}
     for track in infra.track_sections:
         for det_i, det in enumerate(track.waypoints):
@@ -128,11 +128,11 @@ class ZonePath:
     switches_directions: Dict[str, str] = field(default_factory=dict)
 
     @property
-    def entry(self):
+    def entry(self) -> Tuple[str, Direction]:
         return (self.entry_det.label, self.entry_dir)
 
     @property
-    def exit(self):
+    def exit(self) -> Tuple[str, Direction]:
         return (self.exit_det.label, self.exit_dir)
 
 
@@ -155,7 +155,7 @@ class ZonePathStep:
 
 
 def search_zone_paths(infra: Infra) -> List[ZonePath]:
-    """Enumerate all possible paths inside zones"""
+    """Enumerate all possible paths inside zones."""
 
     res = []
     for track in infra.track_sections:
@@ -164,9 +164,7 @@ def search_zone_paths(infra: Infra) -> List[ZonePath]:
         waypoints = track.waypoints
 
         # create paths between inner waypoints
-        for i in range(len(waypoints) - 1):
-            cur_waypoint = waypoints[i]
-            next_waypoint = waypoints[i + 1]
+        for cur_waypoint, next_waypoint in zip(waypoints, waypoints[1:]):
             res.append(
                 ZonePath(
                     entry_det=cur_waypoint,
@@ -222,7 +220,7 @@ class IncompleteRoute:
     switches_directions: Dict[str, str]
 
     @staticmethod
-    def from_zonepath(zone_path: ZonePath):
+    def from_zonepath(zone_path: ZonePath) -> "IncompleteRoute":
         return IncompleteRoute(path=[zone_path], switches_directions={**zone_path.switches_directions})
 
     def fork(self, new_zone_path: ZonePath) -> Optional["IncompleteRoute"]:
@@ -232,13 +230,13 @@ class IncompleteRoute:
         new_switches_directions = {**self.switches_directions, **new_zone_path.switches_directions}
         return IncompleteRoute(path=new_path, switches_directions=new_switches_directions)
 
-    def dir_waypoints(self):
+    def dir_waypoints(self) -> List[Tuple[Waypoint, Direction]]:
         return [
             (self.path[0].entry_det, self.path[0].entry_dir),
             *((zone_path.exit_det, zone_path.exit_dir) for zone_path in self.path),
         ]
 
-    def waypoints(self):
+    def waypoints(self) -> List[Waypoint]:
         return [waypoint for waypoint, _ in self.dir_waypoints()]
 
 
@@ -247,7 +245,7 @@ def generate_route_paths(det_props: Dict[str, DetectorProps], zone_paths: List[Z
     for zone_path in zone_paths:
         graph[zone_path.entry].append(zone_path)
 
-    def is_route_delim(det, direction):
+    def is_route_delim(det: Waypoint, direction: Direction) -> bool:
         if isinstance(det, BufferStop):
             return True
         props = det_props[det.label]
@@ -280,7 +278,7 @@ def generate_route_paths(det_props: Dict[str, DetectorProps], zone_paths: List[Z
                     incomplete_routes.append(new_route)
 
 
-def generate_routes(infra: Infra, progressive_release=True) -> Iterable[Route]:
+def generate_routes(infra: Infra, progressive_release: bool = True) -> Iterable[Route]:
     det_props = find_detector_properties(infra)
 
     zone_paths = search_zone_paths(infra)

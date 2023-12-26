@@ -7,6 +7,8 @@ authors = ["OSRD <contact@osrd.fr>"]
 [tool.poetry.dependencies]
 python = ">=3.9,<3.12"
 osrd-schemas = { path = "../osrd_schemas/", develop = false }
+pytest = "^7.4.3"
+pytest-cov = "^4.1.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^22.12.0"
