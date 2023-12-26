@@ -29,6 +29,11 @@ coverage:
         threshold: 0.5%
         flags:
           - tests
+      railjson_generator:
+        target: auto
+        threshold: 0.5%
+        flags:
+          - railjson_generator
     patch:
       default: off
 
@@ -48,3 +53,6 @@ flags:
   tests:
     paths:
       - tests/
+  railjson_generator:
+    paths:
+      - python/railjson_generator/

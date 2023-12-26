@@ -159,6 +159,22 @@ jobs:
         run: |
           cd python/railjson_generator
           poetry run pytype -j auto
+      
+      - name: Pytest
+        run: |
+          cd python/railjson_generator
+          poetry run pytest --cov --cov-report=xml
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          name: codecov
+          flags: railjson_generator
+          directory: ./python/railjson_generator
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+          verbose: true
+          files: coverage.xml
 
   check_integration_tests:
     runs-on: ubuntu-latest

@@ -1,5 +1,11 @@
 # RAILJSON GENERATOR
 
+Use poetry to install dependencies:
+
+```sh
+poetry install
+```
+
 ## Running generation scripts
 
 To run a generation script, pass its output directory as its first argument:
@@ -15,7 +21,7 @@ This library provides an helper to generate multiple infrastructures at once:
 poetry run python3 -m railjson_generator /tmp/all_infras scripts/*.py
 ```
 
-## How to use
+## API
 
 ### Infra Builder
 
@@ -82,3 +88,25 @@ Route can either be manually created, or generated using `generate_routes`, and 
 ## Example
 
 You can find a complete example [here](./railjson_generator/scripts/examples/example_script.py).
+
+## Testing
+
+```sh
+poetry run pytest
+```
+
+## Linting
+
+Use pflake8 and pytype to check for style issues and potential errors.
+
+```sh
+$ poetry run pflake8 --config ./pyproject.toml
+$ poetry run pytype -j auto
+```
+
+Use black and isort to fix formatting.
+
+```sh
+$ poetry run black .
+$ poetry run isort .
+```
