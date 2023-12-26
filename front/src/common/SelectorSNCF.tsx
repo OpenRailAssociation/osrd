@@ -80,7 +80,8 @@ export default function SelectorSNCF<
                     if (onItemSelected) onItemSelected(item);
                   }}
                   onMouseOver={() => {
-                    if (onItemHovered) onItemHovered(item);
+                    const hoverValue = item === null ? 'Unspecified' : item;
+                    if (onItemHovered) onItemHovered(hoverValue);
                   }}
                   onFocus={() => {
                     if (onItemHovered) onItemHovered(item);
