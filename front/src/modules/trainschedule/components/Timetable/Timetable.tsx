@@ -136,6 +136,13 @@ export default function Timetable({
     }
   };
 
+  const handleConflictClick = (conflict: Conflict) => {
+    if (conflict.train_ids.length > 0) {
+      const firstTrainId = conflict.train_ids[0];
+      dispatch(updateSelectedTrainId(firstTrainId));
+    }
+  };
+
   const handleTrainsDelete = async () => {
     const trainsCount = selectedTrainIds.length;
 
@@ -311,6 +318,7 @@ export default function Timetable({
             conflicts={conflicts}
             expanded={conflictsListExpanded}
             toggleConflictsList={toggleConflictsListExpanded}
+            onClick={handleConflictClick}
           />
         )}
       </div>
