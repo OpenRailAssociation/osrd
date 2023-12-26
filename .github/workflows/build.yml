@@ -543,7 +543,17 @@ jobs:
 
       - name: Run pytest
         run: |
-          poetry -C tests run pytest -m "not e2e"
+          poetry -C tests run pytest -m "not e2e" --cov --cov-report=xml
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          name: codecov
+          flags: tests
+          fail_ci_if_error: false
+          verbose: true
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage.xml
 
       - name: Run Playwright tests
         run: |
