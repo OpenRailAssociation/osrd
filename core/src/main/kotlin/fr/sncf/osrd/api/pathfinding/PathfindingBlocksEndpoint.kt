@@ -7,10 +7,7 @@ import fr.sncf.osrd.api.pathfinding.constraints.ElectrificationConstraints
 import fr.sncf.osrd.api.pathfinding.constraints.LoadingGaugeConstraints
 import fr.sncf.osrd.api.pathfinding.request.PathfindingRequest
 import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint
-import fr.sncf.osrd.api.pathfinding.response.PathWaypointResult
-import fr.sncf.osrd.api.pathfinding.response.PathfindingResponse
-import fr.sncf.osrd.api.pathfinding.response.PathfindingResult
-import fr.sncf.osrd.api.pathfinding.response.Result
+import fr.sncf.osrd.api.pathfinding.response.*
 import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator
 import fr.sncf.osrd.graph.*
 import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
@@ -67,24 +64,26 @@ class PathfindingBlocksEndpoint
                 path, recorder
             )
             validatePathfindingResult(res, reqWaypoints, infra.rawInfra)
-            RsJson(RsWithBody(PathfindingResponse.adapterResult.toJson(PathfindingResponse(Result.SUCCESS, null, res))))
+            RsJson(RsWithBody(PathfindingResponse.adapterResult.toJson(PathfindingResponse(ResponseState.SUCCESS, null, res))))
 
         } catch (ex: Throwable) {
             // TODO: include warnings in the response
             val osrdError = ExceptionHandler.handlePathfinding(ex)
             val code = ExceptionHandler.serverCode(osrdError)
+            // Not a real error
             if (code == 200)
                 RsJson(
                     RsWithBody(
                         PathfindingResponse.adapterResult.toJson(
                             PathfindingResponse(
-                                Result.EXCEPTION,
-                                osrdError,
+                                ResponseState.ERROR,
+                                osrdError.message,
                                 null
                             )
                         )
                     )
                 )
+            // Is an actual error
             ExceptionHandler.handleError(osrdError, code)
         }
     }

@@ -97,6 +97,19 @@ enum PathfindingError {
     RollingStockNotFound { rolling_stock_id: i64 },
 }
 
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize, ToSchema)]
+pub enum ResponseState {
+    SUCCESS,
+    ERROR,
+}
+
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize, ToSchema)]
+pub(super) struct PathResult {
+    pub(super) response_state: ResponseState,
+    pub(super) error_message: String,
+    pub(super) path_response: PathResponse,
+}
+
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, ToSchema)]
 pub(super) struct PathResponse {
     pub(super) id: i64,
@@ -481,11 +494,17 @@ pub async fn run_pathfinding(
 ) -> Result<Pathfinding> {
     assert_eq!(steps_duration.len(), path_request.nb_waypoints());
     let response = path_request.fetch(core.as_ref()).await?;
-    let response_track_map = response.fetch_track_map(infra_id, conn).await?;
-    let response_op_map = response.fetch_op_map(infra_id, conn).await?;
+    let response_track_map = response
+        .pathfinding_response
+        .fetch_track_map(infra_id, conn)
+        .await?;
+    let response_op_map = response
+        .pathfinding_response
+        .fetch_op_map(infra_id, conn)
+        .await?;
     let pathfinding = Pathfinding::from_core_response(
         steps_duration,
-        response,
+        response.pathfinding_response,
         &response_track_map,
         &response_op_map,
     )?;
@@ -600,7 +619,7 @@ mod test {
         db_pool, empty_infra, named_fast_rolling_stock, pathfinding, small_infra, TestFixture,
     };
     use crate::models::{Infra, Pathfinding, Retrieve};
-    use crate::views::pathfinding::{PathResponse, PathfindingError};
+    use crate::views::pathfinding::{PathResponse, PathResult, PathfindingError};
     use crate::views::tests::create_test_service;
     use crate::views::tests::create_test_service_with_core_client;
     use crate::{assert_response_error_type_match, assert_status_and_read};
@@ -723,8 +742,10 @@ mod test {
         let response = call_service(&app, req).await;
 
         // THEN
-        let response: PathResponse = assert_status_and_read!(response, StatusCode::OK);
-        assert!(Pathfinding::retrieve(db_pool(), response.id).await.is_ok());
+        let response: PathResult = assert_status_and_read!(response, StatusCode::OK);
+        assert!(Pathfinding::retrieve(db_pool(), response.path_response.id)
+            .await
+            .is_ok());
     }
 
     #[rstest::rstest]

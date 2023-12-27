@@ -27,7 +27,20 @@ pub struct Waypoint {
     direction: Direction,
 }
 
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub enum ResponseState {
+    SUCCESS,
+    ERROR,
+}
+
 /// The response of a Core pathfinding request, see also [PathfindingRequest]
+#[derive(Debug, Clone, Derivative, Deserialize, Serialize)]
+pub struct PathfindingResult {
+    pub response_state: ResponseState,
+    pub error_message: String,
+    pub pathfinding_response: PathfindingResponse,
+}
+
 #[derive(Debug, Clone, Derivative, Deserialize, Serialize)]
 #[derivative(Default)]
 pub struct PathfindingResponse {
@@ -57,7 +70,7 @@ pub struct Warning {
     message: String,
 }
 
-impl AsCoreRequest<Json<PathfindingResponse>> for PathfindingRequest {
+impl AsCoreRequest<Json<PathfindingResult>> for PathfindingRequest {
     const METHOD: reqwest::Method = reqwest::Method::POST;
     const URL_PATH: &'static str = "/pathfinding/routes";
 }
