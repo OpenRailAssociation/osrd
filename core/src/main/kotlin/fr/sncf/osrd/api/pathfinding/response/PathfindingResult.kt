@@ -42,7 +42,12 @@ enum class ResponseState {
     SUCCESS, ERROR
 }
 
-class PathfindingResponse(val responseState: ResponseState, val errorMessage: String?, val pathfindingResult: PathfindingResult?) {
+class PathfindingResponse(
+    @Json(name = "response_state") val responseState: ResponseState,
+    @Json(name = "error_message") val errorMessage: String?,
+    @Json(name = "pathfinding_result") val pathfindingResult: PathfindingResult?
+) {
+
     companion object {
         val adapterResult: JsonAdapter<PathfindingResponse> = Moshi.Builder()
             .add(KotlinJsonAdapterFactory())
