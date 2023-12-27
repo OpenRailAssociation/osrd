@@ -30,8 +30,8 @@ describe('interpolateOnTime', () => {
         LIST_VALUES.REGIME
       )(time);
       expect(result).toStrictEqual({
-        head_positions: { position: 1870.9890488984856, speed: NaN, time },
-        tail_positions: { position: 1471.3290488984856, speed: NaN, time },
+        head_positions: { position: 1870.9890488984856, speed: 0, time },
+        tail_positions: { position: 1471.3290488984856, speed: 0, time },
         speeds: {
           position: 1867.5542127909848,
           speed: 144.27589007183147,
@@ -52,12 +52,12 @@ describe('interpolateOnTime', () => {
       expect(result).toStrictEqual({
         headPosition: {
           position: 16662.376939865702,
-          speed: NaN,
+          speed: 0,
           time: new Date('1900-01-01T11:57:37.000Z'),
         },
         tailPosition: {
           position: 16262.716939865702,
-          speed: NaN,
+          speed: 0,
           time: new Date('1900-01-01T11:57:37.000Z'),
         },
         speed: {
