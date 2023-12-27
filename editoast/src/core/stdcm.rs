@@ -6,7 +6,7 @@ use crate::core::{pathfinding::Waypoint, simulation::SimulationResponse};
 use crate::schema::rolling_stock::RollingStockComfortType;
 use crate::views::stdcm::AllowanceValue;
 
-use super::pathfinding::PathfindingResponse;
+use super::pathfinding::PathfindingResult;
 use super::{AsCoreRequest, Json};
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -46,6 +46,6 @@ pub struct STDCMCoreStep {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct STDCMCoreResponse {
     pub simulation: SimulationResponse,
-    pub path: PathfindingResponse,
+    pub path: PathfindingResult,
     pub departure_time: f64,
 }

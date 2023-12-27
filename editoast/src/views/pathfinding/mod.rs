@@ -24,8 +24,8 @@ use utoipa::ToSchema;
 use crate::{
     core::{
         pathfinding::{
-            PathfindingRequest as CorePathfindingRequest, PathfindingResponse,
-            PathfindingWaypoints, Waypoint as CoreWaypoint,
+            PathfindingRequest as CorePathfindingRequest, PathfindingResult, PathfindingWaypoints,
+            Waypoint as CoreWaypoint,
         },
         AsCoreRequest, CoreClient,
     },
@@ -104,14 +104,14 @@ pub enum ResponseState {
 }
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize, ToSchema)]
-pub(super) struct PathResult {
+pub(super) struct PathResponse {
     pub(super) response_state: ResponseState,
-    pub(super) error_message: String,
-    pub(super) path_response: PathResponse,
+    pub(super) error_message: Option<String>,
+    pub(super) path_result: PathResult,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, ToSchema)]
-pub(super) struct PathResponse {
+pub(super) struct PathResult {
     pub(super) id: i64,
     pub(super) owner: uuid::Uuid,
     pub(super) length: f64,
@@ -141,7 +141,7 @@ impl From<Pathfinding> for PathResponse {
             payload,
             ..
         } = value;
-        Self {
+        let path_result = PathResult {
             id,
             owner,
             length,
@@ -151,6 +151,11 @@ impl From<Pathfinding> for PathResponse {
             geographic: diesel_linestring_to_geojson(geographic),
             schematic: diesel_linestring_to_geojson(schematic),
             steps: payload.0.path_waypoints,
+        };
+        Self {
+            response_state: ResponseState::SUCCESS,
+            error_message: None,
+            path_result,
         }
     }
 }
@@ -339,7 +344,7 @@ pub fn parse_pathfinding_payload_waypoints(
     Ok(waypoints)
 }
 
-impl PathfindingResponse {
+impl PathfindingResult {
     pub async fn fetch_track_map(&self, infra: i64, conn: &mut PgConnection) -> Result<TrackMap> {
         make_track_map(
             conn,
@@ -365,11 +370,11 @@ impl Pathfinding {
     /// Post-processes the Core pathfinding reponse and build a [Pathfinding] model
     pub fn from_core_response(
         steps_duration: Vec<f64>,
-        response: PathfindingResponse,
+        response: PathfindingResult,
         track_map: &TrackMap,
         op_map: &OpMap,
     ) -> Result<Self> {
-        let PathfindingResponse {
+        let PathfindingResult {
             length,
             geographic,
             schematic,
@@ -495,16 +500,16 @@ pub async fn run_pathfinding(
     assert_eq!(steps_duration.len(), path_request.nb_waypoints());
     let response = path_request.fetch(core.as_ref()).await?;
     let response_track_map = response
-        .pathfinding_response
+        .pathfinding_result
         .fetch_track_map(infra_id, conn)
         .await?;
     let response_op_map = response
-        .pathfinding_response
+        .pathfinding_result
         .fetch_op_map(infra_id, conn)
         .await?;
     let pathfinding = Pathfinding::from_core_response(
         steps_duration,
-        response.pathfinding_response,
+        response.pathfinding_result,
         &response_track_map,
         &response_op_map,
     )?;
@@ -619,7 +624,7 @@ mod test {
         db_pool, empty_infra, named_fast_rolling_stock, pathfinding, small_infra, TestFixture,
     };
     use crate::models::{Infra, Pathfinding, Retrieve};
-    use crate::views::pathfinding::{PathResponse, PathResult, PathfindingError};
+    use crate::views::pathfinding::{PathResponse, PathfindingError};
     use crate::views::tests::create_test_service;
     use crate::views::tests::create_test_service_with_core_client;
     use crate::{assert_response_error_type_match, assert_status_and_read};
@@ -702,7 +707,9 @@ mod test {
 
         // THEN
         let response: PathResponse = assert_status_and_read!(response, StatusCode::OK);
-        assert!(Pathfinding::retrieve(db_pool(), response.id).await.is_ok());
+        assert!(Pathfinding::retrieve(db_pool(), response.path_result.id)
+            .await
+            .is_ok());
     }
 
     #[rstest::rstest]
@@ -742,8 +749,8 @@ mod test {
         let response = call_service(&app, req).await;
 
         // THEN
-        let response: PathResult = assert_status_and_read!(response, StatusCode::OK);
-        assert!(Pathfinding::retrieve(db_pool(), response.path_response.id)
+        let response: PathResponse = assert_status_and_read!(response, StatusCode::OK);
+        assert!(Pathfinding::retrieve(db_pool(), response.path_result.id)
             .await
             .is_ok());
     }

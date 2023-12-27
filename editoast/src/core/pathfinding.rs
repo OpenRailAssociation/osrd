@@ -35,15 +35,15 @@ pub enum ResponseState {
 
 /// The response of a Core pathfinding request, see also [PathfindingRequest]
 #[derive(Debug, Clone, Derivative, Deserialize, Serialize)]
-pub struct PathfindingResult {
+pub struct PathfindingResponse {
     pub response_state: ResponseState,
-    pub error_message: String,
-    pub pathfinding_response: PathfindingResponse,
+    pub error_message: Option<String>,
+    pub pathfinding_result: PathfindingResult,
 }
 
 #[derive(Debug, Clone, Derivative, Deserialize, Serialize)]
 #[derivative(Default)]
-pub struct PathfindingResponse {
+pub struct PathfindingResult {
     pub length: f64,
     #[derivative(Default(value = "Geometry::new(LineString(Default::default()))"))]
     pub geographic: Geometry,
@@ -70,7 +70,7 @@ pub struct Warning {
     message: String,
 }
 
-impl AsCoreRequest<Json<PathfindingResult>> for PathfindingRequest {
+impl AsCoreRequest<Json<PathfindingResponse>> for PathfindingRequest {
     const METHOD: reqwest::Method = reqwest::Method::POST;
     const URL_PATH: &'static str = "/pathfinding/routes";
 }
