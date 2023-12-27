@@ -373,7 +373,7 @@ const specificInterpolateOnTime =
                       bisec0.speed as number,
                       bisec1.speed as number
                     )(proportion) * 3.6
-                  : NaN,
+                  : 0,
               time: timePositionLocal,
             };
           }
