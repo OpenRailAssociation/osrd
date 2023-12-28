@@ -31,8 +31,12 @@ import type { ProjectWithStudies, ProjectCreateForm } from 'common/api/osrdEdito
 import { setFailure, setSuccess } from 'reducers/main';
 import { getUserSafeWord } from 'reducers/user/userSelectors';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
+import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
+import useInputChange from 'utils/hooks/useInputChange';
+import useOutsideClick from 'utils/hooks/useOutsideClick';
 
 const emptyProject: ProjectCreateForm = {
+  budget: undefined,
   description: '',
   funders: '',
   image: null,
@@ -56,8 +60,8 @@ export default function AddOrEditProjectModal({
   project,
   getProject,
 }: AddOrEditProjectModalProps) {
-  const { t } = useTranslation('operationalStudies/project');
-  const { closeModal } = useContext(ModalContext);
+  const { t } = useTranslation(['operationalStudies/project', 'translation']);
+  const { closeModal, isOpen } = useContext(ModalContext);
   const [currentProject, setCurrentProject] = useState<ProjectForm>(project || emptyProject);
   const [tempProjectImage, setTempProjectImage] = useState<Blob | null | undefined>();
 
@@ -72,13 +76,28 @@ export default function AddOrEditProjectModal({
 
   const { updateProjectID } = useOsrdConfActions();
 
-  const modalRef = useRef<HTMLDivElement>(null);
+  const initialValuesRef = useRef<ProjectForm | null>(null);
+
+  const modalRef = useRef<HTMLDivElement | null>(null);
+
+  const { clickedOutside, setHasChanges, resetClickedOutside } = useOutsideClick(
+    modalRef,
+    closeModal,
+    isOpen
+  );
+
+  const handleProjectInputChange = useInputChange(
+    initialValuesRef,
+    setCurrentProject,
+    setHasChanges
+  );
 
   const removeTag = (idx: number) => {
     if (!currentProject.tags) return;
     const newTags = Array.from(currentProject.tags);
     newTags.splice(idx, 1);
     setCurrentProject({ ...currentProject, tags: newTags });
+    handleProjectInputChange('tags', newTags);
   };
 
   const addTag = (tag: string) => {
@@ -86,6 +105,7 @@ export default function AddOrEditProjectModal({
     const newTags = Array.from(currentProject.tags);
     newTags.push(tag);
     if (currentProject) setCurrentProject({ ...currentProject, tags: newTags });
+    handleProjectInputChange('tags', newTags);
   };
 
   const uploadImage = async (image: Blob): Promise<number | null> => {
@@ -215,6 +235,14 @@ export default function AddOrEditProjectModal({
   const debouncedObjectives = useDebounce(currentProject.objectives, 500);
 
   useEffect(() => {
+    if (project) {
+      initialValuesRef.current = { ...project };
+    } else {
+      initialValuesRef.current = { ...emptyProject };
+    }
+  }, [project]);
+
+  useEffect(() => {
     if (safeWord !== '') {
       addTag(safeWord);
     }
@@ -224,6 +252,18 @@ export default function AddOrEditProjectModal({
 
   return (
     <div className="project-edition-modal" ref={modalRef}>
+      {clickedOutside && (
+        <div className="confirm-modal">
+          <div className="confirm-modal-content">
+            <ConfirmModal
+              title={t('common.leaveEditionMode', { ns: 'translation' })}
+              onConfirm={closeModal}
+              onCancel={resetClickedOutside}
+              withCloseButton={false}
+            />
+          </div>
+        </div>
+      )}
       <ModalHeaderSNCF withCloseButton withBorderBottom>
         <h1 className="project-edition-modal-title">
           {editionMode ? t('projectModificationTitle') : t('projectCreationTitle')}
@@ -257,7 +297,7 @@ export default function AddOrEditProjectModal({
                   </div>
                 }
                 value={currentProject.name}
-                onChange={(e) => setCurrentProject({ ...currentProject, name: e.target.value })}
+                onChange={(e) => handleProjectInputChange('name', e.target.value)}
                 isInvalid={displayErrors && !currentProject.name}
                 errorMsg={
                   displayErrors && !currentProject.name ? t('projectNameMissing') : undefined
@@ -276,9 +316,7 @@ export default function AddOrEditProjectModal({
                   </div>
                 }
                 value={currentProject.description}
-                onChange={(e) =>
-                  setCurrentProject({ ...currentProject, description: e.target.value })
-                }
+                onChange={(e) => handleProjectInputChange('description', e.target.value)}
                 placeholder={t('projectDescriptionPlaceholder')}
                 rows={3}
               />
@@ -299,9 +337,7 @@ export default function AddOrEditProjectModal({
                   </div>
                 }
                 value={currentProject.objectives}
-                onChange={(e) =>
-                  setCurrentProject({ ...currentProject, objectives: e.target.value })
-                }
+                onChange={(e) => handleProjectInputChange('objectives', e.target.value)}
               />
             </div>
           </div>
@@ -336,12 +372,7 @@ export default function AddOrEditProjectModal({
                 </div>
               }
               value={currentProject.funders}
-              onChange={(e) =>
-                setCurrentProject({
-                  ...currentProject,
-                  funders: e.target.value,
-                })
-              }
+              onChange={(e) => handleProjectInputChange('funders', e.target.value)}
             />
           </div>
           <div className="col-lg-4">
@@ -361,10 +392,10 @@ export default function AddOrEditProjectModal({
               }
               value={currentProject.budget !== undefined ? currentProject.budget : ''}
               onChange={(e) =>
-                setCurrentProject({
-                  ...currentProject,
-                  budget: e.target.value !== '' ? +e.target.value : undefined,
-                })
+                handleProjectInputChange(
+                  'budget',
+                  e.target.value !== '' ? +e.target.value : undefined
+                )
               }
               textRight
             />

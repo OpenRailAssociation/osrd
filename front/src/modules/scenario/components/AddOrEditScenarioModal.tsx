@@ -26,8 +26,11 @@ import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { InfraSelectorModal } from 'modules/infra/components/InfraSelector';
 import { setFailure, setSuccess } from 'reducers/main';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
+import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
+import useInputChange from 'utils/hooks/useInputChange';
+import useOutsideClick from 'utils/hooks/useOutsideClick';
 
-type CreateOrPatchScenarioForm = ScenarioPatchForm & {
+type ScenarioForm = ScenarioPatchForm & {
   id?: number;
   infra_id?: number;
   electrical_profile_set_id?: number | null;
@@ -35,7 +38,7 @@ type CreateOrPatchScenarioForm = ScenarioPatchForm & {
 
 type AddOrEditScenarioModalProps = {
   editionMode?: boolean;
-  scenario?: CreateOrPatchScenarioForm;
+  scenario?: ScenarioForm;
 };
 
 type createScenarioParams = {
@@ -47,8 +50,21 @@ export default function AddOrEditScenarioModal({
   editionMode = false,
   scenario,
 }: AddOrEditScenarioModalProps) {
-  const { t } = useTranslation('operationalStudies/scenario');
-  const { closeModal } = useContext(ModalContext);
+  const { t } = useTranslation(['operationalStudies/scenario', 'translation']);
+  const { closeModal, isOpen } = useContext(ModalContext);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const infraID = useInfraID();
+
+  const emptyScenario: ScenarioForm = {
+    description: '',
+    electrical_profile_set_id: NaN,
+    infra_id: infraID,
+    name: '',
+    tags: [],
+  };
+  const [currentScenario, setCurrentScenario] = useState<ScenarioForm>(scenario || emptyScenario);
+
   const noElectricalProfileSetOption = {
     key: undefined,
     value: t('noElectricalProfileSet').toString(),
@@ -81,13 +97,7 @@ export default function AddOrEditScenarioModal({
     });
   const [loadInfra] = osrdEditoastApi.endpoints.postInfraByIdLoad.useMutation();
 
-  const [currentScenario, setCurrentScenario] = useState<CreateOrPatchScenarioForm>(scenario || {});
-
   const [displayErrors, setDisplayErrors] = useState(false);
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const infraID = useInfraID();
-  const modalRef = useRef<HTMLDivElement>(null);
 
   const selectedValue = useMemo(() => {
     if (currentScenario.electrical_profile_set_id) {
@@ -103,16 +113,33 @@ export default function AddOrEditScenarioModal({
 
   const { updateScenarioID } = useOsrdConfActions();
 
+  const initialValuesRef = useRef<ScenarioForm | null>(null);
+
+  const modalRef = useRef<HTMLDivElement | null>(null);
+
+  const { clickedOutside, setHasChanges, resetClickedOutside } = useOutsideClick(
+    modalRef,
+    closeModal,
+    isOpen
+  );
+
+  const handleScenarioInputChange = useInputChange(
+    initialValuesRef,
+    setCurrentScenario,
+    setHasChanges
+  );
+
   const removeTag = (idx: number) => {
-    const newTags = currentScenario.tags ? Array.from(currentScenario.tags) : [];
+    const newTags = [...(currentScenario.tags || [])];
     newTags.splice(idx, 1);
     setCurrentScenario({ ...currentScenario, tags: newTags });
+    handleScenarioInputChange('tags', newTags);
   };
 
   const addTag = (tag: string) => {
-    const newTags = currentScenario.tags ? Array.from(currentScenario.tags) : [];
-    newTags.push(tag);
+    const newTags = [...(currentScenario.tags || []), tag];
     setCurrentScenario({ ...currentScenario, tags: newTags });
+    handleScenarioInputChange('tags', newTags);
   };
 
   const createScenario = () => {
@@ -204,6 +231,14 @@ export default function AddOrEditScenarioModal({
   };
 
   useEffect(() => {
+    if (scenario) {
+      initialValuesRef.current = { ...scenario };
+    } else {
+      initialValuesRef.current = { ...emptyScenario };
+    }
+  }, [scenario]);
+
+  useEffect(() => {
     setCurrentScenario({ ...currentScenario, infra_id: infraID });
   }, [infraID]);
 
@@ -211,6 +246,18 @@ export default function AddOrEditScenarioModal({
 
   return (
     <div className="scenario-edition-modal" ref={modalRef}>
+      {clickedOutside && (
+        <div className="confirm-modal">
+          <div className="confirm-modal-content">
+            <ConfirmModal
+              title={t('common.leaveEditionMode', { ns: 'translation' })}
+              onConfirm={closeModal}
+              onCancel={resetClickedOutside}
+              withCloseButton={false}
+            />
+          </div>
+        </div>
+      )}
       <ModalHeaderSNCF withCloseButton withBorderBottom>
         <h1 className="scenario-edition-modal-title">
           {editionMode ? t('scenarioModificationTitle') : t('scenarioCreationTitle')}
@@ -234,7 +281,7 @@ export default function AddOrEditScenarioModal({
                   </div>
                 }
                 value={currentScenario.name || ''}
-                onChange={(e) => setCurrentScenario({ ...currentScenario, name: e.target.value })}
+                onChange={(e) => handleScenarioInputChange('name', e.target.value)}
                 isInvalid={displayErrors && !currentScenario.name}
                 errorMsg={
                   displayErrors && !currentScenario.name ? t('scenarioNameMissing') : undefined
@@ -253,9 +300,7 @@ export default function AddOrEditScenarioModal({
                   </div>
                 }
                 value={currentScenario.description || ''}
-                onChange={(e) =>
-                  setCurrentScenario({ ...currentScenario, description: e.target.value })
-                }
+                onChange={(e) => handleScenarioInputChange('description', e.target.value)}
                 placeholder={t('scenarioDescriptionPlaceholder')}
               />
             </div>
@@ -276,10 +321,10 @@ export default function AddOrEditScenarioModal({
                     label: e.value,
                   }))}
                   onChange={(e) =>
-                    setCurrentScenario({
-                      ...currentScenario,
-                      electrical_profile_set_id: e?.id ? +e.id : undefined,
-                    })
+                    handleScenarioInputChange(
+                      'electrical_profile_set_id',
+                      e?.id ? +e.id : undefined
+                    )
                   }
                 />
               </div>

@@ -151,7 +151,7 @@ const InfraErrorsList: React.FC<InfraErrorsListProps> = ({ infraID, onErrorClick
                   <InfraErrorBox error={item.information} index={index + 1}>
                     {EDITOAST_TYPES.includes(item.information.obj_type) && (
                       <button
-                        className="dropdown-item no-close-modal"
+                        className="dropdown-item"
                         type="button"
                         title={t('Editor.infra-errors.list.goto-error')}
                         onClick={() => {

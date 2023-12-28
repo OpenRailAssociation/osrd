@@ -229,7 +229,8 @@ export default function Study() {
                             } as StudyForm
                           }
                         />,
-                        'xl'
+                        'xl',
+                        'no-close-modal'
                       )
                     }
                   >

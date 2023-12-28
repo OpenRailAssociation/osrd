@@ -14,7 +14,7 @@ export default function ProjectCard() {
       className="project-card empty"
       role="button"
       tabIndex={0}
-      onClick={() => openModal(<AddOrEditProjectModal />, 'xl')}
+      onClick={() => openModal(<AddOrEditProjectModal />, 'xl', 'no-close-modal')}
     >
       <FaPlus />
       <div className="legend">{t('createProject')}</div>

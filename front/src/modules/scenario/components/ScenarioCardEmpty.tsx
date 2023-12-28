@@ -14,7 +14,7 @@ export default function StudyCard() {
       className="scenario-card empty"
       role="button"
       tabIndex={0}
-      onClick={() => openModal(<AddOrEditScenarioModal />, 'xl')}
+      onClick={() => openModal(<AddOrEditScenarioModal />, 'xl', 'no-close-modal')}
     >
       <FaPlus />
       <div className="legend">{t('createScenario')}</div>

@@ -196,7 +196,11 @@ export default function Project() {
                           className="project-details-title-modify-button"
                           type="button"
                           onClick={() =>
-                            openModal(<AddOrEditProjectModal editionMode project={project} />, 'xl')
+                            openModal(
+                              <AddOrEditProjectModal editionMode project={project} />,
+                              'xl',
+                              'no-close-modal'
+                            )
                           }
                         >
                           <span className="project-details-title-modify-button-text">
