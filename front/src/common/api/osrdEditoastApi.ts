@@ -665,15 +665,16 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/train_schedule/`, method: 'PATCH', body: queryArg.body }),
         invalidatesTags: ['train_schedule', 'timetable'],
       }),
-      getTrainScheduleResults: build.query<
-        GetTrainScheduleResultsApiResponse,
-        GetTrainScheduleResultsApiArg
+      postTrainScheduleResults: build.mutation<
+        PostTrainScheduleResultsApiResponse,
+        PostTrainScheduleResultsApiArg
       >({
         query: (queryArg) => ({
           url: `/train_schedule/results/`,
-          params: { path_id: queryArg.pathId, timetable_id: queryArg.timetableId },
+          method: 'POST',
+          body: queryArg.body,
         }),
-        providesTags: ['train_schedule'],
+        invalidatesTags: ['train_schedule'],
       }),
       postTrainScheduleStandaloneSimulation: build.mutation<
         PostTrainScheduleStandaloneSimulationApiResponse,
@@ -1273,13 +1274,13 @@ export type PatchTrainScheduleApiResponse = unknown;
 export type PatchTrainScheduleApiArg = {
   body: TrainSchedulePatch[];
 };
-export type GetTrainScheduleResultsApiResponse =
-  /** status 200 The train schedule results */ SimulationReport[];
-export type GetTrainScheduleResultsApiArg = {
-  /** The ID of the path that was used to project the train path */
-  pathId?: number | null;
-  /** The timetable ID */
-  timetableId: number;
+export type PostTrainScheduleResultsApiResponse =
+  /** status 200 The train schedule simulations results and a list of invalid train_ids */ TrainSimulationResponse;
+export type PostTrainScheduleResultsApiArg = {
+  body: {
+    path_id?: number | null;
+    train_ids: number[];
+  };
 };
 export type PostTrainScheduleStandaloneSimulationApiResponse =
   /** status 200 The ids of the train_schedules created */ number[];
@@ -2373,6 +2374,10 @@ export type TrainSchedulePatch = {
   scheduled_points?: ScheduledPoint[] | null;
   speed_limit_tags?: string | null;
   train_name?: string | null;
+};
+export type TrainSimulationResponse = {
+  invalid_trains: number[];
+  simulations: SimulationReport[];
 };
 export type TrainScheduleBatchItem = {
   allowances?: Allowance[];

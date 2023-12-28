@@ -17,9 +17,7 @@ use editoast_derive::Model;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
-use super::{
-    check_train_validity, get_timetable_train_schedules, LightRollingStockModel, Retrieve,
-};
+use super::{check_train_validity, LightRollingStockModel, Retrieve};
 
 crate::schemas! {
     TrainSchedule,
@@ -547,11 +545,11 @@ pub struct ScheduledPoint {
 
 pub async fn filter_invalid_trains(
     db_pool: Data<DbPool>,
-    timetable_id: i64,
+    schedules: Vec<TrainSchedule>,
     infra_version: String,
-) -> Result<Vec<TrainSchedule>> {
-    let schedules = get_timetable_train_schedules(timetable_id, db_pool.clone()).await?;
+) -> Result<(Vec<TrainSchedule>, Vec<i64>)> {
     let mut result = Vec::new();
+    let mut invalid_trains = Vec::new();
     for schedule in schedules.into_iter() {
         let mut conn = db_pool.get().await?;
         let rolling_stock =
@@ -568,7 +566,9 @@ pub async fn filter_invalid_trains(
         .is_empty();
         if valid {
             result.push(schedule)
+        } else {
+            invalid_trains.push(schedule.id.unwrap())
         }
     }
-    Ok(result)
+    Ok((result, invalid_trains))
 }

@@ -3734,6 +3734,23 @@ components:
       - NewerRollingStock
       - NewerInfra
       type: string
+    TrainSimulationResponse:
+      properties:
+        invalid_trains:
+          description: Requested trains that are invalid and thus not simulated
+          items:
+            format: int64
+            type: integer
+          type: array
+        simulations:
+          description: The simulation results
+          items:
+            $ref: '#/components/schemas/SimulationReport'
+          type: array
+      required:
+      - simulations
+      - invalid_trains
+      type: object
     UpdateOperation:
       properties:
         obj_id:
@@ -6136,33 +6153,35 @@ paths:
       - train_schedule
       - timetable
   /train_schedule/results/:
-    get:
+    post:
       description: Retrieve the simulation result of multiple train schedules
-      parameters:
-      - description: The ID of the path that was used to project the train path
-        in: query
-        name: path_id
-        required: false
-        schema:
-          format: int64
-          nullable: true
-          type: integer
-      - description: The timetable ID
-        in: query
-        name: timetable_id
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                path_id:
+                  description: A path ID to project the simulation results onto. If not provided, the path of the first train will be used.
+                  format: int64
+                  nullable: true
+                  type: integer
+                train_ids:
+                  description: The IDs of the trains to simulate
+                  items:
+                    format: int64
+                    type: integer
+                  type: array
+              required:
+              - train_ids
+              type: object
         required: true
-        schema:
-          format: int64
-          type: integer
       responses:
         '200':
           content:
             application/json:
               schema:
-                items:
-                  $ref: '#/components/schemas/SimulationReport'
-                type: array
-          description: The train schedule results
+                $ref: '#/components/schemas/TrainSimulationResponse'
+          description: The train schedule simulations results and a list of invalid train_ids
       summary: Retrieve the simulation result of multiple train schedules
       tags:
       - train_schedule

@@ -24,9 +24,7 @@ pub use rolling_stock::{LightRollingStockModel, RollingStockLiveryModel, Rolling
 pub use scenario::{Scenario, ScenarioWithCountTrains, ScenarioWithDetails};
 pub use study::{Study, StudyWithScenarios};
 pub use text_array::TextArray;
-pub use timetable::{
-    check_train_validity, get_timetable_train_schedules, Timetable, TimetableWithSchedulesDetails,
-};
+pub use timetable::{check_train_validity, Timetable, TimetableWithSchedulesDetails};
 pub use train_schedule::{
     Allowance, FullResultStops, ResultPosition, ResultSpeed, ResultStops, ResultTrain,
     RoutingRequirement, ScheduledPoint, SignalSighting, SimulationOutput,
