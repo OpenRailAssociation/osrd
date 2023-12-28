@@ -21,17 +21,20 @@ class SimulationBuilder:
         return train_schedule
 
     def add_train_schedule_group(
-        self, locations: Union[Sequence[Location], Sequence[DirectedLocation]], *train_schedules: TrainSchedule
+        self, locations: Sequence[Union[Location, DirectedLocation]], *train_schedules: TrainSchedule
     ) -> TrainScheduleGroup:
+        """Creates a train schedule group containing the given train schedules.
+
+        Simple locations are expanded to directed locations in all directions."""
         if len(locations) < 2:
             raise ValueError(f"Expected at least 2 locations, got {len(locations)}")
-        if isinstance(locations[0], Location):
-            locations = [
-                [DirectedLocation.from_location(loc, direction) for direction in Direction] for loc in locations
-            ]
-        else:
-            locations = [[loc] for loc in locations]
-        train_schedule_group = TrainScheduleGroup(list(train_schedules), locations)
+        directed_locations = [
+            [loc]
+            if isinstance(loc, DirectedLocation)
+            else [DirectedLocation.from_location(loc, direction) for direction in Direction]
+            for loc in locations
+        ]
+        train_schedule_group = TrainScheduleGroup(list(train_schedules), directed_locations)
         self.simulation.train_schedule_groups.append(train_schedule_group)
         return train_schedule_group
 
