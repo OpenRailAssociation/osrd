@@ -12,6 +12,7 @@ import React, {
 } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import cx from 'classnames';
+import useOutsideClick from 'utils/hooks/useOutsideClick';
 
 /**
  * Type of the modal context
@@ -48,27 +49,7 @@ export const ModalSNCF: FC = () => {
   const modalRef = useRef<HTMLDivElement | null>(null);
   const { isOpen, content, closeModal, size, className } = useContext(ModalContext);
 
-  /**
-   * Register click outside event to close the modal.
-   */
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        event.target &&
-        isOpen &&
-        modalRef.current &&
-        !(event.target as HTMLElement).classList.contains('no-close-modal') &&
-        !modalRef.current.contains(event.target as HTMLElement)
-      ) {
-        closeModal();
-      }
-    };
-
-    document.body.addEventListener('mousedown', handleClickOutside);
-    return function cleanup() {
-      document.body.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isOpen, closeModal]);
+  useOutsideClick(modalRef, closeModal, isOpen);
 
   if (!content) {
     return null;

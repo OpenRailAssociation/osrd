@@ -29,6 +29,9 @@ import type { StudyCreateForm } from 'common/api/osrdEditoastApi';
 
 import { setFailure, setSuccess } from 'reducers/main';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
+import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
+import useInputChange from 'utils/hooks/useInputChange';
+import useOutsideClick from 'utils/hooks/useOutsideClick';
 
 export interface StudyForm extends StudyCreateForm {
   id?: number;
@@ -43,11 +46,23 @@ type StudyParams = {
   projectId: string;
 };
 
-const emptyStudy: StudyForm = { name: '', state: STUDY_STATES.started, tags: [] };
+const emptyStudy: StudyForm = {
+  actual_end_date: null,
+  budget: undefined,
+  business_code: '',
+  description: '',
+  expected_end_date: null,
+  name: '',
+  service_code: '',
+  start_date: null,
+  state: STUDY_STATES.started,
+  study_type: 'nothingSelected',
+  tags: [],
+};
 
 export default function AddOrEditStudyModal({ editionMode, study }: Props) {
-  const { t } = useTranslation('operationalStudies/study');
-  const { closeModal } = useContext(ModalContext);
+  const { t } = useTranslation(['operationalStudies/study', 'translation']);
+  const { closeModal, isOpen } = useContext(ModalContext);
   const [currentStudy, setCurrentStudy] = useState<StudyForm>(study || emptyStudy);
   const [displayErrors, setDisplayErrors] = useState(false);
   const { projectId } = useParams() as StudyParams;
@@ -66,16 +81,29 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
 
   const studyCategoriesOptions = createSelectOptions('studyCategories', studyTypes);
 
-  const modalRef = useRef<HTMLDivElement>(null);
+  const initialValuesRef = useRef<StudyForm | null>(null);
+
+  const modalRef = useRef<HTMLDivElement | null>(null);
+
+  const { clickedOutside, setHasChanges, resetClickedOutside } = useOutsideClick(
+    modalRef,
+    closeModal,
+    isOpen
+  );
+
+  const handleStudyInputChange = useInputChange(initialValuesRef, setCurrentStudy, setHasChanges);
 
   const removeTag = (idx: number) => {
     const newTags = [...(currentStudy.tags || [])];
     newTags.splice(idx, 1);
     setCurrentStudy({ ...currentStudy, tags: newTags });
+    handleStudyInputChange('tags', newTags);
   };
 
   const addTag = (tag: string) => {
-    setCurrentStudy({ ...currentStudy, tags: [...(currentStudy.tags || []), tag] });
+    const updatedTags = [...(currentStudy.tags || []), tag];
+    setCurrentStudy({ ...currentStudy, tags: updatedTags });
+    handleStudyInputChange('tags', updatedTags);
   };
 
   const createStudy = () => {
@@ -138,17 +166,6 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
     }
   };
 
-  useEffect(() => {
-    if (isCreateStudyError || isPatchStudyError || isDeleteStudyError) {
-      dispatch(
-        setFailure({
-          name: t('errorHappened'),
-          message: t('errorHappened'),
-        })
-      );
-    }
-  }, [isCreateStudyError, isPatchStudyError, isDeleteStudyError]);
-
   const { isExpectedEndDateValid, isActualEndDateValid } = useMemo(() => {
     const startDate = currentStudy?.start_date;
     const expectedEndDate = currentStudy?.expected_end_date;
@@ -161,10 +178,41 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
     };
   }, [currentStudy?.start_date, currentStudy?.expected_end_date, currentStudy?.actual_end_date]);
 
+  useEffect(() => {
+    if (study) {
+      initialValuesRef.current = { ...study };
+    } else {
+      initialValuesRef.current = { ...emptyStudy };
+    }
+  }, [study]);
+
+  useEffect(() => {
+    if (isCreateStudyError || isPatchStudyError || isDeleteStudyError) {
+      dispatch(
+        setFailure({
+          name: t('errorHappened'),
+          message: t('errorHappened'),
+        })
+      );
+    }
+  }, [isCreateStudyError, isPatchStudyError, isDeleteStudyError]);
+
   useModalFocusTrap(modalRef, closeModal);
 
   return (
     <div className="study-edition-modal" ref={modalRef}>
+      {clickedOutside && (
+        <div className="confirm-modal">
+          <div className="confirm-modal-content">
+            <ConfirmModal
+              title={t('common.leaveEditionMode', { ns: 'translation' })}
+              onConfirm={closeModal}
+              onCancel={resetClickedOutside}
+              withCloseButton={false}
+            />
+          </div>
+        </div>
+      )}
       <ModalHeaderSNCF withCloseButton withBorderBottom>
         <h1 className="study-edition-modal-title">
           <img src={studyLogo} alt="Study Logo" />
@@ -187,7 +235,7 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
               </div>
             }
             value={currentStudy?.name}
-            onChange={(e) => setCurrentStudy({ ...currentStudy, name: e.target.value })}
+            onChange={(e) => handleStudyInputChange('name', e.target.value)}
             isInvalid={displayErrors && !currentStudy?.name}
             errorMsg={displayErrors && !currentStudy?.name ? t('studyNameMissing') : undefined}
           />
@@ -214,10 +262,7 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
                     }}
                     options={studyCategoriesOptions}
                     onChange={(e) =>
-                      setCurrentStudy({
-                        ...currentStudy,
-                        study_type: e?.id as StudyForm['study_type'],
-                      })
+                      handleStudyInputChange('study_type', e?.id as StudyForm['study_type'])
                     }
                     data-testid="studyType"
                   />
@@ -239,12 +284,7 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
                       label: t(`studyStates.${currentStudy.state || 'nothingSelected'}`).toString(),
                     }}
                     options={studyStateOptions}
-                    onChange={(e) =>
-                      setCurrentStudy({
-                        ...currentStudy,
-                        state: e?.id as StudyForm['state'],
-                      })
-                    }
+                    onChange={(e) => handleStudyInputChange('state', e?.id as StudyForm['state'])}
                   />
                 </div>
               </div>
@@ -261,7 +301,7 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
                   </div>
                 }
                 value={currentStudy?.description}
-                onChange={(e) => setCurrentStudy({ ...currentStudy, description: e.target.value })}
+                onChange={(e) => handleStudyInputChange('description', e.target.value)}
                 placeholder={t('studyDescriptionPlaceholder')}
               />
             </div>
@@ -280,9 +320,7 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
                 </div>
               }
               value={formatDateForInput(currentStudy?.start_date)}
-              onChange={(e) =>
-                setCurrentStudy({ ...currentStudy, start_date: e.target.value || null })
-              }
+              onChange={(e) => handleStudyInputChange('start_date', e.target.value || null)}
               max={getEarliestDate(currentStudy?.expected_end_date, currentStudy?.actual_end_date)}
             />
             <InputSNCF
@@ -298,9 +336,7 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
                 </div>
               }
               value={formatDateForInput(currentStudy?.expected_end_date)}
-              onChange={(e) =>
-                setCurrentStudy({ ...currentStudy, expected_end_date: e.target.value || null })
-              }
+              onChange={(e) => handleStudyInputChange('expected_end_date', e.target.value || null)}
               min={formatDateForInput(currentStudy.start_date)}
               isInvalid={!isExpectedEndDateValid}
             />
@@ -317,9 +353,7 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
                 </div>
               }
               value={formatDateForInput(currentStudy?.actual_end_date)}
-              onChange={(e) =>
-                setCurrentStudy({ ...currentStudy, actual_end_date: e.target.value || null })
-              }
+              onChange={(e) => handleStudyInputChange('actual_end_date', e.target.value || null)}
               min={formatDateForInput(currentStudy.start_date)}
               isInvalid={!isActualEndDateValid}
             />
@@ -340,7 +374,7 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
                 </div>
               }
               value={currentStudy?.service_code || ''}
-              onChange={(e) => setCurrentStudy({ ...currentStudy, service_code: e.target.value })}
+              onChange={(e) => handleStudyInputChange('service_code', e.target.value)}
             />
           </div>
           <div className="col-lg-4">
@@ -357,7 +391,7 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
                 </div>
               }
               value={currentStudy?.business_code || ''}
-              onChange={(e) => setCurrentStudy({ ...currentStudy, business_code: e.target.value })}
+              onChange={(e) => handleStudyInputChange('business_code', e.target.value)}
             />
           </div>
           <div className="col-lg-4">
@@ -376,10 +410,10 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
               }
               value={currentStudy.budget !== undefined ? currentStudy.budget : ''}
               onChange={(e) =>
-                setCurrentStudy({
-                  ...currentStudy,
-                  budget: e.target.value !== '' ? +e.target.value : undefined,
-                })
+                handleStudyInputChange(
+                  'budget',
+                  e.target.value !== '' ? +e.target.value : undefined
+                )
               }
               textRight
             />

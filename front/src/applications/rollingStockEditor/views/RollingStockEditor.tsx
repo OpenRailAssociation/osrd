@@ -133,7 +133,7 @@ export default function RollingStockEditor({ rollingStocks }: RollingStockEditor
             onClick={() => {
               openModal(
                 <RollingStockEditorFormModal
-                  mainText={t('leaveEditionMode')}
+                  mainText={t('translation:common.leaveEditionMode')}
                   request={() => {
                     setIsAdding(false);
                     setIsEditing(false);

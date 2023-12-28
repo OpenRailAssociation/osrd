@@ -19,6 +19,7 @@
     "help-display": "Show help",
     "help-legend": "Show legend",
     "itinerary": "Route",
+    "leaveEditionMode":"You are about to exit edit mode, any unsaved changes will be lost.",
     "loading": "Loading...",
     "next": "Next",
     "no": "No",

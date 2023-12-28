@@ -14,7 +14,7 @@ export default function StudyCard() {
       className="study-card empty"
       role="button"
       tabIndex={0}
-      onClick={() => openModal(<AddOrEditStudyModal />, 'xl')}
+      onClick={() => openModal(<AddOrEditStudyModal />, 'xl', 'no-close-modal')}
     >
       <FaPlus />
       <div className="legend">{t('createStudy')}</div>

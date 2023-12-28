@@ -236,7 +236,11 @@ export default function Scenario() {
                         className="scenario-details-modify-button"
                         type="button"
                         onClick={() =>
-                          openModal(<AddAndEditScenarioModal editionMode scenario={scenario} />)
+                          openModal(
+                            <AddAndEditScenarioModal editionMode scenario={scenario} />,
+                            'xl',
+                            'no-close-modal'
+                          )
                         }
                         title={t('editScenario')}
                       >

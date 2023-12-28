@@ -19,6 +19,7 @@
     "help-display": "Afficher l'aide",
     "help-legend": "Afficher la légende",
     "itinerary": "Itinéraire",
+    "leaveEditionMode": "Vous êtes sur le point de quitter le mode édition, toute modification non sauvegardée sera perdue.",
     "loading": "Chargement…",
     "next": "Suivant",
     "no": "Non",
