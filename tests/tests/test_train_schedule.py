@@ -64,23 +64,18 @@ def test_editoast_get_and_update_schedule_result(west_to_south_east_simulation: 
     assert "eco" in simulation_report
 
 
-def test_api_bulk_delete(small_scenario, west_to_south_east_simulations: Sequence[int]):
+def test_editoast_bulk_delete(west_to_south_east_simulations: Sequence[int]):
     ids = west_to_south_east_simulations[0:2]
-    schedules = requests.get(f"{EDITOAST_URL}train_schedule/results/?timetable_id={small_scenario.timetable}").json()
-    old_len = len(schedules)
     r = requests.delete(f"{EDITOAST_URL}train_schedule/", json={"ids": ids})
     if r.status_code // 100 != 2:
         raise RuntimeError(f"Schedule error {r.status_code}: {r.content}, payload={json.dumps(ids)}")
-    schedules = requests.get(f"{EDITOAST_URL}train_schedule/results/?timetable_id={small_scenario.timetable}").json()
-    assert len(schedules) == old_len - 2
-
-
-def test_editoast_bulk_delete(small_scenario, west_to_south_east_simulations: Sequence[int]):
-    ids = west_to_south_east_simulations[0:2]
-    schedules = requests.get(f"{EDITOAST_URL}train_schedule/results/?timetable_id={small_scenario.timetable}").json()
-    old_len = len(schedules)
-    r = requests.delete(f"{EDITOAST_URL}train_schedule/", json={"ids": ids})
-    if r.status_code // 100 != 2:
-        raise RuntimeError(f"Schedule error {r.status_code}: {r.content}, payload={json.dumps(ids)}")
-    schedules = requests.get(f"{EDITOAST_URL}train_schedule/results/?timetable_id={small_scenario.timetable}").json()
-    assert len(schedules) == old_len - 2
+    r = requests.post(
+        f"{EDITOAST_URL}train_schedule/results/",
+        json={"path_id": None, "train_ids": west_to_south_east_simulations[0]},
+    )
+    assert r.status_code == 400
+    r = requests.post(
+        f"{EDITOAST_URL}train_schedule/results/",
+        json={"path_id": None, "train_ids": west_to_south_east_simulations[1]},
+    )
+    assert r.status_code == 400
