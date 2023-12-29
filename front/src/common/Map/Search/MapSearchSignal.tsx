@@ -1,3 +1,4 @@
+import cx from 'classnames';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import { getMap } from 'reducers/map/selectors';
@@ -218,12 +219,10 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
     if (divRef.current) setSearchSignalWidth(divRef.current.offsetWidth);
   }, [divRef.current?.offsetWidth]);
 
-  const classLargeCol = searchSignalWidth > 768 ? 'col-lg-4' : '';
-
   return (
     <>
       <div className="row mb-2 search-signal" ref={divRef}>
-        <div className={`${classLargeCol} col-md-6 mb-2`}>
+        <div className={cx({ 'col-lg-4': searchSignalWidth > 768 }, 'col-md-6 mb-2')}>
           <InputSNCF
             label={t('map-search:line')}
             type="text"
@@ -251,7 +250,7 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
               ))}
           </datalist>
         </div>
-        <div className={`${classLargeCol} col-md-6 mb-2`}>
+        <div className={cx({ 'col-lg-4': searchSignalWidth > 768 }, 'col-md-6 mb-2')}>
           <InputSNCF
             label={t('map-search:signal')}
             type="text"
@@ -279,7 +278,13 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
               ))}
           </datalist>
         </div>
-        <div className={`${classLargeCol} ${searchSignalWidth < 470 ? 'col-md-12' : 'col-md-6'}`}>
+        <div
+          className={cx({
+            'col-lg-4': searchSignalWidth > 768,
+            'col-md-6': searchSignalWidth > 470,
+            'col-md-12': searchSignalWidth < 470,
+          })}
+        >
           <SelectImproved
             label={t('map-search:signalSystem')}
             onChange={(e) => {
@@ -291,7 +296,13 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
             options={Object.values(SIGNALING_SYSTEMS)}
           />
         </div>
-        <div className={`${classLargeCol} ${searchSignalWidth < 470 ? 'col-md-12' : 'col-md-6'}`}>
+        <div
+          className={cx({
+            'col-lg-4': searchSignalWidth > 768,
+            'col-md-6': searchSignalWidth > 470,
+            'col-md-12': searchSignalWidth < 470,
+          })}
+        >
           <MultiSelectSNCF
             multiSelectTitle={t('map-search:aspects')}
             multiSelectPlaceholder={t('map-search:noAspectSelected')}

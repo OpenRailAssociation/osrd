@@ -67,16 +67,18 @@ const Detectors: FC<DetectorsProps> = ({ colors, layerOrder }) => {
   const layerPoint = getDetectorsLayerProps({ colors, sourceTable: 'detectors' });
   const layerName = getDetectorsNameLayerProps({ colors, sourceTable: 'detectors' });
 
-  return layersSettings.detectors ? (
-    <Source
-      id="osrd_detectors_geo"
-      type="vector"
-      url={`${MAP_URL}/layer/detectors/mvt/geo/?infra=${infraID}`}
-    >
-      <OrderedLayer {...layerPoint} id="chartis/osrd_detectors/geo" layerOrder={layerOrder} />
-      <OrderedLayer {...layerName} id="chartis/osrd_detectors_name/geo" layerOrder={layerOrder} />
-    </Source>
-  ) : null;
+  return (
+    layersSettings.detectors && (
+      <Source
+        id="osrd_detectors_geo"
+        type="vector"
+        url={`${MAP_URL}/layer/detectors/mvt/geo/?infra=${infraID}`}
+      >
+        <OrderedLayer {...layerPoint} id="chartis/osrd_detectors/geo" layerOrder={layerOrder} />
+        <OrderedLayer {...layerName} id="chartis/osrd_detectors_name/geo" layerOrder={layerOrder} />
+      </Source>
+    )
+  );
 };
 
 export default Detectors;

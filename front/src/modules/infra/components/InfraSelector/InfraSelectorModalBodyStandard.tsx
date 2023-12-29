@@ -1,3 +1,4 @@
+import cx from 'classnames';
 import React, { useContext } from 'react';
 import nextId from 'react-id-generator';
 import { GoLock } from 'react-icons/go';
@@ -74,19 +75,21 @@ export default function InfraSelectorModalBodyStandard({
             onClick={() => {
               setInfraID(infra.id);
             }}
-            className={`infraslist-item-choice ${infra.locked ? 'locked' : 'unlocked'} ${
-              infra.id === infraID ? 'active' : ''
-            }`}
+            className={cx('infraslist-item-choice', {
+              locked: infra.locked,
+              unlocked: !infra.locked,
+              active: infra.id === infraID,
+            })}
             key={nextId()}
           >
             <div className="infraslist-item-choice-main">
               <span className="infraslist-item-choice-name">{infra.name}</span>
-              {infra.locked ? (
+              {infra.locked && (
                 <span className="infra-lock">
                   <small>{t('infraManagement:locked')}</small>
                   <GoLock />
                 </span>
-              ) : null}
+              )}
             </div>
             <div className="infraslist-item-choice-footer">
               <span className="">ID {infra.id}</span>

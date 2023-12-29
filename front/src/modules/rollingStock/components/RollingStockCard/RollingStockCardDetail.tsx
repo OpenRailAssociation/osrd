@@ -1,3 +1,4 @@
+import cx from 'classnames';
 import { floor, isEmpty } from 'lodash';
 import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -64,7 +65,7 @@ export default function RollingStockCardDetail({
 
   return rollingStock && !isEmpty(curvesComfortList) ? (
     <div className={form ? 'px-4' : 'rollingstock-card-body'}>
-      <div className={`row pt-2  ${form}`}>
+      <div className={`row pt-2 ${form}`}>
         <div className="col-sm-6">
           <table className="rollingstock-details-table">
             <tbody>
@@ -139,14 +140,14 @@ export default function RollingStockCardDetail({
           <table className="rollingstock-details-table ml-2">
             <tbody>
               <tr>
-                <td colSpan={2} className={form ? 'formResistance ml-2' : ''}>
+                <td colSpan={2} className={cx({ 'formResistance ml-2': form })}>
                   {t('rollingResistance')}
                 </td>
               </tr>
               <tr>
                 <td
                   colSpan={2}
-                  className={`text-primary text-muted ${form ? 'formResistance ml-4' : ''}`}
+                  className={cx('text-primary text-muted', { 'formResistance ml-4': form })}
                 >
                   {t('rollingResistanceFormula')}
                 </td>

@@ -319,9 +319,7 @@ export default function SpeedSpaceChart({
         <div className="handle-tab-resize">
           <CgLoadbar />
         </div>
-        {isActive ? (
-          <ElectricalProfilesLegend isActive={isActive} setIsActive={setIsActive} />
-        ) : null}
+        {isActive && <ElectricalProfilesLegend isActive={isActive} setIsActive={setIsActive} />}
       </div>
     </Rnd>
   );

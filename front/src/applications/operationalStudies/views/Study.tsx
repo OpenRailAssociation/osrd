@@ -254,30 +254,32 @@ export default function Study() {
                 )}
               </div>
 
-              {study.service_code || study.business_code || study.budget ? (
-                <div className="study-details-financials">
-                  <div className="study-details-financials-infos">
-                    {study.service_code && (
-                      <div className="study-details-financials-infos-item">
-                        <h3>{t('geremiCode')}</h3>
-                        <div className="code">{study.service_code}</div>
-                      </div>
-                    )}
-                    {study.business_code && (
-                      <div className="study-details-financials-infos-item">
-                        <h3>{t('affairCode')}</h3>
-                        <div className="code">{study.business_code}</div>
+              {study.service_code ||
+                study.business_code ||
+                (study.budget && (
+                  <div className="study-details-financials">
+                    <div className="study-details-financials-infos">
+                      {study.service_code && (
+                        <div className="study-details-financials-infos-item">
+                          <h3>{t('geremiCode')}</h3>
+                          <div className="code">{study.service_code}</div>
+                        </div>
+                      )}
+                      {study.business_code && (
+                        <div className="study-details-financials-infos-item">
+                          <h3>{t('affairCode')}</h3>
+                          <div className="code">{study.business_code}</div>
+                        </div>
+                      )}
+                    </div>
+                    {study.budget !== 0 && (
+                      <div className="study-details-financials-amount">
+                        <span className="study-details-financials-amount-text">{t('budget')}</span>
+                        {budgetFormat(study.budget)}
                       </div>
                     )}
                   </div>
-                  {study.budget !== 0 ? (
-                    <div className="study-details-financials-amount">
-                      <span className="study-details-financials-amount-text">{t('budget')}</span>
-                      {budgetFormat(study.budget)}
-                    </div>
-                  ) : null}
-                </div>
-              ) : null}
+                ))}
 
               <div className="study-details-footer">
                 <div className="study-details-tags">
@@ -296,9 +298,7 @@ export default function Study() {
           )}
 
           <div className="scenarios-toolbar">
-            <div className="">
-              {t('scenariosCount', { count: scenariosList ? scenariosList.length : 0 })}
-            </div>
+            <div className="">{t('scenariosCount', { count: scenariosList.length })}</div>
             <div className="flex-grow-1">
               <FilterTextField
                 setFilter={setFilter}

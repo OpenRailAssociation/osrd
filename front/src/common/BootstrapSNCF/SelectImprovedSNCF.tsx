@@ -121,25 +121,25 @@ function SelectImproved<T extends string | SelectOptionObject>({
     !filteredOptions.map((e) => (isObject(e) ? e.label : e)).includes(filterText);
 
   return (
-    <div className={inline ? 'd-flex align-items-baseline' : ''} data-testid={dataTestId}>
+    <div className={cx({ 'd-flex align-items-baseline': inline })} data-testid={dataTestId}>
       {label && (
-        <label htmlFor="select1" className={inline ? 'pr-2' : ''}>
+        <label htmlFor="select1" className={cx({ 'pr-2': inline })}>
           {label}
         </label>
       )}
-      <div className={`select-improved ${isOpen ? 'active' : ''}`}>
+      <div className={cx('select-improved', { active: isOpen })}>
         <div className="select-control">
           {!noTogglingHeader && (
             <div
-              className={`input-group ${sm ? 'input-group-sm' : ''}`}
+              className={cx('input-group', { 'input-group-sm': sm })}
               tabIndex={0}
               role="button"
               onClick={() => setIsOpen(!isOpen)}
             >
               <p
-                className={`form-control is-placeholder d-flex align-items-center ${
-                  bgWhite ? 'bg-white' : ''
-                }`}
+                className={cx('form-control is-placeholder d-flex align-items-center', {
+                  'bg-white': bgWhite,
+                })}
                 style={sm ? { minHeight: '1.813rem' } : undefined}
               >
                 {renderSelectedItem()}

@@ -16,28 +16,30 @@ function LineSearchLayer(props: TracksGeographicProps) {
   const { lineSearchCode } = useSelector(getMap);
   const infraVersion = infraID !== undefined ? `?infra=${infraID}` : null;
 
-  return infraVersion ? (
-    <Source
-      id="searchTrack-geo"
-      type="vector"
-      url={`${MAP_URL}/layer/track_sections/mvt/geo/${infraVersion}`}
-      source-layer={MAP_TRACK_SOURCES.geographic}
-    >
-      {lineSearchCode && (
-        <OrderedLayer
-          source-layer={MAP_TRACK_SOURCES.geographic}
-          layerOrder={layerOrder}
-          id="lineSearchLayer-geo"
-          type="line"
-          paint={{
-            'line-color': '#ffb612',
-            'line-width': 4,
-          }}
-          filter={['==', 'extensions_sncf_line_code', lineSearchCode]}
-        />
-      )}
-    </Source>
-  ) : null;
+  return (
+    infraVersion && (
+      <Source
+        id="searchTrack-geo"
+        type="vector"
+        url={`${MAP_URL}/layer/track_sections/mvt/geo/${infraVersion}`}
+        source-layer={MAP_TRACK_SOURCES.geographic}
+      >
+        {lineSearchCode && (
+          <OrderedLayer
+            source-layer={MAP_TRACK_SOURCES.geographic}
+            layerOrder={layerOrder}
+            id="lineSearchLayer-geo"
+            type="line"
+            paint={{
+              'line-color': '#ffb612',
+              'line-width': 4,
+            }}
+            filter={['==', 'extensions_sncf_line_code', lineSearchCode]}
+          />
+        )}
+      </Source>
+    )
+  );
 }
 
 export default LineSearchLayer;

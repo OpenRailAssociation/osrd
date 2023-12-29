@@ -27,19 +27,21 @@ const EntityError: FC<{ entity: EditorEntity; className?: string }> = ({ entity,
     return data?.results && data.results.length > 0;
   }, [infraID, data]);
 
-  return hasError ? (
-    <div className={cx('entity-errors-linked', className)}>
-      <h4>
-        <BsExclamationOctagon className="mr-1" />
-        {t('Editor.entities.errors-linked')}
-      </h4>
-      <div className="small">
-        {data?.results?.map((e) => (
-          <InfraErrorLine key={uniqueId()} error={e.information} />
-        ))}
+  return (
+    hasError && (
+      <div className={cx('entity-errors-linked', className)}>
+        <h4>
+          <BsExclamationOctagon className="mr-1" />
+          {t('Editor.entities.errors-linked')}
+        </h4>
+        <div className="small">
+          {data?.results?.map((e) => (
+            <InfraErrorLine key={uniqueId()} error={e.information} />
+          ))}
+        </div>
       </div>
-    </div>
-  ) : null;
+    )
+  );
 };
 
 export default EntityError;

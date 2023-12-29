@@ -1,3 +1,4 @@
+import cx from 'classnames';
 import React, { FC, InputHTMLAttributes } from 'react';
 import './SwitchSNCF.scss';
 
@@ -31,8 +32,6 @@ const SwitchSNCF: FC<SwitchSNCFProps> = ({
   warning,
   disabled,
 }) => {
-  const warningClass = warning ? 'warning' : '';
-
   switch (type) {
     case SWITCH_TYPES.radio:
       return (
@@ -75,7 +74,7 @@ const SwitchSNCF: FC<SwitchSNCFProps> = ({
       );
     case SWITCH_TYPES.options:
       return (
-        <div className={`options-control ${warningClass}`}>
+        <div className={cx('options-control', { warning })}>
           {options.map((option) => {
             const optionId = `${id}-${name}-${option.value}`;
             return (

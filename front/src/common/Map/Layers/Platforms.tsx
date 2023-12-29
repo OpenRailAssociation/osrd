@@ -41,7 +41,7 @@ export function Platforms(props: PlatformsProps) {
 
 function PlatformsState(props: PlatformsProps) {
   const { layersSettings } = useSelector((state: RootState) => state.map);
-  return layersSettings.platforms ? <Platforms {...props} /> : null;
+  return layersSettings.platforms && <Platforms {...props} />;
 }
 
 export default PlatformsState;

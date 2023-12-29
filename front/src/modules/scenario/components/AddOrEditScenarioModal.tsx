@@ -1,3 +1,4 @@
+import cx from 'classnames';
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { GoPencil, GoTrash } from 'react-icons/go';
@@ -284,11 +285,10 @@ export default function AddOrEditScenarioModal({
           {!editionMode && (
             <div className="col-lg-6">
               <div
-                className={`scenario-edition-modal-infraselector ${
-                  displayErrors && !currentScenario.infra_id
-                    ? 'scenario-edition-modal-infraselector-missing'
-                    : null
-                }`}
+                className={cx('scenario-edition-modal-infraselector', {
+                  'scenario-edition-modal-infraselector-missing':
+                    displayErrors && !currentScenario.infra_id,
+                })}
               >
                 <InfraSelectorModal onlySelectionMode />
               </div>

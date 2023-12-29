@@ -230,22 +230,23 @@ export default function Project() {
                   </div>
                 </div>
               </div>
-              {project.funders || project.budget ? (
-                <div className="project-details-financials">
-                  <div className="project-details-financials-infos">
-                    <h3>{t('fundedBy')}</h3>
-                    <div>{project.funders}</div>
+              {project.funders ||
+                (project.budget && (
+                  <div className="project-details-financials">
+                    <div className="project-details-financials-infos">
+                      <h3>{t('fundedBy')}</h3>
+                      <div>{project.funders}</div>
+                    </div>
+                    <div className="project-details-financials-amount">
+                      <span className="project-details-financials-amount-text">
+                        {t('totalBudget')}
+                      </span>
+                      {project.budget !== undefined && project.budget !== 0
+                        ? budgetFormat(project.budget)
+                        : ''}
+                    </div>
                   </div>
-                  <div className="project-details-financials-amount">
-                    <span className="project-details-financials-amount-text">
-                      {t('totalBudget')}
-                    </span>
-                    {project.budget !== undefined && project.budget !== 0
-                      ? budgetFormat(project.budget)
-                      : ''}
-                  </div>
-                </div>
-              ) : null}
+                ))}
               <div className="project-details-tags">
                 {project.tags?.map((tag) => (
                   <div className="project-details-tags-tag" key={nextId()}>

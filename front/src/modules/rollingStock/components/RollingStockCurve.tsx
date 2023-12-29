@@ -1,3 +1,4 @@
+import cx from 'classnames';
 import React, { useEffect, useMemo, useState } from 'react';
 import { PointTooltipProps, ResponsiveLine } from '@nivo/line';
 import { useTranslation } from 'react-i18next';
@@ -73,9 +74,9 @@ function LegendComfortSwitches(props: {
     <span className="d-flex">
       {curvesComfortList.map((comfort) => (
         <span
-          className={`curves-chart-legend-comfort-button ${
-            comfortsStates[comfort] ? 'active' : null
-          }`}
+          className={cx('curves-chart-legend-comfort-button', {
+            active: comfortsStates[comfort],
+          })}
           key={`comfortSwitch-${comfort}`}
           role="button"
           tabIndex={0}
@@ -115,9 +116,9 @@ function Legend(props: {
           {isOnEditionMode && showPowerRestriction && curve.power_restriction}
           {isOnEditionMode && !showPowerRestriction && curve.electrical_profile_level}
           {!isOnEditionMode && !showPowerRestriction && curve.mode}
-          {curve.comfort !== STANDARD_COMFORT_LEVEL && !isOnEditionMode
-            ? comfort2pictogram(curve.comfort)
-            : null}
+          {curve.comfort !== STANDARD_COMFORT_LEVEL &&
+            !isOnEditionMode &&
+            comfort2pictogram(curve.comfort)}
         </span>
       ))}
     </span>

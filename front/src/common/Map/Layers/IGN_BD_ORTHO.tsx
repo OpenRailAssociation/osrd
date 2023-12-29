@@ -27,16 +27,18 @@ export default function IGN_BD_ORTHO(props: IGN_BD_ORTHO_Props) {
     },
   };
 
-  return showIGNBDORTHO ? (
-    <Source
-      id="ignbdortho"
-      type="raster"
-      tiles={[
-        'https://wxs.ign.fr/essentiels/geoportail/r/wms?bbox={bbox-epsg-3857}&styles=normal&SERVICE=WMS&VERSION=1.3.0&format=image/jpeg&service=WMS&REQUEST=GetMap&CRS=EPSG:3857&width=256&height=256&layers=ORTHOIMAGERY.ORTHOPHOTOS',
-      ]}
-      tileSize={256}
-    >
-      <OrderedLayer {...IGN_BD_ORTHO_Params} layerOrder={layerOrder} />
-    </Source>
-  ) : null;
+  return (
+    showIGNBDORTHO && (
+      <Source
+        id="ignbdortho"
+        type="raster"
+        tiles={[
+          'https://wxs.ign.fr/essentiels/geoportail/r/wms?bbox={bbox-epsg-3857}&styles=normal&SERVICE=WMS&VERSION=1.3.0&format=image/jpeg&service=WMS&REQUEST=GetMap&CRS=EPSG:3857&width=256&height=256&layers=ORTHOIMAGERY.ORTHOPHOTOS',
+        ]}
+        tileSize={256}
+      >
+        <OrderedLayer {...IGN_BD_ORTHO_Params} layerOrder={layerOrder} />
+      </Source>
+    )
+  );
 }

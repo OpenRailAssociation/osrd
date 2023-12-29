@@ -128,40 +128,41 @@ const DataLoader: FC<{
     return undefined;
   }, [state]);
 
-  return state !== 'loaded'
-    ? createPortal(
-        <div
-          className="position-absolute"
-          style={{
-            bottom: '110%',
-            height: 1200,
-            width: 1200,
-          }}
+  return (
+    state !== 'loaded' &&
+    createPortal(
+      <div
+        className="position-absolute"
+        style={{
+          bottom: '110%',
+          height: 1200,
+          width: 1200,
+        }}
+      >
+        <ReactMapGL
+          ref={setMapRef}
+          mapStyle={mapBlankStyle}
+          style={{ width: '100%', height: '100%' }}
         >
-          <ReactMapGL
-            ref={setMapRef}
-            mapStyle={mapBlankStyle}
-            style={{ width: '100%', height: '100%' }}
-          >
-            {state === 'render' && (
-              <>
-                <Source id="osm" type="vector" url={OSM_URL}>
-                  {osmLayers}
-                </Source>
-                <GeoJSONs
-                  colors={colors[mapStyle]}
-                  layersSettings={layersSettings}
-                  isEmphasized={false}
-                  layers={layers}
-                  renderAll
-                />
-              </>
-            )}
-          </ReactMapGL>
-        </div>,
-        document.body
-      )
-    : null;
+          {state === 'render' && (
+            <>
+              <Source id="osm" type="vector" url={OSM_URL}>
+                {osmLayers}
+              </Source>
+              <GeoJSONs
+                colors={colors[mapStyle]}
+                layersSettings={layersSettings}
+                isEmphasized={false}
+                layers={layers}
+                renderAll
+              />
+            </>
+          )}
+        </ReactMapGL>
+      </div>,
+      document.body
+    )
+  );
 };
 
 export default DataLoader;

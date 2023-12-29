@@ -39,41 +39,43 @@ function Signals(props: PlatformProps) {
     sourceTable,
   };
 
-  return layersSettings.signals ? (
-    <Source
-      promoteId="id"
-      type="vector"
-      url={`${MAP_URL}/layer/${sourceTable}/mvt/geo/?infra=${infraID}`}
-    >
-      <OrderedLayer
-        {...getSignalMatLayerProps(context)}
-        id="chartis/signal/mast"
-        layerOrder={layerOrder}
-      />
-      <OrderedLayer
-        {...getPointLayerProps(context)}
-        id="chartis/signal/point"
-        layerOrder={layerOrder}
-      />
-      <OrderedLayer
-        {...getKPLabelLayerProps({
-          bottomOffset: 6.5,
-          colors,
-          PKFieldName: 'extensions_sncf_kp',
-          minzoom: 12,
-          isSignalisation: true,
-          sourceTable,
-        })}
-        id="chartis/signal/kp"
-        layerOrder={layerOrder}
-      />
-      <OrderedLayer
-        {...getSignalLayerProps(context)}
-        id="chartis/signal/signals"
-        layerOrder={layerOrder}
-      />
-    </Source>
-  ) : null;
+  return (
+    layersSettings.signals && (
+      <Source
+        promoteId="id"
+        type="vector"
+        url={`${MAP_URL}/layer/${sourceTable}/mvt/geo/?infra=${infraID}`}
+      >
+        <OrderedLayer
+          {...getSignalMatLayerProps(context)}
+          id="chartis/signal/mast"
+          layerOrder={layerOrder}
+        />
+        <OrderedLayer
+          {...getPointLayerProps(context)}
+          id="chartis/signal/point"
+          layerOrder={layerOrder}
+        />
+        <OrderedLayer
+          {...getKPLabelLayerProps({
+            bottomOffset: 6.5,
+            colors,
+            PKFieldName: 'extensions_sncf_kp',
+            minzoom: 12,
+            isSignalisation: true,
+            sourceTable,
+          })}
+          id="chartis/signal/kp"
+          layerOrder={layerOrder}
+        />
+        <OrderedLayer
+          {...getSignalLayerProps(context)}
+          id="chartis/signal/signals"
+          layerOrder={layerOrder}
+        />
+      </Source>
+    )
+  );
 }
 
 export default Signals;

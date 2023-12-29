@@ -22,13 +22,15 @@ export const Spinner: FC<SpinnerProps> = ({ displayDelay, ...props }) => {
     };
   }, [displayDelay, timeoutRef]);
 
-  return display ? (
-    <div {...props}>
-      <div className="spinner-border" role="status">
-        <span className="sr-only">Loading...</span>
+  return (
+    display && (
+      <div {...props}>
+        <div className="spinner-border" role="status">
+          <span className="sr-only">Loading...</span>
+        </div>
       </div>
-    </div>
-  ) : null;
+    )
+  );
 };
 
 export const LoaderFill: FC<SpinnerProps> = ({ className, ...props }) => (

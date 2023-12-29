@@ -79,28 +79,30 @@ export function IsolatedSpeedLimitByTagSelector({
     [speedLimitsByTags]
   );
 
-  return speedLimitsTagsList.length > 0 ? (
-    <div className="osrd-config-item mb-2">
-      <div
-        className={`osrd-config-item-container ${
-          condensed ? 'd-flex align-items-center gap-10' : ''
-        }`}
-      >
-        <img width="32px" src={icon} alt="speedometer" />
-        <span className="text-muted">{t('speedLimitByTag')}</span>
-        <SelectImprovedSNCF
-          sm
-          withSearch
-          dataTestId="speed-limit-by-tag-selector"
-          value={speedLimitByTag || t('noSpeedLimitByTag').toString()}
-          options={speedLimitsTagsList}
-          onChange={(e) => {
-            if (e) dispatchUpdateSpeedLimitByTag(e);
-          }}
-        />
+  return (
+    speedLimitsTagsList.length > 0 && (
+      <div className="osrd-config-item mb-2">
+        <div
+          className={`osrd-config-item-container ${
+            condensed ? 'd-flex align-items-center gap-10' : ''
+          }`}
+        >
+          <img width="32px" src={icon} alt="speedometer" />
+          <span className="text-muted">{t('speedLimitByTag')}</span>
+          <SelectImprovedSNCF
+            sm
+            withSearch
+            dataTestId="speed-limit-by-tag-selector"
+            value={speedLimitByTag || t('noSpeedLimitByTag').toString()}
+            options={speedLimitsTagsList}
+            onChange={(e) => {
+              if (e) dispatchUpdateSpeedLimitByTag(e);
+            }}
+          />
+        </div>
       </div>
-    </div>
-  ) : null;
+    )
+  );
 }
 
 export default withOSRDInfraData(IsolatedSpeedLimitByTagSelector);

@@ -69,16 +69,18 @@ const Switches: FC<SwitchesProps> = (props) => {
   const layerPoint = getSwitchesLayerProps({ colors, sourceTable: 'switches' });
   const layerName = getSwitchesNameLayerProps({ colors, sourceTable: 'switches' });
 
-  return layersSettings.switches ? (
-    <Source
-      id="osrd_switches_geo"
-      type="vector"
-      url={`${MAP_URL}/layer/switches/mvt/geo/?infra=${infraID}`}
-    >
-      <OrderedLayer {...layerPoint} id="chartis/osrd_switches/geo" layerOrder={layerOrder} />
-      <OrderedLayer {...layerName} id="chartis/osrd_switches_name/geo" layerOrder={layerOrder} />
-    </Source>
-  ) : null;
+  return (
+    layersSettings.switches && (
+      <Source
+        id="osrd_switches_geo"
+        type="vector"
+        url={`${MAP_URL}/layer/switches/mvt/geo/?infra=${infraID}`}
+      >
+        <OrderedLayer {...layerPoint} id="chartis/osrd_switches/geo" layerOrder={layerOrder} />
+        <OrderedLayer {...layerName} id="chartis/osrd_switches_name/geo" layerOrder={layerOrder} />
+      </Source>
+    )
+  );
 };
 
 export default Switches;

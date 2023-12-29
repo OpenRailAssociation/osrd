@@ -57,11 +57,13 @@ function OSM({ mapStyle, layerOrder, mapIsLoaded }: OSMProps) {
     if (reload) setReload(false);
   }, [reload]);
 
-  return !reload ? (
-    <Source id="osm" type="vector" url={OSM_URL}>
-      {genOSMLayers(mapStyle, layerOrder)}
-    </Source>
-  ) : null;
+  return (
+    !reload && (
+      <Source id="osm" type="vector" url={OSM_URL}>
+        {genOSMLayers(mapStyle, layerOrder)}
+      </Source>
+    )
+  );
 }
 
 export default OSM;

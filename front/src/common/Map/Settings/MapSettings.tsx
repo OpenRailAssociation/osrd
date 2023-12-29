@@ -1,3 +1,4 @@
+import cx from 'classnames';
 import React, { FC, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -30,7 +31,7 @@ const MapSettings: FC<MapSettingsProps> = ({ closeMapSettingsPopUp }) => {
       >
         {t('map-settings:layers')}
         <i
-          className={`${showSettingsLayers ? 'open' : ''} icons-arrow-down icons-size-20px`}
+          className={cx({ open: showSettingsLayers }, 'icons-arrow-down icons-size-20px')}
           aria-hidden="true"
         />
       </div>
@@ -43,7 +44,7 @@ const MapSettings: FC<MapSettingsProps> = ({ closeMapSettingsPopUp }) => {
       >
         {t('map-settings:speedlimits')}
         <i
-          className={`${showSettingsSpeedLimits ? 'open' : ''} icons-arrow-down icons-size-20px`}
+          className={cx({ open: showSettingsSpeedLimits }, 'icons-arrow-down icons-size-20px')}
           aria-hidden="true"
         />
       </div>

@@ -263,11 +263,9 @@ const Editor = () => {
                     <button
                       key={id}
                       type="button"
-                      className={cx(
-                        'editor-btn',
-                        'btn-rounded',
-                        isActive && isActive(extendedContext) ? 'active' : ''
-                      )}
+                      className={cx('editor-btn', 'btn-rounded', {
+                        active: isActive && isActive(extendedContext),
+                      })}
                       onClick={() => {
                         if (onClick) {
                           onClick(extendedContext);
@@ -356,15 +354,10 @@ const Editor = () => {
                         <button
                           id={id}
                           type="button"
-                          className={cx(
-                            'editor-btn',
-                            'btn-rounded',
-                            'shadow',
-                            isActive && isActive(editorState) ? 'active' : '',
-                            isBlink && isBlink(editorState, infraID)
-                              ? 'btn-map-infras-blinking'
-                              : ''
-                          )}
+                          className={cx('editor-btn', 'btn-rounded', 'shadow', {
+                            active: isActive && isActive(editorState),
+                            'btn-map-infras-blinking': isBlink && isBlink(editorState, infraID),
+                          })}
                           onClick={clickFunction}
                           disabled={isDisabled && isDisabled(editorState)}
                         >

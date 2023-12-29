@@ -96,15 +96,17 @@ export default function Routes(props: RoutesProps) {
   const pointProps = getRoutesPointLayerProps({ colors, sourceTable: 'routes' });
   const textProps = getRoutesTextLayerProps({ colors, sourceTable: 'routes' });
 
-  return layersSettings.routes ? (
-    <Source
-      id="osrd_routes_geo"
-      type="vector"
-      url={`${MAP_URL}/layer/routes/mvt/geo/?infra=${infraID}`}
-    >
-      <OrderedLayer {...lineProps} id="chartis/osrd_routes_line/geo" layerOrder={layerOrder} />
-      <OrderedLayer {...pointProps} id="chartis/osrd_routes_point/geo" layerOrder={layerOrder} />
-      <OrderedLayer {...textProps} id="chartis/osrd_routes_text/geo" layerOrder={layerOrder} />
-    </Source>
-  ) : null;
+  return (
+    layersSettings.routes && (
+      <Source
+        id="osrd_routes_geo"
+        type="vector"
+        url={`${MAP_URL}/layer/routes/mvt/geo/?infra=${infraID}`}
+      >
+        <OrderedLayer {...lineProps} id="chartis/osrd_routes_line/geo" layerOrder={layerOrder} />
+        <OrderedLayer {...pointProps} id="chartis/osrd_routes_point/geo" layerOrder={layerOrder} />
+        <OrderedLayer {...textProps} id="chartis/osrd_routes_text/geo" layerOrder={layerOrder} />
+      </Source>
+    )
+  );
 }

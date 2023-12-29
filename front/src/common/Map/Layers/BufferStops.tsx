@@ -42,19 +42,21 @@ const BufferStops: FC<BufferStopsProps> = ({ layerOrder }) => {
   const infraID = useSelector(getInfraID);
   const layersSettings = useSelector(getLayersSettings);
 
-  return layersSettings.bufferstops ? (
-    <Source
-      id="osrd_bufferstop_geo"
-      type="vector"
-      url={`${MAP_URL}/layer/buffer_stops/mvt/geo/?infra=${infraID}`}
-    >
-      <OrderedLayer
-        {...getBufferStopsLayerProps({ sourceTable: 'buffer_stops' })}
-        id="chartis/osrd_bufferstop/geo"
-        layerOrder={layerOrder}
-      />
-    </Source>
-  ) : null;
+  return (
+    layersSettings.bufferstops && (
+      <Source
+        id="osrd_bufferstop_geo"
+        type="vector"
+        url={`${MAP_URL}/layer/buffer_stops/mvt/geo/?infra=${infraID}`}
+      >
+        <OrderedLayer
+          {...getBufferStopsLayerProps({ sourceTable: 'buffer_stops' })}
+          id="chartis/osrd_bufferstop/geo"
+          layerOrder={layerOrder}
+        />
+      </Source>
+    )
+  );
 };
 
 export default BufferStops;

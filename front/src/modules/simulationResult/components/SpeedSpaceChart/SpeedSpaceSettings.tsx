@@ -1,3 +1,4 @@
+import cx from 'classnames';
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 import { ElectrificationRange, LightRollingStock } from 'common/api/osrdEditoastApi';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -78,7 +79,7 @@ const SpeedSpaceSettings = ({
 
   return (
     <div
-      className={`${showSettings ? 'ml-5' : ''} showSettings`}
+      className={cx({ 'ml-5': showSettings }, 'showSettings')}
       style={showSettings ? { width: 'auto' } : { width: 0 }}
     >
       <div className="h2 d-flex align-items-center">{t('speedSpaceSettings.display')}</div>

@@ -277,14 +277,14 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
         className="spacetime-chart chart"
         style={{ height: `100%` }}
       >
-        {showModal !== '' ? (
+        {showModal !== '' && (
           <ChartModal
             modificationKey={showModal}
             setShowModal={setShowModal}
             trainName={selectedTrain?.name}
             offsetTimeByDragging={dragShiftTrain}
           />
-        ) : null}
+        )}
         <div style={{ height: `100%` }} ref={ref} />
         <button
           type="button"

@@ -15,12 +15,12 @@ const SignalCard = ({ signalSearchResult, onResultClick }: SignalCardProps) => (
   >
     <div className="col-1">
       {typeof signalSearchResult.sprite === 'string' &&
-      typeof signalSearchResult.sprite_signaling_system === 'string' ? (
-        <img
-          src={`${mainConfig.proxy_editoast}/sprites/${signalSearchResult.sprite_signaling_system}/${signalSearchResult.sprite}.svg`}
-          alt={`${signalSearchResult.sprite_signaling_system} ${signalSearchResult.sprite}`}
-        />
-      ) : null}
+        typeof signalSearchResult.sprite_signaling_system === 'string' && (
+          <img
+            src={`${mainConfig.proxy_editoast}/sprites/${signalSearchResult.sprite_signaling_system}/${signalSearchResult.sprite}.svg`}
+            alt={`${signalSearchResult.sprite_signaling_system} ${signalSearchResult.sprite}`}
+          />
+        )}
     </div>
     <div className="col-1 small">{signalSearchResult.label}</div>
     <div className="col-3">{signalSearchResult.line_code}</div>
