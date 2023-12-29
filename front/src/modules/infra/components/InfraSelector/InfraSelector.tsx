@@ -5,14 +5,12 @@ import { GoLock } from 'react-icons/go';
 
 import icon from 'assets/pictures/components/tracks.svg';
 
-import 'common/InfraSelector/InfraSelector.scss';
 import { useInfraID } from 'common/osrdContext';
-import type { Infra } from 'common/api/osrdEditoastApi';
+import { type Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import InfraSelectorModal from 'common/InfraSelector/InfraSelectorModal';
-
 import { setFailure } from 'reducers/main';
+
+import InfraSelectorModal from './InfraSelectorModal';
 
 type InfraSelectorProps = {
   isModalOnly?: boolean;
@@ -62,7 +60,7 @@ const InfraSelector = ({ isModalOnly = false }: InfraSelectorProps) => {
           <img width="32px" className="mr-2" src={icon} alt="infraIcon" />
           {selectedInfra !== undefined ? (
             <>
-              <span className="">{selectedInfra.name}</span>
+              <span>{selectedInfra.name}</span>
               <span className="ml-1 small align-self-center">({selectedInfra.id})</span>
               {selectedInfra.locked && (
                 <span className="infra-lock ml-auto">

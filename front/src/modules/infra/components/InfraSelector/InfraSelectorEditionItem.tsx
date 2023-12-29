@@ -66,9 +66,9 @@ export default function InfraSelectorEditionItem({
               )}
             </div>
             <div className="infraslist-item-edition-footer">
-              <span className="">ID {infra.id}</span>
-              <span className="">RAILJSON V{infra.railjson_version}</span>
-              <span className="">
+              <span>ID {infra.id}</span>
+              <span>RAILJSON V{infra.railjson_version}</span>
+              <span>
                 V{infra.version}
                 {editoastUpToDateIndicator(infra.version, infra.generated_version)}
               </span>

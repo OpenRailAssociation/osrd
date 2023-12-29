@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from 'reducers';
 import { Infra } from 'common/api/osrdEditoastApi';
 import { useTranslation } from 'react-i18next';
-import Loader from 'common/Loader';
+import { Loader } from 'common/Loaders';
 
 type Props = {
   infraState?: Infra['state'];

@@ -9,22 +9,23 @@ interface IGN_Cadastre_Props {
   layerOrder?: number;
 }
 
+const IGN_Cadastre_Params: LayerProps = {
+  source: 'orthophoto',
+  type: 'raster',
+  paint: {
+    'raster-resampling': 'linear',
+    'raster-opacity': 0.75,
+    'raster-hue-rotate': 0,
+    'raster-fade-duration': 0,
+  },
+};
+
 export default function IGN_CADASTRE(props: IGN_Cadastre_Props) {
   const { layerOrder } = props;
   const { showIGNCadastre } = useSelector((state: RootState) => state.map);
 
-  const IGN_Cadastre_Params: LayerProps = {
-    source: 'orthophoto',
-    type: 'raster',
-    paint: {
-      'raster-resampling': 'linear',
-      'raster-opacity': 0.75,
-      'raster-hue-rotate': 0,
-      'raster-fade-duration': 0,
-    },
-  };
-
-  return showIGNCadastre ? (
+  if (!showIGNCadastre) return null;
+  return (
     <Source
       id="igncadastre"
       type="raster"
@@ -35,5 +36,5 @@ export default function IGN_CADASTRE(props: IGN_Cadastre_Props) {
     >
       <OrderedLayer {...IGN_Cadastre_Params} layerOrder={layerOrder} />
     </Source>
-  ) : null;
+  );
 }

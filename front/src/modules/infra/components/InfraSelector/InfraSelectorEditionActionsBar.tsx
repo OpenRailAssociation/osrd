@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { GoDuplicate, GoPencil, GoDownload, GoLock, GoUnlock } from 'react-icons/go';
 import { useTranslation } from 'react-i18next';
 import { MdCancel, MdCheck } from 'react-icons/md';
-import fileDownload from 'js-file-download';
-import { Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useDispatch } from 'react-redux';
+import fileDownload from 'js-file-download';
+
+import { Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { setFailure } from 'reducers/main';
-import InfraLockState from './consts';
+import InfraLockState from 'modules/infra/consts';
 
 type ActionBarProps = {
   infra: Infra;

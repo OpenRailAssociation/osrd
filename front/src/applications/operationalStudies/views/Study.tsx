@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import { useTranslation } from 'react-i18next';
-import Loader, { Spinner } from 'common/Loader';
+import { Loader, Spinner } from 'common/Loaders';
 import nextId from 'react-id-generator';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import ScenarioCard from 'modules/scenario/components/ScenarioCard';
@@ -254,7 +254,7 @@ export default function Study() {
                 )}
               </div>
 
-              {study.service_code || study.business_code || study.budget ? (
+              {(study.service_code || study.business_code || study.budget !== 0) && (
                 <div className="study-details-financials">
                   <div className="study-details-financials-infos">
                     {study.service_code && (
@@ -270,14 +270,14 @@ export default function Study() {
                       </div>
                     )}
                   </div>
-                  {study.budget !== 0 ? (
+                  {study.budget !== 0 && (
                     <div className="study-details-financials-amount">
                       <span className="study-details-financials-amount-text">{t('budget')}</span>
                       {budgetFormat(study.budget)}
                     </div>
-                  ) : null}
+                  )}
                 </div>
-              ) : null}
+              )}
 
               <div className="study-details-footer">
                 <div className="study-details-tags">
@@ -296,9 +296,7 @@ export default function Study() {
           )}
 
           <div className="scenarios-toolbar">
-            <div className="">
-              {t('scenariosCount', { count: scenariosList ? scenariosList.length : 0 })}
-            </div>
+            <div>{t('scenariosCount', { count: scenariosList.length })}</div>
             <div className="flex-grow-1">
               <FilterTextField
                 setFilter={setFilter}

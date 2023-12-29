@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { getDocument } from 'common/api/documentApi';
-import { MiniCardsImageProps } from './ScenarioExplorerTypes';
+import { ProjectWithStudies } from 'common/api/osrdEditoastApi';
 
-export default function Project2Image({ project }: MiniCardsImageProps) {
+const Project2Image = ({ project }: { project: ProjectWithStudies }) => {
   const [imageUrl, setImageUrl] = useState<string>();
 
   useMemo(async () => {
@@ -15,5 +15,7 @@ export default function Project2Image({ project }: MiniCardsImageProps) {
     }
   }, [project]);
 
-  return imageUrl ? <img src={imageUrl} alt="X" /> : null;
-}
+  return imageUrl && <img src={imageUrl} alt="X" />;
+};
+
+export default Project2Image;

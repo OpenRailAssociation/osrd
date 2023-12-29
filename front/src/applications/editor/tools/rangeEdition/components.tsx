@@ -27,7 +27,7 @@ import type {
 } from 'types';
 import { APPLICABLE_DIRECTIONS } from 'types';
 
-import { LoaderFill } from 'common/Loader';
+import { LoaderFill } from 'common/Loaders';
 import { useInfraID } from 'common/osrdContext';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';

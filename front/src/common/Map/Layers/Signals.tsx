@@ -37,7 +37,8 @@ const Signals = ({ colors, sourceTable, layerOrder, infraID }: PlatformProps) =>
     sourceTable,
   };
 
-  return layersSettings.signals ? (
+  if (!layersSettings.signals) return null;
+  return (
     <Source
       promoteId="id"
       type="vector"
@@ -71,7 +72,7 @@ const Signals = ({ colors, sourceTable, layerOrder, infraID }: PlatformProps) =>
         layerOrder={layerOrder}
       />
     </Source>
-  ) : null;
+  );
 };
 
 export default Signals;

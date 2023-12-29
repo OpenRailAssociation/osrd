@@ -43,7 +43,7 @@ export const RollingStockInfo = ({
         </span>
       )}
       <div className="rollingstock-info w-100">
-        {showSeries ? (
+        {showSeries && (
           <span className="rollingstock-info-begin">
             <span className="rollingstock-info-series">
               {metadata.series ? metadata.series : metadata.reference}
@@ -55,13 +55,13 @@ export const RollingStockInfo = ({
                 : metadata.detail}
             </span>
           </span>
-        ) : null}
-        {showMiddle && metadata.series ? (
+        )}
+        {showMiddle && metadata.series && (
           <span className="rollingstock-info-middle">
             {`${metadata.family} / ${metadata.type} / ${metadata.grouping}`}
           </span>
-        ) : null}
-        {showEnd ? <span className="rollingstock-info-end">{rollingStock.name}</span> : null}
+        )}
+        {showEnd && <span className="rollingstock-info-end">{rollingStock.name}</span>}
       </div>
     </div>
   );

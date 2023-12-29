@@ -15,7 +15,7 @@ const EntityError: FC<{ entity: EditorEntity; className?: string }> = ({ entity,
   const { data } = osrdEditoastApi.endpoints.getInfraByIdErrors.useQuery(
     {
       // Infra can be undefined, but in this case the query is skipped
-      id: infraID || -1,
+      id: infraID!,
       objectId: entity.properties.id,
     },
     { skip: isNil(infraID) }
@@ -26,7 +26,9 @@ const EntityError: FC<{ entity: EditorEntity; className?: string }> = ({ entity,
     return data?.results && data.results.length > 0;
   }, [infraID, data]);
 
-  return hasError ? (
+  if (!hasError) return null;
+
+  return (
     <div className={cx('entity-errors-linked', className)}>
       <h4>
         <BsExclamationOctagon className="mr-1" />
@@ -38,7 +40,7 @@ const EntityError: FC<{ entity: EditorEntity; className?: string }> = ({ entity,
         ))}
       </div>
     </div>
-  ) : null;
+  );
 };
 
 export default EntityError;

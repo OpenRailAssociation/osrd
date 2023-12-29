@@ -15,7 +15,7 @@ import infraLogo from 'assets/pictures/components/tracks.svg';
 import type { PointOnMap } from 'applications/operationalStudies/consts';
 import InfraLoadingState from 'applications/operationalStudies/components/Scenario/InfraLoadingState';
 
-import { Spinner } from 'common/Loader';
+import { Spinner } from 'common/Loaders';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 

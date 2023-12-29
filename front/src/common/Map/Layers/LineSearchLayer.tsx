@@ -14,7 +14,8 @@ const LineSearchLayer = ({ layerOrder, infraID }: TracksGeographicProps) => {
   const { lineSearchCode } = useSelector(getMap);
   const infraVersion = infraID !== undefined ? `?infra=${infraID}` : null;
 
-  return infraVersion ? (
+  if (!infraVersion) return null;
+  return (
     <Source
       id="searchTrack-geo"
       type="vector"
@@ -35,7 +36,7 @@ const LineSearchLayer = ({ layerOrder, infraID }: TracksGeographicProps) => {
         />
       )}
     </Source>
-  ) : null;
+  );
 };
 
 export default LineSearchLayer;

@@ -97,7 +97,8 @@ export default function Routes({ colors, layerOrder, infraID }: RoutesProps) {
   const pointProps = getRoutesPointLayerProps({ colors, sourceTable: 'routes' });
   const textProps = getRoutesTextLayerProps({ colors, sourceTable: 'routes' });
 
-  return layersSettings.routes ? (
+  if (!layersSettings.routes) return null;
+  return (
     <Source
       id="osrd_routes_geo"
       type="vector"
@@ -107,5 +108,5 @@ export default function Routes({ colors, layerOrder, infraID }: RoutesProps) {
       <OrderedLayer {...pointProps} id="chartis/osrd_routes_point/geo" layerOrder={layerOrder} />
       <OrderedLayer {...textProps} id="chartis/osrd_routes_text/geo" layerOrder={layerOrder} />
     </Source>
-  ) : null;
+  );
 }

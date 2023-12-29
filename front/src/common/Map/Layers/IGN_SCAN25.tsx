@@ -24,7 +24,8 @@ export default function IGN_SCAN25(props: IGN_SCAN25_Props) {
     },
   };
 
-  return showIGNSCAN25 ? (
+  if (!showIGNSCAN25) return null;
+  return (
     <Source
       id="ignscan25"
       type="raster"
@@ -36,5 +37,5 @@ export default function IGN_SCAN25(props: IGN_SCAN25_Props) {
     >
       <OrderedLayer {...IGN_SCAN25_Params} layerOrder={layerOrder} />
     </Source>
-  ) : null;
+  );
 }

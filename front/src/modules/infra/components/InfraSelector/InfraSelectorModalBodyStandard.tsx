@@ -1,3 +1,4 @@
+import cx from 'classnames';
 import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
@@ -84,24 +85,26 @@ export default function InfraSelectorModalBodyStandard({
             onClick={() => {
               setInfraID(infra.id);
             }}
-            className={`infraslist-item-choice ${infra.locked ? 'locked' : 'unlocked'} ${
-              infra.id === infraID ? 'active' : ''
-            }`}
+            className={cx('infraslist-item-choice', {
+              locked: infra.locked,
+              unlocked: !infra.locked,
+              active: infra.id === infraID,
+            })}
             key={nextId()}
           >
             <div className="infraslist-item-choice-main">
               <span className="infraslist-item-choice-name">{infra.name}</span>
-              {infra.locked ? (
+              {infra.locked && (
                 <span className="infra-lock">
                   <small>{t('infraManagement:locked')}</small>
                   <GoLock />
                 </span>
-              ) : null}
+              )}
             </div>
             <div className="infraslist-item-choice-footer">
-              <span className="">ID {infra.id}</span>
-              <span className="">RAILJSON V{infra.railjson_version}</span>
-              <span className="">
+              <span>ID {infra.id}</span>
+              <span>RAILJSON V{infra.railjson_version}</span>
+              <span>
                 V{infra.version}
                 {editoastUpToDateIndicator(infra.version, infra.generated_version)}
               </span>

@@ -84,7 +84,8 @@ export function IsolatedSpeedLimitByTagSelector({
     [speedLimitsByTags]
   );
 
-  return speedLimitsTagsList.length > 0 ? (
+  if (!speedLimitsTagsList.length) return null;
+  return (
     <div className="osrd-config-item mb-2">
       <div
         className={`osrd-config-item-container ${
@@ -105,7 +106,7 @@ export function IsolatedSpeedLimitByTagSelector({
         />
       </div>
     </div>
-  ) : null;
+  );
 }
 
 export default withOSRDInfraData(IsolatedSpeedLimitByTagSelector);

@@ -27,7 +27,8 @@ export default function IGN_BD_ORTHO(props: IGN_BD_ORTHO_Props) {
     },
   };
 
-  return showIGNBDORTHO ? (
+  if (!showIGNBDORTHO) return null;
+  return (
     <Source
       id="ignbdortho"
       type="raster"
@@ -38,5 +39,5 @@ export default function IGN_BD_ORTHO(props: IGN_BD_ORTHO_Props) {
     >
       <OrderedLayer {...IGN_BD_ORTHO_Params} layerOrder={layerOrder} />
     </Source>
-  ) : null;
+  );
 }

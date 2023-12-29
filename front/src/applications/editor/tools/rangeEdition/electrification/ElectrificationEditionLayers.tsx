@@ -142,7 +142,7 @@ export const ElectrificationEditionLayers = () => {
     }
   }, [hoveredItem]);
 
-  const popUps = !isOnModeMove(interactionState.type) ? (
+  const popUps = !isOnModeMove(interactionState.type) && (
     <>
       {hoveredItem?.itemType === 'TrackRangeExtremity' && (
         <Popup
@@ -184,7 +184,7 @@ export const ElectrificationEditionLayers = () => {
           </Popup>
         )}
     </>
-  ) : null;
+  );
 
   return (
     <>

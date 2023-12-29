@@ -23,7 +23,7 @@ import {
   getEditSpeedSectionState,
 } from 'applications/editor/tools/rangeEdition/utils';
 
-import { Spinner } from 'common/Loader';
+import { Spinner } from 'common/Loaders';
 import colors from 'common/Map/Consts/colors';
 import GeoJSONs from 'common/Map/Layers/GeoJSONs';
 import { useInfraID } from 'common/osrdContext';

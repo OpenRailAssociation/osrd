@@ -14,7 +14,7 @@ import { RollingStockSelector } from 'modules/rollingStock/components/RollingSto
 
 import { useInfraID, useOsrdConfSelectors } from 'common/osrdContext';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import ScenarioExplorer from 'common/ScenarioExplorer/ScenarioExplorer';
+import ScenarioExplorer from 'modules/scenario/components/ScenarioExplorer';
 import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector/SpeedLimitByTagSelector';
 
 import { getSelectedTrain } from 'reducers/osrdsimulation/selectors';

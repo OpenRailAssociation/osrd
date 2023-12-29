@@ -13,14 +13,14 @@ import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import type { TrainScheduleSummary } from 'common/api/osrdEditoastApi';
-import ScenarioExplorerModal from 'common/ScenarioExplorer/ScenarioExplorerModal';
-import type { ScenarioExplorerProps } from 'common/ScenarioExplorer/ScenarioExplorerTypes';
 
-export default function ScenarioExplorer({
+import ScenarioExplorerModal, { type ScenarioExplorerProps } from './ScenarioExplorerModal';
+
+const ScenarioExplorer = ({
   globalProjectId,
   globalStudyId,
   globalScenarioId,
-}: ScenarioExplorerProps) {
+}: ScenarioExplorerProps) => {
   const { t } = useTranslation('common/scenarioExplorer');
   const dispatch = useDispatch();
   const { openModal } = useModal();
@@ -28,18 +28,19 @@ export default function ScenarioExplorer({
   const timetableID = useSelector(getTimetableID);
   const [imageUrl, setImageUrl] = useState<string>();
 
-  const { data: projectDetails } = osrdEditoastApi.useGetProjectsByProjectIdQuery(
+  const { data: projectDetails } = osrdEditoastApi.endpoints.getProjectsByProjectId.useQuery(
     { projectId: globalProjectId as number },
     { skip: !globalProjectId }
   );
 
-  const { data: studyDetails } = osrdEditoastApi.useGetProjectsByProjectIdStudiesAndStudyIdQuery(
-    { projectId: globalProjectId as number, studyId: globalStudyId as number },
-    { skip: !globalProjectId && !globalStudyId }
-  );
+  const { data: studyDetails } =
+    osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyId.useQuery(
+      { projectId: globalProjectId as number, studyId: globalStudyId as number },
+      { skip: !globalProjectId && !globalStudyId }
+    );
 
   const { data: scenarioDetails } =
-    osrdEditoastApi.useGetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdQuery(
+    osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId.useQuery(
       {
         projectId: globalProjectId as number,
         studyId: globalStudyId as number,
@@ -153,4 +154,6 @@ export default function ScenarioExplorer({
       )}
     </div>
   );
-}
+};
+
+export default ScenarioExplorer;

@@ -45,7 +45,7 @@ import { getMap } from 'reducers/map/selectors';
 import colors from 'common/Map/Consts/colors';
 import GeoJSONs, { EditorSource, SourcesDefinitionsIndex } from 'common/Map/Layers/GeoJSONs';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { Spinner } from 'common/Loader';
+import { Spinner } from 'common/Loaders';
 import { useInfraID } from 'common/osrdContext';
 
 export const POINT_LAYER_ID = 'pointEditionTool/new-entity';

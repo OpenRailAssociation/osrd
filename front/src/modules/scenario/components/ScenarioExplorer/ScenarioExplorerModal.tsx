@@ -1,29 +1,35 @@
 import React, { useEffect, useState } from 'react';
+import { MdArrowRight } from 'react-icons/md';
+import { useTranslation } from 'react-i18next';
+import { useDispatch } from 'react-redux';
+
 import projectsLogo from 'assets/pictures/views/projects.svg';
 import scenarioExploratorLogo from 'assets/pictures/views/scenarioExplorator.svg';
 import scenariosLogo from 'assets/pictures/views/scenarios.svg';
 import studiesLogo from 'assets/pictures/views/studies.svg';
+
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
-import { useTranslation } from 'react-i18next';
-import { MdArrowRight } from 'react-icons/md';
-import { useDispatch } from 'react-redux';
 import {
   ScenarioWithCountTrains,
   StudyWithScenarios,
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
 import { setFailure } from 'reducers/main';
-import ProjectMiniCard from './ScenarioExplorerModalProjectMiniCard';
-import ScenarioMiniCard from './ScenarioExplorerModalScenarioMiniCard';
-import StudyMiniCard from './ScenarioExplorerModalStudyMiniCard';
-import { ScenarioExplorerProps } from './ScenarioExplorerTypes';
 
-export default function ScenarioExplorerModal({
+import { ProjectMiniCard, StudyMiniCard, ScenarioMiniCard } from './MiniCards';
+
+export type ScenarioExplorerProps = {
+  globalProjectId?: number;
+  globalStudyId?: number;
+  globalScenarioId?: number;
+};
+
+const ScenarioExplorerModal = ({
   globalProjectId,
   globalStudyId,
   globalScenarioId,
-}: ScenarioExplorerProps) {
+}: ScenarioExplorerProps) => {
   const { t } = useTranslation('common/scenarioExplorer');
   const dispatch = useDispatch();
 
@@ -186,4 +192,6 @@ export default function ScenarioExplorerModal({
       </ModalBodySNCF>
     </div>
   );
-}
+};
+
+export default ScenarioExplorerModal;

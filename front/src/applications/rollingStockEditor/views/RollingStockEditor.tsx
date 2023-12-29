@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { SearchRollingStock } from 'modules/rollingStock/components/RollingStockSelector';
 import { RollingStockCard } from 'modules/rollingStock/components/RollingStockCard';
 import { useDispatch } from 'react-redux';
-import Loader from 'common/Loader';
+import { Loader } from 'common/Loaders';
 import { useTranslation } from 'react-i18next';
 import { LightRollingStockWithLiveries, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import RollingStockEditorButtons from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorButtons';

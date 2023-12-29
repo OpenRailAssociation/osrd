@@ -1,3 +1,4 @@
+import cx from 'classnames';
 import React from 'react';
 import { formatUicToCi } from 'utils/strings';
 
@@ -27,7 +28,7 @@ export default function StationCard({ station, onClick, fixedHeight = false }: P
     station;
   return (
     <div
-      className={`station-card ${fixedHeight ? 'fixed-height' : ''}`}
+      className={cx('station-card', { 'fixed-height': fixedHeight })}
       role="button"
       tabIndex={0}
       onClick={onClick}

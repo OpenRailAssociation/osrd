@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import nextId from 'react-id-generator';
 import StudyCard from 'modules/study/components/StudyCard';
 import StudyCardEmpty from 'modules/study/components/StudyCardEmpty';
-import Loader, { Spinner } from 'common/Loader';
+import { Loader, Spinner } from 'common/Loaders';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import { BiTargetLock } from 'react-icons/bi';
 import { GoPencil } from 'react-icons/go';
@@ -230,22 +230,22 @@ export default function Project() {
                   </div>
                 </div>
               </div>
-              {project.funders || project.budget ? (
+              {(project.funders || (project.budget !== undefined && project.budget !== 0)) && (
                 <div className="project-details-financials">
                   <div className="project-details-financials-infos">
                     <h3>{t('fundedBy')}</h3>
-                    <div>{project.funders}</div>
+                    {project.funders && <div>{project.funders}</div>}
                   </div>
-                  <div className="project-details-financials-amount">
-                    <span className="project-details-financials-amount-text">
-                      {t('totalBudget')}
-                    </span>
-                    {project.budget !== undefined && project.budget !== 0
-                      ? budgetFormat(project.budget)
-                      : ''}
-                  </div>
+                  {project.budget !== undefined && project.budget !== 0 && (
+                    <div className="project-details-financials-amount">
+                      <span className="project-details-financials-amount-text">
+                        {t('totalBudget')}
+                      </span>
+                      {budgetFormat(project.budget)}
+                    </div>
+                  )}
                 </div>
-              ) : null}
+              )}
               <div className="project-details-tags">
                 {project.tags?.map((tag) => (
                   <div className="project-details-tags-tag" key={nextId()}>

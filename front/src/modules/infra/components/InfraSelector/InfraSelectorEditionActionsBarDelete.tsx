@@ -4,7 +4,7 @@ import Countdown from 'react-countdown';
 import { Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useDispatch } from 'react-redux';
 import { setFailure, setSuccess } from 'reducers/main';
-import { Spinner } from 'common/Loader';
+import { Spinner } from 'common/Loaders';
 
 type InfraSelectorEditionActionsBarDeleteProps = {
   infra: Infra;

@@ -26,11 +26,11 @@ function SearchMarker(props: SearchMarkerProps) {
         <span className="map-search-marker-title" style={{ color: colors.mapmarker.text }}>
           {data.title}
         </span>
-        {data.subtitle !== null ? (
+        {data.subtitle !== null && (
           <span className="map-search-marker-subtitle" style={{ color: colors.mapmarker.text }}>
             {data.subtitle}
           </span>
-        ) : null}
+        )}
       </div>
     </Marker>
   );
