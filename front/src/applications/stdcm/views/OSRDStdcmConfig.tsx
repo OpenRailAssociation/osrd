@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 import { Itinerary, Map } from 'modules/trainschedule/components/ManageTrainSchedule';
 import { StdcmRequestStatus } from 'applications/stdcm/types';
 import STDCM_REQUEST_STATUS from 'applications/stdcm/consts';
-import ScenarioExplorer from 'common/ScenarioExplorer/ScenarioExplorer';
+import ScenarioExplorer from 'modules/scenario/components/ScenarioExplorer/ScenarioExplorer';
 import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector/SpeedLimitByTagSelector';
 import {
   getConf,
