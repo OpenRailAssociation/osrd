@@ -1,3 +1,4 @@
+import cx from 'classnames';
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { GoPencil, GoTrash } from 'react-icons/go';
@@ -8,19 +9,21 @@ import { useDispatch } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import { sortBy } from 'lodash';
 
+import {
+  type ScenarioCreateForm,
+  type ScenarioPatchForm,
+  osrdEditoastApi,
+} from 'common/api/osrdEditoastApi';
 import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
 import { useInfraID, useOsrdConfActions } from 'common/osrdContext';
 import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
-import InfraSelectorModal from 'common/InfraSelector/InfraSelectorModal';
 import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import type { ScenarioCreateForm, ScenarioPatchForm } from 'common/api/osrdEditoastApi';
-
+import { InfraSelectorModal } from 'modules/infra/components/InfraSelector';
 import { setFailure, setSuccess } from 'reducers/main';
 
 type CreateOrPatchScenarioForm = ScenarioPatchForm & {
@@ -287,11 +290,10 @@ export default function AddOrEditScenarioModal({
           {!editionMode && (
             <div className="col-lg-6">
               <div
-                className={`scenario-edition-modal-infraselector ${
-                  displayErrors && !currentScenario.infra_id
-                    ? 'scenario-edition-modal-infraselector-missing'
-                    : null
-                }`}
+                className={cx('scenario-edition-modal-infraselector', {
+                  'scenario-edition-modal-infraselector-missing':
+                    displayErrors && !currentScenario.infra_id,
+                })}
               >
                 <InfraSelectorModal onlySelectionMode />
               </div>

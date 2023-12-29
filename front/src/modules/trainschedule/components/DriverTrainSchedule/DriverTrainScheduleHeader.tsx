@@ -35,7 +35,9 @@ export default function DriverTrainScheduleHeader({
 }: Props) {
   const { t } = useTranslation(['operationalStudies/drivertrainschedule']);
   const trainRegime = train[baseOrEco];
-  return trainRegime ? (
+
+  if (!trainRegime) return null;
+  return (
     <>
       <div className="d-flex align-items-center">
         <h1 className="text-blue mt-2">{train.name}</h1>
@@ -97,5 +99,5 @@ export default function DriverTrainScheduleHeader({
         </div>
       </div>
     </>
-  ) : null;
+  );
 }

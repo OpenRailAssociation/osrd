@@ -10,8 +10,8 @@ import 'common/Map/Map.scss';
 
 import type { EditorSliceActions } from 'reducers/editor';
 import { getIsLoading } from 'reducers/main/mainSelector';
-import { LoaderState } from 'common/Loader';
 import { loadDataModel, updateTotalsIssue } from 'reducers/editor';
+import { LoaderState } from 'common/Loaders';
 import { updateViewport } from 'reducers/map';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { useSwitchTypes } from 'applications/editor/tools/switchEdition/types';
@@ -268,11 +268,9 @@ const Editor = () => {
                     <button
                       key={id}
                       type="button"
-                      className={cx(
-                        'editor-btn',
-                        'btn-rounded',
-                        isActive && isActive(extendedContext) ? 'active' : ''
-                      )}
+                      className={cx('editor-btn', 'btn-rounded', {
+                        active: isActive && isActive(extendedContext),
+                      })}
                       onClick={() => {
                         if (onClick) {
                           onClick(extendedContext);
@@ -362,15 +360,10 @@ const Editor = () => {
                         <button
                           id={id}
                           type="button"
-                          className={cx(
-                            'editor-btn',
-                            'btn-rounded',
-                            'shadow',
-                            isActive && isActive(editorState) ? 'active' : '',
-                            isBlink && isBlink(editorState, infraID)
-                              ? 'btn-map-infras-blinking'
-                              : ''
-                          )}
+                          className={cx('editor-btn', 'btn-rounded', 'shadow', {
+                            active: isActive && isActive(editorState),
+                            'btn-map-infras-blinking': isBlink && isBlink(editorState, infraID),
+                          })}
                           onClick={clickFunction}
                           disabled={isDisabled && isDisabled(editorState)}
                         >

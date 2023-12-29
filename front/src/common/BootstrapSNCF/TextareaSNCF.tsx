@@ -1,3 +1,4 @@
+import cx from 'classnames';
 import React, { FC, InputHTMLAttributes, ReactNode } from 'react';
 
 const TextareaSNCF: FC<{
@@ -34,11 +35,6 @@ const TextareaSNCF: FC<{
     selectAllOnFocus,
     rows = 5,
   } = props;
-
-  // Build custom classes
-  const readOnlyFlag = readonly ? 'readonly' : '';
-  const backgroundColor = whiteBG ? 'bg-white' : '';
-
   // Test and adapt display if entry is invalid
   let invalidClass = '';
   let invalidMsg = null;
@@ -61,7 +57,7 @@ const TextareaSNCF: FC<{
       <div className={`form-control-container ${invalidClass}`}>
         <textarea
           onChange={onChange}
-          className={`form-control ${backgroundColor} ${readOnlyFlag}`}
+          className={cx('form-control', { 'bg-white': whiteBG, readonly })}
           id={id}
           value={value}
           placeholder={placeholder}

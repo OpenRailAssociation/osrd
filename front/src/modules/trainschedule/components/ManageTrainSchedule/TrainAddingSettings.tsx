@@ -74,7 +74,7 @@ export default function TrainAddingSettings() {
           sm
         />
       </span>
-      <span className="">
+      <span>
         <InputSNCF
           type="number"
           label={

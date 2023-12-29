@@ -98,11 +98,11 @@ const PslSignCard = ({
             type="number"
             id="psl-position-from-the-beginning"
             label={t('Editor.tools.speed-edition.sign-position')}
-            value={roundedPosition.toString() !== '' ? roundedPosition.toString() : ''}
+            value={roundedPosition.toString()}
             onChange={(e) => {
               updateSign(signInfo, {
                 ...sign,
-                position: Number(e.target.value !== '' ? e.target.value : ''),
+                position: Number(e.target.value),
               });
             }}
             min={0}

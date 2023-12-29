@@ -28,7 +28,7 @@ import {
   getRouteGeometryByRouteId,
 } from 'applications/editor/tools/routeEdition/utils';
 
-import { LoaderFill } from 'common/Loader';
+import { LoaderFill } from 'common/Loaders';
 import colors from 'common/Map/Consts/colors';
 import { useInfraID } from 'common/osrdContext';
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF/ConfirmModal';

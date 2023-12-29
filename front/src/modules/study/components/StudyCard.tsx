@@ -51,9 +51,11 @@ export default function StudyCard({ setFilterChips, study }: StudyCardProps) {
           <AiFillFolderOpen />
         </button>
       </div>
-      <div className="study-card-type">
-        {study.study_type ? t(`operationalStudies/study:studyCategories.${study.study_type}`) : ''}
-      </div>
+      {study.study_type && (
+        <div className="study-card-type">
+          {t(`operationalStudies/study:studyCategories.${study.study_type}`)}
+        </div>
+      )}
       <div className="study-card-description">{study.description}</div>
 
       <div className="study-card-financials">
@@ -71,12 +73,12 @@ export default function StudyCard({ setFilterChips, study }: StudyCardProps) {
             </div>
           )}
         </div>
-        {study.budget && study.budget > 0 ? (
+        {study.budget && study.budget > 0 && (
           <div className="study-card-financials-amount">
             <span className="study-card-financials-amount-text">{t('budget')}</span>
             {budgetFormat(study.budget)}
           </div>
-        ) : null}
+        )}
       </div>
 
       <div className="study-card-tags">

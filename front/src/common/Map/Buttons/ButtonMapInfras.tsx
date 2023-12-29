@@ -1,6 +1,6 @@
 import React from 'react';
 import { GiRailway } from 'react-icons/gi';
-import InfraSelector from 'common/InfraSelector/InfraSelector';
+import InfraSelector from 'modules/infra/components/InfraSelector';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { useTranslation } from 'react-i18next';
 import cx from 'classnames';

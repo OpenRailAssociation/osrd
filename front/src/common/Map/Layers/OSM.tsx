@@ -84,11 +84,13 @@ function OSM({ mapStyle, layerOrder, mapIsLoaded }: OSMProps) {
   }, [reload]);
 
   const toggledLayers = { showOSM3dBuildings };
-  return !reload ? (
+
+  if (reload) return null;
+  return (
     <Source id="osm" type="vector" url={OSM_URL}>
       {genOSMLayers(mapStyle, toggledLayers, layerOrder)}
     </Source>
-  ) : null;
+  );
 }
 
 export default OSM;

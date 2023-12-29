@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { getEditorIssues } from 'reducers/editor/selectors';
 import { updateFiltersIssue } from 'reducers/editor';
-import { LoaderFill, Spinner } from 'common/Loader';
+import { LoaderFill, Spinner } from 'common/Loaders';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { EDITOAST_TYPES } from '../../tools/types';

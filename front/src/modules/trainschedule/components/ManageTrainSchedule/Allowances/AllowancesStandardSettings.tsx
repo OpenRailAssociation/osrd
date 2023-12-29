@@ -76,7 +76,7 @@ export default function AllowancesStandardSettings({
             orientation="right"
             sm
             condensed
-            value={allowanceValue !== undefined ? allowanceValue : ''}
+            value={allowanceValue || ''}
             type={valueAndUnit.value_type}
             handleType={handleType}
             options={unitsList}

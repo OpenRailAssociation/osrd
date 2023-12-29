@@ -1,5 +1,5 @@
 import React, { FC, Suspense, lazy } from 'react';
-import LoaderSNCF from 'common/Loader';
+import { Loader } from 'common/Loaders';
 import { FieldProps } from '@rjsf/core';
 import SchemaField from '@rjsf/core/lib/components/fields/SchemaField';
 import useSwitch from '../useSwitch';
@@ -17,7 +17,7 @@ export const CustomSchemaField: FC<FieldProps> = (props) => {
         <SchemaField {...props} />
         {switchType && (
           <div className="mt-5">
-            <Suspense fallback={<LoaderSNCF />}>
+            <Suspense fallback={<Loader />}>
               <TrackNodeTypeDiagram trackNodeType={switchType.id} />
             </Suspense>
           </div>

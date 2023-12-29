@@ -2,8 +2,8 @@ import React, { FC, HTMLAttributes, useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import cx from 'classnames';
 
-import './Loader.scss';
 import { getIsLoading } from 'reducers/main/mainSelector';
+import './Loader.scss';
 
 type SpinnerProps = HTMLAttributes<HTMLDivElement> & { displayDelay?: number };
 
@@ -22,13 +22,14 @@ export const Spinner: FC<SpinnerProps> = ({ displayDelay, ...props }) => {
     };
   }, [displayDelay, timeoutRef]);
 
-  return display ? (
+  if (!display) return null;
+  return (
     <div {...props}>
       <div className="spinner-border" role="status">
         <span className="sr-only">Loading...</span>
       </div>
     </div>
-  ) : null;
+  );
 };
 
 export const LoaderFill: FC<SpinnerProps> = ({ className, ...props }) => (
@@ -42,7 +43,7 @@ type LoaderProps = {
   className?: string;
 };
 
-const LoaderSNCF: FC<LoaderProps> = ({
+export const Loader: FC<LoaderProps> = ({
   msg = '',
   position = 'center',
   childClass = '',
@@ -56,7 +57,5 @@ const LoaderSNCF: FC<LoaderProps> = ({
 
 export const LoaderState: FC<unknown> = () => {
   const isLoading = useSelector(getIsLoading);
-  return isLoading ? <LoaderSNCF position="top-right" /> : null;
+  return isLoading ? <Loader position="top-right" /> : null;
 };
-
-export default LoaderSNCF;

@@ -41,7 +41,8 @@ interface BufferStopsProps {
 const BufferStops = ({ layerOrder, infraID }: BufferStopsProps) => {
   const layersSettings = useSelector(getLayersSettings);
 
-  return layersSettings.bufferstops ? (
+  if (!layersSettings.bufferstops) return null;
+  return (
     <Source
       id="osrd_bufferstop_geo"
       type="vector"
@@ -53,7 +54,7 @@ const BufferStops = ({ layerOrder, infraID }: BufferStopsProps) => {
         layerOrder={layerOrder}
       />
     </Source>
-  ) : null;
+  );
 };
 
 export default BufferStops;

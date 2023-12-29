@@ -193,7 +193,9 @@ export default function Scenario() {
     []
   );
 
-  return scenario && infraId && timetableId ? (
+  if (!scenario || !infraId || !timetableId) return null;
+
+  return (
     <>
       <NavBarSNCF
         appName={
@@ -353,5 +355,5 @@ export default function Scenario() {
         </div>
       </main>
     </>
-  ) : null;
+  );
 }

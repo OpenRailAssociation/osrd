@@ -6,8 +6,8 @@ import { Dispatch } from 'redux';
 import { TFunction } from 'i18next';
 import cx from 'classnames';
 
-import { LoaderFill } from 'common/Loader';
 import { useInfraID } from 'common/osrdContext';
+import { LoaderFill } from 'common/Loaders';
 import type {
   BufferStopEntity,
   ElectrificationEntity,

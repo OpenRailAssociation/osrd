@@ -174,7 +174,7 @@ export const SpeedSectionEditionLayers = () => {
     }
   }, [hoveredItem]);
 
-  const popUps = !isOnModeMove(interactionState.type) ? (
+  const popUps = !isOnModeMove(interactionState.type) && (
     <>
       {hoveredItem?.itemType === 'TrackRangeExtremity' && (
         <Popup
@@ -227,7 +227,7 @@ export const SpeedSectionEditionLayers = () => {
           </Popup>
         )}
     </>
-  ) : null;
+  );
 
   return (
     <>

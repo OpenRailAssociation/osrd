@@ -21,7 +21,7 @@ import formatStdcmConf from 'applications/stdcm/formatStcmConf';
 import { setFailure } from 'reducers/main';
 import STDCM_REQUEST_STATUS from 'applications/stdcm/consts';
 import { useTranslation } from 'react-i18next';
-import { Spinner } from 'common/Loader';
+import { Spinner } from 'common/Loaders';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { SimulationReport } from 'common/api/osrdEditoastApi';
 import type { StdcmRequestStatus } from 'applications/stdcm/types';

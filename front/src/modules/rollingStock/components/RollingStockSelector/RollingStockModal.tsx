@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import RollingStockCard from 'modules/rollingStock/components/RollingStockCard/RollingStockCard';
 import SearchRollingStock from 'modules/rollingStock/components/RollingStockSelector/SearchRollingStock';
 
-import Loader from 'common/Loader';
+import { Loader } from 'common/Loaders';
 import { useOsrdConfSelectors } from 'common/osrdContext';
 import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';

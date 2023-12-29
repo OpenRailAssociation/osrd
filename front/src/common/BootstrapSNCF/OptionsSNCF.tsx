@@ -6,6 +6,7 @@
  * options={[{ value: string, label: string}, { value: string, label: string}]} />
  */
 
+import cx from 'classnames';
 import React, { ChangeEventHandler } from 'react';
 import './OptionsSNCF.scss';
 
@@ -34,7 +35,7 @@ export default function OptionsSNCF({
   return (
     <>
       {label && <label htmlFor={name}>{label}</label>}
-      <div className={`options-control ${sm ? 'sm' : ''}`} id={name}>
+      <div className={cx('options-control', { sm })} id={name}>
         {options.map((option) => (
           <div className="options-item" key={option.value}>
             <input

@@ -31,12 +31,11 @@ export const SelectionMessages = () => {
   return t(`Editor.tools.select-items.help.${state.selectionState.type}-selection`).toString();
 };
 
-const SelectionZone = ({ newZone }: { newZone?: Zone }) =>
-  newZone ? (
-    <Source type="geojson" data={zoneToFeature(newZone)} key="new-zone">
-      <Layer type="line" paint={{ 'line-color': '#666', 'line-dasharray': [3, 3] }} />
-    </Source>
-  ) : null;
+const SelectionZone = ({ newZone }: { newZone: Zone }) => (
+  <Source type="geojson" data={zoneToFeature(newZone)} key="new-zone">
+    <Layer type="line" paint={{ 'line-color': '#666', 'line-dasharray': [3, 3] }} />
+  </Source>
+);
 
 export const SelectionLayers = () => {
   const {
@@ -78,7 +77,7 @@ export const SelectionLayers = () => {
         issuesSettings={issuesSettings}
         infraID={infraID}
       />
-      <SelectionZone newZone={selectionZone} />
+      {selectionZone && <SelectionZone newZone={selectionZone} />}
       {state.mousePosition && state.selectionState.type === 'single' && state.hovered && (
         <Popup
           className="popup editor-selection"

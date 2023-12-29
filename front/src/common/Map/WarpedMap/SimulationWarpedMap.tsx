@@ -20,7 +20,7 @@ import type { LayerType } from 'applications/editor/tools/types';
 import type { TrainPosition } from 'modules/simulationResult/components/SimulationResultsMap/types';
 import { getSimulationHoverPositions } from 'modules/simulationResult/components/SimulationResultsMap/helpers';
 
-import { LoaderFill } from 'common/Loader';
+import { LoaderFill } from 'common/Loaders';
 import { useInfraID } from 'common/osrdContext';
 import WarpedMap from 'common/Map/WarpedMap/WarpedMap';
 import getWarping from 'common/Map/WarpedMap/getWarping';

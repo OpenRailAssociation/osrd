@@ -1,3 +1,4 @@
+import cx from 'classnames';
 import React from 'react';
 import { GoDuplicate, GoPencil, GoTrash } from 'react-icons/go';
 import { RollingStock, osrdEditoastApi } from 'common/api/osrdEditoastApi';
@@ -112,9 +113,9 @@ function RollingStockEditorButtons({
 
   return (
     <div
-      className={`rollingstock-editor-buttons ${
-        isCondensed ? 'condensed flex-column align-items-center rounded-right' : ''
-      } d-flex p-1`}
+      className={cx('rollingstock-editor-buttons d-flex p-1', {
+        'condensed flex-column align-items-center rounded-right': isCondensed,
+      })}
     >
       <button
         type="button"

@@ -104,7 +104,7 @@ export default function DisplayVias({ zoomToFeaturePoint }: DisplayViasProps) {
                             `KM ${place.position && Math.round(place.position) / 1000}`
                           }`}
                         </small>
-                        <small className="">{place.ch}</small>
+                        <small>{place.ch}</small>
                         {place.uic && (
                           <small className="text-muted ml-3">{formatUicToCi(place.uic)}</small>
                         )}

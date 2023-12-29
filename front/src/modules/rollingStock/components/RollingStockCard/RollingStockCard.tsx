@@ -114,12 +114,12 @@ const RollingStockCard = ({
           <div className="row">
             <div className="col-5">
               <div className="rollingstock-tractionmode text-nowrap">
-                {tractionModes.thermal ? (
+                {tractionModes.thermal && (
                   <span className="text-pink">
                     <MdLocalGasStation />
                   </span>
-                ) : null}
-                {tractionModes.electric ? (
+                )}
+                {tractionModes.electric && (
                   <>
                     <span className="text-primary">
                       <BsLightningFill />
@@ -132,7 +132,7 @@ const RollingStockCard = ({
                       ))}
                     </small>
                   </>
-                ) : null}
+                )}
               </div>
             </div>
             <div className="col-2">
@@ -155,13 +155,13 @@ const RollingStockCard = ({
             </div>
           </div>
         </div>
-        {isOpen && curvesComfortList && !isOnEditMode ? (
+        {isOpen && curvesComfortList && !isOnEditMode && (
           <RollingStockCardButtons
             id={rollingStock.id}
             curvesComfortList={curvesComfortList}
             setOpenedRollingStockCardId={setOpenedRollingStockCardId}
           />
-        ) : null}
+        )}
       </div>
     </div>
   );

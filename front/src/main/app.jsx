@@ -4,11 +4,11 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import 'i18n';
 
 import Home from 'main/home';
-import Loader from 'common/Loader';
+import { Loader } from 'common/Loaders';
 import useAuth from 'utils/hooks/OsrdAuth';
 import ErrorBoundary from 'common/ErrorBoundary';
 import { OsrdContextLayout } from 'common/osrdContext';
-import { NotificationsState } from 'common/Notifications';
+import NotificationsState from 'common/Notifications';
 
 import HomeStdcm from 'applications/stdcm/Home';
 import HomeEditor from 'applications/editor/Home';

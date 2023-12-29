@@ -138,7 +138,7 @@ const Map = ({ viewport, setViewport, setClickedFeatureId }: MapProps) => {
         layerOrder={LAYER_GROUPS_ORDER[LAYERS.OPERATIONAL_POINTS.GROUP]}
         infraID={infraID}
       />
-      {snappedPoint !== undefined ? <SnappedMarker geojson={snappedPoint} /> : null}
+      {snappedPoint !== undefined && <SnappedMarker geojson={snappedPoint} />}
     </ReactMapGL>
   );
 };

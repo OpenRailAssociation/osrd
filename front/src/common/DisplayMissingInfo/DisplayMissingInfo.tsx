@@ -1,3 +1,4 @@
+import cx from 'classnames';
 import React, { useState } from 'react';
 import './DisplayMissingInfo.scss';
 
@@ -25,7 +26,7 @@ const DisplayMissingInfo = (props: Props) => {
         <h2 className=" text-uppercase text-dark mr-1 mb-0">{title}</h2>
         <button type="button" className="btn btn-sm outline-btn" onClick={() => handleClick()}>
           <i
-            className={`icons-arrow-down ${isToggle ? 'icons-rotate-180' : ''} text-dark`}
+            className={cx('icons-arrow-down', { 'icons-rotate-180': isToggle }, 'text-dark')}
             aria-hidden="true"
           />
         </button>

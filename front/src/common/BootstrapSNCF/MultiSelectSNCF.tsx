@@ -1,3 +1,4 @@
+import cx from 'classnames';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 type MultiSelectSNCFProps = {
@@ -46,9 +47,9 @@ const MultiSelectSNCF = ({
                 data-target={index}
                 role="checkbox"
                 aria-checked="false"
-                className={`custom-control-label w-100 text-left font-weight-medium ${
-                  isChecked ? 'active' : ''
-                }`}
+                className={cx('custom-control-label w-100 text-left font-weight-medium', {
+                  active: isChecked,
+                })}
                 onClick={onClickToggle}
               >
                 {selectOption}

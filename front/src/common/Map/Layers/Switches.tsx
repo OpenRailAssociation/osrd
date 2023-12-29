@@ -70,7 +70,8 @@ const Switches = ({ colors, layerOrder, infraID }: SwitchesProps) => {
   const layerPoint = getSwitchesLayerProps({ colors, sourceTable: 'switches' });
   const layerName = getSwitchesNameLayerProps({ colors, sourceTable: 'switches' });
 
-  return layersSettings.switches ? (
+  if (!layersSettings.switches) return null;
+  return (
     <Source
       id="osrd_switches_geo"
       type="vector"
@@ -79,7 +80,7 @@ const Switches = ({ colors, layerOrder, infraID }: SwitchesProps) => {
       <OrderedLayer {...layerPoint} id="chartis/osrd_switches/geo" layerOrder={layerOrder} />
       <OrderedLayer {...layerName} id="chartis/osrd_switches_name/geo" layerOrder={layerOrder} />
     </Source>
-  ) : null;
+  );
 };
 
 export default Switches;

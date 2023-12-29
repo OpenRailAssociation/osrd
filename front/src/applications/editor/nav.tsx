@@ -9,19 +9,17 @@ import { GoSearch, GoZoomIn, GoZoomOut } from 'react-icons/go';
 import { BsExclamationOctagon, BsSliders2 } from 'react-icons/bs';
 import { isNil } from 'lodash';
 
-import type { Shortcut } from 'utils/hooks/useKeyboardShortcuts';
-
 import LayersModal from 'applications/editor/components/LayersModal';
 import { EDITOAST_TO_LAYER_DICT } from 'applications/editor/tools/types';
 import { SelectionState } from 'applications/editor/tools/selection/types';
 import type { EditorState, EditoastType } from 'applications/editor/tools/types';
 import type { EditorContextType, Tool } from 'applications/editor/tools/editorContextTypes';
 
-import InfraSelectorModal from 'common/InfraSelector/InfraSelectorModal';
 import type { ModalContextType } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-
-import type { Viewport } from 'reducers/map';
+import { InfraSelectorModal } from 'modules/infra/components/InfraSelector';
 import { editorSliceActions } from 'reducers/editor';
+import type { Viewport } from 'reducers/map';
+import type { Shortcut } from 'utils/hooks/useKeyboardShortcuts';
 
 const ZOOM_DEFAULT = 5;
 const ZOOM_DELTA = 1.5;
