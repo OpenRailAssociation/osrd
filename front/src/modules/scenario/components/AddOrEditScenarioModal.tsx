@@ -16,11 +16,11 @@ import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
-import InfraSelectorModal from 'common/InfraSelector/InfraSelectorModal';
 import { osrdEditoastApi, ScenarioCreateForm, ScenarioPatchForm } from 'common/api/osrdEditoastApi';
 import { setFailure, setSuccess } from 'reducers/main';
 import { updateScenarioID } from 'reducers/osrdconf';
 import { getInfraID } from 'reducers/osrdconf/selectors';
+import InfraSelectorModal from 'modules/infra/components/InfraSelector/InfraSelectorModal';
 
 type CreateOrPatchScenarioForm = ScenarioPatchForm & {
   id?: number;

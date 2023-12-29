@@ -3,12 +3,12 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { setFailure } from 'reducers/main';
 import icon from 'assets/pictures/components/tracks.svg';
-import InfraSelectorModal from 'common/InfraSelector/InfraSelectorModal';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import { GoLock } from 'react-icons/go';
-import './InfraSelector.scss';
 import { Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+
+import InfraSelectorModal from './InfraSelectorModal';
 
 type InfraSelectorProps = {
   isModalOnly?: boolean;

@@ -1,6 +1,6 @@
 import React from 'react';
 import { GiRailway } from 'react-icons/gi';
-import InfraSelector from 'common/InfraSelector/InfraSelector';
+import InfraSelector from 'modules/infra/components/InfraSelector/InfraSelector';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import { useSelector } from 'react-redux';

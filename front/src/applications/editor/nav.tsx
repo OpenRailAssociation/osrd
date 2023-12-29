@@ -12,7 +12,7 @@ import { Viewport } from 'reducers/map';
 import { selectLayers } from 'reducers/editor';
 import { Shortcut } from 'utils/hooks/useKeyboardShortcuts';
 import { ModalContextType } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import InfraSelectorModal from 'common/InfraSelector/InfraSelectorModal';
+import InfraSelectorModal from 'modules/infra/components/InfraSelector/InfraSelectorModal';
 import { GoSearch, GoZoomIn, GoZoomOut } from 'react-icons/go';
 import { EditorState, EDITOAST_TO_LAYER_DICT, EditoastType } from './tools/types';
 import LayersModal from './components/LayersModal';
