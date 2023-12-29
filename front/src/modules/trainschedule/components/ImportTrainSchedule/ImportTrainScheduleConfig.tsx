@@ -3,7 +3,7 @@ import React, { useState, useContext } from 'react';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
-import { RollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector';
+import { RollingStockSelectorCard } from 'modules/rollingStock/components/RollingStockSelector';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import StationSelector from 'modules/trainschedule/components/ImportTrainSchedule/ImportTrainScheduleStationSelector';
 import { setFailure } from 'reducers/main';
@@ -263,7 +263,7 @@ export default function ImportTrainScheduleConfig({
 
       <div className="row no-gutters">
         <div className="col-lg-6 sm-gutters">
-          <RollingStockSelector />
+          <RollingStockSelectorCard />
         </div>
         <div className="col-lg-5 col-9 sm-gutters">
           <div className="osrd-config-item">

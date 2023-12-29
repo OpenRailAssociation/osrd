@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import RollingStockModal from 'modules/rollingStock/components/RollingStockSelector/RollingStockModal';
 import icon from 'assets/pictures/components/train.svg';
 import {
@@ -18,7 +18,7 @@ type RollingStockProps = {
   condensed?: boolean;
 };
 
-const RollingStockSelector = ({
+const RollingStockSelectorCard = ({
   rollingStockSelected,
   rollingStockComfort,
   image,
@@ -29,14 +29,13 @@ const RollingStockSelector = ({
 }: RollingStockProps) => {
   const { openModal } = useModal();
 
-  const ref2scroll = useRef<HTMLDivElement>(null);
   return (
     <div className="osrd-config-item mb-2">
       <div
         className="osrd-config-item-container osrd-config-item-clickable"
         data-testid="rollingstock-selector"
         onClick={() => {
-          openModal(<RollingStockModal ref2scroll={ref2scroll} />, 'lg');
+          openModal(<RollingStockModal />, 'lg');
         }}
         role="button"
         tabIndex={0}
@@ -91,4 +90,4 @@ const RollingStockSelector = ({
   );
 };
 
-export default RollingStockSelector;
+export default RollingStockSelectorCard;

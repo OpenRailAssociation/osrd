@@ -16,7 +16,7 @@ import {
   getTrainScheduleIDsToModify,
 } from 'reducers/osrdconf/selectors';
 import { osrdEditoastApi, RangedValue } from 'common/api/osrdEditoastApi';
-import { RollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector';
+import { RollingStockSelectorCard } from 'modules/rollingStock/components/RollingStockSelector';
 import Tabs from 'common/Tabs';
 import rollingStockPic from 'assets/pictures/components/train.svg';
 import pahtFindingPic from 'assets/pictures/components/pathfinding.svg';
@@ -77,12 +77,12 @@ export default function ManageTrainSchedule() {
     withWarning: rollingStockID === undefined,
     label: t('tabs.rollingStock'),
     content: rollingStock ? (
-      <RollingStockSelector
+      <RollingStockSelectorCard
         rollingStockSelected={rollingStock}
         image={<RollingStock2Img rollingStock={rollingStock} />}
       />
     ) : (
-      <RollingStockSelector />
+      <RollingStockSelectorCard />
     ),
   };
 

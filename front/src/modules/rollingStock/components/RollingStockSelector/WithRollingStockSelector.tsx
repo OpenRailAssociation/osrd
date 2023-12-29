@@ -4,7 +4,7 @@ import { getRollingStockID, getRollingStockComfort } from 'reducers/osrdconf/sel
 import { RollingStockWithLiveries, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useTranslation } from 'react-i18next';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
-import RollingStockSelector from './RollingStockSelector';
+import RollingStockSelector from './RollingStockSelectorCard';
 
 const WithRollingStockSelector =
   <T extends object>(Component: ComponentType<T>) =>

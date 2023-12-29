@@ -16,7 +16,7 @@ import {
   getTimetableID,
 } from 'reducers/osrdconf/selectors';
 import { getSelectedTrain } from 'reducers/osrdsimulation/selectors';
-import { RollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector';
+import { RollingStockSelectorCard } from 'modules/rollingStock/components/RollingStockSelector';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import StdcmAllowances from 'modules/stdcmAllowances/components/StdcmAllowances';
 import { OsrdStdcmConfState } from 'applications/operationalStudies/consts';
@@ -96,7 +96,7 @@ export default function OSRDConfig({
           />
           {projectID && studyID && scenarioID && timetableID && infraID && (
             <>
-              <RollingStockSelector condensed />
+              <RollingStockSelectorCard condensed />
               <SpeedLimitByTagSelector condensed />
               <Itinerary />
               <RunningTime />
