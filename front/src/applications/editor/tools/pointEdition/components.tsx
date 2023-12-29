@@ -28,7 +28,7 @@ import EntitySumUp from 'applications/editor/components/EntitySumUp';
 import EditorContext from 'applications/editor/context';
 import { getEntities, getEntity } from 'applications/editor/data/api';
 import { NEW_ENTITY_ID, flattenEntity, cleanSymbolType } from 'applications/editor/data/utils';
-import { Spinner } from 'common/Loader';
+import { Spinner } from 'common/Loader/Loader';
 import { getMap } from 'reducers/map/selectors';
 import EntityError from 'applications/editor/components/EntityError';
 import {

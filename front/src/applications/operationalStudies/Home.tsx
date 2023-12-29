@@ -5,7 +5,7 @@ import ProjectCard from 'modules/project/components/ProjectCard';
 import ProjectCardEmpty from 'modules/project/components/ProjectCardEmpty';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
-import { Spinner } from 'common/Loader';
+import { Spinner } from 'common/Loader/Loader';
 import { useTranslation } from 'react-i18next';
 import {
   PostSearchApiArg,

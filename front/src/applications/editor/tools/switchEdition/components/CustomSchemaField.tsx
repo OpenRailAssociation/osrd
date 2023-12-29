@@ -1,5 +1,5 @@
 import React, { FC, Suspense, lazy } from 'react';
-import LoaderSNCF from 'common/Loader';
+import LoaderSNCF from 'common/Loader/Loader';
 import { FieldProps } from '@rjsf/core';
 import SchemaField from '@rjsf/core/lib/components/fields/SchemaField';
 import useSwitch from '../useSwitch';

@@ -24,7 +24,7 @@ import { OsrdStdcmConfState } from 'applications/operationalStudies/consts';
 import STDCM_REQUEST_STATUS from 'applications/stdcm/consts';
 import { updateItinerary } from 'reducers/osrdconf';
 import { useTranslation } from 'react-i18next';
-import { Spinner } from 'common/Loader';
+import { Spinner } from 'common/Loader/Loader';
 import { osrdEditoastApi, SimulationReport } from 'common/api/osrdEditoastApi';
 import { StdcmRequestStatus } from 'applications/stdcm/types';
 import { extractMessageFromError, extractStatusFromError } from 'utils/error';

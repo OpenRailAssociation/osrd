@@ -10,7 +10,7 @@ import 'common/Map/Map.scss';
 
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import { getIsLoading } from 'reducers/main/mainSelector';
-import { LoaderState } from 'common/Loader';
+import { LoaderState } from 'common/Loader/Loader';
 import { loadDataModel, selectLayers, updateTotalsIssue } from 'reducers/editor';
 import { updateInfraID } from 'reducers/osrdconf';
 import { updateViewport } from 'reducers/map';

@@ -22,7 +22,7 @@ import colors from '../../../../../common/Map/Consts/colors';
 import { getEditRouteState, getEmptyCreateRouteState, getRouteGeometryByRouteId } from '../utils';
 import EditorContext from '../../../context';
 import { getMixedEntities } from '../../../data/api';
-import { LoaderFill } from '../../../../../common/Loader';
+import { LoaderFill } from '../../../../../common/Loader/Loader';
 import { ConfirmModal } from '../../../../../common/BootstrapSNCF/ModalSNCF/ConfirmModal';
 import { save } from '../../../../../reducers/editor';
 import { DisplayEndpoints } from './Endpoints';

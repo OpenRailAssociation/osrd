@@ -19,7 +19,7 @@ import {
 import TOOL_TYPES from 'applications/editor/tools/toolTypes';
 import { ExtendedEditorContextType } from 'applications/editor/tools/editorContextTypes';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { Spinner } from 'common/Loader';
+import { Spinner } from 'common/Loader/Loader';
 import GeoJSONs from 'common/Map/Layers/GeoJSONs';
 import colors from 'common/Map/Consts/colors';
 import { save } from 'reducers/editor';

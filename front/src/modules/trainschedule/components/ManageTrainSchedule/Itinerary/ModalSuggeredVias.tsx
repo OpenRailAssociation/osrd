@@ -8,7 +8,7 @@ import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import { GoDash, GoPlus, GoTrash } from 'react-icons/go';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import { Spinner } from 'common/Loader';
+import { Spinner } from 'common/Loader/Loader';
 import type { ArrayElement } from 'utils/types';
 import type { PathResponse, PathWaypoint } from 'common/api/osrdEditoastApi';
 import { formatUicToCi } from 'utils/strings';

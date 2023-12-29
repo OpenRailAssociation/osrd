@@ -6,7 +6,7 @@ import { Dispatch } from 'redux';
 import { TFunction } from 'i18next';
 import cx from 'classnames';
 
-import { LoaderFill } from 'common/Loader';
+import { LoaderFill } from 'common/Loader/Loader';
 import {
   BufferStopEntity,
   CatenaryEntity,

@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
 import { getRollingStockID } from 'reducers/osrdconf/selectors';
-import Loader from 'common/Loader';
+import Loader from 'common/Loader/Loader';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import RollingStockCard from 'modules/rollingStock/components/RollingStockCard/RollingStockCard';

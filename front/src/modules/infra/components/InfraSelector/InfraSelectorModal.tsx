@@ -5,7 +5,7 @@ import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import icon from 'assets/pictures/components/tracks.svg';
 import iconEdition from 'assets/pictures/components/tracks_edit.svg';
 import { useDebounce } from 'utils/helpers';
-import Loader from 'common/Loader';
+import Loader from 'common/Loader/Loader';
 import { MdEditNote, MdList } from 'react-icons/md';
 import { Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useDispatch } from 'react-redux';

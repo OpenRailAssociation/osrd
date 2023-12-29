@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import nextId from 'react-id-generator';
 import StudyCard from 'modules/study/components/StudyCard';
 import StudyCardEmpty from 'modules/study/components/StudyCardEmpty';
-import Loader, { Spinner } from 'common/Loader';
+import Loader, { Spinner } from 'common/Loader/Loader';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import { BiTargetLock } from 'react-icons/bi';
 import { GoPencil } from 'react-icons/go';

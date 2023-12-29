@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import Loader from 'common/Loader';
+import Loader from 'common/Loader/Loader';
 // eslint-disable-next-line import/no-cycle
 import {
   ImportTrainScheduleTrainDetail,

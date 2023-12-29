@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 
 import { RollingStockComfortType, RollingStock, osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import Loader from 'common/Loader';
+import Loader from 'common/Loader/Loader';
 import { setFailure } from 'reducers/main';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import RollingStockCurves from '../RollingStockCurve';

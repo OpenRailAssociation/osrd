@@ -16,7 +16,7 @@ import {
 } from 'applications/editor/tools/editorContextTypes';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
-import { LoaderFill } from 'common/Loader';
+import { LoaderFill } from 'common/Loader/Loader';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import {
   APPLICABLE_DIRECTIONS,

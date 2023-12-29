@@ -3,7 +3,7 @@ import {
   ImportTrainScheduleConfig,
   ImportTrainScheduleTrainsList,
 } from 'modules/trainschedule/components/ImportTrainSchedule';
-import Loader from 'common/Loader';
+import Loader from 'common/Loader/Loader';
 import { TrainSchedule } from 'applications/operationalStudies/types';
 import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
 import { useDispatch } from 'react-redux';

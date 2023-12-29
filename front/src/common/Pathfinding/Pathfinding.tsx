@@ -36,7 +36,7 @@ import {
 } from 'reducers/osrdconf/selectors';
 import infraLogo from 'assets/pictures/components/tracks.svg';
 import InfraLoadingState from 'applications/operationalStudies/components/Scenario/InfraLoadingState';
-import { Spinner } from '../Loader';
+import { Spinner } from '../Loader/Loader';
 
 interface PathfindingState {
   running: boolean;

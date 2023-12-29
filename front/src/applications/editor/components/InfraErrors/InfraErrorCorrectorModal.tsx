@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import { ConfirmModal, useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import Loader from 'common/Loader';
+import Loader from 'common/Loader/Loader';
 import { saveOperations } from 'reducers/editor';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import { OPERATION_TYPE } from 'applications/editor/tools/types';

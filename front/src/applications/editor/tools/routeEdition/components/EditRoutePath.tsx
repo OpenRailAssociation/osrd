@@ -11,7 +11,7 @@ import { BsArrowBarRight } from 'react-icons/bs';
 import { FiSearch } from 'react-icons/fi';
 
 import { EditorEntity, OmitLayer, RouteEntity, WayPointEntity } from 'types';
-import { LoaderFill } from 'common/Loader';
+import { LoaderFill } from 'common/Loader/Loader';
 import { getRoutesLineLayerProps } from 'common/Map/Layers/Routes';
 import colors from 'common/Map/Consts/colors';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';

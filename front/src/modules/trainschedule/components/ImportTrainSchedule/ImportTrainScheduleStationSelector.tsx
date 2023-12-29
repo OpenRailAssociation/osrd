@@ -4,7 +4,7 @@ import nextId from 'react-id-generator';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useDebounce } from 'utils/helpers';
-import Loader from 'common/Loader';
+import Loader from 'common/Loader/Loader';
 import StationCard, { ImportStation } from 'common/StationCard';
 import { searchGraouStations } from 'common/api/graouApi';
 

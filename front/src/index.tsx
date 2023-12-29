@@ -14,7 +14,7 @@ import { persistor, store } from 'store';
 
 // Components
 import App from 'main/app';
-import Loader from 'common/Loader';
+import Loader from 'common/Loader/Loader';
 import { version } from '../package.json';
 
 if (SENTRY_CONFIG.react_sentry_dsn) {

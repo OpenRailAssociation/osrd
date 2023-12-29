@@ -11,7 +11,7 @@ import { BBox2d } from '@turf/helpers/dist/js/lib/geojson';
 import { Feature, FeatureCollection, LineString, Position } from 'geojson';
 import { LngLatBoundsLike } from 'maplibre-gl';
 
-import { LoaderFill } from 'common/Loader';
+import { LoaderFill } from 'common/Loader/Loader';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { LayerType } from 'applications/editor/tools/types';
 import DataLoader from 'common/Map/WarpedMap/DataLoader';
