@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::collections::HashMap;
 
 use super::infra::{call_core_infra_state, InfraState};
@@ -407,7 +408,25 @@ async fn post_timetable(
                     }
                 })
                 .collect();
+            let mut fake_stops: Vec<_> = path_response
+                .payload
+                .path_waypoints
+                .iter()
+                .filter(|pw| pw.suggestion)
+                .map(|pw| TrainStop {
+                    position: Some(pw.path_offset),
+                    location: None,
+                    duration: 0.,
+                })
+                .collect();
 
+            stops.append(&mut fake_stops);
+            stops.sort_by(|a, b| {
+                a.position
+                    .unwrap()
+                    .partial_cmp(&b.position.unwrap())
+                    .unwrap_or(Ordering::Equal)
+            });
             // Force the last stop to be at least 1s long.
             // This is to avoid the train to stop with a non-zero speed.
             let last_stop = stops.last_mut().unwrap();
