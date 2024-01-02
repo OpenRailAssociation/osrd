@@ -1,6 +1,7 @@
 {
+    "status" : 200,
     "response_state" : "SUCCESS",
-    "error_message" : null,
+    "message" : null,
     "pathfinding_result" : {
         "length": 46776.18633140542,
         "curves": [

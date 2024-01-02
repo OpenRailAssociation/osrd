@@ -36,8 +36,9 @@ pub enum ResponseState {
 /// The response of a Core pathfinding request, see also [PathfindingRequest]
 #[derive(Debug, Clone, Derivative, Deserialize, Serialize)]
 pub struct PathfindingResponse {
+    pub status: i64,
     pub response_state: ResponseState,
-    pub error_message: Option<String>,
+    pub message: Option<String>,
     pub pathfinding_result: PathfindingResult,
 }
 

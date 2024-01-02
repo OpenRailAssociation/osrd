@@ -58,14 +58,4 @@ public class ExceptionHandler {
                 ex.osrdErrorType == ErrorType.PathfindingTimeoutError ? 200 :
                 ex.cause == ErrorCause.USER ? 400 : 500;
     }
-
-    public static Response handleError(OSRDError ex, int code) {
-        return new RsWithStatus(
-                new RsJson(
-                        new RsWithBody(OSRDError.adapter.toJson(ex))
-                ),
-                code
-        );
-    }
-
 }

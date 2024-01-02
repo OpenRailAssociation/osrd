@@ -64,27 +64,24 @@ class PathfindingBlocksEndpoint
                 path, recorder
             )
             validatePathfindingResult(res, reqWaypoints, infra.rawInfra)
-            RsJson(RsWithBody(PathfindingResponse.adapterResult.toJson(PathfindingResponse(ResponseState.SUCCESS, null, res))))
+            RsJson(RsWithBody(PathfindingResponse.adapterResult.toJson(PathfindingResponse(200, ResponseState.SUCCESS, null, res))))
 
         } catch (ex: Throwable) {
             // TODO: include warnings in the response
             val osrdError = ExceptionHandler.handlePathfinding(ex)
             val code = ExceptionHandler.serverCode(osrdError)
-            // Not a real error
-            if (code == 200)
-                RsJson(
-                    RsWithBody(
-                        PathfindingResponse.adapterResult.toJson(
-                            PathfindingResponse(
-                                ResponseState.ERROR,
-                                osrdError.message,
-                                null
-                            )
+            RsJson(
+                RsWithBody(
+                    PathfindingResponse.adapterResult.toJson(
+                        PathfindingResponse(
+                            code,
+                            ResponseState.ERROR,
+                            osrdError.message,
+                            null
                         )
                     )
                 )
-            // Is an actual error
-            ExceptionHandler.handleError(osrdError, code)
+            )
         }
     }
 

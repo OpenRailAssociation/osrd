@@ -43,8 +43,9 @@ enum class ResponseState {
 }
 
 class PathfindingResponse(
+    @Json(name = "status") val status: int,
     @Json(name = "response_state") val responseState: ResponseState,
-    @Json(name = "error_message") val errorMessage: String?,
+    @Json(name = "message") val message: String?,
     @Json(name = "pathfinding_result") val pathfindingResult: PathfindingResult?
 ) {
 

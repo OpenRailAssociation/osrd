@@ -105,8 +105,9 @@ pub enum ResponseState {
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize, ToSchema)]
 pub(super) struct PathResponse {
+    pub(super) status: i64,
     pub(super) response_state: ResponseState,
-    pub(super) error_message: Option<String>,
+    pub(super) message: Option<String>,
     pub(super) path_result: PathResult,
 }
 
@@ -153,8 +154,9 @@ impl From<Pathfinding> for PathResponse {
             steps: payload.0.path_waypoints,
         };
         Self {
+            status: 200,
             response_state: ResponseState::SUCCESS,
-            error_message: None,
+            message: None,
             path_result,
         }
     }
