@@ -1,6 +1,6 @@
 package fr.sncf.osrd.utils
 
-import fr.sncf.osrd.utils.units.Distance
+import fr.sncf.osrd.utils.units.*
 import java.util.function.BiFunction
 
 /**
@@ -61,3 +61,19 @@ fun <T> distanceRangeMapOf(entries: List<DistanceRangeMap.RangeMapEntry<T>> = em
   : DistanceRangeMap<T> {
     return DistanceRangeMapImpl(entries)
 }
+
+/** Merges all the given range maps, offsetting them by the given distances.
+ * The lists must be empty or `maps` must be larger by one. */
+fun <T> mergeDistanceRangeMaps(maps: List<DistanceRangeMap<T>>, distances: List<Distance>): DistanceRangeMap<T> {
+        assert((maps.size - 1 == distances.size) || (maps.isEmpty() && distances.isEmpty()))
+        val res = distanceRangeMapOf<T>()
+        var previousDistance = 0.meters
+        // Adding a last distance for convenience, it's not used.
+        for ((map, distance) in maps zip (distances + 0.meters)) {
+            for (entry in map) {
+                res.put(entry.lower + previousDistance, entry.upper + previousDistance, entry.value)
+            }
+            previousDistance += distance
+        }
+        return res
+    }
