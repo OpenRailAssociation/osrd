@@ -1,9 +1,9 @@
 /* eslint-disable import/prefer-default-export */
-import { RollingStock } from 'common/api/osrdEditoastApi';
+import type { EffortCurveForms } from 'modules/rollingStock/types';
 
-export function isElectric(effortCurves: RollingStock['effort_curves'] | null) {
+export function isElectric(effortCurves: EffortCurveForms | null) {
   if (!effortCurves) {
     return false;
   }
-  return Object.values(effortCurves.modes).some((mode) => mode.is_electric);
+  return Object.values(effortCurves).some((mode) => mode.is_electric);
 }

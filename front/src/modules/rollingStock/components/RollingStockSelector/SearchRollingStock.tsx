@@ -1,11 +1,12 @@
-import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
-import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import { LightRollingStock, LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BiLockAlt, BiLockOpenAlt } from 'react-icons/bi';
 import { BsLightningFill } from 'react-icons/bs';
+import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
+import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { MdLocalGasStation } from 'react-icons/md';
+
+import type { LightRollingStock, LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 
 // text: a string to search in the rolling stock name, detail, reference, series, type, grouping
 // elec: true if the rolling stock has an electric mode

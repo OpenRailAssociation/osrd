@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useMemo } from 'react';
 
-import type { ObjectFieldsTypes } from 'utils/types';
+import type { ValueOf } from 'utils/types';
 
 import { ModalProvider } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 
@@ -16,7 +16,7 @@ export type OsrdSelectors = ConfSelectors | MapViewerSelectors | EditorSelectors
 export type OsrdContext = {
   slice: OsrdSlice;
   selectors: OsrdSelectors;
-  mode: ObjectFieldsTypes<typeof MODES>;
+  mode: ValueOf<typeof MODES>;
   isStdcm: boolean;
   isSimulation: boolean;
 } | null;
@@ -96,7 +96,7 @@ export const useInfraActions = () => {
 type OsrdContextLayoutProps = {
   slice: NonNullable<OsrdContext>['slice'];
   selectors: NonNullable<OsrdContext>['selectors'];
-  mode: ObjectFieldsTypes<typeof MODES>;
+  mode: ValueOf<typeof MODES>;
 };
 
 export const OsrdContextLayout = ({ slice, selectors, mode }: OsrdContextLayoutProps) => {

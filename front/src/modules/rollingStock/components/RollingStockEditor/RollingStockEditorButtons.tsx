@@ -1,12 +1,15 @@
 import cx from 'classnames';
 import React from 'react';
-import { GoDuplicate, GoPencil, GoTrash } from 'react-icons/go';
-import { RollingStock, osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { useDispatch } from 'react-redux';
-import { useTranslation } from 'react-i18next';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { setSuccess, setFailure } from 'reducers/main';
+import { useDispatch } from 'react-redux';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
+import { useTranslation } from 'react-i18next';
+
+import { GoDuplicate, GoPencil, GoTrash } from 'react-icons/go';
 import RollingStockEditorFormModal from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorFormModal';
+
+import type { RollingStock } from 'common/api/osrdEditoastApi';
 
 type RollingStockEditorButtonsProps = {
   rollingStock: RollingStock;
@@ -17,14 +20,14 @@ type RollingStockEditorButtonsProps = {
   isCondensed: boolean;
 };
 
-function RollingStockEditorButtons({
+const RollingStockEditorButtons = ({
   rollingStock,
   setIsEditing,
   setIsDuplicating,
   setOpenedRollingStockCardId,
   isRollingStockLocked,
   isCondensed,
-}: RollingStockEditorButtonsProps) {
+}: RollingStockEditorButtonsProps) => {
   const dispatch = useDispatch();
   const { t } = useTranslation(['rollingstock', 'translation']);
   const { openModal } = useModal();
@@ -145,6 +148,6 @@ function RollingStockEditorButtons({
       </button>
     </div>
   );
-}
+};
 
 export default RollingStockEditorButtons;

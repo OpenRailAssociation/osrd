@@ -1,14 +1,18 @@
-import cx from 'classnames';
-import { floor, isEmpty } from 'lodash';
 import React, { useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useDispatch } from 'react-redux';
-
-import { RollingStockComfortType, RollingStock, osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { Loader } from 'common/Loaders';
+import cx from 'classnames';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { STANDARD_COMFORT_LEVEL } from 'modules/rollingStock/consts';
+import { floor, isEmpty, uniq } from 'lodash';
 import { setFailure } from 'reducers/main';
-import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
+import { useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
+
+import { Loader } from 'common/Loaders/Loader';
 import RollingStockCurves from 'modules/rollingStock/components/RollingStockCurve';
+import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
+
+import type { EffortCurveForms } from 'modules/rollingStock/types';
+import type { RollingStockComfortType } from 'common/api/osrdEditoastApi';
 
 type RollingStockCardDetailProps = {
   id: number;
@@ -18,16 +22,21 @@ type RollingStockCardDetailProps = {
   setCurvesComfortList: (curvesComfortList: RollingStockComfortType[]) => void;
 };
 
-export const listCurvesComfort = (curvesData: RollingStock['effort_curves']) => {
-  const comfortList: RollingStockComfortType[] = ['STANDARD'];
-  Object.keys(curvesData.modes).forEach((mode) => {
-    curvesData.modes[mode].curves.forEach((curve) => {
-      if (curve.cond?.comfort) {
-        if (!comfortList.includes(curve.cond.comfort)) comfortList.push(curve.cond.comfort);
-      }
-    });
-  });
-  return comfortList;
+export const getCurvesComforts = (curvesData: EffortCurveForms) => {
+  const modes = Object.keys(curvesData);
+  return modes.length
+    ? modes.reduce<RollingStockComfortType[]>((list, mode) => {
+        const modeComfortList = curvesData[mode].curves.reduce(
+          (acc, curve) => {
+            const { comfort } = curve.cond;
+            if (comfort && !acc.includes(comfort)) acc.push(comfort);
+            return acc;
+          },
+          [STANDARD_COMFORT_LEVEL]
+        );
+        return uniq([...list, ...modeComfortList]);
+      }, [])
+    : [STANDARD_COMFORT_LEVEL];
 };
 
 export default function RollingStockCardDetail({
@@ -49,7 +58,7 @@ export default function RollingStockCardDetail({
   );
 
   useEffect(() => {
-    if (rollingStock) setCurvesComfortList(listCurvesComfort(rollingStock.effort_curves));
+    if (rollingStock) setCurvesComfortList(getCurvesComforts(rollingStock.effort_curves.modes));
   }, [rollingStock]);
 
   useEffect(() => {

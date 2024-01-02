@@ -1,22 +1,29 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
-import { has, isNull, isNil, omit, pick } from 'lodash';
-import type {
-  RollingStockComfortType,
-  ConditionalEffortCurve,
-  RollingStock,
-  RollingStockForm,
-  ModeEffortCurves,
-} from 'common/api/osrdEditoastApi';
 import {
-  EffortCurves,
   RS_REQUIRED_FIELDS,
+  THERMAL_TRACTION_IDENTIFIER,
+  RS_SCHEMA_PROPERTIES,
+  EP_BY_MODE,
+} from 'modules/rollingStock/consts';
+import { getTranslationKey } from 'utils/strings';
+import { has, isNil, isNull, omit, pick } from 'lodash';
+import { isElectric } from 'modules/rollingStock/helpers/electric';
+import { TFunction } from 'i18next';
+
+import type {
+  ConditionalEffortCurveForm,
+  EffortCurveForm,
+  EffortCurveForms,
   RollingStockParametersValidValues,
   RollingStockParametersValues,
-  THERMAL_TRACTION_IDENTIFIER,
-  RollingStockSchemaProperties,
-  electricalProfilesByMode,
-} from 'modules/rollingStock/consts';
-import { isElectric } from './electric';
+} from 'modules/rollingStock/types';
+import type {
+  EffortCurve,
+  RollingStockComfortType,
+  RollingStock,
+  RollingStockForm,
+} from 'common/api/osrdEditoastApi';
+import type { ValueOf } from 'utils/types';
 
 const newRollingStockValues = {
   railjsonVersion: '',
@@ -37,35 +44,30 @@ const newRollingStockValues = {
   powerRestrictions: {},
 };
 
-export const getDefaultRollingStockMode = (
-  selectedMode: string
-): RollingStock['effort_curves'] => ({
-  default_mode: selectedMode,
-  modes: {
-    [`${selectedMode}`]: makeEffortCurve(selectedMode),
-  },
-});
+export const filterUndefinedValueInCurve = (curve: EffortCurveForm) =>
+  curve.speeds.reduce<EffortCurve>(
+    (result, speed, index) => {
+      const maxEffort = curve.max_efforts[index];
+      if (speed !== undefined && maxEffort !== undefined) {
+        result.speeds.push(speed);
+        result.max_efforts.push(maxEffort);
+      }
+      return result;
+    },
+    { speeds: [] as number[], max_efforts: [] as number[] }
+  );
+
+export const getDefaultRollingStockMode = (selectedMode: string | null): EffortCurveForms | null =>
+  selectedMode
+    ? {
+        [`${selectedMode}`]: makeEffortCurve(selectedMode),
+      }
+    : null;
 
 export const getRollingStockEditorDefaultValues = (
-  selectedMode: string | null,
   rollingStockData?: RollingStock
-): RollingStockParametersValues => {
-  let effortCurves: EffortCurves = { modes: {} };
-  const completeSelectedMode = selectedMode
-    ? getDefaultRollingStockMode(selectedMode).modes[selectedMode]
-    : null;
-  if (completeSelectedMode) {
-    effortCurves = {
-      modes: {
-        [selectedMode as string]: {
-          curves: completeSelectedMode.curves,
-          isElectric: completeSelectedMode.is_electric,
-          defaultCurve: completeSelectedMode.default_curve,
-        },
-      },
-    };
-  }
-  return rollingStockData
+): RollingStockParametersValues =>
+  rollingStockData
     ? {
         railjsonVersion: rollingStockData.railjson_version,
         name: rollingStockData.name,
@@ -92,23 +94,40 @@ export const getRollingStockEditorDefaultValues = (
         rollingResistanceC: rollingStockData.rolling_resistance.C,
         electricalPowerStartupTime: rollingStockData.electrical_power_startup_time || null,
         raisePantographTime: rollingStockData.raise_pantograph_time || null,
-        defaultMode: rollingStockData.effort_curves.default_mode,
-        effortCurves,
         basePowerClass: rollingStockData.base_power_class || null,
         powerRestrictions: rollingStockData.power_restrictions,
       }
     : {
         ...newRollingStockValues,
-        defaultMode: selectedMode,
-        effortCurves,
       };
-};
 
 export const rollingStockEditorQueryArg = (
   data: RollingStockParametersValidValues,
-  currentRsEffortCurve: RollingStock['effort_curves']
+  currentRsEffortCurve: EffortCurveForms
 ): RollingStockForm => {
   const electric = isElectric(currentRsEffortCurve);
+  const modes = Object.keys(currentRsEffortCurve);
+  const default_mode = modes.includes(THERMAL_TRACTION_IDENTIFIER)
+    ? THERMAL_TRACTION_IDENTIFIER
+    : modes[0];
+
+  const validCurves = Object.keys(currentRsEffortCurve).reduce(
+    (acc, mode) => ({
+      ...acc,
+      [mode]: {
+        ...currentRsEffortCurve[mode],
+        default_curve: filterUndefinedValueInCurve(currentRsEffortCurve[mode].default_curve),
+        curves: [
+          ...currentRsEffortCurve[mode].curves.map((curve) => ({
+            ...curve,
+            curve: filterUndefinedValueInCurve(curve.curve),
+          })),
+        ],
+      },
+    }),
+    {}
+  );
+
   return {
     name: data.name,
     length: data.length,
@@ -145,18 +164,21 @@ export const rollingStockEditorQueryArg = (
       type: data.type,
       unit: data.unit,
     },
-    effort_curves: currentRsEffortCurve,
+    effort_curves: {
+      default_mode,
+      modes: validCurves,
+    },
     base_power_class: data.basePowerClass,
   };
 };
 
-type Conditions = Record<string, (effortCurves: RollingStock['effort_curves'] | null) => boolean>;
+type Conditions = Record<string, (effortCurves: EffortCurveForms | null) => boolean>;
 
 export const checkRollingStockFormValidity = (
   rollingStockForm: RollingStockParametersValues,
-  effortCurves: RollingStock['effort_curves'] | null
+  effortCurves: EffortCurveForms | null
 ): { invalidFields: string[]; validRollingStockForm: RollingStockParametersValidValues } => {
-  const conditions = RollingStockSchemaProperties.reduce<Conditions>((acc, val) => {
+  const conditions = RS_SCHEMA_PROPERTIES.reduce<Conditions>((acc, val) => {
     if (val.condition) {
       return { ...acc, [val.title]: val.condition };
     }
@@ -218,7 +240,7 @@ export const orderSelectorList = (list: (string | null)[]) => {
  * - curves with least electrical profile
  * - other curves (without power restriction and without electrical profile)
  */
-export const sortSelectedModeCurves = (curvesList: ConditionalEffortCurve[]) => {
+export const sortSelectedModeCurves = (curvesList: ConditionalEffortCurveForm[]) => {
   const { allConds, onlyPR, onlyEP, nulls } = curvesList.reduce(
     (sortedCurves, curve) => {
       const { cond } = curve;
@@ -234,13 +256,16 @@ export const sortSelectedModeCurves = (curvesList: ConditionalEffortCurve[]) => 
       }
       return { ...sortedCurves, nulls: [...sortedCurves.nulls, curve] };
     },
-    { allConds: [], onlyPR: [], onlyEP: [], nulls: [] } as Record<string, ConditionalEffortCurve[]>
+    { allConds: [], onlyPR: [], onlyEP: [], nulls: [] } as Record<
+      string,
+      ConditionalEffortCurveForm[]
+    >
   );
 
   return allConds.concat(onlyPR, onlyEP, nulls);
 };
 
-export function makeEffortCurve(selectedMode: string): ModeEffortCurves {
+export function makeEffortCurve(selectedMode: string): ValueOf<EffortCurveForms> {
   return {
     curves: [
       {
@@ -259,9 +284,10 @@ export function makeEffortCurve(selectedMode: string): ModeEffortCurves {
       max_efforts: [],
       speeds: [],
     },
-    is_electric: !(selectedMode === 'thermal'),
+    is_electric: !(selectedMode === THERMAL_TRACTION_IDENTIFIER),
   };
 }
+
 export const orderElectricalProfils = (
   electricalProfilesList: (string | null)[],
   selectedTractionMode: string | null
@@ -269,8 +295,14 @@ export const orderElectricalProfils = (
   const isSelectedModeWithProfiles =
     selectedTractionMode === '1500V' || selectedTractionMode === '25000V';
   if (isSelectedModeWithProfiles) {
-    const refArray = electricalProfilesByMode[selectedTractionMode];
+    const refArray = EP_BY_MODE[selectedTractionMode];
     return electricalProfilesList.sort((a, b) => refArray.indexOf(a) - refArray.indexOf(b));
   }
   return electricalProfilesList;
 };
+
+export const translateItemsList = <T>(t: TFunction, itemsList: T[], translationKey?: string) =>
+  itemsList.map((item) => ({
+    id: item,
+    label: !isNull(item) ? t(getTranslationKey(translationKey, String(item))) : t('unspecified'),
+  }));

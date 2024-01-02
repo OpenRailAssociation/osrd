@@ -1,19 +1,17 @@
-import React, { useState, useEffect, useContext, useMemo } from 'react';
-import type { MutableRefObject } from 'react';
+import React, { useState, useEffect, useContext, useMemo, type MutableRefObject } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
+import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import { setFailure } from 'reducers/main';
+import { useOsrdConfSelectors } from 'common/osrdContext';
 
+import { Loader } from 'common/Loaders';
+import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import RollingStockCard from 'modules/rollingStock/components/RollingStockCard/RollingStockCard';
 import SearchRollingStock from 'modules/rollingStock/components/RollingStockSelector/SearchRollingStock';
 
-import { Loader } from 'common/Loaders';
-import { useOsrdConfSelectors } from 'common/osrdContext';
-import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
-import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
-import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import type { LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
-
-import { setFailure } from 'reducers/main';
 
 interface RollingStockModal {
   ref2scroll: MutableRefObject<HTMLDivElement | null>;

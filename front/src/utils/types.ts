@@ -5,9 +5,9 @@
  *   tailPosition: PositionSpeedTime;
  *   speed: SpeedTime;
  * }
- * GetObjectFieldsTypes<HeadTailPositionSpeed> = PositionSpeedTime | SpeedTime;
+ * ValueOf<HeadTailPositionSpeed> = PositionSpeedTime | SpeedTime;
  */
-export type ObjectFieldsTypes<T> = T[keyof T];
+export type ValueOf<T> = T[keyof T];
 
 export type ArrayElement<ArrayType extends readonly unknown[] | undefined> =
   ArrayType extends readonly (infer ElementType)[] ? ElementType : never;

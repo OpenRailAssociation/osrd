@@ -1,4 +1,4 @@
-import { ObjectFieldsTypes } from 'utils/types';
-import STDCM_REQUEST_STATUS from './consts';
+import STDCM_REQUEST_STATUS from 'applications/stdcm/consts';
+import type { ValueOf } from 'utils/types';
 
-export type StdcmRequestStatus = ObjectFieldsTypes<typeof STDCM_REQUEST_STATUS>;
+export type StdcmRequestStatus = ValueOf<typeof STDCM_REQUEST_STATUS>;

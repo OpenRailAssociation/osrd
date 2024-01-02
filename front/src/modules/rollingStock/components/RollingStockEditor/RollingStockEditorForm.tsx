@@ -1,36 +1,34 @@
-import React, { useEffect, useState, useMemo } from 'react';
-import { usePrevious } from 'utils/hooks/state';
-import { useTranslation } from 'react-i18next';
-import {
-  RollingStock,
-  RollingStockForm,
-  RollingStockWithLiveries,
-  osrdEditoastApi,
-} from 'common/api/osrdEditoastApi';
-import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
-import { useDispatch, useSelector } from 'react-redux';
-import { addFailureNotification, setFailure, setSuccess } from 'reducers/main';
-import Tabs, { TabProps } from 'common/Tabs';
-import RollingStockEditorFormModal from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorFormModal';
-import {
-  getRollingStockEditorDefaultValues,
-  getDefaultRollingStockMode,
-  rollingStockEditorQueryArg,
-  checkRollingStockFormValidity,
-} from 'modules/rollingStock/helpers/utils';
-import {
-  RollingStockEditorParameter,
-  RollingStockParametersValues,
-  RollingStockSchemaProperties,
-} from 'modules/rollingStock/consts';
-import { getTractionMode } from 'reducers/rollingstockEditor/selectors';
-import { updateTractionMode } from 'reducers/rollingstockEditor';
-import { isElectric } from 'modules/rollingStock/helpers/electric';
+import React, { useEffect, useState } from 'react';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import {
   RollingStockEditorMetadataForm,
   RollingStockEditorParameterForm,
-} from './RollingStockEditorFormHelpers';
-import RollingStockEditorCurves from './RollingStockEditorCurves';
+} from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorFormHelpers';
+import { RollingStockEditorParameter, RS_SCHEMA_PROPERTIES } from 'modules/rollingStock/consts';
+import { addFailureNotification, setFailure, setSuccess } from 'reducers/main';
+import {
+  checkRollingStockFormValidity,
+  getDefaultRollingStockMode,
+  getRollingStockEditorDefaultValues,
+  rollingStockEditorQueryArg,
+} from 'modules/rollingStock/helpers/utils';
+import { isElectric } from 'modules/rollingStock/helpers/electric';
+import { useDispatch } from 'react-redux';
+import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
+import { usePrevious } from 'utils/hooks/state';
+import { useTranslation } from 'react-i18next';
+import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
+import RollingStockEditorCurves from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorCurves';
+import RollingStockEditorFormModal from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorFormModal';
+import Tabs from 'common/Tabs';
+
+import type { EffortCurveForms, RollingStockParametersValues } from 'modules/rollingStock/types';
+import type {
+  RollingStock,
+  RollingStockForm,
+  RollingStockWithLiveries,
+} from 'common/api/osrdEditoastApi';
+import type { TabProps } from 'common/Tabs';
 
 type RollingStockParametersProps = {
   rollingStockData?: RollingStockWithLiveries;
@@ -41,9 +39,9 @@ type RollingStockParametersProps = {
 
 export function modifyRollingStockElectricalValues(
   currentRollingStockValues: RollingStockParametersValues,
-  currentRsEffortCurve: RollingStock['effort_curves'] | null
+  effortCurves: EffortCurveForms | null
 ) {
-  const isCurrentElectric = isElectric(currentRsEffortCurve);
+  const isCurrentElectric = isElectric(effortCurves);
   if (!isCurrentElectric) {
     return {
       ...currentRollingStockValues,
@@ -75,35 +73,26 @@ const RollingStockEditorForm = ({
   const [optionValue, setOptionValue] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
-  const selectedTractionMode = useSelector(getTractionMode);
+  const [selectedTractionMode, setSelectedTractionMode] = useState<string | null>(null);
 
-  const defaultRollingStockMode = useMemo(
-    () => (selectedTractionMode ? getDefaultRollingStockMode(selectedTractionMode) : null),
-    [selectedTractionMode]
+  const [effortCurves, setEffortCurves] = useState<EffortCurveForms | null>(
+    getDefaultRollingStockMode(selectedTractionMode)
   );
+  const prevRsEffortCurve = usePrevious(effortCurves);
 
-  const [currentRsEffortCurve, setCurrentRsEffortCurve] = useState<
-    RollingStock['effort_curves'] | null
-  >(defaultRollingStockMode);
-  const prevRsEffortCurve = usePrevious(currentRsEffortCurve);
-  const defaultValues: RollingStockParametersValues = useMemo(
-    () => getRollingStockEditorDefaultValues(selectedTractionMode, rollingStockData),
-    [rollingStockData, selectedTractionMode, defaultRollingStockMode]
+  const [rollingStockValues, setRollingStockValues] = useState(
+    getRollingStockEditorDefaultValues(rollingStockData)
   );
-
-  const [rollingStockValues, setRollingStockValues] = useState(defaultValues);
 
   useEffect(() => {
     if (prevRsEffortCurve !== undefined) {
-      setRollingStockValues(
-        modifyRollingStockElectricalValues(rollingStockValues, currentRsEffortCurve)
-      );
+      setRollingStockValues(modifyRollingStockElectricalValues(rollingStockValues, effortCurves));
     }
-  }, [currentRsEffortCurve]);
+  }, [effortCurves]);
 
   const [powerRestrictionsClass, setPowerRestrictionsClass] = useState<
     RollingStock['power_restrictions']
-  >(defaultValues.powerRestrictions);
+  >(rollingStockData?.power_restrictions || {});
 
   const addNewRollingstock = (payload: RollingStockForm) => () => {
     postRollingstock({
@@ -184,7 +173,7 @@ const RollingStockEditorForm = ({
         name: t('messages.invalidForm'),
         message: t('messages.missingName'),
       };
-    } else if (!selectedTractionMode || !currentRsEffortCurve) {
+    } else if (!selectedTractionMode || !effortCurves) {
       error = {
         name: t('messages.invalidForm'),
         message: t('messages.missingEffortCurves'),
@@ -197,7 +186,7 @@ const RollingStockEditorForm = ({
 
     const { invalidFields, validRollingStockForm } = checkRollingStockFormValidity(
       data,
-      currentRsEffortCurve
+      effortCurves
     );
     if (invalidFields.length) {
       setRollingStockValues(validRollingStockForm);
@@ -209,7 +198,7 @@ const RollingStockEditorForm = ({
       );
     } else {
       setErrorMessage('');
-      const payload = rollingStockEditorQueryArg(validRollingStockForm, currentRsEffortCurve!);
+      const payload = rollingStockEditorQueryArg(validRollingStockForm, effortCurves!);
       openModal(
         <RollingStockEditorFormModal
           setAddOrEditState={setAddOrEditState}
@@ -233,7 +222,7 @@ const RollingStockEditorForm = ({
 
   useEffect(() => {
     setIsValid(true);
-    RollingStockSchemaProperties.forEach((property) => {
+    RS_SCHEMA_PROPERTIES.forEach((property) => {
       if (
         (property.title ===
           RollingStockEditorParameter[property.title as RollingStockEditorParameter] &&
@@ -248,8 +237,8 @@ const RollingStockEditorForm = ({
 
   useEffect(() => {
     if (rollingStockData) {
-      dispatch(updateTractionMode(rollingStockData.effort_curves.default_mode));
-      setCurrentRsEffortCurve(rollingStockData.effort_curves);
+      setSelectedTractionMode(rollingStockData.effort_curves.default_mode);
+      setEffortCurves(rollingStockData.effort_curves.modes);
     }
   }, [rollingStockData]);
 
@@ -258,8 +247,6 @@ const RollingStockEditorForm = ({
   }, [powerRestrictionsClass]);
 
   const tabRollingStockDetails: TabProps = {
-    title: t('tabs.rollingStockDetails'),
-    withWarning: false,
     label: t('tabs.rollingStockDetails'),
     content: (
       <>
@@ -273,26 +260,32 @@ const RollingStockEditorForm = ({
           rollingStockValues={rollingStockValues}
           setOptionValue={setOptionValue}
           setRollingStockValues={setRollingStockValues}
-          currentRsEffortCurve={currentRsEffortCurve}
+          effortCurves={effortCurves}
         />
       </>
     ),
   };
 
   const tabRollingStockCurves: TabProps = {
-    title: t('tabs.rollingStockCurves'),
-    withWarning: false,
     label: t('tabs.rollingStockCurves'),
     content: (
       <RollingStockEditorCurves
-        data={rollingStockData}
-        currentRsEffortCurve={currentRsEffortCurve}
-        setCurrentRsEffortCurve={setCurrentRsEffortCurve}
+        effortCurves={effortCurves}
+        setEffortCurves={setEffortCurves}
         selectedTractionMode={selectedTractionMode}
+        setSelectedTractionMode={setSelectedTractionMode}
         powerRestrictionsClass={powerRestrictionsClass}
         setPowerRestrictionsClass={setPowerRestrictionsClass}
-        rollingStockValues={rollingStockValues}
-      />
+        rollingStockBasePowerClass={rollingStockValues.basePowerClass}
+      >
+        {rollingStockData && (
+          <div className="rollingstock-detail-container-img">
+            <div className="rollingstock-detail-img">
+              <RollingStock2Img rollingStock={rollingStockData} />
+            </div>
+          </div>
+        )}
+      </RollingStockEditorCurves>
     ),
   };
 
