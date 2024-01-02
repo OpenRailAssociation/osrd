@@ -246,4 +246,28 @@ class TestDistanceRangeMap {
             DistanceRangeMap.RangeMapEntry(Distance(150), Distance(200), 2),
             ), rangeMap.asList())
     }
+
+    @Test
+    fun testMergeDistanceRangeMapsLarge() {
+        val n = 200
+        val oneSecond: Duration = 1.seconds
+        val timeSource = TimeSource.Monotonic
+        val distances = List(n-1) { Distance(n.toLong()) }
+        val maps: MutableList<DistanceRangeMap<Int>> = mutableListOf()
+        for (i in 0..<n) {
+            val entries = List(n) {
+                DistanceRangeMap.RangeMapEntry(Distance(it.toLong()), Distance(it.toLong()+1), i*n+it)
+            }
+            maps.add(distanceRangeMapOf<Int>(entries))
+        }
+        val mergedEntries = List(n*n) {
+                DistanceRangeMap.RangeMapEntry(Distance(it.toLong()), Distance(it.toLong()+1), it)
+        }
+
+        val mark1 = timeSource.markNow()
+        val mark2 = mark1 + oneSecond
+        val rangeMap = mergeDistanceRangeMaps<Int>(maps, distances)
+        assert(!mark2.hasPassedNow())
+        assertEquals(mergedEntries, rangeMap.asList())
+    }
 }
