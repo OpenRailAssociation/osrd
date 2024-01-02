@@ -5,6 +5,7 @@ import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.distanceRangeMapOf
+import fr.sncf.osrd.utils.mergeDistanceRangeMaps
 import fr.sncf.osrd.utils.indexing.DirStaticIdxList
 import fr.sncf.osrd.utils.indexing.mutableDirStaticIdxArrayListOf
 import fr.sncf.osrd.utils.units.*
@@ -143,7 +144,8 @@ data class PathPropertiesImpl(
             maps.add(getData.invoke(dirChunk))
             distances.add(infra.getTrackChunkLength(dirChunk.value).distance)
         }
-        val mergedMap = mergeMaps(maps, distances)
+        distances.removeLast()
+        val mergedMap = mergeDistanceRangeMaps(maps, distances)
         mergedMap.truncate(chunkPath.beginOffset.distance, chunkPath.endOffset.distance)
         mergedMap.shiftPositions(-chunkPath.beginOffset.distance)
         return mergedMap
@@ -202,20 +204,6 @@ data class PathPropertiesImpl(
         return res
             .filter { element -> element.offset >= chunkPath.beginOffset && element.offset <= chunkPath.endOffset }
             .map { element -> IdxWithOffset(element.value, element.offset - chunkPath.beginOffset.distance) }
-    }
-
-    /** Merge all the given range maps, offsetting them by the given distances. The list sizes must match. */
-    private fun <T>mergeMaps(maps: List<DistanceRangeMap<T>>, distances: List<Distance>): DistanceRangeMap<T> {
-        assert(maps.size == distances.size)
-        val res = distanceRangeMapOf<T>()
-        var previousDistance = 0.meters
-        for ((map, distance) in maps zip distances) {
-            for (entry in map) {
-                res.put(entry.lower + previousDistance, entry.upper + previousDistance, entry.value)
-            }
-            previousDistance += distance
-        }
-        return res
     }
 }
 

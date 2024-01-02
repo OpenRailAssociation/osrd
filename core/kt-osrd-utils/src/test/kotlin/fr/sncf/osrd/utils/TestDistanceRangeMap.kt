@@ -221,4 +221,29 @@ class TestDistanceRangeMap {
         assert(!mark4.hasPassedNow())
         assertEquals(entries, rangeMapCtor.asList())
     }
+
+    @Test
+    fun testMergeDistanceRangeMapsEmpty() {
+        val rangeMap = mergeDistanceRangeMaps<Int>(emptyList(), emptyList())
+
+        assertEquals(emptyList(), rangeMap.asList())
+    }
+
+    @Test
+    fun testMergeDistanceRangeMapsSimple() {
+        val inputMap = distanceRangeMapOf<Int>(listOf(
+            DistanceRangeMap.RangeMapEntry(Distance(0), Distance(50), 1),
+            DistanceRangeMap.RangeMapEntry(Distance(50), Distance(100), 2),
+        ))
+        val distances = listOf(Distance(100))
+
+        val rangeMap = mergeDistanceRangeMaps<Int>(listOf(inputMap, inputMap), distances)
+
+        assertEquals(listOf(
+            DistanceRangeMap.RangeMapEntry(Distance(0), Distance(50), 1),
+            DistanceRangeMap.RangeMapEntry(Distance(50), Distance(100), 2),
+            DistanceRangeMap.RangeMapEntry(Distance(100), Distance(150), 1),
+            DistanceRangeMap.RangeMapEntry(Distance(150), Distance(200), 2),
+            ), rangeMap.asList())
+    }
 }
