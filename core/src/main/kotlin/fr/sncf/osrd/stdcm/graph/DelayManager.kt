@@ -6,7 +6,7 @@ import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper
-import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
+import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface.Availability
 import fr.sncf.osrd.train.TrainStop
@@ -32,7 +32,7 @@ internal constructor(
      * shortest delay to add to enter this opening.
      */
     fun minimumDelaysPerOpening(
-        infraExplorer: InfraExplorer,
+        infraExplorer: InfraExplorerWithEnvelope,
         startTime: Double,
         envelope: Envelope,
         startOffset: Offset<Block>,
@@ -68,7 +68,7 @@ internal constructor(
 
     /** Returns the start time of the next occupancy for the block */
     fun findNextOccupancy(
-        infraExplorer: InfraExplorer,
+        infraExplorer: InfraExplorerWithEnvelope,
         time: Double,
         startOffset: Offset<Block>,
         envelope: Envelope,
@@ -106,7 +106,7 @@ internal constructor(
      * to leave the block at t=60s, this will return 8s.
      */
     fun findMaximumAddedDelay(
-        infraExplorer: InfraExplorer,
+        infraExplorer: InfraExplorerWithEnvelope,
         startTime: Double,
         startOffset: Offset<Block>,
         envelope: Envelope,
@@ -131,7 +131,7 @@ internal constructor(
      * allowance.
      */
     private fun getScaledAvailability(
-        infraExplorer: InfraExplorer,
+        infraExplorer: InfraExplorerWithEnvelope,
         startOffset: Offset<Block>,
         endOffset: Offset<Block>,
         envelope: Envelope,
@@ -149,11 +149,11 @@ internal constructor(
                     scaledEnvelope,
                     listOf(TrainStop(envelope.endPos, stopDurationAtEnd))
                 )
+        val explorerWithNewEnvelope = infraExplorer.clone().addEnvelope(envelopeWithStop)
         return blockAvailability.getAvailability(
-            listOf(infraExplorer.getCurrentBlock()),
+            explorerWithNewEnvelope,
             startOffset.distance,
             endOffset.distance,
-            envelopeWithStop,
             startTime
         )
     }

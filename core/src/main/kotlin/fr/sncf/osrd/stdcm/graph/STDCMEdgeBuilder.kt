@@ -2,7 +2,7 @@ package fr.sncf.osrd.stdcm.graph
 
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.sim_infra.api.Block
-import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
+import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import java.util.*
@@ -12,7 +12,7 @@ import kotlin.math.min
 class STDCMEdgeBuilder // region CONSTRUCTORS
 internal constructor(
     /** Instance used to explore the infra, contains the underlying edge */
-    private val infraExplorer: InfraExplorer,
+    private val infraExplorer: InfraExplorerWithEnvelope,
     /** STDCM Graph, needed for most operations */
     private val graph: STDCMGraph
 ) {
@@ -126,7 +126,7 @@ internal constructor(
      */
     @Suppress("UNCHECKED_CAST")
     fun makeAllEdges(): Collection<STDCMEdge> {
-        return if (getEnvelope() == null) listOf()
+        return if (getEnvelope() == null || hasDuplicateBlocks()) listOf()
         else
             getDelaysPerOpening()
                 .stream()
@@ -271,13 +271,27 @@ internal constructor(
         if (res == null) return null
         res = graph.backtrackingManager.backtrack(res)
         return if (res == null || graph.delayManager.isRunTimeTooLong(res)) null else res
+    }
+
+    /** Returns true if the current block is already present in the path to this edge */
+    private fun hasDuplicateBlocks(): Boolean {
+        var node = prevNode
+        while (node != null) {
+            if (
+                !node.previousEdge.endAtStop &&
+                    node.previousEdge.block == infraExplorer.getCurrentBlock()
+            )
+                return true
+            node = node.previousEdge.previousNode
+        }
+        return false
     } // endregion UTILITIES
 
     companion object {
         fun fromNode(
             graph: STDCMGraph,
             node: STDCMNode,
-            infraExplorer: InfraExplorer
+            infraExplorer: InfraExplorerWithEnvelope
         ): STDCMEdgeBuilder {
             val builder = STDCMEdgeBuilder(infraExplorer, graph)
             if (node.locationOnEdge != null) {
