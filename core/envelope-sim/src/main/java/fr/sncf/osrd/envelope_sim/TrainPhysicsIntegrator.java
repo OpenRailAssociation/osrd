@@ -17,7 +17,7 @@ public final class TrainPhysicsIntegrator {
     private static final double SPEED_EPSILON = 1E-5;
     // An acceleration lower than this value will be considered zero
     private static final double ACCELERATION_EPSILON = 1E-5;
-    private static final double TIME_EPSILON = 1E-5;
+    private static final double TIME_EPSILON = 1E-2;
 
     private final PhysicsRollingStock rollingStock;
     private final PhysicsPath path;

@@ -146,10 +146,9 @@ fun getBlocksRunTime(infra: FullInfra, blocks: List<BlockId>): Double {
     return time
 }
 /**
- * Checks that the result don't cross in an occupied section, with a certain tolerance for float
- * inaccuracies
+ * Checks that the result doesn't cross an occupied section, with a certain tolerance for binary
+ * search inaccuracies
  */
-/** Checks that the result don't cross in an occupied section */
 fun occupancyTest(
     res: STDCMResult,
     occupancyGraph: ImmutableMultimap<BlockId, OccupancySegment>,

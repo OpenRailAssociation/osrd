@@ -3,12 +3,16 @@ package fr.sncf.osrd.stdcm.preprocessing
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.EnvelopeTestUtils
 import fr.sncf.osrd.envelope_sim.SimpleRollingStock
+import fr.sncf.osrd.graph.PathfindingEdgeLocationId
 import fr.sncf.osrd.sim_infra.api.getZonePathZone
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
+import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorer
+import fr.sncf.osrd.stdcm.infra_exploration.withEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.implementation.BlockAvailabilityLegacyAdapter
 import fr.sncf.osrd.stdcm.preprocessing.implementation.computeUnavailableSpace
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.utils.Helpers
+import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -44,19 +48,22 @@ class BlockAvailabilityLegacyAdapterTests {
                 20.0
             )
         val adapter = BlockAvailabilityLegacyAdapter(infra.blockInfra, unavailableSpace)
-        val res =
-            adapter.getAvailability(
-                listOf(blocks[0]),
-                0.meters,
-                1.meters,
-                Envelope.make(
-                    EnvelopeTestUtils.generateTimes(
-                        doubleArrayOf(0.0, 1.0),
-                        doubleArrayOf(100.0, 100.0)
+        val explorer =
+            initInfraExplorer(
+                    infra.rawInfra,
+                    infra.blockInfra,
+                    PathfindingEdgeLocationId(blocks[0], Offset(0.meters))
+                )
+                .first()
+                .withEnvelope(
+                    Envelope.make(
+                        EnvelopeTestUtils.generateTimes(
+                            doubleArrayOf(0.0, 1.0),
+                            doubleArrayOf(100.0, 100.0)
+                        )
                     )
-                ),
-                42.0
-            )
+                )
+        val res = adapter.getAvailability(explorer, 0.meters, 1.meters, 42.0)
         val expected = BlockAvailabilityInterface.Unavailable((42 + 20).toDouble(), 0.meters)
         Assertions.assertEquals(expected, res)
     }

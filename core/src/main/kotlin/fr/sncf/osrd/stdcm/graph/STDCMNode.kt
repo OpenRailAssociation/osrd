@@ -1,13 +1,13 @@
 package fr.sncf.osrd.stdcm.graph
 
 import fr.sncf.osrd.sim_infra.api.Block
-import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
+import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.utils.units.Offset
 
 data class STDCMNode(
     val time: Double, // Time at the transition of the edge
     val speed: Double, // Speed at the end of the previous edge
-    val infraExplorer: InfraExplorer, // Instance used to explore the infra
+    val infraExplorer: InfraExplorerWithEnvelope, // Instance used to explore the infra
     val totalPrevAddedDelay:
         Double, // Sum of all the delays we have added by shifting the departure time
     val maximumAddedDelay:
