@@ -1,23 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
-
-import { SearchRollingStock } from 'modules/rollingStock/components/RollingStockSelector';
-import { RollingStockCard } from 'modules/rollingStock/components/RollingStockCard';
-import { useDispatch } from 'react-redux';
-import { Loader } from 'common/Loaders';
-import { useTranslation } from 'react-i18next';
-import { LightRollingStockWithLiveries, osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import RollingStockEditorButtons from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorButtons';
-import RollingStockInformationPanel from 'modules/rollingStock/components/RollingStockEditor/RollingStockInformationPanel';
-import RollingStockEditorForm from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorForm';
-import { STANDARD_COMFORT_LEVEL } from 'modules/rollingStock/consts';
-import {
-  updateComfortLvl,
-  updateTractionMode,
-  updateElectricalProfile,
-  updatePowerRestriction,
-} from 'reducers/rollingstockEditor';
-import RollingStockEditorFormModal from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorFormModal';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
+import { useTranslation } from 'react-i18next';
+import { Loader } from 'common/Loaders/Loader';
+import { RollingStockCard } from 'modules/rollingStock/components/RollingStockCard';
+import RollingStockEditorButtons from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorButtons';
+import RollingStockEditorForm from 'modules/rollingStock/components/RollingStockEditor';
+import RollingStockEditorFormModal from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorFormModal';
+import RollingStockInformationPanel from 'modules/rollingStock/components/RollingStockEditor/RollingStockInformationPanel';
+import { SearchRollingStock } from 'modules/rollingStock/components/RollingStockSelector';
+
+import type { LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 
 type RollingStockEditorProps = {
   rollingStocks: LightRollingStockWithLiveries[];
@@ -31,7 +24,6 @@ export default function RollingStockEditor({ rollingStocks }: RollingStockEditor
   const [isEditing, setIsEditing] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [isDuplicating, setIsDuplicating] = useState(false);
-  const dispatch = useDispatch();
   const { openModal } = useModal();
 
   const [openedRollingStockCardId, setOpenedRollingStockCardId] = useState<number>();
@@ -45,13 +37,6 @@ export default function RollingStockEditor({ rollingStocks }: RollingStockEditor
         skip: !openedRollingStockCardId,
       }
     );
-
-  const resetRollingstockCurvesParams = () => {
-    dispatch(updateComfortLvl(STANDARD_COMFORT_LEVEL));
-    dispatch(updateTractionMode(null));
-    dispatch(updateElectricalProfile(null));
-    dispatch(updatePowerRestriction(null));
-  };
 
   useEffect(() => setFilteredRollingStockList(rollingStocks), []);
 
@@ -67,7 +52,6 @@ export default function RollingStockEditor({ rollingStocks }: RollingStockEditor
               onClick={() => {
                 setIsEditing(false);
                 setIsAdding(false);
-                resetRollingstockCurvesParams();
               }}
             >
               <RollingStockCard
@@ -153,7 +137,6 @@ export default function RollingStockEditor({ rollingStocks }: RollingStockEditor
                   request={() => {
                     setIsAdding(false);
                     setIsEditing(false);
-                    resetRollingstockCurvesParams();
                   }}
                   buttonText={t('translation:common.confirm')}
                 />
@@ -168,7 +151,6 @@ export default function RollingStockEditor({ rollingStocks }: RollingStockEditor
             type="button"
             className="btn btn-primary mb-4"
             onClick={() => {
-              resetRollingstockCurvesParams();
               setIsAdding(true);
               setOpenedRollingStockCardId(undefined);
             }}

@@ -1,12 +1,7 @@
-import {
-  RollingStockComfortType,
-  ConditionalEffortCurve,
-  EffortCurve,
-  LoadingGaugeType,
-  RollingStockCommon,
-  RollingStock,
-} from 'common/api/osrdEditoastApi';
-import { isElectric } from './helpers/electric';
+import { isElectric } from 'modules/rollingStock/helpers/electric';
+
+import type { RollingStockComfortType } from 'common/api/osrdEditoastApi';
+import type { ElectricalProfileByMode, SchemaProperty } from 'modules/rollingStock/types';
 
 export const THERMAL_TRACTION_IDENTIFIER = 'thermal';
 export const STANDARD_COMFORT_LEVEL: RollingStockComfortType = 'STANDARD';
@@ -26,144 +21,6 @@ export const RS_REQUIRED_FIELDS = Object.freeze({
   electricalPowerStartupTime: 5,
   raisePantographTime: 15,
 });
-
-export const DEFAULT_SELECTORS_CLASSNAME = 'selector-SNCF';
-
-export type EffortCurves = {
-  modes: {
-    [key: string]: {
-      curves: ConditionalEffortCurve[];
-      defaultCurve: EffortCurve;
-      isElectric: boolean;
-    };
-  };
-};
-
-export type Curve = {
-  max_efforts: number[];
-  speeds: number[];
-};
-
-export type SelectedCurves = {
-  [key: string]: {
-    curves: ConditionalEffortCurve[];
-    default_curve: EffortCurve;
-    is_electric: boolean;
-  };
-};
-
-export type RollingStockSelectorParams = {
-  comfortLevels: RollingStockComfortType[];
-  electricalProfiles: (string | null)[];
-  powerRestrictions: (string | null)[];
-  tractionModes: string[];
-};
-
-export interface RollingStockSelectorParam {
-  comfortLevels: RollingStockComfortType;
-  electricalProfiles: string | null;
-  powerRestrictions: string | null;
-  tractionModes: string;
-}
-
-export type EffortCurveCondKeys = {
-  comfortLevels: string;
-  electricalProfiles: string;
-  powerRestrictions: string;
-};
-
-export const effortCurveCondKeys: EffortCurveCondKeys = {
-  comfortLevels: 'comfort',
-  electricalProfiles: 'electrical_profile_level',
-  powerRestrictions: 'power_restriction_code',
-};
-
-export type RollingStockParametersValidValues = {
-  // TODO: remove this line in the type
-  [key: string]: string | number | null | EffortCurves | RollingStockCommon['power_restrictions'];
-  railjsonVersion: string;
-  name: string;
-  detail: string;
-  family: string;
-  grouping: string;
-  number: string;
-  reference: string;
-  series: string;
-  subseries: string;
-  type: string;
-  unit: string;
-  length: number;
-  mass: number;
-  maxSpeed: number;
-  startupTime: number;
-  startupAcceleration: number;
-  comfortAcceleration: number;
-  gammaValue: number;
-  inertiaCoefficient: number;
-  loadingGauge: LoadingGaugeType;
-  rollingResistanceA: number;
-  rollingResistanceB: number;
-  rollingResistanceC: number;
-  electricalPowerStartupTime: number | null;
-  raisePantographTime: number | null;
-  defaultMode: string | null;
-  effortCurves: EffortCurves;
-  basePowerClass: string | null;
-  powerRestrictions: RollingStockCommon['power_restrictions'];
-};
-
-export type RollingStockParametersValues = {
-  // TODO: remove this line in the type
-  [key: string]:
-    | string
-    | number
-    | null
-    | EffortCurves
-    | RollingStockCommon['power_restrictions']
-    | undefined;
-  railjsonVersion: string;
-  name: string;
-  detail: string;
-  family: string;
-  grouping: string;
-  number: string;
-  reference: string;
-  series: string;
-  subseries: string;
-  type: string;
-  unit: string;
-  length?: number;
-  mass?: number;
-  maxSpeed?: number;
-  startupTime?: number;
-  startupAcceleration?: number;
-  comfortAcceleration?: number;
-  gammaValue?: number;
-  inertiaCoefficient?: number;
-  loadingGauge: 'G1' | 'G2' | 'GA' | 'GB' | 'GB1' | 'GC' | 'FR3.3' | 'FR3.3/GB/G2' | 'GLOTT';
-  rollingResistanceA?: number;
-  rollingResistanceB?: number;
-  rollingResistanceC?: number;
-  electricalPowerStartupTime: number | null;
-  raisePantographTime: number | null;
-  defaultMode: string | null;
-  effortCurves: EffortCurves;
-  basePowerClass: string | null;
-  powerRestrictions: RollingStockCommon['power_restrictions'];
-};
-
-export type SchemaProperty = {
-  title: string;
-  type: string;
-  side: string;
-  format?: string;
-  enum?: string[];
-  min?: number;
-  max?: number;
-  unit?: string;
-  units?: string[];
-  condition?: (effortCurves: RollingStock['effort_curves'] | null) => boolean;
-};
 
 export enum RollingStockEditorMetadata {
   name = 'name',
@@ -196,7 +53,7 @@ export enum RollingStockEditorParameter {
   rollingResistanceC = 'rollingResistanceC',
 }
 
-export const RollingStockSchemaProperties: readonly SchemaProperty[] = [
+export const RS_SCHEMA_PROPERTIES: readonly SchemaProperty[] = [
   {
     title: 'name',
     type: 'string',
@@ -363,16 +220,9 @@ const ComfortLevels = {
   HEATING: 'HEATING',
 };
 
-export const comfortOptions = Object.keys(ComfortLevels) as RollingStockComfortType[];
+export const COMFORTS = Object.keys(ComfortLevels) as RollingStockComfortType[];
 
-export type ElectricalProfileByMode = {
-  '1500V': (string | null)[];
-  '25000V': (string | null)[];
-  other: null[];
-  thermal: null[];
-};
-
-export const electricalProfilesByMode: ElectricalProfileByMode = {
+export const EP_BY_MODE: ElectricalProfileByMode = {
   '1500V': [
     null,
     'O',

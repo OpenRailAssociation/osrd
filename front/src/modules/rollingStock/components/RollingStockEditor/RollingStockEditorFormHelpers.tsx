@@ -1,16 +1,16 @@
 import React, { SetStateAction } from 'react';
-import { useTranslation } from 'react-i18next';
-import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import InputGroupSNCF from 'common/BootstrapSNCF/InputGroupSNCF';
-import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
 import {
   RollingStockEditorMetadata,
   RollingStockEditorParameter,
-  RollingStockParametersValues,
-  RollingStockSchemaProperties,
+  RS_SCHEMA_PROPERTIES,
 } from 'modules/rollingStock/consts';
-import { RollingStock } from 'common/api/osrdEditoastApi';
 import { isNil } from 'lodash';
+import { useTranslation } from 'react-i18next';
+import InputGroupSNCF from 'common/BootstrapSNCF/InputGroupSNCF';
+import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
+
+import type { EffortCurveForms, RollingStockParametersValues } from 'modules/rollingStock/types';
 
 type RollingStockMetadataFormProps = {
   rollingStockValues: RollingStockParametersValues;
@@ -28,7 +28,7 @@ const RollingStockEditorMetadataFormColumn = ({
 
   return (
     <>
-      {RollingStockSchemaProperties.filter((property) => {
+      {RS_SCHEMA_PROPERTIES.filter((property) => {
         const isInThisGroup =
           property.title ===
           RollingStockEditorMetadata[property.title as RollingStockEditorMetadata];
@@ -89,7 +89,7 @@ type RollingStockEditorParameterFormProps = {
   setRollingStockValues: (
     rollingStockValue: React.SetStateAction<RollingStockParametersValues>
   ) => void;
-  currentRsEffortCurve: RollingStock['effort_curves'] | null;
+  effortCurves: EffortCurveForms | null;
 };
 
 // TODO: make the conditional return clearer
@@ -99,17 +99,17 @@ const RollingStockEditorParameterFormColumn = ({
   rollingStockValues,
   setOptionValue,
   setRollingStockValues,
-  currentRsEffortCurve,
+  effortCurves,
 }: RollingStockEditorParameterFormProps & { formSide: 'left' | 'middle' | 'right' }) => {
   const { t } = useTranslation(['rollingstock', 'translation']);
   return (
     <>
-      {RollingStockSchemaProperties.filter((property) => {
+      {RS_SCHEMA_PROPERTIES.filter((property) => {
         const isInThisGroup =
           property.title ===
           RollingStockEditorParameter[property.title as RollingStockEditorParameter];
         const isOnThisSide = property.side === formSide;
-        const isDisplayed = property.condition ? property.condition(currentRsEffortCurve) : true;
+        const isDisplayed = property.condition ? property.condition(effortCurves) : true;
         return isInThisGroup && isOnThisSide && isDisplayed;
       }).map((property, index) => {
         if (property.enum) {
@@ -246,7 +246,7 @@ export const RollingStockEditorParameterForm = ({
   rollingStockValues,
   setOptionValue,
   setRollingStockValues,
-  currentRsEffortCurve,
+  effortCurves,
 }: RollingStockEditorParameterFormProps) => {
   const { t } = useTranslation(['rollingstock', 'translation']);
   return (
@@ -258,7 +258,7 @@ export const RollingStockEditorParameterForm = ({
           rollingStockValues={rollingStockValues}
           setOptionValue={setOptionValue}
           setRollingStockValues={setRollingStockValues}
-          currentRsEffortCurve={currentRsEffortCurve}
+          effortCurves={effortCurves}
         />
       </div>
       <div className="col-lg-4 rollingstock-editor-input-container">
@@ -268,7 +268,7 @@ export const RollingStockEditorParameterForm = ({
           rollingStockValues={rollingStockValues}
           setOptionValue={setOptionValue}
           setRollingStockValues={setRollingStockValues}
-          currentRsEffortCurve={currentRsEffortCurve}
+          effortCurves={effortCurves}
         />
       </div>
       <div className="col-lg-4">
@@ -282,7 +282,7 @@ export const RollingStockEditorParameterForm = ({
           rollingStockValues={rollingStockValues}
           setOptionValue={setOptionValue}
           setRollingStockValues={setRollingStockValues}
-          currentRsEffortCurve={currentRsEffortCurve}
+          effortCurves={effortCurves}
         />
       </div>
     </div>

@@ -4,7 +4,7 @@ import { formatAllowances } from 'modules/trainschedule/components/ManageTrainSc
 import { NO_POWER_RESTRICTION } from 'modules/trainschedule/components/ManageTrainSchedule/PowerRestrictionsSelector';
 import { setFailure } from 'reducers/main';
 import { time2sec } from 'utils/timeManipulation';
-import { kmh2ms } from 'utils/physics';
+import { kmhToMs } from 'utils/physics';
 import type { PowerRestrictionRange } from 'applications/operationalStudies/consts';
 import type { OsrdConfState } from 'reducers/osrdconf/consts';
 
@@ -120,7 +120,7 @@ export default function formatConf(
       labels: osrdconf.labels,
       departure_time: time2sec(osrdconf.departureTime),
       allowances: formatAllowances(osrdconf.allowances),
-      initial_speed: osrdconf.initialSpeed ? kmh2ms(osrdconf.initialSpeed) : 0,
+      initial_speed: osrdconf.initialSpeed ? kmhToMs(osrdconf.initialSpeed) : 0,
       rolling_stock_id: osrdconf.rollingStockID as number,
       comfort: osrdconf.rollingStockComfort,
       speed_limit_tags: osrdconf.speedLimitByTag,

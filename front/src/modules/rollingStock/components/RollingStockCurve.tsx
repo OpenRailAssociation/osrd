@@ -1,45 +1,24 @@
 import cx from 'classnames';
 import React, { useEffect, useMemo, useState } from 'react';
-import { PointTooltipProps, ResponsiveLine } from '@nivo/line';
-import { useTranslation } from 'react-i18next';
-import { RollingStockComfortType, RollingStock } from 'common/api/osrdEditoastApi';
-import { useSelector } from 'react-redux';
-import { getElectricalProfile, getPowerRestriction } from 'reducers/rollingstockEditor/selectors';
+import { COLORS } from 'modules/rollingStock/components/RollingStockSelector/consts/consts';
 import { STANDARD_COMFORT_LEVEL, THERMAL_TRACTION_IDENTIFIER } from 'modules/rollingStock/consts';
+import { ResponsiveLine } from '@nivo/line';
+import { comfort2pictogram } from 'modules/rollingStock/components/RollingStockSelector/RollingStockHelpers';
 import { geti18nKeyForNull } from 'utils/strings';
-import { COLORS } from './RollingStockSelector/consts/consts';
-import { comfort2pictogram } from './RollingStockSelector/RollingStockHelpers';
+import { useTranslation } from 'react-i18next';
 
-type EffortCurvesModes = RollingStock['effort_curves']['modes'];
-type TransformedCurves = {
-  [index: string]: {
-    mode: string;
-    comfort: RollingStockComfortType;
-    speeds: number[];
-    max_efforts: number[];
-    electricalProfile: string | null;
-    powerRestriction: string | null;
-  };
-};
-type ParsedCurves = {
-  color: string;
-  comfort: RollingStockComfortType;
-  data: {
-    x: number;
-    y: number;
-  }[];
-  id: string;
-  mode: string;
-  electrical_profile_level?: string | null;
-  power_restriction?: string | null;
-};
+import type { ParsedCurve, TransformedCurves } from 'modules/rollingStock/types';
+import type { PointTooltipProps } from '@nivo/line';
+import type { RollingStock, RollingStockComfortType } from 'common/api/osrdEditoastApi';
+
+import { getCurveName } from '../helpers/curves';
 
 // Format RollingStock Curves to NIVO format
 const parseData = (
   label: string,
   color: string,
   curve: TransformedCurves['index']
-): ParsedCurves => {
+): ParsedCurve => {
   // Have to transform data, will change when we'll have multiples curves,
   // so initial transformation is commented :
   // const curveFormatted = curve.map((item)
@@ -94,7 +73,7 @@ function LegendComfortSwitches(props: {
 }
 
 function Legend(props: {
-  curves: ParsedCurves[];
+  curves: ParsedCurve[];
   curvesState: { [key: string]: boolean };
   onCurvesStateChange: (id: string) => void;
   isOnEditionMode?: boolean;
@@ -181,40 +160,39 @@ export default function RollingStockCurve({
   isOnEditionMode,
   showPowerRestriction,
   hoveredElectricalParam,
+  selectedElectricalParam,
 }: {
-  data: EffortCurvesModes;
+  data: RollingStock['effort_curves']['modes'];
   curvesComfortList: RollingStockComfortType[];
   isOnEditionMode?: boolean;
   showPowerRestriction?: boolean;
   hoveredElectricalParam?: string | null;
+  selectedElectricalParam?: string | null;
 }) {
   const { t, ready } = useTranslation(['rollingstock']);
   const mode2name = (mode: string) =>
-    mode !== THERMAL_TRACTION_IDENTIFIER ? mode : t(THERMAL_TRACTION_IDENTIFIER);
-  const selectedElectricalParam = useSelector(
-    showPowerRestriction ? getPowerRestriction : getElectricalProfile
-  );
+    mode !== THERMAL_TRACTION_IDENTIFIER ? `${mode}V` : t(THERMAL_TRACTION_IDENTIFIER);
 
   const transformedData = useMemo(() => {
     const transformedCurves: TransformedCurves = {};
     Object.keys(data).forEach((mode) => {
       const name = mode2name(mode);
       data[mode].curves.forEach((curve) => {
-        if (curve.cond?.comfort && curve.cond?.electrical_profile_level !== undefined) {
-          const electricalProfil = isOnEditionMode
-            ? ` ${geti18nKeyForNull(curve.cond.electrical_profile_level)}`
-            : '';
-          const powerRestriction =
-            showPowerRestriction && curve.cond.power_restriction_code
-              ? ` ${geti18nKeyForNull(curve.cond.power_restriction_code)}`
-              : '';
-          const curveName = `${name} ${curve.cond.comfort}${electricalProfil}${powerRestriction}`;
+        const { comfort, electrical_profile_level, power_restriction_code } = curve.cond;
+        if (comfort && electrical_profile_level !== undefined) {
+          const curveName = getCurveName(
+            name,
+            comfort,
+            electrical_profile_level,
+            showPowerRestriction ? power_restriction_code : null,
+            isOnEditionMode
+          );
           transformedCurves[curveName] = {
             ...(curve.curve as { speeds: number[]; max_efforts: number[] }),
             mode: name,
-            comfort: curve.cond.comfort,
-            electricalProfile: curve.cond.electrical_profile_level,
-            powerRestriction: curve.cond.power_restriction_code as string,
+            comfort,
+            electricalProfile: electrical_profile_level,
+            powerRestriction: power_restriction_code,
           };
         }
       });
@@ -222,7 +200,7 @@ export default function RollingStockCurve({
     return transformedCurves;
   }, [data]);
 
-  const [curves, setCurves] = useState<ParsedCurves[]>([]);
+  const [curves, setCurves] = useState<ParsedCurve[]>([]);
   const [curvesToDisplay, setCurvesToDisplay] = useState(curves);
   const [comfortsStates, setComfortsStates] = useState(initialComfortsState(curvesComfortList));
   const [curvesState, setCurvesState] = useState(initialCurvesState(transformedData));

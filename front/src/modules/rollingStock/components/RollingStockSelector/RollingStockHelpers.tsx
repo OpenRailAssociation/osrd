@@ -1,12 +1,13 @@
 import React from 'react';
+import { BiLockAlt } from 'react-icons/bi';
 import { IoIosSnow } from 'react-icons/io';
 import { ImFire } from 'react-icons/im';
-import {
-  RollingStockComfortType,
+
+import type {
   LightRollingStock,
+  RollingStockComfortType,
   RollingStock,
 } from 'common/api/osrdEditoastApi';
-import { BiLockAlt } from 'react-icons/bi';
 
 const RollingStockUnit = ({ unit, detail }: { unit: string; detail: string }) => {
   if (unit && unit !== 'US') {

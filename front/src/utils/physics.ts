@@ -7,13 +7,13 @@ export function jouleToKwh(jouleEnergy: number, roundedUp = false) {
 }
 
 // Convert km/h to m/s
-export function kmh2ms(kmh: number) {
-  return Math.abs(kmh / 3.6);
+export function kmhToMs(v: number) {
+  return Math.abs(v / 3.6);
 }
 
 // Convert m/s to km/h
-export function ms2kmh(ms: number) {
-  return ms * 3.6;
+export function msTokmh(v: number) {
+  return v * 3.6;
 }
 
 export function mToKmOneDecimal(m: number) {

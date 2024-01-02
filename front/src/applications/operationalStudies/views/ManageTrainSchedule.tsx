@@ -142,7 +142,7 @@ export default function ManageTrainSchedule() {
             />
           </div>
         </div>
-        {rollingStock && isElectric(rollingStock.effort_curves) && (
+        {rollingStock && isElectric(rollingStock.effort_curves.modes) && (
           <PowerRestrictionsSelector
             rollingStockModes={rollingStock.effort_curves.modes}
             rollingStockPowerRestrictions={rollingStock.power_restrictions}

@@ -1,4 +1,4 @@
-import { ArrayElement, ObjectFieldsTypes } from 'utils/types';
+import type { ArrayElement, ValueOf } from 'utils/types';
 
 // CHARTS
 
@@ -10,7 +10,7 @@ export const CHART_AXES = {
   SPACE_HEIGHT: ['position', 'height'],
 } as const;
 
-export type ChartAxes = ObjectFieldsTypes<typeof CHART_AXES>;
+export type ChartAxes = ValueOf<typeof CHART_AXES>;
 export type XAxis = ChartAxes[0];
 export type YAxis = ChartAxes[1];
 export type Y2Axis = typeof CHART_AXES.SPACE_HEIGHT;
@@ -30,7 +30,7 @@ export const LIST_VALUES = {
   REGIME: ['head_positions', 'tail_positions', 'speeds'],
 } as const;
 
-export type ListValues = ObjectFieldsTypes<typeof LIST_VALUES>;
+export type ListValues = ValueOf<typeof LIST_VALUES>;
 export type AllListValues = ArrayElement<ListValues>;
 
 // Signal Base is the Signaling system chosen for results display

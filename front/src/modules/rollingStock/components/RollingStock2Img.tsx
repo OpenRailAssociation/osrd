@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
+import { getDocument } from 'common/api/documentApi';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
-import {
+import placeholderRollingStockThermal from 'assets/pictures/placeholder_rollingstock_thermal.gif';
+import placeholderRollingStockElectric from 'assets/pictures/placeholder_rollingstock_elec.gif';
+
+import type {
   LightRollingStockWithLiveries,
   RollingStockWithLiveries,
 } from 'common/api/osrdEditoastApi';
-import { getDocument } from 'common/api/documentApi';
-import placeholderRollingStockThermal from 'assets/pictures/placeholder_rollingstock_thermal.gif';
-import placeholderRollingStockElectric from 'assets/pictures/placeholder_rollingstock_elec.gif';
 
 const RollingStock2Img: React.FC<{
   rollingStock: RollingStockWithLiveries | LightRollingStockWithLiveries;

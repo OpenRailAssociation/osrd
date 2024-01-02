@@ -1,12 +1,12 @@
 import cx from 'classnames';
 import React, { useState } from 'react';
-import { RollingStockComfortType, RollingStockWithLiveries } from 'common/api/osrdEditoastApi';
+import type { RollingStockComfortType, RollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 import RollingStockCardDetail, {
-  listCurvesComfort,
+  getCurvesComforts,
 } from 'modules/rollingStock/components/RollingStockCard/RollingStockCardDetail';
-import { RollingStockInfo } from 'modules/rollingStock/components/RollingStockSelector/RollingStockHelpers';
-import RollingStockCurve from 'modules/rollingStock/components/RollingStockCurve';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
+import RollingStockCurve from 'modules/rollingStock/components/RollingStockCurve';
+import { RollingStockInfo } from 'modules/rollingStock/components/RollingStockSelector/RollingStockHelpers';
 
 type RollingStockInformationPanelProps = {
   id: number;
@@ -38,7 +38,7 @@ export default function RollingStockInformationPanel({
         />
         <div className="rollingstock-card-body border-0">
           <RollingStockCurve
-            curvesComfortList={listCurvesComfort(rollingStock.effort_curves)}
+            curvesComfortList={getCurvesComforts(rollingStock.effort_curves.modes)}
             data={rollingStock.effort_curves.modes}
           />
           <div className="rollingstock-detail-container-img">

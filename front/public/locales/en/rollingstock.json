@@ -23,10 +23,10 @@
     "default": "Default curve"
   },
   "delete": {
-    "comfortLevels": "Are you sure you want to delete this comfort level ? All the curves associated to it will be lost.",
-    "electricalProfiles": "Are you sure you want to delete this electrical profile ? All the curves associated to it will be lost.",
-    "powerRestrictions": "Are you sure you want to delete the curve associated to this power restriction ?",
-    "tractionModes": "Are you sure you want to delete this traction mode ? All the curves associated to it will be lost."
+    "comfort": "Are you sure you want to delete this comfort level ? All the curves associated to it will be lost.",
+    "electricalProfile": "Are you sure you want to delete this electrical profile ? All the curves associated to it will be lost.",
+    "powerRestriction": "Are you sure you want to delete the curve associated to this power restriction ?",
+    "tractionMode": "Are you sure you want to delete this traction mode ? All the curves associated to it will be lost."
   },
   "deleteRollingStock": "Would you like to delete this rolling stock?",
   "detail": "Detail",

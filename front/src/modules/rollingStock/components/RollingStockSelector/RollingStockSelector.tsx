@@ -1,14 +1,14 @@
 import React, { useRef } from 'react';
-import RollingStockModal from 'modules/rollingStock/components/RollingStockSelector/RollingStockModal';
-import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import icon from 'assets/pictures/components/train.svg';
+import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
+import { useTranslation } from 'react-i18next';
 import {
   comfort2pictogram,
   RollingStockInfo,
 } from 'modules/rollingStock/components/RollingStockSelector/RollingStockHelpers';
-import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
-import { RollingStockComfortType, RollingStockWithLiveries } from 'common/api/osrdEditoastApi';
-import { useTranslation } from 'react-i18next';
+import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
+import RollingStockModal from 'modules/rollingStock/components/RollingStockSelector/RollingStockModal';
+import type { RollingStockComfortType, RollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 
 type RollingStockProps = {
   condensed?: boolean;

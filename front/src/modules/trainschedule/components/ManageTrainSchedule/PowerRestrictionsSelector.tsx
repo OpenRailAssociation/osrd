@@ -39,7 +39,7 @@ const getRollingStockPowerRestrictionsByMode = (
     curvesModesKey,
     (result, mode) => {
       const powerCodes = rollingStockModes[mode].curves.map(
-        (curve) => curve.cond?.power_restriction_code
+        (curve) => curve.cond.power_restriction_code
       );
       compact(uniq(powerCodes));
       return {

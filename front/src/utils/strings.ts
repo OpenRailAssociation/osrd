@@ -35,7 +35,7 @@ export function snakeToCamel(str: string) {
 
 export const emptyStringRegex = /^\s+$/;
 
-export function getTranslationKey(translationList: string, item: string): string {
+export function getTranslationKey(translationList: string | undefined, item: string): string {
   return `${translationList ? `${translationList}.` : ''}${item}`;
 }
 
@@ -45,7 +45,7 @@ export function geti18nKeyForNull(str: string | null): string {
 
 /** Filter non digit characters */
 export function onlyDigit(str: string): string {
-  return str.replace(/\D/g, '');
+  return str.replace(/[^0-9.]/g, '');
 }
 
 /**

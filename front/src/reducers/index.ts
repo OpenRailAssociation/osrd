@@ -16,7 +16,6 @@ import mapReducer, { mapInitialState, mapSlice } from 'reducers/map';
 import userReducer, { userInitialState, userSlice } from 'reducers/user';
 import mainReducer, { mainInitialState, mainSlice } from 'reducers/main';
 import type { EditorState } from 'applications/editor/tools/types';
-import type { RsEditorCurvesState } from 'reducers/rollingstockEditor';
 import type { OsrdSimulationState } from 'reducers/osrdsimulation/types';
 import mapViewerReducer, { mapViewerInitialState, mapViewerSlice } from 'reducers/mapViewer';
 import type { MapViewerState, MapViewerSlice } from 'reducers/mapViewer';
@@ -26,9 +25,6 @@ import editorReducer, { editorInitialState, editorSlice } from 'reducers/editor'
 import osrdsimulationReducer, {
   initialState as osrdSimulationInitialState,
 } from 'reducers/osrdsimulation';
-import rollingstockeditorReducer, {
-  initialState as rsEditorCurvesInitialState,
-} from 'reducers/rollingstockEditor';
 import stdcmConfReducer, {
   stdcmConfInitialState,
   stdcmConfSlice,
@@ -98,7 +94,6 @@ export interface RootState {
   [osrdEditoastApi.reducerPath]: ReturnType<typeof osrdEditoastApi.reducer>;
   [osrdGatewayApi.reducerPath]: ReturnType<typeof osrdGatewayApi.reducer>;
   osrdsimulation: OsrdSimulationState;
-  rsEditorCurvesParams: RsEditorCurvesState;
 }
 
 export const rootInitialState: RootState = {
@@ -112,7 +107,6 @@ export const rootInitialState: RootState = {
   [osrdEditoastApi.reducerPath]: {} as ReturnType<typeof osrdEditoastApi.reducer>,
   [osrdGatewayApi.reducerPath]: {} as ReturnType<typeof osrdGatewayApi.reducer>,
   osrdsimulation: osrdSimulationInitialState,
-  rsEditorCurvesParams: rsEditorCurvesInitialState,
 };
 
 export type AnyReducerState =
@@ -123,8 +117,7 @@ export type AnyReducerState =
   | MainState
   | OsrdStdcmConfState
   | OsrdConfState
-  | OsrdSimulationState
-  | RsEditorCurvesState;
+  | OsrdSimulationState;
 
 export const rootReducer: ReducersMapObject<RootState> = {
   [userSlice.name]: userReducer,
@@ -143,7 +136,6 @@ export const rootReducer: ReducersMapObject<RootState> = {
   osrdsimulation: osrdsimulationReducer,
   [osrdEditoastApi.reducerPath]: osrdEditoastApi.reducer,
   [osrdGatewayApi.reducerPath]: osrdGatewayApi.reducer,
-  rsEditorCurvesParams: rollingstockeditorReducer,
 };
 
 export default persistCombineReducers<RootState, AllActions>(persistConfig, rootReducer);

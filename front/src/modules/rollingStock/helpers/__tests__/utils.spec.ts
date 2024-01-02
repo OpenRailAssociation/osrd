@@ -1,14 +1,12 @@
-import { EffortCurves } from 'common/api/osrdEditoastApi';
-import { checkRollingStockFormValidity, makeEffortCurve } from '../utils';
-import type { RollingStockParametersValues } from '../../consts';
+import { checkRollingStockFormValidity, makeEffortCurve } from 'modules/rollingStock/helpers/utils';
+
+import type { EffortCurves } from 'common/api/osrdEditoastApi';
+import type { EffortCurveForms, RollingStockParametersValues } from 'modules/rollingStock/types';
 
 describe('checkRollingStockFormValidity', () => {
   describe('Non electric stock', () => {
-    it('should return invalids fields with the default values', () => {
-      const effortCurves: EffortCurves = {
-        default_mode: 'thermal',
-        modes: {},
-      };
+    it('should return invalid fields with the default values', () => {
+      const effortCurves: EffortCurves['modes'] = {};
       const rsForm = {
         name: 'auietsrn',
         mass: 155,
@@ -48,11 +46,8 @@ describe('checkRollingStockFormValidity', () => {
   });
   describe('Electric stock', () => {
     it('should return electricalPowerStartupTime and raisePantographTime', () => {
-      const effortCurves: EffortCurves = {
-        default_mode: '15000',
-        modes: {
-          '15000': makeEffortCurve('15000'),
-        },
+      const effortCurves: EffortCurveForms = {
+        '15000': makeEffortCurve('15000'),
       };
       const rsForm = {
         name: 'auietsrn',
