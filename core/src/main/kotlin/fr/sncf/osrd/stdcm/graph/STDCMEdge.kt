@@ -2,7 +2,7 @@ package fr.sncf.osrd.stdcm.graph
 
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.sim_infra.api.Block
-import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
+import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.utils.units.Distance.Companion.fromMeters
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
@@ -10,8 +10,8 @@ import java.util.*
 
 data class STDCMEdge(
     val infraExplorer:
-        InfraExplorer, // Instance used to explore the infra, contains the current underlying edge
-    // (block)
+        InfraExplorerWithEnvelope, // Instance used to explore the infra, contains the current
+    // underlying edge (block)
     val envelope:
         Envelope, // Envelope of the train going through the block (starts at t=0). Does not account
     // for allowances.
