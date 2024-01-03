@@ -261,7 +261,7 @@ function getSumUpContent(
             }).toString()}
           </span>
           <span className={classes.muted}>
-            {t('Editor.tools.catenary-edition.voltage', {
+            {t('Editor.tools.electrification-edition.voltage', {
               voltage,
             }).toString()}
           </span>

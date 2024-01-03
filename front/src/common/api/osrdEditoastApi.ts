@@ -352,13 +352,6 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['pathfinding'],
       }),
-      getPathfindingByPathfindingIdCatenaries: build.query<
-        GetPathfindingByPathfindingIdCatenariesApiResponse,
-        GetPathfindingByPathfindingIdCatenariesApiArg
-      >({
-        query: (queryArg) => ({ url: `/pathfinding/${queryArg.pathfindingId}/catenaries/` }),
-        providesTags: ['infra'],
-      }),
       getPathfindingByPathfindingIdElectricalProfiles: build.query<
         GetPathfindingByPathfindingIdElectricalProfilesApiResponse,
         GetPathfindingByPathfindingIdElectricalProfilesApiArg
@@ -371,6 +364,13 @@ const injectedRtkApi = api
           },
         }),
         providesTags: ['electrical_profiles'],
+      }),
+      getPathfindingByPathfindingIdElectrifications: build.query<
+        GetPathfindingByPathfindingIdElectrificationsApiResponse,
+        GetPathfindingByPathfindingIdElectrificationsApiArg
+      >({
+        query: (queryArg) => ({ url: `/pathfinding/${queryArg.pathfindingId}/electrifications/` }),
+        providesTags: ['infra'],
       }),
       getProjects: build.query<GetProjectsApiResponse, GetProjectsApiArg>({
         query: (queryArg) => ({
@@ -756,7 +756,7 @@ export type GetElectricalProfileSetByElectricalProfileSetIdApiArg = {
   electricalProfileSetId: number;
 };
 export type GetElectricalProfileSetByElectricalProfileSetIdLevelOrderApiResponse =
-  /** status 200 A dictionary mapping catenary modes to a list of electrical profiles ordered by decreasing strength */ {
+  /** status 200 A dictionary mapping electrification modes to a list of electrical profiles ordered by decreasing strength */ {
     [key: string]: LevelValues;
   };
 export type GetElectricalProfileSetByElectricalProfileSetIdLevelOrderApiArg = {
@@ -1037,12 +1037,6 @@ export type PutPathfindingByPathfindingIdApiArg = {
   pathfindingId: number;
   pathfindingRequest: PathfindingRequest;
 };
-export type GetPathfindingByPathfindingIdCatenariesApiResponse =
-  /** status 200  */ CatenariesOnPathResponse;
-export type GetPathfindingByPathfindingIdCatenariesApiArg = {
-  /** A stored path ID */
-  pathfindingId: number;
-};
 export type GetPathfindingByPathfindingIdElectricalProfilesApiResponse =
   /** status 200  */ ProfilesOnPathResponse;
 export type GetPathfindingByPathfindingIdElectricalProfilesApiArg = {
@@ -1050,6 +1044,12 @@ export type GetPathfindingByPathfindingIdElectricalProfilesApiArg = {
   pathfindingId: number;
   rollingStockId: number;
   electricalProfileSetId: number;
+};
+export type GetPathfindingByPathfindingIdElectrificationsApiResponse =
+  /** status 200  */ ElectrificationsOnPathResponse;
+export type GetPathfindingByPathfindingIdElectrificationsApiArg = {
+  /** A stored path ID */
+  pathfindingId: number;
 };
 export type GetProjectsApiResponse =
   /** status 200 The list of projects */ PaginatedResponseOfProjectWithStudies;
@@ -1372,8 +1372,8 @@ export type Infra = {
 };
 export type RailjsonFile = {
   buffer_stops?: any;
-  catenaries?: any;
   detectors?: any;
+  electrifications?: any;
   operational_points?: any;
   routes?: any;
   signals?: any;
@@ -1393,7 +1393,7 @@ export type ObjectType =
   | 'BufferStop'
   | 'Route'
   | 'OperationalPoint'
-  | 'Catenary';
+  | 'Electrification';
 export type Railjson = {
   id: string;
   [key: string]: any;
@@ -1470,7 +1470,7 @@ export type InfraErrorType =
   | 'out_of_range'
   | 'overlapping_speed_sections'
   | 'overlapping_switches'
-  | 'overlapping_catenaries'
+  | 'overlapping_electrifications'
   | 'unknown_port_name'
   | 'unused_port'
   | 'node_endpoints_not_unique';
@@ -1539,7 +1539,7 @@ export type EnergyStorage = {
 export type EnergySource =
   | {
       efficiency: number;
-      energy_source_type: 'Catenary';
+      energy_source_type: 'Electrification';
       max_input_power: SpeedDependantPower;
       max_output_power: SpeedDependantPower;
     }
@@ -1691,12 +1691,12 @@ export type RangedValue = {
   end: number;
   value: string;
 };
-export type CatenariesOnPathResponse = {
-  catenary_ranges: RangedValue[];
-  warnings: InternalError[];
-};
 export type ProfilesOnPathResponse = {
   electrical_profile_ranges: RangedValue[];
+  warnings: InternalError[];
+};
+export type ElectrificationsOnPathResponse = {
+  electrification_ranges: RangedValue[];
   warnings: InternalError[];
 };
 export type Project = {
@@ -2072,7 +2072,7 @@ export type SimulationReportByTrain = {
   }[];
   tail_positions: SpaceTimePosition[][];
 };
-export type CatenaryUsage =
+export type ElectrificationUsage =
   | {
       mode: string;
       mode_handled: boolean;
@@ -2087,8 +2087,8 @@ export type CatenaryUsage =
   | {
       object_type: 'NonElectrified';
     };
-export type CatenaryRange = {
-  catenaryUsage: CatenaryUsage;
+export type ElectrificationRange = {
+  electrificationUsage: ElectrificationUsage;
   start: number;
   stop: number;
 };
@@ -2101,7 +2101,7 @@ export type PowerRestrictionRangeItem = {
 export type SingleSimulationResponse = {
   base_simulation: SimulationReportByTrain;
   eco_simulation: SimulationReportByTrain | null;
-  catenary_ranges: CatenaryRange[];
+  electrification_ranges: ElectrificationRange[];
   power_restriction_ranges: PowerRestrictionRangeItem[];
   speed_limits: {
     position: number;
@@ -2241,7 +2241,7 @@ export type SimulationReport = {
   base: ReportTrain;
   curves: Curve[];
   eco?: ReportTrain | null;
-  catenary_ranges: CatenaryRange[];
+  electrification_ranges: ElectrificationRange[];
   id: number;
   labels: string[];
   name: string;

@@ -1,7 +1,7 @@
 {
   "alternatingCurrent": "AC",
   "directCurrent": "DC",
-  "catenaries": "Electrification",
+  "electrifications": "Electrification",
   "keyTitle": "Legend",
   "speedlimit": "Speed",
   "neutral_sections": "Dead sections",
