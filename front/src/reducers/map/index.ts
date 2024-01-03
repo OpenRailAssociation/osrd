@@ -28,6 +28,7 @@ export interface MapState {
   showIGNSCAN25: boolean;
   showIGNCadastre: boolean;
   showOSM: boolean;
+  showOSM3dBuildings: boolean;
   showOSMtracksections: boolean;
   terrain3DExaggeration: number;
   smoothTravel: boolean;
@@ -62,6 +63,7 @@ export const mapInitialState: MapState = {
   showIGNSCAN25: false,
   showIGNCadastre: false,
   showOSM: true,
+  showOSM3dBuildings: false,
   showOSMtracksections: false,
   terrain3DExaggeration: 0,
   smoothTravel: false,
@@ -123,6 +125,9 @@ export const mapSlice = createSlice({
     updateShowOSM: (state, action: PayloadAction<MapState['showOSM']>) => {
       state.showOSM = action.payload;
     },
+    updateShowOSM3dBuildings: (state, action: PayloadAction<MapState['showOSM3dBuildings']>) => {
+      state.showOSM3dBuildings = action.payload;
+    },
     updateShowOSMtracksections: (
       state,
       action: PayloadAction<MapState['showOSMtracksections']>
@@ -181,6 +186,7 @@ export const {
   updateShowIGNCadastre,
   updateShowIGNSCAN25,
   updateShowOSM,
+  updateShowOSM3dBuildings,
   updateShowOSMtracksections,
   updateTerrain3DExaggeration,
   updateSmoothTravel,
