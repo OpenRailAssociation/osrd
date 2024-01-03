@@ -87,6 +87,7 @@ const WarpedMap: FC<{
         (
           genOSMLayerProps(
             mapStyle,
+            {},
             LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]
           ) as (OrderedLayerProps & {
             'source-layer': string;

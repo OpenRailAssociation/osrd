@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 import { LayerProps, Source } from 'react-map-gl/maplibre';
+import { get } from 'lodash';
 
 import mapStyleBluePrintJson from 'assets/mapstyles/OSMBluePrintStyle.json';
 import mapStyleDarkJson from 'assets/mapstyles/OSMDarkStyle.json';
@@ -8,6 +10,7 @@ import mapStyleJson from 'assets/mapstyles/OSMStyle.json';
 import { OSM_URL } from 'common/Map/const';
 
 import OrderedLayer, { OrderedLayerProps } from 'common/Map/Layers/OrderedLayer';
+import { getShowOSM3dBuildings } from 'reducers/map/selectors';
 
 interface OSMProps {
   mapStyle: string;
@@ -30,36 +33,60 @@ function getMapStyle(mapStyle: string): LayerProps[] {
   }
 }
 
+type FullLayerProps = OrderedLayerProps & { key?: string };
+type ToggledLayers = {
+  showOSM3dBuildings?: boolean;
+};
+
+const filters: Record<string, string> = {
+  batiments_3d: 'showOSM3dBuildings',
+  'building-3d': 'showOSM3dBuildings',
+};
+
 export function genOSMLayerProps(
   mapStyle: string,
+  toggledLayers: ToggledLayers,
   layerOrder?: number
-): (OrderedLayerProps & { key?: string })[] {
+): FullLayerProps[] {
   const osmStyle = getMapStyle(mapStyle);
-  return osmStyle.map((layer) => ({
-    ...layer,
-    key: `${layer.id}-${mapStyle}`,
-    id: `osm/${layer.id}`,
-    layerOrder,
-  }));
+  return osmStyle.reduce<FullLayerProps[]>((acc, layer) => {
+    const isShown = get(toggledLayers, filters[layer.id || ''], true);
+    if (!isShown) {
+      return acc;
+    }
+    return [
+      ...acc,
+      {
+        ...layer,
+        key: `${layer.id}-${mapStyle}`,
+        id: `osm/${layer.id}`,
+        layerOrder,
+      },
+    ];
+  }, []);
 }
 
-export function genOSMLayers(mapStyle: string, layerOrder?: number) {
-  return genOSMLayerProps(mapStyle, layerOrder).map((props) => <OrderedLayer {...props} />);
+export function genOSMLayers(mapStyle: string, toggledLayers: ToggledLayers, layerOrder?: number) {
+  return genOSMLayerProps(mapStyle, toggledLayers, layerOrder).map((props) => (
+    <OrderedLayer {...props} />
+  ));
 }
 
 function OSM({ mapStyle, layerOrder, mapIsLoaded }: OSMProps) {
   // Hack to full reload layers to avoid glitches
   // when switching map style (see #5777)
   const [reload, setReload] = useState(true);
+  const showOSM3dBuildings = useSelector(getShowOSM3dBuildings);
 
   useEffect(() => setReload(true), [mapStyle, mapIsLoaded]);
   useEffect(() => {
     if (reload) setReload(false);
   }, [reload]);
 
+  const toggledLayers = { showOSM3dBuildings };
   return !reload ? (
     <Source id="osm" type="vector" url={OSM_URL}>
-      {genOSMLayers(mapStyle, layerOrder)}
+      {genOSMLayers(mapStyle, toggledLayers, layerOrder)}
     </Source>
   ) : null;
 }

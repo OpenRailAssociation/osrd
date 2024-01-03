@@ -8,6 +8,7 @@ import iconIGNSCAN25 from 'assets/pictures/mapbuttons/mapstyle-scan25.jpg';
 import iconIGNCadastre from 'assets/pictures/mapbuttons/mapstyle-cadastre.jpg';
 import iconOSM from 'assets/pictures/mapbuttons/mapstyle-normal.jpg';
 import iconOSMTracks from 'assets/pictures/mapbuttons/mapstyle-osm-tracks.jpg';
+import icon3dBuildings from 'assets/pictures/mapbuttons/mapstyle-3d-buildings.jpg';
 import SwitchSNCF, {
   SWITCH_TYPES,
   SwitchSNCFProps,
@@ -18,6 +19,7 @@ import {
   updateShowIGNCadastre,
   updateShowIGNSCAN25,
   updateShowOSM,
+  updateShowOSM3dBuildings,
   updateShowOSMtracksections,
   updateTerrain3DExaggeration,
   updateSmoothTravel,
@@ -29,7 +31,8 @@ const FormatSwitch: FC<{
   state: boolean;
   icon: string;
   label: string;
-}> = ({ name, onChange, state, icon, label }) => {
+  disabled?: boolean;
+}> = ({ name, onChange, state, icon, label, disabled }) => {
   const { t } = useTranslation(['map-settings']);
   return (
     <div className="d-flex align-items-center">
@@ -39,6 +42,7 @@ const FormatSwitch: FC<{
         name={name}
         onChange={onChange}
         checked={state}
+        disabled={disabled}
       />
       <img className="ml-2 rounded" src={icon} alt="" height="24" />
       <span className="ml-2">{t(label)}</span>
@@ -49,16 +53,19 @@ const FormatSwitch: FC<{
 const MapSettingsBackgroundSwitches: FC<unknown> = () => {
   const { t } = useTranslation(['map-settings']);
   const {
+    mapStyle,
     showIGNBDORTHO,
     showIGNSCAN25,
     showIGNCadastre,
     showOSM,
+    showOSM3dBuildings,
     showOSMtracksections,
     smoothTravel,
   } = useSelector(getMap);
   const terrain3DExaggeration = useSelector(getTerrain3DExaggeration);
   const dispatch = useDispatch();
 
+  const isBlueprint = mapStyle === 'blueprint';
   return (
     <>
       <FormatSwitch
@@ -67,6 +74,15 @@ const MapSettingsBackgroundSwitches: FC<unknown> = () => {
         state={showOSM}
         icon={iconOSM}
         label="showOSM"
+      />
+      <div className="my-2" />
+      <FormatSwitch
+        name="show3dBuildings"
+        onChange={() => dispatch(updateShowOSM3dBuildings(!showOSM3dBuildings))}
+        state={!isBlueprint ? showOSM3dBuildings : false}
+        icon={icon3dBuildings}
+        disabled={isBlueprint}
+        label="showOSM3dBuildings"
       />
       <div className="my-2" />
       <FormatSwitch

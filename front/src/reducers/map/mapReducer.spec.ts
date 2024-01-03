@@ -13,6 +13,7 @@ import {
   updateShowIGNSCAN25,
   updateShowIGNCadastre,
   updateShowOSM,
+  updateShowOSM3dBuildings,
   updateShowOSMtracksections,
   updateLayersSettings,
   updateTerrain3DExaggeration,
@@ -92,6 +93,12 @@ describe('mapReducer', () => {
     store.dispatch(updateShowOSM(true));
     const mapState = store.getState().map;
     expect(mapState).toEqual({ ...mapState, showOSM: true });
+  });
+
+  it('should handle updateShow3dBuildings', () => {
+    store.dispatch(updateShowOSM3dBuildings(true));
+    const mapState = store.getState().map;
+    expect(mapState).toEqual({ ...mapState, showOSM3dBuildings: true });
   });
 
   it('should handle updateShowOSMtracksections', () => {
