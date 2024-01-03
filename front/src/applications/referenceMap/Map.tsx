@@ -17,7 +17,7 @@ import BufferStops from 'common/Map/Layers/BufferStops';
 import Terrain from 'common/Map/Layers/Terrain';
 import VirtualLayers from 'modules/simulationResult/components/SimulationResultsMap/VirtualLayers';
 /* Settings & Buttons */
-import Catenaries from 'common/Map/Layers/Catenaries';
+import Electrifications from 'common/Map/Layers/Electrifications';
 import Detectors from 'common/Map/Layers/Detectors';
 import Hillshade from 'common/Map/Layers/Hillshade';
 import IGN_BD_ORTHO from 'common/Map/Layers/IGN_BD_ORTHO';
@@ -192,9 +192,9 @@ function Map() {
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.OPERATIONAL_POINTS.GROUP]}
           infraID={infraID}
         />
-        <Catenaries
+        <Electrifications
           colors={colors[mapStyle]}
-          layerOrder={LAYER_GROUPS_ORDER[LAYERS.CATENARIES.GROUP]}
+          layerOrder={LAYER_GROUPS_ORDER[LAYERS.ELECTRIFICATIONS.GROUP]}
           infraID={infraID}
         />
         <NeutralSections

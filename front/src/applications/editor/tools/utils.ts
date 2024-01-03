@@ -10,7 +10,7 @@ import type { Feature, LineString, Point } from 'geojson';
 import type {
   Bbox,
   BufferStopEntity,
-  CatenaryEntity,
+  ElectrificationEntity,
   DetectorEntity,
   EditorEntity,
   RouteEntity,
@@ -178,12 +178,12 @@ export function openEntityEditionPanel(
         },
       });
       break;
-    case 'Catenary':
+    case 'Electrification':
       switchTool({
-        toolType: TOOL_TYPES.CATENARY_EDITION,
+        toolType: TOOL_TYPES.ELECTRIFICATION_EDITION,
         toolState: {
-          initialEntity: entity as CatenaryEntity,
-          entity: entity as CatenaryEntity,
+          initialEntity: entity as ElectrificationEntity,
+          entity: entity as ElectrificationEntity,
         },
       });
       break;

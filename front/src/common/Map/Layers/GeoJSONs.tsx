@@ -28,7 +28,10 @@ import { getBufferStopsLayerProps } from 'common/Map/Layers/BufferStops';
 import { getSwitchesLayerProps, getSwitchesNameLayerProps } from 'common/Map/Layers/Switches';
 import { lineNameLayer, lineNumberLayer, trackNameLayer } from 'common/Map/Layers/commonLayers';
 import { getDetectorsLayerProps, getDetectorsNameLayerProps } from 'common/Map/Layers/Detectors';
-import { getCatenariesProps, getCatenariesTextParams } from 'common/Map/Layers/Catenaries';
+import {
+  getElectrificationsProps,
+  getElectrificationsTextParams,
+} from 'common/Map/Layers/Electrifications';
 import {
   getPSLSignsLayerProps,
   getPSLSignsMastLayerProps,
@@ -235,15 +238,15 @@ function getBufferStopsLayers(context: LayerContext, prefix: string): LayerProps
   ];
 }
 
-function getCatenariesLayers(context: LayerContext, prefix: string): LayerProps[] {
+function getElectrificationsLayers(context: LayerContext, prefix: string): LayerProps[] {
   return [
     {
-      ...getCatenariesProps(context),
-      id: `${prefix}geo/catenaries-main`,
+      ...getElectrificationsProps(context),
+      id: `${prefix}geo/electrifications-main`,
     },
     {
-      ...getCatenariesTextParams(context),
-      id: `${prefix}geo/catenaries-names`,
+      ...getElectrificationsTextParams(context),
+      id: `${prefix}geo/electrifications-names`,
     },
   ];
 }
@@ -385,7 +388,7 @@ const SOURCES_DEFINITION: {
   { entityType: 'speed_sections', getLayers: getSpeedSectionLayers },
   { entityType: 'psl', getLayers: getPSLLayers },
   { entityType: 'psl_signs', getLayers: getPSLSignsLayers },
-  { entityType: 'catenaries', getLayers: getCatenariesLayers },
+  { entityType: 'electrifications', getLayers: getElectrificationsLayers },
   { entityType: 'errors', getLayers: getErrorsLayers },
 ];
 

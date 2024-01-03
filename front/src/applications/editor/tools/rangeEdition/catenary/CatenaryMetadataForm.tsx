@@ -1,19 +1,21 @@
 import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import EditorContext from 'applications/editor/context';
-import { CatenaryEntity } from 'types';
+import { ElectrificationEntity } from 'types';
 import { GiElectric } from 'react-icons/gi';
 import { cloneDeep } from 'lodash';
 import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import { ExtendedEditorContextType } from '../../editorContextTypes';
 import { RangeEditionState } from '../types';
 
-const CatenaryMetadataForm = ({ voltages }: { voltages: string[] }) => {
+const ElectrificationMetadataForm = ({ voltages }: { voltages: string[] }) => {
   const { t } = useTranslation();
   const {
     state: { entity },
     setState,
-  } = useContext(EditorContext) as ExtendedEditorContextType<RangeEditionState<CatenaryEntity>>;
+  } = useContext(EditorContext) as ExtendedEditorContextType<
+    RangeEditionState<ElectrificationEntity>
+  >;
 
   return (
     <SelectImprovedSNCF
@@ -24,9 +26,9 @@ const CatenaryMetadataForm = ({ voltages }: { voltages: string[] }) => {
       }
       options={voltages}
       value={entity.properties.voltage || ''}
-      onChange={(newCatenary) => {
+      onChange={(newElectrification) => {
         const newEntity = cloneDeep(entity);
-        newEntity.properties.voltage = newCatenary;
+        newEntity.properties.voltage = newElectrification;
         setState({ entity: newEntity });
       }}
       withSearch
@@ -37,4 +39,4 @@ const CatenaryMetadataForm = ({ voltages }: { voltages: string[] }) => {
   );
 };
 
-export default CatenaryMetadataForm;
+export default ElectrificationMetadataForm;

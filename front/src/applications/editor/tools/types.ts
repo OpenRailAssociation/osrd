@@ -19,7 +19,7 @@ export interface EditorState extends InfraState {
 
 export const LAYERS = [
   'buffer_stops',
-  'catenaries',
+  'electrifications',
   'detectors',
   'errors',
   'psl',
@@ -36,7 +36,7 @@ export type LayerType = (typeof LAYERS)[number];
 
 export const EDITOAST_TYPES = [
   'BufferStop',
-  'Catenary',
+  'Electrification',
   'Detector',
   'Route',
   'Signal',
@@ -49,7 +49,7 @@ export type EditoastType = (typeof EDITOAST_TYPES)[number];
 
 export const EDITOAST_TO_LAYER_DICT: Record<EditoastType, LayerType[]> = {
   BufferStop: ['buffer_stops'],
-  Catenary: ['catenaries'],
+  Electrification: ['electrifications'],
   Detector: ['detectors'],
   Route: ['routes'],
   Signal: ['signals'],

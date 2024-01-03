@@ -61,8 +61,8 @@ export default function ManageTrainSchedule() {
     }
   );
 
-  const { data: pathWithCatenaries = { catenary_ranges: [] as RangedValue[] } } =
-    osrdEditoastApi.endpoints.getPathfindingByPathfindingIdCatenaries.useQuery(
+  const { data: pathWithElectrifications = { electrification_ranges: [] as RangedValue[] } } =
+    osrdEditoastApi.endpoints.getPathfindingByPathfindingIdElectrifications.useQuery(
       { pathfindingId: pathFindingID as number },
       { skip: !pathFindingID }
     );
@@ -150,7 +150,7 @@ export default function ManageTrainSchedule() {
           <PowerRestrictionsSelector
             rollingStockModes={rollingStock.effort_curves.modes}
             rollingStockPowerRestrictions={rollingStock.power_restrictions}
-            pathCatenaryRanges={pathWithCatenaries.catenary_ranges}
+            pathElectrificationRanges={pathWithElectrifications.electrification_ranges}
           />
         )}
       </div>

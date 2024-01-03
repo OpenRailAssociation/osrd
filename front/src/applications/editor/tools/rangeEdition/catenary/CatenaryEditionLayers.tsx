@@ -14,7 +14,7 @@ import type { ExtendedEditorContextType } from 'applications/editor/tools/editor
 import type { RangeEditionState, TrackState } from 'applications/editor/tools/rangeEdition/types';
 import { getTrackRangeFeatures, isOnModeMove } from 'applications/editor/tools/rangeEdition/utils';
 
-import type { CatenaryEntity, TrackSectionEntity } from 'types';
+import type { ElectrificationEntity, TrackSectionEntity } from 'types';
 
 import colors from 'common/Map/Consts/colors';
 import { useInfraID } from 'common/osrdContext';
@@ -22,7 +22,7 @@ import GeoJSONs, { SourcesDefinitionsIndex } from 'common/Map/Layers/GeoJSONs';
 
 import { getMap } from 'reducers/map/selectors';
 
-export const CatenaryEditionLayers = () => {
+export const ElectrificationEditionLayers = () => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const {
@@ -30,7 +30,9 @@ export const CatenaryEditionLayers = () => {
     renderingFingerprint,
     state: { entity, trackSectionsCache, hoveredItem, interactionState, mousePosition },
     setState,
-  } = useContext(EditorContext) as ExtendedEditorContextType<RangeEditionState<CatenaryEntity>>;
+  } = useContext(EditorContext) as ExtendedEditorContextType<
+    RangeEditionState<ElectrificationEntity>
+  >;
 
   const { mapStyle, layersSettings, issuesSettings, showIGNBDORTHO } = useSelector(getMap);
 
@@ -53,7 +55,7 @@ export const CatenaryEditionLayers = () => {
     return undefined;
   }, [interactionState, hoveredItem, entity]);
 
-  const catenariesFeature: FeatureCollection = useMemo(() => {
+  const electrificationsFeature: FeatureCollection = useMemo(() => {
     const flatEntity = flattenEntity(entity);
     // generate trackRangeFeatures
     const trackRanges = entity.properties?.track_ranges || [];
@@ -78,7 +80,7 @@ export const CatenaryEditionLayers = () => {
       layersSettings,
       issuesSettings,
     };
-    return SourcesDefinitionsIndex.catenaries(context, 'rangeEditors/catenaries/');
+    return SourcesDefinitionsIndex.electrifications(context, 'rangeEditors/electrifications/');
   }, [mapStyle, showIGNBDORTHO, layersSettings, issuesSettings]);
 
   // Here is where we handle loading the TrackSections attached to the speed section:
@@ -196,7 +198,7 @@ export const CatenaryEditionLayers = () => {
         isEmphasized={false}
         infraID={infraID}
       />
-      <Source type="geojson" data={catenariesFeature} key="catenaries">
+      <Source type="geojson" data={electrificationsFeature} key="electrifications">
         {layersProps.map((props, i) => (
           <Layer {...props} key={i} />
         ))}
@@ -216,10 +218,10 @@ export const CatenaryEditionLayers = () => {
   );
 };
 
-export const CatenaryMessages = () => {
+export const ElectrificationMessages = () => {
   const { t } = useTranslation();
   const { state } = useContext(EditorContext) as ExtendedEditorContextType<
-    RangeEditionState<CatenaryEntity>
+    RangeEditionState<ElectrificationEntity>
   >;
   if (state.hoveredItem && state.hoveredItem.type === 'TrackSection')
     return t('Editor.tools.catenary-edition.help.add-track', {

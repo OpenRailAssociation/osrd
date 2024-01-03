@@ -9,7 +9,7 @@ import { GoPlusCircle, GoTrash } from 'react-icons/go';
 import { save } from 'reducers/editor';
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
 import {
-  CatenaryEntity,
+  ElectrificationEntity,
   SpeedSectionEntity,
   SpeedSectionPslEntity,
   TrackSectionEntity,
@@ -40,7 +40,7 @@ import {
   isNew,
 } from './utils';
 
-type EditorRange = SpeedSectionEntity | CatenaryEntity;
+type EditorRange = SpeedSectionEntity | ElectrificationEntity;
 interface RangeEditionToolParams<T extends EditorRange> {
   id: T['objType'];
   icon: IconType;
@@ -81,7 +81,7 @@ function getRangeEditionTool<T extends EditorRange>({
     requiredLayers: new Set(
       layersEntity.objType === 'SpeedSection'
         ? ['speed_sections', 'psl', 'psl_signs']
-        : ['catenaries']
+        : ['electrifications']
     ),
     getInitialState,
 

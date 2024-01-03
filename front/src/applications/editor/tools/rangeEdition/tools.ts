@@ -1,14 +1,14 @@
 import { MdSpeed } from 'react-icons/md';
-import { CatenaryEntity, SpeedSectionEntity, SpeedSectionPslEntity } from 'types';
+import { ElectrificationEntity, SpeedSectionEntity, SpeedSectionPslEntity } from 'types';
 import { GiElectric } from 'react-icons/gi';
 import getRangeEditionTool from './tool-factory';
-import { getNewCatenary, getNewSpeedSection } from './utils';
+import { getNewElectrification, getNewSpeedSection } from './utils';
 import { RangeEditionLeftPanel } from './components';
 import {
   SpeedSectionEditionLayers,
   SpeedSectionMessages,
 } from './speedSection/SpeedSectionEditionLayers';
-import { CatenaryEditionLayers, CatenaryMessages } from './catenary/CatenaryEditionLayers';
+import { ElectrificationEditionLayers, ElectrificationMessages } from './electrification/ElectrificationEditionLayers';
 
 export const SpeedEditionTool = getRangeEditionTool<SpeedSectionEntity | SpeedSectionPslEntity>({
   id: 'SpeedSection',
@@ -19,11 +19,11 @@ export const SpeedEditionTool = getRangeEditionTool<SpeedSectionEntity | SpeedSe
   leftPanelComponent: RangeEditionLeftPanel,
 });
 
-export const CatenaryEditionTool = getRangeEditionTool<CatenaryEntity>({
-  id: 'Catenary',
+export const ElectrificationEditionTool = getRangeEditionTool<ElectrificationEntity>({
+  id: 'Electrification',
   icon: GiElectric,
-  getNewEntity: getNewCatenary,
-  messagesComponent: CatenaryMessages,
-  layersComponent: CatenaryEditionLayers,
+  getNewEntity: getNewElectrification,
+  messagesComponent: ElectrificationMessages,
+  layersComponent: ElectrificationEditionLayers,
   leftPanelComponent: RangeEditionLeftPanel,
 });

@@ -35,7 +35,7 @@ import Signals from 'common/Map/Layers/Signals';
 import Switches from 'common/Map/Layers/Switches';
 import Detectors from 'common/Map/Layers/Detectors';
 import Hillshade from 'common/Map/Layers/Hillshade';
-import Catenaries from 'common/Map/Layers/Catenaries';
+import Electrifications from 'common/Map/Layers/Electrifications';
 import MapButtons from 'common/Map/Buttons/MapButtons';
 import SpeedLimits from 'common/Map/Layers/SpeedLimits';
 import PlatformsLayer from 'common/Map/Layers/Platforms';
@@ -324,9 +324,9 @@ const Map = ({ setExtViewport }: MapProps) => {
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.OPERATIONAL_POINTS.GROUP]}
           infraID={infraID}
         />
-        <Catenaries
+        <Electrifications
           colors={colors[mapStyle]}
-          layerOrder={LAYER_GROUPS_ORDER[LAYERS.CATENARIES.GROUP]}
+          layerOrder={LAYER_GROUPS_ORDER[LAYERS.ELECTRIFICATIONS.GROUP]}
           infraID={infraID}
         />
         <NeutralSections

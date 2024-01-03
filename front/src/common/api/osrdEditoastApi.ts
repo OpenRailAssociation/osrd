@@ -2072,7 +2072,7 @@ export type SimulationReportByTrain = {
   }[];
   tail_positions: SpaceTimePosition[][];
 };
-export type ElectrificationUsage =
+export type CatenaryUsage =
   | {
       mode: string;
       mode_handled: boolean;
@@ -2087,8 +2087,8 @@ export type ElectrificationUsage =
   | {
       object_type: 'NonElectrified';
     };
-export type ElectrificationRange = {
-  electrificationUsage: ElectrificationUsage;
+export type CatenaryRange = {
+  catenaryUsage: CatenaryUsage;
   start: number;
   stop: number;
 };
@@ -2101,7 +2101,7 @@ export type PowerRestrictionRangeItem = {
 export type SingleSimulationResponse = {
   base_simulation: SimulationReportByTrain;
   eco_simulation: SimulationReportByTrain | null;
-  electrification_ranges: ElectrificationRange[];
+  catenary_ranges: CatenaryRange[];
   power_restriction_ranges: PowerRestrictionRangeItem[];
   speed_limits: {
     position: number;
@@ -2241,7 +2241,7 @@ export type SimulationReport = {
   base: ReportTrain;
   curves: Curve[];
   eco?: ReportTrain | null;
-  electrification_ranges: ElectrificationRange[];
+  catenary_ranges: CatenaryRange[];
   id: number;
   labels: string[];
   name: string;
