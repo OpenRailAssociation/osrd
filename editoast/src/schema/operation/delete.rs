@@ -59,7 +59,7 @@ impl From<ObjectRef> for DeleteOperation {
 mod tests {
     use crate::models::infra::tests::test_infra_transaction;
     use crate::schema::operation::create::tests::{
-        create_buffer_stop, create_catenary, create_detector, create_op, create_route,
+        create_buffer_stop, create_detector, create_electrification, create_op, create_route,
         create_signal, create_speed, create_switch, create_track,
     };
     use crate::schema::operation::delete::DeleteOperation;
@@ -237,17 +237,17 @@ mod tests {
     }
 
     #[actix_test]
-    async fn delete_catenary() {
+    async fn delete_electrification() {
         test_infra_transaction(|conn, infra| async  move {
-            let catenary = create_catenary(conn, infra.id.unwrap(), Default::default()).await;
+            let electrification = create_electrification(conn, infra.id.unwrap(), Default::default()).await;
 
-            let op_deletion: DeleteOperation = catenary.get_ref().into();
+            let op_deletion: DeleteOperation = electrification.get_ref().into();
 
             assert!(op_deletion.apply(infra.id.unwrap(), conn).await.is_ok());
 
             let res_del = sql_query(format!(
-                "SELECT COUNT (*) AS nb FROM infra_object_catenary WHERE obj_id = '{}' AND infra_id = {}",
-                catenary.get_id(),
+                "SELECT COUNT (*) AS nb FROM infra_object_electrification WHERE obj_id = '{}' AND infra_id = {}",
+                electrification.get_id(),
                 infra.id.unwrap()
             ))
             .get_result::<Count>(conn).await.unwrap();

@@ -5,7 +5,7 @@ use crate::error::Result;
 use crate::infra_cache::InfraCache;
 use crate::models::{Identifiable, Retrieve};
 use crate::schema::{
-    BufferStop, Catenary, Detector, NeutralSection, ObjectType, OperationalPoint, RailJson,
+    BufferStop, Detector, Electrification, NeutralSection, ObjectType, OperationalPoint, RailJson,
     RailjsonError, Route, Signal, SpeedSection, Switch, SwitchType, TrackSection,
 };
 use crate::tables::infra;
@@ -120,7 +120,11 @@ impl Infra {
         let res = futures::try_join!(
             TrackSection::persist_batch_pool(&railjson.track_sections, infra_id, db_pool.clone()),
             BufferStop::persist_batch_pool(&railjson.buffer_stops, infra_id, db_pool.clone()),
-            Catenary::persist_batch_pool(&railjson.catenaries, infra_id, db_pool.clone()),
+            Electrification::persist_batch_pool(
+                &railjson.electrifications,
+                infra_id,
+                db_pool.clone()
+            ),
             Detector::persist_batch_pool(&railjson.detectors, infra_id, db_pool.clone()),
             OperationalPoint::persist_batch_pool(
                 &railjson.operational_points,

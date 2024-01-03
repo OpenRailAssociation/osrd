@@ -145,22 +145,22 @@ layers:
         joins:
           - inner join infra_object_operational_point operational_point on operational_point.obj_id = layer.obj_id and operational_point.infra_id = layer.infra_id
 
-  catenaries:
-    table_name: infra_layer_catenary
+  electrifications:
+    table_name: infra_layer_electrification
     id_field: id
     views:
       geo:
         on_field: geographic
         cache_duration: 3600
-        data_expr: catenary.data
+        data_expr: electrification.data
         joins:
-          - inner join infra_object_catenary catenary on catenary.obj_id = layer.obj_id and catenary.infra_id = layer.infra_id
+          - inner join infra_object_electrification electrification on electrification.obj_id = layer.obj_id and electrification.infra_id = layer.infra_id
       sch:
         on_field: schematic
         cache_duration: 3600
-        data_expr: catenary.data
+        data_expr: electrification.data
         joins:
-          - inner join infra_object_catenary catenary on catenary.obj_id = layer.obj_id and catenary.infra_id = layer.infra_id
+          - inner join infra_object_electrification electrification on electrification.obj_id = layer.obj_id and electrification.infra_id = layer.infra_id
 
   psl_signs:
     table_name: infra_layer_psl_sign

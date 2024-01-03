@@ -1,5 +1,5 @@
-mod catenaries;
 mod electrical_profiles;
+mod electrifications;
 mod path_rangemap;
 
 use std::collections::{HashMap, HashSet};
@@ -51,7 +51,7 @@ crate::routes! {
             get_pf,
             del_pf,
             update_pf,
-            catenaries::routes(),
+            electrifications::routes(),
             electrical_profiles::routes(),
         },
     }
@@ -63,7 +63,7 @@ crate::schemas! {
     PathfindingStep,
     Waypoint,
     WaypointLocation,
-    catenaries::schemas(),
+    electrifications::schemas(),
     electrical_profiles::schemas(),
 }
 
@@ -74,10 +74,10 @@ enum PathfindingError {
     #[error("Pathfinding {pathfinding_id} does not exist")]
     #[editoast_error(status = 404)]
     NotFound { pathfinding_id: i64 },
-    #[error("Catenary {catenary_id} overlaps with other catenaries")]
+    #[error("Electrification {electrification_id} overlaps with other electrifications")]
     #[editoast_error(status = 500)]
-    CatenaryOverlap {
-        catenary_id: String,
+    ElectrificationOverlap {
+        electrification_id: String,
         overlapping_ranges: Vec<ApplicableDirectionsTrackRange>,
     },
     #[error("Electrical Profile overlaps with others")]

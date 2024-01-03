@@ -10,10 +10,10 @@ INSERT INTO infra_layer_error (
         info_hash
     )
 SELECT $1 AS infra_id,
-    catenaries.geographic,
-    catenaries.schematic,
+    electrifications.geographic,
+    electrifications.schematic,
     errors.information,
     errors.error_hash
 FROM errors
-    LEFT JOIN infra_layer_catenary AS catenaries ON catenaries.obj_id = information->>'obj_id'
-    AND catenaries.infra_id = $1
+    LEFT JOIN infra_layer_electrification AS electrifications ON electrifications.obj_id = information->>'obj_id'
+    AND electrifications.infra_id = $1

@@ -49,7 +49,7 @@ pub enum ObjectCache {
     Route(Route),
     OperationalPoint(OperationalPointCache),
     SwitchType(SwitchType),
-    Catenary(Catenary),
+    Electrification(Electrification),
 }
 
 impl From<RailjsonObject> for ObjectCache {
@@ -67,7 +67,7 @@ impl From<RailjsonObject> for ObjectCache {
             RailjsonObject::OperationalPoint { railjson } => {
                 ObjectCache::OperationalPoint(railjson.into())
             }
-            RailjsonObject::Catenary { railjson } => ObjectCache::Catenary(railjson),
+            RailjsonObject::Electrification { railjson } => ObjectCache::Electrification(railjson),
         }
     }
 }
@@ -90,7 +90,7 @@ impl OSRDIdentified for ObjectCache {
             ObjectCache::Route(obj) => obj.get_id(),
             ObjectCache::OperationalPoint(obj) => obj.get_id(),
             ObjectCache::SwitchType(obj) => obj.get_id(),
-            ObjectCache::Catenary(obj) => obj.get_id(),
+            ObjectCache::Electrification(obj) => obj.get_id(),
         }
     }
 }
@@ -107,7 +107,7 @@ impl OSRDObject for ObjectCache {
             ObjectCache::Route(_) => ObjectType::Route,
             ObjectCache::OperationalPoint(_) => ObjectType::OperationalPoint,
             ObjectCache::SwitchType(_) => ObjectType::SwitchType,
-            ObjectCache::Catenary(_) => ObjectType::Catenary,
+            ObjectCache::Electrification(_) => ObjectType::Electrification,
         }
     }
 }
@@ -124,7 +124,9 @@ impl ObjectCache {
             ObjectCache::Route(route) => route.get_track_referenced_id(),
             ObjectCache::OperationalPoint(op) => op.get_track_referenced_id(),
             ObjectCache::SwitchType(switch_type) => switch_type.get_track_referenced_id(),
-            ObjectCache::Catenary(catenary) => catenary.get_track_referenced_id(),
+            ObjectCache::Electrification(electrification) => {
+                electrification.get_track_referenced_id()
+            }
         }
     }
 
@@ -200,11 +202,11 @@ impl ObjectCache {
         }
     }
 
-    /// Unwrap a catenary from the object cache
-    pub fn unwrap_catenary(&self) -> &Catenary {
+    /// Unwrap a electrification from the object cache
+    pub fn unwrap_electrification(&self) -> &Electrification {
         match self {
-            ObjectCache::Catenary(catenary) => catenary,
-            _ => panic!("ObjectCache is not a Catenary"),
+            ObjectCache::Electrification(electrification) => electrification,
+            _ => panic!("ObjectCache is not a Electrification"),
         }
     }
 }
@@ -355,9 +357,9 @@ impl InfraCache {
         &self.objects[ObjectType::OperationalPoint]
     }
 
-    /// Retrieve the cache of catenaries
-    pub fn catenaries(&self) -> &HashMap<String, ObjectCache> {
-        &self.objects[ObjectType::Catenary]
+    /// Retrieve the cache of electrifications
+    pub fn electrifications(&self) -> &HashMap<String, ObjectCache> {
+        &self.objects[ObjectType::Electrification]
     }
 
     pub fn get_objects_by_type(&self, object_type: ObjectType) -> &HashMap<String, ObjectCache> {
@@ -452,11 +454,11 @@ impl InfraCache {
             infra_cache.add(buffer_stop)
         )?;
 
-        // Load catenary tracks references
+        // Load electrification tracks references
         find_objects(conn, infra_id)
             .await
             .into_iter()
-            .try_for_each(|catenary| infra_cache.add::<Catenary>(catenary))?;
+            .try_for_each(|electrification| infra_cache.add::<Electrification>(electrification))?;
 
         Ok(infra_cache)
     }
@@ -550,7 +552,9 @@ impl InfraCache {
             ObjectCache::OperationalPoint(operational_point) => {
                 self.add::<OperationalPointCache>(operational_point)?;
             }
-            ObjectCache::Catenary(catenary) => self.add::<Catenary>(catenary)?,
+            ObjectCache::Electrification(electrification) => {
+                self.add::<Electrification>(electrification)?
+            }
         }
         Ok(())
     }
@@ -669,15 +673,15 @@ impl InfraCache {
             .unwrap_operational_point())
     }
 
-    pub fn get_catenary(&self, catenary_id: &str) -> Result<&Catenary> {
+    pub fn get_electrification(&self, electrification_id: &str) -> Result<&Electrification> {
         Ok(self
-            .catenaries()
-            .get(catenary_id)
+            .electrifications()
+            .get(electrification_id)
             .ok_or_else(|| InfraCacheEditoastError::ObjectNotFound {
-                obj_type: ObjectType::Catenary.to_string(),
-                obj_id: catenary_id.to_string(),
+                obj_type: ObjectType::Electrification.to_string(),
+                obj_id: electrification_id.to_string(),
             })?
-            .unwrap_catenary())
+            .unwrap_electrification())
     }
 }
 
@@ -708,12 +712,12 @@ pub mod tests {
     use crate::map::BoundingBox;
     use crate::models::infra::tests::test_infra_transaction;
     use crate::schema::operation::create::tests::{
-        create_buffer_stop, create_catenary, create_detector, create_op, create_route,
+        create_buffer_stop, create_detector, create_electrification, create_op, create_route,
         create_signal, create_speed, create_switch, create_switch_type, create_track,
     };
     use crate::schema::utils::{Identifier, NonBlankString};
     use crate::schema::{
-        ApplicableDirections, ApplicableDirectionsTrackRange, Catenary, Direction, Endpoint,
+        ApplicableDirections, ApplicableDirectionsTrackRange, Direction, Electrification, Endpoint,
         OSRDIdentified, OperationalPoint, OperationalPointPartCache, Route, SpeedSection, Switch,
         SwitchPortConnection, SwitchType, TrackEndpoint, Waypoint,
     };
@@ -886,13 +890,13 @@ pub mod tests {
     }
 
     #[actix_test]
-    async fn load_catenary() {
+    async fn load_electrification() {
         test_infra_transaction(|conn, infra| {
             async move {
-                let catenary = create_catenary(
+                let electrification = create_electrification(
                     conn,
                     infra.id.unwrap(),
-                    Catenary {
+                    Electrification {
                         track_ranges: vec![Default::default()],
                         ..Default::default()
                     },
@@ -901,7 +905,9 @@ pub mod tests {
 
                 let infra_cache = InfraCache::load(conn, &infra).await.unwrap();
 
-                assert!(infra_cache.catenaries().contains_key(catenary.get_id()));
+                assert!(infra_cache
+                    .electrifications()
+                    .contains_key(electrification.get_id()));
                 let refs = infra_cache.track_sections_refs;
                 assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
             }
@@ -997,7 +1003,10 @@ pub mod tests {
         }
     }
 
-    pub fn create_catenary_cache<T: AsRef<str>>(id: T, range_list: Vec<(T, f64, f64)>) -> Catenary {
+    pub fn create_electrification_cache<T: AsRef<str>>(
+        id: T,
+        range_list: Vec<(T, f64, f64)>,
+    ) -> Electrification {
         let mut track_ranges = vec![];
         for (obj_id, begin, end) in range_list {
             track_ranges.push(ApplicableDirectionsTrackRange::new(
@@ -1007,7 +1016,7 @@ pub mod tests {
                 ApplicableDirections::Both,
             ));
         }
-        Catenary {
+        Electrification {
             id: id.as_ref().into(),
             voltage: NonBlankString("1500".to_string()),
             track_ranges,
@@ -1093,7 +1102,7 @@ pub mod tests {
     /// No speed section
     /// No signal
     /// No operational point
-    /// No catenary
+    /// No electrification
     ///
     pub fn create_small_infra_cache() -> InfraCache {
         let mut infra_cache = InfraCache::default();
@@ -1233,7 +1242,7 @@ pub mod tests {
         use crate::{
             infra_cache::{
                 tests::{
-                    create_buffer_stop_cache, create_catenary_cache, create_detector_cache,
+                    create_buffer_stop_cache, create_detector_cache, create_electrification_cache,
                     create_operational_point_cache, create_route_cache, create_signal_cache,
                     create_speed_section_cache, create_switch_cache_point,
                     create_switch_type_cache,
@@ -1443,23 +1452,26 @@ pub mod tests {
         }
 
         #[test]
-        fn catenary() {
-            const ID: &str = "catenary_id";
+        fn electrification() {
+            const ID: &str = "electrification_id";
 
             let mut infra_cache = InfraCache::default();
 
             assert_eq!(
-                infra_cache.get_catenary(ID).unwrap_err(),
+                infra_cache.get_electrification(ID).unwrap_err(),
                 InfraCacheEditoastError::ObjectNotFound {
-                    obj_type: ObjectType::Catenary.to_string(),
+                    obj_type: ObjectType::Electrification.to_string(),
                     obj_id: ID.to_string()
                 }
                 .into()
             );
-            let catenary = create_catenary_cache(ID, vec![]);
+            let electrification = create_electrification_cache(ID, vec![]);
 
-            infra_cache.add(catenary.clone()).unwrap();
-            assert_eq!(infra_cache.get_catenary(ID).unwrap(), &catenary);
+            infra_cache.add(electrification.clone()).unwrap();
+            assert_eq!(
+                infra_cache.get_electrification(ID).unwrap(),
+                &electrification
+            );
         }
     }
 }

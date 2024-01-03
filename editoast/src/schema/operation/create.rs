@@ -1,6 +1,6 @@
 use crate::error::Result;
 use crate::schema::{
-    BufferStop, Catenary, Detector, NeutralSection, OSRDIdentified, OSRDObject, ObjectType,
+    BufferStop, Detector, Electrification, NeutralSection, OSRDIdentified, OSRDObject, ObjectType,
     OperationalPoint, Route, Signal, SpeedSection, Switch, SwitchType, TrackSection,
 };
 use diesel::sql_query;
@@ -24,7 +24,7 @@ pub enum RailjsonObject {
     BufferStop { railjson: BufferStop },
     Route { railjson: Route },
     OperationalPoint { railjson: OperationalPoint },
-    Catenary { railjson: Catenary },
+    Electrification { railjson: Electrification },
 }
 
 pub async fn apply_create_operation<'r>(
@@ -73,7 +73,7 @@ impl RailjsonObject {
             RailjsonObject::BufferStop { railjson: obj } => obj,
             RailjsonObject::Route { railjson: obj } => obj,
             RailjsonObject::OperationalPoint { railjson: obj } => obj,
-            RailjsonObject::Catenary { railjson: obj } => obj,
+            RailjsonObject::Electrification { railjson: obj } => obj,
         }
     }
 
@@ -89,7 +89,7 @@ impl RailjsonObject {
             RailjsonObject::BufferStop { railjson: obj } => serde_json::to_value(obj),
             RailjsonObject::Route { railjson: obj } => serde_json::to_value(obj),
             RailjsonObject::OperationalPoint { railjson: obj } => serde_json::to_value(obj),
-            RailjsonObject::Catenary { railjson: obj } => serde_json::to_value(obj),
+            RailjsonObject::Electrification { railjson: obj } => serde_json::to_value(obj),
         }
         .unwrap()
     }
@@ -101,9 +101,11 @@ impl From<TrackSection> for RailjsonObject {
     }
 }
 
-impl From<Catenary> for RailjsonObject {
-    fn from(catenary: Catenary) -> Self {
-        RailjsonObject::Catenary { railjson: catenary }
+impl From<Electrification> for RailjsonObject {
+    fn from(electrification: Electrification) -> Self {
+        RailjsonObject::Electrification {
+            railjson: electrification,
+        }
     }
 }
 
@@ -172,8 +174,8 @@ pub mod tests {
     use crate::models::infra::tests::test_infra_transaction;
     use crate::schema::operation::create::{apply_create_operation, RailjsonObject};
     use crate::schema::{
-        BufferStop, Catenary, Detector, OperationalPoint, Route, Signal, SpeedSection, Switch,
-        SwitchType, TrackSection,
+        BufferStop, Detector, Electrification, OperationalPoint, Route, Signal, SpeedSection,
+        Switch, SwitchType, TrackSection,
     };
 
     pub async fn create_track(
@@ -268,12 +270,14 @@ pub mod tests {
         obj
     }
 
-    pub async fn create_catenary(
+    pub async fn create_electrification(
         conn: &mut PgConnection,
         infra_id: i64,
-        catenary: Catenary,
+        electrification: Electrification,
     ) -> RailjsonObject {
-        let obj = RailjsonObject::Catenary { railjson: catenary };
+        let obj = RailjsonObject::Electrification {
+            railjson: electrification,
+        };
         assert!(apply_create_operation(&obj, infra_id, conn).await.is_ok());
         obj
     }
@@ -378,10 +382,10 @@ pub mod tests {
     }
 
     #[actix_test]
-    async fn create_catenary_test() {
+    async fn create_electrification_test() {
         test_infra_transaction(|conn, infra| {
             async move {
-                create_catenary(conn, infra.id.unwrap(), Default::default()).await;
+                create_electrification(conn, infra.id.unwrap(), Default::default()).await;
             }
             .scope_boxed()
         })

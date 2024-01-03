@@ -373,8 +373,8 @@ pub fn edge_to_buffer(node: &NodeId, edge: &Edge, count: i64) -> BufferStop {
     }
 }
 
-pub fn catenaries(edge: &Edge) -> Option<Catenary> {
-    edge.tags.get("voltage").map(|voltage| Catenary {
+pub fn electrifications(edge: &Edge) -> Option<Electrification> {
+    edge.tags.get("voltage").map(|voltage| Electrification {
         id: edge.id.clone().into(),
         voltage: voltage.clone().into(),
         track_ranges: vec![ApplicableDirectionsTrackRange::new(

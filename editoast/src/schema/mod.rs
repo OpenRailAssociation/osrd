@@ -1,7 +1,7 @@
 mod buffer_stop;
-mod catenary;
 mod detector;
 pub mod electrical_profiles;
+mod electrification;
 mod errors;
 mod geo_json;
 mod neutral_section;
@@ -19,8 +19,8 @@ pub mod track_section;
 pub mod utils;
 
 pub use buffer_stop::{BufferStop, BufferStopCache};
-pub use catenary::Catenary;
 pub use detector::{Detector, DetectorCache};
+pub use electrification::Electrification;
 pub use errors::{InfraError, InfraErrorType};
 pub use geo_json::GeoJson;
 pub use neutral_section::NeutralSection;
@@ -105,7 +105,7 @@ pub enum ObjectType {
     BufferStop,
     Route,
     OperationalPoint,
-    Catenary,
+    Electrification,
 }
 
 impl ObjectType {
@@ -121,7 +121,7 @@ impl ObjectType {
             ObjectType::BufferStop => "infra_object_buffer_stop",
             ObjectType::Route => "infra_object_route",
             ObjectType::OperationalPoint => "infra_object_operational_point",
-            ObjectType::Catenary => "infra_object_catenary",
+            ObjectType::Electrification => "infra_object_electrification",
         }
     }
 
@@ -136,7 +136,7 @@ impl ObjectType {
             ObjectType::Switch => Some("infra_layer_switch"),
             ObjectType::BufferStop => Some("infra_layer_buffer_stop"),
             ObjectType::OperationalPoint => Some("infra_layer_operational_point"),
-            ObjectType::Catenary => Some("infra_layer_catenary"),
+            ObjectType::Electrification => Some("infra_layer_electrification"),
             _ => None,
         }
     }

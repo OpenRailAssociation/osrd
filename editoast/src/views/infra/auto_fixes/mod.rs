@@ -18,8 +18,8 @@ use log::{debug, error};
 use thiserror::Error;
 
 mod buffer_stop;
-mod catenary;
 mod detector;
+mod electrifications;
 mod operational_point;
 mod route;
 mod signal;
@@ -144,11 +144,11 @@ fn fix_infra(
                     .map_err(|e| AutoFixesEditoastError::MissingErrorObject { source: e })?;
                 operational_point::fix_operational_point(operational_point, errors)
             }
-            ObjectType::Catenary => {
-                let catenary = infra_cache
-                    .get_catenary(&object_ref.obj_id)
+            ObjectType::Electrification => {
+                let electrification = infra_cache
+                    .get_electrification(&object_ref.obj_id)
                     .map_err(|e| AutoFixesEditoastError::MissingErrorObject { source: e })?;
-                catenary::fix_catenary(catenary, errors)
+                electrifications::fix_electrification(electrification, errors)
             }
             object_type => {
                 debug!("error not (yet) fixable on '{}'", object_type);
@@ -212,8 +212,8 @@ mod tests {
     use crate::schema::operation::{DeleteOperation, Operation, RailjsonObject};
     use crate::schema::utils::Identifier;
     use crate::schema::{
-        ApplicableDirectionsTrackRange, BufferStop, BufferStopCache, BufferStopExtension, Catenary,
-        Detector, DetectorCache, Endpoint, OSRDIdentified as _, ObjectRef, ObjectType,
+        ApplicableDirectionsTrackRange, BufferStop, BufferStopCache, BufferStopExtension, Detector,
+        DetectorCache, Electrification, Endpoint, OSRDIdentified as _, ObjectRef, ObjectType,
         OperationalPoint, OperationalPointPart, Route, Signal, SignalCache, Slope, SpeedSection,
         Switch, TrackEndpoint, TrackSection, Waypoint,
     };
@@ -656,11 +656,11 @@ mod tests {
         let empty_infra = empty_infra(db_pool()).await;
         let empty_infra_id = empty_infra.id();
 
-        let catenary: RailjsonObject = Catenary::default().into();
+        let electrification: RailjsonObject = Electrification::default().into();
         let operational_point = OperationalPoint::default().into();
         let speed_section = SpeedSection::default().into();
 
-        for obj in [&catenary, &operational_point, &speed_section] {
+        for obj in [&electrification, &operational_point, &speed_section] {
             let req_create = get_create_operation_request(obj.clone(), empty_infra_id);
             assert_eq!(
                 call_service(&app, req_create).await.status(),
@@ -673,7 +673,7 @@ mod tests {
 
         let operations: Vec<Operation> = read_body_json(response).await;
 
-        for obj in [&catenary, &operational_point, &speed_section] {
+        for obj in [&electrification, &operational_point, &speed_section] {
             assert!(operations.contains(&Operation::Delete(DeleteOperation {
                 obj_id: obj.get_id().to_string(),
                 obj_type: obj.get_type(),
@@ -699,7 +699,7 @@ mod tests {
         }
         .into();
 
-        let catenary: RailjsonObject = Catenary {
+        let electrification: RailjsonObject = Electrification {
             track_ranges: vec![ApplicableDirectionsTrackRange {
                 track: track.get_id().as_str().into(),
                 begin: 250.0,
@@ -731,7 +731,7 @@ mod tests {
         }
         .into();
 
-        for obj in [&track, &catenary, &operational_point, &speed_section] {
+        for obj in [&track, &electrification, &operational_point, &speed_section] {
             let req_create = get_create_operation_request(obj.clone(), empty_infra_id);
             assert_eq!(
                 call_service(&app, req_create).await.status(),
@@ -744,7 +744,7 @@ mod tests {
 
         let operations: Vec<Operation> = read_body_json(response).await;
 
-        for obj in [&track, &catenary, &operational_point, &speed_section] {
+        for obj in [&track, &electrification, &operational_point, &speed_section] {
             assert!(!operations.contains(&Operation::Delete(DeleteOperation {
                 obj_id: obj.get_id().to_string(),
                 obj_type: obj.get_type(),

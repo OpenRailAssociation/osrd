@@ -1,5 +1,5 @@
 WITH track_ranges AS (
-    SELECT obj_id AS catenary_id,
+    SELECT obj_id AS electrification_id,
         (
             jsonb_array_elements(data->'track_ranges')->'begin'
         )::float AS slice_begin,
@@ -7,12 +7,12 @@ WITH track_ranges AS (
             jsonb_array_elements(data->'track_ranges')->'end'
         )::float AS slice_end,
         jsonb_array_elements(data->'track_ranges')->>'track' AS track_id
-    FROM infra_object_catenary
+    FROM infra_object_electrification
     WHERE infra_id = $1
         AND obj_id = ANY($2)
 ),
 sliced_tracks AS (
-    SELECT track_ranges.catenary_id,
+    SELECT track_ranges.electrification_id,
         ST_LineSubstring(
             tracks_layer.geographic,
             GREATEST(
@@ -57,12 +57,12 @@ sliced_tracks AS (
         INNER JOIN infra_layer_track_section AS tracks_layer ON tracks.obj_id = tracks_layer.obj_id
         AND tracks.infra_id = tracks_layer.infra_id
 )
-INSERT INTO infra_layer_catenary (obj_id, infra_id, geographic, schematic)
-SELECT catenary_id,
+INSERT INTO infra_layer_electrification (obj_id, infra_id, geographic, schematic)
+SELECT electrification_id,
     $1,
     St_Collect(geo),
     St_Collect(sch)
 FROM sliced_tracks
 WHERE GeometryType(sliced_tracks.geo) = 'LINESTRING'
     AND GeometryType(sliced_tracks.sch) = 'LINESTRING'
-GROUP BY catenary_id
+GROUP BY electrification_id

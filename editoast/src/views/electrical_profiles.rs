@@ -88,7 +88,7 @@ async fn get(
     responses(
         (status = 200,
             body = HashMap<String, LevelValues>,
-            description = "A dictionary mapping catenary modes to a list of electrical profiles ordered by decreasing strength",
+            description = "A dictionary mapping electrification modes to a list of electrical profiles ordered by decreasing strength",
             example = json!({
                 "1500": ["A", "B", "C"],
                 "25000": ["25000", "22500", "20000"]

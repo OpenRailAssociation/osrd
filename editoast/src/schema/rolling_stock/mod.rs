@@ -237,8 +237,8 @@ pub struct SpeedDependantPower {
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize, ToSchema)]
 #[serde(tag = "energy_source_type", deny_unknown_fields)]
 pub enum EnergySource {
-    /// energy source for a rolling stock representing a catenary
-    Catenary {
+    /// energy source for a rolling stock representing a electrification
+    Electrification {
         max_input_power: SpeedDependantPower,
         max_output_power: SpeedDependantPower,
         #[schema(minimum = 0, maximum = 1)]

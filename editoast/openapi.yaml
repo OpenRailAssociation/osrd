@@ -76,23 +76,6 @@ components:
       maxItems: 2
       minItems: 2
       type: array
-    CatenariesOnPathResponse:
-      description: |-
-        A list of ranges associated to catenary modes. When a profile overlapping another is found,
-        a warning is added to the list
-      properties:
-        catenary_ranges:
-          items:
-            $ref: '#/components/schemas/RangedValue'
-          type: array
-        warnings:
-          items:
-            $ref: '#/components/schemas/InternalError'
-          type: array
-      required:
-      - catenary_ranges
-      - warnings
-      type: object
     Comfort:
       default: STANDARD
       description: Train comfort that will be used for the simulation
@@ -356,10 +339,27 @@ components:
         required:
         - object_type
         type: object
+    ElectrificationsOnPathResponse:
+      description: |-
+        A list of ranges associated to electrification modes. When a profile overlapping another is found,
+        a warning is added to the list
+      properties:
+        electrification_ranges:
+          items:
+            $ref: '#/components/schemas/RangedValue'
+          type: array
+        warnings:
+          items:
+            $ref: '#/components/schemas/InternalError'
+          type: array
+      required:
+      - electrification_ranges
+      - warnings
+      type: object
     EnergySource:
       description: energy source of a rolling stock
       oneOf:
-      - description: energy source for a rolling stock representing a catenary
+      - description: energy source for a rolling stock representing a electrification
         properties:
           efficiency:
             format: double
@@ -368,7 +368,7 @@ components:
             type: number
           energy_source_type:
             enum:
-            - Catenary
+            - Electrification
             type: string
           max_input_power:
             $ref: '#/components/schemas/SpeedDependantPower'
@@ -758,7 +758,7 @@ components:
       - out_of_range
       - overlapping_speed_sections
       - overlapping_switches
-      - overlapping_catenaries
+      - overlapping_electrifications
       - unknown_port_name
       - unused_port
       - node_endpoints_not_unique
@@ -1070,7 +1070,7 @@ components:
       - BufferStop
       - Route
       - OperationalPoint
-      - Catenary
+      - Electrification
       type: string
     Operation:
       oneOf:
@@ -1624,9 +1624,9 @@ components:
       properties:
         buffer_stops:
           type: array
-        catenaries:
-          type: array
         detectors:
+          type: array
+        electrifications:
           type: array
         operational_points:
           type: array
@@ -3929,7 +3929,7 @@ paths:
                 additionalProperties:
                   $ref: '#/components/schemas/LevelValues'
                 type: object
-          description: A dictionary mapping catenary modes to a list of electrical profiles ordered by decreasing strength
+          description: A dictionary mapping electrification modes to a list of electrical profiles ordered by decreasing strength
         '404':
           content:
             application/json:
@@ -4971,27 +4971,6 @@ paths:
       summary: Updates an existing path with the result of a new pathfinding run
       tags:
       - pathfinding
-  /pathfinding/{pathfinding_id}/catenaries/:
-    get:
-      description: Retrieve the catenary modes along a path, as seen by the rolling stock specified
-      parameters:
-      - description: A stored path ID
-        in: path
-        name: pathfinding_id
-        required: true
-        schema:
-          format: int64
-          type: integer
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CatenariesOnPathResponse'
-          description: ''
-      summary: Retrieve the catenary modes along a path, as seen by the rolling stock specified
-      tags:
-      - infra
   /pathfinding/{pathfinding_id}/electrical_profiles/:
     get:
       description: Retrieve the electrical profiles along a path, as seen by the rolling stock specified
@@ -5025,6 +5004,27 @@ paths:
       summary: Retrieve the electrical profiles along a path, as seen by the rolling stock specified
       tags:
       - electrical_profiles
+  /pathfinding/{pathfinding_id}/electrifications/:
+    get:
+      description: Retrieve the electrification modes along a path, as seen by the rolling stock specified
+      parameters:
+      - description: A stored path ID
+        in: path
+        name: pathfinding_id
+        required: true
+        schema:
+          format: int64
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ElectrificationsOnPathResponse'
+          description: ''
+      summary: Retrieve the electrification modes along a path, as seen by the rolling stock specified
+      tags:
+      - infra
   /projects/:
     get:
       description: Returns a paginated list of projects
