@@ -45,7 +45,7 @@ import fr.sncf.osrd.railjson.schema.infra.RJSSwitch;
 import fr.sncf.osrd.railjson.schema.infra.RJSSwitchType;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSRouteWaypoint;
-import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSCatenary;
+import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSElectrification;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSLoadingGaugeLimit;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSNeutralSection;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSection;
@@ -177,18 +177,18 @@ public class UndirectedInfraBuilder {
 
         addSpeedSections(infra.speedSections, trackSectionsByID);
 
-        loadCatenaries(infra.catenaries, trackSectionsByID);
+        loadElectrifications(infra.electrifications, trackSectionsByID);
         loadNeutralSections(infra.neutralSections, trackSectionsByID);
 
         return TrackInfraImpl.from(switches.build(), builder.build());
     }
 
-    private void loadCatenaries(List<RJSCatenary> catenaries, HashMap<String, TrackSectionImpl> trackSectionsByID) {
-        for (var catenary : catenaries) {
-            for (var trackRange : catenary.trackRanges) {
+    private void loadElectrifications(List<RJSElectrification> electrifications, HashMap<String, TrackSectionImpl> trackSectionsByID) {
+        for (var electrification : electrifications) {
+            for (var trackRange : electrification.trackRanges) {
                 var track = trackSectionsByID.get(trackRange.trackSectionID);
                 assert track != null;
-                track.getVoltages().put(Range.open(trackRange.begin, trackRange.end), catenary.voltage);
+                track.getVoltages().put(Range.open(trackRange.begin, trackRange.end), electrification.voltage);
             }
         }
     }

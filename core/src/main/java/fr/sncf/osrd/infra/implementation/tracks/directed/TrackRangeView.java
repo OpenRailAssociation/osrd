@@ -211,8 +211,8 @@ public final class TrackRangeView {
         return convertMap(track.getEdge().getLoadingGaugeConstraints());
     }
 
-    /** Returns the voltage of catenaries on the track */
-    public ImmutableRangeMap<Double, String> getCatenaryVoltages() {
+    /** Returns the voltage of electrifications on the track */
+    public ImmutableRangeMap<Double, String> getElectrificationVoltages() {
         return convertMap(track.getEdge().getVoltages());
     }
 

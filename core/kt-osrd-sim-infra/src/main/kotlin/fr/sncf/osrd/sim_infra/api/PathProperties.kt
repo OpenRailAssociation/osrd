@@ -36,7 +36,7 @@ interface PathProperties {
     fun getCurves(): DistanceRangeMap<Double>
     fun getGeo(): LineString
     fun getLoadingGauge(): DistanceRangeMap<LoadingGaugeConstraint>
-    fun getCatenary(): DistanceRangeMap<String>
+    fun getElectrification(): DistanceRangeMap<String>
     fun getNeutralSections(): DistanceRangeMap<NeutralSection>
     @JvmName("getSpeedLimits")
     fun getSpeedLimits(trainTag: String?): DistanceRangeMap<Speed>

@@ -30,13 +30,13 @@ data class ElectrificationConstraints(
     companion object {
         /**
          * Returns the sections of the given block that can't be used by the given rolling stock
-         * because it needs electrified tracks and isn't compatible with the catenaries in some range
+         * because it needs electrified tracks and isn't compatible with the electrifications in some range
          */
         private fun getBlockedRanges(stock: RollingStock, path: PathProperties): Set<Pathfinding.Range<Block>> {
             if (stock.isThermal)
                 return setOf()
             val res = HashSet<Pathfinding.Range<Block>>()
-            val voltages = path.getCatenary()
+            val voltages = path.getElectrification()
             val neutralSections = rangeSetFromMap(path.getNeutralSections())
             for ((lower, upper, value) in voltages) {
                 if (lower == upper)

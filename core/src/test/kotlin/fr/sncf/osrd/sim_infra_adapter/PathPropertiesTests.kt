@@ -244,7 +244,7 @@ class PathPropertiesTests {
     }
 
     @Test
-    fun testSmallInfraCatenary() {
+    fun testSmallInfraElectrification() {
         /*
                 TA0                 TA1
         |------------------|-------------------|
@@ -256,14 +256,14 @@ class PathPropertiesTests {
                  <------------------------|             path backward (3.5 to 1km)
          */
         val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
-        rjsInfra.catenaries = listOf(
-            RJSCatenary(
+        rjsInfra.electrifications = listOf(
+            RJSElectrification(
                 "1500", listOf(
                     RJSApplicableDirectionsTrackRange("TA0", ApplicableDirection.BOTH, 0.0, 2_000.0),
                     RJSApplicableDirectionsTrackRange("TA1", ApplicableDirection.BOTH, 0.0, 1_000.0)
                 )
             ),
-            RJSCatenary(
+            RJSElectrification(
                 "25000", listOf(
                     RJSApplicableDirectionsTrackRange("TA1", ApplicableDirection.BOTH, 1_000.0, 1_950.0)
                 )
@@ -273,23 +273,23 @@ class PathPropertiesTests {
         val infra = adaptRawInfra(oldInfra)
 
         val path = pathFromTracks(infra, listOf("TA0", "TA1"), Direction.INCREASING, 500.meters, 3_500.meters)
-        val catenaryForward = path.getCatenary()
+        val electrificationForward = path.getElectrification()
         assertEquals(
             listOf(
                 DistanceRangeMap.RangeMapEntry(0.meters, 2_500.meters, "1500"),
                 DistanceRangeMap.RangeMapEntry(2_500.meters, 3_000.meters, "25000"),
             ),
-            catenaryForward.asList(),
+            electrificationForward.asList(),
         )
 
         val pathBackward = pathFromTracks(infra, listOf("TA1", "TA0"), Direction.DECREASING, 450.meters, 2_950.meters)
-        val catenaryBackward = pathBackward.getCatenary()
+        val electrificationBackward = pathBackward.getElectrification()
         assertEquals(
             listOf(
                 DistanceRangeMap.RangeMapEntry(0.meters, 500.meters, "25000"),
                 DistanceRangeMap.RangeMapEntry(500.meters, 2_500.meters, "1500"),
             ),
-            catenaryBackward.asList(),
+            electrificationBackward.asList(),
         )
     }
 

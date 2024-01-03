@@ -40,7 +40,7 @@ public class EnvelopeSimPathTest {
     }
 
     @Test
-    void getCatenaryModeAndProfileOnlyModes() {
+    void getElectrificationModeAndProfileOnlyModes() {
         var modes = TreeRangeMap.<Double, Electrification>create();
         modes.put(Range.closed(0.0, 10.0), new NonElectrified());
         modes.put(Range.closed(3.0, 7.0), new Electrified("1500"));
@@ -59,7 +59,7 @@ public class EnvelopeSimPathTest {
 
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
-    void getCatenaryModeAndProfile(boolean withEmptyPowerRestrictionMap) {
+    void getElectrificationModeAndProfile(boolean withEmptyPowerRestrictionMap) {
         var path = EnvelopeSimPathBuilder.withElectricalProfiles1500();
 
         RangeMap<Double, Electrification> modeAndProfileMap;
@@ -79,7 +79,7 @@ public class EnvelopeSimPathTest {
     }
 
     @Test
-    void getCatenaryModeAndProfileWithPowerRestrictions() {
+    void getElectrificationModeAndProfileWithPowerRestrictions() {
         var path = EnvelopeSimPathBuilder.withElectricalProfiles1500();
 
         var powerRestrictionMap = TreeRangeMap.<Double, String>create();
@@ -101,7 +101,7 @@ public class EnvelopeSimPathTest {
     }
 
     @Test
-    void getCatenaryModeAndProfileWithPowerRestrictionsWithoutElectricalProfiles() {
+    void getElectrificationModeAndProfileWithPowerRestrictionsWithoutElectricalProfiles() {
         var path = EnvelopeSimPathBuilder.withElectricalProfiles1500();
 
         var powerRestrictionMap = TreeRangeMap.<Double, String>create();

@@ -375,7 +375,7 @@ private fun makeChunk(
         makeDirectionalMap { range -> DistanceRangeMapImpl.from(range.curves) },
         makeDirectionalMap { range -> DistanceRangeMapImpl.from(range.gradients) },
         DistanceRangeMapImpl.from(rangeViewForward.blockedGaugeTypes),
-        DistanceRangeMapImpl.from(rangeViewForward.catenaryVoltages),
+        DistanceRangeMapImpl.from(rangeViewForward.electrificationVoltages),
         makeDirectionalMap { range -> makeNeutralSection(range) },
         makeDirectionalMap { range -> makeSpeedSections(range) },
     )

@@ -11,7 +11,7 @@ import fr.sncf.osrd.utils.units.Distance.Companion.fromMeters
 
 /**
  * A mapping from track sections to electrical profile values
- * The electrical profiles model the power loss along catenaries depending on the position and the power class of
+ * The electrical profiles model the power loss along electrifications depending on the position and the power class of
  * the rolling stock used
  */
 

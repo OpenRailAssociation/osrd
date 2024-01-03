@@ -10,7 +10,7 @@ import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
 import fr.sncf.osrd.external_generated_inputs.ElectricalProfileMapping
 import fr.sncf.osrd.railjson.schema.common.graph.ApplicableDirection
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSApplicableDirectionsTrackRange
-import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSCatenary
+import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSElectrification
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSlope
 import fr.sncf.osrd.utils.*
 import fr.sncf.osrd.utils.units.meters
@@ -61,19 +61,19 @@ class EnvelopeTrainPathTest {
         expectedMap: ImmutableRangeMap<Double, Electrification>
     ) {
         val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
-        rjsInfra.catenaries = listOf(
-            RJSCatenary(
+        rjsInfra.electrifications = listOf(
+            RJSElectrification(
                 "", listOf(
                     RJSApplicableDirectionsTrackRange("TA0", ApplicableDirection.BOTH, 0.0, 800.0),
                 )
             ),
-            RJSCatenary(
+            RJSElectrification(
                 "1500", listOf(
                     RJSApplicableDirectionsTrackRange("TA0", ApplicableDirection.BOTH, 800.0, 2_000.0),
                     RJSApplicableDirectionsTrackRange("TA1", ApplicableDirection.BOTH, 0.0, 1_000.0)
                 )
             ),
-            RJSCatenary(
+            RJSElectrification(
                 "25000", listOf(
                     RJSApplicableDirectionsTrackRange("TA1", ApplicableDirection.BOTH, 1_100.0, 1_950.0)
                 )
@@ -91,19 +91,19 @@ class EnvelopeTrainPathTest {
     @Test
     fun envelopeFromPathTestElectrificationMapByPowerClassIncreasingDirection() {
         val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
-        rjsInfra.catenaries = listOf(
-            RJSCatenary(
+        rjsInfra.electrifications = listOf(
+            RJSElectrification(
                 "", listOf(
                     RJSApplicableDirectionsTrackRange("TA0", ApplicableDirection.BOTH, 0.0, 1500.0),
                 )
             ),
-            RJSCatenary(
+            RJSElectrification(
                 "1500", listOf(
                     RJSApplicableDirectionsTrackRange("TA0", ApplicableDirection.BOTH, 1500.0, 2_000.0),
                     RJSApplicableDirectionsTrackRange("TA1", ApplicableDirection.BOTH, 0.0, 500.0)
                 )
             ),
-            RJSCatenary(
+            RJSElectrification(
                 "25000", listOf(
                     RJSApplicableDirectionsTrackRange("TA1", ApplicableDirection.BOTH, 500.0, 1_950.0)
                 )
@@ -163,8 +163,8 @@ class EnvelopeTrainPathTest {
     @Test
     fun envelopeFromPathTestElectrificationMapByPowerClassDecreasingDirection() {
         val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
-        rjsInfra.catenaries = listOf(
-            RJSCatenary(
+        rjsInfra.electrifications = listOf(
+            RJSElectrification(
                 "1500",
                 listOf(
                     RJSApplicableDirectionsTrackRange("TA0", ApplicableDirection.BOTH, 0.0, 2_000.0),

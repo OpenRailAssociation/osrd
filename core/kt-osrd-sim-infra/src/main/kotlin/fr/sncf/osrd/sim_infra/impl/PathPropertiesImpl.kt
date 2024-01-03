@@ -49,8 +49,8 @@ data class PathPropertiesImpl(
         return getRangeMapFromUndirected { chunkId -> infra.getTrackChunkLoadingGaugeConstraints(chunkId) }
     }
 
-    override fun getCatenary(): DistanceRangeMap<String> {
-        return getRangeMapFromUndirected { chunkId -> infra.getTrackChunkCatenaryVoltage(chunkId) }
+    override fun getElectrification(): DistanceRangeMap<String> {
+        return getRangeMapFromUndirected { chunkId -> infra.getTrackChunkElectrificationVoltage(chunkId) }
     }
 
     override fun getNeutralSections(): DistanceRangeMap<NeutralSection> {
