@@ -649,7 +649,7 @@
         }
     ],
     "speed_sections": [],
-    "catenaries": [],
+    "electrifications": [],
     "signals": [
         {
             "track": "track.0",

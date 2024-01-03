@@ -7,7 +7,7 @@ from railjson_generator.schema.infra.track_section import TrackSection
 
 
 @dataclass
-class Catenary:
+class Electrification:
     id: str
     voltage: str
     tracks: List[TrackSection]
@@ -23,7 +23,7 @@ class Catenary:
                     applicable_directions=infra.ApplicableDirections.BOTH,
                 )
             )
-        return infra.Catenary(
+        return infra.Electrification(
             id=self.id,
             voltage=self.voltage,
             track_ranges=track_ranges,

@@ -199,39 +199,6 @@
             "title": "BufferStopSncfExtension",
             "type": "object"
         },
-        "Electrification": {
-            "description": "\n    A electrification corresponds to a set of cables designed to power electric trains by capturing the current through the use\n    of a pantograph. Electrification is identified by its identifier.\n    ",
-            "properties": {
-                "id": {
-                    "description": "Unique identifier of the object",
-                    "maxLength": 255,
-                    "minLength": 1,
-                    "title": "Id",
-                    "type": "string"
-                },
-                "track_ranges": {
-                    "description": "List of locations where the voltage is applied",
-                    "items": {
-                        "$ref": "#/$defs/ApplicableDirectionsTrackRange"
-                    },
-                    "title": "Track Ranges",
-                    "type": "array"
-                },
-                "voltage": {
-                    "description": "Type of power supply (in Volts) used for electrification",
-                    "minLength": 1,
-                    "title": "Voltage",
-                    "type": "string"
-                }
-            },
-            "required": [
-                "id",
-                "voltage",
-                "track_ranges"
-            ],
-            "title": "Electrification",
-            "type": "object"
-        },
         "Curve": {
             "description": "This class is used to define the curve object.\n    A curve correspond at radius of curvature in the part of corresponding track section.",
             "properties": {
@@ -406,6 +373,39 @@
                 "direction"
             ],
             "title": "DirectionalTrackRange",
+            "type": "object"
+        },
+        "Electrification": {
+            "description": "\n    An electrification corresponds to a set of cables designed to power\n    electric trains by capturing the current through the use\n    of a pantograph. Electrification is identified by its identifier.\n    ",
+            "properties": {
+                "id": {
+                    "description": "Unique identifier of the object",
+                    "maxLength": 255,
+                    "minLength": 1,
+                    "title": "Id",
+                    "type": "string"
+                },
+                "track_ranges": {
+                    "description": "List of locations where the voltage is applied",
+                    "items": {
+                        "$ref": "#/$defs/ApplicableDirectionsTrackRange"
+                    },
+                    "title": "Track Ranges",
+                    "type": "array"
+                },
+                "voltage": {
+                    "description": "Type of power supply (in Volts) used for electrification",
+                    "minLength": 1,
+                    "title": "Voltage",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "id",
+                "voltage",
+                "track_ranges"
+            ],
+            "title": "Electrification",
             "type": "object"
         },
         "Endpoint": {
@@ -1662,20 +1662,20 @@
             "title": "Buffer Stops",
             "type": "array"
         },
-        "electrifications": {
-            "description": "electrifications of the infra",
-            "items": {
-                "$ref": "#/$defs/Electrification"
-            },
-            "title": "electrifications",
-            "type": "array"
-        },
         "detectors": {
             "description": "Detectors of the infra",
             "items": {
                 "$ref": "#/$defs/Detector"
             },
             "title": "Detectors",
+            "type": "array"
+        },
+        "electrifications": {
+            "description": "Electrifications of the infra",
+            "items": {
+                "$ref": "#/$defs/Electrification"
+            },
+            "title": "Electrifications",
             "type": "array"
         },
         "extended_switch_types": {

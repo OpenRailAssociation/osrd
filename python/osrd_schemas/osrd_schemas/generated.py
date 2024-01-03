@@ -102,8 +102,8 @@ class OverlappingSpeedSections(InfraWarningTrait):
     reference: ObjectReference
 
 
-class OverlappingCatenaries(InfraWarningTrait):
-    error_type: Literal["overlapping_catenaries"] = Field(default="overlapping_catenaries")
+class OverlappingElectrifications(InfraWarningTrait):
+    error_type: Literal["overlapping_electrifications"] = Field(default="overlapping_electrifications")
     reference: ObjectReference
 
 
@@ -121,7 +121,7 @@ InfraError = Annotated[
         ObjectOutOfPath,
         OddBufferStopLocation,
         OutOfRange,
-        OverlappingCatenaries,
+        OverlappingElectrifications,
         OverlappingSpeedSections,
         OverlappingSwitches,
         UnknownPortName,

@@ -65,7 +65,7 @@ signal.add_logical_signal("BAL", settings={"Nf": "true"})
 speed_section = builder.add_speed_section(60.0 / 3.6)
 speed_section.add_track_range(ne_micro_foo_to_bar, 2_000, 6_000, ApplicableDirection.BOTH)
 
-# TODO catenaries on ne_micro_foo_to_bar
+# TODO electrifications on ne_micro_foo_to_bar
 
 
 # Add links

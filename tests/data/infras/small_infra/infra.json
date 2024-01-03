@@ -3623,9 +3623,9 @@
             ]
         }
     ],
-    "catenaries": [
+    "electrifications": [
         {
-            "id": "catenary_25k",
+            "id": "electrification_25k",
             "voltage": "25000",
             "track_ranges": [
                 {
@@ -3805,7 +3805,7 @@
             ]
         },
         {
-            "id": "catenary_1.5k",
+            "id": "electrification_1.5k",
             "voltage": "1500",
             "track_ranges": [
                 {
