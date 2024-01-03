@@ -7,7 +7,7 @@ use derivative::Derivative;
 use editoast_derive::InfraModel;
 use serde::{Deserialize, Serialize};
 
-/// Neutral sections are portions of track where trains aren't allowed to pull power from catenaries. They have to rely on inertia to cross such sections.
+/// Neutral sections are portions of track where trains aren't allowed to pull power from electrifications. They have to rely on inertia to cross such sections.
 ///
 /// In practice, neutral sections are delimited by signs. In OSRD, neutral sections are directional to allow accounting for different sign placement depending on the direction.
 ///

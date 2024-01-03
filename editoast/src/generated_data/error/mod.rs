@@ -1,6 +1,6 @@
 pub mod buffer_stops;
-pub mod catenaries;
 pub mod detectors;
+pub mod electrifications;
 pub mod operational_points;
 pub mod routes;
 pub mod signals;
@@ -237,11 +237,11 @@ pub async fn generate_infra_errors(infra_cache: &InfraCache) -> Vec<InfraError> 
             &[],
         )),
         Box::pin(generate_errors(
-            ObjectType::Catenary,
+            ObjectType::Electrification,
             infra_cache,
             &graph,
-            &catenaries::OBJECT_GENERATORS,
-            &catenaries::GLOBAL_GENERATORS,
+            &electrifications::OBJECT_GENERATORS,
+            &electrifications::GLOBAL_GENERATORS,
         )),
     ];
 
@@ -266,7 +266,7 @@ fn get_insert_errors_query(obj_type: ObjectType) -> &'static str {
         ObjectType::BufferStop => include_str!("sql/buffer_stops_insert_errors.sql"),
         ObjectType::Route => include_str!("sql/routes_insert_errors.sql"),
         ObjectType::OperationalPoint => include_str!("sql/operational_points_insert_errors.sql"),
-        ObjectType::Catenary => include_str!("sql/catenaries_insert_errors.sql"),
+        ObjectType::Electrification => include_str!("sql/electrifications_insert_errors.sql"),
     }
 }
 
@@ -417,8 +417,8 @@ mod test {
     use rstest::rstest;
 
     use super::{
-        buffer_stops, catenaries, detectors, generate_errors, operational_points, routes, signals,
-        speed_sections, switch_types, switches, track_sections, Graph,
+        buffer_stops, detectors, electrifications, generate_errors, operational_points, routes,
+        signals, speed_sections, switch_types, switches, track_sections, Graph,
     };
 
     use crate::infra_cache::tests::{create_buffer_stop_cache, create_small_infra_cache};
@@ -514,11 +514,11 @@ mod test {
         .await
         .is_empty());
         assert!(generate_errors(
-            ObjectType::Catenary,
+            ObjectType::Electrification,
             &small_infra_cache,
             &graph,
-            &catenaries::OBJECT_GENERATORS,
-            &catenaries::GLOBAL_GENERATORS,
+            &electrifications::OBJECT_GENERATORS,
+            &electrifications::GLOBAL_GENERATORS,
         )
         .await
         .is_empty());

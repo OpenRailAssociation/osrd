@@ -1,6 +1,6 @@
 use super::{
-    BufferStop, Catenary, Detector, NeutralSection, OSRDTyped, OperationalPoint, Route, Signal,
-    SpeedSection, Switch, SwitchType, TrackSection,
+    BufferStop, Detector, Electrification, NeutralSection, OSRDTyped, OperationalPoint, Route,
+    Signal, SpeedSection, Switch, SwitchType, TrackSection,
 };
 use crate::models::RAILJSON_VERSION;
 
@@ -28,7 +28,7 @@ pub struct RailJson {
     pub track_sections: Vec<TrackSection>,
     pub speed_sections: Vec<SpeedSection>,
     pub neutral_sections: Vec<NeutralSection>,
-    pub catenaries: Vec<Catenary>,
+    pub electrifications: Vec<Electrification>,
     pub signals: Vec<Signal>,
     pub buffer_stops: Vec<BufferStop>,
     pub detectors: Vec<Detector>,
@@ -128,7 +128,7 @@ pub mod test {
             track_sections: (0..10).map(|_| Default::default()).collect(),
             speed_sections: (0..10).map(|_| Default::default()).collect(),
             neutral_sections: (0..10).map(|_| Default::default()).collect(),
-            catenaries: (0..10).map(|_| Default::default()).collect(),
+            electrifications: (0..10).map(|_| Default::default()).collect(),
             signals: (0..10).map(|_| Default::default()).collect(),
             detectors: (0..10).map(|_| Default::default()).collect(),
             operational_points: (0..10).map(|_| Default::default()).collect(),
@@ -169,8 +169,8 @@ pub mod test {
             &railjson.speed_sections
         ));
         assert!(check_objects_eq(
-            &s_railjson.catenaries,
-            &railjson.catenaries
+            &s_railjson.electrifications,
+            &railjson.electrifications
         ));
         assert!(check_objects_eq(&s_railjson.signals, &railjson.signals));
         assert!(check_objects_eq(&s_railjson.detectors, &railjson.detectors));
@@ -203,7 +203,7 @@ pub mod test {
             track_sections: find_objects(conn, infra.id.unwrap()).await,
             speed_sections: find_objects(conn, infra.id.unwrap()).await,
             neutral_sections: find_objects(conn, infra.id.unwrap()).await,
-            catenaries: find_objects(conn, infra.id.unwrap()).await,
+            electrifications: find_objects(conn, infra.id.unwrap()).await,
             signals: find_objects(conn, infra.id.unwrap()).await,
             buffer_stops: find_objects(conn, infra.id.unwrap()).await,
             detectors: find_objects(conn, infra.id.unwrap()).await,

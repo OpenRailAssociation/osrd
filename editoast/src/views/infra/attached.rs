@@ -20,7 +20,7 @@ const ATTACHED_OBJECTS_TYPES: &[ObjectType] = &[
     ObjectType::Switch,
     ObjectType::BufferStop,
     ObjectType::OperationalPoint,
-    ObjectType::Catenary,
+    ObjectType::Electrification,
 ];
 
 /// Return `/infra/<infra_id>/attached` routes

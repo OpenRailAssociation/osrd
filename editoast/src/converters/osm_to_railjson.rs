@@ -56,7 +56,7 @@ pub fn parse_osm(osm_pbf_in: PathBuf) -> Result<RailJson, Box<dyn Error + Send +
         detectors: signals.iter().map(detector).collect(),
         signals,
         speed_sections: rail_edges.clone().flat_map(speed_sections).collect(),
-        catenaries: rail_edges.clone().flat_map(catenaries).collect(),
+        electrifications: rail_edges.clone().flat_map(electrifications).collect(),
         operational_points: operational_points(&osm_pbf_in, &nodes_tracks),
         ..Default::default()
     };
@@ -232,10 +232,10 @@ mod tests {
     }
 
     #[test]
-    fn parse_catenaries() {
+    fn parse_electrifications() {
         let rj = parse_osm("src/tests/minimal_rail.osm.pbf".into()).unwrap();
-        assert_eq!(1, rj.catenaries.len());
-        assert_eq!("15000", rj.catenaries[0].voltage);
+        assert_eq!(1, rj.electrifications.len());
+        assert_eq!("15000", rj.electrifications[0].voltage);
     }
 
     #[test]

@@ -1,25 +1,27 @@
 #![cfg(test)]
 
 use crate::models::Identifiable;
-use crate::{schema::Catenary as CatenarySchema, tables::infra_object_catenary};
+use crate::{
+    schema::Electrification as ElectrificationSchema, tables::infra_object_electrification,
+};
 use diesel::ExpressionMethods;
 use diesel::QueryDsl;
 use editoast_derive::Model;
 
 #[derive(Debug, Insertable, Queryable, QueryableByName, Model)]
-#[model(table = "infra_object_catenary")]
+#[model(table = "infra_object_electrification")]
 #[model(create, delete)]
-#[diesel(table_name = infra_object_catenary)]
-pub struct Catenary {
+#[diesel(table_name = infra_object_electrification)]
+pub struct Electrification {
     #[diesel(deserialize_as = i64)]
     pub id: Option<i64>,
     pub obj_id: String,
-    pub data: diesel_json::Json<CatenarySchema>,
+    pub data: diesel_json::Json<ElectrificationSchema>,
     pub infra_id: i64,
 }
 
-impl Catenary {
-    pub fn new(data: CatenarySchema, infra_id: i64, obj_id: String) -> Self {
+impl Electrification {
+    pub fn new(data: ElectrificationSchema, infra_id: i64, obj_id: String) -> Self {
         Self {
             id: None,
             obj_id,
@@ -29,7 +31,7 @@ impl Catenary {
     }
 }
 
-impl Identifiable for Catenary {
+impl Identifiable for Electrification {
     fn get_id(&self) -> i64 {
         self.id.unwrap()
     }

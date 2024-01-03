@@ -91,7 +91,7 @@ async fn get_railjson(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<impl Re
             "buffer_stops": {buffer_stops},
             "routes": {routes},
             "operational_points": {operational_points},
-            "catenaries": {catenaries},
+            "electrifications": {electrifications},
             "neutral_sections": {neutral_sections}
         }}"#,
         version = infra_meta.railjson_version.unwrap(),
@@ -104,7 +104,7 @@ async fn get_railjson(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<impl Re
         buffer_stops = res[ObjectType::BufferStop],
         routes = res[ObjectType::Route],
         operational_points = res[ObjectType::OperationalPoint],
-        catenaries = res[ObjectType::Catenary],
+        electrifications = res[ObjectType::Electrification],
         neutral_sections = res[ObjectType::NeutralSection]
     );
 
@@ -205,7 +205,7 @@ mod tests {
             switches: (0..10).map(|_| Default::default()).collect(),
             track_sections: (0..10).map(|_| Default::default()).collect(),
             speed_sections: (0..10).map(|_| Default::default()).collect(),
-            catenaries: (0..10).map(|_| Default::default()).collect(),
+            electrifications: (0..10).map(|_| Default::default()).collect(),
             signals: (0..10).map(|_| Default::default()).collect(),
             detectors: (0..10).map(|_| Default::default()).collect(),
             operational_points: (0..10).map(|_| Default::default()).collect(),

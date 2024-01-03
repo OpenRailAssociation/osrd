@@ -861,7 +861,7 @@ components:
         - BufferStop
         - Route
         - OperationalPoint
-        - Catenary
+        - Electrification
 
     RailjsonFile:
       properties:
@@ -883,7 +883,7 @@ components:
           type: array
         speed_sections:
           type: array
-        catenaries:
+        electrifications:
           type: array
         detectors:
           type: array
@@ -1018,7 +1018,7 @@ components:
         - out_of_range
         - overlapping_speed_sections
         - overlapping_switches
-        - overlapping_catenaries
+        - overlapping_electrifications
         - unknown_port_name
         - unused_port
         - node_endpoints_not_unique
@@ -1217,7 +1217,6 @@ components:
               type: array
               items:
                 $ref: "#/components/schemas/Point3D"
-
 
     SimulationReportByTrain:
       properties:

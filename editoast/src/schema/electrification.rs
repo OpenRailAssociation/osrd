@@ -14,40 +14,40 @@ use derivative::Derivative;
 use serde::{Deserialize, Serialize};
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, InfraModel)]
 #[serde(deny_unknown_fields)]
-#[infra_model(table = "crate::tables::infra_object_catenary")]
+#[infra_model(table = "crate::tables::infra_object_electrification")]
 #[derivative(Default)]
-pub struct Catenary {
+pub struct Electrification {
     pub id: Identifier,
     pub voltage: NonBlankString,
     pub track_ranges: Vec<ApplicableDirectionsTrackRange>,
 }
 
-impl OSRDTyped for Catenary {
+impl OSRDTyped for Electrification {
     fn get_type() -> ObjectType {
-        ObjectType::Catenary
+        ObjectType::Electrification
     }
 }
 
-impl OSRDIdentified for Catenary {
+impl OSRDIdentified for Electrification {
     fn get_id(&self) -> &String {
         &self.id
     }
 }
 
-impl Cache for Catenary {
+impl Cache for Electrification {
     fn get_track_referenced_id(&self) -> Vec<&String> {
         self.track_ranges.iter().map(|tr| &*tr.track).collect()
     }
 
     fn get_object_cache(&self) -> ObjectCache {
-        ObjectCache::Catenary(self.clone())
+        ObjectCache::Electrification(self.clone())
     }
 }
 
 #[cfg(test)]
 mod test {
 
-    use super::Catenary;
+    use super::Electrification;
     use crate::models::infra::tests::test_infra_transaction;
     use actix_web::test as actix_test;
     use diesel_async::scoped_futures::ScopedFutureExt;
@@ -57,12 +57,14 @@ mod test {
         test_infra_transaction(|conn, infra| {
             async move {
                 let data = (0..10)
-                    .map(|_| Catenary::default())
-                    .collect::<Vec<Catenary>>();
+                    .map(|_| Electrification::default())
+                    .collect::<Vec<Electrification>>();
 
-                assert!(Catenary::persist_batch(&data, infra.id.unwrap(), conn)
-                    .await
-                    .is_ok());
+                assert!(
+                    Electrification::persist_batch(&data, infra.id.unwrap(), conn)
+                        .await
+                        .is_ok()
+                );
             }
             .scope_boxed()
         })

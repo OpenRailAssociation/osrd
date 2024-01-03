@@ -1,2 +1,2 @@
-pub mod catenary;
+pub mod electrification;
 pub mod operational_point;

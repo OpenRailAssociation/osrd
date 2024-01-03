@@ -63,7 +63,7 @@ diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
 
-    infra_layer_catenary (id) {
+    infra_layer_detector (id) {
         id -> Int8,
         #[max_length = 255]
         obj_id -> Varchar,
@@ -77,7 +77,7 @@ diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
 
-    infra_layer_detector (id) {
+    infra_layer_electrification (id) {
         id -> Int8,
         #[max_length = 255]
         obj_id -> Varchar,
@@ -112,6 +112,21 @@ diesel::table! {
         obj_id -> Varchar,
         geographic -> Geometry,
         schematic -> Geometry,
+        infra_id -> Int8,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    infra_layer_neutral_sign (id) {
+        id -> Int8,
+        #[max_length = 255]
+        obj_id -> Varchar,
+        geographic -> Geometry,
+        schematic -> Geometry,
+        data -> Jsonb,
         infra_id -> Int8,
     }
 }
@@ -225,7 +240,7 @@ diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
 
-    infra_object_catenary (id) {
+    infra_object_detector (id) {
         id -> Int8,
         #[max_length = 255]
         obj_id -> Varchar,
@@ -238,7 +253,7 @@ diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
 
-    infra_object_detector (id) {
+    infra_object_electrification (id) {
         id -> Int8,
         #[max_length = 255]
         obj_id -> Varchar,
@@ -643,10 +658,11 @@ diesel::table! {
 }
 
 diesel::joinable!(infra_layer_buffer_stop -> infra (infra_id));
-diesel::joinable!(infra_layer_catenary -> infra (infra_id));
 diesel::joinable!(infra_layer_detector -> infra (infra_id));
+diesel::joinable!(infra_layer_electrification -> infra (infra_id));
 diesel::joinable!(infra_layer_error -> infra (infra_id));
 diesel::joinable!(infra_layer_neutral_section -> infra (infra_id));
+diesel::joinable!(infra_layer_neutral_sign -> infra (infra_id));
 diesel::joinable!(infra_layer_operational_point -> infra (infra_id));
 diesel::joinable!(infra_layer_psl_sign -> infra (infra_id));
 diesel::joinable!(infra_layer_signal -> infra (infra_id));
@@ -654,8 +670,8 @@ diesel::joinable!(infra_layer_speed_section -> infra (infra_id));
 diesel::joinable!(infra_layer_switch -> infra (infra_id));
 diesel::joinable!(infra_layer_track_section -> infra (infra_id));
 diesel::joinable!(infra_object_buffer_stop -> infra (infra_id));
-diesel::joinable!(infra_object_catenary -> infra (infra_id));
 diesel::joinable!(infra_object_detector -> infra (infra_id));
+diesel::joinable!(infra_object_electrification -> infra (infra_id));
 diesel::joinable!(infra_object_extended_switch_type -> infra (infra_id));
 diesel::joinable!(infra_object_neutral_section -> infra (infra_id));
 diesel::joinable!(infra_object_operational_point -> infra (infra_id));
@@ -690,10 +706,11 @@ diesel::allow_tables_to_appear_in_same_query!(
     electrical_profile_set,
     infra,
     infra_layer_buffer_stop,
-    infra_layer_catenary,
     infra_layer_detector,
+    infra_layer_electrification,
     infra_layer_error,
     infra_layer_neutral_section,
+    infra_layer_neutral_sign,
     infra_layer_operational_point,
     infra_layer_psl_sign,
     infra_layer_signal,
@@ -701,8 +718,8 @@ diesel::allow_tables_to_appear_in_same_query!(
     infra_layer_switch,
     infra_layer_track_section,
     infra_object_buffer_stop,
-    infra_object_catenary,
     infra_object_detector,
+    infra_object_electrification,
     infra_object_extended_switch_type,
     infra_object_neutral_section,
     infra_object_operational_point,

@@ -85,7 +85,7 @@
     },
     "energy_sources": [
         {
-            "energy_source_type": "Catenary",
+            "energy_source_type": "Electrification",
             "max_input_power": {
                 "speeds": [
                     0,

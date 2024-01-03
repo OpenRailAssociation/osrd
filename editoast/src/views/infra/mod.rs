@@ -527,7 +527,7 @@ pub mod tests {
     };
     use crate::generated_data;
     use crate::schema::operation::{Operation, RailjsonObject};
-    use crate::schema::{Catenary, ObjectType, SpeedSection, SwitchType};
+    use crate::schema::{Electrification, ObjectType, SpeedSection, SwitchType};
     use crate::views::tests::{create_test_service, create_test_service_with_core_client};
     use actix_http::Request;
     use actix_web::http::StatusCode;
@@ -797,22 +797,22 @@ pub mod tests {
         let infra_1 = empty_infra(db_pool()).await;
         let infra_2 = small_infra(db_pool()).await;
 
-        // Create catenaries
-        let catenary_1 = Catenary {
+        // Create electrifications
+        let electrification_1 = Electrification {
             id: "test1".into(),
             voltage: "0".into(),
             track_ranges: vec![],
         };
-        let catenary_2 = Catenary {
+        let electrification_2 = Electrification {
             id: "test2".into(),
             voltage: "1".into(),
             track_ranges: vec![],
         };
 
-        let req = create_object_request(infra_1.id(), catenary_1.into());
+        let req = create_object_request(infra_1.id(), electrification_1.into());
         assert_eq!(call_service(&app, req).await.status(), StatusCode::OK);
 
-        let req = create_object_request(infra_2.id(), catenary_2.into());
+        let req = create_object_request(infra_2.id(), electrification_2.into());
         assert_eq!(call_service(&app, req).await.status(), StatusCode::OK);
 
         // Create rolling_stock
@@ -836,14 +836,14 @@ pub mod tests {
         let infra = empty_infra.await;
 
         let test_cases = vec![true, false];
-        // Create catenary
-        let catenary = Catenary {
+        // Create electrification
+        let electrification = Electrification {
             id: "test".into(),
             voltage: "0".into(),
             track_ranges: vec![],
         };
 
-        let req = create_object_request(infra.id(), catenary.into());
+        let req = create_object_request(infra.id(), electrification.into());
         assert_eq!(call_service(&app, req).await.status(), StatusCode::OK);
 
         // Create rolling_stock

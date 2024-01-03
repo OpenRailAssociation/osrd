@@ -18,39 +18,39 @@ use std::fmt::Debug;
 use utoipa::ToSchema;
 
 crate::routes! {
-    catenaries_on_path,
+    electrifications_on_path,
 }
 
 crate::schemas! {
-    CatenariesOnPathResponse,
+    ElectrificationsOnPathResponse,
     &osrd_containers::rangemap_utils::RangedValue,
 }
 
 /// Build a rangemap for each track section, giving the voltage for each range
-fn map_catenary_modes(
+fn map_electrification_modes(
     infra_cache: &InfraCache,
     track_ids: HashSet<String>,
 ) -> (TrackMap<String>, Vec<InternalError>) {
     let mut warnings = Vec::new();
-    let unique_catenary_ids = track_ids
+    let unique_electrification_ids = track_ids
         .iter()
         .flat_map(|track_id| {
             infra_cache
-                .get_track_refs_type(track_id, ObjectType::Catenary)
+                .get_track_refs_type(track_id, ObjectType::Electrification)
                 .into_iter()
         })
-        .map(|catenary_ref| &catenary_ref.obj_id)
+        .map(|electrification_ref| &electrification_ref.obj_id)
         .collect::<HashSet<_>>();
 
     let mut res = HashMap::new();
-    for catenary_id in unique_catenary_ids {
-        let catenary = infra_cache
-            .catenaries()
-            .get(catenary_id)
-            .expect("catenary not found")
-            .unwrap_catenary();
+    for electrification_id in unique_electrification_ids {
+        let electrification = infra_cache
+            .electrifications()
+            .get(electrification_id)
+            .expect("electrification not found")
+            .unwrap_electrification();
         let mut overlapping_ranges = Vec::new();
-        for track_range in &catenary.track_ranges {
+        for track_range in &electrification.track_ranges {
             if track_ids.contains(track_range.track.as_str()) {
                 let res_entry = res
                     .entry(track_range.track.to_string())
@@ -59,13 +59,13 @@ fn map_catenary_modes(
                 if res_entry.overlaps(&range) {
                     overlapping_ranges.push(track_range.clone());
                 }
-                res_entry.insert(range, catenary.voltage.0.clone());
+                res_entry.insert(range, electrification.voltage.0.clone());
             }
         }
         if !overlapping_ranges.is_empty() {
             warnings.push(
-                PathfindingError::CatenaryOverlap {
-                    catenary_id: catenary_id.to_string(),
+                PathfindingError::ElectrificationOverlap {
+                    electrification_id: electrification_id.to_string(),
                     overlapping_ranges,
                 }
                 .into(),
@@ -76,10 +76,10 @@ fn map_catenary_modes(
 }
 
 #[derive(Debug, Serialize, Deserialize, ToSchema)]
-/// A list of ranges associated to catenary modes. When a profile overlapping another is found,
+/// A list of ranges associated to electrification modes. When a profile overlapping another is found,
 /// a warning is added to the list
-struct CatenariesOnPathResponse {
-    catenary_ranges: Vec<RangedValue>,
+struct ElectrificationsOnPathResponse {
+    electrification_ranges: Vec<RangedValue>,
     warnings: Vec<InternalError>,
 }
 
@@ -87,16 +87,16 @@ struct CatenariesOnPathResponse {
     tag = "infra",
     params(PathfindingIdParam),
     responses(
-        (status = 200, body = CatenariesOnPathResponse),
+        (status = 200, body = ElectrificationsOnPathResponse),
     )
 )]
-#[get("/catenaries")]
-/// Retrieve the catenary modes along a path, as seen by the rolling stock specified
-async fn catenaries_on_path(
+#[get("/electrifications")]
+/// Retrieve the electrification modes along a path, as seen by the rolling stock specified
+async fn electrifications_on_path(
     params: Path<PathfindingIdParam>,
     db_pool: Data<DbPool>,
     infra_caches: Data<CHashMap<i64, InfraCache>>,
-) -> Result<Json<CatenariesOnPathResponse>> {
+) -> Result<Json<ElectrificationsOnPathResponse>> {
     let pathfinding_id = params.pathfinding_id;
     let pathfinding = match Pathfinding::retrieve(db_pool.clone(), pathfinding_id).await? {
         Some(pf) => pf,
@@ -112,11 +112,12 @@ async fn catenaries_on_path(
     let mut conn = db_pool.get().await?;
 
     let infra_cache = InfraCache::get_or_load(&mut conn, &infra_caches, &infra).await?;
-    let (catenary_mode_map, warnings) = map_catenary_modes(&infra_cache, track_section_ids);
+    let (electrification_mode_map, warnings) =
+        map_electrification_modes(&infra_cache, track_section_ids);
 
-    let res = make_path_range_map(&catenary_mode_map, &pathfinding);
-    Ok(Json(CatenariesOnPathResponse {
-        catenary_ranges: RangedValue::list_from_range_map(&res),
+    let res = make_path_range_map(&electrification_mode_map, &pathfinding);
+    Ok(Json(ElectrificationsOnPathResponse {
+        electrification_ranges: RangedValue::list_from_range_map(&res),
         warnings,
     }))
 }
@@ -127,11 +128,12 @@ pub mod tests {
     use crate::{
         fixtures::tests::{db_pool, empty_infra, TestFixture},
         models::{
-            infra_objects::catenary::Catenary, pathfinding::tests::simple_pathfinding_fixture,
-            Create,
+            infra_objects::electrification::Electrification,
+            pathfinding::tests::simple_pathfinding_fixture, Create,
         },
         schema::{
-            ApplicableDirections, ApplicableDirectionsTrackRange, Catenary as CatenarySchema,
+            ApplicableDirections, ApplicableDirectionsTrackRange,
+            Electrification as ElectrificationSchema,
         },
         views::tests::create_test_service,
     };
@@ -144,7 +146,7 @@ pub mod tests {
 
     #[fixture]
     fn simple_mode_map() -> TrackMap<String> {
-        // The mode map associated to the following catenaries
+        // The mode map associated to the following electrifications
         let mut mode_map = [
             ("track_1", "25kV"),
             ("track_2", "25kV"),
@@ -161,23 +163,23 @@ pub mod tests {
     }
 
     #[fixture]
-    async fn infra_with_catenaries(
+    async fn infra_with_electrifications(
         db_pool: Data<DbPool>,
         #[future] empty_infra: TestFixture<Infra>,
     ) -> TestFixture<Infra> {
         let infra = empty_infra.await;
 
         // See the diagram in `models::pathfinding::tests::simple_path` to see how the track sections are connected.
-        let catenary_schemas = vec![
-            CatenarySchema {
+        let electrification_schemas = vec![
+            ElectrificationSchema {
                 track_ranges: vec![
                     ApplicableDirectionsTrackRange::new("track_1", 0.0, 10.0, Both),
                     ApplicableDirectionsTrackRange::new("track_2", 5.0, 10.0, Both),
                 ],
                 voltage: "25kV".into(),
-                id: "catenary_1".into(),
+                id: "electrification_1".into(),
             },
-            CatenarySchema {
+            ElectrificationSchema {
                 track_ranges: vec![
                     ApplicableDirectionsTrackRange::new("track_2", 0.0, 5.0, Both),
                     ApplicableDirectionsTrackRange::new("track_3", 0.0, 5.0, Both),
@@ -185,7 +187,7 @@ pub mod tests {
                 voltage: "25kV".into(),
                 ..Default::default()
             },
-            CatenarySchema {
+            ElectrificationSchema {
                 track_ranges: vec![
                     ApplicableDirectionsTrackRange::new("track_3", 5.0, 10.0, Both),
                     ApplicableDirectionsTrackRange::new("track_5", 0.0, 10.0, Both),
@@ -194,24 +196,24 @@ pub mod tests {
                 ..Default::default()
             },
         ];
-        for (i, catenary_schema) in catenary_schemas.into_iter().enumerate() {
-            Catenary::new(catenary_schema, infra.id(), i.to_string())
+        for (i, electrification_schema) in electrification_schemas.into_iter().enumerate() {
+            Electrification::new(electrification_schema, infra.id(), i.to_string())
                 .create(db_pool.clone())
                 .await
-                .expect("Could not create catenary");
+                .expect("Could not create electrification");
         }
         infra
     }
 
     #[rstest]
-    async fn test_map_catenary_modes(
+    async fn test_map_electrification_modes(
         db_pool: Data<DbPool>,
-        #[future] infra_with_catenaries: TestFixture<Infra>,
+        #[future] infra_with_electrifications: TestFixture<Infra>,
         simple_mode_map: TrackMap<String>,
     ) {
         let mut conn = db_pool.get().await.unwrap();
-        let infra_with_catenaries = infra_with_catenaries.await;
-        let infra_cache = InfraCache::load(&mut conn, &infra_with_catenaries.model)
+        let infra_with_electrifications = infra_with_electrifications.await;
+        let infra_cache = InfraCache::load(&mut conn, &infra_with_electrifications.model)
             .await
             .expect("Could not load infra_cache");
         let track_sections: HashSet<_> =
@@ -220,28 +222,28 @@ pub mod tests {
                 .map(|s| s.to_string())
                 .collect();
 
-        let (mode_map, warnings) = map_catenary_modes(&infra_cache, track_sections);
+        let (mode_map, warnings) = map_electrification_modes(&infra_cache, track_sections);
         assert_eq!(mode_map, simple_mode_map);
         assert!(warnings.is_empty());
     }
 
     #[rstest]
-    async fn test_map_catenary_modes_with_warnings(
+    async fn test_map_electrification_modes_with_warnings(
         db_pool: Data<DbPool>,
-        #[future] infra_with_catenaries: TestFixture<Infra>,
+        #[future] infra_with_electrifications: TestFixture<Infra>,
     ) {
         let mut conn = db_pool.get().await.unwrap();
-        let infra_with_catenaries = infra_with_catenaries.await;
-        let mut infra_cache = InfraCache::load(&mut conn, &infra_with_catenaries.model)
+        let infra_with_electrifications = infra_with_electrifications.await;
+        let mut infra_cache = InfraCache::load(&mut conn, &infra_with_electrifications.model)
             .await
             .expect("Could not load infra_cache");
         infra_cache
-            .add(CatenarySchema {
+            .add(ElectrificationSchema {
                 track_ranges: vec![ApplicableDirectionsTrackRange::new(
                     "track_1", 0.0, 10.0, Both,
                 )],
                 voltage: "25kV".into(),
-                id: "catenary_that_overlaps".into(),
+                id: "electrification_that_overlaps".into(),
             })
             .unwrap();
         let track_sections: HashSet<_> =
@@ -250,15 +252,24 @@ pub mod tests {
                 .map(|s| s.to_string())
                 .collect();
 
-        let (_, warnings) = map_catenary_modes(&infra_cache, track_sections);
+        let (_, warnings) = map_electrification_modes(&infra_cache, track_sections);
         assert_eq!(warnings.len(), 1);
         let warning = &warnings[0];
 
-        assert!(warning.get_context().contains_key("catenary_id"));
-        let catenary_id: String =
-            from_value(warning.get_context().get("catenary_id").unwrap().clone()).unwrap();
+        assert!(warning.get_context().contains_key("electrification_id"));
+        let electrification_id: String = from_value(
+            warning
+                .get_context()
+                .get("electrification_id")
+                .unwrap()
+                .clone(),
+        )
+        .unwrap();
 
-        assert!(catenary_id == "catenary_that_overlaps" || catenary_id == "catenary_1");
+        assert!(
+            electrification_id == "electrification_that_overlaps"
+                || electrification_id == "electrification_1"
+        );
 
         assert!(warning.get_context().contains_key("overlapping_ranges"));
         let overlapping_ranges: Vec<ApplicableDirectionsTrackRange> = from_value(
@@ -277,27 +288,30 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn test_view_catenaries_on_path(
+    async fn test_view_electrifications_on_path(
         db_pool: Data<DbPool>,
-        #[future] infra_with_catenaries: TestFixture<Infra>,
+        #[future] infra_with_electrifications: TestFixture<Infra>,
     ) {
-        let infra_with_catenaries = infra_with_catenaries.await;
+        let infra_with_electrifications = infra_with_electrifications.await;
         let pathfinding =
-            simple_pathfinding_fixture(infra_with_catenaries.id(), db_pool.clone()).await;
+            simple_pathfinding_fixture(infra_with_electrifications.id(), db_pool.clone()).await;
 
         let app = create_test_service().await;
         let req = TestRequest::get()
-            .uri(&format!("/pathfinding/{}/catenaries/", pathfinding.id()))
+            .uri(&format!(
+                "/pathfinding/{}/electrifications/",
+                pathfinding.id()
+            ))
             .to_request();
 
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
 
-        let response: CatenariesOnPathResponse = read_body_json(response).await;
+        let response: ElectrificationsOnPathResponse = read_body_json(response).await;
         assert!(response.warnings.is_empty());
-        assert_eq!(response.catenary_ranges.len(), 3);
+        assert_eq!(response.electrification_ranges.len(), 3);
         assert_eq!(
-            response.catenary_ranges[0],
+            response.electrification_ranges[0],
             RangedValue {
                 begin: 0.0,
                 end: 25.0,
@@ -305,7 +319,7 @@ pub mod tests {
             }
         );
         assert_eq!(
-            response.catenary_ranges[1],
+            response.electrification_ranges[1],
             RangedValue {
                 begin: 25.0,
                 end: 30.0,
@@ -313,7 +327,7 @@ pub mod tests {
             }
         );
         assert_eq!(
-            response.catenary_ranges[2],
+            response.electrification_ranges[2],
             RangedValue {
                 begin: 40.0,
                 end: 48.0,
