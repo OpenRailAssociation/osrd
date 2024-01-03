@@ -14,7 +14,7 @@ export const useMapBlankStyle = (): MapProps['mapStyle'] => {
       ? [
           { url: 'https://static.osm.osrd.fr/sprites/sprites', id: 'default' },
           ...signalingSystems.map((id) => ({
-            url: `${baseURL}/sprites/${id}/sprites`,
+            url: `${window.location.origin}${baseURL}/sprites/${id}/sprites`,
             id,
           })),
         ]

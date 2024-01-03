@@ -1,6 +1,6 @@
 export const MAIN_API = {
-  proxy_editoast: `${import.meta.env.OSRD_BACKEND_URL}/api`,
-  proxy_gateway: `${import.meta.env.OSRD_BACKEND_URL}`,
+  proxy_editoast: '/api',
+  proxy_gateway: '',
   version: '0.0.1',
   editor: {
     component_identifier: { database: 'gaia', name: 'Test' },
