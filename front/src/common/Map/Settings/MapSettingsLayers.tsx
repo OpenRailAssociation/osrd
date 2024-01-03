@@ -65,7 +65,7 @@ const MapSettingsLayers: FC<unknown> = () => (
       <FormatSwitch name="signals" icon={<Icon2SVG file={SignalsSVGFile} altName="Signal svg" />} />
     </div>
     <div className="col-md-6">
-      <FormatSwitch name="catenaries" icon={<GiElectric />} />
+      <FormatSwitch name="electrifications" icon={<GiElectric />} />
     </div>
     <div className="col-md-6">
       <FormatSwitch name="neutral_sections" icon={<GiUnplugged />} />

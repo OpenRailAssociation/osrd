@@ -20,7 +20,7 @@ export const NO_POWER_RESTRICTION = 'NO_POWER_RESTRICTION';
 const DEFAULT_SEGMENT_LENGTH = 1000;
 
 interface PowerRestrictionsSelectorProps {
-  pathCatenaryRanges: RangedValue[];
+  pathElectrificationRanges: RangedValue[];
   rollingStockPowerRestrictions: RollingStock['power_restrictions'];
   rollingStockModes: RollingStock['effort_curves']['modes'];
 }
@@ -52,7 +52,7 @@ const getRollingStockPowerRestrictionsByMode = (
 };
 
 const PowerRestrictionsSelector = ({
-  pathCatenaryRanges,
+  pathElectrificationRanges,
   rollingStockModes,
   rollingStockPowerRestrictions,
 }: PowerRestrictionsSelectorProps) => {
@@ -63,30 +63,30 @@ const PowerRestrictionsSelector = ({
   const powerRestrictionRanges = useSelector(getPowerRestrictionRanges);
 
   const pathLength = useMemo(() => {
-    const lastPathSegment = last(pathCatenaryRanges);
+    const lastPathSegment = last(pathElectrificationRanges);
     return lastPathSegment ? lastPathSegment.end : DEFAULT_SEGMENT_LENGTH;
-  }, [pathCatenaryRanges]);
+  }, [pathElectrificationRanges]);
 
   /** Compute the list of points where the electrification changes on path to give them to the intervals editor as operationalPoints */
   const electrificationChangePoints = useMemo(() => {
     const specialPoints = [
-      ...pathCatenaryRanges.map((catenaryRange) => ({
-        position: catenaryRange.end,
+      ...pathElectrificationRanges.map((electrificationRange) => ({
+        position: electrificationRange.end,
       })),
     ];
     specialPoints.pop();
     return specialPoints;
-  }, [pathCatenaryRanges]);
+  }, [pathElectrificationRanges]);
 
-  /** Format the catenary ranges to display them on the interval editor */
-  const formattedPathCatenaryRanges = useMemo(
+  /** Format the electrification ranges to display them on the interval editor */
+  const formattedPathElectrificationRanges = useMemo(
     () =>
-      pathCatenaryRanges.map((catenaryRange) => ({
-        begin: catenaryRange.begin,
-        end: catenaryRange.end,
-        value: `${catenaryRange.value}V`,
+      pathElectrificationRanges.map((electrificationRange) => ({
+        begin: electrificationRange.begin,
+        end: electrificationRange.end,
+        value: `${electrificationRange.value}V`,
       })),
-    [pathCatenaryRanges]
+    [pathElectrificationRanges]
   );
 
   const powerRestrictionsByMode = useMemo(
@@ -101,8 +101,8 @@ const PowerRestrictionsSelector = ({
       (powerRestrictionRanges.length === 1 &&
         powerRestrictionRanges[0].value === NO_POWER_RESTRICTION)
     ) {
-      if (!isEmpty(pathCatenaryRanges)) {
-        const initialPowerRestrictionRanges = pathCatenaryRanges.map((pathSegment) => ({
+      if (!isEmpty(pathElectrificationRanges)) {
+        const initialPowerRestrictionRanges = pathElectrificationRanges.map((pathSegment) => ({
           begin: pathSegment.begin,
           end: pathSegment.end,
           value: NO_POWER_RESTRICTION,
@@ -120,7 +120,7 @@ const PowerRestrictionsSelector = ({
         );
       }
     }
-  }, [pathCatenaryRanges]);
+  }, [pathElectrificationRanges]);
 
   /** List of options of the rollingStock's power restrictions + option noPowerRestriction */
   const powerRestrictionOptions = useMemo(
@@ -132,36 +132,36 @@ const PowerRestrictionsSelector = ({
     dispatch(updatePowerRestrictionRanges(newPowerRestrictionRanges as PowerRestrictionRange[]));
   };
 
-  /** Check the compatibility between the powerRestrictionRanges and the catenaries */
+  /** Check the compatibility between the powerRestrictionRanges and the electrifications */
   useEffect(() => {
     if (
       !isEmpty(rollingStockPowerRestrictions) &&
-      !isEmpty(pathCatenaryRanges) &&
+      !isEmpty(pathElectrificationRanges) &&
       !isEmpty(powerRestrictionRanges)
     ) {
       powerRestrictionRanges.forEach((powerRestrictionRange) => {
         // find path ranges crossed or included in the power restriction range
-        pathCatenaryRanges.forEach((pathCatenaryRange) => {
+        pathElectrificationRanges.forEach((pathElectrificationRange) => {
           // no intersection between the path range and the power restriction range
           if (
-            pathCatenaryRange.end <= powerRestrictionRange.begin ||
-            powerRestrictionRange.end <= pathCatenaryRange.begin
+            pathElectrificationRange.end <= powerRestrictionRange.begin ||
+            powerRestrictionRange.end <= pathElectrificationRange.begin
           )
             return;
           // check restriction is compatible with the path range's electrification mode
-          const isInvalid = !powerRestrictionsByMode[pathCatenaryRange.value].includes(
+          const isInvalid = !powerRestrictionsByMode[pathElectrificationRange.value].includes(
             powerRestrictionRange.value
           );
           if (isInvalid) {
             const invalidZoneBegin = Math.round(
-              pathCatenaryRange.begin < powerRestrictionRange.begin
+              pathElectrificationRange.begin < powerRestrictionRange.begin
                 ? powerRestrictionRange.begin
-                : pathCatenaryRange.begin
+                : pathElectrificationRange.begin
             );
             const invalidZoneEnd = Math.round(
-              powerRestrictionRange.end < pathCatenaryRange.end
+              powerRestrictionRange.end < pathElectrificationRange.end
                 ? powerRestrictionRange.end
-                : pathCatenaryRange.end
+                : pathElectrificationRange.end
             );
             dispatch(
               setWarning({
@@ -174,7 +174,7 @@ const PowerRestrictionsSelector = ({
                       })
                     : t('warningMessages.powerRestrictionInvalidCombination', {
                         powerRestrictionCode: powerRestrictionRange.value,
-                        electrification: pathCatenaryRange.value,
+                        electrification: pathElectrificationRange.value,
                         begin: invalidZoneBegin,
                         end: invalidZoneEnd,
                       }),
@@ -195,7 +195,7 @@ const PowerRestrictionsSelector = ({
           <>
             <p className="mb-1 mt-1">{t('powerRestrictionExplanationText')}</p>
             <IntervalsEditor
-              additionalData={formattedPathCatenaryRanges}
+              additionalData={formattedPathElectrificationRanges}
               intervalType={INTERVAL_TYPES.SELECT}
               data={powerRestrictionRanges}
               defaultValue={NO_POWER_RESTRICTION}

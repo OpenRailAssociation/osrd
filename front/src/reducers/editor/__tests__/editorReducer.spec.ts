@@ -24,10 +24,10 @@ describe('editorReducer', () => {
   });
 
   it('should handle selectLayers', () => {
-    const editorLayers = testDataBuilder.buildEditorLayers(['catenaries', 'routes']);
+    const editorLayers = testDataBuilder.buildEditorLayers(['electrifications', 'routes']);
     store.dispatch(selectLayers(editorLayers));
     const editorState = store.getState()[editorSlice.name];
-    expect(editorState.editorLayers).toEqual(new Set(['catenaries', 'routes']));
+    expect(editorState.editorLayers).toEqual(new Set(['electrifications', 'routes']));
   });
 
   it('should handle loadDataModelAction and update editorSchema', () => {

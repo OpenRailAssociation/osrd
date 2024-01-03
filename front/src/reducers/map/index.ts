@@ -35,7 +35,7 @@ export interface MapState {
   viewport: Viewport;
   layersSettings: {
     bufferstops: boolean;
-    catenaries: boolean;
+    electrifications: boolean;
     neutral_sections: boolean;
     detectors: boolean;
     operationalpoints: boolean;
@@ -79,7 +79,7 @@ export const mapInitialState: MapState = {
   },
   layersSettings: {
     bufferstops: false,
-    catenaries: false,
+    electrifications: false,
     neutral_sections: false,
     detectors: false,
     operationalpoints: false,

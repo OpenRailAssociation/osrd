@@ -33,7 +33,7 @@ export const infraErrorTypeList: Record<'errors' | 'warnings', Set<InfraErrorTyp
     'odd_buffer_stop_location',
     'overlapping_speed_sections',
     'overlapping_switches',
-    'overlapping_catenaries',
+    'overlapping_electrifications',
     'unused_port',
   ]),
 };
@@ -85,8 +85,8 @@ type InfraErrorOverlappingSwitches = InfraErrorInformation & {
   error_type: 'overlapping_switches';
   reference: ObjectRef;
 };
-type InfraErrorOverlappingCatenaries = InfraErrorInformation & {
-  error_type: 'overlapping_catenaries';
+type InfraErrorOverlappingElectrifications = InfraErrorInformation & {
+  error_type: 'overlapping_electrifications';
   reference: ObjectRef;
 };
 type InfraErrorUnknownPortName = InfraErrorInformation & {
@@ -119,7 +119,7 @@ export type InfraError = Omit<InfraErrorApiType, 'informations'> & {
     | InfraErrorOddBufferStopLocation
     | InfraErrorOverlappingSpeedSections
     | InfraErrorOverlappingSwitches
-    | InfraErrorOverlappingCatenaries
+    | InfraErrorOverlappingElectrifications
     | InfraErrorUnusedPort
     | InfraErrorNodeEndpointsNotUnique;
 };

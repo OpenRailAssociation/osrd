@@ -84,13 +84,13 @@ export const speedLimitMapKey: SpeedLimitKey[] = [
   { speed: 'v0', text: '1km/h - 30km/h' },
 ];
 
-interface CatenaryKey {
+interface ElectrificationKey {
   color: string;
   text: string;
   current: string;
 }
 
-export const catenaryMapKey: CatenaryKey[] = [
+export const electrificationMapKey: ElectrificationKey[] = [
   { color: 'color25000V', text: '25000V', current: 'alternatingCurrent' },
   { color: 'color15000V1623', text: '15000V 16 2/3', current: '' },
   { color: 'color3000V', text: '3000V', current: 'directCurrent' },

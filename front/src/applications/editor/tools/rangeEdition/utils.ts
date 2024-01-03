@@ -9,7 +9,7 @@ import { MapLayerMouseEvent } from 'maplibre-gl';
 import { getNearestPoint } from 'utils/mapHelper';
 import { NEW_ENTITY_ID } from '../../data/utils';
 import {
-  CatenaryEntity,
+  ElectrificationEntity,
   PSLExtension,
   PSLSign,
   SpeedSectionEntity,
@@ -37,10 +37,10 @@ import { PartialOrReducer } from '../editorContextTypes';
 
 // Tool functions
 
-export function getNewCatenary(): CatenaryEntity {
+export function getNewElectrification(): ElectrificationEntity {
   return {
     type: 'Feature',
-    objType: 'Catenary',
+    objType: 'Electrification',
     properties: {
       id: NEW_ENTITY_ID,
       track_ranges: [],
@@ -171,7 +171,9 @@ export function getEditSpeedSectionState(
   };
 }
 
-export function getEditCatenaryState(entity: CatenaryEntity): RangeEditionState<CatenaryEntity> {
+export function getEditElectrificationState(
+  entity: ElectrificationEntity
+): RangeEditionState<ElectrificationEntity> {
   return {
     ...DEFAULT_COMMON_TOOL_STATE,
     initialEntity: cloneDeep(entity),
@@ -377,11 +379,11 @@ export function isOnModeMove(interactionStateType: string): boolean {
   return ['moveRangeExtremity', 'moveSign'].includes(interactionStateType);
 }
 
-export const getObjTypeEdition = (objType: 'SpeedSection' | 'Catenary') =>
-  objType === 'SpeedSection' ? 'speed' : 'catenary';
+export const getObjTypeEdition = (objType: 'SpeedSection' | 'Electrification') =>
+  objType === 'SpeedSection' ? 'speed' : 'electrification';
 
-export const getObjTypeAction = (objType: 'SpeedSection' | 'Catenary') =>
-  objType === 'SpeedSection' ? 'speed-section' : 'catenary';
+export const getObjTypeAction = (objType: 'SpeedSection' | 'Electrification') =>
+  objType === 'SpeedSection' ? 'speed-section' : 'electrification';
 
-export const isNew = (entity: SpeedSectionEntity | CatenaryEntity) =>
+export const isNew = (entity: SpeedSectionEntity | ElectrificationEntity) =>
   entity.properties.id === NEW_ENTITY_ID;

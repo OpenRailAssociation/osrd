@@ -6,7 +6,7 @@ import { BsBoxArrowInRight } from 'react-icons/bs';
 import { last } from 'lodash';
 import type { Position } from 'geojson';
 
-import type { CatenaryEntity, SpeedSectionEntity, TrackSectionEntity } from 'types';
+import type { ElectrificationEntity, SpeedSectionEntity, TrackSectionEntity } from 'types';
 
 import EditorContext from 'applications/editor/context';
 import { getEntities } from 'applications/editor/data/api';
@@ -19,7 +19,7 @@ import { injectGeometry, removeInvalidRanges } from 'applications/editor/tools/t
 import type { TrackEditionState } from 'applications/editor/tools/trackEdition/types';
 import type { ExtendedEditorContextType } from 'applications/editor/tools/editorContextTypes';
 import {
-  getEditCatenaryState,
+  getEditElectrificationState,
   getEditSpeedSectionState,
 } from 'applications/editor/tools/rangeEdition/utils';
 
@@ -43,7 +43,7 @@ const DEFAULT_DISPLAYED_RANGES_COUNT = 3;
 
 interface AttachedRangesItemsListProps {
   id: string;
-  itemType: 'SpeedSection' | 'Catenary';
+  itemType: 'SpeedSection' | 'Electrification';
 }
 
 /**
@@ -57,7 +57,7 @@ export const AttachedRangesItemsList = ({ id, itemType }: AttachedRangesItemsLis
   const [itemsState, setItemsState] = useState<
     | { type: 'idle' }
     | { type: 'loading' }
-    | { type: 'ready'; itemEntities: SpeedSectionEntity[] | CatenaryEntity[] }
+    | { type: 'ready'; itemEntities: SpeedSectionEntity[] | ElectrificationEntity[] }
     | { type: 'error'; message: string }
   >({ type: 'idle' });
   const { switchTool } = useContext(EditorContext) as ExtendedEditorContextType<unknown>;
@@ -85,7 +85,9 @@ export const AttachedRangesItemsList = ({ id, itemType }: AttachedRangesItemsLis
                 } else {
                   setItemsState({
                     type: 'ready',
-                    itemEntities: (res[itemType] || []).map((s) => entities[s] as CatenaryEntity),
+                    itemEntities: (res[itemType] || []).map(
+                      (s) => entities[s] as ElectrificationEntity
+                    ),
                   });
                 }
               })
@@ -132,7 +134,7 @@ export const AttachedRangesItemsList = ({ id, itemType }: AttachedRangesItemsLis
             {(showAll
               ? itemsState.itemEntities
               : itemsState.itemEntities.slice(0, DEFAULT_DISPLAYED_RANGES_COUNT)
-            ).map((entity: SpeedSectionEntity | CatenaryEntity) => (
+            ).map((entity: SpeedSectionEntity | ElectrificationEntity) => (
               <li key={entity.properties.id} className="d-flex align-items-center mb-2">
                 <div className="flex-shrink-0 mr-3">
                   <button
@@ -147,8 +149,8 @@ export const AttachedRangesItemsList = ({ id, itemType }: AttachedRangesItemsLis
                         });
                       } else
                         switchTool({
-                          toolType: TOOL_TYPES.CATENARY_EDITION,
-                          toolState: getEditCatenaryState(entity as CatenaryEntity),
+                          toolType: TOOL_TYPES.ELECTRIFICATION_EDITION,
+                          toolState: getEditElectrificationState(entity as ElectrificationEntity),
                         });
                     }}
                   >
@@ -463,7 +465,7 @@ export const TrackEditionLeftPanel: React.FC = () => {
           <AttachedRangesItemsList id={track.properties.id} itemType="SpeedSection" />
           <div className="border-bottom" />
           <h3>{t('Editor.tools.track-edition.attached-catenaries')}</h3>
-          <AttachedRangesItemsList id={track.properties.id} itemType="Catenary" />
+          <AttachedRangesItemsList id={track.properties.id} itemType="Electrification" />
         </>
       )}
     </>

@@ -36,7 +36,7 @@ export const LAYERS: Array<{ layers: LayerType[]; icon: string | JSX.Element }> 
   { layers: ['switches'], icon: switchesIcon },
   { layers: ['speed_sections'], icon: <MdSpeed style={{ width: '20px' }} className="mx-2" /> },
   { layers: ['psl', 'psl_signs'], icon: pslsIcon },
-  { layers: ['catenaries'], icon: <GiElectric style={{ width: '20px' }} className="mx-2" /> },
+  { layers: ['electrifications'], icon: <GiElectric style={{ width: '20px' }} className="mx-2" /> },
   {
     layers: ['platforms'],
     icon: <TbRectangleVerticalFilled style={{ width: '20px' }} className="mx-2" />,

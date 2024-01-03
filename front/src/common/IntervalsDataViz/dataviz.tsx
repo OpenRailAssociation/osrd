@@ -18,7 +18,7 @@ import './style.scss';
 export interface LinearMetadataDatavizProps<T> extends IntervalItemBaseProps<T> {
   /**
    * Data to display on ranges below the main chart. The data must cover the whole path.
-   * Ex: display the catenary ranges to help the user selecting the correct power restrictions on path
+   * Ex: display the electrification ranges to help the user selecting the correct power restrictions on path
    */
   additionalData?: AdditionalDataItem[];
 

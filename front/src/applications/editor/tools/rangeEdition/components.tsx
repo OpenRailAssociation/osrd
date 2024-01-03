@@ -12,7 +12,7 @@ import EntitySumUp from 'applications/editor/components/EntitySumUp';
 import type { RangeEditionState } from 'applications/editor/tools/rangeEdition/types';
 import { getPointAt, speedSectionIsPsl } from 'applications/editor/tools/rangeEdition/utils';
 import EditPSLSection from 'applications/editor/tools/rangeEdition/speedSection/EditPSLSection';
-import CatenaryMetadataForm from 'applications/editor/tools/rangeEdition/catenary/CatenaryMetadataForm';
+import ElectrificationMetadataForm from 'applications/editor/tools/rangeEdition/electrification/ElectrificationMetadataForm';
 import SpeedSectionMetadataForm from 'applications/editor/tools/rangeEdition/speedSection/SpeedSectionMetadataForm';
 import type {
   ExtendedEditorContextType,
@@ -21,7 +21,7 @@ import type {
 
 import type {
   ApplicableDirection,
-  CatenaryEntity,
+  ElectrificationEntity,
   SpeedSectionEntity,
   SpeedSectionPslEntity,
 } from 'types';
@@ -39,7 +39,7 @@ export const TrackRangesList = () => {
     state: { entity, trackSectionsCache },
     setState,
   } = useContext(EditorContext) as ExtendedEditorContextType<
-    RangeEditionState<SpeedSectionEntity | CatenaryEntity>
+    RangeEditionState<SpeedSectionEntity | ElectrificationEntity>
   >;
   const { t } = useTranslation();
   const ranges = entity.properties.track_ranges || [];
@@ -159,7 +159,7 @@ export const TrackRangesList = () => {
                     </div>
                     <div className="flex-grow-1 flex-shrink-1">
                       <EntitySumUp entity={trackState.track} />
-                      {entity.objType !== 'Catenary' && (
+                      {entity.objType !== 'Electrification' && (
                         <div>
                           <select
                             id="filterLevel"
@@ -216,7 +216,7 @@ export const RangeEditionLeftPanel = () => {
     setState,
     state: { entity, initialEntity, trackSectionsCache },
   } = useContext(EditorContext) as ExtendedEditorContextType<
-    RangeEditionState<SpeedSectionEntity | CatenaryEntity>
+    RangeEditionState<SpeedSectionEntity | ElectrificationEntity>
   >;
 
   const isNew = entity.properties.id === NEW_ENTITY_ID;
@@ -243,12 +243,16 @@ export const RangeEditionLeftPanel = () => {
   return (
     <div>
       <legend className="mb-4">
-        {t(`Editor.obj-types.${entity.objType === 'SpeedSection' ? 'SpeedSection' : 'Catenary'}`)}
+        {t(
+          `Editor.obj-types.${
+            entity.objType === 'SpeedSection' ? 'SpeedSection' : 'Electrification'
+          }`
+        )}
       </legend>
       {initialEntity.objType === 'SpeedSection' ? (
         <SpeedSectionMetadataForm />
       ) : (
-        voltages && <CatenaryMetadataForm voltages={voltages} />
+        voltages && <ElectrificationMetadataForm voltages={voltages} />
       )}
       <hr />
       {initialEntity.objType === 'SpeedSection' && (

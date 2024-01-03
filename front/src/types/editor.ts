@@ -86,7 +86,7 @@ export interface SpeedSectionEntity extends EditorEntity<MultiLineString, SpeedS
   objType: 'SpeedSection';
 }
 
-export interface CatenaryProperties {
+export interface ElectrificationProperties {
   id: string;
   track_ranges?: {
     applicable_directions: ApplicableDirection;
@@ -97,8 +97,9 @@ export interface CatenaryProperties {
   voltage?: string;
 }
 
-export interface CatenaryEntity extends EditorEntity<MultiLineString, CatenaryProperties> {
-  objType: 'Catenary';
+export interface ElectrificationEntity
+  extends EditorEntity<MultiLineString, ElectrificationProperties> {
+  objType: 'Electrification';
 }
 
 export type SignalingSystem = {

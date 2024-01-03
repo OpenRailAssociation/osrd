@@ -11,13 +11,13 @@ import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 
 import type { RootState } from 'reducers';
 
-interface CatenariesProps {
+interface ElectrificationsProps {
   colors: Theme;
   layerOrder: number;
   infraID: number | undefined;
 }
 
-export function getCatenariesProps({
+export function getElectrificationsProps({
   colors,
   sourceTable,
 }: {
@@ -68,7 +68,7 @@ export function getCatenariesProps({
   return res;
 }
 
-export function getCatenariesTextParams({
+export function getElectrificationsTextParams({
   colors,
   sourceTable,
 }: {
@@ -123,31 +123,34 @@ export function getCatenariesTextParams({
   return res;
 }
 
-export default function Catenaries({ colors, layerOrder, infraID }: CatenariesProps) {
+export default function Electrifications({ colors, layerOrder, infraID }: ElectrificationsProps) {
   const { layersSettings } = useSelector((state: RootState) => state.map);
-  const catenariesParams: LayerProps = getCatenariesProps({ colors, sourceTable: 'catenaries' });
-  const catenariesTextParams: LayerProps = getCatenariesTextParams({
+  const electrificationsParams: LayerProps = getElectrificationsProps({
     colors,
-    sourceTable: 'catenaries',
+    sourceTable: 'electrifications',
+  });
+  const electrificationsTextParams: LayerProps = getElectrificationsTextParams({
+    colors,
+    sourceTable: 'electrifications',
   });
 
-  if (layersSettings.catenaries) {
+  if (layersSettings.electrifications) {
     return (
       <Source
-        id="catenaries_geo"
+        id="electrifications_geo"
         type="vector"
-        url={`${MAP_URL}/layer/catenaries/mvt/geo/?infra=${infraID}`}
+        url={`${MAP_URL}/layer/electrifications/mvt/geo/?infra=${infraID}`}
       >
         <OrderedLayer
-          {...catenariesParams}
+          {...electrificationsParams}
           // beforeId={`chartis/tracks-geo/main`}
-          id="chartis/catenaries/geo"
+          id="chartis/electrifications/geo"
           layerOrder={layerOrder}
         />
         <OrderedLayer
-          {...catenariesTextParams}
+          {...electrificationsTextParams}
           // beforeId={`chartis/tracks-geo/main`}
-          id="chartis/catenaries_names/geo"
+          id="chartis/electrifications_names/geo"
           layerOrder={layerOrder}
         />
       </Source>

@@ -4,7 +4,7 @@ import { allInfraErrorTypes } from 'applications/editor/components/InfraErrors/t
 import { OmitLayer } from 'types';
 import { LayerContext } from './types';
 
-const LINE_OBJECT = ['TrackSection', 'Catenary', 'SpeedSection'];
+const LINE_OBJECT = ['TrackSection', 'Electrification', 'SpeedSection'];
 export function getLineErrorsLayerProps(context: LayerContext): OmitLayer<LineLayer> {
   const enableErrorTypes = context.issuesSettings?.types || allInfraErrorTypes;
   const res: OmitLayer<LineLayer> = {

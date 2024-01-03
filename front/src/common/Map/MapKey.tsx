@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import colors from 'common/Map/Consts/colors';
 import { getMapStyle } from 'reducers/map/selectors';
-import { catenaryMapKey, MapKeyProps, speedLimitMapKey } from './const';
+import { electrificationMapKey, MapKeyProps, speedLimitMapKey } from './const';
 import 'common/Map/MapKey.scss';
 import HearderPopUp from './HeaderPopUp';
 
@@ -20,7 +20,7 @@ const MapSettings = ({ closeMapKeyPopUp }: MapKeyProps) => {
     </div>
   ));
 
-  const catenaries = catenaryMapKey.map((key) => (
+  const electrifications = electrificationMapKey.map((key) => (
     <div className="mapkey-item" key={key.text}>
       <div className="mapkey-icon">
         <i
@@ -51,7 +51,7 @@ const MapSettings = ({ closeMapKeyPopUp }: MapKeyProps) => {
         <div className="col-lg-6">
           <div className="mapkey">
             <div className="mapkey-title">{t('map-key:catenaries')}</div>
-            {catenaries}
+            {electrifications}
           </div>
         </div>
         <div className="col-lg-6">

@@ -110,7 +110,7 @@ describe('mapReducer', () => {
   it('should handle updateLayersSettings', () => {
     const layersSettings = {
       bufferstops: true,
-      catenaries: true,
+      electrifications: true,
       neutral_sections: true,
       detectors: true,
       operationalpoints: true,

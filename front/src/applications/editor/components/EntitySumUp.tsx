@@ -10,7 +10,7 @@ import { LoaderFill } from 'common/Loader';
 import { useInfraID } from 'common/osrdContext';
 import type {
   BufferStopEntity,
-  CatenaryEntity,
+  ElectrificationEntity,
   EditorEntity,
   RouteEntity,
   SignalEntity,
@@ -249,15 +249,15 @@ function getSumUpContent(
       });
       break;
     }
-    case 'Catenary': {
-      const catenarySection = entity as CatenaryEntity;
-      text = catenarySection.properties.id;
-      const { voltage } = catenarySection.properties;
+    case 'Electrification': {
+      const electrificationSection = entity as ElectrificationEntity;
+      text = electrificationSection.properties.id;
+      const { voltage } = electrificationSection.properties;
       subtexts.push(
         <>
           <span className={(classes.muted, 'mr-2')}>
             {t('Editor.tools.select-items.linked-to-n-lines', {
-              count: catenarySection.properties.track_ranges?.length || 0,
+              count: electrificationSection.properties.track_ranges?.length || 0,
             }).toString()}
           </span>
           <span className={classes.muted}>
