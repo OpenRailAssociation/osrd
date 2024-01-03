@@ -250,7 +250,7 @@ interface RestrictedRawInfraBuilder {
         curves: DirectionalMap<DistanceRangeMap<Double>>,
         gradients: DirectionalMap<DistanceRangeMap<Double>>,
         loadingGaugeConstraints: DistanceRangeMap<LoadingGaugeConstraint>,
-        catenaryVoltage: DistanceRangeMap<String>,
+        electrificationVoltage: DistanceRangeMap<String>,
         neutralSections: DirectionalMap<DistanceRangeMap<NeutralSection>>,
         speedSections: DirectionalMap<DistanceRangeMap<SpeedSection>>
     ): TrackChunkId
@@ -402,7 +402,7 @@ class RawInfraBuilderImpl : RawInfraBuilder {
         curves: DirectionalMap<DistanceRangeMap<Double>>,
         gradients: DirectionalMap<DistanceRangeMap<Double>>,
         loadingGaugeConstraints: DistanceRangeMap<LoadingGaugeConstraint>,
-        catenaryVoltage: DistanceRangeMap<String>,
+        electrificationVoltage: DistanceRangeMap<String>,
         neutralSections: DirectionalMap<DistanceRangeMap<NeutralSection>>,
         speedSections: DirectionalMap<DistanceRangeMap<SpeedSection>>
     ): TrackChunkId {
@@ -418,7 +418,7 @@ class RawInfraBuilderImpl : RawInfraBuilder {
             offset,
             MutableStaticIdxArrayList(), // Same
             loadingGaugeConstraints,
-            catenaryVoltage,
+            electrificationVoltage,
             neutralSections,
             speedSections
         ))

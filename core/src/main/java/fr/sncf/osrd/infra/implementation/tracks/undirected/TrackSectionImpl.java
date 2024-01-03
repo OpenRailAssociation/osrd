@@ -23,7 +23,7 @@ public class TrackSectionImpl implements TrackSection {
     private final String id;
     private final ImmutableSet<OperationalPoint> operationalPoints;
     EnumMap<Direction, RangeMap<Double, SpeedLimits>> speedSections;
-    RangeMap<Double, String> catenaryVoltages = TreeRangeMap.create();
+    RangeMap<Double, String> electrificationVoltages = TreeRangeMap.create();
 
     EnumMap<Direction, RangeMap<Double, NeutralSection>> neutralSections;
     EnumMap<Direction, RangeMap<Double, NeutralSection>> neutralSectionAnnouncements;
@@ -59,7 +59,7 @@ public class TrackSectionImpl implements TrackSection {
         this.geo = geo;
         this.sch = sch;
         this.loadingGaugeConstraints = loadingGaugeConstraints;
-        this.catenaryVoltages.put(Range.closed(0., length), "");
+        this.electrificationVoltages.put(Range.closed(0., length), "");
         neutralSections = new EnumMap<>(Direction.class);
         neutralSectionAnnouncements = new EnumMap<>(Direction.class);
         for (var dir : Direction.values()) {
@@ -156,7 +156,7 @@ public class TrackSectionImpl implements TrackSection {
 
     @Override
     public RangeMap<Double, String> getVoltages() {
-        return catenaryVoltages;
+        return electrificationVoltages;
     }
 
     @Override

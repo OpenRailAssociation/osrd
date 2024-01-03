@@ -35,7 +35,7 @@ class ElectrificationConstraintsTest {
 
     @ParameterizedTest
     @MethodSource("testDeadSectionArgs")
-    fun testDeadSectionAndCatenaryBlockedRanges(
+    fun testDeadSectionAndElectrificationBlockedRanges(
         blockId: BlockId,
         expectedBlockedRanges: Collection<Pathfinding.Range<Block>>
     ) {
@@ -44,15 +44,15 @@ class ElectrificationConstraintsTest {
     }
 
     fun testDeadSectionArgs(): Stream<Arguments> {
-        return Stream.of( // No corresponding catenary ranges without dead sections
+        return Stream.of( // No corresponding electrification ranges without dead sections
             Arguments.of(
                 0,
                 mutableSetOf(Pathfinding.Range(Offset(0.meters), chunk0Length))
-            ),  // Partially corresponding catenary ranges with dead section
+            ),  // Partially corresponding electrification ranges with dead section
             Arguments.of(
                 1,
                 mutableSetOf(Pathfinding.Range(Offset<Block>(0.meters), Offset(30.meters)))
-            ),  // Fully corresponding catenary ranges without dead sections
+            ),  // Fully corresponding electrification ranges without dead sections
             Arguments.of(2, HashSet<Any>())
         )
     }

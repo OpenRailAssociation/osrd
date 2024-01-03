@@ -29,7 +29,7 @@ interface TrackProperties {
     fun getTrackChunkCurve(trackChunk: DirTrackChunkId): DistanceRangeMap<Double>
     fun getTrackChunkGradient(trackChunk: DirTrackChunkId): DistanceRangeMap<Double>
     fun getTrackChunkLoadingGaugeConstraints(trackChunk: TrackChunkId): DistanceRangeMap<LoadingGaugeConstraint>
-    fun getTrackChunkCatenaryVoltage(trackChunk: TrackChunkId): DistanceRangeMap<String>
+    fun getTrackChunkElectrificationVoltage(trackChunk: TrackChunkId): DistanceRangeMap<String>
     fun getTrackChunkNeutralSections(trackChunk: DirTrackChunkId): DistanceRangeMap<NeutralSection>
     fun getTrackChunkSpeedSections(trackChunk: DirTrackChunkId, trainTag: String?): DistanceRangeMap<Speed>
     fun getTrackChunkGeom(trackChunk: TrackChunkId): LineString

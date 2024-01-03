@@ -16,12 +16,12 @@ fun buildElectrificationMap(path: PathProperties): DistanceRangeMap<Electrificat
     val res: DistanceRangeMap<Electrification> = DistanceRangeMapImpl()
     res.put(Distance.ZERO, path.getLength().distance, NonElectrified())
     res.updateMap(
-        path.getCatenary()
-    ) { _: Electrification?, catenaryMode: String ->
-        if (catenaryMode == "")
+        path.getElectrification()
+    ) { _: Electrification?, electrificationMode: String ->
+        if (electrificationMode == "")
             NonElectrified()
         else
-            Electrified(catenaryMode)
+            Electrified(electrificationMode)
     }
     res.updateMap(
         path.getNeutralSections()

@@ -294,7 +294,7 @@ class PathfindingTest : ApiTest() {
             infra, waypoints, listOf(TestTrains.REALISTIC_FAST_TRAIN)
         )
 
-        // Replace with custom catenaries
+        // Replace with custom electrifications
         // Set voltage to 25000 everywhere except for trackSectionToBlock
         val trackSectionToBlock = normalPath.ranges
             .map { range -> range.edge }
@@ -315,13 +315,13 @@ class PathfindingTest : ApiTest() {
                 )
             }
             .collect(Collectors.toList())
-        val voltageCatenary = RJSCatenary("25000", voltageTrackRanges)
-        val noVoltageCatenary = RJSCatenary("",
+        val voltageElectrification = RJSElectrification("25000", voltageTrackRanges)
+        val noVoltageElectrification = RJSElectrification("",
             listOf(RJSApplicableDirectionsTrackRange(trackSectionToBlock, ApplicableDirection.BOTH, 0.0,
                 rjsInfra.trackSections.stream()
                     .filter { rjsTrackSection: RJSTrackSection -> rjsTrackSection.id == trackSectionToBlock }
                     .findFirst().get().length)))
-        rjsInfra.catenaries = ArrayList(listOf(voltageCatenary, noVoltageCatenary))
+        rjsInfra.electrifications = ArrayList(listOf(voltageElectrification, noVoltageElectrification))
         val infraWithNonElectrifiedTrack = Helpers.fullInfraFromRJS(rjsInfra)
 
         // Run another pathfinding with an electric train
@@ -345,7 +345,7 @@ class PathfindingTest : ApiTest() {
         val waypoints = Array(2) { Array(1) { waypointStart } }
         waypoints[1][0] = waypointEnd
         val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
-        rjsInfra.catenaries = ArrayList()
+        rjsInfra.electrifications = ArrayList()
         AssertionsForClassTypes.assertThatThrownBy {
             runPathfinding(
                 Helpers.fullInfraFromRJS(rjsInfra),

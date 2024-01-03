@@ -5,7 +5,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.List;
 
 /**
- * Neutral sections are portions of track where trains aren't allowed to pull power from catenaries.
+ * Neutral sections are portions of track where trains aren't allowed to pull power from electrifications.
  * They have to rely on inertia to cross such sections.
  * In practice, neutral sections are delimited by signs. In OSRD, neutral sections are directional
  * to allow accounting for different sign placement depending on the direction.

@@ -24,7 +24,7 @@ import java.util.stream.Stream
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class PathfindingElectrificationTest : ApiTest() {
     @Test
-    fun incompatibleCatenariesTest() {
+    fun incompatibleElectrificationsTest() {
         /*       c1
                 ^  \
                /    v
@@ -62,7 +62,7 @@ class PathfindingElectrificationTest : ApiTest() {
         for (block in infra.blockPool)
             block.voltage = "25000"
 
-        // Removes catenary in the section used by the normal train
+        // Removes electrification in the section used by the normal train
         for (range in normalPath.ranges) {
             if (setOf("b->c1", "b->c2").contains(infra.getRouteName(RouteId(range.edge.index)))) {
                 infra.blockPool[range.edge.index.toInt()].voltage = ""
@@ -103,8 +103,8 @@ class PathfindingElectrificationTest : ApiTest() {
 
     @ParameterizedTest
     @MethodSource("testNeutralSectionArgs")
-    fun testNeutralSectionAndCatenaryPathfinding(
-        withCatenary: Boolean,
+    fun testNeutralSectionAndElectrificationPathfinding(
+        withElectrification: Boolean,
         withNeutralSection: Boolean,
         neutralSectionDirection: Direction?
     ) {
@@ -133,8 +133,8 @@ class PathfindingElectrificationTest : ApiTest() {
         assert(TestTrains.FAST_ELECTRIC_TRAIN.modeNames.contains("25000"))
         for (block in infra.blockPool)
             block.voltage = "25000"
-        if (!withCatenary) {
-            // Remove catenary in the middle of the path
+        if (!withElectrification) {
+            // Remove electrification in the middle of the path
             infra.blockPool[secondBlock.index.toInt()].voltage = ""
         }
         if (withNeutralSection) {
@@ -146,7 +146,7 @@ class PathfindingElectrificationTest : ApiTest() {
                 infra.blockPool[secondBlock.index.toInt()].neutralSectionBackward =
                     NeutralSection(lowerPantograph = false, isAnnouncement = false)
         }
-        if (withCatenary || withNeutralSection && neutralSectionDirection == Direction.FORWARD) {
+        if (withElectrification || withNeutralSection && neutralSectionDirection == Direction.FORWARD) {
             // Run another pathfinding with an electric train
             val electricPath = runPathfinding(
                 infra.fullInfra(),
@@ -171,7 +171,7 @@ class PathfindingElectrificationTest : ApiTest() {
     companion object {
         @JvmStatic
         fun testNeutralSectionArgs(): Stream<Arguments> {
-            return Stream.of( // With catenary, with neutral section, neutral section direction
+            return Stream.of( // With electrification, with neutral section, neutral section direction
                 Arguments.of(true, true, Direction.FORWARD),
                 Arguments.of(true, true, Direction.BACKWARD),
                 Arguments.of(true, false, null),
