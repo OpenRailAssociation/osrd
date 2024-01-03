@@ -3,8 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import cx from 'classnames';
-import { isNil, toInteger, uniq } from 'lodash';
-import turfBbox from '@turf/bbox';
+import { isNil, toInteger } from 'lodash';
 
 import 'applications/editor/Editor.scss';
 import 'common/Map/Map.scss';
@@ -29,13 +28,8 @@ import TOOL_TYPES from 'applications/editor/tools/toolTypes';
 
 import type { CommonToolState } from 'applications/editor/tools/commonToolState';
 import { useInfraID, useOsrdActions } from 'common/osrdContext';
-import {
-  EDITOAST_TO_LAYER_DICT,
-  EditoastType,
-  type EditorState,
-} from 'applications/editor/tools/types';
-import { BBox } from '@turf/helpers';
-import type { LngLatBoundsLike, MapRef } from 'react-map-gl/maplibre';
+import type { EditoastType, EditorState } from 'applications/editor/tools/types';
+import type { MapRef } from 'react-map-gl/maplibre';
 import type {
   EditorContextType,
   ExtendedEditorContextType,
