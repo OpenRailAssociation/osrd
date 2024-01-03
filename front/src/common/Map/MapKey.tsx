@@ -50,7 +50,7 @@ const MapSettings = ({ closeMapKeyPopUp }: MapKeyProps) => {
         </div>
         <div className="col-lg-6">
           <div className="mapkey">
-            <div className="mapkey-title">{t('map-key:catenaries')}</div>
+            <div className="mapkey-title">{t('map-key:electrifications')}</div>
             {electrifications}
           </div>
         </div>

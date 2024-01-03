@@ -128,9 +128,9 @@
           "name": "Overlapping of switches",
           "description": "Switches « {{obj_id}} » and « {{reference.obj_id}} » have the same extremeties"
         },
-        "overlapping_catenaries": {
-          "name": "Overlapping of catenaries",
-          "description": "Catenary « {{obj_id}} » overlaps catenary « {{reference.obj_id}} »"
+        "overlapping_electrifications": {
+          "name": "Overlapping of electrifications",
+          "description": "Electrification « {{obj_id}} » overlaps electrification « {{reference.obj_id}} »"
         },
         "unknown_port_name": {
           "name": "Unknown branch name",
@@ -215,7 +215,7 @@
     },
     "obj-types": {
       "BufferStop": "Buffer stop",
-      "Catenary": "Electrification",
+      "Electrification": "Electrification",
       "Detector": "Detector",
       "Route": "Route",
       "Signal": "Signal",
@@ -237,23 +237,23 @@
         },
         "label": "Buffer stop tool"
       },
-      "catenary-edition": {
+      "electrification-edition": {
         "actions": {
-          "confirm-delete-catenary": "Are you sure you want to remove the catenary?",
-          "delete-catenary": "Delete the catenary",
-          "new-catenary": "Create a new catenary",
-          "reset-catenary": "Cancel the current modifications",
-          "save-catenary": "Save the catenary"
+          "confirm-delete-electrification": "Are you sure you want to remove the electrification?",
+          "delete-electrification": "Delete the electrification",
+          "new-electrification": "Create a new electrification",
+          "reset-electrification": "Cancel the current modifications",
+          "save-electrification": "Save the electrification"
         },
         "help": {
-          "init": "Click on a track section to link it to the catenary",
-          "add-track": "Link the track section '{{track.id}}' to the catenary {{voltage}}",
-          "remove-range": "Remove the track section from  the catenary {{voltage}}"
+          "init": "Click on a track section to link it to the electrification",
+          "add-track": "Link the track section '{{track.id}}' to the electrification {{voltage}}",
+          "remove-range": "Remove the track section from  the electrification {{voltage}}"
         },
-        "add-new-catenary": "Add new catenary",
-        "catenaries": "Electrification",
-        "catenary-default": "Default catenary",
-        "label": "Catenary tool",
+        "add-new-electrification": "Add new electrification",
+        "electrifications": "Electrification",
+        "electrification-default": "Default electrification",
+        "label": "Electrification tool",
         "voltage": "{{voltage}}V"
       },
       "detector-edition": {
@@ -282,7 +282,7 @@
         "edit-track-range-start": "Edit departure point",
         "edit-track-range-end": "Edit arrival point",
         "linked-track-sections": "Associated track sections",
-        "empty-linked-track-section": "Click on a track section to link it to the catenary",
+        "empty-linked-track-section": "Click on a track section to link it to the electrification",
         "only-show-n": "Only show the first {{count}} track sections",
         "show-more-ranges_one": "See an additional track section",
         "show-more-ranges_other": "See {{count}} additional track sections"
@@ -461,12 +461,12 @@
           "move-point": "Click a point once to start moving it.",
           "move-point-end": "Click to confirm the move of the point."
         },
-        "attached-catenaries": "Catenaries",
+        "attached-electrifications": "electrifications",
         "attached-speed-sections": "Speed limits",
-        "default-catenaries-error": "An error occurred when loading the {{type}} linked to this line segment.",
+        "default-electrifications-error": "An error occurred when loading the {{type}} linked to this line segment.",
         "default-speed-sections-error": "An exception occured when loading speed limits related to this section.",
         "label": "Track tool",
-        "no-linked-catenary": "No electrification data available",
+        "no-linked-electrification": "No electrification data available",
         "no-linked-speed-section": "No speed limit entered",
         "only-show-n": "Only show the first {{count}} results",
         "show-more-ranges_one": "Show one more result",

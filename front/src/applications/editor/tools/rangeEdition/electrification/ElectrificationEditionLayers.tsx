@@ -224,16 +224,16 @@ export const ElectrificationMessages = () => {
     RangeEditionState<ElectrificationEntity>
   >;
   if (state.hoveredItem && state.hoveredItem.type === 'TrackSection')
-    return t('Editor.tools.catenary-edition.help.add-track', {
+    return t('Editor.tools.electrification-edition.help.add-track', {
       track: state.hoveredItem,
       voltage: state.initialEntity.properties.voltage,
     });
 
   if (state.hoveredItem && state.hoveredItem.itemType === 'TrackRange')
-    return t('Editor.tools.catenary-edition.help.remove-range', {
+    return t('Editor.tools.electrification-edition.help.remove-range', {
       range: state.hoveredItem,
       voltage: state.initialEntity.properties.voltage,
     });
 
-  return t('Editor.tools.catenary-edition.help.init');
+  return t('Editor.tools.electrification-edition.help.init');
 };

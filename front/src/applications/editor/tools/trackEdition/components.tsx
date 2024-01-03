@@ -121,7 +121,7 @@ export const AttachedRangesItemsList = ({ id, itemType }: AttachedRangesItemsLis
           {itemsState.message ||
             (itemType === 'SpeedSection'
               ? t('Editor.tools.track-edition.default-speed-sections-error')
-              : t('Editor.tools.track-edition.default-catenaries-error'))}
+              : t('Editor.tools.track-edition.default-electrifications-error'))}
         </p>
       </div>
     );
@@ -186,7 +186,7 @@ export const AttachedRangesItemsList = ({ id, itemType }: AttachedRangesItemsLis
         <div className="text-center">
           {itemType === 'SpeedSection'
             ? t('Editor.tools.track-edition.no-linked-speed-section')
-            : t('Editor.tools.track-edition.no-linked-catenary')}
+            : t('Editor.tools.track-edition.no-linked-electrification')}
         </div>
       )}
     </>
@@ -464,7 +464,7 @@ export const TrackEditionLeftPanel: React.FC = () => {
           <h3>{t('Editor.tools.track-edition.attached-speed-sections')}</h3>
           <AttachedRangesItemsList id={track.properties.id} itemType="SpeedSection" />
           <div className="border-bottom" />
-          <h3>{t('Editor.tools.track-edition.attached-catenaries')}</h3>
+          <h3>{t('Editor.tools.track-edition.attached-electrifications')}</h3>
           <AttachedRangesItemsList id={track.properties.id} itemType="Electrification" />
         </>
       )}

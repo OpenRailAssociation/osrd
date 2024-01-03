@@ -128,7 +128,7 @@
           "name": "Superposition d’aiguilles/nœuds",
           "description": "L’aiguille/le noeud « {{obj_id}} » et l’aiguille/le noeud « {{reference.obj_id}} » connectent les mêmes extrémités des voies"
         },
-        "overlapping_catenaries": {
+        "overlapping_electrifications": {
           "name": "Superposition de catenaires",
           "description": "La catenaire « {{obj_id}} » se superpose à la catenaire « {{reference.obj_id}} »"
         },
@@ -174,7 +174,7 @@
     },
     "layers": {
       "buffer_stops": "Heurtoirs",
-      "catenaries": "Électrifications",
+      "electrifications": "Électrifications",
       "detectors": "Détecteurs",
       "errors": "Erreurs",
       "psl-psl_signs": "Limites permanentes de vitesse",
@@ -215,7 +215,7 @@
     },
     "obj-types": {
       "BufferStop": "Heurtoir",
-      "Catenary": "Électrification",
+      "Electrification": "Électrification",
       "Detector": "Détecteur",
       "Route": "Itinéraire",
       "Signal": "Signal",
@@ -237,22 +237,22 @@
         },
         "label": "Outil \"Heurtoir\""
       },
-      "catenary-edition": {
+      "electrification-edition": {
         "actions": {
-          "confirm-delete-catenary": "Êtes-vous sûr(e) de vouloir supprimer l'électrification ?",
-          "delete-catenary": "Supprimer l'électrification",
-          "new-catenary": "Créer une nouvelle électrification",
-          "reset-catenary": "Annuler les modifications en cours",
-          "save-catenary": "Sauvegarder l'électrification"
+          "confirm-delete-electrification": "Êtes-vous sûr(e) de vouloir supprimer l'électrification ?",
+          "delete-electrification": "Supprimer l'électrification",
+          "new-electrification": "Créer une nouvelle électrification",
+          "reset-electrification": "Annuler les modifications en cours",
+          "save-electrification": "Sauvegarder l'électrification"
         },
         "help": {
           "init": "Cliquez sur un tronçon d'itinéraire pour l'associer à l'électrification",
           "add-track": "Ajouter le tronçon '{{track.id}}' à l'électrification {{voltage}}",
           "remove-range": "Supprimer le tronçon de l'électrification {{voltage}}"
         },
-        "add-new-catenary": "Ajouter une nouvelle électrification",
-        "catenaries": "Électrification",
-        "catenary-default": "Électrification par défaut",
+        "add-new-electrification": "Ajouter une nouvelle électrification",
+        "electrifications": "Électrification",
+        "electrification-default": "Électrification par défaut",
         "label": "Outil \"Électrification\"",
         "voltage": "{{voltage}}V"
       },
@@ -461,12 +461,12 @@
           "move-point": "Cliquez une première fois sur un point pour commencer à le déplacer.",
           "move-point-end": "Cliquez pour valider le déplacement du point."
         },
-        "attached-catenaries": "Électrifications",
+        "attached-electrifications": "Électrifications",
         "attached-speed-sections": "Vitesses limites",
-        "default-catenaries-error": "Une erreur est survenue lors du chargement des {{type}} liées à cette section de ligne.",
+        "default-electrifications-error": "Une erreur est survenue lors du chargement des {{type}} liées à cette section de ligne.",
         "default-speed-sections-error": "Une erreur est survenue lors du chargement des vitesses limites liées à cette section de ligne.",
         "label": "Outil \"Ligne\"",
-        "no-linked-catenary": "Aucune électrification renseignée",
+        "no-linked-electrification": "Aucune électrification renseignée",
         "no-linked-speed-section": "Aucune vitesse limite renseignée",
         "only-show-n": "Ne montrer que les {{count}} premiers résultats",
         "show-more-ranges_one": "Voir un résultat de plus",

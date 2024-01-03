@@ -1,7 +1,7 @@
 {
   "all": "All signals",
   "bufferstops": "Buffer stops",
-  "catenaries": "Electrification",
+  "electrifications": "Electrification",
   "neutral_sections": "Dead sections",
   "detectors": "Detectors",
   "jdz": "Zone junction",

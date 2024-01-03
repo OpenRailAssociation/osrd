@@ -1,7 +1,7 @@
 {
   "alternatingCurrent": "Alternatif",
   "directCurrent": "Continu",
-  "catenaries": "Électrification",
+  "electrifications": "Électrification",
   "keyTitle": "Légende",
   "speedlimit": "Vitesse",
   "neutral_sections": "BP / CC",

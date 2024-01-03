@@ -3,25 +3,20 @@
     "description": "Utilisé pour connaître le sens d'application de certains objets.",
     "title": "Directions applicables"
   },
-
   "ApplicableDirectionsTrackRange": {
     "description": "Intervalle sur un TIV avec directions associées.",
-
     "properties": {
       "applicable_directions": {
         "description": "Direction dans laquelle l'objet correspondant est appliqué."
       },
-
       "begin": {
         "description": "Distance par rapport au début du TIV correspondant (en mètres).",
         "title": "Début"
       },
-
       "end": {
         "description": "Décalage par rapport à la fin du TIV correspondant (en mètres).",
         "title": "Fin"
       },
-
       "track": {
         "description": "Identifiant du TIV.",
         "title": "Voie"
@@ -29,44 +24,37 @@
     },
     "title": "ApplicableDirectionsTrackRange"
   },
-
   "BalSystem": {
     "properties": {
       "next_signaling_systems": {
         "description": "La liste des systèmes de signalisation d'entrée autorisés.",
         "title": "Systèmes de signalisation suivants"
       },
-
       "settings": {
         "description": "Paramètres du BAL"
       }
     },
     "title": "Signalisation BAL"
   },
-
   "BaprSystem": {
     "properties": {
       "next_signaling_systems": {
         "description": "La liste des systèmes de signalisation d'entrée autorisés.",
         "title": "Systèmes de signalisation suivants"
       },
-
       "settings": {
         "description": "Paramètres du BAPR"
       }
     },
     "title": "Signalisation BAPR"
   },
-
   "BufferStop": {
     "description": "Un heurtoir est un dispositif placé à l'extrémité d'une route en cul-de-sac pour empêcher les trains en dérive de poursuivre leur route. Il est caractérisé par son identifiant et sa voie correspondante.",
-
     "properties": {
       "position": {
         "description": "Distance par rapport au début du TIV correspondant (en mètres).",
         "title": "Position"
       },
-
       "track": {
         "description": "Référence au tronçon sur lequel l’objet se situe",
         "title": "Voie"
@@ -74,7 +62,6 @@
     },
     "title": "Heurtoir"
   },
-
   "BufferStopSncfExtension": {
     "properties": {
       "kp": {
@@ -83,16 +70,13 @@
       }
     }
   },
-
-  "Catenary": {
+  "Electrification": {
     "description": "Une caténaire est un ensemble de câbles permettant d’alimenter les trains en utilisant un pantographe. La caténaire est identifiée par un id",
-
     "properties": {
       "track_ranges": {
         "description": "Liste des intervalles de TIV où la tension est appliquée.",
         "title": "Intervalles de TIV"
       },
-
       "voltage": {
         "description": "Tension électrique (en Volts).",
         "title": "Tension électrique"
@@ -100,21 +84,17 @@
     },
     "title": "Caténaire"
   },
-
   "Curve": {
     "description": "Une courbe définit le rayon de courbure d'une partie spécifique du TIV correspondant.",
-
     "properties": {
       "begin": {
         "description": "Distance entre le début du correspondant et le début de la courbure (en mètres).",
         "title": "Début"
       },
-
       "end": {
         "description": " Distance entre la fin de la courbure et la fin du TIV correspondant (en mètres). ",
         "title": "Fin"
       },
-
       "radius": {
         "description": "Rayon de courbure (en mètres)",
         "title": "Radius"
@@ -122,20 +102,16 @@
     },
     "title": "Courbe"
   },
-
   "Detector": {
     "description": "Un détecteur est caractérisé par son id et son TIV correspondant. Il est utilisé pour détecter un train, afin de savoir si la section correspondant à ce détecteur est occupée.",
-
     "properties": {
       "applicable_directions": {
         "description": "Direction d’application du détecteur"
       },
-
       "position": {
         "description": "Distance depuis le début du TIV (en mètres)",
         "title": "Position"
       },
-
       "track": {
         "description": "Référence au TIV sur lequel l’objet se situe",
         "title": "Voie"
@@ -143,7 +119,6 @@
     },
     "title": "Détecteur"
   },
-
   "DetectorSncfExtension": {
     "properties": {
       "kp": {
@@ -152,30 +127,24 @@
       }
     }
   },
-
   "Direction": {
     "description": "Direction (profil croissant ou décroissant).",
     "title": "Direction"
   },
-
   "DirectionalTrackRange": {
     "description": "Un intervalle sur un TIV est un intervalle avec une direction associée.",
-
     "properties": {
       "begin": {
         "description": "Distance de début par rapport au début du TIV (en mètres).",
         "title": "Début"
       },
-
       "direction": {
         "description": "Description de la direction."
       },
-
       "end": {
         "description": " Distance de fin par rapport au début du TIV (en mètres).",
         "title": "Fin"
       },
-
       "track": {
         "description": "Identifiant du TIV.",
         "title": "Voie"
@@ -183,48 +152,38 @@
     },
     "title": "Intervalle directionnel sur un TIV"
   },
-
   "Endpoint": {
     "title": "Point de fin"
   },
-
   "FlagSignalParameter": {
     "title": "Paramètres du signal"
   },
-
   "LimitedLogicalSignal": {
     "description": "Liste définie de signaux logiques. Utilisée pour générer un schéma utilisable pour le front de l’éditeur",
     "title": "Signaux logiques définis"
   },
-
   "LineString": {
     "description": "LineString Model",
-
     "properties": {
       "bbox": {
         "title": "Bbox"
       },
-
       "coordinates": {
         "title": "Coordonnées"
       }
     },
     "title": "Séquence de points"
   },
-
   "LoadingGaugeLimit": {
     "description": "La limite de gabarit correspond à une restriction appliquée aux trains en fonction de leur gabarit et de leur type de matériel roulant.",
-
     "properties": {
       "begin": {
         "description": "Début de la limite de gabarit par rapport au début du TIV (en mètres).",
         "title": "Début"
       },
-
       "category": {
         "description": "Catégorie de gabarit pour le matériel roulant correspondant."
       },
-
       "end": {
         "description": " Fin de la limite de gabarit par rapport au début du TIV (en mètres).",
         "title": "Fin"
@@ -232,26 +191,21 @@
     },
     "title": "Limite de Gabarit"
   },
-
   "LoadingGaugeType": {
     "description": "Catégorie de gabarit.",
     "title": "Type de gabarit"
   },
-
   "LogicalSignal": {
     "description": "Un signal logique correspond à ce qui est affiché. Un signal physique comprend un ensemble de signaux logiques.",
-
     "properties": {
       "next_signaling_systems": {
         "description": "Liste de systèmes de signalisation autorisés en amont.",
         "title": "Systèmes de signalisations suivants"
       },
-
       "settings": {
         "description": "Une liste de paramètres qui définissent un système de signalisation.",
         "title": "Paramètres"
       },
-
       "signaling_system": {
         "description": "Le système de signalisation du signal.",
         "title": "Système de signalisation"
@@ -259,21 +213,17 @@
     },
     "title": "Signal Logique"
   },
-
   "NeutralSection": {
     "description": "Les zones neutres sont des intervalles de TIV où les trains n’ont pas le droit de récupérer de l’électricité de caténaires. Ils doivent utiliser leur inertie sur ces intervalles. En pratique, les zones neutres sont délimitées par des panneaux. Dans OSRD, les zones neutres sont directionnelles, afin de prendre en compte des placements de panneaux différents en fonction de la direction. Pour plus d’information, consulter [la documentation] (https://osrd.fr/en/docs/explanation/neutral_sections/).",
-
     "properties": {
       "announcement_track_ranges": {
         "description": "Liste des intervalles de TIV où la NEUTRAL SECTION à venir est annoncée.",
         "title": "Intervalles de TIV à venir"
       },
-
       "lower_pantograph": {
         "description": "S’il faut que le train baisse ou non son pantographe sur cette section.",
         "title": "Baisser pantographe"
       },
-
       "track_ranges": {
         "description": "Liste des intervalles de TIV où le train ne peut pas récupérer de l’électricité de caténaires.",
         "title": "Intervalles de TIV"
@@ -281,10 +231,8 @@
     },
     "title": "Zone neutre"
   },
-
   "OperationalPoint": {
     "description": "Décrit les points remarquables de l’infrastructure correspondante.",
-
     "properties": {
       "parts": {
         "title": "Parties de point remarquable"
@@ -292,30 +240,25 @@
     },
     "title": "Point remarquable"
   },
-
   "OperationalPointIdentifierExtension": {
     "properties": {
       "name": {
         "description": "Nom du point remarquable",
         "title": "Nom"
       },
-
       "uic": {
         "description": "Code UIC",
         "title": "Code UIC"
       }
     }
   },
-
   "OperationalPointPart": {
     "description": "Une partie de point remarquable correspond à un point unique sur l’infrastructure qui fait partie du point remarquable.",
-
     "properties": {
       "position": {
         "description": "Décalage entre le point et le début du TIV",
         "title": "Position"
       },
-
       "track": {
         "description": "Référence au TIV sur lequel l’objet est situé.",
         "title": "Voie"
@@ -323,7 +266,6 @@
     },
     "title": "Partie de point remarquable"
   },
-
   "OperationalPointPartSncfExtension": {
     "properties": {
       "kp": {
@@ -332,57 +274,46 @@
       }
     }
   },
-
   "OperationalPointSncfExtension": {
     "properties": {
       "ch": {
         "description": " // THOR site code of the operational point",
         "title": "Ch"
       },
-
       "ch_long_label": {
         "description": " // THOR site code long label of the operational point",
         "title": "Ch Long Label"
       },
-
       "ch_short_label": {
         "description": " // THOR site code short label of the operational point",
         "title": "Ch Short Label"
       },
-
       "ci": {
         "description": " // THOR immutable code of the operational point",
         "title": "Ci"
       },
-
       "trigram": {
         "description": "Identifiant unique d’un point remarquable, composé de trois lettres et propre à la SNCF.",
         "title": "Trigramme"
       }
     }
   },
-
   "Route": {
     "description": "Décrit des itinéraires sur l’infrastructure.",
-
     "properties": {
       "entry_point": {
         "title": "Point d’entrée"
       },
-
       "entry_point_direction": {
         "description": "Sens de l’itinéraire au point d’entrée."
       },
-
       "exit_point": {
         "title": "Point de sortie"
       },
-
       "release_detectors": {
         "description": "Détecteur autorisant la libération des ressources réservées depuis le début de l’itinéraire",
         "title": "Détecteurs de libération"
       },
-
       "switches_directions": {
         "description": "Liste des directions des aiguilles sur l’itinéraire.",
         "title": "Directions des aiguilles"
@@ -390,50 +321,40 @@
     },
     "title": "Itinéraire"
   },
-
   "Side": {
     "description": "Décrit le côté de la voie où est situé le signal.",
     "title": "Côté"
   },
-
   "Sign": {
     "description": "Un panneau est un objet physique, ponctuel, et cosmétique.",
-
     "properties": {
       "angle_geo": {
         "description": "Angle géographique (en degrés)",
         "title": "Angle Géo"
       },
-
       "angle_sch": {
         "description": "Angle schématique (en degrés)",
         "title": "Angle Sch"
       },
-
       "kp": {
         "description": "Point kilométrique du panneau",
         "title": "PK"
       },
-
       "position": {
         "description": "Distance entre le point et le début du TIV (en mètres)",
         "title": "Position"
       },
-
       "side": {
         "description": "Côté de la voie où est situé le panneau"
       },
-
       "track": {
         "description": "Référence du TIV sur lequel est placé l’objet",
         "title": "Voie"
       },
-
       "type": {
         "description": "Précise le type de panneau",
         "title": "Type"
       },
-
       "value": {
         "description": "Si le panneau est une annonce, précise la valeur.",
         "title": "Valeur"
@@ -441,90 +362,72 @@
     },
     "title": "Panneau"
   },
-
   "Signal": {
     "title": "Signal",
     "description": "Un signal est caractérisé par son Id et la voie qui lui est rattachée. Par défaut, un signal est situé au centre de la voie.",
-
     "properties": {
       "direction": {
         "description": "Orientation du signal"
       },
-
       "linked_detector": {
         "description": "Identifiant du détecteur lié au signal",
         "title": "Détecteur lié"
       },
-
       "logical_signals": {
         "description": "Signaux logiques inclus dans le signal physique",
         "title": "Signaux logiques"
       },
-
       "position": {
         "description": "Distance entre le point et le début du TIV (en mètres)",
         "title": "Position"
       },
-
       "sight_distance": {
         "description": "Distance de visibilité du signal (en mètres)",
         "title": "Distance de visibilité"
       },
-
       "track": {
         "description": " Référence du TIV sur laquelle est placée l’objet ",
         "title": "Voie"
       }
     }
   },
-
   "SignalSncfExtension": {
     "properties": {
       "kp": {
         "description": "Point kilométrique du signal",
         "title": "PK"
       },
-
       "label": {
         "title": "Label"
       },
-
       "side": {
         "description": "Côté de la voie où est situé le signal"
       },
-
       "support_type": {
         "title": "Type de support"
       },
-
       "type_code": {
         "title": "Type de code"
       },
-
       "value": {
         "title": "Valeur"
       }
     }
   },
-
   "SignalingSystem": {
     "title": "Système de signalisation"
   },
-
   "Slope": {
     "description": "Correspond au gradient d’élévation d’une partie d’un tronçon d’itinéraire de voie. Le gradient peut être positif (cas d’une rampe) ou négatif (cas d’une pente).",
-
     "properties": {
       "begin": {
         "description": "Distance correspondant au début du gradient associé par rapport au début du TIV (en mètres).",
         "title": "Début"
       },
-
       "end": {
         "description": "Distance correspondant à la fin du gradient associé par rapport au début du TIV (en mètres).",
         "title": "Fin"
       },
-
       "gradient": {
         "description": "Gradient correspondant (en mètres par kilomètres).",
         "title": "Gradient"
@@ -532,21 +435,17 @@
     },
     "title": "Déclivité"
   },
-
   "SpeedSection": {
     "description": "Les limitations de vitesse sont repérables par leurs identifiants (en mètres par seconde).",
-
     "properties": {
       "speed_limit": {
         "description": "Vitesse limite par défaut des trains qui ne sont dans aucune catégorie spécifique (en mètres par seconde).",
         "title": "Vitesse limite"
       },
-
       "speed_limit_by_tag": {
         "description": "Vitesse limite des trains avec un label donné (en mètres par seconde)",
         "title": "Vitesse limite par label"
       },
-
       "track_ranges": {
         "description": "Liste des emplacements où la vitesse limite est appliquée",
         "title": "Intervalles sur un TIV"
@@ -554,40 +453,33 @@
     },
     "title": "Limitation de vitesse"
   },
-
   "SpeedSectionPslSncfExtension": {
     "properties": {
       "announcement": {
         "description": "Valeur(s) d’une limite permanente de vitesse",
         "title": "Panneau d’annonce"
       },
-
       "r": {
         "description": "Fin de la limite permanente de vitesse.",
         "title": "Panneau R"
       },
-
       "z": {
         "description": "Début de la limite permanente de vitesse."
       }
     },
     "title": "Extensions spécifiques à la SNCF"
   },
-
   "Switch": {
     "description": "Les aiguilles sont des appareils permettant de changer de voies.",
-
     "properties": {
       "group_change_delay": {
         "description": "Temps nécessaire pour changer la configuration d’une aiguille.",
         "title": "Délai de changement de configuration d’un groupe d’aiguilles"
       },
-
       "ports": {
         "description": "Emplacement des différentes branches selon des TIV",
         "title": "Branches de l’aiguille"
       },
-
       "switch_type": {
         "description": "Identifiant et type d’aiguille",
         "title": "Type d’aiguille"
@@ -595,16 +487,13 @@
     },
     "title": "Aiguille"
   },
-
   "SwitchPortConnection": {
     "description": "Connexion entre chaque branche d’un type d’aiguille. Elle est toujours bidirectionnelle.",
-
     "properties": {
       "dst": {
         "description": "Nom de la branche de destination de la connexion.",
         "title": "Dst"
       },
-
       "src": {
         "description": " Nom de la branche source de la connexion. ",
         "title": "Src"
@@ -612,7 +501,6 @@
     },
     "title": "Connexion des branches de l’aiguille"
   },
-
   "SwitchSncfExtension": {
     "properties": {
       "label": {
@@ -622,16 +510,13 @@
     },
     "title": "Extension spécifique à la SNCF"
   },
-
   "SwitchType": {
     "description": "Liste de branches et groupes pouvant servir à configurer une aiguille.",
-
     "properties": {
       "groups": {
         "description": "Groupe de connexion de branches",
         "title": "Groupes"
       },
-
       "ports": {
         "description": "Liste des branches d’une aiguille. Les branches correspondent aux extrémités des aiguilles.",
         "title": "Branches de l’aiguille"
@@ -639,15 +524,12 @@
     },
     "title": "Type d’aiguille"
   },
-
   "TrackEndpoint": {
     "description": "Extrémité d’une voie (début ou fin).",
-
     "properties": {
       "endpoint": {
         "description": "Position relative de l’extrémité de la voie considérée"
       },
-
       "track": {
         "description": "Identifiant et type de voie",
         "title": "Voie"
@@ -655,26 +537,21 @@
     },
     "title": "Extrémité de voie"
   },
-
   "TrackSection": {
     "description": "Un tronçon d’itinéraire de voie (TIV) est un morceau de d’itinéraire de voie. Il s’agit du système de repérage utilisé dans OSRD pour localiser un point. Un TIV est identifié par son id unique et ses coordonnées (géographiques ou schématiques).",
-
     "properties": {
       "curves": {
         "description": "Liste des courbes du TIV",
         "title": "Courbes"
       },
-
       "length": {
         "description": "Longueur du TIV (en mètres)",
         "title": "Longueur"
       },
-
       "loading_gauge_limits": {
         "description": "Liste des gabarits limites",
         "title": "Gabarits limites"
       },
-
       "slopes": {
         "description": "Liste des déclivités du TIV",
         "title": "Déclivités"
@@ -682,45 +559,38 @@
     },
     "title": "Tronçon d’itinéraire de voie (TIV)"
   },
-
   "TrackSectionSncfExtension": {
     "properties": {
       "line_code": {
         "description": "Code de ligne utilisé par le TIV correspondant",
         "title": "Code de ligne"
       },
-
       "line_name": {
         "description": "Nom de la ligne utilisée par le TIV correspondant",
         "title": "Nom de la ligne"
       },
-
       "track_name": {
         "description": "Nom correspondant à la voie utilisée",
         "title": "Nom de la voie"
       },
-
       "track_number": {
         "description": "Numéro correspondant au TIV utilisé",
         "title": "Numéro du TIV"
       }
     }
   },
-
   "TvmSystem": {
     "properties": {
       "next_signaling_systems": {
         "description": "Liste des inputs autorisés pour les systèmes de signalisation",
         "title": "Prochain système de signalisation"
       },
-
       "settings": {
         "description": "Paramètres de signaux TVM"
       }
     },
     "title": "Signalisation TVM"
   },
-
   "__main____BalSystem__Settings": {
     "properties": {
       "Nf": {
@@ -729,20 +599,17 @@
     },
     "title": "Paramètres BAL"
   },
-
   "__main____BaprSystem__Settings": {
     "properties": {
       "Nf": {
         "description": "Signal non franchissable"
       },
-
       "distant": {
         "description": "Signal distant"
       }
     },
     "title": "Paramètres BAPR"
   },
-
   "__main____TvmSystem__Settings": {
     "properties": {
       "is_430": {
@@ -751,63 +618,51 @@
     },
     "title": "Paramètres TVM"
   },
-
   "properties": {
     "buffer_stops": {
       "description": "Heurtoirs de l’infrastructure",
       "title": "Heurtoirs"
     },
-
-    "catenaries": {
+    "electrifications": {
       "description": "Caténaires de l’infrastructure ",
       "title": "Caténaires"
     },
-
     "detectors": {
       "description": "Détecteurs de l’infrastructure",
       "title": "Détecteurs"
     },
-
     "neutral_sections": {
       "description": "Sections neutres de l’infrastructure",
       "title": "Sections neutres"
     },
-
     "operational_points": {
       "description": "Liste des points remarquables de l’infrastructure",
       "title": "Points remarquables"
     },
-
     "routes": {
       "description": "Itinéraires de l’infrastructure",
       "title": "Itinéraires"
     },
-
     "signals": {
       "description": "Signaux de l’infrastructure",
       "title": "Signaux"
     },
-
     "speed_sections": {
       "description": "Limites de vitesse de l’infrastructure",
       "title": "Limites de vitesse"
     },
-
     "switch_types": {
       "description": "Types d’aiguille de l’infrastructure",
       "title": "Types d’aiguille"
     },
-
     "switches": {
       "description": "Aiguilles de l’infrastructure",
       "title": "Aiguilles"
     },
-
     "track_section_links": {
       "description": "Raccordements de TIV de l’infrastructure",
       "title": "Raccordements de TIV"
     },
-
     "track_sections": {
       "description": "TIV de l’infrastructure",
       "title": "TIV"

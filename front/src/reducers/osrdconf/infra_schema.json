@@ -199,8 +199,8 @@
             "title": "BufferStopSncfExtension",
             "type": "object"
         },
-        "Catenary": {
-            "description": "\n    A catenary corresponds to a set of cables designed to power electric trains by capturing the current through the use\n    of a pantograph. Catenary is identified by its identifier.\n    ",
+        "Electrification": {
+            "description": "\n    A electrification corresponds to a set of cables designed to power electric trains by capturing the current through the use\n    of a pantograph. Electrification is identified by its identifier.\n    ",
             "properties": {
                 "id": {
                     "description": "Unique identifier of the object",
@@ -229,7 +229,7 @@
                 "voltage",
                 "track_ranges"
             ],
-            "title": "Catenary",
+            "title": "Electrification",
             "type": "object"
         },
         "Curve": {
@@ -636,7 +636,7 @@
             "type": "object"
         },
         "NeutralSection": {
-            "description": "\n    Neutral sections are portions of track where trains aren't allowed to pull power from catenaries.\n    They have to rely on inertia to cross such sections.\n\n    In practice, neutral sections are delimited by signs. In OSRD, neutral sections are directional\n    to allow accounting for different sign placement depending on the direction.\n\n    For more details see [the documentation](https://osrd.fr/en/docs/explanation/neutral_sections/).\n    ",
+            "description": "\n    Neutral sections are portions of track where trains aren't allowed to pull power from electrifications.\n    They have to rely on inertia to cross such sections.\n\n    In practice, neutral sections are delimited by signs. In OSRD, neutral sections are directional\n    to allow accounting for different sign placement depending on the direction.\n\n    For more details see [the documentation](https://osrd.fr/en/docs/explanation/neutral_sections/).\n    ",
             "properties": {
                 "announcement_track_ranges": {
                     "description": "List of locations where the upcoming neutral section is announced but not yet crossed",
@@ -659,7 +659,7 @@
                     "type": "boolean"
                 },
                 "track_ranges": {
-                    "description": "List of locations where the train cannot pull power from catenaries",
+                    "description": "List of locations where the train cannot pull power from electrifications",
                     "items": {
                         "$ref": "#/$defs/DirectionalTrackRange"
                     },
@@ -1662,12 +1662,12 @@
             "title": "Buffer Stops",
             "type": "array"
         },
-        "catenaries": {
-            "description": "Catenaries of the infra",
+        "electrifications": {
+            "description": "electrifications of the infra",
             "items": {
-                "$ref": "#/$defs/Catenary"
+                "$ref": "#/$defs/Electrification"
             },
-            "title": "Catenaries",
+            "title": "electrifications",
             "type": "array"
         },
         "detectors": {
@@ -1756,7 +1756,7 @@
         "switches",
         "track_sections",
         "speed_sections",
-        "catenaries",
+        "electrifications",
         "signals",
         "buffer_stops",
         "detectors",

@@ -21,7 +21,8 @@ const ElectrificationMetadataForm = ({ voltages }: { voltages: string[] }) => {
     <SelectImprovedSNCF
       label={
         <>
-          <GiElectric className="me-1" /> {t('Editor.tools.catenary-edition.catenaries')}
+          <GiElectric className="me-1" />{' '}
+          {t('Editor.tools.electrification-edition.electrifications')}
         </>
       }
       options={voltages}
@@ -33,7 +34,7 @@ const ElectrificationMetadataForm = ({ voltages }: { voltages: string[] }) => {
       }}
       withSearch
       withNewValueInput
-      addButtonTitle={t('Editor.tools.catenary-edition.add-new-catenary')}
+      addButtonTitle={t('Editor.tools.electrification-edition.add-new-electrification')}
       bgWhite
     />
   );
