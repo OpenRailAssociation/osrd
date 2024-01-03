@@ -51,7 +51,7 @@ const RollingStockCard = ({
       }
     });
     return { ...localModes, voltages: localVoltages };
-  }, []);
+  }, [rollingStock.effort_curves.modes]);
 
   function displayCardDetail() {
     if (!isOpen) {
