@@ -13,6 +13,7 @@ import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.Path
 import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper
+import fr.sncf.osrd.stdcm.infra_exploration.withEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface.NotEnoughLookahead
 import fr.sncf.osrd.train.RollingStock
@@ -117,15 +118,12 @@ private fun findConflictOffsets(
     val endOffset = startOffset + Distance(millimeters = ranges.stream()
         .mapToLong { range -> (range.end - range.start).millimeters }
         .sum())
-    val blocks = ranges.stream()
-        .map { x -> x.edge.block }
-        .toList()
+    val explorer = ranges.last().edge.infraExplorer.withEnvelope(envelopeWithStops)
     assert(TrainPhysicsIntegrator.arePositionsEqual(envelopeWithStops.endPos, (endOffset - startOffset).meters))
     val availability = blockAvailability.getAvailability(
-        blocks,
+        explorer,
         startOffset.distance,
         endOffset.distance,
-        envelopeWithStops,
         departureTime
     )
     assert(availability.javaClass != NotEnoughLookahead::class.java)

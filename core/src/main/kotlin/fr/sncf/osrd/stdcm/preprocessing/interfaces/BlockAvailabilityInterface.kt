@@ -4,13 +4,10 @@ import com.google.common.base.Objects
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
 import fr.sncf.osrd.sim_infra.api.BlockId
+import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.utils.units.Distance
 
 /** Abstract interface used to request the availability of path sections  */
-@SuppressFBWarnings(
-    value = ["URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"],
-    justification = "The classes aren't used yet. This should be removed by the end of the migration."
-)
 interface BlockAvailabilityInterface {
     /** Request availability information about a section of the path.
      * <br></br>
@@ -26,19 +23,16 @@ interface BlockAvailabilityInterface {
      * The implementation of BlockAvailabilityInterface must account for train length, sight distance,
      * and similar factors.
      *
-     * @param blocks List of block IDs taken by the train
+     * @param infraExplorer describes the path and envelope of the train
      * @param startOffset Start of the section to check for availability, as an offset from the start of the path
      * @param endOffset End of the section to check for availability, as an offset from the start of the path
-     * @param envelope Envelope describing the position of the train at any moment.
-     * Must be exactly `(endOffset - startOffset) long.
      * @param startTime Time at which the train is at `startOffset`.
      * @return An Availability instance.
      */
     fun getAvailability(
-        blocks: List<BlockId>,
+        infraExplorer: InfraExplorerWithEnvelope,
         startOffset: Distance,
         endOffset: Distance,
-        envelope: EnvelopeTimeInterpolate,
         startTime: Double
     ): Availability
 

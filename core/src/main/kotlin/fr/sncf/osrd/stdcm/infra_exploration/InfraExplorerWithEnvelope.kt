@@ -1,6 +1,5 @@
 package fr.sncf.osrd.stdcm.infra_exploration
 
-import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
 import fr.sncf.osrd.graph.PathfindingEdgeLocationId
 import fr.sncf.osrd.sim_infra.api.Block
@@ -16,10 +15,10 @@ interface InfraExplorerWithEnvelope : InfraExplorer {
     fun getFullEnvelope(): EnvelopeTimeInterpolate
 
     /** Returns the envelope spanning over the last block. */
-    fun getLastEnvelope(): Envelope
+    fun getLastEnvelope(): EnvelopeTimeInterpolate
 
     /** Adds an envelope. */
-    fun addEnvelope(envelope: Envelope)
+    fun addEnvelope(envelope: EnvelopeTimeInterpolate): InfraExplorerWithEnvelope
 
     /** Only shallow copies are made.
      * Used to enable backtracking by cloning explorers at each step. */
@@ -35,5 +34,12 @@ fun initInfraExplorerWithEnvelope(
     location: PathfindingEdgeLocationId<Block>
 ): Collection<InfraExplorerWithEnvelope> {
     return initInfraExplorer(rawInfra, blockInfra, location)
-        .map { explorer -> InfraExplorerWithEnvelopeImpl(explorer, ArrayList()) }
+        .map { explorer -> InfraExplorerWithEnvelopeImpl(explorer, mutableListOf()) }
+}
+
+/** Add an envelope to a simple InfraExplorer. */
+fun InfraExplorer.withEnvelope(
+    envelope: EnvelopeTimeInterpolate,
+): InfraExplorerWithEnvelope {
+    return InfraExplorerWithEnvelopeImpl(this, mutableListOf(envelope))
 }

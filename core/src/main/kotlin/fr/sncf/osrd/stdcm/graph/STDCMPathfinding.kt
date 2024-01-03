@@ -11,6 +11,7 @@ import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.stdcm.STDCMResult
 import fr.sncf.osrd.stdcm.STDCMStep
 import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorer
+import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.RollingStock.Comfort
@@ -178,7 +179,7 @@ private fun convertLocations(
 ): Set<EdgeLocation<STDCMEdge, STDCMEdge>> {
     val res = HashSet<EdgeLocation<STDCMEdge, STDCMEdge>>()
     for (location in locations) {
-        val infraExplorers = initInfraExplorer(graph.rawInfra, graph.blockInfra, location)
+        val infraExplorers = initInfraExplorerWithEnvelope(graph.rawInfra, graph.blockInfra, location)
         for (explorer in infraExplorers) {
             val edges = STDCMEdgeBuilder(explorer, graph)
                 .setStartTime(startTime)
