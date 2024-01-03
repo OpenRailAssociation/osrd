@@ -1,6 +1,6 @@
 import React, { FC, useCallback, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { LngLatBoundsLike, MapRef } from 'react-map-gl/maplibre';
+import type { MapRef } from 'react-map-gl/maplibre';
 import { BsExclamationOctagon } from 'react-icons/bs';
 import { useTranslation } from 'react-i18next';
 
@@ -8,11 +8,11 @@ import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { getEditorState } from 'reducers/editor/selectors';
 import useKeyboardShortcuts from 'utils/hooks/useKeyboardShortcuts';
 
-import { EditorContextType } from '../../tools/editorContextTypes';
-import { getEntityBbox, selectEntity } from '../../tools/utils';
+import type { EditorContextType } from '../../tools/editorContextTypes';
+import { centerMapOnObject, selectEntities } from '../../tools/utils';
 import { getEntity } from '../../data/api';
 import InfraErrorsModal from './InfraErrorsModal';
-import { InfraError } from './types';
+import type { InfraError } from './types';
 
 const InfraErrorMapControl: FC<{
   mapRef: MapRef;
@@ -42,19 +42,12 @@ const InfraErrorMapControl: FC<{
           );
 
           // select the entity
-          selectEntity(entity, { switchTool, dispatch, editorState });
+          selectEntities([entity], { switchTool, dispatch, editorState });
 
           // closing the modal
           closeModal();
 
-          // Center the map on the object
-          const bbox = await getEntityBbox(infraID, entity, dispatch);
-          if (bbox) {
-            // zoom to the bbox
-            mapRef.fitBounds(bbox as LngLatBoundsLike, { animate: false });
-            // make a zoom out to have some kind of "margin" around the bbox
-            mapRef.zoomOut();
-          }
+          centerMapOnObject(infraID, [entity], dispatch, mapRef);
         }}
       />,
       'lg'
@@ -64,10 +57,10 @@ const InfraErrorMapControl: FC<{
     dispatch,
     editorState,
     mapRef,
-    getEntityBbox,
     getEntity,
     closeModal,
-    selectEntity,
+    selectEntities,
+    centerMapOnObject,
   ]);
 
   // ctrl+E opens the modal

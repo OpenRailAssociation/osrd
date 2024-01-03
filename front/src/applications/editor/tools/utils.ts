@@ -1,11 +1,14 @@
-import type { MapLayerMouseEvent } from 'maplibre-gl';
+import type { MapRef } from 'react-map-gl/maplibre';
+import type { LngLatBoundsLike, MapLayerMouseEvent } from 'maplibre-gl';
 import type { Dispatch } from 'redux';
 import turfBbox from '@turf/bbox';
 import length from '@turf/length';
 import lineSlice from '@turf/line-slice';
 import { featureCollection } from '@turf/helpers';
 import type { NearestPoint } from '@turf/nearest-point';
+import type { BBox2d } from '@turf/helpers/dist/js/lib/geojson';
 import type { Feature, LineString, Point } from 'geojson';
+import { uniq } from 'lodash';
 
 import type {
   Bbox,
@@ -80,8 +83,15 @@ export function getTrackSectionEntityFromNearestPoint(
   return track;
 }
 
-export function selectEntity(
-  entity: EditorEntity,
+function getNeededLayers(entities: EditorEntity[]) {
+  const objectTypes = uniq(entities.map((entity) => entity.objType));
+  return uniq(
+    objectTypes.flatMap((objectType) => EDITOAST_TO_LAYER_DICT[objectType as EditoastType])
+  );
+}
+
+export function selectEntities(
+  entities: EditorEntity[],
   context: {
     switchTool: EditorContextType['switchTool'];
     dispatch: Dispatch;
@@ -92,7 +102,7 @@ export function selectEntity(
   // call the switch tool
   switchTool({
     toolType: TOOL_TYPES.SELECTION,
-    toolState: { selection: [entity] },
+    toolState: { selection: entities },
   });
 
   // enable the needed layer
@@ -101,9 +111,10 @@ export function selectEntity(
   // create the next list of layer
   const nextLayers = new Set(actualLayers);
 
+  const neededLayers = getNeededLayers(entities);
+
   // iterate over needed layer
-  const neededLayers = EDITOAST_TO_LAYER_DICT[entity.objType as EditoastType];
-  (neededLayers || []).forEach((l) => {
+  neededLayers.forEach((l) => {
     if (!nextLayers.has(l)) nextLayers.add(l);
   });
 
@@ -198,26 +209,47 @@ export function openEntityEditionPanel(
 }
 
 /**
- * Given an editor entity, return the bbox that contains its geo element if possible.
+ * Given an array of editor entities, return the bbox which fits all of their geo elements.
  */
-export async function getEntityBbox(
+function getLargestBbox(entities: EditorEntity[]): BBox2d {
+  const bboxList = entities.map((entity) => turfBbox(entity.geometry));
+
+  let [minLeft, minBottom, minRight, minTop] = bboxList[0];
+
+  bboxList.forEach(([left, bottom, right, top]) => {
+    if (left < minLeft) minLeft = left;
+    if (bottom < minBottom) minBottom = bottom;
+    if (right > minRight) minRight = right;
+    if (top > minTop) minTop = top;
+  });
+  return [minLeft, minBottom, minRight, minTop] as BBox2d;
+}
+
+/**
+ * Given an array of editor entities, return the bbox that contains its geo element if possible depending the entities type.
+ */
+export async function getEntitiesBbox(
   infraId: number,
-  entity: EditorEntity,
+  entities: EditorEntity[],
   dispatch: Dispatch
 ): Promise<Bbox | null> {
-  if (entity.geometry) {
-    const bbox = turfBbox(entity.geometry);
+  const hasRouteEntity = entities.some((entity) => entity.objType === 'Route');
+
+  if (!hasRouteEntity) {
+    let bbox = turfBbox(entities[0].geometry);
+    if (entities.length > 1) bbox = getLargestBbox(entities);
     return [
       [bbox[0], bbox[1]],
       [bbox[2], bbox[3]],
     ];
   }
-  if (entity.objType === 'Route') {
+
+  if (entities.length === 1 && entities[0].objType === 'Route') {
     // get start point
-    const { id: startPointId, type: startPointIdType } = entity.properties.entry_point;
+    const { id: startPointId, type: startPointIdType } = entities[0].properties.entry_point;
     const startPoint = await getEntity(infraId, startPointId, startPointIdType, dispatch);
     // get end point
-    const { id: endPointId, type: endPointIdType } = entity.properties.exit_point;
+    const { id: endPointId, type: endPointIdType } = entities[0].properties.exit_point;
     const endPoint = await getEntity(infraId, endPointId, endPointIdType, dispatch);
 
     const fc = featureCollection([startPoint, endPoint]);
@@ -228,4 +260,20 @@ export async function getEntityBbox(
     ];
   }
   return null;
+}
+
+export async function centerMapOnObject(
+  infraId: number,
+  entities: EditorEntity[],
+  dispatch: Dispatch,
+  mapRef: MapRef
+): Promise<void> {
+  // Center the map on the object
+  const bbox = await getEntitiesBbox(infraId, entities, dispatch);
+  if (bbox) {
+    // zoom to the bbox
+    mapRef.fitBounds(bbox as LngLatBoundsLike, { animate: false });
+    // make a zoom out to have some kind of "margin" around the bbox
+    mapRef.zoomOut();
+  }
 }
