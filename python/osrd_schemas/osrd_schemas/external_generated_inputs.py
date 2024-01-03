@@ -6,7 +6,7 @@ from .infra import TrackRange
 
 
 class ElectricalProfile(BaseModel):
-    """This class is used to model the power loss along a catenary (thus along ranges of track sections).
+    """This class is used to model the power loss along a electrification (thus along ranges of track sections).
     There should be one value per power class, on every electrified track."""
 
     value: str = Field(description="Category of power loss along the range")
@@ -19,7 +19,8 @@ class ElectricalProfileSet(BaseModel):
 
     levels: List[ElectricalProfile] = Field(description="The list of electrical profiles")
     level_order: Dict[str, List[str]] = Field(
-        description="A mapping from catenary modes to the electrical profile levels in decreasing order of magnitude"
+        description="""A mapping from electrification modes to the electrical profile levels
+                    in decreasing order of magnitude"""
     )
 
 

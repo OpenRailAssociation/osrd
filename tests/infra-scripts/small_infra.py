@@ -12,8 +12,8 @@ from railjson_generator import (
     InfraBuilder,
     get_output_dir,
 )
-from railjson_generator.schema.infra.catenary import Catenary
 from railjson_generator.schema.infra.direction import Direction
+from railjson_generator.schema.infra.electrification import Electrification
 from railjson_generator.schema.infra.track_section import TrackSection
 
 OUTPUT_DIR = get_output_dir()
@@ -582,11 +582,11 @@ speed_2 = builder.add_speed_section(112 / 3.6, speed_limit_by_tag={"Marchandise 
 speed_2.add_track_range(th1, 3500, 4400, ApplicableDirection.BOTH)
 
 # ================================
-#  Catenaries
+#  Electrifications
 # ================================
 electrified_tracks_25000 = [t for t in builder.infra.track_sections if t not in {td1, ta0}]
-builder.infra.catenaries.append(Catenary("catenary_25k", "25000", electrified_tracks_25000))
-builder.infra.catenaries.append(Catenary("catenary_1.5k", "1500", [ta0]))
+builder.infra.electrifications.append(Electrification("electrification_25k", "25000", electrified_tracks_25000))
+builder.infra.electrifications.append(Electrification("electrification_1.5k", "1500", [ta0]))
 
 # ================================
 #  Neutral sections

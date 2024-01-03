@@ -439,7 +439,7 @@
             ]
         }
     ],
-    "catenaries": [],
+    "electrifications": [],
     "signals": [
         {
             "track": "ne.micro.foo_a",

@@ -19,7 +19,7 @@ def _neutral_section_id():
 @dataclass
 class NeutralSection:
     """
-    Neutral sections are portions of track where trains aren't allowed to pull power from catenaries.
+    Neutral sections are portions of track where trains aren't allowed to pull power from electrifications.
     They have to rely on inertia to cross such sections.
 
     In practice, neutral sections are delimited by signs. In OSRD, neutral sections are directional

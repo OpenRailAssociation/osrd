@@ -303,10 +303,11 @@ class SpeedSection(BaseObjectTrait):
     )
 
 
-class Catenary(BaseObjectTrait):
+class Electrification(BaseObjectTrait):
     """
-    A catenary corresponds to a set of cables designed to power electric trains by capturing the current through the use
-    of a pantograph. Catenary is identified by its identifier.
+    An electrification corresponds to a set of cables designed to power
+    electric trains by capturing the current through the use
+    of a pantograph. Electrification is identified by its identifier.
     """
 
     voltage: NonBlankStr = Field(description="Type of power supply (in Volts) used for electrification")
@@ -445,7 +446,7 @@ class Sign(TrackLocationTrait):
 
 class NeutralSection(BaseObjectTrait):
     """
-    Neutral sections are portions of track where trains aren't allowed to pull power from catenaries.
+    Neutral sections are portions of track where trains aren't allowed to pull power from electrifications.
     They have to rely on inertia to cross such sections.
 
     In practice, neutral sections are delimited by signs. In OSRD, neutral sections are directional
@@ -459,7 +460,7 @@ class NeutralSection(BaseObjectTrait):
         default_factory=list,
     )
     track_ranges: List[DirectionalTrackRange] = Field(
-        description="List of locations where the train cannot pull power from catenaries",
+        description="List of locations where the train cannot pull power from electrifications",
         min_length=1,
     )
     lower_pantograph: bool = Field(description="Whether or not trains need to lower their pantograph in the section")
@@ -485,7 +486,7 @@ class RailJsonInfra(BaseModel):
     switches: List[Switch] = Field(description="Switches of the infra")
     track_sections: List[TrackSection] = Field(description="Track sections of the infra")
     speed_sections: List[SpeedSection] = Field(description="Speed sections of the infra")
-    catenaries: List[Catenary] = Field(description="Catenaries of the infra")
+    electrifications: List[Electrification] = Field(description="Electrifications of the infra")
     signals: List[Signal] = Field(description="Signals of the infra")
     buffer_stops: List[BufferStop] = Field(description="Buffer stops of the infra")
     detectors: List[Detector] = Field(description="Detectors of the infra")

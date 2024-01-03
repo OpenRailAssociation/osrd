@@ -12,7 +12,7 @@ OBJECT_TYPES = {
     "Switch": "switches",
     "TrackSection": "track_sections",
     "SpeedSection": "speed_sections",
-    "Catenary": "catenaries",
+    "Electrification": "electrifications",
     "Signal": "signals",
     "BufferStop": "buffer_stops",
     "Detector": "detectors",

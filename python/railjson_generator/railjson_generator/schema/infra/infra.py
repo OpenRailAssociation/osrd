@@ -4,7 +4,7 @@ from typing import List
 
 from osrd_schemas import infra
 
-from railjson_generator.schema.infra.catenary import Catenary
+from railjson_generator.schema.infra.electrification import Electrification
 from railjson_generator.schema.infra.neutral_section import NeutralSection
 from railjson_generator.schema.infra.operational_point import OperationalPoint
 from railjson_generator.schema.infra.route import Route
@@ -21,7 +21,7 @@ class Infra:
     operational_points: List[OperationalPoint] = field(default_factory=list)
     routes: List[Route] = field(default_factory=list)
     speed_sections: List[SpeedSection] = field(default_factory=list)
-    catenaries: List[Catenary] = field(default_factory=list)
+    electrifications: List[Electrification] = field(default_factory=list)
     neutral_sections: List[NeutralSection] = field(default_factory=list)
 
     VERSION = "3.4.7"
@@ -42,7 +42,7 @@ class Infra:
             operational_points=self.make_rjs_operational_points(),
             extended_switch_types=[],
             speed_sections=[speed_section.to_rjs() for speed_section in self.speed_sections],
-            catenaries=[catenary.to_rjs() for catenary in self.catenaries],
+            electrifications=[electrification.to_rjs() for electrification in self.electrifications],
             neutral_sections=[neutral_section.to_rjs() for neutral_section in self.neutral_sections],
         )
 

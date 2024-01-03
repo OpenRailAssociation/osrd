@@ -124,7 +124,7 @@ class EnergyStorage(BaseModel, extra="forbid"):
 class SpeedDependantPower(BaseModel, extra="forbid"):
     """
     A curve that account for speed-related power (output/availability) behavior of specific energy sources,
-    - the pantograph power is lowered at low speed to avoid welding the pantograph to the catenary
+    - the pantograph power is lowered at low speed to avoid welding the pantograph to the electrification
     - the power outputted by Hydrogen fuel cells increases with speed
     """
 
@@ -137,13 +137,13 @@ class SpeedDependantPower(BaseModel, extra="forbid"):
         return self
 
 
-class Catenary(BaseModel, extra="forbid"):
-    """Catenary used when simulating qualesi trains"""
+class Electrification(BaseModel, extra="forbid"):
+    """Electrification used when simulating qualesi trains"""
 
-    energy_source_type: Literal["Catenary"] = Field(default="Catenary")
+    energy_source_type: Literal["Electrification"] = Field(default="Electrification")
     max_input_power: SpeedDependantPower
     max_output_power: SpeedDependantPower
-    efficiency: float = Field(ge=0, le=1, description="Efficiency of catenary and pantograph transmission")
+    efficiency: float = Field(ge=0, le=1, description="Efficiency of electrification and pantograph transmission")
 
 
 class PowerPack(BaseModel, extra="forbid"):
@@ -169,7 +169,7 @@ class Battery(BaseModel, extra="forbid"):
 class EnergySource(RootModel, extra="forbid"):
     """Energy sources used when simulating qualesi trains"""
 
-    root: Union[Catenary, PowerPack, Battery] = Field(discriminator="energy_source_type")
+    root: Union[Electrification, PowerPack, Battery] = Field(discriminator="energy_source_type")
 
 
 class EnergySourcesList(RootModel):
@@ -179,10 +179,10 @@ class EnergySourcesList(RootModel):
 
 
 class RollingStock(BaseModel, extra="forbid"):
-    """Electrical profiles and power classes are used to model the power loss along a catenary:
+    """Electrical profiles and power classes are used to model the power loss along a electrification:
     * Rolling stocks are attributed a power class depending on their power usage.
-    * Electrical profiles are then computed for each power class along all catenaries.
-    The electrical profile's value along the catenary is akin to an "actual available power" value.
+    * Electrical profiles are then computed for each power class along all electrifications.
+    The electrical profile's value along the electrification is akin to an "actual available power" value.
     * Then, speed-effort curves can be computed for all electrical profile values.
 
     To prevent power grid overloads, infrastructure managers can enforce power restrictions on some parts of their

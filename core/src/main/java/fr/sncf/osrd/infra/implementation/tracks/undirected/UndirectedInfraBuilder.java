@@ -183,7 +183,8 @@ public class UndirectedInfraBuilder {
         return TrackInfraImpl.from(switches.build(), builder.build());
     }
 
-    private void loadElectrifications(List<RJSElectrification> electrifications, HashMap<String, TrackSectionImpl> trackSectionsByID) {
+    private void loadElectrifications(List<RJSElectrification> electrifications, 
+                                      HashMap<String, TrackSectionImpl> trackSectionsByID) {
         for (var electrification : electrifications) {
             for (var trackRange : electrification.trackRanges) {
                 var track = trackSectionsByID.get(trackRange.trackSectionID);
