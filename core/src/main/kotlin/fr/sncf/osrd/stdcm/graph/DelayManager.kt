@@ -7,6 +7,7 @@ import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
+import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface.Availability
 import fr.sncf.osrd.train.TrainStop
@@ -27,7 +28,7 @@ class DelayManager internal constructor(
     /** Returns one value per "opening" (interval between two unavailable times).
      * Always returns the shortest delay to add to enter this opening.  */
     fun minimumDelaysPerOpening(
-        infraExplorer: InfraExplorer,
+        infraExplorer: InfraExplorerWithEnvelope,
         startTime: Double,
         envelope: Envelope,
         startOffset: Offset<Block>,
@@ -62,7 +63,7 @@ class DelayManager internal constructor(
 
     /** Returns the start time of the next occupancy for the block  */
     fun findNextOccupancy(
-        infraExplorer: InfraExplorer,
+        infraExplorer: InfraExplorerWithEnvelope,
         time: Double,
         startOffset: Offset<Block>,
         envelope: Envelope,
@@ -95,7 +96,7 @@ class DelayManager internal constructor(
      * e.g. if the train takes 42s to go through the block, enters the block at t=10s,
      * and we need to leave the block at t=60s, this will return 8s.  */
     fun findMaximumAddedDelay(
-        infraExplorer: InfraExplorer,
+        infraExplorer: InfraExplorerWithEnvelope,
         startTime: Double,
         startOffset: Offset<Block>,
         envelope: Envelope,
@@ -111,7 +112,7 @@ class DelayManager internal constructor(
 
     /** Calls `blockAvailability.getAvailability`, on an envelope scaled to account for the standard allowance.  */
     private fun getScaledAvailability(
-        infraExplorer: InfraExplorer,
+        infraExplorer: InfraExplorerWithEnvelope,
         startOffset: Offset<Block>,
         endOffset: Offset<Block>,
         envelope: Envelope,
@@ -128,11 +129,13 @@ class DelayManager internal constructor(
             scaledEnvelope
         else
             EnvelopeStopWrapper(scaledEnvelope, listOf(TrainStop(envelope.endPos, stopDurationAtEnd)))
+        val explorerWithNewEnvelope = infraExplorer
+            .clone()
+            .addEnvelope(envelopeWithStop)
         return blockAvailability.getAvailability(
-            listOf(infraExplorer.getCurrentBlock()),
+            explorerWithNewEnvelope,
             startOffset.distance,
             endOffset.distance,
-            envelopeWithStop,
             startTime
         )
     }

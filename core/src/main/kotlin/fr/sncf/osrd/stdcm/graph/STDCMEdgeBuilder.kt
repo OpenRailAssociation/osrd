@@ -3,6 +3,7 @@ package fr.sncf.osrd.stdcm.graph
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
+import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import java.util.*
@@ -12,7 +13,7 @@ import kotlin.math.min
 class STDCMEdgeBuilder // region CONSTRUCTORS
 internal constructor(
     /** Instance used to explore the infra, contains the underlying edge */
-    private val infraExplorer: InfraExplorer,
+    private val infraExplorer: InfraExplorerWithEnvelope,
     /** STDCM Graph, needed for most operations  */
     private val graph: STDCMGraph
 ) {
@@ -233,7 +234,7 @@ internal constructor(
     }// endregion UTILITIES
 
     companion object {
-        fun fromNode(graph: STDCMGraph, node: STDCMNode, infraExplorer: InfraExplorer): STDCMEdgeBuilder {
+        fun fromNode(graph: STDCMGraph, node: STDCMNode, infraExplorer: InfraExplorerWithEnvelope): STDCMEdgeBuilder {
             val builder = STDCMEdgeBuilder(infraExplorer, graph)
             if (node.locationOnEdge != null) {
                 builder.startOffset = node.locationOnEdge

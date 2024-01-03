@@ -1,12 +1,11 @@
 package fr.sncf.osrd.stdcm.infra_exploration
 
-import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.EnvelopeConcat
 import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
 
 data class InfraExplorerWithEnvelopeImpl(
     private val infraExplorer: InfraExplorer,
-    private val envelopes: MutableList<Envelope>
+    private val envelopes: MutableList<EnvelopeTimeInterpolate>
 ) : InfraExplorer by infraExplorer, InfraExplorerWithEnvelope {
 
     override fun cloneAndExtendLookahead(): Collection<InfraExplorerWithEnvelope> {
@@ -18,12 +17,13 @@ data class InfraExplorerWithEnvelopeImpl(
         return EnvelopeConcat.from(envelopes)
     }
 
-    override fun getLastEnvelope(): Envelope {
+    override fun getLastEnvelope(): EnvelopeTimeInterpolate {
         return envelopes.last()
     }
 
-    override fun addEnvelope(envelope: Envelope) {
+    override fun addEnvelope(envelope: EnvelopeTimeInterpolate): InfraExplorerWithEnvelope {
         envelopes.add(envelope)
+        return this
     }
 
     override fun clone(): InfraExplorerWithEnvelope {
