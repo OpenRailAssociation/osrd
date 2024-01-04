@@ -23,21 +23,31 @@ impl Telemetry {
 
 #[derive(Deserialize, Serialize, Clone)]
 #[serde(tag = "type")]
-pub struct TracingTelemetry {
-    enable: bool,
-    endpoint: String,
+pub enum TracingTelemetry {
+    None,
+    Otlp {
+        endpoint: String,
+        service_name: Option<String>,
+    },
+    Datadog {
+        #[serde(flatten)]
+        endpoint: Endpoint,
+        service_name: Option<String>,
+    },
+}
+
+#[derive(Deserialize, Serialize, Clone)]
+#[serde(untagged)]
+pub enum Endpoint {
+    Kube { kube_node_ip_env: String },
+    Direct { endpoint: String },
 }
 
 impl TracingTelemetry {
-    pub fn enable_providers(self) {
-        if !self.enable {
-            info!("Tracing disabled");
-            return;
-        }
-
+    fn enable_otlp(&self, endpoint: &String, service_name: String) {
         let exporter = opentelemetry_otlp::new_exporter()
             .tonic()
-            .with_endpoint(self.endpoint)
+            .with_endpoint(endpoint)
             .build_span_exporter()
             .expect("Failed to initialize otlp exporter");
 
@@ -47,13 +57,60 @@ impl TracingTelemetry {
             .with_config(opentelemetry_sdk::trace::Config::default().with_resource(
                 opentelemetry_sdk::Resource::new(vec![opentelemetry::KeyValue::new(
                     "service.name",
-                    "gateway",
+                    service_name,
                 )]),
             ))
             .with_batch_exporter(exporter, TokioCurrentThread)
             .build();
 
         global::set_tracer_provider(provider);
+    }
+
+    fn enable_datadog(&self, endpoint: &String, service_name: String) {
+        let exporter = opentelemetry_datadog::new_pipeline()
+            .with_service_name(service_name)
+            .with_agent_endpoint(endpoint)
+            .build_exporter()
+            .expect("Failed to initialize datadog exporter");
+
+        let provider = TracerProvider::builder()
+            .with_batch_exporter(exporter, TokioCurrentThread)
+            .build();
+
+        global::set_tracer_provider(provider);
+    }
+
+    pub fn enable_providers(&self) {
+        let service_name = match self {
+            TracingTelemetry::None => {
+                info!("Tracing disabled");
+                return;
+            }
+            TracingTelemetry::Otlp { service_name, .. }
+            | TracingTelemetry::Datadog { service_name, .. } => {
+                service_name.clone().unwrap_or("osrd-gateway".to_string())
+            }
+        };
+
+        match self {
+            TracingTelemetry::Otlp { endpoint, .. } => {
+                self.enable_otlp(endpoint, service_name);
+            }
+            TracingTelemetry::Datadog { endpoint, .. } => {
+                let used_endpoint = match endpoint {
+                    Endpoint::Kube { kube_node_ip_env } => format!(
+                        "http://{}:8126",
+                        std::env::var(kube_node_ip_env).expect(&format!(
+                            "Missing environment variable {}",
+                            kube_node_ip_env
+                        ))
+                    ),
+                    Endpoint::Direct { endpoint } => endpoint.clone(),
+                };
+                self.enable_datadog(&used_endpoint, service_name);
+            }
+            _ => {}
+        }
     }
 }
 
@@ -139,7 +196,7 @@ pub struct ProxyConfig {
     /// Authentication configuration
     pub auth: AuthConfig,
     /// Telemetry configuration
-    pub telemetry: Option<Telemetry>,
+    pub telemetry: Telemetry,
 }
 
 #[derive(Deserialize, Serialize, Clone)]
@@ -163,7 +220,9 @@ impl Default for ProxyConfig {
                 secure_cookies: true,
                 providers: vec![],
             },
-            telemetry: None,
+            telemetry: Telemetry {
+                tracing: TracingTelemetry::None,
+            },
         }
     }
 }

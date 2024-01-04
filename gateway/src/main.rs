@@ -59,9 +59,7 @@ async fn main() -> std::io::Result<()> {
     };
 
     // Enable telemetry
-    if let Some(telemetry) = config.telemetry {
-        telemetry.enable();
-    }
+    config.telemetry.enable();
 
     // Start server
     HttpServer::new(move || {
