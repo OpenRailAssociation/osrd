@@ -2,11 +2,11 @@ import cx from 'classnames';
 import React, { FC, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import HearderPopUp from 'common/Map/HeaderPopUp';
 import MapSettingsLayers from 'common/Map/Settings/MapSettingsLayers';
 import MapSettingsMapStyle from 'common/Map/Settings/MapSettingsMapStyle';
 import MapSettingsBackgroundSwitches from 'common/Map/Settings/MapSettingsBackgroundSwitches';
 import MapSettingsSpeedLimits from 'common/Map/Settings/MapSettingsSpeedLimits';
-import HearderPopUp from '../HeaderPopUp';
 
 interface MapSettingsProps {
   closeMapSettingsPopUp: () => void;

@@ -1,19 +1,16 @@
-import { AnyAction } from 'redux';
 import produce from 'immer';
 import { noop } from 'lodash';
+import { AnyAction } from 'redux';
 
-import createTrain from 'modules/simulationResult/components/SpaceTimeChart/createTrain';
-import {
-  SIGNAL_BASE_DEFAULT,
-  CHART_AXES,
-} from 'modules/simulationResult/components/simulationResultsConsts';
+import { SimulationReport } from 'common/api/osrdEditoastApi';
+import { SIGNAL_BASE_DEFAULT, CHART_AXES } from 'modules/simulationResult/consts';
 import { makeTrainListWithAllTrainsOffset } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
+import createTrain from 'modules/simulationResult/components/SpaceTimeChart/createTrain';
 import {
   SPEED_SPACE_SETTINGS_KEYS,
   OsrdSimulationState,
   Train,
 } from 'reducers/osrdsimulation/types';
-import { SimulationReport } from 'common/api/osrdEditoastApi';
 // TODO: Dependency cycle will be removed during the refactoring of store
 // eslint-disable-next-line import/no-cycle
 import undoableSimulation from './simulation';

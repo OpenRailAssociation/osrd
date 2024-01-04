@@ -17,6 +17,7 @@ import {
   Operation,
   PostInfraByIdObjectsAndObjectTypeApiResponse,
 } from 'common/api/osrdEditoastApi';
+
 import { EditoastType } from '../tools/types';
 
 // Quick helper to get a "promised" setTimeout:

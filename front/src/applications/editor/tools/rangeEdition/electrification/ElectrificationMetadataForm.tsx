@@ -1,10 +1,12 @@
+import { cloneDeep } from 'lodash';
 import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
-import EditorContext from 'applications/editor/context';
-import { ElectrificationEntity } from 'types';
 import { GiElectric } from 'react-icons/gi';
-import { cloneDeep } from 'lodash';
+
 import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
+import { ElectrificationEntity } from 'types';
+
+import EditorContext from '../../../context';
 import { ExtendedEditorContextType } from '../../editorContextTypes';
 import { RangeEditionState } from '../types';
 

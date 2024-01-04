@@ -4,15 +4,18 @@ import { CgLoadbar } from 'react-icons/cg';
 import { GiResize } from 'react-icons/gi';
 import { Rnd } from 'react-rnd';
 
+import { LightRollingStock, SimulationReport } from 'common/api/osrdEditoastApi';
+import {
+  CHART_AXES,
+  type PositionScaleDomain,
+  type ChartAxes,
+} from 'modules/simulationResult/consts';
 import {
   enableInteractivity,
   traceVerticalLine,
 } from 'modules/simulationResult/components/ChartHelpers/enableInteractivity';
-import { CHART_AXES } from 'modules/simulationResult/components/simulationResultsConsts';
-import type {
-  PositionScaleDomain,
-  ChartAxes,
-} from 'modules/simulationResult/components/simulationResultsConsts';
+import { interpolateOnPosition } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
+import { useChartSynchronizer } from 'modules/simulationResult/components/ChartHelpers/ChartSynchronizer';
 import {
   createChart,
   drawTrain,
@@ -20,13 +23,11 @@ import {
 import type { SpeedSpaceChart, SpeedSpaceSettingsType, Train } from 'reducers/osrdsimulation/types';
 import { getIsPlaying, getSpeedSpaceSettings } from 'reducers/osrdsimulation/selectors';
 import { updateSpeedSpaceSettings } from 'reducers/osrdsimulation/actions';
-import { LightRollingStock, SimulationReport } from 'common/api/osrdEditoastApi';
 import { dateIsInRange } from 'utils/date';
-import SpeedSpaceSettings from './SpeedSpaceSettings';
+
 import ElectricalProfilesLegend from './ElectricalProfilesLegend';
 import prepareData from './prepareData';
-import { interpolateOnPosition } from '../ChartHelpers/ChartHelpers';
-import { useChartSynchronizer } from '../ChartHelpers/ChartSynchronizer';
+import SpeedSpaceSettings from './SpeedSpaceSettings';
 
 const CHART_ID = 'SpeedSpaceChart';
 const CHART_MIN_HEIGHT = 250;

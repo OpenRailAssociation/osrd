@@ -1,8 +1,5 @@
 import { SimulationTrain } from 'reducers/osrdsimulation/types';
-import {
-  LIST_VALUES,
-  CHART_AXES,
-} from 'modules/simulationResult/components/simulationResultsConsts';
+import { LIST_VALUES, CHART_AXES } from 'modules/simulationResult/consts';
 import {
   mergeDatasArea,
   interpolateOnTime,

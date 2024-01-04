@@ -1,8 +1,5 @@
 import * as d3 from 'd3';
-import {
-  AllListValues,
-  SIGNAL_BASE_DEFAULT,
-} from 'modules/simulationResult/components/simulationResultsConsts';
+import { AllListValues, SIGNAL_BASE_DEFAULT } from 'modules/simulationResult/consts';
 import {
   ElectrificationRange,
   PowerRestrictionRangeItem,

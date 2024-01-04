@@ -29,7 +29,7 @@ import getScaleDomainFromValues from 'modules/simulationResult/components/ChartH
 import SpaceCurvesSlopes from 'modules/simulationResult/components/SpaceCurvesSlopes';
 import SpeedSpaceChart from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChart';
 import SpaceTimeChartIsolated from 'modules/simulationResult/components/SpaceTimeChart/withOSRDData';
-import type { PositionScaleDomain } from 'modules/simulationResult/components/simulationResultsConsts';
+import type { PositionScaleDomain } from 'modules/simulationResult/consts';
 import { Train } from 'reducers/osrdsimulation/types';
 
 const MAP_MIN_HEIGHT = 450;

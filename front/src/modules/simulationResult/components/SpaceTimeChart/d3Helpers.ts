@@ -1,3 +1,4 @@
+import { CHART_AXES } from 'modules/simulationResult/consts';
 import drawTrain from 'modules/simulationResult/components/SpaceTimeChart/drawTrain';
 import createSpaceTimeChart from 'modules/simulationResult/components/SpaceTimeChart/createSpaceTimeChart';
 import {
@@ -13,7 +14,6 @@ import {
   DispatchUpdateMustRedraw,
   DispatchUpdateSelectedTrainId,
 } from './types';
-import { CHART_AXES } from '../simulationResultsConsts';
 
 function drawOPs(chartLocal: Chart, projectedTrainSimulation: Train, rotate: boolean) {
   const operationalPointsZone = chartLocal.drawZone

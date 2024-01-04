@@ -3,8 +3,7 @@ import { useSelector } from 'react-redux';
 import * as d3 from 'd3';
 import { CgLoadbar } from 'react-icons/cg';
 
-import { CHART_AXES } from 'modules/simulationResult/components/simulationResultsConsts';
-import type { PositionScaleDomain } from 'modules/simulationResult/components/simulationResultsConsts';
+import { CHART_AXES, type PositionScaleDomain } from 'modules/simulationResult/consts';
 import {
   defineLinear,
   interpolateOnPosition,

@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
+import { has, isNull, isNil, omit, pick } from 'lodash';
 import type {
   RollingStockComfortType,
   ConditionalEffortCurve,
@@ -6,7 +7,6 @@ import type {
   RollingStockForm,
   ModeEffortCurves,
 } from 'common/api/osrdEditoastApi';
-import { has, isNull, isNil, omit, pick } from 'lodash';
 import {
   EffortCurves,
   RS_REQUIRED_FIELDS,
@@ -15,7 +15,7 @@ import {
   THERMAL_TRACTION_IDENTIFIER,
   RollingStockSchemaProperties,
   electricalProfilesByMode,
-} from '../consts';
+} from 'modules/rollingStock/consts';
 import { isElectric } from './electric';
 
 const newRollingStockValues = {

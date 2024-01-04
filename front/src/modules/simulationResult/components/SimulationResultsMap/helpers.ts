@@ -3,16 +3,16 @@ import { lineString } from '@turf/helpers';
 import { Feature, LineString } from 'geojson';
 import { last } from 'lodash';
 
+import { CHART_AXES, LIST_VALUES } from 'modules/simulationResult/consts';
+import { interpolateOnTime } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
 import {
   AllowancesSettings,
   PositionSpeedTime,
   SimulationSnapshot,
   PositionsSpeedTimes,
 } from 'reducers/osrdsimulation/types';
-import { interpolateOnTime } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
 import { datetime2sec } from 'utils/timeManipulation';
 import { TrainPosition } from './types';
-import { CHART_AXES, LIST_VALUES } from '../simulationResultsConsts';
 
 type InterpolatedTrain = {
   name: string;

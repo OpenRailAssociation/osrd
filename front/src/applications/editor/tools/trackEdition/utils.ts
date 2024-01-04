@@ -1,5 +1,5 @@
-import { EditorEntity, TrackSectionEntity } from 'types';
 import { LinearMetadataItem } from 'common/IntervalsDataViz/types';
+import { EditorEntity, TrackSectionEntity } from 'types';
 import { NEW_ENTITY_ID } from '../../data/utils';
 
 export function getNewLine(points: [number, number][]): TrackSectionEntity {

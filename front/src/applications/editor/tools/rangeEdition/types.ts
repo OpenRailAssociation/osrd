@@ -1,6 +1,6 @@
 import { Feature, LineString, Point, Position } from 'geojson';
 
-import { EditorEntity, TrackRange, TrackSectionEntity } from '../../../../types';
+import { EditorEntity, TrackRange, TrackSectionEntity } from 'types';
 import { CommonToolState } from '../commonToolState';
 
 export type TrackRangeFeature = Feature<

@@ -1,6 +1,7 @@
 import { Dispatch } from 'redux';
 import { TFunction, Namespace } from 'react-i18next';
 
+import { ChartAxes } from 'modules/simulationResult/consts';
 import {
   formatRouteAspects,
   formatSignalAspects,
@@ -8,10 +9,8 @@ import {
   formatStepsWithTimeMulti,
   mergeDatasArea,
 } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
-
 import { setFailure } from 'reducers/main';
 import { Train, SimulationTrain } from 'reducers/osrdsimulation/types';
-import { ChartAxes } from '../simulationResultsConsts';
 
 /**
  * Will do some formating & computation to get a trains to be displayed. Stored then with currentSimulation splitted reducer

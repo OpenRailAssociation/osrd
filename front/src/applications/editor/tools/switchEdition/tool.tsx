@@ -6,12 +6,13 @@ import { GoPlusCircle, GoTrash } from 'react-icons/go';
 import { save } from 'reducers/editor';
 import { SwitchEntity, SwitchType } from 'types';
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
-import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
-import { getNewSwitch } from './utils';
+
+import { NEW_ENTITY_ID } from '../../data/utils';
 import { Tool } from '../editorContextTypes';
-import { SwitchEditionState } from './types';
 import { DEFAULT_COMMON_TOOL_STATE } from '../commonToolState';
 import { SwitchEditionLayers, SwitchEditionLeftPanel, SwitchMessages } from './components';
+import { SwitchEditionState } from './types';
+import { getNewSwitch } from './utils';
 
 function getInitialState({
   switchTypes,

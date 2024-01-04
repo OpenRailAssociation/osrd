@@ -4,9 +4,10 @@ import { LngLatBoundsLike, MapRef } from 'react-map-gl/maplibre';
 import { BsExclamationOctagon } from 'react-icons/bs';
 import { useTranslation } from 'react-i18next';
 
-import useKeyboardShortcuts from 'utils/hooks/useKeyboardShortcuts';
-import { getEditorState } from 'reducers/editor/selectors';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
+import { getEditorState } from 'reducers/editor/selectors';
+import useKeyboardShortcuts from 'utils/hooks/useKeyboardShortcuts';
+
 import { EditorContextType } from '../../tools/editorContextTypes';
 import { getEntityBbox, selectEntity } from '../../tools/utils';
 import { getEntity } from '../../data/api';

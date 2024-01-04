@@ -15,13 +15,15 @@ import {
 import {
   CHART_AXES,
   LIST_VALUES,
-} from 'modules/simulationResult/components/simulationResultsConsts';
-import type {
-  ChartAxes,
-  PositionScaleDomain,
-} from 'modules/simulationResult/components/simulationResultsConsts';
+  type ChartAxes,
+  type PositionScaleDomain,
+} from 'modules/simulationResult/consts';
 import drawGuideLines from 'modules/simulationResult/components/ChartHelpers/drawGuideLines';
-import { dateIsInRange } from 'utils/date';
+import type { SpaceCurvesSlopesData } from 'modules/simulationResult/components/SpaceCurvesSlopes';
+import type {
+  AreaBlock,
+  GevPreparedData,
+} from 'modules/simulationResult/components/SpeedSpaceChart/prepareData';
 import type {
   Chart,
   ConsolidatedRouteAspect,
@@ -36,9 +38,8 @@ import type {
   PositionSpeedTime,
   PositionsSpeedTimes,
 } from 'reducers/osrdsimulation/types';
+import { dateIsInRange } from 'utils/date';
 import type { typedEntries } from 'utils/types';
-import type { SpaceCurvesSlopesData } from 'modules/simulationResult/components/SpaceCurvesSlopes';
-import type { AreaBlock, GevPreparedData } from '../SpeedSpaceChart/prepareData';
 
 export const displayGuide = (chart: Chart, opacity: number) => {
   if (chart?.svg) {

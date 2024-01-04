@@ -4,8 +4,8 @@ import { ComponentType } from 'react';
 import { IconType } from 'react-icons/lib/esm/iconBase';
 import { ViewState } from 'react-map-gl/maplibre';
 import { Map, MapLayerMouseEvent } from 'maplibre-gl';
-import { ModalContextType } from '../../../common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import { EditorEntity, SwitchType } from '../../../types';
+import { ModalContextType } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import { EditorEntity, SwitchType } from 'types';
 import { EditorState, LayerType } from './types';
 import { switchProps } from './switchProps';
 

@@ -6,8 +6,6 @@ import { Feature, feature, lineString, LineString, point } from '@turf/helpers';
 import lineSliceAlong from '@turf/line-slice-along';
 import { MapLayerMouseEvent } from 'maplibre-gl';
 
-import { getNearestPoint } from 'utils/mapHelper';
-import { NEW_ENTITY_ID } from '../../data/utils';
 import {
   ElectrificationEntity,
   PSLExtension,
@@ -16,7 +14,17 @@ import {
   SpeedSectionPslEntity,
   TrackRange,
   TrackSectionEntity,
-} from '../../../../types';
+} from 'types';
+import { getNearestPoint } from 'utils/mapHelper';
+
+import { NEW_ENTITY_ID } from '../../data/utils';
+import {
+  approximateDistanceWithEditoastData,
+  getHoveredTrackRanges,
+  getTrackSectionEntityFromNearestPoint,
+} from '../utils';
+import { DEFAULT_COMMON_TOOL_STATE } from '../commonToolState';
+import { PartialOrReducer } from '../editorContextTypes';
 import {
   PSL_SIGN_TYPE,
   PSL_SIGN_TYPES,
@@ -27,13 +35,6 @@ import {
   TrackRangeFeature,
   TrackState,
 } from './types';
-import {
-  approximateDistanceWithEditoastData,
-  getHoveredTrackRanges,
-  getTrackSectionEntityFromNearestPoint,
-} from '../utils';
-import { DEFAULT_COMMON_TOOL_STATE } from '../commonToolState';
-import { PartialOrReducer } from '../editorContextTypes';
 
 // Tool functions
 

@@ -1,6 +1,8 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
+import { SimulationReport } from 'common/api/osrdEditoastApi';
+import { useChartSynchronizer } from 'modules/simulationResult/components/ChartHelpers/ChartSynchronizer';
 import {
   updateMustRedraw,
   updateChart,
@@ -14,10 +16,10 @@ import {
   getIsPlaying,
   getSelectedTrain,
 } from 'reducers/osrdsimulation/selectors';
-import { SimulationReport } from 'common/api/osrdEditoastApi';
 import { persistentUpdateSimulation } from 'reducers/osrdsimulation/simulation';
-import { sec2datetime, datetime2sec } from 'utils/timeManipulation';
 import { Chart, TrainsWithArrivalAndDepartureTimes } from 'reducers/osrdsimulation/types';
+import { sec2datetime, datetime2sec } from 'utils/timeManipulation';
+
 import SpaceTimeChart, { SpaceTimeChartProps } from './SpaceTimeChart';
 import {
   DispatchUpdateChart,
@@ -25,7 +27,6 @@ import {
   DispatchUpdateMustRedraw,
   DispatchUpdateSelectedTrainId,
 } from './types';
-import { useChartSynchronizer } from '../ChartHelpers/ChartSynchronizer';
 
 /**
  * HOC to provide store data

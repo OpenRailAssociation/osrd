@@ -8,7 +8,7 @@ import { RollingStockComfortType, RollingStock, osrdEditoastApi } from 'common/a
 import { Loader } from 'common/Loaders';
 import { setFailure } from 'reducers/main';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
-import RollingStockCurves from '../RollingStockCurve';
+import RollingStockCurves from 'modules/rollingStock/components/RollingStockCurve';
 
 type RollingStockCardDetailProps = {
   id: number;

@@ -1,5 +1,7 @@
-import React, { useMemo } from 'react';
 import { cloneDeep, compact } from 'lodash';
+import React, { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+
 import {
   PSLExtension,
   PSLSign,
@@ -7,13 +9,13 @@ import {
   SpeedSectionPslEntity,
   TrackSectionEntity,
 } from 'types';
-import { useTranslation } from 'react-i18next';
 import { removeDuplicates } from 'utils/array';
+
+import { PartialOrReducer } from '../../editorContextTypes';
 import { PslSignInformation, PSL_SIGN_TYPES, RangeEditionState, TrackState } from '../types';
+import { msToKmh, selectPslSign } from '../utils';
 import PslSignCard from './PslSignCard';
 import PslSignSubSection from './PslSignSubSection';
-import { msToKmh, selectPslSign } from '../utils';
-import { PartialOrReducer } from '../../editorContextTypes';
 
 const getNewAnnouncementSign = (
   trackRanges: NonNullable<SpeedSectionPslEntity['properties']['track_ranges']>,

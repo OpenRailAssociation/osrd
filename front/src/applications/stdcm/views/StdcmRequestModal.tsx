@@ -9,7 +9,7 @@ import {
 } from 'reducers/osrdsimulation/actions';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { CHART_AXES } from 'modules/simulationResult/components/simulationResultsConsts';
+import { CHART_AXES } from 'modules/simulationResult/consts';
 // Generic components
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';

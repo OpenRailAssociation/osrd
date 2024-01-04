@@ -10,7 +10,7 @@ import {
 import nextId from 'react-id-generator';
 import svgDefs from 'modules/simulationResult/components/ChartHelpers/svgDefs';
 import { Chart, SimulationD3Scale } from 'reducers/osrdsimulation/types';
-import { ChartAxes } from 'modules/simulationResult/components/simulationResultsConsts';
+import { ChartAxes } from 'modules/simulationResult/consts';
 
 // keyValues ['position', 'gradient']
 const defineChart = (

@@ -1,6 +1,6 @@
 import React from 'react';
 import { ComponentMeta, ComponentStory } from '@storybook/react';
-import DisplayMissingInfo from '../common/DisplayMissingInfo/DisplayMissingInfo';
+import DisplayMissingInfo from 'common/DisplayMissingInfo/DisplayMissingInfo';
 
 export default {
   title: 'Warning/DisplayMissingInfo',
