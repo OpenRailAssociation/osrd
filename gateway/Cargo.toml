@@ -33,7 +33,8 @@ actix-files = "0.6.2"
 base64ct = "1.6.0"
 opentelemetry = "0.21.0"
 opentelemetry_sdk = { version = "0.21.1", features = ["rt-tokio-current-thread", "metrics"] }
-opentelemetry-otlp = { version = "0.14.0" }
+opentelemetry-datadog = { version = "0.9.0", features = ["reqwest-client"] }
+opentelemetry-otlp = "0.14.0"
 actix-web-opentelemetry = { version = "0.16.0", features = ["awc", "metrics"] }
 
 # reverse proxy dependencies
@@ -75,4 +76,5 @@ actix_proxy = { path = "./actix_proxy" }
 opentelemetry.workspace = true
 opentelemetry_sdk.workspace = true
 opentelemetry-otlp.workspace = true
+opentelemetry-datadog.workspace = true
 actix-web-opentelemetry.workspace = true
