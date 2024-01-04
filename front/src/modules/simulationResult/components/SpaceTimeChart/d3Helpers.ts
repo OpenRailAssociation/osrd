@@ -8,12 +8,7 @@ import {
   SimulationTrain,
   Train,
 } from 'reducers/osrdsimulation/types';
-import {
-  DispatchUpdateChart,
-  DispatchUpdateDepartureArrivalTimes,
-  DispatchUpdateMustRedraw,
-  DispatchUpdateSelectedTrainId,
-} from './types';
+import { DispatchUpdateSelectedTrainId } from './types';
 
 function drawOPs(chartLocal: Chart, projectedTrainSimulation: Train, rotate: boolean) {
   const operationalPointsZone = chartLocal.drawZone
@@ -57,9 +52,6 @@ const drawAllTrains = (
   allowancesSettings: AllowancesSettings,
   chart: Chart | undefined,
   CHART_ID: string,
-  dispatchUpdateChart: DispatchUpdateChart,
-  dispatchUpdateDepartureArrivalTimes: DispatchUpdateDepartureArrivalTimes,
-  dispatchUpdateMustRedraw: DispatchUpdateMustRedraw,
   dispatchUpdateSelectedTrainId: DispatchUpdateSelectedTrainId,
   heightOfSpaceTimeChart: number,
   ref: React.MutableRefObject<HTMLDivElement> | React.RefObject<HTMLDivElement>,
@@ -96,20 +88,15 @@ const drawAllTrains = (
     drawTrain(
       allowancesSettings,
       chartLocal,
-      dispatchUpdateDepartureArrivalTimes,
-      dispatchUpdateMustRedraw,
       dispatchUpdateSelectedTrainId,
       train.id === selectedProjection?.id,
       train.id === selectedTrain?.id,
       rotate,
       setDragOffset,
-      simulationTrains,
       train
     );
   });
   setChart(chartLocal);
-  dispatchUpdateChart({ ...chartLocal, rotate });
-  dispatchUpdateMustRedraw(false);
 };
 
 export { drawOPs, drawAllTrains };

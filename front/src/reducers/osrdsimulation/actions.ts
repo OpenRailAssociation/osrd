@@ -2,7 +2,7 @@ import { Dispatch } from 'redux';
 
 import type { GetState } from 'store';
 import type { ChartSynchronizer } from 'modules/simulationResult/components/ChartHelpers/ChartSynchronizer';
-import { SimulationSnapshot, OsrdSimulationState, Chart } from './types';
+import { SimulationSnapshot, OsrdSimulationState } from './types';
 
 // Action Types
 export const UPDATE_CHART = 'osrdsimu/UPDATE_CHART';
@@ -22,19 +22,10 @@ export const UPDATE_SIGNAL_BASE = 'osrdsimu/UPDATE_SIGNAL_BASE';
 export const UPDATE_TIME_POSITION = 'osrdsimu/UPDATE_TIME_POSITION';
 export const UPDATE_TIME_POSITION_VALUES = 'osrdsimu/UPDATE_TIME_POSITION_VALUES';
 export const UPDATE_CONSOLIDATED_SIMULATION = 'osrdsimu/UPDATE_CONSOLIDATED_SIMULATION';
-export const UPDATE_DEPARTURE_ARRIVAL_TIMES = 'osrdsimu/UPDATE_DEPARTURE_ARRIVAL_TIMES';
 export const UNDO_SIMULATION = 'osrdsimu/UNDO_SIMULATION';
 export const REDO_SIMULATION = 'osrdsimu/REDO_SIMULATION';
 // Functions
 
-export function updateChart(chart: Chart) {
-  return (dispatch: Dispatch) => {
-    dispatch({
-      type: UPDATE_CHART,
-      chart,
-    });
-  };
-}
 export function updateChartXGEV(chartXGEV: OsrdSimulationState['chartXGEV']) {
   return (dispatch: Dispatch) => {
     dispatch({
@@ -69,14 +60,7 @@ export function updateAllowancesSettings(
     });
   };
 }
-export function updateMustRedraw(mustRedraw: OsrdSimulationState['mustRedraw']) {
-  return (dispatch: Dispatch) => {
-    dispatch({
-      type: UPDATE_MUST_REDRAW,
-      mustRedraw,
-    });
-  };
-}
+
 export function updateSelectedProjection(
   selectedProjection: OsrdSimulationState['selectedProjection']
 ) {
@@ -125,16 +109,6 @@ export function updateSignalBase(signalBase: OsrdSimulationState['signalBase']) 
   };
 }
 
-export function updateDepartureArrivalTimes(
-  newDepartureArrivalTimes: OsrdSimulationState['departureArrivalTimes']
-) {
-  return (dispatch: Dispatch) => {
-    dispatch({
-      type: UPDATE_DEPARTURE_ARRIVAL_TIMES,
-      departureArrivalTimes: newDepartureArrivalTimes,
-    });
-  };
-}
 export function updateConsolidatedSimulation(
   consolidatedSimulation: OsrdSimulationState['consolidatedSimulation']
 ) {

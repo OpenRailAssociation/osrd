@@ -14,7 +14,6 @@ import { useChartSynchronizer } from 'modules/simulationResult/components/ChartH
 import ChartModal from 'modules/simulationResult/components/SpaceTimeChart/ChartModal';
 import { isolatedCreateTrain as createTrain } from 'modules/simulationResult/components/SpaceTimeChart/createTrain';
 import { drawAllTrains } from 'modules/simulationResult/components/SpaceTimeChart/d3Helpers';
-import ORSD_GRAPH_SAMPLE_DATA from 'modules/simulationResult/components/SpeedSpaceChart/sampleData';
 import {
   AllowancesSettings,
   Chart,
@@ -23,13 +22,9 @@ import {
   Train,
 } from 'reducers/osrdsimulation/types';
 import { dateIsInRange } from 'utils/date';
-import {
-  DispatchUpdateDepartureArrivalTimes,
-  DispatchUpdateChart,
-  DispatchUpdateMustRedraw,
-  DispatchUpdateSelectedTrainId,
-  DispatchUpdateTimePositionValues,
-} from './types';
+import { sec2datetime, datetime2sec } from 'utils/timeManipulation';
+import { SimulationReport } from 'common/api/osrdEditoastApi';
+import { DispatchPersistentUpdateSimulation, DispatchUpdateSelectedTrainId } from './types';
 
 const CHART_ID = 'SpaceTimeChart';
 const CHART_MIN_HEIGHT = 250;
@@ -51,44 +46,51 @@ const CHART_MIN_HEIGHT = 250;
 
 export type SpaceTimeChartProps = {
   allowancesSettings?: AllowancesSettings;
-  dispatchUpdateDepartureArrivalTimes?: DispatchUpdateDepartureArrivalTimes;
-  dispatchUpdateChart?: DispatchUpdateChart;
-  dispatchUpdateMustRedraw?: DispatchUpdateMustRedraw;
-  dispatchUpdateSelectedTrainId?: DispatchUpdateSelectedTrainId;
-  updateTimePosition?: DispatchUpdateTimePositionValues;
   initialHeight?: number;
-  inputSelectedTrain?: Train;
+  inputSelectedTrain?: Train | SimulationReport;
   selectedProjection?: OsrdSimulationState['selectedProjection'];
   simulation?: SimulationSnapshot;
   simulationIsPlaying?: boolean;
-  onOffsetTimeByDragging?: (trains: Train[], offset: number, timePosition: Date) => void;
-  onSetBaseHeight?: (newHeight: number) => void;
   isDisplayed?: boolean;
+  onSetBaseHeight?: (newHeight: number) => void;
+  dispatchUpdateSelectedTrainId: DispatchUpdateSelectedTrainId;
+  dispatchPersistentUpdateSimulation: DispatchPersistentUpdateSimulation;
 };
 
 export default function SpaceTimeChart(props: SpaceTimeChartProps) {
   const ref = useRef<HTMLDivElement>(null);
   const rndContainerRef = useRef<Rnd>(null);
 
+  const { updateTimePosition } = useChartSynchronizer();
+
   const {
-    allowancesSettings = ORSD_GRAPH_SAMPLE_DATA.allowancesSettings as AllowancesSettings,
-    dispatchUpdateDepartureArrivalTimes = noop,
-    dispatchUpdateMustRedraw = noop,
-    dispatchUpdateSelectedTrainId = noop,
-    updateTimePosition = noop,
-    dispatchUpdateChart = noop,
+    allowancesSettings,
     initialHeight = 400,
-    inputSelectedTrain = ORSD_GRAPH_SAMPLE_DATA.simulation.present.trains[0],
+    inputSelectedTrain,
     selectedProjection,
-    simulation = ORSD_GRAPH_SAMPLE_DATA.simulation.present,
+    simulation,
     simulationIsPlaying = false,
     isDisplayed = true,
-    onOffsetTimeByDragging = noop,
     onSetBaseHeight = noop,
+    dispatchUpdateSelectedTrainId,
+    dispatchPersistentUpdateSimulation,
   } = props;
 
+  // Consequence of direct actions by component
+  const onOffsetTimeByDragging = (
+    trains: SimulationSnapshot['trains'],
+    offset: number,
+    timePosition: Date
+  ) => {
+    dispatchPersistentUpdateSimulation({ ...simulation, trains });
+    if (timePosition && offset) {
+      const newTimePosition = sec2datetime(datetime2sec(timePosition) + offset);
+      updateTimePosition(newTimePosition);
+    }
+  };
+
   const [baseHeight, setBaseHeight] = useState(initialHeight);
-  const [chart, setChart] = useState<Chart | undefined>(undefined);
+  const [chart, setChart] = useState<Chart | undefined>();
   const [dragOffset, setDragOffset] = useState(0);
   const [height, setHeight] = useState(initialHeight);
   const [resetChart, setResetChart] = useState(false);
@@ -119,9 +121,9 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
     (offset: number) => {
       if (trainSimulations) {
         const trains = trainSimulations.map((train) =>
-          train.id === selectedTrain.id ? timeShiftTrain(train as Train, offset) : train
-        );
-        setTrainSimulations(trains as Train[]);
+          train.id === selectedTrain?.id ? timeShiftTrain(train as Train, offset) : train
+        ) as Train[];
+        setTrainSimulations(trains);
         onOffsetTimeByDragging(trains, offset, timePosition);
       }
     },
@@ -134,15 +136,17 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
    * take into account an input update
    */
   useEffect(() => {
-    setTrainSimulations(simulation.trains);
-  }, [simulation.trains]);
+    if (simulation) {
+      setTrainSimulations(simulation.trains);
+    }
+  }, [simulation?.trains]);
 
   useEffect(() => {
     // avoid useless re-render if selectedTrain is already correct
-    if (selectedTrain.id !== inputSelectedTrain.id) {
+    if (selectedTrain?.id !== inputSelectedTrain?.id) {
       setSelectedTrain(inputSelectedTrain);
     }
-  }, [inputSelectedTrain.id]);
+  }, [inputSelectedTrain?.id]);
 
   /*
    * ACTIONS HANDLE
@@ -166,7 +170,7 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
   }, [dragOffset]);
 
   const redrawChart = () => {
-    if (trainSimulations) {
+    if (trainSimulations && allowancesSettings) {
       const trainsToDraw = trainSimulations.map((train) =>
         createTrain(CHART_AXES.SPACE_TIME, train as Train)
       );
@@ -174,9 +178,6 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
         allowancesSettings,
         chart,
         CHART_ID,
-        dispatchUpdateChart,
-        dispatchUpdateDepartureArrivalTimes,
-        dispatchUpdateMustRedraw,
         dispatchUpdateSelectedTrainId,
         height,
         ref,
@@ -217,9 +218,6 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
         timeScaleRange
       );
     }
-
-    // Required to sync the camera in SimulationWarpedMap:
-    dispatchUpdateChart(chart);
   }, [chart]);
 
   const handleKey = ({ key }: KeyboardEvent) => {
@@ -277,11 +275,11 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
         className="spacetime-chart chart"
         style={{ height: `100%` }}
       >
-        {showModal !== '' && (
+        {showModal !== '' && selectedTrain && (
           <ChartModal
             modificationKey={showModal}
             setShowModal={setShowModal}
-            trainName={selectedTrain?.name}
+            trainName={selectedTrain.name}
             offsetTimeByDragging={dragShiftTrain}
           />
         )}

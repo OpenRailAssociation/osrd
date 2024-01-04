@@ -6446,53 +6446,6 @@ const ORSD_GRAPH_SAMPLE_DATA: OsrdSimulationState = {
       ],
     },
   ],
-  departureArrivalTimes: [
-    {
-      id: 10,
-      labels: [],
-      train_name: 'sample 1',
-      path_id: 4,
-      path_length: 201408.607,
-      mechanical_energy_consumed: {
-        base: 12083466761.106243,
-      },
-      departure_time: 50400,
-      arrival_time: 53300.26030786709,
-      stops_count: 0,
-      duration: 2900.2603078670872,
-      speed_limit_tags: 'Aucune composition',
-    },
-    {
-      id: 11,
-      labels: [],
-      train_name: 'sample 3',
-      path_id: 4,
-      path_length: 201408.607,
-      mechanical_energy_consumed: {
-        base: 12083466761.106243,
-      },
-      departure_time: 51300,
-      arrival_time: 54200.26030786709,
-      stops_count: 0,
-      duration: 2900.2603078670872,
-      speed_limit_tags: 'Aucune composition',
-    },
-    {
-      id: 12,
-      labels: [],
-      train_name: 'sample 5',
-      path_id: 4,
-      path_length: 201408.607,
-      mechanical_energy_consumed: {
-        base: 12083466761.106243,
-      },
-      departure_time: 52200,
-      arrival_time: 55100.26030786709,
-      stops_count: 0,
-      duration: 2900.2603078670872,
-      speed_limit_tags: 'Aucune composition',
-    },
-  ],
   displaySimulation: true,
   simulation: {
     past: [
@@ -33148,14 +33101,6 @@ const ORSD_GRAPH_SAMPLE_DATA: OsrdSimulationState = {
       ],
     },
     future: [],
-  },
-};
-
-export const OSRD_ROLLINGSTOCKSELECTED_SAMPLE_DATA = {
-  name: 'XYZ77777',
-  metadata: {
-    series: 'XYZ 77777 ',
-    unit: 'XYZ',
   },
 };
 

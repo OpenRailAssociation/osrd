@@ -24,17 +24,14 @@ import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { RangedValue } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector/SpeedLimitByTagSelector';
+import { useStoreDataForSpeedLimitByTagSelector } from 'common/SpeedLimitByTagSelector/useStoreDataForSpeedLimitByTagSelector';
+import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 
 export default function ManageTrainSchedule() {
   const dispatch = useDispatch();
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
-  const {
-    getRollingStockID,
-    getPathfindingID,
-    getTrainScheduleIDsToModify,
-    getUsingElectricalProfiles,
-  } = useOsrdConfSelectors();
-  const rollingStockID = useSelector(getRollingStockID);
+  const { getPathfindingID, getTrainScheduleIDsToModify, getUsingElectricalProfiles } =
+    useOsrdConfSelectors();
   const pathFindingID = useSelector(getPathfindingID);
   const trainScheduleIDsToModify = useSelector(getTrainScheduleIDsToModify);
   const usingElectricalProfiles = useSelector(getUsingElectricalProfiles);
@@ -44,20 +41,17 @@ export default function ManageTrainSchedule() {
   );
   const osrdActions = useOsrdConfActions();
 
+  const { speedLimitByTag, speedLimitsByTags, dispatchUpdateSpeedLimitByTag } =
+    useStoreDataForSpeedLimitByTagSelector();
+
+  const { rollingStockId, rollingStockComfort, rollingStock } =
+    useStoreDataForRollingStockSelector();
+
   // Details for tabs
   const { data: pathFinding } = osrdEditoastApi.useGetPathfindingByPathfindingIdQuery(
     { pathfindingId: pathFindingID as number },
     {
       skip: !pathFindingID,
-    }
-  );
-
-  const { data: rollingStock } = osrdEditoastApi.endpoints.getRollingStockByRollingStockId.useQuery(
-    {
-      rollingStockId: rollingStockID as number,
-    },
-    {
-      skip: !rollingStockID,
     }
   );
 
@@ -81,15 +75,13 @@ export default function ManageTrainSchedule() {
         <span className="ml-2">{t('tabs.rollingStock')}</span>
       </div>
     ),
-    withWarning: rollingStockID === undefined,
+    withWarning: rollingStockId === undefined,
     label: t('tabs.rollingStock'),
-    content: rollingStock ? (
+    content: (
       <RollingStockSelector
         rollingStockSelected={rollingStock}
-        image={<RollingStock2Img rollingStock={rollingStock} />}
+        rollingStockComfort={rollingStockComfort}
       />
-    ) : (
-      <RollingStockSelector />
     ),
   };
 
@@ -143,7 +135,11 @@ export default function ManageTrainSchedule() {
         <div className="row no-gutters">
           <div className="col-lg-6 pr-lg-2">
             <ElectricalProfiles />
-            <SpeedLimitByTagSelector />
+            <SpeedLimitByTagSelector
+              selectedSpeedLimitByTag={speedLimitByTag}
+              speedLimitsByTags={speedLimitsByTags}
+              dispatchUpdateSpeedLimitByTag={dispatchUpdateSpeedLimitByTag}
+            />
           </div>
         </div>
         {rollingStock && isElectric(rollingStock.effort_curves) && (

@@ -1,0 +1,22 @@
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { useOsrdConfSelectors } from 'common/osrdContext';
+import { useSelector } from 'react-redux';
+
+export const useStoreDataForRollingStockSelector = () => {
+  const { getRollingStockID, getRollingStockComfort } = useOsrdConfSelectors();
+  const rollingStockId = useSelector(getRollingStockID);
+  const rollingStockComfort = useSelector(getRollingStockComfort);
+
+  const { data: rollingStock } = osrdEditoastApi.endpoints.getRollingStockByRollingStockId.useQuery(
+    {
+      rollingStockId: rollingStockId as number,
+    },
+    {
+      skip: !rollingStockId,
+    }
+  );
+
+  return { rollingStockId, rollingStockComfort, rollingStock };
+};
+
+export default useStoreDataForRollingStockSelector;

@@ -15,9 +15,10 @@ import { useInfraID, useOsrdConfSelectors } from 'common/osrdContext';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import ScenarioExplorer from 'modules/scenario/components/ScenarioExplorer';
 import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector/SpeedLimitByTagSelector';
-
 import { getSelectedTrain } from 'reducers/osrdsimulation/selectors';
 import type { OsrdStdcmConfState } from 'reducers/osrdconf/consts';
+import { useStoreDataForSpeedLimitByTagSelector } from 'common/SpeedLimitByTagSelector/useStoreDataForSpeedLimitByTagSelector';
+import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 
 type OSRDStdcmConfigProps = {
   currentStdcmRequestStatus: string;
@@ -40,6 +41,11 @@ export default function OSRDConfig({
   const [isInfraLoaded, setIsInfraLoaded] = useState<boolean>(false);
 
   const osrdconf: OsrdStdcmConfState = useSelector(getConf) as OsrdStdcmConfState;
+
+  const { speedLimitByTag, speedLimitsByTags, dispatchUpdateSpeedLimitByTag } =
+    useStoreDataForSpeedLimitByTagSelector();
+
+  const { rollingStockComfort, rollingStock } = useStoreDataForRollingStockSelector();
 
   const { t } = useTranslation(['translation', 'stdcm', 'simulation']);
 
@@ -91,8 +97,17 @@ export default function OSRDConfig({
           />
           {projectID && studyID && scenarioID && timetableID && infraID && (
             <>
-              <RollingStockSelector condensed />
-              <SpeedLimitByTagSelector condensed />
+              <RollingStockSelector
+                condensed
+                rollingStockSelected={rollingStock}
+                rollingStockComfort={rollingStockComfort}
+              />
+              <SpeedLimitByTagSelector
+                condensed
+                selectedSpeedLimitByTag={speedLimitByTag}
+                speedLimitsByTags={speedLimitsByTags}
+                dispatchUpdateSpeedLimitByTag={dispatchUpdateSpeedLimitByTag}
+              />
               <Itinerary />
               <RunningTime />
               <StdcmAllowances />
