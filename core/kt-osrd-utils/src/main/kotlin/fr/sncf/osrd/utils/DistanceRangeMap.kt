@@ -50,11 +50,14 @@ interface DistanceRangeMap<T> : Iterable<DistanceRangeMap.RangeMapEntry<T>> {
     /** Returns a new DistanceRangeMap of the ranges between lower and upper */
     fun subMap(lower: Distance, upper: Distance): DistanceRangeMap<T>
 
-    /** Updates the map with another one, using a merge function to fuse the values of intersecting ranges*/
+    /** Updates the map with another one, using a merge function to fuse the values of intersecting ranges */
     fun <U> updateMap(
         update: DistanceRangeMap<U>,
         updateFunction: BiFunction<T, U, T>
     )
+
+    /** Returns true if there is no entry at all */
+    fun isEmpty(): Boolean
 }
 
 fun <T> distanceRangeMapOf(entries: List<DistanceRangeMap.RangeMapEntry<T>> = emptyList())
