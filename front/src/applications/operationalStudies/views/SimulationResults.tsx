@@ -9,12 +9,7 @@ import {
   persistentRedoSimulation,
   persistentUndoSimulation,
 } from 'reducers/osrdsimulation/simulation';
-import {
-  getDisplaySimulation,
-  getIsUpdating,
-  getPresentSimulation,
-  getSelectedTrain,
-} from 'reducers/osrdsimulation/selectors';
+import { getDisplaySimulation, getIsUpdating } from 'reducers/osrdsimulation/selectors';
 import { updateSelectedProjection, updateSimulation } from 'reducers/osrdsimulation/actions';
 
 import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
@@ -28,9 +23,10 @@ import DriverTrainSchedule from 'modules/trainschedule/components/DriverTrainSch
 import getScaleDomainFromValues from 'modules/simulationResult/components/ChartHelpers/getScaleDomainFromValues';
 import SpaceCurvesSlopes from 'modules/simulationResult/components/SpaceCurvesSlopes';
 import SpeedSpaceChart from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChart';
-import SpaceTimeChartIsolated from 'modules/simulationResult/components/SpaceTimeChart/withOSRDData';
 import type { PositionScaleDomain } from 'modules/simulationResult/consts';
 import { Train } from 'reducers/osrdsimulation/types';
+import SpaceTimeChart from 'modules/simulationResult/components/SpaceTimeChart/SpaceTimeChart';
+import { useStoreDataForSpaceTimeChart } from 'modules/simulationResult/components/SpaceTimeChart/useStoreDataForSpaceTimeChart';
 
 const MAP_MIN_HEIGHT = 450;
 
@@ -48,8 +44,6 @@ export default function SimulationResults({
 
   // TIMELINE DISABLED // const { chart } = useSelector(getOsrdSimulation);
   const displaySimulation = useSelector(getDisplaySimulation);
-  const selectedTrain = useSelector(getSelectedTrain);
-  const simulation = useSelector(getPresentSimulation);
   const isUpdating = useSelector(getIsUpdating);
 
   const timeTableRef = useRef<HTMLDivElement | null>(null);
@@ -69,6 +63,16 @@ export default function SimulationResults({
     current: [],
     source: undefined,
   });
+
+  const {
+    allowancesSettings,
+    selectedTrain,
+    selectedProjection,
+    simulation,
+    simulationIsPlaying,
+    dispatchUpdateSelectedTrainId,
+    dispatchPersistentUpdateSimulation,
+  } = useStoreDataForSpaceTimeChart();
 
   const { data: selectedTrainSchedule } = osrdEditoastApi.endpoints.getTrainScheduleById.useQuery(
     {
@@ -168,10 +172,17 @@ export default function SimulationResults({
         <div className="osrd-simulation-container d-flex flex-grow-1 flex-shrink-1">
           <div className="chart-container" style={{ height: `${heightOfSpaceTimeChart}px` }}>
             {displaySimulation && (
-              <SpaceTimeChartIsolated
+              <SpaceTimeChart
+                allowancesSettings={allowancesSettings}
+                inputSelectedTrain={selectedTrain}
+                selectedProjection={selectedProjection}
+                simulation={simulation}
+                simulationIsPlaying={simulationIsPlaying}
                 initialHeight={heightOfSpaceTimeChart}
                 onSetBaseHeight={setHeightOfSpaceTimeChart}
                 isDisplayed={isDisplayed}
+                dispatchUpdateSelectedTrainId={dispatchUpdateSelectedTrainId}
+                dispatchPersistentUpdateSimulation={dispatchPersistentUpdateSimulation}
               />
             )}
           </div>

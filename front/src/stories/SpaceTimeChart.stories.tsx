@@ -1,7 +1,9 @@
 import React from 'react';
-import { ComponentStory } from '@storybook/react';
-import SpaceTimeChart from 'modules/simulationResult/components/SpaceTimeChart/SpaceTimeChart';
+import { StoryFn } from '@storybook/react';
 import 'stories/storybook.css';
+import SpaceTimeChart from 'modules/simulationResult/components/SpaceTimeChart/SpaceTimeChart';
+import ORSD_GRAPH_SAMPLE_DATA from 'modules/simulationResult/components/sampleData';
+import { AllowancesSettings, Train } from 'reducers/osrdsimulation/types';
 
 export default {
   /* 👇 The title prop is optional.
@@ -12,7 +14,7 @@ export default {
   component: SpaceTimeChart,
 };
 
-const Template: ComponentStory<typeof SpaceTimeChart> = (args) => (
+const Template: StoryFn<typeof SpaceTimeChart> = (args) => (
   <div className="simulation-results">
     <div className="chart-container">
       <SpaceTimeChart {...args} />
@@ -22,4 +24,8 @@ const Template: ComponentStory<typeof SpaceTimeChart> = (args) => (
 
 export const Standard = Template.bind({});
 
-Standard.args = {};
+Standard.args = {
+  allowancesSettings: ORSD_GRAPH_SAMPLE_DATA.allowancesSettings as AllowancesSettings,
+  inputSelectedTrain: ORSD_GRAPH_SAMPLE_DATA.simulation.present.trains[0] as Train,
+  simulation: ORSD_GRAPH_SAMPLE_DATA.simulation.present,
+};

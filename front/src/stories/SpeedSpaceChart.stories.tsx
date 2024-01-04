@@ -7,7 +7,7 @@ import SpeedSpaceChart, {
 import 'stories/storybook.css';
 import { Provider } from 'react-redux';
 import { store } from 'store';
-import ORSD_GRAPH_SAMPLE_DATA from 'modules/simulationResult/components/SpeedSpaceChart/sampleData';
+import ORSD_GRAPH_SAMPLE_DATA from 'modules/simulationResult/components/sampleData';
 
 export default {
   /* 👇 The title prop is optional.

@@ -1,12 +1,10 @@
 import * as d3 from 'd3';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useDispatch } from 'react-redux';
 
 import { SimulationReport } from 'common/api/osrdEditoastApi';
 import { getDirection, gridX } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
 import { useChartSynchronizer } from 'modules/simulationResult/components/ChartHelpers/ChartSynchronizer';
-import { updateChart } from 'reducers/osrdsimulation/actions';
-import { Chart, SimulationD3Scale } from 'reducers/osrdsimulation/types';
+import { Chart } from 'reducers/osrdsimulation/types';
 import { sec2datetime } from 'utils/timeManipulation';
 
 const drawTrain = (
@@ -39,8 +37,6 @@ type TimeLineProps = {
 };
 
 const TimeLine = ({ chart, selectedTrainId, trains }: TimeLineProps) => {
-  const dispatch = useDispatch();
-
   const ref = useRef<HTMLDivElement>(null);
   const [svgState, setSvg] = useState<
     d3.Selection<SVGGElement, unknown, null, undefined> | undefined
@@ -162,18 +158,10 @@ const TimeLine = ({ chart, selectedTrainId, trains }: TimeLineProps) => {
 
     // drag behaviour
     let dragValue = 0;
-    const drag = d3
-      .drag<SVGRectElement, unknown>()
-      .on('end', () => {
-        const delta = xScale.invert(dragValue).getTime() - xScale.domain()[0].getTime();
-        const newX0 = new Date(chartRect[0].getTime() + delta);
-        const newX1 = new Date(chartRect[1].getTime() + delta);
-        dispatch(updateChart({ ...chart, x: chart.x.domain([newX0, newX1]) as SimulationD3Scale }));
-      })
-      .on('drag', (event) => {
-        dragValue += event.dx;
-        d3.select('#rectZoomTimeLine').attr('transform', `translate(${dragValue},0)`);
-      });
+    const drag = d3.drag<SVGRectElement, unknown>().on('drag', (event) => {
+      dragValue += event.dx;
+      d3.select('#rectZoomTimeLine').attr('transform', `translate(${dragValue},0)`);
+    });
 
     svg
       .append('rect')

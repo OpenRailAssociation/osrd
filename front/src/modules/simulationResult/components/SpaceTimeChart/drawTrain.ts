@@ -1,35 +1,21 @@
 import * as d3 from 'd3';
 import { drag as d3drag, DragContainerElement } from 'd3-drag';
 
-import { CHART_AXES } from 'modules/simulationResult/consts';
-import {
-  getDirection,
-  makeTrainList,
-} from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
+import { getDirection } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
 import drawCurve from 'modules/simulationResult/components/ChartHelpers/drawCurve';
 import drawRect from 'modules/simulationResult/components/ChartHelpers/drawRect';
 import drawText from 'modules/simulationResult/components/ChartHelpers/drawText';
-import {
-  AllowancesSettings,
-  Chart,
-  SimulationTrain,
-  Train,
-  TrainsWithArrivalAndDepartureTimes,
-} from 'reducers/osrdsimulation/types';
+import { CHART_AXES } from 'modules/simulationResult/consts';
+import { AllowancesSettings, Chart, SimulationTrain } from 'reducers/osrdsimulation/types';
 
 export default function drawTrain(
   allowancesSettings: AllowancesSettings,
   chart: Chart,
-  dispatchUpdateDepartureArrivalTimes: (
-    departureArrivalTimes: TrainsWithArrivalAndDepartureTimes[]
-  ) => void,
-  dispatchUpdateMustRedraw: (mustRedraw: boolean) => void,
   dispatchUpdateSelectedTrainId: (selectedTrainId: number) => void,
   isPathSelected: boolean,
   isSelected: boolean,
   rotate: boolean,
   setDragOffset: React.Dispatch<React.SetStateAction<number>>,
-  trainSimulations: Train[],
   trainToDraw: SimulationTrain
 ) {
   const groupID = `spaceTime-${trainToDraw.id}`;
@@ -62,23 +48,10 @@ export default function drawTrain(
     d3.select(releventLine).attr('transform', `translate(${translation})`);
   };
 
-  let debounceTimeoutId: number;
-
-  function debounceUpdateDepartureArrivalTimes(
-    computedDepartureArrivalTimes: TrainsWithArrivalAndDepartureTimes[],
-    interval: number
-  ) {
-    clearTimeout(debounceTimeoutId);
-    debounceTimeoutId = window.setTimeout(() => {
-      dispatchUpdateDepartureArrivalTimes(computedDepartureArrivalTimes);
-    }, interval);
-  }
-
   const drag = d3drag()
     .container((d) => d as DragContainerElement) // the component is dragged from its initial position
     .on('end', () => {
       dragTimeOffset(dragFullOffset);
-      dispatchUpdateMustRedraw(true);
     })
     .on('start', () => {
       dragFullOffset = 0;
@@ -86,9 +59,6 @@ export default function drawTrain(
     })
     .on('drag', (event) => {
       dragFullOffset += rotate ? event.dy : event.dx;
-      const offset = getDragOffsetValue(dragFullOffset);
-      const newDepartureArrivalTimes = makeTrainList(trainSimulations, trainToDraw.id, offset);
-      debounceUpdateDepartureArrivalTimes(newDepartureArrivalTimes, 15);
       applyTrainCurveTranslation(dragFullOffset);
     });
 

@@ -1,35 +1,34 @@
 import React, { useRef } from 'react';
 import RollingStockModal from 'modules/rollingStock/components/RollingStockSelector/RollingStockModal';
+import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import icon from 'assets/pictures/components/train.svg';
 import {
   comfort2pictogram,
   RollingStockInfo,
 } from 'modules/rollingStock/components/RollingStockSelector/RollingStockHelpers';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
-import { RollingStockComfortType, RollingStock } from 'common/api/osrdEditoastApi';
+import { RollingStockComfortType, RollingStockWithLiveries } from 'common/api/osrdEditoastApi';
+import { useTranslation } from 'react-i18next';
 
 type RollingStockProps = {
-  rollingStockSelected?: RollingStock;
-  rollingStockComfort?: RollingStockComfortType;
-  image?: JSX.Element;
-  comfort?: string;
-  comfortType?: string;
-  choice?: string;
   condensed?: boolean;
+  rollingStockSelected?: RollingStockWithLiveries;
+  rollingStockComfort: RollingStockComfortType;
+  image?: JSX.Element;
 };
 
 const RollingStockSelector = ({
+  condensed,
   rollingStockSelected,
   rollingStockComfort,
   image,
-  comfort,
-  comfortType,
-  choice,
-  condensed,
 }: RollingStockProps) => {
   const { openModal } = useModal();
 
   const ref2scroll = useRef<HTMLDivElement>(null);
+
+  const { t } = useTranslation('rollingstock');
+
   return (
     <div className="osrd-config-item mb-2">
       <div
@@ -51,7 +50,9 @@ const RollingStockSelector = ({
                   showSeries={false}
                 />
                 <div className="rollingstock-container-img ml-4">
-                  <div className="rollingstock-img d-flex align-items-center">{image}</div>
+                  <div className="rollingstock-img d-flex align-items-center">
+                    {image || <RollingStock2Img rollingStock={rollingStockSelected} />}
+                  </div>
                 </div>
                 <span className="mx-2">{comfort2pictogram(rollingStockComfort)}</span>
               </div>
@@ -63,13 +64,15 @@ const RollingStockSelector = ({
                   showEnd={false}
                 />
                 <div className="rollingstock-container-img">
-                  <div className="rollingstock-img">{image}</div>
+                  <div className="rollingstock-img">
+                    {image || <RollingStock2Img rollingStock={rollingStockSelected} />}
+                  </div>
                 </div>
                 <div className="rollingstock-minicard-end">
                   <span className="rollingstock-info-comfort text-uppercase small">
-                    <span className="text-uppercase font-weight-bold">{comfort}</span>
+                    <span className="text-uppercase font-weight-bold">{t('comfort')}</span>
                     <span className="mx-2">{comfort2pictogram(rollingStockComfort)}</span>
-                    {comfortType}
+                    {t(`comfortTypes.${rollingStockComfort}`)}
                   </span>
                   <RollingStockInfo
                     rollingStock={rollingStockSelected}
@@ -83,7 +86,7 @@ const RollingStockSelector = ({
         ) : (
           <div className="d-flex align-items-center">
             <img width="32px" className="mr-2" src={icon} alt="infraIcon" />
-            {choice}
+            {t('rollingstockChoice')}
           </div>
         )}
       </div>

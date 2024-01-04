@@ -412,17 +412,6 @@ export function trainWithDepartureAndArrivalTimes(train: Train, dragOffset = 0) 
   };
 }
 
-export function makeTrainList(trains: Train[], trainToOffset: number, dragOffset = 0) {
-  return trains.map((train) => {
-    const usedOffset = trainToOffset === train.id ? dragOffset : 0;
-    return trainWithDepartureAndArrivalTimes(train, usedOffset);
-  });
-}
-
-export function makeTrainListWithAllTrainsOffset(trains: Train[], dragOffset = 0) {
-  return trains.map((train) => trainWithDepartureAndArrivalTimes(train, dragOffset));
-}
-
 /**
  * Get the width of an element based on its text content
  * @param text the text content of the element

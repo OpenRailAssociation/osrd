@@ -222,23 +222,6 @@ export type SpeedSpaceSettingKey =
 
 export type SpeedSpaceSettingsType = { [key in SpeedSpaceSettingKey]: boolean };
 
-export type TrainsWithArrivalAndDepartureTimes = {
-  id: number;
-  labels: string[];
-  train_name: string;
-  path_id: number;
-  path_length: number | undefined;
-  mechanical_energy_consumed: {
-    base: number;
-    eco?: number;
-  };
-  departure_time: number;
-  arrival_time: number;
-  stops_count: number;
-  duration: number;
-  speed_limit_tags: string | undefined;
-};
-
 export interface OsrdSimulationState {
   redirectToGraph?: boolean;
   chart?: Chart;
@@ -254,7 +237,6 @@ export interface OsrdSimulationState {
   };
   signalBase: typeof SIGNAL_BASE_DEFAULT;
   consolidatedSimulation: SimulationTrain[];
-  departureArrivalTimes: TrainsWithArrivalAndDepartureTimes[];
   simulation: {
     past: SimulationHistory;
     present: SimulationSnapshot;

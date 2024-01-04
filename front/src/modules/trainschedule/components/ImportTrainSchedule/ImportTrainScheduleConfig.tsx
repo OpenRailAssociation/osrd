@@ -22,6 +22,7 @@ import {
 } from 'common/api/osrdEditoastApi';
 import { getGraouTrainSchedules } from 'common/api/graouApi';
 import UploadFileModal from 'common/uploadFileModal';
+import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 
 interface ImportTrainScheduleConfigProps {
   infraId: number;
@@ -47,6 +48,7 @@ export default function ImportTrainScheduleConfig({
   const [endTime, setEndTime] = useState('23:59');
   const dispatch = useDispatch();
   const { openModal, closeModal } = useContext(ModalContext);
+  const { rollingStockComfort, rollingStock } = useStoreDataForRollingStockSelector();
 
   async function importTrackSections(opIds: number[]): Promise<
     Record<
@@ -263,7 +265,10 @@ export default function ImportTrainScheduleConfig({
 
       <div className="row no-gutters">
         <div className="col-lg-6 sm-gutters">
-          <RollingStockSelector />
+          <RollingStockSelector
+            rollingStockSelected={rollingStock}
+            rollingStockComfort={rollingStockComfort}
+          />
         </div>
         <div className="col-lg-5 col-9 sm-gutters">
           <div className="osrd-config-item">

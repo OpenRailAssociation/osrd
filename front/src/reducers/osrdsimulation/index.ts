@@ -4,7 +4,6 @@ import { AnyAction } from 'redux';
 
 import { SimulationReport } from 'common/api/osrdEditoastApi';
 import { SIGNAL_BASE_DEFAULT, CHART_AXES } from 'modules/simulationResult/consts';
-import { makeTrainListWithAllTrainsOffset } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
 import createTrain from 'modules/simulationResult/components/SpaceTimeChart/createTrain';
 import {
   SPEED_SPACE_SETTINGS_KEYS,
@@ -27,7 +26,6 @@ import {
   UPDATE_SIMULATION,
   UPDATE_SPEEDSPACE_SETTINGS,
   UPDATE_SIGNAL_BASE,
-  UPDATE_DEPARTURE_ARRIVAL_TIMES,
   UPDATE_CONSOLIDATED_SIMULATION,
   REDO_SIMULATION,
   UNDO_SIMULATION,
@@ -53,7 +51,6 @@ export const initialState: OsrdSimulationState = {
   },
   signalBase: SIGNAL_BASE_DEFAULT,
   consolidatedSimulation: [],
-  departureArrivalTimes: [],
   displaySimulation: false,
   simulation: {
     past: [],
@@ -92,19 +89,11 @@ export default function reducer(inputState: OsrdSimulationState | undefined, act
       case UPDATE_SELECTED_TRAIN_ID:
         draft.selectedTrainId = action.selectedTrainId;
         break;
-      case UPDATE_DEPARTURE_ARRIVAL_TIMES:
-        draft.departureArrivalTimes = action.departureArrivalTimes;
-        break;
       case UPDATE_SIMULATION:
       case UNDO_SIMULATION:
       case REDO_SIMULATION:
         // get only the present, thanks
         draft.simulation = undoableSimulation(state.simulation, action);
-        draft.departureArrivalTimes = makeTrainListWithAllTrainsOffset(
-          draft.simulation.present.trains as Train[], // TODO: remove Train interface
-          0
-        );
-
         draft.consolidatedSimulation = createTrain(
           noop,
           CHART_AXES.SPACE_TIME,

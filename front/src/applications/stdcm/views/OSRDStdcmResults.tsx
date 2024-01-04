@@ -1,21 +1,26 @@
 import React, { useMemo, useState } from 'react';
-import SpaceTimeChart from 'modules/simulationResult/components/SpaceTimeChart/withOSRDData';
 import SpeedSpaceChart from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChart';
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
-import { getPresentSimulation, getSelectedTrain } from 'reducers/osrdsimulation/selectors';
 import { AllowancesSettings } from 'reducers/osrdsimulation/types';
 import { SimulationReport } from 'common/api/osrdEditoastApi';
+import SpaceTimeChart from 'modules/simulationResult/components/SpaceTimeChart/SpaceTimeChart';
+import { useStoreDataForSpaceTimeChart } from 'modules/simulationResult/components/SpaceTimeChart/useStoreDataForSpaceTimeChart';
 
 const OSRDStcdmResults = () => {
   const { t } = useTranslation(['translation', 'stdcm']);
 
-  const selectedTrain = useSelector(getSelectedTrain);
-  const simulation = useSelector(getPresentSimulation);
-
   const [showSpeedSpaceChart, setShowSpeedSpaceChart] = useState(false);
   const [spaceTimeChartHeight, setSpaceTimeChartHeight] = useState(450);
   const [speedSpaceChartHeight, setSpeedSpaceChartHeight] = useState(450);
+
+  const {
+    selectedTrain,
+    selectedProjection,
+    simulation,
+    simulationIsPlaying,
+    dispatchUpdateSelectedTrainId,
+    dispatchPersistentUpdateSimulation,
+  } = useStoreDataForSpaceTimeChart();
 
   // by default, we show the ecoblocks for stdcm (if existing)
   const allowancesSettings = useMemo(
@@ -48,8 +53,14 @@ const OSRDStcdmResults = () => {
             <div className="chart-container mt-2" style={{ height: `${spaceTimeChartHeight}px` }}>
               <SpaceTimeChart
                 allowancesSettings={allowancesSettings}
+                inputSelectedTrain={selectedTrain}
+                selectedProjection={selectedProjection}
+                simulation={simulation}
+                simulationIsPlaying={simulationIsPlaying}
                 initialHeight={450}
                 onSetBaseHeight={setSpaceTimeChartHeight}
+                dispatchUpdateSelectedTrainId={dispatchUpdateSelectedTrainId}
+                dispatchPersistentUpdateSimulation={dispatchPersistentUpdateSimulation}
               />
             </div>
           </div>
