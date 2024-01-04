@@ -156,6 +156,10 @@ data class DistanceRangeMapImpl<T>(
         return res
     }
 
+    override fun isEmpty(): Boolean {
+        return bounds.isEmpty()
+    }
+
     override fun <U> updateMap(update: DistanceRangeMap<U>, updateFunction: BiFunction<T, U, T>) {
         for ((updateLower, updateUpper, updateValue) in update) {
             for ((subMapLower, subMapUpper, subMapValue) in this.subMap(updateLower, updateUpper)) {
