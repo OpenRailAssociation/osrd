@@ -1,23 +1,24 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import { useTranslation } from 'react-i18next';
-import nextId from 'react-id-generator';
-import StudyCard from 'modules/study/components/StudyCard';
-import StudyCardEmpty from 'modules/study/components/StudyCardEmpty';
-import { Loader, Spinner } from 'common/Loaders';
-import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import { BiTargetLock } from 'react-icons/bi';
 import { GoPencil } from 'react-icons/go';
+import nextId from 'react-id-generator';
 import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import { budgetFormat } from 'utils/numbers';
-import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
-import FilterTextField from 'applications/operationalStudies/components/FilterTextField';
-import { PostSearchApiArg, StudyWithScenarios, osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { getDocument } from 'common/api/documentApi';
 import { useParams } from 'react-router-dom';
-import AddOrEditProjectModal from '../../../modules/project/components/AddOrEditProjectModal';
-import BreadCrumbs from '../components/BreadCrumbs';
+import remarkGfm from 'remark-gfm';
+
+import BreadCrumbs from 'applications/operationalStudies/components/BreadCrumbs';
+import FilterTextField from 'applications/operationalStudies/components/FilterTextField';
+import { getDocument } from 'common/api/documentApi';
+import { PostSearchApiArg, StudyWithScenarios, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
+import { Loader, Spinner } from 'common/Loaders';
+import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
+import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
+import AddOrEditProjectModal from 'modules/project/components/AddOrEditProjectModal';
+import StudyCard from 'modules/study/components/StudyCard';
+import StudyCardEmpty from 'modules/study/components/StudyCardEmpty';
+import { budgetFormat } from 'utils/numbers';
 
 type SortOptions =
   | 'NameAsc'

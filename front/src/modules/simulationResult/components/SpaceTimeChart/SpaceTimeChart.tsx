@@ -1,18 +1,20 @@
 import { noop } from 'lodash';
 import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import { CgLoadbar } from 'react-icons/cg';
+import { GiResize } from 'react-icons/gi';
+import { Rnd } from 'react-rnd';
+
+import { CHART_AXES } from 'modules/simulationResult/consts';
 import {
   enableInteractivity,
   traceVerticalLine,
 } from 'modules/simulationResult/components/ChartHelpers/enableInteractivity';
-import { Rnd } from 'react-rnd';
 import { timeShiftTrain } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
-import ORSD_GRAPH_SAMPLE_DATA from 'modules/simulationResult/components/SpeedSpaceChart/sampleData';
-import { CgLoadbar } from 'react-icons/cg';
-import { GiResize } from 'react-icons/gi';
-import { CHART_AXES } from 'modules/simulationResult/components/simulationResultsConsts';
+import { useChartSynchronizer } from 'modules/simulationResult/components/ChartHelpers/ChartSynchronizer';
+import ChartModal from 'modules/simulationResult/components/SpaceTimeChart/ChartModal';
 import { isolatedCreateTrain as createTrain } from 'modules/simulationResult/components/SpaceTimeChart/createTrain';
-
 import { drawAllTrains } from 'modules/simulationResult/components/SpaceTimeChart/d3Helpers';
+import ORSD_GRAPH_SAMPLE_DATA from 'modules/simulationResult/components/SpeedSpaceChart/sampleData';
 import {
   AllowancesSettings,
   Chart,
@@ -20,7 +22,6 @@ import {
   SimulationSnapshot,
   Train,
 } from 'reducers/osrdsimulation/types';
-import ChartModal from 'modules/simulationResult/components/SpaceTimeChart/ChartModal';
 import { dateIsInRange } from 'utils/date';
 import {
   DispatchUpdateDepartureArrivalTimes,
@@ -29,7 +30,6 @@ import {
   DispatchUpdateSelectedTrainId,
   DispatchUpdateTimePositionValues,
 } from './types';
-import { useChartSynchronizer } from '../ChartHelpers/ChartSynchronizer';
 
 const CHART_ID = 'SpaceTimeChart';
 const CHART_MIN_HEIGHT = 250;

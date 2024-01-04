@@ -1,5 +1,5 @@
 import { CircleLayer, SymbolLayer } from 'react-map-gl/maplibre';
-import { Theme, OmitLayer } from '../../../types';
+import { Theme, OmitLayer } from 'types';
 
 const signalTextOffsetX = 5;
 const signalTextOffsetY = -1;

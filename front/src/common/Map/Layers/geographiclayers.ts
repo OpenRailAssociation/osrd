@@ -1,5 +1,5 @@
 import { LineLayer } from 'react-map-gl/maplibre';
-import { Theme } from '../../../types';
+import { Theme } from 'types';
 
 export default function geoMainLayer(theme: Theme, bigger = false): Omit<LineLayer, 'source'> {
   return {

@@ -2,12 +2,12 @@ import * as d3 from 'd3';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { sec2datetime } from 'utils/timeManipulation';
-import { updateChart } from 'reducers/osrdsimulation/actions';
 import { SimulationReport } from 'common/api/osrdEditoastApi';
-import { Chart, SimulationD3Scale } from 'reducers/osrdsimulation/types';
 import { getDirection, gridX } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
-import { useChartSynchronizer } from '../ChartHelpers/ChartSynchronizer';
+import { useChartSynchronizer } from 'modules/simulationResult/components/ChartHelpers/ChartSynchronizer';
+import { updateChart } from 'reducers/osrdsimulation/actions';
+import { Chart, SimulationD3Scale } from 'reducers/osrdsimulation/types';
+import { sec2datetime } from 'utils/timeManipulation';
 
 const drawTrain = (
   train: SimulationReport,

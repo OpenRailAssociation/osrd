@@ -10,8 +10,8 @@ import { AiOutlineColumnWidth } from 'react-icons/ai';
 
 import { RollingStockComfortType, LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
+import { RollingStockInfo } from 'modules/rollingStock/components/RollingStockSelector/RollingStockHelpers';
 import RollingStockCardDetail from './RollingStockCardDetail';
-import { RollingStockInfo } from '../RollingStockSelector/RollingStockHelpers';
 import RollingStockCardButtons from './RollingStockCardButtons';
 
 interface RollingStockCardProps {

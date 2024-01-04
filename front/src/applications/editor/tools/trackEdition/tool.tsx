@@ -1,20 +1,21 @@
-import React from 'react';
+import { Feature, LineString } from 'geojson';
 import { cloneDeep, isEmpty, isEqual } from 'lodash';
+import React from 'react';
+import { AiFillSave } from 'react-icons/ai';
+import { BiAnchor, BiArrowFromLeft, BiArrowToRight, BiReset } from 'react-icons/bi';
+import { GoNoEntry, GoPlusCircle, GoTrash, GoXCircle } from 'react-icons/go';
 import { MdShowChart } from 'react-icons/md';
 import { RiDragMoveLine } from 'react-icons/ri';
-import { BiAnchor, BiArrowFromLeft, BiArrowToRight, BiReset } from 'react-icons/bi';
-import { Feature, LineString } from 'geojson';
-import getNearestPoint from '@turf/nearest-point';
 import { featureCollection } from '@turf/helpers';
+import getNearestPoint from '@turf/nearest-point';
 import nearestPointOnLine, { NearestPointOnLine } from '@turf/nearest-point-on-line';
 
-import { save } from 'reducers/editor';
 import { entityDoUpdate, getLineStringDistance } from 'common/IntervalsDataViz/data';
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
+import { save } from 'reducers/editor';
 import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
-import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
-import { GoNoEntry, GoPlusCircle, GoTrash, GoXCircle } from 'react-icons/go';
-import { AiFillSave } from 'react-icons/ai';
+
+import { NEW_ENTITY_ID } from '../../data/utils';
 import { Tool } from '../editorContextTypes';
 import { DEFAULT_COMMON_TOOL_STATE } from '../commonToolState';
 import {
@@ -24,8 +25,8 @@ import {
   TrackEditionLeftPanel,
   TrackEditionMessages,
 } from './components';
-import { getNewLine } from './utils';
 import { TrackEditionState } from './types';
+import { getNewLine } from './utils';
 
 function getInitialState(): TrackEditionState {
   const track = getNewLine([]);

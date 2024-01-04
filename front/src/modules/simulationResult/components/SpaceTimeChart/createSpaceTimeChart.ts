@@ -2,13 +2,13 @@ import * as d3 from 'd3';
 import { select as d3select } from 'd3-selection';
 
 import { Chart, SimulationTrain, ConsolidatedPosition } from 'reducers/osrdsimulation/types';
+import { ChartAxes } from 'modules/simulationResult/consts';
 import {
   defineLinear,
   defineTime,
   isSpaceTimeChart,
 } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
 import defineChart from 'modules/simulationResult/components/ChartHelpers/defineChart';
-import { ChartAxes } from '../simulationResultsConsts';
 
 export default function createSpaceTimeChart<T extends number | Date>(
   chart: Chart | undefined,

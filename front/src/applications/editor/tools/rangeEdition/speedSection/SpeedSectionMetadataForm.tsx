@@ -1,11 +1,12 @@
 import React, { FC, useContext, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import EditorContext from 'applications/editor/context';
 import { SpeedSectionEntity } from 'types';
 import { AiOutlinePlusCircle } from 'react-icons/ai';
 import { FaTimes } from 'react-icons/fa';
 import { MdSpeed } from 'react-icons/md';
 import { cloneDeep, isEmpty, map, mapKeys, omit } from 'lodash';
+
+import EditorContext from '../../../context';
 import { ExtendedEditorContextType } from '../../editorContextTypes';
 import { RangeEditionState } from '../types';
 import SpeedInput from './SpeedInput';

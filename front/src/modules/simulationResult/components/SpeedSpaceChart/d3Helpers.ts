@@ -1,18 +1,19 @@
-import drawArea from 'modules/simulationResult/components/ChartHelpers/drawArea';
-import drawCurve from 'modules/simulationResult/components/ChartHelpers/drawCurve';
-import defineChart from 'modules/simulationResult/components/ChartHelpers/defineChart';
-import { defineLinear } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
 import * as d3 from 'd3';
+import { isEmpty } from 'lodash';
+
 import {
   createProfileSegment,
   createPowerRestrictionSegment,
   DRAWING_KEYS,
 } from 'applications/operationalStudies/consts';
-import { isEmpty } from 'lodash';
-import { Chart, SpeedSpaceChart, SpeedSpaceSettingsType } from 'reducers/osrdsimulation/types';
+import { POSITION, SPEED, HEIGHT, CHART_AXES } from 'modules/simulationResult/consts';
+import drawArea from 'modules/simulationResult/components/ChartHelpers/drawArea';
+import drawCurve from 'modules/simulationResult/components/ChartHelpers/drawCurve';
+import defineChart from 'modules/simulationResult/components/ChartHelpers/defineChart';
+import { defineLinear } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
 import drawElectricalProfile from 'modules/simulationResult/components/ChartHelpers/drawElectricalProfile';
 import drawPowerRestriction from 'modules/simulationResult/components/ChartHelpers/drawPowerRestriction';
-import { POSITION, SPEED, HEIGHT, CHART_AXES } from '../simulationResultsConsts';
+import { Chart, SpeedSpaceChart, SpeedSpaceSettingsType } from 'reducers/osrdsimulation/types';
 import { GevPreparedData } from './prepareData';
 
 /**

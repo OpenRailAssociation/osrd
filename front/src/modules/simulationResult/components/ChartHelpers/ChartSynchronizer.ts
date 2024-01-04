@@ -2,7 +2,7 @@ import { useRef, useEffect } from 'react';
 
 import type { PositionsSpeedTimes, SimulationTrain } from 'reducers/osrdsimulation/types';
 import type { Store } from 'store';
-import { CHART_AXES, LIST_VALUES } from '../simulationResultsConsts';
+import { CHART_AXES, LIST_VALUES } from 'modules/simulationResult/consts';
 import { interpolateOnTime } from './ChartHelpers';
 
 type PositionValues = PositionsSpeedTimes<Date>;

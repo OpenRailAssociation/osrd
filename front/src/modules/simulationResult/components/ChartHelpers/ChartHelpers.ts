@@ -25,7 +25,7 @@ import {
   XAxis,
   Y2Axis,
   YAxis,
-} from 'modules/simulationResult/components/simulationResultsConsts';
+} from 'modules/simulationResult/consts';
 
 export function sec2d3datetime(time: number) {
   return d3.timeParse('%H:%M:%S')(sec2time(time));

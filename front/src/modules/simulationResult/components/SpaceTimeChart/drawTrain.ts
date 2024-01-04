@@ -1,6 +1,7 @@
 import * as d3 from 'd3';
 import { drag as d3drag, DragContainerElement } from 'd3-drag';
 
+import { CHART_AXES } from 'modules/simulationResult/consts';
 import {
   getDirection,
   makeTrainList,
@@ -15,7 +16,6 @@ import {
   Train,
   TrainsWithArrivalAndDepartureTimes,
 } from 'reducers/osrdsimulation/types';
-import { CHART_AXES } from '../simulationResultsConsts';
 
 export default function drawTrain(
   allowancesSettings: AllowancesSettings,

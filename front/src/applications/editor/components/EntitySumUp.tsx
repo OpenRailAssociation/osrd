@@ -19,6 +19,7 @@ import type {
   TrackSectionEntity,
 } from 'types';
 import { getSpeedSectionsNameString } from 'common/Map/Layers/SpeedLimits';
+
 import { EditoastType } from '../tools/types';
 import { NEW_ENTITY_ID } from '../data/utils';
 import { getEntities, getEntity } from '../data/api';

@@ -1,6 +1,6 @@
 import { Feature, Point } from 'geojson';
 
-import { EditorEntity } from '../../../../types';
+import { EditorEntity } from 'types';
 import { CommonToolState } from '../commonToolState';
 import { LayerType } from '../types';
 

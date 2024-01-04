@@ -1,8 +1,8 @@
 import * as d3 from 'd3';
 import { Chart, ConsolidatedPosition } from 'reducers/osrdsimulation/types';
 import { ArrayElement } from 'utils/types';
-import { ChartAxes } from '../simulationResultsConsts';
-import { GevPreparedData } from '../SpeedSpaceChart/prepareData';
+import { GevPreparedData } from 'modules/simulationResult/components/SpeedSpaceChart/prepareData';
+import { ChartAxes } from 'modules/simulationResult/consts';
 import { getAxis } from './ChartHelpers';
 
 const drawCurve = <
