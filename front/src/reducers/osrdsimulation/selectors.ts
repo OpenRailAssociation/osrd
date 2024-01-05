@@ -15,7 +15,6 @@ export const getSelectedProjection = makeOsrdSimulationSelector('selectedProject
 export const getSelectedTrainId = makeOsrdSimulationSelector('selectedTrainId');
 export const getSpeedSpaceSettings = makeOsrdSimulationSelector('speedSpaceSettings');
 export const getConsolidatedSimulation = makeOsrdSimulationSelector('consolidatedSimulation');
-export const getDisplaySimulation = makeOsrdSimulationSelector('displaySimulation');
 
 export const getPresentSimulation = (state: RootState) => state.osrdsimulation.simulation.present;
 

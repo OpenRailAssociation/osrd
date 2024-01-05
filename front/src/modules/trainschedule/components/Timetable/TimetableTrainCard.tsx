@@ -20,11 +20,15 @@ import trainNameWithNum from 'modules/trainschedule/components/ManageTrainSchedu
 
 import { useOsrdConfActions } from 'common/osrdContext';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import type { TrainScheduleValidation } from 'common/api/osrdEditoastApi';
+import type { SimulationReport, TrainScheduleValidation } from 'common/api/osrdEditoastApi';
 
 import { setFailure, setSuccess } from 'reducers/main';
-import type { ScheduledTrain } from 'reducers/osrdsimulation/types';
-import { updateSelectedProjection, updateSelectedTrainId } from 'reducers/osrdsimulation/actions';
+import type { Projection, ScheduledTrain, SimulationSnapshot } from 'reducers/osrdsimulation/types';
+import {
+  updateSelectedProjection,
+  updateSelectedTrainId,
+  updateSimulation,
+} from 'reducers/osrdsimulation/actions';
 
 const invalidTrainValues: {
   [key in TrainScheduleValidation]: TrainScheduleValidation;
@@ -45,6 +49,9 @@ type TimetableTrainCardProps = {
   refetchTimetable: () => void;
   toggleTrainSelection: (trainId: number) => void;
   setDisplayTrainScheduleManagement: (arg0: string) => void;
+  setTrainResultsToFetch: (trainScheduleIds?: number[]) => void;
+  simulation: SimulationSnapshot;
+  selectedProjection?: Projection;
 };
 
 function TimetableTrainCard({
@@ -59,6 +66,9 @@ function TimetableTrainCard({
   refetchTimetable,
   setDisplayTrainScheduleManagement,
   toggleTrainSelection,
+  setTrainResultsToFetch,
+  simulation,
+  selectedProjection,
 }: TimetableTrainCardProps) {
   const { data: rollingStock } =
     osrdEditoastApi.endpoints.getLightRollingStockByRollingStockId.useQuery({
@@ -91,6 +101,24 @@ function TimetableTrainCard({
     deleteTrainScheduleById({ id: train.id })
       .unwrap()
       .then(() => {
+        const remainingTrains = (simulation.trains as SimulationReport[]).filter(
+          (simulationTrain) => simulationTrain.id !== train.id
+        );
+
+        let trainScheduleIds; // by default we assume that we need to refetch all
+
+        if (remainingTrains.length > 0) {
+          // Check if there is at least one train with the same path as the deleted one
+          const trainWithSamePath = remainingTrains.find(
+            (simulationTrain) => simulationTrain.path === train.path_id
+          );
+
+          if (!projectionPathIsUsed || (trainWithSamePath && projectionPathIsUsed)) {
+            trainScheduleIds = []; // No need to refetch
+          }
+        }
+        setTrainResultsToFetch(trainScheduleIds);
+        dispatch(updateSimulation({ trains: remainingTrains }));
         dispatch(
           setSuccess({
             title: t('timetable.trainDeleted', { name: train.train_name }),
@@ -146,8 +174,9 @@ function TimetableTrainCard({
         },
       })
         .unwrap()
-        .then(() => {
+        .then((newTrainId) => {
           refetchTimetable();
+          setTrainResultsToFetch(newTrainId);
           dispatch(
             setSuccess({
               title: t('timetable.trainAdded'),
@@ -168,6 +197,13 @@ function TimetableTrainCard({
   };
 
   const selectPathProjection = async () => {
+    // If the projected path changes, we want to refetch all trains
+    if (selectedProjection && train.path_id !== selectedProjection.path) {
+      setTrainResultsToFetch(undefined);
+    } else {
+      // We don't fetch anything
+      setTrainResultsToFetch([]);
+    }
     dispatch(
       updateSelectedProjection({
         id: train.id,

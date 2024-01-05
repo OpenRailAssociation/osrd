@@ -55,13 +55,12 @@ export type SpaceTimeChartProps = {
   onSetBaseHeight?: (newHeight: number) => void;
   dispatchUpdateSelectedTrainId: DispatchUpdateSelectedTrainId;
   dispatchPersistentUpdateSimulation: DispatchPersistentUpdateSimulation;
+  setTrainResultsToFetch?: (trainSchedulesIDs?: number[]) => void;
 };
 
 export default function SpaceTimeChart(props: SpaceTimeChartProps) {
   const ref = useRef<HTMLDivElement>(null);
   const rndContainerRef = useRef<Rnd>(null);
-
-  const { updateTimePosition } = useChartSynchronizer();
 
   const {
     allowancesSettings,
@@ -74,20 +73,8 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
     onSetBaseHeight = noop,
     dispatchUpdateSelectedTrainId,
     dispatchPersistentUpdateSimulation,
+    setTrainResultsToFetch = noop,
   } = props;
-
-  // Consequence of direct actions by component
-  const onOffsetTimeByDragging = (
-    trains: SimulationSnapshot['trains'],
-    offset: number,
-    timePosition: Date
-  ) => {
-    dispatchPersistentUpdateSimulation({ ...simulation, trains });
-    if (timePosition && offset) {
-      const newTimePosition = sec2datetime(datetime2sec(timePosition) + offset);
-      updateTimePosition(newTimePosition);
-    }
-  };
 
   const [baseHeight, setBaseHeight] = useState(initialHeight);
   const [chart, setChart] = useState<Chart | undefined>();
@@ -107,7 +94,7 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
   }, [chart]);
 
   /* coordinate the vertical cursors with other graphs (GEV for instance) */
-  const { timePosition } = useChartSynchronizer(
+  const { timePosition, updateTimePosition } = useChartSynchronizer(
     (newTimePosition, positionValues) => {
       if (dateIsInRange(newTimePosition, timeScaleRange)) {
         traceVerticalLine(chart, CHART_AXES.SPACE_TIME, positionValues, newTimePosition, rotate);
@@ -117,6 +104,27 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
     [chart, rotate]
   );
 
+  // Consequence of direct actions by component
+  const onOffsetTimeByDragging = useCallback(
+    (
+      trains: SimulationSnapshot['trains'],
+      offset: number,
+      updateTrainResultsToFetch: (trainSchedulesIDs?: number[]) => void
+    ) => {
+      dispatchPersistentUpdateSimulation({ ...simulation, trains });
+
+      // Sets the train which needs its results to be updated
+      // We know it is always the selected train because when dragging one, it gets the selection
+      if (selectedTrain && updateTrainResultsToFetch) updateTrainResultsToFetch([selectedTrain.id]);
+
+      if (timePosition && offset) {
+        const newTimePosition = sec2datetime(datetime2sec(timePosition) + offset);
+        updateTimePosition(newTimePosition);
+      }
+    },
+    [selectedTrain, timePosition, updateTimePosition]
+  );
+
   const dragShiftTrain = useCallback(
     (offset: number) => {
       if (trainSimulations) {
@@ -124,7 +132,7 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
           train.id === selectedTrain?.id ? timeShiftTrain(train as Train, offset) : train
         ) as Train[];
         setTrainSimulations(trains);
-        onOffsetTimeByDragging(trains, offset, timePosition);
+        onOffsetTimeByDragging(trains, offset, setTrainResultsToFetch);
       }
     },
     [trainSimulations, selectedTrain, onOffsetTimeByDragging]

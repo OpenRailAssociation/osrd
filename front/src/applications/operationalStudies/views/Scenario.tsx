@@ -20,7 +20,7 @@ import getSimulationResults, {
 
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { SimulationReport, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useInfraID, useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 
 import Timetable from 'modules/trainschedule/components/Timetable/Timetable';
@@ -32,6 +32,7 @@ import type { RootState } from 'reducers';
 import { updateSelectedProjection, updateSimulation } from 'reducers/osrdsimulation/actions';
 import {
   getAllowancesSettings,
+  getPresentSimulation,
   getSelectedProjection,
   getSelectedTrainId,
 } from 'reducers/osrdsimulation/selectors';
@@ -52,6 +53,7 @@ export default function Scenario() {
   const [collapsedTimetable, setCollapsedTimetable] = useState(false);
   const [isInfraLoaded, setIsInfraLoaded] = useState(false);
   const [reloadCount, setReloadCount] = useState(1);
+  const [trainResultsToFetch, setTrainResultsToFetch] = useState<number[] | undefined>();
   const isUpdating = useSelector((state: RootState) => state.osrdsimulation.isUpdating);
 
   const { openModal } = useModal();
@@ -68,6 +70,7 @@ export default function Scenario() {
   const selectedTrainId = useSelector(getSelectedTrainId);
   const selectedProjection = useSelector(getSelectedProjection);
   const allowancesSettings = useSelector(getAllowancesSettings);
+  const simulation = useSelector(getPresentSimulation);
 
   const { projectId, studyId, scenarioId } = useMemo(
     () => ({
@@ -173,7 +176,19 @@ export default function Scenario() {
 
   useEffect(() => {
     if (timetable && infra?.state === 'CACHED' && selectedProjection) {
-      getSimulationResults(timetable, selectedProjection, allowancesSettings);
+      // If trainResultsToFetch is undefined that means it's the first load of the scenario
+      // and we want to get all timetable trains results
+      if (trainResultsToFetch) {
+        getSimulationResults(
+          trainResultsToFetch,
+          selectedProjection,
+          allowancesSettings,
+          simulation.trains as SimulationReport[]
+        );
+      } else {
+        const trainScheduleIds = timetable.train_schedule_summaries.map((train) => train.id);
+        getSimulationResults(trainScheduleIds, selectedProjection, allowancesSettings);
+      }
     }
   }, [timetable, infra, selectedProjection]);
 
@@ -281,6 +296,7 @@ export default function Scenario() {
                   <TimetableManageTrainSchedule
                     displayTrainScheduleManagement={displayTrainScheduleManagement}
                     setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
+                    setTrainResultsToFetch={setTrainResultsToFetch}
                     infraState={infra.state}
                     refetchTimetable={refetchTimetable}
                     refetchConflicts={refetchConflicts}
@@ -295,6 +311,8 @@ export default function Scenario() {
                     selectedTrainId={selectedTrainId}
                     refetchTimetable={refetchTimetable}
                     conflicts={conflicts}
+                    setTrainResultsToFetch={setTrainResultsToFetch}
+                    simulation={simulation}
                   />
                 )}
               </div>
@@ -347,6 +365,7 @@ export default function Scenario() {
                       displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.import
                     }
                     collapsedTimetable={collapsedTimetable}
+                    setTrainResultsToFetch={setTrainResultsToFetch}
                   />
                 )}
               </div>

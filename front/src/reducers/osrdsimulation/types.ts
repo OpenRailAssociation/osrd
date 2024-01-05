@@ -242,5 +242,4 @@ export interface OsrdSimulationState {
     present: SimulationSnapshot;
     future: SimulationHistory;
   };
-  displaySimulation: boolean;
 }

@@ -17,6 +17,7 @@ import type { Infra } from 'common/api/osrdEditoastApi';
 type TimetableManageTrainScheduleProps = {
   displayTrainScheduleManagement: string;
   setDisplayTrainScheduleManagement: (type: string) => void;
+  setTrainResultsToFetch: (trainScheduleIds?: number[]) => void;
   infraState?: Infra['state'];
   refetchTimetable: () => void;
   refetchConflicts: () => void;
@@ -25,6 +26,7 @@ type TimetableManageTrainScheduleProps = {
 export default function TimetableManageTrainSchedule({
   displayTrainScheduleManagement,
   setDisplayTrainScheduleManagement,
+  setTrainResultsToFetch,
   infraState,
   refetchTimetable,
   refetchConflicts,
@@ -46,6 +48,7 @@ export default function TimetableManageTrainSchedule({
           <SubmitConfUpdateTrainSchedules
             setIsWorking={setIsWorking}
             setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
+            setTrainResultsToFetch={setTrainResultsToFetch}
           />
         )}
 
@@ -61,6 +64,7 @@ export default function TimetableManageTrainSchedule({
                 refetchTimetable={refetchTimetable}
                 setIsWorking={setIsWorking}
                 refetchConflicts={refetchConflicts}
+                setTrainResultsToFetch={setTrainResultsToFetch}
               />
             )}
             <TrainAddingSettings />

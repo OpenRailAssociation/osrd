@@ -9,7 +9,7 @@ import {
   persistentRedoSimulation,
   persistentUndoSimulation,
 } from 'reducers/osrdsimulation/simulation';
-import { getDisplaySimulation, getIsUpdating } from 'reducers/osrdsimulation/selectors';
+import { getIsUpdating } from 'reducers/osrdsimulation/selectors';
 import { updateSelectedProjection, updateSimulation } from 'reducers/osrdsimulation/actions';
 
 import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
@@ -22,10 +22,10 @@ import TrainDetails from 'modules/simulationResult/components/TrainDetails';
 import DriverTrainSchedule from 'modules/trainschedule/components/DriverTrainSchedule/DriverTrainSchedule';
 import getScaleDomainFromValues from 'modules/simulationResult/components/ChartHelpers/getScaleDomainFromValues';
 import SpaceCurvesSlopes from 'modules/simulationResult/components/SpaceCurvesSlopes';
+import SpaceTimeChart from 'modules/simulationResult/components/SpaceTimeChart/SpaceTimeChart';
 import SpeedSpaceChart from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChart';
 import type { PositionScaleDomain } from 'modules/simulationResult/consts';
 import { Train } from 'reducers/osrdsimulation/types';
-import SpaceTimeChart from 'modules/simulationResult/components/SpaceTimeChart/SpaceTimeChart';
 import { useStoreDataForSpaceTimeChart } from 'modules/simulationResult/components/SpaceTimeChart/useStoreDataForSpaceTimeChart';
 
 const MAP_MIN_HEIGHT = 450;
@@ -33,17 +33,18 @@ const MAP_MIN_HEIGHT = 450;
 type SimulationResultsProps = {
   isDisplayed: boolean;
   collapsedTimetable: boolean;
+  setTrainResultsToFetch: (trainSchedulesIDs?: number[]) => void;
 };
 
 export default function SimulationResults({
   isDisplayed,
   collapsedTimetable,
+  setTrainResultsToFetch,
 }: SimulationResultsProps) {
   const { t } = useTranslation('simulation');
   const dispatch = useDispatch();
 
   // TIMELINE DISABLED // const { chart } = useSelector(getOsrdSimulation);
-  const displaySimulation = useSelector(getDisplaySimulation);
   const isUpdating = useSelector(getIsUpdating);
 
   const timeTableRef = useRef<HTMLDivElement | null>(null);
@@ -171,7 +172,7 @@ export default function SimulationResults({
 
         <div className="osrd-simulation-container d-flex flex-grow-1 flex-shrink-1">
           <div className="chart-container" style={{ height: `${heightOfSpaceTimeChart}px` }}>
-            {displaySimulation && (
+            {simulation.trains.length > 0 && (
               <SpaceTimeChart
                 allowancesSettings={allowancesSettings}
                 inputSelectedTrain={selectedTrain}
@@ -183,6 +184,7 @@ export default function SimulationResults({
                 isDisplayed={isDisplayed}
                 dispatchUpdateSelectedTrainId={dispatchUpdateSelectedTrainId}
                 dispatchPersistentUpdateSimulation={dispatchPersistentUpdateSimulation}
+                setTrainResultsToFetch={setTrainResultsToFetch}
               />
             )}
           </div>

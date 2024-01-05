@@ -41,7 +41,6 @@ export const changeTrain =
       error: getTrainDetailsError,
       isSuccess: isGetTrainDetailsSuccess,
     } = await dispatch(osrdEditoastApi.endpoints.getTrainScheduleById.initiate({ id }));
-
     if (isGetTrainDetailsSuccess) {
       // TODO: add the other information of the trainSchedule (allowances...)
       const trainSchedule: TrainSchedulePatch = {

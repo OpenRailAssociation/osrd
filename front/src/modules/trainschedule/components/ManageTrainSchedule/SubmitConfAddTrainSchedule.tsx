@@ -19,6 +19,7 @@ type SubmitConfAddTrainScheduleProps = {
   refetchTimetable: () => void;
   refetchConflicts: () => void;
   setIsWorking: (isWorking: boolean) => void;
+  setTrainResultsToFetch: (trainScheduleIds?: number[]) => void;
 };
 
 type error400 = {
@@ -37,6 +38,7 @@ export default function SubmitConfAddTrainSchedule({
   refetchTimetable,
   refetchConflicts,
   setIsWorking,
+  setTrainResultsToFetch,
 }: SubmitConfAddTrainScheduleProps) {
   const [postTrainSchedule] =
     osrdEditoastApi.endpoints.postTrainScheduleStandaloneSimulation.useMutation();
@@ -87,7 +89,7 @@ export default function SubmitConfAddTrainSchedule({
       }
 
       try {
-        await postTrainSchedule({
+        const newTrainIds = await postTrainSchedule({
           body: {
             path: pathfindingID,
             schedules,
@@ -102,6 +104,7 @@ export default function SubmitConfAddTrainSchedule({
           })
         );
         setIsWorking(false);
+        setTrainResultsToFetch(newTrainIds);
         refetchTimetable();
         refetchConflicts();
       } catch (e: unknown) {
