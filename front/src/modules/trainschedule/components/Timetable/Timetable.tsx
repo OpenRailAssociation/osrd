@@ -5,7 +5,7 @@ import { GoTrash } from 'react-icons/go';
 import { FaDownload, FaPlus } from 'react-icons/fa';
 import { BiSelectMultiple } from 'react-icons/bi';
 import { BsFillExclamationTriangleFill } from 'react-icons/bs';
-import { isEmpty } from 'lodash';
+import { isEmpty, uniq } from 'lodash';
 import cx from 'classnames';
 
 import { useDebounce } from 'utils/helpers';
@@ -23,11 +23,16 @@ import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import TimetableTrainCard from 'modules/trainschedule/components/Timetable/TimetableTrainCard';
-import type { Conflict, Infra, TimetableWithSchedulesDetails } from 'common/api/osrdEditoastApi';
+import type {
+  Conflict,
+  Infra,
+  SimulationReport,
+  TimetableWithSchedulesDetails,
+} from 'common/api/osrdEditoastApi';
 
 import { setFailure, setSuccess } from 'reducers/main';
-import type { ScheduledTrain } from 'reducers/osrdsimulation/types';
-import { updateSelectedTrainId } from 'reducers/osrdsimulation/actions';
+import type { ScheduledTrain, SimulationSnapshot } from 'reducers/osrdsimulation/types';
+import { updateSelectedTrainId, updateSimulation } from 'reducers/osrdsimulation/actions';
 import { getSelectedProjection } from 'reducers/osrdsimulation/selectors';
 
 type TimetableProps = {
@@ -38,6 +43,8 @@ type TimetableProps = {
   selectedTrainId?: number;
   refetchTimetable: () => void;
   conflicts?: Conflict[];
+  setTrainResultsToFetch: (trainScheduleIds?: number[]) => void;
+  simulation: SimulationSnapshot;
 };
 
 export default function Timetable({
@@ -48,6 +55,8 @@ export default function Timetable({
   selectedTrainId,
   refetchTimetable,
   conflicts,
+  setTrainResultsToFetch,
+  simulation,
 }: TimetableProps) {
   const { t } = useTranslation(['operationalStudies/scenario', 'common/itemTypes']);
 
@@ -155,6 +164,27 @@ export default function Timetable({
     await deleteTrainSchedules({ body: { ids: selectedTrainIds } })
       .unwrap()
       .then(() => {
+        const remainingTrains = (simulation.trains as SimulationReport[]).filter(
+          (simulationTrain) => !selectedTrainIds.includes(simulationTrain.id)
+        );
+        if (remainingTrains.length > 0) {
+          const remainingUniquesPathIds = uniq(remainingTrains.map((train) => train.path));
+          // If there isn't any train left with the same path as the projected one and one of
+          // the deleted trains is the projected one, we want to refetch all trains
+          if (
+            selectedProjection &&
+            !remainingUniquesPathIds.includes(selectedProjection.path) &&
+            selectedTrainIds.includes(selectedProjection.id)
+          ) {
+            setTrainResultsToFetch(undefined);
+          } else {
+            // We don't fetch anything
+            setTrainResultsToFetch([]);
+          }
+        } else {
+          setTrainResultsToFetch(undefined);
+        }
+        dispatch(updateSimulation({ trains: remainingTrains }));
         dispatch(
           setSuccess({
             title: t('timetable.trainsSelectionDeletedCount', { count: trainsCount }),
@@ -303,6 +333,9 @@ export default function Timetable({
                 }
                 refetchTimetable={refetchTimetable}
                 setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
+                setTrainResultsToFetch={setTrainResultsToFetch}
+                simulation={simulation}
+                selectedProjection={selectedProjection}
               />
             ))}
       </div>

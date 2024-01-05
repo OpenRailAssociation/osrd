@@ -42,8 +42,10 @@ export default function StdcmRequestModal(props: StdcmRequestModalProps) {
   const dispatch = useDispatch();
 
   const [postStdcm] = osrdEditoastApi.endpoints.postStdcm.useMutation();
-  const [getTrainScheduleResults] =
-    osrdEditoastApi.endpoints.getTrainScheduleResults.useLazyQuery();
+  const [postTrainScheduleResults] =
+    osrdEditoastApi.endpoints.postTrainScheduleResults.useMutation();
+
+  const [getTimetable] = osrdEditoastApi.endpoints.getTimetableById.useLazyQuery();
 
   const { updateItinerary } = useOsrdConfActions();
 
@@ -54,11 +56,11 @@ export default function StdcmRequestModal(props: StdcmRequestModalProps) {
   // https://developer.mozilla.org/en-US/docs/Web/API/AbortController
   const controller = new AbortController();
 
-  const timetableId = osrdconf.timetableID;
+  const { timetableID } = osrdconf;
 
   useEffect(() => {
     const payload = formatStdcmConf(dispatch, t, osrdconf as OsrdStdcmConfState);
-    if (payload && currentStdcmRequestStatus === STDCM_REQUEST_STATUS.pending && timetableId) {
+    if (payload && currentStdcmRequestStatus === STDCM_REQUEST_STATUS.pending && timetableID) {
       postStdcm(payload)
         .unwrap()
         .then((result) => {
@@ -71,39 +73,47 @@ export default function StdcmRequestModal(props: StdcmRequestModalProps) {
               id: 1500,
               isStdcm: true,
             };
-
-            getTrainScheduleResults({
-              timetableId,
-              pathId: result.path.id,
-            })
-              .unwrap()
-              .then((timetableTrains) => {
-                const trains: SimulationReport[] = [...timetableTrains, fakedNewTrain];
-                const consolidatedSimulation = createTrain(
-                  dispatch,
-                  CHART_AXES.SPACE_TIME,
-                  trains as Train[], // TODO: remove Train interface
-                  t
-                );
-                dispatch(updateConsolidatedSimulation(consolidatedSimulation));
-                dispatch(updateSimulation({ trains }));
-                dispatch(updateSelectedTrainId(fakedNewTrain.id));
-
-                dispatch(
-                  updateSelectedProjection({
-                    id: fakedNewTrain.id,
-                    path: result.path.id,
-                  })
-                );
+            getTimetable({ id: timetableID }).then(({ data: timetable }) => {
+              const trainIdsToFetch =
+                timetable?.train_schedule_summaries.map((train) => train.id) ?? [];
+              postTrainScheduleResults({
+                body: {
+                  path_id: result.path.id,
+                  train_ids: trainIdsToFetch,
+                },
               })
-              .catch(() => {
-                dispatch(
-                  setFailure({
-                    name: t('stdcm:stdcmError'),
-                    message: t('translation:common.error'),
-                  })
-                );
-              });
+                .unwrap()
+                .then((timetableTrains) => {
+                  const trains: SimulationReport[] = [
+                    ...timetableTrains.simulations,
+                    fakedNewTrain,
+                  ];
+                  const consolidatedSimulation = createTrain(
+                    dispatch,
+                    CHART_AXES.SPACE_TIME,
+                    trains as Train[], // TODO: remove Train interface
+                    t
+                  );
+                  dispatch(updateConsolidatedSimulation(consolidatedSimulation));
+                  dispatch(updateSimulation({ trains }));
+                  dispatch(updateSelectedTrainId(fakedNewTrain.id));
+
+                  dispatch(
+                    updateSelectedProjection({
+                      id: fakedNewTrain.id,
+                      path: result.path.id,
+                    })
+                  );
+                })
+                .catch(() => {
+                  dispatch(
+                    setFailure({
+                      name: t('stdcm:stdcmError'),
+                      message: t('translation:common.error'),
+                    })
+                  );
+                });
+            });
           }
         })
         .catch((e) => {

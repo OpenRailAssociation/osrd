@@ -6446,7 +6446,6 @@ const ORSD_GRAPH_SAMPLE_DATA: OsrdSimulationState = {
       ],
     },
   ],
-  displaySimulation: true,
   simulation: {
     past: [
       {

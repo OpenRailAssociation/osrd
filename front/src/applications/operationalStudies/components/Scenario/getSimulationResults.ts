@@ -10,12 +10,14 @@ import { store } from 'store';
 import i18n from 'i18next';
 import {
   SimulationReport,
-  TimetableWithSchedulesDetails,
   TrainScheduleSummary,
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
 import { extractMessageFromError } from 'utils/error';
 import { AllowancesSettings, Projection } from 'reducers/osrdsimulation/types';
+import { ApiError } from 'common/api/baseGeneratedApis';
+import { SerializedError } from '@reduxjs/toolkit';
+import { differenceBy } from 'lodash';
 
 export function selectProjection(
   trainSchedules: TrainScheduleSummary[],
@@ -79,32 +81,37 @@ export function selectProjection(
 }
 
 /**
- * Recover the time table for all the trains
+ * - If first load of the scenario, get all timetable trains results and update the simulation.
+ * - If adding/updating train(s), get these train results and update the simulation.
+ * - If deleting train(s) and there are still trains in the timetable, do nothing
  */
 export default async function getSimulationResults(
-  timetable: TimetableWithSchedulesDetails,
+  trainSchedulesIDs: number[],
   selectedProjection: Projection,
-  allowancesSettings?: AllowancesSettings
+  allowancesSettings?: AllowancesSettings,
+  simulation?: SimulationReport[]
 ) {
-  store.dispatch(updateIsUpdating(true));
-  const trainSchedulesIDs = timetable.train_schedule_summaries.map((train) => train.id);
-
   if (trainSchedulesIDs.length > 0) {
-    // We use this syntax first because of the .initiate, to be able to unsubscribe from the results later
-    const results = store.dispatch(
-      osrdEditoastApi.endpoints.getTrainScheduleResults.initiate({
-        timetableId: timetable.id,
-        pathId: selectedProjection.path,
-      })
-    );
+    store.dispatch(updateIsUpdating(true));
+    try {
+      // We only want to display the valid trains simulations
+      let { simulations: simulationLocal } = await store
+        .dispatch(
+          osrdEditoastApi.endpoints.postTrainScheduleResults.initiate({
+            body: {
+              path_id: selectedProjection.path,
+              train_ids: trainSchedulesIDs,
+            },
+          })
+        )
+        .unwrap();
 
-    const {
-      data: simulationLocal,
-      isError: isGetTrainScheduleResultsError,
-      error: getTrainScheduleResultsError,
-    } = await results;
+      // Means that we are adding or updating a train and we need to add it in the present simulation
+      if (simulation) {
+        const unaffectedTrains = differenceBy(simulation, simulationLocal, 'id');
+        simulationLocal = unaffectedTrains.concat(simulationLocal);
+      }
 
-    if (simulationLocal) {
       const sortedSimulationLocal = [...simulationLocal].sort(
         (a: SimulationReport, b: SimulationReport) => a.base.stops[0].time - b.base.stops[0].time
       );
@@ -123,23 +130,19 @@ export default async function getSimulationResults(
         }
       });
       store.dispatch(updateAllowancesSettings(newAllowancesSettings));
-      store.dispatch(updateIsUpdating(false));
-    } else if (isGetTrainScheduleResultsError && getTrainScheduleResultsError) {
+    } catch (e) {
       store.dispatch(
         setFailure({
           name: i18n.t('simulation:errorMessages.unableToRetrieveTrainSchedule'),
-          message: extractMessageFromError(getTrainScheduleResultsError),
+          message: extractMessageFromError(e as ApiError | SerializedError),
         })
       );
+      console.error('trainScheduleResults error : ', e);
+    } finally {
       store.dispatch(updateIsUpdating(false));
-      console.error(getTrainScheduleResultsError);
     }
-
-    // Manually dispatching an RTK request with .initiate will create a subscription entry, but we need to unsubscribe from that data also manually - otherwise the data stays in the cache permanently.
-    results.unsubscribe();
-  } else {
+  } else if (!simulation) {
     store.dispatch(updateSimulation({ trains: [] }));
-    store.dispatch(updateIsUpdating(false));
     store.dispatch(updateSelectedTrainId(undefined));
     store.dispatch(updateSelectedProjection(undefined));
   }

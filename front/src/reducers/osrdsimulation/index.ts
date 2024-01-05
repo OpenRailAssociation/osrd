@@ -2,7 +2,6 @@ import produce from 'immer';
 import { noop } from 'lodash';
 import { AnyAction } from 'redux';
 
-import { SimulationReport } from 'common/api/osrdEditoastApi';
 import { SIGNAL_BASE_DEFAULT, CHART_AXES } from 'modules/simulationResult/consts';
 import createTrain from 'modules/simulationResult/components/SpaceTimeChart/createTrain';
 import {
@@ -51,7 +50,6 @@ export const initialState: OsrdSimulationState = {
   },
   signalBase: SIGNAL_BASE_DEFAULT,
   consolidatedSimulation: [],
-  displaySimulation: false,
   simulation: {
     past: [],
     present: { trains: [] },
@@ -100,12 +98,6 @@ export default function reducer(inputState: OsrdSimulationState | undefined, act
           draft.simulation.present.trains as Train[], // TODO: remove Train interface
           noop
         );
-        draft.displaySimulation =
-          draft.simulation.present?.trains.length > 0 &&
-          // TODO: delete this cast when we have chosen the appropriate type for the simulation
-          (draft.simulation.present.trains as SimulationReport[]).find(
-            (train) => train.id === state.selectedTrainId
-          ) !== undefined;
 
         break;
       case UPDATE_SPEEDSPACE_SETTINGS:

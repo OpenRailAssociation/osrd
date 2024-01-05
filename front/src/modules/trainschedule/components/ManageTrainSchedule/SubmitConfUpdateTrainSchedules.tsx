@@ -18,6 +18,7 @@ import { updateSelectedProjection, updateSelectedTrainId } from 'reducers/osrdsi
 type SubmitConfUpdateTrainSchedulesProps = {
   setIsWorking: (isWorking: boolean) => void;
   setDisplayTrainScheduleManagement: (arg0: string) => void;
+  setTrainResultsToFetch: (trainScheduleIds?: number[]) => void;
 };
 
 // Refacto in a component to prepare the migration of the patch in editoast (need to be a React component to use hooks inside like rtk's)
@@ -25,6 +26,7 @@ type SubmitConfUpdateTrainSchedulesProps = {
 export default function SubmitConfUpdateTrainSchedules({
   setIsWorking,
   setDisplayTrainScheduleManagement,
+  setTrainResultsToFetch,
 }: SubmitConfUpdateTrainSchedulesProps) {
   const { getTrainScheduleIDsToModify, getConf, getPathfindingID, getName, getDepartureTime } =
     useOsrdConfSelectors();
@@ -79,6 +81,7 @@ export default function SubmitConfUpdateTrainSchedules({
           })
         );
         if (callSuccess) {
+          setTrainResultsToFetch(trainScheduleIDsToModify);
           dispatch(
             setSuccess({
               title: t('trainUpdated'),
