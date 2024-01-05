@@ -29,8 +29,4 @@ data class InfraExplorerWithEnvelopeImpl(
     override fun clone(): InfraExplorerWithEnvelope {
         return InfraExplorerWithEnvelopeImpl(infraExplorer.clone(), ArrayList(envelopes))
     }
-
-    override fun moveForward() {
-        throw RuntimeException("moveForward can't be used for InfraExplorerWithEnvelope")
-    }
 }

@@ -106,7 +106,7 @@ internal constructor(
     /** Creates all edges that can be accessed on the given block, using all the parameters specified.  */
     @Suppress("UNCHECKED_CAST")
     fun makeAllEdges(): Collection<STDCMEdge> {
-        return if (getEnvelope() == null)
+        return if (getEnvelope() == null || hasDuplicateBlocks())
             listOf()
         else
             getDelaysPerOpening().stream()
@@ -231,7 +231,18 @@ internal constructor(
             null
         else
             res
-    }// endregion UTILITIES
+    }
+
+    /** Returns true if the current block is already present in the path to this edge  */
+    private fun hasDuplicateBlocks(): Boolean {
+        var node = prevNode
+        while (node != null) {
+            if (!node.previousEdge.endAtStop && node.previousEdge.block == infraExplorer.getCurrentBlock())
+                return true
+            node = node.previousEdge.previousNode
+        }
+        return false
+    } // endregion UTILITIES
 
     companion object {
         fun fromNode(graph: STDCMGraph, node: STDCMNode, infraExplorer: InfraExplorerWithEnvelope): STDCMEdgeBuilder {
