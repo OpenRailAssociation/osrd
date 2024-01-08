@@ -7,31 +7,37 @@ coverage:
       core:
         target: 75%
         threshold: 0.5%
+        removed_code_behavior: adjust_base
         flags:
           - core
       editoast:
         target: 70%
         threshold: 0.5%
+        removed_code_behavior: adjust_base
         flags:
           - editoast
       gateway:
         target: auto
         threshold: 0.5%
+        removed_code_behavior: adjust_base
         flags:
           - gateway
       front:
         target: auto
         threshold: 0.5%
+        removed_code_behavior: adjust_base
         flags:
           - front
       tests:
         target: auto
         threshold: 0.5%
+        removed_code_behavior: adjust_base
         flags:
           - tests
       railjson_generator:
         target: auto
         threshold: 0.5%
+        removed_code_behavior: adjust_base
         flags:
           - railjson_generator
     patch:
