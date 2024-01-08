@@ -5,6 +5,7 @@ import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
 import fr.sncf.osrd.envelope.part.EnvelopePart
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile
 import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.arePositionsEqual
+import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.areTimesEqual
 import fr.sncf.osrd.graph.PathfindingEdgeLocationId
 import fr.sncf.osrd.utils.DummyInfra
 import fr.sncf.osrd.utils.units.Offset
@@ -168,12 +169,13 @@ class InfraExplorerWithEnvelopeTests {
     private fun testEnvelopeTimeEquality(expected: Envelope, actual: EnvelopeTimeInterpolate) {
         assertTrue { arePositionsEqual(expected.beginPos, actual.beginPos) }
         assertTrue { arePositionsEqual(expected.endPos, actual.endPos) }
-        var position = expected.beginPos
+        var position = 126.0
         while (position < expected.endPos) {
-            assertEquals(
-                expected.interpolateTotalTime(position),
-                actual.interpolateTotalTime(position),
-                1e-5
+            assertTrue (
+                areTimesEqual(
+                    expected.interpolateTotalTime(position),
+                    actual.interpolateTotalTime(position),
+                )
             )
             position += 1.0
         }

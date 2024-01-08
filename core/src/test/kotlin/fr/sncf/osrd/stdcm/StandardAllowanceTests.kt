@@ -306,7 +306,7 @@ class StandardAllowanceTests {
           |       ___/
         b |   ___/
           |  /#################
-        a |_/##################_> time
+        a |_/_#################_> time
 
          */
         val infra = DummyInfra()
