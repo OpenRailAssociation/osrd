@@ -1,5 +1,5 @@
 {
-    "version": "3.4.6",
+    "version": "3.4.7",
     "operational_points": [
         {
             "id": "op.station_foo",
@@ -578,26 +578,22 @@
         {
             "track": "ne.micro.foo_a",
             "position": 175.0,
-            "id": "tde.foo_a-switch_foo",
-            "applicable_directions": "BOTH"
+            "id": "tde.foo_a-switch_foo"
         },
         {
             "track": "ne.micro.foo_b",
             "position": 175.0,
-            "id": "tde.foo_b-switch_foo",
-            "applicable_directions": "BOTH"
+            "id": "tde.foo_b-switch_foo"
         },
         {
             "track": "ne.micro.bar_a",
             "position": 25.0,
-            "id": "tde.track-bar",
-            "applicable_directions": "BOTH"
+            "id": "tde.track-bar"
         },
         {
             "track": "ne.micro.foo_to_bar",
             "position": 25.0,
-            "id": "tde.switch_foo-track",
-            "applicable_directions": "BOTH"
+            "id": "tde.switch_foo-track"
         }
     ],
     "neutral_sections": []

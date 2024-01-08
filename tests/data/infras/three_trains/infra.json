@@ -1,5 +1,5 @@
 {
-    "version": "3.4.6",
+    "version": "3.4.7",
     "operational_points": [],
     "routes": [
         {
@@ -1097,56 +1097,47 @@
         {
             "track": "track.0",
             "position": 800.0,
-            "id": "detector.5",
-            "applicable_directions": "BOTH"
+            "id": "detector.5"
         },
         {
             "track": "track.1",
             "position": 800.0,
-            "id": "detector.6",
-            "applicable_directions": "BOTH"
+            "id": "detector.6"
         },
         {
             "track": "track.2",
             "position": 200.0,
-            "id": "detector.0",
-            "applicable_directions": "BOTH"
+            "id": "detector.0"
         },
         {
             "track": "track.2",
             "position": 800.0,
-            "id": "detector.7",
-            "applicable_directions": "BOTH"
+            "id": "detector.7"
         },
         {
             "track": "track.3",
             "position": 200.0,
-            "id": "detector.1",
-            "applicable_directions": "BOTH"
+            "id": "detector.1"
         },
         {
             "track": "track.4",
             "position": 200.0,
-            "id": "detector.2",
-            "applicable_directions": "BOTH"
+            "id": "detector.2"
         },
         {
             "track": "track.4",
             "position": 800.0,
-            "id": "detector.8",
-            "applicable_directions": "BOTH"
+            "id": "detector.8"
         },
         {
             "track": "track.5",
             "position": 200.0,
-            "id": "detector.3",
-            "applicable_directions": "BOTH"
+            "id": "detector.3"
         },
         {
             "track": "track.6",
             "position": 200.0,
-            "id": "detector.4",
-            "applicable_directions": "BOTH"
+            "id": "detector.4"
         }
     ],
     "neutral_sections": []

@@ -56,33 +56,16 @@ impl Graph {
 
     fn edges_from_track_sections(&mut self, railjson: &RailJson) {
         // We need to split handle separately the signals that are forward
-        let mut fwd_detectors = HashMap::<_, Vec<_>>::new();
-        let mut push_fwd = |d: &Detector| {
-            fwd_detectors
-                .entry(d.track.clone())
-                .or_default()
-                .push(d.clone())
-        };
-        let mut bwd_detectors = HashMap::<_, Vec<_>>::new();
-        let mut push_bwd = |d: &Detector| {
-            bwd_detectors
-                .entry(d.track.clone())
-                .or_default()
-                .push(d.clone())
-        };
+        let mut detectors = HashMap::<_, Vec<_>>::new();
 
         for detector in &railjson.detectors {
-            match detector.applicable_directions {
-                ApplicableDirections::StartToStop => push_fwd(detector),
-                ApplicableDirections::StopToStart => push_bwd(detector),
-                ApplicableDirections::Both => {
-                    push_fwd(detector);
-                    push_bwd(detector);
-                }
-            }
+            detectors
+                .entry(detector.track.clone())
+                .or_default()
+                .push(detector.clone());
         }
 
-        for (track, detectors) in &fwd_detectors {
+        for (track, detectors) in &detectors {
             // When going from start to end
             // We only consider the last detector (closest to end) that is on the same track
             // All the other can be considered as block defining
@@ -96,9 +79,7 @@ impl Graph {
             let v = Node::from_track_endpoint(track, Endpoint::End);
             self.add_directed_edge(u, d.clone(), EdgeType::ToDetector);
             self.add_directed_edge(d.clone(), v, EdgeType::FromDetector(Direction::StartToStop));
-        }
 
-        for (track, detectors) in &bwd_detectors {
             // When going from end to start,
             // We only consider the first detector (closest to start) that is on the same track
             // All the other can be considered as block defining
@@ -128,11 +109,8 @@ impl Graph {
             // We only consider tracks that have no detector for the given direction on them as we split them
             let u = Node::from_track_endpoint(&track.id, Endpoint::Begin);
             let v = Node::from_track_endpoint(&track.id, Endpoint::End);
-            if !fwd_detectors.contains_key(&track.id) {
-                self.add_directed_edge(u.clone(), v.clone(), EdgeType::Track);
-            }
-            if !bwd_detectors.contains_key(&track.id) {
-                self.add_directed_edge(v.clone(), u.clone(), EdgeType::Track);
+            if !detectors.contains_key(&track.id) {
+                self.add_symmetrical_edge(v.clone(), u.clone(), EdgeType::Track);
             }
         }
     }
@@ -401,7 +379,7 @@ mod tests {
     }
 
     #[test]
-    /* ----o---d>---
+    /* ----o---d---
             \------
         The test case has one switch and one detector
     */
@@ -410,7 +388,7 @@ mod tests {
             crate::converters::osm_to_railjson::parse_osm("src/tests/routes.osm.pbf".into())
                 .unwrap();
         let routes = super::routes(&railjson);
-        assert_eq!(5, routes.len());
+        assert_eq!(6, routes.len());
         let routes_with_switches_count = routes
             .iter()
             .filter(|r| r.switches_directions.len() == 1)

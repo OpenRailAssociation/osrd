@@ -29,7 +29,7 @@ use strum::IntoEnumIterator;
 use thiserror::Error;
 use uuid::Uuid;
 
-pub const RAILJSON_VERSION: &str = "3.4.6";
+pub const RAILJSON_VERSION: &str = "3.4.7";
 pub const INFRA_VERSION: &str = "0";
 
 #[derive(

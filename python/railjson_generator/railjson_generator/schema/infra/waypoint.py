@@ -3,7 +3,7 @@ from typing import Union
 
 from osrd_schemas import infra
 
-from railjson_generator.schema.infra.direction import ApplicableDirection, Direction
+from railjson_generator.schema.infra.direction import Direction
 
 Waypoint = Union["BufferStop", "Detector"]
 
@@ -54,7 +54,6 @@ def _detector_id():
 @dataclass
 class Detector:
     position: float
-    applicable_direction: ApplicableDirection = field(default=ApplicableDirection.BOTH)
     label: str = field(default_factory=_detector_id)
 
     _INDEX = 0
@@ -71,5 +70,4 @@ class Detector:
             id=self.label,
             track=track.id,
             position=self.position,
-            applicable_directions=infra.ApplicableDirections[self.applicable_direction.name],
         )

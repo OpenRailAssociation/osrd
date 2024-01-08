@@ -8,7 +8,7 @@ from pydantic.fields import FieldInfo
 
 ALL_OBJECT_TYPES = []
 
-RAILJSON_INFRA_VERSION_TYPE = Literal["3.4.6"]
+RAILJSON_INFRA_VERSION_TYPE = Literal["3.4.7"]
 RAILJSON_INFRA_VERSION = get_args(RAILJSON_INFRA_VERSION_TYPE)[0]
 
 # Traits
@@ -425,8 +425,6 @@ class Detector(BaseObjectTrait, TrackLocationTrait):
     A detector is used to locate a train
     in order to consider the section as occupied when there is a train.
     """
-
-    applicable_directions: ApplicableDirections = Field(description="Direction of the application of the detector")
 
     def ref(self):
         return DetectorReference(type="Detector", id=self.id)
