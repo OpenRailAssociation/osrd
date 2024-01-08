@@ -44,7 +44,7 @@ rand = "0.8.5"
 actix-files = "0.6.2"
 actix-web = "4.4.0"
 actix-http = "3.4.0"
-actix-cors = "0.6.5"
+actix-cors = "0.7.0"
 env_logger = "0.10.1"
 log = "0.4.20"
 redis = { version = "0.24.0", features = [
