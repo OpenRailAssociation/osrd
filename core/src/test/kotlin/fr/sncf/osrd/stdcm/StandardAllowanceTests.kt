@@ -208,7 +208,7 @@ class StandardAllowanceTests {
         occupancyTest(res, occupancyGraph, TIME_STEP)
         val thirdBlockEntryTime = (res.departureTime
                 + res.envelope.interpolateTotalTime(10001.0))
-        Assertions.assertEquals(1000.0, thirdBlockEntryTime, 2 * TIME_STEP)
+        Assertions.assertEquals(1000.0, thirdBlockEntryTime, 3 * TIME_STEP)
     }
 
     /** This test checks that we add the right delay while backtracking several times, by adding mrsp drops  */

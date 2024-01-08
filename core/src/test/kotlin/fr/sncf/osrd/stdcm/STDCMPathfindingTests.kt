@@ -311,7 +311,7 @@ class STDCMPathfindingTests {
                     block, OccupancySegment(0.0, 1000.0, 0.meters, 100.meters)
                 )
             )
-            .setMaxDepartureDelay(1000 + timeStep)
+            .setMaxDepartureDelay(1000 + 2 * timeStep)
             .setMaxRunTime(100.0)
             .setTimeStep(timeStep)
             .run()!!

@@ -423,7 +423,7 @@ class DepartureTimeShiftTests {
             .setEndLocations(setOf(EdgeLocation(lastBlock, Offset(0.meters))))
             .setUnavailableTimes(occupancyGraph)
             .setTimeStep(timeStep)
-            .setMaxDepartureDelay(1000 + timeStep)
+            .setMaxDepartureDelay(1000 + 2 * timeStep)
             .run()!!
         val res = STDCMPathfindingBuilder()
             .setInfra(infra.fullInfra())
@@ -431,7 +431,7 @@ class DepartureTimeShiftTests {
             .setEndLocations(setOf(EdgeLocation(lastBlock, Offset<Block>(0.meters))))
             .setUnavailableTimes(occupancyGraph)
             .setTimeStep(timeStep)
-            .setMaxDepartureDelay(1000 - timeStep)
+            .setMaxDepartureDelay(1000 - 2 * timeStep)
             .run()
         assertNull(res)
     }

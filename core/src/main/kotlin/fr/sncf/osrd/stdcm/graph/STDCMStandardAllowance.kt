@@ -23,6 +23,7 @@ import fr.sncf.osrd.utils.units.Distance.Companion.fromMeters
 import fr.sncf.osrd.utils.units.Offset
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.lang.RuntimeException
 import java.util.*
 
 /** We try to apply the standard allowance as one mareco computation over the whole path.
@@ -34,7 +35,6 @@ val logger: Logger = LoggerFactory.getLogger(STDCMStandardAllowance::class.java)
 
 /** Applies the allowance to the final envelope  */
 fun applyAllowance(
-    graph: STDCMGraph,
     envelope: Envelope,
     ranges: List<EdgeRange<STDCMEdge, STDCMEdge>>,
     standardAllowance: AllowanceValue?,
@@ -44,13 +44,14 @@ fun applyAllowance(
     comfort: Comfort?,
     blockAvailability: BlockAvailabilityInterface,
     departureTime: Double,
-    stops: List<TrainStop>
+    stops: List<TrainStop>,
+    isMareco: Boolean = true,
 ): Envelope {
     if (standardAllowance == null
         || standardAllowance.getAllowanceTime(envelope.totalTime, envelope.totalDistance) < 1e-5
     )
         return envelope // This isn't just an optimization, it avoids float inaccuracies and possible errors
-    val rangeTransitions = initRangeTransitions(stops)
+    val rangeTransitions = TreeSet<Offset<Path>>()
     val context = build(rollingStock!!, envelopeSimPath!!, timeStep, comfort)
     for (i in 0..9) {
         try {
@@ -58,7 +59,8 @@ fun applyAllowance(
                 envelope,
                 standardAllowance,
                 rangeTransitions,
-                context
+                context,
+                isMareco
             )
             val conflictOffset = findConflictOffsets(newEnvelope, blockAvailability, ranges, departureTime, stops)
                 ?: return newEnvelope
@@ -77,29 +79,24 @@ fun applyAllowance(
                 throw e
         }
     }
-    logger.info("Failed to compute a mareco standard allowance, fallback to linear allowance")
-    return makeFallbackEnvelope(envelope, standardAllowance, context)
-}
-
-/** Creates an envelope with a linear allowance. To be used in case we fail to compute a mareco envelope  */
-private fun makeFallbackEnvelope(
-    envelope: Envelope,
-    standardAllowance: AllowanceValue,
-    context: EnvelopeSimContext
-): Envelope {
-    return LinearAllowance(
-        0.0, envelope.endPos, 0.0, listOf(
-            AllowanceRange(0.0, envelope.endPos, standardAllowance)
+    if (!isMareco) {
+        throw RuntimeException("Failed to compute a standard allowance that wouldn't cause conflicts")
+    } else {
+        logger.info("Failed to compute a mareco standard allowance, fallback to linear allowance")
+        return applyAllowance(
+            envelope,
+            ranges,
+            standardAllowance,
+            envelopeSimPath,
+            rollingStock,
+            timeStep,
+            comfort,
+            blockAvailability,
+            departureTime,
+            stops,
+            false,
         )
-    ).apply(envelope, context)
-}
-
-/** Initiates the range transitions with one transition on each stop  */
-private fun initRangeTransitions(stops: List<TrainStop>): NavigableSet<Offset<Path>> {
-    val res = TreeSet<Offset<Path>>()
-    for (stop in stops)
-        res.add(Offset(fromMeters(stop.position)))
-    return res
+    }
 }
 
 /** Looks for the first detected conflict that would happen on the given envelope.
@@ -113,7 +110,7 @@ private fun findConflictOffsets(
     stops: List<TrainStop>
 ): Offset<Path>? {
     val envelopeWithStops = EnvelopeStopWrapper(envelope, stops)
-    val startOffset = ranges[0].start
+    val startOffset = ranges[0].edge.envelopeStartOffset
     val endOffset = startOffset + Distance(millimeters = ranges.stream()
         .mapToLong { range -> (range.end - range.start).millimeters }
         .sum())
@@ -138,14 +135,23 @@ private fun applyAllowanceWithTransitions(
     envelope: Envelope,
     standardAllowance: AllowanceValue,
     rangeTransitions: NavigableSet<Offset<Path>>,
-    context: EnvelopeSimContext
+    context: EnvelopeSimContext,
+    isMareco: Boolean
 ): Envelope {
-    val allowance = MarecoAllowance(
-        0.0,
-        envelope.endPos,
-        1.0,
-        makeAllowanceRanges(standardAllowance, envelope.endPos, rangeTransitions)
-    )
+    val allowance = if (isMareco)
+        MarecoAllowance(
+            0.0,
+            envelope.endPos,
+            1.0, // Needs to be >0 to avoid problems when simulating low speeds
+            makeAllowanceRanges(standardAllowance, envelope.endPos, rangeTransitions)
+        )
+    else
+        LinearAllowance(
+            0.0,
+            envelope.endPos,
+            0.0,
+            makeAllowanceRanges(standardAllowance, envelope.endPos, rangeTransitions)
+        )
     return allowance.apply(envelope, context)
 }
 

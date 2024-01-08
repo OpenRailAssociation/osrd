@@ -45,7 +45,6 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
         val departureTime = computeDepartureTime(ranges, startTime)
         val stops = makeStops(ranges)
         val withAllowance = applyAllowance(
-            graph,
             mergedEnvelopes,
             ranges,
             standardAllowance,
