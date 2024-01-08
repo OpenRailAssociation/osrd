@@ -378,9 +378,9 @@ mod tests {
             "../../tests/small_infra/stdcm/test_1/stdcm_post_expected_response.json"
         ))
         .unwrap();
-        path.id = stdcm_response.path.id;
-        path.owner = stdcm_response.path.owner;
-        path.created = stdcm_response.path.created;
+        path.path_result.id = stdcm_response.path.path_result.id;
+        path.path_result.owner = stdcm_response.path.path_result.owner;
+        path.path_result.created = stdcm_response.path.path_result.created;
         simulation.id = stdcm_response.simulation.id;
         simulation.path = stdcm_response.simulation.path;
         assert_eq!(stdcm_response.path, path);

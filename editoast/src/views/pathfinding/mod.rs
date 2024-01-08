@@ -24,8 +24,8 @@ use utoipa::ToSchema;
 use crate::{
     core::{
         pathfinding::{
-            PathfindingRequest as CorePathfindingRequest, PathfindingResponse,
-            PathfindingWaypoints, Waypoint as CoreWaypoint,
+            PathfindingRequest as CorePathfindingRequest, PathfindingResult, PathfindingWaypoints,
+            Waypoint as CoreWaypoint,
         },
         AsCoreRequest, CoreClient,
     },
@@ -97,8 +97,22 @@ enum PathfindingError {
     RollingStockNotFound { rolling_stock_id: i64 },
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, ToSchema)]
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize, ToSchema)]
+pub enum ResponseState {
+    SUCCESS,
+    ERROR,
+}
+
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize, ToSchema)]
 pub(super) struct PathResponse {
+    pub(super) status: i64,
+    pub(super) response_state: ResponseState,
+    pub(super) message: Option<String>,
+    pub(super) path_result: PathResult,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, ToSchema)]
+pub(super) struct PathResult {
     pub(super) id: i64,
     pub(super) owner: uuid::Uuid,
     pub(super) length: f64,
@@ -128,7 +142,7 @@ impl From<Pathfinding> for PathResponse {
             payload,
             ..
         } = value;
-        Self {
+        let path_result = PathResult {
             id,
             owner,
             length,
@@ -138,6 +152,12 @@ impl From<Pathfinding> for PathResponse {
             geographic: diesel_linestring_to_geojson(geographic),
             schematic: diesel_linestring_to_geojson(schematic),
             steps: payload.0.path_waypoints,
+        };
+        Self {
+            status: 200,
+            response_state: ResponseState::SUCCESS,
+            message: None,
+            path_result,
         }
     }
 }
@@ -326,7 +346,7 @@ pub fn parse_pathfinding_payload_waypoints(
     Ok(waypoints)
 }
 
-impl PathfindingResponse {
+impl PathfindingResult {
     pub async fn fetch_track_map(&self, infra: i64, conn: &mut PgConnection) -> Result<TrackMap> {
         make_track_map(
             conn,
@@ -352,11 +372,11 @@ impl Pathfinding {
     /// Post-processes the Core pathfinding reponse and build a [Pathfinding] model
     pub fn from_core_response(
         steps_duration: Vec<f64>,
-        response: PathfindingResponse,
+        response: PathfindingResult,
         track_map: &TrackMap,
         op_map: &OpMap,
     ) -> Result<Self> {
-        let PathfindingResponse {
+        let PathfindingResult {
             length,
             geographic,
             schematic,
@@ -481,11 +501,17 @@ pub async fn run_pathfinding(
 ) -> Result<Pathfinding> {
     assert_eq!(steps_duration.len(), path_request.nb_waypoints());
     let response = path_request.fetch(core.as_ref()).await?;
-    let response_track_map = response.fetch_track_map(infra_id, conn).await?;
-    let response_op_map = response.fetch_op_map(infra_id, conn).await?;
+    let response_track_map = response
+        .pathfinding_result
+        .fetch_track_map(infra_id, conn)
+        .await?;
+    let response_op_map = response
+        .pathfinding_result
+        .fetch_op_map(infra_id, conn)
+        .await?;
     let pathfinding = Pathfinding::from_core_response(
         steps_duration,
-        response,
+        response.pathfinding_result,
         &response_track_map,
         &response_op_map,
     )?;
@@ -683,7 +709,9 @@ mod test {
 
         // THEN
         let response: PathResponse = assert_status_and_read!(response, StatusCode::OK);
-        assert!(Pathfinding::retrieve(db_pool(), response.id).await.is_ok());
+        assert!(Pathfinding::retrieve(db_pool(), response.path_result.id)
+            .await
+            .is_ok());
     }
 
     #[rstest::rstest]
@@ -724,7 +752,9 @@ mod test {
 
         // THEN
         let response: PathResponse = assert_status_and_read!(response, StatusCode::OK);
-        assert!(Pathfinding::retrieve(db_pool(), response.id).await.is_ok());
+        assert!(Pathfinding::retrieve(db_pool(), response.path_result.id)
+            .await
+            .is_ok());
     }
 
     #[rstest::rstest]

@@ -7,8 +7,7 @@ import fr.sncf.osrd.api.pathfinding.constraints.ElectrificationConstraints
 import fr.sncf.osrd.api.pathfinding.constraints.LoadingGaugeConstraints
 import fr.sncf.osrd.api.pathfinding.request.PathfindingRequest
 import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint
-import fr.sncf.osrd.api.pathfinding.response.PathWaypointResult
-import fr.sncf.osrd.api.pathfinding.response.PathfindingResult
+import fr.sncf.osrd.api.pathfinding.response.*
 import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator
 import fr.sncf.osrd.graph.*
 import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
@@ -38,6 +37,7 @@ import org.takes.rs.RsWithBody
 import org.takes.rs.RsWithStatus
 import java.util.*
 import java.util.stream.Collectors
+import javax.json.Json
 import kotlin.math.abs
 
 class PathfindingBlocksEndpoint
@@ -64,10 +64,24 @@ class PathfindingBlocksEndpoint
                 path, recorder
             )
             validatePathfindingResult(res, reqWaypoints, infra.rawInfra)
-            RsJson(RsWithBody(PathfindingResult.adapterResult.toJson(res)))
+            RsJson(RsWithBody(PathfindingResponse.adapterResult.toJson(PathfindingResponse(200, ResponseState.SUCCESS, null, res))))
+
         } catch (ex: Throwable) {
             // TODO: include warnings in the response
-            ExceptionHandler.handle(ex)
+            val osrdError = ExceptionHandler.handlePathfinding(ex)
+            val code = ExceptionHandler.serverCode(osrdError)
+            RsJson(
+                RsWithBody(
+                    PathfindingResponse.adapterResult.toJson(
+                        PathfindingResponse(
+                            code,
+                            ResponseState.ERROR,
+                            osrdError.message,
+                            null
+                        )
+                    )
+                )
+            )
         }
     }
 

@@ -1,6 +1,7 @@
 package fr.sncf.osrd.api;
 
 import fr.sncf.osrd.reporting.exceptions.ErrorCause;
+import fr.sncf.osrd.reporting.exceptions.ErrorType;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import io.sentry.Sentry;
 import org.takes.Response;
@@ -10,7 +11,9 @@ import org.takes.rs.RsWithStatus;
 
 public class ExceptionHandler {
 
-    /** Handles an exception, returns an HTTP response with all relevant information */
+    /**
+     * Handles an exception, returns an HTTP response with all relevant information
+     */
     public static Response handle(Throwable ex) {
         ex.printStackTrace();
         Sentry.captureException(ex);
@@ -23,7 +26,9 @@ public class ExceptionHandler {
         }
     }
 
-    /** Converts an OSRD error to a server response */
+    /**
+     * Converts an OSRD error to a server response
+     */
     public static Response toResponse(OSRDError ex) {
         int code = ex.cause == ErrorCause.USER ? 400 : 500;
         return new RsWithStatus(
@@ -32,5 +37,25 @@ public class ExceptionHandler {
                 ),
                 code
         );
+    }
+
+    public static OSRDError handlePathfinding(Throwable ex) {
+        ex.printStackTrace();
+        Sentry.captureException(ex);
+        if (ex instanceof OSRDError)
+            return (OSRDError) ex;
+        else if (ex instanceof AssertionError)
+            return OSRDError.newAssertionWrapper((AssertionError) ex);
+        else {
+            return OSRDError.newUnknownError(ex);
+        }
+    }
+
+    public static int serverCode(OSRDError ex) {
+        return ex.osrdErrorType == ErrorType.PathfindingElectrificationError ||
+                ex.osrdErrorType == ErrorType.PathfindingGaugeError ||
+                ex.osrdErrorType == ErrorType.PathfindingGenericError ||
+                ex.osrdErrorType == ErrorType.PathfindingTimeoutError ? 200 :
+                ex.cause == ErrorCause.USER ? 400 : 500;
     }
 }

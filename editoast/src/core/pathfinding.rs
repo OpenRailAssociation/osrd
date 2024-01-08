@@ -27,10 +27,24 @@ pub struct Waypoint {
     direction: Direction,
 }
 
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub enum ResponseState {
+    SUCCESS,
+    ERROR,
+}
+
 /// The response of a Core pathfinding request, see also [PathfindingRequest]
 #[derive(Debug, Clone, Derivative, Deserialize, Serialize)]
-#[derivative(Default)]
 pub struct PathfindingResponse {
+    pub status: i64,
+    pub response_state: ResponseState,
+    pub message: Option<String>,
+    pub pathfinding_result: PathfindingResult,
+}
+
+#[derive(Debug, Clone, Derivative, Deserialize, Serialize)]
+#[derivative(Default)]
+pub struct PathfindingResult {
     pub length: f64,
     #[derivative(Default(value = "Geometry::new(LineString(Default::default()))"))]
     pub geographic: Geometry,
