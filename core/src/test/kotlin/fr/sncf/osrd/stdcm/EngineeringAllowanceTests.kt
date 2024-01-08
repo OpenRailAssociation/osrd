@@ -350,6 +350,6 @@ class EngineeringAllowanceTests {
             .setTimeStep(timeStep)
             .run()!!
         occupancyTest(res, occupancyGraph)
-        Assertions.assertEquals(3600.0, res.departureTime, timeStep)
+        Assertions.assertEquals(3600.0, res.departureTime, 2 * timeStep)
     }
 }

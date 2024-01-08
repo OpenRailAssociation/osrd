@@ -43,7 +43,7 @@ class STDCMGraph(
     /** Constructor  */
     init {
         this.steps = steps
-        delayManager = DelayManager(minScheduleTimeStart, maxRunTime, blockAvailability, this)
+        delayManager = DelayManager(minScheduleTimeStart, maxRunTime, blockAvailability, this, timeStep)
         allowanceManager = AllowanceManager(this)
         backtrackingManager = BacktrackingManager(this)
         this.tag = tag

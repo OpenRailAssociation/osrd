@@ -21,7 +21,8 @@ class DelayManager internal constructor(
     private val minScheduleTimeStart: Double,
     private val maxRunTime: Double,
     private val blockAvailability: BlockAvailabilityInterface,
-    private val graph: STDCMGraph
+    private val graph: STDCMGraph,
+    private val internalMargin: Double // Margin added to every occupancy, to account for binary search tolerance
 ) {
     /** Returns one value per "opening" (interval between two unavailable times).
      * Always returns the shortest delay to add to enter this opening.  */
@@ -32,9 +33,6 @@ class DelayManager internal constructor(
         startOffset: Offset<Block>,
         stopDurationAtEnd: Double?
     ): NavigableSet<Double> {
-        // This is the margin used for the binary search, we need to add
-        // this time before and after the train to avoid problems caused by the error margin
-        val margin = graph.timeStep
         val res = TreeSet<Double>()
         val endOffset = startOffset + fromMeters(envelope.endPos)
         var time = startTime
@@ -49,15 +47,13 @@ class DelayManager internal constructor(
             )
             time += when (availability) {
                 is BlockAvailabilityInterface.Available -> {
-                    if (availability.maximumDelay >= margin)
+                    if (availability.maximumDelay >= internalMargin)
                         res.add(time - startTime)
-                    availability.maximumDelay + 1
+                    availability.maximumDelay + internalMargin
                 }
-
                 is BlockAvailabilityInterface.Unavailable -> {
-                    availability.duration + margin
+                    availability.duration + internalMargin * 2
                 }
-
                 else -> throw OSRDError(ErrorType.InvalidSTDCMDelayError)
             }
         }
@@ -110,7 +106,7 @@ class DelayManager internal constructor(
             blockId, startOffset, endOffset, envelope, startTime, stopDurationAtEnd
         )
         assert(availability is BlockAvailabilityInterface.Available)
-        return (availability as BlockAvailabilityInterface.Available).maximumDelay
+        return (availability as BlockAvailabilityInterface.Available).maximumDelay - internalMargin
     }
 
     /** Calls `blockAvailability.getAvailability`, on an envelope scaled to account for the standard allowance.  */
