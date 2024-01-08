@@ -1,4 +1,3 @@
-use super::ApplicableDirections;
 use super::OSRDIdentified;
 
 use super::utils::Identifier;
@@ -23,7 +22,6 @@ pub struct Detector {
     #[derivative(Default(value = r#""InvalidRef".into()"#))]
     pub track: Identifier,
     pub position: f64,
-    pub applicable_directions: ApplicableDirections,
     #[serde(default)]
     pub extensions: DetectorExtension,
 }

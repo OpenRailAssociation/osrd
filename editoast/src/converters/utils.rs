@@ -351,11 +351,6 @@ pub fn detector(signal: &Signal) -> Detector {
         id: signal.id.clone(),
         track: signal.track.clone(),
         position: signal.position,
-        applicable_directions: if signal.direction == Direction::StartToStop {
-            ApplicableDirections::StartToStop
-        } else {
-            ApplicableDirections::StopToStart
-        },
         extensions: Default::default(),
     }
 }

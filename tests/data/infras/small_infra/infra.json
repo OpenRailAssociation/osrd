@@ -1,5 +1,5 @@
 {
-    "version": "3.4.6",
+    "version": "3.4.7",
     "operational_points": [
         {
             "id": "South_West_station",
@@ -6303,554 +6303,462 @@
         {
             "track": "TA0",
             "position": 1820.0,
-            "id": "DA2",
-            "applicable_directions": "BOTH"
+            "id": "DA2"
         },
         {
             "track": "TA1",
             "position": 1770.0,
-            "id": "DA0",
-            "applicable_directions": "BOTH"
+            "id": "DA0"
         },
         {
             "track": "TA2",
             "position": 1770.0,
-            "id": "DA1",
-            "applicable_directions": "BOTH"
+            "id": "DA1"
         },
         {
             "track": "TA3",
             "position": 25.0,
-            "id": "DA7",
-            "applicable_directions": "BOTH"
+            "id": "DA7"
         },
         {
             "track": "TA4",
             "position": 25.0,
-            "id": "DA8",
-            "applicable_directions": "BOTH"
+            "id": "DA8"
         },
         {
             "track": "TA5",
             "position": 25.0,
-            "id": "DA9",
-            "applicable_directions": "BOTH"
+            "id": "DA9"
         },
         {
             "track": "TA6",
             "position": 180.0,
-            "id": "DA3",
-            "applicable_directions": "BOTH"
+            "id": "DA3"
         },
         {
             "track": "TA6",
             "position": 1800.0,
-            "id": "DA6_1",
-            "applicable_directions": "BOTH"
+            "id": "DA6_1"
         },
         {
             "track": "TA6",
             "position": 3400.0,
-            "id": "DA6_2",
-            "applicable_directions": "BOTH"
+            "id": "DA6_2"
         },
         {
             "track": "TA6",
             "position": 5000.0,
-            "id": "DA6_3",
-            "applicable_directions": "BOTH"
+            "id": "DA6_3"
         },
         {
             "track": "TA6",
             "position": 6600.0,
-            "id": "DA6_4",
-            "applicable_directions": "BOTH"
+            "id": "DA6_4"
         },
         {
             "track": "TA6",
             "position": 8200.0,
-            "id": "DA6_5",
-            "applicable_directions": "BOTH"
+            "id": "DA6_5"
         },
         {
             "track": "TA6",
             "position": 9820.0,
-            "id": "DA5",
-            "applicable_directions": "BOTH"
+            "id": "DA5"
         },
         {
             "track": "TA7",
             "position": 180.0,
-            "id": "DA4",
-            "applicable_directions": "BOTH"
+            "id": "DA4"
         },
         {
             "track": "TA7",
             "position": 1800.0,
-            "id": "DA7_1",
-            "applicable_directions": "BOTH"
+            "id": "DA7_1"
         },
         {
             "track": "TA7",
             "position": 3400.0,
-            "id": "DA7_2",
-            "applicable_directions": "BOTH"
+            "id": "DA7_2"
         },
         {
             "track": "TA7",
             "position": 5000.0,
-            "id": "DA7_3",
-            "applicable_directions": "BOTH"
+            "id": "DA7_3"
         },
         {
             "track": "TA7",
             "position": 6600.0,
-            "id": "DA7_4",
-            "applicable_directions": "BOTH"
+            "id": "DA7_4"
         },
         {
             "track": "TA7",
             "position": 8200.0,
-            "id": "DA7_5",
-            "applicable_directions": "BOTH"
+            "id": "DA7_5"
         },
         {
             "track": "TA7",
             "position": 9820.0,
-            "id": "DA6",
-            "applicable_directions": "BOTH"
+            "id": "DA6"
         },
         {
             "track": "TB0",
             "position": 2820.0,
-            "id": "DB0",
-            "applicable_directions": "BOTH"
+            "id": "DB0"
         },
         {
             "track": "TC0",
             "position": 180.0,
-            "id": "DC0",
-            "applicable_directions": "BOTH"
+            "id": "DC0"
         },
         {
             "track": "TC0",
             "position": 870.0,
-            "id": "DC4",
-            "applicable_directions": "BOTH"
+            "id": "DC4"
         },
         {
             "track": "TC1",
             "position": 180.0,
-            "id": "DC1",
-            "applicable_directions": "BOTH"
+            "id": "DC1"
         },
         {
             "track": "TC1",
             "position": 820.0,
-            "id": "DC5",
-            "applicable_directions": "BOTH"
+            "id": "DC5"
         },
         {
             "track": "TC2",
             "position": 180.0,
-            "id": "DC2",
-            "applicable_directions": "BOTH"
+            "id": "DC2"
         },
         {
             "track": "TC2",
             "position": 820.0,
-            "id": "DC6",
-            "applicable_directions": "BOTH"
+            "id": "DC6"
         },
         {
             "track": "TC3",
             "position": 180.0,
-            "id": "DC3",
-            "applicable_directions": "BOTH"
+            "id": "DC3"
         },
         {
             "track": "TC3",
             "position": 870.0,
-            "id": "DC7",
-            "applicable_directions": "BOTH"
+            "id": "DC7"
         },
         {
             "track": "TD0",
             "position": 180.0,
-            "id": "DD0",
-            "applicable_directions": "BOTH"
+            "id": "DD0"
         },
         {
             "track": "TD0",
             "position": 1737.5,
-            "id": "DD0_1",
-            "applicable_directions": "BOTH"
+            "id": "DD0_1"
         },
         {
             "track": "TD0",
             "position": 3275.0,
-            "id": "DD0_2",
-            "applicable_directions": "BOTH"
+            "id": "DD0_2"
         },
         {
             "track": "TD0",
             "position": 4812.5,
-            "id": "DD0_3",
-            "applicable_directions": "BOTH"
+            "id": "DD0_3"
         },
         {
             "track": "TD0",
             "position": 6350.0,
-            "id": "DD0_4",
-            "applicable_directions": "BOTH"
+            "id": "DD0_4"
         },
         {
             "track": "TD0",
             "position": 7887.5,
-            "id": "DD0_5",
-            "applicable_directions": "BOTH"
+            "id": "DD0_5"
         },
         {
             "track": "TD0",
             "position": 9425.0,
-            "id": "DD0_6",
-            "applicable_directions": "BOTH"
+            "id": "DD0_6"
         },
         {
             "track": "TD0",
             "position": 10962.5,
-            "id": "DD0_7",
-            "applicable_directions": "BOTH"
+            "id": "DD0_7"
         },
         {
             "track": "TD0",
             "position": 12500.0,
-            "id": "DD0_8",
-            "applicable_directions": "BOTH"
+            "id": "DD0_8"
         },
         {
             "track": "TD0",
             "position": 14037.5,
-            "id": "DD0_9",
-            "applicable_directions": "BOTH"
+            "id": "DD0_9"
         },
         {
             "track": "TD0",
             "position": 15575.0,
-            "id": "DD0_10",
-            "applicable_directions": "BOTH"
+            "id": "DD0_10"
         },
         {
             "track": "TD0",
             "position": 17112.5,
-            "id": "DD0_11",
-            "applicable_directions": "BOTH"
+            "id": "DD0_11"
         },
         {
             "track": "TD0",
             "position": 18650.0,
-            "id": "DD0_12",
-            "applicable_directions": "BOTH"
+            "id": "DD0_12"
         },
         {
             "track": "TD0",
             "position": 20187.5,
-            "id": "DD0_13",
-            "applicable_directions": "BOTH"
+            "id": "DD0_13"
         },
         {
             "track": "TD0",
             "position": 21725.0,
-            "id": "DD0_14",
-            "applicable_directions": "BOTH"
+            "id": "DD0_14"
         },
         {
             "track": "TD0",
             "position": 23262.5,
-            "id": "DD0_15",
-            "applicable_directions": "BOTH"
+            "id": "DD0_15"
         },
         {
             "track": "TD0",
             "position": 24820.0,
-            "id": "DD2",
-            "applicable_directions": "BOTH"
+            "id": "DD2"
         },
         {
             "track": "TD1",
             "position": 180.0,
-            "id": "DD1",
-            "applicable_directions": "BOTH"
+            "id": "DD1"
         },
         {
             "track": "TD1",
             "position": 1737.5,
-            "id": "DD1_1",
-            "applicable_directions": "BOTH"
+            "id": "DD1_1"
         },
         {
             "track": "TD1",
             "position": 3275.0,
-            "id": "DD1_2",
-            "applicable_directions": "BOTH"
+            "id": "DD1_2"
         },
         {
             "track": "TD1",
             "position": 4812.5,
-            "id": "DD1_3",
-            "applicable_directions": "BOTH"
+            "id": "DD1_3"
         },
         {
             "track": "TD1",
             "position": 6350.0,
-            "id": "DD1_4",
-            "applicable_directions": "BOTH"
+            "id": "DD1_4"
         },
         {
             "track": "TD1",
             "position": 7887.5,
-            "id": "DD1_5",
-            "applicable_directions": "BOTH"
+            "id": "DD1_5"
         },
         {
             "track": "TD1",
             "position": 9425.0,
-            "id": "DD1_6",
-            "applicable_directions": "BOTH"
+            "id": "DD1_6"
         },
         {
             "track": "TD1",
             "position": 10962.5,
-            "id": "DD1_7",
-            "applicable_directions": "BOTH"
+            "id": "DD1_7"
         },
         {
             "track": "TD1",
             "position": 12500.0,
-            "id": "DD1_8",
-            "applicable_directions": "BOTH"
+            "id": "DD1_8"
         },
         {
             "track": "TD1",
             "position": 14037.5,
-            "id": "DD1_9",
-            "applicable_directions": "BOTH"
+            "id": "DD1_9"
         },
         {
             "track": "TD1",
             "position": 15575.0,
-            "id": "DD1_10",
-            "applicable_directions": "BOTH"
+            "id": "DD1_10"
         },
         {
             "track": "TD1",
             "position": 17112.5,
-            "id": "DD1_11",
-            "applicable_directions": "BOTH"
+            "id": "DD1_11"
         },
         {
             "track": "TD1",
             "position": 18650.0,
-            "id": "DD1_12",
-            "applicable_directions": "BOTH"
+            "id": "DD1_12"
         },
         {
             "track": "TD1",
             "position": 20187.5,
-            "id": "DD1_13",
-            "applicable_directions": "BOTH"
+            "id": "DD1_13"
         },
         {
             "track": "TD1",
             "position": 21725.0,
-            "id": "DD1_14",
-            "applicable_directions": "BOTH"
+            "id": "DD1_14"
         },
         {
             "track": "TD1",
             "position": 23262.5,
-            "id": "DD1_15",
-            "applicable_directions": "BOTH"
+            "id": "DD1_15"
         },
         {
             "track": "TD1",
             "position": 24820.0,
-            "id": "DD3",
-            "applicable_directions": "BOTH"
+            "id": "DD3"
         },
         {
             "track": "TD2",
             "position": 180.0,
-            "id": "DD4",
-            "applicable_directions": "BOTH"
+            "id": "DD4"
         },
         {
             "track": "TD2",
             "position": 1820.0,
-            "id": "DD6",
-            "applicable_directions": "BOTH"
+            "id": "DD6"
         },
         {
             "track": "TD3",
             "position": 180.0,
-            "id": "DF0",
-            "applicable_directions": "BOTH"
+            "id": "DF0"
         },
         {
             "track": "TD3",
             "position": 2820.0,
-            "id": "DH0",
-            "applicable_directions": "BOTH"
+            "id": "DH0"
         },
         {
             "track": "TE0",
             "position": 180.0,
-            "id": "DE1",
-            "applicable_directions": "BOTH"
+            "id": "DE1"
         },
         {
             "track": "TE0",
             "position": 1320.0,
-            "id": "DE0",
-            "applicable_directions": "BOTH"
+            "id": "DE0"
         },
         {
             "track": "TF1",
             "position": 180.0,
-            "id": "DD5",
-            "applicable_directions": "BOTH"
+            "id": "DD5"
         },
         {
             "track": "TF1",
             "position": 2250.0,
-            "id": "DF1_1",
-            "applicable_directions": "BOTH"
+            "id": "DF1_1"
         },
         {
             "track": "TE1",
             "position": 180.0,
-            "id": "DE4",
-            "applicable_directions": "BOTH"
+            "id": "DE4"
         },
         {
             "track": "TE1",
             "position": 1820.0,
-            "id": "DE2",
-            "applicable_directions": "BOTH"
+            "id": "DE2"
         },
         {
             "track": "TE2",
             "position": 180.0,
-            "id": "DE5",
-            "applicable_directions": "BOTH"
+            "id": "DE5"
         },
         {
             "track": "TE2",
             "position": 1870.0,
-            "id": "DE3",
-            "applicable_directions": "BOTH"
+            "id": "DE3"
         },
         {
             "track": "TE3",
             "position": 180.0,
-            "id": "DE7",
-            "applicable_directions": "BOTH"
+            "id": "DE7"
         },
         {
             "track": "TE3",
             "position": 1820.0,
-            "id": "DE6",
-            "applicable_directions": "BOTH"
+            "id": "DE6"
         },
         {
             "track": "TG0",
             "position": 180.0,
-            "id": "DD7",
-            "applicable_directions": "BOTH"
+            "id": "DD7"
         },
         {
             "track": "TG0",
             "position": 820.0,
-            "id": "DG0",
-            "applicable_directions": "BOTH"
+            "id": "DG0"
         },
         {
             "track": "TG1",
             "position": 180.0,
-            "id": "DG1",
-            "applicable_directions": "BOTH"
+            "id": "DG1"
         },
         {
             "track": "TG1",
             "position": 2000.0,
-            "id": "DG1_1",
-            "applicable_directions": "BOTH"
+            "id": "DG1_1"
         },
         {
             "track": "TG1",
             "position": 3820.0,
-            "id": "DG3",
-            "applicable_directions": "BOTH"
+            "id": "DG3"
         },
         {
             "track": "TG2",
             "position": 180.0,
-            "id": "DG2",
-            "applicable_directions": "BOTH"
+            "id": "DG2"
         },
         {
             "track": "TG2",
             "position": 2820.0,
-            "id": "DG4",
-            "applicable_directions": "BOTH"
+            "id": "DG4"
         },
         {
             "track": "TG3",
             "position": 25.0,
-            "id": "DG7",
-            "applicable_directions": "BOTH"
+            "id": "DG7"
         },
         {
             "track": "TG4",
             "position": 180.0,
-            "id": "DG5",
-            "applicable_directions": "BOTH"
+            "id": "DG5"
         },
         {
             "track": "TG5",
             "position": 180.0,
-            "id": "DG6",
-            "applicable_directions": "BOTH"
+            "id": "DG6"
         },
         {
             "track": "TH0",
             "position": 180.0,
-            "id": "DH1",
-            "applicable_directions": "BOTH"
+            "id": "DH1"
         },
         {
             "track": "TH0",
             "position": 820.0,
-            "id": "DH2",
-            "applicable_directions": "BOTH"
+            "id": "DH2"
         },
         {
             "track": "TH1",
             "position": 180.0,
-            "id": "DH3",
-            "applicable_directions": "BOTH"
+            "id": "DH3"
         },
         {
             "track": "TH1",
             "position": 1800.0,
-            "id": "DH1_1",
-            "applicable_directions": "BOTH"
+            "id": "DH1_1"
         },
         {
             "track": "TH1",
             "position": 3400.0,
-            "id": "DH1_2",
-            "applicable_directions": "BOTH"
+            "id": "DH1_2"
         }
     ],
     "neutral_sections": [

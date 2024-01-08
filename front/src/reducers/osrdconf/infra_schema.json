@@ -264,14 +264,6 @@
         "Detector": {
             "description": "This class defines detector object.\n    A detector is characterized by its id and its corresponding track.\n    A detector is used to locate a train\n    in order to consider the section as occupied when there is a train.\n    ",
             "properties": {
-                "applicable_directions": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/ApplicableDirections"
-                        }
-                    ],
-                    "description": "Direction of the application of the detector"
-                },
                 "extensions": {
                     "allOf": [
                         {
@@ -304,8 +296,7 @@
             "required": [
                 "track",
                 "position",
-                "id",
-                "applicable_directions"
+                "id"
             ],
             "title": "Detector",
             "type": "object"
@@ -1744,8 +1735,8 @@
             "type": "array"
         },
         "version": {
-            "const": "3.4.6",
-            "default": "3.4.6",
+            "const": "3.4.7",
+            "default": "3.4.7",
             "description": "Version of the schema",
             "title": "Version"
         }
