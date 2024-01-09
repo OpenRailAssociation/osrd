@@ -2,11 +2,17 @@ use editoast_derive::EditoastError;
 use geos::geojson::{self, Geometry, Value::LineString};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
+use utoipa::ToSchema;
 
 use crate::error::Result;
 
-// impl Iter trait
-#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+crate::schemas! {
+    Zone,
+    BoundingBox,
+}
+
+/// A bounding box
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
 pub struct BoundingBox(pub (f64, f64), pub (f64, f64));
 
 impl BoundingBox {
@@ -86,7 +92,7 @@ impl Default for BoundingBox {
 
 /// Geographic and Schematic bounding box zone impacted by a list of operations.
 /// Zones use the coordinate system [epsg:4326](https://epsg.io/4326).
-#[derive(Debug, Clone, Default, Serialize)]
+#[derive(Debug, Clone, Default, Serialize, ToSchema)]
 pub struct Zone {
     pub geo: BoundingBox,
     pub sch: BoundingBox,

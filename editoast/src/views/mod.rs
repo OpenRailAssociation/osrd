@@ -23,7 +23,7 @@ use crate::client::get_app_version;
 use crate::core::version::CoreVersionRequest;
 use crate::core::{self, AsCoreRequest, CoreClient};
 use crate::error::{self, Result};
-use crate::map::redis_utils::RedisClient;
+use crate::map::{self, redis_utils::RedisClient};
 use crate::models;
 use crate::schema;
 use crate::{schemas, DbPool};
@@ -31,7 +31,6 @@ use actix_web::dev::HttpServiceFactory;
 use actix_web::web::{Data, Json};
 use actix_web::{get, services};
 use diesel::sql_query;
-use infra::auto_fixes;
 use redis::cmd;
 use serde_derive::{Deserialize, Serialize};
 use utoipa::{OpenApi, ToSchema};
@@ -51,13 +50,17 @@ fn routes_v2() -> Routes<impl HttpServiceFactory> {
         search::routes(),
         electrical_profiles::routes(),
         layers::routes(),
-        auto_fixes::routes(),
+        infra::routes(),
     }
     routes()
 }
 
 pub fn routes() -> impl HttpServiceFactory {
-    services![routes_v2(), infra::routes(), single_simulation::routes(),]
+    services![
+        infra::infra_routes(),
+        routes_v2(),
+        single_simulation::routes(),
+    ]
 }
 
 schemas! {
@@ -65,17 +68,18 @@ schemas! {
     models::schemas(),
     schema::schemas(),
     core::schemas(),
+    map::schemas(),
     Version,
     timetable::schemas(),
     documents::schemas(),
     pathfinding::schemas(),
     projects::schemas(),
     search::schemas(),
-    crate::schema::schemas(),
     train_schedule::schemas(),
     rolling_stocks::schemas(),
     light_rolling_stocks::schemas(),
     electrical_profiles::schemas(),
+    infra::schemas(),
 }
 
 #[derive(OpenApi)]

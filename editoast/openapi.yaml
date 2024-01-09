@@ -68,10 +68,13 @@ components:
     BoundingBox:
       description: A bounding box
       items:
+        description: A bounding box
         items:
-          type: integer
-        maxItems: 2
-        minItems: 2
+          allOf:
+          - format: double
+            type: number
+          - format: double
+            type: number
         type: array
       maxItems: 2
       minItems: 2
@@ -3709,11 +3712,17 @@ components:
         - geo_coordinate
         type: object
     Zone:
+      description: |-
+        Geographic and Schematic bounding box zone impacted by a list of operations.
+        Zones use the coordinate system [epsg:4326](https://epsg.io/4326).
       properties:
         geo:
           $ref: '#/components/schemas/BoundingBox'
         sch:
           $ref: '#/components/schemas/BoundingBox'
+      required:
+      - geo
+      - sch
       type: object
     ZoneUpdate:
       properties:
@@ -4314,31 +4323,6 @@ paths:
       summary: Retrieve a paginated list of errors
       tags:
       - infra
-  /infra/{id}/lines/{line_code}/bbox/:
-    get:
-      parameters:
-      - description: infra id
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
-      - description: a line code
-        in: path
-        name: line_code
-        required: true
-        schema:
-          type: integer
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Zone'
-          description: The BBox of the line
-      summary: Returns the BBoxes (geo and schematic) of a line
-      tags:
-      - infra
   /infra/{id}/load/:
     post:
       parameters:
@@ -4715,6 +4699,34 @@ paths:
                 type: array
           description: The list of suggested operations
       summary: Retrieve a list of operations to fix infra issues
+      tags:
+      - infra
+  /infra/{infra_id}/lines/{line_code}/bbox/:
+    get:
+      description: Returns the BBoxes (geo and schematic) of a line
+      parameters:
+      - description: The ID of the infra to fix
+        in: path
+        name: infra_id
+        required: true
+        schema:
+          format: int64
+          type: integer
+      - description: A line code
+        in: path
+        name: line_code
+        required: true
+        schema:
+          format: int64
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Zone'
+          description: The BBox of the line
+      summary: Returns the BBoxes (geo and schematic) of a line
       tags:
       - infra
   /layers/layer/{layer_slug}/mvt/{view_slug}/:

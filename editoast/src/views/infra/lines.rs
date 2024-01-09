@@ -3,17 +3,17 @@ use crate::infra_cache::{InfraCache, ObjectCache};
 use crate::map::Zone;
 use crate::models::{Infra, Retrieve};
 
-use crate::DbPool;
-use actix_web::dev::HttpServiceFactory;
+use crate::{views::infra::InfraIdParam, DbPool};
 use actix_web::get;
-use actix_web::web::{scope, Data, Json, Path};
+use actix_web::web::{Data, Json, Path};
 use chashmap::CHashMap;
 use editoast_derive::EditoastError;
 use thiserror::Error;
 
-/// Return `/infra/<infra_id>/lines` routes
-pub fn routes() -> impl HttpServiceFactory {
-    scope("/lines").service(get_line_bbox)
+crate::routes! {
+    "/lines/{line_code}/bbox" => {
+        get_line_bbox,
+    },
 }
 
 #[derive(Debug, Error, EditoastError)]
@@ -23,7 +23,18 @@ enum LinesErrors {
     LineNotFound { line_code: i32 },
 }
 
-#[get("/{line_code}/bbox")]
+/// Returns the BBoxes (geo and schematic) of a line
+#[utoipa::path(
+    tag = "infra",
+    params(
+        InfraIdParam,
+        ("line_code" = i64, Path, description = "A line code"),
+    ),
+    responses(
+        (status = 200, body = Zone, description = "The BBox of the line"),
+    )
+)]
+#[get("")]
 async fn get_line_bbox(
     path: Path<(i64, i64)>,
     infra_caches: Data<CHashMap<i64, InfraCache>>,

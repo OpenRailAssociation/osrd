@@ -17,6 +17,10 @@ pub use self::layer_cache::{
 };
 pub use self::redis_utils::{delete, get, keys, set};
 
+crate::schemas! {
+    bounding_box::schemas(),
+}
+
 /// Invalidates cache for specific
 ///
 /// # Arguments

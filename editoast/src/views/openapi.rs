@@ -60,9 +60,11 @@ impl OpenApiPathScope {
         }
     }
 
-    pub fn route(mut self, openapi_path: String, openapi_pathitem: PathItem) -> Self {
-        self.paths
-            .push_back(Dispatch::Path(openapi_path, openapi_pathitem));
+    pub fn route<S: AsRef<str>>(mut self, openapi_path: S, openapi_pathitem: PathItem) -> Self {
+        self.paths.push_back(Dispatch::Path(
+            openapi_path.as_ref().to_owned(),
+            openapi_pathitem,
+        ));
         self
     }
 

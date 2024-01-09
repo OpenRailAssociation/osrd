@@ -180,13 +180,6 @@ const injectedRtkApi = api
         }),
         providesTags: ['infra'],
       }),
-      getInfraByIdLinesAndLineCodeBbox: build.query<
-        GetInfraByIdLinesAndLineCodeBboxApiResponse,
-        GetInfraByIdLinesAndLineCodeBboxApiArg
-      >({
-        query: (queryArg) => ({ url: `/infra/${queryArg.id}/lines/${queryArg.lineCode}/bbox/` }),
-        providesTags: ['infra'],
-      }),
       postInfraByIdLoad: build.mutation<PostInfraByIdLoadApiResponse, PostInfraByIdLoadApiArg>({
         query: (queryArg) => ({ url: `/infra/${queryArg.id}/load/`, method: 'POST' }),
         invalidatesTags: ['infra'],
@@ -280,6 +273,15 @@ const injectedRtkApi = api
         GetInfraByInfraIdAutoFixesApiArg
       >({
         query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/auto_fixes/` }),
+        providesTags: ['infra'],
+      }),
+      getInfraByInfraIdLinesAndLineCodeBbox: build.query<
+        GetInfraByInfraIdLinesAndLineCodeBboxApiResponse,
+        GetInfraByInfraIdLinesAndLineCodeBboxApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/infra/${queryArg.infraId}/lines/${queryArg.lineCode}/bbox/`,
+        }),
         providesTags: ['infra'],
       }),
       getLayersLayerByLayerSlugMvtAndViewSlug: build.query<
@@ -869,14 +871,6 @@ export type GetInfraByIdErrorsApiArg = {
   /** Whether the response should include errors or warnings */
   level?: 'errors' | 'warnings' | 'all';
 };
-export type GetInfraByIdLinesAndLineCodeBboxApiResponse =
-  /** status 200 The BBox of the line */ Zone;
-export type GetInfraByIdLinesAndLineCodeBboxApiArg = {
-  /** infra id */
-  id: number;
-  /** a line code */
-  lineCode: number;
-};
 export type PostInfraByIdLoadApiResponse = unknown;
 export type PostInfraByIdLoadApiArg = {
   /** infra id */
@@ -976,6 +970,14 @@ export type GetInfraByInfraIdAutoFixesApiResponse =
 export type GetInfraByInfraIdAutoFixesApiArg = {
   /** The ID of the infra to fix */
   infraId: number;
+};
+export type GetInfraByInfraIdLinesAndLineCodeBboxApiResponse =
+  /** status 200 The BBox of the line */ Zone;
+export type GetInfraByInfraIdLinesAndLineCodeBboxApiArg = {
+  /** The ID of the infra to fix */
+  infraId: number;
+  /** A line code */
+  lineCode: number;
 };
 export type GetLayersLayerByLayerSlugMvtAndViewSlugApiResponse =
   /** status 200 Successful Response */ {
@@ -1485,11 +1487,6 @@ export type InfraError = {
   };
   schematic?: object | null;
 };
-export type BoundingBox = number[][];
-export type Zone = {
-  geo?: BoundingBox;
-  sch?: BoundingBox;
-};
 export type Direction = 'START_TO_STOP' | 'STOP_TO_START';
 export type Identifier = string;
 export type DirectionalTrackRange = {
@@ -1511,6 +1508,11 @@ export type RouteTrackRangesCantComputePathError = {
 export type RouteTrackRangesComputed = {
   track_ranges: DirectionalTrackRange[];
   type: 'Computed';
+};
+export type BoundingBox = (number & number)[][];
+export type Zone = {
+  geo: BoundingBox;
+  sch: BoundingBox;
 };
 export type LightModeEffortCurves = {
   is_electric: boolean;
