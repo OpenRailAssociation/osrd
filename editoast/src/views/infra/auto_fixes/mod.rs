@@ -45,7 +45,11 @@ fn new_ref_fix_create_pair(object: RailjsonObject) -> (ObjectRef, Fix) {
 }
 
 // Return `/infra/<infra_id>/auto_fixes` routes
-crate::routes! {"/infra/{infra_id}/auto_fixes" => { list_auto_fixes, } } // TODO:  move it to infra when migrated (and un-pub module)
+crate::routes! {
+    "/auto_fixes" => {
+        list_auto_fixes,
+    },
+}
 
 /// Retrieve a list of operations to fix infra issues
 #[utoipa::path(

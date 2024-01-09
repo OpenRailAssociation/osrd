@@ -32,7 +32,7 @@ const MapSearchLine = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchLine
     undefined
   );
   const [getTrackZones, { data: trackZones }] =
-    osrdEditoastApi.endpoints.getInfraByIdLinesAndLineCodeBbox.useLazyQuery({});
+    osrdEditoastApi.endpoints.getInfraByInfraIdLinesAndLineCodeBbox.useLazyQuery({});
 
   const zoomToFeature = (boundingBox: BBox) => {
     const [minLng, minLat, maxLng, maxLat] = boundingBox;
@@ -83,7 +83,7 @@ const MapSearchLine = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchLine
     if (map.mapSearchMarker) {
       dispatch(updateMapSearchMarker(undefined));
     }
-    getTrackZones({ id: infraID as number, lineCode: searchResultItem.line_code });
+    getTrackZones({ infraId: infraID as number, lineCode: searchResultItem.line_code });
     dispatch(updateLineSearchCode(searchResultItem.line_code));
   };
 

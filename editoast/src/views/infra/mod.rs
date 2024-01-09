@@ -1,5 +1,5 @@
 mod attached;
-pub mod auto_fixes;
+mod auto_fixes;
 mod edition;
 mod errors;
 mod lines;
@@ -40,8 +40,19 @@ use thiserror::Error;
 use utoipa::IntoParams;
 use uuid::Uuid;
 
+crate::routes! {
+    "/infra" => {
+        "/{infra_id}" => {
+            lines::routes(),
+            auto_fixes::routes(),
+        },
+    },
+}
+
+crate::schemas! {}
+
 /// Return `/infra` routes
-pub fn routes() -> impl HttpServiceFactory {
+pub fn infra_routes() -> impl HttpServiceFactory {
     scope("/infra")
         .service((
             list,
@@ -69,10 +80,11 @@ pub fn routes() -> impl HttpServiceFactory {
                 .service((
                     errors::routes(),
                     objects::routes(),
-                    lines::routes(),
                     routes::routes(),
                     pathfinding::routes(),
                     attached::routes(),
+                    lines::routes(),
+                    auto_fixes::routes(),
                 )),
         )
 }
