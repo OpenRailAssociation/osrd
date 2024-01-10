@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use actix_web::dev::HttpServiceFactory;
 use actix_web::post;
@@ -31,11 +31,8 @@ enum GetObjectsErrors {
 }
 
 /// Return whether the list of ids contains unique values or has duplicate
-fn has_unique_ids(obj_ids: &Vec<String>) -> bool {
-    let mut obj_ids_2 = obj_ids.clone();
-    obj_ids_2.sort();
-    obj_ids_2.dedup();
-    obj_ids_2.len() == obj_ids.len()
+fn has_unique_ids(obj_ids: &[String]) -> bool {
+    obj_ids.len() == obj_ids.iter().collect::<HashSet<_>>().len()
 }
 
 #[derive(QueryableByName, Debug, Clone, Serialize, Deserialize, PartialEq)]

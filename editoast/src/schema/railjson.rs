@@ -176,10 +176,7 @@ pub mod test {
         assert!(check_objects_eq(&s_railjson.detectors, &railjson.detectors));
     }
 
-    fn check_objects_eq<T: PartialEq + OSRDIdentified>(
-        objects: &Vec<T>,
-        expected: &Vec<T>,
-    ) -> bool {
+    fn check_objects_eq<T: PartialEq + OSRDIdentified>(objects: &[T], expected: &[T]) -> bool {
         assert_eq!(objects.len(), expected.len());
         let map_expected: HashMap<_, _> = expected.iter().map(|obj| (obj.get_id(), obj)).collect();
 
