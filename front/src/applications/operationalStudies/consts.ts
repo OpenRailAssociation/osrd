@@ -3,7 +3,7 @@ import { Position } from 'geojson';
 import {
   ElectrificationRange,
   ElectrificationUsage,
-  PowerRestrictionRangeItem,
+  SimulationPowerRestrictionRange,
 } from 'common/api/osrdEditoastApi';
 import { LinearMetadataItem } from 'common/IntervalsDataViz/types';
 import { HeightPosition } from 'reducers/osrdsimulation/types';
@@ -314,8 +314,8 @@ export interface PowerRestrictionSegment {
 }
 
 export const createPowerRestrictionSegment = (
-  fullPowerRestrictionRange: PowerRestrictionRangeItem[],
-  powerRestrictionRange: PowerRestrictionRangeItem
+  fullPowerRestrictionRange: SimulationPowerRestrictionRange[],
+  powerRestrictionRange: SimulationPowerRestrictionRange
 ) => {
   // figure out if the power restriction is incompatible or missing
   const isRestriction = powerRestrictionRange.handled;

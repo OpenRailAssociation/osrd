@@ -14,6 +14,7 @@ use utoipa::ToSchema;
 
 crate::schemas! {
     SignalUpdate,
+    TrainStop,
 }
 
 #[derive(Debug, Serialize)]
@@ -53,9 +54,11 @@ pub struct CoreTrainSchedule {
 }
 
 /// One must be specified between `position` and `location`.
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize, ToSchema)]
 pub struct TrainStop {
+    #[schema(required)]
     pub position: Option<f64>,
+    #[schema(required)]
     pub location: Option<TrackLocation>,
     pub duration: f64,
 }
@@ -115,10 +118,12 @@ pub struct SignalUpdate {
     /// The aspects start being displayed at this time (number of seconds since 1970-01-01T00:00:00)
     pub time_start: f64,
     /// The aspects stop being displayed at this time (number of seconds since 1970-01-01T00:00:00)
+    #[schema(required)]
     pub time_end: Option<f64>,
     /// The route starts at this position on the train path
     pub position_start: f64,
     /// The route ends at this position on the train path
+    #[schema(required)]
     pub position_end: Option<f64>,
     /// The color of the aspect
     ///
@@ -129,5 +134,6 @@ pub struct SignalUpdate {
     /// The labels of the new aspect
     pub aspect_label: String,
     pub track: String,
+    #[schema(required)]
     pub track_offset: Option<f64>,
 }

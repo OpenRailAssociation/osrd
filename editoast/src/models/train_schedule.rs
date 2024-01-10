@@ -47,6 +47,8 @@ crate::schemas! {
     StandardAllowance,
     Allowance,
     ScheduledPoint,
+    ResultTrain,
+    ResultPosition,
 }
 
 #[derive(
@@ -224,7 +226,7 @@ pub struct ResultSpeed {
     pub speed: f64,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 pub struct ResultPosition {
     pub time: f64,
     pub track_section: String,
@@ -308,11 +310,14 @@ pub struct RoutingRequirement {
     pub zones: Vec<RoutingZoneRequirement>,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Derivative)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Derivative, ToSchema)]
 #[derivative(Default)]
 pub struct ResultTrain {
+    #[schema(min_items = 1)]
     pub speeds: Vec<ResultSpeed>,
+    #[schema(min_items = 1)]
     pub head_positions: Vec<ResultPosition>,
+    #[schema(min_items = 1)]
     pub stops: Vec<ResultStops>,
     pub mechanical_energy_consumed: f64,
     pub signal_sightings: Vec<SignalSighting>,
@@ -539,7 +544,9 @@ pub enum Allowance {
 #[derive(Debug, Clone, Derivative, Serialize, Deserialize, PartialEq, ToSchema)]
 #[derivative(Default)]
 pub struct ScheduledPoint {
+    /// Offset in meters from the start of the path at which the train must be
     pub path_offset: f64,
+    /// Time in seconds (elapsed since the train's departure) at which the train must be
     pub time: f64,
 }
 

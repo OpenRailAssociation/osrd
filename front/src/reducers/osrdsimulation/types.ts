@@ -2,7 +2,7 @@ import * as d3 from 'd3';
 import { AllListValues, SIGNAL_BASE_DEFAULT } from 'modules/simulationResult/consts';
 import {
   ElectrificationRange,
-  PowerRestrictionRangeItem,
+  SimulationPowerRestrictionRange,
   SimulationReport,
   TrainScheduleSummary,
 } from 'common/api/osrdEditoastApi';
@@ -160,7 +160,7 @@ export type ConsolidatedSpeedTime = SpeedTime<Date>;
 
 export interface Train {
   electrification_ranges: ElectrificationRange[];
-  power_restriction_ranges: PowerRestrictionRangeItem[];
+  power_restriction_ranges: SimulationPowerRestrictionRange[];
   id: number;
   labels: string[];
   path: number;

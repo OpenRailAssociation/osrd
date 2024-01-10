@@ -79,14 +79,6 @@ components:
       maxItems: 2
       minItems: 2
       type: array
-    Comfort:
-      default: STANDARD
-      description: Train comfort that will be used for the simulation
-      enum:
-      - AC
-      - HEATING
-      - STANDARD
-      type: string
     ConditionalEffortCurve:
       additionalProperties: false
       properties:
@@ -3873,23 +3865,6 @@ components:
       required:
       - power_restriction
       type: object
-    PowerRestrictionRangeItem:
-      properties:
-        code:
-          type: string
-        handled:
-          type: boolean
-        start:
-          format: double
-          type: number
-        stop:
-          format: double
-          type: number
-      required:
-      - start
-      - stop
-      - code
-      - handled
     ProfilesOnPathResponse:
       description: |-
         A list of ranges associated to electrical profile values. When a profile overlapping another is found,
@@ -4174,6 +4149,25 @@ components:
       - route_aspects
       - mechanical_energy_consumed
       type: object
+    ResultPosition:
+      properties:
+        offset:
+          format: double
+          type: number
+        path_offset:
+          format: double
+          type: number
+        time:
+          format: double
+          type: number
+        track_section:
+          type: string
+      required:
+      - time
+      - track_section
+      - offset
+      - path_offset
+      type: object
     ResultSpeed:
       properties:
         position:
@@ -4209,6 +4203,52 @@ components:
       - position
       - duration
       - ch
+      type: object
+    ResultTrain:
+      properties:
+        head_positions:
+          items:
+            $ref: '#/components/schemas/ResultPosition'
+          minItems: 1
+          type: array
+        mechanical_energy_consumed:
+          format: double
+          type: number
+        routing_requirements:
+          items:
+            $ref: '#/components/schemas/RoutingRequirement'
+          type: array
+        signal_sightings:
+          items:
+            $ref: '#/components/schemas/SignalSighting'
+          type: array
+        spacing_requirements:
+          items:
+            $ref: '#/components/schemas/SpacingRequirement'
+          type: array
+        speeds:
+          items:
+            $ref: '#/components/schemas/ResultSpeed'
+          minItems: 1
+          type: array
+        stops:
+          items:
+            $ref: '#/components/schemas/ResultStops'
+          minItems: 1
+          type: array
+        zone_updates:
+          items:
+            $ref: '#/components/schemas/ZoneUpdate'
+          type: array
+      required:
+      - speeds
+      - head_positions
+      - stops
+      - mechanical_energy_consumed
+      - signal_sightings
+      - zone_updates
+      - spacing_requirements
+      - routing_requirements
       type: object
     RjsPowerRestrictionRange:
       description: A range along the train path where a power restriction is applied.
@@ -4274,6 +4314,7 @@ components:
         - metadata
         type: object
     RollingStockComfortType:
+      description: Train comfort that will be used for the simulation
       enum:
       - STANDARD
       - AC
@@ -4730,9 +4771,11 @@ components:
     ScheduledPoint:
       properties:
         path_offset:
+          description: Offset in meters from the start of the path at which the train must be
           format: double
           type: number
         time:
+          description: Time in seconds (elapsed since the train's departure) at which the train must be
           format: double
           type: number
       required:
@@ -5086,11 +5129,14 @@ components:
       required:
       - signal_id
       - time_start
+      - time_end
       - position_start
+      - position_end
       - color
       - blinking
       - aspect_label
       - track
+      - track_offset
       type: object
     SimulationPowerRestrictionRange:
       properties:
@@ -5169,269 +5215,78 @@ components:
       - electrification_ranges
       - power_restriction_ranges
       type: object
-    SimulationReportByTrain:
-      properties:
-        head_positions:
-          items:
-            items:
-              $ref: '#/components/schemas/SpaceTimePosition'
-            minItems: 1
-            type: array
-          minItems: 1
-          type: array
-        mechanical_energy_consumed:
-          format: float
-          type: number
-        route_aspects:
-          items:
-            properties:
-              aspect_label:
-                description: label of the new signal aspect
-                type: string
-              blinking:
-                description: true if the signal is blinking
-                type: boolean
-              color:
-                description: color of the aspect (Bits 24-31 are alpha, 16-23 are red, 8-15 are green, 0-7 are blue)
-                format: float
-                type: number
-              position_end:
-                description: the route ends at this position on the train path
-                format: float
-                type: number
-              position_start:
-                description: the route starts at this position on the train path
-                format: float
-                type: number
-              route_id:
-                description: id of the affected route on the train path
-                type: string
-              signal_id:
-                description: id of the updated signal
-                type: string
-              time_end:
-                description: the aspect stops being displayed at this time
-                format: float
-                type: number
-              time_start:
-                description: the aspect starts being displayed at this time
-                format: float
-                type: number
-            required:
-            - signal_id
-            - route_id
-            - time_start
-            - time_end
-            - position_start
-            - position_end
-            - color
-            - blinking
-            - aspect_label
-            type: object
-          type: array
-        signals:
-          items:
-            properties:
-              aspects:
-                items:
-                  type: string
-                type: array
-              geo_position:
-                items:
-                  format: float
-                  type: number
-                maxItems: 2
-                minItems: 2
-                type: array
-              schema_position:
-                items:
-                  format: float
-                  type: number
-                maxItems: 2
-                minItems: 2
-                type: array
-              signal_id:
-                type: integer
-            required:
-            - signal_id
-            - aspects
-            - geo_position
-            - schema_position
-            type: object
-          type: array
-        speeds:
-          items:
-            allOf:
-            - $ref: '#/components/schemas/SpaceTimePosition'
-            - properties:
-                speed:
-                  format: float
-                  type: number
-              required:
-              - speed
-              type: object
-          minItems: 1
-          type: array
-        stops:
-          items:
-            properties:
-              duration:
-                format: float
-                type: number
-              id:
-                description: Can be null if it's not an operational point
-                nullable: true
-                type: string
-              line_code:
-                type: number
-              line_name:
-                type: string
-              name:
-                description: Can be 'Unknown' if it's not an operational point
-                type: string
-              position:
-                format: float
-                type: number
-              time:
-                format: float
-                type: number
-              track_name:
-                type: string
-              track_number:
-                type: number
-            required:
-            - id
-            - name
-            - time
-            - position
-            - duration
-            - line_code
-            - track_number
-            - line_name
-            - track_name
-            type: object
-          type: array
-        tail_positions:
-          items:
-            items:
-              $ref: '#/components/schemas/SpaceTimePosition'
-            minItems: 1
-            type: array
-          minItems: 1
-          type: array
-      required:
-      - speeds
-      - head_positions
-      - tail_positions
-      - stops
-      - route_aspects
-      - signals
-      - mechanical_energy_consumed
     SingleSimulationRequest:
-      properties:
-        allowances:
-          default: []
-          items:
-            $ref: '#/components/schemas/Allowance'
-          type: array
-        comfort:
-          $ref: '#/components/schemas/Comfort'
-        electrical_profile_set_id:
-          type: integer
-        initial_speed:
-          default: 0
-          format: float
-          type: number
-        options:
-          allOf:
-          - $ref: '#/components/schemas/TrainScheduleOptions'
-          nullable: true
-        path_id:
-          type: integer
-        power_restriction_ranges:
-          description: A list of ranges along the train path where power restrictions apply.
-          items:
-            $ref: '#/components/schemas/RjsPowerRestrictionRange'
-          nullable: true
-          type: array
-        rolling_stock_id:
-          type: integer
-        scheduled_points:
-          default: []
-          items:
-            properties:
-              path_offset:
-                description: Offset in meters from the start of the path at which the train must be.
-                format: float
-                type: number
-              time:
-                description: Time in seconds (elapsed since the train's departure) at which the train must be.
-                format: float
-                type: number
-            required:
-            - path_offset
-            - time
-            type: object
-          type: array
-        stops:
-          default: []
-          items:
-            properties:
-              duration:
-                format: float
-                type: number
-              location:
-                $ref: '#/components/schemas/TrackLocation'
-              position:
-                format: float
-                type: number
-            type: object
-          type: array
-        tag:
-          type: string
-      required:
-      - rolling_stock_id
-      - path_id
-      type: object
+      allOf:
+      - properties:
+          allowances:
+            items:
+              $ref: '#/components/schemas/Allowance'
+            type: array
+          comfort:
+            $ref: '#/components/schemas/RollingStockComfortType'
+          initial_speed:
+            format: double
+            type: number
+          options:
+            allOf:
+            - $ref: '#/components/schemas/TrainScheduleOptions'
+            nullable: true
+          power_restriction_ranges:
+            items:
+              $ref: '#/components/schemas/RjsPowerRestrictionRange'
+            nullable: true
+            type: array
+          scheduled_points:
+            items:
+              $ref: '#/components/schemas/ScheduledPoint'
+            type: array
+          stops:
+            items:
+              $ref: '#/components/schemas/TrainStop'
+            type: array
+          tag:
+            nullable: true
+            type: string
+        type: object
+      - properties:
+          electrical_profile_set_id:
+            format: int64
+            nullable: true
+            type: integer
+          path_id:
+            format: int64
+            type: integer
+          rolling_stock_id:
+            format: int64
+            type: integer
+        required:
+        - rolling_stock_id
+        - path_id
+        type: object
     SingleSimulationResponse:
       properties:
         base_simulation:
-          $ref: '#/components/schemas/SimulationReportByTrain'
+          $ref: '#/components/schemas/ResultTrain'
         eco_simulation:
           allOf:
-          - $ref: '#/components/schemas/SimulationReportByTrain'
+          - $ref: '#/components/schemas/ResultTrain'
           nullable: true
         electrification_ranges:
-          description: A list of ranges which should be contiguous and which describe the electrification on the path and if it is handled by the train
           items:
             $ref: '#/components/schemas/ElectrificationRange'
-          minItems: 1
           type: array
         power_restriction_ranges:
-          description: The list of ranges where power restrictions are applied
           items:
-            $ref: '#/components/schemas/PowerRestrictionRangeItem'
+            $ref: '#/components/schemas/SimulationPowerRestrictionRange'
           type: array
         speed_limits:
-          items:
-            properties:
-              position:
-                type: number
-              speed:
-                type: number
-            required:
-            - position
-            - speed
-            type: object
-          minItems: 2
-          type: array
+          $ref: '#/components/schemas/Mrsp'
         warnings:
           items:
             type: string
           type: array
       required:
       - base_simulation
-      - eco_simulation
       - speed_limits
       - warnings
       - electrification_ranges
@@ -6156,6 +6011,25 @@ components:
       required:
       - simulations
       - invalid_trains
+      type: object
+    TrainStop:
+      description: One must be specified between `position` and `location`.
+      properties:
+        duration:
+          format: double
+          type: number
+        location:
+          allOf:
+          - $ref: '#/components/schemas/TrackLocation'
+          nullable: true
+        position:
+          format: double
+          nullable: true
+          type: number
+      required:
+      - position
+      - location
+      - duration
       type: object
     UpdateOperation:
       properties:
@@ -8318,15 +8192,15 @@ paths:
       - search
   /single_simulation/:
     post:
+      description: Runs a simulation with a single train, does not write anything to the database
       requestBody:
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/SingleSimulationRequest'
-        description: The details of the simulation
         required: true
       responses:
-        '201':
+        '200':
           content:
             application/json:
               schema:
