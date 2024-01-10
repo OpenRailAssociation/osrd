@@ -472,39 +472,6 @@ paths:
                   type: string
                 example: ["750V", "1500V", "2500.5V"]
 
-  /infra/{id}/attached/{track_id}/:
-    get:
-      summary: Retrieve all objects attached to a given track
-      parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          description: Infra ID
-          required: true
-        - in: path
-          name: track_id
-          schema:
-            type: string
-          description: Track ID
-          required: true
-      responses:
-        200:
-          description: All objects attached to the given track (arranged by types)
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties:
-                  type: array
-                  items:
-                    type: string
-                    description: Object IDs
-                example:
-                  Switch: ["switch.0", "switch.1"]
-                  Detector: ["detector.0"]
-                  BufferStop: []
-
   /infra/{id}/routes/{waypoint_type}/{waypoint_id}/:
     get:
       tags:
@@ -741,21 +708,6 @@ components:
           locked,
           state,
         ]
-
-    ObjectType:
-      type: string
-      description: Type of the object
-      enum:
-        - TrackSection
-        - Signal
-        - SpeedSection
-        - Detector
-        - Switch
-        - SwitchType
-        - BufferStop
-        - Route
-        - OperationalPoint
-        - Electrification
 
     RailjsonFile:
       properties:

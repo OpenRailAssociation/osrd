@@ -1062,12 +1062,12 @@ components:
       - document_key
       type: object
     ObjectType:
-      description: Type of the object
       enum:
       - TrackSection
       - Signal
       - SpeedSection
       - Detector
+      - NeutralSection
       - Switch
       - SwitchType
       - BufferStop
@@ -4229,41 +4229,6 @@ paths:
       summary: Update an infrastructure name
       tags:
       - infra
-  /infra/{id}/attached/{track_id}/:
-    get:
-      parameters:
-      - description: Infra ID
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
-      - description: Track ID
-        in: path
-        name: track_id
-        required: true
-        schema:
-          type: string
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                additionalProperties:
-                  items:
-                    description: Object IDs
-                    type: string
-                  type: array
-                example:
-                  BufferStop: []
-                  Detector:
-                  - detector.0
-                  Switch:
-                  - switch.0
-                  - switch.1
-                type: object
-          description: All objects attached to the given track (arranged by types)
-      summary: Retrieve all objects attached to a given track
   /infra/{id}/clone/:
     post:
       parameters:
@@ -4652,6 +4617,37 @@ paths:
                 type: array
           description: Voltages list
       summary: List all voltages
+      tags:
+      - infra
+  /infra/{infra_id}/attached/{track_id}/:
+    get:
+      description: Retrieve all objects attached to a given track
+      parameters:
+      - description: An infra ID
+        in: path
+        name: infra_id
+        required: true
+        schema:
+          format: int64
+          type: integer
+      - description: A track section ID
+        in: path
+        name: track_id
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  items:
+                    type: string
+                  type: array
+                type: object
+          description: All objects attached to the given track (arranged by types)
+      summary: Retrieve all objects attached to a given track
       tags:
       - infra
   /infra/{infra_id}/auto_fixes/:

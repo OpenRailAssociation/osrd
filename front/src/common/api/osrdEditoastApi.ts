@@ -153,12 +153,6 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['infra'],
       }),
-      getInfraByIdAttachedAndTrackId: build.query<
-        GetInfraByIdAttachedAndTrackIdApiResponse,
-        GetInfraByIdAttachedAndTrackIdApiArg
-      >({
-        query: (queryArg) => ({ url: `/infra/${queryArg.id}/attached/${queryArg.trackId}/` }),
-      }),
       postInfraByIdClone: build.mutation<PostInfraByIdCloneApiResponse, PostInfraByIdCloneApiArg>({
         query: (queryArg) => ({
           url: `/infra/${queryArg.id}/clone/`,
@@ -254,6 +248,13 @@ const injectedRtkApi = api
           url: `/infra/${queryArg.id}/voltages/`,
           params: { include_rolling_stock_modes: queryArg.includeRollingStockModes },
         }),
+        providesTags: ['infra'],
+      }),
+      getInfraByInfraIdAttachedAndTrackId: build.query<
+        GetInfraByInfraIdAttachedAndTrackIdApiResponse,
+        GetInfraByInfraIdAttachedAndTrackIdApiArg
+      >({
+        query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/attached/${queryArg.trackId}/` }),
         providesTags: ['infra'],
       }),
       getInfraByInfraIdAutoFixes: build.query<
@@ -832,16 +833,6 @@ export type PutInfraByIdApiArg = {
     name?: string;
   };
 };
-export type GetInfraByIdAttachedAndTrackIdApiResponse =
-  /** status 200 All objects attached to the given track (arranged by types) */ {
-    [key: string]: string[];
-  };
-export type GetInfraByIdAttachedAndTrackIdApiArg = {
-  /** Infra ID */
-  id: number;
-  /** Track ID */
-  trackId: string;
-};
 export type PostInfraByIdCloneApiResponse = /** status 201 The duplicated infra id */ {
   id?: number;
 };
@@ -945,6 +936,16 @@ export type GetInfraByIdVoltagesApiArg = {
   id: number;
   /** include rolling stocks modes or not */
   includeRollingStockModes?: boolean;
+};
+export type GetInfraByInfraIdAttachedAndTrackIdApiResponse =
+  /** status 200 All objects attached to the given track (arranged by types) */ {
+    [key: string]: string[];
+  };
+export type GetInfraByInfraIdAttachedAndTrackIdApiArg = {
+  /** An infra ID */
+  infraId: number;
+  /** A track section ID */
+  trackId: string;
 };
 export type GetInfraByInfraIdAutoFixesApiResponse =
   /** status 200 The list of suggested operations */ Operation[];
@@ -1379,6 +1380,7 @@ export type ObjectType =
   | 'Signal'
   | 'SpeedSection'
   | 'Detector'
+  | 'NeutralSection'
   | 'Switch'
   | 'SwitchType'
   | 'BufferStop'
