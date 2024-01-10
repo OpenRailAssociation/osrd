@@ -6,7 +6,7 @@ import {
   SpeedPosition,
   Train,
 } from 'reducers/osrdsimulation/types';
-import { ElectrificationRange, PowerRestrictionRangeItem } from 'common/api/osrdEditoastApi';
+import { ElectrificationRange, SimulationPowerRestrictionRange } from 'common/api/osrdEditoastApi';
 import { createCurveCurve, createSlopeCurve } from './utils';
 
 export interface AreaBlock {
@@ -21,7 +21,7 @@ export interface GevPreparedData {
   curvesHistogram: RadiusPosition[];
   eco_speed: PositionSpeedTime[];
   electrificationRanges: ElectrificationRange[];
-  powerRestrictionRanges: PowerRestrictionRangeItem[];
+  powerRestrictionRanges: SimulationPowerRestrictionRange[];
   margins_speed: PositionSpeedTime[];
   slopesCurve: HeightPosition[];
   slopesHistogram: GradientPosition[];

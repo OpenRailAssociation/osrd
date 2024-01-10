@@ -117,7 +117,7 @@ pub struct RollingStockMetadata {
     reference: String,
 }
 
-// Effort curves schema
+/// Train comfort that will be used for the simulation
 #[derive(
     Display, Clone, Default, Debug, EnumString, PartialEq, Deserialize, Serialize, ToSchema,
 )]

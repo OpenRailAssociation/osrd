@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import { comfort2pictogram } from 'modules/rollingStock/components/RollingStockSelector/RollingStockHelpers';
 
-import type { Comfort } from 'common/api/osrdEditoastApi';
+import type { RollingStockComfortType } from 'common/api/osrdEditoastApi';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import type { Option } from 'common/BootstrapSNCF/OptionsSNCF';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
@@ -39,7 +39,7 @@ const RollingStockCardButtons = ({
 
   const selectRollingStock = () => {
     setOpenedRollingStockCardId(undefined);
-    dispatch(updateRollingStockComfort(comfort as Comfort));
+    dispatch(updateRollingStockComfort(comfort as RollingStockComfortType));
     dispatch(updateRollingStockID(id));
     dispatch(updatePowerRestrictionRanges([]));
     dispatch(updatePathfindingID(undefined));

@@ -1236,9 +1236,8 @@ export type PostSearchApiArg = {
   searchPayload: SearchPayload;
 };
 export type PostSingleSimulationApiResponse =
-  /** status 201 Data about the simulation produced */ SingleSimulationResponse;
+  /** status 200 Data about the simulation produced */ SingleSimulationResponse;
 export type PostSingleSimulationApiArg = {
-  /** The details of the simulation */
   singleSimulationRequest: SingleSimulationRequest;
 };
 export type GetSpritesSignalingSystemsApiResponse =
@@ -2117,56 +2116,63 @@ export type SearchPayload = {
   object: string;
   query: SearchQuery;
 };
-export type SpaceTimePosition = {
+export type ResultPosition = {
+  offset: number;
+  path_offset: number;
+  time: number;
+  track_section: string;
+};
+export type RoutingZoneRequirement = {
+  end_time: number;
+  entry_detector: string;
+  exit_detector: string;
+  switches: {
+    [key: string]: string;
+  };
+  zone: string;
+};
+export type RoutingRequirement = {
+  begin_time: number;
+  route: string;
+  zones: RoutingZoneRequirement[];
+};
+export type SignalSighting = {
+  offset: number;
+  signal: string;
+  state: string;
+  time: number;
+};
+export type SpacingRequirement = {
+  begin_time: number;
+  end_time: number;
+  zone: string;
+};
+export type ResultSpeed = {
+  position: number;
+  speed: number;
+  time: number;
+};
+export type ResultStops = {
+  ch: string | null;
+  duration: number;
   position: number;
   time: number;
 };
-export type SimulationReportByTrain = {
-  head_positions: SpaceTimePosition[][];
+export type ZoneUpdate = {
+  isEntry: boolean;
+  offset: number;
+  time: number;
+  zone: string;
+};
+export type ResultTrain = {
+  head_positions: ResultPosition[];
   mechanical_energy_consumed: number;
-  route_aspects: {
-    /** label of the new signal aspect */
-    aspect_label: string;
-    /** true if the signal is blinking */
-    blinking: boolean;
-    /** color of the aspect (Bits 24-31 are alpha, 16-23 are red, 8-15 are green, 0-7 are blue) */
-    color: number;
-    /** the route ends at this position on the train path */
-    position_end: number;
-    /** the route starts at this position on the train path */
-    position_start: number;
-    /** id of the affected route on the train path */
-    route_id: string;
-    /** id of the updated signal */
-    signal_id: string;
-    /** the aspect stops being displayed at this time */
-    time_end: number;
-    /** the aspect starts being displayed at this time */
-    time_start: number;
-  }[];
-  signals: {
-    aspects: string[];
-    geo_position: number[];
-    schema_position: number[];
-    signal_id: number;
-  }[];
-  speeds: (SpaceTimePosition & {
-    speed: number;
-  })[];
-  stops: {
-    duration: number;
-    /** Can be null if it's not an operational point */
-    id: string | null;
-    line_code: number;
-    line_name: string;
-    /** Can be 'Unknown' if it's not an operational point */
-    name: string;
-    position: number;
-    time: number;
-    track_name: string;
-    track_number: number;
-  }[];
-  tail_positions: SpaceTimePosition[][];
+  routing_requirements: RoutingRequirement[];
+  signal_sightings: SignalSighting[];
+  spacing_requirements: SpacingRequirement[];
+  speeds: ResultSpeed[];
+  stops: ResultStops[];
+  zone_updates: ZoneUpdate[];
 };
 export type ElectrificationUsage =
   | {
@@ -2188,23 +2194,25 @@ export type ElectrificationRange = {
   start: number;
   stop: number;
 };
-export type PowerRestrictionRangeItem = {
+export type SimulationPowerRestrictionRange = {
   code: string;
   handled: boolean;
   start: number;
   stop: number;
 };
+export type MrspPoint = {
+  /** Relative position of the point on its track section (in meters) */
+  position: number;
+  /** Speed limit at this point (in m/s) */
+  speed: number;
+};
+export type Mrsp = MrspPoint[];
 export type SingleSimulationResponse = {
-  base_simulation: SimulationReportByTrain;
-  eco_simulation: SimulationReportByTrain | null;
-  /** A list of ranges which should be contiguous and which describe the electrification on the path and if it is handled by the train */
+  base_simulation: ResultTrain;
+  eco_simulation?: ResultTrain | null;
   electrification_ranges: ElectrificationRange[];
-  /** The list of ranges where power restrictions are applied */
-  power_restriction_ranges: PowerRestrictionRangeItem[];
-  speed_limits: {
-    position: number;
-    speed: number;
-  }[];
+  power_restriction_ranges: SimulationPowerRestrictionRange[];
+  speed_limits: Mrsp;
   warnings: string[];
 };
 export type AllowanceValue =
@@ -2243,7 +2251,6 @@ export type Allowance =
   | (StandardAllowance & {
       allowance_type: 'standard';
     });
-export type Comfort = 'AC' | 'HEATING' | 'STANDARD';
 export type TrainScheduleOptions = {
   /** Whether to ignore the electrical profile of the train for simulation */
   ignore_electrical_profiles?: boolean | null;
@@ -2256,28 +2263,30 @@ export type RjsPowerRestrictionRange = {
   /** The power restriction code to apply. */
   power_restriction_code: string;
 };
+export type ScheduledPoint = {
+  /** Offset in meters from the start of the path at which the train must be */
+  path_offset: number;
+  /** Time in seconds (elapsed since the train's departure) at which the train must be */
+  time: number;
+};
+export type TrainStop = {
+  duration: number;
+  location: TrackLocation | null;
+  position: number | null;
+};
 export type SingleSimulationRequest = {
   allowances?: Allowance[];
-  comfort?: Comfort;
-  electrical_profile_set_id?: number;
+  comfort?: RollingStockComfortType;
   initial_speed?: number;
   options?: TrainScheduleOptions | null;
-  path_id: number;
-  /** A list of ranges along the train path where power restrictions apply. */
   power_restriction_ranges?: RjsPowerRestrictionRange[] | null;
+  scheduled_points?: ScheduledPoint[];
+  stops?: TrainStop[];
+  tag?: string | null;
+} & {
+  electrical_profile_set_id?: number | null;
+  path_id: number;
   rolling_stock_id: number;
-  scheduled_points?: {
-    /** Offset in meters from the start of the path at which the train must be. */
-    path_offset: number;
-    /** Time in seconds (elapsed since the train's departure) at which the train must be. */
-    time: number;
-  }[];
-  stops?: {
-    duration?: number;
-    location?: TrackLocation;
-    position?: number;
-  }[];
-  tag?: string;
 };
 export type RoutePath = {
   route: string;
@@ -2302,28 +2311,17 @@ export type SignalUpdate = {
     (Bits 24-31 are alpha, 16-23 are red, 8-15 are green, 0-7 are blue) */
   color: number;
   /** The route ends at this position on the train path */
-  position_end?: number | null;
+  position_end: number | null;
   /** The route starts at this position on the train path */
   position_start: number;
   /** The id of the updated signal */
   signal_id: string;
   /** The aspects stop being displayed at this time (number of seconds since 1970-01-01T00:00:00) */
-  time_end?: number | null;
+  time_end: number | null;
   /** The aspects start being displayed at this time (number of seconds since 1970-01-01T00:00:00) */
   time_start: number;
   track: string;
-  track_offset?: number | null;
-};
-export type ResultSpeed = {
-  position: number;
-  speed: number;
-  time: number;
-};
-export type ResultStops = {
-  ch: string | null;
-  duration: number;
-  position: number;
-  time: number;
+  track_offset: number | null;
 };
 export type FullResultStops = ResultStops & {
   /** The id of the operational point, null if not applicable */
@@ -2343,19 +2341,6 @@ export type ReportTrain = {
   stops: FullResultStops[];
   tail_positions: GetCurvePoint[][];
 };
-export type SimulationPowerRestrictionRange = {
-  code: string;
-  handled: boolean;
-  start: number;
-  stop: number;
-};
-export type MrspPoint = {
-  /** Relative position of the point on its track section (in meters) */
-  position: number;
-  /** Speed limit at this point (in m/s) */
-  speed: number;
-};
-export type Mrsp = MrspPoint[];
 export type SimulationReport = {
   base: ReportTrain;
   curves: Curve[];
@@ -2377,10 +2362,6 @@ export type SimulationReport = {
 export type Timetable = {
   id: number;
   name: string;
-};
-export type ScheduledPoint = {
-  path_offset: number;
-  time: number;
 };
 export type TrainSchedule = {
   allowances: Allowance[];

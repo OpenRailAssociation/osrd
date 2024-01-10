@@ -56,16 +56,13 @@ fn routes_v2() -> Routes<impl HttpServiceFactory> {
         electrical_profiles::routes(),
         layers::routes(),
         infra::routes(),
+        single_simulation::routes(),
     }
     routes()
 }
 
 pub fn routes() -> impl HttpServiceFactory {
-    services![
-        infra::infra_routes(),
-        routes_v2(),
-        single_simulation::routes(),
-    ]
+    services![infra::infra_routes(), routes_v2(),]
 }
 
 schemas! {
@@ -85,6 +82,7 @@ schemas! {
     light_rolling_stocks::schemas(),
     electrical_profiles::schemas(),
     infra::schemas(),
+    single_simulation::schemas(),
 }
 
 #[derive(OpenApi)]

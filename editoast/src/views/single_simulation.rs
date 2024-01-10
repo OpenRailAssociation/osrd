@@ -10,13 +10,13 @@ use crate::models::train_schedule::{
 };
 use crate::models::{Pathfinding, Retrieve, RollingStockModel};
 use crate::schema::rolling_stock::RollingStockComfortType;
-use crate::DbPool;
-use actix_web::dev::HttpServiceFactory;
+use crate::{schemas, DbPool};
 use actix_web::post;
-use actix_web::web::{scope, Data, Json};
+use actix_web::web::{Data, Json};
 use editoast_derive::EditoastError;
 use serde_derive::{Deserialize, Serialize};
 use thiserror::Error;
+use utoipa::ToSchema;
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "single_simulation")]
@@ -35,11 +35,18 @@ pub enum SingleSimulationError {
     WrongCoreResponseFormat,
 }
 
-pub fn routes() -> impl HttpServiceFactory {
-    scope("/single_simulation").service((standalone_simulation,))
+crate::routes! {
+    "/single_simulation" => {
+        standalone_simulation,
+    }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+schemas! {
+    SingleSimulationResponse,
+    SingleSimulationRequest,
+}
+
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
 struct ScheduleArgs {
     #[serde(default)]
     pub initial_speed: f64,
@@ -76,17 +83,18 @@ impl ScheduleArgs {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
 struct SingleSimulationRequest {
     pub rolling_stock_id: i64,
     pub path_id: i64,
     #[serde(default)]
     pub electrical_profile_set_id: Option<i64>,
     #[serde(flatten)]
+    #[schema(inline)]
     pub schedule_args: ScheduleArgs,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, ToSchema)]
 struct SingleSimulationResponse {
     pub base_simulation: ResultTrain,
     pub eco_simulation: Option<ResultTrain>,
