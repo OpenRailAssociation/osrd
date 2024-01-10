@@ -313,7 +313,7 @@ fn compute_path(
         .collect()
 }
 
-fn build_path_output(path: &Vec<PathfindingStep>, infra_cache: &InfraCache) -> PathfindingOutput {
+fn build_path_output(path: &[PathfindingStep], infra_cache: &InfraCache) -> PathfindingOutput {
     // Fill track ranges
     let mut track_ranges = Vec::new();
     // We ignore the first element of path, as it is a virtual step to handle going in both directions
