@@ -64,12 +64,12 @@ export const AttachedRangesItemsList = ({ id, itemType }: AttachedRangesItemsLis
   const [showAll, setShowAll] = useState(false);
 
   const [getAttachedItems] =
-    osrdEditoastApi.endpoints.getInfraByIdAttachedAndTrackId.useLazyQuery();
+    osrdEditoastApi.endpoints.getInfraByInfraIdAttachedAndTrackId.useLazyQuery();
 
   useEffect(() => {
     if (itemsState.type === 'idle' && infraID) {
       setItemsState({ type: 'loading' });
-      getAttachedItems({ id: infraID, trackId: id })
+      getAttachedItems({ infraId: infraID, trackId: id })
         .unwrap()
         .then((res: { [key: string]: string[] }) => {
           if (res[itemType]?.length) {

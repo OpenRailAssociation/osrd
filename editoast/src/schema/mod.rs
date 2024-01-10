@@ -57,6 +57,7 @@ use strum_macros::{Display, EnumIter};
 use utoipa::ToSchema;
 
 crate::schemas! {
+    ObjectType,
     TrackLocation,
     DirectionalTrackRange,
     Direction,
@@ -91,7 +92,18 @@ impl<T: OSRDIdentified + OSRDTyped> OSRDObject for T {
 }
 
 #[derive(
-    Debug, Clone, Copy, Deserialize, Hash, Eq, PartialEq, Serialize, Enum, EnumIter, Display,
+    Debug,
+    Clone,
+    Copy,
+    Deserialize,
+    Hash,
+    Eq,
+    PartialEq,
+    Serialize,
+    Enum,
+    EnumIter,
+    Display,
+    ToSchema,
 )]
 #[serde(deny_unknown_fields)]
 pub enum ObjectType {

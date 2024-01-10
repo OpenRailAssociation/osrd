@@ -1,16 +1,18 @@
-use crate::error::Result;
-use crate::infra_cache::InfraCache;
-use crate::models::Infra;
-use crate::schema::ObjectType;
-use crate::views::infra::InfraApiError;
-use crate::DbPool;
-use actix_web::dev::HttpServiceFactory;
-use actix_web::get;
-use actix_web::web::{Data, Json, Path};
+use crate::{
+    error::Result, infra_cache::InfraCache, models::Infra, schema::ObjectType,
+    views::infra::InfraApiError, DbPool,
+};
+use actix_web::{
+    get,
+    web::{Data, Json, Path},
+};
 use chashmap::CHashMap;
 use editoast_derive::EditoastError;
+use serde_derive::Deserialize;
 use std::collections::HashMap;
 use thiserror::Error;
+
+crate::routes! { attached }
 
 /// Objects types that can be attached to a track
 const ATTACHED_OBJECTS_TYPES: &[ObjectType] = &[
@@ -23,11 +25,6 @@ const ATTACHED_OBJECTS_TYPES: &[ObjectType] = &[
     ObjectType::Electrification,
 ];
 
-/// Return `/infra/<infra_id>/attached` routes
-pub fn routes() -> impl HttpServiceFactory {
-    attached
-}
-
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "attached")]
 enum AttachedError {
@@ -36,15 +33,36 @@ enum AttachedError {
     TrackNotFound { track_id: String },
 }
 
-/// This endpoint returns attached objects of given track
+#[derive(utoipa::IntoParams, Deserialize)]
+struct InfraAttachedParams {
+    /// An infra ID
+    infra_id: i64,
+    /// A track section ID
+    track_id: String,
+}
+
+/// Retrieve all objects attached to a given track
+#[utoipa::path(
+    tag = "infra",
+    params(InfraAttachedParams),
+    responses(
+        (
+            status = 200,
+            body = inline(HashMap<ObjectType, Vec<String>>),
+            description = "All objects attached to the given track (arranged by types)"
+        ),
+    ),
+)]
 #[get("/attached/{track_id}")]
 async fn attached(
-    infra: Path<(i64, String)>,
+    params: Path<InfraAttachedParams>,
     infra_caches: Data<CHashMap<i64, InfraCache>>,
     db_pool: Data<DbPool>,
 ) -> Result<Json<HashMap<ObjectType, Vec<String>>>> {
-    let (infra, track_id) = infra.into_inner();
-
+    let InfraAttachedParams {
+        infra_id: infra,
+        track_id,
+    } = params.into_inner();
     let mut conn = db_pool.get().await?;
     let infra = match Infra::retrieve_for_update(&mut conn, infra).await {
         Ok(infra) => infra,

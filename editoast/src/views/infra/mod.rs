@@ -46,6 +46,7 @@ crate::routes! {
             lines::routes(),
             auto_fixes::routes(),
             pathfinding::routes(),
+            attached::routes(),
         },
     },
 }
