@@ -42,14 +42,19 @@ impl CacheOperation {
         railjson_object: RailjsonObject,
     ) -> Result<Self> {
         let cache_operation = match operation {
-            Operation::Create(railjson_object) => {
-                CacheOperation::Create(ObjectCache::from(railjson_object.deref().clone()))
+            Operation::Create(new_railjson_object) => {
+                debug_assert_eq!(new_railjson_object.get_ref(), railjson_object.get_ref());
+                CacheOperation::Create(ObjectCache::from(new_railjson_object.deref().clone()))
             }
             Operation::Update(UpdateOperation { railjson_patch, .. }) => {
                 let railjson_object = railjson_object.patch(railjson_patch)?;
                 CacheOperation::Update(ObjectCache::from(railjson_object))
             }
-            Operation::Delete(_) => CacheOperation::Delete(railjson_object.get_ref()),
+            Operation::Delete(delete_operation) => {
+                let object_ref = ObjectRef::from(delete_operation.clone());
+                debug_assert_eq!(object_ref, railjson_object.get_ref());
+                CacheOperation::Delete(object_ref)
+            }
         };
         Ok(cache_operation)
     }
