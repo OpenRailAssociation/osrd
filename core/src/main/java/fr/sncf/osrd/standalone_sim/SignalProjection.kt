@@ -35,7 +35,8 @@ fun project(
     val sigSystemManager = simulator.sigModuleManager
     val bal = sigSystemManager.findSignalingSystem("BAL")
     val bapr = sigSystemManager.findSignalingSystem("BAPR")
-    val tvm = sigSystemManager.findSignalingSystem("TVM")
+    val tvm300 = sigSystemManager.findSignalingSystem("TVM300")
+    val tvm430 = sigSystemManager.findSignalingSystem("TVM430")
 
     // Recover blocks from the route path
     val routePath = toRouteIdList(routePathIds)
@@ -45,7 +46,7 @@ fun project(
         blockPath.add(block.block)
 
     val blockPaths = recoverBlocks(
-        rawInfra, blockInfra, routePath, mutableStaticIdxArrayListOf(bal, bapr, tvm)
+        rawInfra, blockInfra, routePath, mutableStaticIdxArrayListOf(bal, bapr, tvm300, tvm430)
     )
     assert(blockPaths.isNotEmpty())
 

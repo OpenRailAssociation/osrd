@@ -24,7 +24,7 @@ class Infra:
     electrifications: List[Electrification] = field(default_factory=list)
     neutral_sections: List[NeutralSection] = field(default_factory=list)
 
-    VERSION = "3.4.7"
+    VERSION = "3.4.8"
 
     def add_route(self, *args, **kwargs):
         self.routes.append(Route(*args, **kwargs))

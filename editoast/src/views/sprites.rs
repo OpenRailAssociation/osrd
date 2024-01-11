@@ -29,7 +29,7 @@ enum SpriteErrors {
 #[utoipa::path(
     tag = "sprites",
     responses(
-        (status = 200, description = "List of supported signaling systems", body = Vec<String>, example = json!(["BAL", "TVM"])),
+        (status = 200, description = "List of supported signaling systems", body = Vec<String>, example = json!(["BAL", "TVM300"])),
     ),
 )]
 #[get("/signaling_systems")]

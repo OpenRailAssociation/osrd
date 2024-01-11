@@ -53,10 +53,11 @@ fun recoverBlockPath(
     val sigSystemManager = simulator.sigModuleManager
     val bal = sigSystemManager.findSignalingSystem("BAL")
     val bapr = sigSystemManager.findSignalingSystem("BAPR")
-    val tvm = sigSystemManager.findSignalingSystem("TVM")
+    val tvm300 = sigSystemManager.findSignalingSystem("TVM300")
+    val tvm430 = sigSystemManager.findSignalingSystem("TVM430")
 
     val blockPaths = recoverBlocks(
-        fullInfra.rawInfra, fullInfra.blockInfra, routePath, mutableStaticIdxArrayListOf(bal, bapr, tvm)
+        fullInfra.rawInfra, fullInfra.blockInfra, routePath, mutableStaticIdxArrayListOf(bal, bapr, tvm300, tvm430)
     )
     assert(blockPaths.isNotEmpty())
     return blockPaths[0].toList() // TODO: have a better way to choose the block path
