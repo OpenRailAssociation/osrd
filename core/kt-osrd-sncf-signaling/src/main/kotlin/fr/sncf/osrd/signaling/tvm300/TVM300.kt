@@ -1,4 +1,4 @@
-package fr.sncf.osrd.signaling.bal
+package fr.sncf.osrd.signaling.tvm300
 
 import fr.sncf.osrd.signaling.BlockDiagReporter
 import fr.sncf.osrd.signaling.SigBlock
@@ -7,13 +7,13 @@ import fr.sncf.osrd.sim_infra.api.SigSettingsSchema
 import fr.sncf.osrd.sim_infra.api.SigStateSchema
 
 
-object TVM : SignalingSystemDriver {
-    override val id = "TVM"
+object TVM300 : SignalingSystemDriver {
+    override val id = "TVM300"
     override val stateSchema = SigStateSchema {
         enum("aspect", listOf("VL", "A", "S", "C"))
     }
     override val settingsSchema = SigSettingsSchema {
-        flag("is_430")
+        flag("Nf")
     }
     override val isBlockDelimiterExpr = "true"
 

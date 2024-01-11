@@ -5813,7 +5813,7 @@ paths:
             application/json:
               example:
               - BAL
-              - TVM
+              - TVM300
               schema:
                 items:
                   type: string

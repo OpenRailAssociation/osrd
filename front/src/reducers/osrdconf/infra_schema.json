@@ -421,7 +421,8 @@
                 "mapping": {
                     "BAL": "#/$defs/BalSystem",
                     "BAPR": "#/$defs/BaprSystem",
-                    "TVM": "#/$defs/TvmSystem"
+                    "TVM300": "#/$defs/Tvm300System",
+                    "TVM430": "#/$defs/Tvm430System"
                 },
                 "propertyName": "signaling_system"
             },
@@ -433,7 +434,10 @@
                     "$ref": "#/$defs/BaprSystem"
                 },
                 {
-                    "$ref": "#/$defs/TvmSystem"
+                    "$ref": "#/$defs/Tvm300System"
+                },
+                {
+                    "$ref": "#/$defs/Tvm430System"
                 }
             ],
             "title": "LimitedLogicalSignal"
@@ -1117,7 +1121,8 @@
             "enum": [
                 "BAL",
                 "BAPR",
-                "TVM"
+                "TVM300",
+                "TVM430"
             ],
             "title": "SignalingSystem",
             "type": "string"
@@ -1552,7 +1557,7 @@
             "title": "TrackSectionSncfExtension",
             "type": "object"
         },
-        "TvmSystem": {
+        "Tvm300System": {
             "properties": {
                 "next_signaling_systems": {
                     "description": "The list of allowed input signaling systems",
@@ -1565,21 +1570,51 @@
                 "settings": {
                     "allOf": [
                         {
-                            "$ref": "#/$defs/__main____TvmSystem__Settings"
+                            "$ref": "#/$defs/__main____Tvm300System__Settings"
                         }
                     ],
                     "description": "TVM signal settings"
                 },
                 "signaling_system": {
-                    "const": "TVM",
-                    "default": "TVM",
+                    "const": "TVM300",
+                    "default": "TVM300",
                     "title": "Signaling System"
                 }
             },
             "required": [
                 "settings"
             ],
-            "title": "TvmSystem",
+            "title": "Tvm300System",
+            "type": "object"
+        },
+        "Tvm430System": {
+            "properties": {
+                "next_signaling_systems": {
+                    "description": "The list of allowed input signaling systems",
+                    "items": {
+                        "$ref": "#/$defs/SignalingSystem"
+                    },
+                    "title": "Next Signaling Systems",
+                    "type": "array"
+                },
+                "settings": {
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/__main____Tvm430System__Settings"
+                        }
+                    ],
+                    "description": "TVM signal settings"
+                },
+                "signaling_system": {
+                    "const": "TVM430",
+                    "default": "TVM430",
+                    "title": "Signaling System"
+                }
+            },
+            "required": [
+                "settings"
+            ],
+            "title": "Tvm430System",
             "type": "object"
         },
         "__main____BalSystem__Settings": {
@@ -1625,19 +1660,36 @@
             "title": "Settings",
             "type": "object"
         },
-        "__main____TvmSystem__Settings": {
+        "__main____Tvm300System__Settings": {
             "properties": {
-                "is_430": {
+                "Nf": {
                     "allOf": [
                         {
                             "$ref": "#/$defs/FlagSignalParameter"
                         }
                     ],
-                    "description": "Is it TVM-430"
+                    "description": "Is the signal non-passable"
                 }
             },
             "required": [
-                "is_430"
+                "Nf"
+            ],
+            "title": "Settings",
+            "type": "object"
+        },
+        "__main____Tvm430System__Settings": {
+            "properties": {
+                "Nf": {
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/FlagSignalParameter"
+                        }
+                    ],
+                    "description": "Is the signal non-passable"
+                }
+            },
+            "required": [
+                "Nf"
             ],
             "title": "Settings",
             "type": "object"
@@ -1735,8 +1787,8 @@
             "type": "array"
         },
         "version": {
-            "const": "3.4.7",
-            "default": "3.4.7",
+            "const": "3.4.8",
+            "default": "3.4.8",
             "description": "Version of the schema",
             "title": "Version"
         }

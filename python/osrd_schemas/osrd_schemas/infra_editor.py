@@ -9,7 +9,8 @@ from . import infra
 class SignalingSystem(str, Enum):
     bal = "BAL"
     bapr = "BAPR"
-    tmv = "TVM"
+    tvm300 = "TVM300"
+    tvm430 = "TVM430"
 
 
 class FlagSignalParameter(str, Enum):
@@ -40,18 +41,26 @@ class BaprSystem(BaseLogicalSignal):
     settings: Settings = Field(description="BAPR signal settings")
 
 
-class TvmSystem(BaseLogicalSignal):
+class Tvm300System(BaseLogicalSignal):
     class Settings(BaseModel):
-        is_430: FlagSignalParameter = Field(description="Is it TVM-430")
+        Nf: FlagSignalParameter = Field(description="Is the signal non-passable")
 
-    signaling_system: Literal["TVM"] = Field(default="TVM")
+    signaling_system: Literal["TVM300"] = Field(default="TVM300")
+    settings: Settings = Field(description="TVM signal settings")
+
+
+class Tvm430System(BaseLogicalSignal):
+    class Settings(BaseModel):
+        Nf: FlagSignalParameter = Field(description="Is the signal non-passable")
+
+    signaling_system: Literal["TVM430"] = Field(default="TVM430")
     settings: Settings = Field(description="TVM signal settings")
 
 
 class LimitedLogicalSignal(RootModel):
     """Limited list of logical signals. Used to generate a usable schema for the front editor"""
 
-    root: Union[BalSystem, BaprSystem, TvmSystem] = Field(..., discriminator="signaling_system")
+    root: Union[BalSystem, BaprSystem, Tvm300System, Tvm430System] = Field(..., discriminator="signaling_system")
 
 
 class _TmpSignal(BaseModel):
