@@ -11,7 +11,7 @@ members = [".", "editoast_derive", "osrd_containers"]
 rangemap = "1.4.0"
 serde = "1.0.193"
 serde_derive = "1.0.193"
-serde_json = "1.0.108"
+serde_json = "1.0.109"
 utoipa = { version = "4.1.0", features = ["actix_extras", "chrono", "uuid"] }
 
 [dependencies]
