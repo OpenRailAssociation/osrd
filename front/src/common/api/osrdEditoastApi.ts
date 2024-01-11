@@ -5,8 +5,8 @@ export const addTagTypes = [
   'electrical_profiles',
   'infra',
   'rolling_stock',
-  'pathfinding',
   'routes',
+  'pathfinding',
   'layers',
   'projects',
   'studies',
@@ -199,18 +199,6 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['infra'],
       }),
-      postInfraByIdPathfinding: build.mutation<
-        PostInfraByIdPathfindingApiResponse,
-        PostInfraByIdPathfindingApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/infra/${queryArg.id}/pathfinding/`,
-          method: 'POST',
-          body: queryArg.body,
-          params: { number: queryArg.number },
-        }),
-        invalidatesTags: ['infra', 'pathfinding'],
-      }),
       getInfraByIdRailjson: build.query<
         GetInfraByIdRailjsonApiResponse,
         GetInfraByIdRailjsonApiArg
@@ -283,6 +271,18 @@ const injectedRtkApi = api
           url: `/infra/${queryArg.infraId}/lines/${queryArg.lineCode}/bbox/`,
         }),
         providesTags: ['infra'],
+      }),
+      postInfraByInfraIdPathfinding: build.mutation<
+        PostInfraByInfraIdPathfindingApiResponse,
+        PostInfraByInfraIdPathfindingApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/infra/${queryArg.infraId}/pathfinding/`,
+          method: 'POST',
+          body: queryArg.pathfindingInput,
+          params: { number: queryArg.number },
+        }),
+        invalidatesTags: ['infra', 'pathfinding'],
       }),
       getLayersLayerByLayerSlugMvtAndViewSlug: build.query<
         GetLayersLayerByLayerSlugMvtAndViewSlugApiResponse,
@@ -894,25 +894,6 @@ export type PostInfraByIdObjectsAndObjectTypeApiArg = {
   /** List of object id's */
   body: string[];
 };
-export type PostInfraByIdPathfindingApiResponse =
-  /** status 200 Paths, containing track ranges, detectors and switches with their directions. If no path is found, an empty list is returned. */ {
-    detectors: string[];
-    switches_directions: {
-      [key: string]: string;
-    };
-    track_ranges: DirectionalTrackRange[];
-  }[];
-export type PostInfraByIdPathfindingApiArg = {
-  /** Infra ID */
-  id: number;
-  /** Maximum number of paths to return */
-  number?: number;
-  /** Starting and ending track location */
-  body: {
-    ending?: TrackLocation;
-    starting?: TrackLocation;
-  };
-};
 export type GetInfraByIdRailjsonApiResponse =
   /** status 200 The infra in railjson format */ RailjsonFile;
 export type GetInfraByIdRailjsonApiArg = {
@@ -978,6 +959,14 @@ export type GetInfraByInfraIdLinesAndLineCodeBboxApiArg = {
   infraId: number;
   /** A line code */
   lineCode: number;
+};
+export type PostInfraByInfraIdPathfindingApiResponse =
+  /** status 200 A list of shortest paths between starting and ending track locations */ PathfindingOutput[];
+export type PostInfraByInfraIdPathfindingApiArg = {
+  /** The ID of the infra to fix */
+  infraId: number;
+  number?: number | null;
+  pathfindingInput: PathfindingInput;
 };
 export type GetLayersLayerByLayerSlugMvtAndViewSlugApiResponse =
   /** status 200 Successful Response */ {
@@ -1487,6 +1476,12 @@ export type InfraError = {
   };
   schematic?: object | null;
 };
+export type RouteTrackRangesNotFoundError = {
+  type: 'NotFound';
+};
+export type RouteTrackRangesCantComputePathError = {
+  type: 'CantComputePath';
+};
 export type Direction = 'START_TO_STOP' | 'STOP_TO_START';
 export type Identifier = string;
 export type DirectionalTrackRange = {
@@ -1494,16 +1489,6 @@ export type DirectionalTrackRange = {
   direction: Direction;
   end: number;
   track: Identifier;
-};
-export type TrackLocation = {
-  offset: number;
-  track_section: Identifier;
-};
-export type RouteTrackRangesNotFoundError = {
-  type: 'NotFound';
-};
-export type RouteTrackRangesCantComputePathError = {
-  type: 'CantComputePath';
 };
 export type RouteTrackRangesComputed = {
   track_ranges: DirectionalTrackRange[];
@@ -1513,6 +1498,21 @@ export type BoundingBox = (number & number)[][];
 export type Zone = {
   geo: BoundingBox;
   sch: BoundingBox;
+};
+export type PathfindingOutput = {
+  detectors: Identifier[];
+  switches_directions: {
+    [key: string]: Identifier;
+  };
+  track_ranges: DirectionalTrackRange[];
+};
+export type PathfindingTrackLocationInput = {
+  position: number;
+  track: Identifier;
+};
+export type PathfindingInput = {
+  ending: PathfindingTrackLocationInput;
+  starting: PathfindingTrackLocationInput;
 };
 export type LightModeEffortCurves = {
   is_electric: boolean;
@@ -1645,6 +1645,10 @@ export type Slope = {
 export type GeoJsonPoint = {
   coordinates: GeoJsonPointValue;
   type: 'Point';
+};
+export type TrackLocation = {
+  offset: number;
+  track_section: Identifier;
 };
 export type PathWaypoint = {
   ch: string | null;

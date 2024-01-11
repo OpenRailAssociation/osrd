@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 
-use actix_web::dev::HttpServiceFactory;
 use actix_web::post;
 use actix_web::web::{Data, Json, Path, Query};
 use chashmap::CHashMap;
@@ -8,6 +7,7 @@ use derivative::Derivative;
 use pathfinding::prelude::yen;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
+use utoipa::{IntoParams, ToSchema};
 
 use crate::error::Result;
 use crate::infra_cache::{Graph, InfraCache};
@@ -15,12 +15,20 @@ use crate::models::Infra;
 use crate::schema::utils::Identifier;
 use crate::schema::{Direction, DirectionalTrackRange, Endpoint, ObjectType, TrackEndpoint};
 use crate::views::infra::InfraApiError;
+use crate::views::infra::InfraIdParam;
 use crate::DbPool;
 use editoast_derive::EditoastError;
 
-/// Return `/infra/<infra_id>/pathfinding` routes
-pub fn routes() -> impl HttpServiceFactory {
-    pathfinding_view
+crate::routes! {
+    "/pathfinding" => {
+        pathfinding_view,
+    },
+}
+
+crate::schemas! {
+    PathfindingTrackLocationInput,
+    PathfindingInput,
+    PathfindingOutput,
 }
 
 const DEFAULT_NUMBER_OF_PATHS: u8 = 5;
@@ -40,42 +48,50 @@ enum PathfindingViewErrors {
     InvalidNumberOfPaths(u8),
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, ToSchema)]
 #[serde(deny_unknown_fields)]
 struct PathfindingTrackLocationInput {
     track: Identifier,
     position: f64,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, ToSchema)]
 struct PathfindingInput {
     starting: PathfindingTrackLocationInput,
     ending: PathfindingTrackLocationInput,
 }
 
-#[derive(Debug, Default, Clone, Serialize)]
+#[derive(Debug, Default, Clone, Serialize, ToSchema)]
 struct PathfindingOutput {
     track_ranges: Vec<DirectionalTrackRange>,
     detectors: Vec<Identifier>,
     switches_directions: HashMap<Identifier, Identifier>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, IntoParams, Deserialize)]
 struct QueryParam {
     number: Option<u8>,
 }
 
 /// This endpoint search path between starting and ending track locations
-#[post("/pathfinding")]
+#[utoipa::path(
+    tag = "infra,pathfinding",
+    params(InfraIdParam, QueryParam),
+    request_body = PathfindingInput,
+    responses(
+        (status = 200, description = "A list of shortest paths between starting and ending track locations", body = Vec<PathfindingOutput>)
+    )
+)]
+#[post("")]
 async fn pathfinding_view(
-    infra: Path<i64>,
+    infra: Path<InfraIdParam>,
     params: Query<QueryParam>,
     input: Json<PathfindingInput>,
     infra_caches: Data<CHashMap<i64, InfraCache>>,
     db_pool: Data<DbPool>,
 ) -> Result<Json<Vec<PathfindingOutput>>> {
     // Parse and check input
-    let infra_id = infra.into_inner();
+    let infra_id = infra.into_inner().infra_id;
     let number = params.number.unwrap_or(DEFAULT_NUMBER_OF_PATHS);
     if !(1..=MAX_NUMBER_OF_PATHS).contains(&number) {
         return Err(PathfindingViewErrors::InvalidNumberOfPaths(number).into());

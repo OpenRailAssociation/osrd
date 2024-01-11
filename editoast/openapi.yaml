@@ -1340,6 +1340,35 @@ components:
       - uic
       - ch
       type: object
+    PathfindingInput:
+      properties:
+        ending:
+          $ref: '#/components/schemas/PathfindingTrackLocationInput'
+        starting:
+          $ref: '#/components/schemas/PathfindingTrackLocationInput'
+      required:
+      - starting
+      - ending
+      type: object
+    PathfindingOutput:
+      properties:
+        detectors:
+          items:
+            $ref: '#/components/schemas/Identifier'
+          type: array
+        switches_directions:
+          additionalProperties:
+            $ref: '#/components/schemas/Identifier'
+          type: object
+        track_ranges:
+          items:
+            $ref: '#/components/schemas/DirectionalTrackRange'
+          type: array
+      required:
+      - track_ranges
+      - detectors
+      - switches_directions
+      type: object
     PathfindingPayload:
       description: |-
         The "payload" of a path
@@ -1391,6 +1420,17 @@ components:
       required:
       - duration
       - waypoints
+      type: object
+    PathfindingTrackLocationInput:
+      properties:
+        position:
+          format: double
+          type: number
+        track:
+          $ref: '#/components/schemas/Identifier'
+      required:
+      - track
+      - position
       type: object
     Point:
       description: GeoJSon geometry
@@ -4403,70 +4443,6 @@ paths:
       summary: Retrieve a list of specific objects in railjson format
       tags:
       - infra
-  /infra/{id}/pathfinding/:
-    post:
-      parameters:
-      - description: Infra ID
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
-      - description: Maximum number of paths to return
-        in: query
-        name: number
-        schema:
-          default: 5
-          format: integer
-          maximum: 5
-          minimum: 1
-          type: number
-      requestBody:
-        content:
-          application/json:
-            schema:
-              properties:
-                ending:
-                  $ref: '#/components/schemas/TrackLocation'
-                starting:
-                  $ref: '#/components/schemas/TrackLocation'
-              type: object
-        description: Starting and ending track location
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                items:
-                  properties:
-                    detectors:
-                      items:
-                        example: detector1
-                        type: string
-                      type: array
-                    switches_directions:
-                      additionalProperties:
-                        type: string
-                      example:
-                        switch1: left
-                        switch2: right
-                      type: object
-                    track_ranges:
-                      items:
-                        $ref: '#/components/schemas/DirectionalTrackRange'
-                      minItems: 1
-                      type: array
-                  required:
-                  - track_ranges
-                  - detectors
-                  - switches_directions
-                  type: object
-                type: array
-          description: Paths, containing track ranges, detectors and switches with their directions. If no path is found, an empty list is returned.
-      summary: Compute paths given starting and ending track location. Return shortest paths.
-      tags:
-      - infra
-      - pathfinding
   /infra/{id}/railjson/:
     get:
       parameters:
@@ -4729,6 +4705,44 @@ paths:
       summary: Returns the BBoxes (geo and schematic) of a line
       tags:
       - infra
+  /infra/{infra_id}/pathfinding/:
+    post:
+      description: This endpoint search path between starting and ending track locations
+      parameters:
+      - description: The ID of the infra to fix
+        in: path
+        name: infra_id
+        required: true
+        schema:
+          format: int64
+          type: integer
+      - in: query
+        name: number
+        required: false
+        schema:
+          format: int32
+          minimum: 0
+          nullable: true
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PathfindingInput'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/PathfindingOutput'
+                type: array
+          description: A list of shortest paths between starting and ending track locations
+      summary: This endpoint search path between starting and ending track locations
+      tags:
+      - infra
+      - pathfinding
   /layers/layer/{layer_slug}/mvt/{view_slug}/:
     get:
       description: Returns layer view metadata to query tiles

@@ -48,7 +48,7 @@ export const EditRoutePathLeftPanel = ({ state }: { state: EditRoutePathState })
   const [includeReleaseDetectors, setIncludeReleaseDetectors] = useState(true);
   const { entryPoint, exitPoint } = state.routeState;
 
-  const [postPathfinding] = osrdEditoastApi.endpoints.postInfraByIdPathfinding.useMutation();
+  const [postPathfinding] = osrdEditoastApi.endpoints.postInfraByInfraIdPathfinding.useMutation();
 
   const searchCandidates = useCallback(async () => {
     if (!entryPoint || !exitPoint || state.optionsState.type === 'loading') return;
@@ -64,8 +64,8 @@ export const EditRoutePathLeftPanel = ({ state }: { state: EditRoutePathState })
       dispatch
     );
     const candidates = await postPathfinding({
-      id: infraID as number,
-      body: payload,
+      infraId: infraID as number,
+      pathfindingInput: payload,
     }).unwrap();
 
     const candidateColors = chroma

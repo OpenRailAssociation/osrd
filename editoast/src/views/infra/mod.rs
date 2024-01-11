@@ -45,11 +45,14 @@ crate::routes! {
         "/{infra_id}" => {
             lines::routes(),
             auto_fixes::routes(),
+            pathfinding::routes(),
         },
     },
 }
 
-crate::schemas! {}
+crate::schemas! {
+    pathfinding::schemas(),
+}
 
 /// Return `/infra` routes
 pub fn infra_routes() -> impl HttpServiceFactory {
@@ -63,7 +66,7 @@ pub fn infra_routes() -> impl HttpServiceFactory {
             railjson::routes(),
         ))
         .service(
-            scope("/{infra}")
+            scope("/{infra_id}")
                 .service((
                     get,
                     load,
@@ -258,7 +261,7 @@ struct InfraWithState {
     pub state: InfraState,
 }
 
-#[derive(IntoParams)]
+#[derive(IntoParams, Deserialize)]
 #[allow(unused)]
 struct InfraIdParam {
     /// The ID of the infra to fix
