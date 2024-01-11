@@ -4,7 +4,7 @@ import { lineString, point } from '@turf/helpers';
 import lineSlice from '@turf/line-slice';
 
 import { Dispatch } from 'redux';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, Identifier } from 'common/api/osrdEditoastApi';
 import { getEntities, getEntity, getMixedEntities } from 'applications/editor/data/api';
 import { DEFAULT_COMMON_TOOL_STATE } from 'applications/editor/tools/commonToolState';
 import { RouteCandidate, RouteEditionState } from 'applications/editor/tools/routeEdition/types';
@@ -236,12 +236,12 @@ export async function getCompatibleRoutesPayload(
 
   return {
     starting: {
-      track_section: entryPointEntity.properties.track as string,
-      offset: entryPointEntity.properties.position as number,
+      track: entryPointEntity.properties.track as Identifier,
+      position: entryPointEntity.properties.position as number,
     },
     ending: {
-      track_section: exitPointEntity.properties.track as string,
-      offset: exitPointEntity.properties.position as number,
+      track: exitPointEntity.properties.track as Identifier,
+      position: exitPointEntity.properties.position as number,
     },
   };
 }
