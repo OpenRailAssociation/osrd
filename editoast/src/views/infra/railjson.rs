@@ -176,6 +176,7 @@ mod tests {
     use rstest::*;
 
     #[rstest]
+    #[serial_test::serial]
     async fn test_get_railjson(#[future] empty_infra: TestFixture<Infra>) {
         let empty_infra = empty_infra.await;
         let app = create_test_service().await;
@@ -195,6 +196,7 @@ mod tests {
     }
 
     #[rstest]
+    #[serial_test::serial]
     async fn test_post_railjson(db_pool: Data<DbPool>) {
         let app = create_test_service().await;
 
