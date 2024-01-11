@@ -576,7 +576,7 @@ pub mod tests {
         nb: i64,
     }
 
-    #[rstest]
+    #[rstest] // Slow test
     async fn infra_clone(db_pool: Data<DbPool>) {
         let app = create_test_service().await;
         let small_infra = &small_infra(db_pool.clone()).await.model;
@@ -762,7 +762,7 @@ pub mod tests {
         assert!(refreshed_infras.infra_refreshed.is_empty());
     }
 
-    #[rstest]
+    #[rstest] // Slow test
     async fn infra_refresh_force(#[future] empty_infra: TestFixture<Infra>) {
         let empty_infra = empty_infra.await;
         let app = create_test_service().await;

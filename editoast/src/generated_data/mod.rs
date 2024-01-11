@@ -155,7 +155,7 @@ pub mod tests {
     use diesel_async::scoped_futures::ScopedFutureExt;
     use diesel_async::AsyncPgConnection as PgConnection;
 
-    #[actix_test]
+    #[actix_test] // Slow test
     async fn refresh_all_test() {
         test_infra_and_delete(|pool, infra: Infra| {
             async move {

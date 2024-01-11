@@ -120,7 +120,7 @@ mod test {
         .await;
     }
 
-    #[actix_test]
+    #[actix_test] // Slow test
     async fn test_persist_large() {
         test_infra_transaction(|conn, infra| {
             async move {
