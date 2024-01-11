@@ -283,13 +283,16 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
             throw new OSRDError(ErrorType.AllowanceConvergenceTooMuchTime);
         }
 
+        // Reduce tolerance when there are several ranges, so that the error doesn't add up to more than a time step
+        var tolerance = context.timeStep / ((float) ranges.size());
+
         Envelope res = null;
         OSRDError lastError = null;
         var search = new DoubleBinarySearch(
                 initialLowBound,
                 initialHighBound,
                 targetTime,
-                context.timeStep,
+                tolerance,
                 true
         );
         logger.debug("  target time = {}", targetTime);
