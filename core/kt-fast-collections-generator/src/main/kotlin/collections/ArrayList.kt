@@ -250,6 +250,16 @@ private fun CollectionItemType.generateArrayList(context: GeneratorContext, curr
                 res.add(c)
                 return res
             }
+
+            /** GENERATED CODE */
+            fun ${paramsDecl} mutable${simpleName}ArrayListOf(a: $type, b: $type, c: $type, d: $type): Mutable${simpleName}ArrayList${paramsUse} {
+                val res = Mutable${simpleName}ArrayList${paramsUse}(3)
+                res.add(a)
+                res.add(b)
+                res.add(c)
+                res.add(d)
+                return res
+            }
         """.trimIndent())
     file.close()
 }
