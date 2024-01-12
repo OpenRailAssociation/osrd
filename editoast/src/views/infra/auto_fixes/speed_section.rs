@@ -5,7 +5,7 @@ use crate::schema::{
 };
 use itertools::Itertools as _;
 use json_patch::{Patch, PatchOperation, RemoveOperation};
-use log::debug;
+use log::{debug, error};
 use std::collections::HashMap;
 
 fn invalid_reference_to_ordered_operation(
@@ -56,13 +56,18 @@ pub fn fix_speed_section(
         .flatten();
     operation
         .and_then(|operation| {
-            let cache_operation = CacheOperation::try_from_operation(
+            let cache_operation = match CacheOperation::try_from_operation(
                 &operation,
                 RailjsonObject::SpeedSection {
                     railjson: speed_section.clone(),
                 },
-            )
-            .ok()?;
+            ) {
+                Ok(cache_operation) => cache_operation,
+                Err(e) => {
+                    error!("failed to convert `Operation` on speed section into a `CacheOperation`: {e}");
+                    return None;
+                }
+            };
             Some((speed_section.get_ref(), (operation, cache_operation)))
         })
         .into_iter()
