@@ -1199,7 +1199,7 @@ dependencies = [
  "osrd_containers",
  "paste",
  "pathfinding",
- "pointy",
+ "pointy 0.5.0",
  "postgis_diesel",
  "postgres-openssl",
  "pretty_assertions",
@@ -2217,7 +2217,7 @@ checksum = "565b864b271f21b3fff747d5c2d7827a102f7d93375d67337b09fa4d4b3487c6"
 dependencies = [
  "log",
  "num-traits",
- "pointy",
+ "pointy 0.4.0",
  "protobuf 3.2.0",
  "thiserror",
 ]
@@ -2628,6 +2628,15 @@ name = "pointy"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f08dc89a46f7c7f8f7233a3e5f2a0964ec7c9e3b4d1a949e52cd371940ab409d"
+dependencies = [
+ "num-traits",
+]
+
+[[package]]
+name = "pointy"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1abf55719b26d1479fd3263bed514942ee51522ee47474e56da8bd30e6fe1268"
 dependencies = [
  "num-traits",
 ]

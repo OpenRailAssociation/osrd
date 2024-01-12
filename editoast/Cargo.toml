@@ -67,7 +67,7 @@ enum-map = "2.7.3"
 editoast_derive = { path = "./editoast_derive" }
 osrd_containers = { path = "./osrd_containers" }
 mvt = "0.8.1"
-pointy = "0.4.0"
+pointy = "0.5.0"
 futures = "0.3.29"
 postgis_diesel = { version = "2.2.1", features = ["serde"] }
 geos = { version = "8.3.0", features = ["json"] }
