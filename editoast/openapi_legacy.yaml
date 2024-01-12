@@ -472,87 +472,6 @@ paths:
                   type: string
                 example: ["750V", "1500V", "2500.5V"]
 
-  /infra/{id}/routes/{waypoint_type}/{waypoint_id}/:
-    get:
-      tags:
-        - infra
-        - routes
-      summary: Retrieve all routes that starting and ending by the given waypoint (detector or buffer stop)
-      parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          description: Infra ID
-          required: true
-        - in: path
-          name: waypoint_type
-          schema:
-            type: string
-            enum: [Detector, BufferStop]
-          description: Type of the waypoint
-          required: true
-        - in: path
-          name: waypoint_id
-          schema:
-            type: string
-          description: The waypoint id
-          required: true
-      responses:
-        200:
-          description: All routes that starting and ending by the given waypoint
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  starting:
-                    type: array
-                    items:
-                      type: string
-                    example: ["route1", "route2"]
-                  ending:
-                    type: array
-                    items:
-                      type: string
-                    example: ["route3", "route4"]
-                required: [starting, ending]
-
-  /infra/{id}/routes/track_ranges/:
-    get:
-      tags:
-        - infra
-        - routes
-      summary: Compute the track ranges through which routes passes.
-      parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          description: Infra ID
-          required: true
-        - in: query
-          name: routes
-          schema:
-            type: array
-            items:
-              type: string
-            description: A list of routes seperated by comma
-            example: "route1,route2,route3"
-          required: true
-      responses:
-        200:
-          description: Foreach route, the track ranges through which it passes or an error
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  oneOf:
-                    - $ref: "#/components/schemas/RouteTrackRangesNotFoundError"
-                    - $ref: "#/components/schemas/RouteTrackRangesCantComputePathError"
-                    - $ref: "#/components/schemas/RouteTrackRangesComputed"
-
   /infra/{id}/objects/{object_type}/:
     post:
       tags:
@@ -904,44 +823,6 @@ components:
               type: string
             is_warning:
               type: boolean
-
-    RouteTrackRangesComputed:
-      type: object
-      description: Route track ranges successfully computed
-      required:
-        - type
-        - track_ranges
-      properties:
-        type:
-          type: string
-          enum:
-            - Computed
-        track_ranges:
-          type: array
-          items:
-            $ref: "#/components/schemas/DirectionalTrackRange"
-
-    RouteTrackRangesNotFoundError:
-      type: object
-      description: Error when the route id couldn't be found
-      required:
-        - type
-      properties:
-        type:
-          type: string
-          enum:
-            - NotFound
-
-    RouteTrackRangesCantComputePathError:
-      type: object
-      description: Error when the route path couldn't be computed
-      required:
-        - type
-      properties:
-        type:
-          type: string
-          enum:
-            - CantComputePath
 
     Geometry:
       type: object

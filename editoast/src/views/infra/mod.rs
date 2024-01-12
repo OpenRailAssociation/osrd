@@ -43,6 +43,7 @@ use uuid::Uuid;
 crate::routes! {
     "/infra" => {
         "/{infra_id}" => {
+            routes::routes(),
             lines::routes(),
             auto_fixes::routes(),
             pathfinding::routes(),

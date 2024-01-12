@@ -2153,41 +2153,6 @@ components:
       - signaling_type
       - track_sections
       type: object
-    RouteTrackRangesCantComputePathError:
-      description: Error when the route path couldn't be computed
-      properties:
-        type:
-          enum:
-          - CantComputePath
-          type: string
-      required:
-      - type
-      type: object
-    RouteTrackRangesComputed:
-      description: Route track ranges successfully computed
-      properties:
-        track_ranges:
-          items:
-            $ref: '#/components/schemas/DirectionalTrackRange'
-          type: array
-        type:
-          enum:
-          - Computed
-          type: string
-      required:
-      - type
-      - track_ranges
-      type: object
-    RouteTrackRangesNotFoundError:
-      description: Error when the route id couldn't be found
-      properties:
-        type:
-          enum:
-          - NotFound
-          type: string
-      required:
-      - type
-      type: object
     RoutingRequirement:
       properties:
         begin_time:
@@ -4427,93 +4392,6 @@ paths:
       summary: Serialize an infra to railjson
       tags:
       - infra
-  /infra/{id}/routes/track_ranges/:
-    get:
-      parameters:
-      - description: Infra ID
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
-      - in: query
-        name: routes
-        required: true
-        schema:
-          description: A list of routes seperated by comma
-          example: route1,route2,route3
-          items:
-            type: string
-          type: array
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                items:
-                  oneOf:
-                  - $ref: '#/components/schemas/RouteTrackRangesNotFoundError'
-                  - $ref: '#/components/schemas/RouteTrackRangesCantComputePathError'
-                  - $ref: '#/components/schemas/RouteTrackRangesComputed'
-                type: array
-          description: Foreach route, the track ranges through which it passes or an error
-      summary: Compute the track ranges through which routes passes.
-      tags:
-      - infra
-      - routes
-  /infra/{id}/routes/{waypoint_type}/{waypoint_id}/:
-    get:
-      parameters:
-      - description: Infra ID
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
-      - description: Type of the waypoint
-        in: path
-        name: waypoint_type
-        required: true
-        schema:
-          enum:
-          - Detector
-          - BufferStop
-          type: string
-      - description: The waypoint id
-        in: path
-        name: waypoint_id
-        required: true
-        schema:
-          type: string
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                properties:
-                  ending:
-                    example:
-                    - route3
-                    - route4
-                    items:
-                      type: string
-                    type: array
-                  starting:
-                    example:
-                    - route1
-                    - route2
-                    items:
-                      type: string
-                    type: array
-                required:
-                - starting
-                - ending
-                type: object
-          description: All routes that starting and ending by the given waypoint
-      summary: Retrieve all routes that starting and ending by the given waypoint (detector or buffer stop)
-      tags:
-      - infra
-      - routes
   /infra/{id}/speed_limit_tags/:
     get:
       parameters:
@@ -4739,6 +4617,114 @@ paths:
       tags:
       - infra
       - pathfinding
+  /infra/{infra_id}/routes/track_ranges/:
+    get:
+      description: Compute the track ranges through which routes passes.
+      parameters:
+      - description: The ID of the infra to fix
+        in: path
+        name: infra_id
+        required: true
+        schema:
+          format: int64
+          type: integer
+      - description: A list of comma-separated route ids
+        in: query
+        name: routes
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  oneOf:
+                  - properties:
+                      track_ranges:
+                        items:
+                          $ref: '#/components/schemas/DirectionalTrackRange'
+                        type: array
+                      type:
+                        enum:
+                        - Computed
+                        type: string
+                    required:
+                    - type
+                    - track_ranges
+                    type: object
+                  - properties:
+                      type:
+                        enum:
+                        - NotFound
+                        type: string
+                    required:
+                    - type
+                    type: object
+                  - properties:
+                      type:
+                        enum:
+                        - CantComputePath
+                        type: string
+                    required:
+                    - type
+                    type: object
+                type: array
+          description: Foreach route, all the track ranges in it or an error
+      summary: Compute the track ranges through which routes passes.
+      tags:
+      - infra
+      - routes
+  /infra/{infra_id}/routes/{waypoint_type}/{waypoint_id}/:
+    get:
+      description: Retrieve all routes that starting and ending by the given waypoint (detector or buffer stop)
+      parameters:
+      - description: Infra ID
+        in: path
+        name: infra_id
+        required: true
+        schema:
+          format: int64
+          type: integer
+      - description: Type of the waypoint
+        in: path
+        name: waypoint_type
+        required: true
+        schema:
+          enum:
+          - Detector
+          - BufferStop
+          type: string
+      - description: Waypoint ID
+        in: path
+        name: waypoint_id
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  ending:
+                    items:
+                      type: string
+                    type: array
+                  starting:
+                    items:
+                      type: string
+                    type: array
+                required:
+                - starting
+                - ending
+                type: object
+          description: All routes that starting and ending by the given waypoint
+      summary: Retrieve all routes that starting and ending by the given waypoint (detector or buffer stop)
+      tags:
+      - infra
+      - routes
   /layers/layer/{layer_slug}/mvt/{view_slug}/:
     get:
       description: Returns layer view metadata to query tiles
