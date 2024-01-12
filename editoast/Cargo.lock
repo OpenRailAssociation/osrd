@@ -1199,7 +1199,7 @@ dependencies = [
  "osrd_containers",
  "paste",
  "pathfinding",
- "pointy",
+ "pointy 0.4.0",
  "postgis_diesel",
  "postgres-openssl",
  "pretty_assertions",
@@ -2211,14 +2211,14 @@ dependencies = [
 
 [[package]]
 name = "mvt"
-version = "0.8.1"
+version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "565b864b271f21b3fff747d5c2d7827a102f7d93375d67337b09fa4d4b3487c6"
+checksum = "f1aef0702a843e65e8e544babd859771fb8d0c9d5da58e438ede9610cf78034d"
 dependencies = [
  "log",
  "num-traits",
- "pointy",
- "protobuf 3.2.0",
+ "pointy 0.5.0",
+ "protobuf 3.3.0",
  "thiserror",
 ]
 
@@ -2633,6 +2633,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "pointy"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1abf55719b26d1479fd3263bed514942ee51522ee47474e56da8bd30e6fe1268"
+dependencies = [
+ "num-traits",
+]
+
+[[package]]
 name = "polling"
 version = "2.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2787,9 +2796,9 @@ checksum = "106dd99e98437432fed6519dedecfade6a06a73bb7b2a1e019fdd2bee5778d94"
 
 [[package]]
 name = "protobuf"
-version = "3.2.0"
+version = "3.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b55bad9126f378a853655831eb7363b7b01b81d19f8cb1218861086ca4a1a61e"
+checksum = "b65f4a8ec18723a734e5dc09c173e0abf9690432da5340285d536edcb4dac190"
 dependencies = [
  "once_cell",
  "protobuf-support",
@@ -2817,9 +2826,9 @@ dependencies = [
 
 [[package]]
 name = "protobuf-support"
-version = "3.2.0"
+version = "3.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a5d4d7b8601c814cfb36bcebb79f0e61e45e1e93640cf778837833bbed05c372"
+checksum = "6872f4d4f4b98303239a2b5838f5bbbb77b01ffc892d627957f37a22d7cfe69c"
 dependencies = [
  "thiserror",
 ]
