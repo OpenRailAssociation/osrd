@@ -127,12 +127,16 @@ mod tests {
 
         assert_eq!(operations.len(), 1);
 
-        let (operation, cache_operation) = operations.get(&electrification_cache.get_ref()).unwrap();
+        let (operation, cache_operation) =
+            operations.get(&electrification_cache.get_ref()).unwrap();
         let Operation::Update(update_operation) = operation else {
             panic!("not an `Operation::Update`");
         };
         assert_eq!(update_operation.obj_id, "electrification_id");
-        assert!(matches!(update_operation.obj_type, ObjectType::Electrification));
+        assert!(matches!(
+            update_operation.obj_type,
+            ObjectType::Electrification
+        ));
         assert_eq!(
             update_operation.railjson_patch,
             serde_json::from_str::<Patch>(
@@ -143,7 +147,8 @@ mod tests {
             )
             .unwrap()
         );
-        let CacheOperation::Update(ObjectCache::Electrification(electrification)) = cache_operation else {
+        let CacheOperation::Update(ObjectCache::Electrification(electrification)) = cache_operation
+        else {
             panic!("not a `CacheOperation::Update(ObjectCache::Electrification())`");
         };
         assert_eq!(electrification.track_ranges.len(), 1);
@@ -175,7 +180,8 @@ mod tests {
             "electrification",
             ObjectRef::new(ObjectType::TrackSection, "unknown_track_section_1"),
         );
-        let error_electrification_2 = InfraError::new_empty_object(&electrification_cache, "track_ranges");
+        let error_electrification_2 =
+            InfraError::new_empty_object(&electrification_cache, "track_ranges");
 
         let operations = super::fix_electrification(
             &electrification_cache,
@@ -184,12 +190,16 @@ mod tests {
 
         assert_eq!(operations.len(), 1);
 
-        let (operation, cache_operation) = operations.get(&electrification_cache.get_ref()).unwrap();
+        let (operation, cache_operation) =
+            operations.get(&electrification_cache.get_ref()).unwrap();
         let Operation::Delete(delete_operation) = operation else {
             panic!("not an `Operation::Delete`");
         };
         assert_eq!(delete_operation.obj_id, "electrification_id");
-        assert!(matches!(delete_operation.obj_type, ObjectType::Electrification));
+        assert!(matches!(
+            delete_operation.obj_type,
+            ObjectType::Electrification
+        ));
         let CacheOperation::Delete(object_ref) = cache_operation else {
             panic!("not a `CacheOperation::Delete()`");
         };

@@ -306,8 +306,8 @@ mod tests {
     use crate::schema::operation::{DeleteOperation, Operation, RailjsonObject};
     use crate::schema::utils::Identifier;
     use crate::schema::{
-        ApplicableDirectionsTrackRange, BufferStop, BufferStopCache, BufferStopExtension, Electrification,
-        Detector, DetectorCache, Endpoint, ObjectRef, ObjectType, OperationalPoint,
+        ApplicableDirectionsTrackRange, BufferStop, BufferStopCache, BufferStopExtension, Detector,
+        DetectorCache, Electrification, Endpoint, ObjectRef, ObjectType, OperationalPoint,
         OperationalPointPart, Route, Signal, SignalCache, Slope, SpeedSection, Switch,
         TrackEndpoint, TrackSection, Waypoint,
     };
