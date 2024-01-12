@@ -5,8 +5,8 @@ export const addTagTypes = [
   'electrical_profiles',
   'infra',
   'rolling_stock',
-  'routes',
   'pathfinding',
+  'routes',
   'layers',
   'projects',
   'studies',
@@ -200,25 +200,6 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/infra/${queryArg.id}/railjson/` }),
         providesTags: ['infra'],
       }),
-      getInfraByIdRoutesTrackRanges: build.query<
-        GetInfraByIdRoutesTrackRangesApiResponse,
-        GetInfraByIdRoutesTrackRangesApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/infra/${queryArg.id}/routes/track_ranges/`,
-          params: { routes: queryArg.routes },
-        }),
-        providesTags: ['infra', 'routes'],
-      }),
-      getInfraByIdRoutesAndWaypointTypeWaypointId: build.query<
-        GetInfraByIdRoutesAndWaypointTypeWaypointIdApiResponse,
-        GetInfraByIdRoutesAndWaypointTypeWaypointIdApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/infra/${queryArg.id}/routes/${queryArg.waypointType}/${queryArg.waypointId}/`,
-        }),
-        providesTags: ['infra', 'routes'],
-      }),
       getInfraByIdSpeedLimitTags: build.query<
         GetInfraByIdSpeedLimitTagsApiResponse,
         GetInfraByIdSpeedLimitTagsApiArg
@@ -284,6 +265,25 @@ const injectedRtkApi = api
           params: { number: queryArg.number },
         }),
         invalidatesTags: ['infra', 'pathfinding'],
+      }),
+      getInfraByInfraIdRoutesTrackRanges: build.query<
+        GetInfraByInfraIdRoutesTrackRangesApiResponse,
+        GetInfraByInfraIdRoutesTrackRangesApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/infra/${queryArg.infraId}/routes/track_ranges/`,
+          params: { routes: queryArg.routes },
+        }),
+        providesTags: ['infra', 'routes'],
+      }),
+      getInfraByInfraIdRoutesAndWaypointTypeWaypointId: build.query<
+        GetInfraByInfraIdRoutesAndWaypointTypeWaypointIdApiResponse,
+        GetInfraByInfraIdRoutesAndWaypointTypeWaypointIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/infra/${queryArg.infraId}/routes/${queryArg.waypointType}/${queryArg.waypointId}/`,
+        }),
+        providesTags: ['infra', 'routes'],
       }),
       getLayersLayerByLayerSlugMvtAndViewSlug: build.query<
         GetLayersLayerByLayerSlugMvtAndViewSlugApiResponse,
@@ -891,30 +891,6 @@ export type GetInfraByIdRailjsonApiArg = {
   /** Infra ID */
   id: number;
 };
-export type GetInfraByIdRoutesTrackRangesApiResponse =
-  /** status 200 Foreach route, the track ranges through which it passes or an error */ (
-    | RouteTrackRangesNotFoundError
-    | RouteTrackRangesCantComputePathError
-    | RouteTrackRangesComputed
-  )[];
-export type GetInfraByIdRoutesTrackRangesApiArg = {
-  /** Infra ID */
-  id: number;
-  routes: string[];
-};
-export type GetInfraByIdRoutesAndWaypointTypeWaypointIdApiResponse =
-  /** status 200 All routes that starting and ending by the given waypoint */ {
-    ending: string[];
-    starting: string[];
-  };
-export type GetInfraByIdRoutesAndWaypointTypeWaypointIdApiArg = {
-  /** Infra ID */
-  id: number;
-  /** Type of the waypoint */
-  waypointType: 'Detector' | 'BufferStop';
-  /** The waypoint id */
-  waypointId: string;
-};
 export type GetInfraByIdSpeedLimitTagsApiResponse = /** status 200 Tags list */ string[];
 export type GetInfraByIdSpeedLimitTagsApiArg = {
   /** Infra id */
@@ -968,6 +944,38 @@ export type PostInfraByInfraIdPathfindingApiArg = {
   infraId: number;
   number?: number | null;
   pathfindingInput: PathfindingInput;
+};
+export type GetInfraByInfraIdRoutesTrackRangesApiResponse =
+  /** status 200 Foreach route, all the track ranges in it or an error */ (
+    | {
+        track_ranges: DirectionalTrackRange[];
+        type: 'Computed';
+      }
+    | {
+        type: 'NotFound';
+      }
+    | {
+        type: 'CantComputePath';
+      }
+  )[];
+export type GetInfraByInfraIdRoutesTrackRangesApiArg = {
+  /** The ID of the infra to fix */
+  infraId: number;
+  /** A list of comma-separated route ids */
+  routes: string;
+};
+export type GetInfraByInfraIdRoutesAndWaypointTypeWaypointIdApiResponse =
+  /** status 200 All routes that starting and ending by the given waypoint */ {
+    ending: string[];
+    starting: string[];
+  };
+export type GetInfraByInfraIdRoutesAndWaypointTypeWaypointIdApiArg = {
+  /** Infra ID */
+  infraId: number;
+  /** Type of the waypoint */
+  waypointType: 'Detector' | 'BufferStop';
+  /** Waypoint ID */
+  waypointId: string;
 };
 export type GetLayersLayerByLayerSlugMvtAndViewSlugApiResponse =
   /** status 200 Successful Response */ {
@@ -1478,28 +1486,18 @@ export type InfraError = {
   };
   schematic?: object | null;
 };
-export type RouteTrackRangesNotFoundError = {
-  type: 'NotFound';
+export type BoundingBox = (number & number)[][];
+export type Zone = {
+  geo: BoundingBox;
+  sch: BoundingBox;
 };
-export type RouteTrackRangesCantComputePathError = {
-  type: 'CantComputePath';
-};
-export type Direction = 'START_TO_STOP' | 'STOP_TO_START';
 export type Identifier = string;
+export type Direction = 'START_TO_STOP' | 'STOP_TO_START';
 export type DirectionalTrackRange = {
   begin: number;
   direction: Direction;
   end: number;
   track: Identifier;
-};
-export type RouteTrackRangesComputed = {
-  track_ranges: DirectionalTrackRange[];
-  type: 'Computed';
-};
-export type BoundingBox = (number & number)[][];
-export type Zone = {
-  geo: BoundingBox;
-  sch: BoundingBox;
 };
 export type PathfindingOutput = {
   detectors: Identifier[];

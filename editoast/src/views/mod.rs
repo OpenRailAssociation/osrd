@@ -33,6 +33,7 @@ use actix_web::{get, services};
 use diesel::sql_query;
 use redis::cmd;
 use serde_derive::{Deserialize, Serialize};
+use utoipa::openapi::RefOr;
 use utoipa::{OpenApi, ToSchema};
 
 // This function is only temporary while our migration to using utoipa is
@@ -100,6 +101,16 @@ impl OpenApiRoot {
                 if let Some(request_body) = operation.request_body.as_mut() {
                     for (_, content) in request_body.content.iter_mut() {
                         remove_discriminator(&mut content.schema);
+                    }
+                }
+                for (_, response) in operation.responses.responses.iter_mut() {
+                    match response {
+                        RefOr::T(response) => {
+                            for (_, content) in response.content.iter_mut() {
+                                remove_discriminator(&mut content.schema);
+                            }
+                        }
+                        RefOr::Ref { .. } => panic!("editoast doesn't support response references"),
                     }
                 }
             }

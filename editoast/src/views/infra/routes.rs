@@ -1,24 +1,34 @@
-use crate::error::Result;
-use crate::infra_cache::{Graph, InfraCache};
-use crate::models::{Infra, Retrieve};
-use crate::schema::DirectionalTrackRange;
-use crate::views::infra::InfraApiError;
-use crate::views::params::List;
-use crate::DbPool;
-use actix_web::dev::HttpServiceFactory;
-use actix_web::get;
-use actix_web::web::{scope, Data, Json, Path, Query};
+use crate::{
+    error::Result,
+    infra_cache::{Graph, InfraCache},
+    models::{Infra, Retrieve},
+    schema::DirectionalTrackRange,
+    views::{
+        infra::{InfraApiError, InfraIdParam},
+        params::List,
+    },
+    DbPool,
+};
+use actix_web::{
+    get,
+    web::{Data, Json, Path, Query},
+};
 use chashmap::CHashMap;
-use diesel::sql_query;
-use diesel::sql_types::{BigInt, Bool, Text};
+use diesel::{
+    sql_query,
+    sql_types::{BigInt, Bool, Text},
+};
 use diesel_async::RunQueryDsl;
 
 use serde::{Deserialize, Serialize};
 use strum_macros::Display;
+use utoipa::ToSchema;
 
-/// Return `/infra/<infra_id>/routes` routes
-pub fn routes() -> impl HttpServiceFactory {
-    scope("/routes").service((get_routes_track_ranges, get_routes_from_waypoint))
+crate::routes! {
+    "/routes" => {
+        get_routes_track_ranges,
+        get_routes_from_waypoint,
+    }
 }
 
 #[derive(QueryableByName)]
@@ -29,31 +39,48 @@ struct RouteFromWaypointResult {
     is_entry_point: bool,
 }
 
-#[derive(Debug, Display, Clone, Copy, Deserialize)]
+#[derive(Debug, Display, Clone, Copy, Deserialize, ToSchema)]
 enum WaypointType {
     Detector,
     BufferStop,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Deserialize, utoipa::IntoParams)]
+struct RoutesFromWaypointParams {
+    /// Infra ID
+    infra_id: i64,
+    /// Type of the waypoint
+    #[param(inline)]
+    waypoint_type: WaypointType,
+    /// Waypoint ID
+    waypoint_id: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, PartialEq, ToSchema)]
 struct RoutesResponse {
     starting: Vec<String>,
     ending: Vec<String>,
 }
 
-/// Return the routes list of a specific waypoint
+/// Retrieve all routes that starting and ending by the given waypoint (detector or buffer stop)
+#[utoipa::path(
+    tag = "infra,routes",
+    params(RoutesFromWaypointParams),
+    responses(
+        (status = 200, body = inline(RoutesResponse), description = "All routes that starting and ending by the given waypoint")
+    ),
+)]
 #[get("/{waypoint_type}/{waypoint_id}")]
 async fn get_routes_from_waypoint(
-    path: Path<(i64, WaypointType, String)>,
+    path: Path<RoutesFromWaypointParams>,
     db_pool: Data<DbPool>,
 ) -> Result<Json<RoutesResponse>> {
-    let (infra, waypoint_type, waypoint_id) = path.into_inner();
     let mut conn = db_pool.get().await?;
     let routes: Vec<RouteFromWaypointResult> =
         sql_query(include_str!("sql/get_routes_from_waypoint.sql"))
-            .bind::<BigInt, _>(infra)
-            .bind::<Text, _>(waypoint_id)
-            .bind::<Text, _>(waypoint_type.to_string())
+            .bind::<BigInt, _>(&path.infra_id)
+            .bind::<Text, _>(&path.waypoint_id)
+            .bind::<Text, _>(path.waypoint_type.to_string())
             .load(&mut conn)
             .await?;
 
@@ -74,7 +101,7 @@ async fn get_routes_from_waypoint(
     }))
 }
 
-#[derive(Debug, Clone, Serialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, PartialEq, ToSchema)]
 #[serde(deny_unknown_fields, tag = "type", content = "track_ranges")]
 enum RouteTrackRangesResult {
     Computed(Vec<DirectionalTrackRange>),
@@ -82,11 +109,21 @@ enum RouteTrackRangesResult {
     CantComputePath,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, utoipa::IntoParams)]
 struct RouteTrackRangesParams {
+    /// A list of comma-separated route ids
+    #[param(value_type = String)]
     routes: List<String>,
 }
 
+/// Compute the track ranges through which routes passes.
+#[utoipa::path(
+    tag = "infra,routes",
+    params(InfraIdParam, RouteTrackRangesParams),
+    responses(
+        (status = 200, body = inline(Vec<RouteTrackRangesResult>), description = "Foreach route, all the track ranges in it or an error")
+    ),
+)]
 #[get("/track_ranges")]
 async fn get_routes_track_ranges<'a>(
     infra: Path<i64>,
