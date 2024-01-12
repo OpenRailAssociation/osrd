@@ -144,9 +144,9 @@ async function getRouteGeometryByRoute(
   dispatch: Dispatch
 ): Promise<Feature<LineString, { id: string }>> {
   const trackRangesResult = await dispatch(
-    osrdEditoastApi.endpoints.getInfraByIdRoutesTrackRanges.initiate({
-      id: infra as number,
-      routes: [route.properties.id],
+    osrdEditoastApi.endpoints.getInfraByInfraIdRoutesTrackRanges.initiate({
+      infraId: infra as number,
+      routes: route.properties.id,
     })
   ).unwrap();
   if (trackRangesResult.length === 0 || trackRangesResult[0].type !== 'Computed') {

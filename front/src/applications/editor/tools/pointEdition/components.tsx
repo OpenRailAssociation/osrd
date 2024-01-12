@@ -72,7 +72,7 @@ export const RoutesList = ({ type, id }: RoutesListProps) => {
   >({ type: 'idle' });
   const { switchTool } = useContext(EditorContext) as ExtendedEditorContextType<unknown>;
   const [getRoutesFromWaypoint] =
-    osrdEditoastApi.endpoints.getInfraByIdRoutesAndWaypointTypeWaypointId.useLazyQuery();
+    osrdEditoastApi.endpoints.getInfraByInfraIdRoutesAndWaypointTypeWaypointId.useLazyQuery();
 
   useEffect(() => {
     if (routesState.type === 'idle' && infraID) {
@@ -80,7 +80,7 @@ export const RoutesList = ({ type, id }: RoutesListProps) => {
         setRoutesState({ type: 'error', message: `${type} elements are not valid waypoints.` });
       } else {
         setRoutesState({ type: 'loading' });
-        getRoutesFromWaypoint({ id: infraID, waypointType: type, waypointId: id })
+        getRoutesFromWaypoint({ infraId: infraID, waypointType: type, waypointId: id })
           .unwrap()
           .then(({ starting = [], ending = [] }) => {
             if (starting.length || ending.length) {
