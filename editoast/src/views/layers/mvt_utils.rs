@@ -1,6 +1,5 @@
 use diesel::sql_types::{Jsonb, Text};
 use mvt::{Feature, GeomData, GeomEncoder, Tile as MvtTile};
-use pointy::Transform;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 
@@ -18,7 +17,7 @@ impl GeoJsonAndData {
     /// Converts GeoJsonAndData as mvt GeomData
     pub fn as_geom_data(&self) -> GeomData {
         let geo_json = serde_json::from_str::<GeoJson>(&self.geo_json).unwrap();
-        let mut encoder = GeomEncoder::new(geo_json.get_geom_type(), Transform::default());
+        let mut encoder = GeomEncoder::new(geo_json.get_geom_type());
         match geo_json {
             GeoJson::Point { coordinates } => {
                 encoder.add_point(coordinates.0, coordinates.1).unwrap();
