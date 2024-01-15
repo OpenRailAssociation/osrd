@@ -31,11 +31,11 @@
         };
         pythonPackages = ps: [
           ps.black
-          ps.isort
           ps.flake8
           ps.intervaltree
-          ps.numpy
+          ps.isort
           ps.mock
+          ps.numpy
           ps.pillow
           ps.psycopg
           ps.psycopg2
@@ -53,7 +53,6 @@
           ps.ipympl
           ps.matplotlib
           ps.networkx
-          ps.pyosmium
 
           ps.progress
           ps.tqdm
@@ -65,7 +64,7 @@
           nodejs = fixedNode;
         };
 
-        rustChan = pkgs.rust-bin.stable."1.73.0".rust.override {
+        rustChan = pkgs.rust-bin.stable."1.75.0".rust.override {
           targets = [];
           extensions = [
             "clippy"
@@ -101,8 +100,7 @@
                 postgresql
 
                 # API
-                (python310.withPackages pythonPackages)
-                poetry
+                (python311.withPackages pythonPackages)
 
                 # Core
                 gradle
