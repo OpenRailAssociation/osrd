@@ -52,7 +52,7 @@ public class EnvelopeConcat implements EnvelopeTimeInterpolate {
     public double interpolateTotalTime(double position) {
         var envelope = findEnvelopeAt(position);
         assert envelope != null : "Trying to interpolate time outside of the envelope";
-        return envelope.startTime + envelope.envelope.interpolateTotalTime(position - envelope.startOffset);
+        return envelope.startTime + envelope.envelope.interpolateTotalTimeClamp(position - envelope.startOffset);
     }
 
     @Override
