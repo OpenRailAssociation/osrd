@@ -150,10 +150,13 @@ internal constructor(
                     listOf(TrainStop(envelope.endPos, stopDurationAtEnd))
                 )
         val explorerWithNewEnvelope = infraExplorer.clone().addEnvelope(envelopeWithStop)
+        val startOffsetOnPath =
+            startOffset + explorerWithNewEnvelope.getPredecessorLength().distance
+        val endOffsetOnPath = startOffsetOnPath + (endOffset - startOffset)
         return blockAvailability.getAvailability(
             explorerWithNewEnvelope,
-            startOffset.distance,
-            endOffset.distance,
+            startOffsetOnPath.distance,
+            endOffsetOnPath.distance,
             startTime
         )
     }
