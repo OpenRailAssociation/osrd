@@ -88,6 +88,7 @@ components:
       - STANDARD
       type: string
     ConditionalEffortCurve:
+      additionalProperties: false
       properties:
         cond:
           $ref: '#/components/schemas/EffortCurveConditions'
@@ -169,6 +170,7 @@ components:
       - STOP_TO_START
       type: string
     DirectionalTrackRange:
+      additionalProperties: false
       properties:
         begin:
           format: double
@@ -187,6 +189,7 @@ components:
       - direction
       type: object
     EffortCurve:
+      additionalProperties: false
       properties:
         max_efforts:
           example:
@@ -213,6 +216,7 @@ components:
       - max_efforts
       type: object
     EffortCurveConditions:
+      additionalProperties: false
       properties:
         comfort:
           allOf:
@@ -230,6 +234,7 @@ components:
       - power_restriction_code
       type: object
     EffortCurves:
+      additionalProperties: false
       properties:
         default_mode:
           type: string
@@ -431,6 +436,7 @@ components:
         - energy_source_type
         type: object
     EnergyStorage:
+      additionalProperties: false
       description: energy storage of an energy source (of a rolling stock, can be a electrical battery or a hydrogen/fuel powerPack)
       properties:
         capacity:
@@ -510,6 +516,7 @@ components:
         - track_name
         type: object
     Gamma:
+      additionalProperties: false
       properties:
         type:
           type: string
@@ -790,6 +797,7 @@ components:
         type: string
       type: array
     LightEffortCurves:
+      additionalProperties: false
       properties:
         default_mode:
           type: string
@@ -968,6 +976,7 @@ components:
       - base
       type: object
     ModeEffortCurves:
+      additionalProperties: false
       properties:
         curves:
           items:
@@ -1691,6 +1700,7 @@ components:
       - value
       type: object
     RefillLaw:
+      additionalProperties: false
       description: physical law defining how the storage can be refilled
       properties:
         soc_ref:
@@ -1803,6 +1813,7 @@ components:
       - power_restriction_code
       type: object
     RollingResistance:
+      additionalProperties: false
       properties:
         A:
           format: double
@@ -2049,6 +2060,7 @@ components:
       - name
       type: object
     RollingStockLockedUpdateForm:
+      additionalProperties: false
       properties:
         locked:
           description: New locked value
@@ -2057,6 +2069,7 @@ components:
       - locked
       type: object
     RollingStockMetadata:
+      additionalProperties: false
       properties:
         detail:
           type: string
@@ -2187,6 +2200,7 @@ components:
       - end_time
       type: object
     Scenario:
+      additionalProperties: false
       properties:
         creation_date:
           format: date-time
@@ -3078,6 +3092,7 @@ components:
       - end_time
       type: object
     SpeedDependantPower:
+      additionalProperties: false
       description: power-speed curve (in an energy source)
       properties:
         powers:
@@ -3113,6 +3128,7 @@ components:
       - distribution
       type: object
     Study:
+      additionalProperties: false
       properties:
         actual_end_date:
           format: date
@@ -3398,6 +3414,7 @@ components:
       - offset
       type: object
     TrackRange:
+      additionalProperties: false
       properties:
         begin:
           format: double
