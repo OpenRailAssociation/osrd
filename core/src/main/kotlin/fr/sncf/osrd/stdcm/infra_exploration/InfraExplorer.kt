@@ -59,6 +59,12 @@ interface InfraExplorer {
     /** Returns the length of the current block. */
     fun getCurrentBlockLength(): Length<Block>
 
+    /** Returns the length of all blocks before the current one */
+    fun getPredecessorLength(): Length<Path>
+
+    /** Returns the all the blocks before the current one */
+    fun getPredecessorBlocks(): StaticIdxList<Block>
+
     /** Returns a copy of the current instance. */
     fun clone(): InfraExplorer
 }
@@ -160,12 +166,26 @@ private class InfraExplorerImpl(
     }
 
     override fun getCurrentBlock(): BlockId {
-        assert(currentIndex < blocks.size) { "InfraExplorer: currentBlockIndex is out of bounds."}
+        assert(currentIndex < blocks.size) { "InfraExplorer: currentBlockIndex is out of bounds." }
         return blocks[currentIndex]
     }
 
     override fun getCurrentBlockLength(): Length<Block> {
         return blockInfra.getBlockLength(getCurrentBlock())
+    }
+
+    override fun getPredecessorLength(): Length<Path> {
+        return Length(Distance(millimeters =
+        getPredecessorBlocks()
+            .sumOf { blockInfra.getBlockLength(it).distance.millimeters }
+        ))
+    }
+
+    override fun getPredecessorBlocks(): StaticIdxList<Block> {
+        val res = mutableStaticIdxArrayListOf<Block>()
+        for (i in 0..<currentIndex)
+            res.add(blocks[i])
+        return res
     }
 
     override fun clone(): InfraExplorer {
