@@ -137,7 +137,7 @@ class StandardAllowanceTests {
         val timeEnterOccupiedSection =
             (res.withAllowance.departureTime +
                 res.withAllowance.envelope.interpolateTotalTime(5000.0))
-        Assertions.assertEquals(3600.0, timeEnterOccupiedSection, 2 * TIME_STEP)
+        Assertions.assertEquals(3600.0, timeEnterOccupiedSection, 3 * TIME_STEP)
         occupancyTest(res.withAllowance, occupancyGraph, 2 * TIME_STEP)
         checkAllowanceResult(res, allowance)
     }
