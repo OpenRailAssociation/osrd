@@ -19,7 +19,7 @@ thiserror = "1.0.50"
 dyn-clone = "1.0.16"
 futures-util = "0.3.29"
 futures = "0.3.29"
-smallvec = "1.11.2"
+smallvec = "1.12.0"
 
 # main crate
 figment = "0.10"
