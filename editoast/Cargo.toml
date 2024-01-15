@@ -9,17 +9,17 @@ members = [".", "editoast_derive", "osrd_containers"]
 
 [workspace.dependencies]
 rangemap = "1.4.0"
-serde = "1.0.193"
-serde_derive = "1.0.193"
-serde_json = "1.0.108"
-utoipa = { version = "4.1.0", features = ["actix_extras", "chrono", "uuid"] }
+serde = "1.0.195"
+serde_derive = "1.0.195"
+serde_json = "1.0.111"
+utoipa = { version = "4.2.0", features = ["actix_extras", "chrono", "uuid"] }
 
 [dependencies]
 # For batch dependcy updates see https://osrd.fr/en/docs/guides/contribute/batch-updating-dependencies/
 
-async-trait = "0.1.75"
+async-trait = "0.1.77"
 chashmap = "2.2.2"
-clap = { version = "4.4.11", features = ["derive", "env"] }
+clap = { version = "4.4.16", features = ["derive", "env"] }
 colored = "2.1.0"
 chrono = { version = "0.4.31", features = ["serde"] }
 derivative = "2.2.0"
@@ -37,14 +37,14 @@ postgres-openssl = "0.5.0"
 openssl = "*"
 futures-util = "*"
 diesel_json = "0.2.1"
-image = "0.24.7"
+image = "0.24.8"
 json-patch = "1.2.0"
-pathfinding = "4.7.0"
+pathfinding = "4.8.2"
 rand = "0.8.5"
-actix-files = "0.6.2"
-actix-web = "4.4.0"
-actix-http = "3.4.0"
-actix-cors = "0.6.5"
+actix-files = "0.6.5"
+actix-web = "4.4.1"
+actix-http = "3.5.1"
+actix-cors = "0.7.0"
 env_logger = "0.10.1"
 log = "0.4.20"
 redis = { version = "0.24.0", features = [
@@ -58,18 +58,18 @@ sentry-actix = "0.32.1"
 serde.workspace = true
 serde_derive.workspace = true
 serde_json.workspace = true
-serde_yaml = "0.9.29"
+serde_yaml = "0.9.30"
 sha1 = "0.10"
 strum = "0.25.0"
 strum_macros = "0.25.3"
-thiserror = "1.0.51"
+thiserror = "1.0.56"
 enum-map = "2.7.3"
 editoast_derive = { path = "./editoast_derive" }
 osrd_containers = { path = "./osrd_containers" }
 mvt = "0.8.1"
-pointy = "0.4.0"
-futures = "0.3.29"
-postgis_diesel = { version = "2.2.1", features = ["serde"] }
+pointy = "0.5.0"
+futures = "0.3.30"
+postgis_diesel = { version = "2.3.0", features = ["serde"] }
 geos = { version = "8.3.0", features = ["json"] }
 rangemap.workspace = true
 actix-multipart = "0.6.1"
@@ -86,6 +86,6 @@ validator = { version = "0.16.1", features = ["derive"] }
 [dev-dependencies]
 async-std = { version = "1.12.0", features = ["attributes", "tokio1"] }
 rstest = "0.18.2"
-tempfile = "3.8.1"
+tempfile = "3.9.0"
 pretty_assertions = "1.4.0"
-serial_test = "2.0.0"
+serial_test = "3.0.0"
