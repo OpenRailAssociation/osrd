@@ -4,10 +4,9 @@ import { omit } from 'lodash';
 
 import { formatIsoDate } from 'utils/date';
 
-import type { OsrdConfState, PointOnMap } from 'applications/operationalStudies/consts';
-
 import { computeLinkedOriginTimes } from 'reducers/osrdconf/helpers';
 import { InfraStateReducers, buildInfraStateReducers, infraState } from 'reducers/infra';
+import type { PointOnMap } from 'applications/operationalStudies/consts';
 import type {
   OperationalStudiesConfSlice,
   OperationalStudiesConfSliceActions,
@@ -15,6 +14,7 @@ import type {
 import type { StdcmConfSlice, StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
 import type { StdcmConfSelectors } from 'reducers/osrdconf/stdcmConf/selectors';
 import type { OperationalStudiesConfSelectors } from 'reducers/osrdconf/operationalStudiesConf/selectors';
+import type { OsrdConfState } from 'reducers/osrdconf/consts';
 
 export const defaultCommonConf: OsrdConfState = {
   name: '',

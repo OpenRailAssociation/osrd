@@ -5,8 +5,6 @@ import { useDispatch } from 'react-redux';
 import nextId from 'react-id-generator';
 import { GoLock } from 'react-icons/go';
 
-import { MODES } from 'applications/operationalStudies/consts';
-
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import type { Infra } from 'common/api/osrdEditoastApi';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
@@ -16,6 +14,7 @@ import {
   useOsrdContext,
   useUpdateInfraID,
 } from 'common/osrdContext';
+import { MODES } from 'main/consts';
 
 type InfraSelectorModalBodyStandardProps = {
   filter: string;

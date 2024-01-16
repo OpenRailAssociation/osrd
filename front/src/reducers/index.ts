@@ -4,9 +4,7 @@ import { persistCombineReducers, persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage'; // defaults to localStorage
 import createCompressor from 'redux-persist-transform-compress';
 import { createFilter } from 'redux-persist-transform-filter';
-
-import type { OsrdConfState, OsrdStdcmConfState } from 'applications/operationalStudies/consts';
-
+import type { OsrdConfState, OsrdStdcmConfState } from 'reducers/osrdconf/consts';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { osrdGatewayApi } from 'common/api/osrdGatewayApi';
 

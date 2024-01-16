@@ -8,3 +8,5 @@ const STDCM_REQUEST_STATUS = Object.freeze({
 });
 
 export default STDCM_REQUEST_STATUS;
+
+export const RUNTIME_CAP = 43200;

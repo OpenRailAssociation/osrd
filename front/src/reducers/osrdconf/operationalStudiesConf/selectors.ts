@@ -1,7 +1,6 @@
-import type { OsrdConfState } from 'applications/operationalStudies/consts';
-
 import buildCommonConfSelectors from 'reducers/osrdconf/osrdConfCommon/selectors';
 import { operationalStudiesConfSlice } from 'reducers/osrdconf/operationalStudiesConf';
+import type { OsrdConfState } from '../consts';
 
 const buildOperationalStudiesConfSelectors = () => {
   const commonConfSelectors = buildCommonConfSelectors<OsrdConfState>(operationalStudiesConfSlice);

@@ -1,8 +1,7 @@
 import { makeSubSelector } from 'utils/selectors';
 
-import type { OsrdConfState } from 'applications/operationalStudies/consts';
-
 import type { RootState } from 'reducers';
+import type { OsrdConfState } from 'reducers/osrdconf/consts';
 import type { StdcmConfSlice } from 'reducers/osrdconf/stdcmConf';
 import type { OperationalStudiesConfSlice } from 'reducers/osrdconf/operationalStudiesConf';
 import buildInfraStateSelectors from 'reducers/infra/selectors';

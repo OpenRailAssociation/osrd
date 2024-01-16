@@ -16,7 +16,7 @@ import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import ReactModal from 'react-modal';
 // OSRD helpers
 import createTrain from 'modules/simulationResult/components/SpaceTimeChart/createTrain';
-import formatStdcmConf from 'applications/stdcm/formatStcmConf';
+import formatStdcmConf from 'applications/stdcm/formatStdcmConf';
 // Static Data and Assets
 import { setFailure } from 'reducers/main';
 import STDCM_REQUEST_STATUS from 'applications/stdcm/consts';
@@ -28,7 +28,7 @@ import type { StdcmRequestStatus } from 'applications/stdcm/types';
 import { extractMessageFromError, extractStatusFromError } from 'utils/error';
 import { Train } from 'reducers/osrdsimulation/types';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
-import type { OsrdStdcmConfState } from 'applications/operationalStudies/consts';
+import type { OsrdStdcmConfState } from 'reducers/osrdconf/consts';
 
 type StdcmRequestModalProps = {
   setCurrentStdcmRequestStatus: (currentStdcmRequestStatus: StdcmRequestStatus) => void;
@@ -36,11 +36,7 @@ type StdcmRequestModalProps = {
 };
 
 export default function StdcmRequestModal(props: StdcmRequestModalProps) {
-  const { t } = useTranslation([
-    'translation',
-    'operationalStudies/manageTrainSchedule',
-    'translation',
-  ]);
+  const { t } = useTranslation(['translation', 'stdcm']);
   const { getConf } = useOsrdConfSelectors();
   const osrdconf = useSelector(getConf);
   const dispatch = useDispatch();
@@ -103,7 +99,7 @@ export default function StdcmRequestModal(props: StdcmRequestModalProps) {
               .catch(() => {
                 dispatch(
                   setFailure({
-                    name: t('operationalStudies/manageTrainSchedule:errorMessages.stdcmError'),
+                    name: t('stdcm:stdcmError'),
                     message: t('translation:common.error'),
                   })
                 );
@@ -115,10 +111,10 @@ export default function StdcmRequestModal(props: StdcmRequestModalProps) {
           setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.rejected);
           dispatch(
             setFailure({
-              name: t('operationalStudies/manageTrainSchedule:errorMessages.stdcmError'),
+              name: t('stdcm:stdcmError'),
               message:
                 extractStatusFromError(e) === 400 && errorMessage === 'No path could be found'
-                  ? t('operationalStudies/manageTrainSchedule:errorMessages.stdcmErrorNoPaths')
+                  ? t('stdcm:stdcmErrorNoPaths')
                   : errorMessage,
             })
           );
@@ -154,15 +150,13 @@ export default function StdcmRequestModal(props: StdcmRequestModalProps) {
       <div className="modal-dialog" role="document">
         <div className="modal-content">
           <ModalHeaderSNCF>
-            <h1>{t('operationalStudies/manageTrainSchedule:stdcmComputation')}</h1>
+            <h1>{t('stdcm:stdcmComputation')}</h1>
           </ModalHeaderSNCF>
           <ModalBodySNCF>
             <div className="d-flex flex-column text-center">
               {currentStdcmRequestStatus === STDCM_REQUEST_STATUS.pending && (
                 <div className="d-flex align-items-center justify-content-center mb-3">
-                  <span className="mr-2">
-                    {t('operationalStudies/manageTrainSchedule:pleaseWait')}
-                  </span>
+                  <span className="mr-2">{t('stdcm:pleaseWait')}</span>
                   <Spinner />
                 </div>
               )}
@@ -173,9 +167,9 @@ export default function StdcmRequestModal(props: StdcmRequestModalProps) {
                   type="button"
                   onClick={cancelStdcmRequest}
                 >
-                  {t('operationalStudies/manageTrainSchedule:cancelRequest')}
+                  {t('stdcm:cancelRequest')}
                   <span className="sr-only" aria-hidden="true">
-                    {t('operationalStudies/manageTrainSchedule:cancelRequest')}
+                    {t('stdcm:cancelRequest')}
                   </span>
                 </button>
               </div>

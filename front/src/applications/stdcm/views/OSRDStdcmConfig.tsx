@@ -6,7 +6,6 @@ import STDCM_REQUEST_STATUS from 'applications/stdcm/consts';
 import type { StdcmRequestStatus } from 'applications/stdcm/types';
 import RunningTime from 'applications/stdcm/components/RunningTime';
 import OSRDStdcmResults from 'applications/stdcm/views/OSRDStdcmResults';
-import type { OsrdStdcmConfState } from 'applications/operationalStudies/consts';
 
 import StdcmAllowances from 'modules/stdcmAllowances/components/StdcmAllowances';
 import { Itinerary, Map } from 'modules/trainschedule/components/ManageTrainSchedule';
@@ -18,6 +17,7 @@ import ScenarioExplorer from 'modules/scenario/components/ScenarioExplorer';
 import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector/SpeedLimitByTagSelector';
 
 import { getSelectedTrain } from 'reducers/osrdsimulation/selectors';
+import type { OsrdStdcmConfState } from 'reducers/osrdconf/consts';
 
 type OSRDStdcmConfigProps = {
   currentStdcmRequestStatus: string;
@@ -41,11 +41,7 @@ export default function OSRDConfig({
 
   const osrdconf: OsrdStdcmConfState = useSelector(getConf) as OsrdStdcmConfState;
 
-  const { t } = useTranslation([
-    'translation',
-    'operationalStudies/manageTrainSchedule',
-    'simulation',
-  ]);
+  const { t } = useTranslation(['translation', 'stdcm', 'simulation']);
 
   const { data: infra } = osrdEditoastApi.useGetInfraByIdQuery(
     { id: infraID as number },
@@ -111,9 +107,9 @@ export default function OSRDConfig({
                     setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.pending);
                   }}
                 >
-                  {t('operationalStudies/manageTrainSchedule:apply')}
+                  {t('stdcm:apply')}
                   <span className="sr-only" aria-hidden="true">
-                    {t('operationalStudies/manageTrainSchedule:apply')}
+                    {t('stdcm:apply')}
                   </span>
                 </button>
               </div>
