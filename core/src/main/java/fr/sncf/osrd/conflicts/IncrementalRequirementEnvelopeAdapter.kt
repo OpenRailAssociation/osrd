@@ -1,16 +1,15 @@
 package fr.sncf.osrd.conflicts
 
-import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper
+import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.units.Offset
-import kotlin.math.absoluteValue
 import kotlin.math.max
 import kotlin.math.min
 
 class IncrementalRequirementEnvelopeAdapter(
     private val incrementalPath: IncrementalPath,
     private val rollingStock: RollingStock,
-    private val envelopeWithStops: EnvelopeStopWrapper
+    private val envelopeWithStops: EnvelopeTimeInterpolate
 )  : IncrementalRequirementCallbacks {
     override fun arrivalTimeInRange(pathBeginOff: Offset<Path>, pathEndOff: Offset<Path>): Double {
         // if the head of the train enters the zone at some point, use that
