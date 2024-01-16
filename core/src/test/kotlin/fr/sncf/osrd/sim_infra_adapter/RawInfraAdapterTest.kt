@@ -24,14 +24,14 @@ class RawInfraAdapterTest {
     fun smokeAdaptTinyInfra() {
         val rjsInfra = Helpers.getExampleInfra("tiny_infra/infra.json")
         val oldInfra = Helpers.infraFromRJS(rjsInfra)
-        adaptRawInfra(oldInfra)
+        adaptRawInfra(oldInfra, rjsInfra)
     }
 
     @Test
     fun smokeAdaptSmallInfra() {
         val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
         val oldInfra = Helpers.infraFromRJS(rjsInfra)
-        adaptRawInfra(oldInfra)
+        adaptRawInfra(oldInfra, rjsInfra)
     }
 
     @ParameterizedTest
@@ -41,7 +41,7 @@ class RawInfraAdapterTest {
             1e-2 // fairly high value, because we compare integer millimeters with float meters
         val rjsInfra = Helpers.getExampleInfra(infraPath)
         val oldInfra = Helpers.infraFromRJS(rjsInfra)
-        val infra = adaptRawInfra(oldInfra)
+        val infra = adaptRawInfra(oldInfra, rjsInfra)
         for (route in infra.routes.iterator()) {
             val oldRoute = oldInfra.reservationRouteMap[infra.getRouteName(route)]!!
             val chunks = infra.getChunksOnRoute(route)
@@ -74,7 +74,7 @@ class RawInfraAdapterTest {
     fun testChunkSlopes(infraPath: String) {
         val rjsInfra = Helpers.getExampleInfra(infraPath)
         val oldInfra = Helpers.infraFromRJS(rjsInfra)
-        val infra = adaptRawInfra(oldInfra)
+        val infra = adaptRawInfra(oldInfra, rjsInfra)
         for (route in infra.routes.iterator()) {
             val oldRoute = oldInfra.reservationRouteMap[infra.getRouteName(route)]!!
             val chunks = infra.getChunksOnRoute(route)
@@ -117,7 +117,7 @@ class RawInfraAdapterTest {
         newRoute.switchesDirections["PA0"] = "A_B1"
         rjsInfra.routes = listOf(newRoute)
         val oldInfra = Helpers.infraFromRJS(rjsInfra)
-        adaptRawInfra(oldInfra)
+        adaptRawInfra(oldInfra, rjsInfra)
     }
 
     private fun assertCrossing(rawInfra: RawInfra, nodeIdx: StaticIdx<TrackNode>) {
@@ -144,7 +144,7 @@ class RawInfraAdapterTest {
     @Test
     fun loadSmallInfraNodes() {
         val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
-        val rawInfra = adaptRawInfra(Helpers.infraFromRJS(rjsInfra)).simInfra
+        val rawInfra = adaptRawInfra(Helpers.infraFromRJS(rjsInfra), rjsInfra).simInfra
         val nodeNameToIdxMap =
             rawInfra.trackNodes
                 .map { nodeIdx -> Pair(rawInfra.getTrackNodeName(nodeIdx), nodeIdx) }
