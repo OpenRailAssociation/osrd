@@ -84,8 +84,8 @@ fun makeBlock(rawInfra: RawInfra, blockInfra: BlockInfra, id: StaticIdx<Block>):
     return BlockViewer(
         blockInfra.getBlockPath(id).map { path -> makeZonePath(rawInfra, path) },
         id,
-        makeDirViewer(entry, rawInfra.getDetectorName(entry.value)!!),
-        makeDirViewer(exit, rawInfra.getDetectorName(exit.value)!!),
+        makeDirViewer(entry, rawInfra.getDetectorName(entry.value)),
+        makeDirViewer(exit, rawInfra.getDetectorName(exit.value)),
         blockInfra.getBlockLength(id),
     )
 }

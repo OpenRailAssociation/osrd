@@ -19,7 +19,6 @@ import fr.sncf.osrd.sim_infra.utils.BlockPathElement
 import fr.sncf.osrd.sim_infra.utils.chunksToRoutes
 import fr.sncf.osrd.sim_infra.utils.recoverBlocks
 import fr.sncf.osrd.sim_infra.utils.toList
-import fr.sncf.osrd.sim_infra_adapter.SimInfraAdapter
 import fr.sncf.osrd.standalone_sim.result.*
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.RoutingRequirement
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.RoutingZoneRequirement
@@ -71,7 +70,7 @@ fun run(
 ): ResultTrain {
     assert(envelope.continuous)
 
-    val rawInfra = fullInfra.rawInfra as SimInfraAdapter
+    val rawInfra = fullInfra.rawInfra
     val loadedSignalInfra = fullInfra.loadedSignalInfra
     val blockInfra = fullInfra.blockInfra
     val simulator = fullInfra.signalingSimulator
@@ -463,7 +462,7 @@ private fun zoneOccupationChangeEvents(
     blockPath: StaticIdxList<Block>,
     blockInfra: BlockInfra,
     envelope: EnvelopeTimeInterpolate,
-    rawInfra: SimInfraAdapter,
+    rawInfra: RawInfra,
     trainLength: Double
 ): MutableList<ZoneOccupationChangeEvent> {
     var zoneCount = 0
