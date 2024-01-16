@@ -7,7 +7,7 @@ import fr.sncf.osrd.signaling.bapr.BAPRtoBAPR
 import fr.sncf.osrd.signaling.impl.SigSystemManagerImpl
 import fr.sncf.osrd.signaling.impl.SignalingSimulatorImpl
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.sim_infra.impl.RawInfraBuilder
+import fr.sncf.osrd.sim_infra.impl.RawInfraFromRjsBuilder
 import fr.sncf.osrd.utils.indexing.IdxMap
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import fr.sncf.osrd.utils.units.Length
@@ -29,7 +29,7 @@ class TestBAPRtoBAL {
         // N: BAL
 
         // region build the test infrastructure
-        val builder = RawInfraBuilder()
+        val builder = RawInfraFromRjsBuilder()
 
         // region zones
         val zoneA = builder.zone(listOf())
