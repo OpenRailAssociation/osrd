@@ -1,13 +1,12 @@
 import { omit } from 'lodash';
 import { createStoreWithoutMiddleware } from 'store';
 
-import type { OsrdConfState, PointOnMap } from 'applications/operationalStudies/consts';
-
+import type { PointOnMap } from 'applications/operationalStudies/consts';
 import type { Allowance } from 'common/api/osrdEditoastApi';
-
 import { defaultCommonConf } from 'reducers/osrdconf/osrdConfCommon';
 import type { StdcmConfSlice } from 'reducers/osrdconf/stdcmConf';
 import type { OperationalStudiesConfSlice } from 'reducers/osrdconf/operationalStudiesConf';
+import type { OsrdConfState } from 'reducers/osrdconf/consts';
 import commonConfBuilder from 'reducers/osrdconf/osrdConfCommon/__tests__/commonConfBuilder';
 
 function createStore(

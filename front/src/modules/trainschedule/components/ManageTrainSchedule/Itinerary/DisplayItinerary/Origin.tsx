@@ -7,10 +7,9 @@ import type { Position } from 'geojson';
 
 import { makeEnumBooleans } from 'utils/constants';
 
-import { MODES } from 'applications/operationalStudies/consts';
-
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useOsrdConfActions, useOsrdContext, useOsrdConfSelectors } from 'common/osrdContext';
+import { MODES } from 'main/consts';
 
 interface OriginProps {
   zoomToFeaturePoint: (lngLat?: Position, id?: string) => void;

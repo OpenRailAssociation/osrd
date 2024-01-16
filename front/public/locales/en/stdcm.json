@@ -1,0 +1,12 @@
+{
+  "apply": "Apply",
+  "cancelRequest": "Cancel request",
+  "pleaseWait": "Please wait…",
+  "spaceSpeedGraphic": "Space-Velocity graph",
+  "spaceTimeGraphic": "Space-Time graph",
+  "stdcmComputation": "Search for a train path",
+  "stdcmError": "Calculation error for last minute train path.",
+  "stdcmErrorNoPaths": "Incompatibility with other train paths.",
+  "stdcmNoResults": "No path found",
+  "stdcmResults": "Results"
+}

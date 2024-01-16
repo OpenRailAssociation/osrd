@@ -4,14 +4,13 @@ import { PathfindingRequest } from 'common/api/osrdEditoastApi';
 
 import { time2sec } from 'utils/timeManipulation';
 
-import { createAllowanceValue } from 'applications/stdcm/components/allowancesConsts';
-import type { OsrdStdcmConfState } from 'applications/operationalStudies/consts';
-
 import { getPathfindingQuery } from 'common/Pathfinding/Pathfinding';
 import type { PostStdcmApiArg } from 'common/api/osrdEditoastApi';
 
 import { setFailure } from 'reducers/main';
 import type { InfraState } from 'reducers/infra';
+import type { OsrdStdcmConfState } from 'reducers/osrdconf/consts';
+import { createAllowanceValue } from 'modules/stdcmAllowances/allowancesConsts';
 
 export default function formatStdcmConf(
   dispatch: Dispatch,

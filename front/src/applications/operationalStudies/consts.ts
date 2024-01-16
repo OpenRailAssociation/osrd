@@ -1,17 +1,12 @@
 import i18n from 'i18n';
-import { Position, Feature } from 'geojson';
+import { Position } from 'geojson';
 import {
-  AllowanceValue,
-  RollingStockComfortType,
   ElectrificationRange,
   ElectrificationUsage,
-  PathResponse,
   PowerRestrictionRangeItem,
 } from 'common/api/osrdEditoastApi';
 import { LinearMetadataItem } from 'common/IntervalsDataViz/types';
 import { HeightPosition } from 'reducers/osrdsimulation/types';
-import { AllowanceForm } from 'modules/trainschedule/components/ManageTrainSchedule/Allowances/types';
-import { InfraState } from 'reducers/infra';
 
 export const BLOCKTYPES = [
   {
@@ -80,24 +75,6 @@ export const MANAGE_TRAIN_SCHEDULE_TYPES = Object.freeze({
   import: 'IMPORT',
 });
 
-interface MODES_Types {
-  [n: string]: string;
-}
-
-export const MODES: MODES_Types = Object.freeze({
-  simulation: 'SIMULATION',
-  stdcm: 'STDCM',
-  editor: 'EDITOR',
-  mapViewer: 'MAP_VIEWER',
-});
-
-export const DEFAULT_MODE = MODES.simulation;
-
-export interface StandardAllowance {
-  type: AllowanceValue['value_type'];
-  value: number;
-}
-
 export interface PointOnMap {
   id?: string;
   name?: string;
@@ -149,51 +126,6 @@ export type StudyType = keyof typeof STUDY_TYPES;
 export const studyTypes = Object.keys(STUDY_TYPES) as StudyType[];
 
 export type PowerRestrictionRange = LinearMetadataItem<{ value: string }>;
-
-export interface OsrdConfState extends InfraState {
-  rollingStockComfort: RollingStockComfortType;
-  name: string;
-  trainCount: number;
-  trainStep: number;
-  trainDelta: number;
-  allowances: AllowanceForm[];
-  usingElectricalProfiles: boolean;
-  labels: string[];
-  projectID?: number;
-  studyID?: number;
-  scenarioID?: number;
-  pathfindingID?: number;
-  timetableID?: number;
-  rollingStockID?: number;
-  speedLimitByTag?: string;
-  // TODO: update the call to the api, to rename the fields begin & end -> begin_position & end_position
-  powerRestrictionRanges: PowerRestrictionRange[];
-  origin?: PointOnMap;
-  initialSpeed?: number;
-  departureTime: string;
-  destination?: PointOnMap;
-  vias: PointOnMap[];
-  suggeredVias: PathResponse['steps'] | PointOnMap[];
-  geojson?: PathResponse;
-  originDate?: string;
-  originTime?: string;
-  originUpperBoundDate?: string;
-  originUpperBoundTime?: string;
-  originLinkedBounds: boolean;
-  destinationDate?: string;
-  destinationTime?: string;
-  gridMarginBefore?: number;
-  gridMarginAfter?: number;
-  trainScheduleIDsToModify: number[];
-  featureInfoClick: { displayPopup: boolean; feature?: Feature; coordinates?: number[] };
-}
-
-export interface OsrdStdcmConfState extends OsrdConfState {
-  maximumRunTime: number;
-  standardStdcmAllowance?: StandardAllowance;
-}
-
-export const RUNTIME_CAP = 43200;
 
 // electrical profiles
 interface Profile {

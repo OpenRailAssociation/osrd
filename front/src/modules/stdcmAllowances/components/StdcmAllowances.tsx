@@ -4,8 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import { convertInputStringToNumber } from 'utils/strings';
 
-import type { StandardAllowance } from 'applications/operationalStudies/consts';
-import { ALLOWANCE_UNITS_KEYS } from 'applications/stdcm/components/allowancesConsts';
+import { ALLOWANCE_UNITS_KEYS } from 'modules/stdcmAllowances/allowancesConsts';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import InputGroupSNCF from 'common/BootstrapSNCF/InputGroupSNCF';
@@ -15,6 +14,7 @@ import type { InputGroupSNCFValue } from 'common/BootstrapSNCF/InputGroupSNCF';
 
 import type { StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
 import type { StdcmConfSelectors } from 'reducers/osrdconf/stdcmConf/selectors';
+import type { StandardAllowance } from 'reducers/osrdconf/consts';
 
 const StdcmAllowances = () => {
   const { t } = useTranslation('allowances');

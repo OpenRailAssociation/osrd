@@ -8,13 +8,12 @@ import { noop } from 'lodash';
 
 import { sec2time, time2sec } from 'utils/timeManipulation';
 
-import { RUNTIME_CAP } from 'applications/operationalStudies/consts';
-
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 
 import type { StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
 import type { StdcmConfSelectors } from 'reducers/osrdconf/stdcmConf/selectors';
+import { RUNTIME_CAP } from 'applications/stdcm/consts';
 
 interface RunningTimeProps {
   dispatch?: Dispatch;

@@ -13,7 +13,7 @@ import NotificationsState from 'common/Notifications';
 import HomeStdcm from 'applications/stdcm/Home';
 import HomeEditor from 'applications/editor/Home';
 import HomeMap from 'applications/referenceMap/Home';
-import { MODES } from 'applications/operationalStudies/consts';
+import { MODES } from 'main/consts';
 import Study from 'applications/operationalStudies/views/Study';
 import Project from 'applications/operationalStudies/views/Project';
 import Scenario from 'applications/operationalStudies/views/Scenario';

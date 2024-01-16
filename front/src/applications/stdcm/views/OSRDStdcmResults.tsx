@@ -8,7 +8,7 @@ import { AllowancesSettings } from 'reducers/osrdsimulation/types';
 import { SimulationReport } from 'common/api/osrdEditoastApi';
 
 const OSRDStcdmResults = () => {
-  const { t } = useTranslation(['translation', 'operationalStudies/manageTrainSchedule']);
+  const { t } = useTranslation(['translation', 'stdcm']);
 
   const selectedTrain = useSelector(getSelectedTrain);
   const simulation = useSelector(getPresentSimulation);
@@ -44,9 +44,7 @@ const OSRDStcdmResults = () => {
       <div className="osrd-simulation-container mb-2 simulation-results">
         <div className="osrd-config-item mb-2">
           <div className="osrd-simulation-container mb-2">
-            <p className="mt-2 mb-3 ml-4 font-weight-bold">
-              {t('operationalStudies/manageTrainSchedule:spaceTimeGraphic')}
-            </p>
+            <p className="mt-2 mb-3 ml-4 font-weight-bold">{t('stdcm:spaceTimeGraphic')}</p>
             <div className="chart-container mt-2" style={{ height: `${spaceTimeChartHeight}px` }}>
               <SpaceTimeChart
                 allowancesSettings={allowancesSettings}
@@ -62,7 +60,7 @@ const OSRDStcdmResults = () => {
               className="btn d-flex align-items-center mb-1 font-weight-bold"
               onClick={() => setShowSpeedSpaceChart(!showSpeedSpaceChart)}
             >
-              {t('operationalStudies/manageTrainSchedule:spaceSpeedGraphic')}
+              {t('stdcm:spaceSpeedGraphic')}
               <i
                 className={
                   showSpeedSpaceChart ? 'icons-arrow-up ml-auto' : 'icons-arrow-down ml-auto'

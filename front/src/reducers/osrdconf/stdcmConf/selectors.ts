@@ -1,6 +1,6 @@
 import { makeSubSelector } from 'utils/selectors';
 
-import type { OsrdStdcmConfState } from 'applications/operationalStudies/consts';
+import type { OsrdStdcmConfState } from 'reducers/osrdconf/consts';
 
 import { stdcmConfSlice } from 'reducers/osrdconf/stdcmConf';
 import buildCommonConfSelectors from 'reducers/osrdconf/osrdConfCommon/selectors';

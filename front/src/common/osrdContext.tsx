@@ -2,8 +2,6 @@ import React, { createContext, useContext, useMemo } from 'react';
 
 import type { ObjectFieldsTypes } from 'utils/types';
 
-import { MODES } from 'applications/operationalStudies/consts';
-
 import { ModalProvider } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 
 import type { OsrdSlice } from 'reducers';
@@ -11,6 +9,7 @@ import type { EditorSelectors } from 'reducers/editor/selectors';
 import type { MapViewerSelectors } from 'reducers/mapViewer/selectors';
 import { useSelector } from 'react-redux';
 import { ConfSelectors, ConfSliceActions } from 'reducers/osrdconf/osrdConfCommon';
+import { MODES } from 'main/consts';
 
 export type OsrdSelectors = ConfSelectors | MapViewerSelectors | EditorSelectors;
 

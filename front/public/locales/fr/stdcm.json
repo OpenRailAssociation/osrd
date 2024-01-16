@@ -1,0 +1,12 @@
+{
+  "apply": "Appliquer",
+  "cancelRequest": "Annuler la requête",
+  "pleaseWait": "Veuillez patientez…",
+  "spaceSpeedGraphic": "Graphique Espace-Vitesse",
+  "spaceTimeGraphic": "Graphique Espace-Temps",
+  "stdcmComputation": "Recherche de sillon",
+  "stdcmError": "Erreur de calcul Sillon de dernière minute",
+  "stdcmErrorNoPaths": "Incompatibilité avec d'autres sillons.",
+  "stdcmNoResults": "Aucun sillon trouvé",
+  "stdcmResults": "Résultats"
+}
