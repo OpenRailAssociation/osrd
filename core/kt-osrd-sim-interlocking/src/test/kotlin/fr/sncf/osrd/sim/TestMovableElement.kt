@@ -4,7 +4,7 @@ import fr.sncf.osrd.sim.interlocking.api.MovableElementInitPolicy
 import fr.sncf.osrd.sim.interlocking.api.withLock
 import fr.sncf.osrd.sim.interlocking.impl.MovableElementSimImpl
 import fr.sncf.osrd.sim_infra.api.TrackNodePortId
-import fr.sncf.osrd.sim_infra.impl.rawInfra
+import fr.sncf.osrd.sim_infra.impl.rawInfraFromRjs
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.milliseconds
@@ -17,7 +17,7 @@ class TestMovableElements {
     @Test
     fun lockMoveTest() = runTest {
         // setup test data
-        val infra = rawInfra {
+        val infra = rawInfraFromRjs {
             movableElement("A", delay = 42L.milliseconds) {
                 config("a", Pair(TrackNodePortId(0u), TrackNodePortId(1u)))
                 config("b", Pair(TrackNodePortId(0u), TrackNodePortId(2u)))
