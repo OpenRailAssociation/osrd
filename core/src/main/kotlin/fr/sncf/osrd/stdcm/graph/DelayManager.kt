@@ -153,8 +153,8 @@ internal constructor(
         val endOffsetOnPath = startOffsetOnPath + (endOffset - startOffset)
         return blockAvailability.getAvailability(
             explorerWithNewEnvelope,
-            startOffsetOnPath.distance,
-            endOffsetOnPath.distance,
+            startOffsetOnPath.cast(),
+            endOffsetOnPath.cast(),
             startTime
         )
     }
