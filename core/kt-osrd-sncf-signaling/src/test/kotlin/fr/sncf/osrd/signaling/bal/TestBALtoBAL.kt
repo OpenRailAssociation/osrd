@@ -7,7 +7,7 @@ import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.TrackNodePortId
 import fr.sncf.osrd.sim_infra.api.decreasing
 import fr.sncf.osrd.sim_infra.api.increasing
-import fr.sncf.osrd.sim_infra.impl.RawInfraBuilder
+import fr.sncf.osrd.sim_infra.impl.RawInfraFromRjsBuilder
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import fr.sncf.osrd.utils.units.Length
@@ -31,7 +31,7 @@ class TestBALtoBAL {
         //  <-- reverse     normal -->
 
         // region build the test infrastructure
-        val builder = RawInfraBuilder()
+        val builder = RawInfraFromRjsBuilder()
         // region switches
         val switch =
             builder.movableElement("S", delay = 10L.milliseconds) {

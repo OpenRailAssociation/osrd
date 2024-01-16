@@ -13,7 +13,7 @@ class SignalLoadingTest {
     fun smokeLoadSignalTinyInfra() {
         val rjsInfra = Helpers.getExampleInfra("tiny_infra/infra.json")
         val oldInfra = Helpers.infraFromRJS(rjsInfra)
-        val infra = adaptRawInfra(oldInfra)
+        val infra = adaptRawInfra(oldInfra, rjsInfra)
 
         val simulator = SignalingSimulatorImpl(balSigSystemManager)
         val loadedSignalInfra = simulator.loadSignals(infra)
@@ -24,7 +24,7 @@ class SignalLoadingTest {
     fun smokeLoadSignalSmallInfra() {
         val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
         val oldInfra = Helpers.infraFromRJS(rjsInfra)
-        val infra = adaptRawInfra(oldInfra)
+        val infra = adaptRawInfra(oldInfra, rjsInfra)
 
         val simulator = SignalingSimulatorImpl(balSigSystemManager)
         val loadedSignalInfra = simulator.loadSignals(infra)
