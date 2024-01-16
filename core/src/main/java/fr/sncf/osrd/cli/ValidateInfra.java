@@ -1,7 +1,7 @@
 package fr.sncf.osrd.cli;
 
 import static fr.sncf.osrd.api.SignalingSimulatorKt.makeSignalingSimulator;
-import static fr.sncf.osrd.sim_infra_adapter.RawInfraAdapterKt.adaptRawInfra;
+import static fr.sncf.osrd.sim_infra_adapter.RawInfraFromRjsAdapterKt.adaptRawInfra;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -35,7 +35,7 @@ public class ValidateInfra implements CliCommand {
             logger.info("loading legacy infra");
             var infra = SignalingInfraBuilder.fromRJSInfra(rjs, Set.of(new BAL3(recorder)), recorder);
             logger.info("adapting raw infra");
-            var rawInfra = adaptRawInfra(infra);
+            var rawInfra = adaptRawInfra(infra, rjs);
             logger.info("loading signals");
             SignalingSimulator signalingSimulator = makeSignalingSimulator();
             var loadedSignalInfra = signalingSimulator.loadSignals(rawInfra);

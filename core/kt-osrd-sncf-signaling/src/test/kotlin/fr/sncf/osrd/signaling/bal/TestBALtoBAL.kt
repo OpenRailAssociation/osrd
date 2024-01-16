@@ -4,8 +4,9 @@ import fr.sncf.osrd.signaling.ZoneStatus
 import fr.sncf.osrd.signaling.impl.SigSystemManagerImpl
 import fr.sncf.osrd.signaling.impl.SignalingSimulatorImpl
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.sim_infra.impl.RawInfraBuilder
-import fr.sncf.osrd.utils.indexing.*
+import fr.sncf.osrd.sim_infra.impl.RawInfraFromRjsBuilder
+import fr.sncf.osrd.utils.indexing.StaticIdx
+import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
@@ -27,7 +28,7 @@ class TestBALtoBAL {
         //  <-- reverse     normal -->
 
         // region build the test infrastructure
-        val builder = RawInfraBuilder()
+        val builder = RawInfraFromRjsBuilder()
         // region switches
         val switch =
             builder.movableElement("S", delay = 10L.milliseconds) {
