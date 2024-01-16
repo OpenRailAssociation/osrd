@@ -36,38 +36,7 @@ else
   exit 2
 fi
 
-# Check if the database exists
-echo "Checking database exists..."
-DB_EXISTS="$(docker exec osrd-postgres psql -c "SELECT EXISTS (SELECT FROM pg_stat_database WHERE datname = 'osrd');")"
-DB_EXISTS="$(echo "$DB_EXISTS" | grep -o -E '[tf]$')"
-
-if [ $DB_EXISTS = 't' ]; then
-  echo "  Database 'osrd' found"
-else
-  echo "  Database 'osrd' not found"
-fi
-
-if [ $DB_EXISTS = 't' ]; then
-  # Check that no service is connected to the database
-  echo "Checking database availability..."
-  DB_CONN="$(docker exec osrd-postgres psql -c "SELECT numbackends FROM pg_stat_database WHERE datname = 'osrd';")"
-  DB_CONN="$(echo "$DB_CONN" | grep -o -E '[0-9]+$')"
-
-  if [ $DB_CONN -ne 0 ]; then
-    echo "  The database can not cleared."
-    echo "  You must only have your postgres container runnning!"
-    exit 2
-  fi
-
-  # Drop database
-  echo "Deleting osrd database..."
-  docker exec osrd-postgres psql -c 'DROP DATABASE osrd;' > /dev/null
-fi
-
-echo "Initialize new database..."
-# Here I remove the first line of the script cause the user already exists
-docker exec osrd-postgres sh -c 'cat /docker-entrypoint-initdb.d/init.sql | tail -n 1 > /tmp/init.sql'
-docker exec osrd-postgres psql -f //tmp/init.sql > /dev/null
+$(dirname "$0")/cleanup-db.sh # Cleanup and init db (no migration)
 
 # Copy needed files to the container
 docker cp "$BACKUP_PATH" osrd-postgres:tmp/backup-osrd
@@ -80,4 +49,4 @@ docker exec osrd-postgres pg_restore --if-exists -c -d osrd -x //tmp/backup-osrd
 echo "Analyze for performances..."
 docker exec osrd-postgres psql -d osrd -c 'ANALYZE;' > /dev/null
 
-echo Done !
+echo "Load backup done!"
