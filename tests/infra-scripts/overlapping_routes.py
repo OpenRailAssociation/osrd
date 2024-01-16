@@ -2,11 +2,7 @@
 from dataclasses import dataclass
 from typing import Any, List
 
-from railjson_generator import (
-    Direction,
-    InfraBuilder,
-    get_output_dir,
-)
+from railjson_generator import Direction, InfraBuilder, get_output_dir
 
 OUTPUT_DIR = get_output_dir()
 
