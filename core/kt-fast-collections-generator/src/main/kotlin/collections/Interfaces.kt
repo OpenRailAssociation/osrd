@@ -31,6 +31,10 @@ private fun CollectionItemType.generateInterfaces(context: GeneratorContext, cur
                 val size: Int
             }
 
+            fun interface ${simpleName}Comparator${paramsDecl} {
+                fun compare(a: $type, b: $type): Int
+            }
+
             /** GENERATED CODE */
             @Suppress("INAPPLICABLE_JVM_NAME")
             interface ${simpleName}List${paramsDecl} : ${simpleName}Collection${paramsUse} {

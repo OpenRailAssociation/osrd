@@ -52,7 +52,7 @@ class PathPropertiesTests {
                     )
         }
         val oldInfra = Helpers.infraFromRJS(rjsInfra)
-        val infra = adaptRawInfra(oldInfra)
+        val infra = adaptRawInfra(oldInfra, rjsInfra)
 
         val path =
             pathFromTracks(
@@ -122,7 +122,7 @@ class PathPropertiesTests {
                 )
             )
         val oldInfra = Helpers.infraFromRJS(rjsInfra)
-        val infra = adaptRawInfra(oldInfra)
+        val infra = adaptRawInfra(oldInfra, rjsInfra)
         val path =
             pathFromTracks(
                 infra,
@@ -189,7 +189,7 @@ class PathPropertiesTests {
                     RJSCurve(1_000.0, 2_000.0, 10_000.0),
                 )
         val oldInfra = Helpers.infraFromRJS(rjsInfra)
-        val infra = adaptRawInfra(oldInfra)
+        val infra = adaptRawInfra(oldInfra, rjsInfra)
         val pathBackward =
             pathFromTracks(infra, listOf("TA0"), Direction.DECREASING, 500.meters, 1_500.meters)
         val slopesBackward = pathBackward.getCurves()
@@ -230,7 +230,7 @@ class PathPropertiesTests {
                 )
         }
         val oldInfra = Helpers.infraFromRJS(rjsInfra)
-        val infra = adaptRawInfra(oldInfra)
+        val infra = adaptRawInfra(oldInfra, rjsInfra)
         val pathBackward =
             pathFromTracks(infra, listOf("TA0"), Direction.DECREASING, 500.meters, 1_500.meters)
         val slopesBackward = pathBackward.getGradients()
@@ -263,7 +263,7 @@ class PathPropertiesTests {
                 track.geo = RJSLineString.make(listOf(1.0, 2.0, 2.0), listOf(1.0, 1.0, 1.95))
         }
         val oldInfra = Helpers.infraFromRJS(rjsInfra)
-        val infra = adaptRawInfra(oldInfra)
+        val infra = adaptRawInfra(oldInfra, rjsInfra)
 
         val path =
             pathFromTracks(
@@ -344,7 +344,7 @@ class PathPropertiesTests {
                 )
             )
         val oldInfra = Helpers.infraFromRJS(rjsInfra)
-        val infra = adaptRawInfra(oldInfra)
+        val infra = adaptRawInfra(oldInfra, rjsInfra)
 
         val path =
             pathFromTracks(
@@ -405,7 +405,7 @@ class PathPropertiesTests {
                     )
         }
         val oldInfra = Helpers.infraFromRJS(rjsInfra)
-        val infra = adaptRawInfra(oldInfra)
+        val infra = adaptRawInfra(oldInfra, rjsInfra)
 
         val pathBackward =
             pathFromTracks(

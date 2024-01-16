@@ -8,6 +8,7 @@ import fr.sncf.osrd.signaling.impl.SigSystemManagerImpl
 import fr.sncf.osrd.signaling.impl.SignalingSimulatorImpl
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.RawInfraBuilder
+import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
@@ -50,8 +51,9 @@ class TestBAPRtoBAL {
         // region signals
         val balParameters = RawSignalParameters(mapOf(Pair("jaune_cli", "false")), mapOf())
         val baprParameters = RawSignalParameters(mapOf(), mapOf())
+        // TODO: add an actual track graph
         val signalm =
-            builder.physicalSignal("m", 300.meters) {
+            builder.physicalSignal("m", 300.meters, StaticIdx(42u), Offset(42.meters)) {
                 logicalSignal(
                     "BAPR",
                     listOf("BAPR"),
@@ -60,7 +62,7 @@ class TestBAPRtoBAL {
                 )
             }
         val signalM =
-            builder.physicalSignal("M", 300.meters) {
+            builder.physicalSignal("M", 300.meters, StaticIdx(42u), Offset(42.meters)) {
                 logicalSignal(
                     "BAPR",
                     listOf("BAPR"),
@@ -72,7 +74,7 @@ class TestBAPRtoBAL {
                 )
             }
         val signaln =
-            builder.physicalSignal("n", 300.meters) {
+            builder.physicalSignal("n", 300.meters, StaticIdx(42u), Offset(42.meters)) {
                 logicalSignal(
                     "BAPR",
                     listOf("BAL"),
@@ -81,7 +83,7 @@ class TestBAPRtoBAL {
                 )
             }
         val signalN =
-            builder.physicalSignal("N", 300.meters) {
+            builder.physicalSignal("N", 300.meters, StaticIdx(42u), Offset(42.meters)) {
                 logicalSignal("BAL", listOf("BAL"), mapOf(Pair("Nf", "true")), balParameters)
             }
 

@@ -410,6 +410,39 @@ public final class OSRDError extends RuntimeException {
     }
 
     /**
+     * Creates a new OSRDError for an invalid infrastructure error.
+     *
+     * @param errorType the error type
+     * @param id the ID associated with the error
+     * @return a new OSRDError instance
+     */
+    public static OSRDError newInvalidRangeError(ErrorType errorType, String id) {
+        var error = new OSRDError(errorType);
+        error.context.put("track_id", id);
+        return error;
+    }
+
+    /**
+     * Creates a new OSRDError for an invalid infrastructure error with an RJS switch ID, switch
+     * type, and switch ports.
+     *
+     * @param rjsSwitchID the RJS switch ID associated with the error
+     * @param switchType the switch type
+     * @param switchTypePorts the expected switch ports
+     * @param switchPorts the received switch ports
+     * @return a new OSRDError instance
+     */
+    public static OSRDError newWrongSwitchPortsError(
+            String rjsSwitchID, String switchType, Object switchTypePorts, Object switchPorts) {
+        var error = new OSRDError(ErrorType.InvalidInfraWrongSwitchPorts);
+        error.context.put("rjs_switch_id", rjsSwitchID);
+        error.context.put("switch_type", switchType);
+        error.context.put("expected_switch_ports", switchTypePorts);
+        error.context.put("got_switch_ports", switchPorts);
+        return error;
+    }
+
+    /**
      * Returns the error message.
      *
      * @return the error message

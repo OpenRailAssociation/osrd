@@ -20,4 +20,12 @@ enum class Direction {
                 INCREASING -> Endpoint.END
                 DECREASING -> Endpoint.START
             }
+
+    /** Returns 1 for INCREASING, -1 for DECREASING */
+    val sign
+        get() =
+            when (this) {
+                INCREASING -> 1
+                DECREASING -> -1
+            }
 }

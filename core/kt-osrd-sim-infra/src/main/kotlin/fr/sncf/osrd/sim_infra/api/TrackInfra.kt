@@ -38,6 +38,10 @@ typealias DirTrackChunkId = DirStaticIdx<TrackChunk>
 
 typealias OptDirTrackChunkId = OptDirStaticIdx<TrackChunk>
 
+fun <T> StaticIdx<T>.withDirection(dir: Direction): DirStaticIdx<T> {
+    return DirStaticIdx(this, dir)
+}
+
 val <T> StaticIdx<T>.increasing
     get() = DirStaticIdx(this, Direction.INCREASING)
 val <T> StaticIdx<T>.decreasing

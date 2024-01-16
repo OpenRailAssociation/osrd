@@ -1,6 +1,7 @@
 package fr.sncf.osrd.geom;
 
 import com.carrotsearch.hppc.DoubleArrayList;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -15,6 +16,43 @@ public final class LineString {
 
     /** A cumulative list of N-1 distances between coordinates */
     private final double[] cumulativeLengths;
+
+    /** Check if 2 arrays of double are equal, allowing for epsilon variation and also allowing extra elements in list
+     * that would just differ from previous element by epsilon.
+     * Additional parameter to allow an extra first value that would be close to 0 */
+    private static boolean equalsMergeTolerance(
+            double[] left, double[] right, double tolerance, boolean isFirstVirtual0) {
+        int i = 0, j = 0;
+        while (true) {
+            if (Math.abs(left[i] - right[j]) < tolerance) {
+                // default consume from both arrays if equal
+                if (i + 1 >= left.length && j + 1 >= right.length) return true;
+                if (i + 1 < left.length) i++;
+                if (j + 1 < right.length) j++;
+            } else if ((i > 0 && Math.abs(left[i - 1] - left[i]) < tolerance)
+                    || (isFirstVirtual0 && i == 0 && Math.abs(left[0]) < tolerance)) {
+                // else, if current left value is equal to previous left value, consume left
+                // also check if the list should be considered as starting by a virtual 0
+                i++;
+            } else if ((j > 0 && Math.abs(right[j - 1] - right[j]) < tolerance)
+                    || (isFirstVirtual0 && j == 0 && Math.abs(right[0]) < tolerance)) {
+                // same for right
+                j++;
+            } else return false;
+        }
+    }
+
+    public boolean equalsWithTolerance(Object obj, double tolerance) {
+        if (obj == null) return false;
+        if (obj.getClass() != this.getClass()) return false;
+
+        final LineString other = (LineString) obj;
+        if (!equalsMergeTolerance(bufferX, other.bufferX, tolerance, false)) return false;
+        if (!equalsMergeTolerance(bufferY, other.bufferY, tolerance, false)) return false;
+        if (!equalsMergeTolerance(cumulativeLengths, other.cumulativeLengths, tolerance, true)) return false;
+
+        return true;
+    }
 
     private LineString(double[] bufferX, double[] bufferY, double[] cumulativeLengths) {
         assert bufferX.length == bufferY.length : "Expected the same length";
@@ -242,5 +280,18 @@ public final class LineString {
         newBufferY.add(lastPoint.y());
 
         return LineString.make(newBufferX.toArray(), newBufferY.toArray());
+    }
+
+    @Override
+    @SuppressFBWarnings({"EQ_UNUSUAL"})
+    public boolean equals(Object o) {
+        return equalsWithTolerance(o, 0.00001);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Arrays.hashCode(bufferX);
+        result = 31 * result + Arrays.hashCode(bufferY);
+        return result;
     }
 }

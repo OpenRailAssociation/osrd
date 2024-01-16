@@ -7,7 +7,6 @@ import fr.sncf.osrd.api.makeSignalingSimulator
 import fr.sncf.osrd.geom.LineString
 import fr.sncf.osrd.geom.Point
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.sim_infra.impl.NeutralSection
 import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.utils.units.*
 import kotlin.time.Duration
@@ -134,6 +133,14 @@ class DummyInfra : RawInfra, BlockInfra {
 
     override fun getPhysicalSignal(signal: LogicalSignalId): PhysicalSignalId {
         return convertId(signal)
+    }
+
+    override fun getPhysicalSignalTrack(signal: PhysicalSignalId): TrackSectionId {
+        TODO("Not yet implemented")
+    }
+
+    override fun getPhysicalSignalTrackOffset(signal: PhysicalSignalId): Offset<TrackSection> {
+        TODO("Not yet implemented")
     }
 
     override fun getPhysicalSignalName(signal: PhysicalSignalId): String {
@@ -285,8 +292,8 @@ class DummyInfra : RawInfra, BlockInfra {
         TODO("Not yet implemented")
     }
 
-    override fun getDetectorName(det: DetectorId): String? {
-        return detectorMap.inverse()[DirDetectorId(det, Direction.INCREASING)]
+    override fun getDetectorName(det: DetectorId): String {
+        return detectorMap.inverse()[DirDetectorId(det, Direction.INCREASING)]!!
     }
 
     private fun getOrCreateDetectorId(name: String): DirDetectorId {
