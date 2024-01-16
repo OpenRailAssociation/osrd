@@ -1,22 +1,25 @@
 package fr.sncf.osrd.stdcm.preprocessing.interfaces
 
-import com.google.common.base.Objects
+import fr.sncf.osrd.sim_infra.api.Path
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
-import fr.sncf.osrd.utils.units.Distance
+import fr.sncf.osrd.utils.units.Offset
 
 /** Abstract interface used to request the availability of path sections */
 interface BlockAvailabilityInterface {
     /**
-     * Request availability information about a section of the path. <br></br> Can return either an
-     * instance of either type:
+     * Request availability information about a section of the path.
+     *
+     * Can return either an instance of either type:
      * * Available: the section is available
      * * Unavailable: the section isn't available
      * * NotEnoughLookahead: the train path needs to extend further, it depends on a directional
      *   choice
      *
-     * More details are given in the instances. <br></br> Note: every position refers to the
-     * position of the head of the train. The implementation of BlockAvailabilityInterface must
-     * account for train length, sight distance, and similar factors.
+     * More details are given in the instances.
+     *
+     * Note: every position refers to the position of the head of the train. The implementation of
+     * BlockAvailabilityInterface must account for train length, sight distance, and similar
+     * factors.
      *
      * @param infraExplorer describes the path and envelope of the train
      * @param startOffset Start of the section to check for availability, as an offset from the
@@ -28,8 +31,8 @@ interface BlockAvailabilityInterface {
      */
     fun getAvailability(
         infraExplorer: InfraExplorerWithEnvelope,
-        startOffset: Distance,
-        endOffset: Distance,
+        startOffset: Offset<Path>,
+        endOffset: Offset<Path>,
         startTime: Double
     ): Availability
 
@@ -37,56 +40,33 @@ interface BlockAvailabilityInterface {
     abstract class Availability
 
     /**
-     * The requested section is available. <br></br> For example: a train enter the section at t=10,
-     * sees a signal 42s after entering the section, and the signal is green until t=100. The result
-     * would be:
+     * The requested section is available.
+     *
+     * For example: a train enter the section at t=10, sees a signal 42s after entering the section,
+     * and the signal is green until t=100. The result would be:
      * * maximumDelay = 100 - 42 - 10 = 48
      * * timeOfNextConflict = 100
      */
-    class Available(
+    data class Available(
         /** The train can use the section now and up to `maximumDelay` later without conflict */
         val maximumDelay: Double,
         /** Earliest time any resource used by the train is reused by another one */
         val timeOfNextConflict: Double
-    ) : Availability() {
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (other == null || javaClass != other.javaClass) return false
-            val available = other as Available
-            return (available.maximumDelay.compareTo(maximumDelay) == 0 &&
-                available.timeOfNextConflict.compareTo(timeOfNextConflict) == 0)
-        }
-
-        override fun hashCode(): Int {
-            return Objects.hashCode(maximumDelay, timeOfNextConflict)
-        }
-    }
+    ) : Availability()
 
     /** The requested section isn't available yet */
-    class Unavailable(
+    data class Unavailable(
         /** Minimum delay to add to the departure time to avoid any conflict */
         val duration: Double,
         /**
-         * Exact offset of the first conflict encountered. It's always the offset that marks either
-         * the border of an unavailable section. <br></br> It's either the offset where we start
-         * using a ressource before it's available, or the offset where the train would have
-         * released a ressource it has kept for too long.
+         * Exact offset of the first conflict encountered. It's always an offset that delimits an
+         * unavailable section.
+         *
+         * It's either the offset where we start using a resource before it's available, or the
+         * offset where the train would have released a resource it has kept for too long.
          */
-        val firstConflictOffset: Distance
-    ) : Availability() {
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (other == null || javaClass != other.javaClass) return false
-            val that = other as Unavailable
-            return (that.duration.compareTo(duration) == 0 &&
-                that.firstConflictOffset.millimeters.compareTo(firstConflictOffset.millimeters) ==
-                    0)
-        }
-
-        override fun hashCode(): Int {
-            return Objects.hashCode(duration, firstConflictOffset)
-        }
-    }
+        val firstConflictOffset: Offset<Path>
+    ) : Availability()
 
     /**
      * The availability of the requested section can't be determined, the path needs to extend
