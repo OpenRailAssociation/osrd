@@ -1,11 +1,11 @@
 import {
-  GetInfraByIdErrorsApiArg,
+  GetInfraByInfraIdErrorsApiArg,
   InfraError as InfraErrorApiType,
-  InfraErrorType,
+  InfraErrorTypeLabel,
 } from 'common/api/osrdEditoastApi';
 
 // Error level
-export type InfraErrorLevel = GetInfraByIdErrorsApiArg['level'];
+export type InfraErrorLevel = GetInfraByInfraIdErrorsApiArg['level'];
 export const InfraErrorLevelList: Array<NonNullable<InfraErrorLevel>> = [
   'all',
   'errors',
@@ -13,8 +13,8 @@ export const InfraErrorLevelList: Array<NonNullable<InfraErrorLevel>> = [
 ];
 
 // Error type
-export type { InfraErrorType };
-export const infraErrorTypeList: Record<'errors' | 'warnings', Set<InfraErrorType>> = {
+export type { InfraErrorTypeLabel };
+export const infraErrorTypeList: Record<'errors' | 'warnings', Set<InfraErrorTypeLabel>> = {
   errors: new Set([
     'invalid_group',
     'invalid_reference',

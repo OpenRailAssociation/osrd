@@ -43,6 +43,7 @@ use uuid::Uuid;
 crate::routes! {
     "/infra" => {
         "/{infra_id}" => {
+            errors::routes(),
             routes::routes(),
             lines::routes(),
             auto_fixes::routes(),
@@ -54,6 +55,7 @@ crate::routes! {
 
 crate::schemas! {
     pathfinding::schemas(),
+    errors::schemas(),
 }
 
 /// Return `/infra` routes
@@ -266,7 +268,7 @@ struct InfraWithState {
 #[derive(IntoParams, Deserialize)]
 #[allow(unused)]
 struct InfraIdParam {
-    /// The ID of the infra to fix
+    /// An infra ID
     infra_id: i64,
 }
 

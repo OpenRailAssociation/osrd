@@ -61,6 +61,9 @@ crate::schemas! {
     TrackLocation,
     DirectionalTrackRange,
     Direction,
+    ObjectRef,
+    Endpoint,
+    errors::schemas(),
     utils::schemas(),
     rolling_stock::schemas(),
     operation::schemas(),
@@ -154,7 +157,7 @@ impl ObjectType {
     }
 }
 
-#[derive(Deserialize, Derivative, Serialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Deserialize, Derivative, Serialize, Clone, Debug, PartialEq, Eq, Hash, ToSchema)]
 #[derivative(Default)]
 #[serde(deny_unknown_fields)]
 pub struct ObjectRef {
@@ -345,7 +348,7 @@ pub enum ApplicableDirections {
     Both,
 }
 
-#[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq, Hash, ToSchema)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum Endpoint {
     Begin,

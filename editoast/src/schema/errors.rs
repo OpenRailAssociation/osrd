@@ -1,21 +1,37 @@
 use super::{Endpoint, OSRDIdentified, OSRDObject, ObjectType};
 use crate::schema::ObjectRef;
 use serde::{Deserialize, Serialize};
-use strum_macros::EnumVariantNames;
+use strum_macros::{EnumDiscriminants, EnumVariantNames};
+use utoipa::ToSchema;
 
-#[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
+crate::schemas! {
+    InfraError,
+    InfraErrorType,
+    InfraErrorTypeLabel,
+}
+
+#[derive(Serialize, Deserialize, PartialEq, Debug, Clone, ToSchema)]
+// FIXME: this stuct do not deserialize properly because deny_unknown_fields
+// do not work with flatten. Cf. https://github.com/osrd-project/osrd/issues/6349
 #[serde(deny_unknown_fields)]
 pub struct InfraError {
+    #[schema(value_type = Identifier)]
     obj_id: String,
     obj_type: ObjectType,
+    #[schema(required)]
     field: Option<String>,
     is_warning: bool,
     #[serde(flatten)]
     sub_type: InfraErrorType,
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Debug, EnumVariantNames, Clone)]
+#[derive(
+    Serialize, Deserialize, PartialEq, Debug, EnumVariantNames, EnumDiscriminants, Clone, ToSchema,
+)]
 #[strum(serialize_all = "snake_case")]
+#[strum_discriminants(derive(ToSchema, Deserialize))]
+#[strum_discriminants(name(InfraErrorTypeLabel))]
+#[strum_discriminants(serde(rename_all = "snake_case"))]
 #[serde(tag = "error_type", rename_all = "snake_case", deny_unknown_fields)]
 pub enum InfraErrorType {
     DuplicatedGroup {

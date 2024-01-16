@@ -11,12 +11,12 @@ import { LoaderFill, Spinner } from 'common/Loaders';
 import { updateFiltersIssue } from 'reducers/editor';
 import { getEditorIssues } from 'reducers/editor/selectors';
 
-import { EDITOAST_TYPES } from '../../tools/types';
+import { EDITOAST_TYPES, EditoastType } from '../../tools/types';
 import { InfraErrorBox } from './InfraError';
 import {
   InfraError,
   InfraErrorLevel,
-  InfraErrorType,
+  InfraErrorTypeLabel,
   InfraErrorLevelList,
   allInfraErrorTypes,
   infraErrorTypeList,
@@ -38,16 +38,16 @@ const InfraErrorsList: React.FC<InfraErrorsListProps> = ({ infraID, onErrorClick
   // list of issues
   const [errors, setErrors] = useState<Array<InfraError>>([]);
   // Error types filtered in correlatino with error level
-  const [errorTypeList, setErrorTypeList] = useState<InfraErrorType[]>(allInfraErrorTypes);
+  const [errorTypeList, setErrorTypeList] = useState<InfraErrorTypeLabel[]>(allInfraErrorTypes);
 
   // Query to retrieve the issue with the API
-  const [getInfraErrors] = osrdEditoastApi.endpoints.getInfraByIdErrors.useLazyQuery({});
+  const [getInfraErrors] = osrdEditoastApi.endpoints.getInfraByInfraIdErrors.useLazyQuery({});
   const fetch = useCallback(
-    async (id: number, page: number, level: InfraErrorLevel, errorType?: InfraErrorType) => {
+    async (id: number, page: number, level: InfraErrorLevel, errorType?: InfraErrorTypeLabel) => {
       setLoading(true);
       try {
         const response = await getInfraErrors({
-          id,
+          infraId: id,
           page,
           errorType,
           level,
@@ -115,7 +115,8 @@ const InfraErrorsList: React.FC<InfraErrorsListProps> = ({ infraID, onErrorClick
             onChange={(e) => {
               dispatch(
                 updateFiltersIssue(infraID, {
-                  filterType: e.target.value !== 'all' ? (e.target.value as InfraErrorType) : null,
+                  filterType:
+                    e.target.value !== 'all' ? (e.target.value as InfraErrorTypeLabel) : null,
                 })
               );
             }}
@@ -153,7 +154,9 @@ const InfraErrorsList: React.FC<InfraErrorsListProps> = ({ infraID, onErrorClick
               {errors.map((item, index) => (
                 <li key={uniqueId()} className="list-group-item management-item">
                   <InfraErrorBox error={item.information} index={index + 1}>
-                    {EDITOAST_TYPES.includes(item.information.obj_type) && (
+                    {EDITOAST_TYPES.includes(
+                      item.information.obj_type as EditoastType // EditoastType < ObjectType
+                    ) && (
                       <button
                         className="dropdown-item no-close-modal"
                         type="button"

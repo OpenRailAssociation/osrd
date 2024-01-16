@@ -2,7 +2,10 @@ import { flatMap } from 'lodash';
 
 import { EditorSchema } from 'types';
 
-import { InfraErrorLevel, InfraErrorType } from 'applications/editor/components/InfraErrors/types';
+import {
+  InfraErrorLevel,
+  InfraErrorTypeLabel,
+} from 'applications/editor/components/InfraErrors/types';
 
 import { InfraState } from 'reducers/infra';
 
@@ -13,7 +16,7 @@ export interface EditorState extends InfraState {
     total: number;
     filterTotal: number;
     filterLevel: NonNullable<InfraErrorLevel>;
-    filterType: InfraErrorType | null;
+    filterType: InfraErrorTypeLabel | null;
   };
 }
 

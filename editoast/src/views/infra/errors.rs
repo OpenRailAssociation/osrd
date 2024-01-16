@@ -1,8 +1,9 @@
 use crate::error::Result;
-use crate::schema::InfraErrorType;
+use crate::schema::utils::Identifier;
+use crate::schema::{InfraErrorType, ObjectType};
+use crate::views::infra::InfraIdParam;
 use crate::views::pagination::{Paginate, PaginatedResponse, PaginationQueryParam};
-use crate::DbPool;
-use actix_web::dev::HttpServiceFactory;
+use crate::{decl_paginated_response, DbPool};
 use actix_web::get;
 use actix_web::web::{Data, Json as WebJson, Path, Query};
 use diesel::sql_query;
@@ -12,25 +13,43 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use strum::VariantNames;
 use thiserror::Error;
+use utoipa::{IntoParams, ToSchema};
 
-/// Return `/infra/<infra_id>/errors` routes
-pub fn routes() -> impl HttpServiceFactory {
+crate::routes! {
     list_errors
 }
 
-#[derive(Debug, Clone, Deserialize)]
-struct QueryParams {
-    #[serde(default)]
-    level: Level,
-    error_type: Option<String>,
-    object_id: Option<String>,
+crate::schemas! {
+    InfraError,
+    Level,
 }
 
-/// Return the list of errors of an infra
+#[derive(Debug, Clone, Deserialize, IntoParams)]
+struct QueryParams {
+    /// Whether the response should include errors or warnings
+    #[serde(default)]
+    level: Level,
+    /// The type of error to filter on
+    #[param(value_type = Option<InfraErrorTypeLabel>)]
+    error_type: Option<String>,
+    /// Filter errors and warnings related to a given object
+    object_id: Option<Identifier>,
+}
+
+decl_paginated_response!(PaginatedResponseOfInfraError, InfraError);
+
+/// A paginated list of errors related to an infra
+#[utoipa::path(
+    tag = "infra",
+    params(InfraIdParam, PaginationQueryParam, QueryParams),
+    responses(
+        (status = 200, body = inline(PaginatedResponseOfInfraError), description = "A paginated list of errors"),
+    ),
+)]
 #[get("/errors")]
 async fn list_errors(
     db_pool: Data<DbPool>,
-    infra: Path<i64>,
+    path: Path<InfraIdParam>,
     pagination_params: Query<PaginationQueryParam>,
     params: Query<QueryParams>,
 ) -> Result<WebJson<PaginatedResponse<InfraError>>> {
@@ -38,7 +57,6 @@ async fn list_errors(
         .validate(100)?
         .warn_page_size(100)
         .unpack();
-    let infra = infra.into_inner();
 
     if let Some(error_type) = &params.error_type {
         if !check_error_type_query(error_type) {
@@ -46,7 +64,8 @@ async fn list_errors(
         }
     }
 
-    let errors = get_paginated_infra_errors(db_pool, infra, page, per_page, &params).await?;
+    let errors =
+        get_paginated_infra_errors(db_pool, path.infra_id, page, per_page, &params).await?;
     Ok(WebJson(errors))
 }
 
@@ -67,10 +86,38 @@ enum ListErrorsErrors {
 #[derive(QueryableByName, Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct InfraError {
     #[diesel(sql_type = Json)]
-    pub information: JsonValue,
+    pub information: JsonValue, // cf. https://github.com/osrd-project/osrd/issues/6349
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Eq, Deserialize)]
+impl<'__s> utoipa::ToSchema<'__s> for InfraError {
+    fn schema() -> (
+        &'__s str,
+        utoipa::openapi::RefOr<utoipa::openapi::schema::Schema>,
+    ) {
+        /// Information about the error (check schema documentation for more details)
+        #[derive(ToSchema)]
+        #[allow(unused)]
+        struct Information {
+            obj_id: Identifier,
+            obj_type: ObjectType,
+            field: Option<String>,
+            is_warning: bool,
+            error_type: InfraErrorType,
+        }
+
+        /// An infra error or warning
+        #[allow(unused)]
+        #[derive(ToSchema)]
+        struct InfraError {
+            #[schema(inline)]
+            information: Information,
+        }
+
+        InfraError::schema()
+    }
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Eq, Deserialize, ToSchema)]
 #[serde(rename_all = "lowercase")]
 pub enum Level {
     Warnings,
@@ -105,7 +152,7 @@ async fn get_paginated_infra_errors(
     sql_query(query)
         .bind::<BigInt, _>(infra)
         .bind::<Text, _>(error_type)
-        .bind::<Text, _>(object_id)
+        .bind::<Text, _>(object_id.to_string())
         .paginate(page, per_page)
         .load_and_count::<InfraError>(&mut conn)
         .await

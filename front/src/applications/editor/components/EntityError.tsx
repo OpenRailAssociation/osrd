@@ -12,10 +12,10 @@ import { InfraErrorLine } from './InfraErrors/InfraError';
 const EntityError: FC<{ entity: EditorEntity; className?: string }> = ({ entity, className }) => {
   const { t } = useTranslation();
   const infraID = useInfraID();
-  const { data } = osrdEditoastApi.endpoints.getInfraByIdErrors.useQuery(
+  const { data } = osrdEditoastApi.endpoints.getInfraByInfraIdErrors.useQuery(
     {
       // Infra can be undefined, but in this case the query is skipped
-      id: infraID!,
+      infraId: infraID!,
       objectId: entity.properties.id,
     },
     { skip: isNil(infraID) }
