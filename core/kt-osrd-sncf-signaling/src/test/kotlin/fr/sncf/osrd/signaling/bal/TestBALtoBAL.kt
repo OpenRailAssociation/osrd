@@ -5,7 +5,8 @@ import fr.sncf.osrd.signaling.impl.SigSystemManagerImpl
 import fr.sncf.osrd.signaling.impl.SignalingSimulatorImpl
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.RawInfraBuilder
-import fr.sncf.osrd.utils.indexing.*
+import fr.sncf.osrd.utils.indexing.StaticIdx
+import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
@@ -62,12 +63,13 @@ class TestBALtoBAL {
         // region signals
         val parameters = RawSignalParameters(mapOf(Pair("jaune_cli", "false")), mapOf())
 
+        // TODO: add an actual track graph
         val signalX =
-            builder.physicalSignal("X", 300.meters) {
+            builder.physicalSignal("X", 300.meters, StaticIdx(42u), Offset(42.meters)) {
                 logicalSignal("BAL", listOf("BAL"), mapOf(Pair("Nf", "true")), parameters)
             }
         val signalV =
-            builder.physicalSignal("V", 300.meters) {
+            builder.physicalSignal("V", 300.meters, StaticIdx(42u), Offset(42.meters)) {
                 logicalSignal("BAL", listOf("BAL"), mapOf(Pair("Nf", "true")), parameters)
             }
         // endregion

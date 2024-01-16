@@ -38,6 +38,7 @@ dependencies {
     implementation project(':kt-osrd-signaling')
     implementation project(":kt-osrd-sim-interlocking")
     implementation project(":kt-osrd-sim-infra")
+    implementation project(":kt-osrd-rjs-parser")
     implementation project(":kt-osrd-sncf-signaling")
 
     // base primitives

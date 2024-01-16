@@ -54,7 +54,7 @@ class BlockAvailabilityTests {
             "zone.[det.center.1:INCREASING, det.center.2:DECREASING]",
             "zone.[det.center.2:INCREASING, det.center.3:DECREASING]",
             "zone.[det.b1.nf:DECREASING, det.b2.nf:DECREASING, det.center.3:INCREASING]",
-            "zone.[det.b1.nf:INCREASING, bf.b1:DECREASING]"
+            "zone.[bf.b1:DECREASING, det.b1.nf:INCREASING]"
         )
 
     @BeforeEach

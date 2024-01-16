@@ -1,13 +1,17 @@
 package fr.sncf.osrd.sim_infra.api
 
 import fr.sncf.osrd.geom.LineString
-import fr.sncf.osrd.sim_infra.impl.NeutralSection
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.Speed
+
+data class NeutralSection(
+    val lowerPantograph: Boolean,
+    val isAnnouncement: Boolean,
+)
 
 /**
  * An operational point is a special location (such as a station). It has an ID and a set of

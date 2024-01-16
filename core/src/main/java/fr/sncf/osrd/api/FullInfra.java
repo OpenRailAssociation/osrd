@@ -31,7 +31,7 @@ public record FullInfra(
                 SignalingInfraBuilder.fromRJSInfra(rjsInfra, Set.of(new BAL3(diagnosticRecorder)), diagnosticRecorder);
 
         logger.info("adaptation to kotlin");
-        var rawInfra = adaptRawInfra(infra);
+        var rawInfra = adaptRawInfra(infra, rjsInfra);
 
         logger.info("loading signals");
         var loadedSignalInfra = signalingSimulator.loadSignals(rawInfra);

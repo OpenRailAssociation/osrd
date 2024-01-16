@@ -8,7 +8,6 @@ import fr.sncf.osrd.signaling.ZoneStatus
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.ChunkPath
 import fr.sncf.osrd.sim_infra.utils.recoverBlocks
-import fr.sncf.osrd.sim_infra_adapter.SimInfraAdapter
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SignalSighting
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.ZoneUpdate
 import fr.sncf.osrd.standalone_sim.result.SignalUpdate
@@ -27,7 +26,7 @@ fun project(
     signalSightings: List<SignalSighting>,
     zoneUpdates: List<ZoneUpdate>
 ): SignalProjectionResult {
-    val rawInfra = fullInfra.rawInfra as SimInfraAdapter
+    val rawInfra = fullInfra.rawInfra
     val loadedSignalInfra = fullInfra.loadedSignalInfra
     val blockInfra = fullInfra.blockInfra
     val simulator = fullInfra.signalingSimulator
@@ -116,7 +115,7 @@ private fun computeSignalAspectChangeEvents(
     pathSignals: List<PathSignal>,
     zoneUpdates: List<ZoneUpdate>,
     simulator: SignalingSimulator,
-    rawInfra: SimInfraAdapter,
+    rawInfra: RawInfra,
     loadedSignalInfra: LoadedSignalInfra,
     leastConstrainingStates: Map<SignalingSystemId, SigState>,
 ): Map<PathSignal, MutableList<SignalAspectChangeEvent>> {
@@ -185,7 +184,7 @@ private fun signalUpdates(
     signalsOnPath: List<PathSignal>,
     signalAspectChangeEvents: Map<PathSignal, MutableList<SignalAspectChangeEvent>>,
     loadedSignalInfra: LoadedSignalInfra,
-    rawInfra: SimInfraAdapter,
+    rawInfra: RawInfra,
     signalSightings: List<SignalSighting>,
 ): MutableList<SignalUpdate> {
     val signalUpdates = mutableListOf<SignalUpdate>()
@@ -229,10 +228,10 @@ private fun signalUpdates(
         val signal = pathSignal.signal
         val physicalSignalId = loadedSignalInfra.getPhysicalSignal(signal)
         val physicalSignalName = rawInfra.getPhysicalSignalName(physicalSignalId)
-        val signalId = rawInfra.signalMap.inverse()[physicalSignalId]!!
-        val rjsSignal = rawInfra.rjsSignalMap[signalId]!!
-        val track = rjsSignal.track
-        val trackOffset = rjsSignal.position
+        val physicalSignalTrack = rawInfra.getPhysicalSignalTrack(physicalSignalId)
+        val physicalSignalTrackOffset = rawInfra.getPhysicalSignalTrackOffset(physicalSignalId)
+        val track = rawInfra.getTrackSectionName(physicalSignalTrack)
+        val trackOffset = physicalSignalTrackOffset.distance.meters
         val positionStart = pathSignal.pathOffset
         val positionEnd = if (nextSignal.contains(signal)) nextSignal[signal]!!.pathOffset else null
 
@@ -247,7 +246,7 @@ private fun signalUpdates(
             if (abs(timeStart - timeEnd) > 0.1) {
                 signalUpdates.add(
                     SignalUpdate(
-                        signalId,
+                        physicalSignalName,
                         timeStart,
                         timeEnd,
                         positionStart.meters,
@@ -269,7 +268,7 @@ private fun signalUpdates(
             val timeEnd = nextEvent.time
             signalUpdates.add(
                 SignalUpdate(
-                    signalId,
+                    physicalSignalName,
                     timeStart.toDouble() / 1000,
                     timeEnd.toDouble() / 1000,
                     positionStart.meters,
@@ -289,7 +288,7 @@ private fun signalUpdates(
             val timeStart = event.time
             signalUpdates.add(
                 SignalUpdate(
-                    signalId,
+                    physicalSignalName,
                     timeStart.toDouble() / 1000,
                     null,
                     positionStart.meters,

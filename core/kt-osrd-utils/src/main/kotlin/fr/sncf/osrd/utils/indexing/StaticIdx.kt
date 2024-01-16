@@ -19,7 +19,6 @@ import fr.sncf.osrd.utils.Endpoint
 
 @JvmInline
 value class OptStaticIdx<T>(private val data: UInt) {
-
     constructor() : this(UInt.MAX_VALUE)
 
     val isNone: Boolean
@@ -37,11 +36,14 @@ value class OptStaticIdx<T>(private val data: UInt) {
             onSome(asIndex())
         }
     }
+
+    val orNull: StaticIdx<T>?
+        get() = if (isNone) null else asIndex()
 }
 
 @JvmInline
 value class EndpointStaticIdx<T>(val data: UInt) : NumIdx {
-    public constructor(
+    constructor(
         value: StaticIdx<T>,
         endpoint: Endpoint
     ) : this(
@@ -142,6 +144,12 @@ value class StaticPool<IndexT, ValueT>(private val items: MutableList<ValueT>) :
 
     override fun iterator(): StaticIdxIterator<IndexT> {
         return StaticIdxSpaceIterator(items.size.toUInt())
+    }
+
+    fun <NewValueT> map(f: (ValueT) -> NewValueT): StaticPool<IndexT, NewValueT> {
+        val result = mutableListOf<NewValueT>()
+        for (it in items) result.add(f(it))
+        return StaticPool(result)
     }
 }
 
