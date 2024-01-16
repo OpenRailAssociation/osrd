@@ -1,7 +1,9 @@
 package fr.sncf.osrd.stdcm.preprocessing.interfaces
 
+import fr.sncf.osrd.sim_infra.api.Path
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.utils.units.Distance
+import fr.sncf.osrd.utils.units.Offset
 
 /** Abstract interface used to request the availability of path sections  */
 interface BlockAvailabilityInterface {
@@ -27,8 +29,8 @@ interface BlockAvailabilityInterface {
      */
     fun getAvailability(
         infraExplorer: InfraExplorerWithEnvelope,
-        startOffset: Distance,
-        endOffset: Distance,
+        startOffset: Offset<Path>,
+        endOffset: Offset<Path>,
         startTime: Double
     ): Availability
 
@@ -57,9 +59,9 @@ interface BlockAvailabilityInterface {
         val duration: Double,
         /** Exact offset of the first conflict encountered. It's always an offset that delimits an unavailable section.
          *
-         * It's either the offset where we start using a ressource before it's available,
-         * or the offset where the train would have released a ressource it has kept for too long.  */
-        val firstConflictOffset: Distance
+         * It's either the offset where we start using a resource before it's available,
+         * or the offset where the train would have released a resource it has kept for too long.  */
+        val firstConflictOffset: Offset<Path>
     ) : Availability()
 
     /** The availability of the requested section can't be determined,

@@ -74,7 +74,7 @@ enum class SpacingRequirementPhase {
 
 class SpacingRequirementAutomaton(
     // context
-    val rawInfra: SimInfraAdapter,
+    val rawInfra: RawInfra,
     val loadedSignalInfra: LoadedSignalInfra,
     val blockInfra: BlockInfra,
     val simulator: SignalingSimulator,

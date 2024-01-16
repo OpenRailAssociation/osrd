@@ -119,13 +119,13 @@ private fun findConflictOffsets(
     assert(TrainPhysicsIntegrator.arePositionsEqual(envelopeWithStops.endPos, (endOffset - startOffset).meters))
     val availability = blockAvailability.getAvailability(
         explorer,
-        startOffset.distance,
-        endOffset.distance,
+        startOffset.cast(),
+        endOffset.cast(),
         departureTime
     )
     assert(availability.javaClass != NotEnoughLookahead::class.java)
     val offsetDistance = (availability as? BlockAvailabilityInterface.Unavailable)?.firstConflictOffset ?: return null
-    return Offset(offsetDistance)
+    return offsetDistance
 }
 
 /** Applies the allowance to the final envelope, with range transitions at the given offsets  */

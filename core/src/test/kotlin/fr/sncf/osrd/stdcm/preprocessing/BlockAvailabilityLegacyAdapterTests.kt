@@ -56,11 +56,11 @@ class BlockAvailabilityLegacyAdapterTests {
             )
         val res = adapter.getAvailability(
             explorer,
-            0.meters,
-            1.meters,
+            Offset(0.meters),
+            Offset(1.meters),
             42.0
         )
-        val expected = BlockAvailabilityInterface.Unavailable((42 + 20).toDouble(), 0.meters)
+        val expected = BlockAvailabilityInterface.Unavailable((42 + 20).toDouble(), Offset(0.meters))
         Assertions.assertEquals(expected, res)
     }
 }
