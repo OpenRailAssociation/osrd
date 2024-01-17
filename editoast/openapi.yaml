@@ -188,6 +188,2262 @@ components:
       - end
       - direction
       type: object
+    EditoastAttachedTrackNotFound:
+      properties:
+        context:
+          properties:
+            track_id:
+              type: string
+          required:
+          - track_id
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 404
+          type: integer
+        type:
+          enum:
+          - editoast:attached:TrackNotFound
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastAutoFixesConflictingFixesOnSameObject:
+      properties:
+        context:
+          properties:
+            fixes:
+              type: array
+            object:
+              type: object
+          required:
+          - fixes
+          - object
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 500
+          type: integer
+        type:
+          enum:
+          - editoast:auto_fixes:ConflictingFixesOnSameObject
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastAutoFixesFixTrialFailure:
+      properties:
+        context:
+          properties:
+            source:
+              type: object
+          required:
+          - source
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 500
+          type: integer
+        type:
+          enum:
+          - editoast:auto_fixes:FixTrialFailure
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastAutoFixesMaximumIterationReached:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 500
+          type: integer
+        type:
+          enum:
+          - editoast:auto_fixes:MaximumIterationReached
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastAutoFixesMissingErrorObject:
+      properties:
+        context:
+          properties:
+            source:
+              type: object
+          required:
+          - source
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 500
+          type: integer
+        type:
+          enum:
+          - editoast:auto_fixes:MissingErrorObject
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastCacheOperationDuplicateIdsProvided:
+      properties:
+        context:
+          properties:
+            obj_id:
+              type: string
+            obj_type:
+              type: string
+          required:
+          - obj_id
+          - obj_type
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 404
+          type: integer
+        type:
+          enum:
+          - editoast:cache_operation:DuplicateIdsProvided
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastCacheOperationObjectNotFound:
+      properties:
+        context:
+          properties:
+            obj_id:
+              type: string
+            obj_type:
+              type: string
+          required:
+          - obj_id
+          - obj_type
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 404
+          type: integer
+        type:
+          enum:
+          - editoast:cache_operation:ObjectNotFound
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastCoreclientCannotExtractResponseBody:
+      properties:
+        context:
+          properties:
+            msg:
+              type: string
+          required:
+          - msg
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 500
+          type: integer
+        type:
+          enum:
+          - editoast:coreclient:CannotExtractResponseBody
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastCoreclientConnectionClosedBeforeMessageCompleted:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 500
+          type: integer
+        type:
+          enum:
+          - editoast:coreclient:ConnectionClosedBeforeMessageCompleted
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastCoreclientConnectionResetByPeer:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 500
+          type: integer
+        type:
+          enum:
+          - editoast:coreclient:ConnectionResetByPeer
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastCoreclientCoreResponseFormatError:
+      properties:
+        context:
+          properties:
+            msg:
+              type: string
+          required:
+          - msg
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 500
+          type: integer
+        type:
+          enum:
+          - editoast:coreclient:CoreResponseFormatError
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastCoreclientGenericCoreError:
+      properties:
+        context:
+          properties:
+            raw_error:
+              type: string
+            status:
+              type: object
+            url:
+              type: string
+          required:
+          - raw_error
+          - status
+          - url
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:coreclient:GenericCoreError
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastCoreclientUnparsableErrorOutput:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:coreclient:UnparsableErrorOutput
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastDocumentNotFound:
+      properties:
+        context:
+          properties:
+            document_key:
+              type: integer
+          required:
+          - document_key
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 404
+          type: integer
+        type:
+          enum:
+          - editoast:document:NotFound
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastElectricalProfilesNotFound:
+      properties:
+        context:
+          properties:
+            electrical_profile_set_id:
+              type: integer
+          required:
+          - electrical_profile_set_id
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 404
+          type: integer
+        type:
+          enum:
+          - editoast:electrical_profiles:NotFound
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastError:
+      description: Generated error type for Editoast
+      discriminator:
+        propertyName: type
+      oneOf:
+      - $ref: '#/components/schemas/EditoastAttachedTrackNotFound'
+      - $ref: '#/components/schemas/EditoastAutoFixesConflictingFixesOnSameObject'
+      - $ref: '#/components/schemas/EditoastAutoFixesFixTrialFailure'
+      - $ref: '#/components/schemas/EditoastAutoFixesMaximumIterationReached'
+      - $ref: '#/components/schemas/EditoastAutoFixesMissingErrorObject'
+      - $ref: '#/components/schemas/EditoastCacheOperationDuplicateIdsProvided'
+      - $ref: '#/components/schemas/EditoastCacheOperationObjectNotFound'
+      - $ref: '#/components/schemas/EditoastCoreclientCannotExtractResponseBody'
+      - $ref: '#/components/schemas/EditoastCoreclientConnectionClosedBeforeMessageCompleted'
+      - $ref: '#/components/schemas/EditoastCoreclientConnectionResetByPeer'
+      - $ref: '#/components/schemas/EditoastCoreclientCoreResponseFormatError'
+      - $ref: '#/components/schemas/EditoastCoreclientGenericCoreError'
+      - $ref: '#/components/schemas/EditoastCoreclientUnparsableErrorOutput'
+      - $ref: '#/components/schemas/EditoastDocumentNotFound'
+      - $ref: '#/components/schemas/EditoastElectricalProfilesNotFound'
+      - $ref: '#/components/schemas/EditoastGeometryUnexpectedGeometry'
+      - $ref: '#/components/schemas/EditoastInfraNotFound'
+      - $ref: '#/components/schemas/EditoastInfraNotFound'
+      - $ref: '#/components/schemas/EditoastInfraEditionInfraIsLocked'
+      - $ref: '#/components/schemas/EditoastInfraErrorsWrongErrorTypeProvided'
+      - $ref: '#/components/schemas/EditoastInfraLinesLineNotFound'
+      - $ref: '#/components/schemas/EditoastInfraObjectsDuplicateIdsProvided'
+      - $ref: '#/components/schemas/EditoastInfraObjectsObjectIdNotFound'
+      - $ref: '#/components/schemas/EditoastInfraPathfindingEndingTrackLocationNotFound'
+      - $ref: '#/components/schemas/EditoastInfraPathfindingInvalidNumberOfPaths'
+      - $ref: '#/components/schemas/EditoastInfraPathfindingStartingTrackLocationNotFound'
+      - $ref: '#/components/schemas/EditoastInfraRailjsonWrongRailjsonVersionProvided'
+      - $ref: '#/components/schemas/EditoastInfraCacheObjectNotFound'
+      - $ref: '#/components/schemas/EditoastLayersLayerNotFound'
+      - $ref: '#/components/schemas/EditoastLayersViewNotFound'
+      - $ref: '#/components/schemas/EditoastOperationEmptyId'
+      - $ref: '#/components/schemas/EditoastOperationInvalidPatch'
+      - $ref: '#/components/schemas/EditoastOperationModifyId'
+      - $ref: '#/components/schemas/EditoastOperationObjectNotFound'
+      - $ref: '#/components/schemas/EditoastPaginationInvalidPage'
+      - $ref: '#/components/schemas/EditoastPaginationInvalidPageSize'
+      - $ref: '#/components/schemas/EditoastPathfindingElectricalProfilesOverlap'
+      - $ref: '#/components/schemas/EditoastPathfindingElectrificationOverlap'
+      - $ref: '#/components/schemas/EditoastPathfindingInfraNotFound'
+      - $ref: '#/components/schemas/EditoastPathfindingNotFound'
+      - $ref: '#/components/schemas/EditoastPathfindingOperationalPointsNotFound'
+      - $ref: '#/components/schemas/EditoastPathfindingRollingStockNotFound'
+      - $ref: '#/components/schemas/EditoastPathfindingTrackSectionsNotFound'
+      - $ref: '#/components/schemas/EditoastPostgresHost'
+      - $ref: '#/components/schemas/EditoastPostgresPassword'
+      - $ref: '#/components/schemas/EditoastPostgresPort'
+      - $ref: '#/components/schemas/EditoastPostgresUsername'
+      - $ref: '#/components/schemas/EditoastProjectImageError'
+      - $ref: '#/components/schemas/EditoastProjectImageNotFound'
+      - $ref: '#/components/schemas/EditoastProjectNotFound'
+      - $ref: '#/components/schemas/EditoastRailjsonUnsupportedVersion'
+      - $ref: '#/components/schemas/EditoastRedisUrl'
+      - $ref: '#/components/schemas/EditoastRollingstocksBasePowerClassEmpty'
+      - $ref: '#/components/schemas/EditoastRollingstocksCannotCreateCompoundImage'
+      - $ref: '#/components/schemas/EditoastRollingstocksCannotReadImage'
+      - $ref: '#/components/schemas/EditoastRollingstocksNameAlreadyUsed'
+      - $ref: '#/components/schemas/EditoastRollingstocksNotFound'
+      - $ref: '#/components/schemas/EditoastRollingstocksRollingStockIsLocked'
+      - $ref: '#/components/schemas/EditoastRollingstocksRollingStockIsUsed'
+      - $ref: '#/components/schemas/EditoastScenarioNotFound'
+      - $ref: '#/components/schemas/EditoastSearchArgMissing'
+      - $ref: '#/components/schemas/EditoastSearchArgTypeMismatch'
+      - $ref: '#/components/schemas/EditoastSearchEmptyArray'
+      - $ref: '#/components/schemas/EditoastSearchIntegerConversion'
+      - $ref: '#/components/schemas/EditoastSearchInvalidColumnName'
+      - $ref: '#/components/schemas/EditoastSearchInvalidFunctionIdentifier'
+      - $ref: '#/components/schemas/EditoastSearchInvalidSyntax'
+      - $ref: '#/components/schemas/EditoastSearchObjectType'
+      - $ref: '#/components/schemas/EditoastSearchQueryAst'
+      - $ref: '#/components/schemas/EditoastSearchRuntimeTypeCheckFail'
+      - $ref: '#/components/schemas/EditoastSearchUndefinedFunction'
+      - $ref: '#/components/schemas/EditoastSearchUndefinedOverload'
+      - $ref: '#/components/schemas/EditoastSearchUnexpectedArg'
+      - $ref: '#/components/schemas/EditoastSearchUnexpectedColummn'
+      - $ref: '#/components/schemas/EditoastSearchUnexpectedErsatz'
+      - $ref: '#/components/schemas/EditoastSearchVariadicArgTypeMismatch'
+      - $ref: '#/components/schemas/EditoastSingleSimulationElectricalProfileSetNotFound'
+      - $ref: '#/components/schemas/EditoastSingleSimulationPathNotFound'
+      - $ref: '#/components/schemas/EditoastSingleSimulationRollingStockNotFound'
+      - $ref: '#/components/schemas/EditoastSingleSimulationWrongCoreResponseFormat'
+      - $ref: '#/components/schemas/EditoastSpritesFileNotFound'
+      - $ref: '#/components/schemas/EditoastSpritesUnknownSignalingSystem'
+      - $ref: '#/components/schemas/EditoastStdcmInfraNotFound'
+      - $ref: '#/components/schemas/EditoastStudyNotFound'
+      - $ref: '#/components/schemas/EditoastStudyStartDateAfterEndDate'
+      - $ref: '#/components/schemas/EditoastTimetableInfraNotLoaded'
+      - $ref: '#/components/schemas/EditoastTimetableNotFound'
+      - $ref: '#/components/schemas/EditoastTrainScheduleBatchShouldHaveSameTimetable'
+      - $ref: '#/components/schemas/EditoastTrainScheduleBatchTrainScheduleNotFound'
+      - $ref: '#/components/schemas/EditoastTrainScheduleNoSimulation'
+      - $ref: '#/components/schemas/EditoastTrainScheduleNoTrainSchedules'
+      - $ref: '#/components/schemas/EditoastTrainScheduleNotFound'
+      - $ref: '#/components/schemas/EditoastTrainSchedulePathNotFound'
+      - $ref: '#/components/schemas/EditoastTrainScheduleRollingStockNotFound'
+      - $ref: '#/components/schemas/EditoastTrainScheduleTimetableNotFound'
+      - $ref: '#/components/schemas/EditoastTrainScheduleUnsimulatedTrainSchedule'
+      - $ref: '#/components/schemas/EditoastUrlInvalidUrl'
+    EditoastGeometryUnexpectedGeometry:
+      properties:
+        context:
+          properties:
+            actual:
+              type: string
+            expected:
+              type: string
+          required:
+          - actual
+          - expected
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 404
+          type: integer
+        type:
+          enum:
+          - editoast:geometry:UnexpectedGeometry
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastInfraCacheObjectNotFound:
+      properties:
+        context:
+          properties:
+            obj_id:
+              type: string
+            obj_type:
+              type: string
+          required:
+          - obj_id
+          - obj_type
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 404
+          type: integer
+        type:
+          enum:
+          - editoast:infra_cache:ObjectNotFound
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastInfraEditionInfraIsLocked:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:infra:edition:InfraIsLocked
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastInfraErrorsWrongErrorTypeProvided:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:infra:errors:WrongErrorTypeProvided
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastInfraLinesLineNotFound:
+      properties:
+        context:
+          properties:
+            line_code:
+              type: integer
+          required:
+          - line_code
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:infra:lines:LineNotFound
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastInfraNotFound:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:infra:NotFound
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastInfraObjectsDuplicateIdsProvided:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:infra:objects:DuplicateIdsProvided
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastInfraObjectsObjectIdNotFound:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:infra:objects:ObjectIdNotFound
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastInfraPathfindingEndingTrackLocationNotFound:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:infra:pathfinding:EndingTrackLocationNotFound
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastInfraPathfindingInvalidNumberOfPaths:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:infra:pathfinding:InvalidNumberOfPaths
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastInfraPathfindingStartingTrackLocationNotFound:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:infra:pathfinding:StartingTrackLocationNotFound
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastInfraRailjsonWrongRailjsonVersionProvided:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:infra:railjson:WrongRailjsonVersionProvided
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastLayersLayerNotFound:
+      properties:
+        context:
+          properties:
+            expected_names:
+              type: array
+            layer_name:
+              type: string
+          required:
+          - expected_names
+          - layer_name
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 404
+          type: integer
+        type:
+          enum:
+          - editoast:layers:LayerNotFound
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastLayersViewNotFound:
+      properties:
+        context:
+          properties:
+            expected_names:
+              type: array
+            view_name:
+              type: string
+          required:
+          - expected_names
+          - view_name
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 404
+          type: integer
+        type:
+          enum:
+          - editoast:layers:ViewNotFound
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastOperationEmptyId:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:operation:EmptyId
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastOperationInvalidPatch:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:operation:InvalidPatch
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastOperationModifyId:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:operation:ModifyId
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastOperationObjectNotFound:
+      properties:
+        context:
+          properties:
+            infra_id:
+              type: integer
+            obj_id:
+              type: string
+          required:
+          - infra_id
+          - obj_id
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 404
+          type: integer
+        type:
+          enum:
+          - editoast:operation:ObjectNotFound
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastPaginationInvalidPage:
+      properties:
+        context:
+          properties:
+            page:
+              type: integer
+          required:
+          - page
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 404
+          type: integer
+        type:
+          enum:
+          - editoast:pagination:InvalidPage
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastPaginationInvalidPageSize:
+      properties:
+        context:
+          properties:
+            max_page_size:
+              type: integer
+            provided_page_size:
+              type: integer
+          required:
+          - max_page_size
+          - provided_page_size
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:pagination:InvalidPageSize
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastPathfindingElectricalProfilesOverlap:
+      properties:
+        context:
+          properties:
+            overlapping_ranges:
+              type: array
+          required:
+          - overlapping_ranges
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 500
+          type: integer
+        type:
+          enum:
+          - editoast:pathfinding:ElectricalProfilesOverlap
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastPathfindingElectrificationOverlap:
+      properties:
+        context:
+          properties:
+            electrification_id:
+              type: string
+            overlapping_ranges:
+              type: array
+          required:
+          - electrification_id
+          - overlapping_ranges
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 500
+          type: integer
+        type:
+          enum:
+          - editoast:pathfinding:ElectrificationOverlap
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastPathfindingInfraNotFound:
+      properties:
+        context:
+          properties:
+            infra_id:
+              type: integer
+          required:
+          - infra_id
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 404
+          type: integer
+        type:
+          enum:
+          - editoast:pathfinding:InfraNotFound
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastPathfindingNotFound:
+      properties:
+        context:
+          properties:
+            pathfinding_id:
+              type: integer
+          required:
+          - pathfinding_id
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 404
+          type: integer
+        type:
+          enum:
+          - editoast:pathfinding:NotFound
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastPathfindingOperationalPointsNotFound:
+      properties:
+        context:
+          properties:
+            operational_points:
+              type: object
+          required:
+          - operational_points
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 404
+          type: integer
+        type:
+          enum:
+          - editoast:pathfinding:OperationalPointsNotFound
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastPathfindingRollingStockNotFound:
+      properties:
+        context:
+          properties:
+            rolling_stock_id:
+              type: integer
+          required:
+          - rolling_stock_id
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 404
+          type: integer
+        type:
+          enum:
+          - editoast:pathfinding:RollingStockNotFound
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastPathfindingTrackSectionsNotFound:
+      properties:
+        context:
+          properties:
+            track_sections:
+              type: object
+          required:
+          - track_sections
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 404
+          type: integer
+        type:
+          enum:
+          - editoast:pathfinding:TrackSectionsNotFound
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastPostgresHost:
+      properties:
+        context:
+          properties:
+            hostname:
+              type: string
+          required:
+          - hostname
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 500
+          type: integer
+        type:
+          enum:
+          - editoast:postgres:Host
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastPostgresPassword:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 500
+          type: integer
+        type:
+          enum:
+          - editoast:postgres:Password
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastPostgresPort:
+      properties:
+        context:
+          properties:
+            port:
+              type: integer
+          required:
+          - port
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 500
+          type: integer
+        type:
+          enum:
+          - editoast:postgres:Port
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastPostgresUsername:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 500
+          type: integer
+        type:
+          enum:
+          - editoast:postgres:Username
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastProjectImageError:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:project:ImageError
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastProjectImageNotFound:
+      properties:
+        context:
+          properties:
+            document_key:
+              type: integer
+          required:
+          - document_key
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:project:ImageNotFound
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastProjectNotFound:
+      properties:
+        context:
+          properties:
+            project_id:
+              type: integer
+          required:
+          - project_id
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 404
+          type: integer
+        type:
+          enum:
+          - editoast:project:NotFound
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastRailjsonUnsupportedVersion:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:railjson:UnsupportedVersion
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastRedisUrl:
+      properties:
+        context:
+          properties:
+            url:
+              type: string
+          required:
+          - url
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 500
+          type: integer
+        type:
+          enum:
+          - editoast:redis:Url
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastRollingstocksBasePowerClassEmpty:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:rollingstocks:BasePowerClassEmpty
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastRollingstocksCannotCreateCompoundImage:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 500
+          type: integer
+        type:
+          enum:
+          - editoast:rollingstocks:CannotCreateCompoundImage
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastRollingstocksCannotReadImage:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 500
+          type: integer
+        type:
+          enum:
+          - editoast:rollingstocks:CannotReadImage
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastRollingstocksNameAlreadyUsed:
+      properties:
+        context:
+          properties:
+            name:
+              type: string
+          required:
+          - name
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:rollingstocks:NameAlreadyUsed
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastRollingstocksNotFound:
+      properties:
+        context:
+          properties:
+            rolling_stock_id:
+              type: integer
+          required:
+          - rolling_stock_id
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 404
+          type: integer
+        type:
+          enum:
+          - editoast:rollingstocks:NotFound
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastRollingstocksRollingStockIsLocked:
+      properties:
+        context:
+          properties:
+            rolling_stock_id:
+              type: integer
+          required:
+          - rolling_stock_id
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:rollingstocks:RollingStockIsLocked
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastRollingstocksRollingStockIsUsed:
+      properties:
+        context:
+          properties:
+            rolling_stock_id:
+              type: integer
+            usage:
+              type: array
+          required:
+          - rolling_stock_id
+          - usage
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 409
+          type: integer
+        type:
+          enum:
+          - editoast:rollingstocks:RollingStockIsUsed
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastScenarioNotFound:
+      properties:
+        context:
+          properties:
+            scenario_id:
+              type: integer
+          required:
+          - scenario_id
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 404
+          type: integer
+        type:
+          enum:
+          - editoast:scenario:NotFound
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastSearchArgMissing:
+      properties:
+        context:
+          properties:
+            arg_pos:
+              type: integer
+            expected:
+              type: object
+          required:
+          - arg_pos
+          - expected
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:search:ArgMissing
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastSearchArgTypeMismatch:
+      properties:
+        context:
+          properties:
+            actual:
+              type: object
+            arg_pos:
+              type: integer
+            expected:
+              type: object
+          required:
+          - actual
+          - arg_pos
+          - expected
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:search:ArgTypeMismatch
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastSearchEmptyArray:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:search:EmptyArray
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastSearchIntegerConversion:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:search:IntegerConversion
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastSearchInvalidColumnName:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:search:InvalidColumnName
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastSearchInvalidFunctionIdentifier:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:search:InvalidFunctionIdentifier
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastSearchInvalidSyntax:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:search:InvalidSyntax
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastSearchObjectType:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:search:ObjectType
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastSearchQueryAst:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:search:QueryAst
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastSearchRuntimeTypeCheckFail:
+      properties:
+        context:
+          properties:
+            actual:
+              type: object
+            expected:
+              type: object
+            value:
+              type: string
+          required:
+          - actual
+          - expected
+          - value
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:search:RuntimeTypeCheckFail
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastSearchUndefinedFunction:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:search:UndefinedFunction
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastSearchUndefinedOverload:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:search:UndefinedOverload
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastSearchUnexpectedArg:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:search:UnexpectedArg
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastSearchUnexpectedColummn:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:search:UnexpectedColummn
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastSearchUnexpectedErsatz:
+      properties:
+        context:
+          properties:
+            expected:
+              type: object
+            value:
+              type: string
+          required:
+          - expected
+          - value
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:search:UnexpectedErsatz
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastSearchVariadicArgTypeMismatch:
+      properties:
+        context:
+          properties:
+            actual:
+              type: object
+            expected:
+              type: object
+          required:
+          - actual
+          - expected
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:search:VariadicArgTypeMismatch
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastSingleSimulationElectricalProfileSetNotFound:
+      properties:
+        context:
+          properties:
+            electrical_profile_set_id:
+              type: integer
+          required:
+          - electrical_profile_set_id
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:single_simulation:ElectricalProfileSetNotFound
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastSingleSimulationPathNotFound:
+      properties:
+        context:
+          properties:
+            path_id:
+              type: integer
+          required:
+          - path_id
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:single_simulation:PathNotFound
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastSingleSimulationRollingStockNotFound:
+      properties:
+        context:
+          properties:
+            rolling_stock_id:
+              type: integer
+          required:
+          - rolling_stock_id
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:single_simulation:RollingStockNotFound
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastSingleSimulationWrongCoreResponseFormat:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 500
+          type: integer
+        type:
+          enum:
+          - editoast:single_simulation:WrongCoreResponseFormat
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastSpritesFileNotFound:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 404
+          type: integer
+        type:
+          enum:
+          - editoast:sprites:FileNotFound
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastSpritesUnknownSignalingSystem:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 404
+          type: integer
+        type:
+          enum:
+          - editoast:sprites:UnknownSignalingSystem
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastStdcmInfraNotFound:
+      properties:
+        context:
+          properties:
+            infra_id:
+              type: integer
+          required:
+          - infra_id
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 404
+          type: integer
+        type:
+          enum:
+          - editoast:stdcm:InfraNotFound
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastStudyNotFound:
+      properties:
+        context:
+          properties:
+            study_id:
+              type: integer
+          required:
+          - study_id
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 404
+          type: integer
+        type:
+          enum:
+          - editoast:study:NotFound
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastStudyStartDateAfterEndDate:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:study:StartDateAfterEndDate
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastTimetableInfraNotLoaded:
+      properties:
+        context:
+          properties:
+            infra_id:
+              type: integer
+          required:
+          - infra_id
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:timetable:InfraNotLoaded
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastTimetableNotFound:
+      properties:
+        context:
+          properties:
+            timetable_id:
+              type: integer
+          required:
+          - timetable_id
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 404
+          type: integer
+        type:
+          enum:
+          - editoast:timetable:NotFound
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastTrainScheduleBatchShouldHaveSameTimetable:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:train_schedule:BatchShouldHaveSameTimetable
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastTrainScheduleBatchTrainScheduleNotFound:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:train_schedule:BatchTrainScheduleNotFound
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastTrainScheduleNoSimulation:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 500
+          type: integer
+        type:
+          enum:
+          - editoast:train_schedule:NoSimulation
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastTrainScheduleNoTrainSchedules:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:train_schedule:NoTrainSchedules
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastTrainScheduleNotFound:
+      properties:
+        context:
+          properties:
+            train_schedule_id:
+              type: integer
+          required:
+          - train_schedule_id
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:train_schedule:NotFound
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastTrainSchedulePathNotFound:
+      properties:
+        context:
+          properties:
+            path_id:
+              type: integer
+          required:
+          - path_id
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:train_schedule:PathNotFound
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastTrainScheduleRollingStockNotFound:
+      properties:
+        context:
+          properties:
+            rolling_stock_id:
+              type: integer
+          required:
+          - rolling_stock_id
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:train_schedule:RollingStockNotFound
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastTrainScheduleTimetableNotFound:
+      properties:
+        context:
+          properties:
+            timetable_id:
+              type: integer
+          required:
+          - timetable_id
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:train_schedule:TimetableNotFound
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastTrainScheduleUnsimulatedTrainSchedule:
+      properties:
+        context:
+          properties:
+            train_schedule_id:
+              type: integer
+          required:
+          - train_schedule_id
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 500
+          type: integer
+        type:
+          enum:
+          - editoast:train_schedule:UnsimulatedTrainSchedule
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastUrlInvalidUrl:
+      properties:
+        context:
+          properties:
+            url:
+              type: string
+          required:
+          - url
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 500
+          type: integer
+        type:
+          enum:
+          - editoast:url:InvalidUrl
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
     EffortCurve:
       additionalProperties: false
       properties:

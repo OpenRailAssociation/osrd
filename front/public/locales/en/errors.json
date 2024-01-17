@@ -1,11 +1,175 @@
 {
-"401": "Unauthenticated user",
-"403": "Access denied",
-"404": "Resource not found",
-"500": "Server errors",
-"502": "Server errors",
-"503": "Server errors",
-"504": "The server did not respond.",
-"default": "An error has occurred.",
-"pageNotFound": "The page you are looking for does not exist."
+  "401": "Unauthenticated user",
+  "403": "Access denied",
+  "404": "Resource not found",
+  "500": "Server errors",
+  "502": "Server errors",
+  "503": "Server errors",
+  "504": "The server did not respond.",
+  "default": "An error has occurred.",
+  "pageNotFound": "The page you are looking for does not exist.",
+  "editoast": {
+    "attached": {
+      "TrackNotFound": "Track {{track_id}} not found"
+    },
+    "auto_fixes": {
+      "ConflictingFixesOnSameObject": "Conflicting fixes for the same object on the same fix-iteration",
+      "FixTrialFailure": "Failed trying to apply fixes",
+      "MaximumIterationReached": "Reached maximum number of iterations to fix infra without providing every possible fixes",
+      "MissingErrorObject": "Failed to find the error's object"
+    },
+    "cache_operation": {
+      "DuplicateIdsProvided": "{{obj_type}} {{obj_id}} : a duplicate already exists",
+      "ObjectNotFound": "{{obj_type}} {{obj_id}} could not be found everywhere in the infrastructure cache"
+    },
+    "coreclient": {
+      "CannotExtractResponseBody": "Cannot extract Core response body: {{msg}}",
+      "ConnectionClosedBeforeMessageCompleted": "Core connection closed before message completed. Should retry.",
+      "ConnectionResetByPeer": "Core connection reset by peer. Should retry.",
+      "CoreResponseFormatError": "Cannot parse Core response: {{msg}}",
+      "GenericCoreError": "Core error {{raw_error}}",
+      "UnparsableErrorOutput": "Core returned an error in an unknown format"
+    },
+    "document": {
+      "NotFound": "Document '{{document_key}}' not found"
+    },
+    "electrical_profiles": {
+      "NotFound": "Electrical Profile Set '{{electrical_profile_set_id}}', could not be found"
+    },
+    "geometry": {
+      "UnexpectedGeometry": "Expected geometry {{expected}} but got {{actual}}"
+    },
+    "infra_cache": {
+      "ObjectNotFound": "{{obj_type}} '{{obj_id}}', could not be found everywhere in the infrastructure cache"
+    },
+    "infra": {
+      "NotFound": "",
+      "edition": {
+        "InfraIsLocked": "Infra is locked"
+      },
+      "errors": {
+        "WrongErrorTypeProvided": "Wrong Error type provided"
+      },
+      "lines": {
+        "LineNotFound": "No line with code {{line_code}} found"
+      },
+      "objects": {
+        "DuplicateIdsProvided": "Duplicate object ids provided",
+        "ObjectIdNotFound": "Object ID not found"
+      },
+      "pathfinding": {
+        "EndingTrackLocationNotFound": "Ending track location was not found",
+        "InvalidNumberOfPaths": "The pathfinding cannot return 5 paths (expected: [1-5])",
+        "StartingTrackLocationNotFound": "Starting track location was not found"
+      },
+      "railjson": {
+        "WrongRailjsonVersionProvided": "Wrong railjson version provided"
+      }
+    },
+    "layers": {
+      "LayerNotFound": "Layer {{layer_name}} not found.",
+      "ViewNotFound": "View {{view_name}} not found."
+    },
+    "operation": {
+      "EmptyId": "Empty string id is forbidden",
+      "InvalidPatch": "A Json Patch error occurred",
+      "ModifyId": "Update operation try to modify object id, which is forbidden",
+      "ObjectNotFound": "Object '{{obj_id}}', could not be found in the infrastructure '{{infra_id}}'"
+    },
+    "pagination": {
+      "InvalidPage": "Invalid page number ({{page}})",
+      "InvalidPageSize": "Invalid page size ({{provided_page_size}}), expected an integer 0 < page_size <= {{max_page_size}}"
+    },
+    "pathfinding": {
+      "ElectricalProfilesOverlap": "Electrical Profile overlaps with others",
+      "ElectrificationOverlap": "Electrification {{electrification_id}} overlaps with other electrifications",
+      "InfraNotFound": "Infra {{infra_id}} does not exist",
+      "NotFound": "Pathfinding {{pathfinding_id}} does not exist",
+      "OperationalPointsNotFound": "Operational points do not exist: {{operational_points}}",
+      "RollingStockNotFound": "Rolling stock with id {{rolling_stock_id}} does not exist",
+      "TrackSectionsNotFound": "Track sections do not exist: {{track_sections}}"
+    },
+    "postgres": {
+      "Host": "Invalid host '{{hostname}}'",
+      "Password": "Invalid password",
+      "Port": "Invalid port '{{port}}'",
+      "Username": "Invalid username"
+    },
+    "project": {
+      "ImageError": "The provided image is not valid",
+      "ImageNotFound": "Image document '{{document_key}}' not found",
+      "NotFound": "Project '{{project_id}}', could not be found"
+    },
+    "railjson": {
+      "UnsupportedVersion": "Unsupported railjson version"
+    },
+    "redis": {
+      "Url": "Invalid url '{{url}}'"
+    },
+    "rollingstocks": {
+      "BasePowerClassEmpty": "Base power class is an empty string",
+      "CannotCreateCompoundImage": "Impossible to copy the separated image on the compound image",
+      "CannotReadImage": "Impossible to read the separated image",
+      "NameAlreadyUsed": "Name '{{name}}' already used",
+      "NotFound": "Rolling stock '{{rolling_stock_id}}' could not be found",
+      "RollingStockIsLocked": "RollingStock '{{rolling_stock_id}}' is locked",
+      "RollingStockIsUsed": "RollingStock '{{rolling_stock_id}}' is used"
+    },
+    "scenario": {
+      "NotFound": "Scenario not found"
+    },
+    "search": {
+      "ArgMissing": "Expected argument of type {{expected}} at position {{arg_pos}} is missing",
+      "ArgTypeMismatch": "Expected argument of type {{expected}} at position {{arg_pos}}, but got {{actual}}",
+      "EmptyArray": "Empty arrays are invalid syntax",
+      "IntegerConversion": "Could not convert to i64",
+      "InvalidColumnName": "Invalid column name",
+      "InvalidFunctionIdentifier": "Function identifer must be a string",
+      "InvalidSyntax": "Invalid syntax",
+      "ObjectType": "Object type is invalid",
+      "QueryAst": "Query Boolean type is expected",
+      "RuntimeTypeCheckFail": "Expected type {{expected}}, got value '{{value}}' of type {{actual}} instead",
+      "UndefinedFunction": "Undefined function",
+      "UndefinedOverload": "No suitable overload",
+      "UnexpectedArg": "Unexpected argument of type found",
+      "UnexpectedColummn": "Unexpected column",
+      "UnexpectedErsatz": "Expected value of type {{expected}}, but got ersatz '{{value}}'",
+      "VariadicArgTypeMismatch": "Expected variadic argument of type {{expected}}, but got {{actual}}"
+    },
+    "single_simulation": {
+      "ElectricalProfileSetNotFound": "Electrical Profile Set '{{electrical_profile_set_id}}' could not be found",
+      "PathNotFound": "Path '{{path_id}}' could not be found",
+      "RollingStockNotFound": "Rolling Stock '{{rolling_stock_id}}' could not be found",
+      "WrongCoreResponseFormat": "Received wrong response format from core"
+    },
+    "sprites": {
+      "FileNotFound": "File not found",
+      "UnknownSignalingSystem": "Unknown signaling system"
+    },
+    "stdcm": {
+      "InfraNotFound": "Infra {{infra_id}} does not exist"
+    },
+    "study": {
+      "NotFound": "Study '{{study_id}}' could not be found",
+      "StartDateAfterEndDate": "The study start date must be before the end date"
+    },
+    "timetable": {
+      "InfraNotLoaded": "Infra '{{infra_id}}' is not loaded",
+      "NotFound": "Timetable '{{timetable_id}}' could not be found"
+    },
+    "train_schedule": {
+      "BatchShouldHaveSameTimetable": "Batch should have the same timetable",
+      "BatchTrainScheduleNotFound": "Some Train Schedules could not be found",
+      "NoSimulation": "No simulation given",
+      "NoTrainSchedules": "No train schedules given",
+      "NotFound": "Train Schedule '{{train_schedule_id}}' could not be found",
+      "PathNotFound": "Path '{{path_id}}' could not be found",
+      "RollingStockNotFound": "Rolling Stock '{{rolling_stock_id}}' could not be found",
+      "TimetableNotFound": "Timetable '{{timetable_id}}' could not be found",
+      "UnsimulatedTrainSchedule": "Train Schedule '{{train_schedule_id}}' is not simulated"
+    },
+    "url": {
+      "InvalidUrl": "Invalid url '{{url}}'"
+    }
+  }
 }

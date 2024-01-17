@@ -116,6 +116,7 @@
     "sort-by": "^1.2.0",
     "ts-node": "^10.9.2",
     "tslib": "^2.6.2",
+    "tsx": "^4.7.1",
     "uuid": "^9.0.1",
     "viewport-mercator-project": "^7.0.4"
   },
@@ -196,7 +197,8 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "generate-licenses": "license-checker-rseidelsohn --json --production --direct --excludePackagesStartingWith '@types' --excludePrivatePackages --customPath src/common/ReleaseInformations/json/licenseCustomFormat.json > src/common/ReleaseInformations/json/licenses.json",
-    "e2e-tests": "yarn playwright test"
+    "e2e-tests": "yarn playwright test",
+    "api-errors-i18n": "tsx ./scripts/api-errors-i18n.ts"
   },
   "browserslist": {
     "production": [

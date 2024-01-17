@@ -1174,7 +1174,9 @@ dependencies = [
  "futures 0.3.30",
  "futures-util",
  "geos",
+ "heck",
  "image",
+ "inventory",
  "itertools",
  "json-patch",
  "mvt",
@@ -1222,6 +1224,7 @@ dependencies = [
  "pretty_assertions",
  "proc-macro2",
  "quote",
+ "serde_json",
  "syn 2.0.48",
 ]
 
@@ -1930,6 +1933,12 @@ checksum = "276ec31bcb4a9ee45f58bec6f9ec700ae4cf4f4f8f2fa7e06cb406bd5ffdd770"
 dependencies = [
  "num-traits",
 ]
+
+[[package]]
+name = "inventory"
+version = "0.3.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c8573b2b1fb643a372c73b23f4da5f888677feef3305146d68a539250a9bccc7"
 
 [[package]]
 name = "io-lifetimes"

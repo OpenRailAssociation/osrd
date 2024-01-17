@@ -1,11 +1,175 @@
 {
-"401" : "Utilisateur non authentifié",
-"403" : "Accès refusé",
-"404" : "Ressource non trouvée",
-"500" : "Erreurs serveur",
-"502" : "Erreurs serveur",
-"503" : "Erreurs serveur",
-"504" : "Le serveur n'a pas répondu.",
-"default" : "Une erreur est survenue.",
-"pageNotFound" : "La page que vous recherchez n'existe pas."    
+  "401": "Utilisateur non authentifié",
+  "403": "Accès refusé",
+  "404": "Ressource non trouvée",
+  "500": "Erreurs serveur",
+  "502": "Erreurs serveur",
+  "503": "Erreurs serveur",
+  "504": "Le serveur n'a pas répondu.",
+  "default": "Une erreur est survenue.",
+  "pageNotFound": "La page que vous recherchez n'existe pas.",
+  "editoast": {
+    "attached": {
+      "TrackNotFound": "Section de ligne {{track_id}} non trouvée"
+    },
+    "auto_fixes": {
+      "ConflictingFixesOnSameObject": "Correctifs conflictuels pour le même objet sur la même itération de correctif",
+      "FixTrialFailure": "Echec de l'application des correctifs",
+      "MaximumIterationReached": "Nombre maximum d'itérations atteint pour corriger l'infra sans fournir tous les correctifs possibles",
+      "MissingErrorObject": "Impossible de trouver l'objet de l'erreur"
+    },
+    "cache_operation": {
+      "DuplicateIdsProvided": "{{obj_type}} {{obj_id}}: un doublon existe déjà",
+      "ObjectNotFound": "{{obj_type}} {{obj_id}} n'a pu être trouvé nulle part dans le cache de l'infrastructure"
+    },
+    "coreclient": {
+      "CannotExtractResponseBody": "Core: Impossible d'extraire le corps de la réponse : {{msg}}",
+      "ConnectionClosedBeforeMessageCompleted": "Core: connexion fermée avant la fin du message. Nouvelle tentative.",
+      "ConnectionResetByPeer": "Core: réinitialisation de la connexion. Nouvelle tentative.",
+      "CoreResponseFormatError": "Core: impossible d'analyser la réponse '{{msg}}'",
+      "GenericCoreError": "Core: erreur {{raw_error}}",
+      "UnparsableErrorOutput": "Core: a renvoyé une erreur dans un format inconnu"
+    },
+    "document": {
+      "NotFound": "Document '{{document_key}}' non trouvé"
+    },
+    "electrical_profiles": {
+      "NotFound": "Profil électrique '{{electrical_profile_set_id}}' non trouvé"
+    },
+    "geometry": {
+      "UnexpectedGeometry": "Géometrie {{expected}} attendue mais {{actual}} reçue"
+    },
+    "infra_cache": {
+      "ObjectNotFound": "{{obj_type}} '{{obj_id}}' introuvable dans le cache de l'infrastructure"
+    },
+    "infra": {
+      "NotFound": "",
+      "edition": {
+        "InfraIsLocked": "Infrastructure verrouillée"
+      },
+      "errors": {
+        "WrongErrorTypeProvided": "Mauvais type d'erreur fourni"
+      },
+      "lines": {
+        "LineNotFound": "Aucune ligne trouvée avec le code {{line_code}}"
+      },
+      "objects": {
+        "DuplicateIdsProvided": "Identifiants d'objet fournis en double",
+        "ObjectIdNotFound": "Objet ID non trouvé"
+      },
+      "pathfinding": {
+        "EndingTrackLocationNotFound": "Localisation de la fin de la section non trouvé",
+        "InvalidNumberOfPaths": "La recherche de chemin ne peut pas renvoyer plus de 5 chemins",
+        "StartingTrackLocationNotFound": "Localisation du début de la section non trouvé"
+      },
+      "railjson": {
+        "WrongRailjsonVersionProvided": "Mauvaise version de railjson fournie"
+      }
+    },
+    "layers": {
+      "LayerNotFound": "Couche de données {{layer_name}} non trouvée.",
+      "ViewNotFound": "View {{view_name}} non trouvé."
+    },
+    "operation": {
+      "EmptyId": "Une chaine de caractères vide est interdit comme identifiant",
+      "InvalidPatch": "Une erreur de correctif JSON est survenue",
+      "ModifyId": "L'opération de mise à jour tente de modifier l'ID de l'objet, ce qui est interdit",
+      "ObjectNotFound": "Objet '{{obj_id}}' non trouvé dans l'infrastructure '{{infra_id}}'"
+    },
+    "pagination": {
+      "InvalidPage": "Le numéro de page '{{page}}' est invalide",
+      "InvalidPageSize": "La taille de la page '{{provided_page_size}}' est invalide, il doit être un entier compris entre 0 et {{max_page_size}}"
+    },
+    "pathfinding": {
+      "ElectricalProfilesOverlap": "Des profils électriques se chevauchent",
+      "ElectrificationOverlap": "Electrification {{electrification_id}} se supperpose avec d'autres",
+      "InfraNotFound": "Infrastructure {{infra_id}} non trouvée",
+      "NotFound": "Itinéraire {{pathfinding_id}} non trouvé",
+      "OperationalPointsNotFound": "Points opérationnels {{operational_points}} non trouvés",
+      "RollingStockNotFound": "Matériel roulant {{rolling_stock_id}} non trouvé",
+      "TrackSectionsNotFound": "Section de ligne {{track_sections}} non trouvée"
+    },
+    "postgres": {
+      "Host": "Url de base de données '{{hostname}} est invalide",
+      "Password": "Mot-de-passe erroné",
+      "Port": "Port '{{port}}' invalide",
+      "Username": "Identifiant invalide"
+    },
+    "project": {
+      "ImageError": "L'image fournie est invalide",
+      "ImageNotFound": "Image '{{document_key}}' non trouvée",
+      "NotFound": "Projet '{{project_id}}' non trouvé"
+    },
+    "railjson": {
+      "UnsupportedVersion": "Version de railjson non supportée"
+    },
+    "redis": {
+      "Url": "Url invalide '{{url}}'"
+    },
+    "rollingstocks": {
+      "BasePowerClassEmpty": "La classe de puissance par défaut ne peut être vide",
+      "CannotCreateCompoundImage": "Impossible de créer l'image composée",
+      "CannotReadImage": "Impossible de lire l'image",
+      "NameAlreadyUsed": "Un matériel roulant avec le nom '{{name}}' existe déjà",
+      "NotFound": "Matériel roulant '{{rolling_stock_id}}' non trouvé",
+      "RollingStockIsLocked": "Matériel roulant '{{rolling_stock_id}}' est verrouillé",
+      "RollingStockIsUsed": "Matériel roulant '{{rolling_stock_id}}' est occupé"
+    },
+    "scenario": {
+      "NotFound": "Scénario non trouvé"
+    },
+    "search": {
+      "ArgMissing": "Argument de type {{expected}} manquant à la position {{arg_pos}}",
+      "ArgTypeMismatch": "Argument de type {{expected}} attendu à la position {{arg_pos}}, mais {{actual}} reçu",
+      "EmptyArray": "Les tableaux vides sont interdits",
+      "IntegerConversion": "Impossible de convertir en 'i64'",
+      "InvalidColumnName": "Nom de colonne invalide",
+      "InvalidFunctionIdentifier": "L'identifiant de la fonction doit être une chaîne de caractères",
+      "InvalidSyntax": "Syntaxe invalide",
+      "ObjectType": "Le type de l'objet est invalide",
+      "QueryAst": "Une requête de type booléen est attendue",
+      "RuntimeTypeCheckFail": "Type attendu {{expected}}, mais reçu '{{value}}' de type {{actual}} à la place",
+      "UndefinedFunction": "Fonction non définie",
+      "UndefinedOverload": "Aucune surcharge appropriée",
+      "UnexpectedArg": "Argument inattendu trouvé",
+      "UnexpectedColummn": "Colonne inattendue",
+      "UnexpectedErsatz": "Une valeur de type {{expected}} était attendue, mais '{{value}}' trouvé",
+      "VariadicArgTypeMismatch": "Un argument variadique de type {{expected}} était attendu, mais {{actual}} trouvé"
+    },
+    "single_simulation": {
+      "ElectricalProfileSetNotFound": "Profil électrique '{{electrical_profile_set_id}}' non trouvé",
+      "PathNotFound": "Chemin '{{path_id}}' non trouvé",
+      "RollingStockNotFound": "Matériel roulant '{{rolling_stock_id}}' non trouvé",
+      "WrongCoreResponseFormat": "Mauvais format de réponse reçu de Core"
+    },
+    "sprites": {
+      "FileNotFound": "Fichier non trouvé",
+      "UnknownSignalingSystem": "Système de signalisation inconnu"
+    },
+    "stdcm": {
+      "InfraNotFound": "Infrastructure {{infra_id}} non trouvée"
+    },
+    "study": {
+      "NotFound": "Etude '{{study_id}}' non trouvée",
+      "StartDateAfterEndDate": "La date de début de l'étude doit commencer avant sa date de fin"
+    },
+    "timetable": {
+      "InfraNotLoaded": "L'infrastructure '{{infra_id}}' n'est pas chargée",
+      "NotFound": "Grille horaire '{{timetable_id}}' non trouvée"
+    },
+    "train_schedule": {
+      "BatchShouldHaveSameTimetable": "Le lot doit avoir une grille horaire identique",
+      "BatchTrainScheduleNotFound": "Certaines circulations sont introuvables",
+      "NoSimulation": "Aucune simulation fournie",
+      "NoTrainSchedules": "Aucune circulation de train fournie",
+      "NotFound": "Circulation '{{train_schedule_id}}' non trouvée",
+      "PathNotFound": "Chemin '{{path_id}}' non trouvé",
+      "RollingStockNotFound": "Matériel roulant '{{rolling_stock_id}}' non trouvé",
+      "TimetableNotFound": "Grille horaire '{{timetable_id}}' non trouvée",
+      "UnsimulatedTrainSchedule": "La circulation '{{train_schedule_id}}' n'est pas simulée"
+    },
+    "url": {
+      "InvalidUrl": "Url invalide '{{url}}'"
+    }
+  }
 }
