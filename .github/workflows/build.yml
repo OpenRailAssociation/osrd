@@ -486,6 +486,13 @@ jobs:
         run: |
           diff $PWD/editoast/openapi.yaml $PWD/output/openapi.yaml
 
+      - name: Check for i18n API errors
+        run: |
+          docker run --name=front-error-i18n --net=host -v $PWD/output/openapi.yaml:/editoast/openapi.yaml \
+              ${{ fromJSON(needs.build.outputs.stable_tags).front-build }} \
+              yarn api-errors-i18n
+          exit $(docker wait front-error-i18n)
+
   check_gateway:
     runs-on: ubuntu-latest
     needs:

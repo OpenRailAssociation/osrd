@@ -2,7 +2,8 @@ use darling::{Error, Result};
 use darling::{FromDeriveInput, FromVariant};
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::{DataEnum, DeriveInput, Fields, Ident};
+use syn::ext::IdentExt;
+use syn::{DataEnum, DeriveInput, Fields, Ident, Lit};
 
 const DEFAULT_STATUS_CODE: u16 = 400;
 
@@ -28,7 +29,6 @@ struct ParsedVariant {
 
 pub fn expand_editoast_error(input: &DeriveInput) -> Result<TokenStream> {
     let options = ErrorOptions::from_derive_input(input)?;
-
     let name = &input.ident;
     let base_id = options.base_id;
 
@@ -37,15 +37,21 @@ pub fn expand_editoast_error(input: &DeriveInput) -> Result<TokenStream> {
         _ => return Err(Error::custom("EditoastError: Only enums are supported.")),
     };
     let variants = parse_variants(enum_data)?;
+    let default_status = options.default_status.unwrap_or(DEFAULT_STATUS_CODE);
+    let get_statuses = expand_get_statuses(&variants, default_status)?;
 
-    let get_statuses = expand_get_statuses(
-        &variants,
-        options.default_status.unwrap_or(DEFAULT_STATUS_CODE),
-    )?;
     let contexts = expand_contexts(&variants);
-    let get_types = expand_get_types(&variants, base_id.clone());
+    let get_types = expand_get_types(&variants, &base_id);
 
+    let error_definition = variants
+        .iter()
+        .map(|v| parse_error_definition(&base_id, default_status, v))
+        .collect::<Result<Vec<TokenStream>>>()?;
+
+    let error_definitions: TokenStream = error_definition.into_iter().collect();
     Ok(quote! {
+        #error_definitions
+
         impl crate::error::EditoastError for #name {
             fn get_status(&self) -> actix_web::http::StatusCode {
                 #get_statuses
@@ -58,6 +64,62 @@ pub fn expand_editoast_error(input: &DeriveInput) -> Result<TokenStream> {
             fn context(&self) -> std::collections::HashMap<String, serde_json::Value> {
                 #contexts
             }
+        }
+    })
+}
+
+fn parse_error_definition(
+    base_id: &String,
+    default_status: u16,
+    variant: &ParsedVariant,
+) -> Result<TokenStream> {
+    //Error name
+    let name = variant.ident.unraw().to_string();
+
+    // Compute its id
+    let id = format!("editoast:{}:{}", base_id, name);
+
+    // Retieve error status (or get the default one)
+    let status = match variant.params.status.as_ref() {
+        Some(syn::Expr::Lit(exprlit)) => match &exprlit.lit {
+            Lit::Int(lit) => lit.base10_parse::<u16>().unwrap(),
+            _ => default_status,
+        },
+        _ => default_status,
+    };
+
+    // Retrieve the list of parameters that are given in the error
+    let mut context = std::collections::HashMap::new();
+    let untyped_prop: Vec<String> = variant
+        .fields
+        .iter()
+        .filter_map(|field| match field.ident.as_ref() {
+            Some(name) => {
+                let prop_name = name.to_string();
+                match extract_type(&field.ty) {
+                    Some(prop_type) => {
+                        context.insert(prop_name, prop_type);
+                        None
+                    }
+                    _ => Some(prop_name),
+                }
+            }
+            _ => None,
+        })
+        .collect();
+
+    if !untyped_prop.is_empty() {
+        return Err(Error::custom(format!(
+            "EditoastError: Can't find the type of properties {} on error {}",
+            untyped_prop.join(", "),
+            name
+        )));
+    }
+
+    let context_serialized = serde_json::to_string(&context).unwrap();
+    Ok(quote! {
+        inventory::submit! {
+            crate::error::ErrorDefinition::new(#id, #name, #status, #context_serialized )
         }
     })
 }
@@ -114,7 +176,7 @@ fn expand_get_statuses(variants: &[ParsedVariant], default_status: u16) -> Resul
     })
 }
 
-fn expand_get_types(variants: &[ParsedVariant], base_id: String) -> TokenStream {
+fn expand_get_types(variants: &[ParsedVariant], base_id: &String) -> TokenStream {
     let match_variants = variants.iter().map(|variant| {
         let ident = &variant.ident;
         quote! {#ident {..}}
@@ -152,5 +214,21 @@ fn expand_contexts(variants: &[ParsedVariant]) -> TokenStream {
         match self {
             #(#context),*
         }
+    }
+}
+
+// https://stackoverflow.com/questions/55271857/how-can-i-get-the-t-from-an-optiont-when-using-syn
+fn extract_type(ty: &syn::Type) -> Option<String> {
+    match *ty {
+        syn::Type::Path(ref typepath) => {
+            if typepath.qself.is_none() {
+                let path = &typepath.path;
+                let segment = path.segments.first();
+                segment.map(|x| x.ident.to_string())
+            } else {
+                None
+            }
+        }
+        _ => None,
     }
 }

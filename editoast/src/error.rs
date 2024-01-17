@@ -219,3 +219,31 @@ impl EditoastError for json_patch::PatchError {
         "editoast:JsonPatchError"
     }
 }
+
+// error definition : uses by the macro EditoastError to generate
+// the list of error and share it with the openAPI generator
+pub struct ErrorDefinition {
+    pub id: &'static str,
+    pub name: &'static str,
+    pub status: u16,
+    context_serialized: &'static str,
+}
+impl ErrorDefinition {
+    pub const fn new(
+        id: &'static str,
+        name: &'static str,
+        status: u16,
+        context_serialized: &'static str,
+    ) -> Self {
+        ErrorDefinition {
+            id,
+            name,
+            status,
+            context_serialized,
+        }
+    }
+    pub fn get_context(&self) -> HashMap<String, String> {
+        serde_json::from_str(self.context_serialized).expect("Error context should be a valid json")
+    }
+}
+inventory::collect!(ErrorDefinition);

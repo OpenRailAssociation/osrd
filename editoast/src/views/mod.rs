@@ -22,7 +22,7 @@ use self::openapi::{merge_path_items, remove_discriminator, OpenApiMerger, Route
 use crate::client::get_app_version;
 use crate::core::version::CoreVersionRequest;
 use crate::core::{self, AsCoreRequest, CoreClient};
-use crate::error::{self, Result};
+use crate::error::{self, ErrorDefinition, Result};
 use crate::map::{self, redis_utils::RedisClient};
 use crate::models;
 use crate::schema;
@@ -31,11 +31,15 @@ use actix_web::dev::HttpServiceFactory;
 use actix_web::web::{Data, Json};
 use actix_web::{get, services};
 use diesel::sql_query;
+use heck::ToUpperCamelCase;
+use itertools::Itertools;
 use redis::cmd;
 use serde_derive::{Deserialize, Serialize};
 use tracing::debug;
-use utoipa::openapi::RefOr;
-use utoipa::{OpenApi, ToSchema};
+use utoipa::{
+    openapi::RefOr,
+    {OpenApi, ToSchema},
+};
 
 // This function is only temporary while our migration to using utoipa is
 // still going
@@ -125,7 +129,7 @@ impl OpenApiRoot {
 
     // utoipa::path doesn't support multiple tags, so this is a hack to split them
     // A PR on utoipa might be a good idea
-    /// Split comma-separated tags into multiple tags
+    // Split comma-separated tags into multiple tags
     fn split_tags(openapi: &mut utoipa::openapi::OpenApi) {
         for (_, endpoint) in openapi.paths.paths.iter_mut() {
             for (_, operation) in endpoint.operations.iter_mut() {
@@ -137,6 +141,99 @@ impl OpenApiRoot {
                 });
             }
         }
+    }
+
+    fn error_context_to_openapi_object(error_def: &ErrorDefinition) -> utoipa::openapi::Object {
+        let mut context = utoipa::openapi::Object::new();
+        // We write openapi propertiesd by alpha order, to keep the same yml file
+        for prop_name in error_def.get_context().keys().sorted() {
+            let prop_type = &error_def.get_context()[prop_name];
+            context.properties.insert(
+                prop_name.clone(),
+                utoipa::openapi::ObjectBuilder::new()
+                    .schema_type(match prop_type.as_ref() {
+                        "bool" => utoipa::openapi::SchemaType::Boolean,
+                        "isize" => utoipa::openapi::SchemaType::Integer,
+                        "i8" => utoipa::openapi::SchemaType::Integer,
+                        "i16" => utoipa::openapi::SchemaType::Integer,
+                        "i32" => utoipa::openapi::SchemaType::Integer,
+                        "i64" => utoipa::openapi::SchemaType::Integer,
+                        "usize" => utoipa::openapi::SchemaType::Integer,
+                        "u8" => utoipa::openapi::SchemaType::Integer,
+                        "u16" => utoipa::openapi::SchemaType::Integer,
+                        "u32" => utoipa::openapi::SchemaType::Integer,
+                        "u64" => utoipa::openapi::SchemaType::Integer,
+                        "f8" => utoipa::openapi::SchemaType::Number,
+                        "f16" => utoipa::openapi::SchemaType::Number,
+                        "f32" => utoipa::openapi::SchemaType::Number,
+                        "f64" => utoipa::openapi::SchemaType::Number,
+                        "Vec" => utoipa::openapi::SchemaType::Array,
+                        "char" => utoipa::openapi::SchemaType::String,
+                        "String" => utoipa::openapi::SchemaType::String,
+                        _ => utoipa::openapi::SchemaType::Object,
+                    })
+                    .into(),
+            );
+            context.required.push(prop_name.clone());
+        }
+        context
+    }
+
+    // Add errors in openapi schema
+    fn add_errors_in_schema(openapi: &mut utoipa::openapi::OpenApi) {
+        // Building the generic editoast error
+        let mut editoast_error = utoipa::openapi::OneOf::new();
+        editoast_error.description = Some("Generated error type for Editoast".to_string());
+        editoast_error.discriminator = Some(utoipa::openapi::Discriminator::new("type"));
+
+        // Adding all error type to openapi
+        // alpha sorted by name, to keep the same file (there is no order guarantee with inventory)
+        let mut errors: Vec<&ErrorDefinition> = vec![];
+        for error_def in inventory::iter::<ErrorDefinition> {
+            errors.push(error_def);
+        }
+        errors.sort_by(|a, b| a.id.cmp(b.id));
+        for error_def in errors {
+            let error_id = error_def.id.to_upper_camel_case();
+            openapi.components.as_mut().unwrap().schemas.insert(
+                error_id.clone(),
+                utoipa::openapi::ObjectBuilder::new()
+                    .property(
+                        "type",
+                        utoipa::openapi::ObjectBuilder::new()
+                            .schema_type(utoipa::openapi::SchemaType::String)
+                            .enum_values(Some([error_def.id])),
+                    )
+                    .property(
+                        "status",
+                        utoipa::openapi::ObjectBuilder::new()
+                            .schema_type(utoipa::openapi::SchemaType::Integer)
+                            .enum_values(Some([error_def.status])),
+                    )
+                    .property(
+                        "message",
+                        utoipa::openapi::ObjectBuilder::new()
+                            .schema_type(utoipa::openapi::SchemaType::String),
+                    )
+                    .property("context", Self::error_context_to_openapi_object(error_def))
+                    .required("type")
+                    .required("status")
+                    .required("message")
+                    .into(),
+            );
+
+            // Adding the ref of the error to the generic error
+            editoast_error.items.push(
+                utoipa::openapi::Ref::new(format!("#/components/schemas/{}", error_id.clone()))
+                    .into(),
+            );
+        }
+
+        // Adding generic error to openapi
+        openapi.components.as_mut().unwrap().schemas.insert(
+            String::from("EditoastError"),
+            utoipa::openapi::OneOfBuilder::from(editoast_error).into(),
+        );
     }
 
     pub fn build_openapi() -> serde_json::Value {
@@ -167,6 +264,7 @@ impl OpenApiRoot {
 
         Self::remove_discrimators(&mut openapi);
         Self::split_tags(&mut openapi);
+        Self::add_errors_in_schema(&mut openapi);
 
         // Remove the operation_id that defaults to the endpoint function name
         // so that it doesn't override the RTK methods names.
