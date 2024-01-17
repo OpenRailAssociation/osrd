@@ -87,7 +87,7 @@ Route can either be manually created, or generated using `generate_routes`, and 
 
 ## Example
 
-You can find a complete example [here](./railjson_generator/scripts/examples/example_script.py).
+You can find a complete example here: [small_infra.py](railjson_generator/schema/infra/infra.py).
 
 ## Testing
 
