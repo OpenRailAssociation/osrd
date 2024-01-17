@@ -210,5 +210,6 @@
     ],
     "power_restrictions": {},
     "electrical_power_startup_time": 6.0,
-    "raise_pantograph_time": 16.0
+    "raise_pantograph_time": 16.0,
+    "supported_signaling_systems": ["BAL", "BAPR", "TVM300", "TVM430"]
 }

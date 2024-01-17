@@ -123,7 +123,8 @@ public class RJSRollingStockParser {
                 rjsRollingStock.basePowerClass,
                 rjsRollingStock.powerRestrictions,
                 rjsRollingStock.electricalPowerStartUpTime,
-                rjsRollingStock.raisePantographTime
+                rjsRollingStock.raisePantographTime,
+                rjsRollingStock.supportedSignalingSystems
         );
     }
 

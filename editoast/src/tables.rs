@@ -423,6 +423,7 @@ diesel::table! {
         electrical_power_startup_time -> Nullable<Float8>,
         raise_pantograph_time -> Nullable<Float8>,
         version -> Int8,
+        supported_signaling_systems -> Jsonb,
     }
 }
 

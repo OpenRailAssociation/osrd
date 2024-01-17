@@ -145,6 +145,9 @@ impl From<RollingStockForm> for RollingStockModel {
             energy_sources: Some(DieselJson(rolling_stock.common.energy_sources)),
             electrical_power_startup_time: Some(rolling_stock.common.electrical_power_startup_time),
             raise_pantograph_time: Some(rolling_stock.common.raise_pantograph_time),
+            supported_signaling_systems: Some(DieselJson(
+                rolling_stock.common.supported_signaling_systems,
+            )),
             ..Default::default()
         }
     }

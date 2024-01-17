@@ -7,7 +7,9 @@ import static fr.sncf.osrd.train.RollingStock.Comfort;
 import com.google.common.collect.Lists;
 import fr.sncf.osrd.utils.Helpers;
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
+import fr.sncf.osrd.envelope_sim.SimpleRollingStock.CurveShape;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
+import fr.sncf.osrd.train.RollingStock.Comfort;
 import org.junit.jupiter.api.Test;
 import java.util.*;
 
@@ -107,7 +109,8 @@ public class TestTrains {
                 RJSLoadingGaugeType.G1,
                 linearModeEffortCurves,
                 "thermal",
-                "1"
+                "1",
+                new String[]{"BAL", "BAPR", "TVM300", "TVM430"}
         );
 
         VERY_LONG_FAST_TRAIN = new RollingStock(
@@ -124,7 +127,8 @@ public class TestTrains {
                 RJSLoadingGaugeType.G1,
                 linearModeEffortCurves,
                 "thermal",
-                "1"
+                "1",
+                new String[]{"BAL", "BAPR", "TVM300", "TVM430"}
         );
 
         REALISTIC_FAST_TRAIN = new RollingStock(
@@ -144,7 +148,8 @@ public class TestTrains {
                 "5",
                 Map.of("Restrict1", "4", "Restrict2", "3"),
                 0.,
-                0.
+                0.,
+                new String[]{"BAL", "BAPR", "TVM300", "TVM430"}
         );
 
         REALISTIC_FAST_TRAIN_MAX_DEC_TYPE = new RollingStock(
@@ -161,7 +166,8 @@ public class TestTrains {
                 RJSLoadingGaugeType.G1,
                 linearModeEffortCurves,
                 "thermal",
-                "1"
+                "1",
+                new String[]{"BAL", "BAPR", "TVM300", "TVM430"}
         );
 
         FAST_TRAIN_LARGE_GAUGE = new RollingStock(
@@ -178,7 +184,8 @@ public class TestTrains {
                 RJSLoadingGaugeType.GC,
                 linearModeEffortCurves,
                 "thermal",
-                "1"
+                "1",
+                new String[]{"BAL", "BAPR", "TVM300", "TVM430"}
         );
 
         FAST_ELECTRIC_TRAIN = new RollingStock(
@@ -196,7 +203,8 @@ public class TestTrains {
                 createModeEffortCurves(MAX_SPEED, CurveShape.LINEAR,
                         Map.of("25000V", new RollingStock.EffortCurveConditions[0])),
                 "25000V",
-                "1"
+                "1",
+                new String[]{"BAL", "BAPR", "TVM300", "TVM430"}
         );
 
         CONSTANT_POWER_TRAIN = new RollingStock(
@@ -214,7 +222,8 @@ public class TestTrains {
                 createModeEffortCurves(MAX_SPEED, CurveShape.HYPERBOLIC,
                         Map.of("thermal", new RollingStock.EffortCurveConditions[0])),
                 "thermal",
-                "1"
+                "1",
+                new String[]{"BAL", "BAPR", "TVM300", "TVM430"}
         );
     }
 

@@ -121,7 +121,8 @@
     "power_restrictions": {},
     "energy_sources": [],
     "electrical_power_startup_time": null,
-    "raise_pantograph_time": null
+    "raise_pantograph_time": null,
+    "supported_signaling_systems": ["BAL", "BAPR", "TVM300", "TVM430"]
   },
   "comfort": "STANDARD",
   "route_occupancies": [],

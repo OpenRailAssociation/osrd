@@ -12,6 +12,7 @@ from pydantic import (
 )
 
 from .infra import LoadingGaugeType
+from .infra_editor import SignalingSystem
 
 RAILJSON_ROLLING_STOCK_VERSION_TYPE = Literal["3.2"]
 RAILJSON_ROLLING_STOCK_VERSION = get_args(RAILJSON_ROLLING_STOCK_VERSION_TYPE)[0]
@@ -229,6 +230,7 @@ class RollingStock(BaseModel, extra="forbid"):
         default=None,
         ge=0,
     )
+    supported_signaling_systems: List[SignalingSystem] = Field(default_factory=list)
 
 
 if __name__ == "__main__":

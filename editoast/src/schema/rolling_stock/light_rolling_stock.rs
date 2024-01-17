@@ -6,7 +6,7 @@ use utoipa::ToSchema;
 
 use crate::models::rolling_stock::rolling_stock_livery::RollingStockLiveryMetadata;
 
-use super::{EnergySource, Gamma, RollingResistance, RollingStockMetadata};
+use super::{EnergySource, Gamma, RollingResistance, RollingStockMetadata, SignalingSystem};
 
 crate::schemas! {
     LightRollingStock,
@@ -67,6 +67,9 @@ pub struct LightRollingStock {
     #[serde(skip)]
     #[diesel(sql_type = BigInt)]
     pub version: i64,
+    #[diesel(sql_type = Jsonb)]
+    #[schema(value_type = Vec<SignalingSystem>)]
+    pub supported_signaling_systems: DieselJson<Vec<SignalingSystem>>,
 }
 
 #[derive(Debug, QueryableByName, Serialize, Deserialize, ToSchema)]

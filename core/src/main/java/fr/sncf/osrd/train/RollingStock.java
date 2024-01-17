@@ -101,6 +101,8 @@ public final class RollingStock implements PhysicsRollingStock {
     public final Double electricalPowerStartUpTime;
     public final Double raisePantographTime;
 
+    public final String[] supportedSignalingSystems;
+
     @Override
     public double getMass() {
         return mass;
@@ -331,11 +333,12 @@ public final class RollingStock implements PhysicsRollingStock {
             RJSLoadingGaugeType loadingGaugeType,
             Map<String, ModeEffortCurves> modes,
             String defaultMode,
-            String basePowerclass
+            String basePowerclass,
+            String[] supportedSignalingSystems
     ) {
         this(id, length, mass, inertiaCoefficient, a, b, c, maxSpeed, startUpTime, startUpAcceleration,
                 comfortAcceleration, gamma, gammaType, loadingGaugeType, modes, defaultMode, basePowerclass, Map.of(),
-                0., 0.);
+                0., 0., supportedSignalingSystems);
     }
 
     /**
@@ -361,7 +364,8 @@ public final class RollingStock implements PhysicsRollingStock {
             String basePowerclass,
             Map<String, String> powerRestrictions,
             Double electricalPowerStartUpTime,
-            Double raisePantographTime
+            Double raisePantographTime,
+            String[] supportedSignalingSystems
     ) {
         this.id = id;
         this.A = a;
@@ -384,6 +388,7 @@ public final class RollingStock implements PhysicsRollingStock {
         this.powerRestrictions = powerRestrictions;
         this.electricalPowerStartUpTime = electricalPowerStartUpTime;
         this.raisePantographTime = raisePantographTime;
+        this.supportedSignalingSystems = supportedSignalingSystems;
 
         assert !isElectric() || (this.electricalPowerStartUpTime != null && this.raisePantographTime != null) :
                 "Electrical power start up time and Raise pantograph time must be defined for an electric train";

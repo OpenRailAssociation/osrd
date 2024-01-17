@@ -3,7 +3,9 @@ use crate::models::rolling_stock::rolling_stock_livery::RollingStockLiveryMetada
 use crate::schema::rolling_stock::light_rolling_stock::{
     LightEffortCurves, LightRollingStock, LightRollingStockWithLiveries,
 };
-use crate::schema::rolling_stock::{EnergySource, Gamma, RollingResistance, RollingStockMetadata};
+use crate::schema::rolling_stock::{
+    EnergySource, Gamma, RollingResistance, RollingStockMetadata, SignalingSystem,
+};
 use crate::tables::rolling_stock;
 use crate::views::pagination::{Paginate, PaginatedResponse};
 use crate::DbPool;
@@ -51,6 +53,8 @@ pub struct LightRollingStockModel {
     electrical_power_startup_time: Option<f64>,
     raise_pantograph_time: Option<f64>,
     pub version: i64,
+    #[schema(value_type = Vec<SignalingSystem>)]
+    supported_signaling_systems: DieselJson<Vec<SignalingSystem>>,
 }
 
 impl LightRollingStockModel {
@@ -118,6 +122,7 @@ impl From<LightRollingStockModel> for LightRollingStock {
             power_restrictions: rolling_stock_model.power_restrictions,
             energy_sources: rolling_stock_model.energy_sources,
             version: rolling_stock_model.version,
+            supported_signaling_systems: rolling_stock_model.supported_signaling_systems,
         }
     }
 }
