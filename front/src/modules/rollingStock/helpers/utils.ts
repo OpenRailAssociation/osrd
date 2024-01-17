@@ -306,3 +306,37 @@ export const translateItemsList = <T>(t: TFunction, itemsList: T[], translationK
     id: item,
     label: !isNull(item) ? t(getTranslationKey(translationKey, String(item))) : t('unspecified'),
   }));
+
+/**
+ * conversion table as an object,
+ * its values are the number to multiply the old value in old unit to get the new value in desired unit
+ */
+export const conversionFactors = {
+    'km/h': {'m/s': 1 / 3.6, 'N/(km/h)': 1 / (9.81 * 3.6)},
+    'm/s': {'km/h': 3.6, 'N/(m/s)': 1 / 9.81},
+    'N': {'daN': 1 / 10, 'kN': 1e-3, 'N/(km/h)': 9.81, 'N/(m/s)': 9.81},
+    'daN': {'N': 10, 'kN': 1e-2},
+    'kN': {'N': 1000, 'daN': 100},
+};
+/**
+ * converts a property of a RollingStock object if it is doable
+ * @param oldValue
+ * @param oldUnit
+ * @param newUnit
+ */
+export const convertUnit = (oldValue: number, oldUnit: string, newUnit: string): number => {
+
+    if (!conversionFactors[oldUnit] || !conversionFactors[newUnit]) {
+        throw new Error(`Cannot convert one of the units`)
+    }
+
+    if (!conversionFactors[oldUnit]) {
+        throw new Error(`Unit ${oldUnit} not supported`);
+    }
+
+    if (!conversionFactors[oldUnit][newUnit]) {
+        throw new Error(`Cannot convert between ${oldUnit} and ${newUnit}`);
+    }
+
+    return oldValue * conversionFactors[oldUnit][newUnit];
+}
