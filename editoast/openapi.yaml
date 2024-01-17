@@ -1431,6 +1431,7 @@ components:
       - waypoints
       type: object
     PathfindingTrackLocationInput:
+      additionalProperties: false
       properties:
         position:
           format: double
