@@ -13,7 +13,7 @@ use crate::models::rolling_stock::rolling_stock_livery::RollingStockLiveryMetada
 use crate::models::{Create, Identifiable, TextArray, Update};
 use crate::schema::rolling_stock::{
     EffortCurves, EnergySource, Gamma, RollingResistance, RollingStock, RollingStockCommon,
-    RollingStockMetadata, RollingStockWithLiveries,
+    RollingStockMetadata, RollingStockWithLiveries, SignalingSystem,
 };
 use crate::schema::track_section::LoadingGaugeType;
 use crate::tables::rolling_stock;
@@ -130,6 +130,9 @@ pub struct RollingStockModel {
     #[diesel(deserialize_as = i64)]
     #[schema(value_type = i64)]
     pub version: Option<i64>,
+    #[diesel(deserialize_as = DieselJson<Vec<SignalingSystem>>)]
+    #[schema(value_type = Vec<SignalingSystem>)]
+    pub supported_signaling_systems: Option<DieselJson<Vec<SignalingSystem>>>,
 }
 
 fn validate_rolling_stock(
@@ -295,6 +298,7 @@ impl From<RollingStockModel> for RollingStockCommon {
                 .electrical_power_startup_time
                 .unwrap(),
             raise_pantograph_time: rolling_stock_model.raise_pantograph_time.unwrap(),
+            supported_signaling_systems: rolling_stock_model.supported_signaling_systems.unwrap().0,
         }
     }
 }

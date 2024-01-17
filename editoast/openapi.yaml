@@ -884,6 +884,10 @@ components:
         startup_time:
           format: double
           type: number
+        supported_signaling_systems:
+          items:
+            $ref: '#/components/schemas/SignalingSystem'
+          type: array
       required:
       - id
       - name
@@ -904,6 +908,7 @@ components:
       - metadata
       - power_restrictions
       - energy_sources
+      - supported_signaling_systems
       type: object
     LightRollingStockWithLiveries:
       allOf:
@@ -1961,6 +1966,10 @@ components:
         startup_time:
           format: double
           type: number
+        supported_signaling_systems:
+          items:
+            $ref: '#/components/schemas/SignalingSystem'
+          type: array
       required:
       - name
       - effort_curves
@@ -2712,6 +2721,13 @@ components:
       - aspect_label
       - track
       type: object
+    SignalingSystem:
+      enum:
+      - BAL
+      - BAPR
+      - TVM300
+      - TVM430
+      type: string
     SimulationPowerRestrictionRange:
       properties:
         code:

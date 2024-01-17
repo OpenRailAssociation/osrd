@@ -94,6 +94,9 @@ public class RJSRollingStock implements Identified {
     @Json(name = "raise_pantograph_time")
     public Double raisePantographTime = null;
 
+    @Json(name = "supported_signaling_systems")
+    public String[] supportedSignalingSystems = null;
+    
     public enum GammaType {
         CONST,
         MAX

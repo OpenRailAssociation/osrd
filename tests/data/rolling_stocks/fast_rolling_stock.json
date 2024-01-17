@@ -88,5 +88,6 @@
     "unit": ""
   },
   "power_restrictions": {},
-  "energy_sources": []
+  "energy_sources": [],
+  "supported_signaling_systems": ["BAL", "BAPR", "TVM300", "TVM430"]
 }

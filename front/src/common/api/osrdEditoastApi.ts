@@ -1591,6 +1591,7 @@ export type RollingResistance = {
   C: number;
   type: string;
 };
+export type SignalingSystem = 'BAL' | 'BAPR' | 'TVM300' | 'TVM430';
 export type LightRollingStock = {
   base_power_class?: string | null;
   comfort_acceleration: number;
@@ -1614,6 +1615,7 @@ export type LightRollingStock = {
   rolling_resistance: RollingResistance;
   startup_acceleration: number;
   startup_time: number;
+  supported_signaling_systems: SignalingSystem[];
 };
 export type RollingStockLiveryMetadata = {
   compound_image_id?: number | null;
@@ -1902,6 +1904,7 @@ export type RollingStockCommon = {
   rolling_resistance: RollingResistance;
   startup_acceleration: number;
   startup_time: number;
+  supported_signaling_systems?: SignalingSystem[];
 };
 export type RollingStock = RollingStockCommon & {
   id: number;

@@ -1904,5 +1904,11 @@
   },
   "energy_sources": [],
   "electrical_power_startup_time": 5.0,
-  "raise_pantograph_time": 15.0
+  "raise_pantograph_time": 15.0,
+  "supported_signaling_systems": [
+    "BAL",
+    "BAPR",
+    "TVM300",
+    "TVM430"
+  ]
 }
