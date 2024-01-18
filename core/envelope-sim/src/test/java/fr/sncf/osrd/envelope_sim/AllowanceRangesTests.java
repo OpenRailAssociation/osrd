@@ -1,11 +1,17 @@
 package fr.sncf.osrd.envelope_sim;
 
-import static fr.sncf.osrd.envelope.EnvelopeShape.*;
+import static fr.sncf.osrd.envelope.EnvelopeShape.CONSTANT;
+import static fr.sncf.osrd.envelope.EnvelopeShape.DECREASING;
+import static fr.sncf.osrd.envelope.EnvelopeShape.INCREASING;
+import static fr.sncf.osrd.envelope.EnvelopeShape.check;
 import static fr.sncf.osrd.envelope_sim.MaxEffortEnvelopeBuilder.makeComplexMaxEffortEnvelope;
 import static fr.sncf.osrd.envelope_sim.MaxEffortEnvelopeBuilder.makeSimpleMaxEffortEnvelope;
 import static fr.sncf.osrd.envelope_sim.SimpleContextBuilder.TIME_STEP;
 import static fr.sncf.osrd.envelope_sim.SimpleContextBuilder.makeSimpleContext;
-import static org.junit.jupiter.api.Assertions.*;
+import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.areTimesEqual;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.primitives.Doubles;
 import fr.sncf.osrd.envelope.Envelope;
@@ -84,14 +90,15 @@ public class AllowanceRangesTests {
         var baseTime1 = maxEffortEnvelope.getTimeBetween(0, rangesTransition);
         var baseTime2 = maxEffortEnvelope.getTimeBetween(rangesTransition, length);
         var totalBaseTime = maxEffortEnvelope.getTotalTime();
-        assertEquals(totalBaseTime, baseTime1 + baseTime2, 2 * TIME_STEP);
+        assertTrue(areTimesEqual(totalBaseTime, baseTime1 + baseTime2));
         var distance = getDistance(allowance);
         var targetTime1 = baseTime1 + value1.getAllowanceTime(baseTime1, rangesTransition);
         var targetTime2 = baseTime2 + value2.getAllowanceTime(baseTime2, distance - rangesTransition);
         var marginTime1 = marecoEnvelope.getTimeBetween(0, rangesTransition);
         var marginTime2 = marecoEnvelope.getTimeBetween(rangesTransition, length);
-        assertEquals(marginTime1, targetTime1, 2 * TIME_STEP);
-        assertEquals(marginTime2, targetTime2, 2 * TIME_STEP);
+        assertEquals(marginTime1, targetTime1, testContext.timeStep);
+        assertEquals(marginTime2, targetTime2, testContext.timeStep);
+        assertEquals(marecoEnvelope.getTotalTime(), targetTime1 + targetTime2, testContext.timeStep);
     }
 
     /** Test ranges with decreasing values */
@@ -116,16 +123,17 @@ public class AllowanceRangesTests {
         var baseTime2 = maxEffortEnvelope.getTimeBetween(rangesTransitions[1], rangesTransitions[2]);
         var baseTime3 = maxEffortEnvelope.getTimeBetween(rangesTransitions[2], rangesTransitions[3]);
         var totalBaseTime = maxEffortEnvelope.getTotalTime();
-        assertEquals(totalBaseTime, baseTime1 + baseTime2 + baseTime3, 3 * TIME_STEP);
+        assertTrue(areTimesEqual(totalBaseTime, baseTime1 + baseTime2 + baseTime3));
         var targetTime1 = baseTime1 + value1.getAllowanceTime(baseTime1, rangesTransitions[1] - rangesTransitions[0]);
         var targetTime2 = baseTime2 + value2.getAllowanceTime(baseTime2, rangesTransitions[2] - rangesTransitions[1]);
         var targetTime3 = baseTime3 + value3.getAllowanceTime(baseTime3, rangesTransitions[3] - rangesTransitions[2]);
         var marginTime1 = marecoEnvelope.getTimeBetween(rangesTransitions[0], rangesTransitions[1]);
         var marginTime2 = marecoEnvelope.getTimeBetween(rangesTransitions[1], rangesTransitions[2]);
         var marginTime3 = marecoEnvelope.getTimeBetween(rangesTransitions[2], rangesTransitions[3]);
-        assertEquals(marginTime1, targetTime1, 2 * TIME_STEP);
-        assertEquals(marginTime2, targetTime2, 2 * TIME_STEP);
-        assertEquals(marginTime3, targetTime3, 2 * TIME_STEP);
+        assertEquals(marginTime1, targetTime1, testContext.timeStep);
+        assertEquals(marginTime2, targetTime2, testContext.timeStep);
+        assertEquals(marginTime3, targetTime3, testContext.timeStep);
+        assertEquals(marecoEnvelope.getTotalTime(), targetTime1 + targetTime2 + targetTime3, testContext.timeStep);
     }
 
     /** Test ranges with increasing values */
@@ -150,16 +158,17 @@ public class AllowanceRangesTests {
         var baseTime2 = maxEffortEnvelope.getTimeBetween(rangesTransitions[1], rangesTransitions[2]);
         var baseTime3 = maxEffortEnvelope.getTimeBetween(rangesTransitions[2], rangesTransitions[3]);
         var totalBaseTime = maxEffortEnvelope.getTotalTime();
-        assertEquals(totalBaseTime, baseTime1 + baseTime2 + baseTime3, 3 * TIME_STEP);
+        assertTrue(areTimesEqual(totalBaseTime, baseTime1 + baseTime2 + baseTime3));
         var targetTime1 = baseTime1 + value1.getAllowanceTime(baseTime1, rangesTransitions[1] - rangesTransitions[0]);
         var targetTime2 = baseTime2 + value2.getAllowanceTime(baseTime2, rangesTransitions[2] - rangesTransitions[1]);
         var targetTime3 = baseTime3 + value3.getAllowanceTime(baseTime3, rangesTransitions[3] - rangesTransitions[2]);
         var marginTime1 = marecoEnvelope.getTimeBetween(rangesTransitions[0], rangesTransitions[1]);
         var marginTime2 = marecoEnvelope.getTimeBetween(rangesTransitions[1], rangesTransitions[2]);
         var marginTime3 = marecoEnvelope.getTimeBetween(rangesTransitions[2], rangesTransitions[3]);
-        assertEquals(marginTime1, targetTime1, 2 * TIME_STEP);
-        assertEquals(marginTime2, targetTime2, 2 * TIME_STEP);
-        assertEquals(marginTime3, targetTime3, 2 * TIME_STEP);
+        assertEquals(marginTime1, targetTime1, testContext.timeStep);
+        assertEquals(marginTime2, targetTime2, testContext.timeStep);
+        assertEquals(marginTime3, targetTime3, testContext.timeStep);
+        assertEquals(marecoEnvelope.getTotalTime(), targetTime1 + targetTime2 + targetTime3, testContext.timeStep);
     }
 
     /** Test that we can add precisely the needed time in adjacent ranges */
@@ -185,17 +194,22 @@ public class AllowanceRangesTests {
         assertEquals(
                 maxEffortEnvelope.interpolateTotalTime(rangesTransitions[1]) + value1.time,
                 marecoEnvelope.interpolateTotalTime(rangesTransitions[1]),
-                2 * TIME_STEP
+                testContext.timeStep
         );
         assertEquals(
                 maxEffortEnvelope.interpolateTotalTime(rangesTransitions[2]) + value1.time + value2.time,
                 marecoEnvelope.interpolateTotalTime(rangesTransitions[2]),
-                2 * TIME_STEP
+                testContext.timeStep
         );
         assertEquals(
                 maxEffortEnvelope.interpolateTotalTime(rangesTransitions[3]) + value1.time + value2.time + value3.time,
                 marecoEnvelope.interpolateTotalTime(rangesTransitions[3]),
-                2 * TIME_STEP
+                testContext.timeStep
+        );
+        assertEquals(
+                maxEffortEnvelope.getTotalTime() + value1.time + value2.time + value3.time,
+                marecoEnvelope.getTotalTime(),
+                testContext.timeStep
         );
 
         // Checks that we don't accelerate to match the original speed for transitions
@@ -224,13 +238,14 @@ public class AllowanceRangesTests {
         var baseTime1 = maxEffortEnvelope.getTimeBetween(rangesTransitions[0], rangesTransitions[1]);
         var baseTime2 = maxEffortEnvelope.getTimeBetween(rangesTransitions[1], rangesTransitions[2]);
         var totalBaseTime = maxEffortEnvelope.getTotalTime();
-        assertEquals(totalBaseTime, baseTime1 + baseTime2, 3 * TIME_STEP);
+        assertTrue(areTimesEqual(totalBaseTime, baseTime1 + baseTime2));
         var targetTime1 = baseTime1 + value1.getAllowanceTime(baseTime1, rangesTransitions[1] - rangesTransitions[0]);
         var targetTime2 = baseTime2 + value2.getAllowanceTime(baseTime2, rangesTransitions[2] - rangesTransitions[1]);
         var marginTime1 = marecoEnvelope.getTimeBetween(rangesTransitions[0], rangesTransitions[1]);
         var marginTime2 = marecoEnvelope.getTimeBetween(rangesTransitions[1], rangesTransitions[2]);
-        assertEquals(marginTime1, targetTime1, 2 * TIME_STEP);
-        assertEquals(marginTime2, targetTime2, 2 * TIME_STEP);
+        assertEquals(marginTime1, targetTime1, testContext.timeStep);
+        assertEquals(marginTime2, targetTime2, testContext.timeStep);
+        assertEquals(marecoEnvelope.getTotalTime(), targetTime1 + targetTime2, testContext.timeStep);
     }
 
     /** Test arguments for @testVeryShortRange */
@@ -266,16 +281,17 @@ public class AllowanceRangesTests {
         var baseTime2 = maxEffortEnvelope.getTimeBetween(rangesTransitions[1], rangesTransitions[2]);
         var baseTime3 = maxEffortEnvelope.getTimeBetween(rangesTransitions[2], rangesTransitions[3]);
         var totalBaseTime = maxEffortEnvelope.getTotalTime();
-        assertEquals(totalBaseTime, baseTime1 + baseTime2 + baseTime3, 3 * TIME_STEP);
+        assertTrue(areTimesEqual(totalBaseTime, baseTime1 + baseTime2 + baseTime3));
         var targetTime1 = baseTime1 + value1.getAllowanceTime(baseTime1, rangesTransitions[1] - rangesTransitions[0]);
         var targetTime2 = baseTime2 + value2.getAllowanceTime(baseTime2, rangesTransitions[2] - rangesTransitions[1]);
         var targetTime3 = baseTime3 + value3.getAllowanceTime(baseTime3, rangesTransitions[3] - rangesTransitions[2]);
         var marginTime1 = marecoEnvelope.getTimeBetween(rangesTransitions[0], rangesTransitions[1]);
         var marginTime2 = marecoEnvelope.getTimeBetween(rangesTransitions[1], rangesTransitions[2]);
         var marginTime3 = marecoEnvelope.getTimeBetween(rangesTransitions[2], rangesTransitions[3]);
-        assertEquals(marginTime1, targetTime1, 2 * TIME_STEP);
-        assertEquals(marginTime2, targetTime2, 2 * TIME_STEP);
-        assertEquals(marginTime3, targetTime3, 2 * TIME_STEP);
+        assertEquals(marginTime1, targetTime1, testContext.timeStep);
+        assertEquals(marginTime2, targetTime2, testContext.timeStep);
+        assertEquals(marginTime3, targetTime3, testContext.timeStep);
+        assertEquals(marecoEnvelope.getTotalTime(), targetTime1 + targetTime2 + targetTime3, testContext.timeStep);
     }
 
     /** Test with an allowance range that starts very slightly after the path start, and ends around the end
@@ -368,6 +384,7 @@ public class AllowanceRangesTests {
                     new AllowanceValue.Percentage(50)
             ));
         }
+
         var allowance = new LinearAllowance(
                 0,
                 testPath.getLength(),

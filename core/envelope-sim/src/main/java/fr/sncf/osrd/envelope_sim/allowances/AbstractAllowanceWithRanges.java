@@ -190,13 +190,13 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
             var envelopeRange = Envelope.make(envelopeRegion.slice(range.beginPos, range.endPos));
             var imposedBeginSpeed = imposedTransitionSpeeds[rangeIndex];
             var imposedEndSpeed = imposedTransitionSpeeds[rangeIndex + 1];
-            var tolerance = context.timeStep * envelopeRange.getTotalTime() / envelopeRegion.getTotalTime();
+            var rangeRatio = envelopeRange.getTotalTime() / envelopeRegion.getTotalTime();
+            var tolerance = context.timeStep * rangeRatio;
             var allowanceRange =
                     computeAllowanceRange(envelopeRange, context, range.value, imposedBeginSpeed, imposedEndSpeed,
                             tolerance);
             // memorize the beginning and end speeds
-            imposedTransitionSpeeds[rangeIndex] =
-                    allowanceRange.getBeginSpeed(); // shouldn't we check if it's the same ?
+            imposedTransitionSpeeds[rangeIndex] = allowanceRange.getBeginSpeed();
             imposedTransitionSpeeds[rangeIndex + 1] = allowanceRange.getEndSpeed();
             res[rangeIndex] = allowanceRange;
         }
