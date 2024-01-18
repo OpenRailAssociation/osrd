@@ -26,20 +26,21 @@ export default function SubmitConfUpdateTrainSchedules({
   setIsWorking,
   setDisplayTrainScheduleManagement,
 }: SubmitConfUpdateTrainSchedulesProps) {
-  const { getTrainScheduleIDsToModify } = useOsrdConfSelectors();
+  const { getTrainScheduleIDsToModify, getConf, getPathfindingID, getName, getDepartureTime } =
+    useOsrdConfSelectors();
+  const confName = useSelector(getName);
+  const simulationConf = useSelector(getConf);
+  const pathfindingID = useSelector(getPathfindingID);
+  const departureTime = useSelector(getDepartureTime);
+  const trainScheduleIDsToModify = useSelector(getTrainScheduleIDsToModify);
+
   const { updateTrainScheduleIDsToModify } = useOsrdConfActions();
   const dispatch = useDispatch();
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
-  const trainScheduleIDsToModify = useSelector(getTrainScheduleIDsToModify);
+
   const [patchTrainSchedules] = osrdEditoastApi.endpoints.patchTrainSchedule.useMutation();
 
   async function submitConfUpdateTrainSchedules() {
-    const { getConf, getPathfindingID, getName, getDepartureTime } = useOsrdConfSelectors();
-    const simulationConf = useSelector(getConf);
-    const pathfindingID = useSelector(getPathfindingID);
-    const confName = useSelector(getName);
-    const departureTime = useSelector(getDepartureTime);
-
     // First train tested, and next we put the other trains
     const formattedSimulationConf = formatConf(dispatch, t, simulationConf, true);
     if (!pathfindingID) {
