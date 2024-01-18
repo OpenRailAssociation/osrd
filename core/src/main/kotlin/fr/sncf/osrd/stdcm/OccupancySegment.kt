@@ -1,5 +1,6 @@
 package fr.sncf.osrd.stdcm
 
+import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.utils.units.Distance
 
 /**
@@ -11,5 +12,7 @@ data class OccupancySegment(
     val timeStart: Double,
     val timeEnd: Double,
     val distanceStart: Distance,
-    val distanceEnd: Distance
+    val distanceEnd: Distance,
+    val enabledIfBlockInLookahead: BlockId? = null,
+    val disabledIfBlockInLookahead: BlockId? = null
 )
