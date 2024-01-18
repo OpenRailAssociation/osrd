@@ -37,7 +37,7 @@ interface BlockAvailabilityInterface {
     ): Availability
 
     /** Represents the availability of the requested section */
-    abstract class Availability
+    sealed class Availability
 
     /**
      * The requested section is available.
@@ -69,9 +69,9 @@ interface BlockAvailabilityInterface {
     ) : Availability()
 
     /**
-     * The availability of the requested section can't be determined, the path needs to extend
-     * further. The availability depends on the block taken by the train after the end of the given
-     * path.
+     * This is thrown when the availability of the requested section can't be determined, the path
+     * needs to extend further. The availability depends on the block taken by the train after the
+     * end of the given path.
      */
-    class NotEnoughLookahead : Availability()
+    class NotEnoughLookaheadError : RuntimeException()
 }
