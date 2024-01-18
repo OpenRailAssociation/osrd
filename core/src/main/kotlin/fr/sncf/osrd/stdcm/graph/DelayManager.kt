@@ -58,7 +58,6 @@ internal constructor(
                     is BlockAvailabilityInterface.Unavailable -> {
                         availability.duration + internalMargin * 2
                     }
-                    else -> throw NotEnoughLookaheadError()
                 }
         }
         return res
@@ -158,6 +157,4 @@ internal constructor(
             startTime
         )
     }
-
-    class NotEnoughLookaheadError : RuntimeException()
 }

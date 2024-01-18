@@ -15,7 +15,6 @@ import fr.sncf.osrd.sim_infra.api.Path
 import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper
 import fr.sncf.osrd.stdcm.infra_exploration.withEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
-import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface.NotEnoughLookahead
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.RollingStock.Comfort
 import fr.sncf.osrd.train.TrainStop
@@ -145,7 +144,6 @@ private fun findConflictOffsets(
             endOffset.cast(),
             departureTime
         )
-    assert(availability.javaClass != NotEnoughLookahead::class.java)
     val offsetDistance =
         (availability as? BlockAvailabilityInterface.Unavailable)?.firstConflictOffset
             ?: return null
