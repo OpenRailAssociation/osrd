@@ -86,7 +86,7 @@ class Infra:
                         ch_long_label="0",
                         trigram=op.trigram,
                     ),
-                    "identifier": infra.OperationalPointIdentifierExtension(uic=0, name=op.label),
+                    "identifier": infra.OperationalPointIdentifierExtension(uic=op.uic, name=op.label),
                 },
             )
             ops.append(new_op)
