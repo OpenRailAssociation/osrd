@@ -36,8 +36,10 @@ class InfraExplorerWithEnvelopeTests {
         )
 
         // a --> b
-        val firstExplorers = initInfraExplorerWithEnvelope(infra, infra,
-            PathfindingEdgeLocationId(blocks[0], Offset(0.meters)))
+        val firstExplorers = initInfraExplorerWithEnvelope(
+            infra, infra,
+            PathfindingEdgeLocationId(blocks[0], Offset(0.meters)),
+        )
         assertEquals(1, firstExplorers.size)
         val firstExplorer = firstExplorers.first()
 
@@ -107,8 +109,10 @@ class InfraExplorerWithEnvelopeTests {
         )
 
         // a --> b
-        val firstExplorers = initInfraExplorerWithEnvelope(infra, infra,
-            PathfindingEdgeLocationId(blocks[0], Offset(0.meters)))
+        val firstExplorers = initInfraExplorerWithEnvelope(
+            infra, infra,
+            PathfindingEdgeLocationId(blocks[0], Offset(0.meters)),
+        )
         assertEquals(1, firstExplorers.size)
         var explorer = firstExplorers.first()
 

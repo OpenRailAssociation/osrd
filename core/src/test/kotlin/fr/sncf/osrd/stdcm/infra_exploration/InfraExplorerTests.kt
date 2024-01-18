@@ -18,6 +18,26 @@ import kotlin.test.assertTrue
 
 class InfraExplorerTests {
     @Test
+    fun testSingleEdge() {
+        /*
+        a --> b
+         */
+        val infra = DummyInfra()
+        val block = infra.addBlock("a", "b")
+
+        val explorers = initInfraExplorer(
+            infra,
+            infra,
+            PathfindingEdgeLocationId(block, Offset(0.meters)),
+            listOf(block)
+        )
+        assertEquals(1, explorers.size)
+        val explorer = explorers.first()
+        assertTrue { explorer.getIncrementalPath().pathStarted }
+        assertTrue { explorer.getIncrementalPath().pathComplete }
+    }
+
+    @Test
     fun testSinglePath() {
         /*
         a --> b --> c --> d --> e
@@ -31,12 +51,18 @@ class InfraExplorerTests {
         )
 
         // a --> b
-        val firstExplorers = initInfraExplorer(infra, infra, PathfindingEdgeLocationId(blocks[0], Offset(0.meters)))
+        val firstExplorers = initInfraExplorer(
+            infra,
+            infra,
+            PathfindingEdgeLocationId(blocks[0], Offset(0.meters)),
+            listOf(blocks.last())
+        )
         assertEquals(1, firstExplorers.size)
         var explorer = firstExplorers.first()
 
         assertEquals(blocks[0], explorer.getCurrentBlock())
         assertThrows<AssertionError> { explorer.moveForward() } // Not enough lookahead
+        assertFalse { explorer.getIncrementalPath().pathComplete }
 
         // Fully extend lookahead
         for (i in 0 ..< 3) {
@@ -44,6 +70,8 @@ class InfraExplorerTests {
             assertEquals(1, extended.size)
             explorer = extended.first()
         }
+
+        assertTrue { explorer.getIncrementalPath().pathComplete }
 
         // Current block hasn't moved
         assertEquals(blocks[0], explorer.getCurrentBlock())

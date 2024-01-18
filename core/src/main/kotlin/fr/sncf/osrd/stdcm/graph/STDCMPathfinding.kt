@@ -8,9 +8,9 @@ import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue
 import fr.sncf.osrd.graph.*
 import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
 import fr.sncf.osrd.sim_infra.api.Block
+import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.stdcm.STDCMResult
 import fr.sncf.osrd.stdcm.STDCMStep
-import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorer
 import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.train.RollingStock
@@ -66,6 +66,8 @@ fun findPath(
         .map(STDCMStep::locations)
         .toList()
     val remainingDistanceEstimators = makeHeuristics(fullInfra, locations)
+    val endBlocks = steps.last().locations
+        .map { it.edge }
     val path = Pathfinding(graph)
         .setEdgeToLength { edge -> edge.infraExplorer.getCurrentBlockLength().cast() }
         .setRemainingDistanceEstimator(makeAStarHeuristic(remainingDistanceEstimators, rollingStock))
@@ -80,7 +82,7 @@ fun findPath(
         }
         .setTimeout(pathfindingTimeout)
         .runPathfinding(
-            convertLocations(graph, steps[0].locations, startTime, maxDepartureDelay),
+            convertLocations(graph, steps[0].locations, startTime, maxDepartureDelay, endBlocks),
             makeObjectiveFunction(steps)
         ) ?: return null
     return STDCMPostProcessing(graph).makeResult(
@@ -175,11 +177,12 @@ private fun convertLocations(
     graph: STDCMGraph,
     locations: Collection<PathfindingEdgeLocationId<Block>>,
     startTime: Double,
-    maxDepartureDelay: Double
+    maxDepartureDelay: Double,
+    endBlocks: Collection<BlockId> = setOf()
 ): Set<EdgeLocation<STDCMEdge, STDCMEdge>> {
     val res = HashSet<EdgeLocation<STDCMEdge, STDCMEdge>>()
     for (location in locations) {
-        val infraExplorers = initInfraExplorerWithEnvelope(graph.rawInfra, graph.blockInfra, location)
+        val infraExplorers = initInfraExplorerWithEnvelope(graph.rawInfra, graph.blockInfra, location, endBlocks)
         for (explorer in infraExplorers) {
             val edges = STDCMEdgeBuilder(explorer, graph)
                 .setStartTime(startTime)

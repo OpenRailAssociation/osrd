@@ -76,7 +76,12 @@ interface EdgeIdentifier {
 }
 
 /** Init all InfraExplorers starting at the given location. */
-fun initInfraExplorer(rawInfra: RawInfra, blockInfra: BlockInfra, location: PathfindingEdgeLocationId<Block>): Collection<InfraExplorer> {
+fun initInfraExplorer(
+    rawInfra: RawInfra,
+    blockInfra: BlockInfra,
+    location: PathfindingEdgeLocationId<Block>,
+    endBlocks: Collection<BlockId> = setOf()
+): Collection<InfraExplorer> {
     val infraExplorers = mutableListOf<InfraExplorer>()
     val block = location.edge
     val pathProps = makePathProps(blockInfra, rawInfra, block)
@@ -88,7 +93,7 @@ fun initInfraExplorer(rawInfra: RawInfra, blockInfra: BlockInfra, location: Path
             mutableStaticIdxArrayListOf(it),
             mutableStaticIdxArrayListOf(block),
             containsStart = true,
-            containsEnd = false,
+            containsEnd = endBlocks.contains(block),
             travelledPathBegin = location.offset.distance,
             travelledPathEnd = Distance.ZERO
         ))
@@ -98,7 +103,8 @@ fun initInfraExplorer(rawInfra: RawInfra, blockInfra: BlockInfra, location: Path
             mutableStaticIdxArrayListOf(block),
             mutableStaticIdxArrayListOf(it),
             incrementalPath,
-            blockToPathProperties
+            blockToPathProperties,
+            endBlocks = endBlocks
         )
         infraExplorers.add(infraExplorer)
     }
@@ -112,7 +118,8 @@ private class InfraExplorerImpl(
     private var routes: MutableStaticIdxArrayList<Route>,
     private var incrementalPath: IncrementalPath,
     private var blockToPathProperties: MutableMap<BlockId, PathProperties>,
-    private var currentIndex: Int = 0
+    private var currentIndex: Int = 0,
+    private val endBlocks: Collection<BlockId>, // Blocks on which "end of path" should be set to true
 ): InfraExplorer {
 
     override fun getIncrementalPath(): IncrementalPath {
@@ -139,6 +146,8 @@ private class InfraExplorerImpl(
     }
 
     override fun cloneAndExtendLookahead(): Collection<InfraExplorer> {
+        if (getIncrementalPath().pathComplete)
+            return listOf() // Can't extend beyond the destination
         val infraExplorers = mutableListOf<InfraExplorer>()
         val lastBlock = blocks.last()
         val lastRoute = routes.last()
@@ -196,7 +205,8 @@ private class InfraExplorerImpl(
             this.routes.clone(),
             this.incrementalPath.clone(),
             this.blockToPathProperties.toMutableMap(),
-            this.currentIndex
+            this.currentIndex,
+            this.endBlocks
         )
     }
 
@@ -217,7 +227,7 @@ private class InfraExplorerImpl(
             if (isNewRoute) mutableStaticIdxArrayListOf(route) else mutableStaticIdxArrayListOf(),
             mutableStaticIdxArrayListOf(nextBlock),
             containsStart = false,
-            containsEnd = false,
+            containsEnd = endBlocks.contains(nextBlock),
             travelledPathBegin = Distance.ZERO,
             travelledPathEnd = Distance.ZERO
         ))
