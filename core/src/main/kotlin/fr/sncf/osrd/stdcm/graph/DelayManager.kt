@@ -55,7 +55,7 @@ class DelayManager internal constructor(
                 is BlockAvailabilityInterface.Unavailable -> {
                     availability.duration + internalMargin * 2
                 }
-                else -> throw OSRDError(ErrorType.InvalidSTDCMDelayError)
+                else -> throw NotEnoughLookaheadError()
             }
         }
         return res
@@ -141,4 +141,6 @@ class DelayManager internal constructor(
             startTime
         )
     }
+
+    class NotEnoughLookaheadError : RuntimeException()
 }
