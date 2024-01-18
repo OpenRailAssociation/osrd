@@ -38,9 +38,6 @@ class PathFragment(
         }
 }
 
-/** A marker type for Offset<Path> */
-sealed interface Path
-
 /** A marker type for Offset<TravelledPath> */
 sealed interface TravelledPath
 
@@ -91,6 +88,7 @@ interface IncrementalPath {
     val travelledPathEnd: Offset<Path> //
 
     fun toTravelledPath(offset: Offset<Path>): Offset<TravelledPath>
+    fun fromTravelledPath(offset: Offset<TravelledPath>): Offset<Path>
 }
 
 fun incrementalPathOf(rawInfra: RawInfra, blockInfra: BlockInfra): IncrementalPath {
@@ -289,5 +287,9 @@ private class IncrementalPathImpl(
 
     override fun toTravelledPath(offset: Offset<Path>): Offset<TravelledPath> {
         return Offset(offset.distance - travelledPathBegin.distance)
+    }
+
+    override fun fromTravelledPath(offset: Offset<TravelledPath>): Offset<Path> {
+        return Offset(offset.distance + travelledPathBegin.distance)
     }
 }

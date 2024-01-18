@@ -1,7 +1,6 @@
 package fr.sncf.osrd.stdcm.preprocessing.implementation
 
 import com.google.common.collect.Multimap
-import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.BlockInfra
 import fr.sncf.osrd.sim_infra.api.Path
@@ -36,7 +35,6 @@ class BlockAvailabilityLegacyAdapter(
         startOffset: Offset<Path>,
         endOffset: Offset<Path>,
     ): List<ResourceUse> {
-        val envelope = infraExplorer.getFullEnvelope()
         val blocks = makeBlocksWithOffsets(infraExplorer)
         val res = mutableListOf<ResourceUse>()
         for (blockWithOffset in getBlocksInRange(blocks, startOffset, endOffset)) {
@@ -44,7 +42,7 @@ class BlockAvailabilityLegacyAdapter(
                 val trainInBlock = getTimeTrainInBlock(
                     unavailableSegment,
                     blockWithOffset,
-                    envelope,
+                    infraExplorer,
                     startOffset,
                     endOffset
                 ) ?: continue
@@ -100,7 +98,7 @@ class BlockAvailabilityLegacyAdapter(
     private fun getTimeTrainInBlock(
         unavailableSegment: OccupancySegment,
         block: BlockWithOffset,
-        envelope: EnvelopeTimeInterpolate,
+        explorer: InfraExplorerWithEnvelope,
         startOffset: Offset<Path>,
         endOffset: Offset<Path>
     ): TimeInterval? {
@@ -109,11 +107,8 @@ class BlockAvailabilityLegacyAdapter(
         if (startOffset.distance > blockExitOffset || endOffset.distance < blockEnterOffset)
             return null
 
-        // startTime refers to the time at startOffset, we need to offset it when interpolating on the envelope
-        // val envelopeStartTime = startTime - envelope.interpolateTotalTimeClamp(startOffset.meters)
-
-        val enterTime = envelope.interpolateTotalTimeClamp(blockEnterOffset.meters)
-        val exitTime = envelope.interpolateTotalTimeClamp(blockExitOffset.meters)
+        val enterTime = explorer.interpolateTimeClamp(Offset(blockEnterOffset))
+        val exitTime = explorer.interpolateTimeClamp(Offset(blockExitOffset))
         return TimeInterval(enterTime, exitTime)
     }
 
