@@ -354,7 +354,7 @@ export function getMapMouseEventNearestFeature(
             const layer = feature.sourceLayer as LayerType;
             const multiplier = POINT_FEATURES_DISTANCE_MULTIPLIERS[layer] || DEFAULT_MULTIPLIER;
             nearestFeaturePoint = feature as Feature<Point>;
-            // we boost point, otherwise when a point is on line, it's too hard to find it
+            // we boost point, otherwise when a point is on some line, it's too hard to find it
             distance = fnDistance(coord, nearestFeaturePoint.geometry.coordinates) * multiplier;
             break;
           }
@@ -413,8 +413,7 @@ export function getMapMouseEventNearestFeature(
     )
   );
 
-  if (!result) return null;
-  return result;
+  return result || null;
 }
 
 /**

@@ -56,13 +56,6 @@ export const SpeedSectionEditionLayers = () => {
     else if (hoveredItem?.itemType) {
       res.push(hoveredItem.track.properties.id);
     }
-    // EditorEntity hovered element:
-    else if (
-      hoveredItem?.type === 'TrackSection' &&
-      !(entity.properties.track_ranges || []).find((range) => range.track === hoveredItem.id)
-    ) {
-      res.push(hoveredItem.id);
-    }
 
     return res;
   }, [interactionState, hoveredItem, entity]);
@@ -251,7 +244,17 @@ export const SpeedSectionEditionLayers = () => {
           <Layer {...props} key={i} />
         ))}
         <Layer
+          type="line"
+          id="speed-section/track-sections"
+          paint={{
+            'line-dasharray': [3, 3],
+            'line-color': '#000000',
+            'line-width': 1,
+          }}
+        />
+        <Layer
           type="circle"
+          id="speed-section/extremities"
           paint={{
             'circle-radius': 4,
             'circle-color': '#fff',
@@ -267,6 +270,7 @@ export const SpeedSectionEditionLayers = () => {
         ))}
         <Layer
           type="circle"
+          id="speed-section/psl/extremities"
           paint={{
             'circle-radius': 4,
             'circle-color': '#fff',

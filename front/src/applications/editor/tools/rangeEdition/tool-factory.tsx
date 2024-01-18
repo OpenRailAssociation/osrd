@@ -375,6 +375,14 @@ function getRangeEditionTool<T extends EditorRange>({
     getInteractiveLayers() {
       return ['editor/geo/track-main'];
     },
+    getEventsLayers() {
+      return [
+        'editor/geo/track-main',
+        'speed-section/extremities',
+        'speed-section/track-sections',
+        'speed-section/psl/extremities',
+      ];
+    },
   };
 }
 
