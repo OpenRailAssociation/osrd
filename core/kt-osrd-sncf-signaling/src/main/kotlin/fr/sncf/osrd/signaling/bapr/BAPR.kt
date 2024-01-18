@@ -3,6 +3,7 @@ package fr.sncf.osrd.signaling.bapr
 import fr.sncf.osrd.signaling.BlockDiagReporter
 import fr.sncf.osrd.signaling.SigBlock
 import fr.sncf.osrd.signaling.SignalingSystemDriver
+import fr.sncf.osrd.sim_infra.api.SigParametersSchema
 import fr.sncf.osrd.sim_infra.api.SigSettingsSchema
 import fr.sncf.osrd.sim_infra.api.SigStateSchema
 
@@ -13,6 +14,7 @@ object BAPR : SignalingSystemDriver {
         flag("Nf")
         flag("distant")
     }
+    override val parametersSchema = SigParametersSchema {}
     override val isBlockDelimiterExpr = "!distant"
 
     override fun checkBlock(reporter: BlockDiagReporter, block: SigBlock) {

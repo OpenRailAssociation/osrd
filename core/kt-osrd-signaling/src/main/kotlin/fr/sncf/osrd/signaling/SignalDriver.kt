@@ -69,6 +69,7 @@ interface SignalDriver {
 
     fun evalSignal(
         signal: SigSettings,
+        parameters: SigParameters,
         stateSchema: SigStateSchema,
         maView: MovementAuthorityView?,
         limitView: SpeedLimitView?
@@ -85,6 +86,7 @@ interface BlockDiagReporter {
 }
 
 interface SignalingSystemDriver {
+    val parametersSchema: SigParametersSchema
     val id: String
     val stateSchema: SigStateSchema
     val settingsSchema: SigSettingsSchema

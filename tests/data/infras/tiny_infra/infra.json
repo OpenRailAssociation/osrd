@@ -1,5 +1,5 @@
 {
-    "version": "3.4.10",
+    "version": "3.4.11",
     "operational_points": [
         {
             "id": "op.station_foo",
@@ -457,7 +457,11 @@
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
-                    }
+                    },
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
+                    "conditional_parameters": []
                 }
             ],
             "extensions": {
@@ -480,7 +484,11 @@
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
-                    }
+                    },
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
+                    "conditional_parameters": []
                 }
             ],
             "extensions": {
@@ -503,7 +511,11 @@
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
-                    }
+                    },
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
+                    "conditional_parameters": []
                 }
             ],
             "extensions": {
@@ -526,7 +538,11 @@
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
-                    }
+                    },
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
+                    "conditional_parameters": []
                 }
             ],
             "extensions": {
@@ -549,7 +565,11 @@
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
-                    }
+                    },
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
+                    "conditional_parameters": []
                 }
             ],
             "extensions": {

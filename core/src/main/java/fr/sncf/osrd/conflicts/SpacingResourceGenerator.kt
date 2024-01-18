@@ -174,7 +174,8 @@ class SpacingRequirementAutomaton(
     // Returns false if it's either not required, or we need a longer block path to tell.
     private fun isZoneIndexRequiredForSignal(
         probedZoneIndex: Int,
-        pathSignal: PathSignal
+        pathSignal: PathSignal,
+        routes: List<RouteId>,
     ): Boolean {
         val firstBlockIndex = pathSignal.minBlockPathIndex
 
@@ -207,6 +208,7 @@ class SpacingRequirementAutomaton(
                 loadedSignalInfra,
                 blockInfra,
                 blocks,
+                routes,
                 blocks.size,
                 zoneStates,
                 ZoneStatus.OCCUPIED
@@ -219,7 +221,7 @@ class SpacingRequirementAutomaton(
 
     // Returns the index of the first zone that isn't required for the given signal,
     // or null if we need more path to determine it
-    private fun findFirstNonRequiredZoneIndex(pathSignal: PathSignal): Int? {
+    private fun findFirstNonRequiredZoneIndex(pathSignal: PathSignal, routes: List<RouteId>): Int? {
         // We are looking for the index `i` where `isZoneIndexRequiredForSignal` returns
         // true at `i-1` and false at `i`. We could just iterate starting at 0, but
         // because `i` is not that small (20 on average) and the signaling
@@ -238,7 +240,7 @@ class SpacingRequirementAutomaton(
         while (true) {
             if (lowerBound == upperBound) break
             val probedZoneIndex = (upperBound + lowerBound) / 2
-            val required = isZoneIndexRequiredForSignal(probedZoneIndex, pathSignal)
+            val required = isZoneIndexRequiredForSignal(probedZoneIndex, pathSignal, routes)
             if (required) {
                 lowerBound = probedZoneIndex + 1
             } else {
@@ -248,7 +250,8 @@ class SpacingRequirementAutomaton(
 
         // Handle the case where the result is higher than the initial upper bound
         while (
-            lowerBound >= initialUpperBound && isZoneIndexRequiredForSignal(lowerBound, pathSignal)
+            lowerBound >= initialUpperBound &&
+                isZoneIndexRequiredForSignal(lowerBound, pathSignal, routes)
         ) lowerBound++
 
         // Check if more path is needed for a valid solution
@@ -268,6 +271,8 @@ class SpacingRequirementAutomaton(
         // initialize requirements which only apply before the train sees any signal
         setupInitialRequirements()
 
+        val routes = incrementalPath.routes.toList()
+
         // for all signals, update zone requirement times until a signal is found for which
         // more path is needed
         while (pendingSignals.isNotEmpty()) {
@@ -286,7 +291,7 @@ class SpacingRequirementAutomaton(
 
             val firstRequiredZone = getSignalProtectedZone(pathSignal)
             val firstNonRequiredZone =
-                findFirstNonRequiredZoneIndex(pathSignal) ?: return NotEnoughPath
+                findFirstNonRequiredZoneIndex(pathSignal, routes) ?: return NotEnoughPath
             for (i in firstRequiredZone until firstNonRequiredZone) {
                 addSignalRequirements(firstRequiredZone, i, sightTime)
             }

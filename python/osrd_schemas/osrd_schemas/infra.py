@@ -8,7 +8,7 @@ from pydantic.fields import FieldInfo
 
 ALL_OBJECT_TYPES = []
 
-RAILJSON_INFRA_VERSION_TYPE = Literal["3.4.10"]
+RAILJSON_INFRA_VERSION_TYPE = Literal["3.4.11"]
 RAILJSON_INFRA_VERSION = get_args(RAILJSON_INFRA_VERSION_TYPE)[0]
 
 # Traits
@@ -391,6 +391,13 @@ class TrackSection(BaseObjectTrait, GeometryLineTrait):
     )
 
 
+class ConditionalParameter(BaseModel):
+    on_route: Identifier = Field(description="Route on which the parameters are applied")
+    parameters: Mapping[NonBlankStr, NonBlankStr] = Field(
+        description="List of key value parameters, which are defined per signaling system"
+    )
+
+
 class LogicalSignal(BaseModel):
     """A logical signal is what displays something, whereas a physical signal is a group of logical signals"""
 
@@ -398,6 +405,12 @@ class LogicalSignal(BaseModel):
     next_signaling_systems: List[str] = Field(description="The list of allowed input signaling systems")
     settings: Mapping[NonBlankStr, NonBlankStr] = Field(
         description="A list of key value parameters, which are defined per signaling system"
+    )
+    default_parameters: Mapping[NonBlankStr, NonBlankStr] = Field(
+        description="A list of default parameters (in regards to routes), which are defined per signaling system"
+    )
+    conditional_parameters: List[ConditionalParameter] = Field(
+        description="A list of conditional parameters, which are defined per signaling system"
     )
 
 

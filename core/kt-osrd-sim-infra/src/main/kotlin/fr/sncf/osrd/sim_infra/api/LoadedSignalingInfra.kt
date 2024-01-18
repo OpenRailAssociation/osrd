@@ -1,5 +1,6 @@
 package fr.sncf.osrd.sim_infra.api
 
+import fr.sncf.osrd.sim_infra.impl.SignalParameters
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.utils.units.*
@@ -19,6 +20,12 @@ typealias SigSettings = SigData<SignalSettingsMarker>
 
 typealias SigSettingsSchema = SigSchema<SignalSettingsMarker>
 
+sealed interface SignalParametersMarker
+
+typealias SigParametersSchema = SigSchema<SignalParametersMarker>
+
+typealias SigParameters = SigData<SignalParametersMarker>
+
 sealed interface SignalStateMarker
 
 typealias SigState = SigData<SignalStateMarker>
@@ -34,6 +41,8 @@ interface InfraSigSystemManager {
     fun getStateSchema(sigSystem: SignalingSystemId): SigStateSchema
 
     fun getSettingsSchema(sigSystem: SignalingSystemId): SigSettingsSchema
+
+    fun getParametersSchema(sigSystem: SignalingSystemId): SigParametersSchema
 
     val drivers: StaticIdxSpace<SignalDriver>
 
@@ -57,6 +66,8 @@ interface LoadedSignalInfra {
     fun getSignalingSystem(signal: LogicalSignalId): SignalingSystemId
 
     fun getSettings(signal: LogicalSignalId): SigSettings
+
+    fun getParameters(signal: StaticIdx<LogicalSignal>): SignalParameters
 
     fun getDrivers(signal: LogicalSignalId): StaticIdxList<SignalDriver>
 

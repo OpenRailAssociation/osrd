@@ -6,8 +6,11 @@ import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.api.SignalDriver
 import fr.sncf.osrd.utils.indexing.StaticIdxSpace
 
-class MockSigSystemManager(val sigSystem: String, val settingsSchema: SigSettingsSchema) :
-    SigSystemManager {
+class MockSigSystemManager(
+    val sigSystem: String,
+    val settingsSchema: SigSettingsSchema,
+    val parametersSchema: SigParametersSchema
+) : SigSystemManager {
     override fun checkSignalingSystemBlock(
         reporter: BlockDiagReporter,
         sigSystem: SignalingSystemId,
@@ -17,6 +20,7 @@ class MockSigSystemManager(val sigSystem: String, val settingsSchema: SigSetting
     override fun evalSignal(
         driverId: SignalDriverId,
         signal: SigSettings,
+        parameters: SigParameters,
         stateSchema: SigStateSchema,
         maView: MovementAuthorityView?,
         limitView: SpeedLimitView?
@@ -38,6 +42,10 @@ class MockSigSystemManager(val sigSystem: String, val settingsSchema: SigSetting
 
     override fun getSettingsSchema(sigSystem: SignalingSystemId): SigSettingsSchema {
         return settingsSchema
+    }
+
+    override fun getParametersSchema(sigSystem: SignalingSystemId): SigParametersSchema {
+        return parametersSchema
     }
 
     override val drivers: StaticIdxSpace<SignalDriver>

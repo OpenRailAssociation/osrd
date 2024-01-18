@@ -23,6 +23,11 @@ sealed interface LogicalSignal
 
 typealias LogicalSignalId = StaticIdx<LogicalSignal>
 
+data class RawSignalParameters(
+    val default: Map<String, String>,
+    val conditional: Map<RouteId, Map<String, String>>
+)
+
 interface RawSignalingInfra : RoutingInfra {
     fun getSignals(zonePath: ZonePathId): StaticIdxList<PhysicalSignal>
 
@@ -48,6 +53,8 @@ interface RawSignalingInfra : RoutingInfra {
     fun getSignalingSystemId(signal: LogicalSignalId): String
 
     fun getRawSettings(signal: LogicalSignalId): Map<String, String>
+
+    fun getRawParameters(signal: LogicalSignalId): RawSignalParameters
 
     fun getNextSignalingSystemIds(signal: LogicalSignalId): List<String>
 }

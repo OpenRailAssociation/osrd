@@ -1,5 +1,5 @@
 {
-    "version": "3.4.10",
+    "version": "3.4.11",
     "operational_points": [
         {
             "id": "my-op",
@@ -797,7 +797,11 @@
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
-                    }
+                    },
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
+                    "conditional_parameters": []
                 }
             ],
             "extensions": {
@@ -820,7 +824,11 @@
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
-                    }
+                    },
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
+                    "conditional_parameters": []
                 }
             ],
             "extensions": {
@@ -843,7 +851,11 @@
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
-                    }
+                    },
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
+                    "conditional_parameters": []
                 }
             ],
             "extensions": {
@@ -866,7 +878,11 @@
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
-                    }
+                    },
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
+                    "conditional_parameters": []
                 }
             ],
             "extensions": {
@@ -889,7 +905,11 @@
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
-                    }
+                    },
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
+                    "conditional_parameters": []
                 }
             ],
             "extensions": {
@@ -912,7 +932,11 @@
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
-                    }
+                    },
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
+                    "conditional_parameters": []
                 }
             ],
             "extensions": {
@@ -935,7 +959,11 @@
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
-                    }
+                    },
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
+                    "conditional_parameters": []
                 }
             ],
             "extensions": {
@@ -958,7 +986,11 @@
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
-                    }
+                    },
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
+                    "conditional_parameters": []
                 }
             ],
             "extensions": {
@@ -981,7 +1013,11 @@
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
-                    }
+                    },
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
+                    "conditional_parameters": []
                 }
             ],
             "extensions": {
@@ -1004,7 +1040,11 @@
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
-                    }
+                    },
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
+                    "conditional_parameters": []
                 }
             ],
             "extensions": {
@@ -1027,7 +1067,11 @@
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
-                    }
+                    },
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
+                    "conditional_parameters": []
                 }
             ],
             "extensions": {
@@ -1050,7 +1094,11 @@
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
-                    }
+                    },
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
+                    "conditional_parameters": []
                 }
             ],
             "extensions": {
@@ -1073,7 +1121,11 @@
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
-                    }
+                    },
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
+                    "conditional_parameters": []
                 }
             ],
             "extensions": {
@@ -1096,7 +1148,11 @@
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
-                    }
+                    },
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
+                    "conditional_parameters": []
                 }
             ],
             "extensions": {
@@ -1119,7 +1175,11 @@
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
-                    }
+                    },
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
+                    "conditional_parameters": []
                 }
             ],
             "extensions": {
@@ -1142,7 +1202,11 @@
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
-                    }
+                    },
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
+                    "conditional_parameters": []
                 }
             ],
             "extensions": {
@@ -1165,7 +1229,11 @@
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
-                    }
+                    },
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
+                    "conditional_parameters": []
                 }
             ],
             "extensions": {
@@ -1188,7 +1256,11 @@
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
-                    }
+                    },
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
+                    "conditional_parameters": []
                 }
             ],
             "extensions": {

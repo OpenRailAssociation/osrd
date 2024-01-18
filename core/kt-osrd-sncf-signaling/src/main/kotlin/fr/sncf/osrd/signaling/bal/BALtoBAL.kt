@@ -4,6 +4,7 @@ import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.signaling.*
 import fr.sncf.osrd.signaling.ProtectionStatus.*
+import fr.sncf.osrd.sim_infra.api.SigParameters
 import fr.sncf.osrd.sim_infra.api.SigSettings
 import fr.sncf.osrd.sim_infra.api.SigState
 import fr.sncf.osrd.sim_infra.api.SigStateSchema
@@ -13,10 +14,21 @@ object BALtoBAL : SignalDriver {
     override val inputSignalingSystem = "BAL"
     override val outputSignalingSystem = "BAL"
 
-    private fun cascadePrimaryAspect(aspect: String): String {
+    private fun cascadePrimaryAspect(aspect: String, parameters: SigParameters): String {
         return when (aspect) {
             "VL" -> "VL"
-            "A" -> "VL"
+            "A" ->
+                if (parameters.getFlag("jaune_cli")) {
+                    "(A)"
+                } else {
+                    "VL"
+                }
+            "(A)" ->
+                if (parameters.getFlag("jaune_cli")) {
+                    "(A)"
+                } else {
+                    "VL"
+                }
             "S" -> "A"
             "C" -> "A"
             else -> throw OSRDError.newAspectError(aspect)
@@ -25,6 +37,7 @@ object BALtoBAL : SignalDriver {
 
     override fun evalSignal(
         signal: SigSettings,
+        parameters: SigParameters,
         stateSchema: SigStateSchema,
         maView: MovementAuthorityView?,
         limitView: SpeedLimitView?
@@ -44,7 +57,7 @@ object BALtoBAL : SignalDriver {
                     } else {
                         val nextSignalState = maView.nextSignalState
                         val nextAspect = nextSignalState.getEnum("aspect")
-                        value("aspect", cascadePrimaryAspect(nextAspect))
+                        value("aspect", cascadePrimaryAspect(nextAspect, parameters))
                     }
                 }
             }

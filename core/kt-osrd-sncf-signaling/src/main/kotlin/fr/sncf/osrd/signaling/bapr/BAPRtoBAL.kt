@@ -2,6 +2,7 @@ package fr.sncf.osrd.signaling.bapr
 
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.signaling.*
+import fr.sncf.osrd.sim_infra.api.SigParameters
 import fr.sncf.osrd.sim_infra.api.SigSettings
 import fr.sncf.osrd.sim_infra.api.SigState
 import fr.sncf.osrd.sim_infra.api.SigStateSchema
@@ -23,6 +24,7 @@ object BAPRtoBAL : SignalDriver {
 
     override fun evalSignal(
         signal: SigSettings,
+        parameters: SigParameters,
         stateSchema: SigStateSchema,
         maView: MovementAuthorityView?,
         limitView: SpeedLimitView?

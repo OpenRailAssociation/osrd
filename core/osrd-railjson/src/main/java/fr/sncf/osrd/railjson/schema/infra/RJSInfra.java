@@ -18,7 +18,7 @@ public class RJSInfra {
     public static final JsonAdapter<RJSInfra> adapter =
             new Moshi.Builder().add(ID.Adapter.FACTORY).build().adapter(RJSInfra.class);
 
-    public static final transient String CURRENT_VERSION = "3.4.9";
+    public static final transient String CURRENT_VERSION = "3.4.11";
 
     /** The version of the infra format used */
     public String version;

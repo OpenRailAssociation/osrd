@@ -48,12 +48,15 @@ class TestBAPRtoBAL {
         // endregion
 
         // region signals
+        val balParameters = RawSignalParameters(mapOf(Pair("jaune_cli", "false")), mapOf())
+        val baprParameters = RawSignalParameters(mapOf(), mapOf())
         val signalm =
             builder.physicalSignal("m", 300.meters) {
                 logicalSignal(
                     "BAPR",
                     listOf("BAPR"),
-                    mapOf(Pair("distant", "true"), Pair("Nf", "false"))
+                    mapOf(Pair("distant", "true"), Pair("Nf", "false")),
+                    baprParameters
                 )
             }
         val signalM =
@@ -61,7 +64,11 @@ class TestBAPRtoBAL {
                 logicalSignal(
                     "BAPR",
                     listOf("BAPR"),
-                    mapOf(Pair("distant", "false"), Pair("Nf", "true"))
+                    mapOf(
+                        Pair("distant", "false"),
+                        Pair("Nf", "true"),
+                    ),
+                    baprParameters
                 )
             }
         val signaln =
@@ -69,12 +76,13 @@ class TestBAPRtoBAL {
                 logicalSignal(
                     "BAPR",
                     listOf("BAL"),
-                    mapOf(Pair("distant", "true"), Pair("Nf", "false"))
+                    mapOf(Pair("distant", "true"), Pair("Nf", "false")),
+                    baprParameters
                 )
             }
         val signalN =
             builder.physicalSignal("N", 300.meters) {
-                logicalSignal("BAL", listOf("BAL"), mapOf(Pair("Nf", "true")))
+                logicalSignal("BAL", listOf("BAL"), mapOf(Pair("Nf", "true")), balParameters)
             }
 
         // endregion
@@ -126,6 +134,7 @@ class TestBAPRtoBAL {
                 loadedSignalInfra,
                 blockInfra,
                 fullPath,
+                listOf(), // we don't use parameters here
                 fullPath.size,
                 zoneStates,
                 ZoneStatus.INCOMPATIBLE

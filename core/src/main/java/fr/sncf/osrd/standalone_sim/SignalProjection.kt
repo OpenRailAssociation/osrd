@@ -72,6 +72,7 @@ fun project(
     val signalAspectChangeEvents =
         computeSignalAspectChangeEvents(
             blockPath,
+            routePath,
             zoneMap,
             blockInfra,
             pathSignals,
@@ -93,6 +94,7 @@ fun project(
 
 private fun computeSignalAspectChangeEvents(
     blockPath: StaticIdxList<Block>,
+    routePath: StaticIdxList<Route>,
     zoneToPathIndexMap: Map<String, Int>,
     blockInfra: BlockInfra,
     pathSignals: List<PathSignal>,
@@ -101,6 +103,7 @@ private fun computeSignalAspectChangeEvents(
     rawInfra: SimInfraAdapter,
     loadedSignalInfra: LoadedSignalInfra
 ): Map<PathSignal, MutableList<SignalAspectChangeEvent>> {
+    val routes = routePath.toList()
     val zoneCount = blockPath.sumOf { blockInfra.getBlockPath(it).size }
     val zoneStates = ArrayList<ZoneStatus>(zoneCount)
     for (i in 0 until zoneCount) zoneStates.add(ZoneStatus.CLEAR)
@@ -123,6 +126,7 @@ private fun computeSignalAspectChangeEvents(
                 loadedSignalInfra,
                 blockInfra,
                 blockPath,
+                routes,
                 blockPath.size,
                 zoneStates,
                 ZoneStatus.CLEAR
@@ -155,15 +159,15 @@ private fun signalUpdates(
     // TODO: maybe have those be specific to the signaling system
     // FIXME: this doesn't work if the train goes through the same signal twice
     // This is probably a weird edge case anyway
-    @Suppress("UNUSED_PARAMETER")
     fun blinking(aspect: String): Boolean {
-        return false
+        return aspect == "(A)"
     }
 
     fun color(aspect: String): Int {
         return when (aspect) {
             "VL" -> Color.GREEN.rgb
             "A" -> Color.YELLOW.rgb
+            "(A)" -> Color.YELLOW.rgb
             "S" -> Color.RED.rgb
             "C" -> Color.RED.rgb
             else -> throw OSRDError.newAspectError(aspect)

@@ -47,6 +47,8 @@ interface IncrementalPath {
     val endBlockIndex: Int
     val endRouteIndex: Int
 
+    val routes: AppendOnlyLinkedList<RouteId>
+
     fun getBlock(blockIndex: Int): BlockId
 
     fun getRoute(routeIndex: Int): RouteId
@@ -102,7 +104,7 @@ private class IncrementalPathImpl(
 
     // objects
     private var zonePaths: AppendOnlyLinkedList<ZonePathId> = appendOnlyLinkedListOf(),
-    private var routes: AppendOnlyLinkedList<RouteId> = appendOnlyLinkedListOf(),
+    override var routes: AppendOnlyLinkedList<RouteId> = appendOnlyLinkedListOf(),
     private var blocks: AppendOnlyLinkedList<BlockId> = appendOnlyLinkedListOf(),
 
     // lookup tables from blocks and routes to zone path bounds

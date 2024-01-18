@@ -39,6 +39,14 @@ pub struct LogicalSignal {
     pub signaling_system: String,
     pub next_signaling_systems: Vec<String>,
     pub settings: HashMap<NonBlankString, NonBlankString>,
+    pub default_parameters: HashMap<NonBlankString, NonBlankString>,
+    pub conditional_parameters: Vec<ConditionalParameters>,
+}
+
+#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq)]
+pub struct ConditionalParameters {
+    pub on_route: NonBlankString,
+    pub parameters: HashMap<NonBlankString, NonBlankString>,
 }
 
 #[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq)]

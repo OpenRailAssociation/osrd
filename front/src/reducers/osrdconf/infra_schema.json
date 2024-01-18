@@ -52,6 +52,22 @@
         },
         "BalSystem": {
             "properties": {
+                "conditional_parameters": {
+                    "description": "BAL signal parameters for specific routes",
+                    "items": {
+                        "$ref": "#/$defs/__main____BalSystem__ConditionalParameters"
+                    },
+                    "title": "Conditional Parameters",
+                    "type": "array"
+                },
+                "default_parameters": {
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/__main____BalSystem__Parameters"
+                        }
+                    ],
+                    "description": "BAL signal parameters"
+                },
                 "next_signaling_systems": {
                     "description": "The list of allowed input signaling systems",
                     "items": {
@@ -75,13 +91,22 @@
                 }
             },
             "required": [
-                "settings"
+                "settings",
+                "default_parameters"
             ],
             "title": "BalSystem",
             "type": "object"
         },
         "BaprSystem": {
             "properties": {
+                "conditional_parameters": {
+                    "description": "BAPR signal parameters for specific routes",
+                    "items": {
+                        "$ref": "#/$defs/__main____BaprSystem__ConditionalParameters"
+                    },
+                    "title": "Conditional Parameters",
+                    "type": "array"
+                },
                 "next_signaling_systems": {
                     "description": "The list of allowed input signaling systems",
                     "items": {
@@ -89,6 +114,14 @@
                     },
                     "title": "Next Signaling Systems",
                     "type": "array"
+                },
+                "parameters": {
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/__main____BaprSystem__Parameters"
+                        }
+                    ],
+                    "description": "BAPR signal parameters"
                 },
                 "settings": {
                     "allOf": [
@@ -105,7 +138,8 @@
                 }
             },
             "required": [
-                "settings"
+                "settings",
+                "parameters"
             ],
             "title": "BaprSystem",
             "type": "object"
@@ -197,6 +231,32 @@
                 "kp"
             ],
             "title": "BufferStopSncfExtension",
+            "type": "object"
+        },
+        "ConditionalParameter": {
+            "properties": {
+                "on_route": {
+                    "description": "Route on which the parameters are applied",
+                    "maxLength": 255,
+                    "minLength": 1,
+                    "title": "On Route",
+                    "type": "string"
+                },
+                "parameters": {
+                    "additionalProperties": {
+                        "minLength": 1,
+                        "type": "string"
+                    },
+                    "description": "List of key value parameters, which are defined per signaling system",
+                    "title": "Parameters",
+                    "type": "object"
+                }
+            },
+            "required": [
+                "on_route",
+                "parameters"
+            ],
+            "title": "ConditionalParameter",
             "type": "object"
         },
         "Curve": {
@@ -599,6 +659,23 @@
         "LogicalSignal": {
             "description": "A logical signal is what displays something, whereas a physical signal is a group of logical signals",
             "properties": {
+                "conditional_parameters": {
+                    "description": "A list of conditional parameters, which are defined per signaling system",
+                    "items": {
+                        "$ref": "#/$defs/ConditionalParameter"
+                    },
+                    "title": "Conditional Parameters",
+                    "type": "array"
+                },
+                "default_parameters": {
+                    "additionalProperties": {
+                        "minLength": 1,
+                        "type": "string"
+                    },
+                    "description": "A list of default parameters (in regards to routes), which are defined per signaling system",
+                    "title": "Default Parameters",
+                    "type": "object"
+                },
                 "next_signaling_systems": {
                     "description": "The list of allowed input signaling systems",
                     "items": {
@@ -625,7 +702,9 @@
             "required": [
                 "signaling_system",
                 "next_signaling_systems",
-                "settings"
+                "settings",
+                "default_parameters",
+                "conditional_parameters"
             ],
             "title": "LogicalSignal",
             "type": "object"
@@ -1640,6 +1719,22 @@
         },
         "Tvm300System": {
             "properties": {
+                "conditional_parameters": {
+                    "description": "TVM signal parameters for specific routes",
+                    "items": {
+                        "$ref": "#/$defs/__main____Tvm300System__ConditionalParameters"
+                    },
+                    "title": "Conditional Parameters",
+                    "type": "array"
+                },
+                "default_parameters": {
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/__main____Tvm300System__Parameters"
+                        }
+                    ],
+                    "description": "TVM signal parameters"
+                },
                 "next_signaling_systems": {
                     "description": "The list of allowed input signaling systems",
                     "items": {
@@ -1663,13 +1758,30 @@
                 }
             },
             "required": [
-                "settings"
+                "settings",
+                "default_parameters"
             ],
             "title": "Tvm300System",
             "type": "object"
         },
         "Tvm430System": {
             "properties": {
+                "conditional_parameters": {
+                    "description": "TVM signal parameters for specific routes",
+                    "items": {
+                        "$ref": "#/$defs/__main____Tvm430System__ConditionalParameters"
+                    },
+                    "title": "Conditional Parameters",
+                    "type": "array"
+                },
+                "default_parameters": {
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/__main____Tvm430System__Parameters"
+                        }
+                    ],
+                    "description": "TVM signal parameters"
+                },
                 "next_signaling_systems": {
                     "description": "The list of allowed input signaling systems",
                     "items": {
@@ -1693,9 +1805,52 @@
                 }
             },
             "required": [
-                "settings"
+                "settings",
+                "default_parameters"
             ],
             "title": "Tvm430System",
+            "type": "object"
+        },
+        "__main____BalSystem__ConditionalParameters": {
+            "properties": {
+                "on_route": {
+                    "description": "Route for which those parameters are active",
+                    "maxLength": 255,
+                    "minLength": 1,
+                    "title": "On Route",
+                    "type": "string"
+                },
+                "parameters": {
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/__main____BalSystem__Parameters"
+                        }
+                    ],
+                    "description": "BAL signal parameters"
+                }
+            },
+            "required": [
+                "on_route",
+                "parameters"
+            ],
+            "title": "ConditionalParameters",
+            "type": "object"
+        },
+        "__main____BalSystem__Parameters": {
+            "properties": {
+                "jaune_cli": {
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/FlagSignalParameter"
+                        }
+                    ],
+                    "description": "Is the signal yellow blinking"
+                }
+            },
+            "required": [
+                "jaune_cli"
+            ],
+            "title": "Parameters",
             "type": "object"
         },
         "__main____BalSystem__Settings": {
@@ -1713,6 +1868,36 @@
                 "Nf"
             ],
             "title": "Settings",
+            "type": "object"
+        },
+        "__main____BaprSystem__ConditionalParameters": {
+            "properties": {
+                "on_route": {
+                    "description": "Route for which those parameters are active",
+                    "maxLength": 255,
+                    "minLength": 1,
+                    "title": "On Route",
+                    "type": "string"
+                },
+                "parameters": {
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/__main____BaprSystem__Parameters"
+                        }
+                    ],
+                    "description": "BAPR signal parameters"
+                }
+            },
+            "required": [
+                "on_route",
+                "parameters"
+            ],
+            "title": "ConditionalParameters",
+            "type": "object"
+        },
+        "__main____BaprSystem__Parameters": {
+            "properties": {},
+            "title": "Parameters",
             "type": "object"
         },
         "__main____BaprSystem__Settings": {
@@ -1741,6 +1926,36 @@
             "title": "Settings",
             "type": "object"
         },
+        "__main____Tvm300System__ConditionalParameters": {
+            "properties": {
+                "on_route": {
+                    "description": "Route for which those parameters are active",
+                    "maxLength": 255,
+                    "minLength": 1,
+                    "title": "On Route",
+                    "type": "string"
+                },
+                "parameters": {
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/__main____Tvm300System__Parameters"
+                        }
+                    ],
+                    "description": "TVM300 signal parameters"
+                }
+            },
+            "required": [
+                "on_route",
+                "parameters"
+            ],
+            "title": "ConditionalParameters",
+            "type": "object"
+        },
+        "__main____Tvm300System__Parameters": {
+            "properties": {},
+            "title": "Parameters",
+            "type": "object"
+        },
         "__main____Tvm300System__Settings": {
             "properties": {
                 "Nf": {
@@ -1756,6 +1971,36 @@
                 "Nf"
             ],
             "title": "Settings",
+            "type": "object"
+        },
+        "__main____Tvm430System__ConditionalParameters": {
+            "properties": {
+                "on_route": {
+                    "description": "Route for which those parameters are active",
+                    "maxLength": 255,
+                    "minLength": 1,
+                    "title": "On Route",
+                    "type": "string"
+                },
+                "parameters": {
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/__main____Tvm430System__Parameters"
+                        }
+                    ],
+                    "description": "TVM430 signal parameters"
+                }
+            },
+            "required": [
+                "on_route",
+                "parameters"
+            ],
+            "title": "ConditionalParameters",
+            "type": "object"
+        },
+        "__main____Tvm430System__Parameters": {
+            "properties": {},
+            "title": "Parameters",
             "type": "object"
         },
         "__main____Tvm430System__Settings": {
@@ -1868,8 +2113,8 @@
             "type": "array"
         },
         "version": {
-            "const": "3.4.10",
-            "default": "3.4.10",
+            "const": "3.4.11",
+            "default": "3.4.11",
             "description": "Version of the schema",
             "title": "Version"
         }

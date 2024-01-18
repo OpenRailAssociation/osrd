@@ -3,41 +3,7 @@ package fr.sncf.osrd.sim_infra.impl
 import fr.sncf.osrd.geom.LineString
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
-import fr.sncf.osrd.sim_infra.api.Detector
-import fr.sncf.osrd.sim_infra.api.DetectorId
-import fr.sncf.osrd.sim_infra.api.DirDetectorId
-import fr.sncf.osrd.sim_infra.api.DirTrackChunkId
-import fr.sncf.osrd.sim_infra.api.DirTrackSectionId
-import fr.sncf.osrd.sim_infra.api.EndpointTrackSectionId
-import fr.sncf.osrd.sim_infra.api.LoadingGaugeConstraint
-import fr.sncf.osrd.sim_infra.api.LogicalSignal
-import fr.sncf.osrd.sim_infra.api.LogicalSignalId
-import fr.sncf.osrd.sim_infra.api.OperationalPointPart
-import fr.sncf.osrd.sim_infra.api.OperationalPointPartId
-import fr.sncf.osrd.sim_infra.api.OptDirTrackSectionId
-import fr.sncf.osrd.sim_infra.api.PhysicalSignal
-import fr.sncf.osrd.sim_infra.api.PhysicalSignalId
-import fr.sncf.osrd.sim_infra.api.RawInfra
-import fr.sncf.osrd.sim_infra.api.Route
-import fr.sncf.osrd.sim_infra.api.RouteId
-import fr.sncf.osrd.sim_infra.api.SpeedLimit
-import fr.sncf.osrd.sim_infra.api.TrackChunk
-import fr.sncf.osrd.sim_infra.api.TrackChunkId
-import fr.sncf.osrd.sim_infra.api.TrackNode
-import fr.sncf.osrd.sim_infra.api.TrackNodeConfig
-import fr.sncf.osrd.sim_infra.api.TrackNodeConfigId
-import fr.sncf.osrd.sim_infra.api.TrackNodeId
-import fr.sncf.osrd.sim_infra.api.TrackNodePort
-import fr.sncf.osrd.sim_infra.api.TrackNodePortId
-import fr.sncf.osrd.sim_infra.api.TrackSection
-import fr.sncf.osrd.sim_infra.api.TrackSectionId
-import fr.sncf.osrd.sim_infra.api.Zone
-import fr.sncf.osrd.sim_infra.api.ZoneId
-import fr.sncf.osrd.sim_infra.api.ZonePath
-import fr.sncf.osrd.sim_infra.api.ZonePathId
-import fr.sncf.osrd.sim_infra.api.decreasing
-import fr.sncf.osrd.sim_infra.api.increasing
-import fr.sncf.osrd.sim_infra.api.toEndpoint
+import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.DirectionalMap
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.distanceRangeMapOf
@@ -110,6 +76,7 @@ class LogicalSignalDescriptor(
     val signalingSystemId: String,
     val nextSignalingSystemIds: List<String>,
     val rawSettings: Map<String, String>,
+    val rawParameters: RawSignalParameters,
 )
 
 class PhysicalSignalDescriptor(
@@ -493,6 +460,10 @@ class RawInfraImpl(
 
     override fun getRawSettings(signal: LogicalSignalId): Map<String, String> {
         return logicalSignalPool[signal].rawSettings
+    }
+
+    override fun getRawParameters(signal: LogicalSignalId): RawSignalParameters {
+        return logicalSignalPool[signal].rawParameters
     }
 
     override fun getNextSignalingSystemIds(signal: LogicalSignalId): List<String> {

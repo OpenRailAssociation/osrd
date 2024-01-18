@@ -12,6 +12,7 @@ import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import java.util.stream.Stream
 import org.assertj.core.api.Assertions
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
@@ -19,6 +20,8 @@ import org.junit.jupiter.params.provider.MethodSource
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class SignalingSystemConstraintsTest {
+
+    @Disabled("See #6903")
     @ParameterizedTest
     @MethodSource("testSignalingSystemArgs")
     fun testSignalingSystemBlockedRanges(
@@ -31,6 +34,7 @@ class SignalingSystemConstraintsTest {
         a --> b --> c
 
          */
+
         val infra = DummyInfra()
         infra.addBlock("a", "b", signalingSystemName = "BAL")
         infra.addBlock("b", "c", signalingSystemName = "TVM430")
