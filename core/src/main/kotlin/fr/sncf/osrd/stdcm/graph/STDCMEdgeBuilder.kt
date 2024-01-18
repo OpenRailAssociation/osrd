@@ -9,48 +9,47 @@ import java.util.*
 import kotlin.math.min
 
 /** This class handles the creation of new edges, handling the many optional parameters. */
-class STDCMEdgeBuilder // region CONSTRUCTORS
+data class STDCMEdgeBuilder
 internal constructor(
     /** Instance used to explore the infra, contains the underlying edge */
     private val infraExplorer: InfraExplorerWithEnvelope,
     /** STDCM Graph, needed for most operations */
-    private val graph: STDCMGraph
-) {
+    private val graph: STDCMGraph,
     /** Start time of the edge */
-    private var startTime = 0.0
+    private var startTime: Double = 0.0,
 
     /** Start speed, ignored if envelope is specified */
-    private var startSpeed = 0.0
+    private var startSpeed: Double = 0.0,
 
     /** Start offset on the given block */
-    private var startOffset: Offset<Block> = Offset(0.meters)
+    private var startOffset: Offset<Block> = Offset(0.meters),
 
     /**
      * Maximum delay we can add on any of the previous edges by shifting the departure time, without
      * causing a conflict
      */
-    private var prevMaximumAddedDelay = 0.0
+    private var prevMaximumAddedDelay: Double = 0.0,
 
     /**
      * Sum of all the delay that has been added in the previous edges by shifting the departure time
      */
-    private var prevAddedDelay = 0.0
+    private var prevAddedDelay: Double = 0.0,
 
     /** Previous node, used to compute the final path */
-    private var prevNode: STDCMNode? = null
+    private var prevNode: STDCMNode? = null,
 
     /** Envelope to use on the edge, if unspecified we try to go at maximum allowed speed */
-    private var envelope: Envelope? = null
+    private var envelope: Envelope? = null,
 
     /**
      * If set to true, we add the maximum amount of delay allowed by shifting the departure time.
      * Used when computing allowances
      */
-    private var forceMaxDelay = false
+    private var forceMaxDelay: Boolean = false,
 
     /** Index of the last waypoint passed by the train */
-    private var waypointIndex = 0
-    // endregion CONSTRUCTORS
+    private var waypointIndex: Int = 0
+) {
     // region SETTERS
     /** Sets the start time of the edge */
     fun setStartTime(startTime: Double): STDCMEdgeBuilder {
@@ -126,13 +125,20 @@ internal constructor(
      */
     @Suppress("UNCHECKED_CAST")
     fun makeAllEdges(): Collection<STDCMEdge> {
-        return if (getEnvelope() == null || hasDuplicateBlocks()) listOf()
-        else
-            getDelaysPerOpening()
-                .stream()
-                .map { delayNeeded -> makeSingleEdge(delayNeeded) }
-                .filter { obj -> Objects.nonNull(obj) }
-                .toList() as Collection<STDCMEdge>
+        return try {
+            if (getEnvelope() == null || hasDuplicateBlocks()) listOf()
+            else
+                getDelaysPerOpening()
+                    .stream()
+                    .map { delayNeeded -> makeSingleEdge(delayNeeded) }
+                    .filter { obj -> Objects.nonNull(obj) }
+                    .toList() as Collection<STDCMEdge>
+        } catch (_: DelayManager.NotEnoughLookaheadError) {
+            // More lookahead required, extend and repeat for each new path
+            infraExplorer.cloneAndExtendLookahead().flatMap {
+                copy(infraExplorer = it).makeAllEdges()
+            }
+        }
     }
 
     /**
