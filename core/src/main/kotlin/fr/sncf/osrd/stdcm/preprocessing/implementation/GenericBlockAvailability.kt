@@ -1,6 +1,7 @@
 package fr.sncf.osrd.stdcm.preprocessing.implementation
 
 import fr.sncf.osrd.sim_infra.api.Path
+import fr.sncf.osrd.stdcm.graph.DelayManager
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.utils.units.Offset
@@ -25,7 +26,7 @@ abstract class GenericBlockAvailability : BlockAvailabilityInterface {
     ): List<ResourceUse>?
 
     /** Returns all the scheduled resource use that use the same resource as the one given as parameter */
-    abstract fun getScheduledResources(infraExplorer: InfraExplorerWithEnvelope, resource: ResourceUse): List<ResourceUse>
+    abstract fun getScheduledResources(infraExplorer: InfraExplorerWithEnvelope, resource: ResourceUse): List<ResourceUse>?
 
     override fun getAvailability(
         infraExplorer: InfraExplorerWithEnvelope,
@@ -34,7 +35,7 @@ abstract class GenericBlockAvailability : BlockAvailabilityInterface {
         startTime: Double
     ): BlockAvailabilityInterface.Availability {
         val resourceUses = generateResourcesForPath(infraExplorer, startOffset, endOffset)
-            ?: return BlockAvailabilityInterface.NotEnoughLookahead()
+            ?: throw BlockAvailabilityInterface.NotEnoughLookaheadError()
         // startTime refers to the time at startOffset, we need to offset it
         val pathStartTime = startTime - infraExplorer.interpolateTimeClamp(startOffset)
         val unavailability = findMinimumDelay(infraExplorer, resourceUses, pathStartTime)
@@ -53,7 +54,7 @@ abstract class GenericBlockAvailability : BlockAvailabilityInterface {
         for (resourceUse in resourceUses) {
             val resourceStartTime = resourceUse.startTime + pathStartTime
             val resourceEndTime = resourceUse.endTime + pathStartTime
-            for (scheduledResourceUse in getScheduledResources(infraExplorer, resourceUse)) {
+            for (scheduledResourceUse in getScheduledResourcesOrThrow(infraExplorer, resourceUse)) {
                 if (resourceStartTime > scheduledResourceUse.endTime
                     || resourceEndTime < scheduledResourceUse.startTime)
                     continue
@@ -94,7 +95,7 @@ abstract class GenericBlockAvailability : BlockAvailabilityInterface {
         for (resourceUse in resourceUses) {
             val resourceStartTime = resourceUse.startTime + pathStartTime
             val resourceEndTime = resourceUse.endTime + pathStartTime
-            for (scheduledResourceUse in getScheduledResources(infraExplorer, resourceUse)) {
+            for (scheduledResourceUse in getScheduledResourcesOrThrow(infraExplorer, resourceUse)) {
                 if (resourceStartTime >= scheduledResourceUse.endTime)
                     continue // The block is occupied before we enter it
                 assert(resourceStartTime <= scheduledResourceUse.startTime)
@@ -106,5 +107,11 @@ abstract class GenericBlockAvailability : BlockAvailabilityInterface {
             }
         }
         return BlockAvailabilityInterface.Available(maximumDelay, timeOfNextOccupancy)
+    }
+
+    private fun getScheduledResourcesOrThrow(infraExplorer: InfraExplorerWithEnvelope, resource: ResourceUse)
+    : List<ResourceUse> {
+        return getScheduledResources(infraExplorer, resource)
+            ?: throw BlockAvailabilityInterface.NotEnoughLookaheadError()
     }
 }

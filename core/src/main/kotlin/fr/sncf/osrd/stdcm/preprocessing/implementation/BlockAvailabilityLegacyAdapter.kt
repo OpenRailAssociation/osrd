@@ -47,7 +47,7 @@ class BlockAvailabilityLegacyAdapter(
                     endOffset
                 ) ?: continue
                 val segmentStartOffset = Offset<Path>(blockWithOffset.pathOffset + unavailableSegment.distanceStart)
-                val segmentEndOffset = Offset<Path>(blockWithOffset.pathOffset + unavailableSegment.distanceStart)
+                val segmentEndOffset = Offset<Path>(blockWithOffset.pathOffset + unavailableSegment.distanceEnd)
                 res.add(BlockResourceUse(
                     segmentStartOffset,
                     segmentEndOffset,
@@ -61,13 +61,24 @@ class BlockAvailabilityLegacyAdapter(
     }
 
     /** Returns all the scheduled resource use that use the same resource as the one given as parameter */
-    override fun getScheduledResources(infraExplorer: InfraExplorerWithEnvelope, resource: ResourceUse): List<ResourceUse> {
+    override fun getScheduledResources(infraExplorer: InfraExplorerWithEnvelope, resource: ResourceUse): List<ResourceUse>? {
         val blocks = makeBlocksWithOffsets(infraExplorer)
         val blockUse = resource as BlockResourceUse
         val res = mutableListOf<ResourceUse>()
         for (segment in unavailableSpace[blockUse.blockId]) {
             // Can be optimized
             val blockOffset = Offset<Path>(blocks.first { it.blockId == blockUse.blockId }.pathOffset)
+            if (segment.enabledIfBlockInLookahead != null) {
+                val lookahead = infraExplorer.getLookahead()
+                if (lookahead.contains(segment.disabledIfBlockInLookahead))
+                    continue
+                if (!lookahead.contains(segment.enabledIfBlockInLookahead)) {
+                    if (!infraExplorer.getIncrementalPath().pathComplete)
+                        return null // Can't determine the resource use
+                    else
+                        continue
+                }
+            }
             res.add(BlockResourceUse(
                 blockOffset + segment.distanceStart,
                 blockOffset + segment.distanceEnd,
