@@ -105,6 +105,10 @@ const MapUnplugged = ({
     () => (activeTool.getInteractiveLayers ? activeTool.getInteractiveLayers(extendedContext) : []),
     [activeTool, extendedContext]
   );
+  const eventsLayerIDs = useMemo(
+    () => (activeTool.getEventsLayers ? activeTool.getEventsLayers(extendedContext) : null),
+    [activeTool, extendedContext]
+  );
 
   const cursor = useMemo(
     () => (activeTool.getCursor ? activeTool.getCursor(extendedContext, mapState) : 'default'),
@@ -138,7 +142,15 @@ const MapUnplugged = ({
             setToolState({ hovered: null });
           }}
           onMouseMove={(e) => {
-            const nearestResult = getMapMouseEventNearestFeature(e);
+            const nearestResult = getMapMouseEventNearestFeature(
+              e,
+              eventsLayerIDs
+                ? {
+                    layersId: eventsLayerIDs,
+                  }
+                : undefined
+            );
+
             const partialToolState: Partial<CommonToolState> = {
               mousePosition: [e.lngLat.lng, e.lngLat.lat],
             };
@@ -229,7 +241,15 @@ const MapUnplugged = ({
           cursor={cursor}
           interactiveLayerIds={interactiveLayerIDs}
           onClick={(e) => {
-            const nearestResult = getMapMouseEventNearestFeature(e);
+            const nearestResult = getMapMouseEventNearestFeature(
+              e,
+              eventsLayerIDs
+                ? {
+                    layersId: eventsLayerIDs,
+                  }
+                : undefined
+            );
+
             const eventWithFeature = nearestResult
               ? {
                   ...e,

@@ -106,6 +106,7 @@ export interface Tool<S> {
 
   // Display:
   getInteractiveLayers?: (context: ReadOnlyEditorContextType<S>) => string[];
+  getEventsLayers?: (context: ReadOnlyEditorContextType<S>) => string[];
   layersComponent?: ComponentType<{ map: Map }>;
   leftPanelComponent?: ComponentType;
   messagesComponent?: ComponentType;
