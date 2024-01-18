@@ -175,7 +175,7 @@ public class AllowanceTests {
         var allowanceEnvelope = allowance.apply(base, context);
         var marginTime = allowanceEnvelope.getTotalTime();
         var targetTime = allowance.getTargetTime(base);
-        assertEquals(marginTime, targetTime, 2 * TIME_STEP);
+        assertEquals(marginTime, targetTime, context.timeStep);
     }
 
     private void testTransitionPoints(
@@ -197,8 +197,8 @@ public class AllowanceTests {
         var expectedTimeEndPoint = timeEndPointBase + allowance.getAddedTime(base);
 
         // make sure begin has the same time before and after margin, and that end is offset by the proper value
-        assertEquals(timeBeginPointBase, timeBeginPoint, 5 * TIME_STEP);
-        assertEquals(expectedTimeEndPoint, timeEndPoint, 5 * TIME_STEP);
+        assertEquals(timeBeginPointBase, timeBeginPoint, context.timeStep);
+        assertEquals(expectedTimeEndPoint, timeEndPoint, context.timeStep);
 
         var speedBeginPointBase = base.interpolateSpeed(beginPos);
         var speedEndPointBase = base.interpolateSpeed(endPos);
@@ -384,10 +384,10 @@ public class AllowanceTests {
         var engineeringAllowanceAddedTime = engineeringAllowance.getAddedTime(standardEnvelope);
         var targetTime = baseTime + standardAllowanceAddedTime + engineeringAllowanceAddedTime;
         var marginTime = engineeringEnvelope.getTotalTime();
-        assertEquals(marginTime, targetTime, 5 * TIME_STEP);
+        assertEquals(marginTime, targetTime, 2 * context.timeStep);
 
         var engineeringAllowanceTargetTime = engineeringAllowance.getTargetTime(standardEnvelope);
-        assertEquals(marginTime, engineeringAllowanceTargetTime, 5 * TIME_STEP);
+        assertEquals(marginTime, engineeringAllowanceTargetTime, context.timeStep);
 
     }
 
@@ -427,7 +427,7 @@ public class AllowanceTests {
                 + allowanceA.getAddedTime(maxEffortEnvelope)
                 + allowanceB.getAddedTime(maxEffortEnvelope);
         var marginTime = engineeringEnvelopeB.getTotalTime();
-        assertEquals(marginTime, targetTime, 2 * TIME_STEP);
+        assertEquals(marginTime, targetTime, 2 * testContext.timeStep);
     }
 
     /** Test several engineering allowances on segments */
@@ -546,7 +546,7 @@ public class AllowanceTests {
         var marecoEnvelope = allowance.apply(maxEffortEnvelope, testContext);
         var targetTime = allowance.getTargetTime(maxEffortEnvelope);
         var marginTime = marecoEnvelope.getTotalTime();
-        assertEquals(marginTime, targetTime, 2 * TIME_STEP);
+        assertEquals(marginTime, targetTime, testContext.timeStep);
 
         // The train space-speed curve is supposed to follow this complicated shape because of the multiple
         // accelerating slopes.
