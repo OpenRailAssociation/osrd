@@ -41,7 +41,7 @@ class InfraExplorerWithEnvelopeTests {
             initInfraExplorerWithEnvelope(
                 infra,
                 infra,
-                PathfindingEdgeLocationId(blocks[0], Offset(0.meters))
+                PathfindingEdgeLocationId(blocks[0], Offset(0.meters)),
             )
         assertEquals(1, firstExplorers.size)
         val firstExplorer = firstExplorers.first()
@@ -129,7 +129,7 @@ class InfraExplorerWithEnvelopeTests {
             initInfraExplorerWithEnvelope(
                 infra,
                 infra,
-                PathfindingEdgeLocationId(blocks[0], Offset(0.meters))
+                PathfindingEdgeLocationId(blocks[0], Offset(0.meters)),
             )
         assertEquals(1, firstExplorers.size)
         var explorer = firstExplorers.first()

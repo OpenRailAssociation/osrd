@@ -3,6 +3,7 @@ package fr.sncf.osrd.stdcm.infra_exploration
 import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
 import fr.sncf.osrd.graph.PathfindingEdgeLocationId
 import fr.sncf.osrd.sim_infra.api.Block
+import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.BlockInfra
 import fr.sncf.osrd.sim_infra.api.Path
 import fr.sncf.osrd.sim_infra.api.RawInfra
@@ -42,9 +43,11 @@ interface InfraExplorerWithEnvelope : InfraExplorer {
 fun initInfraExplorerWithEnvelope(
     rawInfra: RawInfra,
     blockInfra: BlockInfra,
-    location: PathfindingEdgeLocationId<Block>
+    location: PathfindingEdgeLocationId<Block>,
+    endBlocks: Collection<BlockId> = setOf()
 ): Collection<InfraExplorerWithEnvelope> {
-    return initInfraExplorer(rawInfra, blockInfra, location).map { explorer ->
+    return initInfraExplorer(rawInfra, blockInfra, location, endBlocks = endBlocks).map { explorer
+        ->
         InfraExplorerWithEnvelopeImpl(explorer, mutableListOf())
     }
 }
