@@ -18,26 +18,7 @@ import fr.sncf.osrd.infra.api.tracks.undirected.TrackSection
 import fr.sncf.osrd.infra.implementation.tracks.directed.DiTrackEdgeImpl
 import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal
-import fr.sncf.osrd.sim_infra.api.DetectorId
-import fr.sncf.osrd.sim_infra.api.DirDetectorId
-import fr.sncf.osrd.sim_infra.api.EndpointTrackSectionId
-import fr.sncf.osrd.sim_infra.api.PhysicalSignal
-import fr.sncf.osrd.sim_infra.api.PhysicalSignalId
-import fr.sncf.osrd.sim_infra.api.RawInfra
-import fr.sncf.osrd.sim_infra.api.RouteId
-import fr.sncf.osrd.sim_infra.api.TrackChunk
-import fr.sncf.osrd.sim_infra.api.TrackChunkId
-import fr.sncf.osrd.sim_infra.api.TrackNode
-import fr.sncf.osrd.sim_infra.api.TrackNodeConfig
-import fr.sncf.osrd.sim_infra.api.TrackNodeConfigId
-import fr.sncf.osrd.sim_infra.api.TrackNodeId
-import fr.sncf.osrd.sim_infra.api.TrackNodePortId
-import fr.sncf.osrd.sim_infra.api.TrackSectionId
-import fr.sncf.osrd.sim_infra.api.ZoneId
-import fr.sncf.osrd.sim_infra.api.ZonePath
-import fr.sncf.osrd.sim_infra.api.ZonePathId
-import fr.sncf.osrd.sim_infra.api.decreasing
-import fr.sncf.osrd.sim_infra.api.increasing
+import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.NeutralSection as SimNeutralSection
 import fr.sncf.osrd.sim_infra.impl.RawInfraBuilder
 import fr.sncf.osrd.sim_infra.impl.SpeedSection
@@ -101,6 +82,15 @@ fun adaptRawInfra(infra: SignalingInfra): SimInfraAdapter {
     val rjsSignalMap = HashBiMap.create<String, RJSSignal>()
     val routeMap = HashBiMap.create<ReservationRoute, RouteId>()
     val trackChunkMap = mutableMapOf<TrackSection, Map<Distance, TrackChunkId>>()
+    val routeList = infra.reservationRouteMap.values.toList()
+
+    // We need to be able to resolve routeIDs before actually creating the routes
+    // We MUST take care that routes are created in the same order
+    val routeNameToID = mutableMapOf<String, RouteId>()
+    var routeCount = 0u
+    for (route in routeList) {
+        routeNameToID[route.id] = RouteId(routeCount++)
+    }
 
     // parse tracks
     for (edge in infra.trackGraph.edges()) {
@@ -238,10 +228,20 @@ fun adaptRawInfra(infra: SignalingInfra): SimInfraAdapter {
                     for (sigSystem in rjsLogicalSignal.nextSignalingSystems) assert(
                         sigSystem.isNotEmpty()
                     )
+
+                    val rawParameters =
+                        RawSignalParameters(
+                            rjsLogicalSignal.defaultParameters,
+                            rjsLogicalSignal.conditionalParameters.associate {
+                                Pair(routeNameToID[it.onRoute]!!, it.parameters)
+                            }
+                        )
+
                     logicalSignal(
                         rjsLogicalSignal.signalingSystem,
                         rjsLogicalSignal.nextSignalingSystems,
-                        rjsLogicalSignal.settings
+                        rjsLogicalSignal.settings,
+                        rawParameters
                     )
                 }
             }
@@ -259,7 +259,8 @@ fun adaptRawInfra(infra: SignalingInfra): SimInfraAdapter {
     for (trackSignals in signalsPerTrack.values) trackSignals.sortBy { it.position }
 
     // translate routes
-    for (route in infra.reservationRouteMap.values) {
+    // be sure to do so in the same order as routeNameToID
+    for (route in routeList) {
         routeMap[route] =
             builder.route(route.id) {
                 val oldPath = route.detectorPath!!

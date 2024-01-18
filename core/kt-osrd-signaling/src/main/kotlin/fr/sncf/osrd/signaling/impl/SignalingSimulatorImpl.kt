@@ -2,6 +2,7 @@ package fr.sncf.osrd.signaling.impl
 
 import fr.sncf.osrd.signaling.*
 import fr.sncf.osrd.sim_infra.api.*
+import fr.sncf.osrd.sim_infra.impl.SignalParameters
 import fr.sncf.osrd.sim_infra.impl.loadedSignalInfra
 import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.utils.units.Distance
@@ -32,6 +33,15 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
         return schema(rawSettings)
     }
 
+    private fun loadSignalParameters(
+        rawParameters: RawSignalParameters,
+        schema: SigParametersSchema
+    ): SignalParameters {
+        val default = schema(rawParameters.default)
+        val conditional = rawParameters.conditional.mapValues { schema(it.value) }
+        return SignalParameters(default, conditional)
+    }
+
     override fun loadSignals(unloadedSignalInfra: RawSignalingInfra): LoadedSignalInfra {
         return loadedSignalInfra(sigModuleManager) {
             for (oldPhysicalSignal in unloadedSignalInfra.physicalSignals) {
@@ -49,6 +59,11 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
                                 sigModuleManager.getSettingsSchema(signalingSystemId)
                             val rawSettings = unloadedSignalInfra.getRawSettings(oldLogicalSignal)
                             sigSettings(loadSignalSetting(rawSettings, settingsSchema))
+                            val parametersSchema =
+                                sigModuleManager.getParametersSchema(signalingSystemId)
+                            val rawParameters =
+                                unloadedSignalInfra.getRawParameters(oldLogicalSignal)
+                            sigParameters(loadSignalParameters(rawParameters, parametersSchema))
 
                             for (oldNextSS in
                                 unloadedSignalInfra.getNextSignalingSystemIds(oldLogicalSignal)) {
@@ -119,12 +134,14 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
         loadedSignalInfra: LoadedSignalInfra,
         blocks: BlockInfra,
         fullPath: StaticIdxList<Block>,
+        routes: List<RouteId>,
         evaluatedPathEnd: Int,
         zoneStates: List<ZoneStatus>,
         followingZoneState: ZoneStatus,
     ): Map<LogicalSignalId, SigState> {
         assert(evaluatedPathEnd > 0)
         assert(evaluatedPathEnd <= fullPath.size)
+        val routeSet = routes.toSet()
 
         // compute the offset of each block's first zone inside the partial path
         val blockZoneMap = IntArray(evaluatedPathEnd + 1)
@@ -214,10 +231,22 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
             val currentSignalSettings = loadedSignalInfra.getSettings(signal)
             val driver = sigModuleManager.findDriver(currentSSId, lastSignalSSId ?: currentSSId)
             val schema = sigModuleManager.getStateSchema(currentSSId)
+
+            val parameters = loadedSignalInfra.getParameters(signal)
+            var resolvedParameters: SigParameters? = null
+            for (route in parameters.conditional.keys) {
+                if (routeSet.contains(route)) {
+                    resolvedParameters = parameters.conditional[route]
+                    break
+                }
+            }
+            resolvedParameters = resolvedParameters ?: parameters.default
+
             val state =
                 sigModuleManager.evalSignal(
                     driver,
                     currentSignalSettings,
+                    resolvedParameters,
                     schema,
                     mav,
                     null // TODO: Handle speed limits

@@ -15,16 +15,37 @@ def _signal_id():
 
 
 @dataclass
+class SignalConditionalParameters:
+    on_route: str
+    parameters: Dict[str, str]
+
+    def to_rjs(self):
+        return infra.SignalConditionalParameters(
+            on_route=self.on_route,
+            parameters=self.parameters,
+        )
+
+
+@dataclass
 class LogicalSignal:
     signaling_system: str
     next_signaling_systems: List[str] = field(default_factory=list)
     settings: Dict[str, str] = field(default_factory=dict)
+    default_parameters: Dict[str, str] = field(default_factory=dict)
+    conditional_parameters: List[SignalConditionalParameters] = field(default_factory=list)
 
     def to_rjs(self):
+        if self.signaling_system == "BAL":
+            self.default_parameters = (
+                {"jaune_cli": "false"} if self.default_parameters == {} else self.default_parameters
+            )
+
         return infra.LogicalSignal(
             signaling_system=self.signaling_system,
             next_signaling_systems=self.next_signaling_systems,
             settings=self.settings,
+            default_parameters=self.default_parameters,
+            conditional_parameters=[param.to_rjs() for param in self.conditional_parameters],
         )
 
 

@@ -3,39 +3,7 @@ package fr.sncf.osrd.sim_infra.impl
 import fr.sncf.osrd.fast_collections.mutableIntArrayListOf
 import fr.sncf.osrd.geom.LineString
 import fr.sncf.osrd.reporting.exceptions.OSRDError
-import fr.sncf.osrd.sim_infra.api.Detector
-import fr.sncf.osrd.sim_infra.api.DetectorId
-import fr.sncf.osrd.sim_infra.api.DirDetectorId
-import fr.sncf.osrd.sim_infra.api.DirTrackChunkId
-import fr.sncf.osrd.sim_infra.api.EndpointTrackSectionId
-import fr.sncf.osrd.sim_infra.api.LoadingGaugeConstraint
-import fr.sncf.osrd.sim_infra.api.LogicalSignal
-import fr.sncf.osrd.sim_infra.api.LogicalSignalId
-import fr.sncf.osrd.sim_infra.api.OperationalPointPart
-import fr.sncf.osrd.sim_infra.api.OperationalPointPartId
-import fr.sncf.osrd.sim_infra.api.PhysicalSignal
-import fr.sncf.osrd.sim_infra.api.PhysicalSignalId
-import fr.sncf.osrd.sim_infra.api.RawInfra
-import fr.sncf.osrd.sim_infra.api.Route
-import fr.sncf.osrd.sim_infra.api.RouteId
-import fr.sncf.osrd.sim_infra.api.SpeedLimit
-import fr.sncf.osrd.sim_infra.api.SpeedLimitId
-import fr.sncf.osrd.sim_infra.api.TrackChunk
-import fr.sncf.osrd.sim_infra.api.TrackChunkId
-import fr.sncf.osrd.sim_infra.api.TrackNode
-import fr.sncf.osrd.sim_infra.api.TrackNodeConfig
-import fr.sncf.osrd.sim_infra.api.TrackNodeConfigId
-import fr.sncf.osrd.sim_infra.api.TrackNodeId
-import fr.sncf.osrd.sim_infra.api.TrackNodePort
-import fr.sncf.osrd.sim_infra.api.TrackNodePortId
-import fr.sncf.osrd.sim_infra.api.TrackSection
-import fr.sncf.osrd.sim_infra.api.TrackSectionId
-import fr.sncf.osrd.sim_infra.api.Zone
-import fr.sncf.osrd.sim_infra.api.ZoneId
-import fr.sncf.osrd.sim_infra.api.ZonePath
-import fr.sncf.osrd.sim_infra.api.ZonePathId
-import fr.sncf.osrd.sim_infra.api.decreasing
-import fr.sncf.osrd.sim_infra.api.increasing
+import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.DirectionalMap
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.indexing.DirStaticIdx
@@ -111,7 +79,8 @@ interface PhysicalSignalBuilder {
     fun logicalSignal(
         signalingSystem: String,
         nextSignalingSystems: List<String>,
-        settings: Map<String, String>
+        settings: Map<String, String>,
+        parameters: RawSignalParameters,
     ): LogicalSignalId
 }
 
@@ -125,10 +94,13 @@ class PhysicalSignalBuilderImpl(
     override fun logicalSignal(
         signalingSystem: String,
         nextSignalingSystems: List<String>,
-        settings: Map<String, String>
+        settings: Map<String, String>,
+        parameters: RawSignalParameters,
     ): LogicalSignalId {
         val logicalSignalId =
-            globalPool.add(LogicalSignalDescriptor(signalingSystem, nextSignalingSystems, settings))
+            globalPool.add(
+                LogicalSignalDescriptor(signalingSystem, nextSignalingSystems, settings, parameters)
+            )
         children.add(logicalSignalId)
         return logicalSignalId
     }

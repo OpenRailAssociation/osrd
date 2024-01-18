@@ -140,6 +140,10 @@ class DummyInfra : RawInfra, BlockInfra {
         return mapOf("Nf" to "false")
     }
 
+    override fun getRawParameters(signal: LogicalSignalId): RawSignalParameters {
+        return RawSignalParameters(mapOf("jaune_cli" to "false"), mapOf())
+    }
+
     override fun getNextSignalingSystemIds(signal: LogicalSignalId): List<String> {
         val sigSystemName = blockPool[signal.index].signalingSystemName
         return listOf(sigSystemName)

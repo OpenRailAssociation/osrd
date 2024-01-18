@@ -60,13 +60,14 @@ class BlockBuilderTest {
         // endregion
 
         // region signals
+        val parameters = RawSignalParameters(mapOf(Pair("jaune_cli", "false")), mapOf())
         val signalX =
             builder.physicalSignal("X", 300.meters) {
-                logicalSignal("BAL", listOf("BAL"), mapOf(Pair("Nf", "true")))
+                logicalSignal("BAL", listOf("BAL"), mapOf(Pair("Nf", "true")), parameters)
             }
         val signalV =
             builder.physicalSignal("Y", 300.meters) {
-                logicalSignal("BAL", listOf("BAL"), mapOf(Pair("Nf", "true")))
+                logicalSignal("BAL", listOf("BAL"), mapOf(Pair("Nf", "true")), parameters)
             }
         // endregion
 
@@ -114,7 +115,13 @@ class BlockBuilderTest {
         // endregion
 
         val simulator =
-            SignalingSimulatorImpl(MockSigSystemManager("BAL", SigSettingsSchema { flag("Nf") }))
+            SignalingSimulatorImpl(
+                MockSigSystemManager(
+                    "BAL",
+                    SigSettingsSchema { flag("Nf") },
+                    SigParametersSchema { flag("jaune_cli") }
+                )
+            )
         val loadedSignalInfra = simulator.loadSignals(infra)
         val blockInfra = simulator.buildBlocks(infra, loadedSignalInfra)
 

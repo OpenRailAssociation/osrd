@@ -32,12 +32,13 @@ class SigSystemManagerImpl : SigSystemManager {
     override fun evalSignal(
         driverId: SignalDriverId,
         signal: SigSettings,
+        parameters: SigParameters,
         stateSchema: SigStateSchema,
         maView: MovementAuthorityView?,
         limitView: SpeedLimitView?
     ): SigState {
         val driver = driverPool[driverId]
-        return driver.evalSignal(signal, stateSchema, maView, limitView)
+        return driver.evalSignal(signal, parameters, stateSchema, maView, limitView)
     }
 
     override val signalingSystems: StaticIdxSpace<SignalingSystem>
@@ -53,6 +54,10 @@ class SigSystemManagerImpl : SigSystemManager {
 
     override fun getSettingsSchema(sigSystem: SignalingSystemId): SigSettingsSchema {
         return sigSystemPool[sigSystem].settingsSchema
+    }
+
+    override fun getParametersSchema(sigSystem: SignalingSystemId): SigParametersSchema {
+        return sigSystemPool[sigSystem].parametersSchema
     }
 
     override val drivers

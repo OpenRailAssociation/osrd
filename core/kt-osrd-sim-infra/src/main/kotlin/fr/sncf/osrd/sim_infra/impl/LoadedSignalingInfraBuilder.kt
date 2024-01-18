@@ -25,6 +25,8 @@ interface LoadedLogicalSignalBuilder {
 
     fun sigSettings(sigSettings: SigSettings)
 
+    fun sigParameters(sigParameters: SignalParameters)
+
     fun signalingSystemId(signalingSystemId: SignalingSystemId)
 }
 
@@ -48,13 +50,14 @@ private class LoadedPhysicalSignalBuilderImpl(
 
 private class LoadedLogicalSignalBuilderImpl(
     var sigSettings: SigSettings?,
+    var sigParameters: SignalParameters?,
     var signalingSystemId: SignalingSystemId?,
     val drivers: MutableStaticIdxArrayList<SignalDriver>,
     private val infraBuilderImpl: LoadedSignalingInfraBuilderImpl
 ) : LoadedLogicalSignalBuilder {
     constructor(
         infraBuilderImpl: LoadedSignalingInfraBuilderImpl
-    ) : this(null, null, mutableStaticIdxArrayListOf(), infraBuilderImpl)
+    ) : this(null, null, null, mutableStaticIdxArrayListOf(), infraBuilderImpl)
 
     override fun driver(driver: SignalDriverId) {
         drivers.add(driver)
@@ -64,6 +67,10 @@ private class LoadedLogicalSignalBuilderImpl(
         this.sigSettings = sigSettings
     }
 
+    override fun sigParameters(sigParameters: SignalParameters) {
+        this.sigParameters = sigParameters
+    }
+
     override fun signalingSystemId(signalingSystemId: SignalingSystemId) {
         this.signalingSystemId = signalingSystemId
     }
@@ -71,6 +78,7 @@ private class LoadedLogicalSignalBuilderImpl(
     fun build(): LogicalSignalId {
         val id = LogicalSignalId(infraBuilderImpl.logicalSignalSpace++)
         infraBuilderImpl.signalSettingsMap[id] = sigSettings!!
+        infraBuilderImpl.signalParametersMap[id] = sigParameters!!
         infraBuilderImpl.signalingSystemMap[id] = signalingSystemId!!
         infraBuilderImpl.driverMap[id] = drivers
         return id
@@ -83,6 +91,7 @@ internal constructor(
     var logicalSignalSpace: UInt,
     val physicalSignalPool: StaticPool<PhysicalSignal, StaticIdxList<LogicalSignal>>,
     val signalSettingsMap: IdxMap<LogicalSignalId, SigSettings>,
+    val signalParametersMap: IdxMap<LogicalSignalId, SignalParameters>,
     val signalingSystemMap: IdxMap<LogicalSignalId, SignalingSystemId>,
     val driverMap: IdxMap<LogicalSignalId, StaticIdxList<SignalDriver>>
 ) : LoadedSignalingInfraBuilder {
@@ -92,6 +101,7 @@ internal constructor(
         sigSystemManager,
         0u,
         StaticPool(),
+        IdxMap(),
         IdxMap(),
         IdxMap(),
         IdxMap(),
@@ -118,6 +128,7 @@ internal constructor(
             logicalSignalSpace,
             physicalSignalPool,
             signalSettingsMap,
+            signalParametersMap,
             signalingSystemMap,
             driverMap,
             delimiterMap,

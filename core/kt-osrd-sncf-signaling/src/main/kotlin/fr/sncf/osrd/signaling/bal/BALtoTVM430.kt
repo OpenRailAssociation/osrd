@@ -1,6 +1,7 @@
 package fr.sncf.osrd.signaling.bal
 
 import fr.sncf.osrd.signaling.*
+import fr.sncf.osrd.sim_infra.api.SigParameters
 import fr.sncf.osrd.sim_infra.api.SigSettings
 import fr.sncf.osrd.sim_infra.api.SigState
 import fr.sncf.osrd.sim_infra.api.SigStateSchema
@@ -12,6 +13,7 @@ object BALtoTVM430 : SignalDriver {
 
     override fun evalSignal(
         signal: SigSettings,
+        parameters: SigParameters,
         stateSchema: SigStateSchema,
         maView: MovementAuthorityView?,
         limitView: SpeedLimitView?

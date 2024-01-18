@@ -3,10 +3,16 @@ package fr.sncf.osrd.sim_infra.impl
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.indexing.*
 
+data class SignalParameters(
+    val default: SigParameters,
+    val conditional: Map<RouteId, SigParameters>
+)
+
 class LoadedSignalingInfraImpl(
     val logicalSignalSpace: StaticIdxSpace<LogicalSignal>,
     val physicalSignalPool: StaticPool<PhysicalSignal, StaticIdxList<LogicalSignal>>,
     val signalSettingsMap: IdxMap<LogicalSignalId, SigSettings>,
+    val signalParametersMap: IdxMap<LogicalSignalId, SignalParameters>,
     val signalingSystemMap: IdxMap<LogicalSignalId, SignalingSystemId>,
     val driverMap: IdxMap<LogicalSignalId, StaticIdxList<SignalDriver>>,
     val blockDelimiterMap: IdxMap<LogicalSignalId, Boolean>,
@@ -39,6 +45,10 @@ class LoadedSignalingInfraImpl(
 
     override fun getSettings(signal: LogicalSignalId): SigSettings {
         return signalSettingsMap[signal]!!
+    }
+
+    override fun getParameters(signal: StaticIdx<LogicalSignal>): SignalParameters {
+        return signalParametersMap[signal]!!
     }
 
     override fun getDrivers(signal: LogicalSignalId): StaticIdxList<SignalDriver> {

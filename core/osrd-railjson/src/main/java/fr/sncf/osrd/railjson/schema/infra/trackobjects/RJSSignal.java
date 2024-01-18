@@ -58,6 +58,23 @@ public class RJSSignal extends RJSTrackObject implements Identified {
         public Map<String, String> settings;
 
         /**
+         * The schema for allowed parameters is defined by the signaling system.
+         */
+        @Json(name = "default_parameters")
+        public Map<String, String> defaultParameters;
+
+        public static class ConditionalParameter {
+            @Json(name = "on_route")
+            public String onRoute;
+
+            @Json(name = "parameters")
+            public Map<String, String> parameters;
+        }
+
+        @Json(name = "conditional_parameters")
+        public List<ConditionalParameter> conditionalParameters;
+
+        /**
          * An optional list of next signaling systems with which the signal is allowed to interface.
          * This list will be used to look up drivers. If missing, the driver list is deduced from
          * surrounding signals. Drivers define how signals are driven by interfacing with the next

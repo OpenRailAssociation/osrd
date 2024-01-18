@@ -30,6 +30,7 @@ interface SigSystemManager : InfraSigSystemManager {
     fun evalSignal(
         driverId: SignalDriverId,
         signal: SigSettings,
+        parameters: SigParameters,
         stateSchema: SigStateSchema,
         maView: MovementAuthorityView?,
         limitView: SpeedLimitView?
@@ -51,6 +52,7 @@ interface SignalingSimulator {
         loadedSignalInfra: LoadedSignalInfra,
         blocks: BlockInfra,
         fullPath: StaticIdxList<Block>,
+        routes: List<RouteId>,
         evaluatedPathEnd: Int,
         zoneStates: List<ZoneStatus>,
         followingZoneState: ZoneStatus,
