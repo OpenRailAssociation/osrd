@@ -205,7 +205,7 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
 
   /* add behaviour on zoom and mousemove/mouseover/wheel on the new chart each time the chart changes */
   useEffect(() => {
-    if (trainSimulations) {
+    if (trainSimulations && selectedTrain) {
       const dataSimulation = createTrain(CHART_AXES.SPACE_TIME, selectedTrain as Train);
       enableInteractivity(
         chart,
