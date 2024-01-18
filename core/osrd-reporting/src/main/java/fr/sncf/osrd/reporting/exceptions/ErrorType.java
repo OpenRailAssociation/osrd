@@ -306,20 +306,10 @@ public enum ErrorType {
             "unknown sig schema field",
             ErrorCause.USER
     ),
-    InvalidSTDCMDelayError(
-            "invalid_stdcm",
-            "STDCM lookahead isn't supported yet",
-            ErrorCause.INTERNAL
-    ),
     InvalidSTDCMUnspecifiedStartTime(
             "invalid_stdcm",
             "STDCM requests with unspecified start time are not supported yet",
             ErrorCause.INTERNAL
-    ),
-    InvalidSTDCMUnspecifiedStartAndEndTime(
-            "invalid_stdcm",
-            "Invalid STDCM request: both end time and start time are unspecified, at least one must be set",
-            ErrorCause.USER
     ),
     DelimitingSignalEmptyBlock(
             "delimiting_signal_empty_block",
