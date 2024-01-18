@@ -16,7 +16,7 @@ import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
-import java.util.Objects
+import java.util.*
 
 /** Explore the infra, without running simulations.
  * Builds one global path from the start of the train, one block at a time.
@@ -62,8 +62,11 @@ interface InfraExplorer {
     /** Returns the length of all blocks before the current one */
     fun getPredecessorLength(): Length<Path>
 
-    /** Returns the all the blocks before the current one */
+    /** Returns all the blocks before the current one */
     fun getPredecessorBlocks(): StaticIdxList<Block>
+
+    /** Returns all the blocks after the current one */
+    fun getLookahead(): StaticIdxList<Block>
 
     /** Returns a copy of the current instance. */
     fun clone(): InfraExplorer
@@ -197,6 +200,13 @@ private class InfraExplorerImpl(
         return res
     }
 
+    override fun getLookahead(): StaticIdxList<Block> {
+        val res = mutableStaticIdxArrayListOf<Block>()
+        for (i in currentIndex + 1..<blocks.size)
+            res.add(blocks[i])
+        return res
+    }
+
     override fun clone(): InfraExplorer {
         return InfraExplorerImpl(
             this.rawInfra,
@@ -231,6 +241,10 @@ private class InfraExplorerImpl(
             travelledPathBegin = Distance.ZERO,
             travelledPathEnd = Distance.ZERO
         ))
+    }
+
+    override fun toString(): String {
+        return String.format("currentBlock=%s, lookahead=%s", getCurrentBlock(), getLookahead())
     }
 }
 

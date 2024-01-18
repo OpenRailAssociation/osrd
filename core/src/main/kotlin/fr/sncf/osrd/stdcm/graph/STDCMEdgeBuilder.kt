@@ -4,6 +4,7 @@ import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
+import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import java.util.*
@@ -112,7 +113,7 @@ data class STDCMEdgeBuilder internal constructor(
                     .map { delayNeeded -> makeSingleEdge(delayNeeded) }
                     .filter { obj -> Objects.nonNull(obj) }
                     .toList() as Collection<STDCMEdge>
-        } catch (_: DelayManager.NotEnoughLookaheadError) {
+        } catch (_: BlockAvailabilityInterface.NotEnoughLookaheadError) {
             // More lookahead required, extend and repeat for each new path
             infraExplorer.cloneAndExtendLookahead()
                 .flatMap { copy(infraExplorer=it).makeAllEdges() }

@@ -72,7 +72,10 @@ class STDCMGraph(
             STDCMEdgeBuilder.fromNode(this, node, node.infraExplorer).makeAllEdges()
         else {
             val res = ArrayList<STDCMEdge>()
-            val extendedPaths = node.infraExplorer.cloneAndExtendLookahead()
+            val extendedPaths = if (node.infraExplorer.getLookahead().size == 0)
+                node.infraExplorer.cloneAndExtendLookahead()
+            else
+                listOf(node.infraExplorer.clone())
             for (newPath in extendedPaths) {
                 newPath.moveForward()
                 newPath.addEnvelope(node.previousEdge.envelope)
