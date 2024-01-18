@@ -45,11 +45,7 @@ abstract class GenericBlockAvailability : BlockAvailabilityInterface {
             generateResourcesForPath(infraExplorer, startOffset, endOffset)
                 ?: return BlockAvailabilityInterface.NotEnoughLookahead()
         // startTime refers to the time at startOffset, we need to offset it
-        val pathStartTime =
-            startTime -
-                infraExplorer
-                    .getFullEnvelope()
-                    .interpolateTotalTimeClamp(startOffset.distance.meters)
+        val pathStartTime = startTime - infraExplorer.interpolateTimeClamp(startOffset)
         val unavailability = findMinimumDelay(infraExplorer, resourceUses, pathStartTime)
         return unavailability ?: findMaximumDelay(infraExplorer, resourceUses, pathStartTime)
     }
