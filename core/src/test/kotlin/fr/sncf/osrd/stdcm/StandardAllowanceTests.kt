@@ -330,7 +330,7 @@ class StandardAllowanceTests {
         occupancyTest(res, occupancyGraph, TIME_STEP)
         val thirdBlockEntryTime = (res.departureTime
                 + res.envelope.interpolateTotalTime(11000.0))
-        Assertions.assertEquals(1000.0, thirdBlockEntryTime, 2 * TIME_STEP)
+        Assertions.assertEquals(1000.0, thirdBlockEntryTime, 3 * TIME_STEP) // Actually 3 allowances are built
     }
 
     /** Tests a simple path with no conflict, with a time per distance allowance and very low value  */

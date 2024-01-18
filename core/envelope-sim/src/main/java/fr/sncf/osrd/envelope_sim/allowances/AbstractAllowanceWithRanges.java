@@ -8,7 +8,10 @@ import static java.lang.Math.abs;
 
 import com.carrotsearch.hppc.DoubleArrayList;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.envelope.*;
+import fr.sncf.osrd.envelope.Envelope;
+import fr.sncf.osrd.envelope.EnvelopeAttr;
+import fr.sncf.osrd.envelope.EnvelopeBuilder;
+import fr.sncf.osrd.envelope.EnvelopeSpeedCap;
 import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.envelope.part.EnvelopePartBuilder;
@@ -142,7 +145,7 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
         return res;
     }
 
-    private record RangePercentage(AllowanceRange range, double percentage) {
+    private record RangeBaseTime(AllowanceRange range, double baseTime) {
     }
 
     /**
@@ -163,23 +166,20 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
             imposedTransitionSpeeds[i] = NaN;
         imposedTransitionSpeeds[ranges.size()] = envelopeRegion.getEndSpeed();
 
-        // build an array of (range, percentage) in order to sort the array rangeOrder by ascending percentage
-        var rangePercentages = new RangePercentage[ranges.size()];
+        // build an array of (range, baseTime) in order to sort the array rangeOrder by ascending base time
+        var baseTimes = new RangeBaseTime[ranges.size()];
         for (var i = 0; i < ranges.size(); i++) {
             var range = ranges.get(i);
-            var percentage = range.value.getAllowanceRatio(
-                    envelopeRegion.getTimeBetween(range.beginPos, range.endPos),
-                    range.endPos - range.beginPos
-            );
-            rangePercentages[i] = new RangePercentage(range, percentage);
+            var baseTime = envelopeRegion.getTimeBetween(range.beginPos, range.endPos);
+            baseTimes[i] = new RangeBaseTime(range, baseTime);
         }
 
         // the order in which the ranges should be computed
-        // ranges are computed with increasing percentage values
+        // ranges are computed with increasing baseTime values
         var rangeOrder = new Integer[ranges.size()];
         for (var i = 0; i < ranges.size(); i++)
             rangeOrder[i] = i;
-        Arrays.sort(rangeOrder, Comparator.comparingDouble(rangeIndex -> rangePercentages[rangeIndex].percentage));
+        Arrays.sort(rangeOrder, Comparator.comparingDouble(rangeIndex -> baseTimes[rangeIndex].baseTime));
 
         var res = new Envelope[ranges.size()];
 
@@ -190,10 +190,13 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
             var envelopeRange = Envelope.make(envelopeRegion.slice(range.beginPos, range.endPos));
             var imposedBeginSpeed = imposedTransitionSpeeds[rangeIndex];
             var imposedEndSpeed = imposedTransitionSpeeds[rangeIndex + 1];
+            var tolerance = context.timeStep * envelopeRange.getTotalTime() / envelopeRegion.getTotalTime();
             var allowanceRange =
-                    computeAllowanceRange(envelopeRange, context, range.value, imposedBeginSpeed, imposedEndSpeed);
+                    computeAllowanceRange(envelopeRange, context, range.value, imposedBeginSpeed, imposedEndSpeed,
+                            tolerance);
             // memorize the beginning and end speeds
-            imposedTransitionSpeeds[rangeIndex] = allowanceRange.getBeginSpeed();
+            imposedTransitionSpeeds[rangeIndex] =
+                    allowanceRange.getBeginSpeed(); // shouldn't we check if it's the same ?
             imposedTransitionSpeeds[rangeIndex + 1] = allowanceRange.getEndSpeed();
             res[rangeIndex] = allowanceRange;
         }
@@ -209,8 +212,8 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
                                            EnvelopeSimContext context,
                                            AllowanceValue value,
                                            double imposedRangeBeginSpeed,
-                                           double imposedRangeEndSpeed) {
-
+                                           double imposedRangeEndSpeed,
+                                           double tolerance) {
         // compute the added time for all the allowance range
         var baseTime = envelopeRange.getTotalTime();
         var baseDistance = envelopeRange.getTotalDistance();
@@ -261,8 +264,10 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
             var imposedEndSpeed = sectionEndPos == rangeEndPos ? imposedRangeEndSpeed : NaN;
 
             logger.debug("  computing section n°{}", i + 1);
+            var distributedTolerance = tolerance * sectionRatio;
             var allowanceSection =
-                    computeAllowanceSection(section, context, targetTime, imposedBeginSpeed, imposedEndSpeed);
+                    computeAllowanceSection(section, context, targetTime, imposedBeginSpeed, imposedEndSpeed,
+                            distributedTolerance);
             assert abs(allowanceSection.getTotalTime() - targetTime) <= context.timeStep;
             builder.addEnvelope(allowanceSection);
         }
@@ -274,7 +279,8 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
                                              EnvelopeSimContext context,
                                              double targetTime,
                                              double imposedBeginSpeed,
-                                             double imposedEndSpeed) {
+                                             double imposedEndSpeed,
+                                             double tolerance) {
         // perform a binary search
         var initialLowBound = computeInitialLowBound(envelopeSection);
         var initialHighBound = computeInitialHighBound(envelopeSection, context.rollingStock);
@@ -282,9 +288,6 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
             // This can happen when capacity speed limit > max speed. We know in advance no solution can be found.
             throw new OSRDError(ErrorType.AllowanceConvergenceTooMuchTime);
         }
-
-        // Reduce tolerance when there are several ranges, so that the error doesn't add up to more than a time step
-        var tolerance = context.timeStep / ((float) ranges.size());
 
         Envelope res = null;
         OSRDError lastError = null;
