@@ -3,7 +3,6 @@ package fr.sncf.osrd.stdcm.preprocessing.implementation
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.conflicts.IncrementalRequirementEnvelopeAdapter
 import fr.sncf.osrd.conflicts.SpacingRequirementAutomaton
-import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
 import fr.sncf.osrd.envelope_utils.DoubleBinarySearch
 import fr.sncf.osrd.sim_infra.api.Path
 import fr.sncf.osrd.sim_infra.api.ZoneId
@@ -54,10 +53,8 @@ data class BlockAvailability(
         val res = mutableListOf<ResourceUse>()
         val resources = spacingGenerator.processPathUpdate()
         for (resource in resources) {
-            val resourceStartOffset =
-                getEnvelopeOffsetFromTime(infraExplorer.getFullEnvelope(), resource.beginTime)
-            val resourceEndOffset =
-                getEnvelopeOffsetFromTime(infraExplorer.getFullEnvelope(), resource.endTime)
+            val resourceStartOffset = getEnvelopeOffsetFromTime(infraExplorer, resource.beginTime)
+            val resourceEndOffset = getEnvelopeOffsetFromTime(infraExplorer, resource.endTime)
             if (resourceStartOffset > endOffset || resourceEndOffset < startOffset)
                 continue // The resource use is outside the considered range
             res.add(
@@ -81,15 +78,9 @@ data class BlockAvailability(
         val zoneResourceUse = resource as ZoneResourceUse
         for (scheduledRequirement in requirements[zoneResourceUse.zoneId] ?: listOf()) {
             val resourceStartOffset =
-                getEnvelopeOffsetFromTime(
-                    infraExplorer.getFullEnvelope(),
-                    scheduledRequirement.beginTime
-                )
+                getEnvelopeOffsetFromTime(infraExplorer, scheduledRequirement.beginTime)
             val resourceEndOffset =
-                getEnvelopeOffsetFromTime(
-                    infraExplorer.getFullEnvelope(),
-                    scheduledRequirement.endTime
-                )
+                getEnvelopeOffsetFromTime(infraExplorer, scheduledRequirement.endTime)
             res.add(
                 ZoneResourceUse(
                     resourceStartOffset,
@@ -107,12 +98,15 @@ data class BlockAvailability(
      * Turns a time into an offset on an envelope with a binary search. Can be optimized if needed.
      */
     private fun getEnvelopeOffsetFromTime(
-        envelope: EnvelopeTimeInterpolate,
+        explorer: InfraExplorerWithEnvelope,
         time: Double
     ): Offset<Path> {
+        val envelope = explorer.getFullEnvelope()
         val search = DoubleBinarySearch(envelope.beginPos, envelope.endPos, time, 2.0, false)
         while (!search.complete()) search.feedback(envelope.interpolateTotalTimeClamp(search.input))
-        return Offset(Distance.fromMeters(search.result))
+        return explorer
+            .getIncrementalPath()
+            .fromTravelledPath(Offset(Distance.fromMeters(search.result)))
     }
 }
 
