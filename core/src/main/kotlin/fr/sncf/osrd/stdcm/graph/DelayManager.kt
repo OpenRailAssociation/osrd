@@ -2,8 +2,6 @@ package fr.sncf.osrd.stdcm.graph
 
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope_sim.allowances.LinearAllowance
-import fr.sncf.osrd.reporting.exceptions.ErrorType
-import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
@@ -60,7 +58,7 @@ internal constructor(
                     is BlockAvailabilityInterface.Unavailable -> {
                         availability.duration + internalMargin * 2
                     }
-                    else -> throw OSRDError(ErrorType.InvalidSTDCMDelayError)
+                    else -> throw NotEnoughLookaheadError()
                 }
         }
         return res
@@ -160,4 +158,6 @@ internal constructor(
             startTime
         )
     }
+
+    class NotEnoughLookaheadError : RuntimeException()
 }
