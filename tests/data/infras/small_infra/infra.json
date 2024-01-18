@@ -27,7 +27,7 @@
                 },
                 "identifier": {
                     "name": "South_West_station",
-                    "uic": 0
+                    "uic": 1
                 }
             }
         },
@@ -49,7 +49,7 @@
                 },
                 "identifier": {
                     "name": "West_station",
-                    "uic": 0
+                    "uic": 2
                 }
             }
         },
@@ -83,7 +83,7 @@
                 },
                 "identifier": {
                     "name": "Mid_West_station",
-                    "uic": 0
+                    "uic": 3
                 }
             }
         },
@@ -109,7 +109,7 @@
                 },
                 "identifier": {
                     "name": "Mid_East_station",
-                    "uic": 0
+                    "uic": 4
                 }
             }
         },
@@ -135,7 +135,7 @@
                 },
                 "identifier": {
                     "name": "North_station",
-                    "uic": 0
+                    "uic": 5
                 }
             }
         },
@@ -157,7 +157,7 @@
                 },
                 "identifier": {
                     "name": "South_station",
-                    "uic": 0
+                    "uic": 6
                 }
             }
         },
@@ -183,7 +183,7 @@
                 },
                 "identifier": {
                     "name": "North_East_station",
-                    "uic": 0
+                    "uic": 7
                 }
             }
         },
@@ -205,7 +205,7 @@
                 },
                 "identifier": {
                     "name": "South_East_station",
-                    "uic": 0
+                    "uic": 8
                 }
             }
         }
