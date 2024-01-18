@@ -5,7 +5,9 @@ import fr.sncf.osrd.graph.PathfindingEdgeLocationId
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.BlockInfra
+import fr.sncf.osrd.sim_infra.api.Path
 import fr.sncf.osrd.sim_infra.api.RawInfra
+import fr.sncf.osrd.utils.units.Offset
 
 /**
  * Explore the infra while running simulations. Builds one global envelope and path from the start
@@ -22,6 +24,12 @@ interface InfraExplorerWithEnvelope : InfraExplorer {
 
     /** Adds an envelope. */
     fun addEnvelope(envelope: EnvelopeTimeInterpolate): InfraExplorerWithEnvelope
+
+    /**
+     * Calls `InterpolateTotalTimeClamp` on the underlying envelope, taking the travelled path
+     * offset into account.
+     */
+    fun interpolateTimeClamp(pathOffset: Offset<Path>): Double
 
     /**
      * Only shallow copies are made. Used to enable backtracking by cloning explorers at each step.
