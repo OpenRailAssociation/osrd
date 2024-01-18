@@ -1,6 +1,7 @@
 package fr.sncf.osrd.conflicts
 
 import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
+import fr.sncf.osrd.sim_infra.api.Path
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.units.Offset
 import kotlin.math.max

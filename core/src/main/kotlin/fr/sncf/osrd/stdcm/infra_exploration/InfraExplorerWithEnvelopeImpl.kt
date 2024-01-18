@@ -2,6 +2,8 @@ package fr.sncf.osrd.stdcm.infra_exploration
 
 import fr.sncf.osrd.envelope.EnvelopeConcat
 import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
+import fr.sncf.osrd.sim_infra.api.Path
+import fr.sncf.osrd.utils.units.Offset
 
 data class InfraExplorerWithEnvelopeImpl(
     private val infraExplorer: InfraExplorer,
@@ -24,6 +26,12 @@ data class InfraExplorerWithEnvelopeImpl(
     override fun addEnvelope(envelope: EnvelopeTimeInterpolate): InfraExplorerWithEnvelope {
         envelopes.add(envelope)
         return this
+    }
+
+    override fun interpolateTimeClamp(pathOffset: Offset<Path>): Double {
+        return getFullEnvelope().interpolateTotalTimeClamp(
+            getIncrementalPath().toTravelledPath(pathOffset).distance.meters
+        )
     }
 
     override fun clone(): InfraExplorerWithEnvelope {

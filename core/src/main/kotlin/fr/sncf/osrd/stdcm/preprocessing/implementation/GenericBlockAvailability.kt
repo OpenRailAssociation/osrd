@@ -1,7 +1,6 @@
 package fr.sncf.osrd.stdcm.preprocessing.implementation
 
 import fr.sncf.osrd.sim_infra.api.Path
-import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.utils.units.Offset
@@ -37,7 +36,7 @@ abstract class GenericBlockAvailability : BlockAvailabilityInterface {
         val resourceUses = generateResourcesForPath(infraExplorer, startOffset, endOffset)
             ?: return BlockAvailabilityInterface.NotEnoughLookahead()
         // startTime refers to the time at startOffset, we need to offset it
-        val pathStartTime = startTime - infraExplorer.getFullEnvelope().interpolateTotalTimeClamp(startOffset.distance.meters)
+        val pathStartTime = startTime - infraExplorer.interpolateTimeClamp(startOffset)
         val unavailability = findMinimumDelay(infraExplorer, resourceUses, pathStartTime)
         return unavailability ?: findMaximumDelay(infraExplorer, resourceUses, pathStartTime)
     }
