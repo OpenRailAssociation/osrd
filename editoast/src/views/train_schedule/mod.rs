@@ -199,7 +199,8 @@ impl From<TrainSchedulePatch> for TrainScheduleChangeset {
     }
 }
 
-#[derive(ToSchema)]
+#[derive(ToSchema, Deserialize)]
+#[serde(transparent)]
 struct PatchMultiplePayload(#[schema(min_items = 1)] Vec<TrainSchedulePatch>);
 
 /// Update multiple train schedules at once and re-run simulations accordingly
@@ -213,10 +214,10 @@ struct PatchMultiplePayload(#[schema(min_items = 1)] Vec<TrainSchedulePatch>);
 #[patch("")]
 async fn patch_multiple(
     db_pool: Data<DbPool>,
-    train_schedules_changesets: Json<Vec<TrainSchedulePatch>>,
+    train_schedules_changesets: Json<PatchMultiplePayload>,
     core: Data<CoreClient>,
 ) -> Result<HttpResponse> {
-    let train_schedules_changesets = train_schedules_changesets.into_inner();
+    let train_schedules_changesets = train_schedules_changesets.into_inner().0;
     if train_schedules_changesets.is_empty() {
         return Err(TrainScheduleError::NoTrainSchedules.into());
     }
