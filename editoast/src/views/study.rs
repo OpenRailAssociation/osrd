@@ -4,11 +4,11 @@ use crate::error::Result;
 use crate::models::Create;
 use crate::models::Delete;
 use crate::models::List;
-use crate::models::Project;
 use crate::models::Retrieve;
 use crate::models::Study;
 use crate::models::StudyWithScenarios;
 use crate::models::Update;
+use crate::modelsv2::Project;
 use crate::views::pagination::{PaginatedResponse, PaginationQueryParam};
 use crate::views::projects::ProjectError;
 use crate::views::projects::ProjectIdParam;
@@ -146,15 +146,17 @@ async fn create(
 ) -> Result<Json<StudyResponse>> {
     let project_id = project.into_inner();
 
-    let mut conn = db_pool.get().await?;
+    let conn = &mut db_pool.get().await?;
 
     let (study, project) = conn
         .transaction::<_, InternalError, _>(|conn| {
             async {
                 // Check if project exists
-                let Some(project) = Project::retrieve_conn(conn, project_id).await? else {
-                    return Err(ProjectError::NotFound { project_id }.into());
-                };
+                use crate::modelsv2::Retrieve;
+                let mut project = Project::retrieve_or_fail(conn, project_id, || {
+                    ProjectError::NotFound { project_id }
+                })
+                .await?;
 
                 // Create study
                 let study: Study = data
@@ -164,11 +166,7 @@ async fn create(
                     .await?;
 
                 // Update project last_modification field
-                let project = project
-                    .clone()
-                    .update_last_modified_conn(conn)
-                    .await?
-                    .expect("Project should exist");
+                project.update_last_modified(conn).await?;
 
                 Ok((study, project))
             }
@@ -205,10 +203,11 @@ pub struct StudyIdParam {
 async fn delete(path: Path<(i64, i64)>, db_pool: Data<DbPool>) -> Result<HttpResponse> {
     let (project_id, study_id) = path.into_inner();
     // Check if project exists
-    let project = match Project::retrieve(db_pool.clone(), project_id).await? {
-        None => return Err(ProjectError::NotFound { project_id }.into()),
-        Some(project) => project,
-    };
+    let conn = &mut db_pool.get().await?;
+    use crate::modelsv2::Retrieve;
+    let mut project =
+        Project::retrieve_or_fail(conn, project_id, || ProjectError::NotFound { project_id })
+            .await?;
 
     // Delete study
     if !Study::delete(db_pool.clone(), study_id).await? {
@@ -216,8 +215,7 @@ async fn delete(path: Path<(i64, i64)>, db_pool: Data<DbPool>) -> Result<HttpRes
     }
 
     // Update project last_modification field
-    let project = project.update_last_modified(db_pool).await?;
-    project.expect("Project should exist");
+    project.update_last_modified(conn).await?;
 
     Ok(HttpResponse::NoContent().finish())
 }
@@ -264,9 +262,11 @@ async fn get(db_pool: Data<DbPool>, path: Path<(i64, i64)>) -> Result<Json<Study
     let (project_id, study_id) = path.into_inner();
 
     // Check if project exists
-    let Some(project) = Project::retrieve(db_pool.clone(), project_id).await? else {
-        return Err(ProjectError::NotFound { project_id }.into());
-    };
+    let conn = &mut db_pool.get().await?;
+    use crate::modelsv2::Retrieve;
+    let project =
+        Project::retrieve_or_fail(conn, project_id, || ProjectError::NotFound { project_id })
+            .await?;
 
     // Return the study
     let study = match Study::retrieve(db_pool.clone(), study_id).await? {
@@ -344,14 +344,16 @@ async fn patch(
     db_pool: Data<DbPool>,
 ) -> Result<Json<StudyResponse>> {
     let (project_id, study_id) = path.into_inner();
-    let mut conn = db_pool.get().await?;
+    let conn = &mut db_pool.get().await?;
     let (study_scenarios, project) = conn
         .transaction::<_, InternalError, _>(|conn| {
             async {
                 // Check if project exists
-                let Some(project) = Project::retrieve_conn(conn, project_id).await? else {
-                    return Err(ProjectError::NotFound { project_id }.into());
-                };
+                use crate::modelsv2::Retrieve;
+                let mut project = Project::retrieve_or_fail(conn, project_id, || {
+                    ProjectError::NotFound { project_id }
+                })
+                .await?;
 
                 // Update study
                 let study: Study = data.into_inner().try_into()?;
@@ -363,11 +365,7 @@ async fn patch(
                 study.validate()?;
 
                 // Update project last_modification field
-                let project = project
-                    .clone()
-                    .update_last_modified_conn(conn)
-                    .await?
-                    .expect("Project should exist");
+                project.update_last_modified(conn).await?;
 
                 Ok((study.with_scenarios_conn(conn).await?, project))
             }
@@ -384,8 +382,8 @@ pub mod test {
     use crate::fixtures::tests::{
         db_pool, project, study_fixture_set, StudyFixtureSet, TestFixture,
     };
-    use crate::models::Project;
     use crate::models::Study;
+    use crate::modelsv2::Project;
     use crate::views::tests::create_test_service;
     use actix_http::Request;
     use actix_web::http::StatusCode;

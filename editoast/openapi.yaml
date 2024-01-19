@@ -3934,9 +3934,7 @@ components:
         objectives:
           type: string
         tags:
-          items:
-            type: string
-          type: array
+          $ref: '#/components/schemas/Tags'
       required:
       - id
       - name
@@ -3972,10 +3970,7 @@ components:
           maxLength: 4096
           type: string
         tags:
-          items:
-            maxLength: 255
-            type: string
-          type: array
+          $ref: '#/components/schemas/Tags'
       required:
       - name
       type: object
@@ -4008,11 +4003,9 @@ components:
           nullable: true
           type: string
         tags:
-          items:
-            maxLength: 255
-            type: string
+          allOf:
+          - $ref: '#/components/schemas/Tags'
           nullable: true
-          type: array
       type: object
     ProjectWithStudies:
       allOf:
@@ -5684,6 +5677,10 @@ components:
         required:
         - scenarios_count
         type: object
+    Tags:
+      items:
+        type: string
+      type: array
     Timetable:
       properties:
         id:

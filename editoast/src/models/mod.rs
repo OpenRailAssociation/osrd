@@ -1,7 +1,6 @@
 pub mod electrical_profiles;
 pub mod infra;
 pub mod pathfinding;
-mod projects;
 pub mod rolling_stock;
 mod scenario;
 mod study;
@@ -9,6 +8,7 @@ mod text_array;
 mod timetable;
 pub mod train_schedule;
 
+use crate::modelsv2::projects;
 use crate::DbPool;
 use crate::{error::Result, views::pagination::PaginatedResponse};
 use actix_web::web::Data;
@@ -18,7 +18,6 @@ use diesel_async::AsyncPgConnection as PgConnection;
 pub use self::pathfinding::*;
 pub use electrical_profiles::ElectricalProfileSet;
 pub use infra::Infra;
-pub use projects::{Ordering, Project, ProjectWithStudies};
 pub use rolling_stock::{LightRollingStockModel, RollingStockLiveryModel, RollingStockModel};
 pub use scenario::{Scenario, ScenarioWithCountTrains, ScenarioWithDetails};
 pub use study::{Study, StudyWithScenarios};

@@ -964,12 +964,7 @@ pub mod tests {
                 .clone()
                 .unwrap(),
             project_id: train_schedule_with_scenario.project.id(),
-            project_name: train_schedule_with_scenario
-                .project
-                .model
-                .name
-                .clone()
-                .unwrap(),
+            project_name: train_schedule_with_scenario.project.model.name.clone(),
         }];
         assert_response_error_type_match!(
             response,

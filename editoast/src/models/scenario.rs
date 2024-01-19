@@ -18,8 +18,8 @@ use editoast_derive::Model;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
-use super::projects::Ordering;
 use super::List;
+use crate::modelsv2::projects::Ordering;
 
 #[derive(
     Clone,
@@ -214,9 +214,9 @@ pub mod test {
     use crate::fixtures::tests::{db_pool, scenario_fixture_set, ScenarioFixtureSet, TestFixture};
     use crate::models::Delete;
     use crate::models::List;
-    use crate::models::Ordering;
     use crate::models::Retrieve;
     use crate::models::Timetable;
+    use crate::modelsv2::Ordering;
     use rstest::rstest;
 
     #[rstest]

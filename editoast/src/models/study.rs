@@ -1,6 +1,6 @@
 use crate::error::Result;
+use crate::models::TextArray;
 use crate::models::{Identifiable, Update};
-use crate::models::{Project, TextArray};
 use crate::tables::study;
 use crate::views::pagination::{Paginate, PaginatedResponse};
 use crate::DbPool;
@@ -20,8 +20,8 @@ use editoast_derive::Model;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
-use super::projects::Ordering;
 use super::List;
+use crate::modelsv2::projects::{Ordering, Project};
 
 #[derive(
     Clone,
@@ -194,8 +194,8 @@ pub mod test {
     use crate::fixtures::tests::{db_pool, study_fixture_set, StudyFixtureSet, TestFixture};
     use crate::models::Delete;
     use crate::models::List;
-    use crate::models::Ordering;
     use crate::models::Retrieve;
+    use crate::modelsv2::Ordering;
     use rstest::rstest;
 
     #[rstest]

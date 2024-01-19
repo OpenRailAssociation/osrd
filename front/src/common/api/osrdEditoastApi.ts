@@ -1762,6 +1762,7 @@ export type ElectrificationsOnPathResponse = {
   electrification_ranges: RangedValue[];
   warnings: InternalError[];
 };
+export type Tags = string[];
 export type Project = {
   budget: number;
   creation_date: string;
@@ -1772,7 +1773,7 @@ export type Project = {
   last_modification: string;
   name: string;
   objectives: string;
-  tags: string[];
+  tags: Tags;
 };
 export type ProjectWithStudies = Project & {
   studies_count: number;
@@ -1802,7 +1803,7 @@ export type ProjectCreateForm = {
   image?: number | null;
   name: string;
   objectives?: string;
-  tags?: string[];
+  tags?: Tags;
 };
 export type ProjectPatchForm = {
   budget?: number | null;
@@ -1812,7 +1813,7 @@ export type ProjectPatchForm = {
   image?: number | null;
   name?: string | null;
   objectives?: string | null;
-  tags?: string[] | null;
+  tags?: Tags | null;
 };
 export type Study = {
   actual_end_date?: string | null;
