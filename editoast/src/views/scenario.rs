@@ -2,9 +2,10 @@ use crate::decl_paginated_response;
 use crate::error::{InternalError, Result};
 use crate::models::train_schedule::LightTrainSchedule;
 use crate::models::{
-    Create, Delete, List, Project, Retrieve, ScenarioWithCountTrains, ScenarioWithDetails, Study,
-    Timetable, Update,
+    Create, Delete, List, Retrieve, ScenarioWithCountTrains, ScenarioWithDetails, Study, Timetable,
+    Update,
 };
+use crate::modelsv2::Project;
 use crate::views::pagination::{PaginatedResponse, PaginationQueryParam};
 use crate::views::projects::{ProjectError, ProjectIdParam};
 use crate::views::study::{StudyError, StudyIdParam};
@@ -138,10 +139,10 @@ async fn check_project_study_conn(
     project_id: i64,
     study_id: i64,
 ) -> Result<(Project, Study)> {
-    let project = match Project::retrieve_conn(conn, project_id).await? {
-        None => return Err(ProjectError::NotFound { project_id }.into()),
-        Some(project) => project,
-    };
+    use crate::modelsv2::Retrieve;
+    let project =
+        Project::retrieve_or_fail(conn, project_id, || ProjectError::NotFound { project_id })
+            .await?;
     let study = match Study::retrieve_conn(conn, study_id).await? {
         None => return Err(StudyError::NotFound { study_id }.into()),
         Some(study) => study,
@@ -172,7 +173,7 @@ async fn create(
 
     let mut conn = db_pool.get().await?;
     // Check if the project and the study exist
-    let (project, study) = check_project_study_conn(&mut conn, project_id, study_id).await?;
+    let (mut project, study) = check_project_study_conn(&mut conn, project_id, study_id).await?;
     let (project, study, scenarios_with_details) = conn
         .transaction::<_, InternalError, _>(|conn| {
             async {
@@ -196,11 +197,7 @@ async fn create(
                     .expect("Study should exist");
 
                 // Update project last_modification field
-                let project = project
-                    .clone()
-                    .update_last_modified_conn(conn)
-                    .await?
-                    .expect("Project should exist");
+                project.update_last_modified(conn).await?;
 
                 // Return study with list of scenarios
                 Ok((project, study, scenario.with_details_conn(conn).await?))
@@ -233,7 +230,7 @@ async fn delete(path: Path<(i64, i64, i64)>, db_pool: Data<DbPool>) -> Result<Ht
     let (project_id, study_id, scenario_id) = path.into_inner();
 
     // Check if the project and the study exist
-    let (project, study) = check_project_study(db_pool.clone(), project_id, study_id)
+    let (mut project, study) = check_project_study(db_pool.clone(), project_id, study_id)
         .await
         .unwrap();
 
@@ -243,8 +240,8 @@ async fn delete(path: Path<(i64, i64, i64)>, db_pool: Data<DbPool>) -> Result<Ht
     }
 
     // Update project last_modification field
-    let project = project.update_last_modified(db_pool.clone()).await?;
-    project.expect("Project should exist");
+    let conn = &mut db_pool.get().await?;
+    project.update_last_modified(conn).await?;
 
     // Update study last_modification field
     let study = study.update_last_modified(db_pool).await?;
@@ -297,7 +294,7 @@ async fn patch(
         .transaction::<_, InternalError, _>(|conn| {
             async {
                 // Check if project and study exist
-                let (project, study) = check_project_study_conn(conn, project_id, study_id)
+                let (mut project, study) = check_project_study_conn(conn, project_id, study_id)
                     .await
                     .unwrap();
                 // Update the scenario
@@ -313,11 +310,7 @@ async fn patch(
                     .await?
                     .expect("Study should exist");
                 // Update project last_modification field
-                let project = project
-                    .clone()
-                    .update_last_modified_conn(conn)
-                    .await?
-                    .expect("Project should exist");
+                project.update_last_modified(conn).await?;
                 Ok((project, study, scenario.with_details_conn(conn).await?))
             }
             .scope_boxed()

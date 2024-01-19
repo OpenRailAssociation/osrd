@@ -6,11 +6,11 @@ pub mod tests {
     use crate::models::train_schedule::Mrsp;
     use crate::models::{
         self, ElectricalProfileSet, Identifiable, Infra, Pathfinding, PathfindingChangeset,
-        Project, ResultPosition, ResultStops, ResultTrain, RollingStockLiveryModel,
-        RollingStockModel, Scenario, SimulationOutput, SimulationOutputChangeset, Study, Timetable,
-        TrainSchedule,
+        ResultPosition, ResultStops, ResultTrain, RollingStockLiveryModel, RollingStockModel,
+        Scenario, SimulationOutput, SimulationOutputChangeset, Study, Timetable, TrainSchedule,
     };
-    use crate::modelsv2::{self, Document, Model};
+    use crate::modelsv2::projects::Tags;
+    use crate::modelsv2::{self, Document, Model, Project};
     use crate::schema::electrical_profiles::{ElectricalProfile, ElectricalProfileSetData};
     use crate::schema::{RailJson, TrackRange};
     use crate::views::infra::InfraForm;
@@ -272,17 +272,16 @@ pub mod tests {
 
     #[fixture]
     pub async fn project(db_pool: Data<DbPool>) -> TestFixture<Project> {
-        let project_model = Project {
-            name: Some("test_project".into()),
-            objectives: Some("".into()),
-            description: Some("".into()),
-            funders: Some("".into()),
-            budget: Some(0),
-            tags: Some(vec![]),
-            creation_date: Some(Utc::now().naive_utc()),
-            ..Default::default()
-        };
-        TestFixture::create_legacy(project_model, db_pool).await
+        let project_model = Project::changeset()
+            .name("test_project".to_owned())
+            .objectives("".to_owned())
+            .description("".to_owned())
+            .funders("".to_owned())
+            .budget(0)
+            .creation_date(Utc::now().naive_utc())
+            .last_modification(Utc::now().naive_utc())
+            .tags(Tags::default());
+        TestFixture::create(project_model, db_pool).await
     }
 
     #[fixture]

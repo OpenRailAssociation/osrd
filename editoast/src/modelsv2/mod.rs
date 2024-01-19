@@ -1,6 +1,9 @@
 pub mod documents;
 pub mod infra_objects;
+pub mod projects;
 pub mod railjson;
+
+pub use projects::{Ordering, Project};
 
 pub use documents::Document;
 pub use infra_objects::*;

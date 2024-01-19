@@ -1,7 +1,9 @@
 use crate::decl_paginated_response;
 use crate::error::Result;
-use crate::models::{Create, Delete, List, Ordering, Project, ProjectWithStudies, Retrieve};
-use crate::modelsv2::Document;
+use crate::models::List;
+use crate::modelsv2::{
+    projects::Tags, Changeset, Create, Document, Model, Ordering, Project, Retrieve,
+};
 use crate::views::pagination::{PaginatedResponse, PaginationQueryParam};
 use crate::DbPool;
 
@@ -35,6 +37,7 @@ crate::schemas! {
     ProjectCreateForm,
     ProjectPatchForm,
     study::schemas(),
+    ProjectWithStudies,
 }
 
 #[derive(Debug, Error, EditoastError)]
@@ -79,27 +82,25 @@ struct ProjectCreateForm {
     pub image: Option<i64>,
     #[serde(default)]
     #[schema(max_length = 255)]
-    pub tags: Vec<String>,
+    pub tags: Tags,
 }
 
-impl From<ProjectCreateForm> for Project {
+impl From<ProjectCreateForm> for Changeset<Project> {
     fn from(project: ProjectCreateForm) -> Self {
-        Project {
-            name: Some(project.name),
-            description: Some(project.description),
-            objectives: Some(project.objectives),
-            funders: Some(project.funders),
-            budget: Some(project.budget),
-            image: project.image.map(Some),
-            tags: Some(project.tags),
-            creation_date: Some(Utc::now().naive_utc()),
-            ..Default::default()
-        }
+        Project::changeset()
+            .name(project.name)
+            .description(project.description)
+            .objectives(project.objectives)
+            .funders(project.funders)
+            .budget(project.budget)
+            .image(project.image)
+            .tags(project.tags)
+            .creation_date(Utc::now().naive_utc())
+            .last_modification(Utc::now().naive_utc())
     }
 }
 
 async fn check_image_content(db_pool: Data<DbPool>, document_key: i64) -> Result<()> {
-    use crate::modelsv2::Retrieve;
     let conn = &mut db_pool.get().await?;
     let doc = Document::retrieve_or_fail(conn, document_key, || ProjectError::ImageNotFound {
         document_key,
@@ -115,6 +116,22 @@ async fn check_image_content(db_pool: Data<DbPool>, document_key: i64) -> Result
     Ok(())
 }
 
+#[derive(Debug, Clone, Serialize, ToSchema)]
+pub struct ProjectWithStudies {
+    #[serde(flatten)]
+    project: Project,
+    studies_count: i64,
+}
+
+impl ProjectWithStudies {
+    pub fn new_from_project(project: Project, studies_count: i64) -> Self {
+        Self {
+            project,
+            studies_count,
+        }
+    }
+}
+
 /// Create a new project
 #[utoipa::path(
     tag = "projects",
@@ -128,15 +145,14 @@ async fn create(
     db_pool: Data<DbPool>,
     data: Json<ProjectCreateForm>,
 ) -> Result<Json<ProjectWithStudies>> {
-    let project: Project = data.into_inner().into();
-    if let Some(Some(image)) = project.image {
+    let project_create_form = data.into_inner();
+    if let Some(image) = project_create_form.image {
         check_image_content(db_pool.clone(), image).await?;
     }
-    let project = project.create(db_pool).await?;
-    let project_with_studies = ProjectWithStudies {
-        project,
-        studies_count: 0,
-    };
+    let project: Changeset<Project> = project_create_form.into();
+    let conn = &mut db_pool.get().await?;
+    let project = project.create(conn).await?;
+    let project_with_studies = ProjectWithStudies::new_from_project(project, 0);
 
     Ok(Json(project_with_studies))
 }
@@ -162,9 +178,19 @@ async fn list(
         .warn_page_size(100)
         .unpack();
     let ordering = params.ordering.clone();
-    let projects = ProjectWithStudies::list(db_pool, page, per_page, ordering).await?;
+    let projects = Project::list(db_pool.clone(), page, per_page, ordering).await?;
+    let mut results = Vec::new();
+    for project in projects.results.into_iter() {
+        let studies_count = project.studies_count(db_pool.clone()).await?;
+        results.push(ProjectWithStudies::new_from_project(project, studies_count));
+    }
 
-    Ok(Json(projects))
+    Ok(Json(PaginatedResponse {
+        count: projects.count,
+        previous: projects.previous,
+        next: projects.next,
+        results,
+    }))
 }
 
 // Documentation struct
@@ -187,12 +213,15 @@ pub struct ProjectIdParam {
 #[get("")]
 async fn get(db_pool: Data<DbPool>, project: Path<i64>) -> Result<Json<ProjectWithStudies>> {
     let project_id = project.into_inner();
-    let project = match Project::retrieve(db_pool.clone(), project_id).await? {
-        Some(project) => project,
-        None => return Err(ProjectError::NotFound { project_id }.into()),
-    };
-    let project_studies = project.with_studies(db_pool).await?;
-    Ok(Json(project_studies))
+    let conn = &mut db_pool.get().await?;
+    let project =
+        Project::retrieve_or_fail(conn, project_id, || ProjectError::NotFound { project_id })
+            .await?;
+    let studies_count = project.studies_count(db_pool).await?;
+    Ok(Json(ProjectWithStudies::new_from_project(
+        project,
+        studies_count,
+    )))
 }
 
 /// Delete a project
@@ -207,7 +236,8 @@ async fn get(db_pool: Data<DbPool>, project: Path<i64>) -> Result<Json<ProjectWi
 #[delete("")]
 async fn delete(project: Path<i64>, db_pool: Data<DbPool>) -> Result<HttpResponse> {
     let project_id = project.into_inner();
-    if Project::delete(db_pool, project_id).await? {
+    let conn = &mut db_pool.get().await?;
+    if Project::delete_and_prune_document(conn, project_id).await? {
         Ok(HttpResponse::NoContent().finish())
     } else {
         Err(ProjectError::NotFound { project_id }.into())
@@ -229,22 +259,19 @@ struct ProjectPatchForm {
     /// The id of the image document
     pub image: Option<i64>,
     #[schema(max_length = 255)]
-    pub tags: Option<Vec<String>>,
+    pub tags: Option<Tags>,
 }
 
-impl ProjectPatchForm {
-    fn into_project(self, project_id: i64) -> Project {
-        Project {
-            id: Some(project_id),
-            name: self.name,
-            description: self.description,
-            objectives: self.objectives,
-            funders: self.funders,
-            budget: self.budget,
-            image: Some(self.image),
-            tags: self.tags,
-            ..Default::default()
-        }
+impl From<ProjectPatchForm> for Changeset<Project> {
+    fn from(project: ProjectPatchForm) -> Self {
+        Project::changeset()
+            .flat_name(project.name)
+            .flat_description(project.description)
+            .flat_objectives(project.objectives)
+            .flat_funders(project.funders)
+            .flat_budget(project.budget)
+            .flat_image(Some(project.image))
+            .flat_tags(project.tags)
     }
 }
 
@@ -264,27 +291,29 @@ impl ProjectPatchForm {
 #[patch("")]
 async fn patch(
     data: Json<ProjectPatchForm>,
-    project: Path<i64>,
+    project_id: Path<i64>,
     db_pool: Data<DbPool>,
 ) -> Result<Json<ProjectWithStudies>> {
     let data = data.into_inner();
-    let project_id = project.into_inner();
-    let project = data.into_project(project_id);
-    if let Some(Some(image)) = project.image {
+    let project_id = project_id.into_inner();
+    if let Some(image) = data.image {
         check_image_content(db_pool.clone(), image).await?;
     }
-    let project = match project.update(db_pool.clone()).await? {
-        Some(project) => project,
-        None => return Err(ProjectError::NotFound { project_id }.into()),
-    };
-    let project_studies = project.with_studies(db_pool).await?;
-    Ok(Json(project_studies))
+    let project_changeset: Changeset<Project> = data.into();
+    let conn = &mut db_pool.get().await?;
+    let project = Project::update_and_prune_document(conn, project_changeset, project_id).await?;
+    let studies_count = project.studies_count(db_pool).await?;
+    Ok(Json(ProjectWithStudies::new_from_project(
+        project,
+        studies_count,
+    )))
 }
 
 #[cfg(test)]
 pub mod test {
     use super::*;
     use crate::fixtures::tests::{db_pool, project, TestFixture};
+    use crate::modelsv2::DeleteStatic;
     use crate::views::tests::create_test_service;
     use actix_http::Request;
     use actix_web::http::StatusCode;
@@ -309,7 +338,8 @@ pub mod test {
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
         let project: Project = read_body_json(response).await;
-        Project::delete(db_pool, project.id.unwrap()).await.unwrap();
+        let conn = &mut db_pool.get().await.unwrap();
+        Project::delete_static(conn, project.id).await.unwrap();
     }
 
     #[rstest]
