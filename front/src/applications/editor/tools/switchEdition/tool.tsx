@@ -7,6 +7,7 @@ import { save } from 'reducers/editor';
 import { SwitchEntity, SwitchType } from 'types';
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
 
+import { filter, groupBy } from 'lodash';
 import { NEW_ENTITY_ID } from '../../data/utils';
 import { Tool } from '../editorContextTypes';
 import { DEFAULT_COMMON_TOOL_STATE } from '../commonToolState';
@@ -49,7 +50,19 @@ const SwitchEditionTool: Tool<SwitchEditionState> = {
         icon: AiFillSave,
         labelTranslationKey: 'Editor.tools.switch-edition.actions.save-switch',
         isDisabled({ isLoading, state }) {
-          return state.portEditionState.type !== 'idle' || isLoading || false;
+          const portWithTracks = filter(state.entity?.properties?.ports ?? {}, (p) => !!p?.track);
+          const portsKeys = Object.keys(state.entity?.properties?.ports ?? {});
+          const detectedDuplicates = filter(
+            groupBy(portWithTracks, 'track'),
+            (v, _) => v.length > 1
+          );
+          return (
+            state.portEditionState.type !== 'idle' ||
+            portWithTracks.length !== portsKeys.length ||
+            !!detectedDuplicates.length ||
+            isLoading ||
+            false
+          );
         },
         async onClick({ setIsFormSubmited }) {
           if (setIsFormSubmited) {

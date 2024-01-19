@@ -1,10 +1,10 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import Select from 'react-select';
 import { useTranslation } from 'react-i18next';
 import { FaMapMarkedAlt, FaTimesCircle } from 'react-icons/fa';
 import type { FieldProps } from '@rjsf/core';
-import { keyBy } from 'lodash';
+import { isEmpty, isNil, keyBy } from 'lodash';
 
 import EditorContext from 'applications/editor/context';
 import { getEntity } from 'applications/editor/data/api';
@@ -29,6 +29,22 @@ const TrackSectionEndpointSelector = ({ schema, formData, onChange, name }: Fiel
   const { state, setState } = useContext(
     EditorContext
   ) as ExtendedEditorContextType<SwitchEditionState>;
+
+  const duplicateWith = useMemo(() => {
+    const allPorts = Object.entries(state.entity.properties?.ports ?? {});
+    const ports = allPorts
+      .filter(([_, v]) => !isNil(v) && !isEmpty(v))
+      .map(([k, v]) => ({
+        ...v,
+        port: k,
+        name: `port::${k}`,
+      }));
+
+    if (!ports.length) return [];
+    const currentPort = ports.find((p) => p.name === name);
+    return ports.filter((p) => p.name !== name && p.track === currentPort?.track);
+  }, [state.entity.properties]);
+
   const { t } = useTranslation();
   const infraID = useInfraID();
 
@@ -89,6 +105,14 @@ const TrackSectionEndpointSelector = ({ schema, formData, onChange, name }: Fiel
     <div className="mb-4">
       {schema.title && <h5>{schema.title}</h5>}
       {schema.description && <p>{schema.description}</p>}
+      {duplicateWith.map(({ track, port }, i) => (
+        <div className="text-danger small font-weight-bold" key={`${name}-${track}-${i}`}>
+          {t('Editor.tools.switch-edition.duplicate-errors', {
+            track,
+            port,
+          })}
+        </div>
+      ))}
       <div className="d-flex flex-row align-items-center mb-2">
         <div className="flex-grow-1 flex-shrink-1 mr-2">
           {trackSection ? (

@@ -429,6 +429,7 @@
           "pick-track-cancel": "Undo line selection",
           "save-switch": "Save the switch"
         },
+        "duplicate-errors": "The track {{track}} is already used by the port {{port}}",
         "endpoint": "Endpoint:",
         "help": {
           "no-move": "Switches cannot be moved, and are automatically placed on their first port.",

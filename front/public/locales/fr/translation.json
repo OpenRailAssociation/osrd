@@ -429,6 +429,7 @@
           "pick-track-cancel": "Annuler la sélection d'une ligne",
           "save-switch": "Sauvegarder l'aiguillage"
         },
+        "duplicate-errors": "La voie {{track}} est déjà utilisée par le port {{port}}",
         "endpoint": "Extrémité :",
         "help": {
           "no-move": "Les aiguillages ne peuvent pas être déplacés, et sont automatiquement placés sur leur premier port.",
