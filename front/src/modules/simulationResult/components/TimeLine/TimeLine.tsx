@@ -4,8 +4,8 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { SimulationReport } from 'common/api/osrdEditoastApi';
 import { getDirection, gridX } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
 import { useChartSynchronizer } from 'modules/simulationResult/components/ChartHelpers/ChartSynchronizer';
-import { Chart } from 'reducers/osrdsimulation/types';
 import { sec2datetime } from 'utils/timeManipulation';
+import { TimeScaleDomain } from 'modules/simulationResult/consts';
 
 const drawTrain = (
   train: SimulationReport,
@@ -31,13 +31,18 @@ const drawTrain = (
 };
 
 type TimeLineProps = {
-  chart: Chart;
+  timeScaleDomain?: TimeScaleDomain;
   selectedTrainId: number;
   trains: SimulationReport[];
-  onChangeXScaleDomain: (domain: Date[]) => void;
+  onChangeTimeScaleDomain: (domain: TimeScaleDomain) => void;
 };
 
-const TimeLine = ({ chart, selectedTrainId, trains, onChangeXScaleDomain }: TimeLineProps) => {
+const TimeLine = ({
+  timeScaleDomain,
+  selectedTrainId,
+  trains,
+  onChangeTimeScaleDomain,
+}: TimeLineProps) => {
   const ref = useRef<HTMLDivElement>(null);
   const [svgState, setSvg] = useState<
     d3.Selection<SVGGElement, unknown, null, undefined> | undefined
@@ -93,7 +98,6 @@ const TimeLine = ({ chart, selectedTrainId, trains, onChangeXScaleDomain }: Time
     if (d3.select(ref.current)) {
       d3.select(ref.current).select('svg').remove();
     }
-    const chartRect = (chart.rotate ? chart.y.domain() : chart.x.domain()) as Date[];
 
     const svg = d3
       .select(ref.current)
@@ -158,30 +162,34 @@ const TimeLine = ({ chart, selectedTrainId, trains, onChangeXScaleDomain }: Time
     trains.map((train) => drawTrain(train, selectedTrainId, xScale, svg, dimensions.height));
 
     // drag behaviour
-    let dragValue = 0;
-    const drag = d3
-      .drag<SVGRectElement, unknown>()
-      .on('end', () => {
-        const delta = xScale.invert(dragValue).getTime() - xScale.domain()[0].getTime();
-        const newX0 = new Date(chartRect[0].getTime() + delta);
-        const newX1 = new Date(chartRect[1].getTime() + delta);
-        const newChart = { ...chart };
-        newChart.x.domain([newX0, newX1]);
-        onChangeXScaleDomain(newChart.x.domain() as Date[]);
-      })
-      .on('drag', (event) => {
-        dragValue += event.dx;
-        d3.select('#rectZoomTimeLine').attr('transform', `translate(${dragValue},0)`);
-      });
+    const currentTimeScaleRange = timeScaleDomain?.range;
+    if (currentTimeScaleRange) {
+      let dragValue = 0;
+      const drag = d3
+        .drag<SVGRectElement, unknown>()
+        .on('end', () => {
+          const delta = xScale.invert(dragValue).getTime() - xScale.domain()[0].getTime();
+          const newX0 = new Date(currentTimeScaleRange[0].getTime() + delta);
+          const newX1 = new Date(currentTimeScaleRange[1].getTime() + delta);
+          onChangeTimeScaleDomain({
+            range: [newX0, newX1],
+            source: 'Timeline',
+          });
+        })
+        .on('drag', (event) => {
+          dragValue += event.dx;
+          d3.select('#rectZoomTimeLine').attr('transform', `translate(${dragValue},0)`);
+        });
 
-    svg
-      .append('rect')
-      .attr('id', 'rectZoomTimeLine')
-      .attr('x', xScale(chartRect[0]))
-      .attr('y', 1)
-      .attr('width', xScale(chartRect[1]) - xScale(chartRect[0]))
-      .attr('height', dimensions.height - 1)
-      .call(drag);
+      svg
+        .append('rect')
+        .attr('id', 'rectZoomTimeLine')
+        .attr('x', xScale(currentTimeScaleRange[0]))
+        .attr('y', 1)
+        .attr('width', xScale(currentTimeScaleRange[1]) - xScale(currentTimeScaleRange[0]))
+        .attr('height', dimensions.height - 1)
+        .call(drag);
+    }
 
     setSvg(svg);
   };
@@ -191,8 +199,8 @@ const TimeLine = ({ chart, selectedTrainId, trains, onChangeXScaleDomain }: Time
   }, [trains]);
 
   useEffect(() => {
-    drawChart();
-  }, [chart]);
+    if (timeScaleDomain?.source !== 'Timeline') drawChart();
+  }, [timeScaleDomain]);
 
   useEffect(() => {
     if (svgState) {
