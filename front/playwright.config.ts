@@ -62,7 +62,7 @@ const config: PlaywrightTestConfig = {
 
   /* select tags to run specific tests */
   // TODO: remove grep when every tests are refactored
-  grep: [/home/, /project/, /study/, /scenario/],
+  grep: [/home/, /project/, /study/, /scenario/, /editor/],
 };
 
 export default config;
