@@ -1,10 +1,10 @@
 import { noop } from 'lodash';
-import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { CgLoadbar } from 'react-icons/cg';
 import { GiResize } from 'react-icons/gi';
 import { Rnd } from 'react-rnd';
 
-import { CHART_AXES } from 'modules/simulationResult/consts';
+import { CHART_AXES, TimeScaleDomain } from 'modules/simulationResult/consts';
 import {
   enableInteractivity,
   traceVerticalLine,
@@ -51,12 +51,13 @@ export type SpaceTimeChartProps = {
   selectedProjection?: OsrdSimulationState['selectedProjection'];
   simulation?: SimulationSnapshot;
   simulationIsPlaying?: boolean;
+  timeScaleDomain?: TimeScaleDomain;
   isDisplayed?: boolean;
   onSetBaseHeight?: (newHeight: number) => void;
   dispatchUpdateSelectedTrainId: DispatchUpdateSelectedTrainId;
   dispatchPersistentUpdateSimulation: DispatchPersistentUpdateSimulation;
   setTrainResultsToFetch?: (trainSchedulesIDs?: number[]) => void;
-  chartXScaleDomain?: number[] | Date[];
+  setTimeScaleDomain?: React.Dispatch<React.SetStateAction<TimeScaleDomain>>;
 };
 
 export default function SpaceTimeChart(props: SpaceTimeChartProps) {
@@ -70,12 +71,13 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
     selectedProjection,
     simulation,
     simulationIsPlaying = false,
+    timeScaleDomain,
     isDisplayed = true,
     onSetBaseHeight = noop,
     dispatchUpdateSelectedTrainId,
     dispatchPersistentUpdateSimulation,
     setTrainResultsToFetch = noop,
-    chartXScaleDomain,
+    setTimeScaleDomain,
   } = props;
 
   const [baseHeight, setBaseHeight] = useState(initialHeight);
@@ -90,15 +92,14 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
     SimulationSnapshot['trains'] | undefined
   >(undefined);
 
-  const timeScaleRange: [Date, Date] = useMemo(() => {
-    if (chart) return (rotate ? chart.y.domain() : chart.x.domain()) as [Date, Date];
-    return [new Date(), new Date()];
-  }, [chart]);
-
   /* coordinate the vertical cursors with other graphs (GEV for instance) */
   const { timePosition, updateTimePosition } = useChartSynchronizer(
     (newTimePosition, positionValues) => {
-      if (dateIsInRange(newTimePosition, timeScaleRange)) {
+      if (
+        timeScaleDomain &&
+        timeScaleDomain.range &&
+        dateIsInRange(newTimePosition, timeScaleDomain.range)
+      ) {
         traceVerticalLine(chart, CHART_AXES.SPACE_TIME, positionValues, newTimePosition, rotate);
       }
     },
@@ -179,15 +180,16 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
     dragShiftTrain(dragOffset);
   }, [dragOffset]);
 
-  const redrawChart = () => {
+  const redrawChart = (newResizedChart?: Chart) => {
     if (trainSimulations && allowancesSettings) {
       const trainsToDraw = trainSimulations.map((train) =>
         createTrain(CHART_AXES.SPACE_TIME, train as Train)
       );
 
-      drawAllTrains(
+      const newChart = newResizedChart ?? chart;
+      const newDrawnedChart = drawAllTrains(
         allowancesSettings,
-        chart,
+        newChart,
         CHART_ID,
         dispatchUpdateSelectedTrainId,
         height,
@@ -196,11 +198,11 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
         rotate,
         selectedProjection,
         selectedTrain as Train,
-        setChart,
         setDragOffset,
         trainSimulations as Train[],
         trainsToDraw
       );
+      setChart(newDrawnedChart);
       setResetChart(false);
     }
   };
@@ -212,22 +214,45 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
    */
   useEffect(() => {
     redrawChart();
-  }, [resetChart, rotate, selectedTrain, trainSimulations, height, chartXScaleDomain]);
+  }, [resetChart, rotate, selectedTrain, trainSimulations, height]);
+
+  /* redraw the trains if the time scale range has changed from Timeline */
+  useEffect(() => {
+    if (chart && timeScaleDomain && timeScaleDomain.source !== 'SpaceTimeChart') {
+      const currentTimeRange = timeScaleDomain.range;
+      if (currentTimeRange) {
+        const newChart = { ...chart };
+        newChart.x.domain(currentTimeRange);
+        redrawChart();
+      }
+    }
+  }, [timeScaleDomain]);
 
   /* add behaviour on zoom and mousemove/mouseover/wheel on the new chart each time the chart changes */
   useEffect(() => {
-    if (trainSimulations && selectedTrain) {
-      const dataSimulation = createTrain(CHART_AXES.SPACE_TIME, selectedTrain as Train);
-      enableInteractivity(
-        chart,
-        dataSimulation,
-        CHART_AXES.SPACE_TIME,
-        rotate,
-        setChart,
-        simulationIsPlaying,
-        updateTimePosition,
-        timeScaleRange
-      );
+    if (chart) {
+      const newTimeScaleRange = (rotate ? chart.y.domain() : chart.x.domain()) as [Date, Date];
+
+      if (setTimeScaleDomain) {
+        setTimeScaleDomain({
+          range: newTimeScaleRange,
+          source: 'SpaceTimeChart',
+        });
+      }
+
+      if (trainSimulations && selectedTrain && timeScaleDomain) {
+        const dataSimulation = createTrain(CHART_AXES.SPACE_TIME, selectedTrain as Train);
+        enableInteractivity(
+          chart,
+          dataSimulation,
+          CHART_AXES.SPACE_TIME,
+          rotate,
+          setChart,
+          simulationIsPlaying,
+          updateTimePosition,
+          newTimeScaleRange
+        );
+      }
     }
   }, [chart]);
 

@@ -23,9 +23,10 @@ import DriverTrainSchedule from 'modules/trainschedule/components/DriverTrainSch
 import SpaceCurvesSlopes from 'modules/simulationResult/components/SpaceCurvesSlopes';
 import SpaceTimeChart from 'modules/simulationResult/components/SpaceTimeChart/SpaceTimeChart';
 import SpeedSpaceChart from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChart';
-import type { PositionScaleDomain } from 'modules/simulationResult/consts';
+import type { PositionScaleDomain, TimeScaleDomain } from 'modules/simulationResult/consts';
 import { Train } from 'reducers/osrdsimulation/types';
 import { useStoreDataForSpaceTimeChart } from 'modules/simulationResult/components/SpaceTimeChart/useStoreDataForSpaceTimeChart';
+import getScaleDomainFromValues from 'modules/simulationResult/components/ChartHelpers/getScaleDomainFromValues';
 
 const MAP_MIN_HEIGHT = 450;
 
@@ -57,7 +58,10 @@ export default function SimulationResults({
   const [initialHeightOfSpaceCurvesSlopesChart, setInitialHeightOfSpaceCurvesSlopesChart] =
     useState(heightOfSpaceCurvesSlopesChart);
 
-  const [chartXScaleDomain] = useState<number[] | Date[]>([]);
+  const [timeScaleDomain, setTimeScaleDomain] = useState<TimeScaleDomain>({
+    range: undefined,
+    source: undefined,
+  });
 
   // X scale domain shared between SpeedSpace and SpaceCurvesSlopes charts.
   const [positionScaleDomain, setPositionScaleDomain] = useState<PositionScaleDomain>({
@@ -152,14 +156,15 @@ export default function SimulationResults({
       </div>
 
       {/* SIMULATION: TIMELINE — TEMPORARILY DISABLED
-      {simulation.trains.length && chart && (
+      {simulation.trains.length && (
         <TimeLine
-          chart={chart}
+          timeScaleDomain={timeScaleDomain}
           selectedTrainId={selectedTrain?.id || simulation.trains[0].id}
           trains={simulation.trains as SimulationReport[]}
-          onChangeXScaleDomain={setChartXScaleDomain}
+          onChangeTimeScaleDomain={setTimeScaleDomain}
         />
-      )} */}
+      )}
+      */}
 
       {/* SIMULATION : SPACE TIME CHART */}
       <div className="simulation-warped-map d-flex flex-row align-items-stretch mb-2 bg-white">
@@ -187,7 +192,8 @@ export default function SimulationResults({
                 dispatchUpdateSelectedTrainId={dispatchUpdateSelectedTrainId}
                 dispatchPersistentUpdateSimulation={dispatchPersistentUpdateSimulation}
                 setTrainResultsToFetch={setTrainResultsToFetch}
-                chartXScaleDomain={chartXScaleDomain}
+                timeScaleDomain={timeScaleDomain}
+                setTimeScaleDomain={setTimeScaleDomain}
               />
             )}
           </div>

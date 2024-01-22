@@ -59,7 +59,6 @@ const drawAllTrains = (
   rotate: boolean,
   selectedProjection: OsrdSimulationState['selectedProjection'],
   selectedTrain: Train,
-  setChart: React.Dispatch<React.SetStateAction<Chart | undefined>>,
   setDragOffset: React.Dispatch<React.SetStateAction<number>>,
   simulationTrains: Train[],
   trainsToDraw: SimulationTrain[]
@@ -96,7 +95,7 @@ const drawAllTrains = (
       train
     );
   });
-  setChart(chartLocal);
+  return chartLocal;
 };
 
 export { drawOPs, drawAllTrains };
