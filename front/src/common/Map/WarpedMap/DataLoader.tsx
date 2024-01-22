@@ -117,8 +117,6 @@ const DataLoader = ({ bbox, getGeoJSONs, layers }: DataLoaderProps) => {
         const osmFeaturesCount = sum(map(osmData, (collection) => collection.features.length));
 
         console.timeEnd(TIME_LABEL);
-        console.log('  - OSRD features: ', osrdFeaturesCount);
-        console.log('  - OSM features: ', osmFeaturesCount);
 
         // Finalize:
         getGeoJSONs(osrdData, osmData);

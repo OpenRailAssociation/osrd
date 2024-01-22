@@ -13,6 +13,7 @@ import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 
 import type { EffortCurveForms } from 'modules/rollingStock/types';
 import type { RollingStockComfortType } from 'common/api/osrdEditoastApi';
+import { convertUnit } from '../../helpers/utils';
 
 type RollingStockCardDetailProps = {
   id: number;
