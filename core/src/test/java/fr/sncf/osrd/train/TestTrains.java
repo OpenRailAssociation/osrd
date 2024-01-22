@@ -23,6 +23,8 @@ public class TestTrains {
 
     public static final RollingStock CONSTANT_POWER_TRAIN;
 
+    public static final RollingStock TRAIN_WITHOUT_TVM;
+
     public static final double MAX_SPEED = 300 / 3.6;
 
     private static Map<String, RollingStock.ModeEffortCurves> createModeEffortCurves(
@@ -132,7 +134,7 @@ public class TestTrains {
         );
 
         REALISTIC_FAST_TRAIN = new RollingStock(
-                "fast train",
+                "realistic fast train",
                 400, trainMass, 1.05, (0.65 * trainMass) / 100,
                 ((0.008 * trainMass) / 100) * 3.6,
                 (((0.00012 * trainMass) / 100) * 3.6) * 3.6,
@@ -189,7 +191,7 @@ public class TestTrains {
         );
 
         FAST_ELECTRIC_TRAIN = new RollingStock(
-                "fast train",
+                "fast electric train",
                 400, trainMass, 1.05, (0.65 * trainMass) / 100,
                 ((0.008 * trainMass) / 100) * 3.6,
                 (((0.00012 * trainMass) / 100) * 3.6) * 3.6,
@@ -224,6 +226,25 @@ public class TestTrains {
                 "thermal",
                 "1",
                 new String[]{"BAL", "BAPR", "TVM300", "TVM430"}
+        );
+
+        TRAIN_WITHOUT_TVM = new RollingStock(
+                "train without tvm",
+                100, trainMass, 1.05, (0.65 * trainMass) / 100,
+                ((0.008 * trainMass) / 100) * 3.6,
+                (((0.00012 * trainMass) / 100) * 3.6) * 3.6,
+                44,
+                20,
+                0.05,
+                0.25,
+                0.5,
+                PhysicsRollingStock.GammaType.CONST,
+                RJSLoadingGaugeType.G1,
+                createModeEffortCurves(44, CurveShape.HYPERBOLIC,
+                        Map.of("thermal", new RollingStock.EffortCurveConditions[0])),
+                "thermal",
+                "1",
+                new String[]{"BAL", "BAPR"}
         );
     }
 

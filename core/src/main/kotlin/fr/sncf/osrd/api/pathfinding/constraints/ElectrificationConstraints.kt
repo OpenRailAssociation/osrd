@@ -13,7 +13,6 @@ import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 import java.util.stream.Collectors
 
-@JvmRecord
 data class ElectrificationConstraints(
     val blockInfra: BlockInfra,
     val rawInfra: RawSignalingInfra,

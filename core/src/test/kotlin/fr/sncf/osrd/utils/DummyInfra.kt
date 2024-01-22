@@ -3,6 +3,7 @@ package fr.sncf.osrd.utils
 import com.google.common.collect.HashBiMap
 import com.google.common.collect.HashMultimap
 import fr.sncf.osrd.api.FullInfra
+import fr.sncf.osrd.api.makeSignalingSimulator
 import fr.sncf.osrd.geom.LineString
 import fr.sncf.osrd.geom.Point
 import fr.sncf.osrd.sim_infra.api.*
@@ -12,7 +13,9 @@ import fr.sncf.osrd.utils.units.*
 import kotlin.time.Duration
 
 /** This class is used to create a minimal infra to be used on unit tests, with a simple block graph.
- * Ids are all interchangeable, there's one zone, one chunk, one track, one route per block.
+ * Ids are all interchangeable:
+ * there's one zone, one chunk, one track, one route, one signal per block,
+ * each having the same id as the block.
  * Block descriptor can be edited when we need to set data that isn't included in the method parameters.
  * Not all methods are implemented, but it can be added when relevant. */
 class DummyInfra : RawInfra, BlockInfra {
@@ -22,46 +25,33 @@ class DummyInfra : RawInfra, BlockInfra {
     private val detectorMap = HashBiMap.create<String, DirDetectorId>()
     private val entryMap = HashMultimap.create<DirDetectorId, BlockId>()
     private val exitMap = HashMultimap.create<DirDetectorId, BlockId>()
+    private val signalingSimulator = makeSignalingSimulator()
 
     /** get the FullInfra  */
     fun fullInfra(): FullInfra {
         return FullInfra(
             this,
-            null,
+            signalingSimulator.loadSignals(this),
             this,
-            null
+            signalingSimulator
         )
     }
 
-    /** Creates a block going from nodes `entry` to `exit` of length 100m, named $entry->$exit, with no max speed.  */
-    fun addBlock(
-        entry: String,
-        exit: String,
-    ): BlockId {
-        return addBlock(entry, exit, 100.meters)
-    }
-
-    /** Creates a block going from nodes `entry` to `exit` of length `length`, named $entry->$exit */
-    fun addBlock(
-        entry: String,
-        exit: String,
-        length: Distance
-    ): BlockId {
-        return addBlock(entry, exit, length, Double.POSITIVE_INFINITY)
-    }
-
     /** Creates a block going from nodes `entry` to `exit` of length `length`, named $entry->$exit,
-     * with the given maximum speed. */
+     * with the given maximum speed and signaling system.
+     * If the nodes do not exist they are created. */
     fun addBlock(
         entry: String,
         exit: String,
-        length: Distance,
-        allowedSpeed: Double,
+        length: Distance = 100.meters,
+        allowedSpeed: Double = Double.POSITIVE_INFINITY,
+        signalingSystemName: String = "BAL"
     ): BlockId {
         val name = String.format("%s->%s", entry, exit)
         val entryId = detectorMap.computeIfAbsent(entry) { DirDetectorId(detectorMap.size.toUInt() * 2u) }
         val exitId = detectorMap.computeIfAbsent(exit) { DirDetectorId(detectorMap.size.toUInt() * 2u) }
         val id = BlockId(blockPool.size.toUInt())
+        val signalingSystemId =  getSignalingSystemIdfromName(signalingSystemName)
         blockPool.add(
             DummyBlockDescriptor(
                 length,
@@ -70,6 +60,8 @@ class DummyInfra : RawInfra, BlockInfra {
                 exitId,
                 allowedSpeed,
                 0.0,
+                signalingSystemId,
+                signalingSystemName
             )
         )
         entryMap.put(entryId, id)
@@ -84,6 +76,8 @@ class DummyInfra : RawInfra, BlockInfra {
         val exit: DirDetectorId,
         val allowedSpeed: Double,
         var gradient: Double,
+        var signalingSystemId: SignalingSystemId,
+        var signalingSystemName: String,
         var voltage: String = "",
         var neutralSectionForward: NeutralSection? = null,
         var neutralSectionBackward: NeutralSection? = null,
@@ -92,11 +86,11 @@ class DummyInfra : RawInfra, BlockInfra {
     // region inherited
 
     override fun getSignals(zonePath: ZonePathId): StaticIdxList<PhysicalSignal> {
-        TODO("Not yet implemented")
+        return makeIndexList(zonePath)
     }
 
     override fun getSignalPositions(zonePath: ZonePathId): OffsetList<ZonePath> {
-        TODO("Not yet implemented")
+        return mutableOffsetArrayListOf(Offset(0.meters))
     }
 
     override fun getSpeedLimits(route: RouteId): StaticIdxList<SpeedLimit> {
@@ -112,36 +106,41 @@ class DummyInfra : RawInfra, BlockInfra {
     }
 
     override val physicalSignals: StaticIdxSpace<PhysicalSignal>
-        get() = TODO("Not yet implemented")
+        get() = StaticIdxSpace(blockPool.size.toUInt())
     override val logicalSignals: StaticIdxSpace<LogicalSignal>
-        get() = TODO("Not yet implemented")
+        get() = StaticIdxSpace(blockPool.size.toUInt())
 
     override fun getLogicalSignals(signal: PhysicalSignalId): StaticIdxList<LogicalSignal> {
-        TODO("Not yet implemented")
+        return makeIndexList(signal)
     }
 
     override fun getPhysicalSignal(signal: LogicalSignalId): PhysicalSignalId {
-        TODO("Not yet implemented")
+        return convertId(signal)
     }
 
-    override fun getPhysicalSignalName(signal: PhysicalSignalId): String? {
-        TODO("Not yet implemented")
+    override fun getPhysicalSignalName(signal: PhysicalSignalId): String {
+        return "BAL"
     }
 
     override fun getSignalSightDistance(signal: PhysicalSignalId): Distance {
-        TODO("Not yet implemented")
+        return 400.meters
     }
 
     override fun getSignalingSystemId(signal: LogicalSignalId): String {
-        TODO("Not yet implemented")
+        return blockPool[signal.index].signalingSystemName
+    }
+
+    private fun getSignalingSystemIdfromName(signalingSystemName: String): SignalingSystemId {
+        return this.signalingSimulator.sigModuleManager.findSignalingSystem(signalingSystemName)
     }
 
     override fun getRawSettings(signal: LogicalSignalId): Map<String, String> {
-        TODO("Not yet implemented")
+        return mapOf("Nf" to "false")
     }
 
     override fun getNextSignalingSystemIds(signal: LogicalSignalId): List<String> {
-        TODO("Not yet implemented")
+        val sigSystemName = blockPool[signal.index].signalingSystemName
+        return listOf(sigSystemName)
     }
 
     override val routes: StaticIdxSpace<Route>
@@ -432,7 +431,7 @@ class DummyInfra : RawInfra, BlockInfra {
     }
 
     override fun getBlockSignalingSystem(block: BlockId): SignalingSystemId {
-        TODO("Not yet implemented")
+        return blockPool[block.index].signalingSystemId
     }
 
     override fun getBlocksStartingAtDetector(detector: DirDetectorId): StaticIdxList<Block> {
@@ -492,6 +491,10 @@ class DummyInfra : RawInfra, BlockInfra {
         val res = MutableDirStaticIdxArrayList<U>()
         res.add(DirStaticIdx(StaticIdx(id.index), Direction.INCREASING))
         return res
+    }
+
+    private fun <T, U> convertId(id: StaticIdx<T>): StaticIdx<U> {
+        return StaticIdx(id.index)
     }
     // endregion
 }

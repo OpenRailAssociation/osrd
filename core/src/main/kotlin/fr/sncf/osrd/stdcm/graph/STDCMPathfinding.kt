@@ -3,6 +3,7 @@ package fr.sncf.osrd.stdcm.graph
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.pathfinding.constraints.ElectrificationConstraints
 import fr.sncf.osrd.api.pathfinding.constraints.LoadingGaugeConstraints
+import fr.sncf.osrd.api.pathfinding.constraints.makeSignalingSystemConstraints
 import fr.sncf.osrd.api.pathfinding.makeHeuristics
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue
 import fr.sncf.osrd.graph.*
@@ -58,6 +59,10 @@ fun findPath(
         fullInfra.blockInfra, fullInfra.rawInfra,
         listOf(rollingStock)
     )
+    val signalingSystemConstraints = makeSignalingSystemConstraints(
+        fullInfra.blockInfra, fullInfra.signalingSimulator,
+        listOf(rollingStock)
+    )
 
     // Initialize the A* heuristic
     val locations = steps.stream()
@@ -70,6 +75,7 @@ fun findPath(
         .setEdgeToLength { edge -> edge.length.cast() }
         .addBlockedRangeOnEdges { edge: STDCMEdge? -> convertRanges(loadingGaugeConstraints.apply(edge!!.block)) }
         .addBlockedRangeOnEdges { edge: STDCMEdge? -> convertRanges(electrificationConstraints.apply(edge!!.block)) }
+        .addBlockedRangeOnEdges { edge: STDCMEdge? -> convertRanges(signalingSystemConstraints.apply(edge!!.block)) }
         .setTotalCostUntilEdgeLocation { range ->
             totalCostUntilEdgeLocation(
                 range,

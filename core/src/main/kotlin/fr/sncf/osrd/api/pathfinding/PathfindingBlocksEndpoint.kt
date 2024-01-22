@@ -5,11 +5,11 @@ import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.InfraManager
 import fr.sncf.osrd.api.pathfinding.constraints.ElectrificationConstraints
 import fr.sncf.osrd.api.pathfinding.constraints.LoadingGaugeConstraints
+import fr.sncf.osrd.api.pathfinding.constraints.SignalingSystemConstraints
+import fr.sncf.osrd.api.pathfinding.constraints.makeSignalingSystemConstraints
 import fr.sncf.osrd.api.pathfinding.request.PathfindingRequest
 import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint
-import fr.sncf.osrd.api.pathfinding.response.PathWaypointResult
 import fr.sncf.osrd.api.pathfinding.response.PathfindingResult
-import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator
 import fr.sncf.osrd.graph.*
 import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
 import fr.sncf.osrd.infra.api.Direction
@@ -79,6 +79,8 @@ class PathfindingBlocksEndpoint
                 ErrorType.PathfindingGaugeError
             constraintErrors[ElectrificationConstraints::class.java] =
                 ErrorType.PathfindingElectrificationError
+            constraintErrors[SignalingSystemConstraints::class.java] =
+                ErrorType.PathfindingSignalisationSystemError
         }
     }
 }
@@ -203,8 +205,13 @@ fun runPathfinding(
         infra.blockInfra, infra.rawInfra,
         rollingStocks
     )
+    val signalisationSystemConstraints = makeSignalingSystemConstraints(
+        infra.blockInfra,
+        infra.signalingSimulator,
+        rollingStocks
+    )
     val constraints = listOf(
-        loadingGaugeConstraints, electrificationConstraints
+        loadingGaugeConstraints, electrificationConstraints, signalisationSystemConstraints
     )
     val remainingDistanceEstimators = makeHeuristics(infra, waypoints)
 
