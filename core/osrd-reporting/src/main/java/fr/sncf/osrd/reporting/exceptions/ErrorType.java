@@ -92,12 +92,17 @@ public enum ErrorType {
     ),
     PathfindingGaugeError(
             "no_path_found:gauge",
-            "No path could be found after loading Gauge constraints",
+            "No path could be found with compatible Gauge",
             ErrorCause.USER
     ),
     PathfindingElectrificationError(
             "no_path_found:electrification",
-            "No path could be found after loading Electrification constraints",
+            "No path could be found with compatible electrification",
+            ErrorCause.USER
+    ),
+    PathfindingSignalisationSystemError(
+            "no_path_found:signalisation_system",
+            "No path could be found with a compatible signaling system",
             ErrorCause.USER
     ),
     PathfindingTimeoutError(

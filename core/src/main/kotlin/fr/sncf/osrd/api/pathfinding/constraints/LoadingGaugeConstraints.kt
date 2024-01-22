@@ -9,7 +9,6 @@ import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.units.Offset
 import java.util.stream.Collectors
 
-@JvmRecord
 data class LoadingGaugeConstraints(
     val blockInfra: BlockInfra,
     val infra: RawSignalingInfra,
