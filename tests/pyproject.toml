@@ -31,7 +31,7 @@ profile = "black"
 multi_line_output = 3
 
 [tool.pytype]
-inputs = ["tests"]
+inputs = ["tests", "fuzzer", "infra-scripts"]
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
