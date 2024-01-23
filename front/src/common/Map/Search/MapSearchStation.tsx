@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { getMap } from 'reducers/map/selectors';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { onResultSearchClick } from 'common/Map/utils';
+import { createMapSearchQuery, onResultSearchClick } from 'common/Map/utils';
 import { useDebounce } from 'utils/helpers';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
@@ -50,20 +50,12 @@ const MapSearchStation = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchS
     query: ['and', searchQuery, infraID !== undefined ? ['=', ['infra_id'], infraID] : true],
   });
 
-  /** Builds the query */
-  const createQuery = (isSearchByTrigram?: boolean) => {
-    if (isSearchByTrigram) return ['=i', ['trigram'], searchState];
-    return isSearchingByName
-      ? ['search', ['name'], searchState]
-      : ['=', ['ci'], Number(searchState)];
-  };
-
   // Sort on name, and on yardname
   const orderResults = (results: SearchResultItemOperationalPoint[]) =>
     results.slice().sort((a, b) => a.name.localeCompare(b.name) || a.ch.localeCompare(b.ch));
 
-  const searchByTrigrams = useCallback(async () => {
-    const searchQuery = createQuery(true);
+  const searchByTrigrams = async () => {
+    const searchQuery = createMapSearchQuery(searchState, ['ci', 'name'], true);
     const payload = createPayload(searchQuery);
     await postSearch({
       searchPayload: payload,
@@ -75,10 +67,10 @@ const MapSearchStation = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchS
       .catch(() => {
         resetSearchResult();
       });
-  }, [searchState]);
+  };
 
   const searchByCodesAndNames = async () => {
-    const searchQuery = createQuery();
+    const searchQuery = createMapSearchQuery(searchState, ['ci', 'name']);
     const payload = createPayload(searchQuery);
 
     await postSearch({

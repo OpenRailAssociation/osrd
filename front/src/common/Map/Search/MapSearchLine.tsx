@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
+import { createMapSearchQuery } from 'common/Map/utils';
 import { getMap } from 'reducers/map/selectors';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { updateLineSearchCode, updateMapSearchMarker } from 'reducers/map';
 import { useDebounce } from 'utils/helpers';
-import { zoomToFeature } from 'common/Map/WarpedMap/core/helpers';
+import { useInfraID } from 'common/osrdContext';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import { zoomToFeature } from 'common/Map/WarpedMap/core/helpers';
 import bbox from '@turf/bbox';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import LineCard from 'common/Map/Search/LineCard';
@@ -13,7 +15,6 @@ import nextId from 'react-id-generator';
 
 import type { Viewport } from 'reducers/map';
 import type { Zone, SearchResultItemTrack, SearchPayload } from 'common/api/osrdEditoastApi';
-import { useInfraID } from 'common/osrdContext';
 
 type MapSearchLineProps = {
   updateExtViewport: (viewport: Partial<Viewport>) => void;
@@ -46,13 +47,11 @@ const MapSearchLine = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchLine
   };
 
   const getPayload = (lineSearch: string, infraIDPayload: number): SearchPayload => {
-    const playloadQuery: (string | number | string[])[] = !Number.isNaN(Number(lineSearch))
-      ? ['=', ['line_code'], Number(lineSearch)]
-      : ['search', ['line_name'], lineSearch];
+    const payloadQuery = createMapSearchQuery(lineSearch, ['line_code', 'line_name']);
 
     return {
       object: 'track',
-      query: ['and', ['=', ['infra_id'], infraIDPayload], playloadQuery],
+      query: ['and', ['=', ['infra_id'], infraIDPayload], payloadQuery],
     };
   };
 
