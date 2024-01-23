@@ -10,17 +10,16 @@ use crate::{
         ResultSpeed, ResultStops, ResultTrain, Retrieve, RollingStockModel, SimulationOutput,
         SimulationOutputChangeset, Slope, TrainSchedule,
     },
-    modelsv2::{infra_objects::TrackSectionModel, Model as ModelV2},
     schema::utils::Identifier,
-    views::train_schedule::{projection::Projection, TrainScheduleError::UnsimulatedTrainSchedule},
+    views::{
+        pathfinding::make_track_map,
+        train_schedule::{projection::Projection, TrainScheduleError::UnsimulatedTrainSchedule},
+    },
     DbPool,
 };
 
-use std::collections::HashMap;
-
 use actix_web::web::Data;
-use diesel::sql_types::{Array as SqlArray, BigInt, Text};
-use diesel::{sql_query, ExpressionMethods, QueryDsl};
+use diesel::{ExpressionMethods, QueryDsl};
 use diesel_async::RunQueryDsl;
 use futures::future::OptionFuture;
 use serde_derive::{Deserialize, Serialize};
@@ -237,26 +236,14 @@ async fn add_stops_additional_information(
     db_pool: Data<DbPool>,
 ) -> error::Result<Vec<FullResultStops>> {
     let mut conn = db_pool.get().await?;
-    let track_ids: Vec<String> = path_waypoints
-        .iter()
-        .map(|pw| pw.location.track_section.0.clone())
-        .collect();
-    // TODO: use BatchRetrieve once it's implemented
-    let track_sections: Vec<_> = sql_query(
-        "SELECT * FROM infra_object_track_section WHERE infra_id = $1 AND obj_id = ANY($2);",
-    )
-    .bind::<BigInt, _>(infra_id)
-    .bind::<SqlArray<Text>, _>(&track_ids)
-    .load(&mut conn)
-    .await?
-    .into_iter()
-    .map(<TrackSectionModel as ModelV2>::from_row)
-    .collect();
-    let track_sections_map: HashMap<String, TrackSectionModel> = HashMap::from_iter(
-        track_sections
+    let track_sections_map = make_track_map(
+        &mut conn,
+        infra_id,
+        path_waypoints
             .iter()
-            .map(|ts| (ts.obj_id.clone(), ts.clone())),
-    );
+            .map(|pw| pw.location.track_section.0.clone()),
+    )
+    .await?;
     let stops = stops
         .iter()
         .zip(path_waypoints.iter())
@@ -264,7 +251,6 @@ async fn add_stops_additional_information(
             match &track_sections_map
                 .get(&pw.location.track_section.0)
                 .unwrap()
-                .data
                 .extensions
                 .sncf
             {

@@ -35,7 +35,7 @@ use crate::{
         PathWaypoint, Pathfinding, PathfindingChangeset, PathfindingPayload, Retrieve,
         RollingStockModel, Slope, Update,
     },
-    modelsv2::{infra_objects::TrackSectionModel, Model as ModelV2},
+    modelsv2::infra_objects::TrackSectionModel,
     schema::{
         rolling_stock::RollingStock,
         utils::geometry::{diesel_linestring_to_geojson, geojson_to_diesel_linestring},
@@ -205,35 +205,23 @@ pub type TrackMap = HashMap<String, TrackSection>;
 type OpMap = HashMap<String, OperationalPoint>;
 
 /// Computes a hash map (obj_id => TrackSection) for each obj_id in an iterator
-async fn make_track_map<I: Iterator<Item = String>>(
+pub(in crate::views) async fn make_track_map<I: Iterator<Item = String> + Send>(
     conn: &mut PgConnection,
     infra_id: i64,
     it: I,
 ) -> Result<TrackMap> {
-    use tables::infra_object_track_section::dsl;
-    // TODO: implement a BatchRetrieve trait for tracksections for a better error handling + check all tracksections are there
-    let ids = it.collect::<HashSet<_>>().into_iter().collect::<Vec<_>>();
-    let expected_count = ids.len();
-    let tracksections: Vec<_> = dsl::infra_object_track_section
-        .filter(dsl::infra_id.eq(infra_id))
-        .filter(dsl::obj_id.eq_any(&ids))
-        .get_results(conn)
-        .await?
-        .into_iter()
-        .map(<TrackSectionModel as ModelV2>::from_row)
-        .collect();
-    if tracksections.len() != expected_count {
-        let got = HashSet::<String>::from_iter(tracksections.iter().map(|ts| ts.obj_id.clone()));
-        let expected = HashSet::<String>::from_iter(ids);
-        let diff = expected.difference(&got).collect::<HashSet<_>>();
-        return Err(PathfindingError::TrackSectionsNotFound {
-            track_sections: diff.into_iter().map(|s| s.to_owned()).collect(),
+    use crate::modelsv2::*;
+    let ids = it.map(|id| (infra_id, id));
+    let track_sections: Vec<_> = TrackSectionModel::retrieve_batch_or_fail(conn, ids, |missing| {
+        PathfindingError::TrackSectionsNotFound {
+            track_sections: missing.into_iter().map(|(_, obj_id)| obj_id).collect(),
         }
-        .into());
-    }
-    Ok(HashMap::from_iter(
-        tracksections.into_iter().map(|ts| (ts.obj_id, ts.data)),
-    ))
+    })
+    .await?;
+    Ok(track_sections
+        .into_iter()
+        .map(|TrackSectionModel { obj_id, data, .. }| (obj_id, data))
+        .collect())
 }
 
 async fn make_op_map<I: Iterator<Item = String>>(
