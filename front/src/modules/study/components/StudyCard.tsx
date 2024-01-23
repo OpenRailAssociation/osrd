@@ -58,28 +58,30 @@ export default function StudyCard({ setFilterChips, study }: StudyCardProps) {
       )}
       <div className="study-card-description">{study.description}</div>
 
-      <div className="study-card-financials">
-        <div className="study-card-financials-infos">
-          {study.service_code && (
-            <div className="study-card-financials-infos-item">
-              <h3>{t('geremiCode')}</h3>
-              <div>{study.service_code}</div>
-            </div>
-          )}
-          {study.business_code && (
-            <div className="study-card-financials-infos-item">
-              <h3>{t('affairCode')}</h3>
-              <div>{study.business_code}</div>
+      {(study.budget > 0 || study.service_code || study.business_code) && (
+        <div className="study-card-financials">
+          <div className="study-card-financials-infos">
+            {study.service_code && (
+              <div className="study-card-financials-infos-item">
+                <h3>{t('geremiCode')}</h3>
+                <div>{study.service_code}</div>
+              </div>
+            )}
+            {study.business_code && (
+              <div className="study-card-financials-infos-item">
+                <h3>{t('affairCode')}</h3>
+                <div>{study.business_code}</div>
+              </div>
+            )}
+          </div>
+          {study.budget > 0 && (
+            <div className="study-card-financials-amount">
+              <span className="study-card-financials-amount-text">{t('budget')}</span>
+              {budgetFormat(study.budget)}
             </div>
           )}
         </div>
-        {study.budget && study.budget > 0 && (
-          <div className="study-card-financials-amount">
-            <span className="study-card-financials-amount-text">{t('budget')}</span>
-            {budgetFormat(study.budget)}
-          </div>
-        )}
-      </div>
+      )}
 
       <div className="study-card-tags">
         {study.tags &&
