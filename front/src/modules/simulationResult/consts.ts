@@ -1,21 +1,15 @@
 import { ArrayElement, ObjectFieldsTypes } from 'utils/types';
 
 // CHARTS
-export const TIME = 'time';
-export const POSITION = 'position';
-export const SPEED = 'speed';
-export const GRADIENT = 'gradient';
-export const RADIUS = 'radius';
-export const HEIGHT = 'height';
 
 export type AxisKey = 'time' | 'position' | 'speed' | 'gradient' | 'radius' | 'height';
 
 export const CHART_AXES = {
-  SPACE_TIME: [TIME, POSITION],
-  SPACE_SPEED: [POSITION, SPEED],
-  SPACE_GRADIENT: [POSITION, GRADIENT],
-  SPACE_RADIUS: [POSITION, RADIUS],
-  SPACE_HEIGHT: [POSITION, HEIGHT],
+  SPACE_TIME: ['time', 'position'],
+  SPACE_SPEED: ['position', 'speed'],
+  SPACE_GRADIENT: ['position', 'gradient'],
+  SPACE_RADIUS: ['position', 'radius'],
+  SPACE_HEIGHT: ['position', 'height'],
 } as const;
 
 export type ChartAxes = ObjectFieldsTypes<typeof CHART_AXES>;
@@ -40,19 +34,8 @@ export const LIST_VALUES = {
 
 export type ListValues = ObjectFieldsTypes<typeof LIST_VALUES>;
 export type AllListValues = ArrayElement<ListValues>;
-// Signal Base is the Signaling system chosen for results display
 
+// Signal Base is the Signaling system chosen for results display
 export const SIGNAL_BASE_DEFAULT = 'BAL3';
 
 export const LIST_VALUES_SIGNAL_BASE = ['BAL3'];
-
-export type PositionScaleDomain = {
-  initial: number[];
-  current: number[];
-  source?: 'SpeedSpaceChart' | 'SpaceCurvesSlopes';
-};
-
-export type TimeScaleDomain = {
-  range?: [Date, Date];
-  source?: 'SpaceTimeChart' | 'Timeline';
-};

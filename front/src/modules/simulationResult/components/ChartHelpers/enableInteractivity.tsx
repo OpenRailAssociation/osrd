@@ -12,12 +12,8 @@ import {
   getAxis,
   isSpaceTimeChart,
 } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
-import {
-  CHART_AXES,
-  LIST_VALUES,
-  type ChartAxes,
-  type PositionScaleDomain,
-} from 'modules/simulationResult/consts';
+import { CHART_AXES, LIST_VALUES, type ChartAxes } from 'modules/simulationResult/consts';
+import type { PositionScaleDomain } from 'modules/simulationResult/types';
 import drawGuideLines from 'modules/simulationResult/components/ChartHelpers/drawGuideLines';
 import type { SpaceCurvesSlopesData } from 'modules/simulationResult/components/SpaceCurvesSlopes';
 import type {

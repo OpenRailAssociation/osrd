@@ -5,7 +5,7 @@ import { SimulationReport } from 'common/api/osrdEditoastApi';
 import { getDirection, gridX } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
 import { useChartSynchronizer } from 'modules/simulationResult/components/ChartHelpers/ChartSynchronizer';
 import { sec2datetime } from 'utils/timeManipulation';
-import { TimeScaleDomain } from 'modules/simulationResult/consts';
+import type { TimeScaleDomain } from 'modules/simulationResult/types';
 
 const drawTrain = (
   train: SimulationReport,
@@ -34,14 +34,14 @@ type TimeLineProps = {
   timeScaleDomain?: TimeScaleDomain;
   selectedTrainId: number;
   trains: SimulationReport[];
-  onChangeTimeScaleDomain: (domain: TimeScaleDomain) => void;
+  onTimeScaleDomainChange: (domain: TimeScaleDomain) => void;
 };
 
 const TimeLine = ({
   timeScaleDomain,
   selectedTrainId,
   trains,
-  onChangeTimeScaleDomain,
+  onTimeScaleDomainChange,
 }: TimeLineProps) => {
   const ref = useRef<HTMLDivElement>(null);
   const [svgState, setSvg] = useState<
@@ -171,7 +171,7 @@ const TimeLine = ({
           const delta = xScale.invert(dragValue).getTime() - xScale.domain()[0].getTime();
           const newX0 = new Date(currentTimeScaleRange[0].getTime() + delta);
           const newX1 = new Date(currentTimeScaleRange[1].getTime() + delta);
-          onChangeTimeScaleDomain({
+          onTimeScaleDomainChange({
             range: [newX0, newX1],
             source: 'Timeline',
           });

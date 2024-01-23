@@ -23,7 +23,7 @@ import DriverTrainSchedule from 'modules/trainschedule/components/DriverTrainSch
 import SpaceCurvesSlopes from 'modules/simulationResult/components/SpaceCurvesSlopes';
 import SpaceTimeChart from 'modules/simulationResult/components/SpaceTimeChart/SpaceTimeChart';
 import SpeedSpaceChart from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChart';
-import type { PositionScaleDomain, TimeScaleDomain } from 'modules/simulationResult/consts';
+import type { PositionScaleDomain, TimeScaleDomain } from 'modules/simulationResult/types';
 import { Train } from 'reducers/osrdsimulation/types';
 import { useStoreDataForSpaceTimeChart } from 'modules/simulationResult/components/SpaceTimeChart/useStoreDataForSpaceTimeChart';
 import getScaleDomainFromValues from 'modules/simulationResult/components/ChartHelpers/getScaleDomainFromValues';
@@ -161,7 +161,7 @@ export default function SimulationResults({
           timeScaleDomain={timeScaleDomain}
           selectedTrainId={selectedTrain?.id || simulation.trains[0].id}
           trains={simulation.trains as SimulationReport[]}
-          onChangeTimeScaleDomain={setTimeScaleDomain}
+          onTimeScaleDomainChange={setTimeScaleDomain}
         />
       )}
       */}

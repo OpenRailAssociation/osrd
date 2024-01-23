@@ -4,7 +4,8 @@ import { CgLoadbar } from 'react-icons/cg';
 import { GiResize } from 'react-icons/gi';
 import { Rnd } from 'react-rnd';
 
-import { CHART_AXES, TimeScaleDomain } from 'modules/simulationResult/consts';
+import { CHART_AXES } from 'modules/simulationResult/consts';
+import type { TimeScaleDomain } from 'modules/simulationResult/types';
 import {
   enableInteractivity,
   traceVerticalLine,
@@ -57,7 +58,7 @@ export type SpaceTimeChartProps = {
   dispatchUpdateSelectedTrainId: DispatchUpdateSelectedTrainId;
   dispatchPersistentUpdateSimulation: DispatchPersistentUpdateSimulation;
   setTrainResultsToFetch?: (trainSchedulesIDs?: number[]) => void;
-  setTimeScaleDomain?: React.Dispatch<React.SetStateAction<TimeScaleDomain>>;
+  setTimeScaleDomain?: (newTimeScaleDomain: TimeScaleDomain) => void;
 };
 
 export default function SpaceTimeChart(props: SpaceTimeChartProps) {
@@ -180,16 +181,15 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
     dragShiftTrain(dragOffset);
   }, [dragOffset]);
 
-  const redrawChart = (newResizedChart?: Chart) => {
+  const redrawChart = () => {
     if (trainSimulations && allowancesSettings) {
       const trainsToDraw = trainSimulations.map((train) =>
         createTrain(CHART_AXES.SPACE_TIME, train as Train)
       );
 
-      const newChart = newResizedChart ?? chart;
       const newDrawnedChart = drawAllTrains(
         allowancesSettings,
-        newChart,
+        chart,
         CHART_ID,
         dispatchUpdateSelectedTrainId,
         height,
@@ -221,8 +221,7 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
     if (chart && timeScaleDomain && timeScaleDomain.source !== 'SpaceTimeChart') {
       const currentTimeRange = timeScaleDomain.range;
       if (currentTimeRange) {
-        const newChart = { ...chart };
-        newChart.x.domain(currentTimeRange);
+        chart.x.domain(currentTimeRange);
         redrawChart();
       }
     }
@@ -240,19 +239,17 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
         });
       }
 
-      if (trainSimulations && selectedTrain && timeScaleDomain) {
-        const dataSimulation = createTrain(CHART_AXES.SPACE_TIME, selectedTrain as Train);
-        enableInteractivity(
-          chart,
-          dataSimulation,
-          CHART_AXES.SPACE_TIME,
-          rotate,
-          setChart,
-          simulationIsPlaying,
-          updateTimePosition,
-          newTimeScaleRange
-        );
-      }
+      const dataSimulation = createTrain(CHART_AXES.SPACE_TIME, selectedTrain as Train);
+      enableInteractivity(
+        chart,
+        dataSimulation,
+        CHART_AXES.SPACE_TIME,
+        rotate,
+        setChart,
+        simulationIsPlaying,
+        updateTimePosition,
+        newTimeScaleRange
+      );
     }
   }, [chart]);
 

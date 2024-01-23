@@ -17,15 +17,7 @@ import {
   SimulationD3Scale,
   PositionsSpeedTimes,
 } from 'reducers/osrdsimulation/types';
-import {
-  ChartAxes,
-  GRADIENT,
-  ListValues,
-  TIME,
-  XAxis,
-  Y2Axis,
-  YAxis,
-} from 'modules/simulationResult/consts';
+import { ChartAxes, ListValues, XAxis, Y2Axis, YAxis } from 'modules/simulationResult/consts';
 
 export function sec2d3datetime(time: number) {
   return d3.timeParse('%H:%M:%S')(sec2time(time));
@@ -383,9 +375,9 @@ const specificInterpolateOnTime =
     return positionInterpolated;
   };
 
-export const isSpaceTimeChart = (keyValues: ChartAxes) => keyValues[0] === TIME;
+export const isSpaceTimeChart = (keyValues: ChartAxes) => keyValues[0] === 'time';
 
-export const isSpaceSlopesCurves = (keyValues: ChartAxes) => keyValues[1] === GRADIENT;
+export const isSpaceSlopesCurves = (keyValues: ChartAxes) => keyValues[1] === 'gradient';
 
 export function trainWithDepartureAndArrivalTimes(train: Train, dragOffset = 0) {
   const firstStop = train.base.stops[0];
