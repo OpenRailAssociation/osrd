@@ -6,7 +6,7 @@ import {
   createPowerRestrictionSegment,
   DRAWING_KEYS,
 } from 'applications/operationalStudies/consts';
-import { POSITION, SPEED, HEIGHT, CHART_AXES } from 'modules/simulationResult/consts';
+import { CHART_AXES } from 'modules/simulationResult/consts';
 import drawArea from 'modules/simulationResult/components/ChartHelpers/drawArea';
 import drawCurve from 'modules/simulationResult/components/ChartHelpers/drawCurve';
 import defineChart from 'modules/simulationResult/components/ChartHelpers/defineChart';
@@ -39,19 +39,19 @@ function createChart(
   let scaleY2: d3.ScaleLinear<number, number, never> = defineLinear(0, 0, 0);
 
   if (chart === undefined || resetChart) {
-    const maxX = d3.max(trainSimulation.speed, (speedObject) => speedObject[POSITION]) as number;
+    const maxX = d3.max(trainSimulation.speed, (speedObject) => speedObject.position) as number;
     scaleX = defineLinear(maxX + 100);
 
-    const maxY = d3.max(trainSimulation.speed, (speedObject) => speedObject[SPEED]) as number;
+    const maxY = d3.max(trainSimulation.speed, (speedObject) => speedObject.speed) as number;
     scaleY = defineLinear(maxY);
 
     const minY2 = d3.min(
       trainSimulation.slopesCurve,
-      (speedObject) => speedObject[HEIGHT]
+      (speedObject) => speedObject.height
     ) as number;
     const maxY2 = d3.max(
       trainSimulation.slopesCurve,
-      (speedObject) => speedObject[HEIGHT]
+      (speedObject) => speedObject.height
     ) as number;
     scaleY2 = chart === undefined ? defineLinear(maxY2, 0, minY2) : chart.y2;
   } else {

@@ -5,11 +5,8 @@ import { GiResize } from 'react-icons/gi';
 import { Rnd } from 'react-rnd';
 
 import { LightRollingStock, SimulationReport } from 'common/api/osrdEditoastApi';
-import {
-  CHART_AXES,
-  type PositionScaleDomain,
-  type ChartAxes,
-} from 'modules/simulationResult/consts';
+import { CHART_AXES, type ChartAxes } from 'modules/simulationResult/consts';
+import type { PositionScaleDomain } from 'modules/simulationResult/types';
 import {
   enableInteractivity,
   traceVerticalLine,
