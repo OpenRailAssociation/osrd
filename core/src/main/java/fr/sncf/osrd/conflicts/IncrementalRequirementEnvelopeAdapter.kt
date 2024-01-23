@@ -1,15 +1,15 @@
 package fr.sncf.osrd.conflicts
 
-import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper
-import fr.sncf.osrd.train.RollingStock
+import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
+import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import kotlin.math.max
 import kotlin.math.min
 
 class IncrementalRequirementEnvelopeAdapter(
-    private val rollingStock: RollingStock,
-    private val envelopeWithStops: EnvelopeStopWrapper,
+    private val rollingStock: PhysicsRollingStock,
+    private val envelopeWithStops: EnvelopeTimeInterpolate,
     override var simulationComplete: Boolean,
 ) : IncrementalRequirementCallbacks {
     override fun arrivalTimeInRange(
@@ -40,9 +40,6 @@ class IncrementalRequirementEnvelopeAdapter(
         val criticalPoint = end + rollingStock.length
         if (criticalPoint >= 0.0 && criticalPoint <= envelopeWithStops.endPos)
             return envelopeWithStops.interpolateTotalTime(criticalPoint)
-
-        if (arrivalTimeInRange(pathBeginOff, pathEndOff).isFinite())
-            return envelopeWithStops.totalTime
 
         return Double.POSITIVE_INFINITY
     }

@@ -3,7 +3,6 @@ package fr.sncf.osrd.conflicts
 import fr.sncf.osrd.signaling.SignalingSimulator
 import fr.sncf.osrd.signaling.ZoneStatus
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.sim_infra_adapter.SimInfraAdapter
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import fr.sncf.osrd.utils.units.Offset
@@ -36,11 +35,11 @@ data class PendingSpacingRequirement(
 
 class SpacingRequirementAutomaton(
     // context
-    val rawInfra: SimInfraAdapter,
+    val rawInfra: RawInfra,
     val loadedSignalInfra: LoadedSignalInfra,
     val blockInfra: BlockInfra,
     val simulator: SignalingSimulator,
-    val callbacks: IncrementalRequirementCallbacks,
+    var callbacks: IncrementalRequirementCallbacks,
     val incrementalPath: IncrementalPath,
 ) {
     private var nextProcessedBlock = 0
@@ -188,8 +187,8 @@ class SpacingRequirementAutomaton(
         // there may be more zone states than what's contained in the path's blocks, which shouldn't
         // matter
         val zoneStartIndex = incrementalPath.getBlockStartZone(incrementalPath.beginBlockIndex)
-        val zoneCount =
-            incrementalPath.getBlockEndZone(incrementalPath.endBlockIndex - 1) - zoneStartIndex
+        val zoneEndIndex = incrementalPath.getBlockEndZone(incrementalPath.endBlockIndex - 1)
+        val zoneCount = zoneEndIndex - zoneStartIndex
         val zoneStates = MutableList(zoneCount) { ZoneStatus.CLEAR }
 
         // for all signals, update zone requirement times until a signal is found for which
@@ -215,10 +214,9 @@ class SpacingRequirementAutomaton(
 
             // find the first zone after the signal which can be occupied without disturbing the
             // train
-            var lastConstrainingZone = -1
             zoneProbingLoop@ while (true) {
                 // if we reached the last zone, just quit
-                if (nextProbedZoneForSignal == incrementalPath.endZonePathIndex) {
+                if (nextProbedZoneForSignal == zoneEndIndex) {
                     if (incrementalPath.pathComplete) break@zoneProbingLoop
                     return NotEnoughPath
                 }
@@ -249,13 +247,6 @@ class SpacingRequirementAutomaton(
                 // FIXME: Have a better way to check if the signal is constraining
                 if (signalState.getEnum("aspect") == "VL") break
                 addSignalRequirements(signalProtectedZone, zoneIndex, sightTime)
-                lastConstrainingZone = zoneIndex
-            }
-
-            if (lastConstrainingZone == -1) {
-                logger.error {
-                    "signal ${rawInfra.getLogicalSignalName(pathSignal.signal)} does not react to zone occupation"
-                }
             }
             pendingSignals.removeFirst()
             nextProbedZoneForSignal = -1
@@ -318,6 +309,6 @@ class SpacingRequirementAutomaton(
 
 sealed interface SpacingResourceUpdate
 
-class SpacingRequirements(val requirements: List<SpacingRequirement>) : SpacingResourceUpdate
+data class SpacingRequirements(val requirements: List<SpacingRequirement>) : SpacingResourceUpdate
 
 data object NotEnoughPath : SpacingResourceUpdate

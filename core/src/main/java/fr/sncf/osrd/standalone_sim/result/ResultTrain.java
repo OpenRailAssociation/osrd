@@ -4,6 +4,7 @@ import com.squareup.moshi.Json;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
 public class ResultTrain {
@@ -78,8 +79,7 @@ public class ResultTrain {
         public double endTime;
 
         // whether the requirement end_time is final. it's metadata, and **shouldn't be used for conflict detection**
-        @Json(name = "is_complete")
-        public boolean isComplete;
+        public transient boolean isComplete;
 
         public SpacingRequirement(String zone, double beginTime, double endTime, boolean isComplete) {
             this.zone = zone;
@@ -94,6 +94,28 @@ public class ResultTrain {
 
         public SpacingRequirement withAddedTime(double timeToAdd) {
             return new SpacingRequirement(zone, beginTime + timeToAdd, endTime + timeToAdd, isComplete);
+        }
+
+        @Override
+        public String toString() {
+            return "SpacingRequirement{" + "zone='" + zone + '\'' + ", beginTime=" + beginTime + ", endTime=" + endTime
+                    + '}';
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            final SpacingRequirement that = (SpacingRequirement) o;
+            return Double.compare(beginTime, that.beginTime) == 0
+                    && Double.compare(endTime, that.endTime) == 0
+                    && isComplete == that.isComplete
+                    && Objects.equals(zone, that.zone);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(zone, beginTime, endTime, isComplete);
         }
     }
 
