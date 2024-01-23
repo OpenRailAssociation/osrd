@@ -20,7 +20,7 @@ import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import { Loader, Spinner } from 'common/Loaders';
 import ScenarioCard from 'modules/scenario/components/ScenarioCard';
 import ScenarioCardEmpty from 'modules/scenario/components/ScenarioCardEmpty';
-import AddOrEditStudyModal from 'modules/study/components/AddOrEditStudyModal';
+import AddOrEditStudyModal, { StudyForm } from 'modules/study/components/AddOrEditStudyModal';
 import { budgetFormat } from 'utils/numbers';
 
 type SortOptions =
@@ -219,7 +219,18 @@ export default function Study() {
                     className="study-details-modify-button"
                     type="button"
                     onClick={() =>
-                      openModal(<AddOrEditStudyModal editionMode study={study} />, 'xl')
+                      openModal(
+                        <AddOrEditStudyModal
+                          editionMode
+                          study={
+                            {
+                              ...study,
+                              budget: study.budget !== 0 ? study.budget : undefined,
+                            } as StudyForm
+                          }
+                        />,
+                        'xl'
+                      )
                     }
                   >
                     <span className="study-details-modify-button-text">{t('modifyStudy')}</span>

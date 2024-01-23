@@ -25,17 +25,17 @@ import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
-import type { StudyCreateForm, StudyWithScenarios } from 'common/api/osrdEditoastApi';
+import type { StudyCreateForm } from 'common/api/osrdEditoastApi';
 
 import { setFailure, setSuccess } from 'reducers/main';
 
-interface StudyForm extends StudyCreateForm {
+export interface StudyForm extends StudyCreateForm {
   id?: number;
 }
 
 type Props = {
   editionMode?: boolean;
-  study?: StudyWithScenarios;
+  study?: StudyForm;
 };
 
 type StudyParams = {
@@ -47,7 +47,7 @@ const emptyStudy: StudyForm = { name: '', state: STUDY_STATES.started, tags: [] 
 export default function AddOrEditStudyModal({ editionMode, study }: Props) {
   const { t } = useTranslation('operationalStudies/study');
   const { closeModal } = useContext(ModalContext);
-  const [currentStudy, setCurrentStudy] = useState<StudyForm>((study as StudyForm) || emptyStudy);
+  const [currentStudy, setCurrentStudy] = useState<StudyForm>(study || emptyStudy);
   const [displayErrors, setDisplayErrors] = useState(false);
   const { projectId } = useParams() as StudyParams;
   const { updateStudyID } = useOsrdConfActions();
