@@ -4,7 +4,7 @@ import { SpeedSectionEntity } from 'types';
 import { AiOutlinePlusCircle } from 'react-icons/ai';
 import { FaTimes } from 'react-icons/fa';
 import { MdSpeed } from 'react-icons/md';
-import { cloneDeep, isEmpty, map, mapKeys, omit } from 'lodash';
+import { cloneDeep, isEmpty, mapKeys, omit } from 'lodash';
 
 import EditorContext from '../../../context';
 import { ExtendedEditorContextType } from '../../editorContextTypes';
@@ -74,8 +74,8 @@ const SpeedSectionMetadataForm: FC = () => {
             {t('Editor.tools.speed-edition.additional-speed-limit')}
           </div>
         )}
-        {map(entity.properties.speed_limit_by_tag || {}, (value, key) => (
-          <div key={key} className="form-group field field-string">
+        {Object.entries(entity.properties.speed_limit_by_tag || {}).map(([key, value], index) => (
+          <div key={index} className="form-group field field-string">
             <div className="d-flex flex-row align-items-center">
               <input
                 required
