@@ -21,15 +21,16 @@ const SpeedInput: FC<
 
   return (
     <input
-      min={0}
+      min={1}
       step={0.1}
       {...attrs}
       type="number"
       value={kmhSpeed}
       onChange={(e) => {
-        setKmhSpeed(e.target.value);
-        const newKmhSpeed = +e.target.value;
-        const newMsSpeed = isNumber(newKmhSpeed) ? kmhToMs(newKmhSpeed) : undefined;
+        const inputValue = e.target.value;
+        setKmhSpeed(inputValue);
+        const newKmhSpeed = parseFloat(inputValue);
+        const newMsSpeed = Number.isNaN(newKmhSpeed) ? undefined : kmhToMs(newKmhSpeed);
         if (newMsSpeed !== msSpeed) onChange(newMsSpeed);
       }}
     />
