@@ -47,3 +47,14 @@ export const onResultSearchClick = ({
     })
   );
 };
+
+export const createMapSearchQuery = (
+  searchState: string,
+  keywords: string[],
+  isSearchByTrigram?: boolean
+) => {
+  if (isSearchByTrigram) return ['=i', ['trigram'], searchState];
+  return !Number.isNaN(Number(searchState))
+    ? ['=', [keywords[0]], Number(searchState)]
+    : ['search', [keywords[1]], searchState];
+};

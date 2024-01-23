@@ -8,7 +8,7 @@ import { useDebounce } from 'utils/helpers';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import { onResultSearchClick } from 'common/Map/utils';
+import { createMapSearchQuery, onResultSearchClick } from 'common/Map/utils';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import MultiSelectSNCF from 'common/BootstrapSNCF/MultiSelectSNCF';
 import nextId from 'react-id-generator';
@@ -98,10 +98,7 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
     trackSystems: string[],
     settings: string[]
   ): SearchPayload => {
-    const payloadQuery = !Number.isNaN(Number(lineSearch))
-      ? ['=', ['line_code'], Number(lineSearch)]
-      : ['search', ['line_name'], lineSearch];
-
+    const payloadQuery = createMapSearchQuery(lineSearch, ['line_code', 'line_name']);
     return {
       object: 'signal',
       query: [
