@@ -67,7 +67,7 @@ public class RJSParsingTests {
         var rjsInfra = Helpers.getExampleInfra("one_line/infra.json");
         var track = rjsInfra.trackSections.iterator().next();
         rjsInfra.speedSections = List.of(
-                new RJSSpeedSection("id", 27, Map.of(
+                new RJSSpeedSection("id", 27., Map.of(
                         "category1", 10.,
                         "category2", 20.
                 ), List.of(new RJSApplicableDirectionsTrackRange(
@@ -76,7 +76,7 @@ public class RJSParsingTests {
                         0,
                         10
                 ))),
-            new RJSSpeedSection("id", 45, Map.of(
+            new RJSSpeedSection("id", 45., Map.of(
                     "category2", 12.,
                     "category3", 30.
             ), List.of(new RJSApplicableDirectionsTrackRange(

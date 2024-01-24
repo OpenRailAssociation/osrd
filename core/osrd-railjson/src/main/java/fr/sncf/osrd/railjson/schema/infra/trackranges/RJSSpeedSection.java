@@ -20,7 +20,7 @@ public class RJSSpeedSection implements Identified {
     /** Constructor */
     public RJSSpeedSection(
             String id,
-            double speedLimit,
+            Double speedLimit,
             Map<String, Double> speedLimitByTag,
             List<RJSApplicableDirectionsTrackRange> trackRanges
     ) {

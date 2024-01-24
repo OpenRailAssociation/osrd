@@ -50,7 +50,7 @@ public class MRSPTest {
         var speedSection1 = new RJSSpeedSection(NAME, SPEED1, Map.of(TRAIN_TAG1, SPEED2),
                 List.of(new RJSApplicableDirectionsTrackRange("TA0", ApplicableDirection.BOTH,
                         POSITION1, POSITION2)));
-        var speedSection2 = new RJSSpeedSection(NAME, 0, Map.of(TRAIN_TAG2, SPEED3),
+        var speedSection2 = new RJSSpeedSection(NAME, null, Map.of(TRAIN_TAG2, SPEED3),
                 List.of(new RJSApplicableDirectionsTrackRange("TA0", ApplicableDirection.BOTH,
                         POSITION2, POSITION3)));
         rjsInfra.speedSections = new ArrayList<>();

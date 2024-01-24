@@ -391,6 +391,11 @@ public enum ErrorType {
             "Allowance is out of bounds",
             ErrorCause.USER
     ),
+    InvalidSpeedLimitValue(
+            "speed_limit_value",
+            "Speed limit must be greater than 0",
+            ErrorCause.USER
+    )
     ;
 
     public final String type;

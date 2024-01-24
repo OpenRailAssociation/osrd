@@ -143,6 +143,7 @@ async fn post_railjson(
     }
     .into();
     let railjson = railjson.into_inner();
+
     let infra = infra.persist(railjson, db_pool.clone()).await?;
     let infra_id = infra.id.unwrap();
 

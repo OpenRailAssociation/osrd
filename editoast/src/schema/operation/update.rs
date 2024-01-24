@@ -94,6 +94,7 @@ impl DataObject {
         if obj_railjson.get_id() != &update.obj_id {
             return Err(OperationError::ModifyId.into());
         }
+
         Ok(obj_railjson)
     }
 }

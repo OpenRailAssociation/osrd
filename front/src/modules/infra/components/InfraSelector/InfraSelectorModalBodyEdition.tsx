@@ -69,6 +69,9 @@ const InfraSelectorModalBodyEdition = ({
         .then(() => {
           setSelectedFile(undefined);
           setErrorMessage(undefined);
+        })
+        .catch(() => {
+          setErrorMessage(t('jsonUpload.uploadError'));
         });
     } else {
       postInfra({ body: { name: nameNewInfra } })

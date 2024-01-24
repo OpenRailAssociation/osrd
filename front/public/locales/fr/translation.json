@@ -40,6 +40,12 @@
         "title": "Modifications enregistrées",
         "text": "Vos modifications ont été publiées"
       }
+    },
+    "failure": {
+      "save":{
+        "title": "Echec de l'enregistrement des modifications",
+        "text": "Vos modifications n'ont pas été publiées"
+      }
     }
   },
   "Editor": {
@@ -481,6 +487,7 @@
   "jsonUpload": {
     "badJSON": "Le fichier JSON est malformé",
     "emptyFile": "Le fichier est vide",
-    "notJSONFormat": "Le fichier n'est pas au format JSON"
+    "notJSONFormat": "Le fichier n'est pas au format JSON",
+    "uploadError": "Erreur lors du chargement du fichier"
   }
 }

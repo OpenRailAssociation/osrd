@@ -31,7 +31,7 @@ pub use operational_point::{
 pub use railjson::{find_objects, RailJson, RailjsonError};
 pub use route::Route;
 pub use signal::{LogicalSignal, Signal, SignalCache, SignalExtensions, SignalSncfExtension};
-pub use speed_section::SpeedSection;
+pub use speed_section::{Speed, SpeedSection};
 pub use switch::{Switch, SwitchCache};
 pub use switch_type::{
     builtin_node_types_list, Crossing, DoubleSlipSwitch, Link, PointSwitch, SingleSlipSwitch,

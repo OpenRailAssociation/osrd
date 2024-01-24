@@ -222,13 +222,13 @@ mod tests {
             .iter()
             .find(|s| s.track_ranges[0].applicable_directions == ApplicableDirections::StartToStop)
             .unwrap();
-        assert!((120. / 3.6 - forward.speed_limit.unwrap()).abs() < 0.1);
+        assert!((120. / 3.6 - forward.speed_limit.unwrap().0).abs() < 0.1);
         let backward = rj
             .speed_sections
             .iter()
             .find(|s| s.track_ranges[0].applicable_directions == ApplicableDirections::StopToStart)
             .unwrap();
-        assert!((60. / 3.6 - backward.speed_limit.unwrap()).abs() < 0.1);
+        assert!((60. / 3.6 - backward.speed_limit.unwrap().0).abs() < 0.1);
     }
 
     #[test]

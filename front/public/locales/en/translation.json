@@ -40,6 +40,12 @@
         "title": "Modifications saved",
         "text": "Your modifications have been published"
       }
+    },
+    "failure": {
+      "save":{
+        "title": "Failed to save modifications",
+        "text": "Failed to publish your modifications"
+      }
     }
   },
   "Editor": {
@@ -483,6 +489,7 @@
   "jsonUpload": {
     "badJSON": "The JSON file is malformed",
     "emptyFile": "The file is empty",
-    "notJSONFormat": "The file is not in JSON format "
+    "notJSONFormat": "The file is not in JSON format ",
+    "uploadError": "Error occurred while upload the file"
   }
 }
