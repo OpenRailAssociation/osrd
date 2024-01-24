@@ -50,6 +50,7 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
         val stops = makeStops(ranges)
         val withAllowance =
             applyAllowance(
+                graph,
                 mergedEnvelopes,
                 ranges,
                 standardAllowance,

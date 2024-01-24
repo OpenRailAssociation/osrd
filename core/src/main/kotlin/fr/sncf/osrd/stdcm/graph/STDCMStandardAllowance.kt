@@ -36,6 +36,7 @@ val logger: Logger = LoggerFactory.getLogger(STDCMStandardAllowance::class.java)
 
 /** Applies the allowance to the final envelope */
 fun applyAllowance(
+    graph: STDCMGraph,
     envelope: Envelope,
     ranges: List<EdgeRange<STDCMEdge, STDCMEdge>>,
     standardAllowance: AllowanceValue?,
@@ -67,8 +68,14 @@ fun applyAllowance(
                     isMareco
                 )
             val conflictOffset =
-                findConflictOffsets(newEnvelope, blockAvailability, ranges, departureTime, stops)
-                    ?: return newEnvelope
+                findConflictOffsets(
+                    graph,
+                    newEnvelope,
+                    blockAvailability,
+                    ranges,
+                    departureTime,
+                    stops
+                ) ?: return newEnvelope
             if (rangeTransitions.contains(conflictOffset))
                 break // Error case, we exit and fallback to the linear envelope
             logger.info(
@@ -93,6 +100,7 @@ fun applyAllowance(
     } else {
         logger.info("Failed to compute a mareco standard allowance, fallback to linear allowance")
         return applyAllowance(
+            graph,
             envelope,
             ranges,
             standardAllowance,
@@ -113,6 +121,7 @@ fun applyAllowance(
  * found, returns its offset. Otherwise, returns NaN.
  */
 private fun findConflictOffsets(
+    graph: STDCMGraph,
     envelope: Envelope,
     blockAvailability: BlockAvailabilityInterface,
     ranges: List<EdgeRange<STDCMEdge, STDCMEdge>>,
@@ -130,7 +139,17 @@ private fun findConflictOffsets(
                         .mapToLong { range -> (range.end - range.start).millimeters }
                         .sum()
             )
-    val explorer = ranges.last().edge.infraExplorer.withEnvelope(envelopeWithStops)
+    val explorer =
+        ranges
+            .last()
+            .edge
+            .infraExplorer
+            .withEnvelope(
+                envelopeWithStops,
+                graph.fullInfra,
+                graph.rollingStock,
+                isSimulationComplete = true
+            )
     assert(
         TrainPhysicsIntegrator.arePositionsEqual(
             envelopeWithStops.endPos,

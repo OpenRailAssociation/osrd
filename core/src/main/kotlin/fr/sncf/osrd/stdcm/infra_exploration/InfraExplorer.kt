@@ -217,7 +217,7 @@ private class InfraExplorerImpl(
             this.incrementalPath.clone(),
             this.blockToPathProperties.toMutableMap(),
             this.currentIndex,
-            this.endBlocks
+            this.endBlocks,
         )
     }
 

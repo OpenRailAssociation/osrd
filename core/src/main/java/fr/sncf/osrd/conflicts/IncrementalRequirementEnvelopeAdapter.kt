@@ -9,13 +9,14 @@ import kotlin.math.min
 
 class IncrementalRequirementEnvelopeAdapter(
     private val rollingStock: PhysicsRollingStock,
-    private val envelopeWithStops: EnvelopeTimeInterpolate,
+    private val envelopeWithStops: EnvelopeTimeInterpolate?,
     override var simulationComplete: Boolean,
 ) : IncrementalRequirementCallbacks {
     override fun arrivalTimeInRange(
         pathBeginOff: Offset<TravelledPath>,
         pathEndOff: Offset<TravelledPath>
     ): Double {
+        if (envelopeWithStops == null) return Double.POSITIVE_INFINITY
         // if the head of the train enters the zone at some point, use that
         val begin = pathBeginOff.distance.meters
         if (begin >= 0.0 && begin <= envelopeWithStops.endPos)
@@ -35,6 +36,7 @@ class IncrementalRequirementEnvelopeAdapter(
         pathBeginOff: Offset<TravelledPath>,
         pathEndOff: Offset<TravelledPath>
     ): Double {
+        if (envelopeWithStops == null) return Double.POSITIVE_INFINITY
         val end = pathEndOff.distance.meters
 
         val criticalPoint = end + rollingStock.length
@@ -45,8 +47,8 @@ class IncrementalRequirementEnvelopeAdapter(
     }
 
     override val currentTime
-        get() = envelopeWithStops.totalTime
+        get() = envelopeWithStops?.totalTime ?: 0.0
 
     override val currentPathOffset
-        get() = Offset<TravelledPath>(envelopeWithStops.endPos.meters)
+        get() = Offset<TravelledPath>(envelopeWithStops?.endPos?.meters ?: 0.meters)
 }
