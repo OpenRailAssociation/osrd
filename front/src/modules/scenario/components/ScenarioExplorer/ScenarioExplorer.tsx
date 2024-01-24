@@ -131,7 +131,9 @@ const ScenarioExplorer = ({
               <img src={scenarioIcon} alt="scenario icon" />
               <span className="scenario-explorator-card-head-legend">{t('scenarioLegend')}</span>
               <div className="scenario-explorator-card-head-scenario">
-                {scenarioDetails.name}
+                <span className="text-truncate" title={scenarioDetails.name}>
+                  {scenarioDetails.name}
+                </span>
                 {timetable && (
                   <span className="scenario-explorator-card-head-scenario-traincount">
                     {validTrainCount(timetable.train_schedule_summaries)}

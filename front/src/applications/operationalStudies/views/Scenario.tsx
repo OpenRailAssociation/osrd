@@ -225,7 +225,12 @@ export default function Scenario() {
                 {scenario && (
                   <div className="scenario-details">
                     <div className="scenario-details-name">
-                      <span className="flex-grow-1 scenario-name">{scenario.name}</span>
+                      <span
+                        className="flex-grow-1 scenario-name text-truncate"
+                        title={scenario.name}
+                      >
+                        {scenario.name}
+                      </span>
                       <button
                         data-testid="editScenario"
                         className="scenario-details-modify-button"
