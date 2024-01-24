@@ -4,14 +4,14 @@
   "errorMessages": {
     "unableToSearchSignal": "Recherche du signal impossible"
   },
-  "labelbvonly": "BV uniquement",
+  "labelbvonly": "BV seuls",
   "line": "Ligne",
   "linecode": "Code ligne",
   "name": "Nom",
   "noAspectSelected": "Aucun aspect sélectionné",
   "noresult": "Aucun résultat",
   "pk": "PK",
-  "placeholderchcode": "Code CH",
+  "placeholderchcode": "CH",
   "placeholderline": "Nom ou numéro de ligne",
   "placeholdername": "Nom, appelation, libellé, code CI",
   "placeholdersignal": "Nom du signal",

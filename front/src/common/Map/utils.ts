@@ -4,6 +4,7 @@ import type { AllGeoJSON } from '@turf/helpers';
 import type { AnyAction, Dispatch } from 'redux';
 import type { MapState, Viewport } from 'reducers/map/index';
 import type {
+  SearchQuery,
   SearchResultItemOperationalPoint,
   SearchResultItemSignal,
 } from 'common/api/osrdEditoastApi';
@@ -48,13 +49,13 @@ export const onResultSearchClick = ({
   );
 };
 
-export const createMapSearchQuery = (
+/** This function will build a query based on the type of __searchState__.
+ * If it can be converted to a number, the op search will be based on its code rather than its name. */
+export function createMapSearchQuery(
   searchState: string,
-  keywords: string[],
-  isSearchByTrigram?: boolean
-) => {
-  if (isSearchByTrigram) return ['=i', ['trigram'], searchState];
+  { codeColumn, nameColumn }: { codeColumn: string; nameColumn: string }
+): SearchQuery {
   return !Number.isNaN(Number(searchState))
-    ? ['=', [keywords[0]], Number(searchState)]
-    : ['search', [keywords[1]], searchState];
-};
+    ? ['=', [codeColumn], Number(searchState)]
+    : ['search', [nameColumn], searchState];
+}

@@ -47,7 +47,10 @@ const MapSearchLine = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchLine
   };
 
   const getPayload = (lineSearch: string, infraIDPayload: number): SearchPayload => {
-    const payloadQuery = createMapSearchQuery(lineSearch, ['line_code', 'line_name']);
+    const payloadQuery = createMapSearchQuery(lineSearch, {
+      codeColumn: 'line_code',
+      nameColumn: 'line_name',
+    });
 
     return {
       object: 'track',
