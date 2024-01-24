@@ -5,7 +5,7 @@ type RollingStockConstantsType = {
   [key: string]: {
     min: number;
     max: number;
-    array?: string[];
+    units?: Array<string>;
   };
 };
 const RollingStockConstants: RollingStockConstantsType = {
@@ -16,22 +16,26 @@ const RollingStockConstants: RollingStockConstantsType = {
   mass: {
     min: 0.1,
     max: 10000,
+    units: ['t', 'kg'],
   },
   inertiaCoefficient: {
     min: 1,
     max: 1.5,
   },
-  a: {
+  rollingResistanceA: {
     min: 0,
     max: 20000,
+    units: ['N', 'daN', 'daN/t'],
   },
-  b: {
+  rollingResistanceB: {
     min: 0,
     max: 500,
+    units: ['N/(m/s)', 'daN/(km/h)', 'daN/(km/h)/t'],
   },
-  c: {
+  rollingResistanceC: {
     min: 0,
     max: 10,
+    units: ['N/(m/s)²', 'daN/(km/h)²', 'daN/(km/h)²/t'],
   },
   maxSpeed: {
     min: 1,

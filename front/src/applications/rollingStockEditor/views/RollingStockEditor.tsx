@@ -160,7 +160,6 @@ export default function RollingStockEditor({ rollingStocks }: RollingStockEditor
         </div>
         {isAdding && (
           <div className="d-flex flex-column pl-0 rollingstock-editor-form-container mb-3">
-            <h1>eeeeeeeeeeeeee</h1>
             <RollingStockEditorForm
               isAdding={isAdding}
               setAddOrEditState={setIsAdding}

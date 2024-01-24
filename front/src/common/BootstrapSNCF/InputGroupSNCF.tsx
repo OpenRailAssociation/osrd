@@ -1,9 +1,18 @@
-import React, { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import React, {
+  ChangeEvent,
+  ChangeEventHandler,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import nextId from 'react-id-generator';
 import './InputGroupSNCF.scss';
 import cx from 'classnames';
 import { isFloat, stripDecimalDigits } from 'utils/numbers';
 import { isNil } from 'lodash';
+import { convertUnit } from '../../modules/rollingStock/helpers/utils';
+import RollingStockConstants from '../../modules/rollingStock/components/RollingStockEditor/RollingStockConstants';
 
 type Option = {
   id: string;
@@ -138,6 +147,25 @@ export default function InputGroupSNCF({
     </div>
   );
 
+  const objectUnits: Array<string> | undefined = RollingStockConstants[id]?.units;
+
+  /**
+   * convert unit if needed after the change in selector
+   * @param event
+   */
+  function handleChangeUnit(event: ChangeEventHandler<HTMLInputElement>) {
+    console.log('unitchanged', value, event);
+
+    const inputValue: string = `${value}`;
+    const oldUnit: string | undefined = selected.label;
+    const newUnit = event.target.value;
+    const valueConverted = convertUnit(inputValue, oldUnit, newUnit);
+    console.log('valueConverted', valueConverted);
+    // TODO find a way to update the value
+    // and catch an impossible conversion error
+    value = valueConverted;
+  }
+
   return (
     <>
       {label && (
@@ -203,7 +231,25 @@ export default function InputGroupSNCF({
               ))}
             </div>
           </div>
+          <br />
         </div>
+        <div className="unit-selector form-control-container mb-4 w-100">
+          {objectUnits && (
+            <select
+              className="form-control h-100 px-2 input input-small"
+              name="unitSelector"
+              id="unitSelector"
+              onChange={handleChangeUnit}
+            >
+              {objectUnits.map((unit: string) => (
+                <option value={unit} key={`unit_${unit}`}>
+                  {unit}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+
         {orientation === 'left' && inputField}
         {isDropdownShown && (
           <div
