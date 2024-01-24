@@ -54,55 +54,53 @@ const MapSearchStation = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchS
   const orderResults = (results: SearchResultItemOperationalPoint[]) =>
     results.slice().sort((a, b) => a.name.localeCompare(b.name) || a.ch.localeCompare(b.ch));
 
-  const searchByTrigrams = async () => {
-    const searchQuery = createMapSearchQuery(searchState, ['ci', 'name'], true);
-    const payload = createPayload(searchQuery);
-    await postSearch({
-      searchPayload: payload,
-    })
-      .unwrap()
-      .then((results) => {
-        setTrigramResults(results as SearchResultItemOperationalPoint[]);
-      })
-      .catch(() => {
-        resetSearchResult();
-      });
-  };
-
-  const searchByCodesAndNames = async () => {
-    const searchQuery = createMapSearchQuery(searchState, ['ci', 'name']);
-    const payload = createPayload(searchQuery);
-
-    await postSearch({
-      searchPayload: payload,
-    })
-      .unwrap()
-      .then((results) => {
-        setNameResults(orderResults(results as SearchResultItemOperationalPoint[]));
-      })
-      .catch(() => {
-        resetSearchResult();
-      });
-  };
-
-  const getResult = async () => {
+  const searchOperationalPoints = async () => {
     if (!isSearchingByName && searchState.length !== 6) return;
-    if (searchState.length > 3) {
-      setTrigramResults([]);
-      searchByCodesAndNames();
-    } else if (searchState.length === 3) {
-      // The trigram search should always appear first, we need two api calls here.
-      searchByTrigrams();
-      searchByCodesAndNames();
-    } else if (searchState.length > 0) {
-      setNameResults([]);
-      searchByTrigrams();
+    const isSearchingByTrigram = isSearchingByName && searchState.length < 3;
+    const searchQuery = isSearchingByTrigram
+      ? ['=i', ['trigram'], searchState]
+      : createMapSearchQuery(searchState, {
+          codeColumn: 'ci',
+          nameColumn: 'name',
+        });
+    const payload = createPayload(searchQuery);
+
+    await postSearch({
+      searchPayload: payload,
+    })
+      .unwrap()
+      .then((results) => {
+        if (isSearchingByTrigram) {
+          setNameResults([]);
+          setTrigramResults(results as SearchResultItemOperationalPoint[]);
+        }
+        if (isSearchingByName) {
+          setTrigramResults([]);
+          setNameResults(orderResults(results as SearchResultItemOperationalPoint[]));
+        }
+      })
+      .catch(() => {
+        resetSearchResult();
+      });
+
+    // We need to make a second api call for this case in order to obtain the results of the search by trigram and by name.
+    if (isSearchingByName && searchState.length === 3) {
+      await postSearch({
+        searchPayload: createPayload(['=i', ['trigram'], searchState]),
+      })
+        .unwrap()
+        .then((results) => {
+          setTrigramResults(results as SearchResultItemOperationalPoint[]);
+        })
+        .catch(() => {
+          resetSearchResult();
+        });
     }
   };
 
   useEffect(() => {
     if (searchState) {
-      getResult();
+      searchOperationalPoints();
     } else {
       resetSearchResult();
     }
@@ -136,8 +134,8 @@ const MapSearchStation = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchS
 
   return (
     <>
-      <div className="d-flex mb-2">
-        <span className="flex-fill mr-2">
+      <div className="d-flex mb-2 flex-column flex-md-row">
+        <span className="flex-fill col-md-6 col-xl-7 pl-0 mb-2">
           <InputSNCF
             id="map-search-station"
             name="map-search-station"
@@ -154,7 +152,7 @@ const MapSearchStation = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchS
             sm
           />
         </span>
-        <span className="flex-fill mr-2">
+        <span className="col-md-3 pl-0 mb-2">
           <InputSNCF
             type="text"
             placeholder={t('map-search:placeholderchcode')}
@@ -170,7 +168,7 @@ const MapSearchStation = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchS
             sm
           />
         </span>
-        <span className="d-flex flex-fill">
+        <span className="col-md-3 col-xl-2 pr-2 pl-0 mt-md-1">
           <CheckboxRadioSNCF
             type="checkbox"
             label={t('map-search:labelbvonly')}
@@ -185,11 +183,13 @@ const MapSearchStation = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchS
           count: searchResults.length,
         })}
       </h2>
-      <StationCardsList
-        operationalPoints={searchResults}
-        stationCHcodes={stationCHcodes}
-        onStationClick={onResultClick}
-      />
+      {searchResults.length > 0 && (
+        <StationCardsList
+          operationalPoints={searchResults}
+          stationCHcodes={stationCHcodes}
+          onStationClick={onResultClick}
+        />
+      )}
     </>
   );
 };
