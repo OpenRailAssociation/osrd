@@ -3,6 +3,7 @@ package fr.sncf.osrd.utils
 import com.google.common.collect.HashBiMap
 import com.google.common.collect.HashMultimap
 import fr.sncf.osrd.api.FullInfra
+import fr.sncf.osrd.api.makeSignalingSimulator
 import fr.sncf.osrd.geom.LineString
 import fr.sncf.osrd.geom.Point
 import fr.sncf.osrd.sim_infra.api.*
@@ -25,11 +26,12 @@ class DummyInfra : RawInfra, BlockInfra {
 
     /** get the FullInfra  */
     fun fullInfra(): FullInfra {
+        val simulator = makeSignalingSimulator()
         return FullInfra(
             this,
-            null,
+            simulator.loadSignals(this),
             this,
-            null
+            simulator
         )
     }
 
@@ -92,11 +94,11 @@ class DummyInfra : RawInfra, BlockInfra {
     // region inherited
 
     override fun getSignals(zonePath: ZonePathId): StaticIdxList<PhysicalSignal> {
-        TODO("Not yet implemented")
+        return makeIndexList(zonePath)
     }
 
     override fun getSignalPositions(zonePath: ZonePathId): OffsetList<ZonePath> {
-        TODO("Not yet implemented")
+        return mutableOffsetArrayListOf(Offset(0.meters))
     }
 
     override fun getSpeedLimits(route: RouteId): StaticIdxList<SpeedLimit> {
@@ -112,16 +114,16 @@ class DummyInfra : RawInfra, BlockInfra {
     }
 
     override val physicalSignals: StaticIdxSpace<PhysicalSignal>
-        get() = TODO("Not yet implemented")
+        get() = StaticIdxSpace(blockPool.size.toUInt())
     override val logicalSignals: StaticIdxSpace<LogicalSignal>
-        get() = TODO("Not yet implemented")
+        get() = StaticIdxSpace(blockPool.size.toUInt())
 
     override fun getLogicalSignals(signal: PhysicalSignalId): StaticIdxList<LogicalSignal> {
-        TODO("Not yet implemented")
+        return makeIndexList(signal)
     }
 
     override fun getPhysicalSignal(signal: LogicalSignalId): PhysicalSignalId {
-        TODO("Not yet implemented")
+        return convertId(signal)
     }
 
     override fun getPhysicalSignalName(signal: PhysicalSignalId): String? {
@@ -129,19 +131,19 @@ class DummyInfra : RawInfra, BlockInfra {
     }
 
     override fun getSignalSightDistance(signal: PhysicalSignalId): Distance {
-        TODO("Not yet implemented")
+        return 400.meters
     }
 
     override fun getSignalingSystemId(signal: LogicalSignalId): String {
-        TODO("Not yet implemented")
+        return "BAL"
     }
 
     override fun getRawSettings(signal: LogicalSignalId): Map<String, String> {
-        TODO("Not yet implemented")
+        return mapOf(Pair("Nf", "true"))
     }
 
     override fun getNextSignalingSystemIds(signal: LogicalSignalId): List<String> {
-        TODO("Not yet implemented")
+        return listOf("BAL")
     }
 
     override val routes: StaticIdxSpace<Route>
@@ -492,6 +494,10 @@ class DummyInfra : RawInfra, BlockInfra {
         val res = MutableDirStaticIdxArrayList<U>()
         res.add(DirStaticIdx(StaticIdx(id.index), Direction.INCREASING))
         return res
+    }
+
+    private fun <T, U> convertId(id: StaticIdx<T>): StaticIdx<U> {
+        return StaticIdx(id.index)
     }
     // endregion
 }
