@@ -91,7 +91,9 @@ export const ScenarioMiniCard = ({
       tabIndex={0}
       onClick={selectScenario}
     >
-      <div>{scenario.name}</div>
+      <div className="text-truncate" title={scenario.name}>
+        {scenario.name}
+      </div>
     </div>
   );
 };
