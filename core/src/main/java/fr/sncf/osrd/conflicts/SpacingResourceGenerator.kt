@@ -39,8 +39,8 @@ class SpacingRequirementAutomaton(
     val loadedSignalInfra: LoadedSignalInfra,
     val blockInfra: BlockInfra,
     val simulator: SignalingSimulator,
-    var callbacks: IncrementalRequirementCallbacks,
-    val incrementalPath: IncrementalPath,
+    var callbacks: IncrementalRequirementCallbacks, // Not read-only to be updated along the path
+    var incrementalPath: IncrementalPath, // Not read-only to be updated along the path
 ) {
     private var nextProcessedBlock = 0
 
@@ -304,6 +304,10 @@ class SpacingRequirementAutomaton(
             endTime,
             isComplete,
         )
+    }
+
+    fun clone(): SpacingRequirementAutomaton {
+        TODO("Not yet implemented")
     }
 }
 
