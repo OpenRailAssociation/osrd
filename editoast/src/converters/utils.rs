@@ -369,9 +369,13 @@ pub fn edge_to_buffer(node: &NodeId, edge: &Edge, count: i64) -> BufferStop {
 }
 
 pub fn electrifications(edge: &Edge) -> Option<Electrification> {
-    edge.tags.get("voltage").map(|voltage| {
-        let voltages: Vec<String> = voltage
+    // TODO: handle multiple overlapping electrifications
+    // Specific infrastructures can support multiple electrifications (e.g. "voltage"="600;1500;3000;15000;25000").
+    // Short term solution : pick the first one, i.g. "600;1500;3000;15000;25000" -> "600V"
+    edge.tags.get("voltage").and_then(|voltage| {
+        voltage
             .split(';')
+            .next()
             .map(|v| {
                 if v.parse::<f64>().is_ok() {
                     format!("{}V", v)
@@ -379,17 +383,16 @@ pub fn electrifications(edge: &Edge) -> Option<Electrification> {
                     v.to_string()
                 }
             })
-            .collect();
-        Electrification {
-            id: edge.id.clone().into(),
-            voltage: voltages.join(";").into(),
-            track_ranges: vec![ApplicableDirectionsTrackRange::new(
-                edge.id.clone(),
-                0.,
-                edge.length(),
-                ApplicableDirections::Both,
-            )],
-        }
+            .map(|parsed_voltage| Electrification {
+                id: edge.id.clone().into(),
+                voltage: parsed_voltage.into(),
+                track_ranges: vec![ApplicableDirectionsTrackRange::new(
+                    edge.id.clone(),
+                    0.,
+                    edge.length(),
+                    ApplicableDirections::Both,
+                )],
+            })
     })
 }
 
@@ -463,6 +466,7 @@ fn identifier(tags: &osmpbfreader::Tags) -> Option<OperationalPointIdentifierExt
 #[cfg(test)]
 mod tests {
     use osm4routing::Coord;
+    use rstest::rstest;
 
     use crate::converters::utils::*;
 
@@ -510,5 +514,33 @@ mod tests {
         };
         assert_eq!(1., reference_coord(NodeId(0), &edge).lon);
         assert_eq!(0., reference_coord(NodeId(2), &edge).lon);
+    }
+
+    #[rstest]
+    #[case("15000", "15000V")]
+    #[case("15000V", "15000V")]
+    #[case("600;1500;3000;15000;25000", "600V")]
+    fn test_voltage(#[case] input: &str, #[case] expected: &str) {
+        let edge = Edge {
+            id: "1".into(),
+            tags: HashMap::from([("voltage".into(), input.into())]),
+            ..Default::default()
+        };
+
+        let electrification = electrifications(&edge).unwrap();
+
+        assert_eq!(electrification.voltage, expected.into());
+    }
+
+    #[test]
+    fn test_no_voltage() {
+        let edge = Edge {
+            id: "1".into(),
+            ..Default::default()
+        };
+
+        let electrification = electrifications(&edge);
+
+        assert!(electrification.is_none());
     }
 }
