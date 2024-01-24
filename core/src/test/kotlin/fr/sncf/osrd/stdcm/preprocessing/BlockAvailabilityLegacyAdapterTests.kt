@@ -61,7 +61,9 @@ class BlockAvailabilityLegacyAdapterTests {
                             doubleArrayOf(0.0, 1.0),
                             doubleArrayOf(100.0, 100.0)
                         )
-                    )
+                    ),
+                    infra,
+                    SimpleRollingStock.STANDARD_TRAIN
                 )
         val res = adapter.getAvailability(explorer, Offset(0.meters), Offset(1.meters), 42.0)
         val expected =

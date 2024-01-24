@@ -40,8 +40,7 @@ fun findPath(
     assert(steps.size >= 2) { "Not enough steps have been set to find a path" }
     val graph =
         STDCMGraph(
-            fullInfra.rawInfra,
-            fullInfra.blockInfra,
+            fullInfra,
             rollingStock,
             comfort,
             timeStep,
@@ -95,6 +94,7 @@ fun findPath(
                     steps[0].locations,
                     startTime,
                     maxDepartureDelay,
+                    rollingStock,
                     endBlocks
                 ),
                 makeObjectiveFunction(steps)
@@ -200,12 +200,13 @@ private fun convertLocations(
     locations: Collection<PathfindingEdgeLocationId<Block>>,
     startTime: Double,
     maxDepartureDelay: Double,
+    rollingStock: RollingStock,
     endBlocks: Collection<BlockId> = setOf()
 ): Set<EdgeLocation<STDCMEdge, STDCMEdge>> {
     val res = HashSet<EdgeLocation<STDCMEdge, STDCMEdge>>()
     for (location in locations) {
         val infraExplorers =
-            initInfraExplorerWithEnvelope(graph.rawInfra, graph.blockInfra, location, endBlocks)
+            initInfraExplorerWithEnvelope(graph.fullInfra, location, endBlocks, rollingStock)
         for (explorer in infraExplorers) {
             val edges =
                 STDCMEdgeBuilder(explorer, graph)
