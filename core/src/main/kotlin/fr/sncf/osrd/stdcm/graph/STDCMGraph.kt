@@ -1,12 +1,11 @@
 package fr.sncf.osrd.stdcm.graph
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue.FixedTime
 import fr.sncf.osrd.graph.Graph
-import fr.sncf.osrd.sim_infra.api.BlockInfra
-import fr.sncf.osrd.sim_infra.api.RawSignalingInfra
 import fr.sncf.osrd.stdcm.STDCMStep
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.train.RollingStock
@@ -21,8 +20,7 @@ import fr.sncf.osrd.train.RollingStock.Comfort
  */
 @SuppressFBWarnings("FE_FLOATING_POINT_EQUALITY")
 class STDCMGraph(
-    val rawInfra: RawSignalingInfra,
-    val blockInfra: BlockInfra,
+    val fullInfra: FullInfra,
     val rollingStock: RollingStock,
     val comfort: Comfort?,
     val timeStep: Double,
@@ -33,6 +31,8 @@ class STDCMGraph(
     tag: String?,
     standardAllowance: AllowanceValue?
 ) : Graph<STDCMNode, STDCMEdge, STDCMEdge> {
+    val rawInfra = fullInfra.rawInfra!!
+    val blockInfra = fullInfra.blockInfra!!
     var stdcmSimulations: STDCMSimulations = STDCMSimulations()
     val steps: List<STDCMStep>
     val delayManager: DelayManager
