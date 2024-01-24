@@ -143,6 +143,7 @@ mod tests {
     use crate::generated_data::error::speed_sections::check_overlapping;
     use crate::infra_cache::tests::{create_small_infra_cache, create_speed_section_cache};
     use crate::infra_cache::Graph;
+    use crate::schema::Speed;
     use crate::schema::{ObjectRef, ObjectType};
 
     #[test]
@@ -185,11 +186,11 @@ mod tests {
         let mut infra_cache = create_small_infra_cache();
         let track_ranges_1 = vec![("A", 20., 220.)];
         let mut speed_section_1 = create_speed_section_cache("SP_error_1", track_ranges_1);
-        speed_section_1.speed_limit = Some(42.);
+        speed_section_1.speed_limit = Some(Speed(42.));
         infra_cache.add(speed_section_1).unwrap();
         let track_ranges_2 = vec![("A", 100., 150.), ("A", 200., 480.)];
         let mut speed_section_2 = create_speed_section_cache("SP_error_2", track_ranges_2);
-        speed_section_2.speed_limit = Some(100.);
+        speed_section_2.speed_limit = Some(Speed(100.));
         infra_cache.add(speed_section_2).unwrap();
         let errors = check_overlapping(&infra_cache, &Graph::load(&infra_cache));
         assert_eq!(1, errors.len());
@@ -204,13 +205,13 @@ mod tests {
         let mut speed_section_1 = create_speed_section_cache("SP_error_1", track_ranges_1);
         speed_section_1
             .speed_limit_by_tag
-            .insert("my_tag".into(), 42.);
+            .insert("my_tag".into(), Speed(42.));
         infra_cache.add(speed_section_1).unwrap();
         let track_ranges_2 = vec![("A", 100., 150.), ("A", 200., 480.)];
         let mut speed_section_2 = create_speed_section_cache("SP_error_2", track_ranges_2);
         speed_section_2
             .speed_limit_by_tag
-            .insert("my_tag".into(), 100.);
+            .insert("my_tag".into(), Speed(100.));
         infra_cache.add(speed_section_2).unwrap();
         let errors = check_overlapping(&infra_cache, &Graph::load(&infra_cache));
         assert_eq!(1, errors.len());
@@ -223,16 +224,16 @@ mod tests {
         let mut infra_cache = create_small_infra_cache();
         let track_ranges_1 = vec![("A", 20., 220.)];
         let mut speed_section_1 = create_speed_section_cache("SP_error_1", track_ranges_1);
-        speed_section_1.speed_limit = Some(42.);
+        speed_section_1.speed_limit = Some(Speed(42.));
         speed_section_1
             .speed_limit_by_tag
-            .insert("my_tag_2".into(), 42.);
+            .insert("my_tag_2".into(), Speed(42.));
         infra_cache.add(speed_section_1).unwrap();
         let track_ranges_2 = vec![("A", 100., 150.), ("A", 200., 480.)];
         let mut speed_section_2 = create_speed_section_cache("SP_error_2", track_ranges_2);
         speed_section_2
             .speed_limit_by_tag
-            .insert("my_tag".into(), 100.);
+            .insert("my_tag".into(), Speed(100.));
         infra_cache.add(speed_section_2).unwrap();
         let errors = check_overlapping(&infra_cache, &Graph::load(&infra_cache));
         assert_eq!(0, errors.len());

@@ -420,6 +420,17 @@ public final class OSRDError extends RuntimeException {
     }
 
     /**
+     * Creates a new OSRDError for invalid speed limit value
+     * @param speedLimit speed limit
+     * @return a new OSRDError instance
+     */
+    public static OSRDError newInvalidSpeedLimitError(double speedLimit) {
+        var error = new OSRDError(ErrorType.InvalidSpeedLimitValue);
+        error.context.put("speed_limit", speedLimit);
+        return error;
+    }
+
+    /**
      * Returns the error message.
      *
      * @return the error message

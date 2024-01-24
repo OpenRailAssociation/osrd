@@ -2,7 +2,9 @@ package fr.sncf.osrd.infra.api.tracks.undirected;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
+import com.squareup.moshi.JsonDataException;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSection;
+import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import java.util.Objects;
 
 public final class SpeedLimits {
@@ -19,10 +21,23 @@ public final class SpeedLimits {
 
     /** Directly creates a SpeedLimits instance from the railjson dict */
     public static SpeedLimits from(RJSSpeedSection rjsSpeedSection) {
-        return new SpeedLimits(
-                rjsSpeedSection.getSpeedLimit(),
-                ImmutableMap.copyOf(rjsSpeedSection.speedLimitByTag)
-        );
+        double speedLimit = rjsSpeedSection.getSpeedLimit();
+        ImmutableMap<String, Double> speedLimitByTag = ImmutableMap.copyOf(rjsSpeedSection.speedLimitByTag);
+
+        validateSpeedLimit(speedLimit);
+
+        for (Double limit : speedLimitByTag.values()) {
+            validateSpeedLimit(limit);
+        }
+
+        return new SpeedLimits(speedLimit, speedLimitByTag);
+    }
+
+    /** validates that speed limit is greater than 0 */
+    private static void validateSpeedLimit(Double speedLimit) throws JsonDataException {
+        if (speedLimit != null && speedLimit <= 0) {
+            throw OSRDError.newInvalidSpeedLimitError(speedLimit);
+        }
     }
 
     /** Returns the speed limit for the given tags */

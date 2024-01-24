@@ -255,7 +255,12 @@ export function saveOperations(
       }
       throw new Error(JSON.stringify(response.error));
     } catch (e) {
-      dispatch(setFailure(e as Error));
+      dispatch(
+        setFailure({
+          name: i18next.t('common.failure.save.title'),
+          message: i18next.t('common.failure.save.text'),
+        })
+      );
       throw e;
     } finally {
       dispatch(updateTotalsIssue(infraID));
