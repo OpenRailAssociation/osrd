@@ -7,6 +7,8 @@ import fr.sncf.osrd.envelope_sim.EnvelopeProfile
 import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.arePositionsEqual
 import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.areTimesEqual
 import fr.sncf.osrd.graph.PathfindingEdgeLocationId
+import fr.sncf.osrd.train.TestRollingStock
+import fr.sncf.osrd.train.TestTrains.REALISTIC_FAST_TRAIN
 import fr.sncf.osrd.utils.DummyInfra
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
@@ -37,8 +39,9 @@ class InfraExplorerWithEnvelopeTests {
 
         // a --> b
         val firstExplorers = initInfraExplorerWithEnvelope(
-            infra, infra,
+            infra.fullInfra(),
             PathfindingEdgeLocationId(blocks[0], Offset(0.meters)),
+            rollingStock = REALISTIC_FAST_TRAIN
         )
         assertEquals(1, firstExplorers.size)
         val firstExplorer = firstExplorers.first()
@@ -110,8 +113,9 @@ class InfraExplorerWithEnvelopeTests {
 
         // a --> b
         val firstExplorers = initInfraExplorerWithEnvelope(
-            infra, infra,
+            infra.fullInfra(),
             PathfindingEdgeLocationId(blocks[0], Offset(0.meters)),
+            rollingStock = REALISTIC_FAST_TRAIN
         )
         assertEquals(1, firstExplorers.size)
         var explorer = firstExplorers.first()

@@ -1,12 +1,16 @@
 package fr.sncf.osrd.stdcm.infra_exploration
 
+import fr.sncf.osrd.api.FullInfra
+import fr.sncf.osrd.conflicts.IncrementalRequirementEnvelopeAdapter
+import fr.sncf.osrd.conflicts.SpacingRequirementAutomaton
+import fr.sncf.osrd.envelope.EnvelopeConcat
 import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
+import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
 import fr.sncf.osrd.graph.PathfindingEdgeLocationId
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
-import fr.sncf.osrd.sim_infra.api.BlockInfra
 import fr.sncf.osrd.sim_infra.api.Path
-import fr.sncf.osrd.sim_infra.api.RawInfra
+import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.units.Offset
 
 /** Explore the infra while running simulations. Builds one global envelope and path from the start of the train.
@@ -26,6 +30,9 @@ interface InfraExplorerWithEnvelope : InfraExplorer {
     /** Calls `InterpolateTotalTimeClamp` on the underlying envelope, taking the travelled path offset into account. */
     fun interpolateTimeClamp(pathOffset: Offset<Path>): Double
 
+    /** Returns the underlying spacing requirement automaton */
+    fun getSpacingRequirementAutomaton(): SpacingRequirementAutomaton
+
     /** Only shallow copies are made.
      * Used to enable backtracking by cloning explorers at each step. */
     override fun clone(): InfraExplorerWithEnvelope
@@ -35,18 +42,48 @@ interface InfraExplorerWithEnvelope : InfraExplorer {
 
 /** Init all InfraExplorersWithEnvelope starting at the given location. */
 fun initInfraExplorerWithEnvelope(
-    rawInfra: RawInfra,
-    blockInfra: BlockInfra,
+    fullInfra: FullInfra,
     location: PathfindingEdgeLocationId<Block>,
-    endBlocks: Collection<BlockId> = setOf()
+    endBlocks: Collection<BlockId> = setOf(),
+    rollingStock: RollingStock
 ): Collection<InfraExplorerWithEnvelope> {
-    return initInfraExplorer(rawInfra, blockInfra, location, endBlocks = endBlocks)
-        .map { explorer -> InfraExplorerWithEnvelopeImpl(explorer, mutableListOf()) }
+    return initInfraExplorer(fullInfra.rawInfra, fullInfra.blockInfra, location, endBlocks = endBlocks)
+        .map { explorer ->
+            InfraExplorerWithEnvelopeImpl(
+                explorer,
+                mutableListOf(),
+                SpacingRequirementAutomaton(
+                    fullInfra.rawInfra,
+                    fullInfra.loadedSignalInfra,
+                    fullInfra.blockInfra,
+                    fullInfra.signalingSimulator,
+                    IncrementalRequirementEnvelopeAdapter(
+                        explorer.getIncrementalPath(), rollingStock, null
+                    ),
+                    explorer.getIncrementalPath(),
+                )
+            )
+        }
 }
 
 /** Add an envelope to a simple InfraExplorer. */
 fun InfraExplorer.withEnvelope(
     envelope: EnvelopeTimeInterpolate,
+    fullInfra: FullInfra,
+    rollingStock: PhysicsRollingStock,
 ): InfraExplorerWithEnvelope {
-    return InfraExplorerWithEnvelopeImpl(this, mutableListOf(envelope))
+    return InfraExplorerWithEnvelopeImpl(
+        this,
+        mutableListOf(envelope),
+        SpacingRequirementAutomaton(
+            fullInfra.rawInfra,
+            fullInfra.loadedSignalInfra,
+            fullInfra.blockInfra,
+            fullInfra.signalingSimulator,
+            IncrementalRequirementEnvelopeAdapter(
+                getIncrementalPath(), rollingStock, EnvelopeConcat.from(listOf(envelope))
+            ),
+            getIncrementalPath(),
+        )
+    )
 }

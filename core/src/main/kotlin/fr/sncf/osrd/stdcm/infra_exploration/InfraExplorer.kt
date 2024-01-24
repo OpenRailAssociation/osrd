@@ -3,6 +3,7 @@ package fr.sncf.osrd.stdcm.infra_exploration
 import fr.sncf.osrd.api.pathfinding.makePathProps
 import fr.sncf.osrd.conflicts.IncrementalPath
 import fr.sncf.osrd.conflicts.PathFragment
+import fr.sncf.osrd.conflicts.SpacingRequirementAutomaton
 import fr.sncf.osrd.conflicts.incrementalPathOf
 import fr.sncf.osrd.graph.PathfindingEdgeLocationId
 import fr.sncf.osrd.sim_infra.api.*
@@ -216,7 +217,7 @@ private class InfraExplorerImpl(
             this.incrementalPath.clone(),
             this.blockToPathProperties.toMutableMap(),
             this.currentIndex,
-            this.endBlocks
+            this.endBlocks,
         )
     }
 

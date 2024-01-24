@@ -8,6 +8,8 @@ import fr.sncf.osrd.envelope_sim.allowances.LinearAllowance
 import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue
+import fr.sncf.osrd.fast_collections.growCapacity
+import fr.sncf.osrd.graph.Graph
 import fr.sncf.osrd.graph.Pathfinding.EdgeRange
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
@@ -34,6 +36,7 @@ val logger: Logger = LoggerFactory.getLogger(STDCMStandardAllowance::class.java)
 
 /** Applies the allowance to the final envelope  */
 fun applyAllowance(
+    graph: STDCMGraph,
     envelope: Envelope,
     ranges: List<EdgeRange<STDCMEdge, STDCMEdge>>,
     standardAllowance: AllowanceValue?,
@@ -61,7 +64,7 @@ fun applyAllowance(
                 context,
                 isMareco
             )
-            val conflictOffset = findConflictOffsets(newEnvelope, blockAvailability, ranges, departureTime, stops)
+            val conflictOffset = findConflictOffsets(graph, newEnvelope, blockAvailability, ranges, departureTime, stops)
                 ?: return newEnvelope
             if (rangeTransitions.contains(conflictOffset))
                 break // Error case, we exit and fallback to the linear envelope
@@ -83,6 +86,7 @@ fun applyAllowance(
     } else {
         logger.info("Failed to compute a mareco standard allowance, fallback to linear allowance")
         return applyAllowance(
+            graph,
             envelope,
             ranges,
             standardAllowance,
@@ -102,6 +106,7 @@ fun applyAllowance(
  * If a conflict is found, returns its offset.
  * Otherwise, returns NaN.  */
 private fun findConflictOffsets(
+    graph: STDCMGraph,
     envelope: Envelope,
     blockAvailability: BlockAvailabilityInterface,
     ranges: List<EdgeRange<STDCMEdge, STDCMEdge>>,
@@ -113,7 +118,7 @@ private fun findConflictOffsets(
     val endOffset = startOffset + Distance(millimeters = ranges.stream()
         .mapToLong { range -> (range.end - range.start).millimeters }
         .sum())
-    val explorer = ranges.last().edge.infraExplorer.withEnvelope(envelopeWithStops)
+    val explorer = ranges.last().edge.infraExplorer.withEnvelope(envelopeWithStops, graph.fullInfra, graph.rollingStock)
     assert(TrainPhysicsIntegrator.arePositionsEqual(envelopeWithStops.endPos, (endOffset - startOffset).meters))
     val availability = blockAvailability.getAvailability(
         explorer,

@@ -1,6 +1,7 @@
 package fr.sncf.osrd.stdcm.graph
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue.FixedTime
@@ -20,8 +21,7 @@ import fr.sncf.osrd.train.RollingStock.Comfort
  * STDCMEdgeBuilder handles the creation of new STDCMEdge instances  */
 @SuppressFBWarnings("FE_FLOATING_POINT_EQUALITY")
 class STDCMGraph(
-    val rawInfra: RawSignalingInfra,
-    val blockInfra: BlockInfra,
+    val fullInfra: FullInfra,
     val rollingStock: RollingStock,
     val comfort: Comfort?,
     val timeStep: Double,
@@ -32,6 +32,8 @@ class STDCMGraph(
     tag: String?,
     standardAllowance: AllowanceValue?
 ) : Graph<STDCMNode, STDCMEdge, STDCMEdge> {
+    val rawInfra = fullInfra.rawInfra!!
+    val blockInfra = fullInfra.blockInfra!!
     var stdcmSimulations: STDCMSimulations = STDCMSimulations()
     val steps: List<STDCMStep>
     val delayManager: DelayManager

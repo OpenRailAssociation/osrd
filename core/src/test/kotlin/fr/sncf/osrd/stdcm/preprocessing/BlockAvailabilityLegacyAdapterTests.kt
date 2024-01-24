@@ -52,7 +52,9 @@ class BlockAvailabilityLegacyAdapterTests {
         )
             .first()
             .withEnvelope(
-                Envelope.make(EnvelopeTestUtils.generateTimes(doubleArrayOf(0.0, 1.0), doubleArrayOf(100.0, 100.0)))
+                Envelope.make(EnvelopeTestUtils.generateTimes(doubleArrayOf(0.0, 1.0), doubleArrayOf(100.0, 100.0))),
+                infra,
+                SimpleRollingStock.STANDARD_TRAIN
             )
         val res = adapter.getAvailability(
             explorer,

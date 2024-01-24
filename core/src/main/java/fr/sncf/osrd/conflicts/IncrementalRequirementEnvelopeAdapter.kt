@@ -1,6 +1,7 @@
 package fr.sncf.osrd.conflicts
 
 import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
+import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
 import fr.sncf.osrd.sim_infra.api.Path
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.units.Offset
@@ -9,10 +10,12 @@ import kotlin.math.min
 
 class IncrementalRequirementEnvelopeAdapter(
     private val incrementalPath: IncrementalPath,
-    private val rollingStock: RollingStock,
-    private val envelopeWithStops: EnvelopeTimeInterpolate
+    private val rollingStock: PhysicsRollingStock,
+    private val envelopeWithStops: EnvelopeTimeInterpolate?
 )  : IncrementalRequirementCallbacks {
     override fun arrivalTimeInRange(pathBeginOff: Offset<Path>, pathEndOff: Offset<Path>): Double {
+        if (envelopeWithStops == null)
+            return Double.POSITIVE_INFINITY
         // if the head of the train enters the zone at some point, use that
         val travelledPathBegin = incrementalPath.toTravelledPath(pathBeginOff)
         val begin = travelledPathBegin.distance.meters
@@ -32,6 +35,8 @@ class IncrementalRequirementEnvelopeAdapter(
     }
 
     override fun departureTimeFromRange(pathBeginOff: Offset<Path>, pathEndOff: Offset<Path>): Double {
+        if (envelopeWithStops == null)
+            return Double.POSITIVE_INFINITY
         val travelledPathEnd = incrementalPath.toTravelledPath(pathEndOff)
         val end = travelledPathEnd.distance.meters
 
@@ -46,6 +51,8 @@ class IncrementalRequirementEnvelopeAdapter(
     }
 
     override fun endTime(): Double {
+        if (envelopeWithStops == null)
+            return 0.0
         return envelopeWithStops.totalTime
     }
 }
