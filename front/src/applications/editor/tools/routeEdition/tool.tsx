@@ -12,7 +12,7 @@ import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF/ConfirmModal';
 import { Tool } from '../editorContextTypes';
 import { RouteEditionState } from './types';
 import { Layers, LeftPanel, Messages } from './components';
-import { getEmptyRoute, getRouteEditionState } from './utils';
+import { getRouteEditionState } from './utils';
 
 const RouteEditionTool: Tool<RouteEditionState> = {
   id: 'route-edition',
@@ -40,7 +40,7 @@ const RouteEditionTool: Tool<RouteEditionState> = {
         icon: BiReset,
         labelTranslationKey: `Editor.tools.routes-edition.actions.reset-route`,
         isDisabled({ state: { entity, initialEntity } }) {
-          return isEqual(entity, initialEntity) || isEqual(entity, getEmptyRoute());
+          return isEqual(entity, initialEntity);
         },
         onClick({ state: { initialEntity }, setState }) {
           setState(getRouteEditionState(initialEntity));
