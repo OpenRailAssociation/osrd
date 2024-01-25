@@ -73,8 +73,7 @@ const MapSearchStation = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchS
         if (isSearchingByTrigram) {
           setNameResults([]);
           setTrigramResults(results as SearchResultItemOperationalPoint[]);
-        }
-        if (isSearchingByName) {
+        } else {
           setTrigramResults([]);
           setNameResults(orderResults(results as SearchResultItemOperationalPoint[]));
         }
