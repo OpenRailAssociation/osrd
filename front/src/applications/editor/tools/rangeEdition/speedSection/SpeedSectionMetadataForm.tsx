@@ -1,10 +1,11 @@
-import React, { FC, useContext, useMemo } from 'react';
+import React, { FC, useContext, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SpeedSectionEntity } from 'types';
 import { AiOutlinePlusCircle } from 'react-icons/ai';
 import { FaTimes } from 'react-icons/fa';
 import { MdSpeed } from 'react-icons/md';
 import { cloneDeep, isEmpty, mapKeys, omit } from 'lodash';
+import nextId from 'react-id-generator';
 
 import EditorContext from '../../../context';
 import { ExtendedEditorContextType } from '../../editorContextTypes';
@@ -31,6 +32,10 @@ const SpeedSectionMetadataForm: FC = () => {
     setState,
   } = useContext(EditorContext) as ExtendedEditorContextType<RangeEditionState<SpeedSectionEntity>>;
 
+  const [uniqueIds, setUniqueIds] = useState<string[]>(
+    Object.keys(entity.properties?.speed_limit_by_tag || {}).map(() => nextId())
+  );
+
   const addSpeedSectionButtonIsDisabled = useMemo(() => {
     const { speed_limit_by_tag } = entity.properties;
     if (speed_limit_by_tag) {
@@ -42,7 +47,6 @@ const SpeedSectionMetadataForm: FC = () => {
     }
     return false;
   }, [entity]);
-
   return (
     <div>
       <h4 className="pb-0">
@@ -74,59 +78,62 @@ const SpeedSectionMetadataForm: FC = () => {
             {t('Editor.tools.speed-edition.additional-speed-limit')}
           </div>
         )}
-        {Object.entries(entity.properties.speed_limit_by_tag || {}).map(([key, value], index) => (
-          <div key={index} className="form-group field field-string">
-            <div className="d-flex flex-row align-items-center">
-              <input
-                required
-                className="form-control flex-grow-2 flex-shrink-1 mr-2 px-2"
-                placeholder=""
-                type="text"
-                value={key}
-                onChange={(e) => {
-                  const newEntity = cloneDeep(entity);
-                  const newKey = e.target.value;
-                  newEntity.properties.speed_limit_by_tag = mapKeys(
-                    newEntity.properties.speed_limit_by_tag || {},
-                    (_v, k) => (k === key ? newKey : k)
-                  );
-                  setState({ entity: newEntity });
-                }}
-              />
-              <SpeedInput
-                className="form-control flex-shrink-0 px-2"
-                style={{ width: '5em' }}
-                placeholder=""
-                msSpeed={value}
-                onChange={(newMsSpeed) => {
-                  const newEntity = cloneDeep(entity);
-                  newEntity.properties.speed_limit_by_tag =
-                    newEntity.properties.speed_limit_by_tag || {};
-                  newEntity.properties.speed_limit_by_tag[key] = newMsSpeed;
-                  setState({ entity: newEntity });
-                }}
-              />
-              <span className="text-muted ml-2">km/h</span>
-              <small>
-                <button
-                  type="button"
-                  className="btn btn-primary btn-sm px-2 ml-2"
-                  title={t('commons.delete')}
-                  onClick={() => {
+        {Object.entries(entity.properties.speed_limit_by_tag || {}).map(
+          ([key, value], currentIndex) => (
+            <div key={uniqueIds[currentIndex]} className="form-group field field-string">
+              <div className="d-flex flex-row align-items-center">
+                <input
+                  required
+                  className="form-control flex-grow-2 flex-shrink-1 mr-2 px-2"
+                  placeholder=""
+                  type="text"
+                  value={key}
+                  onChange={(e) => {
                     const newEntity = cloneDeep(entity);
-                    newEntity.properties.speed_limit_by_tag = omit(
+                    const newKey = e.target.value;
+                    newEntity.properties.speed_limit_by_tag = mapKeys(
                       newEntity.properties.speed_limit_by_tag || {},
-                      key
+                      (_v, k) => (k === key ? newKey : k)
                     );
                     setState({ entity: newEntity });
                   }}
-                >
-                  <FaTimes />
-                </button>
-              </small>
+                />
+                <SpeedInput
+                  className="form-control flex-shrink-0 px-2"
+                  style={{ width: '5em' }}
+                  placeholder=""
+                  msSpeed={value}
+                  onChange={(newMsSpeed) => {
+                    const newEntity = cloneDeep(entity);
+                    newEntity.properties.speed_limit_by_tag =
+                      newEntity.properties.speed_limit_by_tag || {};
+                    newEntity.properties.speed_limit_by_tag[key] = newMsSpeed;
+                    setState({ entity: newEntity });
+                  }}
+                />
+                <span className="text-muted ml-2">km/h</span>
+                <small>
+                  <button
+                    type="button"
+                    className="btn btn-primary btn-sm px-2 ml-2"
+                    title={t('commons.delete')}
+                    onClick={() => {
+                      const newEntity = cloneDeep(entity);
+                      newEntity.properties.speed_limit_by_tag = omit(
+                        newEntity.properties.speed_limit_by_tag || {},
+                        key
+                      );
+                      setUniqueIds(uniqueIds.filter((_, index) => index !== currentIndex));
+                      setState({ entity: newEntity });
+                    }}
+                  >
+                    <FaTimes />
+                  </button>
+                </small>
+              </div>
             </div>
-          </div>
-        ))}
+          )
+        )}
         <button
           type="button"
           className="btn btn-secondary w-100 text-wrap small mb-2"
@@ -138,6 +145,7 @@ const SpeedSectionMetadataForm: FC = () => {
               t('Editor.tools.speed-edition.new-tag')
             );
             newEntity.properties.speed_limit_by_tag[newSpeedLimitTag] = undefined;
+            setUniqueIds([...uniqueIds, nextId()]);
             setState({ entity: newEntity });
           }}
           disabled={addSpeedSectionButtonIsDisabled}
