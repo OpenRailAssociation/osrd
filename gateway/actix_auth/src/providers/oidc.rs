@@ -111,7 +111,7 @@ impl SessionProvider for OidcProvider {
         ctx: &mut ProviderContext<Self>,
         _: &HttpRequest,
     ) -> Result<LoginResponse, actix_web::Error> {
-        let scope = self.profile_scope_override.as_deref().unwrap_or("profile");
+        // let scope = self.profile_scope_override.as_deref().unwrap_or("profile");
         // Generate the full authorization URL.
         let client_builder = self
             .client
@@ -120,7 +120,8 @@ impl SessionProvider for OidcProvider {
                 CsrfToken::new_random,
                 Nonce::new_random,
             )
-            .add_scope(Scope::new(scope.to_owned()));
+            // .add_scope(Scope::new(scope.to_owned()))
+            ;
 
         let (auth_url, csrf_token, nonce) = client_builder.url();
         // if we ever decide to store the nonce unencrypted, we should also change how it's checked:
