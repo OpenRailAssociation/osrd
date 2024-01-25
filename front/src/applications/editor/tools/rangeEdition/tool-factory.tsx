@@ -48,6 +48,7 @@ interface RangeEditionToolParams<T extends EditorRange> {
   messagesComponent: ComponentType;
   layersComponent: ComponentType<{ map: Map }>;
   leftPanelComponent: ComponentType;
+  canSave?: (state: RangeEditionState<T>) => boolean;
 }
 
 function getRangeEditionTool<T extends EditorRange>({
@@ -57,6 +58,7 @@ function getRangeEditionTool<T extends EditorRange>({
   messagesComponent,
   layersComponent,
   leftPanelComponent,
+  canSave,
 }: RangeEditionToolParams<T>): Tool<RangeEditionState<T>> {
   const layersEntity = getNewEntity();
   function getInitialState(): RangeEditionState<T> {
@@ -91,8 +93,10 @@ function getRangeEditionTool<T extends EditorRange>({
           id: `save-${objectTypeAction}`,
           icon: AiFillSave,
           labelTranslationKey: `Editor.tools.${objectTypeEdition}-edition.actions.save-${objectTypeAction}`,
-          isDisabled({ isLoading }) {
-            return isLoading || false;
+          isDisabled({ isLoading, state }) {
+            if (isLoading) return true;
+            if (canSave) return !canSave(state);
+            return false;
           },
           async onClick({ state, setState, dispatch, infraID }) {
             const { initialEntity, entity } = state;

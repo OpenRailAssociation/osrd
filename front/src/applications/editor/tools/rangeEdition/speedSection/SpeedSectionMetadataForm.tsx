@@ -78,6 +78,7 @@ const SpeedSectionMetadataForm: FC = () => {
           <div key={key} className="form-group field field-string">
             <div className="d-flex flex-row align-items-center">
               <input
+                required
                 className="form-control flex-grow-2 flex-shrink-1 mr-2 px-2"
                 placeholder=""
                 type="text"

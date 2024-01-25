@@ -20,6 +20,11 @@ export const SpeedEditionTool = getRangeEditionTool<SpeedSectionEntity | SpeedSe
   messagesComponent: SpeedSectionMessages,
   layersComponent: SpeedSectionEditionLayers,
   leftPanelComponent: RangeEditionLeftPanel,
+  canSave(state) {
+    const records = state.entity.properties.speed_limit_by_tag || {};
+    const compositionCodes = Object.keys(records);
+    return compositionCodes.every((code) => !!code);
+  },
 });
 
 export const ElectrificationEditionTool = getRangeEditionTool<ElectrificationEntity>({
