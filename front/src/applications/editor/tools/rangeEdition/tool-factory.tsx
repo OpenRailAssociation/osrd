@@ -16,7 +16,7 @@ import {
 } from 'types/editor';
 import { getNearestPoint } from 'utils/mapHelper';
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
-import { PartialOrReducer, Tool } from '../editorContextTypes';
+import { PartialOrReducer, ReadOnlyEditorContextType, Tool } from '../editorContextTypes';
 import { DEFAULT_COMMON_TOOL_STATE } from '../commonToolState';
 import { approximateDistanceWithEditoastData } from '../utils';
 import { LAYER_TO_EDITOAST_DICT, LAYERS_SET, LayerType } from '../types';
@@ -49,6 +49,7 @@ interface RangeEditionToolParams<T extends EditorRange> {
   layersComponent: ComponentType<{ map: Map }>;
   leftPanelComponent: ComponentType;
   canSave?: (state: RangeEditionState<T>) => boolean;
+  getEventsLayers?: (context: ReadOnlyEditorContextType<RangeEditionState<T>>) => string[];
 }
 
 function getRangeEditionTool<T extends EditorRange>({
@@ -59,6 +60,7 @@ function getRangeEditionTool<T extends EditorRange>({
   layersComponent,
   leftPanelComponent,
   canSave,
+  getEventsLayers,
 }: RangeEditionToolParams<T>): Tool<RangeEditionState<T>> {
   const layersEntity = getNewEntity();
   function getInitialState(): RangeEditionState<T> {
@@ -379,14 +381,7 @@ function getRangeEditionTool<T extends EditorRange>({
     getInteractiveLayers() {
       return ['editor/geo/track-main'];
     },
-    getEventsLayers() {
-      return [
-        'editor/geo/track-main',
-        'speed-section/extremities',
-        'speed-section/track-sections',
-        'speed-section/psl/extremities',
-      ];
-    },
+    getEventsLayers,
   };
 }
 

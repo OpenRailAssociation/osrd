@@ -45,13 +45,6 @@ export const ElectrificationEditionLayers = () => {
     // Custom hovered element:
     if (hoveredItem?.itemType) return [hoveredItem.track.properties.id];
 
-    // EditorEntity hovered element:
-    if (
-      hoveredItem?.type === 'TrackSection' &&
-      !(entity.properties.track_ranges || []).find((range) => range.track === hoveredItem.id)
-    )
-      return [hoveredItem.id];
-
     return undefined;
   }, [interactionState, hoveredItem, entity]);
 
@@ -203,7 +196,17 @@ export const ElectrificationEditionLayers = () => {
           <Layer {...props} key={i} />
         ))}
         <Layer
+          type="line"
+          id="electrification/track-sections"
+          paint={{
+            'line-dasharray': [3, 3],
+            'line-color': '#000000',
+            'line-width': 1,
+          }}
+        />
+        <Layer
           type="circle"
+          id="electrification/extremities"
           paint={{
             'circle-radius': 4,
             'circle-color': '#fff',

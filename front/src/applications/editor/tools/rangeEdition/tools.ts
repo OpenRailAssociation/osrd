@@ -25,6 +25,14 @@ export const SpeedEditionTool = getRangeEditionTool<SpeedSectionEntity | SpeedSe
     const compositionCodes = Object.keys(records);
     return compositionCodes.every((code) => !!code);
   },
+  getEventsLayers() {
+    return [
+      'editor/geo/track-main',
+      'speed-section/extremities',
+      'speed-section/track-sections',
+      'speed-section/psl/extremities',
+    ];
+  },
 });
 
 export const ElectrificationEditionTool = getRangeEditionTool<ElectrificationEntity>({
@@ -34,4 +42,11 @@ export const ElectrificationEditionTool = getRangeEditionTool<ElectrificationEnt
   messagesComponent: ElectrificationMessages,
   layersComponent: ElectrificationEditionLayers,
   leftPanelComponent: RangeEditionLeftPanel,
+  getEventsLayers() {
+    return [
+      'editor/geo/track-main',
+      'electrification/extremities',
+      'electrification/track-sections',
+    ];
+  },
 });
