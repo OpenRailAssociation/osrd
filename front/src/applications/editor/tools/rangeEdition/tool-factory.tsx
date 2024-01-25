@@ -118,7 +118,7 @@ function getRangeEditionTool<T extends EditorRange>({
                 )
               );
               const { railjson } = res[0];
-              const { entityId } = railjson;
+              const { id: entityId } = railjson;
 
               const savedEntity =
                 entityId && entityId !== entity.properties.id
