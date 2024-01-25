@@ -288,7 +288,7 @@
       },
       "routes-edition": {
         "actions": {
-          "save-route": "Sauvegarder le nouvel itinéraire",
+          "save-route": "Sauvegarder l'itinéraire",
           "reset-route":"Réinitialiser l'itinéraire",
           "delete-route": "Supprimer l'itinéraire",
           "new-route": "Créer un nouvel itinéraire",
@@ -328,7 +328,7 @@
         },
         "include-release-detectors": "Transit rigide",
         "label": "Outil \"Itinéraires\"",
-        "locked-release-detectors": "Cette propriété ne peut pas être réactivée a posteriori, et peut uniquement être désactivée.",
+        "locked-release-detectors": "Une fois cette propriété activée et sauvegardée, celle-ci ne peut plus être désactivée",
         "no-waypoint-picked-yet": "Cliquer sur le bouton ci-contre pour sélectionner un détecteur ou un heurtoir sur la carte.",
         "preview-candidate": "Sélectionner",
         "routes": "{{count}} itinéraires compatibles trouvés",
