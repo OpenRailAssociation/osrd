@@ -20,4 +20,11 @@ class LoadingGaugeConstraintImpl(blockedTypes: ImmutableSet<RJSLoadingGaugeType>
     override fun isCompatibleWith(trainType: LoadingGaugeTypeId): Boolean {
         return !blockedTypes.contains(trainType)
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is LoadingGaugeConstraintImpl) return false
+        if (blockedTypes != other.blockedTypes) return false
+        return true
+    }
 }

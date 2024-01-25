@@ -6867,6 +6867,26 @@
                 }
             ],
             "lower_pantograph": false
+        },
+        {
+            "id": "neutral_section.3",
+            "announcement_track_ranges": [
+                {
+                    "track": "TA0",
+                    "begin": 1990.0,
+                    "end": 2000.0,
+                    "direction": "STOP_TO_START"
+                }
+            ],
+            "track_ranges": [
+                {
+                    "track": "TA0",
+                    "begin": 1850.0,
+                    "end": 1990.0,
+                    "direction": "STOP_TO_START"
+                }
+            ],
+            "lower_pantograph": false
         }
     ]
 }

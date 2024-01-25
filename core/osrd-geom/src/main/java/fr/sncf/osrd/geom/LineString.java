@@ -4,6 +4,7 @@ import com.carrotsearch.hppc.DoubleArrayList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public final class LineString {
 
@@ -15,6 +16,31 @@ public final class LineString {
 
     /** A cumulative list of N-1 distances between coordinates */
     private final double[] cumulativeLengths;
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) return false;
+        if (obj.getClass() != this.getClass()) return false;
+
+        double epsilon = 0.00000001d;
+        final LineString other = (LineString) obj;
+        for (int i = 0; i < this.bufferX.length; i++) {
+            if (Math.abs(this.bufferX[i] - other.bufferX[i]) > epsilon) return false;
+        }
+        for (int i = 0; i < this.bufferY.length; i++) {
+            if (Math.abs(this.bufferY[i] - other.bufferY[i]) > epsilon) return false;
+        }
+        for (int i = 0; i < this.cumulativeLengths.length; i++) {
+            if (Math.abs(this.cumulativeLengths[i] - other.cumulativeLengths[i]) > epsilon) return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(Arrays.hashCode(bufferX), Arrays.hashCode(bufferY), Arrays.hashCode(cumulativeLengths));
+    }
 
     private LineString(double[] bufferX, double[] bufferY, double[] cumulativeLengths) {
         assert bufferX.length == bufferY.length : "Expected the same length";

@@ -16,6 +16,8 @@ interface DistanceRangeMap<T> : Iterable<DistanceRangeMap.RangeMapEntry<T>> {
         @get:JvmName("getValue") val value: T,
     )
 
+    override fun equals(other: Any?): Boolean
+
     /** Sets the value between the lower and upper distances */
     fun put(lower: Distance, upper: Distance, value: T)
 
@@ -33,6 +35,9 @@ interface DistanceRangeMap<T> : Iterable<DistanceRangeMap.RangeMapEntry<T>> {
 
     /** Removes all values outside the given range */
     fun truncate(beginOffset: Distance, endOffset: Distance)
+
+    /** Split range in 2 parts, if lower part is kept, upper part returned */
+    fun split(splitOffset: Distance, keepLower: Boolean = true): DistanceRangeMap<T>
 
     /** Shifts the positions by adding the given value */
     fun shiftPositions(offset: Distance)

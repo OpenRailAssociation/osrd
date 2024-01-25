@@ -11,4 +11,12 @@ class DirectionalMap<T>(
             Direction.DECREASING -> backwards
         }
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is DirectionalMap<*>) return false
+        if (forwards != other.forwards) return false
+        if (backwards != other.backwards) return false
+        return true
+    }
 }

@@ -18,6 +18,14 @@ data class DistanceRangeMapImpl<T>(
         putMany(entries)
     }
 
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is DistanceRangeMapImpl<*>) return false
+        if (bounds != other.bounds) return false
+        if (values != other.values) return false
+        return true
+    }
+
     /** Sets the value between the lower and upper distances */
     override fun put(lower: Distance, upper: Distance, value: T) {
         putOptional(lower, upper, value)
@@ -121,6 +129,39 @@ data class DistanceRangeMapImpl<T>(
                 bounds.remove(bounds.size - 1)
                 values.removeAt(values.size - 1)
             }
+        }
+    }
+
+    override fun split(splitOffset: Distance, keepLower: Boolean): DistanceRangeMap<T> {
+        if (
+            bounds.isEmpty() ||
+                (keepLower && upperBound() < splitOffset) ||
+                (!keepLower && splitOffset < lowerBound())
+        )
+            return DistanceRangeMapImpl()
+
+        // TODO: avoid clone for efficiency
+        if (
+            (keepLower && splitOffset < lowerBound()) || (!keepLower && upperBound() < splitOffset)
+        ) {
+            val res = DistanceRangeMapImpl(this.asList())
+            res.shiftPositions(-splitOffset)
+            values.clear()
+            bounds.clear()
+            return res
+        }
+
+        // TODO: avoid clone for efficiency
+        if (keepLower) {
+            val res = this.subMap(splitOffset, upperBound())
+            res.shiftPositions(-splitOffset)
+            this.truncate(lowerBound(), splitOffset)
+            return res
+        } else {
+            val res = this.subMap(lowerBound(), splitOffset)
+            this.truncate(splitOffset, upperBound())
+            this.shiftPositions(-splitOffset)
+            return res
         }
     }
 

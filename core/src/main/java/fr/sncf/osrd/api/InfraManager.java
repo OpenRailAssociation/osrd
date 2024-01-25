@@ -1,7 +1,7 @@
 package fr.sncf.osrd.api;
 
 import static fr.sncf.osrd.api.SignalingSimulatorKt.makeSignalingSimulator;
-import static fr.sncf.osrd.sim_infra_adapter.RawInfraAdapterKt.adaptRawInfra;
+import static fr.sncf.osrd.sim_infra_adapter.RawInfraFromRjsAdapterKt.adaptRawInfra;
 
 import com.squareup.moshi.JsonDataException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -138,12 +138,12 @@ public class InfraManager extends APIClient {
 
             // Attempt to ease memory pressure by making the RailJSON deserialized copy
             // orphan, and calling the garbage collector.
-            rjsInfra = null;
-            System.gc();
+            // rjsInfra = null; // TODO PEB remove
+            // System.gc(); // TODO PEB remove
 
             logger.info("adaptation to kotlin of {}", request.url());
             cacheEntry.transitionTo(InfraStatus.ADAPTING_KOTLIN);
-            var rawInfra = adaptRawInfra(infra);
+            var rawInfra = adaptRawInfra(infra, rjsInfra);
             logger.info("loading signals of {}", request.url());
             cacheEntry.transitionTo(InfraStatus.LOADING_SIGNALS);
             var loadedSignalInfra = signalingSimulator.loadSignals(rawInfra);

@@ -9,4 +9,6 @@ typealias LoadingGaugeTypeId = StaticIdx<LoadingGaugeType>
 interface LoadingGaugeConstraint {
     /** Returns true if a train of the given type is compatible */
     fun isCompatibleWith(trainType: LoadingGaugeTypeId): Boolean
+
+    override fun equals(other: Any?): Boolean
 }

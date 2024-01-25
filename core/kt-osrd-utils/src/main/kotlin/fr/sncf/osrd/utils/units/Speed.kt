@@ -28,5 +28,5 @@ value class Speed(val millimetersPerSecond: ULong) {
     }
 }
 
-val Double.metersPerSecond: Distance
-    get() = Distance(Math.round(this * multiplier))
+val Double.metersPerSecond: Speed
+    get() = Speed.fromMetersPerSecond(this)

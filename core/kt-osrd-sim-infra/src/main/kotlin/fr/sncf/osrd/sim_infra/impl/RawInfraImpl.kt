@@ -38,18 +38,11 @@ import fr.sncf.osrd.sim_infra.api.ZonePathId
 import fr.sncf.osrd.sim_infra.api.decreasing
 import fr.sncf.osrd.sim_infra.api.increasing
 import fr.sncf.osrd.sim_infra.api.toEndpoint
+import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.DirectionalMap
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.distanceRangeMapOf
-import fr.sncf.osrd.utils.indexing.DirStaticIdxList
-import fr.sncf.osrd.utils.indexing.IdxMap
-import fr.sncf.osrd.utils.indexing.MutableStaticIdxArrayList
-import fr.sncf.osrd.utils.indexing.OptStaticIdx
-import fr.sncf.osrd.utils.indexing.StaticIdx
-import fr.sncf.osrd.utils.indexing.StaticIdxList
-import fr.sncf.osrd.utils.indexing.StaticIdxSortedSet
-import fr.sncf.osrd.utils.indexing.StaticIdxSpace
-import fr.sncf.osrd.utils.indexing.StaticPool
+import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
@@ -71,15 +64,15 @@ class TrackNodeDescriptor(
 
 class TrackSectionDescriptor(
     val name: String,
-    val chunks: StaticIdxList<TrackChunk>,
+    val chunks: MutableStaticIdxList<TrackChunk>,
 )
 
 class TrackChunkDescriptor(
-    val geo: LineString,
+    var geo: LineString,
     val slopes: DirectionalMap<DistanceRangeMap<Double>>,
     val curves: DirectionalMap<DistanceRangeMap<Double>>,
     val gradients: DirectionalMap<DistanceRangeMap<Double>>,
-    val length: Length<TrackChunk>,
+    var length: Length<TrackChunk>,
     val routes: DirectionalMap<StaticIdxList<Route>>,
     var track: StaticIdx<TrackSection>,
     val offset: Offset<TrackSection>,
@@ -88,7 +81,91 @@ class TrackChunkDescriptor(
     val electrificationVoltage: DistanceRangeMap<String>,
     val neutralSections: DirectionalMap<DistanceRangeMap<NeutralSection>>,
     val speedSections: DirectionalMap<DistanceRangeMap<SpeedSection>>
-)
+) {
+    fun split(splitOffset: Offset<TrackSection>): TrackChunkDescriptor? {
+        if ((splitOffset == offset) or (splitOffset == offset + length.distance)) return null
+        if ((splitOffset < offset) or (splitOffset > offset + length.distance)) {
+            throw OSRDError.newInfraLoadingError(
+                ErrorType.InfraHardLoadingError,
+                "Impossible to split trackChunk, offset out of range"
+            )
+        }
+        val endLength = Length<TrackChunk>(offset + length.distance - splitOffset)
+
+        val endGeo =
+            geo.slice(
+                (splitOffset - offset).millimeters.toDouble() / length.distance.millimeters,
+                1.0
+            )
+        geo =
+            geo.slice(
+                0.0,
+                (splitOffset - offset).millimeters.toDouble() / length.distance.millimeters
+            )
+        val endSlopes =
+            DirectionalMap(
+                slopes.get(Direction.INCREASING).split(splitOffset - offset),
+                slopes
+                    .get(Direction.DECREASING)
+                    .split(offset + length.distance - splitOffset, false)
+            )
+        endSlopes.get(Direction.DECREASING).shiftPositions(endLength.distance)
+        val endCurves =
+            DirectionalMap(
+                curves.get(Direction.INCREASING).split(splitOffset - offset),
+                curves
+                    .get(Direction.DECREASING)
+                    .split(offset + length.distance - splitOffset, false)
+            )
+        endCurves.get(Direction.DECREASING).shiftPositions(endLength.distance)
+        val endGradients =
+            DirectionalMap(
+                gradients.get(Direction.INCREASING).split(splitOffset - offset),
+                gradients
+                    .get(Direction.DECREASING)
+                    .split(offset + length.distance - splitOffset, false)
+            )
+        endGradients.get(Direction.DECREASING).shiftPositions(endLength.distance)
+        val endLoadingGaugeConstraint = loadingGaugeConstraints.split(splitOffset - offset)
+        val endElectrificationVoltage = electrificationVoltage.split(splitOffset - offset)
+        val endNeutralSections =
+            DirectionalMap(
+                neutralSections.get(Direction.INCREASING).split(splitOffset - offset),
+                neutralSections
+                    .get(Direction.DECREASING)
+                    .split(offset + length.distance - splitOffset, false)
+            )
+        endNeutralSections.get(Direction.DECREASING).shiftPositions(endLength.distance)
+        val endSpeedSections =
+            DirectionalMap(
+                speedSections.get(Direction.INCREASING).split(splitOffset - offset),
+                speedSections
+                    .get(Direction.DECREASING)
+                    .split(offset + length.distance - splitOffset, false)
+            )
+        endSpeedSections.get(Direction.DECREASING).shiftPositions(endLength.distance)
+        length = Length(splitOffset - offset)
+
+        return TrackChunkDescriptor(
+            endGeo,
+            endSlopes,
+            endCurves,
+            endGradients,
+            endLength,
+            DirectionalMap(
+                MutableStaticIdxArrayList(),
+                MutableStaticIdxArrayList()
+            ), // TODO routes: change this?
+            track,
+            splitOffset,
+            MutableStaticIdxArrayList(), // TODO operationalPointsParts: change this?
+            endLoadingGaugeConstraint,
+            endElectrificationVoltage,
+            endNeutralSections,
+            endSpeedSections
+        )
+    }
+}
 
 class ZoneDescriptor(
     val movableElements: StaticIdxSortedSet<TrackNode>,
@@ -167,7 +244,15 @@ class SpeedSection(
 class NeutralSection(
     val lowerPantograph: Boolean,
     val isAnnouncement: Boolean,
-)
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is NeutralSection) return false
+        if (lowerPantograph != other.lowerPantograph) return false
+        if (isAnnouncement != other.isAnnouncement) return false
+        return true
+    }
+}
 
 class RawInfraImpl(
     val trackNodePool: StaticPool<TrackNode, TrackNodeDescriptor>,

@@ -1,6 +1,6 @@
 package fr.sncf.osrd.api;
 
-import static fr.sncf.osrd.sim_infra_adapter.RawInfraAdapterKt.adaptRawInfra;
+import static fr.sncf.osrd.sim_infra_adapter.RawInfraFromRjsAdapterKt.adaptRawInfra;
 
 import fr.sncf.osrd.infra.implementation.signaling.SignalingInfraBuilder;
 import fr.sncf.osrd.infra.implementation.signaling.modules.bal3.BAL3;
@@ -26,12 +26,14 @@ public record FullInfra(
     public static FullInfra fromRJSInfra(
             RJSInfra rjsInfra, DiagnosticRecorder diagnosticRecorder, SignalingSimulator signalingSimulator) {
         // Parse railjson into a proper infra
+
+        // To be replaced
         logger.info("parsing infra");
         var infra =
                 SignalingInfraBuilder.fromRJSInfra(rjsInfra, Set.of(new BAL3(diagnosticRecorder)), diagnosticRecorder);
 
         logger.info("adaptation to kotlin");
-        var rawInfra = adaptRawInfra(infra);
+        var rawInfra = adaptRawInfra(infra, rjsInfra);
 
         logger.info("loading signals");
         var loadedSignalInfra = signalingSimulator.loadSignals(rawInfra);
