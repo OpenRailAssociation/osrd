@@ -229,7 +229,7 @@ class InfraExplorerTests {
         assertEquals(1, blocks.size)
         val block = blocks[0]
 
-        // block 1->2
+        // block 1->2, lookahead 2->3->bx
         var explorers =
             initInfraExplorer(
                     infra.rawInfra,
@@ -241,13 +241,13 @@ class InfraExplorerTests {
         assertFalse { allEqual(explorers.map { it.getLastEdgeIdentifier() }) }
         assertTrue { allEqual(explorers.map { it.getCurrentBlock() }) }
 
-        // block 2->3
-        explorers = explorers.map { extendAndMove(it) }
+        // block 2->3, lookahead 3->bx
+        explorers.forEach { it.moveForward() }
         assertFalse { allEqual(explorers.map { it.getLastEdgeIdentifier() }) }
         assertTrue { allEqual(explorers.map { it.getCurrentBlock() }) }
 
         // block 3->b1 and 3->b2
-        explorers = explorers.map { extendAndMove(it) }
+        explorers.forEach { it.moveForward() }
         assertFalse { allEqual(explorers.map { it.getLastEdgeIdentifier() }) }
         assertFalse { allEqual(explorers.map { it.getCurrentBlock() }) }
     }
@@ -289,14 +289,5 @@ class InfraExplorerTests {
             if (list[0] != list[i]) return false
         }
         return true
-    }
-
-    /** Extend lookahead (assuming a single option) and move forward */
-    private fun extendAndMove(explorer: InfraExplorer): InfraExplorer {
-        val all = explorer.cloneAndExtendLookahead()
-        assert(all.size == 1)
-        val extended = all.first()
-        extended.moveForward()
-        return extended
     }
 }
