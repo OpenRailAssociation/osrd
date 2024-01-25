@@ -159,7 +159,7 @@ jobs:
         run: |
           cd python/railjson_generator
           poetry run pytype -j auto
-      
+
       - name: Pytest
         run: |
           cd python/railjson_generator
@@ -175,6 +175,30 @@ jobs:
           fail_ci_if_error: false
           verbose: true
           files: coverage.xml
+
+  check_commits:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0  # Fetch all history for all branches and tags
+
+    - name: Check for 'fixup' commits
+      run: |
+        # We don't have a base ref to check against if we aren't in a
+        # pull_request workflow.
+        BASE=${{ github.base_ref }}
+        if [[ -z "$BASE" ]]; then
+          exit 0
+        fi
+
+        # Check that commit don't start with fixup
+        if git log --format=%s origin/"$BASE"..HEAD | grep -i '^fixup'; then
+          echo "Found a bad commit message"
+          exit 1
+        fi
+
 
   check_integration_tests:
     runs-on: ubuntu-latest
