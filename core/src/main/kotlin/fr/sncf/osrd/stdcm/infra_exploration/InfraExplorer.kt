@@ -7,7 +7,6 @@ import fr.sncf.osrd.conflicts.incrementalPathOf
 import fr.sncf.osrd.graph.PathfindingEdgeLocationId
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.utils.PathPropertiesView
-import fr.sncf.osrd.sim_infra.utils.getBlockExit
 import fr.sncf.osrd.sim_infra.utils.getRouteBlocks
 import fr.sncf.osrd.sim_infra.utils.routesOnBlock
 import fr.sncf.osrd.utils.indexing.MutableStaticIdxArrayList
@@ -16,6 +15,7 @@ import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
+import fr.sncf.osrd.utils.units.meters
 import java.util.*
 
 /** Explore the infra, without running simulations.
@@ -23,12 +23,13 @@ import java.util.*
  *
  * The path has several parts: the current block (on which is the train head), the path the train comes from,
  * and the *lookahead* (i.e. the path the train will follow later).
+ * The lookahead is always extended one whole route at a time.
  *
  * ```
  * (...      predecessors  ) ( current block ) (           lookahead             )
  * ------> ----------------> ----------------> ----------------> ---------------->
  *                           (       ^       )                   (       ^       )
- *                           getCurrentBlock()                getLastBlockIdentifier()
+ *                           getCurrentBlock()                getLastEdgeIdentifier()
  *                           getCurrentEdgePathProperties()
  *                           ...
  * ```
@@ -43,11 +44,11 @@ interface InfraExplorer {
     fun getCurrentEdgePathProperties(offset: Offset<Block>, length: Distance?): PathProperties
 
     /** Returns an object that can be used to identify edges.
-     * The last edge contains the current block (current position in the path), the lookahead's blocks (path to explore)
-     * and the last route (current path's exit). */
+     * The last edge contains the current block (current position in the path)
+     * and the lookahead's blocks (path to explore). */
     fun getLastEdgeIdentifier(): EdgeIdentifier
 
-    /** Clone the current object and extend the lookahead by one block, for each block starting there. */
+    /** Clone the current object and extend the lookahead by one route, for each route starting there. */
     fun cloneAndExtendLookahead(): Collection<InfraExplorer>
 
     /** Move the current block by one, following the lookahead section. */
@@ -92,23 +93,16 @@ fun initInfraExplorer(
     val routes = blockInfra.routesOnBlock(rawInfra, block)
     routes.forEach {
         val incrementalPath = incrementalPathOf(rawInfra, blockInfra)
-        incrementalPath.extend(PathFragment(
-            mutableStaticIdxArrayListOf(it),
-            mutableStaticIdxArrayListOf(block),
-            containsStart = true,
-            containsEnd = endBlocks.contains(block),
-            travelledPathBegin = location.offset.distance,
-            travelledPathEnd = Distance.ZERO
-        ))
         val infraExplorer = InfraExplorerImpl(
             rawInfra,
             blockInfra,
-            mutableStaticIdxArrayListOf(block),
-            mutableStaticIdxArrayListOf(it),
+            mutableStaticIdxArrayListOf(),
+            mutableStaticIdxArrayListOf(),
             incrementalPath,
             blockToPathProperties,
             endBlocks = endBlocks
         )
+        infraExplorer.extend(it, location)
         infraExplorers.add(infraExplorer)
     }
     return infraExplorers
@@ -145,23 +139,16 @@ private class InfraExplorerImpl(
         for (i in currentIndex..<blocks.size) {
             currentAndRemainingBlocks.add(blocks[i])
         }
-        return EdgeIdentifierImpl(currentAndRemainingBlocks, routes.last())
+        return EdgeIdentifierImpl(currentAndRemainingBlocks)
     }
 
     override fun cloneAndExtendLookahead(): Collection<InfraExplorer> {
         if (getIncrementalPath().pathComplete)
             return listOf() // Can't extend beyond the destination
         val infraExplorers = mutableListOf<InfraExplorer>()
-        val lastBlock = blocks.last()
         val lastRoute = routes.last()
-        val lastBlockExit = blockInfra.getBlockExit(rawInfra, lastBlock)
         val lastRouteExit = rawInfra.getRouteExit(lastRoute)
-        val nextRoutes =
-            if (lastBlockExit != lastRouteExit)
-                //Last route ends after last block: route should not change, but block should move forward
-                mutableStaticIdxArrayListOf(lastRoute)
-            else
-                rawInfra.getRoutesStartingAtDet(lastBlockExit)
+        val nextRoutes = rawInfra.getRoutesStartingAtDet(lastRouteExit)
         nextRoutes.forEach {
             val infraExplorer = this.clone() as InfraExplorerImpl
             infraExplorer.extend(it)
@@ -220,27 +207,38 @@ private class InfraExplorerImpl(
         )
     }
 
-    private fun extend(route: RouteId) {
-        val routeBlocks = blockInfra.getRouteBlocks(rawInfra, route)
-        val lastBlock = blocks.last()
-        val nextBlockIndex = routeBlocks.indexOf(lastBlock) + 1
-        assert(nextBlockIndex < routeBlocks.size) {
-            "InfraExplorer's last block cannot be the last block of the route to extend."
+    fun extend(route: RouteId, firstLocation: PathfindingEdgeLocationId<Block>? = null) {
+        var routeBlocks = blockInfra.getRouteBlocks(rawInfra, route)
+        if (firstLocation != null) {
+            // Only add the blocks after (including) the first block
+            val filteredRouteBlocks = mutableStaticIdxArrayListOf<Block>()
+            var seenFirstBlock = false
+            for (block in routeBlocks) {
+                if (block == firstLocation.edge)
+                    seenFirstBlock = true
+                if (seenFirstBlock)
+                    filteredRouteBlocks.add(block)
+            }
+            assert(seenFirstBlock)
+            routeBlocks = filteredRouteBlocks
         }
-        val nextBlock = routeBlocks[nextBlockIndex]
-        blocks.add(nextBlock)
-        val isNewRoute = nextBlockIndex == 0
-        if (isNewRoute)
-            routes.add(route)
-        blockToPathProperties[nextBlock] = makePathProps(blockInfra, rawInfra, nextBlock)
-        incrementalPath.extend(PathFragment(
-            if (isNewRoute) mutableStaticIdxArrayListOf(route) else mutableStaticIdxArrayListOf(),
-            mutableStaticIdxArrayListOf(nextBlock),
-            containsStart = false,
-            containsEnd = endBlocks.contains(nextBlock),
-            travelledPathBegin = Distance.ZERO,
-            travelledPathEnd = Distance.ZERO
-        ))
+        blocks.addAll(routeBlocks)
+        routes.add(route)
+        for (block in blocks) {
+            blockToPathProperties[block] = makePathProps(blockInfra, rawInfra, block)
+            val endPath = endBlocks.contains(block)
+            val startPath = !incrementalPath.pathStarted
+            incrementalPath.extend(PathFragment(
+                mutableStaticIdxArrayListOf(route),
+                mutableStaticIdxArrayListOf(block),
+                containsStart = startPath,
+                containsEnd = endPath,
+                travelledPathBegin = if (startPath) firstLocation!!.offset.distance else Distance.ZERO,
+                travelledPathEnd = Distance.ZERO
+            ))
+            if (endPath)
+                break // Can't extend any further
+        }
     }
 
     override fun toString(): String {
@@ -248,17 +246,17 @@ private class InfraExplorerImpl(
     }
 }
 
-private class EdgeIdentifierImpl(private val blocks: StaticIdxList<Block>, private val route: RouteId): EdgeIdentifier {
+private class EdgeIdentifierImpl(private val blocks: StaticIdxList<Block>): EdgeIdentifier {
     override fun equals(other: Any?): Boolean {
         if (this === other)
             return true
         return if (other !is EdgeIdentifierImpl)
             false
         else
-            this.blocks == other.blocks && this.route == other.route
+            this.blocks == other.blocks
     }
 
     override fun hashCode(): Int {
-        return Objects.hash(blocks, route)
+        return Objects.hash(blocks)
     }
 }
