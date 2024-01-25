@@ -37,16 +37,26 @@ export const RouteEditionPanel: FC<{ state: RouteEditionState }> = ({ state }) =
     [state.entity]
   );
 
+  /**
+   * Transit checkbox should be disabled if
+   */
   const disableTransit = useMemo(() => {
     let shouldbeDisabled = true;
+    // if we have the data directly on the object
     if (state.entity.properties.release_detectors.length > 0) {
       shouldbeDisabled = false;
     }
-    // We can swith from empty to filled when there is a selected route in the search
+    // We can swith from filled to empty when there is a selected route in the search
     // because we've got the data
     else if (
       state.optionsState.type === 'options' &&
       !isNil(state.optionsState.focusedOptionIndex)
+    ) {
+      shouldbeDisabled = false;
+    } else if (
+      state.optionsState.type === 'idle' &&
+      state.initialEntity?.properties &&
+      state.initialEntity.properties.release_detectors.length > 0
     ) {
       shouldbeDisabled = false;
     }
@@ -91,16 +101,25 @@ export const RouteEditionPanel: FC<{ state: RouteEditionState }> = ({ state }) =
    * What we do when the rigid transit checkbox changed
    */
   const onReleaseDetectorChange = useCallback(
-    (withDetector: boolean) => {
+    (withoutDetector: boolean) => {
       setState((prev) => {
         let detectors: string[] = [];
+        // take the data from the selected option
         if (
-          withDetector &&
+          !withoutDetector &&
           prev.optionsState.type === 'options' &&
           !isNil(prev.optionsState.focusedOptionIndex)
         ) {
           const selectedCandidate = prev.optionsState.options[prev.optionsState.focusedOptionIndex];
           detectors = selectedCandidate.data.detectors;
+        }
+        if (
+          !withoutDetector &&
+          prev.initialEntity &&
+          prev.initialEntity.properties.release_detectors.length > 0 &&
+          prev.optionsState.type === 'idle'
+        ) {
+          detectors = prev.initialEntity.properties.release_detectors;
         }
         return {
           ...prev,

@@ -5,7 +5,7 @@ import { featureCollection } from '@turf/helpers';
 import { FaFlagCheckered } from 'react-icons/fa';
 import { BsArrowBarRight } from 'react-icons/bs';
 import { useTranslation } from 'react-i18next';
-import { isNil, isEqual } from 'lodash';
+import { isNil } from 'lodash';
 
 import {
   NULL_GEOMETRY,
@@ -132,20 +132,17 @@ export const RouteEditionLayers: FC<{ state: RouteEditionState }> = ({ state }) 
    * => load its geometry
    */
   useEffect(() => {
-    // if there is an initial entity and enti
-    if (
-      !isNil(state.initialEntity) &&
-      isEqual(state.initialEntity.properties, state.entity.properties)
-    ) {
-      getRouteGeometry(state.initialEntity.properties.id).then((d) =>
+    // if there is an initial entity
+    if (!isNil(state.initialEntity)) {
+      getRouteGeometry(state.initialEntity.properties.id).then((d) => {
         setEntityGeo({
           ...d,
           properties: {
             ...d.properties,
             color: colors[mapStyle].routes.text,
           },
-        })
-      );
+        });
+      });
     }
     return () => {
       setEntityGeo({ type: 'Feature', properties: {}, geometry: NULL_GEOMETRY });

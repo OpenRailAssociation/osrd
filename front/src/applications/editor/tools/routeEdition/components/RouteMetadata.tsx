@@ -35,7 +35,7 @@ export const RouteMetadata: FC<{
           <input
             type="checkbox"
             id="include-release-detectors"
-            checked={!!entity.properties.release_detectors.length}
+            checked={entity.properties.release_detectors.length === 0}
             disabled={disabled || disableTransit}
             onChange={(e) => onChange(e.target.checked)}
             ref={(input) => {
