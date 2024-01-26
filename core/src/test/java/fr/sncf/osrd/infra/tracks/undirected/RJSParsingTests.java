@@ -67,7 +67,7 @@ public class RJSParsingTests {
         var rjsInfra = Helpers.getExampleInfra("one_line/infra.json");
         var track = rjsInfra.trackSections.iterator().next();
         rjsInfra.speedSections = List.of(
-                new RJSSpeedSection("id", 42, Map.of(
+                new RJSSpeedSection("id", 27, Map.of(
                         "category1", 10.,
                         "category2", 20.
                 ), List.of(new RJSApplicableDirectionsTrackRange(
@@ -78,7 +78,7 @@ public class RJSParsingTests {
                 ))),
             new RJSSpeedSection("id", 45, Map.of(
                     "category2", 12.,
-                    "category3", 17.
+                    "category3", 30.
             ), List.of(new RJSApplicableDirectionsTrackRange(
                     track.id,
                     ApplicableDirection.START_TO_STOP,
@@ -88,21 +88,22 @@ public class RJSParsingTests {
         );
         var parsedInfra = UndirectedInfraBuilder.parseInfra(rjsInfra, new DiagnosticRecorderImpl(true));
         var expected = TreeRangeMap.<Double, SpeedLimits>create();
-        expected.put(Range.closed(0., 5.), new SpeedLimits(42, ImmutableMap.of(
+        expected.put(Range.closed(0., 5.), new SpeedLimits(27, ImmutableMap.of(
                 "category1", 10.,
                 "category2", 20.
         )));
-        expected.put(Range.closed(5., 10.), new SpeedLimits(42, ImmutableMap.of(
+        expected.put(Range.closed(5., 10.), new SpeedLimits(27, ImmutableMap.of(
                 "category1", 10.,
                 "category2", 12.,
-                "category3", 17.
+                "category3", 27.
         )));
         expected.put(Range.closed(10., 15.), new SpeedLimits(45, ImmutableMap.of(
                 "category2", 12.,
-                "category3", 17.
+                "category3", 30.
         )));
+        expected.put(Range.closed(15., 1000.), new SpeedLimits(Double.POSITIVE_INFINITY, ImmutableMap.of()));
         var speedLimits = parsedInfra.getTrackSection(track.id).getSpeedSections().get(Direction.FORWARD);
-        equalsIgnoringTransitions(expected, speedLimits);
+        assertTrue(equalsIgnoringTransitions(expected, speedLimits));
     }
 
     @Test
