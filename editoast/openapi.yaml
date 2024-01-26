@@ -3340,6 +3340,10 @@ components:
       - properties:
           OperationalPointNotFound:
             properties:
+              missing_ids:
+                items:
+                  type: string
+                type: array
               missing_uics:
                 items:
                   format: int64
@@ -3347,6 +3351,7 @@ components:
                 type: array
             required:
             - missing_uics
+            - missing_ids
             type: object
         required:
         - OperationalPointNotFound
@@ -3418,6 +3423,17 @@ components:
             type: integer
         required:
         - uic
+        - type
+        type: object
+      - properties:
+          id:
+            type: string
+          type:
+            enum:
+            - operational_point_id
+            type: string
+        required:
+        - id
         - type
         type: object
     TimetableImportPathSchedule:
