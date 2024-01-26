@@ -25,9 +25,10 @@ import {
 import { dateIsInRange } from 'utils/date';
 import { sec2datetime, datetime2sec } from 'utils/timeManipulation';
 import { SimulationReport } from 'common/api/osrdEditoastApi';
-import { DispatchPersistentUpdateSimulation, DispatchUpdateSelectedTrainId } from './types';
 
-const CHART_ID = 'SpaceTimeChart';
+import { DispatchPersistentUpdateSimulation, DispatchUpdateSelectedTrainId } from './types';
+import { SPACE_TIME_CHART_ID } from './consts';
+
 const CHART_MIN_HEIGHT = 250;
 
 /**
@@ -190,7 +191,6 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
       const newDrawnedChart = drawAllTrains(
         allowancesSettings,
         chart,
-        CHART_ID,
         dispatchUpdateSelectedTrainId,
         height,
         ref,
@@ -304,7 +304,7 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
       }}
     >
       <div
-        id={`container-${CHART_ID}`}
+        id={`container-${SPACE_TIME_CHART_ID}`}
         className="spacetime-chart chart"
         style={{ height: `100%` }}
       >

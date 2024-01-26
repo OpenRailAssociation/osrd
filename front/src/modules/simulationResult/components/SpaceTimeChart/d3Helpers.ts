@@ -1,4 +1,3 @@
-import { CHART_AXES } from 'modules/simulationResult/consts';
 import drawTrain from 'modules/simulationResult/components/SpaceTimeChart/drawTrain';
 import createSpaceTimeChart from 'modules/simulationResult/components/SpaceTimeChart/createSpaceTimeChart';
 import {
@@ -51,7 +50,6 @@ const drawAxisTitle = (chart: Chart, rotate: boolean) => {
 const drawAllTrains = (
   allowancesSettings: AllowancesSettings,
   chart: Chart | undefined,
-  CHART_ID: string,
   dispatchUpdateSelectedTrainId: DispatchUpdateSelectedTrainId,
   heightOfSpaceTimeChart: number,
   ref: React.MutableRefObject<HTMLDivElement> | React.RefObject<HTMLDivElement>,
@@ -65,10 +63,8 @@ const drawAllTrains = (
 ) => {
   const chartLocal = createSpaceTimeChart(
     chart,
-    CHART_ID,
     trainsToDraw,
     heightOfSpaceTimeChart,
-    CHART_AXES.SPACE_TIME,
     ref,
     reset,
     rotate

@@ -2,64 +2,66 @@ import * as d3 from 'd3';
 import { select as d3select } from 'd3-selection';
 
 import { Chart, SimulationTrain, ConsolidatedPosition } from 'reducers/osrdsimulation/types';
-import { ChartAxes } from 'modules/simulationResult/consts';
+import { CHART_AXES } from 'modules/simulationResult/consts';
 import {
   defineLinear,
   defineTime,
-  isSpaceTimeChart,
 } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
 import defineChart from 'modules/simulationResult/components/ChartHelpers/defineChart';
+import { SPACE_TIME_CHART_ID } from './consts';
 
-export default function createSpaceTimeChart<T extends number | Date>(
+function getMaxPosition(trains: SimulationTrain[], pos: 'tailPosition' | 'headPosition') {
+  return d3.max(
+    trains.flatMap(
+      (train) =>
+        d3.max(
+          train[pos].map(
+            (section) =>
+              d3.max(section.map((step: ConsolidatedPosition) => step.position)) as number
+          )
+        ) as number
+    )
+  ) as number;
+}
+
+export default function createSpaceTimeChart(
   chart: Chart | undefined,
-  chartID: string,
-  dataSimulation: SimulationTrain[],
-  heightOfSpaceTimeChart: number,
-  keyValues: ChartAxes,
+  trains: SimulationTrain[],
+  chartHeight: number,
   ref: React.MutableRefObject<HTMLDivElement> | React.RefObject<HTMLDivElement>,
   reset: boolean,
   rotate: boolean
 ): Chart {
-  d3select(`#${chartID}`).remove();
+  d3select(`#${SPACE_TIME_CHART_ID}`).remove();
 
-  const xValues: T[] = dataSimulation
-    .map((train) =>
-      (train.eco_headPosition ?? train.headPosition).map((section) =>
-        section.map((position) => (isSpaceTimeChart(keyValues) ? position.time : position.position))
-      )
+  const resetChart = chart === undefined || reset;
+
+  const times = trains.flatMap((train) =>
+    (train.eco_headPosition ?? train.headPosition).flatMap((section) =>
+      section.map((position) => position.time as Date)
     )
-    .flat(Infinity) as T[];
+  );
 
-  function getMax(pos: 'tailPosition' | 'headPosition') {
-    return d3.max(
-      dataSimulation.flatMap(
-        (train) =>
-          d3.max(
-            train[pos].map(
-              (section) => d3.max(section.map((step: ConsolidatedPosition) => step.position)) as T
-            )
-          ) as T
-      )
-    );
-  }
-  const dataSimulationLinearMax = d3.max([getMax('tailPosition'), getMax('headPosition')] as T[]);
+  const maxPosition = d3.max([
+    getMaxPosition(trains, 'tailPosition'),
+    getMaxPosition(trains, 'headPosition'),
+  ]);
 
-  const defineX = chart === undefined || reset ? defineTime(d3.extent(xValues) as [T, T]) : chart.x;
+  const defineX = resetChart ? defineTime(d3.extent(times) as [Date, Date]) : chart.x;
 
-  const defineY =
-    chart === undefined || reset ? defineLinear(Number(dataSimulationLinearMax), 0.05) : chart.y;
+  const defineY = resetChart ? defineLinear(Number(maxPosition), 0.05) : chart.y;
 
-  const width = parseInt(d3select(`#container-${chartID}`)?.style('width'), 10);
+  const width = parseInt(d3select(`#container-${SPACE_TIME_CHART_ID}`)?.style('width'), 10);
 
   const chartLocal = defineChart(
     width,
-    heightOfSpaceTimeChart,
+    chartHeight,
     defineX,
     defineY,
     ref,
     rotate,
-    keyValues,
-    chartID
+    CHART_AXES.SPACE_TIME,
+    SPACE_TIME_CHART_ID
   );
-  return chart === undefined || reset ? chartLocal : { ...chartLocal, x: chart.x, y: chart.y };
+  return resetChart ? chartLocal : { ...chartLocal, x: chart.x, y: chart.y };
 }
