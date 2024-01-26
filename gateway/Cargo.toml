@@ -32,7 +32,7 @@ actix-session = "0.8"
 actix-files = "0.6.2"
 base64ct = "1.6.0"
 opentelemetry = "0.21.0"
-opentelemetry_sdk = { version = "0.21.1", features = ["rt-tokio-current-thread", "metrics"] }
+opentelemetry_sdk = { version = "0.21.2", features = ["rt-tokio-current-thread", "metrics"] }
 opentelemetry-datadog = { version = "0.9.0", features = ["reqwest-client"] }
 opentelemetry-otlp = "0.14.0"
 actix-web-opentelemetry = { version = "0.16.0", features = ["awc", "metrics"] }
