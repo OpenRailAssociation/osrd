@@ -24,7 +24,7 @@ export default function createSpaceTimeChart<T extends number | Date>(
 
   const xValues: T[] = dataSimulation
     .map((train) =>
-      train.headPosition.map((section) =>
+      (train.eco_headPosition ?? train.headPosition).map((section) =>
         section.map((position) => (isSpaceTimeChart(keyValues) ? position.time : position.position))
       )
     )
