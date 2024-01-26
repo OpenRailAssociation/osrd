@@ -51,4 +51,12 @@ class IncrementalRequirementEnvelopeAdapter(
 
     override val currentPathOffset
         get() = Offset<TravelledPath>(envelopeWithStops?.endPos?.meters ?: 0.meters)
+
+    override fun clone(): IncrementalRequirementCallbacks {
+        return IncrementalRequirementEnvelopeAdapter(
+            rollingStock,
+            envelopeWithStops,
+            simulationComplete,
+        )
+    }
 }

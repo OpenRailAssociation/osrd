@@ -307,7 +307,14 @@ class SpacingRequirementAutomaton(
     }
 
     fun clone(): SpacingRequirementAutomaton {
-        TODO("Not yet implemented")
+        return SpacingRequirementAutomaton(
+            this.rawInfra,
+            this.loadedSignalInfra,
+            this.blockInfra,
+            this.simulator,
+            this.callbacks.clone(),
+            this.incrementalPath.clone()
+        )
     }
 }
 

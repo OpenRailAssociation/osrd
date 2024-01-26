@@ -24,6 +24,8 @@ interface IncrementalRequirementCallbacks {
     val currentPathOffset: Offset<TravelledPath>
 
     val simulationComplete: Boolean
+
+    fun clone(): IncrementalRequirementCallbacks
 }
 
 data class PathSignal(
