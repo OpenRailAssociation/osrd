@@ -2187,9 +2187,9 @@ dependencies = [
 
 [[package]]
 name = "mvt"
-version = "0.9.0"
+version = "0.9.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f1aef0702a843e65e8e544babd859771fb8d0c9d5da58e438ede9610cf78034d"
+checksum = "de84789f070ec86d558f34d64b8afcf194ad9878dbdd03eb57268d44bfac4809"
 dependencies = [
  "log",
  "num-traits",
@@ -2601,9 +2601,9 @@ dependencies = [
 
 [[package]]
 name = "pointy"
-version = "0.5.0"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1abf55719b26d1479fd3263bed514942ee51522ee47474e56da8bd30e6fe1268"
+checksum = "0da621c0f2ec6aca88545b90ed862dee7ee364e9a8c17b234b9469e3f340ff70"
 dependencies = [
  "num-traits",
 ]
