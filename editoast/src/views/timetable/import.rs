@@ -64,9 +64,11 @@ pub struct TimetableImportPathSchedule {
 #[serde(tag = "type")]
 pub enum TimetableImportPathLocation {
     #[serde(rename = "track_offset")]
-    TrackOffsetLocation { track_section: String, offset: f64 },
+    TrackOffset { track_section: String, offset: f64 },
     #[serde(rename = "operational_point")]
-    OperationalPointLocation { uic: i64 },
+    OperationalPoint { uic: i64 },
+    #[serde(rename = "operational_point_id")]
+    OperationalPointId { id: String },
 }
 
 #[derive(Debug, Serialize, ToSchema)]
@@ -76,10 +78,19 @@ struct TimetableImportReport {
 
 #[derive(Debug, Clone, Serialize, ToSchema)]
 enum TimetableImportError {
-    RollingStockNotFound { name: String },
-    OperationalPointNotFound { missing_uics: Vec<i64> },
-    PathfindingError { cause: InternalError },
-    SimulationError { cause: InternalError },
+    RollingStockNotFound {
+        name: String,
+    },
+    OperationalPointNotFound {
+        missing_uics: Vec<i64>,
+        missing_ids: Vec<String>,
+    },
+    PathfindingError {
+        cause: InternalError,
+    },
+    SimulationError {
+        cause: InternalError,
+    },
 }
 
 #[derive(Debug, Clone, Deserialize, ToSchema)]
@@ -88,6 +99,11 @@ pub struct TimetableImportTrain {
     name: String,
     #[schema(example = "2023-08-17T08:46:00+02:00")]
     departure_time: DateTime<Utc>,
+}
+
+struct OperationalPointsToParts {
+    from_uic: HashMap<i64, Vec<OperationalPointPart>>,
+    from_id: HashMap<String, Vec<OperationalPointPart>>,
 }
 
 /// Import a timetable
@@ -181,11 +197,11 @@ async fn import_item(
     // PATHFINDING
     let mut pf_request = PathfindingRequest::new(infra_id, infra_version.to_owned());
     pf_request.with_rolling_stocks(&mut vec![rolling_stock.clone()]);
-    // List operational points uic needed for this import
     let ops_uic = ops_uic_from_path(&import_item.path);
+    let ops_id = ops_id_from_path(&import_item.path);
     // Retrieve operational points
-    let op_id_to_parts = match find_operation_points(&ops_uic, infra_id, conn).await? {
-        Ok(op_id_to_parts) => op_id_to_parts,
+    let op_to_parts = match find_operation_points(&ops_uic, &ops_id, infra_id, conn).await? {
+        Ok(op_to_parts) => op_to_parts,
         Err(err) => {
             return Ok(import_item
                 .trains
@@ -195,7 +211,7 @@ async fn import_item(
         }
     };
     // Create waypoints
-    let mut waypoints = waypoints_from_steps(&import_item.path, &op_id_to_parts);
+    let mut waypoints = waypoints_from_steps(&import_item.path, &op_to_parts);
     pf_request.with_waypoints(&mut waypoints);
 
     // Run pathfinding
@@ -295,37 +311,65 @@ async fn import_item(
 
 async fn find_operation_points(
     ops_uic: &[i64],
+    ops_id: &[String],
     infra_id: i64,
     conn: &mut AsyncPgConnection,
-) -> Result<std::result::Result<HashMap<i64, Vec<OperationalPointPart>>, TimetableImportError>> {
+) -> Result<std::result::Result<OperationalPointsToParts, TimetableImportError>> {
     // Retrieve operational points
-    let ops = OperationalPointModel::retrieve_from_uic(conn, infra_id, ops_uic).await?;
-    let mut op_id_to_parts = HashMap::<_, Vec<_>>::new();
-    for op in ops {
-        op_id_to_parts
+    let ops_from_uic: Vec<OperationalPointModel> =
+        OperationalPointModel::retrieve_from_uic(conn, infra_id, ops_uic).await?;
+    let mut op_uic_to_parts = HashMap::<_, Vec<_>>::new();
+    for op in ops_from_uic {
+        op_uic_to_parts
             .entry(op.data.0.extensions.identifier.unwrap().uic)
             .or_default()
             .extend(op.data.0.parts);
     }
+    let mut missing_uics: Vec<i64> = vec![];
     // If we didn't find all the operational points, we can't run the pathfinding
-    if op_id_to_parts.len() != ops_uic.len() {
-        let missing_uics = ops_uic
-            .iter()
-            .filter(|uic| !op_id_to_parts.contains_key(uic))
-            .cloned()
-            .collect();
+    if op_uic_to_parts.len() != ops_uic.len() {
+        ops_uic.iter().for_each(|uic| {
+            if !op_uic_to_parts.contains_key(uic) {
+                missing_uics.push(*uic)
+            }
+        });
+    }
+
+    let ops_from_ids = OperationalPointModel::retrieve_from_obj_ids(conn, infra_id, ops_id).await?;
+    let mut op_id_to_parts = HashMap::<_, Vec<_>>::new();
+    for op in ops_from_ids {
+        op_id_to_parts
+            .entry(op.obj_id)
+            .or_default()
+            .extend(op.data.0.parts);
+    }
+    // If we didn't find all the operational points, we can't run the pathfinding
+    let mut missing_ids: Vec<String> = vec![];
+    if op_id_to_parts.len() != ops_id.len() {
+        ops_id.iter().for_each(|id| {
+            if !op_id_to_parts.contains_key(id) {
+                missing_ids.push(id.to_string())
+            }
+        });
+    }
+    if missing_uics.len() + missing_ids.len() > 0 {
         return Ok(Err(TimetableImportError::OperationalPointNotFound {
             missing_uics,
+            missing_ids,
         }));
     }
-    Ok(Ok(op_id_to_parts))
+
+    Ok(Ok(OperationalPointsToParts {
+        from_uic: op_uic_to_parts,
+        from_id: op_id_to_parts,
+    }))
 }
 
 fn ops_uic_from_path(path: &[TimetableImportPathStep]) -> Vec<i64> {
     let mut ops_uic = path
         .iter()
         .filter_map(|step| match &step.location {
-            TimetableImportPathLocation::OperationalPointLocation { uic } => Some(*uic),
+            TimetableImportPathLocation::OperationalPoint { uic } => Some(*uic),
             _ => None,
         })
         .collect::<Vec<_>>();
@@ -335,19 +379,41 @@ fn ops_uic_from_path(path: &[TimetableImportPathStep]) -> Vec<i64> {
     ops_uic
 }
 
+fn ops_id_from_path(path: &[TimetableImportPathStep]) -> Vec<String> {
+    let mut ops_id = path
+        .iter()
+        .filter_map(|step| match &step.location {
+            TimetableImportPathLocation::OperationalPointId { id } => Some(id.to_string()),
+            _ => None,
+        })
+        .collect::<Vec<_>>();
+    // Remove duplicates
+    ops_id.sort();
+    ops_id.dedup();
+    ops_id
+}
+
 fn waypoints_from_steps(
     path: &Vec<TimetableImportPathStep>,
-    op_id_to_parts: &HashMap<i64, Vec<OperationalPointPart>>,
+    op_to_parts: &OperationalPointsToParts,
 ) -> Vec<Vec<Waypoint>> {
     let mut res = PathfindingWaypoints::new();
     for step in path {
         res.push(match &step.location {
-            TimetableImportPathLocation::TrackOffsetLocation {
+            TimetableImportPathLocation::TrackOffset {
                 track_section,
                 offset,
             } => Vec::from(Waypoint::bidirectional(track_section, *offset)),
-            TimetableImportPathLocation::OperationalPointLocation { uic } => op_id_to_parts
+            TimetableImportPathLocation::OperationalPoint { uic } => op_to_parts
+                .from_uic
                 .get(uic)
+                .unwrap()
+                .iter()
+                .flat_map(|op_part| Waypoint::bidirectional(&op_part.track, op_part.position))
+                .collect(),
+            TimetableImportPathLocation::OperationalPointId { id } => op_to_parts
+                .from_id
+                .get(id)
                 .unwrap()
                 .iter()
                 .flat_map(|op_part| Waypoint::bidirectional(&op_part.track, op_part.position))
@@ -438,8 +504,8 @@ mod tests {
 
     #[test]
     fn test_waypoints_from_steps() {
-        let mut op_id_to_parts = HashMap::new();
-        op_id_to_parts.insert(
+        let mut op_uic_to_parts = HashMap::new();
+        op_uic_to_parts.insert(
             1,
             vec![
                 OperationalPointPart {
@@ -455,23 +521,52 @@ mod tests {
             ],
         );
 
+        let mut op_id_to_parts = HashMap::new();
+        op_id_to_parts.insert(
+            "a1".to_string(),
+            vec![
+                OperationalPointPart {
+                    track: Identifier("E".to_string()),
+                    position: 0.,
+                    ..Default::default()
+                },
+                OperationalPointPart {
+                    track: Identifier("F".to_string()),
+                    position: 100.,
+                    ..Default::default()
+                },
+            ],
+        );
+
         let path = vec![
             TimetableImportPathStep {
-                location: TimetableImportPathLocation::TrackOffsetLocation {
+                location: TimetableImportPathLocation::TrackOffset {
                     track_section: "C".to_string(),
                     offset: 50.,
                 },
                 schedule: HashMap::new(),
             },
             TimetableImportPathStep {
-                location: TimetableImportPathLocation::OperationalPointLocation { uic: 1 },
+                location: TimetableImportPathLocation::OperationalPoint { uic: 1 },
+                schedule: HashMap::new(),
+            },
+            TimetableImportPathStep {
+                location: TimetableImportPathLocation::OperationalPointId {
+                    id: "a1".to_string(),
+                },
                 schedule: HashMap::new(),
             },
         ];
 
-        let waypoints = waypoints_from_steps(&path, &op_id_to_parts);
+        let waypoints = waypoints_from_steps(
+            &path,
+            &(OperationalPointsToParts {
+                from_uic: op_uic_to_parts,
+                from_id: op_id_to_parts,
+            }),
+        );
 
-        assert_eq!(waypoints.len(), 2);
+        assert_eq!(waypoints.len(), 3);
         assert_eq!(waypoints[0], Waypoint::bidirectional("C", 50.));
         assert_eq!(
             waypoints[1],
@@ -481,35 +576,61 @@ mod tests {
             ]
             .concat()
         );
+        assert_eq!(
+            waypoints[2],
+            [
+                Waypoint::bidirectional("E", 0.),
+                Waypoint::bidirectional("F", 100.),
+            ]
+            .concat()
+        );
     }
 
     #[test]
-    fn test_ops_uic_from_path() {
+    fn test_ops_uic_id_from_path() {
         let path = vec![
             TimetableImportPathStep {
-                location: TimetableImportPathLocation::TrackOffsetLocation {
+                location: TimetableImportPathLocation::TrackOffset {
                     track_section: "A".to_string(),
                     offset: 0.,
                 },
                 schedule: HashMap::new(),
             },
             TimetableImportPathStep {
-                location: TimetableImportPathLocation::OperationalPointLocation { uic: 1 },
+                location: TimetableImportPathLocation::OperationalPoint { uic: 1 },
                 schedule: HashMap::new(),
             },
             TimetableImportPathStep {
-                location: TimetableImportPathLocation::OperationalPointLocation { uic: 2 },
+                location: TimetableImportPathLocation::OperationalPointId {
+                    id: "a1".to_string(),
+                },
                 schedule: HashMap::new(),
             },
             TimetableImportPathStep {
-                location: TimetableImportPathLocation::TrackOffsetLocation {
+                location: TimetableImportPathLocation::OperationalPoint { uic: 2 },
+                schedule: HashMap::new(),
+            },
+            TimetableImportPathStep {
+                location: TimetableImportPathLocation::TrackOffset {
                     track_section: "B".to_string(),
                     offset: 100.,
                 },
                 schedule: HashMap::new(),
             },
             TimetableImportPathStep {
-                location: TimetableImportPathLocation::OperationalPointLocation { uic: 1 },
+                location: TimetableImportPathLocation::OperationalPointId {
+                    id: "a2".to_string(),
+                },
+                schedule: HashMap::new(),
+            },
+            TimetableImportPathStep {
+                location: TimetableImportPathLocation::OperationalPointId {
+                    id: "a1".to_string(),
+                },
+                schedule: HashMap::new(),
+            },
+            TimetableImportPathStep {
+                location: TimetableImportPathLocation::OperationalPoint { uic: 1 },
                 schedule: HashMap::new(),
             },
         ];
@@ -519,5 +640,11 @@ mod tests {
         assert_eq!(ops_uic.len(), 2);
         assert_eq!(ops_uic[0], 1);
         assert_eq!(ops_uic[1], 2);
+
+        let ops_id = ops_id_from_path(&path);
+
+        assert_eq!(ops_id.len(), 2);
+        assert_eq!(ops_id[0], "a1");
+        assert_eq!(ops_id[1], "a2");
     }
 }

@@ -2308,6 +2308,7 @@ export type TimetableImportError =
     }
   | {
       OperationalPointNotFound: {
+        missing_ids: string[];
         missing_uics: number[];
       };
     }
@@ -2335,6 +2336,10 @@ export type TimetableImportPathLocation =
   | {
       type: 'operational_point';
       uic: number;
+    }
+  | {
+      id: string;
+      type: 'operational_point_id';
     };
 export type TimetableImportPathSchedule = {
   arrival_time: string;
