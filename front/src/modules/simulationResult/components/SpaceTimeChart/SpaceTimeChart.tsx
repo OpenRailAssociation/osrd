@@ -229,7 +229,7 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
 
   /* add behaviour on zoom and mousemove/mouseover/wheel on the new chart each time the chart changes */
   useEffect(() => {
-    if (chart) {
+    if (chart && selectedTrain) {
       const newTimeScaleRange = (rotate ? chart.y.domain() : chart.x.domain()) as [Date, Date];
 
       if (setTimeScaleDomain) {
