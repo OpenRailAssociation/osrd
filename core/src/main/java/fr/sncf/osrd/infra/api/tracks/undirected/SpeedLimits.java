@@ -3,9 +3,7 @@ package fr.sncf.osrd.infra.api.tracks.undirected;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSection;
-import fr.sncf.osrd.sim_infra.impl.SpeedSection;
-import fr.sncf.osrd.utils.units.Speed;
-import java.util.HashMap;
+import java.util.Objects;
 
 public final class SpeedLimits {
 
@@ -51,12 +49,26 @@ public final class SpeedLimits {
         var categories = Sets.union(a.speedLimitByTag.keySet(), b.speedLimitByTag.keySet());
         var builder = ImmutableMap.<String, Double>builder();
         for (var category : categories) {
-            Double speedA = a.speedLimitByTag.getOrDefault(category, Double.POSITIVE_INFINITY);
-            Double speedB = b.speedLimitByTag.getOrDefault(category, Double.POSITIVE_INFINITY);
+            Double speedA = a.speedLimitByTag.getOrDefault(category, a.defaultSpeedLimit);
+            Double speedB = b.speedLimitByTag.getOrDefault(category, b.defaultSpeedLimit);
             assert speedA != null && speedB != null;
             var speed = Double.min(speedA, speedB);
             builder.put(category, speed);
         }
         return new SpeedLimits(defaultSpeed, builder.build());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SpeedLimits other = (SpeedLimits) o;
+        return Double.compare(defaultSpeedLimit, other.defaultSpeedLimit) == 0
+                && Objects.equals(speedLimitByTag, other.speedLimitByTag);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(defaultSpeedLimit, speedLimitByTag);
     }
 }
