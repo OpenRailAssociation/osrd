@@ -3,10 +3,8 @@ package fr.sncf.osrd.conflicts
 import fr.sncf.osrd.signaling.SignalingSimulator
 import fr.sncf.osrd.signaling.ZoneStatus
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.sim_infra_adapter.SimInfraAdapter
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
-import fr.sncf.osrd.utils.units.meters
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
@@ -277,6 +275,13 @@ class SpacingRequirementAutomaton(
     }
 
     fun clone(): SpacingRequirementAutomaton {
-        TODO("Not yet implemented")
+        return SpacingRequirementAutomaton(
+            this.rawInfra,
+            this.loadedSignalInfra,
+            this.blockInfra,
+            this.simulator,
+            this.callbacks.clone(),
+            this.incrementalPath.clone()
+        )
     }
 }

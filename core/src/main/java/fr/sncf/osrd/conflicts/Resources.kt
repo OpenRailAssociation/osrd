@@ -15,6 +15,8 @@ interface IncrementalRequirementCallbacks {
 
     // the end time of the train
     fun endTime(): Double
+
+    fun clone(): IncrementalRequirementCallbacks
 }
 
 
