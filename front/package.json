@@ -137,7 +137,7 @@
     "@types/chroma-js": "^2.1.4",
     "@types/d3": "^7.4.0",
     "@types/d3-drag": "^3.0.3",
-    "@types/jest": "^27.0.1",
+    "@types/jest": "^29.5.11",
     "@types/lodash": "^4.14.192",
     "@types/node": "^18.15.11",
     "@types/react": "^18.0.33",
