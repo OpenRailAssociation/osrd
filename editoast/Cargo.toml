@@ -45,7 +45,7 @@ actix-files = "0.6.5"
 actix-web = "4.4.1"
 actix-http = "3.5.1"
 actix-cors = "0.7.0"
-env_logger = "0.10.1"
+env_logger = "0.10.2"
 log = "0.4.20"
 redis = { version = "0.24.0", features = [
     "tokio-comp",
