@@ -106,7 +106,7 @@
     "redux-thunk": "^2.3.0",
     "remark-gfm": "^3.0.1",
     "reselect": "^4.1.6",
-    "sass": "^1.60.0",
+    "sass": "^1.70.0",
     "sass-loader": "^13.2.2",
     "scheduler": "^0.23.0",
     "sort-by": "^1.2.0",
