@@ -2,8 +2,6 @@ import { ArrayElement, ObjectFieldsTypes } from 'utils/types';
 
 // CHARTS
 
-export type AxisKey = 'time' | 'position' | 'speed' | 'gradient' | 'radius' | 'height';
-
 export const CHART_AXES = {
   SPACE_TIME: ['time', 'position'],
   SPACE_SPEED: ['position', 'speed'],
