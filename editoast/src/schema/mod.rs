@@ -404,6 +404,7 @@ pub struct Sign {
     pub angle_geo: f64,
     pub angle_sch: f64,
     pub side: Side,
+    pub direction: ApplicableDirections,
     #[serde(rename = "type")]
     pub sign_type: NonBlankString,
     pub value: String,

@@ -439,6 +439,7 @@ class Sign(TrackLocationTrait):
     angle_geo: float = Field(0, description="Geographic angle in degrees")
     angle_sch: float = Field(0, description="Schematic angle in degrees")
     side: Side = Field(Side.CENTER, description="Side of the sign on the track")
+    direction: ApplicableDirections = Field(ApplicableDirections.BOTH, description="Direction of the sign on the track")
     type: NonBlankStr = Field(description="Precise the type of the sign")
     value: str = Field(description="If the sign is an announcement, precise the value(s)", default="")
     kp: str = Field(description="Kilometric point of the sign", default="")
