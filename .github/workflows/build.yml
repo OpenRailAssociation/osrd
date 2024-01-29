@@ -184,7 +184,7 @@ jobs:
       with:
         fetch-depth: 0  # Fetch all history for all branches and tags
 
-    - name: Check for 'fixup' commits
+    - name: Check commit names
       run: |
         # We don't have a base ref to check against if we aren't in a
         # pull_request workflow.
@@ -193,9 +193,22 @@ jobs:
           exit 0
         fi
 
-        # Check that commit don't start with fixup
-        if git log --format=%s origin/"$BASE"..HEAD | grep -i '^fixup'; then
-          echo "Found a bad commit message"
+        commit_titles() {
+          git log --format=%s origin/"$BASE"..HEAD --skip=1
+        }
+
+        if commit_titles | grep -i '^fixup'; then
+          echo "Found a fixup commit"
+          exit 1
+        fi
+
+        # Check that commit contains ':'
+        if commit_titles |  grep -E -v '^([.a-z]+, )*[.a-z]+: [a-z]'; then
+          echo "All commit messages must use the following format:"
+          echo "  core: add fancy margin support"
+          echo
+          echo "When a commit changes multiple modules, separate module names with ', ':"
+          echo "  core, editoast: fix curve simplification"
           exit 1
         fi
 
