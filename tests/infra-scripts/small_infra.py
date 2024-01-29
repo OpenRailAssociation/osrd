@@ -6,6 +6,7 @@ For more information, and a diagram of this infrastructure, see: https://osrd.fr
 """
 from typing import Mapping, Optional, Tuple
 
+from osrd_schemas.infra import LoadingGaugeType
 from railjson_generator import (
     ApplicableDirection,
     ExternalGeneratedInputs,
@@ -196,6 +197,11 @@ ta6.add_slope(begin=7700, end=8000, slope=3)
 ta7.add_slope(begin=7000, end=7300, slope=3)
 ta7.add_slope(begin=7300, end=7700, slope=6)
 ta7.add_slope(begin=7700, end=8000, slope=3)
+
+# Loading Gauge Limits
+ta0.add_loading_gauge_limit(begin=0, end=200, category=LoadingGaugeType.GB1)
+ta0.add_loading_gauge_limit(begin=200, end=1900, category=LoadingGaugeType.G1)
+ta0.add_loading_gauge_limit(begin=100, end=1500, category=LoadingGaugeType.FR3_3)
 
 # ================================
 #  Around station B: South-West

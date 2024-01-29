@@ -1,5 +1,6 @@
 package fr.sncf.osrd.railjson.schema.infra;
 
+import com.squareup.moshi.Json;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.railjson.schema.common.Identified;
 import fr.sncf.osrd.railjson.schema.geom.RJSLineString;
@@ -15,6 +16,8 @@ public class RJSTrackSection implements Identified {
 
     public List<RJSSlope> slopes;
     public List<RJSCurve> curves;
+
+    @Json(name = "loading_gauge_limits")
     public List<RJSLoadingGaugeLimit> loadingGaugeLimits;
 
     public RJSLineString geo;

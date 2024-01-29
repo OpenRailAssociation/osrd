@@ -47,6 +47,17 @@ class Curve(RangeElement):
         return infra.Curve(radius=self.radius, begin=self.begin, end=self.end)
 
 
+class LoadingGaugeLimit(RangeElement):
+    category: infra.LoadingGaugeType
+
+    def __init__(self, begin, end, category):
+        super().__init__(begin, end)
+        self.category = category
+
+    def to_rjs(self):
+        return infra.LoadingGaugeLimit(category=self.category, begin=self.begin, end=self.end)
+
+
 @dataclass
 class TrackRange(RangeElement):
     track: "TrackSection"

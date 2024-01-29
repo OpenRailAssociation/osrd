@@ -525,6 +525,7 @@
             "length": 1000.0,
             "slopes": [],
             "curves": [],
+            "loading_gauge_limits": [],
             "extensions": {
                 "sncf": {
                     "line_code": 0,
@@ -565,6 +566,7 @@
             "length": 1000.0,
             "slopes": [],
             "curves": [],
+            "loading_gauge_limits": [],
             "extensions": {
                 "sncf": {
                     "line_code": 0,
@@ -605,6 +607,7 @@
             "length": 1000.0,
             "slopes": [],
             "curves": [],
+            "loading_gauge_limits": [],
             "extensions": {
                 "sncf": {
                     "line_code": 0,
@@ -645,6 +648,7 @@
             "length": 1000.0,
             "slopes": [],
             "curves": [],
+            "loading_gauge_limits": [],
             "extensions": {
                 "sncf": {
                     "line_code": 0,
@@ -685,6 +689,7 @@
             "length": 1000.0,
             "slopes": [],
             "curves": [],
+            "loading_gauge_limits": [],
             "extensions": {
                 "sncf": {
                     "line_code": 0,
@@ -725,6 +730,7 @@
             "length": 1000.0,
             "slopes": [],
             "curves": [],
+            "loading_gauge_limits": [],
             "extensions": {
                 "sncf": {
                     "line_code": 0,
@@ -765,6 +771,7 @@
             "length": 1000.0,
             "slopes": [],
             "curves": [],
+            "loading_gauge_limits": [],
             "extensions": {
                 "sncf": {
                     "line_code": 0,

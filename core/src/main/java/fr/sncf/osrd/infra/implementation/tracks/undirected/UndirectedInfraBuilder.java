@@ -341,7 +341,7 @@ public class UndirectedInfraBuilder {
             var allowedTypes = new HashSet<RJSLoadingGaugeType>();
             for (var range : limits)
                 if (range.begin <= begin && range.end >= end)
-                    allowedTypes.addAll(getCompatibleGaugeTypes(range.type));
+                    allowedTypes.addAll(getCompatibleGaugeTypes(range.category));
             var blockedTypes = Sets.difference(
                     Sets.newHashSet(RJSLoadingGaugeType.values()),
                     allowedTypes
