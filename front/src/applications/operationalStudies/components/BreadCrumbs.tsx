@@ -17,28 +17,40 @@ export default function BreadCrumbs({ project, study, scenario }: Props) {
         t('projectsList')
       ) : (
         <>
-          <Link to="/operational-studies/projects">{t('projectsList')}</Link>
+          <div>
+            <Link to="/operational-studies/projects">{t('projectsList')}</Link>{' '}
+          </div>
           <i className="icons-arrow-next icons-size-x75 text-muted" />
         </>
       )}
 
-      {project && !study && !scenario && project.name}
+      {project && !study && !scenario && <div className="text-truncate">{project.name}</div>}
 
       {project && study && (
         <>
-          <Link to={`/operational-studies/projects/${project.id}`}>{project.name}</Link>
+          <div className="text-truncate" title={project.name}>
+            <Link to={`/operational-studies/projects/${project.id}`}> {project.name}</Link>
+          </div>
           <i className="icons-arrow-next icons-size-x75 text-muted" />
         </>
       )}
-      {project && study && !scenario && study.name}
+      {project && study && !scenario && (
+        <div className="text-truncate" title={study.name}>
+          {study.name}
+        </div>
+      )}
 
       {project && study && scenario && (
         <>
-          <Link to={`/operational-studies/projects/${project.id}/studies/${study.id}`}>
-            {study.name}
-          </Link>
+          <div className="text-truncate" title={study.name}>
+            <Link to={`/operational-studies/projects/${project.id}/studies/${study.id}`}>
+              {study.name}
+            </Link>
+          </div>
           <i className="icons-arrow-next icons-size-x75 text-muted" />
-          {scenario.name}
+          <div className="text-truncate" title={scenario.name}>
+            {scenario.name}
+          </div>
         </>
       )}
     </div>

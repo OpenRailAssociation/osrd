@@ -73,9 +73,11 @@
           border-radius: 0 4px 4px 0;
           background-color: var(--purple);
           width: 100%;
+          overflow: hidden;
         }
         .scenario-explorator-card-head-study {
           background-color: var(--primary);
+          overflow: hidden;
         }
         .scenario-explorator-card-head-scenario {
           display: flex;

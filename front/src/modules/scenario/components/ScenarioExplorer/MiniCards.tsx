@@ -44,7 +44,9 @@ export const ProjectMiniCard = ({ project, setSelectedID, isSelected }: MiniCard
     <div className="minicard-img">
       <Project2Image project={project} />
     </div>
-    <div>{project.name}</div>
+    <div className="text-truncate" title={project.name}>
+      {project.name}
+    </div>
   </div>
 );
 
@@ -58,7 +60,9 @@ export const StudyMiniCard = ({ study, setSelectedID, isSelected }: MiniCardStud
     tabIndex={0}
     onClick={() => setSelectedID(study.id)}
   >
-    <div>{study.name}</div>
+    <div className="text-truncate" title={study.name}>
+      {study.name}
+    </div>
   </div>
 );
 
