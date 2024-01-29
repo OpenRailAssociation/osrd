@@ -49,6 +49,18 @@ pub trait Model: Clone + Sized + Send {
     }
 }
 
+/// A type alias for the [Model::Row] associated type
+///
+/// Helps silent compiler errors about type amibiguity.
+#[allow(unused)]
+pub type Row<M> = <M as Model>::Row;
+
+/// A type alias for the [Model::Changeset] associated type
+///
+/// Helps silent compiler errors about type amibiguity.
+#[allow(unused)]
+pub type Changeset<M> = <M as Model>::Changeset;
+
 /// A couple ([Model] mutable reference, a [Model] changeset instance)
 ///
 /// This struct is useful for several things:
