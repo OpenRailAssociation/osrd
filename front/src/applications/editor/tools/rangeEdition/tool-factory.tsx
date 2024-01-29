@@ -206,7 +206,23 @@ function getRangeEditionTool<T extends EditorRange>({
       const feature = (e.features || [])[0];
 
       if (isOnModeMove(interactionState.type)) {
-        setState({ interactionState: { type: 'idle' } });
+        if (interactionState.type === 'moveRangeExtremity' && entity.properties.track_ranges) {
+          // after resizing a track range, check if the user dragged an extremity beyond the other one
+          // if he did, switch the values of each extremities
+          const updatedTrackIndex = interactionState.rangeIndex;
+          const updatedTrack = entity.properties.track_ranges[updatedTrackIndex];
+
+          if (updatedTrack.begin > updatedTrack.end) {
+            [updatedTrack.begin, updatedTrack.end] = [updatedTrack.end, updatedTrack.begin];
+
+            const newEntity = cloneDeep(entity);
+            newEntity.properties.track_ranges?.splice(updatedTrackIndex, 1, updatedTrack);
+            setState({ entity: newEntity, interactionState: { type: 'idle' } });
+          }
+          setState({ interactionState: { type: 'idle' } });
+        } else {
+          setState({ interactionState: { type: 'idle' } });
+        }
       } else if (feature) {
         if (feature.properties?.itemType === 'TrackRangeExtremity') {
           const hoveredExtremity = feature as unknown as TrackRangeExtremityFeature;
