@@ -363,9 +363,6 @@ private fun makeChunk(
         }
         return res
     }
-    for (entry in DistanceRangeMapImpl.from(rangeViewForward.blockedGaugeTypes)) {
-        entry.value!!.isCompatibleWith(LoadingGaugeTypeId(RJSLoadingGaugeType.G1.ordinal.toUInt()))
-    }
 
     val chunkId = builder.trackChunk(
         rangeViewForward.geo,

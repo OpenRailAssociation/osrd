@@ -105,6 +105,7 @@
             "length": 200.0,
             "slopes": [],
             "curves": [],
+            "loading_gauge_limits": [],
             "extensions": {
                 "sncf": {
                     "line_code": 0,
@@ -145,6 +146,7 @@
             "length": 200.0,
             "slopes": [],
             "curves": [],
+            "loading_gauge_limits": [],
             "extensions": {
                 "sncf": {
                     "line_code": 0,
@@ -185,6 +187,7 @@
             "length": 200.0,
             "slopes": [],
             "curves": [],
+            "loading_gauge_limits": [],
             "extensions": {
                 "sncf": {
                     "line_code": 0,
@@ -225,6 +228,7 @@
             "length": 200.0,
             "slopes": [],
             "curves": [],
+            "loading_gauge_limits": [],
             "extensions": {
                 "sncf": {
                     "line_code": 0,
