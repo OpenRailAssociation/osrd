@@ -120,12 +120,20 @@ const ScenarioExplorer = ({
             <div className="scenario-explorator-card-head-content-item">
               <img src={projectIcon} alt="project icon" />
               <span className="scenario-explorator-card-head-legend">{t('projectLegend')}</span>
-              <div className="scenario-explorator-card-head-project">{projectDetails.name}</div>
+              <div className="scenario-explorator-card-head-project">
+                <span className="text-truncate" title={projectDetails.name}>
+                  {projectDetails.name}
+                </span>
+              </div>
             </div>
             <div className="scenario-explorator-card-head-content-item">
               <img src={studyIcon} alt="study icon" />
               <span className="scenario-explorator-card-head-legend">{t('studyLegend')}</span>
-              <div className="scenario-explorator-card-head-study">{studyDetails.name}</div>
+              <div className="scenario-explorator-card-head-study">
+                <span className="text-truncate" title={studyDetails.name}>
+                  {studyDetails.name}
+                </span>
+              </div>
             </div>
             <div className="scenario-explorator-card-head-content-item">
               <img src={scenarioIcon} alt="scenario icon" />

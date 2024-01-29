@@ -94,7 +94,7 @@ body {
   align-items: center;
   gap: 0.5rem;
   font-size: 1.25rem;
-  line-height: 1rem;
+  max-width: 84vw;
   a {
     color: var(--coolgray7);
     &:hover {
