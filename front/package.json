@@ -165,7 +165,7 @@
     "happy-dom": "^8.6.0",
     "prettier": "^2.8.7",
     "storybook": "^7.0.22",
-    "typescript": "~5.1.6",
+    "typescript": "~5.3.3",
     "vite": "^4.5.2",
     "vite-plugin-checker": "^0.5.6",
     "vite-tsconfig-paths": "^4.0.8",
