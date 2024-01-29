@@ -61,7 +61,7 @@ serde_json.workspace = true
 serde_yaml = "0.9.30"
 sha1 = "0.10"
 strum = "0.25.0"
-strum_macros = "0.25.3"
+strum_macros = "0.26.1"
 thiserror = "1.0.56"
 enum-map = "2.7.3"
 editoast_derive = { path = "./editoast_derive" }
