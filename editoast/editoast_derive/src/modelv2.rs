@@ -148,7 +148,7 @@ struct ModelFieldOption {
     #[darling(default)]
     to_string: bool,
     #[darling(default)]
-    remote: Option<syn::Path>,
+    remote: Option<syn::Type>,
 }
 
 #[derive(Debug, PartialEq)]
@@ -178,7 +178,7 @@ struct ModelField {
 
 #[derive(Debug, PartialEq, Clone)]
 enum FieldTransformation {
-    Remote(syn::Path),
+    Remote(syn::Type),
     Json,
     Geo,
     ToString,
@@ -186,7 +186,7 @@ enum FieldTransformation {
 
 impl FieldTransformation {
     fn from_args(
-        remote: Option<syn::Path>,
+        remote: Option<syn::Type>,
         json: bool,
         geo: bool,
         to_string: bool,
@@ -230,10 +230,7 @@ impl ModelField {
     #[allow(clippy::wrong_self_convention)]
     fn into_transformed(&self, expr: TokenStream) -> TokenStream {
         match self.transform {
-            Some(FieldTransformation::Remote(_)) => {
-                let ty = &self.ty;
-                quote! {  Into::<#ty>::into(#expr) }
-            }
+            Some(FieldTransformation::Remote(_)) => quote! { #expr.into() },
             Some(FieldTransformation::Json) => quote! { diesel_json::Json(#expr) },
             Some(FieldTransformation::Geo) => unimplemented!("to be designed"),
             Some(FieldTransformation::ToString) => quote! { #expr.to_string() },
@@ -244,7 +241,7 @@ impl ModelField {
     #[allow(clippy::wrong_self_convention)]
     fn from_transformed(&self, expr: TokenStream) -> TokenStream {
         match self.transform {
-            Some(FieldTransformation::Remote(ref ty)) => quote! { #ty::from(#expr) },
+            Some(FieldTransformation::Remote(_)) => quote! { #expr.into() },
             Some(FieldTransformation::Json) => quote! { #expr.0 },
             Some(FieldTransformation::Geo) => unimplemented!("to be designed"),
             Some(FieldTransformation::ToString) => quote! { String::from(#expr.parse()) },
