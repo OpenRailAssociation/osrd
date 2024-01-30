@@ -42,7 +42,7 @@ class EffortCurve(BaseModel, extra="forbid"):
 
     @model_validator(mode="after")
     def check_size(self):
-        assert len(self.speeds) == len(self.speeds), "speeds and max_efforts must be the same length"
+        assert len(self.speeds) == len(self.max_efforts), "speeds and max_efforts must be the same length"
         return self
 
 
