@@ -31,7 +31,14 @@ class BlockAvailabilityLegacyAdapterTests {
             computeUnavailableSpace(
                 infra.rawInfra,
                 infra.blockInfra,
-                listOf(SpacingRequirement(zoneName, startOccupancy, endOccupancy)),
+                listOf(
+                    SpacingRequirement(
+                        zoneName,
+                        startOccupancy,
+                        endOccupancy,
+                        true,
+                    )
+                ),
                 SimpleRollingStock.STANDARD_TRAIN,
                 10.0,
                 20.0

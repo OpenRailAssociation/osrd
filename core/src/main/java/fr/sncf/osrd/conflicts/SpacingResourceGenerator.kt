@@ -6,62 +6,33 @@ import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra_adapter.SimInfraAdapter
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
+import fr.sncf.osrd.utils.units.Offset
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
-/**
+/*
  * ```
  *         zone occupied                  Y           Y
  *  explicit requirement                              Y         Y
  *     needs requirement                  Y           Y         Y
  *               signals          ┎o         ┎o         ┎o         ┎o         ┎o         ┎o
+ *           signal seen                     Y
  *                 zones   +---------|----------|----------|----------|----------|----------|
- *            train path                  =============
+ *            train path                ============
  *                 phase    headroom    begin      main        end          tailroom
  * ```
+ *
+ * We have to emit implicit requirements for all zones between and including those occupied by the train
+ * when it starts, and the first zone required by signaling.
  */
-enum class SpacingRequirementPhase {
-    HeadRoom,
-    Begin,
-    Main,
-    End,
-    TailRoom;
 
-    /** Checks whether the current state accepts this zone configuration */
-    fun check(occupied: Boolean, hasRequirement: Boolean): Boolean {
-        return when (this) {
-            HeadRoom -> !occupied && !hasRequirement
-            Begin -> occupied && !hasRequirement
-            Main -> occupied && hasRequirement
-            End -> !occupied && hasRequirement
-            TailRoom -> !occupied && !hasRequirement
-        }
-    }
-
-    fun react(occupied: Boolean, hasRequirement: Boolean): SpacingRequirementPhase {
-        // no state change
-        if (check(occupied, hasRequirement)) return this
-
-        when (this) {
-            HeadRoom -> {
-                if (occupied) return Begin.react(true, hasRequirement)
-            }
-            Begin -> {
-                if (hasRequirement) return Main.react(occupied, true)
-                if (!occupied) return TailRoom
-            }
-            Main -> {
-                if (!occupied) return End.react(false, hasRequirement)
-            }
-            End -> {
-                if (!hasRequirement) return TailRoom
-            }
-            TailRoom -> return TailRoom
-        }
-        return this
-    }
-}
+data class PendingSpacingRequirement(
+    val zoneIndex: Int,
+    val zoneEntryOffset: Offset<Path>,
+    val zoneExitOffset: Offset<Path>,
+    val beginTime: Double
+)
 
 class SpacingRequirementAutomaton(
     // context
@@ -74,8 +45,6 @@ class SpacingRequirementAutomaton(
 ) {
     private var nextProcessedBlock = 0
 
-    private var phase = SpacingRequirementPhase.HeadRoom
-
     // last zone for which a requirement was emitted
     private var lastEmittedZone = -1
 
@@ -86,6 +55,9 @@ class SpacingRequirementAutomaton(
 
     // the queue of signals awaiting processing
     private val pendingSignals = ArrayDeque<PathSignal>()
+
+    // requirements that need to be returned on the next successful pathUpdate
+    private val pendingRequirements = ArrayDeque<PendingSpacingRequirement>()
 
     private fun registerPathExtension() {
         // if the path has not yet started, skip signal processing
@@ -125,68 +97,18 @@ class SpacingRequirementAutomaton(
         nextProcessedBlock = incrementalPath.endBlockIndex
     }
 
-    /**
-     * For all zones which either occupied by the train or required at some point, emit a zone
-     * requirement. Some zones do not have requirements: those before the train's starting position,
-     * and those far enough from the end of the train path.
-     */
-    private fun emitZoneRequirement(
-        zoneIndex: Int,
-        zoneRequirementTime: Double
-    ): SpacingRequirement? {
-        val zonePath = incrementalPath.getZonePath(zoneIndex)
-        val zone = rawInfra.getZonePathZone(zonePath)
-
+    private fun addZonePendingRequirement(zoneIndex: Int, zoneRequirementTime: Double) {
+        assert(zoneRequirementTime.isFinite())
         val zoneEntryOffset = incrementalPath.getZonePathStartOffset(zoneIndex)
         val zoneExitOffset = incrementalPath.getZonePathEndOffset(zoneIndex)
-        val zoneEntryTime = callbacks.arrivalTimeInRange(zoneEntryOffset, zoneExitOffset)
-        val zoneExitTime = callbacks.departureTimeFromRange(zoneEntryOffset, zoneExitOffset)
-        val enters = zoneEntryTime.isFinite()
-        val exits = zoneExitTime.isFinite()
-        assert(enters == exits)
-        val occupied = enters
-
-        val explicitRequirement = zoneRequirementTime.isFinite()
-
-        phase = phase.react(occupied, explicitRequirement)
-        val correctPhase = phase.check(occupied, explicitRequirement)
-        if (!correctPhase) logger.error { "incorrect phase for zone $zone" }
-
-        if (phase == SpacingRequirementPhase.HeadRoom || phase == SpacingRequirementPhase.TailRoom)
-            return null
-
-        val beginTime: Double
-        val endTime: Double
-
-        val zoneName = rawInfra.getZoneName(zone)
-
-        when (phase) {
-            SpacingRequirementPhase.Begin -> {
-                beginTime = 0.0
-                endTime = zoneExitTime
-            }
-            SpacingRequirementPhase.Main -> {
-                beginTime =
-                    if (zoneRequirementTime.isFinite()) {
-                        zoneRequirementTime
-                    } else {
-                        // zones may not be required due to faulty signaling.
-                        // in this case, fall back to the time at which the zone was first occupied
-                        logger.error { "missing main phase zone requirement on zone $zoneName" }
-                        zoneEntryTime
-                    }
-                endTime = zoneExitTime
-            }
-            else -> /* SpacingRequirementPhase.End */ {
-                assert(zoneRequirementTime.isFinite())
-                beginTime = zoneRequirementTime
-                // the time at which this requirement ends is the one at which the train
-                // exits the simulation
-                endTime = callbacks.endTime()
-            }
-        }
-
-        return SpacingRequirement(zoneName, beginTime, endTime)
+        val req =
+            PendingSpacingRequirement(
+                zoneIndex,
+                zoneEntryOffset,
+                zoneExitOffset,
+                zoneRequirementTime
+            )
+        pendingRequirements.add(req)
     }
 
     private fun getSignalProtectedZone(signal: PathSignal): Int {
@@ -195,21 +117,67 @@ class SpacingRequirementAutomaton(
         return incrementalPath.getBlockEndZone(signal.minBlockPathIndex)
     }
 
-    fun processPathUpdate(): List<SpacingRequirement> {
-        registerPathExtension()
+    // create requirements for zones occupied by the train at the beginning of the simulation
+    private fun setupInitialRequirements() {
+        if (lastEmittedZone != -1) return
 
-        val res = mutableListOf<SpacingRequirement>()
-        fun emitRequirementsUntil(zoneIndex: Int, sightTime: Double) {
-            if (zoneIndex <= lastEmittedZone) return
-
-            for (skippedZone in lastEmittedZone + 1 until zoneIndex) {
-                val req = emitZoneRequirement(skippedZone, Double.POSITIVE_INFINITY)
-                if (req != null) res.add(req)
+        // look for the zone which contains the train as it starts.
+        // when the simulation starts, the train occupies a single point on the tracks, as if it
+        // were contained
+        // inside a magic portal until the train entirely moved out of it
+        var startZone = -1
+        val startingPoint = incrementalPath.travelledPathBegin
+        for (i in incrementalPath.beginZonePathIndex until incrementalPath.endZonePathIndex) {
+            val zonePathStartOffset = incrementalPath.getZonePathStartOffset(i)
+            val zonePathEndOffset = incrementalPath.getZonePathEndOffset(i)
+            if (startingPoint >= zonePathStartOffset && startingPoint < zonePathEndOffset) {
+                startZone = i
+                break
             }
-            val req = emitZoneRequirement(zoneIndex, sightTime)
-            if (req != null) res.add(req)
-            lastEmittedZone = zoneIndex
         }
+
+        assert(startZone != -1)
+        // the simulation start time is 0)
+        addZonePendingRequirement(startZone, 0.0)
+        lastEmittedZone = startZone
+    }
+
+    private fun addSignalRequirements(beginZoneIndex: Int, endZoneIndex: Int, sightTime: Double) {
+        if (endZoneIndex <= lastEmittedZone) return
+
+        // emit requirements for unprotected zones, which are between the last required zone and the
+        // first zone required by this signal. This is sometimes somewhat fine, such as at the
+        // beginning of a simulation
+        for (unprotectedZoneIndex in lastEmittedZone + 1 until beginZoneIndex) {
+            val zoneEntryOffset =
+                incrementalPath.toTravelledPath(
+                    incrementalPath.getZonePathStartOffset(unprotectedZoneIndex)
+                )
+            val zoneExitOffset =
+                incrementalPath.toTravelledPath(
+                    incrementalPath.getZonePathEndOffset(unprotectedZoneIndex)
+                )
+            val unprotectedReqTime = callbacks.arrivalTimeInRange(zoneEntryOffset, zoneExitOffset)
+            // TODO: emit a warning message if the unprotected zone is after the first processed
+            // signal
+            addZonePendingRequirement(unprotectedZoneIndex, unprotectedReqTime)
+            lastEmittedZone = unprotectedZoneIndex
+        }
+
+        // emit requirements for zones protected by this signal
+        for (requiredZoneIndex in
+            lastEmittedZone + 1 until endZoneIndex + 1) addZonePendingRequirement(
+            requiredZoneIndex,
+            sightTime
+        )
+        lastEmittedZone = endZoneIndex
+    }
+
+    fun processPathUpdate(): SpacingResourceUpdate {
+        // process newly added path data
+        registerPathExtension()
+        // initialize requirements which only apply before the train sees any signal
+        setupInitialRequirements()
 
         val blocks = mutableStaticIdxArrayListOf<Block>()
         for (blockIndex in
@@ -228,14 +196,22 @@ class SpacingRequirementAutomaton(
         // more path is needed
         signalLoop@ while (pendingSignals.isNotEmpty()) {
             val pathSignal = pendingSignals.first()
-            if (nextProbedZoneForSignal == -1)
-                nextProbedZoneForSignal = getSignalProtectedZone(pathSignal)
             val physicalSignal = loadedSignalInfra.getPhysicalSignal(pathSignal.signal)
 
             // figure out when the signal is first seen
-            val sightOffset =
-                pathSignal.pathOffset - rawInfra.getSignalSightDistance(physicalSignal)
-            val sightTime = callbacks.arrivalTimeInRange(sightOffset, pathSignal.pathOffset)
+            val signalOffset = incrementalPath.toTravelledPath(pathSignal.pathOffset)
+            val sightOffset = signalOffset - rawInfra.getSignalSightDistance(physicalSignal)
+            // If the train's simulation has reached the point where the signal is seen, bail out
+            if (
+                callbacks.currentPathOffset < sightOffset &&
+                    !(callbacks.simulationComplete && incrementalPath.pathComplete)
+            )
+                break@signalLoop
+            val sightTime = callbacks.arrivalTimeInRange(sightOffset, signalOffset)
+            assert(sightTime.isFinite())
+            val signalProtectedZone = getSignalProtectedZone(pathSignal)
+
+            if (nextProbedZoneForSignal == -1) nextProbedZoneForSignal = signalProtectedZone
 
             // find the first zone after the signal which can be occupied without disturbing the
             // train
@@ -244,7 +220,7 @@ class SpacingRequirementAutomaton(
                 // if we reached the last zone, just quit
                 if (nextProbedZoneForSignal == incrementalPath.endZonePathIndex) {
                     if (incrementalPath.pathComplete) break@zoneProbingLoop
-                    break@signalLoop
+                    return NotEnoughPath
                 }
                 val zoneIndex = nextProbedZoneForSignal++
 
@@ -272,7 +248,7 @@ class SpacingRequirementAutomaton(
 
                 // FIXME: Have a better way to check if the signal is constraining
                 if (signalState.getEnum("aspect") == "VL") break
-                emitRequirementsUntil(zoneIndex, sightTime)
+                addSignalRequirements(signalProtectedZone, zoneIndex, sightTime)
                 lastConstrainingZone = zoneIndex
             }
 
@@ -284,6 +260,64 @@ class SpacingRequirementAutomaton(
             pendingSignals.removeFirst()
             nextProbedZoneForSignal = -1
         }
-        return res
+
+        // serialize requirements and find the index of the first incomplete requirement
+        var firstIncompleteReq = pendingRequirements.size
+        val serializedRequirements =
+            pendingRequirements.mapIndexed { index, pendingSpacingRequirement ->
+                val serializedReq = serializeRequirement(pendingSpacingRequirement)
+                if (!serializedReq.isComplete && index < firstIncompleteReq)
+                    firstIncompleteReq = index
+                serializedReq
+            }
+
+        // remove complete requirements
+        for (i in 0 until firstIncompleteReq) pendingRequirements.removeFirst()
+
+        return SpacingRequirements(serializedRequirements)
+    }
+
+    private fun serializeRequirement(
+        pendingRequirement: PendingSpacingRequirement
+    ): SpacingRequirement {
+        val zonePath = incrementalPath.getZonePath(pendingRequirement.zoneIndex)
+        val zone = rawInfra.getZonePathZone(zonePath)
+        val zoneName = rawInfra.getZoneName(zone)
+        val zoneEntryOffset =
+            incrementalPath.toTravelledPath(
+                incrementalPath.getZonePathStartOffset(pendingRequirement.zoneIndex)
+            )
+        val zoneExitOffset =
+            incrementalPath.toTravelledPath(
+                incrementalPath.getZonePathEndOffset(pendingRequirement.zoneIndex)
+            )
+        val departureTime = callbacks.departureTimeFromRange(zoneEntryOffset, zoneExitOffset)
+
+        // three cases, to be evaluated **in order**:
+        // - (COMPLETE) the train left the zone (endTime = time the train left the zone)
+        // - (COMPLETE) the simulation has ended (endTime = simulation end time)
+        // - (INCOMPLETE) the train hasn't left the zone yet (endTime = currentTime)
+        val endTime: Double
+        val isComplete: Boolean
+        if (departureTime.isFinite()) {
+            endTime = departureTime
+            isComplete = true
+        } else {
+            endTime = callbacks.currentTime
+            isComplete = callbacks.simulationComplete
+        }
+
+        return SpacingRequirement(
+            zoneName,
+            pendingRequirement.beginTime,
+            endTime,
+            isComplete,
+        )
     }
 }
+
+sealed interface SpacingResourceUpdate
+
+class SpacingRequirements(val requirements: List<SpacingRequirement>) : SpacingResourceUpdate
+
+data object NotEnoughPath : SpacingResourceUpdate

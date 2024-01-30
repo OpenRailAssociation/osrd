@@ -3,23 +3,25 @@ package fr.sncf.osrd.conflicts
 import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.units.Offset
+import fr.sncf.osrd.utils.units.meters
 import kotlin.math.max
 import kotlin.math.min
 
 class IncrementalRequirementEnvelopeAdapter(
-    private val incrementalPath: IncrementalPath,
     private val rollingStock: RollingStock,
-    private val envelopeWithStops: EnvelopeStopWrapper
+    private val envelopeWithStops: EnvelopeStopWrapper,
+    override var simulationComplete: Boolean,
 ) : IncrementalRequirementCallbacks {
-    override fun arrivalTimeInRange(pathBeginOff: Offset<Path>, pathEndOff: Offset<Path>): Double {
+    override fun arrivalTimeInRange(
+        pathBeginOff: Offset<TravelledPath>,
+        pathEndOff: Offset<TravelledPath>
+    ): Double {
         // if the head of the train enters the zone at some point, use that
-        val travelledPathBegin = incrementalPath.toTravelledPath(pathBeginOff)
-        val begin = travelledPathBegin.distance.meters
+        val begin = pathBeginOff.distance.meters
         if (begin >= 0.0 && begin <= envelopeWithStops.endPos)
             return envelopeWithStops.interpolateTotalTime(begin)
 
-        val travelledPathEnd = incrementalPath.toTravelledPath(pathEndOff)
-        val end = travelledPathEnd.distance.meters
+        val end = pathEndOff.distance.meters
 
         val trainBegin = -rollingStock.length
         val trainEnd = 0.0
@@ -30,11 +32,10 @@ class IncrementalRequirementEnvelopeAdapter(
     }
 
     override fun departureTimeFromRange(
-        pathBeginOff: Offset<Path>,
-        pathEndOff: Offset<Path>
+        pathBeginOff: Offset<TravelledPath>,
+        pathEndOff: Offset<TravelledPath>
     ): Double {
-        val travelledPathEnd = incrementalPath.toTravelledPath(pathEndOff)
-        val end = travelledPathEnd.distance.meters
+        val end = pathEndOff.distance.meters
 
         val criticalPoint = end + rollingStock.length
         if (criticalPoint >= 0.0 && criticalPoint <= envelopeWithStops.endPos)
@@ -46,7 +47,9 @@ class IncrementalRequirementEnvelopeAdapter(
         return Double.POSITIVE_INFINITY
     }
 
-    override fun endTime(): Double {
-        return envelopeWithStops.totalTime
-    }
+    override val currentTime
+        get() = envelopeWithStops.totalTime
+
+    override val currentPathOffset
+        get() = Offset<TravelledPath>(envelopeWithStops.endPos.meters)
 }

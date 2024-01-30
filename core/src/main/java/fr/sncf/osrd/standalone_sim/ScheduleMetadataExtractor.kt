@@ -4,10 +4,7 @@ package fr.sncf.osrd.standalone_sim
 
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.pathfinding.chunksToRoutes
-import fr.sncf.osrd.conflicts.IncrementalRequirementEnvelopeAdapter
-import fr.sncf.osrd.conflicts.PathFragment
-import fr.sncf.osrd.conflicts.SpacingRequirementAutomaton
-import fr.sncf.osrd.conflicts.incrementalPathOf
+import fr.sncf.osrd.conflicts.*
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.EnvelopePhysics
 import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
@@ -166,11 +163,7 @@ fun run(
 
     val incrementalPath = incrementalPathOf(rawInfra, blockInfra)
     val envelopeAdapter =
-        IncrementalRequirementEnvelopeAdapter(
-            incrementalPath,
-            schedule.rollingStock,
-            envelopeWithStops
-        )
+        IncrementalRequirementEnvelopeAdapter(schedule.rollingStock, envelopeWithStops, true)
     val spacingGenerator =
         SpacingRequirementAutomaton(
             rawInfra,
@@ -190,7 +183,8 @@ fun run(
             endOffset
         )
     )
-    val spacingRequirements = spacingGenerator.processPathUpdate()
+    // as the provided path is complete, the resource generator should never return NotEnoughPath
+    val spacingRequirements = spacingGenerator.processPathUpdate() as SpacingRequirements
 
     val routingRequirements =
         routingRequirements(
@@ -213,7 +207,7 @@ fun run(
         mechanicalEnergyConsumed,
         signalSightings,
         zoneUpdates,
-        spacingRequirements,
+        spacingRequirements.requirements,
         routingRequirements,
     )
 }

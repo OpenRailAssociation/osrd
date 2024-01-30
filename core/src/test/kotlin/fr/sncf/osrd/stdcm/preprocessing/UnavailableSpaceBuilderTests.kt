@@ -37,7 +37,7 @@ class UnavailableSpaceBuilderTests {
             computeUnavailableSpace(
                 infra,
                 infra,
-                setOf(SpacingRequirement("a->b", 0.0, 100.0)),
+                setOf(SpacingRequirement("a->b", 0.0, 100.0, true)),
                 TestTrains.REALISTIC_FAST_TRAIN,
                 0.0,
                 0.0
@@ -71,7 +71,7 @@ class UnavailableSpaceBuilderTests {
             computeUnavailableSpace(
                 infra,
                 infra,
-                setOf(SpacingRequirement("b->c", 0.0, 100.0)),
+                setOf(SpacingRequirement("b->c", 0.0, 100.0, true)),
                 TestTrains.REALISTIC_FAST_TRAIN,
                 0.0,
                 0.0
@@ -110,7 +110,7 @@ class UnavailableSpaceBuilderTests {
             computeUnavailableSpace(
                 infra,
                 infra,
-                setOf(SpacingRequirement("center->b1", 0.0, 100.0)),
+                setOf(SpacingRequirement("center->b1", 0.0, 100.0, true)),
                 TestTrains.REALISTIC_FAST_TRAIN,
                 0.0,
                 0.0
@@ -141,7 +141,7 @@ class UnavailableSpaceBuilderTests {
             computeUnavailableSpace(
                 infra,
                 infra,
-                setOf(SpacingRequirement("c->d", 0.0, 100.0)),
+                setOf(SpacingRequirement("c->d", 0.0, 100.0, true)),
                 TestTrains.REALISTIC_FAST_TRAIN,
                 0.0,
                 0.0
@@ -164,7 +164,7 @@ class UnavailableSpaceBuilderTests {
             computeUnavailableSpace(
                 infra,
                 infra,
-                setOf(SpacingRequirement("b->c", 100.0, 200.0)),
+                setOf(SpacingRequirement("b->c", 100.0, 200.0, true)),
                 TestTrains.REALISTIC_FAST_TRAIN,
                 20.0,
                 60.0
