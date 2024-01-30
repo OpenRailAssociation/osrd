@@ -308,25 +308,44 @@ export const translateItemsList = <T>(t: TFunction, itemsList: T[], translationK
   }));
 
 /**
- * conversion table as an object,
+ * describes the configuration of a conversion table between units
+ */
+export interface conversionConfig {
+  [key: string]: { [key: string]: number };
+}
+/**
+ * Conversion table as a literal object,
  * its values are the number to multiply the old value in old unit to get the new value in desired unit
  */
-export const conversionFactors = {
-    t: { kg: 1000 },
-    kg: { t: 1 / 1000 },
-    'km/h': { 'm/s': 1 / 3.6, 'N/(km/h)': 1 / (9.81 * 3.6) },
-    'm/s': { 'km/h': 3.6, 'N/(m/s)': 1 / 9.81 },
-    N: { daN: 1 / 10, kN: 1e-3, 'N/(km/h)': 9.81, 'N/(m/s)': 9.81 },
-    daN: { N: 10, kN: 1e-2 },
-    kN: { N: 1000, daN: 100 },
+export const conversionFactors: conversionConfig = {
+  t: { kg: 1000 },
+  kg: { t: 1 / 1000 },
+  'km/h': { 'm/s': 1 / 3.6, 'N/(km/h)': 1 / (9.81 * 3.6) },
+  'm/s': { 'km/h': 3.6, 'N/(m/s)': 1 / 9.81 },
+  N: { daN: 1 / 10, kN: 1e-3, 'N/(km/h)': 9.81, 'N/(m/s)': 9.81 },
+  daN: { N: 10, kN: 1e-2 },
+  kN: { N: 1000, daN: 100 },
 };
 /**
- * converts a property of a RollingStock object if it is doable
+ * Converts a property of a RollingStock object if it is doable
  * @param oldValue
  * @param oldUnit
  * @param newUnit
  */
 export const convertUnit = (oldValue: number, oldUnit: string, newUnit: string): number => {
+  // same units
+  if (oldUnit === newUnit) {
+    return oldValue;
+  }
+  if (!oldValue) {
+    throw new Error(`Cannot convert undefined oldValue`);
+  }
+  if (!oldUnit) {
+    throw new Error(`Cannot convert oldUnit`);
+  }
+  if (!newUnit) {
+    throw new Error(`Cannot convert newUnit`);
+  }
 
     if (!conversionFactors[oldUnit] || !conversionFactors[newUnit]) {
         throw new Error(`Cannot convert one of the units`)
@@ -340,5 +359,5 @@ export const convertUnit = (oldValue: number, oldUnit: string, newUnit: string):
         throw new Error(`Cannot convert between ${oldUnit} and ${newUnit}`);
     }
 
-    return oldValue * conversionFactors[oldUnit][newUnit];
-}
+  return oldValue * conversionFactors[oldUnit][newUnit];
+};

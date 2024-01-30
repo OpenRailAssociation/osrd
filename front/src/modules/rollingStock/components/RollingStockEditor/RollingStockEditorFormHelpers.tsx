@@ -186,7 +186,7 @@ const RollingStockEditorParameterFormColumn = ({
               condensed
               orientation="right"
               textRight
-              disableUnitSelector
+
             />
           </div>
         ) : (

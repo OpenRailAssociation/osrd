@@ -95,3 +95,17 @@ describe('checkRollingStockFormValidity', () => {
     });
   });
 });
+
+describe('convert units', () => {
+  it('should convert weight units from tons to kilograms', () => {
+    expect(convertUnit(4, 't', 'kg')).toBe(4000);
+  });
+  it('should convert weight units from kilograms to tons', () => {
+    expect(convertUnit(4, 'kg', 't')).toBe(0.004);
+  });
+  it('should convert weight units from kN to daN', () => {
+    expect(convertUnit(5, 'kN', 'daN')).toBe(500);
+  });
+  it('should convert speed units from km/h to m/s', () =>
+    expect(convertUnit(1000, 'km/h', 'm/s')).toBe(1000 / 3.6));
+});
