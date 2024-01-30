@@ -77,10 +77,15 @@ public class ResultTrain {
         @Json(name = "end_time")
         public double endTime;
 
-        public SpacingRequirement(String zone, double beginTime, double endTime) {
+        // whether the requirement end_time is final. it's metadata, and **shouldn't be used for conflict detection**
+        @Json(name = "is_complete")
+        public boolean isComplete;
+
+        public SpacingRequirement(String zone, double beginTime, double endTime, boolean isComplete) {
             this.zone = zone;
             this.beginTime = beginTime;
             this.endTime = endTime;
+            this.isComplete = isComplete;
             assert !Double.isNaN(beginTime);
             assert !Double.isNaN(endTime);
             assert Double.isFinite(beginTime);
@@ -88,7 +93,7 @@ public class ResultTrain {
         }
 
         public SpacingRequirement withAddedTime(double timeToAdd) {
-            return new SpacingRequirement(zone, beginTime + timeToAdd, endTime + timeToAdd);
+            return new SpacingRequirement(zone, beginTime + timeToAdd, endTime + timeToAdd, isComplete);
         }
     }
 

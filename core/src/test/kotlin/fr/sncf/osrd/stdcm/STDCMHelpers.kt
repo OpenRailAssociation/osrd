@@ -66,7 +66,8 @@ fun makeRequirementsFromPath(
             SpacingRequirement(
                 entry.zone,
                 departureTime + entry.beginTime,
-                departureTime + entry.endTime
+                departureTime + entry.endTime,
+                entry.isComplete,
             )
         )
     }

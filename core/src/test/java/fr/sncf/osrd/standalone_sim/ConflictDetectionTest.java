@@ -51,8 +51,7 @@ public class ConflictDetectionTest {
         var fullInfra = fullInfraFromRJS(rjsInfra);
         var rawInfra = fullInfra.rawInfra();
 
-        // A path from the center track of south-west station to the center-top track of mid west
-        // station
+        // A path from the center track of south-west station to the center-top track of mid west station
         var chunkPath = chunkPathFromRoutes(
                 rawInfra,
                 List.of("rt.buffer_stop.1->DA0", "rt.DA0->DA5", "rt.DA5->DC5"),
@@ -106,8 +105,7 @@ public class ConflictDetectionTest {
         var ta0 = getTrackSectionFromNameOrThrow("TA0", rawInfra);
         var tc0 = getTrackSectionFromNameOrThrow("TC0", rawInfra);
 
-        // these paths are fairly distant from each other, but require passing a signal which
-        // protects
+        // these paths are fairly distant from each other, but require passing a signal which protects
         // a very long route. As the routes for pathA and pathB are incompatible with each other,
         // a conflict should occur.
         var chunkPathA = chunkPathFromRoutes(
@@ -138,8 +136,7 @@ public class ConflictDetectionTest {
         {
             var conflicts = ConflictsKt.detectConflicts(List.of(
                     convertRequirements(0L, 0.0, simResultA.train),
-                    // give enough time for switches to move (the default move time
-                    // is 5)
+                    // give enough time for switches to move (the default move time is 5)
                     convertRequirements(1L, simResultA.envelope.getTotalTime() + 5.1, simResultB.train)));
             assertFalse(conflicts.stream().anyMatch((conflict) -> conflict.conflictType == ROUTING));
             assertFalse(conflicts.stream().anyMatch((conflict) -> conflict.conflictType == SPACING));
@@ -205,8 +202,8 @@ public class ConflictDetectionTest {
     private static TrainRequirements convertRequirements(long trainId, double offset, ResultTrain train) {
         var spacingRequirements = new ArrayList<ResultTrain.SpacingRequirement>();
         for (var req : train.spacingRequirements)
-            spacingRequirements.add(
-                    new ResultTrain.SpacingRequirement(req.zone, offset + req.beginTime, offset + req.endTime));
+            spacingRequirements.add(new ResultTrain.SpacingRequirement(
+                    req.zone, offset + req.beginTime, offset + req.endTime, req.isComplete));
         var routingRequirements = new ArrayList<ResultTrain.RoutingRequirement>();
         for (var req : train.routingRequirements) {
             var zoneReqs = new ArrayList<ResultTrain.RoutingZoneRequirement>();
