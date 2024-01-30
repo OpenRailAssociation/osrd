@@ -1,4 +1,4 @@
-import React, { SetStateAction } from 'react';
+import React, { SetStateAction, useState } from 'react';
 import {
   RollingStockEditorMetadata,
   RollingStockEditorParameter,
@@ -6,11 +6,12 @@ import {
 } from 'modules/rollingStock/consts';
 import { isNil } from 'lodash';
 import { useTranslation } from 'react-i18next';
-import InputGroupSNCF from 'common/BootstrapSNCF/InputGroupSNCF';
+import InputGroupSNCF, { InputGroupSNCFValue } from 'common/BootstrapSNCF/InputGroupSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
 
 import type { EffortCurveForms, RollingStockParametersValues } from 'modules/rollingStock/types';
+import { convertUnit } from '../../helpers/utils';
 
 type RollingStockMetadataFormProps = {
   rollingStockValues: RollingStockParametersValues;
@@ -102,9 +103,14 @@ const RollingStockEditorParameterFormColumn = ({
   effortCurves,
 }: RollingStockEditorParameterFormProps & { formSide: 'left' | 'middle' | 'right' }) => {
   const { t } = useTranslation(['rollingstock', 'translation']);
+
+  const unitRemember: any = {};
+
   return (
     <>
       {RS_SCHEMA_PROPERTIES.filter((property) => {
+        unitRemember[property.title] = property.unit;
+
         const isInThisGroup =
           property.title ===
           RollingStockEditorParameter[property.title as RollingStockEditorParameter];
@@ -136,6 +142,9 @@ const RollingStockEditorParameterFormColumn = ({
             </div>
           );
         }
+        /**
+         * if the property has units choices like tons, kilograms, N, daN or km/h , we display a selector that converts the value to the new unit
+         */
         return property.units ? (
           <div
             className={`${
@@ -157,12 +166,39 @@ const RollingStockEditorParameterFormColumn = ({
                 id: `${property.title}-${unit}`,
                 label: unit,
               }))}
-              handleType={(type) => {
-                setRollingStockValues({
-                  ...rollingStockValues,
-                  [property.title]: type.value !== '' ? Number(type.value) : undefined,
-                } as SetStateAction<RollingStockParametersValues>);
-                setOptionValue(type.type as string);
+              handleUnit={(inputValue: InputGroupSNCFValue): void => {
+                console.log('unit before', unitRemember[property.title]);
+
+                /**
+                 * during the change of the unit, we need to update the value of the input after a conversion.
+                 * First, we should find what was the previously selected unit.
+                 * Then we convert it.
+                 */
+                console.log('unité changée, handleUnit inputValue', inputValue);
+                // split inputValue with a dash
+                if (inputValue.type) {
+                  const splitInputValue = inputValue.type.split('-');
+                  const currentUnit = splitInputValue[splitInputValue.length - 1];
+                  const oldValue = inputValue.value;
+                  console.log('property', property);
+                  console.log('oldValue', oldValue);
+                  setRollingStockValues((previousRollingStockValues: any) => {
+                    console.log('previous prev', previousRollingStockValues, currentUnit);
+                    if (previousRollingStockValues[property.title]) {
+                      // const currentUnit = previousRollingStockValues[property.title]!.unit;
+                      console.log('currentUnit', currentUnit);
+                    }
+                    rollingStockValues[property.title] = inputValue.value
+                      ? Number(inputValue.value)
+                      : undefined;
+
+                    return {
+                      ...rollingStockValues,
+                    };
+                  });
+                }
+
+                setOptionValue(inputValue.type as string);
               }}
               min={property.min}
               max={property.max}
@@ -186,7 +222,6 @@ const RollingStockEditorParameterFormColumn = ({
               condensed
               orientation="right"
               textRight
-
             />
           </div>
         ) : (

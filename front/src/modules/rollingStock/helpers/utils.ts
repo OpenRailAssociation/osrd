@@ -347,17 +347,17 @@ export const convertUnit = (oldValue: number, oldUnit: string, newUnit: string):
     throw new Error(`Cannot convert newUnit`);
   }
 
-    if (!conversionFactors[oldUnit] || !conversionFactors[newUnit]) {
-        throw new Error(`Cannot convert one of the units`)
-    }
+  if (!conversionFactors[oldUnit] || !conversionFactors[newUnit]) {
+    throw new Error(`Cannot convert one of the units`);
+  }
 
-    if (!conversionFactors[oldUnit]) {
-        throw new Error(`Unit ${oldUnit} not supported`);
-    }
+  if (!conversionFactors[oldUnit]) {
+    throw new Error(`Unit ${oldUnit} not supported`);
+  }
 
-    if (!conversionFactors[oldUnit][newUnit]) {
-        throw new Error(`Cannot convert between ${oldUnit} and ${newUnit}`);
-    }
+  if (!conversionFactors[oldUnit][newUnit]) {
+    throw new Error(`Cannot convert between ${oldUnit} and ${newUnit}`);
+  }
 
   return oldValue * conversionFactors[oldUnit][newUnit];
 };

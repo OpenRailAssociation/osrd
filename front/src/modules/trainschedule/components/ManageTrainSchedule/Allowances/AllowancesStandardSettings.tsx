@@ -78,7 +78,7 @@ export default function AllowancesStandardSettings({
             condensed
             value={allowanceValue || ''}
             type={valueAndUnit.value_type}
-            handleType={handleType}
+            handleUnit={handleType}
             options={unitsList}
             typeValue="number"
             min={1}

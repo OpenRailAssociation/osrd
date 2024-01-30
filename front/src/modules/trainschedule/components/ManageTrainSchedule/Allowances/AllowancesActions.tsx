@@ -16,13 +16,13 @@ import { removeElementAtIndex, replaceElementAtIndex } from 'utils/array';
 import { sortBy } from 'lodash';
 import { unitsList, unitsNames, unitsTypes } from './consts';
 import {
-  AllowancesTypes,
-  SetAllowanceSelectedIndexType,
   ActionOnAllowance,
-  OverlapAllowancesIndexesType,
+  AllowancesTypes,
   AllowanceValueForm,
-  RangeAllowanceForm,
   EngineeringAllowanceForm,
+  OverlapAllowancesIndexesType,
+  RangeAllowanceForm,
+  SetAllowanceSelectedIndexType,
 } from './types';
 import getAllowanceValue, {
   fillAllowancesWithDefaultRanges,
@@ -368,7 +368,7 @@ const AllowancesActions = <T extends RangeAllowanceForm | EngineeringAllowanceFo
             sm
             condensed
             value={allowanceValue}
-            handleType={handleValueAndUnit}
+            handleUnit={handleValueAndUnit}
             options={unitsList}
             typeValue="number"
             type={valueAndUnit?.value_type || defaultType()}

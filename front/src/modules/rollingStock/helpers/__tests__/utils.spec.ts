@@ -1,4 +1,8 @@
-import { checkRollingStockFormValidity, makeEffortCurve } from 'modules/rollingStock/helpers/utils';
+import {
+  checkRollingStockFormValidity,
+  convertUnit,
+  makeEffortCurve,
+} from 'modules/rollingStock/helpers/utils';
 
 import type { EffortCurves } from 'common/api/osrdEditoastApi';
 import type { EffortCurveForms, RollingStockParametersValues } from 'modules/rollingStock/types';
@@ -108,4 +112,8 @@ describe('convert units', () => {
   });
   it('should convert speed units from km/h to m/s', () =>
     expect(convertUnit(1000, 'km/h', 'm/s')).toBe(1000 / 3.6));
+  it('should throw error for non existing old unit', () =>
+    expect(convertUnit(1000, 'potatoes', 'm/s')).toThrowError());
+  it('should throw error for non existing new unit', () =>
+    expect(convertUnit(1000, 't', 'm/s')).toThrowError());
 });

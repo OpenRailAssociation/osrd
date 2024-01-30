@@ -7,10 +7,10 @@ import { convertInputStringToNumber } from 'utils/strings';
 import { ALLOWANCE_UNITS_KEYS } from 'modules/stdcmAllowances/allowancesConsts';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import type { InputGroupSNCFValue } from 'common/BootstrapSNCF/InputGroupSNCF';
 import InputGroupSNCF from 'common/BootstrapSNCF/InputGroupSNCF';
 import type { AllowanceValue } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
-import type { InputGroupSNCFValue } from 'common/BootstrapSNCF/InputGroupSNCF';
 
 import type { StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
 import type { StdcmConfSelectors } from 'reducers/osrdconf/stdcmConf/selectors';
@@ -87,7 +87,6 @@ const StdcmAllowances = () => {
         <InputGroupSNCF
           id="standardAllowanceTypeSelect"
           options={standardAllowanceTypes}
-          handleType={onchangeType}
           value={stdcmStandardAllowance?.value || ''}
           type={stdcmStandardAllowance?.type || 'percentage'}
           orientation="right"
@@ -95,6 +94,7 @@ const StdcmAllowances = () => {
           condensed
           sm
           textRight
+          handleUnit={onchangeType}
         />
       </div>
     </div>

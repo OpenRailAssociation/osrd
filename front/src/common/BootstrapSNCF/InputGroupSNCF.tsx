@@ -1,18 +1,11 @@
-import React, {
-  ChangeEvent,
-  ChangeEventHandler,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+import React, { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import nextId from 'react-id-generator';
 import './InputGroupSNCF.scss';
 import cx from 'classnames';
 import { isFloat, stripDecimalDigits } from 'utils/numbers';
 import { isNil } from 'lodash';
+import { setUIValue } from '@testing-library/user-event/document/UI';
 import { convertUnit } from '../../modules/rollingStock/helpers/utils';
-import RollingStockConstants from '../../modules/rollingStock/components/RollingStockEditor/RollingStockConstants';
 
 type Option = {
   id: string;
@@ -26,7 +19,7 @@ type Props = {
   id: string;
   label?: React.ReactElement;
   options: Option[];
-  handleType: (type: InputGroupSNCFValue) => void;
+  handleUnit: (type: InputGroupSNCFValue) => void;
   orientation?: string;
   placeholder?: string;
   sm?: boolean;
@@ -54,7 +47,7 @@ const isNeedStripDecimalDigits = (inputValue: string, limit: number) => {
 export default function InputGroupSNCF({
   id,
   label,
-  handleType,
+  handleUnit,
   options,
   orientation = 'left',
   placeholder = '',
@@ -75,6 +68,9 @@ export default function InputGroupSNCF({
   limitDecimal = 10,
 }: Props) {
   const [isDropdownShown, setIsDropdownShown] = useState(false);
+
+  // setInputValue changes the state
+
   const [selected, setSelected] = useState(
     value
       ? {
@@ -97,14 +93,16 @@ export default function InputGroupSNCF({
   const handleOnChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
       const eventValue = Number(event.target.value);
+      console.log('eventValue', eventValue);
+
       if (limitDecimal && isNeedStripDecimalDigits(event.target.value, limitDecimal)) {
         const limitedValue = stripDecimalDigits(eventValue, limitDecimal);
-        handleType({ type: selected.id, value: limitedValue });
+        handleUnit({ type: selected.id, value: limitedValue });
       } else {
-        handleType({ type: selected.id, value: event.target.value });
+        handleUnit({ type: selected.id, value: event.target.value });
       }
     },
-    [handleType, selected, limitDecimal]
+    [handleUnit, selected, limitDecimal]
   );
 
   const inputValue = useMemo(() => {
@@ -146,25 +144,6 @@ export default function InputGroupSNCF({
       )}
     </div>
   );
-
-  const objectUnits: Array<string> | undefined = RollingStockConstants[id]?.units;
-
-  /**
-   * convert unit if needed after the change in selector
-   * @param event
-   */
-  function handleChangeUnit(event: ChangeEventHandler<HTMLInputElement>) {
-    console.log('unitchanged', value, event);
-
-    const inputValue: string = `${value}`;
-    const oldUnit: string | undefined = selected.label;
-    const newUnit = event.target.value;
-    const valueConverted = convertUnit(inputValue, oldUnit, newUnit);
-    console.log('valueConverted', valueConverted);
-    // TODO find a way to update the value
-    // and catch an impossible conversion error
-    value = valueConverted;
-  }
 
   return (
     <>
@@ -209,9 +188,22 @@ export default function InputGroupSNCF({
                 <React.Fragment key={nextId()}>
                   <label className="dropdown-item" htmlFor={option.id}>
                     <div
-                      onClick={() => {
+                      onClick={(event) => {
+                        console.log('event', event);
+                        console.log('value avant', value);
+                        console.log('selected', selected);
+                        console.log('option nouvelle unité:', option, option.label);
+
+                        const converted = convertUnit(
+                          value as number,
+                          selected.label,
+                          option.label
+                        );
+
+                        console.log('converted', converted);
+                        console.log('option', option);
+
                         setSelected(option);
-                        handleType({ type: option.id, value: 0 });
                         setIsDropdownShown(false);
                       }}
                       role="button"
@@ -232,22 +224,6 @@ export default function InputGroupSNCF({
             </div>
           </div>
           <br />
-        </div>
-        <div className="unit-selector form-control-container mb-4 w-100">
-          {objectUnits && (
-            <select
-              className="form-control h-100 px-2 input input-small"
-              name="unitSelector"
-              id="unitSelector"
-              onChange={handleChangeUnit}
-            >
-              {objectUnits.map((unit: string) => (
-                <option value={unit} key={`unit_${unit}`}>
-                  {unit}
-                </option>
-              ))}
-            </select>
-          )}
         </div>
 
         {orientation === 'left' && inputField}
