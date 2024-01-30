@@ -478,7 +478,7 @@ impl ModelConfig {
     }
 
     fn make_builder(&self, changeset: bool) -> TokenStream {
-        let np!(fields, fns, types, bodies): np!(vec4) = self
+        let np!(fields, fns, flat_fns, types, bodies, flat_bodies): np!(vec6) = self
             .iter_fields()
             .filter(|f| !self.is_primary(f))
             .filter(|field| !field.builder_skip)
@@ -490,7 +490,19 @@ impl ModelConfig {
                 } else {
                     quote! { self.changeset.#ident = Some(#expr) }
                 };
-                np!(ident, &field.builder_ident, &field.ty, body)
+                let flat_body = if changeset {
+                    quote! { self.#ident = #ident.map(|#ident| #expr) }
+                } else {
+                    quote! { self.changeset.#ident = #ident.map(|#ident| #expr) }
+                };
+                np!(
+                    ident,
+                    &field.builder_ident,
+                    Ident::new(&format!("flat_{}", &field.builder_ident), Span::call_site()),
+                    &field.ty,
+                    body,
+                    flat_body
+                )
             })
             .unzip();
 
@@ -510,6 +522,13 @@ impl ModelConfig {
                     #[must_use = "builder methods are intended to be chained"]
                     pub fn #fns(mut self, #fields: #types) -> Self {
                         #bodies;
+                        self
+                    }
+
+                    #[allow(unused)]
+                    #[must_use = "builder methods are intended to be chained"]
+                    pub fn #flat_fns(mut self, #fields: Option<#types>) -> Self {
+                        #flat_bodies;
                         self
                     }
                 )*
