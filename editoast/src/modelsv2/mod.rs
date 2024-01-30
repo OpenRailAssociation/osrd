@@ -291,6 +291,19 @@ where
     }
 }
 
+/// Describes how to check for the existence of a [Model] in the database
+///
+/// You can implement this type manually but its recommended to use the `Model`
+/// derive macro instead.
+#[async_trait]
+pub trait Exists<K>: Sized
+where
+    for<'async_trait> K: Send + 'async_trait,
+{
+    /// Returns whether the row #`id` exists in the database
+    async fn exists(conn: &mut diesel_async::AsyncPgConnection, id: K) -> Result<bool>;
+}
+
 /// Splits a query into chunks to accommodate libpq's maximum number of parameters
 ///
 /// This is a hack around a libpq limitation (cf. <https://github.com/diesel-rs/diesel/issues/2414>).
@@ -952,9 +965,10 @@ mod tests {
             .unwrap();
         assert_eq!(count, 4);
 
-        let survivor = Document::retrieve(&mut pool.get().await.unwrap(), not_deleted)
-            .await
-            .unwrap();
-        assert!(survivor.is_some());
+        assert!(
+            Document::exists(&mut pool.get().await.unwrap(), not_deleted)
+                .await
+                .unwrap()
+        );
     }
 }

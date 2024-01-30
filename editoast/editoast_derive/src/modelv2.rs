@@ -690,6 +690,23 @@ impl ModelConfig {
                             .map_err(Into::into)
                     }
                 }
+
+                #[automatically_derived]
+                #[async_trait::async_trait]
+                impl crate::modelsv2::Exists<#ty> for #model {
+                    async fn exists(
+                        conn: &mut diesel_async::AsyncPgConnection,
+                        #ident: #ty,
+                    ) -> crate::error::Result<bool> {
+                        use diesel::prelude::*;
+                        use diesel_async::RunQueryDsl;
+                        use #table_mod::dsl;
+                        diesel::select(diesel::dsl::exists(dsl::#table_name.#filter))
+                            .get_result(conn)
+                            .await
+                            .map_err(Into::into)
+                    }
+                }
             )*
 
             #[automatically_derived]
