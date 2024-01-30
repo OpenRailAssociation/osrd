@@ -6,8 +6,8 @@ import { BiReset } from 'react-icons/bi';
 import { AiFillSave } from 'react-icons/ai';
 import { GoPlusCircle, GoTrash } from 'react-icons/go';
 
-import { save } from 'reducers/editor';
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
+import { save } from 'reducers/editor';
 import {
   ElectrificationEntity,
   SpeedSectionEntity,
@@ -15,7 +15,8 @@ import {
   TrackSectionEntity,
 } from 'types/editor';
 import { getNearestPoint } from 'utils/mapHelper';
-import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
+
+import { NEW_ENTITY_ID } from '../../data/utils';
 import { PartialOrReducer, ReadOnlyEditorContextType, Tool } from '../editorContextTypes';
 import { DEFAULT_COMMON_TOOL_STATE } from '../commonToolState';
 import { approximateDistanceWithEditoastData } from '../utils';

@@ -181,18 +181,33 @@
       }
     }
   }
-}
 
-.z-index-tooltip {
-  z-index: 1070 !important;
-}
-
-.editor-infra-errors-list {
-  .error-count {
-    height: 1.5rem;
+  .selection-left-panel {
+    .entity {
+      .strong {
+        font-weight: bold;
+      }
+    }
   }
-  #errors-list-container {
-    height: 60vh;
-    overflow: auto;
+
+  .popup.editor-selection {
+    .maplibregl-popup-content {
+      min-width: 200px;
+      min-height: 100px;
+    }
+  }
+
+  .z-index-tooltip {
+    z-index: 1070 !important;
+  }
+
+  .editor-infra-errors-list {
+    .error-count {
+      height: 1.5rem;
+    }
+    #errors-list-container {
+      height: 60vh;
+      overflow: auto;
+    }
   }
 }

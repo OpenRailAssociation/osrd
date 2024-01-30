@@ -8,7 +8,7 @@ import TrackSectionEndpointSelector from './TrackSectionEndpointSelector';
 
 const TrackNodeTypeDiagram = lazy(() => import('./TrackNodeTypeDiagram'));
 
-export const CustomSchemaField: FC<FieldProps> = (props) => {
+const CustomSchemaField: FC<FieldProps> = (props) => {
   const { name = '' } = props;
   const { switchType } = useSwitch();
   if (name === GROUP_CHANGE_DELAY)

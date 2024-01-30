@@ -23,12 +23,12 @@ import { Endpoints } from './EndPoints';
 import { SearchRoute } from './SearchRoute';
 import { RouteMetadata } from './RouteMetadata';
 
-export const RouteEditionPanel: FC<{ state: RouteEditionState }> = ({ state }) => {
+const RouteEditionPanel: FC = () => {
   const { t } = useTranslation();
   const infraID = useInfraID();
   const dispatch = useDispatch();
   const [postPathfinding] = osrdEditoastApi.endpoints.postInfraByInfraIdPathfinding.useMutation();
-  const { setState, isFormSubmited, setIsFormSubmited } = useContext(
+  const { state, setState, isFormSubmited, setIsFormSubmited } = useContext(
     EditorContext
   ) as ExtendedEditorContextType<RouteEditionState>;
 

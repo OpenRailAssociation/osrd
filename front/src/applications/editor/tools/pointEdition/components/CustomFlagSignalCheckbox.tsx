@@ -1,7 +1,7 @@
 import React from 'react';
 import { WidgetProps } from '@rjsf/core';
 
-export const CustomFlagSignalCheckbox: React.FC<WidgetProps> = (props) => {
+const CustomFlagSignalCheckbox: React.FC<WidgetProps> = (props) => {
   const { schema, onChange, title, value } = props;
   const FLAG_NAME = 'flag-signal-parameter';
 
