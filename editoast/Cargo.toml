@@ -54,7 +54,7 @@ redis = { version = "0.24.0", features = [
     "tokio-native-tls-comp",
 ] }
 sentry = "0.32.1"
-sentry-actix = "0.32.1"
+sentry-actix = "0.32.2"
 serde.workspace = true
 serde_derive.workspace = true
 serde_json.workspace = true
