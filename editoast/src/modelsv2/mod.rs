@@ -886,21 +886,21 @@ where
 #[cfg(test)]
 mod tests {
     use crate::fixtures::tests::{db_pool, TestFixture};
+    use crate::modelsv2::*;
     use editoast_derive::ModelV2;
     use itertools::Itertools;
     use std::collections::HashSet;
 
     #[derive(Debug, Default, Clone, ModelV2)]
     #[model(table = crate::tables::document)]
-    pub struct Document {
-        pub id: i64,
-        pub content_type: String,
-        pub data: Vec<u8>,
+    struct Document {
+        id: i64,
+        content_type: String,
+        data: Vec<u8>,
     }
 
     #[rstest::rstest]
     async fn test_batch() {
-        use crate::modelsv2::*;
         let pool = db_pool();
         let mut conn = pool.get().await.unwrap();
         let changesets = (0..5).map(|i| {
@@ -969,6 +969,81 @@ mod tests {
             Document::exists(&mut pool.get().await.unwrap(), not_deleted)
                 .await
                 .unwrap()
+        );
+    }
+
+    #[rstest::rstest]
+    async fn test_remote() {
+        #[derive(Debug, Clone, PartialEq)]
+        enum Data {
+            Prefixed(u8),
+            Raw(u8, u8),
+        }
+
+        impl From<Vec<u8>> for Data {
+            fn from(v: Vec<u8>) -> Self {
+                match v.as_slice() {
+                    [0x42, x] => Data::Prefixed(*x),
+                    [x, y] => Data::Raw(*x, *y),
+                    _ => panic!("invalid 2-bytes data"),
+                }
+            }
+        }
+
+        impl From<Data> for Vec<u8> {
+            fn from(d: Data) -> Self {
+                match d {
+                    Data::Prefixed(x) => vec![0x42, x],
+                    Data::Raw(x, y) => vec![x, y],
+                }
+            }
+        }
+
+        #[derive(Clone, ModelV2)]
+        #[model(table = crate::tables::document)]
+        struct Document {
+            id: i64,
+            content_type: String,
+            #[model(remote = "Vec<u8>")]
+            data: Data,
+        }
+
+        let pool = db_pool();
+        let mut conn = pool.get().await.unwrap();
+        let docs = Document::create_batch::<_, Vec<_>>(
+            &mut conn,
+            [
+                Document::changeset()
+                    .content_type(String::from("text/plain"))
+                    .data(Data::Prefixed(0x43)),
+                Document::changeset()
+                    .content_type(String::from("text/plain"))
+                    .data(Data::Raw(0, 1)),
+            ],
+        )
+        .await
+        .unwrap()
+        .into_iter()
+        .map(|d| TestFixture::new(d, pool.clone()))
+        .collect::<Vec<_>>();
+        assert_eq!(docs.len(), 2);
+
+        let ids = docs.iter().map(|d| d.model.id).collect::<Vec<_>>();
+        assert_eq!(
+            Document::retrieve(&mut conn, ids[0])
+                .await
+                .unwrap()
+                .unwrap()
+                .data,
+            Data::Prefixed(0x43)
+        );
+        assert_eq!(
+            Document::retrieve(&mut conn, ids[1])
+                .await
+                .unwrap()
+                .unwrap()
+                .data,
+            Data::Raw(0, 1)
         );
     }
 }
