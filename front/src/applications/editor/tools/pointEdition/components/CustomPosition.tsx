@@ -2,7 +2,7 @@ import React from 'react';
 import { WidgetProps } from '@rjsf/core';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 
-export const CustomPosition: React.FC<WidgetProps> = (props) => {
+const CustomPosition: React.FC<WidgetProps> = (props) => {
   const { schema, onChange, title, value } = props;
   const POINT_NAME = 'point-parameter';
 

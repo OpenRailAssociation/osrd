@@ -9,7 +9,6 @@ import { Feature, LineString, Point } from 'geojson';
 import nearestPointOnLine from '@turf/nearest-point-on-line';
 
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
-import { getNearestPoint } from 'utils/mapHelper';
 import { save } from 'reducers/editor';
 import {
   NULL_GEOMETRY,
@@ -18,6 +17,7 @@ import {
   SignalEntity,
   TrackSectionEntity,
 } from 'types';
+import { getNearestPoint } from 'utils/mapHelper';
 
 import { NEW_ENTITY_ID } from '../../data/utils';
 import { getEntity } from '../../data/api';
@@ -26,8 +26,9 @@ import { Tool } from '../editorContextTypes';
 import { DEFAULT_COMMON_TOOL_STATE } from '../commonToolState';
 import { approximateDistanceWithEditoastData } from '../utils';
 
-import { getPointEditionLeftPanel, POINT_LAYER_ID, PointEditionMessages } from './components';
+import { PointEditionMessages, getPointEditionLeftPanel } from './components';
 import { PointEditionState } from './types';
+import { POINT_LAYER_ID } from './consts';
 
 type EditorPoint = BufferStopEntity | DetectorEntity | SignalEntity;
 interface PointEditionToolParams<T extends EditorPoint> {

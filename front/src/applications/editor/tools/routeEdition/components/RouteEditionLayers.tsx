@@ -1,12 +1,22 @@
-import React, { FC, useCallback, useEffect, useMemo, useState } from 'react';
+import { Feature, LineString } from 'geojson';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Layer, Popup, Source, LineLayer } from 'react-map-gl/maplibre';
 import { featureCollection } from '@turf/helpers';
 import { FaFlagCheckered } from 'react-icons/fa';
 import { BsArrowBarRight } from 'react-icons/bs';
 import { useTranslation } from 'react-i18next';
-import { isNil } from 'lodash';
+import { compact, isNil } from 'lodash';
 
+import {
+  getRoutesLineLayerProps,
+  getRoutesPointLayerProps,
+  getRoutesTextLayerProps,
+} from 'common/Map/Layers/Routes';
+import colors from 'common/Map/Consts/colors';
+import GeoJSONs from 'common/Map/Layers/GeoJSONs';
+import { useInfraID } from 'common/osrdContext';
+import { getMap } from 'reducers/map/selectors';
 import {
   NULL_GEOMETRY,
   type EditorEntity,
@@ -14,24 +24,43 @@ import {
   type WayPointEntity,
   type NullGeometry,
 } from 'types';
-import {
-  getRoutesLineLayerProps,
-  getRoutesPointLayerProps,
-  getRoutesTextLayerProps,
-} from 'common/Map/Layers/Routes';
-import colors from 'common/Map/Consts/colors';
-import { getMapStyle } from 'reducers/map/selectors';
-import { useInfraID } from 'common/osrdContext';
+
 import EntitySumUp from 'applications/editor/components/EntitySumUp';
+import EditorContext from 'applications/editor/context';
 import { nestEntity } from 'applications/editor/data/utils';
-import { Feature, LineString } from 'geojson';
+import { ExtendedEditorContextType } from '../../editorContextTypes';
 import type { RouteEditionState } from '../types';
 import { getOptionsStateType, getRouteGeometryByRouteId } from '../utils';
 
-export const RouteEditionLayers: FC<{ state: RouteEditionState }> = ({ state }) => {
-  const mapStyle = useSelector(getMapStyle);
-  const { t } = useTranslation();
+const RouteEditionLayers = () => {
+  const {
+    state,
+    renderingFingerprint,
+    editorState: { editorLayers },
+  } = useContext(EditorContext) as ExtendedEditorContextType<RouteEditionState>;
+
+  const { mapStyle, layersSettings, issuesSettings } = useSelector(getMap);
   const infraID = useInfraID();
+
+  const selectedRouteIndex =
+    state.optionsState.type === 'options' ? state.optionsState.focusedOptionIndex : undefined;
+
+  const selectedRouteDetectors =
+    selectedRouteIndex !== undefined
+      ? state.optionsState.options![selectedRouteIndex].data.detectors
+      : [];
+
+  const selectedRouteSwitches =
+    selectedRouteIndex !== undefined
+      ? Object.keys(state.optionsState.options![selectedRouteIndex].data.switches_directions)
+      : [];
+
+  const selectionList = compact([
+    state.entity?.properties.entry_point.id,
+    state.entity?.properties.exit_point?.id,
+  ]).concat(selectedRouteDetectors, selectedRouteSwitches);
+
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const [entityGeo, setEntityGeo] = useState<null | Feature<LineString> | Feature<NullGeometry>>(
     null
@@ -151,6 +180,17 @@ export const RouteEditionLayers: FC<{ state: RouteEditionState }> = ({ state }) 
 
   return (
     <>
+      {/* Editor data layer */}
+      <GeoJSONs
+        selection={selectionList.length > 1 ? selectionList : undefined}
+        colors={colors[mapStyle]}
+        layers={editorLayers}
+        fingerprint={renderingFingerprint}
+        layersSettings={layersSettings}
+        issuesSettings={issuesSettings}
+        infraID={infraID}
+      />
+
       {/* Displaying options */}
       {shouldDisplayOptions && (
         <Source type="geojson" data={geoOptionsFeature}>

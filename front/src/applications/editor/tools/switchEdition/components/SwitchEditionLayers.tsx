@@ -1,156 +1,28 @@
-import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import Select from 'react-select';
 import { Layer, Popup, Source } from 'react-map-gl/maplibre';
 import nearestPoint from '@turf/nearest-point';
 import { featureCollection, point } from '@turf/helpers';
-import { first, last, debounce } from 'lodash';
+import { first, last } from 'lodash';
 import type { Position } from 'geojson';
-
-import type { SwitchEntity, TrackSectionEntity } from 'types';
-
-import EditorContext from 'applications/editor/context';
-import { getEntity } from 'applications/editor/data/api';
-import { flattenEntity } from 'applications/editor/data/utils';
-import EditorForm from 'applications/editor//components/EditorForm';
-import EntitySumUp from 'applications/editor/components/EntitySumUp';
-import EntityError from 'applications/editor/components/EntityError';
-import useSwitch from 'applications/editor/tools/switchEdition/useSwitch';
-import { SwitchEditionState } from 'applications/editor/tools/switchEdition/types';
-import type { FlatSwitchEntity } from 'applications/editor/tools/switchEdition/utils';
-import type { ExtendedEditorContextType } from 'applications/editor/tools/editorContextTypes';
-import { flatSwitchToSwitch, getNewSwitch } from 'applications/editor/tools/switchEdition/utils';
-import { CustomSchemaField } from 'applications/editor/tools/switchEdition/components/CustomSchemaField';
 
 import colors from 'common/Map/Consts/colors';
 import GeoJSONs from 'common/Map/Layers/GeoJSONs';
 import { useInfraID } from 'common/osrdContext';
 import { getSwitchesLayerProps, getSwitchesNameLayerProps } from 'common/Map/Layers/Switches';
-
-import { save } from 'reducers/editor';
 import { getMap } from 'reducers/map/selectors';
+import type { SwitchEntity, TrackSectionEntity } from 'types';
 
-export const SwitchEditionLeftPanel = () => {
-  const dispatch = useDispatch();
-  const { t } = useTranslation();
-  const infraID = useInfraID();
-  const { state, setState, isFormSubmited, setIsFormSubmited } = useContext(
-    EditorContext
-  ) as ExtendedEditorContextType<SwitchEditionState>;
-  const submitBtnRef = useRef<HTMLButtonElement>(null);
+import EditorContext from '../../../context';
+import { getEntity } from '../../../data/api';
+import { flattenEntity } from '../../../data/utils';
+import EntitySumUp from '../../../components/EntitySumUp';
+import type { ExtendedEditorContextType } from '../../editorContextTypes';
+import useSwitch from '../useSwitch';
+import { SwitchEditionState } from '../types';
 
-  // Retrieve proper data
-  const {
-    switchEntity,
-    flatSwitchEntity,
-    switchType,
-    switchTypeOptions,
-    switchTypeOptionsDict,
-    switchTypesDict,
-    switchTypeJSONSchema,
-    isNew,
-  } = useSwitch();
-
-  if (!switchType || !flatSwitchEntity) {
-    return null;
-  }
-
-  // Hack to be able to launch the submit event from the rjsf form by using
-  // the toolbar button instead of the form one.
-  // See https://github.com/rjsf-team/react-jsonschema-form/issues/500
-  useEffect(() => {
-    if (isFormSubmited && setIsFormSubmited && submitBtnRef.current) {
-      submitBtnRef.current.click();
-      setIsFormSubmited(false);
-    }
-  }, [isFormSubmited]);
-
-  return (
-    <div>
-      <legend>{t('Editor.tools.switch-edition.switch-type')}</legend>
-      <Select
-        options={switchTypeOptions}
-        value={switchTypeOptionsDict[switchType.id]}
-        onChange={(o) => {
-          if (o && o.value !== switchType.id) {
-            const newEntity = getNewSwitch(switchTypesDict[o.value]);
-            setState({
-              ...state,
-              entity: newEntity,
-              initialEntity: newEntity,
-            });
-          }
-        }}
-        isDisabled={!isNew}
-      />
-      <hr />
-      <EditorForm
-        key={switchType.id}
-        data={flatSwitchEntity}
-        overrideSchema={switchTypeJSONSchema}
-        overrideFields={{
-          SchemaField: CustomSchemaField,
-        }}
-        onSubmit={async (flatSwitch) => {
-          const entityToSave = flatSwitchToSwitch(switchType, flatSwitch as FlatSwitchEntity);
-
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const res: any = await dispatch(
-            save(
-              infraID,
-              !isNew
-                ? {
-                    update: [
-                      {
-                        source: state.initialEntity as SwitchEntity,
-                        target: entityToSave,
-                      },
-                    ],
-                  }
-                : { create: [entityToSave] }
-            )
-          );
-          const { railjson } = res[0];
-          const { id } = railjson;
-
-          if (id && id !== entityToSave.properties.id) {
-            const savedEntity = {
-              ...entityToSave,
-              properties: { ...entityToSave.properties, id: `${id}` },
-            };
-            setState({
-              ...state,
-              initialEntity: savedEntity,
-              entity: savedEntity,
-            });
-          }
-        }}
-        onChange={debounce((entity) => {
-          const flatSwitch = entity as FlatSwitchEntity;
-          setState({
-            ...state,
-            portEditionState: { type: 'idle' },
-            entity: {
-              ...flatSwitchToSwitch(switchType, flatSwitch),
-              geometry: flatSwitch.geometry,
-            },
-          });
-        }, 200)}
-      >
-        <div>
-          {/* We don't want to see the button but just be able to click on it */}
-          <button type="submit" ref={submitBtnRef} style={{ display: 'none' }}>
-            {t('common.save')}
-          </button>
-        </div>
-      </EditorForm>
-      {!isNew && <EntityError className="mt-1" entity={switchEntity} />}
-    </div>
-  );
-};
-
-export const SwitchEditionLayers = () => {
+const SwitchEditionLayers = () => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const infraID = useInfraID();
@@ -340,12 +212,4 @@ export const SwitchEditionLayers = () => {
   );
 };
 
-export const SwitchMessages = () => {
-  const { t } = useTranslation();
-  const {
-    state: { portEditionState },
-  } = useContext(EditorContext) as ExtendedEditorContextType<SwitchEditionState>;
-  return portEditionState.type === 'selection'
-    ? t('Editor.tools.switch-edition.help.select-track')
-    : t('Editor.tools.switch-edition.help.no-move');
-};
+export default SwitchEditionLayers;

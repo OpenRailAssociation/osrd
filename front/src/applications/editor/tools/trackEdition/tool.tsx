@@ -17,13 +17,8 @@ import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import { Tool } from '../editorContextTypes';
 import { DEFAULT_COMMON_TOOL_STATE } from '../commonToolState';
-import {
-  POINTS_LAYER_ID,
-  TRACK_LAYER_ID,
-  TrackEditionLayers,
-  TrackEditionLeftPanel,
-  TrackEditionMessages,
-} from './components';
+import { TrackEditionLayers, TrackEditionLeftPanel, TrackEditionMessages } from './components';
+import { POINTS_LAYER_ID, TRACK_LAYER_ID } from './consts';
 import { TrackEditionState } from './types';
 import { getNewLine } from './utils';
 

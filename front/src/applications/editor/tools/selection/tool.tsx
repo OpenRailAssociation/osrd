@@ -7,15 +7,15 @@ import { BiLoader, BiSelection } from 'react-icons/bi';
 import { PointLike } from 'maplibre-gl';
 import { isEqual, max, min } from 'lodash';
 
-import { getMixedEntities } from 'applications/editor/data/api';
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF/ConfirmModal';
 import { save } from 'reducers/editor';
 import { selectInZone } from 'utils/mapHelper';
-import { LAYER_TO_EDITOAST_DICT, LayerType } from 'applications/editor/tools/types';
-import { DEFAULT_COMMON_TOOL_STATE } from 'applications/editor/tools/commonToolState';
-import { Tool } from 'applications/editor/tools/editorContextTypes';
-import { openEntityEditionPanel } from 'applications/editor/tools/utils';
 
+import { getMixedEntities } from '../../data/api';
+import { LAYER_TO_EDITOAST_DICT, LayerType } from '../types';
+import { DEFAULT_COMMON_TOOL_STATE } from '../commonToolState';
+import { Tool } from '../editorContextTypes';
+import { openEntityEditionPanel } from '../utils';
 import { SelectionLayers, SelectionMessages, SelectionLeftPanel } from './components';
 import { SelectionState } from './types';
 

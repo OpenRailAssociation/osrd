@@ -11,7 +11,7 @@ import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF/ConfirmModal';
 import { Tool } from '../editorContextTypes';
 import { RouteEditionState } from './types';
-import { Layers, LeftPanel, Messages } from './components';
+import { RouteEditionLayers, RouteEditionLeftPanel, RouteEditionMessages } from './components';
 import { getRouteEditionState } from './utils';
 
 const RouteEditionTool: Tool<RouteEditionState> = {
@@ -102,9 +102,9 @@ const RouteEditionTool: Tool<RouteEditionState> = {
     }
   },
 
-  messagesComponent: Messages,
-  layersComponent: Layers,
-  leftPanelComponent: LeftPanel,
+  messagesComponent: RouteEditionMessages,
+  layersComponent: RouteEditionLayers,
+  leftPanelComponent: RouteEditionLeftPanel,
   getInteractiveLayers() {
     return ['editor/geo/buffer-stop-main', 'editor/geo/detector-main', 'editor/geo/detector-name'];
   },
