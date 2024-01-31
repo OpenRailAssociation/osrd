@@ -10,4 +10,3 @@ public interface DiTrackEdge  {
 
     Direction getDirection();
 }
-

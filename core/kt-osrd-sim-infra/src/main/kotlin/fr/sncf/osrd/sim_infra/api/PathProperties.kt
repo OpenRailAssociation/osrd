@@ -80,4 +80,3 @@ fun getTrackLocationOffsetOrThrow(
 ): Offset<Path> {
     return path.getTrackLocationOffset(location) ?: throw RuntimeException("Can't find location on path")
 }
-
