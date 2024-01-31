@@ -28,10 +28,17 @@ export const removeElementAtIndex = <T>(array: T[], indexToRemove: number) => {
   return result;
 };
 
-export const replaceElementAtIndex = <T>(array: T[], indexToRemove: number, newElement: T) => {
+/**
+ * returns a copy of the array with an element replaced
+ */
+export function replaceElementAtIndex<T, K extends Readonly<T[]>>(
+  array: T[] | K,
+  indexToReplace: number,
+  newElement: T
+): T[] | K {
   const result = [...array];
-  result.splice(indexToRemove, 1, newElement);
+  result.splice(indexToReplace, 1, newElement);
   return result;
-};
+}
 
 export const removeDuplicates = <T>(array: T[]) => [...new Set(array)];

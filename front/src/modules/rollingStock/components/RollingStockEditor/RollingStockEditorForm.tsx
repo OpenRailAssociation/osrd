@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import {
   RollingStockEditorMetadataForm,
+  RollingStockEditorOnboardSystemEquipmentForm,
   RollingStockEditorParameterForm,
 } from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorFormHelpers';
-import { RollingStockEditorParameter, RS_SCHEMA_PROPERTIES } from 'modules/rollingStock/consts';
+import { RS_SCHEMA_PROPERTIES, RollingStockEditorParameter } from 'modules/rollingStock/consts';
 import { addFailureNotification, setFailure, setSuccess } from 'reducers/main';
 import {
   checkRollingStockFormValidity,
@@ -211,7 +212,7 @@ const RollingStockEditorForm = ({
       <RollingStockEditorFormModal
         setAddOrEditState={setAddOrEditState}
         request={isAdding ? addNewRollingstock(payload) : updateRollingStock(payload)}
-        mainText={t('confirmUpdateRollingStock')}
+        mainText={isAdding ? t('confirmAddRollingStock') : t('confirmUpdateRollingStock')}
         buttonText={t('translation:common.yes')}
       />
     );
@@ -272,6 +273,11 @@ const RollingStockEditorForm = ({
           setRollingStockValues={setRollingStockValues}
           effortCurves={effortCurves}
         />
+
+        <RollingStockEditorOnboardSystemEquipmentForm
+          rsSignalingSystemsList={rollingStockValues.supportedSignalingSystems}
+          setRollingStockValues={setRollingStockValues}
+        />
       </>
     ),
   };
@@ -308,7 +314,7 @@ const RollingStockEditorForm = ({
       onSubmit={(e) => submit(e, rollingStockValues)}
     >
       <Tabs pills fullWidth tabs={[tabRollingStockDetails, tabRollingStockCurves]} />
-      <div className="d-flex justify-content-end">
+      <div className="d-flex justify-content-end mt-2">
         <div className="d-flex flex-column justify-content-end">
           {errorMessage && <p className="text-danger mb-1 p-3">{errorMessage}</p>}
           <div className="d-flex justify-content-end">

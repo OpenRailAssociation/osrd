@@ -12,7 +12,7 @@ import RollingStockCurves from 'modules/rollingStock/components/RollingStockCurv
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 
 import type { EffortCurveForms } from 'modules/rollingStock/types';
-import type { RollingStockComfortType } from 'common/api/osrdEditoastApi';
+import type { RollingStockComfortType, RollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 
 type RollingStockCardDetailProps = {
   id: number;
@@ -72,121 +72,108 @@ export default function RollingStockCardDetail({
     }
   }, [error]);
 
+  const leftColumn = (rs: RollingStockWithLiveries) => (
+    <table className="rollingstock-details-table">
+      <tbody>
+        <tr>
+          <td className="text-primary">{t('startupTime')}</td>
+          <td>
+            {rs.startup_time}
+            <span className="small ml-1 text-muted">s</span>
+          </td>
+        </tr>
+        <tr>
+          <td className="text-primary">{t('startupAcceleration')}</td>
+          <td>
+            {rs.startup_acceleration}
+            <span className="small ml-1 text-muted">m/s²</span>
+          </td>
+        </tr>
+        <tr>
+          <td className="text-primary">{t('comfortAcceleration')}</td>
+          <td>
+            {rs.comfort_acceleration}
+            <span className="small ml-1 text-muted">m/s²</span>
+          </td>
+        </tr>
+        <tr>
+          <td className="text-primary">{t('inertiaCoefficient')}</td>
+          <td>{rs.inertia_coefficient}</td>
+        </tr>
+        <tr>
+          <td className="text-primary">{t('gammaValue')}</td>
+          <td>
+            {rs.gamma.value * -1}
+            <span className="small ml-1 text-muted">m/s²</span>
+          </td>
+        </tr>
+        <tr>
+          <td className="text-primary">{t('loadingGauge')}</td>
+          <td>{rs.loading_gauge}</td>
+        </tr>
+        <tr>
+          <td className="text-primary">{t('basePowerClass')}</td>
+          <td>{rs.base_power_class}</td>
+        </tr>
+      </tbody>
+    </table>
+  );
+  const rightColumn = (rs: RollingStockWithLiveries) => (
+    <table className="rollingstock-details-table">
+      <tbody>
+        <tr>
+          <td className={cx({ formResistance: form })}>{t('rollingResistance')}</td>
+          <td className={cx('text-primary text-muted', { formResistance: form })}>
+            {t('rollingResistanceFormula')}
+          </td>
+        </tr>
+        <tr>
+          <td className="text-primary">{t('rollingResistanceA')}</td>
+          <td>
+            {Math.floor(rs.rolling_resistance?.A ? (rs.rolling_resistance.A * 10000) / 10000 : 0)}
+            <span className="small ml-1 text-muted">N</span>
+          </td>
+        </tr>
+        <tr>
+          <td className="text-primary">{t('rollingResistanceB')}</td>
+          <td>
+            {Math.floor(rs.rolling_resistance?.B ? (rs.rolling_resistance.B * 10000) / 10000 : 0)}
+            <span className="small ml-1 text-muted">N/(m/s)</span>
+          </td>
+        </tr>
+        <tr>
+          <td className="text-primary">{t('rollingResistanceC')}</td>
+          <td title={rs.rolling_resistance?.C.toString()}>
+            {floor(rs.rolling_resistance?.C ?? 0, 2)}
+            <span className="small ml-1 text-muted">N/(m/s)²</span>
+          </td>
+        </tr>
+        {!isEmpty(rs.supported_signaling_systems) && (
+          <tr>
+            <td className="text-primary text-nowrap pr-1">{t('supportedSignalingSystems')}</td>
+            <td>{rs.supported_signaling_systems.join(', ')}</td>
+          </tr>
+        )}
+        {rs.power_restrictions && Object.keys(rs.power_restrictions).length !== 0 && (
+          <tr>
+            <td className="text-primary text-nowrap pr-1">
+              {t('powerRestrictionsInfos', {
+                count: Object.keys(rs.power_restrictions).length,
+              })}
+            </td>
+            <td>
+              {rs.power_restrictions !== null && Object.keys(rs.power_restrictions).join(' ')}
+            </td>
+          </tr>
+        )}
+      </tbody>
+    </table>
+  );
   return rollingStock && !isEmpty(curvesComfortList) ? (
     <div className={form ? 'px-4' : 'rollingstock-card-body'}>
       <div className={`row pt-2 ${form}`}>
-        <div className="col-sm-6">
-          <table className="rollingstock-details-table">
-            <tbody>
-              <tr>
-                <td className="text-primary">{t('startupTime')}</td>
-                <td>
-                  {rollingStock.startup_time}
-                  <span className="small ml-1 text-muted">s</span>
-                </td>
-              </tr>
-              <tr>
-                <td className="text-primary">{t('startupAcceleration')}</td>
-                <td>
-                  {rollingStock.startup_acceleration}
-                  <span className="small ml-1 text-muted">m/s²</span>
-                </td>
-              </tr>
-              <tr>
-                <td className="text-primary">{t('comfortAcceleration')}</td>
-                <td>
-                  {rollingStock.comfort_acceleration}
-                  <span className="small ml-1 text-muted">m/s²</span>
-                </td>
-              </tr>
-              <tr>
-                <td className="text-primary">{t('inertiaCoefficient')}</td>
-                <td>{rollingStock.inertia_coefficient}</td>
-              </tr>
-              <tr>
-                <td className="text-primary">{t('gammaValue')}</td>
-                <td>
-                  {rollingStock.gamma.value * -1}
-                  <span className="small ml-1 text-muted">m/s²</span>
-                </td>
-              </tr>
-              <tr>
-                <td className="text-primary">{t('loadingGauge')}</td>
-                <td>{rollingStock.loading_gauge}</td>
-              </tr>
-              <tr>
-                <td className="text-primary">{t('basePowerClass')}</td>
-                <td>{rollingStock.base_power_class}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div className="col-sm-6">
-          {rollingStock.power_restrictions &&
-            Object.keys(rollingStock.power_restrictions).length !== 0 && (
-              <table className="rollingstock-details-table mb-1">
-                <tbody>
-                  <tr>
-                    <td className="text-primary text-nowrap pr-1">
-                      {t('powerRestrictionsInfos', {
-                        count: Object.keys(rollingStock.power_restrictions).length,
-                      })}
-                    </td>
-                    <td>
-                      {rollingStock.power_restrictions !== null &&
-                        Object.keys(rollingStock.power_restrictions).join(' ')}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            )}
-          <table className="rollingstock-details-table ml-2">
-            <tbody>
-              <tr>
-                <td colSpan={2} className={cx({ 'formResistance ml-2': form })}>
-                  {t('rollingResistance')}
-                </td>
-              </tr>
-              <tr>
-                <td
-                  colSpan={2}
-                  className={cx('text-primary text-muted', { 'formResistance ml-4': form })}
-                >
-                  {t('rollingResistanceFormula')}
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  {Math.floor(
-                    rollingStock.rolling_resistance?.A
-                      ? (rollingStock.rolling_resistance.A * 10000) / 10000
-                      : 0
-                  )}
-                  <span className="small ml-1 text-muted">N</span>
-                </td>
-                <td className="text-primary">{t('rollingResistanceA')}</td>
-              </tr>
-              <tr>
-                <td>
-                  {Math.floor(
-                    rollingStock.rolling_resistance?.B
-                      ? (rollingStock.rolling_resistance.B * 10000) / 10000
-                      : 0
-                  )}
-                  <span className="small ml-1 text-muted">N/(m/s)</span>
-                </td>
-                <td className="text-primary">{t('rollingResistanceB')}</td>
-              </tr>
-              <tr>
-                <td title={rollingStock.rolling_resistance?.C.toString()}>
-                  {floor(rollingStock.rolling_resistance?.C ?? 0, 2)}
-                  <span className="small ml-1 text-muted">N/(m/s)²</span>
-                </td>
-                <td className="text-primary">{t('rollingResistanceC')}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <div className="col-sm-6">{leftColumn(rollingStock)}</div>
+        <div className="col-sm-6">{rightColumn(rollingStock)}</div>
       </div>
       {!hideCurves && (
         <>

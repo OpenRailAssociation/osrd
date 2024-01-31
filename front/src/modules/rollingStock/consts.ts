@@ -1,6 +1,6 @@
 import { isElectric } from 'modules/rollingStock/helpers/electric';
 
-import type { RollingStockComfortType } from 'common/api/osrdEditoastApi';
+import { type RollingStockComfortType } from 'common/api/osrdEditoastApi';
 import type { ElectricalProfileByMode, SchemaProperty } from 'modules/rollingStock/types';
 
 export const THERMAL_TRACTION_IDENTIFIER = 'thermal';
@@ -52,6 +52,8 @@ export enum RollingStockEditorParameter {
   rollingResistanceB = 'rollingResistanceB',
   rollingResistanceC = 'rollingResistanceC',
 }
+
+export const DEFAULT_SIGNALING_SYSTEMS = ['BAL', 'BAPR'];
 
 export const RS_SCHEMA_PROPERTIES: readonly SchemaProperty[] = [
   {
@@ -166,7 +168,7 @@ export const RS_SCHEMA_PROPERTIES: readonly SchemaProperty[] = [
   },
   {
     title: 'loadingGauge',
-    type: 'string',
+    type: 'select',
     enum: ['G1', 'G2', 'GA', 'GB', 'GB1', 'GC', 'FR3.3', 'FR3.3/GB/G2', 'GLOTT'],
     side: 'middle',
   },
@@ -181,6 +183,7 @@ export const RS_SCHEMA_PROPERTIES: readonly SchemaProperty[] = [
     min: 0,
     units: ['N', 'daN', 'daN/t'],
     side: 'right',
+    margin: 'mb-3',
   },
   {
     title: 'rollingResistanceB',
@@ -188,6 +191,7 @@ export const RS_SCHEMA_PROPERTIES: readonly SchemaProperty[] = [
     min: 0,
     units: ['N/(m/s)', 'daN/(km/h)', 'daN/(km/h)/t'],
     side: 'right',
+    margin: 'mb-3',
   },
   {
     title: 'rollingResistanceC',
@@ -211,6 +215,12 @@ export const RS_SCHEMA_PROPERTIES: readonly SchemaProperty[] = [
     unit: 's',
     side: 'middle',
     condition: isElectric,
+  },
+  {
+    title: 'supportedSignalingSystems',
+    type: 'checkboxes',
+    enum: [],
+    side: 'left',
   },
 ];
 

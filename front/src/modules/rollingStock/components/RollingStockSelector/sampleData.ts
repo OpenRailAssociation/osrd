@@ -85,7 +85,7 @@ const ROLLING_STOCK_SAMPLE_DATA: RollingStockWithLiveries = {
       compound_image_id: 1908,
     },
   ],
-  supported_signaling_systems: [],
+  supported_signaling_systems: ['BAL', 'BAPR'],
 };
 
 export default ROLLING_STOCK_SAMPLE_DATA;
