@@ -9,4 +9,3 @@ import_types = ["diesel::sql_types::*","postgis_diesel::sql_types::*"]
 
 [migrations_directory]
 dir = "migrations"
-

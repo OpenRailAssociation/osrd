@@ -65,5 +65,3 @@ public class ResultPosition {
         return new ResultPosition(time + timeToAdd, pathOffset, trackSection, offset);
     }
 }
-
-

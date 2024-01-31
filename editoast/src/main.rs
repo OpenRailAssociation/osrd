@@ -604,7 +604,7 @@ async fn clear_infra(
 /// Prints the OpenApi to stdout
 fn generate_openapi() {
     let openapi = OpenApiRoot::build_openapi();
-    println!("{}", serde_yaml::to_string(&openapi).unwrap());
+    print!("{}", serde_yaml::to_string(&openapi).unwrap());
 }
 
 fn list_search_objects() {

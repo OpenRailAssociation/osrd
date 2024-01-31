@@ -17,4 +17,3 @@ dependencies {
     // PLEASE ADD AND UPDATE DEPENDENCIES USING libs.versions.toml
     api libs.kotlin.reflect
 }
-

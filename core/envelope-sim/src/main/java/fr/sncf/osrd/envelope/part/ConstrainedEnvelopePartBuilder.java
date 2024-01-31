@@ -127,4 +127,3 @@ public final class ConstrainedEnvelopePartBuilder implements InteractiveEnvelope
         sink.setAttrs(attrs);
     }
 }
-

@@ -180,7 +180,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0  # Fetch all history for all branches and tags
 
@@ -202,8 +202,8 @@ jobs:
           exit 1
         fi
 
-        # Check that commit contains ':'
-        if commit_titles |  grep -E -v '^([.a-z]+, )*[.a-z]+: [a-z]'; then
+        # Check that commit contains ':' (and no autosquashable commit using '!')
+        if commit_titles | grep -E -v '^([-.a-z]+[,:] )*[-.a-z]+: [a-z][a-z0-9 _.,+-`/]*$'; then
           echo "All commit messages must use the following format:"
           echo "  core: add fancy margin support"
           echo
@@ -212,6 +212,27 @@ jobs:
           exit 1
         fi
 
+  final_newline_lint:
+    runs-on: ubuntu-latest
+    name: Check final newline
+    steps:
+      - name: Install ripgrep
+        run: sudo apt-get install -y ripgrep
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Check final newline is present
+        run: |
+          # search missing final newline
+          if rg -Ul '[^\n]\z' -g '!*.svg' .; then
+            echo "Found missing final newline on listed file(s)"
+            exit 1
+          fi
+
+          # search multiple final newlines
+          if rg -Ul '\n\n\z' .; then
+            echo "Found multiple final newlines on listed file(s)"
+            exit 1
+          fi
 
   check_integration_tests:
     runs-on: ubuntu-latest

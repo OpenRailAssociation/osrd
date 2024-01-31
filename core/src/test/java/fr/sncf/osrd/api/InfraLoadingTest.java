@@ -24,4 +24,3 @@ public class InfraLoadingTest extends ApiTest {
         assertTrue(list.get(0).contains(expectedStatusCode));
     }
 }
-

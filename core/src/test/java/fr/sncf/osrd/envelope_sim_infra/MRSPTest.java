@@ -101,4 +101,3 @@ public class MRSPTest {
                         Envelope.make(makeFlatPart(TRAIN_LIMIT, 0, pathLength, MAX_SPEED))));
     }
 }
-

@@ -377,4 +377,3 @@ private fun getBlockOffset(
     }
     throw AssertionError(String.format("getBlockOffset: Track chunk %s not in block %s", trackChunkId, blockId))
 }
-

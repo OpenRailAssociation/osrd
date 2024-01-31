@@ -181,4 +181,3 @@ public class StandaloneSimulationEndpoint implements Take {
         }
     }
 }
-
