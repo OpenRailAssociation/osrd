@@ -64,7 +64,7 @@ public class EnvelopeStopWrapper implements EnvelopeTimeInterpolate {
                     point.speed(), point.position()
             );
             res.add(shiftedPoint);
-            if (stopIndex < stops.size() && arePositionsEqual(point.position(), stops.get(stopIndex).position)) {
+            if (stopIndex < stops.size() && point.position() >= stops.get(stopIndex).position) {
                 var stopDuration = stops.get(stopIndex).duration;
                 stopIndex++;
                 sumPreviousStopDuration += stopDuration;
