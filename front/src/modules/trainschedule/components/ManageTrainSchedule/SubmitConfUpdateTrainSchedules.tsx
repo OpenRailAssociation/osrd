@@ -1,7 +1,6 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { FaPen } from 'react-icons/fa';
 
 import { extractMessageFromError } from 'utils/error';
 
@@ -15,6 +14,7 @@ import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import { useAppDispatch } from 'store';
 import { setFailure, setSuccess } from 'reducers/main';
 import { updateSelectedProjection, updateSelectedTrainId } from 'reducers/osrdsimulation/actions';
+import { Pencil } from '@osrd-project/ui-icons';
 
 type SubmitConfUpdateTrainSchedulesProps = {
   setIsWorking: (isWorking: boolean) => void;
@@ -116,7 +116,7 @@ export default function SubmitConfUpdateTrainSchedules({
   return (
     <button className="btn btn-warning" type="button" onClick={submitConfUpdateTrainSchedules}>
       <span className="mr-2">
-        <FaPen />
+        <Pencil size="lg" />
       </span>
       {t('updateTrainSchedule')}
     </button>

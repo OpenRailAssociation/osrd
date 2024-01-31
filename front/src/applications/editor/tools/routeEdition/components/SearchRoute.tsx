@@ -1,6 +1,6 @@
 import React, { FC, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { GoSearch } from 'react-icons/go';
+import { Search } from '@osrd-project/ui-icons';
 
 import { LoaderFill } from 'common/Loaders';
 import type { OptionsStateType } from 'applications/editor/tools/routeEdition/types';
@@ -35,7 +35,7 @@ export const SearchRoute: FC<SearchRouteProps> = ({
         type="button"
         onClick={searchFn}
       >
-        <GoSearch /> {t(`Editor.tools.routes-edition.search-routes${!isNew ? '-alt' : ''}`)}
+        <Search /> {t(`Editor.tools.routes-edition.search-routes${!isNew ? '-alt' : ''}`)}
       </button>
 
       {state.type === 'loading' && <LoaderFill />}

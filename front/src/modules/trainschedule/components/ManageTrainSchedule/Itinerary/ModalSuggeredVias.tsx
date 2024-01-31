@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { useSelector } from 'react-redux';
-import { GoDash, GoPlus, GoTrash } from 'react-icons/go';
+import { Dash, Plus, Trash } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 import { formatUicToCi } from 'utils/strings';
 import cx from 'classnames';
@@ -94,7 +94,7 @@ export default function ModalSugerredVias({
             title={t('addVia')}
             onClick={() => convertPathfindingVias(uniqueSuggeredVias, idx - 1)}
           >
-            <GoPlus />
+            <Plus />
           </button>
         ) : (
           <button
@@ -104,7 +104,7 @@ export default function ModalSugerredVias({
             title={t('removeVia')}
             onClick={() => removeViaFromPath(via)}
           >
-            <GoDash color="white" />
+            <Dash />
           </button>
         )}
       </div>
@@ -137,7 +137,7 @@ export default function ModalSugerredVias({
             type="button"
             onClick={removeAllVias}
           >
-            <GoTrash />
+            <Trash />
             <span className="ml-2">{t('deleteVias')}</span>
           </button>
         </div>

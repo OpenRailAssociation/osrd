@@ -4,7 +4,7 @@ import { cloneDeep, isEqual } from 'lodash';
 import { IconType } from 'react-icons';
 import { BiReset } from 'react-icons/bi';
 import { AiFillSave } from 'react-icons/ai';
-import { GoPlusCircle, GoTrash } from 'react-icons/go';
+import { PlusCircle, Trash } from '@osrd-project/ui-icons';
 
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import type { PartialOrReducer, ReadOnlyEditorContextType, Tool } from 'applications/editor/types';
@@ -152,7 +152,7 @@ function getRangeEditionTool<T extends EditorRange>({
       [
         {
           id: `new-${objectTypeAction}`,
-          icon: GoPlusCircle,
+          icon: PlusCircle,
           labelTranslationKey: `Editor.tools.${objectTypeEdition}-edition.actions.new-${objectTypeAction}`,
           onClick({ setState }) {
             setState(getInitialState());
@@ -162,7 +162,7 @@ function getRangeEditionTool<T extends EditorRange>({
       [
         {
           id: 'delete-entity',
-          icon: GoTrash,
+          icon: Trash,
           labelTranslationKey: `Editor.tools.${objectTypeEdition}-edition.actions.delete-${objectTypeAction}`,
           // Show button only if we are editing
           isDisabled({ state }) {

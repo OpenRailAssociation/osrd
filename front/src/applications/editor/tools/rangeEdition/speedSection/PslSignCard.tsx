@@ -1,7 +1,7 @@
 import { TFunction } from 'i18next';
 import { isNil } from 'lodash';
 import React from 'react';
-import { GoTrash } from 'react-icons/go';
+import { Trash } from '@osrd-project/ui-icons';
 import { RiDragMoveLine } from 'react-icons/ri';
 
 import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
@@ -162,7 +162,7 @@ const PslSignCard = ({
                 removeSign(signInfo as Exclude<PslSignInformation, { signType: PSL_SIGN_TYPES.Z }>)
               }
             >
-              <GoTrash />
+              <Trash />
             </button>
           </div>
         )}

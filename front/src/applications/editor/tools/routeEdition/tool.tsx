@@ -2,7 +2,7 @@ import React from 'react';
 import { isEqual } from 'lodash';
 import { GiPathDistance } from 'react-icons/gi';
 import { AiFillSave } from 'react-icons/ai';
-import { GoPlusCircle, GoTrash } from 'react-icons/go';
+import { PlusCircle, Trash } from '@osrd-project/ui-icons';
 import { BiReset } from 'react-icons/bi';
 
 import { save } from 'reducers/editor/thunkActions';
@@ -49,7 +49,7 @@ const RouteEditionTool: Tool<RouteEditionState> = {
     [
       {
         id: 'new-route',
-        icon: GoPlusCircle,
+        icon: PlusCircle,
         labelTranslationKey: 'Editor.tools.routes-edition.actions.new-route',
         onClick({ setState }) {
           setState(getRouteEditionState());
@@ -59,7 +59,7 @@ const RouteEditionTool: Tool<RouteEditionState> = {
     [
       {
         id: 'delete-route',
-        icon: GoTrash,
+        icon: Trash,
         labelTranslationKey: 'Editor.tools.routes-edition.actions.delete-route',
         // Show button only if we are editing
         isDisabled({ state: { entity } }) {

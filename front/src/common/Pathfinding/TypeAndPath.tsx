@@ -7,7 +7,7 @@ import type {
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
-import { GoAlert, GoTriangleRight } from 'react-icons/go';
+import { Alert, TriangleRight } from '@osrd-project/ui-icons';
 import bbox from '@turf/bbox';
 import type { Position } from 'geojson';
 import cx from 'classnames';
@@ -47,7 +47,7 @@ function OpTooltips({ opList }: { opList: SearchResultItemOperationalPoint[] }) 
               style={{ left: `${leftMargin}rem` }}
               title={op.name}
             >
-              {op.name ? op.name : <GoAlert />}
+              {op.name ? op.name : <Alert />}
             </div>
           )
         );
@@ -182,7 +182,7 @@ export default function TypeAndPath({ zoomToFeature }: PathfindingProps) {
           onClick={launchPathFinding}
           disabled={isInvalid || opList.length < 2}
         >
-          <GoTriangleRight />
+          <TriangleRight />
         </button>
       </div>
     </div>

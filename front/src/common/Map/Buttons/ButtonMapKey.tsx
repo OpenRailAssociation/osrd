@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { BsQuestionCircle } from 'react-icons/bs';
+import { Question } from '@osrd-project/ui-icons';
 import Tipped from 'common/Tipped';
 
 type ButtonMapKeyProps = {
@@ -17,7 +17,7 @@ const ButtonMapKey = ({ toggleMapKey }: ButtonMapKeyProps) => {
         onClick={toggleMapKey}
       >
         <span className="sr-only">Key</span>
-        <BsQuestionCircle />
+        <Question size="lg" />
       </button>
       <span>{t('common.help-legend')} </span>
     </Tipped>

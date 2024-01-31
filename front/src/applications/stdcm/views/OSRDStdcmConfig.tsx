@@ -19,6 +19,7 @@ import { getSelectedTrain } from 'reducers/osrdsimulation/selectors';
 import type { OsrdStdcmConfState } from 'reducers/osrdconf/consts';
 import { useStoreDataForSpeedLimitByTagSelector } from 'common/SpeedLimitByTagSelector/useStoreDataForSpeedLimitByTagSelector';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
+import { ChevronDown, ChevronUp } from '@osrd-project/ui-icons';
 
 type OSRDStdcmConfigProps = {
   currentStdcmRequestStatus: string;
@@ -142,7 +143,7 @@ export default function OSRDConfig({
                   onClick={() => setShowMap(!showMap)}
                 >
                   {t('simulation:map')}
-                  <i className={showMap ? 'icons-arrow-up ml-auto' : 'icons-arrow-down ml-auto'} />
+                  <span className="ml-auto">{showMap ? <ChevronUp /> : <ChevronDown />}</span>
                 </div>
               )}
               <div className="osrd-config-item">

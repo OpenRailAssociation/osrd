@@ -19,6 +19,7 @@ import type { SearchResultItemSignal, SearchPayload } from 'common/api/osrdEdito
 import { useAppDispatch } from 'store';
 import type { Viewport } from 'reducers/map';
 import { useInfraID } from 'common/osrdContext';
+import { ChevronDown, ChevronUp } from '@osrd-project/ui-icons';
 
 type MapSearchSignalProps = {
   updateExtViewport: (viewport: Partial<Viewport>) => void;
@@ -206,11 +207,7 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
 
   const orderDisplay = (name: string) => {
     if (name === sortFilter.name) {
-      return sortFilter.asc ? (
-        <i className="icons-arrow-up icons-size-x5 ml-1" />
-      ) : (
-        <i className="icons-arrow-down icons-size-x5 ml-1" />
-      );
+      return <span className="ml-1">{sortFilter.asc ? <ChevronUp /> : <ChevronDown />}</span>;
     }
     return null;
   };

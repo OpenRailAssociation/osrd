@@ -1,7 +1,7 @@
 import cx from 'classnames';
 import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { GoPencil, GoTrash } from 'react-icons/go';
+import { Pencil, Trash } from '@osrd-project/ui-icons';
 import { FaPlus } from 'react-icons/fa';
 import { GiElectric } from 'react-icons/gi';
 import { MdDescription, MdTitle } from 'react-icons/md';
@@ -361,7 +361,7 @@ export default function AddOrEditScenarioModal({
               onClick={removeScenario}
             >
               <span className="mr-2">
-                <GoTrash />
+                <Trash />
               </span>
               {t('scenarioDeleteButton')}
             </button>
@@ -377,7 +377,7 @@ export default function AddOrEditScenarioModal({
               onClick={updateScenario}
             >
               <span className="mr-2">
-                <GoPencil />
+                <Pencil />
               </span>
               {t('scenarioModifyButton')}
             </button>

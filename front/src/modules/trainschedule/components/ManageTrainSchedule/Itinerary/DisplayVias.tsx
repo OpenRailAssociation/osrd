@@ -11,6 +11,7 @@ import { useDebounce } from 'utils/helpers';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import { useAppDispatch } from 'store';
+import { XCircle } from '@osrd-project/ui-icons';
 
 type InputStopTimeProps = {
   index: number;
@@ -150,7 +151,7 @@ export default function DisplayVias({ zoomToFeaturePoint }: DisplayViasProps) {
                         type="button"
                         onClick={() => dispatchAndRun(deleteVias(index))}
                       >
-                        <i className="icons-circle-delete" />
+                        <XCircle variant="fill" />
                         <span className="sr-only" aria-hidden="true">
                           Delete
                         </span>

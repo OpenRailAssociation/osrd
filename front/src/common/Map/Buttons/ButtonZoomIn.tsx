@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { GoZoomIn } from 'react-icons/go';
+import { ZoomIn } from '@osrd-project/ui-icons';
 import Tipped from 'common/Tipped';
 
 type ButtonZoomInProps = {
@@ -13,7 +13,7 @@ const ButtonZoomIn = ({ zoomIn }: ButtonZoomInProps) => {
     <Tipped mode="left">
       <button type="button" className="btn-rounded btn-rounded-white" onClick={() => zoomIn()}>
         <span className="sr-only">{t('common.zoom-in')}</span>
-        <GoZoomIn />
+        <ZoomIn size="lg" />
       </button>
       <span>{t('common.zoom-in')}</span>
     </Tipped>

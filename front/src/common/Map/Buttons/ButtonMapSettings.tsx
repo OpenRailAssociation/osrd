@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { BsSliders2 } from 'react-icons/bs';
+import { Sliders } from '@osrd-project/ui-icons';
 import Tipped from 'common/Tipped';
 
 type ButtonMapSettingsProps = {
@@ -19,7 +19,7 @@ const ButtonMapSettings = ({ toggleMapSettings }: ButtonMapSettingsProps) => {
         onClick={toggleMapSettings}
       >
         <span className="sr-only">Settings</span>
-        <BsSliders2 />
+        <Sliders size="lg" />
       </button>
       <span>{t('Editor.nav.toggle-layers')}</span>
     </Tipped>

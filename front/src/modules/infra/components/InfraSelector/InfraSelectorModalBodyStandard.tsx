@@ -2,7 +2,7 @@ import cx from 'classnames';
 import React, { useCallback, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import nextId from 'react-id-generator';
-import { GoLock } from 'react-icons/go';
+import { Lock, Search } from '@osrd-project/ui-icons';
 import { useNavigate } from 'react-router-dom';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
@@ -77,7 +77,7 @@ export default function InfraSelectorModalBodyStandard({
           value={filter}
           type="text"
           noMargin
-          unit={<i className="icons-search" />}
+          unit={<Search />}
         />
       </div>
       <div className="text-center small text-muted infras-count">
@@ -103,7 +103,7 @@ export default function InfraSelectorModalBodyStandard({
               {infra.locked && (
                 <span className="infra-lock">
                   <small>{t('infraManagement:locked')}</small>
-                  <GoLock />
+                  <Lock />
                 </span>
               )}
             </div>

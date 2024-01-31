@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useDebounce } from 'utils/helpers';
+import { Search } from '@osrd-project/ui-icons';
 
 type Props = {
   id: string;
@@ -36,7 +37,7 @@ export default function FilterTextField({ id, setFilter, sm = false, filterChips
       placeholder={t('filterPlaceholder')}
       whiteBG
       noMargin
-      unit={<i className="icons-search" />}
+      unit={<Search />}
       sm={sm}
     />
   );

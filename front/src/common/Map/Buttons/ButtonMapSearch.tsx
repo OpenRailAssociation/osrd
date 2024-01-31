@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { GoSearch } from 'react-icons/go';
+import { Search } from '@osrd-project/ui-icons';
 import Tipped from 'common/Tipped';
 
 type ButtonMapSearchProps = {
@@ -17,7 +17,7 @@ const ButtonMapSearch = ({ toggleMapSearch }: ButtonMapSearchProps) => {
         onClick={toggleMapSearch}
       >
         <span className="sr-only">Search</span>
-        <GoSearch />
+        <Search size="lg" />
       </button>
       <span>{t('common.search')}</span>
     </Tipped>

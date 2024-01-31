@@ -4,7 +4,7 @@ import type { Position } from 'geojson';
 import bbox from '@turf/bbox';
 import { useTranslation } from 'react-i18next';
 import { compact, isEqual, omit } from 'lodash';
-import { GoAlert, GoCheckCircle, GoStop } from 'react-icons/go';
+import { Alert, CheckCircle, Stop } from '@osrd-project/ui-icons';
 
 import type { ArrayElement } from 'utils/types';
 import { conditionalStringConcat, formatKmValue } from 'utils/strings';
@@ -342,7 +342,7 @@ function Pathfinding({ zoomToFeature, path }: PathfindingProps) {
   const displayInfraSoftError = () => (
     <div className="content pathfinding-error my-2">
       <span className="lead">
-        <GoStop />
+        <Stop />
       </span>
       {reloadCount <= 5 ? (
         <span className="flex-grow-1">{t('errorMessages.unableToLoadInfra', { reloadCount })}</span>
@@ -355,7 +355,7 @@ function Pathfinding({ zoomToFeature, path }: PathfindingProps) {
   const displayInfraHardError = () => (
     <div className="content pathfinding-error my-2">
       <span className="lead">
-        <GoStop />
+        <Stop />
       </span>
       <span className="flex-grow-1">{t('errorMessages.hardErrorInfra')}</span>
     </div>
@@ -536,7 +536,7 @@ function Pathfinding({ zoomToFeature, path }: PathfindingProps) {
       {!pathfindingState.error && !pathfindingState.running && path && origin && destination && (
         <div className="content pathfinding-done">
           <span className="lead">
-            <GoCheckCircle />
+            <CheckCircle />
           </span>
           <span className="flex-grow-1">{t('pathfindingDone')}</span>
           <small className="text-secondary" data-testid="result-pathfinding-distance">
@@ -556,7 +556,7 @@ function Pathfinding({ zoomToFeature, path }: PathfindingProps) {
               className={`content pathfinding-error ${infra && infra.state !== 'CACHED' && 'mt-2'}`}
             >
               <span className="lead">
-                <GoStop />
+                <Stop />
               </span>
               <span className="flex-grow-1">
                 {t('pathfindingError', { errorMessage: t(pathfindingState.error) })}
@@ -566,7 +566,7 @@ function Pathfinding({ zoomToFeature, path }: PathfindingProps) {
           {pathfindingState.missingParam && (
             <div className="content missing-params">
               <span className="lead">
-                <GoAlert />
+                <Alert />
               </span>
               <span className="flex-grow-1">
                 {t('pathfindingMissingParams', { missingElements })}

@@ -1,10 +1,10 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdTrain } from 'react-icons/md';
-import { FcCalendar } from 'react-icons/fc';
 import { useNavigate } from 'react-router-dom';
-import { AiFillFolderOpen } from 'react-icons/ai';
 import { RiFolderChartLine } from 'react-icons/ri';
+import { Calendar, FileDirectoryOpen } from '@osrd-project/ui-icons';
+
 import nextId from 'react-id-generator';
 
 import { dateTimeFormatting } from 'utils/date';
@@ -50,7 +50,7 @@ export default function StudyCard({ setFilterChips, scenario }: StudyCardProps) 
           onClick={handleClick}
         >
           <span className="mr-2">{t('openScenario')}</span>
-          <AiFillFolderOpen />
+          <FileDirectoryOpen variant="fill" />
         </button>
       </div>
       <div className="scenario-card-description">{scenario.description}</div>
@@ -83,7 +83,7 @@ export default function StudyCard({ setFilterChips, scenario }: StudyCardProps) 
         </div>
         <div className="scenario-card-date">
           <span className="mr-1">
-            <FcCalendar />
+            <Calendar />
           </span>
           <span className="mr-1">{t('updatedOn')}</span>
           {scenario.last_modification && dateTimeFormatting(new Date(scenario.last_modification))}

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { GoPencil } from 'react-icons/go';
+import { Pencil } from '@osrd-project/ui-icons';
 import nextId from 'react-id-generator';
 import { useParams } from 'react-router-dom';
 
@@ -235,7 +235,7 @@ export default function Study() {
                     }
                   >
                     <span className="study-details-modify-button-text">{t('modifyStudy')}</span>
-                    <GoPencil />
+                    <Pencil />
                   </button>
                 </div>
                 {study.study_type && (

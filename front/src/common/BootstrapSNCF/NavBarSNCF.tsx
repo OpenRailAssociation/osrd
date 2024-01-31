@@ -1,8 +1,7 @@
 import React, { ReactElement } from 'react';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { FaPowerOff, FaInfoCircle, FaCog } from 'react-icons/fa';
-import { AiFillSafetyCertificate } from 'react-icons/ai';
+import { Gear, Info, ShieldCheck, SignOut } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 import i18n from 'i18next';
 
@@ -48,7 +47,7 @@ export default function LegacyNavBarSNCF({ appName, logo = logoOSRD }: Props) {
               aria-label={t('userSettings')}
               title={t('userSettings')}
             >
-              <AiFillSafetyCertificate />
+              <ShieldCheck />
             </button>
           </li>
         )}
@@ -73,7 +72,7 @@ export default function LegacyNavBarSNCF({ appName, logo = logoOSRD }: Props) {
                 key="release"
               >
                 <span className="mr-2">
-                  <FaInfoCircle />
+                  <Info />
                 </span>
                 {t('about')}
               </button>,
@@ -95,13 +94,13 @@ export default function LegacyNavBarSNCF({ appName, logo = logoOSRD }: Props) {
                 key="release"
               >
                 <span className="mr-2">
-                  <FaCog />
+                  <Gear variant="fill" />
                 </span>
                 {t('userSettings')}
               </button>,
               <button type="button" className="btn-link text-reset" onClick={logout} key="logout">
                 <span className="mr-2">
-                  <FaPowerOff />
+                  <SignOut />
                 </span>
                 {t('disconnect')}
               </button>,

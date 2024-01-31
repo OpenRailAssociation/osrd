@@ -1,6 +1,6 @@
 import React, { FC, useCallback, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { GoPencil } from 'react-icons/go';
+import { Pencil } from '@osrd-project/ui-icons';
 import { FaMapMarkedAlt, FaTimesCircle } from 'react-icons/fa';
 import { isNil } from 'lodash';
 
@@ -83,7 +83,7 @@ const WayPointInput: FC<WayPointInputProps> = ({ endPoint, wayPoint, onChange })
   }, [endPoint, isPicking, setState, state]);
 
   const getButtonIcon = () => {
-    if (!isPicking && isWayPointSelected) return <GoPencil />;
+    if (!isPicking && isWayPointSelected) return <Pencil />;
     return isPicking ? <FaTimesCircle /> : <FaMapMarkedAlt />;
   };
 

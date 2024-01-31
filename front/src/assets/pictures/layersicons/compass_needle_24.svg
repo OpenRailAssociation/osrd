@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-    <title>icon/24/compass-needle-24</title>
-    <g id="icon/24/compass-needle-24" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-        <path d="M12,4 C13.2426407,4 14.25,5.00735931 14.25,6.25 L14.25,12 L14.25,19.25 C14.25,19.6642136 13.9142136,20 13.5,20 C13.0857864,20 12.75,19.6642136 12.75,19.25 L12.749,12 L11.25,12 L11.25,19.25 C11.25,19.6642136 10.9142136,20 10.5,20 C10.0857864,20 9.75,19.6642136 9.75,19.25 L9.75,6.25 C9.75,5.00735931 10.7573593,4 12,4 Z" id="Path" fill="#000000" fill-rule="nonzero"></path>
-    </g>
-</svg>

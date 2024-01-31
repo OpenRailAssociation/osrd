@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
-import { GoArrowSwitch, GoPlus, GoRocket, GoTrash } from 'react-icons/go';
+import { ArrowSwitch, Plus, Rocket, Trash } from '@osrd-project/ui-icons';
 import type { Position } from 'geojson';
 
 import DisplayItinerary from 'modules/trainschedule/components/ManageTrainSchedule/Itinerary/DisplayItinerary';
@@ -102,7 +102,7 @@ function Itinerary({ path }: ItineraryProps) {
           title={t('toggleTrigramSearch')}
           onClick={() => setDisplayTypeAndPath(!displayTypeAndPath)}
         >
-          <GoRocket />
+          <Rocket />
         </button>
       </div>
       {displayTypeAndPath && (
@@ -119,12 +119,12 @@ function Itinerary({ path }: ItineraryProps) {
               onClick={() => openModal(viaModalContent)}
             >
               <span className="mr-1">{t('addVias')}</span>
-              <GoPlus />
+              <Plus />
             </button>
           )}
           <button className="col ml-1 my-1 btn bg-warning btn-sm" type="button" onClick={inverseOD}>
             <span className="mr-1">{t('inverseOD')}</span>
-            <GoArrowSwitch />
+            <ArrowSwitch />
           </button>
           <Tipped mode="right">
             <button
@@ -133,7 +133,7 @@ function Itinerary({ path }: ItineraryProps) {
               aria-label={t('deleteRoute')}
               onClick={resetPathfinding}
             >
-              <GoTrash />
+              <Trash />
             </button>
             <span>{t('deleteRoute')}</span>
           </Tipped>

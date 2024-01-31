@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { ModalBodySNCF, ModalHeaderSNCF } from 'common/BootstrapSNCF/ModalSNCF';
-import { FaCog } from 'react-icons/fa';
+import { Gear, ShieldCheck } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { updateUserPreferences } from 'reducers/user';
-import { AiFillSafetyCertificate } from 'react-icons/ai';
 import cx from 'classnames';
 import { useDebounce } from 'utils/helpers';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
@@ -26,8 +25,8 @@ export default function UserSettings() {
   return (
     <>
       <ModalHeaderSNCF withCloseButton>
-        <h1>
-          <FaCog />
+        <h1 className="d-flex align-items-center">
+          <Gear variant="fill" size="lg" />
           <span className="ml-2">{t('userSettings')}</span>
         </h1>
       </ModalHeaderSNCF>
@@ -47,7 +46,7 @@ export default function UserSettings() {
           noMargin
           unit={
             <span className={cx('lead', safeWordText !== '' && 'text-success')}>
-              <AiFillSafetyCertificate />
+              <ShieldCheck />
             </span>
           }
         />

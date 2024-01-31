@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Route, Routes } from 'react-router-dom';
-import { GoLock } from 'react-icons/go';
+import { Lock } from '@osrd-project/ui-icons';
 
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
@@ -34,7 +34,7 @@ const HomeReferenceMap = () => {
             {infra ? (
               <span className="ml-2 text-muted">
                 {t('referenceMap:infrastructure', { name: infra.name })}
-                <span className="ml-2">{infra.locked && <GoLock />}</span>
+                <span className="ml-2">{infra.locked && <Lock />}</span>
               </span>
             ) : (
               <span className="ml-2 text-orange">{t('referenceMap:mapNoInfraSelected')}</span>

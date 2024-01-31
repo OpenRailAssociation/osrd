@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { GoLock, GoTrash } from 'react-icons/go';
+import { Lock, Trash } from '@osrd-project/ui-icons';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useTranslation } from 'react-i18next';
 import { Infra } from 'common/api/osrdEditoastApi';
@@ -36,7 +36,7 @@ export default function InfraSelectorEditionItem({
               title={t('infraManagement:actions.delete')}
               onClick={() => setRunningDelete(true)}
             >
-              <GoTrash />
+              <Trash />
             </button>
           )}
           <div className="infraslist-item-edition-block">
@@ -60,7 +60,7 @@ export default function InfraSelectorEditionItem({
                   {infra.locked && (
                     <span className="infra-lock">
                       <small>{t('infraManagement:locked')}</small>
-                      <GoLock />
+                      <Lock />
                     </span>
                   )}
                 </>
