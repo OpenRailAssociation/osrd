@@ -2,11 +2,12 @@
 import {
   RS_REQUIRED_FIELDS,
   THERMAL_TRACTION_IDENTIFIER,
-  RS_SCHEMA_PROPERTIES,
   EP_BY_MODE,
+  DEFAULT_SIGNALING_SYSTEMS,
+  RS_SCHEMA_PROPERTIES,
 } from 'modules/rollingStock/consts';
 import { getTranslationKey } from 'utils/strings';
-import { has, isNil, isNull, omit, pick } from 'lodash';
+import { groupBy, has, isNil, isNull, omit, pick } from 'lodash';
 import { isElectric } from 'modules/rollingStock/helpers/electric';
 import { TFunction } from 'i18next';
 
@@ -16,6 +17,7 @@ import type {
   EffortCurveForms,
   RollingStockParametersValidValues,
   RollingStockParametersValues,
+  SchemaProperty,
 } from 'modules/rollingStock/types';
 import type {
   EffortCurve,
@@ -42,6 +44,7 @@ const newRollingStockValues = {
   raisePantographTime: null,
   basePowerClass: null,
   powerRestrictions: {},
+  supportedSignalingSystems: DEFAULT_SIGNALING_SYSTEMS,
 };
 
 export const filterUndefinedValueInCurve = (curve: EffortCurveForm) =>
@@ -96,6 +99,7 @@ export const getRollingStockEditorDefaultValues = (
         raisePantographTime: rollingStockData.raise_pantograph_time || null,
         basePowerClass: rollingStockData.base_power_class || null,
         powerRestrictions: rollingStockData.power_restrictions,
+        supportedSignalingSystems: rollingStockData.supported_signaling_systems,
       }
     : {
         ...newRollingStockValues,
@@ -168,7 +172,7 @@ export const rollingStockEditorQueryArg = (
       modes: validCurves,
     },
     base_power_class: data.basePowerClass,
-    supported_signaling_systems: ['BAL', 'BAPR'],
+    supported_signaling_systems: data.supportedSignalingSystems,
   };
 };
 
@@ -346,3 +350,28 @@ export const translateItemsList = <T>(t: TFunction, itemsList: T[], translationK
     id: item,
     label: !isNull(item) ? t(getTranslationKey(translationKey, String(item))) : t('unspecified'),
   }));
+
+/**
+ * This function divides rolling stock properties according to:
+ * - their name
+ * - the side of the form where they should be displayed.
+ * @param propertiesToDisplay List of the properties names we need to display in this part of the form
+ * @param effortCurves List of the rolling stock effort curves
+ * @param checkCondition Indicates whether to check for the presence of an electrical mode
+ * @returns An object with 3 lists of properties for each side of the form
+ */
+export const splitRollingStockProperties = (
+  propertiesToDisplay: string[],
+  effortCurves?: EffortCurveForms | null,
+  checkCondition?: boolean
+) => {
+  const displayedProperties = RS_SCHEMA_PROPERTIES.filter((property) => {
+    const isInThisGroup = propertiesToDisplay.includes(property.title);
+    if (checkCondition && effortCurves) {
+      const isDisplayed = property.condition ? property.condition(effortCurves) : true;
+      return isInThisGroup && isDisplayed;
+    }
+    return isInThisGroup;
+  });
+  return groupBy(displayedProperties, 'side') as { [key: string]: SchemaProperty[] };
+};

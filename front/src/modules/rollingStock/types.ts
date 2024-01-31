@@ -7,7 +7,7 @@ import type {
 
 export type RollingStockParametersValidValues = {
   // TODO: remove this line in the type
-  [key: string]: string | number | null | RollingStockCommon['power_restrictions'];
+  [key: string]: string | number | null | RollingStockCommon['power_restrictions'] | string[];
   railjsonVersion: string;
   name: string;
   detail: string;
@@ -35,11 +35,18 @@ export type RollingStockParametersValidValues = {
   raisePantographTime: number | null;
   basePowerClass: string | null;
   powerRestrictions: RollingStockCommon['power_restrictions'];
+  supportedSignalingSystems: string[];
 };
 
 export type RollingStockParametersValues = {
   // TODO: remove this line in the type
-  [key: string]: string | number | null | RollingStockCommon['power_restrictions'] | undefined;
+  [key: string]:
+    | string
+    | number
+    | null
+    | RollingStockCommon['power_restrictions']
+    | undefined
+    | string[];
   railjsonVersion: string;
   name: string;
   detail: string;
@@ -67,6 +74,7 @@ export type RollingStockParametersValues = {
   raisePantographTime: number | null;
   basePowerClass: string | null;
   powerRestrictions: RollingStockCommon['power_restrictions'];
+  supportedSignalingSystems: string[];
 };
 
 export type SchemaProperty = {
@@ -80,6 +88,7 @@ export type SchemaProperty = {
   unit?: string;
   units?: string[];
   condition?: (effortCurves: EffortCurveForms | null) => boolean;
+  margin?: string;
 };
 
 export type ElectricalProfileByMode = {

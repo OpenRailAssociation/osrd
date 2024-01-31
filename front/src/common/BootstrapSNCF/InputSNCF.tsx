@@ -5,6 +5,7 @@ import cx from 'classnames';
 export type InputSNCFProps = {
   id: string;
   type: string;
+  containerClass?: string;
   name?: string;
   label?: JSX.Element | string;
   placeholder?: string;
@@ -49,6 +50,7 @@ const InputSNCF = ({
   // Basic input props
   id,
   type,
+  containerClass,
   name,
   label,
   placeholder,
@@ -80,7 +82,7 @@ const InputSNCF = ({
   condensed = false,
   textRight = false,
   disabled = false,
-  ref = undefined,
+  ref,
 }: InputSNCFProps): JSX.Element => {
   // Build custom classes
   const textAlignmentClass = textRight ? 'right-alignment' : 'left-alignment';
@@ -124,7 +126,7 @@ const InputSNCF = ({
             {label}
           </label>
         )}
-        <div className={cx({ 'input-group': appendOptions })}>
+        <div className={cx(containerClass, { 'input-group': appendOptions })}>
           <div
             className={cx('form-control-container', {
               'is-invalid': isInvalid,
