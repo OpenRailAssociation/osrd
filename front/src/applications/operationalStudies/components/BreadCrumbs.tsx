@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { ChevronRight } from '@osrd-project/ui-icons';
 import { Project, Study, Scenario } from 'common/api/osrdEditoastApi';
 
 type Props = {
@@ -20,7 +21,9 @@ export default function BreadCrumbs({ project, study, scenario }: Props) {
           <div>
             <Link to="/operational-studies/projects">{t('projectsList')}</Link>{' '}
           </div>
-          <i className="icons-arrow-next icons-size-x75 text-muted" />
+          <span className="text-muted">
+            <ChevronRight />
+          </span>
         </>
       )}
 
@@ -31,7 +34,9 @@ export default function BreadCrumbs({ project, study, scenario }: Props) {
           <div className="text-truncate" title={project.name}>
             <Link to={`/operational-studies/projects/${project.id}`}> {project.name}</Link>
           </div>
-          <i className="icons-arrow-next icons-size-x75 text-muted" />
+          <span className="text-muted">
+            <ChevronRight />
+          </span>
         </>
       )}
       {project && study && !scenario && (
@@ -47,7 +52,9 @@ export default function BreadCrumbs({ project, study, scenario }: Props) {
               {study.name}
             </Link>
           </div>
-          <i className="icons-arrow-next icons-size-x75 text-muted" />
+          <span className="text-muted">
+            <ChevronRight />
+          </span>
           <div className="text-truncate" title={scenario.name}>
             {scenario.name}
           </div>

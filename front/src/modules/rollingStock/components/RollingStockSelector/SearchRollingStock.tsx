@@ -7,6 +7,7 @@ import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { MdLocalGasStation } from 'react-icons/md';
 
 import type { LightRollingStock, LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
+import { Search } from '@osrd-project/ui-icons';
 
 // text: a string to search in the rolling stock name, detail, reference, series, type, grouping
 // elec: true if the rolling stock has an electric mode
@@ -191,7 +192,7 @@ const SearchRollingStock = ({
           onChange={searchMateriel}
           placeholder={t('translation:common.search')}
           noMargin
-          unit={<i className="icons-search" />}
+          unit={<Search />}
           whiteBG={hasWhiteBackground}
           sm
         />

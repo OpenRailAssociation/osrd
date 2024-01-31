@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BiTargetLock } from 'react-icons/bi';
-import { GoPencil } from 'react-icons/go';
+import { Pencil } from '@osrd-project/ui-icons';
 import nextId from 'react-id-generator';
 import ReactMarkdown from 'react-markdown';
 import { useParams } from 'react-router-dom';
@@ -206,7 +206,7 @@ export default function Project() {
                           <span className="project-details-title-modify-button-text">
                             {t('modifyProject')}
                           </span>
-                          <GoPencil />
+                          <Pencil />
                         </button>
                       </div>
                       <div className="row">

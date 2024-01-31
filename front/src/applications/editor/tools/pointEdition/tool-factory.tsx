@@ -3,7 +3,7 @@ import { cloneDeep, isEqual, omit } from 'lodash';
 import { IconType } from 'react-icons';
 import { BiReset } from 'react-icons/bi';
 import { AiFillSave } from 'react-icons/ai';
-import { GoPlusCircle, GoTrash } from 'react-icons/go';
+import { PlusCircle, Trash } from '@osrd-project/ui-icons';
 import { Map } from 'maplibre-gl';
 import { Feature, LineString, Point } from 'geojson';
 import nearestPointOnLine from '@turf/nearest-point-on-line';
@@ -110,7 +110,7 @@ function getPointEditionTool<T extends EditorPoint>({
       [
         {
           id: 'new-entity',
-          icon: GoPlusCircle,
+          icon: PlusCircle,
           labelTranslationKey: `Editor.tools.${id}-edition.actions.new-entity`,
           onClick({ setState }) {
             setState(getInitialState());
@@ -120,7 +120,7 @@ function getPointEditionTool<T extends EditorPoint>({
       [
         {
           id: 'delete-entity',
-          icon: GoTrash,
+          icon: Trash,
           labelTranslationKey: `Editor.tools.${id}-edition.actions.delete-entity`,
           // Show button only if we are editing
           isDisabled({ state }) {

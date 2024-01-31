@@ -2,7 +2,7 @@ import { filter, groupBy } from 'lodash';
 import React from 'react';
 import { TbSwitch2 } from 'react-icons/tb';
 import { AiFillSave } from 'react-icons/ai';
-import { GoPlusCircle, GoTrash } from 'react-icons/go';
+import { PlusCircle, Trash } from '@osrd-project/ui-icons';
 
 import { save } from 'reducers/editor/thunkActions';
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
@@ -73,7 +73,7 @@ const SwitchEditionTool: Tool<SwitchEditionState> = {
     [
       {
         id: 'new-switch',
-        icon: GoPlusCircle,
+        icon: PlusCircle,
         labelTranslationKey: 'Editor.tools.switch-edition.actions.new-switch',
         onClick({ setState, switchTypes }) {
           if (!switchTypes?.length) throw new Error('There is no switch type yet.');
@@ -92,7 +92,7 @@ const SwitchEditionTool: Tool<SwitchEditionState> = {
     [
       {
         id: 'delete-switch',
-        icon: GoTrash,
+        icon: Trash,
         labelTranslationKey: `Editor.tools.switch-edition.actions.delete-switch`,
         // Show button only if we are editing
         isDisabled({ state }) {

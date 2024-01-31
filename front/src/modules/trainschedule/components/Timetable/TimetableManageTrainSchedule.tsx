@@ -13,6 +13,7 @@ import {
 
 import { useOsrdConfActions } from 'common/osrdContext';
 import type { Infra } from 'common/api/osrdEditoastApi';
+import { ChevronLeft } from '@osrd-project/ui-icons';
 
 type TimetableManageTrainScheduleProps = {
   displayTrainScheduleManagement: string;
@@ -87,7 +88,9 @@ export default function TimetableManageTrainSchedule({
           data-testid="return-simulation-result"
           type="button"
         >
-          <i className="icons-arrow-prev mr-2" />
+          <span className="mr-2">
+            <ChevronLeft size="lg" />
+          </span>
           {t('returnToSimulationResults')}
         </button>
       </div>

@@ -6,7 +6,7 @@ import { setSuccess, setFailure } from 'reducers/main';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { useTranslation } from 'react-i18next';
 
-import { GoDuplicate, GoPencil, GoTrash } from 'react-icons/go';
+import { Duplicate, Pencil, Trash } from '@osrd-project/ui-icons';
 import RollingStockEditorFormModal from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorFormModal';
 
 import type { RollingStock } from 'common/api/osrdEditoastApi';
@@ -129,7 +129,7 @@ const RollingStockEditorButtons = ({
         disabled={isRollingStockLocked}
         onClick={() => setIsEditing(true)}
       >
-        <GoPencil />
+        <Pencil />
       </button>
       <button
         type="button"
@@ -139,7 +139,7 @@ const RollingStockEditorButtons = ({
         tabIndex={0}
         onClick={() => duplicateRollingStock()}
       >
-        <GoDuplicate />
+        <Duplicate />
       </button>
       <button
         type="button"
@@ -150,7 +150,7 @@ const RollingStockEditorButtons = ({
         disabled={isRollingStockLocked}
         onClick={() => confirmDelete()}
       >
-        <GoTrash />
+        <Trash />
       </button>
     </div>
   );

@@ -1,7 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
-import { FaPlus } from 'react-icons/fa';
 
 import { time2sec, sec2time } from 'utils/timeManipulation';
 
@@ -14,6 +13,7 @@ import type { Infra, TrainScheduleBatchItem } from 'common/api/osrdEditoastApi';
 
 import { setFailure, setSuccess } from 'reducers/main';
 import { useAppDispatch } from 'store';
+import { Plus } from '@osrd-project/ui-icons';
 
 type SubmitConfAddTrainScheduleProps = {
   infraState?: Infra['state'];
@@ -139,7 +139,7 @@ export default function SubmitConfAddTrainSchedule({
       data-testid="add-train-schedules"
     >
       <span className="mr-2">
-        <FaPlus />
+        <Plus size="lg" />
       </span>
       {t('addTrainSchedule')}
     </button>

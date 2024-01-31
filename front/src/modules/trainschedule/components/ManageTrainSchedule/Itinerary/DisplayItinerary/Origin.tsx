@@ -10,6 +10,7 @@ import { makeEnumBooleans } from 'utils/constants';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useOsrdConfActions, useOsrdContext, useOsrdConfSelectors } from 'common/osrdContext';
 import { MODES } from 'main/consts';
+import { XCircle } from '@osrd-project/ui-icons';
 
 interface OriginProps {
   zoomToFeaturePoint: (lngLat?: Position, id?: string) => void;
@@ -95,7 +96,7 @@ function Origin({ zoomToFeaturePoint }: OriginProps) {
                 dispatch(updatePathfindingID(undefined));
               }}
             >
-              <i className="icons-circle-delete" />
+              <XCircle variant="fill" />
               <span className="sr-only" aria-hidden="true">
                 Delete
               </span>

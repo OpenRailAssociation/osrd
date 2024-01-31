@@ -1,6 +1,6 @@
 import React from 'react';
 import { FiEdit } from 'react-icons/fi';
-import { GoTrash } from 'react-icons/go';
+import { Trash } from '@osrd-project/ui-icons';
 import { BsCursor } from 'react-icons/bs';
 import { FaDrawPolygon } from 'react-icons/fa';
 import { BiLoader, BiSelection } from 'react-icons/bi';
@@ -110,7 +110,7 @@ const SelectionTool: Tool<SelectionState> = {
       },
       {
         id: 'delete-selection',
-        icon: GoTrash,
+        icon: Trash,
         labelTranslationKey: 'Editor.tools.select-items.actions.delete-selection',
         isDisabled({ state }) {
           return !state.selection.length;

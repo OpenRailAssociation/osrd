@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import InputGroupSNCF, { InputGroupSNCFValue } from 'common/BootstrapSNCF/InputGroupSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
-import { GoTrash } from 'react-icons/go';
+import { Trash } from '@osrd-project/ui-icons';
 import { FaPlus, FaSearch } from 'react-icons/fa';
 import { CgArrowsShrinkH } from 'react-icons/cg';
 import { BiArrowFromLeft, BiArrowFromRight } from 'react-icons/bi';
@@ -399,7 +399,7 @@ const AllowancesActions = <T extends RangeAllowanceForm | EngineeringAllowanceFo
                   title={t('deleteAllowance')}
                   onClick={() => handleManageAllowance(ActionOnAllowance.delete)}
                 >
-                  <GoTrash />
+                  <Trash />
                 </button>
               )}
             <button

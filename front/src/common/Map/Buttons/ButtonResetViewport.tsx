@@ -1,8 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import compass_needle_24 from 'assets/pictures/layersicons/compass_needle_24.svg';
-import compass_cardinal_24 from 'assets/pictures/layersicons/compass_cardinal_24.svg';
+import { CompassCardinal, CompassNeedle } from '@osrd-project/ui-icons';
 import Tipped from 'common/Tipped';
 
 type ButtonResetViewportProps = {
@@ -26,15 +25,12 @@ const ButtonResetViewport = ({ updateLocalViewport, bearing }: ButtonResetViewpo
         onClick={updateLocalViewport}
       >
         <span className="sr-only">Reset north</span>
-        <div className="compass-container">
-          <img
-            src={compass_needle_24}
-            alt="Compass Needle"
-            style={rotationStyle}
-            className="compass-needle z-2"
-          />
-          <img src={compass_cardinal_24} alt="Compass Cardinal" className="compass-cardinal z-3" />
-        </div>
+        <span className="compass-needle" style={rotationStyle}>
+          <CompassNeedle size="lg" />
+        </span>
+        <span className="compass-cardinal">
+          <CompassCardinal size="lg" />
+        </span>
       </button>
       <span>{t('common.reset-north')}</span>
     </Tipped>

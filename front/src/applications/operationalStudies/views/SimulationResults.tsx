@@ -28,6 +28,7 @@ import { Train } from 'reducers/osrdsimulation/types';
 import { useStoreDataForSpaceTimeChart } from 'modules/simulationResult/components/SpaceTimeChart/useStoreDataForSpaceTimeChart';
 import getScaleDomainFromValues from 'modules/simulationResult/components/ChartHelpers/getScaleDomainFromValues';
 import { useAppDispatch } from 'store';
+import { ChevronLeft, ChevronRight } from '@osrd-project/ui-icons';
 
 const MAP_MIN_HEIGHT = 450;
 
@@ -174,7 +175,7 @@ export default function SimulationResults({
           title={t('toggleWarpedMap')}
           onClick={() => setShowWarpedMap(!showWarpedMap)}
         >
-          <i className={showWarpedMap ? 'icons-arrow-prev' : 'icons-arrow-next'} />
+          {showWarpedMap ? <ChevronLeft /> : <ChevronRight />}
         </button>
         <SimulationWarpedMap collapsed={!showWarpedMap} />
 

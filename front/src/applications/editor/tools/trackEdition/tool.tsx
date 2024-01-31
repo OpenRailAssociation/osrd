@@ -4,7 +4,7 @@ import { cloneDeep, isEmpty, isEqual } from 'lodash';
 import { MdShowChart } from 'react-icons/md';
 import { RiDragMoveLine } from 'react-icons/ri';
 import { AiFillSave } from 'react-icons/ai';
-import { GoNoEntry, GoPlusCircle, GoTrash, GoXCircle } from 'react-icons/go';
+import { NoEntry, PlusCircle, Trash, XCircle } from '@osrd-project/ui-icons';
 import { BiAnchor, BiArrowFromLeft, BiArrowToRight, BiReset } from 'react-icons/bi';
 import getNearestPoint from '@turf/nearest-point';
 import { featureCollection } from '@turf/helpers';
@@ -79,7 +79,7 @@ const TrackEditionTool: Tool<TrackEditionState> = {
       },
       {
         id: 'mode-add-point',
-        icon: GoPlusCircle,
+        icon: PlusCircle,
         labelTranslationKey: 'Editor.tools.track-edition.actions.mode-add-point',
         onClick({ setState, state }) {
           setState({
@@ -93,7 +93,7 @@ const TrackEditionTool: Tool<TrackEditionState> = {
       },
       {
         id: 'mode-delete-point',
-        icon: GoXCircle,
+        icon: XCircle,
         labelTranslationKey: 'Editor.tools.track-edition.actions.mode-delete-point',
         onClick({ setState, state }) {
           setState({
@@ -155,7 +155,7 @@ const TrackEditionTool: Tool<TrackEditionState> = {
       },
       {
         id: 'cancel-line',
-        icon: GoNoEntry,
+        icon: NoEntry,
         labelTranslationKey: 'Editor.tools.track-edition.actions.cancel-line',
         onClick({ setState, state }) {
           if (state.track.geometry.coordinates.length) {
@@ -172,7 +172,7 @@ const TrackEditionTool: Tool<TrackEditionState> = {
     [
       {
         id: 'delete-line',
-        icon: GoTrash,
+        icon: Trash,
         labelTranslationKey: 'Editor.tools.track-edition.actions.delete-line',
         // Show button only if we are editing
         isDisabled({ state }) {

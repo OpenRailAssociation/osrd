@@ -2,7 +2,7 @@ import cx from 'classnames';
 import { isNull } from 'lodash';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import React, { useState, type PropsWithChildren } from 'react';
-import { GoTrash } from 'react-icons/go';
+import { Trash } from '@osrd-project/ui-icons';
 
 import SelectNewItemButton from 'common/Selector/SelectNewItemButton';
 
@@ -76,7 +76,7 @@ const SelectorItem = <T extends string | null>({
           className="selector-trash-icon"
           aria-label="Delete item"
         >
-          <GoTrash />
+          <Trash />
         </button>
       )}
     </div>

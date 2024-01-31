@@ -5,6 +5,7 @@ import { AllowancesSettings } from 'reducers/osrdsimulation/types';
 import { SimulationReport } from 'common/api/osrdEditoastApi';
 import SpaceTimeChart from 'modules/simulationResult/components/SpaceTimeChart/SpaceTimeChart';
 import { useStoreDataForSpaceTimeChart } from 'modules/simulationResult/components/SpaceTimeChart/useStoreDataForSpaceTimeChart';
+import { ChevronDown, ChevronUp } from '@osrd-project/ui-icons';
 
 const OSRDStcdmResults = () => {
   const { t } = useTranslation(['translation', 'stdcm']);
@@ -72,11 +73,9 @@ const OSRDStcdmResults = () => {
               onClick={() => setShowSpeedSpaceChart(!showSpeedSpaceChart)}
             >
               {t('stdcm:spaceSpeedGraphic')}
-              <i
-                className={
-                  showSpeedSpaceChart ? 'icons-arrow-up ml-auto' : 'icons-arrow-down ml-auto'
-                }
-              />
+              <span className="ml-auto">
+                {showSpeedSpaceChart ? <ChevronUp /> : <ChevronDown />}
+              </span>
             </div>
             {showSpeedSpaceChart && selectedTrain && (
               <div

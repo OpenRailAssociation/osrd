@@ -2,9 +2,9 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
-import magicWandIcon from 'assets/pictures/magic_wand.svg';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { getEditorState } from 'reducers/editor/selectors';
+import { Wand } from '@osrd-project/ui-icons';
 import InfraErrorCorrectorModal from './InfraErrorCorrectorModal';
 
 const InfraErrorCorrector = () => {
@@ -17,13 +17,14 @@ const InfraErrorCorrector = () => {
     <button
       type="button"
       title={t('Editor.nav.infra-error-corrector')}
-      className="btn btn-sm p-1 shadow d-flex align-items-center justify-content-center"
+      className="btn btn-sm py-1 px-2 shadow d-flex align-items-center justify-content-center"
       onClick={() => {
         openModal(<InfraErrorCorrectorModal />);
       }}
       disabled={total === 0}
+      aria-label="Magic Wand"
     >
-      <img src={magicWandIcon} alt="Magic wand" />
+      <Wand />
     </button>
   );
 };

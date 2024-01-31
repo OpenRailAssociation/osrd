@@ -2,9 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
-import { GoPencil } from 'react-icons/go';
+import { Pencil, Eye, EyeClosed, ChevronLeft, ChevronRight } from '@osrd-project/ui-icons';
 import { GiElectric } from 'react-icons/gi';
-import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 import infraLogo from 'assets/pictures/components/tracks.svg';
 
@@ -246,7 +245,7 @@ export default function Scenario() {
                         }
                         title={t('editScenario')}
                       >
-                        <GoPencil />
+                        <Pencil />
                       </button>
                       <button
                         type="button"
@@ -254,7 +253,7 @@ export default function Scenario() {
                         onClick={() => setTrainsWithDetails(!trainsWithDetails)}
                         title={t('displayTrainsWithDetails')}
                       >
-                        {trainsWithDetails ? <FaEyeSlash /> : <FaEye />}
+                        {trainsWithDetails ? <EyeClosed /> : <Eye />}
                       </button>
                       <button
                         type="button"
@@ -262,7 +261,7 @@ export default function Scenario() {
                         aria-label={t('toggleTimetable')}
                         onClick={() => setCollapsedTimetable(true)}
                       >
-                        <i className="icons-arrow-prev" />
+                        <ChevronLeft />
                       </button>
                     </div>
                     <div className="row">
@@ -355,7 +354,7 @@ export default function Scenario() {
                       aria-label={t('toggleTimetable')}
                       onClick={() => setCollapsedTimetable(false)}
                     >
-                      <i className="icons-arrow-next" />
+                      <ChevronRight />
                     </button>
                     <div className="lead ml-2">{scenario.name}</div>
                     <div className="d-flex align-items-center ml-auto">

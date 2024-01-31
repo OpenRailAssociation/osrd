@@ -1,10 +1,8 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
-import { GoTrash } from 'react-icons/go';
-import { FaDownload, FaPlus } from 'react-icons/fa';
 import { BiSelectMultiple } from 'react-icons/bi';
-import { BsFillExclamationTriangleFill } from 'react-icons/bs';
+import { Alert, Download, Plus, Search, Trash } from '@osrd-project/ui-icons';
 import { isEmpty, uniq } from 'lodash';
 import cx from 'classnames';
 
@@ -228,7 +226,7 @@ export default function Timetable({
           onClick={() => setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.import)}
         >
           <span className="mr-2">
-            <FaDownload />
+            <Download />
           </span>
           {t('timetable.importTrainSchedule')}
         </button>
@@ -242,7 +240,7 @@ export default function Timetable({
           }}
         >
           <span className="mr-2">
-            <FaPlus />
+            <Plus />
           </span>
           {t('timetable.addTrainSchedule')}
         </button>
@@ -272,7 +270,7 @@ export default function Timetable({
             placeholder={t('filterPlaceholder')}
             whiteBG
             noMargin
-            unit={<i className="icons-search" />}
+            unit={<Search />}
             sm
             data-testid="scenarios-filter"
           />
@@ -306,7 +304,7 @@ export default function Timetable({
               )
             }
           >
-            <GoTrash />
+            <Trash />
           </button>
         )}
       </div>
@@ -347,7 +345,7 @@ export default function Timetable({
       <div className="scenario-timetable-warnings">
         {timetableHasInvalidTrain(trainsList) && (
           <div className="invalid-trains">
-            <BsFillExclamationTriangleFill size="1.5em" />
+            <Alert size="lg" variant="fill" />
             <span className="flex-grow-1">{t('timetable.invalidTrains')}</span>
           </div>
         )}

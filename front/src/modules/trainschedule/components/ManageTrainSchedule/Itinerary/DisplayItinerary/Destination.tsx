@@ -5,6 +5,7 @@ import { IoFlag } from 'react-icons/io5';
 import type { Position } from 'geojson';
 
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
+import { XCircle } from '@osrd-project/ui-icons';
 
 interface DestinationProps {
   zoomToFeaturePoint: (lngLat?: Position, id?: string) => void;
@@ -43,7 +44,7 @@ function Destination({ zoomToFeaturePoint }: DestinationProps) {
               dispatch(updatePathfindingID(undefined));
             }}
           >
-            <i className="icons-circle-delete" />
+            <XCircle variant="fill" />
             <span className="sr-only" aria-hidden="true">
               Delete
             </span>

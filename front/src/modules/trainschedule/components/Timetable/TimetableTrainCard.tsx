@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { GiPathDistance } from 'react-icons/gi';
-import { GoPencil, GoTrash } from 'react-icons/go';
+import { Pencil, Trash } from '@osrd-project/ui-icons';
 import { MdAvTimer, MdContentCopy } from 'react-icons/md';
 import nextId from 'react-id-generator';
 import cx from 'classnames';
@@ -343,7 +343,7 @@ function TimetableTrainCard({
                 title={t('timetable.update')}
                 onClick={editTrainSchedule}
               >
-                <GoPencil />
+                <Pencil />
               </button>
             </>
           )}
@@ -354,7 +354,7 @@ function TimetableTrainCard({
             title={t('timetable.delete')}
             onClick={deleteTrain}
           >
-            <GoTrash />
+            <Trash />
           </button>
         </div>
       </div>

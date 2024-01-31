@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback, ChangeEvent } from 'react';
-import { AiOutlinePicture } from 'react-icons/ai';
+import { Image, XCircle } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
-import { TiDelete } from 'react-icons/ti';
 import logoCheese from 'assets/pictures/misc/cheese.svg';
 import logoDog from 'assets/pictures/misc/dog.svg';
 import logoCat from 'assets/pictures/misc/cat.svg';
@@ -43,7 +42,7 @@ const IMAGE_MAX_SIZE = 2 * 1024 * 1024; // 2MiB
 function displayNoImageMessages(isValid: boolean, t: (arg0: string) => string) {
   return (
     <>
-      <AiOutlinePicture />
+      <Image />
       {isValid ? (
         <div className="project-edition-modal-picture-placeholder-text">{t('noImage')}</div>
       ) : (
@@ -188,7 +187,7 @@ function PicturePlaceholderButtons({
         aria-label={t('removeImage')}
         onClick={() => setTempProjectImage(null)}
       >
-        <TiDelete />
+        <XCircle variant="fill" />
       </button>
     </div>
   );

@@ -2,8 +2,7 @@ import cx from 'classnames';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
-import { AiFillFolderOpen, AiFillCheckCircle } from 'react-icons/ai';
-import { RiCalendarLine, RiFoldersLine } from 'react-icons/ri';
+import { Calendar, CheckCircle, FileDirectory, FileDirectoryOpen } from '@osrd-project/ui-icons';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { Link } from 'react-router-dom';
 import nextId from 'react-id-generator';
@@ -52,7 +51,7 @@ export default function ProjectCard({ setFilterChips, project, isSelected, toggl
       tabIndex={0}
     >
       <span className="selected-mark">
-        <AiFillCheckCircle />
+        <CheckCircle variant="fill" size="lg" />
       </span>
       <div className="project-card-img">
         <LazyLoadImage src={imageUrl} alt="project logo" />
@@ -64,7 +63,7 @@ export default function ProjectCard({ setFilterChips, project, isSelected, toggl
               type="button"
             >
               <span className="mr-2">{t('openProject')}</span>
-              <AiFillFolderOpen />
+              <FileDirectoryOpen variant="fill" />
             </button>
           </Link>
         </div>
@@ -72,13 +71,13 @@ export default function ProjectCard({ setFilterChips, project, isSelected, toggl
       <div className="project-card-studies">
         <div>
           <span className="mr-1">
-            <RiCalendarLine />
+            <Calendar />
           </span>
           {dateTimeFormatting(new Date(project.last_modification))}
         </div>
         <div>
           <span className="mr-1">
-            <RiFoldersLine />
+            <FileDirectory />
           </span>
           {t('studiesCount', { count: project.studies_count })}
         </div>

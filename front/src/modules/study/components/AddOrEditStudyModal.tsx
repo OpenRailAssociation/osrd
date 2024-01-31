@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { FaPlus, FaTasks } from 'react-icons/fa';
-import { GoNote, GoPencil, GoTrash } from 'react-icons/go';
+import { Note, Pencil, Trash } from '@osrd-project/ui-icons';
 import { MdBusinessCenter, MdTitle } from 'react-icons/md';
 import { RiCalendarLine, RiMoneyEuroCircleLine, RiQuestionLine } from 'react-icons/ri';
 
@@ -295,7 +295,7 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
                 label={
                   <div className="d-flex align-items-center">
                     <span className="mr-2">
-                      <GoNote />
+                      <Note />
                     </span>
                     {t('studyDescription')}
                   </div>
@@ -437,7 +437,7 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
               onClick={deleteStudy}
             >
               <span className="mr-2">
-                <GoTrash />
+                <Trash />
               </span>
               {t('studyDeleteButton')}
             </button>
@@ -454,7 +454,7 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
               disabled={!isExpectedEndDateValid || !isActualEndDateValid}
             >
               <span className="mr-2">
-                <GoPencil />
+                <Pencil />
               </span>
               {t('studyModifyButton')}
             </button>

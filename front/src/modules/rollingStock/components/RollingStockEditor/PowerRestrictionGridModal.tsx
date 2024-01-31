@@ -5,6 +5,7 @@ import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { ModalBodySNCF, ModalHeaderSNCF, useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { splitArrayByFirstLetter } from 'utils/array';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
+import { Search } from '@osrd-project/ui-icons';
 
 type PowerRestrictionGridModalProps = {
   powerRestrictionsList: string[];
@@ -48,7 +49,7 @@ const PowerRestrictionGridModal = ({
           onChange={(e) => setFilter(e.target.value)}
           onClear={() => setFilter('')}
           noMargin
-          unit={<i className="icons-search" />}
+          unit={<Search />}
           clearButton
           focus
         />

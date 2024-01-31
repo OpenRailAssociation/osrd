@@ -6,7 +6,7 @@ import {
   ImportTrainScheduleTrainDetail,
   ImportTrainScheduleModal,
 } from 'modules/trainschedule/components/ImportTrainSchedule';
-import { GoRocket } from 'react-icons/go';
+import { Rocket } from '@osrd-project/ui-icons';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { keyBy } from 'lodash';
 import rollingstockOpenData2OSRD from 'modules/trainschedule/components/ImportTrainSchedule/rollingstock_opendata2osrd.json';
@@ -67,7 +67,7 @@ export default function ImportTrainScheduleTrainsList({
               )
             }
           >
-            <GoRocket />
+            <Rocket />
             <span className="ml-3">{t('launchImport')}</span>
           </button>
         </div>

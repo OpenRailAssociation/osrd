@@ -2,9 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import nextId from 'react-id-generator';
-import { FcCalendar } from 'react-icons/fc';
-import { RiFolderChartLine } from 'react-icons/ri';
-import { AiFillFolderOpen } from 'react-icons/ai';
+import { Calendar, FileDirectory, FileDirectoryOpen } from '@osrd-project/ui-icons';
 
 import studyLogo from 'assets/pictures/views/study.svg';
 
@@ -48,7 +46,7 @@ export default function StudyCard({ setFilterChips, study }: StudyCardProps) {
           type="button"
         >
           <span className="mr-2">{t('openStudy')}</span>
-          <AiFillFolderOpen />
+          <FileDirectoryOpen variant="fill" />
         </button>
       </div>
       {study.study_type && (
@@ -103,13 +101,13 @@ export default function StudyCard({ setFilterChips, study }: StudyCardProps) {
       <div className="study-card-footer">
         <div className="study-card-scenarios-count ml-auto">
           <span className="mr-1">
-            <RiFolderChartLine />
+            <FileDirectory />
           </span>
           {t('scenariosCount', { count: study.scenarios_count })}
         </div>
         <div className="study-card-date">
           <span className="mr-1">
-            <FcCalendar />
+            <Calendar />
           </span>
           <span className="mr-1">{t('updatedOn')}</span>
           {study.last_modification && dateTimeFormatting(new Date(study.last_modification))}

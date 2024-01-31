@@ -24,6 +24,7 @@ import { getIsPlaying, getSpeedSpaceSettings } from 'reducers/osrdsimulation/sel
 import { updateSpeedSpaceSettings } from 'reducers/osrdsimulation/actions';
 import { dateIsInRange } from 'utils/date';
 
+import { ChevronLeft, ChevronRight, Info } from '@osrd-project/ui-icons';
 import ElectricalProfilesLegend from './ElectricalProfilesLegend';
 import prepareData from './prepareData';
 import SpeedSpaceSettings from './SpeedSpaceSettings';
@@ -269,7 +270,7 @@ export default function SpeedSpaceChart({
           title={t('toggleSpeedSpaceSettings')}
           onClick={() => setShowSettings(!showSettings)}
         >
-          <i className={showSettings ? 'icons-arrow-prev' : 'icons-arrow-next'} />
+          {showSettings ? <ChevronLeft /> : <ChevronRight />}
         </button>
         <div>
           <SpeedSpaceSettings
@@ -291,7 +292,7 @@ export default function SpeedSpaceChart({
               setIsActive(!isActive);
             }}
           >
-            <i className="icons-circle-information" />
+            <Info />
           </button>
         )}
         <button

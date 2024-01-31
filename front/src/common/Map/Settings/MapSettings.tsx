@@ -1,4 +1,3 @@
-import cx from 'classnames';
 import React, { FC, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -7,6 +6,7 @@ import MapSettingsLayers from 'common/Map/Settings/MapSettingsLayers';
 import MapSettingsMapStyle from 'common/Map/Settings/MapSettingsMapStyle';
 import MapSettingsBackgroundSwitches from 'common/Map/Settings/MapSettingsBackgroundSwitches';
 import MapSettingsSpeedLimits from 'common/Map/Settings/MapSettingsSpeedLimits';
+import { ChevronDown, ChevronUp } from '@osrd-project/ui-icons';
 
 interface MapSettingsProps {
   closeMapSettingsPopUp: () => void;
@@ -30,10 +30,9 @@ const MapSettings: FC<MapSettingsProps> = ({ closeMapSettingsPopUp }) => {
         tabIndex={0}
       >
         {t('map-settings:layers')}
-        <i
-          className={cx('icons-arrow-down icons-size-20px', { open: showSettingsLayers })}
-          aria-hidden="true"
-        />
+        <span className="ml-2">
+          {showSettingsLayers ? <ChevronUp size="lg" /> : <ChevronDown size="lg" />}
+        </span>
       </div>
       {showSettingsLayers && <MapSettingsLayers />}
       <div
@@ -43,10 +42,9 @@ const MapSettings: FC<MapSettingsProps> = ({ closeMapSettingsPopUp }) => {
         tabIndex={0}
       >
         {t('map-settings:speedlimits')}
-        <i
-          className={cx('icons-arrow-down icons-size-20px', { open: showSettingsSpeedLimits })}
-          aria-hidden="true"
-        />
+        <span className="ml-2">
+          {showSettingsSpeedLimits ? <ChevronUp size="lg" /> : <ChevronDown size="lg" />}
+        </span>
       </div>
       {showSettingsSpeedLimits && <MapSettingsSpeedLimits />}
     </div>

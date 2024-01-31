@@ -23,6 +23,7 @@ import {
 import { getGraouTrainSchedules } from 'common/api/graouApi';
 import UploadFileModal from 'common/uploadFileModal';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
+import { Download, Search } from '@osrd-project/ui-icons';
 
 interface ImportTrainScheduleConfigProps {
   infraId: number;
@@ -329,7 +330,7 @@ export default function ImportTrainScheduleConfig({
             title={t('searchTimetable')}
             onClick={defineConfig}
           >
-            <i className="icons-search" />
+            <Search />
           </button>
           <button
             type="button"
@@ -338,7 +339,7 @@ export default function ImportTrainScheduleConfig({
             title={t('importTimetable')}
             onClick={() => openModal(<UploadFileModal handleSubmit={importFile} />)}
           >
-            <i className="icons-download" />
+            <Download />
           </button>
         </div>
       </div>

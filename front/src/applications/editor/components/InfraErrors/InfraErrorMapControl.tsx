@@ -1,7 +1,6 @@
 import React, { FC, useCallback, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import type { MapRef } from 'react-map-gl/maplibre';
-import { BsExclamationOctagon } from 'react-icons/bs';
 import { useTranslation } from 'react-i18next';
 
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
@@ -12,6 +11,7 @@ import useKeyboardShortcuts from 'utils/hooks/useKeyboardShortcuts';
 import type { EditorContextType } from 'applications/editor/types';
 import { centerMapOnObject, selectEntities } from 'applications/editor/tools/utils';
 import { getEntity } from 'applications/editor/data/api';
+import { Alert } from '@osrd-project/ui-icons';
 import InfraErrorsModal from './InfraErrorsModal';
 import type { InfraError } from './types';
 
@@ -73,12 +73,14 @@ const InfraErrorMapControl: FC<{
     <button
       type="button"
       title={t('Editor.nav.infra-errors-list')}
-      className="btn btn-sm p-1 shadow d-flex align-items-center justify-content-center"
+      className="btn btn-sm py-1 px-2 shadow d-flex align-items-center justify-content-center"
       onClick={displayErrors}
       disabled={total === 0}
     >
       <span className="px-1">{label}</span>
-      <BsExclamationOctagon size="1.2em" className="ml-1 text-danger" />
+      <span className="ml-1 text-danger">
+        <Alert variant="fill" />
+      </span>
     </button>
   );
 };

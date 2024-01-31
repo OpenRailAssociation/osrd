@@ -1,5 +1,5 @@
 import React from 'react';
-import { GoZoomOut } from 'react-icons/go';
+import { ZoomOut } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 import Tipped from 'common/Tipped';
 
@@ -13,7 +13,7 @@ const ButtonZoomIn = ({ zoomOut }: ButtonZoomInProps) => {
     <Tipped mode="left">
       <button type="button" className="btn-rounded btn-rounded-white" onClick={() => zoomOut()}>
         <span className="sr-only">Zoom in</span>
-        <GoZoomOut />
+        <ZoomOut size="lg" />
       </button>
       <span>{t('common.zoom-out')}</span>
     </Tipped>

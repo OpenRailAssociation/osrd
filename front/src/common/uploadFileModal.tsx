@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import { Download } from '@osrd-project/ui-icons';
 
 interface UploadFileModalProps {
   handleSubmit: (file: File) => void;
@@ -38,7 +39,9 @@ const UploadFileModal: FC<UploadFileModalProps> = ({ handleSubmit }) => {
       <ModalBodySNCF>
         <>
           <div className="h1 modal-title text-center mb-4">
-            <i className="icons-download text-primary" aria-hidden="true" />
+            <span className="text-primary">
+              <Download />
+            </span>
           </div>
           <input
             type="file"

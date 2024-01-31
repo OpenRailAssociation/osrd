@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { FaPlus } from 'react-icons/fa';
 import { BiTargetLock } from 'react-icons/bi';
-import { GoPencil, GoTrash } from 'react-icons/go';
+import { Pencil, Trash } from '@osrd-project/ui-icons';
 import { RiMoneyEuroCircleLine } from 'react-icons/ri';
 import { MdBusinessCenter, MdDescription, MdTitle } from 'react-icons/md';
 import ReactMarkdown from 'react-markdown';
@@ -419,7 +419,7 @@ export default function AddOrEditProjectModal({
               onClick={removeProject}
             >
               <span className="mr-2">
-                <GoTrash />
+                <Trash />
               </span>
               {t('projectDeleteButton')}
             </button>
@@ -435,7 +435,7 @@ export default function AddOrEditProjectModal({
               onClick={updateProject}
             >
               <span className="mr-2">
-                <GoPencil />
+                <Pencil />
               </span>
               {t('projectModifyButton')}
             </button>

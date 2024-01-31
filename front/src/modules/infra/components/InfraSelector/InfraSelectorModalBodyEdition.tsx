@@ -4,6 +4,7 @@ import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useTranslation } from 'react-i18next';
 import { VscJson } from 'react-icons/vsc';
 import { Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { Search } from '@osrd-project/ui-icons';
 import InfraSelectorEditionItem from './InfraSelectorEditionItem';
 
 type InfraSelectorModalBodyEditionProps = {
@@ -93,7 +94,7 @@ const InfraSelectorModalBodyEdition = ({
             value={filter}
             type="text"
             noMargin
-            unit={<i className="icons-search" />}
+            unit={<Search />}
           />
         </div>
         <div className="text-center small text-muted">

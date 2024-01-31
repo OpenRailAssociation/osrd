@@ -1,6 +1,6 @@
 import React, { useContext, useEffect } from 'react';
 import { groupBy, map } from 'lodash';
-import { GoNoEntry } from 'react-icons/go';
+import { NoEntry } from '@osrd-project/ui-icons';
 import { RiFocus3Line } from 'react-icons/ri';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
@@ -75,7 +75,7 @@ const SelectionLeftPanel = () => {
                     setState({ ...state, selection: selection.filter((i) => i.objType !== type) })
                   }
                 >
-                  <GoNoEntry /> {t('Editor.tools.select-items.unselect')}
+                  <NoEntry /> {t('Editor.tools.select-items.unselect')}
                 </button>
               </div>
             </li>
@@ -114,7 +114,7 @@ const SelectionLeftPanel = () => {
                   })
                 }
               >
-                <GoNoEntry /> {t('Editor.tools.select-items.unselect')}
+                <NoEntry /> {t('Editor.tools.select-items.unselect')}
               </button>
             </div>
           </li>
