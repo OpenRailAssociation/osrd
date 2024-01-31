@@ -432,10 +432,13 @@ const Editor = () => {
                 map={mapRef.current ?? undefined}
                 resetPitchBearing={resetPitchBearing}
                 withInfraButton
-                withInfraErrorsButton
                 bearing={viewport.bearing}
-                editorState={editorState}
-                isInEditor
+                editorProps={{
+                  toolState: toolAndState.state,
+                  setToolState,
+                  editorState,
+                  activeTool: toolAndState.tool,
+                }}
               />
 
               {mapRef.current &&
