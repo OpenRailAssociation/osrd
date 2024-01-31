@@ -171,9 +171,7 @@ const SearchRollingStock = ({
   }, [isSuccess]);
 
   useEffect(() => {
-    if (rollingStocks && rollingStocks.length !== 0) {
-      updateSearch();
-    }
+    updateSearch();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters, rollingStocks]);
 
