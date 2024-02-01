@@ -1,5 +1,4 @@
 use derivative::Derivative;
-use editoast_derive::InfraModel;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -9,9 +8,8 @@ use super::{
 };
 use crate::infra_cache::{Cache, Graph, InfraCache, ObjectCache};
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq, InfraModel)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
-#[infra_model(table = "crate::tables::infra_object_route")]
 #[derivative(Default)]
 pub struct Route {
     pub id: Identifier,
@@ -161,27 +159,7 @@ impl Route {
 mod test {
 
     use super::Route;
-    use crate::{
-        infra_cache::{tests::create_small_infra_cache, Graph},
-        models::infra::tests::test_infra_transaction,
-    };
-    use actix_web::test as actix_test;
-    use diesel_async::scoped_futures::ScopedFutureExt;
-
-    #[actix_test]
-    async fn test_persist() {
-        test_infra_transaction(|conn, infra| {
-            async move {
-                let data = (0..10).map(|_| Route::default()).collect::<Vec<Route>>();
-
-                assert!(Route::persist_batch(&data, infra.id.unwrap(), conn)
-                    .await
-                    .is_ok());
-            }
-            .scope_boxed()
-        })
-        .await;
-    }
+    use crate::infra_cache::{tests::create_small_infra_cache, Graph};
 
     #[test]
     fn test_compute_track_ranges_1() {

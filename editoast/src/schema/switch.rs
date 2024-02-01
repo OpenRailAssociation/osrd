@@ -10,13 +10,11 @@ use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
 use derivative::Derivative;
 
-use editoast_derive::InfraModel;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, InfraModel)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
-#[infra_model(table = "crate::tables::infra_object_switch")]
 #[derivative(Default)]
 pub struct Switch {
     pub id: Identifier,
@@ -99,29 +97,5 @@ impl Cache for SwitchCache {
 
     fn get_object_cache(&self) -> ObjectCache {
         ObjectCache::Switch(self.clone())
-    }
-}
-
-#[cfg(test)]
-mod test {
-
-    use super::Switch;
-    use crate::models::infra::tests::test_infra_transaction;
-    use actix_web::test as actix_test;
-    use diesel_async::scoped_futures::ScopedFutureExt;
-
-    #[actix_test]
-    async fn test_persist() {
-        test_infra_transaction(|conn, infra| {
-            async move {
-                let data = (0..10).map(|_| Switch::default()).collect::<Vec<Switch>>();
-
-                assert!(Switch::persist_batch(&data, infra.id.unwrap(), conn)
-                    .await
-                    .is_ok());
-            }
-            .scope_boxed()
-        })
-        .await;
     }
 }

@@ -1,26 +1,17 @@
-use super::ApplicableDirectionsTrackRange;
-use super::OSRDIdentified;
-
-use super::utils::Identifier;
-use super::utils::NonBlankString;
-use super::OSRDTyped;
-use super::ObjectType;
-use super::Sign;
-
-use crate::infra_cache::Cache;
-use crate::infra_cache::ObjectCache;
+use super::{
+    utils::{Identifier, NonBlankString},
+    ApplicableDirectionsTrackRange, OSRDIdentified, OSRDTyped, ObjectType, Sign,
+};
+use crate::infra_cache::{Cache, ObjectCache};
 
 use derivative::Derivative;
-
-use editoast_derive::InfraModel;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 #[derive(Debug, Derivative, Clone, Serialize, PartialEq, Copy)]
 pub struct Speed(pub f64);
 
-#[derive(Debug, Derivative, Deserialize, Clone, Serialize, PartialEq, InfraModel)]
-#[infra_model(table = "crate::tables::infra_object_speed_section")]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
 #[derivative(Default)]
 #[serde(deny_unknown_fields)]
 pub struct SpeedSection {
@@ -94,39 +85,15 @@ impl Cache for SpeedSection {
 
 #[cfg(test)]
 mod test {
-
-    use super::SpeedSection;
-    use super::SpeedSectionExtensions;
-    use crate::models::infra::tests::test_infra_transaction;
-    use actix_web::test as actix_test;
-    use diesel_async::scoped_futures::ScopedFutureExt;
-    use serde_json::from_str;
-    use serde_json::from_value;
-    use serde_json::json;
+    use super::{SpeedSection, SpeedSectionExtensions};
+    use serde_json::{from_str, from_value, json};
 
     #[test]
     fn test_speed_section_extensions_deserialization() {
         from_str::<SpeedSectionExtensions>(r#"{}"#).unwrap();
     }
 
-    #[actix_test]
-    async fn test_persist() {
-        test_infra_transaction(|conn, infra| {
-            async move {
-                let data = (0..10)
-                    .map(|_| SpeedSection::default())
-                    .collect::<Vec<SpeedSection>>();
-
-                assert!(SpeedSection::persist_batch(&data, infra.id.unwrap(), conn)
-                    .await
-                    .is_ok());
-            }
-            .scope_boxed()
-        })
-        .await;
-    }
-
-    //SpeedSection validation succeed
+    // SpeedSection validation succeed
     #[test]
     fn test_valid_speed_section() {
         let section = json!({
