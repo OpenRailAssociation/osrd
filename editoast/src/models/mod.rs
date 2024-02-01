@@ -1,6 +1,5 @@
 pub mod electrical_profiles;
 pub mod infra;
-pub mod infra_objects;
 pub mod pathfinding;
 mod projects;
 pub mod rolling_stock;

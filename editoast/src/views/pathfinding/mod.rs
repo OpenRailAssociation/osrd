@@ -11,8 +11,7 @@ use actix_web::{
 };
 use chrono::{DateTime, Utc};
 use derivative::Derivative;
-use diesel::{ExpressionMethods, QueryDsl};
-use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
+use diesel_async::AsyncPgConnection as PgConnection;
 use editoast_derive::EditoastError;
 use geos::geojson::{self, Geometry};
 use geos::Geom;
@@ -31,17 +30,16 @@ use crate::{
     },
     error::Result,
     models::{
-        infra_objects::operational_point::OperationalPointModel, Create, Curve, Delete, Infra,
-        PathWaypoint, Pathfinding, PathfindingChangeset, PathfindingPayload, Retrieve,
-        RollingStockModel, Slope, Update,
+        Create, Curve, Delete, Infra, PathWaypoint, Pathfinding, PathfindingChangeset,
+        PathfindingPayload, Retrieve, RollingStockModel, Slope, Update,
     },
-    modelsv2::infra_objects::TrackSectionModel,
+    modelsv2::{infra_objects::TrackSectionModel, OperationalPointModel},
     schema::{
         rolling_stock::RollingStock,
         utils::geometry::{diesel_linestring_to_geojson, geojson_to_diesel_linestring},
         ApplicableDirectionsTrackRange, OperationalPoint, TrackRange, TrackSection,
     },
-    tables, DbPool,
+    DbPool,
 };
 
 crate::routes! {
@@ -91,7 +89,7 @@ enum PathfindingError {
     TrackSectionsNotFound { track_sections: HashSet<String> },
     #[error("Operational points do not exist: {operational_points:?}")]
     #[editoast_error(status = 404)]
-    OperationalPointNotFound { operational_points: HashSet<String> },
+    OperationalPointsNotFound { operational_points: HashSet<String> },
     #[error("Rolling stock with id {rolling_stock_id} doesn't exist")]
     #[editoast_error(status = 404)]
     RollingStockNotFound { rolling_stock_id: i64 },
@@ -224,35 +222,24 @@ pub(in crate::views) async fn make_track_map<I: Iterator<Item = String> + Send>(
         .collect())
 }
 
-async fn make_op_map<I: Iterator<Item = String>>(
+async fn make_op_map<I: Iterator<Item = String> + Send>(
     conn: &mut PgConnection,
-    infra: i64,
+    infra_id: i64,
     it: I,
 ) -> Result<OpMap> {
-    use tables::infra_object_operational_point::dsl;
-    // TODO: implement a BatchRetrieve trait for tracksections for a better error handling + check all tracksections are there
-    let ids = it.collect::<HashSet<_>>().into_iter().collect::<Vec<_>>();
-    let expected_count = ids.len();
-    let tracksections: Vec<_> = match dsl::infra_object_operational_point
-        .filter(dsl::infra_id.eq(infra))
-        .filter(dsl::obj_id.eq_any(&ids))
-        .get_results::<OperationalPointModel>(conn)
-        .await
-    {
-        Ok(ts) if ts.len() != expected_count => {
-            let got = HashSet::<String>::from_iter(ts.into_iter().map(|ts| ts.obj_id));
-            let expected = HashSet::<String>::from_iter(ids);
-            let diff = expected.difference(&got).collect::<HashSet<_>>();
-            return Err(PathfindingError::OperationalPointNotFound {
-                operational_points: diff.into_iter().map(|s| s.to_owned()).collect(),
+    use crate::modelsv2::prelude::*;
+    let ids = it.map(|id| (infra_id, id));
+    let track_sections: Vec<_> =
+        OperationalPointModel::retrieve_batch_or_fail(conn, ids, |missing| {
+            PathfindingError::OperationalPointsNotFound {
+                operational_points: missing.into_iter().map(|(_, obj_id)| obj_id).collect(),
             }
-            .into());
-        }
-        res => res,
-    }?;
-    Ok(HashMap::from_iter(
-        tracksections.into_iter().map(|ts| (ts.obj_id, ts.data.0)),
-    ))
+        })
+        .await?;
+    Ok(track_sections
+        .into_iter()
+        .map(|OperationalPointModel { obj_id, schema, .. }| (obj_id, schema))
+        .collect())
 }
 
 impl PathfindingRequest {
