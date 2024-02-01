@@ -1,22 +1,28 @@
 use std::pin::Pin;
 
 use super::{Create, Delete, List, NoParams, Update};
-use crate::error::Result;
-use crate::infra_cache::InfraCache;
-use crate::models::{Identifiable, Retrieve};
-use crate::modelsv2::railjson::persist_railjson;
-use crate::schema::{ObjectType, RailJson, RAILJSON_VERSION};
-use crate::tables::infra;
-use crate::tables::infra::dsl;
-use crate::views::pagination::{Paginate, PaginatedResponse};
-use crate::{generated_data, DbPool};
+use crate::{
+    error::Result,
+    generated_data,
+    infra_cache::InfraCache,
+    models::{Identifiable, Retrieve},
+    modelsv2::railjson::persist_railjson,
+    schema::{ObjectType, RailJson, RAILJSON_VERSION},
+    tables::infra::{self, dsl},
+    views::pagination::{Paginate, PaginatedResponse},
+    DbPool,
+};
+
 use actix_web::web::Data;
 use async_trait::async_trait;
 use chrono::{NaiveDateTime, Utc};
 use derivative::Derivative;
-use diesel::result::Error as DieselError;
-use diesel::sql_types::{BigInt, Bool, Nullable, Text};
-use diesel::{sql_query, ExpressionMethods, QueryDsl};
+use diesel::{
+    result::Error as DieselError,
+    sql_query,
+    sql_types::{BigInt, Bool, Nullable, Text},
+    ExpressionMethods, QueryDsl,
+};
 use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
 use editoast_derive::{EditoastError, Model};
 use futures::future::try_join_all;
@@ -269,19 +275,25 @@ pub enum InfraError {
 #[cfg(test)]
 pub mod tests {
     use super::Infra;
-    use crate::client::PostgresConfig;
-    use crate::fixtures::tests::{db_pool, small_infra};
-    use crate::models::infra::{InfraError, INFRA_VERSION};
-    use crate::models::Create;
-    use crate::schema::RAILJSON_VERSION;
-    use crate::{Data, DbPool};
+    use crate::{
+        client::PostgresConfig,
+        error::EditoastError,
+        fixtures::tests::{db_pool, small_infra},
+        models::{
+            infra::{InfraError, INFRA_VERSION},
+            Create,
+        },
+        modelsv2::railjson::{find_all_schemas, RailJsonError},
+        schema::{RailJson, RAILJSON_VERSION},
+        Data, DbPool,
+    };
     use actix_web::test as actix_test;
     use chrono::Utc;
-    use diesel::result::Error;
-    use diesel::sql_query;
-    use diesel::sql_types::Text;
-    use diesel_async::scoped_futures::{ScopedBoxFuture, ScopedFutureExt};
-    use diesel_async::{AsyncConnection, AsyncPgConnection as PgConnection, RunQueryDsl};
+    use diesel::{result::Error, sql_query, sql_types::Text};
+    use diesel_async::{
+        scoped_futures::{ScopedBoxFuture, ScopedFutureExt},
+        AsyncConnection, AsyncPgConnection as PgConnection, RunQueryDsl,
+    };
     use rstest::rstest;
     use uuid::Uuid;
 
@@ -424,6 +436,102 @@ pub mod tests {
             result.unwrap_err(),
             InfraError::NotFound(not_found_infra_id).into(),
             "error type mismatch"
+        );
+    }
+
+    #[actix_test]
+    async fn persists_railjson_ko_version() {
+        let infra = build_test_infra();
+        let pool = db_pool();
+        let railjson_with_invalid_version = RailJson {
+            version: "0".to_string(),
+            ..Default::default()
+        };
+        let res = infra.persist(railjson_with_invalid_version, pool).await;
+        assert!(res.is_err());
+        let expected_error = RailJsonError::UnsupportedVersion("0".to_string());
+        assert_eq!(res.unwrap_err().get_type(), expected_error.get_type());
+    }
+
+    #[actix_test]
+    async fn persist_railjson_ok() {
+        let pool = db_pool();
+        let mut conn = pool.get().await.unwrap();
+
+        // GIVEN
+        let railjson = RailJson {
+            buffer_stops: (0..10).map(|_| Default::default()).collect(),
+            routes: (0..10).map(|_| Default::default()).collect(),
+            extended_switch_types: (0..10).map(|_| Default::default()).collect(),
+            switches: (0..10).map(|_| Default::default()).collect(),
+            track_sections: (0..10).map(|_| Default::default()).collect(),
+            speed_sections: (0..10).map(|_| Default::default()).collect(),
+            neutral_sections: (0..10).map(|_| Default::default()).collect(),
+            electrifications: (0..10).map(|_| Default::default()).collect(),
+            signals: (0..10).map(|_| Default::default()).collect(),
+            detectors: (0..10).map(|_| Default::default()).collect(),
+            operational_points: (0..10).map(|_| Default::default()).collect(),
+            version: RAILJSON_VERSION.to_string(),
+        };
+        let infra: Infra = build_test_infra();
+
+        // WHEN
+        let result = infra.persist(railjson.clone(), pool).await;
+
+        // THEN
+        let infra_res = result.expect("unexpected infra.persist failure");
+        assert_eq!(infra_res.railjson_version.unwrap(), railjson.version);
+
+        let id = infra_res.id.unwrap();
+        fn sort<T: OSRDIdentified>(mut objects: Vec<T>) -> Vec<T> {
+            objects.sort_by(|a, b| a.get_id().cmp(b.get_id()));
+            objects
+        }
+
+        use crate::schema::*;
+        assert_eq!(
+            sort::<BufferStop>(find_all_schemas(&mut conn, id).await.unwrap()),
+            sort(railjson.buffer_stops)
+        );
+        assert_eq!(
+            sort::<Route>(find_all_schemas(&mut conn, id).await.unwrap()),
+            sort(railjson.routes)
+        );
+        assert_eq!(
+            sort::<SwitchType>(find_all_schemas(&mut conn, id).await.unwrap()),
+            sort(railjson.extended_switch_types)
+        );
+        assert_eq!(
+            sort::<Switch>(find_all_schemas(&mut conn, id).await.unwrap()),
+            sort(railjson.switches)
+        );
+        assert_eq!(
+            sort::<TrackSection>(find_all_schemas(&mut conn, id).await.unwrap()),
+            sort(railjson.track_sections)
+        );
+        assert_eq!(
+            sort::<SpeedSection>(find_all_schemas(&mut conn, id).await.unwrap()),
+            sort(railjson.speed_sections)
+        );
+        assert_eq!(
+            sort::<NeutralSection>(find_all_schemas(&mut conn, id).await.unwrap()),
+            sort(railjson.neutral_sections)
+        );
+        assert_eq!(
+            sort::<Electrification>(find_all_schemas(&mut conn, id).await.unwrap()),
+            sort(railjson.electrifications)
+        );
+        assert_eq!(
+            sort::<Signal>(find_all_schemas(&mut conn, id).await.unwrap()),
+            sort(railjson.signals)
+        );
+        assert_eq!(
+            sort::<Detector>(find_all_schemas(&mut conn, id).await.unwrap()),
+            sort(railjson.detectors)
+        );
+        assert_eq!(
+            sort::<OperationalPoint>(find_all_schemas(&mut conn, id).await.unwrap()),
+            sort(railjson.operational_points)
         );
     }
 }
