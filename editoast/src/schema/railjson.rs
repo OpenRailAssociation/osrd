@@ -1,16 +1,10 @@
 use super::{
-    BufferStop, Detector, Electrification, NeutralSection, OSRDTyped, OperationalPoint, Route,
-    Signal, SpeedSection, Switch, SwitchType, TrackSection,
+    BufferStop, Detector, Electrification, NeutralSection, OperationalPoint, Route, Signal,
+    SpeedSection, Switch, SwitchType, TrackSection,
 };
 
 use derivative::Derivative;
-use diesel::{
-    sql_query,
-    sql_types::{BigInt, Text},
-    QueryableByName,
-};
-use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
-use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 
 pub const RAILJSON_VERSION: &str = "3.4.8";
 
@@ -33,55 +27,20 @@ pub struct RailJson {
     pub detectors: Vec<Detector>,
 }
 
-#[derive(QueryableByName, Debug, Clone)]
-pub struct ObjectQueryable {
-    #[diesel(sql_type = Text)]
-    pub data: String,
-}
-
-struct MyParsedObject<T>(T);
-
-impl<T: DeserializeOwned> From<ObjectQueryable> for MyParsedObject<T> {
-    fn from(object: ObjectQueryable) -> Self {
-        MyParsedObject(serde_json::from_str(&object.data).expect("Failed to parse object"))
-    }
-}
-
-pub async fn find_objects<T: DeserializeOwned + OSRDTyped>(
-    conn: &mut PgConnection,
-    infrastructre_id: i64,
-) -> Vec<T> {
-    sql_query(format!(
-        "SELECT data::text FROM {} WHERE infra_id = $1",
-        T::get_type().get_table()
-    ))
-    .bind::<BigInt, _>(infrastructre_id)
-    .load::<ObjectQueryable>(conn)
-    .await
-    .expect("Error loading objects")
-    .into_iter()
-    .map(|obj| MyParsedObject::<T>::from(obj).0)
-    .collect()
-}
-
 #[cfg(test)]
 pub mod test {
-    use super::find_objects;
     use crate::client::PostgresConfig;
     use crate::error::EditoastError;
-    use crate::error::Result;
     use crate::models::infra::tests::build_test_infra;
     use crate::models::Infra;
+    use crate::modelsv2::railjson::find_all_schemas;
     use crate::modelsv2::railjson::RailJsonError;
-    use crate::schema::railjson::RAILJSON_VERSION;
-    use crate::schema::OSRDIdentified;
     use crate::schema::RailJson;
     use actix_web::test as actix_test;
     use actix_web::web::Data;
     use diesel_async::pooled_connection::deadpool::Pool;
     use diesel_async::pooled_connection::AsyncDieselConnectionManager as ConnectionManager;
     use diesel_async::AsyncPgConnection as PgConnection;
-    use std::collections::HashMap;
 
     #[actix_test]
     async fn persists_railjson_ko_version() {
@@ -131,75 +90,59 @@ pub mod test {
         let result = infra.persist(railjson.clone(), pool).await;
 
         // THEN
-        assert!(result.is_ok());
-        let infra = result.unwrap();
+        let infra_res = result.expect("unexpected infra.persist failure");
+        assert_eq!(infra_res.railjson_version.unwrap(), railjson.version);
 
-        let s_railjson = find_railjson(&mut conn, &infra).await.unwrap();
-
-        assert_eq!(infra.railjson_version.unwrap(), railjson.version);
-        assert!(check_objects_eq(
-            &s_railjson.buffer_stops,
-            &railjson.buffer_stops
-        ));
-        assert!(check_objects_eq(
-            &s_railjson.operational_points,
-            &railjson.operational_points
-        ));
-        assert!(check_objects_eq(&s_railjson.routes, &railjson.routes));
-        assert!(check_objects_eq(
-            &s_railjson.extended_switch_types,
-            &railjson.extended_switch_types
-        ));
-        assert!(check_objects_eq(&s_railjson.switches, &railjson.switches));
-        assert!(check_objects_eq(
-            &s_railjson.track_sections,
-            &railjson.track_sections
-        ));
-        assert!(check_objects_eq(
-            &s_railjson.speed_sections,
-            &railjson.speed_sections
-        ));
-        assert!(check_objects_eq(
-            &s_railjson.electrifications,
-            &railjson.electrifications
-        ));
-        assert!(check_objects_eq(&s_railjson.signals, &railjson.signals));
-        assert!(check_objects_eq(&s_railjson.detectors, &railjson.detectors));
-    }
-
-    fn check_objects_eq<T: PartialEq + OSRDIdentified>(objects: &[T], expected: &[T]) -> bool {
-        assert_eq!(objects.len(), expected.len());
-        let map_expected: HashMap<_, _> = expected.iter().map(|obj| (obj.get_id(), obj)).collect();
-
-        for obj in objects.iter() {
-            match map_expected.get(&obj.get_id()) {
-                None => return false,
-                Some(expected) => {
-                    if &obj != expected {
-                        return false;
-                    }
-                }
-            }
+        let id = infra_res.id.unwrap();
+        fn sort<T: OSRDIdentified>(mut objects: Vec<T>) -> Vec<T> {
+            objects.sort_by(|a, b| a.get_id().cmp(b.get_id()));
+            objects
         }
-        true
-    }
 
-    async fn find_railjson(conn: &mut PgConnection, infra: &Infra) -> Result<RailJson> {
-        let railjson = RailJson {
-            version: infra.clone().railjson_version.unwrap(),
-            operational_points: find_objects(conn, infra.id.unwrap()).await,
-            routes: find_objects(conn, infra.id.unwrap()).await,
-            extended_switch_types: find_objects(conn, infra.id.unwrap()).await,
-            switches: find_objects(conn, infra.id.unwrap()).await,
-            track_sections: find_objects(conn, infra.id.unwrap()).await,
-            speed_sections: find_objects(conn, infra.id.unwrap()).await,
-            neutral_sections: find_objects(conn, infra.id.unwrap()).await,
-            electrifications: find_objects(conn, infra.id.unwrap()).await,
-            signals: find_objects(conn, infra.id.unwrap()).await,
-            buffer_stops: find_objects(conn, infra.id.unwrap()).await,
-            detectors: find_objects(conn, infra.id.unwrap()).await,
-        };
-
-        Ok(railjson)
+        use crate::schema::*;
+        assert_eq!(
+            sort::<BufferStop>(find_all_schemas(&mut conn, id).await.unwrap()),
+            sort(railjson.buffer_stops)
+        );
+        assert_eq!(
+            sort::<Route>(find_all_schemas(&mut conn, id).await.unwrap()),
+            sort(railjson.routes)
+        );
+        assert_eq!(
+            sort::<SwitchType>(find_all_schemas(&mut conn, id).await.unwrap()),
+            sort(railjson.extended_switch_types)
+        );
+        assert_eq!(
+            sort::<Switch>(find_all_schemas(&mut conn, id).await.unwrap()),
+            sort(railjson.switches)
+        );
+        assert_eq!(
+            sort::<TrackSection>(find_all_schemas(&mut conn, id).await.unwrap()),
+            sort(railjson.track_sections)
+        );
+        assert_eq!(
+            sort::<SpeedSection>(find_all_schemas(&mut conn, id).await.unwrap()),
+            sort(railjson.speed_sections)
+        );
+        assert_eq!(
+            sort::<NeutralSection>(find_all_schemas(&mut conn, id).await.unwrap()),
+            sort(railjson.neutral_sections)
+        );
+        assert_eq!(
+            sort::<Electrification>(find_all_schemas(&mut conn, id).await.unwrap()),
+            sort(railjson.electrifications)
+        );
+        assert_eq!(
+            sort::<Signal>(find_all_schemas(&mut conn, id).await.unwrap()),
+            sort(railjson.signals)
+        );
+        assert_eq!(
+            sort::<Detector>(find_all_schemas(&mut conn, id).await.unwrap()),
+            sort(railjson.detectors)
+        );
+        assert_eq!(
+            sort::<OperationalPoint>(find_all_schemas(&mut conn, id).await.unwrap()),
+            sort(railjson.operational_points)
+        );
     }
 }

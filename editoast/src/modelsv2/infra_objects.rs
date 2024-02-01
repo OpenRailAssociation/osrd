@@ -5,8 +5,8 @@ use editoast_derive::ModelV2;
 use serde::{Deserialize, Serialize};
 use std::ops::{Deref, DerefMut};
 
-pub trait ModelBackedSchema {
-    type Model: SchemaModel;
+pub trait ModelBackedSchema: Sized {
+    type Model: SchemaModel + Into<Self>;
 }
 
 pub trait SchemaModel: Model {
@@ -14,6 +14,12 @@ pub trait SchemaModel: Model {
 
     /// Creates a changeset for this infra object with a random obj_id and no infra_id set
     fn new_from_schema(schema: Self::Schema) -> Changeset<Self>;
+
+    /// Retrieve all objects of this type from the database for a given infra
+    async fn find_all<C: Default + std::iter::Extend<Self> + Send>(
+        conn: &mut diesel_async::AsyncPgConnection,
+        infra_id: i64,
+    ) -> crate::error::Result<C>;
 }
 
 macro_rules! infra_model {
@@ -42,6 +48,23 @@ macro_rules! infra_model {
                 use crate::schema::OSRDIdentified;
                 let obj_id = schema.get_id().clone();
                 Self::changeset().schema(schema).obj_id(obj_id)
+            }
+
+            async fn find_all<C: Default + std::iter::Extend<Self> + Send>(
+                conn: &mut diesel_async::AsyncPgConnection,
+                infra_id: i64,
+            ) -> crate::error::Result<C> {
+                use diesel::prelude::*;
+                use diesel_async::RunQueryDsl;
+                use futures::stream::TryStreamExt;
+                use $table::dsl;
+                Ok($table::table
+                    .filter(dsl::infra_id.eq(infra_id))
+                    .load_stream(conn)
+                    .await?
+                    .map_ok(Self::from_row)
+                    .try_collect::<C>()
+                    .await?)
             }
         }
 

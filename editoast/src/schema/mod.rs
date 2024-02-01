@@ -28,7 +28,7 @@ pub use operational_point::{
     OperationalPoint, OperationalPointCache, OperationalPointExtensions,
     OperationalPointIdentifierExtension, OperationalPointPart,
 };
-pub use railjson::{find_objects, RailJson, RAILJSON_VERSION};
+pub use railjson::{RailJson, RAILJSON_VERSION};
 pub use route::Route;
 pub use signal::{LogicalSignal, Signal, SignalCache, SignalExtensions, SignalSncfExtension};
 pub use speed_section::{Speed, SpeedSection};

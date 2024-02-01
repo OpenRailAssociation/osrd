@@ -73,13 +73,17 @@ pub async fn persist_railjson(
     .map(|_| ())
 }
 
-// pub async fn find_all_schemas<T>(
-//     conn: &mut diesel_async::AsyncPgConnection,
-//     infra_id: i64,
-// ) -> Result<Vec<T>>
-// where
-//     T: ModelBackedSchema,
-//     T::Model: Model,
-// {
-//     T::find_all(conn).await
-// }
+pub async fn find_all_schemas<T, C>(
+    conn: &mut diesel_async::AsyncPgConnection,
+    infra_id: i64,
+) -> Result<C>
+where
+    T: ModelBackedSchema,
+    C: FromIterator<T>,
+{
+    Ok(T::Model::find_all::<Vec<_>>(conn, infra_id)
+        .await?
+        .into_iter()
+        .map(Into::into)
+        .collect())
+}
