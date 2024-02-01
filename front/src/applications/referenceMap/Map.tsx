@@ -108,7 +108,6 @@ function Map() {
         withInfraButton
         withMapKeyButton
         bearing={viewport.bearing}
-        isInEditor={false}
       />
       <ReactMapGL
         {...viewport}
