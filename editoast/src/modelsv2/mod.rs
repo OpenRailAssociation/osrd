@@ -2,6 +2,7 @@ pub mod documents;
 pub mod infra_objects;
 
 pub use documents::Document;
+pub use infra_objects::*;
 
 use async_trait::async_trait;
 use diesel::{pg::Pg, result::Error::NotFound, AsChangeset, QueryableByName};
@@ -9,6 +10,16 @@ use diesel::{pg::Pg, result::Error::NotFound, AsChangeset, QueryableByName};
 use crate::error::{EditoastError, Result};
 
 pub use crate::models::{Identifiable, PreferredId};
+
+/// A module that exposes all the ModelV2 traits and utils, but not the models themselves
+pub mod prelude {
+    #[allow(unused_imports)]
+    pub use super::{
+        Changeset, Create, CreateBatch, CreateBatchWithKey, Delete, DeleteBatch, DeleteStatic,
+        Exists, Model, Patch, Retrieve, RetrieveBatch, RetrieveBatchUnchecked, Row, Save, Update,
+        UpdateBatch, UpdateBatchUnchecked,
+    };
+}
 
 /// A struct that can be saved to and read from the database using diesel's interface
 ///
@@ -379,10 +390,9 @@ macro_rules! chunked_for_libpq {
 /// You can implement this type manually but its recommended to use the `Model`
 /// derive macro instead.
 #[async_trait::async_trait]
-pub trait CreateBatch<Cs, K>: Sized
+pub trait CreateBatch<Cs>: Sized
 where
     Cs: Send,
-    K: Send + Clone,
 {
     /// Creates a batch of rows in the database given an iterator of changesets
     ///
@@ -403,7 +413,22 @@ where
         conn: &mut diesel_async::AsyncPgConnection,
         values: I,
     ) -> Result<C>;
+}
 
+/// Describes how a [Model] can be created in the database given a batch of its changesets
+///
+/// This trait is similar to [CreateBatch] but the returned models are paired with their key.
+/// There is two different traits because Rust cannot infer the type of the key when using
+/// [CreateBatch::create_batch] with a model that has more than one identifier.
+///
+/// You can implement this type manually but its recommended to use the `Model`
+/// derive macro instead.
+#[async_trait::async_trait]
+pub trait CreateBatchWithKey<Cs, K>: Sized
+where
+    Cs: Send,
+    K: Send + Clone,
+{
     /// Just like [CreateBatch::create_batch] but the returned models are paired with their key
     async fn create_batch_with_key<
         I: IntoIterator<Item = Cs> + Send + 'async_trait,
@@ -885,8 +910,8 @@ where
 
 #[cfg(test)]
 mod tests {
+    use super::prelude::*;
     use crate::fixtures::tests::{db_pool, TestFixture};
-    use crate::modelsv2::*;
     use editoast_derive::ModelV2;
     use itertools::Itertools;
     use std::collections::HashSet;

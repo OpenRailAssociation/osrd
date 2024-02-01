@@ -761,37 +761,41 @@ impl ModelConfig {
                 }
             }
 
+            #[automatically_derived]
+            #[async_trait::async_trait]
+            impl crate::modelsv2::CreateBatch<#cs_ident> for #model {
+                async fn create_batch<
+                    I: std::iter::IntoIterator<Item = #cs_ident> + Send + 'async_trait,
+                    C: Default + std::iter::Extend<Self> + Send,
+                >(
+                    conn: &mut diesel_async::AsyncPgConnection,
+                    values: I,
+                ) -> crate::error::Result<C> {
+                    use crate::modelsv2::Model;
+                    use #table_mod::dsl;
+                    use diesel::prelude::*;
+                    use diesel_async::RunQueryDsl;
+                    use futures_util::stream::TryStreamExt;
+                    Ok(crate::chunked_for_libpq! {
+                        #field_count,
+                        values,
+                        C::default(),
+                        chunk => {
+                            diesel::insert_into(dsl::#table_name)
+                                .values(chunk)
+                                .load_stream::<#row_ident>(conn)
+                                .await
+                                .map(|s| s.map_ok(<#model as Model>::from_row).try_collect::<Vec<_>>())?
+                                .await?
+                        }
+                    })
+                }
+            }
+
             #(
                 #[automatically_derived]
                 #[async_trait::async_trait]
-                impl crate::modelsv2::CreateBatch<#cs_ident, #ty> for #model {
-                    async fn create_batch<
-                        I: std::iter::IntoIterator<Item = #cs_ident> + Send + 'async_trait,
-                        C: Default + std::iter::Extend<Self> + Send,
-                    >(
-                        conn: &mut diesel_async::AsyncPgConnection,
-                        values: I,
-                    ) -> crate::error::Result<C> {
-                        use crate::modelsv2::Model;
-                        use #table_mod::dsl;
-                        use diesel::prelude::*;
-                        use diesel_async::RunQueryDsl;
-                        use futures_util::stream::TryStreamExt;
-                        Ok(crate::chunked_for_libpq! {
-                            #field_count,
-                            values,
-                            C::default(),
-                            chunk => {
-                                diesel::insert_into(dsl::#table_name)
-                                    .values(chunk)
-                                    .load_stream::<#row_ident>(conn)
-                                    .await
-                                    .map(|s| s.map_ok(<#model as Model>::from_row).try_collect::<Vec<_>>())?
-                                    .await?
-                            }
-                        })
-                    }
-
+                impl crate::modelsv2::CreateBatchWithKey<#cs_ident, #ty> for #model {
                     async fn create_batch_with_key<
                         I: std::iter::IntoIterator<Item = #cs_ident> + Send + 'async_trait,
                         C: Default + std::iter::Extend<(#ty, Self)> + Send,
