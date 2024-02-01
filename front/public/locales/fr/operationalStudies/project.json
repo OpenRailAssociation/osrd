@@ -46,6 +46,7 @@
   "scenariosCount_one": "1 scénario",
   "scenariosCount_other": "{{count}} scénarios",
   "scenariosCount_zero": "Aucun scénario",
+  "projectDescriptionPlaceholder": "Courte description du projet",
   "sortOptions": {
     "byName": "Tri par nom",
     "byRecentDate": "Plus récents"

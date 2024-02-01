@@ -123,6 +123,7 @@
     height: 3.9rem;
     overflow: auto;
     font-size: 0.8rem;
+    white-space: break-spaces;
     &::first-letter {
       text-transform: capitalize;
     }

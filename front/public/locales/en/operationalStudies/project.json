@@ -46,6 +46,7 @@
   "scenariosCount_one": "1 scenario",
   "scenariosCount_other": "{{count}} scenarios",
   "scenariosCount_zero": "No scenario",
+  "projectDescriptionPlaceholder": "Short description of the project",
   "sortOptions": {
     "byName": "Sort by name",
     "byRecentDate": "Latest"

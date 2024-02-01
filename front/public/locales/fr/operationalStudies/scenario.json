@@ -23,6 +23,7 @@
   "scenarioDeleted": "Suppression réussie !",
   "scenarioDeletedDetails": "Le scénario {{ name }} a bien été supprimé.",
   "scenarioDescription": "Description",
+  "scenarioDescriptionPlaceholder": "Courte description du scénario",
   "scenarioModificationTitle": "Modifier le scénario",
   "scenarioModifyButton": "Enregistrer",
   "scenarioName": "Nom du scénario",

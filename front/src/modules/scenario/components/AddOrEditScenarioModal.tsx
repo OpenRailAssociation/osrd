@@ -252,6 +252,7 @@ export default function AddOrEditScenarioModal({
                 onChange={(e) =>
                   setCurrentScenario({ ...currentScenario, description: e.target.value })
                 }
+                placeholder={t('scenarioDescriptionPlaceholder')}
               />
             </div>
             {!editionMode && electricalProfilOptions.length > 1 && (
