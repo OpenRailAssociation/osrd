@@ -120,40 +120,6 @@ pub enum ObjectType {
     Electrification,
 }
 
-impl ObjectType {
-    pub fn get_table(&self) -> &'static str {
-        match *self {
-            ObjectType::TrackSection => "infra_object_track_section",
-            ObjectType::Signal => "infra_object_signal",
-            ObjectType::NeutralSection => "infra_object_neutral_section",
-            ObjectType::SpeedSection => "infra_object_speed_section",
-            ObjectType::Detector => "infra_object_detector",
-            ObjectType::Switch => "infra_object_switch",
-            ObjectType::SwitchType => "infra_object_extended_switch_type",
-            ObjectType::BufferStop => "infra_object_buffer_stop",
-            ObjectType::Route => "infra_object_route",
-            ObjectType::OperationalPoint => "infra_object_operational_point",
-            ObjectType::Electrification => "infra_object_electrification",
-        }
-    }
-
-    /// Returns the layer table name.
-    /// Returns `None` for objects that doesn't have a layer such as routes or switch types.
-    pub fn get_geometry_layer_table(&self) -> Option<&'static str> {
-        match *self {
-            ObjectType::TrackSection => Some("infra_layer_track_section"),
-            ObjectType::Signal => Some("infra_layer_signal"),
-            ObjectType::SpeedSection => Some("infra_layer_speed_section"),
-            ObjectType::Detector => Some("infra_layer_detector"),
-            ObjectType::Switch => Some("infra_layer_switch"),
-            ObjectType::BufferStop => Some("infra_layer_buffer_stop"),
-            ObjectType::OperationalPoint => Some("infra_layer_operational_point"),
-            ObjectType::Electrification => Some("infra_layer_electrification"),
-            _ => None,
-        }
-    }
-}
-
 #[derive(Deserialize, Derivative, Serialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[derivative(Default)]
 #[serde(deny_unknown_fields)]

@@ -1,5 +1,6 @@
 use crate::modelsv2::prelude::*;
 use crate::schema;
+use crate::schema::ObjectType;
 use crate::tables::*;
 use editoast_derive::ModelV2;
 use serde::{Deserialize, Serialize};
@@ -11,6 +12,9 @@ pub trait ModelBackedSchema: Sized {
 
 pub trait SchemaModel: Model {
     type Schema: ModelBackedSchema;
+
+    const TABLE: &'static str;
+    const LAYER_TABLE: Option<&'static str>;
 
     /// Creates a changeset for this infra object with a random obj_id and no infra_id set
     fn new_from_schema(schema: Self::Schema) -> Changeset<Self>;
@@ -24,6 +28,12 @@ pub trait SchemaModel: Model {
 
 macro_rules! infra_model {
     ($name:ident, $table:ident, $data:path) => {
+        infra_model!(@ $name, $table, None, $data);
+    };
+    ($name:ident, $table:ident, $layer:expr, $data:path) => {
+        infra_model!(@ $name, $table, Some(stringify!($layer)), $data);
+    };
+    (@ $name:ident, $table:ident, $layer:expr, $data:path) => {
         #[derive(Debug, Clone, Default, Serialize, Deserialize, ModelV2)]
         #[model(table = $table)]
         #[model(preferred = (infra_id, obj_id))]
@@ -41,6 +51,9 @@ macro_rules! infra_model {
 
         impl SchemaModel for $name {
             type Schema = $data;
+
+            const TABLE: &'static str = stringify!($table);
+            const LAYER_TABLE: Option<&'static str> = $layer;
 
             fn new_from_schema(schema: Self::Schema) -> Changeset<Self> {
                 // TODO: remove the `id` field of the schemas and replace it by
@@ -120,38 +133,58 @@ macro_rules! infra_model {
 infra_model!(
     TrackSectionModel,
     infra_object_track_section,
+    infra_layer_track_section,
     schema::TrackSection
 );
 
 infra_model!(
     BufferStopModel,
     infra_object_buffer_stop,
+    infra_layer_buffer_stop,
     schema::BufferStop
 );
 
 infra_model!(
     ElectrificationModel,
     infra_object_electrification,
+    infra_layer_electrification,
     schema::Electrification
 );
 
-infra_model!(DetectorModel, infra_object_detector, schema::Detector);
+infra_model!(
+    DetectorModel,
+    infra_object_detector,
+    infra_layer_detector,
+    schema::Detector
+);
 
 infra_model!(
     OperationalPointModel,
     infra_object_operational_point,
+    infra_layer_operational_point,
     schema::OperationalPoint
 );
 
 infra_model!(RouteModel, infra_object_route, schema::Route);
 
-infra_model!(SignalModel, infra_object_signal, schema::Signal);
+infra_model!(
+    SignalModel,
+    infra_object_signal,
+    infra_layer_signal,
+    schema::Signal
+);
 
-infra_model!(SwitchModel, infra_object_switch, schema::Switch);
+infra_model!(
+    SwitchModel,
+    infra_object_switch,
+    infra_layer_switch,
+    schema::Switch
+);
 
 infra_model!(
     SpeedSectionModel,
     infra_object_speed_section,
+    infra_layer_speed_section,
     schema::SpeedSection
 );
 
@@ -166,6 +199,41 @@ infra_model!(
     infra_object_neutral_section,
     schema::NeutralSection
 );
+
+pub fn get_table(object_type: &ObjectType) -> &'static str {
+    match object_type {
+        ObjectType::TrackSection => TrackSectionModel::TABLE,
+        ObjectType::BufferStop => BufferStopModel::TABLE,
+        ObjectType::Electrification => ElectrificationModel::TABLE,
+        ObjectType::Detector => DetectorModel::TABLE,
+        ObjectType::OperationalPoint => OperationalPointModel::TABLE,
+        ObjectType::Route => RouteModel::TABLE,
+        ObjectType::Signal => SignalModel::TABLE,
+        ObjectType::Switch => SwitchModel::TABLE,
+        ObjectType::SpeedSection => SpeedSectionModel::TABLE,
+        ObjectType::SwitchType => SwitchTypeModel::TABLE,
+        ObjectType::NeutralSection => NeutralSectionModel::TABLE,
+    }
+}
+
+/// Returns the layer table name of the given object type
+///
+/// Returns `None` for objects that doesn't have a layer such as routes or switch types.
+pub fn get_geometry_layer_table(object_type: &ObjectType) -> Option<&'static str> {
+    match object_type {
+        ObjectType::TrackSection => TrackSectionModel::LAYER_TABLE,
+        ObjectType::BufferStop => BufferStopModel::LAYER_TABLE,
+        ObjectType::Electrification => ElectrificationModel::LAYER_TABLE,
+        ObjectType::Detector => DetectorModel::LAYER_TABLE,
+        ObjectType::OperationalPoint => OperationalPointModel::LAYER_TABLE,
+        ObjectType::Route => RouteModel::LAYER_TABLE,
+        ObjectType::Signal => SignalModel::LAYER_TABLE,
+        ObjectType::Switch => SwitchModel::LAYER_TABLE,
+        ObjectType::SpeedSection => SpeedSectionModel::LAYER_TABLE,
+        ObjectType::SwitchType => SwitchTypeModel::LAYER_TABLE,
+        ObjectType::NeutralSection => NeutralSectionModel::LAYER_TABLE,
+    }
+}
 
 impl OperationalPointModel {
     /// Retrieve a list of operational points from the database

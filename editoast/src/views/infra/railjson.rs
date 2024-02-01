@@ -1,6 +1,7 @@
 use crate::error::Result;
 use crate::infra_cache::InfraCache;
 use crate::models::{Infra, Retrieve};
+use crate::modelsv2::get_table;
 use crate::schema::{ObjectType, RailJson, RAILJSON_VERSION};
 use crate::views::infra::{InfraApiError, InfraForm};
 use crate::DbPool;
@@ -47,7 +48,7 @@ async fn get_railjson(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<impl Re
         .map(|object_type| (object_type, db_pool.get()))
         .map(|(object_type, conn_future)| async move {
             let mut conn = conn_future.await?;
-            let table = object_type.get_table();
+            let table = get_table(&object_type);
             let query =
                 format!("SELECT (x.data)::text AS railjson FROM {table} x WHERE x.infra_id = $1");
 

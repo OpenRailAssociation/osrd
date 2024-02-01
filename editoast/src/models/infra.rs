@@ -6,7 +6,7 @@ use crate::{
     generated_data,
     infra_cache::InfraCache,
     models::{Identifiable, Retrieve},
-    modelsv2::railjson::persist_railjson,
+    modelsv2::{get_geometry_layer_table, get_table, railjson::persist_railjson},
     schema::{ObjectType, RailJson, RAILJSON_VERSION},
     tables::infra::{self, dsl},
     views::pagination::{Paginate, PaginatedResponse},
@@ -163,7 +163,7 @@ impl Infra {
         let mut futures = Vec::<Pin<Box<dyn Future<Output = _>>>>::new();
         let mut conn = db_pool.get().await?;
         for object in ObjectType::iter() {
-            let model_table = object.get_table();
+            let model_table = get_table(&object);
             let model = sql_query(format!(
                 "INSERT INTO {model_table}(obj_id,data,infra_id) SELECT obj_id,data,$1 FROM {model_table} WHERE infra_id = $2"
             ))
@@ -172,9 +172,9 @@ impl Infra {
             .execute(&mut conn);
             futures.push(model);
 
-            if let Some(layer_table) = object.get_geometry_layer_table() {
+            if let Some(layer_table) = get_geometry_layer_table(&object) {
                 let layer_table = layer_table.to_string();
-                let sql = if layer_table != ObjectType::Signal.get_geometry_layer_table().unwrap() {
+                let sql = if layer_table != get_geometry_layer_table(&ObjectType::Signal).unwrap() {
                     format!(
                     "INSERT INTO {layer_table}(obj_id,geographic,schematic,infra_id) SELECT obj_id,geographic,schematic,$1 FROM {layer_table} WHERE infra_id=$2")
                 } else {
