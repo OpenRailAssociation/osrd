@@ -33,6 +33,8 @@ import { setFailure, setSuccess } from 'reducers/main';
 import type { ScheduledTrain, SimulationSnapshot } from 'reducers/osrdsimulation/types';
 import { updateSelectedTrainId, updateSimulation } from 'reducers/osrdsimulation/actions';
 import { getSelectedProjection } from 'reducers/osrdsimulation/selectors';
+import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
+import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
 
 type TimetableProps = {
   setDisplayTrainScheduleManagement: (mode: string) => void;
@@ -44,6 +46,10 @@ type TimetableProps = {
   conflicts?: Conflict[];
   setTrainResultsToFetch: (trainScheduleIds?: number[]) => void;
   simulation: SimulationSnapshot;
+};
+
+type RollingStocksDictionary = {
+  [key: string]: number[];
 };
 
 export default function Timetable({
@@ -68,6 +74,14 @@ export default function Timetable({
   const [multiselectOn, setMultiselectOn] = useState(false);
   const [conflictsListExpanded, setConflictsListExpanded] = useState(false);
   const [selectedTrainIds, setSelectedTrainIds] = useState<number[]>([]);
+  const [rollingStockIds, setRollingStockIds] = useState<number[]>([]);
+  const [rollingStocksDictionary, setRollingStocksDictionary] = useState<RollingStocksDictionary>(
+    {}
+  );
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [showValidTrains, setShowValidTrains] = useState(true);
+  const [showInvalidTrains, setShowInvalidTrains] = useState(true);
+  const [tags, setTags] = useState<string[]>([]);
 
   const { openModal } = useContext(ModalContext);
 
@@ -88,6 +102,42 @@ export default function Timetable({
         : [],
     [timetable]
   );
+
+  const { data: { results: rollingStocks } = { results: [] } } =
+    enhancedEditoastApi.useGetLightRollingStockQuery({ pageSize: 1000 });
+
+  useEffect(() => {
+    const rollingStockIdsSet = new Set(rollingStockIds);
+    const newRollingStocksDictionary: RollingStocksDictionary = {};
+
+    rollingStocks.forEach((rollingStock) => {
+      if (rollingStockIdsSet.has(rollingStock.id)) {
+        const { metadata } = rollingStock;
+        if (metadata) {
+          if (metadata.detail) {
+            if (!newRollingStocksDictionary[metadata.detail]) {
+              newRollingStocksDictionary[metadata.detail] = [];
+            }
+            newRollingStocksDictionary[metadata.detail].push(rollingStock.id);
+          }
+          if (metadata.series) {
+            if (!newRollingStocksDictionary[metadata.series]) {
+              newRollingStocksDictionary[metadata.series] = [];
+            }
+            newRollingStocksDictionary[metadata.series].push(rollingStock.id);
+          }
+          if (metadata.family) {
+            if (!newRollingStocksDictionary[metadata.family]) {
+              newRollingStocksDictionary[metadata.family] = [];
+            }
+            newRollingStocksDictionary[metadata.family].push(rollingStock.id);
+          }
+        }
+      }
+    });
+
+    setRollingStocksDictionary(newRollingStocksDictionary);
+  }, [rollingStocks, rollingStockIds]);
 
   const keepTrain = (train: ScheduledTrain, searchString: string): boolean => {
     if (searchString) {
@@ -115,6 +165,22 @@ export default function Timetable({
     return [];
   }, [timetable, trainsDurationsIntervals, debouncedTerm]);
 
+  useEffect(() => {
+    const extractedRollingStockIds = trainsList.map((train) => train.rolling_stock_id);
+    setRollingStockIds(extractedRollingStockIds);
+  }, [trainsList]);
+
+  const trainsWithRollingStockDetail = useMemo(
+    () =>
+      trainsList.map((train) => {
+        const rollingStock = rollingStocks.find((rs) => rs.id === train.rolling_stock_id);
+        const rollingStockMetadata = rollingStock?.metadata;
+        const rollingStockName = rollingStock?.name;
+        return { ...train, rollingStockMetadata, rollingStockName };
+      }),
+    [trainsList, rollingStocks]
+  );
+
   const toggleConflictsListExpanded = () => {
     setConflictsListExpanded(!conflictsListExpanded);
   };
@@ -133,6 +199,22 @@ export default function Timetable({
     }
 
     setSelectedTrainIds(currentSelectedTrainIds);
+  };
+
+  const handleShowValidTrainsChange = (checked: boolean) => {
+    if (!checked && !showInvalidTrains) {
+      // Prevent unchecking if the other checkbox is already unchecked
+      return;
+    }
+    setShowValidTrains(checked);
+  };
+
+  const handleShowInvalidTrainsChange = (checked: boolean) => {
+    if (!checked && !showValidTrains) {
+      // Prevent unchecking if the other checkbox is already unchecked
+      return;
+    }
+    setShowInvalidTrains(checked);
   };
 
   const selectAllTrains = () => {
@@ -215,6 +297,130 @@ export default function Timetable({
   useEffect(() => {
     dispatch(updateTrainScheduleIDsToModify([]));
   }, []);
+
+  const specialCodeDictionary: { [key: string]: string } = {
+    'Divers - Haut le pied': 'HLP',
+    '': 'NO CODE',
+  };
+
+  // const getSpecialCodeDictionary = () => ({
+  //   'Divers - Haut le pied': 'HLP',
+  //   '': t('yourTranslationKeyForNoCode'), // Use the translation key here
+  // });
+
+  const extractTagCode = (tag: string | null) => {
+    // const specialCodeDictionary = getSpecialCodeDictionary();
+
+    if (!tag) {
+      return 'NO CODE'; // Return 'NO CODE' when tag is null or undefined
+    }
+    if (tag in specialCodeDictionary) {
+      return specialCodeDictionary[tag];
+    }
+
+    const regex = /\s*(\w+)\s*$/;
+    const matches = tag.match(regex);
+    if (matches && matches[1]) {
+      return matches[1];
+    }
+
+    return tag;
+  };
+
+  const [uniqueTags, setUniqueTags] = useState<string[]>([]);
+  const [selectedTags, setSelectedTags] = useState(new Set());
+
+  const toggleTagSelection = (tag: string | null) => {
+    setSelectedTags((prevSelectedTags) => {
+      const newSelectedTags = new Set(prevSelectedTags);
+      if (newSelectedTags.has(tag)) {
+        newSelectedTags.delete(tag);
+      } else {
+        newSelectedTags.add(tag);
+      }
+      return newSelectedTags;
+    });
+  };
+
+  const filteredTrainsList = useMemo(
+    () =>
+      trainsWithRollingStockDetail
+        .filter((train) => keepTrain(train, debouncedTerm))
+        .filter(
+          (train) =>
+            (showValidTrains &&
+              !showInvalidTrains &&
+              (!train.invalid_reasons || train.invalid_reasons.length === 0)) ||
+            (!showValidTrains &&
+              showInvalidTrains &&
+              train.invalid_reasons &&
+              train.invalid_reasons.length > 0) ||
+            (showValidTrains && showInvalidTrains)
+        )
+        .filter(
+          (train) =>
+            selectedTags.size === 0 || selectedTags.has(extractTagCode(train.speed_limit_tags))
+        )
+        .filter(
+          (train) =>
+            tags.length === 0 ||
+            tags.some((tag) =>
+              tag === 'NO CODE'
+                ? !train.speed_limit_tags
+                : rollingStocksDictionary[tag]?.includes(train.rolling_stock_id)
+            )
+        ),
+    [
+      trainsWithRollingStockDetail,
+      debouncedTerm,
+      showValidTrains,
+      showInvalidTrains,
+      selectedTags,
+      tags,
+      rollingStocksDictionary,
+    ]
+  );
+
+  useEffect(() => {
+    const compositionCodes = new Set<string>();
+    trainsList.forEach((train) => {
+      const tagCode = train.speed_limit_tags ? extractTagCode(train.speed_limit_tags) : 'NO CODE';
+      compositionCodes.add(tagCode);
+    });
+    setUniqueTags(Array.from(compositionCodes));
+  }, [trainsList]);
+
+  const addTag = (newTag: string) => {
+    if (newTag in rollingStocksDictionary && !tags.includes(newTag)) {
+      setTags([...tags, newTag]);
+    }
+  };
+
+  const removeTag = (tagIdx: number) => {
+    setTags(tags.filter((_, idx) => idx !== tagIdx));
+  };
+
+  const [chipInputValue, setChipInputValue] = useState('');
+
+  const handleChipInputChange = (value: string) => {
+    setChipInputValue(value);
+
+    // Update suggestions based on the input value
+    if (value) {
+      const filteredSuggestions = Object.keys(rollingStocksDictionary).filter((key) =>
+        key.toLowerCase().includes(value.toLowerCase())
+      );
+      setSuggestions(filteredSuggestions);
+    } else {
+      setSuggestions([]);
+    }
+  };
+
+  const handleSuggestionClick = (suggestion: string) => {
+    addTag(suggestion);
+    setChipInputValue('');
+    setSuggestions([]);
+  };
 
   return (
     <div className="scenario-timetable">
@@ -308,6 +514,49 @@ export default function Timetable({
           </button>
         )}
       </div>
+      <div className="validity-filter-checkboxes">
+        <label htmlFor="showValidTrainsCheckbox">
+          <input
+            id="showValidTrainsCheckbox"
+            type="checkbox"
+            checked={showValidTrains}
+            onChange={(e) => handleShowValidTrainsChange(e.target.checked)}
+          />
+          {t('timetable.showValidTrains')}
+        </label>
+        <label htmlFor="showInvalidTrainsCheckbox">
+          <input
+            id="showInvalidTrainsCheckbox"
+            type="checkbox"
+            checked={showInvalidTrains}
+            onChange={(e) => handleShowInvalidTrainsChange(e.target.checked)}
+          />
+          {t('timetable.showInvalidTrains')}
+        </label>
+      </div>
+      <div>
+        <ChipsSNCF
+          addTag={addTag}
+          tags={tags}
+          removeTag={removeTag}
+          color="green"
+          chipInputValue={chipInputValue}
+          setChipInputValue={handleChipInputChange}
+          placeholder={t('advancedFiltersPlaceholder')}
+          containerColorClass="white"
+        />
+        {suggestions.length > 0 && (
+          <ul className="autocomplete-suggestions">
+            {suggestions.map((suggestion, idx) => (
+              <li key={idx}>
+                <button type="button" onClick={() => handleSuggestionClick(suggestion)}>
+                  {suggestion}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
 
       <div
         className={cx('scenario-timetable-trains', {
@@ -315,8 +564,30 @@ export default function Timetable({
           'with-details': trainsWithDetails,
         })}
       >
+        <div>
+          <span>{t('timetable.compositionCodes')}:</span>
+          {uniqueTags.map((tag) => {
+            // Translate tag here
+            let displayTag = tag;
+            if (tag === 'NO CODE') {
+              displayTag = t('timetable.noSpeedLimitTags');
+            }
+            return (
+              <button
+                className={`btn btn-sm m-1 ${
+                  selectedTags.has(tag) ? 'btn btn-sm selected-tags' : ''
+                }`}
+                type="button"
+                key={tag}
+                onClick={() => toggleTagSelection(tag)}
+              >
+                {displayTag}
+              </button>
+            );
+          })}
+        </div>
         {trainsDurationsIntervals &&
-          trainsList
+          filteredTrainsList
             .sort((trainA, trainB) => trainA.departure_time - trainB.departure_time)
             .map((train: ScheduledTrain, idx: number) => (
               <TimetableTrainCard
