@@ -23,6 +23,7 @@
   "scenarioDeleted": "Successful deletion!",
   "scenarioDeletedDetails": "Scenario {{ name }} has been deleted.",
   "scenarioDescription": "Description",
+  "scenarioDescriptionPlaceholder": "Short description of the scenario",
   "scenarioModificationTitle": "Modify scenario",
   "scenarioModifyButton": "Save",
   "scenarioName": "Scenario's name",

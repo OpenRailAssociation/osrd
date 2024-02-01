@@ -37,6 +37,7 @@
   "studyDeleted": "Successful deletion!",
   "studyDeletedDetails": "The {{ name }} study has been deleted.",
   "studyDescription": "Description",
+  "studyDescriptionPlaceholder": "Short description of the study",
   "studyEstimatedEndingDate": "Expected ending",
   "studyModificationTitle": "Edit a study",
   "studyModifyButton": "Save",

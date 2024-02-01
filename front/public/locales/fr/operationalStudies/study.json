@@ -37,6 +37,7 @@
   "studyDeleted": "Suppression réussie !",
   "studyDeletedDetails": "L'étude {{ name }} a bien été supprimée.",
   "studyDescription": "Description",
+  "studyDescriptionPlaceholder": "Courte description de l'étude",
   "studyEstimatedEndingDate": "Fin estimée",
   "studyModificationTitle": "Modifier une étude",
   "studyModifyButton": "Enregistrer",

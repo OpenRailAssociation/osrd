@@ -273,6 +273,7 @@ export default function AddOrEditProjectModal({
                 onChange={(e) =>
                   setCurrentProject({ ...currentProject, description: e.target.value })
                 }
+                placeholder={t('projectDescriptionPlaceholder')}
                 rows={3}
               />
             </div>

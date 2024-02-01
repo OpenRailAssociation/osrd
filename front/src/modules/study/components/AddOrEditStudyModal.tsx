@@ -256,6 +256,7 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
                 }
                 value={currentStudy?.description}
                 onChange={(e) => setCurrentStudy({ ...currentStudy, description: e.target.value })}
+                placeholder={t('studyDescriptionPlaceholder')}
               />
             </div>
           </div>
