@@ -13,6 +13,7 @@
     "unableToDuplicateATrain": "Unable to duplicate the train"
   },
   "filterPlaceholder": "Filter, tags",
+  "advancedFiltersPlaceholder": "Filter by family, serie, detail",
   "infraLoadingState": "{{step}}/8",
   "modifyScenario": "Modify scenario",
   "noElectricalProfileSet": "No electrical profile",
@@ -47,7 +48,11 @@
     "update": "Edit",
     "toggleMultiSelection": "Toggle multiselection",
     "trainsSelectionDeletedCount_one": "The train has been deleted.",
-    "trainsSelectionDeletedCount_other": "The {{count}} trains have been deleted."
+    "trainsSelectionDeletedCount_other": "The {{count}} trains have been deleted.",
+    "noSpeedLimitTags": "Without code",
+    "showValidTrains": "Valid trains",
+    "showInvalidTrains": "Invalid trains",
+    "compositionCodes": "Composition codes"
   },
   "toggleTimetable": "Toggle the timetable",
   "trainCount_one": "1 train",
