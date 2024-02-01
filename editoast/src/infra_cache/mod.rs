@@ -3,6 +3,7 @@ mod graph;
 use crate::error::Result;
 use crate::map::BoundingBox;
 use crate::models::Infra;
+use crate::modelsv2::railjson::find_all_schemas;
 use crate::schema::operation::{CacheOperation, RailjsonObject};
 use crate::schema::*;
 use chashmap::{CHashMap, ReadGuard, WriteGuard};
@@ -398,16 +399,16 @@ impl InfraCache {
         )?;
 
         // Load speed sections tracks references
-        find_objects(conn, infra_id)
-            .await
+        find_all_schemas::<SpeedSection, Vec<_>>(conn, infra_id)
+            .await?
             .into_iter()
-            .try_for_each(|speed| infra_cache.add::<SpeedSection>(speed))?;
+            .try_for_each(|speed| infra_cache.add(speed))?;
 
         // Load routes tracks references
-        find_objects(conn, infra_id)
-            .await
+        find_all_schemas::<_, Vec<Route>>(conn, infra_id)
+            .await?
             .into_iter()
-            .try_for_each(|route| infra_cache.add::<Route>(route))?;
+            .try_for_each(|route| infra_cache.add(route))?;
 
         // Load operational points tracks references
         sql_query(
@@ -426,8 +427,8 @@ impl InfraCache {
         )?;
 
         // Load switch types references
-        find_objects(conn, infra_id)
-            .await
+        find_all_schemas::<_, Vec<SwitchType>>(conn, infra_id)
+            .await?
             .into_iter()
             .try_for_each(|switch_type| infra_cache.add::<SwitchType>(switch_type))?;
 
@@ -455,8 +456,8 @@ impl InfraCache {
         )?;
 
         // Load electrification tracks references
-        find_objects(conn, infra_id)
-            .await
+        find_all_schemas::<_, Vec<Electrification>>(conn, infra_id)
+            .await?
             .into_iter()
             .try_for_each(|electrification| infra_cache.add::<Electrification>(electrification))?;
 
