@@ -11,11 +11,8 @@ use diesel::sql_types::{Double, Text};
 
 use serde::{Deserialize, Serialize};
 
-use editoast_derive::InfraModel;
-
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, InfraModel)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
-#[infra_model(table = "crate::tables::infra_object_detector")]
 #[derivative(Default)]
 pub struct Detector {
     pub id: Identifier,
@@ -99,30 +96,4 @@ pub struct DetectorExtension {
 #[serde(deny_unknown_fields)]
 pub struct DetectorSncfExtension {
     pub kp: String,
-}
-
-#[cfg(test)]
-mod test {
-
-    use super::Detector;
-    use crate::models::infra::tests::test_infra_transaction;
-    use actix_web::test as actix_test;
-    use diesel_async::scoped_futures::ScopedFutureExt;
-
-    #[actix_test]
-    async fn test_persist() {
-        test_infra_transaction(|conn, infra| {
-            async move {
-                let data = (0..10)
-                    .map(|_| Detector::default())
-                    .collect::<Vec<Detector>>();
-
-                assert!(Detector::persist_batch(&data, infra.id.unwrap(), conn)
-                    .await
-                    .is_ok());
-            }
-            .scope_boxed()
-        })
-        .await;
-    }
 }

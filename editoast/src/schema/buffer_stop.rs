@@ -4,12 +4,10 @@ use super::utils::Identifier;
 use crate::infra_cache::{Cache, ObjectCache};
 use derivative::Derivative;
 use diesel::sql_types::{Double, Text};
-use editoast_derive::InfraModel;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, InfraModel)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
-#[infra_model(table = "crate::tables::infra_object_buffer_stop")]
 #[derivative(Default)]
 pub struct BufferStop {
     pub id: Identifier,
@@ -93,47 +91,4 @@ pub struct BufferStopExtension {
 #[serde(deny_unknown_fields)]
 pub struct BufferStopSncfExtension {
     pub kp: String,
-}
-
-#[cfg(test)]
-mod test {
-
-    use super::BufferStop;
-    use crate::models::infra::tests::test_infra_transaction;
-    use actix_web::test as actix_test;
-    use diesel_async::scoped_futures::ScopedFutureExt;
-
-    #[actix_test]
-    async fn test_persist() {
-        test_infra_transaction(|conn, infra| {
-            async move {
-                let data = (0..10)
-                    .map(|_| BufferStop::default())
-                    .collect::<Vec<BufferStop>>();
-
-                assert!(BufferStop::persist_batch(&data, infra.id.unwrap(), conn)
-                    .await
-                    .is_ok());
-            }
-            .scope_boxed()
-        })
-        .await;
-    }
-
-    #[actix_test] // Slow test
-    async fn test_persist_large() {
-        test_infra_transaction(|conn, infra| {
-            async move {
-                let data = (0..(2_usize.pow(16) * 2))
-                    .map(|_| BufferStop::default())
-                    .collect::<Vec<BufferStop>>();
-
-                assert!(BufferStop::persist_batch(&data, infra.id.unwrap(), conn)
-                    .await
-                    .is_ok());
-            }
-            .scope_boxed()
-        })
-        .await;
-    }
 }

@@ -4,10 +4,12 @@ use super::{Create, Delete, List, NoParams, Update};
 use crate::error::Result;
 use crate::infra_cache::InfraCache;
 use crate::models::{Identifiable, Retrieve};
-use crate::schema::{
-    BufferStop, Detector, Electrification, NeutralSection, ObjectType, OperationalPoint, RailJson,
-    RailjsonError, Route, Signal, SpeedSection, Switch, SwitchType, TrackSection,
+use crate::modelsv2::{
+    BufferStopModel, DetectorModel, ElectrificationModel, NeutralSectionModel,
+    OperationalPointModel, RouteModel, SignalModel, SpeedSectionModel, SwitchModel,
+    SwitchTypeModel, TrackSectionModel,
 };
+use crate::schema::{ObjectType, RailJson, RailjsonError};
 use crate::tables::infra;
 use crate::tables::infra::dsl;
 use crate::views::pagination::{Paginate, PaginatedResponse};
@@ -112,44 +114,60 @@ impl Infra {
         if railjson.version != RAILJSON_VERSION {
             return Err(RailjsonError::WrongVersion(railjson.version).into());
         }
-        let mut conn = db_pool.get().await?;
-        let infra = self.create_conn(&mut conn).await?;
+        let mut conn_pool = try_join_all(vec![
+            db_pool.get(),
+            db_pool.get(),
+            db_pool.get(),
+            db_pool.get(),
+            db_pool.get(),
+            db_pool.get(),
+            db_pool.get(),
+            db_pool.get(),
+            db_pool.get(),
+            db_pool.get(),
+            db_pool.get(),
+        ])
+        .await?;
+        let infra = self.create_conn(&mut conn_pool[0]).await?;
         let infra_id = infra.id.unwrap();
 
         debug!("🛤  Begin importing all railjson objects");
+        let RailJson {
+            track_sections,
+            buffer_stops,
+            electrifications,
+            detectors,
+            operational_points,
+            routes,
+            signals,
+            switches,
+            speed_sections,
+            extended_switch_types,
+            neutral_sections,
+            ..
+        } = railjson;
+        let mut conns = conn_pool.iter_mut();
         let res = futures::try_join!(
-            TrackSection::persist_batch_pool(&railjson.track_sections, infra_id, db_pool.clone()),
-            BufferStop::persist_batch_pool(&railjson.buffer_stops, infra_id, db_pool.clone()),
-            Electrification::persist_batch_pool(
-                &railjson.electrifications,
+            TrackSectionModel::persist_batch(conns.next().unwrap(), infra_id, track_sections),
+            BufferStopModel::persist_batch(conns.next().unwrap(), infra_id, buffer_stops),
+            ElectrificationModel::persist_batch(conns.next().unwrap(), infra_id, electrifications),
+            DetectorModel::persist_batch(conns.next().unwrap(), infra_id, detectors),
+            OperationalPointModel::persist_batch(
+                conns.next().unwrap(),
                 infra_id,
-                db_pool.clone()
+                operational_points
             ),
-            Detector::persist_batch_pool(&railjson.detectors, infra_id, db_pool.clone()),
-            OperationalPoint::persist_batch_pool(
-                &railjson.operational_points,
-                infra_id,
-                db_pool.clone()
-            ),
-            Route::persist_batch_pool(&railjson.routes, infra_id, db_pool.clone()),
-            Signal::persist_batch_pool(&railjson.signals, infra_id, db_pool.clone()),
-            Switch::persist_batch_pool(&railjson.switches, infra_id, db_pool.clone()),
-            SpeedSection::persist_batch_pool(&railjson.speed_sections, infra_id, db_pool.clone()),
-            SwitchType::persist_batch_pool(
-                &railjson.extended_switch_types,
-                infra_id,
-                db_pool.clone()
-            ),
-            NeutralSection::persist_batch_pool(
-                &railjson.neutral_sections,
-                infra_id,
-                db_pool.clone()
-            ),
+            RouteModel::persist_batch(conns.next().unwrap(), infra_id, routes),
+            SignalModel::persist_batch(conns.next().unwrap(), infra_id, signals),
+            SwitchModel::persist_batch(conns.next().unwrap(), infra_id, switches),
+            SpeedSectionModel::persist_batch(conns.next().unwrap(), infra_id, speed_sections),
+            SwitchTypeModel::persist_batch(conns.next().unwrap(), infra_id, extended_switch_types),
+            NeutralSectionModel::persist_batch(conns.next().unwrap(), infra_id, neutral_sections),
         );
         match res {
             Err(err) => {
                 error!("Could not import infrastructure {infra_id}. Rolling back");
-                Infra::delete_conn(&mut conn, infra_id).await?;
+                Infra::delete_conn(&mut conn_pool[0], infra_id).await?;
                 Err(err)
             }
             Ok(_) => {

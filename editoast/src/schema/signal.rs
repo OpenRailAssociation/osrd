@@ -14,13 +14,10 @@ use crate::infra_cache::ObjectCache;
 use derivative::Derivative;
 use diesel::sql_types::{Double, Jsonb, Text};
 use diesel_json::Json as DieselJson;
-
-use editoast_derive::InfraModel;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, InfraModel)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
-#[infra_model(table = "crate::tables::infra_object_signal")]
 #[derivative(Default)]
 pub struct Signal {
     pub id: Identifier,
@@ -132,27 +129,8 @@ impl From<Signal> for SignalCache {
 
 #[cfg(test)]
 mod test {
-    use super::Signal;
     use super::SignalExtensions;
-    use crate::models::infra::tests::test_infra_transaction;
-    use actix_web::test as actix_test;
-    use diesel_async::scoped_futures::ScopedFutureExt;
     use serde_json::from_str;
-
-    #[actix_test]
-    async fn test_persist() {
-        test_infra_transaction(|conn, infra| {
-            async move {
-                let data = (0..10).map(|_| Signal::default()).collect::<Vec<Signal>>();
-
-                assert!(Signal::persist_batch(&data, infra.id.unwrap(), conn)
-                    .await
-                    .is_ok());
-            }
-            .scope_boxed()
-        })
-        .await;
-    }
 
     #[test]
     fn test_signal_extensions_deserialization() {

@@ -11,14 +11,12 @@ use crate::infra_cache::ObjectCache;
 use crate::map::BoundingBox;
 
 use derivative::Derivative;
-use editoast_derive::InfraModel;
 use geos::geojson::{Geometry, Value::LineString};
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, InfraModel)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
-#[infra_model(table = "crate::tables::infra_object_track_section")]
 #[derivative(Default)]
 pub struct TrackSection {
     pub id: Identifier,
@@ -193,31 +191,10 @@ impl Cache for TrackSectionCache {
 
 #[cfg(test)]
 mod test {
-    use super::TrackSection;
     use super::TrackSectionExtensions;
     use crate::map::BoundingBox;
-    use crate::models::infra::tests::test_infra_transaction;
-    use actix_web::test as actix_test;
-    use diesel_async::scoped_futures::ScopedFutureExt;
     use geos::geojson;
     use serde_json::from_str;
-
-    #[actix_test]
-    async fn test_persist() {
-        test_infra_transaction(|conn, infra| {
-            async move {
-                let data = (0..10)
-                    .map(|_| TrackSection::default())
-                    .collect::<Vec<TrackSection>>();
-
-                assert!(TrackSection::persist_batch(&data, infra.id.unwrap(), conn)
-                    .await
-                    .is_ok());
-            }
-            .scope_boxed()
-        })
-        .await;
-    }
 
     /// Test bounding box from linestring
     #[test]

@@ -9,7 +9,6 @@ use crate::infra_cache::ObjectCache;
 
 use derivative::Derivative;
 
-use editoast_derive::InfraModel;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -19,9 +18,8 @@ type NodeType = &'static str;
 type NodePorts = &'static [&'static str];
 type NodeGroups = &'static [&'static [StaticMap]];
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq, InfraModel)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
-#[infra_model(table = "crate::tables::infra_object_extended_switch_type")]
 #[derivative(Default)]
 pub struct SwitchType {
     pub id: Identifier,
@@ -196,30 +194,4 @@ pub fn builtin_node_types_list() -> Vec<SwitchType> {
         SingleSlipSwitch.into(),
         DoubleSlipSwitch.into(),
     ]
-}
-
-#[cfg(test)]
-mod test {
-
-    use super::SwitchType;
-    use crate::models::infra::tests::test_infra_transaction;
-    use actix_web::test as actix_test;
-    use diesel_async::scoped_futures::ScopedFutureExt;
-
-    #[actix_test]
-    async fn test_persist() {
-        test_infra_transaction(|conn, infra| {
-            async move {
-                let data = (0..10)
-                    .map(|_| SwitchType::default())
-                    .collect::<Vec<SwitchType>>();
-
-                assert!(SwitchType::persist_batch(&data, infra.id.unwrap(), conn)
-                    .await
-                    .is_ok());
-            }
-            .scope_boxed()
-        })
-        .await;
-    }
 }

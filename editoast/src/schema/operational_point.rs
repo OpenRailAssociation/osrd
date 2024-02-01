@@ -9,12 +9,10 @@ use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
 use derivative::Derivative;
 
-use editoast_derive::InfraModel;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, InfraModel)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
-#[infra_model(table = "crate::tables::infra_object_operational_point")]
 #[derivative(Default)]
 pub struct OperationalPoint {
     pub id: Identifier,
@@ -145,32 +143,8 @@ impl From<OperationalPointPart> for OperationalPointPartCache {
 
 #[cfg(test)]
 mod test {
-
-    use super::OperationalPoint;
     use super::OperationalPointExtensions;
-    use crate::models::infra::tests::test_infra_transaction;
-    use actix_web::test as actix_test;
-    use diesel_async::scoped_futures::ScopedFutureExt;
     use serde_json::from_str;
-
-    #[actix_test]
-    async fn test_persist() {
-        test_infra_transaction(|conn, infra| {
-            async move {
-                let data = (0..10)
-                    .map(|_| OperationalPoint::default())
-                    .collect::<Vec<OperationalPoint>>();
-
-                assert!(
-                    OperationalPoint::persist_batch(&data, infra.id.unwrap(), conn)
-                        .await
-                        .is_ok()
-                );
-            }
-            .scope_boxed()
-        })
-        .await;
-    }
 
     #[test]
     fn test_op_extensions_deserialization() {

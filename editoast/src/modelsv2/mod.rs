@@ -16,8 +16,8 @@ pub mod prelude {
     #[allow(unused_imports)]
     pub use super::{
         Changeset, Create, CreateBatch, CreateBatchWithKey, Delete, DeleteBatch, DeleteStatic,
-        Exists, Model, Patch, Retrieve, RetrieveBatch, RetrieveBatchUnchecked, Row, Save, Update,
-        UpdateBatch, UpdateBatchUnchecked,
+        Exists, Model, ModelBackedSchema, Patch, Retrieve, RetrieveBatch, RetrieveBatchUnchecked,
+        Row, Save, Update, UpdateBatch, UpdateBatchUnchecked,
     };
 }
 

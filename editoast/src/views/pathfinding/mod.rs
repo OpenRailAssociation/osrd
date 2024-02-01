@@ -210,7 +210,7 @@ pub(in crate::views) async fn make_track_map<I: Iterator<Item = String> + Send>(
     infra_id: i64,
     it: I,
 ) -> Result<TrackMap> {
-    use crate::modelsv2::*;
+    use crate::modelsv2::prelude::*;
     let ids = it.map(|id| (infra_id, id));
     let track_sections: Vec<_> = TrackSectionModel::retrieve_batch_or_fail(conn, ids, |missing| {
         PathfindingError::TrackSectionsNotFound {
@@ -220,7 +220,7 @@ pub(in crate::views) async fn make_track_map<I: Iterator<Item = String> + Send>(
     .await?;
     Ok(track_sections
         .into_iter()
-        .map(|TrackSectionModel { obj_id, data, .. }| (obj_id, data))
+        .map(|TrackSectionModel { obj_id, schema, .. }| (obj_id, schema))
         .collect())
 }
 
