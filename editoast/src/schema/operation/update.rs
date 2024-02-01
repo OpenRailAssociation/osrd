@@ -1,4 +1,5 @@
 use crate::error::Result;
+use crate::modelsv2::get_table;
 use crate::schema::operation::RailjsonObject;
 use crate::schema::{OSRDIdentified, ObjectType};
 use diesel::result::Error as DieselError;
@@ -25,7 +26,7 @@ impl UpdateOperation {
 
         let mut obj: DataObject = match sql_query(format!(
             "SELECT data FROM {} WHERE infra_id = $1 AND obj_id = $2",
-            self.obj_type.get_table()
+            get_table(&self.obj_type)
         ))
         .bind::<BigInt, _>(infra_id)
         .bind::<Text, _>(&self.obj_id)
@@ -49,7 +50,7 @@ impl UpdateOperation {
         // Save new object
         match sql_query(format!(
             "UPDATE {} SET data = $1 WHERE infra_id = $2 AND obj_id = $3",
-            self.obj_type.get_table()
+            get_table(&self.obj_type)
         ))
         .bind::<Json, _>(obj.data)
         .bind::<BigInt, _>(infra_id)

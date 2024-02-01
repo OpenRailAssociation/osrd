@@ -1,5 +1,6 @@
 use super::OperationError;
 use crate::error::Result;
+use crate::modelsv2::get_table;
 use crate::schema::ObjectRef;
 use crate::schema::ObjectType;
 use diesel::sql_query;
@@ -19,7 +20,7 @@ impl DeleteOperation {
     pub async fn apply(&self, infra_id: i64, conn: &mut PgConnection) -> Result<()> {
         match sql_query(format!(
             "DELETE FROM {} WHERE obj_id = $1 AND infra_id = $2",
-            self.obj_type.get_table()
+            get_table(&self.obj_type)
         ))
         .bind::<Text, _>(&self.obj_id)
         .bind::<BigInt, _>(&infra_id)

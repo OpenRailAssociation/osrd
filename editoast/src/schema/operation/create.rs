@@ -1,4 +1,5 @@
 use crate::error::Result;
+use crate::modelsv2::get_table;
 use crate::schema::{
     BufferStop, Detector, Electrification, NeutralSection, OSRDIdentified, OSRDObject, ObjectType,
     OperationalPoint, Route, Signal, SpeedSection, Switch, SwitchType, TrackSection,
@@ -38,7 +39,7 @@ pub async fn apply_create_operation<'r>(
     }
     sql_query(format!(
         "INSERT INTO {} (infra_id, obj_id, data) VALUES ($1, $2, $3)",
-        railjson_object.get_type().get_table()
+        get_table(&railjson_object.get_type())
     ))
     .bind::<BigInt, _>(infra_id)
     .bind::<Text, _>(railjson_object.get_id())

@@ -541,6 +541,7 @@ pub mod tests {
         db_pool, empty_infra, named_other_rolling_stock, small_infra, TestFixture,
     };
     use crate::generated_data;
+    use crate::modelsv2::{get_geometry_layer_table, get_table};
     use crate::schema::operation::{Operation, RailjsonObject};
     use crate::schema::{Electrification, ObjectType, SpeedSection, SwitchType};
     use crate::views::tests::{create_test_service, create_test_service_with_core_client};
@@ -635,8 +636,8 @@ pub mod tests {
 
         let mut tables = vec!["infra_layer_error"];
         for object in ObjectType::iter() {
-            tables.push(object.get_table());
-            if let Some(layer_table) = object.get_geometry_layer_table() {
+            tables.push(get_table(&object));
+            if let Some(layer_table) = get_geometry_layer_table(&object) {
                 tables.push(layer_table);
             }
         }

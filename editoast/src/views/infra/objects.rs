@@ -12,6 +12,7 @@ use serde_json::Value as JsonValue;
 use thiserror::Error;
 
 use crate::error::Result;
+use crate::modelsv2::{get_geometry_layer_table, get_table};
 use crate::schema::{GeoJson, ObjectType};
 use crate::DbPool;
 use editoast_derive::EditoastError;
@@ -64,7 +65,7 @@ async fn get_objects(
         format!(
             "SELECT obj_id as obj_id, data as railjson, NULL as geographic, NULL as schematic
                 FROM {} WHERE infra_id = $1 AND obj_id = ANY($2) ",
-            ObjectType::get_table(&obj_type)
+            get_table(&obj_type)
         )
     } else {
         format!("
@@ -77,8 +78,8 @@ async fn get_objects(
             LEFT JOIN {} AS geometry_table ON object_table.obj_id = geometry_table.obj_id AND object_table.infra_id = geometry_table.infra_id
             WHERE object_table.infra_id = $1 AND object_table.obj_id = ANY($2)
             ",
-            ObjectType::get_table(&obj_type),
-            ObjectType::get_geometry_layer_table(&obj_type).unwrap()
+            get_table(&obj_type),
+            get_geometry_layer_table(&obj_type).unwrap()
         )
     };
 
