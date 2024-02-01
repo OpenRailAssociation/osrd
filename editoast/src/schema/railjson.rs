@@ -2,7 +2,6 @@ use super::{
     BufferStop, Detector, Electrification, NeutralSection, OSRDTyped, OperationalPoint, Route,
     Signal, SpeedSection, Switch, SwitchType, TrackSection,
 };
-use crate::models::RAILJSON_VERSION;
 
 use derivative::Derivative;
 use diesel::{
@@ -14,6 +13,8 @@ use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
 use editoast_derive::EditoastError;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use thiserror::Error;
+
+pub const RAILJSON_VERSION: &str = "3.4.8";
 
 #[derive(Deserialize, Derivative, Serialize, Clone, Debug)]
 #[derivative(Default)]
@@ -81,7 +82,7 @@ pub mod test {
     use crate::models::infra::tests::build_test_infra;
     use crate::models::Create;
     use crate::models::Infra;
-    use crate::models::RAILJSON_VERSION;
+    use crate::schema::railjson::RAILJSON_VERSION;
     use crate::schema::OSRDIdentified;
     use crate::schema::{RailJson, RailjsonError};
     use actix_web::test as actix_test;
