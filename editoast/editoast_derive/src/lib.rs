@@ -1,26 +1,12 @@
 extern crate proc_macro;
 
 mod error;
-mod infra_model;
 mod model;
 mod modelv2;
 mod search;
 
 use proc_macro::TokenStream;
 use syn::{parse_macro_input, DeriveInput};
-
-/// An InfraModel custom derive.
-///
-/// Usage: you should provide a diesel table path, like so
-/// `#[infra_model(table = "crate::tables::infra_object_buffer_stop")]`
-///
-/// The type must be OSRDIdentified, and must be serializable
-///
-/// Provides a type impl with an insertion method, persist_batch
-#[proc_macro_derive(InfraModel, attributes(infra_model))]
-pub fn infra_model(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    infra_model::infra_model(input)
-}
 
 /// An EditoastError custom derive.
 ///
