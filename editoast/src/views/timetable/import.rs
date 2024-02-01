@@ -1,3 +1,4 @@
+use crate::modelsv2::{OperationalPointModel, RetrieveBatch};
 use crate::schema::OperationalPointPart;
 use crate::views::timetable::TimetableError;
 use crate::{core::CoreClient, views::timetable::Path, DbPool};
@@ -11,7 +12,6 @@ use crate::core::pathfinding::{PathfindingRequest, PathfindingWaypoints, Waypoin
 use crate::core::simulation::{CoreTrainSchedule, SimulationRequest, TrainStop};
 use crate::core::AsCoreRequest;
 use crate::error::{InternalError, Result};
-use crate::models::infra_objects::operational_point::OperationalPointModel;
 use crate::models::{
     Create, Infra, Pathfinding, Retrieve, RollingStockModel, ScheduledPoint, Timetable,
     TrainSchedule,
@@ -316,14 +316,13 @@ async fn find_operation_points(
     conn: &mut AsyncPgConnection,
 ) -> Result<std::result::Result<OperationalPointsToParts, TimetableImportError>> {
     // Retrieve operational points
-    let ops_from_uic: Vec<OperationalPointModel> =
-        OperationalPointModel::retrieve_from_uic(conn, infra_id, ops_uic).await?;
+    let ops_from_uic = OperationalPointModel::retrieve_from_uic(conn, infra_id, ops_uic).await?;
     let mut op_uic_to_parts = HashMap::<_, Vec<_>>::new();
     for op in ops_from_uic {
         op_uic_to_parts
-            .entry(op.data.0.extensions.identifier.unwrap().uic)
+            .entry(op.schema.extensions.identifier.unwrap().uic)
             .or_default()
-            .extend(op.data.0.parts);
+            .extend(op.schema.parts);
     }
     let mut missing_uics: Vec<i64> = vec![];
     // If we didn't find all the operational points, we can't run the pathfinding
@@ -335,23 +334,18 @@ async fn find_operation_points(
         });
     }
 
-    let ops_from_ids = OperationalPointModel::retrieve_from_obj_ids(conn, infra_id, ops_id).await?;
+    let ops_full_ids = ops_id.iter().map(|obj_id| (infra_id, obj_id.clone()));
+    let (ops_from_ids, missing_ids) =
+        OperationalPointModel::retrieve_batch::<_, Vec<_>>(conn, ops_full_ids).await?;
     let mut op_id_to_parts = HashMap::<_, Vec<_>>::new();
     for op in ops_from_ids {
         op_id_to_parts
             .entry(op.obj_id)
             .or_default()
-            .extend(op.data.0.parts);
+            .extend(op.schema.parts);
     }
     // If we didn't find all the operational points, we can't run the pathfinding
-    let mut missing_ids: Vec<String> = vec![];
-    if op_id_to_parts.len() != ops_id.len() {
-        ops_id.iter().for_each(|id| {
-            if !op_id_to_parts.contains_key(id) {
-                missing_ids.push(id.to_string())
-            }
-        });
-    }
+    let missing_ids: Vec<String> = missing_ids.into_iter().map(|(_, obj_id)| obj_id).collect();
     if missing_uics.len() + missing_ids.len() > 0 {
         return Ok(Err(TimetableImportError::OperationalPointNotFound {
             missing_uics,

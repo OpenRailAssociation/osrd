@@ -127,10 +127,8 @@ pub mod tests {
     use super::*;
     use crate::{
         fixtures::tests::{db_pool, empty_infra, TestFixture},
-        models::{
-            infra_objects::electrification::Electrification,
-            pathfinding::tests::simple_pathfinding_fixture, Create,
-        },
+        models::pathfinding::tests::simple_pathfinding_fixture,
+        modelsv2::ElectrificationModel,
         schema::{
             ApplicableDirections, ApplicableDirectionsTrackRange,
             Electrification as ElectrificationSchema,
@@ -196,12 +194,13 @@ pub mod tests {
                 ..Default::default()
             },
         ];
-        for (i, electrification_schema) in electrification_schemas.into_iter().enumerate() {
-            Electrification::new(electrification_schema, infra.id(), i.to_string())
-                .create(db_pool.clone())
-                .await
-                .expect("Could not create electrification");
-        }
+        ElectrificationModel::persist_batch(
+            &mut db_pool.get().await.unwrap(),
+            infra.id(),
+            electrification_schemas,
+        )
+        .await
+        .expect("Could not create electrifications");
         infra
     }
 

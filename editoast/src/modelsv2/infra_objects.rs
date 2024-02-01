@@ -157,27 +157,6 @@ impl OperationalPointModel {
             .map(Self::from_row)
             .collect())
     }
-
-    /// Retrieve a list of operational points from the database
-    pub async fn retrieve_from_obj_ids(
-        conn: &mut diesel_async::AsyncPgConnection,
-        infra_id: i64,
-        ids: &[String],
-    ) -> crate::error::Result<Vec<Self>> {
-        use diesel::sql_query;
-        use diesel::sql_types::{Array, BigInt, Text};
-        use diesel_async::RunQueryDsl;
-        let query = "SELECT * FROM infra_object_operational_point
-                                WHERE infra_id = $1 AND infra_object_operational_point.obj_id = ANY($2)".to_string();
-        Ok(sql_query(query)
-            .bind::<BigInt, _>(infra_id)
-            .bind::<Array<Text>, _>(ids)
-            .load(conn)
-            .await?
-            .into_iter()
-            .map(Self::from_row)
-            .collect())
-    }
 }
 
 #[cfg(test)]
