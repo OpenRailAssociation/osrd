@@ -128,7 +128,7 @@ pub mod tests {
     use crate::{
         fixtures::tests::{db_pool, empty_infra, TestFixture},
         models::pathfinding::tests::simple_pathfinding_fixture,
-        modelsv2::ElectrificationModel,
+        modelsv2::{prelude::*, ElectrificationModel},
         schema::{
             ApplicableDirections, ApplicableDirectionsTrackRange,
             Electrification as ElectrificationSchema,
@@ -194,10 +194,9 @@ pub mod tests {
                 ..Default::default()
             },
         ];
-        ElectrificationModel::persist_batch(
+        ElectrificationModel::create_batch::<_, Vec<_>>(
             &mut db_pool.get().await.unwrap(),
-            infra.id(),
-            electrification_schemas,
+            ElectrificationModel::from_infra_schemas(infra.id(), electrification_schemas),
         )
         .await
         .expect("Could not create electrifications");

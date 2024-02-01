@@ -4,12 +4,8 @@ use super::{Create, Delete, List, NoParams, Update};
 use crate::error::Result;
 use crate::infra_cache::InfraCache;
 use crate::models::{Identifiable, Retrieve};
-use crate::modelsv2::{
-    BufferStopModel, DetectorModel, ElectrificationModel, NeutralSectionModel,
-    OperationalPointModel, RouteModel, SignalModel, SpeedSectionModel, SwitchModel,
-    SwitchTypeModel, TrackSectionModel,
-};
-use crate::schema::{ObjectType, RailJson, RailjsonError, RAILJSON_VERSION};
+use crate::modelsv2::railjson::persist_railjson;
+use crate::schema::{ObjectType, RailJson, RAILJSON_VERSION};
 use crate::tables::infra;
 use crate::tables::infra::dsl;
 use crate::views::pagination::{Paginate, PaginatedResponse};
@@ -110,70 +106,17 @@ impl Infra {
     }
 
     pub async fn persist(self, railjson: RailJson, db_pool: Data<DbPool>) -> Result<Infra> {
-        if railjson.version != RAILJSON_VERSION {
-            return Err(RailjsonError::WrongVersion(railjson.version).into());
-        }
-        let mut conn_pool = try_join_all(vec![
-            db_pool.get(),
-            db_pool.get(),
-            db_pool.get(),
-            db_pool.get(),
-            db_pool.get(),
-            db_pool.get(),
-            db_pool.get(),
-            db_pool.get(),
-            db_pool.get(),
-            db_pool.get(),
-            db_pool.get(),
-        ])
-        .await?;
-        let infra = self.create_conn(&mut conn_pool[0]).await?;
+        let conn = &mut db_pool.get().await?;
+        let infra = self.create_conn(conn).await?;
         let infra_id = infra.id.unwrap();
-
         debug!("🛤  Begin importing all railjson objects");
-        let RailJson {
-            track_sections,
-            buffer_stops,
-            electrifications,
-            detectors,
-            operational_points,
-            routes,
-            signals,
-            switches,
-            speed_sections,
-            extended_switch_types,
-            neutral_sections,
-            ..
-        } = railjson;
-        let mut conns = conn_pool.iter_mut();
-        let res = futures::try_join!(
-            TrackSectionModel::persist_batch(conns.next().unwrap(), infra_id, track_sections),
-            BufferStopModel::persist_batch(conns.next().unwrap(), infra_id, buffer_stops),
-            ElectrificationModel::persist_batch(conns.next().unwrap(), infra_id, electrifications),
-            DetectorModel::persist_batch(conns.next().unwrap(), infra_id, detectors),
-            OperationalPointModel::persist_batch(
-                conns.next().unwrap(),
-                infra_id,
-                operational_points
-            ),
-            RouteModel::persist_batch(conns.next().unwrap(), infra_id, routes),
-            SignalModel::persist_batch(conns.next().unwrap(), infra_id, signals),
-            SwitchModel::persist_batch(conns.next().unwrap(), infra_id, switches),
-            SpeedSectionModel::persist_batch(conns.next().unwrap(), infra_id, speed_sections),
-            SwitchTypeModel::persist_batch(conns.next().unwrap(), infra_id, extended_switch_types),
-            NeutralSectionModel::persist_batch(conns.next().unwrap(), infra_id, neutral_sections),
-        );
-        match res {
-            Err(err) => {
-                error!("Could not import infrastructure {infra_id}. Rolling back");
-                Infra::delete_conn(&mut conn_pool[0], infra_id).await?;
-                Err(err)
-            }
-            Ok(_) => {
-                debug!("🛤  Import finished successfully");
-                Ok(infra)
-            }
-        }
+        if let Err(e) = persist_railjson(db_pool.into_inner(), infra_id, railjson).await {
+            error!("Could not import infrastructure {infra_id}. Rolling back");
+            Infra::delete_conn(conn, infra_id).await?;
+            return Err(e);
+        };
+        debug!("🛤  Import finished successfully");
+        Ok(infra)
     }
 
     pub async fn clone(

@@ -10,9 +10,7 @@ use diesel::{
     QueryableByName,
 };
 use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
-use editoast_derive::EditoastError;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
-use thiserror::Error;
 
 pub const RAILJSON_VERSION: &str = "3.4.8";
 
@@ -33,13 +31,6 @@ pub struct RailJson {
     pub signals: Vec<Signal>,
     pub buffer_stops: Vec<BufferStop>,
     pub detectors: Vec<Detector>,
-}
-
-#[derive(Debug, Error, EditoastError)]
-#[editoast_error(base_id = "railjson")]
-pub enum RailjsonError {
-    #[error("Wrong railjson version '{0}'. Should be {}", RAILJSON_VERSION)]
-    WrongVersion(String),
 }
 
 #[derive(QueryableByName, Debug, Clone)]
@@ -80,11 +71,11 @@ pub mod test {
     use crate::error::EditoastError;
     use crate::error::Result;
     use crate::models::infra::tests::build_test_infra;
-    use crate::models::Create;
     use crate::models::Infra;
+    use crate::modelsv2::railjson::RailJsonError;
     use crate::schema::railjson::RAILJSON_VERSION;
     use crate::schema::OSRDIdentified;
-    use crate::schema::{RailJson, RailjsonError};
+    use crate::schema::RailJson;
     use actix_web::test as actix_test;
     use actix_web::web::Data;
     use diesel_async::pooled_connection::deadpool::Pool;
@@ -100,14 +91,13 @@ pub mod test {
             .expect("cannot get postgres config url");
         let manager = ConnectionManager::<PgConnection>::new(pg_config_url);
         let pool = Data::new(Pool::builder(manager).max_size(1).build().unwrap());
-        let infra = infra.create(pool.clone()).await.unwrap();
         let railjson_with_invalid_version = RailJson {
             version: "0".to_string(),
             ..Default::default()
         };
         let res = infra.persist(railjson_with_invalid_version, pool).await;
         assert!(res.is_err());
-        let expected_error = RailjsonError::WrongVersion("0".to_string());
+        let expected_error = RailJsonError::UnsupportedVersion("0".to_string());
         assert_eq!(res.unwrap_err().get_type(), expected_error.get_type(),);
     }
 
