@@ -1,5 +1,6 @@
 pub mod documents;
 pub mod infra_objects;
+pub mod railjson;
 
 pub use documents::Document;
 pub use infra_objects::*;
@@ -17,7 +18,7 @@ pub mod prelude {
     pub use super::{
         Changeset, Create, CreateBatch, CreateBatchWithKey, Delete, DeleteBatch, DeleteStatic,
         Exists, Model, ModelBackedSchema, Patch, Retrieve, RetrieveBatch, RetrieveBatchUnchecked,
-        Row, Save, Update, UpdateBatch, UpdateBatchUnchecked,
+        Row, Save, SchemaModel, Update, UpdateBatch, UpdateBatchUnchecked,
     };
 }
 

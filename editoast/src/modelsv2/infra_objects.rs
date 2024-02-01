@@ -6,7 +6,14 @@ use serde::{Deserialize, Serialize};
 use std::ops::{Deref, DerefMut};
 
 pub trait ModelBackedSchema {
-    type Model: Model;
+    type Model: SchemaModel;
+}
+
+pub trait SchemaModel: Model {
+    type Schema: ModelBackedSchema;
+
+    /// Creates a changeset for this infra object with a random obj_id and no infra_id set
+    fn new_from_schema(schema: Self::Schema) -> Changeset<Self>;
 }
 
 macro_rules! infra_model {
@@ -26,27 +33,30 @@ macro_rules! infra_model {
             type Model = $name;
         }
 
-        impl $name {
-            /// Creates a changeset for this infra object with a random obj_id
-            pub fn new_from_schema(schema: $data) -> Changeset<Self> {
+        impl SchemaModel for $name {
+            type Schema = $data;
+
+            fn new_from_schema(schema: Self::Schema) -> Changeset<Self> {
                 // TODO: remove the `id` field of the schemas and replace it by
                 // a `modelsv2::ObjectId` type, whose `Default` yields a new UUID
                 use crate::schema::OSRDIdentified;
                 let obj_id = schema.get_id().clone();
                 Self::changeset().schema(schema).obj_id(obj_id)
             }
+        }
 
-            pub async fn persist_batch(
-                conn: &mut diesel_async::AsyncPgConnection,
+        impl $name {
+            /// Converts all schemas into changesets of this infra object model
+            ///
+            /// Each changeset will have a random obj_id and the provided infra_id set.
+            pub fn from_infra_schemas(
                 infra_id: i64,
                 schemas: impl IntoIterator<Item = $data>,
-            ) -> crate::error::Result<()> {
-                let cs = schemas
+            ) -> Vec<Changeset<Self>> {
+                schemas
                     .into_iter()
                     .map(|schema| Self::new_from_schema(schema).infra_id(infra_id))
-                    .collect::<Vec<_>>();
-                let _: Vec<_> = Self::create_batch(conn, cs).await?;
-                Ok(())
+                    .collect()
             }
         }
 
@@ -171,8 +181,9 @@ mod test_persist {
                 async fn [<test_persist_ $obj:snake>]() {
                     crate::models::infra::tests::test_infra_transaction(|conn, infra| {
                         async move {
-                            let cs = (0..10).map(|_| Default::default());
-                            assert!($obj::persist_batch(conn, infra.id.unwrap(), cs).await.is_ok());
+                            let schemas = (0..10).map(|_| Default::default());
+                            let changesets = $obj::from_infra_schemas(infra.id.unwrap(), schemas);
+                            assert!($obj::create_batch::<_, Vec<_>>(conn, changesets).await.is_ok());
                         }.scope_boxed()
                     }).await;
                 }
