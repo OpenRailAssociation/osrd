@@ -9,7 +9,7 @@ use crate::modelsv2::{
     OperationalPointModel, RouteModel, SignalModel, SpeedSectionModel, SwitchModel,
     SwitchTypeModel, TrackSectionModel,
 };
-use crate::schema::{ObjectType, RailJson, RailjsonError};
+use crate::schema::{ObjectType, RailJson, RailjsonError, RAILJSON_VERSION};
 use crate::tables::infra;
 use crate::tables::infra::dsl;
 use crate::views::pagination::{Paginate, PaginatedResponse};
@@ -31,7 +31,6 @@ use strum::IntoEnumIterator;
 use thiserror::Error;
 use uuid::Uuid;
 
-pub const RAILJSON_VERSION: &str = "3.4.8";
 pub const INFRA_VERSION: &str = "0";
 
 #[derive(
@@ -330,7 +329,8 @@ pub mod tests {
     use crate::client::PostgresConfig;
     use crate::fixtures::tests::{db_pool, small_infra};
     use crate::models::infra::{InfraError, INFRA_VERSION};
-    use crate::models::{Create, RAILJSON_VERSION};
+    use crate::models::Create;
+    use crate::schema::RAILJSON_VERSION;
     use crate::{Data, DbPool};
     use actix_web::test as actix_test;
     use chrono::Utc;
