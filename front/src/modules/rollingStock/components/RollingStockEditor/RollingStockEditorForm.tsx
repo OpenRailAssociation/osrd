@@ -184,10 +184,8 @@ const RollingStockEditorForm = ({
       return;
     }
 
-    const { invalidFields, validRollingStockForm } = checkRollingStockFormValidity(
-      data,
-      effortCurves
-    );
+    const { invalidFields, validRollingStockForm, invalidEffortCurves } =
+      checkRollingStockFormValidity(data, effortCurves, t);
     if (invalidFields.length) {
       setRollingStockValues(validRollingStockForm);
       setErrorMessage(
@@ -196,18 +194,27 @@ const RollingStockEditorForm = ({
           count: invalidFields.length,
         })
       );
-    } else {
-      setErrorMessage('');
-      const payload = rollingStockEditorQueryArg(validRollingStockForm, effortCurves!);
-      openModal(
-        <RollingStockEditorFormModal
-          setAddOrEditState={setAddOrEditState}
-          request={isAdding ? addNewRollingstock(payload) : updateRollingStock(payload)}
-          mainText={t('confirmUpdateRollingStock')}
-          buttonText={t('translation:common.yes')}
-        />
-      );
+
+      return;
     }
+
+    if (invalidEffortCurves.length > 0) {
+      setErrorMessage(
+        t('messages.invalidEffortCurves', { invalidEffortCurves: invalidEffortCurves.join(', ') })
+      );
+      return;
+    }
+
+    setErrorMessage('');
+    const payload = rollingStockEditorQueryArg(validRollingStockForm, effortCurves!);
+    openModal(
+      <RollingStockEditorFormModal
+        setAddOrEditState={setAddOrEditState}
+        request={isAdding ? addNewRollingstock(payload) : updateRollingStock(payload)}
+        mainText={t('confirmUpdateRollingStock')}
+        buttonText={t('translation:common.yes')}
+      />
+    );
   };
 
   const cancel = () => {
@@ -297,9 +304,7 @@ const RollingStockEditorForm = ({
       <Tabs pills fullWidth tabs={[tabRollingStockDetails, tabRollingStockCurves]} />
       <div className="d-flex justify-content-end">
         <div className="d-flex flex-column justify-content-end">
-          {errorMessage && (
-            <p className="text-danger mb-1 ml-auto error-message text-wrap">{errorMessage}</p>
-          )}
+          {errorMessage && <p className="text-danger mb-1 p-3">{errorMessage}</p>}
           <div className="d-flex justify-content-end">
             <button
               type="button"

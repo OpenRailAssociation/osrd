@@ -176,8 +176,13 @@ type Conditions = Record<string, (effortCurves: EffortCurveForms | null) => bool
 
 export const checkRollingStockFormValidity = (
   rollingStockForm: RollingStockParametersValues,
-  effortCurves: EffortCurveForms | null
-): { invalidFields: string[]; validRollingStockForm: RollingStockParametersValidValues } => {
+  effortCurves: EffortCurveForms | null,
+  t: TFunction
+): {
+  invalidFields: string[];
+  validRollingStockForm: RollingStockParametersValidValues;
+  invalidEffortCurves: string[];
+} => {
   const conditions = RS_SCHEMA_PROPERTIES.reduce<Conditions>((acc, val) => {
     if (val.condition) {
       return { ...acc, [val.title]: val.condition };
@@ -196,13 +201,48 @@ export const checkRollingStockFormValidity = (
     return false;
   });
 
+  let invalidEffortCurves: string[] = [];
+  Object.entries(effortCurves || {}).forEach(([mode, { curves }]) => {
+    curves.forEach(
+      ({ curve, cond: { comfort, electrical_profile_level, power_restriction_code } }) => {
+        const filteredCurve = filterUndefinedValueInCurve(curve);
+
+        if (
+          filteredCurve.max_efforts.length < 2 ||
+          filteredCurve.speeds.length < 2 ||
+          new Set(filteredCurve.speeds).size !== filteredCurve.speeds.length
+        ) {
+          const formattedComfort = formatCurveCondition(comfort, t, 'comfortTypes');
+          const formattedElecProfile = formatCurveCondition(electrical_profile_level, t);
+          const formattedResCode = formatCurveCondition(power_restriction_code, t);
+
+          invalidEffortCurves = [
+            ...invalidEffortCurves,
+            `${formattedComfort} > ${t(mode)} > ${formattedElecProfile} > ${formattedResCode}`,
+          ];
+        }
+      }
+    );
+  });
+
   return {
     invalidFields,
     validRollingStockForm: {
       ...pick(RS_REQUIRED_FIELDS, invalidFields),
       ...omit(rollingStockForm, invalidFields),
     } as RollingStockParametersValidValues,
+    invalidEffortCurves,
   };
+};
+
+const formatCurveCondition = (
+  conditionValue: string | null,
+  t: TFunction,
+  translationCategory?: string
+): string => {
+  if (conditionValue === null) return t('unspecified');
+  if (translationCategory) return t(getTranslationKey(translationCategory, conditionValue));
+  return t(conditionValue);
 };
 
 export const createEmptyCurve = (
