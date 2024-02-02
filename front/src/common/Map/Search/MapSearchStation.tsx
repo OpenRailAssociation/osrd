@@ -149,6 +149,7 @@ const MapSearchStation = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchS
             clearButton
             noMargin
             sm
+            focus
           />
         </span>
         <span className="col-md-3 pl-0 mb-2">

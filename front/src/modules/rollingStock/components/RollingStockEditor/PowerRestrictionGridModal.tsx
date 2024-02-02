@@ -1,9 +1,10 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Grid from 'common/Grid/Grid';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { ModalBodySNCF, ModalHeaderSNCF, useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { splitArrayByFirstLetter } from 'utils/array';
+import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 
 type PowerRestrictionGridModalProps = {
   powerRestrictionsList: string[];
@@ -35,50 +36,7 @@ const PowerRestrictionGridModal = ({
     closeModal();
   };
 
-  // Allow the user to escape the modal by pressing escape and to trap the focus inside it
-  useEffect(() => {
-    const modalElement = modalRef.current;
-
-    const focusableElements = modalElement?.querySelectorAll(
-      // last declaration stands for all elements not natively focusable like li
-      'input, button, [tabindex]:not([tabindex="-1"])'
-    ) as NodeListOf<Element>;
-
-    const firstElement = focusableElements[0] as HTMLElement;
-    const lastElement = focusableElements[focusableElements?.length - 1] as HTMLElement;
-
-    /**
-     *
-     * Prevent the tab event and set focus on :
-     * - last element if we are pressing on "shift" in addition to "tab" and are on the first element
-     * - first element if we are only pressing "tab" and are on the last element
-     */
-    const handleTabKeyPress = (event: KeyboardEvent) => {
-      if (event.key === 'Tab') {
-        if (event.shiftKey && document.activeElement === firstElement) {
-          event.preventDefault();
-          lastElement.focus();
-        } else if (!event.shiftKey && document.activeElement === lastElement) {
-          event.preventDefault();
-          firstElement.focus();
-        }
-      }
-    };
-
-    const handleEscapeKeyPress = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        closeModal();
-      }
-    };
-
-    modalElement?.addEventListener('keydown', handleTabKeyPress);
-    modalElement?.addEventListener('keydown', handleEscapeKeyPress);
-
-    return () => {
-      modalElement?.removeEventListener('keydown', handleTabKeyPress);
-      modalElement?.removeEventListener('keydown', handleEscapeKeyPress);
-    };
-  }, []);
+  useModalFocusTrap(modalRef, closeModal);
 
   return (
     <div className="p-2" ref={modalRef}>

@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
@@ -30,6 +30,7 @@ import type { ProjectWithStudies, ProjectCreateForm } from 'common/api/osrdEdito
 
 import { setFailure, setSuccess } from 'reducers/main';
 import { getUserSafeWord } from 'reducers/user/userSelectors';
+import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 
 const emptyProject: ProjectCreateForm = {
   description: '',
@@ -70,6 +71,8 @@ export default function AddOrEditProjectModal({
   const [deleteProject] = osrdEditoastApi.endpoints.deleteProjectsByProjectId.useMutation();
 
   const { updateProjectID } = useOsrdConfActions();
+
+  const modalRef = useRef<HTMLDivElement>(null);
 
   const removeTag = (idx: number) => {
     if (!currentProject.tags) return;
@@ -217,8 +220,10 @@ export default function AddOrEditProjectModal({
     }
   }, [safeWord]);
 
+  useModalFocusTrap(modalRef, closeModal);
+
   return (
-    <div className="project-edition-modal">
+    <div className="project-edition-modal" ref={modalRef}>
       <ModalHeaderSNCF withCloseButton withBorderBottom>
         <h1 className="project-edition-modal-title">
           {editionMode ? t('projectModificationTitle') : t('projectCreationTitle')}
@@ -242,6 +247,7 @@ export default function AddOrEditProjectModal({
                 type="text"
                 name="projectInputName"
                 data-testid="projectInputName"
+                focus
                 label={
                   <div className="d-flex align-items-center">
                     <span className="mr-2">
