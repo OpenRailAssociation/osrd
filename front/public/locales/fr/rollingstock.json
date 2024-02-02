@@ -71,7 +71,8 @@
     "rollingStockDuplicateName": "Un matériel roulant du même nom existe déjà.",
     "rollingStockNotAdded": "Le matériel roulant n'a pas été ajouté.",
     "rollingStockNotUpdated": "Le matériel roulant n'a pas été mis à jour.",
-    "rollingStockNotDeleted": "Le matériel roulant n'a pas été supprimé."
+    "rollingStockNotDeleted": "Le matériel roulant n'a pas été supprimé.",
+    "invalidEffortCurves": "Courbes invalides : {{invalidEffortCurves}}. Chaque courbe doit posséder au moins 2 combinaisons de valeurs vitesse / effort (sans doublon sur les valeurs de vitesse). Les combinaisons ayant au moins un champs vide sont ignorées."
   },
   "name": "Nom",
   "no": "Non",

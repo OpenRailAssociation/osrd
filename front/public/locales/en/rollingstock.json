@@ -69,7 +69,8 @@
     "rollingStockDuplicateName": "Rolling stock of the same name already exists.",
     "rollingStockNotAdded": "Rolling stock not added",
     "rollingStockNotUpdated": "Rolling stock not updated",
-    "rollingStockNotDeleted": "Rolling stock not deleted"
+    "rollingStockNotDeleted": "Rolling stock not deleted",
+    "invalidEffortCurves": "Invalid curves: {{invalidEffortCurves}}. Each curve must have at least 2 combinations of speed / effort values (with no duplication of speed values). Combinations with at least one empty field are ignored."
   },
   "name": "Name",
   "no": "No",
