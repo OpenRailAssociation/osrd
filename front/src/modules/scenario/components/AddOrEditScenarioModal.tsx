@@ -1,5 +1,5 @@
 import cx from 'classnames';
-import React, { useContext, useEffect, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { GoPencil, GoTrash } from 'react-icons/go';
 import { FaPlus } from 'react-icons/fa';
@@ -25,6 +25,7 @@ import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { InfraSelectorModal } from 'modules/infra/components/InfraSelector';
 import { setFailure, setSuccess } from 'reducers/main';
+import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 
 type CreateOrPatchScenarioForm = ScenarioPatchForm & {
   id?: number;
@@ -86,6 +87,7 @@ export default function AddOrEditScenarioModal({
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const infraID = useInfraID();
+  const modalRef = useRef<HTMLDivElement>(null);
 
   const selectedValue = useMemo(() => {
     if (currentScenario.electrical_profile_set_id) {
@@ -203,11 +205,12 @@ export default function AddOrEditScenarioModal({
 
   useEffect(() => {
     setCurrentScenario({ ...currentScenario, infra_id: infraID });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [infraID]);
 
+  useModalFocusTrap(modalRef, closeModal);
+
   return (
-    <div className="scenario-edition-modal">
+    <div className="scenario-edition-modal" ref={modalRef}>
       <ModalHeaderSNCF withCloseButton withBorderBottom>
         <h1 className="scenario-edition-modal-title">
           {editionMode ? t('scenarioModificationTitle') : t('scenarioCreationTitle')}
@@ -221,6 +224,7 @@ export default function AddOrEditScenarioModal({
                 id="scenarioInputName"
                 type="text"
                 name="scenarioInputName"
+                focus
                 label={
                   <div className="d-flex align-items-center">
                     <span className="mr-2">

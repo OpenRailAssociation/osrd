@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -28,6 +28,7 @@ import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import type { StudyCreateForm } from 'common/api/osrdEditoastApi';
 
 import { setFailure, setSuccess } from 'reducers/main';
+import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 
 export interface StudyForm extends StudyCreateForm {
   id?: number;
@@ -64,6 +65,8 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
   const studyStateOptions = createSelectOptions('studyStates', studyStates);
 
   const studyCategoriesOptions = createSelectOptions('studyCategories', studyTypes);
+
+  const modalRef = useRef<HTMLDivElement>(null);
 
   const removeTag = (idx: number) => {
     const newTags = [...(currentStudy.tags || [])];
@@ -158,8 +161,10 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
     };
   }, [currentStudy?.start_date, currentStudy?.expected_end_date, currentStudy?.actual_end_date]);
 
+  useModalFocusTrap(modalRef, closeModal);
+
   return (
-    <div className="study-edition-modal">
+    <div className="study-edition-modal" ref={modalRef}>
       <ModalHeaderSNCF withCloseButton withBorderBottom>
         <h1 className="study-edition-modal-title">
           <img src={studyLogo} alt="Study Logo" />
@@ -172,6 +177,7 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
             id="studyInputName"
             type="text"
             name="studyInputName"
+            focus
             label={
               <div className="d-flex align-items-center">
                 <span className="mr-2">
