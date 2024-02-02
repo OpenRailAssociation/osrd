@@ -202,8 +202,13 @@ jobs:
           exit 1
         fi
 
+        if commit_titles | grep -P -v '^[\x00-\x7F]*$'; then
+          echo "Commit titles must be ascii only"
+          exit 1
+        fi
+
         # Check that commit contains ':' (and no autosquashable commit using '!')
-        if commit_titles | grep -E -v '^([-.a-z]+[,:] )*[-.a-z]+: [a-z][a-z0-9 _.,+-`/]*$'; then
+        if commit_titles | grep -E -v '^([-_.a-z]+[,:] )*[-_.a-z]+: [a-z][^#:]*$'; then
           echo "All commit messages must use the following format:"
           echo "  core: add fancy margin support"
           echo
