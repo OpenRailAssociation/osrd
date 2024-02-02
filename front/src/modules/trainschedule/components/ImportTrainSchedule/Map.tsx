@@ -27,8 +27,6 @@ import OperationalPoints from 'common/Map/Layers/OperationalPoints';
 
 import { getMapStyle } from 'reducers/map/selectors';
 
-import 'common/Map/Map.scss';
-
 interface MapProps {
   viewport: { latitude: number; longitude: number };
   setViewport: (viewPort: { latitude: number; longitude: number }) => void;

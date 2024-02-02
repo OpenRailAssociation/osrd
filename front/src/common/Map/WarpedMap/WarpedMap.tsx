@@ -10,7 +10,7 @@ import { LngLatBoundsLike } from 'maplibre-gl';
 import { LAYERS, LAYER_ENTITIES_ORDERS, LAYER_GROUPS_ORDER } from 'config/layerOrder';
 import colors from 'common/Map/Consts/colors';
 import { ALL_SIGNAL_LAYERS } from 'common/Map/Consts/SignalsNames';
-import { LayerType } from 'applications/editor/tools/types';
+import { Layer as LayerType } from 'applications/editor/consts';
 import { TrainPosition } from 'modules/simulationResult/components/SimulationResultsMap/types';
 import VirtualLayers from 'modules/simulationResult/components/SimulationResultsMap/VirtualLayers';
 import RenderItinerary from 'modules/simulationResult/components/SimulationResultsMap/RenderItinerary';

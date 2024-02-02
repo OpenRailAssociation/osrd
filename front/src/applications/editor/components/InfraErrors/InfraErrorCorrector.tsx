@@ -2,9 +2,9 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
-import { getEditorState } from 'reducers/editor/selectors';
-import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import magicWandIcon from 'assets/pictures/magic_wand.svg';
+import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
+import { getEditorState } from 'reducers/editor/selectors';
 import InfraErrorCorrectorModal from './InfraErrorCorrectorModal';
 
 const InfraErrorCorrector = () => {

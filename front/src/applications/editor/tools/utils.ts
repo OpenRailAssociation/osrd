@@ -10,26 +10,29 @@ import type { BBox2d } from '@turf/helpers/dist/js/lib/geojson';
 import type { Feature, LineString, Point } from 'geojson';
 import { uniq } from 'lodash';
 
-import type {
-  Bbox,
-  BufferStopEntity,
-  ElectrificationEntity,
-  DetectorEntity,
-  EditorEntity,
-  RouteEntity,
-  SignalEntity,
-  SpeedSectionEntity,
-  SwitchEntity,
-  TrackSectionEntity,
-} from 'types';
 import { getEntity } from 'applications/editor/data/api';
-import TOOL_TYPES from 'applications/editor/tools/toolTypes';
-import { EDITOAST_TO_LAYER_DICT } from 'applications/editor/tools/types';
-import type { TrackState } from 'applications/editor/tools/rangeEdition/types';
-import type { EditoastType, EditorState } from 'applications/editor/tools/types';
-import type { EditorContextType } from 'applications/editor/tools/editorContextTypes';
-import { editorSliceActions } from 'reducers/editor';
-import { getRouteEditionState } from './routeEdition/utils';
+import { EDITOAST_TO_LAYER_DICT } from 'applications/editor/consts';
+import TOOL_NAMES from 'applications/editor/tools/constsToolNames';
+import type {
+  ElectrificationEntity,
+  SpeedSectionEntity,
+  TrackState,
+} from 'applications/editor/tools/rangeEdition/types';
+import { getRouteEditionState } from 'applications/editor/tools/routeEdition/utils';
+import type { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
+import type {
+  BufferStopEntity,
+  DetectorEntity,
+  SignalEntity,
+} from 'applications/editor/tools/pointEdition/types';
+import type { SwitchEntity } from 'applications/editor/tools/switchEdition/types';
+import type { RouteEntity } from 'applications/editor/tools/routeEdition/types';
+import type { EditoastType } from 'applications/editor/consts';
+import type { EditorContextType } from 'applications/editor/types';
+import { EditorEntity } from 'applications/editor/typesEditorEntity';
+import type { Bbox } from 'types';
+
+import { type EditorState, editorSliceActions } from 'reducers/editor';
 
 /**
  * Since Turf and Editoast do not compute the lengths the same way (see #1751)
@@ -101,7 +104,7 @@ export function selectEntities(
   const { switchTool, dispatch, editorState } = context;
   // call the switch tool
   switchTool({
-    toolType: TOOL_TYPES.SELECTION,
+    toolType: TOOL_NAMES.SELECTION,
     toolState: { selection: entities },
   });
 
@@ -133,7 +136,7 @@ export function openEntityEditionPanel(
   switch (entity.objType) {
     case 'TrackSection':
       switchTool({
-        toolType: TOOL_TYPES.TRACK_EDITION,
+        toolType: TOOL_NAMES.TRACK_EDITION,
         toolState: {
           initialTrack: entity as TrackSectionEntity,
           track: entity as TrackSectionEntity,
@@ -145,7 +148,7 @@ export function openEntityEditionPanel(
       break;
     case 'Signal':
       switchTool({
-        toolType: TOOL_TYPES.SIGNAL_EDITION,
+        toolType: TOOL_NAMES.SIGNAL_EDITION,
         toolState: {
           initialEntity: entity as SignalEntity,
           entity: entity as SignalEntity,
@@ -154,7 +157,7 @@ export function openEntityEditionPanel(
       break;
     case 'BufferStop':
       switchTool({
-        toolType: TOOL_TYPES.BUFFER_STOP_EDITION,
+        toolType: TOOL_NAMES.BUFFER_STOP_EDITION,
         toolState: {
           initialEntity: entity as BufferStopEntity,
           entity: entity as BufferStopEntity,
@@ -163,7 +166,7 @@ export function openEntityEditionPanel(
       break;
     case 'Detector':
       switchTool({
-        toolType: TOOL_TYPES.DETECTOR_EDITION,
+        toolType: TOOL_NAMES.DETECTOR_EDITION,
         toolState: {
           initialEntity: entity as DetectorEntity,
           entity: entity as DetectorEntity,
@@ -172,7 +175,7 @@ export function openEntityEditionPanel(
       break;
     case 'Switch':
       switchTool({
-        toolType: TOOL_TYPES.SWITCH_EDITION,
+        toolType: TOOL_NAMES.SWITCH_EDITION,
         toolState: {
           initialEntity: entity as SwitchEntity,
           entity: entity as SwitchEntity,
@@ -181,7 +184,7 @@ export function openEntityEditionPanel(
       break;
     case 'SpeedSection':
       switchTool({
-        toolType: TOOL_TYPES.SPEED_SECTION_EDITION,
+        toolType: TOOL_NAMES.SPEED_SECTION_EDITION,
         toolState: {
           initialEntity: entity as SpeedSectionEntity,
           entity: entity as SpeedSectionEntity,
@@ -190,7 +193,7 @@ export function openEntityEditionPanel(
       break;
     case 'Electrification':
       switchTool({
-        toolType: TOOL_TYPES.ELECTRIFICATION_EDITION,
+        toolType: TOOL_NAMES.ELECTRIFICATION_EDITION,
         toolState: {
           initialEntity: entity as ElectrificationEntity,
           entity: entity as ElectrificationEntity,
@@ -199,7 +202,7 @@ export function openEntityEditionPanel(
       break;
     case 'Route':
       switchTool({
-        toolType: TOOL_TYPES.ROUTE_EDITION,
+        toolType: TOOL_NAMES.ROUTE_EDITION,
         toolState: getRouteEditionState(entity as RouteEntity),
       });
       break;

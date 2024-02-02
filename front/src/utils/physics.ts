@@ -12,7 +12,7 @@ export function kmhToMs(v: number) {
 }
 
 // Convert m/s to km/h
-export function msTokmh(v: number) {
+export function msToKmh(v: number) {
   return v * 3.6;
 }
 

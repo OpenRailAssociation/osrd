@@ -4,8 +4,11 @@ import { HiSwitchVertical } from 'react-icons/hi';
 import { FaFlagCheckered } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 
-import type { EndPoint, WayPointEntity } from 'types';
-import type { RouteEditionState } from 'applications/editor/tools/routeEdition/types';
+import type {
+  WayPointEntity,
+  RouteEditionState,
+} from 'applications/editor/tools/routeEdition/types';
+import { EndPoint } from 'applications/editor/tools/switchEdition/types';
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import WayPointInput from './WayPointInput';
 

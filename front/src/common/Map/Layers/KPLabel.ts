@@ -1,7 +1,7 @@
 import { ExpressionFilterSpecification } from 'maplibre-gl';
 import { LayerProps, SymbolLayer } from 'react-map-gl/maplibre';
 
-import { OmitLayer, Theme } from 'types';
+import type { OmitLayer, Theme } from 'types';
 
 export default function getKPLabelLayerProps(params: {
   sourceTable?: string;

@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 import type { CellBase, Matrix } from 'react-spreadsheet';
 import type { ConditionalEffortCurveForm, EffortCurveForms } from 'modules/rollingStock/types';
-import { msTokmh } from 'utils/physics';
+import { msToKmh } from 'utils/physics';
 import formatCurve from './formatSpreadSheetCurve';
 
 type CurveSpreadsheetProps = {
@@ -39,7 +39,7 @@ const CurveSpreadsheet = ({
         ? max_efforts.map((effort, index) => [
             {
               value:
-                speeds[index] !== undefined ? Math.round(msTokmh(speeds[index]!)).toString() : '',
+                speeds[index] !== undefined ? Math.round(msToKmh(speeds[index]!)).toString() : '',
             },
             { value: effort !== undefined ? Math.round(effort / 10).toString() : '' },
           ])

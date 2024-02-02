@@ -6,15 +6,20 @@ import { FaMapMarkedAlt, FaTimesCircle } from 'react-icons/fa';
 import { isNil } from 'lodash';
 
 import EditorContext from 'applications/editor/context';
-import { type RouteEditionState, EndPointKeys } from 'applications/editor/tools/routeEdition/types';
+import { EndPointKeys } from 'applications/editor/tools/routeEdition/types';
+import type {
+  RouteEditionState,
+  WayPoint,
+  WayPointEntity,
+} from 'applications/editor/tools/routeEdition/types';
 import { getEntity } from 'applications/editor/data/api';
 import EntitySumUp from 'applications/editor/components/EntitySumUp';
-import Tipped from 'applications/editor/components/Tipped';
-import { ExtendedEditorContextType } from 'applications/editor/tools/editorContextTypes';
+import type { ExtendedEditorContextType } from 'applications/editor/types';
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import { useInfraID } from 'common/osrdContext';
-import type { EndPoint, WayPoint, WayPointEntity } from 'types';
+import Tipped from 'common/Tipped';
 import useKeyboardShortcuts from 'utils/hooks/useKeyboardShortcuts';
+import { EndPoint } from '../../switchEdition/types';
 
 interface WayPointInputProps {
   endPoint: EndPoint;

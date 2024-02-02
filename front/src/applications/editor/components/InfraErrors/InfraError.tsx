@@ -1,5 +1,5 @@
-import React, { PropsWithChildren } from 'react';
 import cx from 'classnames';
+import React, { PropsWithChildren } from 'react';
 
 import { InfraError } from './types';
 import InfraErrorIcon from './InfraErrorIcon';

@@ -1,7 +1,62 @@
+import { MultiLineString } from '@turf/helpers';
 import { Feature, LineString, Point, Position } from 'geojson';
 
-import { EditorEntity, TrackRange, TrackSectionEntity } from 'types';
-import { CommonToolState } from '../commonToolState';
+import type { EditorEntity } from 'applications/editor/typesEditorEntity';
+import { TrackRange, TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
+import { CommonToolState } from 'applications/editor/tools/types';
+import { APPLICABLE_DIRECTIONS } from './consts';
+
+export type ApplicableDirection = (typeof APPLICABLE_DIRECTIONS)[number];
+export type PSLSign = {
+  angle: number;
+  position: number;
+  side: 'LEFT' | 'RIGHT' | 'CENTER';
+  track: string;
+  type: string;
+  value: string;
+  kp: string;
+};
+
+export type PSLExtension = {
+  announcement: PSLSign[];
+  z: PSLSign;
+  r: PSLSign[];
+};
+
+export type SpeedSectionEntity = EditorEntity<
+  MultiLineString,
+  {
+    speed_limit?: number;
+    speed_limit_by_tag?: Record<string, number | undefined>;
+    track_ranges?: {
+      applicable_directions: ApplicableDirection;
+      begin: number;
+      end: number;
+      track: string;
+    }[];
+    extensions?: {
+      psl_sncf: null | PSLExtension;
+    };
+  }
+> & {
+  objType: 'SpeedSection';
+};
+
+export type ElectrificationEntity = EditorEntity<
+  MultiLineString,
+  {
+    id: string;
+    track_ranges?: {
+      applicable_directions: ApplicableDirection;
+      begin: number;
+      end: number;
+      track: string;
+    }[];
+    voltage?: string;
+  }
+> & {
+  objType: 'Electrification';
+};
 
 export type TrackRangeFeature = Feature<
   LineString,
@@ -68,6 +123,15 @@ export type TrackState =
   | { type: 'loading' }
   | { type: 'error' }
   | { type: 'success'; track: TrackSectionEntity };
+
+// PSL types
+
+export type SpeedSectionPslEntity = EditorEntity<
+  MultiLineString,
+  Omit<SpeedSectionEntity['properties'], 'extensions'> & { extensions: { psl_sncf: PSLExtension } }
+> & {
+  objType: 'SpeedSection';
+};
 
 export enum PSL_SIGN_TYPES {
   Z = 'z',

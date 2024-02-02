@@ -1,4 +1,6 @@
-enum TOOL_TYPES {
+// This const needs to stay in a separate file to avoid import cycle.
+
+enum TOOL_NAMES {
   SELECTION = 'select-items',
   TRACK_EDITION = 'track-edition',
   SPEED_SECTION_EDITION = 'speed-edition',
@@ -10,4 +12,4 @@ enum TOOL_TYPES {
   ROUTE_EDITION = 'route-edition',
 }
 
-export default TOOL_TYPES;
+export default TOOL_NAMES;

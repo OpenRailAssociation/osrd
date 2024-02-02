@@ -4,21 +4,27 @@ import { useTranslation } from 'react-i18next';
 import chroma from 'chroma-js';
 import { isNil } from 'lodash';
 
-import type { EndPoint, RouteEntity, WayPointEntity } from 'types';
 import EditorContext from 'applications/editor/context';
 import EntityError from 'applications/editor/components/EntityError';
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useInfraID } from 'common/osrdContext';
 import { save } from 'reducers/editor';
-import { EndPointKeys, type RouteEditionState } from '../types';
-import type { ExtendedEditorContextType } from '../../editorContextTypes';
+
+import type { ExtendedEditorContextType } from 'applications/editor/types';
+import { EndPointKeys } from 'applications/editor/tools/routeEdition/types';
+import type {
+  WayPointEntity,
+  RouteEditionState,
+  RouteEntity,
+} from 'applications/editor/tools/routeEdition/types';
 import {
   getCompatibleRoutesPayload,
   getRouteEditionState,
   getRouteGeometries,
   routeHasExtremities,
-} from '../utils';
+} from 'applications/editor/tools/routeEdition/utils';
+import type { EndPoint } from 'applications/editor/tools/switchEdition/types';
 import { Endpoints } from './EndPoints';
 import { SearchRoute } from './SearchRoute';
 import { RouteMetadata } from './RouteMetadata';

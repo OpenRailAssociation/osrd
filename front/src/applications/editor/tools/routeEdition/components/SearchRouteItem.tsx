@@ -2,7 +2,7 @@ import React, { FC } from 'react';
 import { useTranslation } from 'react-i18next';
 import cx from 'classnames';
 
-import type { RouteCandidate } from '../types';
+import type { RouteCandidate } from 'applications/editor/tools/routeEdition/types';
 
 interface SearchRouteItemProps {
   index: number;

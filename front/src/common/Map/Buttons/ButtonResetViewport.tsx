@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import compass_needle_24 from 'assets/pictures/layersicons/compass_needle_24.svg';
 import compass_cardinal_24 from 'assets/pictures/layersicons/compass_cardinal_24.svg';
-import Tipped from 'applications/editor/components/Tipped';
+import Tipped from 'common/Tipped';
 
 type ButtonResetViewportProps = {
   updateLocalViewport: () => void;

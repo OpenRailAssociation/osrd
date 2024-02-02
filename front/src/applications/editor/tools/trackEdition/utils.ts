@@ -1,8 +1,17 @@
+import { cloneDeep } from 'lodash';
 import { LinearMetadataItem } from 'common/IntervalsDataViz/types';
-import { EditorEntity, TrackSectionEntity } from 'types';
-import { NEW_ENTITY_ID } from '../../data/utils';
 
-export function getNewLine(points: [number, number][]): TrackSectionEntity {
+import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
+import { EditorEntity } from 'applications/editor/typesEditorEntity';
+import type {
+  ElectrificationEntity,
+  RangeEditionState,
+  SpeedSectionEntity,
+} from 'applications/editor/tools/rangeEdition/types';
+import { DEFAULT_COMMON_TOOL_STATE } from 'applications/editor/tools/consts';
+import type { TrackEditionState, TrackSectionEntity } from './types';
+
+function getNewLine(points: [number, number][]): TrackSectionEntity {
   return {
     type: 'Feature',
     objType: 'TrackSection',
@@ -17,6 +26,20 @@ export function getNewLine(points: [number, number][]): TrackSectionEntity {
       curves: [],
       loading_gauge_limits: [],
     },
+  };
+}
+
+export function getInitialState(): TrackEditionState {
+  const track = getNewLine([]);
+
+  return {
+    ...DEFAULT_COMMON_TOOL_STATE,
+    anchorLinePoints: true,
+    addNewPointsAtStart: false,
+    nearestPoint: null,
+    track,
+    initialTrack: track,
+    editionState: { type: 'addPoint' },
   };
 }
 
@@ -41,4 +64,30 @@ export function removeInvalidRanges<T>(values: LinearMetadataItem<T>[], newLengt
   return values
     .filter((item) => item.begin < newLength || item.begin === undefined)
     .map((item) => (item.end >= newLength ? { ...item, end: newLength } : item));
+}
+
+export function getEditSpeedSectionState(
+  entity: SpeedSectionEntity
+): RangeEditionState<SpeedSectionEntity> {
+  return {
+    ...DEFAULT_COMMON_TOOL_STATE,
+    initialEntity: cloneDeep(entity),
+    entity: cloneDeep(entity),
+    trackSectionsCache: {},
+    interactionState: { type: 'idle' },
+    hoveredItem: null,
+  };
+}
+
+export function getEditElectrificationState(
+  entity: ElectrificationEntity
+): RangeEditionState<ElectrificationEntity> {
+  return {
+    ...DEFAULT_COMMON_TOOL_STATE,
+    initialEntity: cloneDeep(entity),
+    entity: cloneDeep(entity),
+    trackSectionsCache: {},
+    interactionState: { type: 'idle' },
+    hoveredItem: null,
+  };
 }

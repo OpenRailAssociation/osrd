@@ -6,22 +6,18 @@ import { BiReset } from 'react-icons/bi';
 import { AiFillSave } from 'react-icons/ai';
 import { GoPlusCircle, GoTrash } from 'react-icons/go';
 
+import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
+import type { PartialOrReducer, ReadOnlyEditorContextType, Tool } from 'applications/editor/types';
+import { LAYER_TO_EDITOAST_DICT, LAYERS_SET, type Layer } from 'applications/editor/consts';
+import { approximateDistanceWithEditoastData } from 'applications/editor/tools/utils';
+import { DEFAULT_COMMON_TOOL_STATE } from 'applications/editor/tools/consts';
+import { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
+
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { save } from 'reducers/editor';
-import {
-  ElectrificationEntity,
-  SpeedSectionEntity,
-  SpeedSectionPslEntity,
-  TrackSectionEntity,
-} from 'types/editor';
 import { getNearestPoint } from 'utils/mapHelper';
 
-import { NEW_ENTITY_ID } from '../../data/utils';
-import { PartialOrReducer, ReadOnlyEditorContextType, Tool } from '../editorContextTypes';
-import { DEFAULT_COMMON_TOOL_STATE } from '../commonToolState';
-import { approximateDistanceWithEditoastData } from '../utils';
-import { LAYER_TO_EDITOAST_DICT, LAYERS_SET, LayerType } from '../types';
-import {
+import type {
   HoveredExtremityState,
   HoveredSignState,
   HoveredRangeState,
@@ -29,6 +25,9 @@ import {
   RangeEditionState,
   TrackRangeExtremityFeature,
   TrackRangeFeature,
+  SpeedSectionPslEntity,
+  SpeedSectionEntity,
+  ElectrificationEntity,
 } from './types';
 import {
   getPslSignNewPosition,
@@ -42,7 +41,7 @@ import {
 } from './utils';
 
 type EditorRange = SpeedSectionEntity | ElectrificationEntity;
-interface RangeEditionToolParams<T extends EditorRange> {
+type RangeEditionToolParams<T extends EditorRange> = {
   id: T['objType'];
   icon: IconType;
   getNewEntity: () => T;
@@ -51,7 +50,7 @@ interface RangeEditionToolParams<T extends EditorRange> {
   leftPanelComponent: ComponentType;
   canSave?: (state: RangeEditionState<T>) => boolean;
   getEventsLayers?: (context: ReadOnlyEditorContextType<RangeEditionState<T>>) => string[];
-}
+};
 
 function getRangeEditionTool<T extends EditorRange>({
   id,
@@ -338,7 +337,7 @@ function getRangeEditionTool<T extends EditorRange>({
       else if (feature.sourceLayer && LAYERS_SET.has(feature.sourceLayer)) {
         const newHoveredItem = {
           id: feature.properties?.id as string,
-          type: LAYER_TO_EDITOAST_DICT[feature.sourceLayer as LayerType],
+          type: LAYER_TO_EDITOAST_DICT[feature.sourceLayer as Layer],
           renderedEntity: feature,
         };
         if (!isEqual(newHoveredItem, hoveredItem))

@@ -24,15 +24,12 @@ import { useDispatch } from 'react-redux';
 import useOutsideClick from 'utils/hooks/useOutsideClick';
 
 // Editor
-import type { PartialOrReducer, Tool } from 'applications/editor/tools/editorContextTypes';
-import type { CommonToolState } from 'applications/editor/tools/commonToolState';
-import {
-  EDITOAST_TO_LAYER_DICT,
-  type EditoastType,
-  type EditorState,
-} from 'applications/editor/tools/types';
+import type { PartialOrReducer, Tool } from 'applications/editor/types';
+import { EDITOAST_TO_LAYER_DICT, type EditoastType } from 'applications/editor/consts';
 import LayersModal from 'applications/editor/components/LayersModal';
 import type { SelectionState } from 'applications/editor/tools/selection/types';
+import type { CommonToolState } from 'applications/editor/tools/types';
+import type { EditorState } from 'reducers/editor';
 import ButtonMapInfraErrors from './ButtonMapInfraErrors';
 
 type MapButtonsProps = {

@@ -1,7 +1,7 @@
 import { Dispatch } from 'redux';
 import { compact } from 'lodash';
 
-import { msTokmh } from 'utils/physics';
+import { msToKmh } from 'utils/physics';
 import type { ArrayElement } from 'utils/types';
 import { sec2time } from 'utils/timeManipulation';
 
@@ -87,7 +87,7 @@ export default function adjustConfWithTrainToModify(
 
   if (trainSchedule.departure_time)
     dispatch(updateDepartureTime(sec2time(trainSchedule.departure_time)));
-  dispatch(updateInitialSpeed(msTokmh(trainSchedule.initial_speed) || 0));
+  dispatch(updateInitialSpeed(msToKmh(trainSchedule.initial_speed) || 0));
 
   if (trainSchedule.allowances) dispatch(updateAllowances(trainSchedule.allowances as Allowance[]));
 

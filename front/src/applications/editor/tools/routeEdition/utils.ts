@@ -4,24 +4,20 @@ import { lineString, point } from '@turf/helpers';
 import lineSlice from '@turf/line-slice';
 
 import { Dispatch } from 'redux';
-import { osrdEditoastApi, Identifier } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, type Identifier } from 'common/api/osrdEditoastApi';
 import { getEntities, getEntity, getMixedEntities } from 'applications/editor/data/api';
-import { DEFAULT_COMMON_TOOL_STATE } from 'applications/editor/tools/commonToolState';
-import {
+import { DEFAULT_COMMON_TOOL_STATE } from 'applications/editor/tools/consts';
+import type {
   OptionsStateType,
   RouteCandidate,
   RouteEditionState,
-} from 'applications/editor/tools/routeEdition/types';
-import {
-  NULL_GEOMETRY,
-  PartialButFor,
   RouteEntity,
-  TrackRange,
-  TrackSectionEntity,
   WayPoint,
   WayPointEntity,
-} from 'types';
+} from 'applications/editor/tools/routeEdition/types';
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
+import type { TrackRange, TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
+import { NULL_GEOMETRY, type PartialButFor } from 'types';
 
 /**
  * Check if a route is valid or not.
@@ -37,7 +33,7 @@ export function routeHasExtremities(route: RouteEntity): boolean {
 /**
  * Get an empty route entity.
  */
-export function getEmptyRoute(): RouteEntity {
+function getEmptyRoute(): RouteEntity {
   return {
     type: 'Feature',
     objType: 'Route',

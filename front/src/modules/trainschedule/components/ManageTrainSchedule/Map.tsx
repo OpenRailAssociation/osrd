@@ -49,7 +49,6 @@ import LineSearchLayer from 'common/Map/Layers/LineSearchLayer';
 import SNCF_PSL from 'common/Map/Layers/extensions/SNCF/PSL';
 import Terrain from 'common/Map/Layers/Terrain';
 import TracksGeographic from 'common/Map/Layers/TracksGeographic';
-import 'common/Map/Map.scss';
 import { useInfraID, useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import Itinerary from 'modules/trainschedule/components/ManageTrainSchedule/ManageTrainScheduleMap/Itinerary';
 import ItineraryMarkers from 'modules/trainschedule/components/ManageTrainSchedule/ManageTrainScheduleMap/ItineraryMarkers';

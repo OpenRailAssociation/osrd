@@ -1,15 +1,17 @@
 import React, { FC, useContext, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { SpeedSectionEntity } from 'types';
 import { AiOutlinePlusCircle } from 'react-icons/ai';
 import { FaTimes } from 'react-icons/fa';
 import { MdSpeed } from 'react-icons/md';
 import { cloneDeep, isEmpty, mapKeys, omit } from 'lodash';
 import nextId from 'react-id-generator';
 
-import EditorContext from '../../../context';
-import { ExtendedEditorContextType } from '../../editorContextTypes';
-import { RangeEditionState } from '../types';
+import EditorContext from 'applications/editor/context';
+import { ExtendedEditorContextType } from 'applications/editor/types';
+import {
+  RangeEditionState,
+  SpeedSectionEntity,
+} from 'applications/editor/tools/rangeEdition/types';
 import SpeedInput from './SpeedInput';
 
 const getNewSpeedLimitTag = (

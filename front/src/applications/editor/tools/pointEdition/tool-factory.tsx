@@ -10,34 +10,29 @@ import nearestPointOnLine from '@turf/nearest-point-on-line';
 
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { save } from 'reducers/editor';
-import {
-  NULL_GEOMETRY,
-  BufferStopEntity,
-  DetectorEntity,
-  SignalEntity,
-  TrackSectionEntity,
-} from 'types';
+import { NULL_GEOMETRY } from 'types';
 import { getNearestPoint } from 'utils/mapHelper';
 
-import { NEW_ENTITY_ID } from '../../data/utils';
-import { getEntity } from '../../data/api';
-import { LAYER_TO_EDITOAST_DICT, LayerType } from '../types';
-import { Tool } from '../editorContextTypes';
-import { DEFAULT_COMMON_TOOL_STATE } from '../commonToolState';
-import { approximateDistanceWithEditoastData } from '../utils';
+import { LAYER_TO_EDITOAST_DICT, Layer } from 'applications/editor/consts';
+import type { Tool } from 'applications/editor/types';
+import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
+import { getEntity } from 'applications/editor/data/api';
+import { DEFAULT_COMMON_TOOL_STATE } from 'applications/editor/tools/consts';
+import type { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
+import { approximateDistanceWithEditoastData } from 'applications/editor/tools/utils';
 
 import { PointEditionMessages, getPointEditionLeftPanel } from './components';
-import { PointEditionState } from './types';
+import type { BufferStopEntity, DetectorEntity, PointEditionState, SignalEntity } from './types';
 import { POINT_LAYER_ID } from './consts';
 
 type EditorPoint = BufferStopEntity | DetectorEntity | SignalEntity;
-interface PointEditionToolParams<T extends EditorPoint> {
-  layer: LayerType;
+type PointEditionToolParams<T extends EditorPoint> = {
+  layer: Layer;
   icon: IconType;
   getNewEntity: (point?: [number, number]) => T;
   layersComponent: ComponentType<{ map: Map }>;
   requiresAngle?: boolean;
-}
+};
 
 function calculateDistanceAlongTrack(track: Feature<LineString>, point: Point) {
   const wrongPointOnTrack = nearestPointOnLine(track.geometry, point, { units: 'meters' });

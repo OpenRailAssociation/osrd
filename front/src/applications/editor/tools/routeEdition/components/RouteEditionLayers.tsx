@@ -17,20 +17,21 @@ import colors from 'common/Map/Consts/colors';
 import GeoJSONs from 'common/Map/Layers/GeoJSONs';
 import { useInfraID } from 'common/osrdContext';
 import { getMap } from 'reducers/map/selectors';
-import {
-  NULL_GEOMETRY,
-  type EditorEntity,
-  type OmitLayer,
-  type WayPointEntity,
-  type NullGeometry,
-} from 'types';
+import { NULL_GEOMETRY, type OmitLayer, type NullGeometry } from 'types';
 
 import EntitySumUp from 'applications/editor/components/EntitySumUp';
 import EditorContext from 'applications/editor/context';
 import { nestEntity } from 'applications/editor/data/utils';
-import { ExtendedEditorContextType } from '../../editorContextTypes';
-import type { RouteEditionState } from '../types';
-import { getOptionsStateType, getRouteGeometryByRouteId } from '../utils';
+import type { ExtendedEditorContextType } from 'applications/editor/types';
+import type {
+  RouteEditionState,
+  WayPointEntity,
+} from 'applications/editor/tools/routeEdition/types';
+import {
+  getOptionsStateType,
+  getRouteGeometryByRouteId,
+} from 'applications/editor/tools/routeEdition/utils';
+import { EditorEntity } from 'applications/editor/typesEditorEntity';
 
 const RouteEditionLayers = () => {
   const {

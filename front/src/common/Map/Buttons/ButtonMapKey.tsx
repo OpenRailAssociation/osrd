@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { BsQuestionCircle } from 'react-icons/bs';
-import Tipped from 'applications/editor/components/Tipped';
+import Tipped from 'common/Tipped';
 
 type ButtonMapKeyProps = {
   toggleMapKey: () => void;

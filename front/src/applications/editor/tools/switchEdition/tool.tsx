@@ -1,18 +1,17 @@
+import { filter, groupBy } from 'lodash';
 import React from 'react';
 import { TbSwitch2 } from 'react-icons/tb';
 import { AiFillSave } from 'react-icons/ai';
 import { GoPlusCircle, GoTrash } from 'react-icons/go';
 
-import { save } from 'reducers/editor';
-import { SwitchEntity, SwitchType } from 'types';
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
+import { save } from 'reducers/editor';
 
-import { filter, groupBy } from 'lodash';
-import { NEW_ENTITY_ID } from '../../data/utils';
-import { Tool } from '../editorContextTypes';
-import { DEFAULT_COMMON_TOOL_STATE } from '../commonToolState';
+import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
+import type { Tool } from 'applications/editor/types';
+import { DEFAULT_COMMON_TOOL_STATE } from 'applications/editor/tools/consts';
 import { SwitchEditionLayers, SwitchEditionLeftPanel, SwitchMessages } from './components';
-import { SwitchEditionState } from './types';
+import type { SwitchEditionState, SwitchEntity, SwitchType } from './types';
 import { getNewSwitch } from './utils';
 
 function getInitialState({

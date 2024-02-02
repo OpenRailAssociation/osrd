@@ -1,7 +1,7 @@
 import React from 'react';
 import { GoZoomOut } from 'react-icons/go';
 import { useTranslation } from 'react-i18next';
-import Tipped from 'applications/editor/components/Tipped';
+import Tipped from 'common/Tipped';
 
 type ButtonZoomInProps = {
   zoomOut: () => void;

@@ -8,9 +8,9 @@ import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { getEditorState } from 'reducers/editor/selectors';
 import useKeyboardShortcuts from 'utils/hooks/useKeyboardShortcuts';
 
-import type { EditorContextType } from '../../tools/editorContextTypes';
-import { centerMapOnObject, selectEntities } from '../../tools/utils';
-import { getEntity } from '../../data/api';
+import type { EditorContextType } from 'applications/editor/types';
+import { centerMapOnObject, selectEntities } from 'applications/editor/tools/utils';
+import { getEntity } from 'applications/editor/data/api';
 import InfraErrorsModal from './InfraErrorsModal';
 import type { InfraError } from './types';
 

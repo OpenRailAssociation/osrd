@@ -5,7 +5,7 @@ import bearing from '@turf/bearing';
 import { compare } from 'fast-json-patch';
 import { v4 as uuid } from 'uuid';
 
-import { EditorEntity, EditorSchema } from 'types';
+import type { EditorEntity, EditorSchema } from 'applications/editor/typesEditorEntity';
 import {
   ALL_SIGNAL_LAYERS_SET,
   SIGNALS_TO_SYMBOLS,
@@ -18,7 +18,7 @@ import {
   PostInfraByIdObjectsAndObjectTypeApiResponse,
 } from 'common/api/osrdEditoastApi';
 
-import { EditoastType } from '../tools/types';
+import { type EditoastType } from 'applications/editor/consts';
 
 // Quick helper to get a "promised" setTimeout:
 export function setTimeoutPromise(ms: number) {

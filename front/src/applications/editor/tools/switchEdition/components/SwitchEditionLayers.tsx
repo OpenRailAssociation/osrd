@@ -12,15 +12,18 @@ import GeoJSONs from 'common/Map/Layers/GeoJSONs';
 import { useInfraID } from 'common/osrdContext';
 import { getSwitchesLayerProps, getSwitchesNameLayerProps } from 'common/Map/Layers/Switches';
 import { getMap } from 'reducers/map/selectors';
-import type { SwitchEntity, TrackSectionEntity } from 'types';
 
-import EditorContext from '../../../context';
-import { getEntity } from '../../../data/api';
-import { flattenEntity } from '../../../data/utils';
-import EntitySumUp from '../../../components/EntitySumUp';
-import type { ExtendedEditorContextType } from '../../editorContextTypes';
-import useSwitch from '../useSwitch';
-import { SwitchEditionState } from '../types';
+import EditorContext from 'applications/editor/context';
+import { getEntity } from 'applications/editor/data/api';
+import { flattenEntity } from 'applications/editor/data/utils';
+import EntitySumUp from 'applications/editor/components/EntitySumUp';
+import type { ExtendedEditorContextType } from 'applications/editor/types';
+import useSwitch from 'applications/editor/tools/switchEdition/useSwitch';
+import type {
+  SwitchEditionState,
+  SwitchEntity,
+} from 'applications/editor/tools/switchEdition/types';
+import { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
 
 const SwitchEditionLayers = () => {
   const dispatch = useDispatch();

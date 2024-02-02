@@ -5,17 +5,21 @@ import { cloneDeep } from 'lodash';
 import { useInfraID } from 'common/osrdContext';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
-import type { ElectrificationEntity, SpeedSectionEntity, SpeedSectionPslEntity } from 'types';
 
-import EditorContext from '../../../context';
-import { NEW_ENTITY_ID } from '../../../data/utils';
-import EntityError from '../../../components/EntityError';
-import type { ExtendedEditorContextType, PartialOrReducer } from '../../editorContextTypes';
-import type { RangeEditionState } from '../types';
-import { speedSectionIsPsl } from '../utils';
-import EditPSLSection from '../speedSection/EditPSLSection';
-import ElectrificationMetadataForm from '../electrification/ElectrificationMetadataForm';
-import SpeedSectionMetadataForm from '../speedSection/SpeedSectionMetadataForm';
+import EditorContext from 'applications/editor/context';
+import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
+import EntityError from 'applications/editor/components/EntityError';
+import type { ExtendedEditorContextType, PartialOrReducer } from 'applications/editor/types';
+import type {
+  ElectrificationEntity,
+  RangeEditionState,
+  SpeedSectionEntity,
+  SpeedSectionPslEntity,
+} from 'applications/editor/tools/rangeEdition/types';
+import { speedSectionIsPsl } from 'applications/editor/tools/rangeEdition/utils';
+import EditPSLSection from 'applications/editor/tools/rangeEdition/speedSection/EditPSLSection';
+import ElectrificationMetadataForm from 'applications/editor/tools/rangeEdition/electrification/ElectrificationMetadataForm';
+import SpeedSectionMetadataForm from 'applications/editor/tools/rangeEdition/speedSection/SpeedSectionMetadataForm';
 import TrackRangesList from './RangeEditionTrackRangeList';
 
 const RangeEditionLeftPanel = () => {

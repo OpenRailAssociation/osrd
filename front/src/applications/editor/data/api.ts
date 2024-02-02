@@ -5,8 +5,8 @@ import {
   PostInfraByIdObjectsAndObjectTypeApiResponse,
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
-import { EditoastType } from 'applications/editor/tools/types';
-import { EditorEntity } from 'types/editor';
+import type { EditoastType } from 'applications/editor/consts';
+import type { EditorEntity } from 'applications/editor/typesEditorEntity';
 
 export function editoastToEditorEntity<T extends EditorEntity = EditorEntity>(
   entity: PostInfraByIdObjectsAndObjectTypeApiResponse[0],

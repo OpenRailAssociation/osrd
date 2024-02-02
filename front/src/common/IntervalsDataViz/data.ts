@@ -4,7 +4,7 @@ import { JSONSchema7, JSONSchema7Definition } from 'json-schema';
 import { utils } from '@rjsf/core';
 import lineSplit from '@turf/line-split';
 import fnLength from '@turf/length';
-import { EditorEntity } from 'types/editor';
+import { EditorEntity } from 'applications/editor/typesEditorEntity';
 import { removeInvalidRanges } from 'applications/editor/tools/trackEdition/utils';
 import { LinearMetadataItem, OperationalPoint } from './types';
 

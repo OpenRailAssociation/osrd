@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { BsExclamationOctagon } from 'react-icons/bs';
 import { useDispatch } from 'react-redux';
-import { editorSliceActions } from 'reducers/editor';
-import type { EditorState, LayerType } from 'applications/editor/tools/types';
+import { type EditorState, editorSliceActions } from 'reducers/editor';
+import type { Layer } from 'applications/editor/consts';
 import cx from 'classnames';
 
 interface ButtonMapInfraErrorsProps {
@@ -14,7 +14,7 @@ const ButtonMapInfraErrors: React.FC<ButtonMapInfraErrorsProps> = ({ editorState
   const [isActive, setIsActive] = useState(true);
 
   const toggleInfraErrors = () => {
-    const newSet = new Set<LayerType>(editorState.editorLayers);
+    const newSet = new Set<Layer>(editorState.editorLayers);
     if (newSet.has('errors')) newSet.delete('errors');
     else newSet.add('errors');
     dispatch(editorSliceActions.selectLayers(newSet));

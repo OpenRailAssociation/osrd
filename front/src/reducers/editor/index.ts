@@ -5,26 +5,39 @@ import type { AnyAction, Dispatch, PayloadAction } from '@reduxjs/toolkit';
 import { JSONSchema7, JSONSchema7Definition } from 'json-schema';
 import { omit, clone, isNil, isUndefined } from 'lodash';
 
-import type { ThunkAction, EditorSchema, EditorEntity } from 'types';
+import type { ThunkAction } from 'types';
 
 import {
-  allInfraErrorTypes,
-  infraErrorTypeList,
-} from 'applications/editor/components/InfraErrors/types';
-import type { EditorState } from 'applications/editor/tools/types';
+  type InfraErrorLevel,
+  INFRA_ERRORS,
+  INFRA_ERRORS_BY_LEVEL,
+} from 'applications/editor/components/InfraErrors';
 import {
   entityToCreateOperation,
   entityToUpdateOperation,
   entityToDeleteOperation,
 } from 'applications/editor/data/utils';
+import { type Layer } from 'applications/editor/consts';
 
-import type { Operation } from 'common/api/osrdEditoastApi';
+import type { InfraErrorType, Operation } from 'common/api/osrdEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 
 import { updateIssuesSettings } from 'reducers/map';
 import infra_schema from 'reducers/osrdconf/infra_schema.json';
-import { buildInfraStateReducers, infraState } from 'reducers/infra';
+import { InfraState, buildInfraStateReducers, infraState } from 'reducers/infra';
 import { setLoading, setSuccess, setFailure, setSuccessWithoutMessage } from 'reducers/main';
+import { EditorEntity, EditorSchema } from 'applications/editor/typesEditorEntity';
+
+export interface EditorState extends InfraState {
+  editorSchema: EditorSchema;
+  editorLayers: Set<Layer>;
+  issues: {
+    total: number;
+    filterTotal: number;
+    filterLevel: NonNullable<InfraErrorLevel>;
+    filterType: InfraErrorType | null;
+  };
+}
 
 export const editorInitialState: EditorState = {
   // Definition of entities (json schema)
@@ -183,7 +196,7 @@ export function updateFiltersIssue(
     // Check compatibility btw level & type
     // if both are provided and there is an incompatibility, we keep the level
     if (!isNil(filters.filterLevel) && !isNil(filters.filterType)) {
-      if (type && level !== 'all' && !infraErrorTypeList[level].has(type)) {
+      if (type && level !== 'all' && !INFRA_ERRORS_BY_LEVEL[level].has(type)) {
         type = null;
       }
     }
@@ -194,7 +207,7 @@ export function updateFiltersIssue(
     // if only type is provided, we check the level compatibility.
     // if it is not, we set it to "all"
     if (!isNil(filters.filterType) && isNil(filters.filterLevel)) {
-      if (level !== 'all' && !infraErrorTypeList[level].has(filters.filterType)) {
+      if (level !== 'all' && !INFRA_ERRORS_BY_LEVEL[level].has(filters.filterType)) {
         level = 'all';
       }
     }
@@ -205,7 +218,7 @@ export function updateFiltersIssue(
     // dispatch the list of types matched by the filter to the map
     let derivedTypes = [];
     if (!isNil(type)) derivedTypes = [type];
-    else derivedTypes = level === 'all' ? allInfraErrorTypes : [...infraErrorTypeList[level]];
+    else derivedTypes = level === 'all' ? INFRA_ERRORS : [...INFRA_ERRORS_BY_LEVEL[level]];
     dispatch(
       updateIssuesSettings({
         types: derivedTypes,

@@ -9,14 +9,15 @@ import { useInfraID } from 'common/osrdContext';
 import colors from 'common/Map/Consts/colors';
 import GeoJSONs, { EditorSource, SourcesDefinitionsIndex } from 'common/Map/Layers/GeoJSONs';
 import { getMap } from 'reducers/map/selectors';
-import { EditorEntity, NULL_GEOMETRY } from 'types';
+import { NULL_GEOMETRY } from 'types';
 
-import EditorContext from '../../../context';
-import EntitySumUp from '../../../components/EntitySumUp';
-import { NEW_ENTITY_ID, cleanSymbolType, flattenEntity } from '../../../data/utils';
-import { ExtendedEditorContextType } from '../../editorContextTypes';
-import { POINT_LAYER_ID } from '../consts';
-import { PointEditionState } from '../types';
+import EditorContext from 'applications/editor/context';
+import EntitySumUp from 'applications/editor/components/EntitySumUp';
+import { NEW_ENTITY_ID, cleanSymbolType, flattenEntity } from 'applications/editor/data/utils';
+import type { ExtendedEditorContextType } from 'applications/editor/types';
+import { POINT_LAYER_ID } from 'applications/editor/tools/pointEdition/consts';
+import type { PointEditionState } from 'applications/editor/tools/pointEdition/types';
+import type { EditorEntity } from 'applications/editor/typesEditorEntity';
 
 interface BasePointEditionLayersProps {
   // eslint-disable-next-line react/no-unused-prop-types

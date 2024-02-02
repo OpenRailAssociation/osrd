@@ -1,8 +1,8 @@
-import type { SwitchType } from 'types';
+import { Feature } from 'geojson';
 
 import type { PointOnMap, PowerRestrictionRange } from 'applications/operationalStudies/consts';
+import type { SwitchType } from 'applications/editor/tools/switchEdition/types';
 import type { Allowance, PathResponse } from 'common/api/osrdEditoastApi';
-import { Feature } from 'geojson';
 import type { OsrdConfState } from 'reducers/osrdconf/consts';
 
 export default function commonConfBuilder() {

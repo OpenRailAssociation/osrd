@@ -6,15 +6,21 @@ import Select from 'react-select';
 
 import { useInfraID } from 'common/osrdContext';
 import { save } from 'reducers/editor';
-import type { SwitchEntity } from 'types';
 
-import EditorContext from '../../../context';
-import EditorForm from '../../../components/EditorForm';
-import EntityError from '../../../components/EntityError';
-import type { ExtendedEditorContextType } from '../../editorContextTypes';
-import useSwitch from '../useSwitch';
-import { SwitchEditionState } from '../types';
-import { type FlatSwitchEntity, flatSwitchToSwitch, getNewSwitch } from '../utils';
+import EditorContext from 'applications/editor/context';
+import EditorForm from 'applications/editor/components/EditorForm';
+import EntityError from 'applications/editor/components/EntityError';
+import type { ExtendedEditorContextType } from 'applications/editor/types';
+import useSwitch from 'applications/editor/tools/switchEdition/useSwitch';
+import type {
+  SwitchEditionState,
+  SwitchEntity,
+} from 'applications/editor/tools/switchEdition/types';
+import {
+  type FlatSwitchEntity,
+  flatSwitchToSwitch,
+  getNewSwitch,
+} from 'applications/editor/tools/switchEdition/utils';
 import CustomSchemaField from './CustomSchemaField';
 
 const SwitchEditionLeftPanel = () => {

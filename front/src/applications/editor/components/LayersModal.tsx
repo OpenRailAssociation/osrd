@@ -6,9 +6,9 @@ import { MdSpeed } from 'react-icons/md';
 import { GiElectric } from 'react-icons/gi';
 import { TbRectangleVerticalFilled } from 'react-icons/tb';
 
-import { EDITOAST_TO_LAYER_DICT } from 'applications/editor/tools/types';
-import type { LayerType, EditoastType } from 'applications/editor/tools/types';
-import type { EditorEntity } from 'types';
+import { EDITOAST_TO_LAYER_DICT } from 'applications/editor/consts';
+import type { Layer, EditoastType } from 'applications/editor/consts';
+import type { EditorEntity } from 'applications/editor/typesEditorEntity';
 
 import pslsIcon from 'assets/pictures/layersicons/layer_tivs.svg';
 import switchesIcon from 'assets/pictures/layersicons/switches.svg';
@@ -28,7 +28,7 @@ import { getMap } from 'reducers/map/selectors';
 import { updateLayersSettings } from 'reducers/map';
 import { editorSliceActions } from 'reducers/editor';
 
-export const LAYERS: Array<{ layers: LayerType[]; icon: string | JSX.Element }> = [
+export const LAYERS: Array<{ layers: Layer[]; icon: string | JSX.Element }> = [
   { layers: ['track_sections'], icon: trackSectionsIcon },
   { layers: ['signals'], icon: signalsIcon },
   { layers: ['buffer_stops'], icon: bufferStopIcon },
@@ -44,10 +44,10 @@ export const LAYERS: Array<{ layers: LayerType[]; icon: string | JSX.Element }> 
 ];
 
 interface LayersModalProps {
-  initialLayers: Set<LayerType>;
+  initialLayers: Set<Layer>;
   selection?: EditorEntity[];
-  frozenLayers?: Set<LayerType>;
-  onChange: (args: { newLayers: Set<LayerType> }) => void;
+  frozenLayers?: Set<Layer>;
+  onChange: (args: { newLayers: Set<Layer> }) => void;
 }
 const LayersModal: FC<LayersModalProps> = ({
   initialLayers,
@@ -58,7 +58,7 @@ const LayersModal: FC<LayersModalProps> = ({
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const { layersSettings } = useSelector(getMap);
-  const [selectedLayers, setSelectedLayers] = useState<Set<LayerType>>(initialLayers);
+  const [selectedLayers, setSelectedLayers] = useState<Set<Layer>>(initialLayers);
   const infraID = useInfraID();
 
   const { data: speedLimitTags } = osrdEditoastApi.endpoints.getInfraByIdSpeedLimitTags.useQuery({
@@ -90,7 +90,7 @@ const LayersModal: FC<LayersModalProps> = ({
         if (layerType && !acc.has(layerType)) acc.add(layerType);
       });
       return acc;
-    }, new Set<LayerType>());
+    }, new Set<Layer>());
 
     // enable all the layers
     setSelectedLayers((set) => {

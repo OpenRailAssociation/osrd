@@ -14,27 +14,13 @@ import { entityDoUpdate, getLineStringDistance } from 'common/IntervalsDataViz/d
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { save } from 'reducers/editor';
 import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
+
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
-import { Tool } from '../editorContextTypes';
-import { DEFAULT_COMMON_TOOL_STATE } from '../commonToolState';
+import type { Tool } from 'applications/editor/types';
 import { TrackEditionLayers, TrackEditionLeftPanel, TrackEditionMessages } from './components';
 import { POINTS_LAYER_ID, TRACK_LAYER_ID } from './consts';
-import { TrackEditionState } from './types';
-import { getNewLine } from './utils';
-
-function getInitialState(): TrackEditionState {
-  const track = getNewLine([]);
-
-  return {
-    ...DEFAULT_COMMON_TOOL_STATE,
-    anchorLinePoints: true,
-    addNewPointsAtStart: false,
-    nearestPoint: null,
-    track,
-    initialTrack: track,
-    editionState: { type: 'addPoint' },
-  };
-}
+import type { TrackEditionState } from './types';
+import { getInitialState } from './utils';
 
 const TrackEditionTool: Tool<TrackEditionState> = {
   id: 'track-edition',

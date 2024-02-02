@@ -1,10 +1,18 @@
 import React, { useMemo } from 'react';
-import { TRACK_NODE_TYPES_ID, TrackNodeTypeId } from 'types';
 import link from 'assets/pictures/trackNodeTypes/link.svg';
 import crossing from 'assets/pictures/trackNodeTypes/crossing.svg';
 import pointSwitch from 'assets/pictures/trackNodeTypes/point_switch.svg';
 import singleSlipSwitch from 'assets/pictures/trackNodeTypes/single_slip_switch.svg';
 import doubleSlipSwitch from 'assets/pictures/trackNodeTypes/double_slip_switch.svg';
+import type { TrackNodeTypeId } from '../types';
+
+enum TRACK_NODE_TYPES_ID {
+  CROSSING = 'crossing',
+  SINGLE_SLIP_SWITCH = 'single_slip_switch',
+  DOUBLE_SLIP_SWITCH = 'double_slip_switch',
+  LINK = 'link',
+  POINT_SWITCH = 'point_switch',
+}
 
 const TrackNodeTypeDiagram = ({ trackNodeType }: { trackNodeType: TrackNodeTypeId }) => {
   const trackNodeTypeImage = useMemo(() => {

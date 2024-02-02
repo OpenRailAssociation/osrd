@@ -5,12 +5,11 @@ import { AiFillSave } from 'react-icons/ai';
 import { GoPlusCircle, GoTrash } from 'react-icons/go';
 import { BiReset } from 'react-icons/bi';
 
-import { WayPointEntity } from 'types';
 import { save } from 'reducers/editor';
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF/ConfirmModal';
-import { Tool } from '../editorContextTypes';
-import { RouteEditionState } from './types';
+import type { Tool } from 'applications/editor/types';
+import type { RouteEditionState, WayPointEntity } from './types';
 import { RouteEditionLayers, RouteEditionLeftPanel, RouteEditionMessages } from './components';
 import { getRouteEditionState } from './utils';
 

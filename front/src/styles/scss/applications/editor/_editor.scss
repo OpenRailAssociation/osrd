@@ -1,3 +1,6 @@
+@import './editorForm';
+
+
 .editor-root {
   $blue: var(--primary);
   $blue-dark: var(--primary-dark);
@@ -107,7 +110,7 @@
 
   .panel-box {
     width: 400px;
-    height: 85%;
+    height: 100%;
     overflow-y: auto;
   }
 

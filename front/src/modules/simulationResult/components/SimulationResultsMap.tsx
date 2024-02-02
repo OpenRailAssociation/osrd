@@ -56,7 +56,6 @@ import {
 } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 
-import 'common/Map/Map.scss';
 import Terrain from 'common/Map/Layers/Terrain';
 import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
 import { useInfraID } from 'common/osrdContext';

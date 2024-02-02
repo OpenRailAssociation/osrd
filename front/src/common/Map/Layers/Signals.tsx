@@ -2,7 +2,7 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { Source, MapRef } from 'react-map-gl/maplibre';
 
-import { Theme } from 'types';
+import type { Theme } from 'types';
 
 import { MAP_URL } from 'common/Map/const';
 

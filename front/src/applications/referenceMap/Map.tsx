@@ -41,7 +41,6 @@ import TracksOSM from 'common/Map/Layers/TracksOSM';
 import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
 import { useMapBlankStyle } from 'common/Map/Layers/blankStyle';
 
-import 'common/Map/Map.scss';
 import { useInfraID } from 'common/osrdContext';
 
 function Map() {

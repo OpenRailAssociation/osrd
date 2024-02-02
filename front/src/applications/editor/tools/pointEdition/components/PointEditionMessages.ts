@@ -1,11 +1,11 @@
 import { isEqual } from 'lodash';
 import { useContext } from 'react';
 
-import { EditorEntity, NULL_GEOMETRY } from 'types';
-
-import EditorContext from '../../../context';
-import { EditorContextType } from '../../editorContextTypes';
-import { PointEditionState } from '../types';
+import EditorContext from 'applications/editor/context';
+import type { EditorContextType } from 'applications/editor/types';
+import type { EditorEntity } from 'applications/editor/typesEditorEntity';
+import { PointEditionState } from 'applications/editor/tools/pointEdition/types';
+import { NULL_GEOMETRY } from 'types';
 
 const PointEditionMessages = () => {
   const { t, state } = useContext(EditorContext) as EditorContextType<

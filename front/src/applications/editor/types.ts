@@ -4,23 +4,24 @@ import { ComponentType } from 'react';
 import { IconType } from 'react-icons/lib/esm/iconBase';
 import { ViewState } from 'react-map-gl/maplibre';
 import { Map, MapLayerMouseEvent } from 'maplibre-gl';
+
+import type { SwitchType } from 'applications/editor/tools/switchEdition/types';
 import { ModalContextType } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import { EditorEntity, SwitchType } from 'types';
-import { EditorState, LayerType } from './types';
-import { switchProps } from './switchProps';
+import type { EditorState } from 'reducers/editor';
+
+import type { Layer } from './consts';
+import type { switchProps } from './tools/switchProps';
+import type { EditorEntity } from './typesEditorEntity';
 
 export type Reducer<T> = (value: T) => T;
-export type ValueOrReducer<T> = T | Reducer<T>;
 export type PartialOrReducer<T> = Partial<T> | Reducer<T>;
 
-export interface MapState {
+export type MapState = {
   mapStyle: string;
   viewport: ViewState;
-}
-export interface OSRDConf {
-  infraID: number | undefined;
-  switchTypes: SwitchType[] | undefined;
-}
+};
+
+// EDITOR CONTEXT
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type EditorContextType<S = any> = {
@@ -41,7 +42,7 @@ export type EditorContextType<S = any> = {
   renderingFingerprint: number;
 } & Pick<ModalContextType, 'openModal' | 'closeModal'>;
 
-export interface ExtendedEditorContextType<S> extends EditorContextType<S> {
+export type ExtendedEditorContextType<S> = EditorContextType<S> & {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   dispatch: Dispatch<any>;
   editorState: EditorState;
@@ -52,7 +53,7 @@ export interface ExtendedEditorContextType<S> extends EditorContextType<S> {
   isFormSubmited?: boolean;
   isInfraLocked?: boolean;
   setIsFormSubmited?: (isSubmit: boolean) => void;
-}
+};
 
 export type ReadOnlyEditorContextType<S> = Omit<
   ExtendedEditorContextType<S>,
@@ -61,10 +62,9 @@ export type ReadOnlyEditorContextType<S> = Omit<
   editorState: EditorState;
 };
 
-// UTILS
-export type MakeOptional<Type, Key extends keyof Type> = Omit<Type, Key> & Partial<Pick<Type, Key>>;
+// TOOLS
 
-export interface ToolAction<S> {
+export type ToolAction<S> = {
   id: string;
   icon: ComponentType;
   labelTranslationKey: string;
@@ -74,9 +74,9 @@ export interface ToolAction<S> {
   isDisabled?: (context: ReadOnlyEditorContextType<S>) => boolean;
   // On click button:
   onClick?: (context: ExtendedEditorContextType<S>) => void;
-}
+};
 
-export interface Tool<S> {
+export type Tool<S> = {
   id: string;
   icon: IconType;
   labelTranslationKey: string;
@@ -85,7 +85,7 @@ export interface Tool<S> {
     infraID: number | undefined;
     switchTypes: SwitchType[] | undefined;
   }) => S;
-  requiredLayers?: Set<LayerType>;
+  requiredLayers?: Set<Layer>;
   isDisabled?: (context: ReadOnlyEditorContextType<S>) => boolean;
 
   // Interactions with MapLibre:
@@ -111,7 +111,7 @@ export interface Tool<S> {
   layersComponent?: ComponentType<{ map: Map }>;
   leftPanelComponent?: ComponentType;
   messagesComponent?: ComponentType;
-}
+};
 
 export type FullTool<S> = {
   tool: Tool<S>;

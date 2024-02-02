@@ -4,10 +4,10 @@ import cx from 'classnames';
 import { BsExclamationOctagon } from 'react-icons/bs';
 import { isNil, uniqueId } from 'lodash';
 
-import type { EditorEntity } from 'types';
+import type { EditorEntity } from 'applications/editor/typesEditorEntity';
 import { useInfraID } from 'common/osrdContext';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { InfraErrorLine } from './InfraErrors/InfraError';
+import { InfraErrorLine } from './InfraErrors';
 
 const EntityError: FC<{ entity: EditorEntity; className?: string }> = ({ entity, className }) => {
   const { t } = useTranslation();

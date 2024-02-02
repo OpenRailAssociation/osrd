@@ -4,7 +4,6 @@ import { ThunkAction as ReduxThunkAction } from 'redux-thunk';
 import type {} from 'redux-thunk/extend-redux';
 
 export * from './geospatial';
-export * from './editor';
 
 //
 //  Redux types

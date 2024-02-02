@@ -1,4 +1,4 @@
-import { LayerType } from 'applications/editor/tools/types';
+import { Layer } from 'applications/editor/consts';
 
 export const LAYER_GROUPS = Object.freeze({
   MAP_BACKGROUND: Symbol('MAP_BACKGROUND'),
@@ -57,7 +57,7 @@ export const LAYERS = Object.freeze({
   ERRORS: { GROUP: LAYER_GROUPS.ERRORS },
 });
 
-export const LAYER_ENTITIES_ORDERS: Record<LayerType, number> = Object.freeze({
+export const LAYER_ENTITIES_ORDERS: Record<Layer, number> = Object.freeze({
   buffer_stops: LAYER_GROUPS_ORDER[LAYERS.BUFFER_STOPS.GROUP],
   detectors: LAYER_GROUPS_ORDER[LAYERS.DETECTORS.GROUP],
   signals: LAYER_GROUPS_ORDER[LAYERS.SIGNALS.GROUP],

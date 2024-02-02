@@ -9,12 +9,10 @@ import GeoJSONs from 'common/Map/Layers/GeoJSONs';
 import { useInfraID } from 'common/osrdContext';
 import { getMap } from 'reducers/map/selectors';
 
-import EditorContext from '../../../context';
-import type { ExtendedEditorContextType } from '../../editorContextTypes';
-import type { TrackEditionState } from '../types';
-
-export const TRACK_LAYER_ID = 'trackEditionTool/new-track-path';
-export const POINTS_LAYER_ID = 'trackEditionTool/new-track-points';
+import EditorContext from 'applications/editor/context';
+import type { ExtendedEditorContextType } from 'applications/editor/types';
+import type { TrackEditionState } from 'applications/editor/tools/trackEdition/types';
+import { POINTS_LAYER_ID, TRACK_LAYER_ID } from 'applications/editor/tools/trackEdition/consts';
 
 const TRACK_COLOR = '#666';
 const TRACK_STYLE = { 'line-color': TRACK_COLOR, 'line-dasharray': [2, 1], 'line-width': 2 };
