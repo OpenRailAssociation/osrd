@@ -6,26 +6,27 @@ import along from '@turf/along';
 
 import { useInfraID } from 'common/osrdContext';
 import { save } from 'reducers/editor';
-import {
+
+import type { EditorEntity } from 'applications/editor/typesEditorEntity';
+import type {
   BufferStopEntity,
   DetectorEntity,
-  EditorEntity,
+  PointEditionState,
   SignalEntity,
-  TrackSectionEntity,
-} from 'types';
+} from 'applications/editor/tools/pointEdition/types';
+import EditorContext from 'applications/editor/context';
+import EntityError from 'applications/editor/components/EntityError';
+import EditorForm from 'applications/editor/components/EditorForm';
+import { getEntity } from 'applications/editor/data/api';
+import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
+import { ExtendedEditorContextType } from 'applications/editor/types';
+import { EditoastType } from 'applications/editor/consts';
+import { formatSignalingSystems } from 'applications/editor/tools/pointEdition/utils';
 
-import EditorContext from '../../../context';
-import EntityError from '../../../components/EntityError';
-import EditorForm from '../../../components/EditorForm';
-import { getEntity } from '../../../data/api';
-import { NEW_ENTITY_ID } from '../../../data/utils';
-import { ExtendedEditorContextType } from '../../editorContextTypes';
-import { EditoastType } from '../../types';
-import { formatSignalingSystems } from '../utils';
-import { PointEditionState } from '../types';
 import CustomFlagSignalCheckbox from './CustomFlagSignalCheckbox';
 import CustomPosition from './CustomPosition';
 import RoutesList from './RoutesList';
+import { TrackSectionEntity } from '../../trackEdition/types';
 
 type EditorPoint = BufferStopEntity | DetectorEntity | SignalEntity;
 

@@ -5,10 +5,10 @@ import { RiFocus3Line } from 'react-icons/ri';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 
-import EditorContext from '../../../context';
-import EntitySumUp from '../../../components/EntitySumUp';
-import type { SelectionState } from '../types';
-import type { ExtendedEditorContextType } from '../../editorContextTypes';
+import EditorContext from 'applications/editor/context';
+import EntitySumUp from 'applications/editor/components/EntitySumUp';
+import type { SelectionState } from 'applications/editor/tools/selection/types';
+import type { ExtendedEditorContextType } from 'applications/editor/types';
 
 const SelectionLeftPanel = () => {
   const { t } = useTranslation();

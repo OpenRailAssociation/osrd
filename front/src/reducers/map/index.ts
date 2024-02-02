@@ -7,7 +7,7 @@ import history from 'main/history';
 
 import { gpsRound } from 'utils/helpers';
 
-import type { InfraErrorType } from 'applications/editor/components/InfraErrors/types';
+import type { InfraErrorType } from 'applications/editor/components/InfraErrors';
 
 import { MAP_URL } from 'common/Map/const';
 

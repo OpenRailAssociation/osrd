@@ -2,18 +2,22 @@ import { cloneDeep, compact } from 'lodash';
 import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { removeDuplicates } from 'utils/array';
+import { msToKmh } from 'utils/physics';
+
+import type { PartialOrReducer } from 'applications/editor/types';
 import {
-  PSLExtension,
+  type PslSignInformation,
+  PSL_SIGN_TYPES,
+  type RangeEditionState,
+  type TrackState,
+  type SpeedSectionPslEntity,
   PSLSign,
   SpeedSectionEntity,
-  SpeedSectionPslEntity,
-  TrackSectionEntity,
-} from 'types';
-import { removeDuplicates } from 'utils/array';
-
-import { PartialOrReducer } from '../../editorContextTypes';
-import { PslSignInformation, PSL_SIGN_TYPES, RangeEditionState, TrackState } from '../types';
-import { msToKmh, selectPslSign } from '../utils';
+  PSLExtension,
+} from 'applications/editor/tools/rangeEdition/types';
+import { selectPslSign } from 'applications/editor/tools/rangeEdition/utils';
+import { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
 import PslSignCard from './PslSignCard';
 import PslSignSubSection from './PslSignSubSection';
 

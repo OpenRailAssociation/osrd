@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { Source, LayerProps } from 'react-map-gl/maplibre';
 
 import { RootState } from 'reducers';
-import { Theme } from 'types';
+import type { Theme } from 'types';
 import { MAP_URL } from 'common/Map/const';
 
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';

@@ -11,11 +11,11 @@ import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF/ConfirmModal';
 import { save } from 'reducers/editor';
 import { selectInZone } from 'utils/mapHelper';
 
-import { getMixedEntities } from '../../data/api';
-import { LAYER_TO_EDITOAST_DICT, LayerType } from '../types';
-import { DEFAULT_COMMON_TOOL_STATE } from '../commonToolState';
-import { Tool } from '../editorContextTypes';
-import { openEntityEditionPanel } from '../utils';
+import { getMixedEntities } from 'applications/editor/data/api';
+import { LAYER_TO_EDITOAST_DICT, Layer } from 'applications/editor/consts';
+import type { Tool } from 'applications/editor/types';
+import { DEFAULT_COMMON_TOOL_STATE } from 'applications/editor/tools/consts';
+import { openEntityEditionPanel } from 'applications/editor/tools/utils';
 import { SelectionLayers, SelectionMessages, SelectionLeftPanel } from './components';
 import { SelectionState } from './types';
 
@@ -197,7 +197,7 @@ const SelectionTool: Tool<SelectionState> = {
                 ? [
                     {
                       id: entity.properties.id as string,
-                      type: LAYER_TO_EDITOAST_DICT[entity.sourceLayer as LayerType],
+                      type: LAYER_TO_EDITOAST_DICT[entity.sourceLayer as Layer],
                     },
                   ]
                 : []
@@ -254,7 +254,7 @@ const SelectionTool: Tool<SelectionState> = {
                 ? [
                     {
                       id: entity.properties.id as string,
-                      type: LAYER_TO_EDITOAST_DICT[entity.sourceLayer as LayerType],
+                      type: LAYER_TO_EDITOAST_DICT[entity.sourceLayer as Layer],
                     },
                   ]
                 : []

@@ -1,53 +1,43 @@
+import { SerializedError } from '@reduxjs/toolkit';
+import cx from 'classnames';
+import { isNil, toInteger } from 'lodash';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { MapRef } from 'react-map-gl/maplibre';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import cx from 'classnames';
-import { isNil, toInteger } from 'lodash';
 
-import 'applications/editor/Editor.scss';
-import 'common/Map/Map.scss';
-
-import type { EditorSliceActions } from 'reducers/editor';
-import { getIsLoading } from 'reducers/main/mainSelector';
-import { loadDataModel, updateTotalsIssue } from 'reducers/editor';
-import { LoaderState } from 'common/Loaders';
-import { updateViewport } from 'reducers/map';
+import { ApiError } from 'common/api/baseGeneratedApis';
+import type { ObjectType } from 'common/api/osrdEditoastApi';
+import { useInfraID, useOsrdActions } from 'common/osrdContext';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
+import MapButtons from 'common/Map/Buttons/MapButtons';
+import { LoaderState } from 'common/Loaders';
+import MapSearch from 'common/Map/Search/MapSearch';
+import Tipped from 'common/Tipped';
+import { getIsLoading } from 'reducers/main/mainSelector';
+import { loadDataModel, updateTotalsIssue, type EditorSliceActions } from 'reducers/editor';
+import { getEditorState, getInfraLockStatus } from 'reducers/editor/selectors';
+import { updateViewport, type Viewport } from 'reducers/map';
+import { setFailure } from 'reducers/main';
+import { extractMessageFromError } from 'utils/error';
+
+import { getEntity, getMixedEntities } from 'applications/editor/data/api';
+import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import { useSwitchTypes } from 'applications/editor/tools/switchEdition/types';
 import EditorContext from 'applications/editor/context';
 import InfraErrorCorrector from 'applications/editor/components/InfraErrors/InfraErrorCorrector';
 import InfraErrorMapControl from 'applications/editor/components/InfraErrors/InfraErrorMapControl';
 import Map from 'applications/editor/Map';
-import MapButtons from 'common/Map/Buttons/MapButtons';
-import MapSearch from 'common/Map/Search/MapSearch';
-
-import Tipped from 'applications/editor/components/Tipped';
-import TOOLS from 'applications/editor/tools/tools';
-import TOOL_TYPES from 'applications/editor/tools/toolTypes';
-
-import type { CommonToolState } from 'applications/editor/tools/commonToolState';
-import { useInfraID, useOsrdActions } from 'common/osrdContext';
-import type { EditoastType, EditorState } from 'applications/editor/tools/types';
-import type { MapRef } from 'react-map-gl/maplibre';
-import type {
-  EditorContextType,
-  ExtendedEditorContextType,
-  FullTool,
-  Reducer,
-} from 'applications/editor/tools/editorContextTypes';
-import type { Viewport } from 'reducers/map';
+import type { CommonToolState } from 'applications/editor/tools/types';
 import type { switchProps } from 'applications/editor/tools/switchProps';
-import type { ObjectType } from 'common/api/osrdEditoastApi';
-import { setFailure } from 'reducers/main';
-import { extractMessageFromError } from 'utils/error';
-import { ApiError } from 'common/api/baseGeneratedApis';
-import { SerializedError } from '@reduxjs/toolkit';
-import { EditorEntity } from 'types';
-import { getInfraLockStatus } from 'reducers/editor/selectors';
-import { centerMapOnObject, selectEntities } from './tools/utils';
-import { getEntity, getMixedEntities } from './data/api';
-import { NEW_ENTITY_ID } from './data/utils';
+import { centerMapOnObject, selectEntities } from 'applications/editor/tools/utils';
+import TOOLS from 'applications/editor/tools/constsTools';
+import TOOL_NAMES from 'applications/editor/tools/constsToolNames';
+
+import type { EditoastType } from './consts';
+import type { EditorContextType, ExtendedEditorContextType, FullTool, Reducer } from './types';
+import type { EditorEntity } from './typesEditorEntity';
 
 const Editor = () => {
   const { t } = useTranslation();
@@ -61,12 +51,12 @@ const Editor = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const isLocked = useSelector(getInfraLockStatus);
   const isLoading = useSelector(getIsLoading);
-  const editorState = useSelector((state: { editor: EditorState }) => state.editor);
+  const editorState = useSelector(getEditorState);
   const switchTypes = useSwitchTypes(infraID);
   /* eslint-disable @typescript-eslint/no-explicit-any */
   const [toolAndState, setToolAndState] = useState<FullTool<any>>({
-    tool: TOOLS[TOOL_TYPES.SELECTION],
-    state: TOOLS[TOOL_TYPES.SELECTION].getInitialState({ infraID, switchTypes }),
+    tool: TOOLS[TOOL_NAMES.SELECTION],
+    state: TOOLS[TOOL_NAMES.SELECTION].getInitialState({ infraID, switchTypes }),
   });
   const [isSearchToolOpened, setIsSearchToolOpened] = useState(false);
   const [renderingFingerprint, setRenderingFingerprint] = useState(Date.now());
@@ -105,7 +95,7 @@ const Editor = () => {
   );
 
   const resetState = useCallback(() => {
-    switchTool({ toolType: TOOL_TYPES.SELECTION, toolState: {} });
+    switchTool({ toolType: TOOL_NAMES.SELECTION, toolState: {} });
     forceRender();
   }, [switchTool, forceRender]);
 
@@ -330,7 +320,7 @@ const Editor = () => {
       >
         <div className="layout">
           <div className="tool-box bg-primary">
-            {Object.values(TOOL_TYPES).map((toolType: TOOL_TYPES) => {
+            {Object.values(TOOL_NAMES).map((toolType: TOOL_NAMES) => {
               const tool = TOOLS[toolType];
               const { id, icon: IconComponent, labelTranslationKey } = tool;
               const label = t(labelTranslationKey);

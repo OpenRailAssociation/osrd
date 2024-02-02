@@ -1,8 +1,8 @@
 import { useContext } from 'react';
 
-import EditorContext from '../../../context';
-import type { ExtendedEditorContextType } from '../../editorContextTypes';
-import type { TrackEditionState } from '../types';
+import EditorContext from 'applications/editor/context';
+import type { ExtendedEditorContextType } from 'applications/editor/types';
+import type { TrackEditionState } from 'applications/editor/tools/trackEdition/types';
 
 const TrackEditionMessages = () => {
   const { t, state } = useContext(EditorContext) as ExtendedEditorContextType<TrackEditionState>;

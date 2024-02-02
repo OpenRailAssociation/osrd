@@ -1,12 +1,16 @@
-import React from 'react';
 import { TFunction } from 'i18next';
-import { PSLSign } from 'types';
-import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
-import { GoTrash } from 'react-icons/go';
 import { isNil } from 'lodash';
+import React from 'react';
+import { GoTrash } from 'react-icons/go';
 import { RiDragMoveLine } from 'react-icons/ri';
+
+import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import { PSL_SIGN_TYPES, PslSignInformation } from '../types';
+import {
+  PSLSign,
+  PSL_SIGN_TYPES,
+  type PslSignInformation,
+} from 'applications/editor/tools/rangeEdition/types';
 
 const PslSignCard = ({
   sign,

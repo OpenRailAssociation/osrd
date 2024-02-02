@@ -1,9 +1,13 @@
-import React, { FC, Suspense, lazy } from 'react';
-import { Loader } from 'common/Loaders';
 import { FieldProps } from '@rjsf/core';
 import SchemaField from '@rjsf/core/lib/components/fields/SchemaField';
-import useSwitch from '../useSwitch';
-import { FLAT_SWITCH_PORTS_PREFIX, GROUP_CHANGE_DELAY } from '../utils';
+import React, { FC, Suspense, lazy } from 'react';
+
+import { Loader } from 'common/Loaders';
+import useSwitch from 'applications/editor/tools/switchEdition/useSwitch';
+import {
+  FLAT_SWITCH_PORTS_PREFIX,
+  GROUP_CHANGE_DELAY,
+} from 'applications/editor/tools/switchEdition/utils';
 import TrackSectionEndpointSelector from './TrackSectionEndpointSelector';
 
 const TrackNodeTypeDiagram = lazy(() => import('./TrackNodeTypeDiagram'));

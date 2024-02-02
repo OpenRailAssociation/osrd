@@ -8,19 +8,21 @@ import { isEmpty, isNil, keyBy } from 'lodash';
 
 import EditorContext from 'applications/editor/context';
 import { getEntity } from 'applications/editor/data/api';
-import Tipped from 'applications/editor/components/Tipped';
 import { FLAT_SWITCH_PORTS_PREFIX } from 'applications/editor/tools/switchEdition/utils';
-import type { ExtendedEditorContextType } from 'applications/editor/tools/editorContextTypes';
+import type { ExtendedEditorContextType } from 'applications/editor/types';
 
-import type { TrackSectionEntity } from 'types';
-import { DEFAULT_ENDPOINT, ENDPOINTS, ENDPOINTS_SET } from 'types';
-import type {
-  PortEndPointCandidate,
-  SwitchEditionState,
+import Tipped from 'common/Tipped';
+import {
+  ENDPOINTS,
+  type PortEndPointCandidate,
+  type SwitchEditionState,
 } from 'applications/editor/tools/switchEdition/types';
 
 import { useInfraID } from 'common/osrdContext';
+import { TrackSectionEntity } from '../../trackEdition/types';
 
+const DEFAULT_ENDPOINT = ENDPOINTS[0];
+const ENDPOINTS_SET = new Set(ENDPOINTS);
 const ENDPOINT_OPTIONS = ENDPOINTS.map((s) => ({ value: s, label: s }));
 const ENDPOINT_OPTIONS_DICT = keyBy(ENDPOINT_OPTIONS, 'value');
 

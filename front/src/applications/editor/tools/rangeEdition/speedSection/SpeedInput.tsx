@@ -1,6 +1,6 @@
 import React, { FC, InputHTMLAttributes, useEffect, useState } from 'react';
 import { isNumber } from 'lodash';
-import { kmhToMs, msToKmh } from '../utils';
+import { kmhToMs, msToKmh } from 'utils/physics';
 
 function msToKmhString(msSpeed: number | undefined): string {
   return isNumber(msSpeed) ? msToKmh(msSpeed).toFixed(2) : '';

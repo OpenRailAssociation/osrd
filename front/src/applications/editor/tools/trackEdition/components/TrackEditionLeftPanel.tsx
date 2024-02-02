@@ -3,19 +3,20 @@ import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { WidgetProps } from '@rjsf/core';
 
-import type { TrackSectionEntity } from 'types';
-
 import DebouncedNumberInputSNCF from 'common/BootstrapSNCF/FormSNCF/DebouncedNumberInputSNCF';
 import { useInfraID } from 'common/osrdContext';
 import { save } from 'reducers/editor';
 
-import EditorContext from '../../../context';
-import { NEW_ENTITY_ID } from '../../../data/utils';
-import EditorForm from '../../../components/EditorForm';
-import EntityError from '../../../components/EntityError';
-import type { ExtendedEditorContextType } from '../../editorContextTypes';
-import { injectGeometry, removeInvalidRanges } from '../utils';
-import type { TrackEditionState } from '../types';
+import EditorContext from 'applications/editor/context';
+import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
+import EditorForm from 'applications/editor/components/EditorForm';
+import EntityError from 'applications/editor/components/EntityError';
+import type { ExtendedEditorContextType } from 'applications/editor/types';
+import { injectGeometry, removeInvalidRanges } from 'applications/editor/tools/trackEdition/utils';
+import type {
+  TrackEditionState,
+  TrackSectionEntity,
+} from 'applications/editor/tools/trackEdition/types';
 import AttachedRangesItemsList from './AttachedRangesItemsList';
 
 const CustomLengthInput: React.FC<WidgetProps> = (props) => {

@@ -6,31 +6,28 @@ import { Feature, feature, lineString, LineString, point } from '@turf/helpers';
 import lineSliceAlong from '@turf/line-slice-along';
 import { MapLayerMouseEvent } from 'maplibre-gl';
 
-import {
-  ElectrificationEntity,
-  PSLExtension,
-  PSLSign,
-  SpeedSectionEntity,
-  SpeedSectionPslEntity,
-  TrackRange,
-  TrackSectionEntity,
-} from 'types';
 import { getNearestPoint } from 'utils/mapHelper';
 
-import { NEW_ENTITY_ID } from '../../data/utils';
+import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import {
   approximateDistanceWithEditoastData,
   getHoveredTrackRanges,
   getTrackSectionEntityFromNearestPoint,
-} from '../utils';
-import { DEFAULT_COMMON_TOOL_STATE } from '../commonToolState';
-import { PartialOrReducer } from '../editorContextTypes';
+} from 'applications/editor/tools/utils';
+import type { PartialOrReducer } from 'applications/editor/types';
+import type { TrackRange, TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
+
 import {
+  ElectrificationEntity,
+  PSLExtension,
+  PSLSign,
   PSL_SIGN_TYPE,
   PSL_SIGN_TYPES,
   PslSignFeature,
   PslSignInformation,
   RangeEditionState,
+  SpeedSectionEntity,
+  SpeedSectionPslEntity,
   TrackRangeExtremityFeature,
   TrackRangeFeature,
   TrackState,
@@ -116,7 +113,7 @@ export function getSignInformationFromInteractionState(
   ) as PslSignInformation;
 }
 
-export function getNewPslExtension(
+function getNewPslExtension(
   newPslExtension: PSLExtension,
   signInformation: PslSignInformation,
   newPosition: { track: string; position: number }
@@ -157,32 +154,6 @@ export function getMovedPslEntity(
   const updatedEntity = cloneDeep(entity);
   updatedEntity.properties.extensions.psl_sncf = newPslExtension;
   return updatedEntity;
-}
-
-export function getEditSpeedSectionState(
-  entity: SpeedSectionEntity
-): RangeEditionState<SpeedSectionEntity> {
-  return {
-    ...DEFAULT_COMMON_TOOL_STATE,
-    initialEntity: cloneDeep(entity),
-    entity: cloneDeep(entity),
-    trackSectionsCache: {},
-    interactionState: { type: 'idle' },
-    hoveredItem: null,
-  };
-}
-
-export function getEditElectrificationState(
-  entity: ElectrificationEntity
-): RangeEditionState<ElectrificationEntity> {
-  return {
-    ...DEFAULT_COMMON_TOOL_STATE,
-    initialEntity: cloneDeep(entity),
-    entity: cloneDeep(entity),
-    trackSectionsCache: {},
-    interactionState: { type: 'idle' },
-    hoveredItem: null,
-  };
 }
 
 export function getTrackRangeFeatures(
@@ -332,13 +303,6 @@ export function getPointAt(track: TrackSectionEntity, at: number): Position {
 
   const computedLength = length(track);
   return along(track.geometry, (at * computedLength) / dataLength).geometry.coordinates;
-}
-
-export function msToKmh(v: number): number {
-  return v * 3.6;
-}
-export function kmhToMs(v: number): number {
-  return v / 3.6;
 }
 
 /**

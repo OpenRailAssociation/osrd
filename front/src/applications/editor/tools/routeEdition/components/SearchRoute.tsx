@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { GoSearch } from 'react-icons/go';
 
 import { LoaderFill } from 'common/Loaders';
+import type { OptionsStateType } from 'applications/editor/tools/routeEdition/types';
 import { SearchRouteItem } from './SearchRouteItem';
-import type { OptionsStateType } from '../types';
 
 interface SearchRouteProps {
   searchFn: () => void;

@@ -7,15 +7,15 @@ import { useDispatch } from 'react-redux';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { Spinner } from 'common/Loaders';
 import { useInfraID } from 'common/osrdContext';
-import { RouteEntity } from 'types';
 
-import EntitySumUp from '../../../components/EntitySumUp';
-import EditorContext from '../../../context';
-import { getEntities } from '../../../data/api';
-import { ExtendedEditorContextType } from '../../editorContextTypes';
-import { EditoastType } from '../../types';
-import TOOL_TYPES from '../../toolTypes';
-import { getRouteEditionState } from '../../routeEdition/utils';
+import EntitySumUp from 'applications/editor/components/EntitySumUp';
+import EditorContext from 'applications/editor/context';
+import { getEntities } from 'applications/editor/data/api';
+import type { ExtendedEditorContextType } from 'applications/editor/types';
+import type { RouteEntity } from 'applications/editor/tools/routeEdition/types';
+import type { EditoastType } from 'applications/editor/consts';
+import TOOL_NAMES from 'applications/editor/tools/constsToolNames';
+import { getRouteEditionState } from 'applications/editor/tools/routeEdition/utils';
 
 interface RoutesListProps {
   type: EditoastType;
@@ -106,7 +106,7 @@ const RoutesList = ({ type, id }: RoutesListProps) => {
                     title={t('common.open')}
                     onClick={() => {
                       switchTool({
-                        toolType: TOOL_TYPES.ROUTE_EDITION,
+                        toolType: TOOL_NAMES.ROUTE_EDITION,
                         toolState: getRouteEditionState(route),
                       });
                     }}
@@ -137,7 +137,7 @@ const RoutesList = ({ type, id }: RoutesListProps) => {
                     title={t('common.open')}
                     onClick={() => {
                       switchTool({
-                        toolType: TOOL_TYPES.ROUTE_EDITION,
+                        toolType: TOOL_NAMES.ROUTE_EDITION,
                         toolState: getRouteEditionState(route),
                       });
                     }}

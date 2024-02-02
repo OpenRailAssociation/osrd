@@ -11,7 +11,7 @@ import { map, sum, uniqBy } from 'lodash';
 
 import mapStyleJson from 'assets/mapstyles/OSMStyle.json';
 
-import type { LayerType } from 'applications/editor/tools/types';
+import type { Layer } from 'applications/editor/consts';
 
 import { OSM_URL } from 'common/Map/const';
 import colors from 'common/Map/Consts/colors';
@@ -38,10 +38,10 @@ const OSM_LAYERS = new Set(['building', 'water', 'water_name', 'waterway', 'poi'
 interface DataLoaderProps {
   bbox: BBox2d;
   getGeoJSONs: (
-    osrdData: Partial<Record<LayerType, FeatureCollection>>,
+    osrdData: Partial<Record<Layer, FeatureCollection>>,
     osmData: Record<string, FeatureCollection>
   ) => void;
-  layers: Set<LayerType>;
+  layers: Set<Layer>;
 }
 
 const DataLoader = ({ bbox, getGeoJSONs, layers }: DataLoaderProps) => {
@@ -80,7 +80,7 @@ const DataLoader = ({ bbox, getGeoJSONs, layers }: DataLoaderProps) => {
       const querySources = () => {
         // Retrieve OSRD data:
         let osrdFeaturesCount = 0;
-        const osrdData: Partial<Record<LayerType, FeatureCollection>> = {};
+        const osrdData: Partial<Record<Layer, FeatureCollection>> = {};
         layers.forEach((layer) => {
           osrdData[layer] = featureCollection(
             uniqBy(

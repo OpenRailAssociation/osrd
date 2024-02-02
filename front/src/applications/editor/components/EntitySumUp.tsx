@@ -8,24 +8,21 @@ import cx from 'classnames';
 
 import { useInfraID } from 'common/osrdContext';
 import { LoaderFill } from 'common/Loaders';
-import type {
-  BufferStopEntity,
-  ElectrificationEntity,
-  EditorEntity,
-  RouteEntity,
-  SignalEntity,
-  SpeedSectionEntity,
-  SwitchEntity,
-  TrackSectionEntity,
-} from 'types';
 import { getSpeedSectionsNameString } from 'common/Map/Layers/SpeedLimits';
 
-import { EditoastType } from '../tools/types';
-import { NEW_ENTITY_ID } from '../data/utils';
-import { getEntities, getEntity } from '../data/api';
-import { InfraError } from './InfraErrors/types';
-import InfraErrorIcon from './InfraErrors/InfraErrorIcon';
-import InfraErrorTypeLabel from './InfraErrors/InfraErrorTypeLabel';
+import { type EditoastType } from 'applications/editor/consts';
+import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
+import { getEntities, getEntity } from 'applications/editor/data/api';
+import type { EditorEntity } from 'applications/editor/typesEditorEntity';
+import type { BufferStopEntity, SignalEntity } from 'applications/editor/tools/pointEdition/types';
+import type { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
+import type { RouteEntity } from 'applications/editor/tools/routeEdition/types';
+import type { SwitchEntity } from 'applications/editor/tools/switchEdition/types';
+import type {
+  ElectrificationEntity,
+  SpeedSectionEntity,
+} from 'applications/editor/tools/rangeEdition/types';
+import { type InfraError, InfraErrorIcon, InfraErrorTypeLabel } from './InfraErrors';
 
 function prettifyStringsArray(strings: string[], finalSeparator: string): string {
   switch (strings.length) {

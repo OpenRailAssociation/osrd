@@ -2,9 +2,9 @@ import { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
-import EditorContext from '../../../context';
-import type { ExtendedEditorContextType } from '../../editorContextTypes';
-import type { RouteEditionState } from '../types';
+import EditorContext from 'applications/editor/context';
+import type { ExtendedEditorContextType } from 'applications/editor/types';
+import type { RouteEditionState } from 'applications/editor/tools/routeEdition/types';
 
 const RouteEditionMessages = () => {
   const { t } = useTranslation();

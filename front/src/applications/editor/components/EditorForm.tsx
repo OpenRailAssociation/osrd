@@ -1,21 +1,21 @@
-import React, { useState, useEffect, useMemo, PropsWithChildren } from 'react';
 import Form, { Field, UiSchema } from '@rjsf/core';
-import { useSelector } from 'react-redux';
 import { GeoJsonProperties } from 'geojson';
+import i18n from 'i18n';
 import { JSONSchema7 } from 'json-schema';
 import { isNil, omitBy } from 'lodash';
-
-import './EditorForm.scss';
+import React, { useState, useEffect, useMemo, PropsWithChildren } from 'react';
 import { useTranslation } from 'react-i18next';
-import i18n from 'i18n';
-import { EditorEntity } from 'types';
-import { translateSchema } from 'applications/editor/tools/translationTools';
+import { useSelector } from 'react-redux';
+
 import {
   getLayerForObjectType,
   getJsonSchemaForLayer,
   NEW_ENTITY_ID,
 } from 'applications/editor/data/utils';
-import { EditorState } from 'applications/editor/tools/types';
+import { translateSchema } from 'applications/editor/tools/translationTools';
+import { getEditorState } from 'reducers/editor/selectors';
+import type { EditorEntity } from 'applications/editor/typesEditorEntity';
+
 import { FormComponent, FormLineStringLength } from './LinearMetadata';
 
 const fields = {
@@ -50,7 +50,7 @@ function EditorForm<T extends Omit<EditorEntity, 'objType'> & { objType: string 
   const [submited, setSubmited] = useState<boolean>(false);
   const { t } = useTranslation('infraEditor');
 
-  const editorState = useSelector((state: { editor: EditorState }) => state.editor);
+  const editorState = useSelector(getEditorState);
   const layer = useMemo(
     () => getLayerForObjectType(editorState.editorSchema, data.objType),
     [data.objType, editorState.editorSchema]

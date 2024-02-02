@@ -10,10 +10,11 @@ import EditorContext from 'applications/editor/context';
 import { flattenEntity } from 'applications/editor/data/utils';
 import EntitySumUp from 'applications/editor/components/EntitySumUp';
 import { getEntities, getEntity } from 'applications/editor/data/api';
-import type { ExtendedEditorContextType } from 'applications/editor/tools/editorContextTypes';
+import type { ExtendedEditorContextType } from 'applications/editor/types';
 import type {
   PslSignFeature,
   RangeEditionState,
+  SpeedSectionEntity,
   TrackState,
 } from 'applications/editor/tools/rangeEdition/types';
 import {
@@ -22,8 +23,7 @@ import {
   isOnModeMove,
   speedSectionIsPsl,
 } from 'applications/editor/tools/rangeEdition/utils';
-
-import type { SpeedSectionEntity, TrackSectionEntity } from 'types';
+import { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
 
 import colors from 'common/Map/Consts/colors';
 import { useInfraID } from 'common/osrdContext';

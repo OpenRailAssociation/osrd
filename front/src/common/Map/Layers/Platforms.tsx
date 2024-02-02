@@ -4,7 +4,7 @@ import { Source, LayerProps } from 'react-map-gl/maplibre';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import { OSM_URL } from 'common/Map/const';
 
-import { Theme } from 'types';
+import type { Theme } from 'types';
 import { useSelector } from 'react-redux';
 import { RootState } from 'reducers';
 

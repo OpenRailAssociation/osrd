@@ -1,14 +1,15 @@
-import React, { useContext, useMemo, useState } from 'react';
+import React, { useContext, useMemo, useState, type PropsWithChildren } from 'react';
 import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl/maplibre';
 import { isEmpty, isEqual } from 'lodash';
 import { TFunction } from 'i18next';
 import { useSelector, useDispatch } from 'react-redux';
+import type { MapRef } from 'react-map-gl/maplibre';
 import { withTranslation } from 'react-i18next';
 
-import 'common/Map/Map.scss';
 import colors from 'common/Map/Consts/colors';
 
 /* Main data & layers */
+import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
 import Background from 'common/Map/Layers/Background';
 import Hillshade from 'common/Map/Layers/Hillshade';
 import IGN_BD_ORTHO from 'common/Map/Layers/IGN_BD_ORTHO';
@@ -23,27 +24,21 @@ import TracksOSM from 'common/Map/Layers/TracksOSM';
 import VirtualLayers from 'modules/simulationResult/components/SimulationResultsMap/VirtualLayers';
 
 import EditorContext from 'applications/editor/context';
-import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
 import { getEntity } from 'applications/editor/data/api';
 import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
 import { getMap, getShowOSM, getTerrain3DExaggeration } from 'reducers/map/selectors';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
-import { LAYER_TO_EDITOAST_DICT, LAYERS_SET } from 'applications/editor/tools/types';
+import { LAYER_TO_EDITOAST_DICT, LAYERS_SET } from 'applications/editor/consts';
 import { updateMapSearchMarker } from 'reducers/map';
 import { useMapBlankStyle } from 'common/Map/Layers/blankStyle';
 import { useSwitchTypes } from 'applications/editor/tools/switchEdition/types';
 
-import type { CommonToolState } from 'applications/editor/tools/commonToolState';
-import type {
-  EditorContextType,
-  ExtendedEditorContextType,
-  Tool,
-} from 'applications/editor/tools/editorContextTypes';
-import type { EditorState, LayerType } from 'applications/editor/tools/types';
-import type { InfraError } from 'applications/editor/components/InfraErrors/types';
-import type { MapRef } from 'react-map-gl/maplibre';
-import type { PropsWithChildren } from 'react';
+import type { EditorContextType, ExtendedEditorContextType, Tool } from 'applications/editor/types';
+import type { Layer } from 'applications/editor/consts';
+import type { CommonToolState } from 'applications/editor/tools/types';
+import type { InfraError } from 'applications/editor/components/InfraErrors';
 import type { Viewport } from 'reducers/map';
+import { getEditorState } from 'reducers/editor/selectors';
 
 interface MapProps<S extends CommonToolState = CommonToolState> {
   t: TFunction;
@@ -83,7 +78,7 @@ const MapUnplugged = ({
   });
   const context = useContext(EditorContext) as EditorContextType<CommonToolState>;
   const switchTypes = useSwitchTypes(infraID);
-  const editorState = useSelector((state: { editor: EditorState }) => state.editor);
+  const editorState = useSelector(getEditorState);
   const showOSM = useSelector(getShowOSM);
   const terrain3DExaggeration = useSelector(getTerrain3DExaggeration);
 
@@ -181,7 +176,7 @@ const MapUnplugged = ({
               ) {
                 partialToolState.hovered = {
                   id: feature.properties?.id as string,
-                  type: LAYER_TO_EDITOAST_DICT[feature.sourceLayer as LayerType],
+                  type: LAYER_TO_EDITOAST_DICT[feature.sourceLayer as Layer],
                   renderedEntity: feature,
                 };
               } else if (feature.sourceLayer === 'errors') {

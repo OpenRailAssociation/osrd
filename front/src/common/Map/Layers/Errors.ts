@@ -1,12 +1,12 @@
 import { CircleLayer, LineLayer, SymbolLayer } from 'react-map-gl/maplibre';
 
-import { allInfraErrorTypes } from 'applications/editor/components/InfraErrors/types';
-import { OmitLayer } from 'types';
-import { LayerContext } from './types';
+import { INFRA_ERRORS } from 'applications/editor/components/InfraErrors';
+import type { OmitLayer } from 'types';
+import type { LayerContext } from './types';
 
 const LINE_OBJECT = ['TrackSection', 'Electrification', 'SpeedSection'];
 export function getLineErrorsLayerProps(context: LayerContext): OmitLayer<LineLayer> {
-  const enableErrorTypes = context.issuesSettings?.types || allInfraErrorTypes;
+  const enableErrorTypes = context.issuesSettings?.types || INFRA_ERRORS;
   const res: OmitLayer<LineLayer> = {
     type: 'line',
     filter: ['all', ['in', 'obj_type', ...LINE_OBJECT], ['in', 'error_type', ...enableErrorTypes]],
@@ -27,7 +27,7 @@ export function getLineErrorsLayerProps(context: LayerContext): OmitLayer<LineLa
 }
 
 export function getLineTextErrorsLayerProps(context: LayerContext): OmitLayer<SymbolLayer> {
-  const enableErrorTypes = context.issuesSettings?.types || allInfraErrorTypes;
+  const enableErrorTypes = context.issuesSettings?.types || INFRA_ERRORS;
   const res: OmitLayer<SymbolLayer> = {
     type: 'symbol',
     filter: ['all', ['in', 'obj_type', ...LINE_OBJECT], ['in', 'error_type', ...enableErrorTypes]],
@@ -53,7 +53,7 @@ export function getLineTextErrorsLayerProps(context: LayerContext): OmitLayer<Sy
 }
 
 export function getPointErrorsLayerProps(context: LayerContext): OmitLayer<CircleLayer> {
-  const enableErrorTypes = context.issuesSettings?.types || allInfraErrorTypes;
+  const enableErrorTypes = context.issuesSettings?.types || INFRA_ERRORS;
   const res: OmitLayer<CircleLayer> = {
     type: 'circle',
     filter: ['all', ['!in', 'obj_type', ...LINE_OBJECT], ['in', 'error_type', ...enableErrorTypes]],
@@ -73,7 +73,7 @@ export function getPointErrorsLayerProps(context: LayerContext): OmitLayer<Circl
 }
 
 export function getPointTextErrorsLayerProps(context: LayerContext): OmitLayer<SymbolLayer> {
-  const enableErrorTypes = context.issuesSettings?.types || allInfraErrorTypes;
+  const enableErrorTypes = context.issuesSettings?.types || INFRA_ERRORS;
   const res: OmitLayer<SymbolLayer> = {
     type: 'symbol',
     filter: ['all', ['!in', 'obj_type', ...LINE_OBJECT], ['in', 'error_type', ...enableErrorTypes]],

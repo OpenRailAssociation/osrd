@@ -1,14 +1,38 @@
-import { Feature, LineString } from 'geojson';
+import { Feature, LineString, Point } from 'geojson';
 
-import { BufferStopEntity, DetectorEntity, EndPoint, RouteEntity, WayPointEntity } from 'types';
-import { DirectionalTrackRange } from 'common/api/osrdEditoastApi';
-import { CommonToolState } from 'applications/editor/tools/commonToolState';
+import { EditorEntity } from 'applications/editor/typesEditorEntity';
+import type { CommonToolState } from 'applications/editor/tools/types';
+import { EndPoint } from 'applications/editor/tools/switchEdition/types';
+import type { Direction, DirectionalTrackRange } from 'common/api/osrdEditoastApi';
+import { BufferStopEntity, DetectorEntity } from 'applications/editor/tools/pointEdition/types';
+import { NullGeometry } from 'types';
 
-export interface RouteCandidate {
+//
+// Waypoint
+//
+export type WayPoint = {
+  type: 'BufferStop' | 'Detector';
+  id: string;
+};
+export type WayPointEntity = BufferStopEntity<Point> | DetectorEntity<Point>;
+export type RouteEntity = EditorEntity<
+  NullGeometry,
+  {
+    entry_point: WayPoint;
+    entry_point_direction: Direction;
+    exit_point: WayPoint;
+    switches_directions: Record<string, string>;
+    release_detectors: string[];
+  }
+> & {
+  objType: 'Route';
+};
+
+export type RouteCandidate = {
   track_ranges: Required<DirectionalTrackRange>[];
   detectors: string[];
   switches_directions: Record<string, string>;
-}
+};
 
 export enum EndPointKeys {
   BEGIN = 'entry_point',

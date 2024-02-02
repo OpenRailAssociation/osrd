@@ -2,8 +2,6 @@ import React, { FC, HTMLAttributes, useState } from 'react';
 import { CSSTransition } from 'react-transition-group';
 import cx from 'classnames';
 
-import './Tipped.scss';
-
 interface TippedProps extends HTMLAttributes<unknown> {
   children: [JSX.Element, JSX.Element];
   tag?: keyof JSX.IntrinsicElements;
@@ -21,7 +19,7 @@ const Tipped: FC<TippedProps> = (props) => {
   return (
     <RootTag
       {...(attributes || {})}
-      className={cx(attributes?.className, 'tooltip-container')}
+      className={cx(attributes?.className, 'tipped-tooltip-container')}
       style={{
         ...(attributes.style || {}),
         position: 'relative',

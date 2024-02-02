@@ -1,13 +1,14 @@
 import { useContext, useMemo } from 'react';
 import { first, keyBy } from 'lodash';
 
-import type { SwitchEntity } from 'types';
-
 import EditorContext from 'applications/editor/context';
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import { useSwitchTypes } from 'applications/editor/tools/switchEdition/types';
-import type { SwitchEditionState } from 'applications/editor/tools/switchEdition/types';
-import type { ExtendedEditorContextType } from 'applications/editor/tools/editorContextTypes';
+import type {
+  SwitchEditionState,
+  SwitchEntity,
+} from 'applications/editor/tools/switchEdition/types';
+import type { ExtendedEditorContextType } from 'applications/editor/types';
 import {
   getSwitchTypeJSONSchema,
   switchToFlatSwitch,

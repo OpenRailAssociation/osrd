@@ -6,14 +6,18 @@ import { FaFlagCheckered, FaTimes } from 'react-icons/fa';
 import { cloneDeep } from 'lodash';
 
 import { LoaderFill } from 'common/Loaders';
-import type { ApplicableDirection, ElectrificationEntity, SpeedSectionEntity } from 'types';
-import { APPLICABLE_DIRECTIONS } from 'types';
 
-import EditorContext from '../../../context';
-import EntitySumUp from '../../../components/EntitySumUp';
-import type { RangeEditionState } from '../types';
-import { getPointAt } from '../utils';
-import type { ExtendedEditorContextType } from '../../editorContextTypes';
+import EditorContext from 'applications/editor/context';
+import EntitySumUp from 'applications/editor/components/EntitySumUp';
+import { APPLICABLE_DIRECTIONS } from 'applications/editor/tools/rangeEdition/consts';
+import type {
+  ApplicableDirection,
+  ElectrificationEntity,
+  RangeEditionState,
+  SpeedSectionEntity,
+} from 'applications/editor/tools/rangeEdition/types';
+import { getPointAt } from 'applications/editor/tools/rangeEdition/utils';
+import type { ExtendedEditorContextType } from 'applications/editor/types';
 
 const DEFAULT_DISPLAYED_RANGES_COUNT = 5;
 

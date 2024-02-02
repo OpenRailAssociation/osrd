@@ -1,6 +1,11 @@
 import { MdSpeed } from 'react-icons/md';
-import { ElectrificationEntity, SpeedSectionEntity, SpeedSectionPslEntity } from 'types';
 import { GiElectric } from 'react-icons/gi';
+
+import type {
+  ElectrificationEntity,
+  SpeedSectionEntity,
+} from 'applications/editor/tools/rangeEdition/types';
+
 import getRangeEditionTool from './tool-factory';
 import { getNewElectrification, getNewSpeedSection } from './utils';
 import { RangeEditionLeftPanel } from './components';
@@ -12,6 +17,7 @@ import {
   ElectrificationEditionLayers,
   ElectrificationMessages,
 } from './electrification/ElectrificationEditionLayers';
+import { SpeedSectionPslEntity } from './types';
 
 export const SpeedEditionTool = getRangeEditionTool<SpeedSectionEntity | SpeedSectionPslEntity>({
   id: 'SpeedSection',

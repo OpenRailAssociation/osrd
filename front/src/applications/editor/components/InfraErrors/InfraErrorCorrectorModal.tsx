@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
-import { OPERATION_TYPE } from 'applications/editor/tools/types';
+import { OPERATION_TYPE } from 'applications/editor/consts';
 import { useInfraID } from 'common/osrdContext';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { ConfirmModal, useModal } from 'common/BootstrapSNCF/ModalSNCF';

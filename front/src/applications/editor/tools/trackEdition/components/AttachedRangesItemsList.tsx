@@ -3,18 +3,23 @@ import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { BsBoxArrowInRight } from 'react-icons/bs';
 
-import type { ElectrificationEntity, SpeedSectionEntity } from 'types';
-
 import { Spinner } from 'common/Loaders';
 import { useInfraID } from 'common/osrdContext';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 
-import EditorContext from '../../../context';
-import { getEntities } from '../../../data/api';
-import EntitySumUp from '../../../components/EntitySumUp';
-import type { ExtendedEditorContextType } from '../../editorContextTypes';
-import { getEditElectrificationState, getEditSpeedSectionState } from '../../rangeEdition/utils';
-import TOOL_TYPES from '../../toolTypes';
+import EditorContext from 'applications/editor/context';
+import { getEntities } from 'applications/editor/data/api';
+import EntitySumUp from 'applications/editor/components/EntitySumUp';
+import type { ExtendedEditorContextType } from 'applications/editor/types';
+import {
+  getEditElectrificationState,
+  getEditSpeedSectionState,
+} from 'applications/editor/tools/trackEdition/utils';
+import {
+  ElectrificationEntity,
+  SpeedSectionEntity,
+} from 'applications/editor/tools/rangeEdition/types';
+import TOOL_NAMES from 'applications/editor/tools/constsToolNames';
 
 const DEFAULT_DISPLAYED_RANGES_COUNT = 3;
 
@@ -121,12 +126,12 @@ const AttachedRangesItemsList = ({ id, itemType }: AttachedRangesItemsListProps)
                     onClick={() => {
                       if (entity.objType === 'SpeedSection') {
                         switchTool({
-                          toolType: TOOL_TYPES.SPEED_SECTION_EDITION,
+                          toolType: TOOL_NAMES.SPEED_SECTION_EDITION,
                           toolState: getEditSpeedSectionState(entity as SpeedSectionEntity),
                         });
                       } else
                         switchTool({
-                          toolType: TOOL_TYPES.ELECTRIFICATION_EDITION,
+                          toolType: TOOL_NAMES.ELECTRIFICATION_EDITION,
                           toolState: getEditElectrificationState(entity as ElectrificationEntity),
                         });
                     }}

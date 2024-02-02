@@ -8,7 +8,7 @@ import distance from '@turf/distance';
 import { MapGeoJSONFeature } from 'maplibre-gl';
 import WebMercatorViewport from 'viewport-mercator-project';
 
-import { EditoastType, LAYER_TO_EDITOAST_DICT, LayerType } from 'applications/editor/tools/types';
+import { EditoastType, LAYER_TO_EDITOAST_DICT, Layer } from 'applications/editor/consts';
 import { getMixedEntities } from 'applications/editor/data/api';
 import { flattenEntity } from 'applications/editor/data/utils';
 import vec, { Vec2 } from 'common/Map/WarpedMap/core/vec-lib';
@@ -131,11 +131,11 @@ export function getPointInTriangle(
 const OSRD_BATCH_SIZE = 500;
 export async function getImprovedOSRDData(
   infra: number,
-  data: Partial<Record<LayerType, FeatureCollection>>,
+  data: Partial<Record<Layer, FeatureCollection>>,
   dispatch: Dispatch
 ): Promise<Record<string, Feature>> {
   const queries = _(data)
-    .flatMap((collection: FeatureCollection, layerType: LayerType) => {
+    .flatMap((collection: FeatureCollection, layerType: Layer) => {
       const editoastType = LAYER_TO_EDITOAST_DICT[layerType];
       return collection.features.flatMap((feature) =>
         feature.properties?.fromEditoast || typeof feature.properties?.id !== 'string'

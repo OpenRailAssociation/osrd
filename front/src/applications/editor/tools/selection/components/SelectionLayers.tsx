@@ -9,10 +9,10 @@ import { getMap } from 'reducers/map/selectors';
 import type { Zone } from 'types';
 import { zoneToFeature } from 'utils/mapHelper';
 
-import EditorContext from '../../../context';
-import EntitySumUp from '../../../components/EntitySumUp';
-import type { SelectionState } from '../types';
-import type { ExtendedEditorContextType } from '../../editorContextTypes';
+import EditorContext from 'applications/editor/context';
+import EntitySumUp from 'applications/editor/components/EntitySumUp';
+import type { ExtendedEditorContextType } from 'applications/editor/types';
+import type { SelectionState } from 'applications/editor/tools/selection/types';
 
 const SelectionZone = ({ newZone }: { newZone: Zone }) => (
   <Source type="geojson" data={zoneToFeature(newZone)} key="new-zone">

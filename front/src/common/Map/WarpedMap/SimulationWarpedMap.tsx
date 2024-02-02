@@ -15,7 +15,7 @@ import { clip } from 'utils/mapHelper';
 import { getAsyncMemoData, useAsyncMemo } from 'utils/useAsyncMemo';
 import type { AsyncMemoState } from 'utils/useAsyncMemo';
 
-import type { LayerType } from 'applications/editor/tools/types';
+import type { Layer } from 'applications/editor/consts';
 
 import type { TrainPosition } from 'modules/simulationResult/components/SimulationResultsMap/types';
 import { getSimulationHoverPositions } from 'modules/simulationResult/components/SimulationResultsMap/helpers';
@@ -51,7 +51,7 @@ interface PathStatePayload {
 
 interface DataStatePayload {
   osm: Record<string, FeatureCollection>;
-  osrd: Partial<Record<LayerType, FeatureCollection>>;
+  osrd: Partial<Record<Layer, FeatureCollection>>;
 }
 
 function transformDataStatePayload(
@@ -85,7 +85,7 @@ const SimulationWarpedMap = ({ collapsed }: { collapsed?: boolean }) => {
   >({ type: 'idle' });
   const pathfindingID = useSelector(getSelectedProjection)?.path as number;
   const [getPath] = osrdEditoastApi.endpoints.getPathfindingByPathfindingId.useLazyQuery();
-  const layers = useMemo(() => new Set<LayerType>(['track_sections']), []);
+  const layers = useMemo(() => new Set<Layer>(['track_sections']), []);
   const [mode, setMode] = useState<'manual' | 'auto'>('auto');
   const {
     chart,

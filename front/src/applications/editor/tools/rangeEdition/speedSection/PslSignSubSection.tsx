@@ -1,8 +1,12 @@
 import React from 'react';
-import { PSLSign } from 'types';
 import { TFunction } from 'i18next';
 import { FaPlus } from 'react-icons/fa';
-import { PSL_SIGN_TYPES, PslSignInformation } from '../types';
+
+import {
+  PSLSign,
+  PSL_SIGN_TYPES,
+  type PslSignInformation,
+} from 'applications/editor/tools/rangeEdition/types';
 import PslSignCard from './PslSignCard';
 
 const PslSignSubSection = ({

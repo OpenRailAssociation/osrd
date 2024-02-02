@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { GoZoomIn } from 'react-icons/go';
-import Tipped from 'applications/editor/components/Tipped';
+import Tipped from 'common/Tipped';
 
 type ButtonZoomInProps = {
   zoomIn: () => void;

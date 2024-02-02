@@ -10,11 +10,14 @@ import EditorContext from 'applications/editor/context';
 import { flattenEntity } from 'applications/editor/data/utils';
 import EntitySumUp from 'applications/editor/components/EntitySumUp';
 import { getEntities, getEntity } from 'applications/editor/data/api';
-import type { ExtendedEditorContextType } from 'applications/editor/tools/editorContextTypes';
-import type { RangeEditionState, TrackState } from 'applications/editor/tools/rangeEdition/types';
+import type { ExtendedEditorContextType } from 'applications/editor/types';
+import type {
+  ElectrificationEntity,
+  RangeEditionState,
+  TrackState,
+} from 'applications/editor/tools/rangeEdition/types';
 import { getTrackRangeFeatures, isOnModeMove } from 'applications/editor/tools/rangeEdition/utils';
-
-import type { ElectrificationEntity, TrackSectionEntity } from 'types';
+import type { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
 
 import colors from 'common/Map/Consts/colors';
 import { useInfraID } from 'common/osrdContext';

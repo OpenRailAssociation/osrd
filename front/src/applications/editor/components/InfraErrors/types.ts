@@ -6,38 +6,9 @@ import {
 
 // Error level
 export type InfraErrorLevel = GetInfraByIdErrorsApiArg['level'];
-export const InfraErrorLevelList: Array<NonNullable<InfraErrorLevel>> = [
-  'all',
-  'errors',
-  'warnings',
-];
 
 // Error type
 export type { InfraErrorType };
-export const infraErrorTypeList: Record<'errors' | 'warnings', Set<InfraErrorType>> = {
-  errors: new Set([
-    'invalid_group',
-    'invalid_reference',
-    'invalid_route',
-    'invalid_switch_ports',
-    'object_out_of_path',
-    'out_of_range',
-    'unknown_port_name',
-    'node_endpoints_not_unique',
-  ]),
-  warnings: new Set([
-    'duplicated_group',
-    'empty_object',
-    'missing_route',
-    'missing_buffer_stop',
-    'odd_buffer_stop_location',
-    'overlapping_speed_sections',
-    'overlapping_switches',
-    'overlapping_electrifications',
-    'unused_port',
-  ]),
-};
-export const allInfraErrorTypes = [...infraErrorTypeList.warnings, ...infraErrorTypeList.errors];
 
 interface ObjectRef {
   obj_id: string;

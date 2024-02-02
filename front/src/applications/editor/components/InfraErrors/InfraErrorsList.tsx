@@ -11,16 +11,12 @@ import { LoaderFill, Spinner } from 'common/Loaders';
 import { updateFiltersIssue } from 'reducers/editor';
 import { getEditorIssues } from 'reducers/editor/selectors';
 
-import { EDITOAST_TYPES } from '../../tools/types';
+import { EDITOAST_TYPES } from 'applications/editor/consts';
+import { INFRA_ERRORS, INFRA_ERRORS_BY_LEVEL } from './consts';
 import { InfraErrorBox } from './InfraError';
-import {
-  InfraError,
-  InfraErrorLevel,
-  InfraErrorType,
-  InfraErrorLevelList,
-  allInfraErrorTypes,
-  infraErrorTypeList,
-} from './types';
+import { InfraError, InfraErrorLevel, InfraErrorType } from './types';
+
+const INFRA_ERROR_LEVELS: Array<NonNullable<InfraErrorLevel>> = ['all', 'errors', 'warnings'];
 
 interface InfraErrorsListProps {
   infraID: number;
@@ -38,7 +34,7 @@ const InfraErrorsList: React.FC<InfraErrorsListProps> = ({ infraID, onErrorClick
   // list of issues
   const [errors, setErrors] = useState<Array<InfraError>>([]);
   // Error types filtered in correlatino with error level
-  const [errorTypeList, setErrorTypeList] = useState<InfraErrorType[]>(allInfraErrorTypes);
+  const [errorTypeList, setErrorTypeList] = useState<InfraErrorType[]>(INFRA_ERRORS);
 
   // Query to retrieve the issue with the API
   const [getInfraErrors] = osrdEditoastApi.endpoints.getInfraByIdErrors.useLazyQuery({});
@@ -74,8 +70,8 @@ const InfraErrorsList: React.FC<InfraErrorsListProps> = ({ infraID, onErrorClick
   useEffect(() => {
     const types =
       isNil(filterLevel) || filterLevel === 'all'
-        ? allInfraErrorTypes
-        : [...infraErrorTypeList[filterLevel]];
+        ? INFRA_ERRORS
+        : [...INFRA_ERRORS_BY_LEVEL[filterLevel]];
     const sortedTypes = sortBy(types, (type) => t(`Editor.infra-errors.error-type.${type}.name`));
     setErrorTypeList(sortedTypes);
   }, [filterLevel]);
@@ -94,7 +90,7 @@ const InfraErrorsList: React.FC<InfraErrorsListProps> = ({ infraID, onErrorClick
         <div className="col-md-6 pb-3 pb-md-0">
           <OptionsSNCF
             name="filterLevel"
-            options={InfraErrorLevelList.map((item) => ({
+            options={INFRA_ERROR_LEVELS.map((item) => ({
               value: item || '',
               label: t(`Editor.infra-errors.error-level.${item}`),
             }))}

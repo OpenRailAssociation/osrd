@@ -4,8 +4,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { GoArrowSwitch, GoPlus, GoRocket, GoTrash } from 'react-icons/go';
 import type { Position } from 'geojson';
 
-import Tipped from 'applications/editor/components/Tipped';
-
 import DisplayItinerary from 'modules/trainschedule/components/ManageTrainSchedule/Itinerary/DisplayItinerary';
 import ModalSuggerredVias from 'modules/trainschedule/components/ManageTrainSchedule/Itinerary/ModalSuggeredVias';
 import Pathfinding from 'common/Pathfinding/Pathfinding';
@@ -14,8 +12,8 @@ import TypeAndPath from 'common/Pathfinding/TypeAndPath';
 
 import { PathResponse } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
-
 import { zoomToFeature } from 'common/Map/WarpedMap/core/helpers';
+import Tipped from 'common/Tipped';
 
 import type { Viewport } from 'reducers/map';
 import { getMap } from 'reducers/map/selectors';

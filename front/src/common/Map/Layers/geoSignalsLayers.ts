@@ -1,5 +1,5 @@
 import { CircleLayer, SymbolLayer } from 'react-map-gl/maplibre';
-import { OmitLayer } from 'types';
+import type { OmitLayer } from 'types';
 import holyLand from 'common/MotriceRelated/holyLand';
 import { SignalContext } from 'common/Map/Layers/types';
 

@@ -4,11 +4,13 @@ import { useTranslation } from 'react-i18next';
 import { GiElectric } from 'react-icons/gi';
 
 import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
-import { ElectrificationEntity } from 'types';
 
-import EditorContext from '../../../context';
-import { ExtendedEditorContextType } from '../../editorContextTypes';
-import { RangeEditionState } from '../types';
+import EditorContext from 'applications/editor/context';
+import type { ExtendedEditorContextType } from 'applications/editor/types';
+import type {
+  ElectrificationEntity,
+  RangeEditionState,
+} from 'applications/editor/tools/rangeEdition/types';
 
 const ElectrificationMetadataForm = ({ voltages }: { voltages: string[] }) => {
   const { t } = useTranslation();

@@ -11,7 +11,7 @@ import type { Theme } from 'types';
 
 import { LAYER_ENTITIES_ORDERS, LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 
-import type { LayerType } from 'applications/editor/tools/types';
+import type { Layer as LayerType } from 'applications/editor/consts';
 
 import geoMainLayer from 'common/Map/Layers/geographiclayers';
 import { getPointLayerProps, getSignalLayerProps } from 'common/Map/Layers/geoSignalsLayers';
