@@ -197,14 +197,19 @@ jobs:
           git log --format=%s origin/"$BASE"..HEAD --skip=1
         }
 
-        if commit_titles | grep -i '^fixup'; then
-          echo "Found a fixup commit"
+        if commit_titles | grep -i -E '^(fix|fixup|fixes|wip)( |$)'; then
+          echo "Found a work-in-progess commit: please amend it before merge"
           exit 1
         fi
 
-        # Check that commit contains ':' (and no autosquashable commit using '!')
-        if commit_titles | grep -E -v '^([-.a-z]+[,:] )*[-.a-z]+: [a-z][a-z0-9 _.,+-`/]*$'; then
-          echo "All commit messages must use the following format:"
+        if commit_titles | grep -i -E '^(fixup|squash|amend)!'; then
+          echo "Found an autosquashable commit: please autosquash before merge"
+          exit 1
+        fi
+
+        # Check that commit contains ':'
+        if commit_titles | grep -E -v '^.+: .+$'; then
+          echo "Commit messages should use the following format:"
           echo "  core: add fancy margin support"
           echo
           echo "When a commit changes multiple modules, separate module names with ', ':"
