@@ -1,0 +1,21 @@
+{
+  "actions": {
+    "add": "Añadir",
+    "delete": "Borrar",
+    "merge": "Fusionar con el segmento siguiente",
+    "reset": "Restablecer",
+    "split": "Dividir",
+    "translate": "Traductor",
+    "zoom-in": "Ampliar",
+    "Zoom-out": "Reducir",
+    "deleteSelectionCount": "¿Confirma la eliminación de {{items}}?"
+  },
+  "navigation": {
+    "next": "Siguiente",
+    "previous": "Anterior",
+    "goBack": "Volver a la página anterior",
+    "goHome": "Volver a la página de inicio"
+  },
+  "begin": "Inicio",
+  "end": "Fin"
+}
