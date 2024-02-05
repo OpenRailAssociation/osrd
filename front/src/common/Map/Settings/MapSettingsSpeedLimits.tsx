@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { IoMdSpeedometer } from 'react-icons/io';
 import type { IconType } from 'react-icons';
@@ -18,6 +18,7 @@ import {
   Icon2SVG,
 } from 'common/Map/Settings/MapSettingsLayers';
 
+import { useAppDispatch } from 'store';
 import { setFailure } from 'reducers/main';
 import { getMap } from 'reducers/map/selectors';
 import { updateLayersSettings } from 'reducers/map';
@@ -31,7 +32,7 @@ type FormatSwitchProps = {
 };
 
 const FormatSwitch = ({ name, icon: IconComponent, color = '', disabled }: FormatSwitchProps) => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule', 'map-settings']);
   const { layersSettings } = useSelector(getMap);
   const infraID = useInfraID();

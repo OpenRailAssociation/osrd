@@ -3,12 +3,13 @@ import { getMap } from 'reducers/map/selectors';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { createMapSearchQuery, onResultSearchClick } from 'common/Map/utils';
 import { useDebounce } from 'utils/helpers';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 
 import type { SearchQuery, SearchResultItemOperationalPoint } from 'common/api/osrdEditoastApi';
+import { useAppDispatch } from 'store';
 import type { Viewport } from 'reducers/map';
 import { useInfraID } from 'common/osrdContext';
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
@@ -32,7 +33,7 @@ const MapSearchStation = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchS
   const infraID = useInfraID();
 
   const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const { t } = useTranslation(['map-search']);
 

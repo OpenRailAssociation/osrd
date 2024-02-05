@@ -49,6 +49,7 @@ export default function RollingStockEditor({ rollingStocks }: RollingStockEditor
               role="button"
               tabIndex={-1}
               className="d-flex align-self-start rollingstock-elements w-100 rollingstock-editor-list-cards"
+              aria-label={t('selectRollingStock')}
               onClick={() => {
                 setIsEditing(false);
                 setIsAdding(false);

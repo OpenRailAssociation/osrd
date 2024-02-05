@@ -1,19 +1,17 @@
-import { noop } from 'lodash';
-import {
-  changeTrain,
-  getTrainDetailsForAPI,
-} from 'modules/simulationResult/components/simulationResultsHelpers';
 import { setFailure } from 'reducers/main';
 import i18n from 'i18next';
 
-import { AnyAction, Dispatch, Reducer } from 'redux';
-// TODO: Dependency cycle will be removed during the refactoring of store
-// eslint-disable-next-line import/no-cycle
-import { RootState } from 'reducers';
-import { SimulationReport, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { AnyAction, Reducer } from 'redux';
+import type { AppDispatch, GetState } from 'store';
+import {
+  SimulationReport,
+  TrainSchedule,
+  TrainSchedulePatch,
+  osrdEditoastApi,
+} from 'common/api/osrdEditoastApi';
 import { ApiError } from 'common/api/baseGeneratedApis';
 import { SerializedError } from '@reduxjs/toolkit';
-import { OsrdSimulationState, SimulationSnapshot } from './types';
+import { OsrdSimulationState, SimulationSnapshot, Train } from './types';
 import {
   UPDATE_SIMULATION,
   UNDO_SIMULATION,
@@ -23,6 +21,76 @@ import {
   updateSimulation,
 } from './actions';
 
+/**
+ * Premare the params to override the trains details and save them
+ * @param {object} simulationTrain
+ * @returns
+ */
+export const getTrainDetailsForAPI = (
+  simulationTrain: SimulationReport | Train
+): Partial<TrainSchedule> => ({
+  id: simulationTrain.id,
+  departure_time: simulationTrain.base.stops[0].time,
+  train_name: simulationTrain.name,
+});
+// Nedded to load the namespace for i18n
+i18n.loadNamespaces('operationalStudies/manageTrainSchedule');
+
+/**
+ * Use the trainScheduleAPI to update train details on a specific computation
+ *
+ * @export
+ * @param {object} details
+ * @param {int} id
+ */
+export const changeTrain =
+  (details: Partial<TrainSchedule>, id: number) => async (dispatch: AppDispatch) => {
+    const {
+      data: trainDetails,
+      isError: isGetTrainDetailsError,
+      error: getTrainDetailsError,
+      isSuccess: isGetTrainDetailsSuccess,
+    } = await dispatch(osrdEditoastApi.endpoints.getTrainScheduleById.initiate({ id }));
+    if (isGetTrainDetailsSuccess) {
+      // TODO: add the other information of the trainSchedule (allowances...)
+      const trainSchedule: TrainSchedulePatch = {
+        id,
+        departure_time: details.departure_time || trainDetails?.departure_time,
+        initial_speed: details.initial_speed || trainDetails?.initial_speed,
+        labels: details.labels || trainDetails?.labels,
+        path_id: details.path_id || trainDetails?.path_id,
+        rolling_stock_id: details.rolling_stock_id || trainDetails?.rolling_stock_id,
+        train_name: details.train_name || trainDetails?.train_name,
+      };
+      const response = await dispatch(
+        osrdEditoastApi.endpoints.patchTrainSchedule.initiate({ body: [trainSchedule] })
+      );
+      if ('error' in response) {
+        dispatch(
+          setFailure({
+            name: i18n.t('operationalStudies/manageTrainSchedule:errorMessages.unableToPatchTrain'),
+            message: `${
+              (response.error as ApiError)?.data?.message ||
+              (response.error as SerializedError)?.message
+            }`,
+          })
+        );
+      }
+    } else if (isGetTrainDetailsError && getTrainDetailsError) {
+      dispatch(
+        setFailure({
+          name: i18n.t(
+            'operationalStudies/manageTrainSchedule:errorMessages.unableToRetrieveTrain'
+          ),
+          message: `${
+            (getTrainDetailsError as ApiError)?.data?.message ||
+            (getTrainDetailsError as SerializedError)?.message
+          }`,
+        })
+      );
+    }
+  };
+
 // CONTEXT HELPERS
 
 const simulationEquals = (present: SimulationSnapshot, newPresent: SimulationSnapshot) =>
@@ -31,7 +99,7 @@ const simulationEquals = (present: SimulationSnapshot, newPresent: SimulationSna
 const apiSyncOnDiff = (
   present: SimulationSnapshot,
   nextPresent: SimulationSnapshot,
-  dispatch = noop
+  dispatch: AppDispatch
 ) => {
   // if there is no modification, don't do anything
   if (simulationEquals(present, nextPresent)) return;
@@ -75,7 +143,7 @@ const apiSyncOnDiff = (
 
 // THUNKS
 export const persistentUndoSimulation = () =>
-  async function persistentUndoSimulationParts(dispatch: Dispatch, getState: () => RootState) {
+  async function persistentUndoSimulationParts(dispatch: AppDispatch, getState: GetState) {
     // use getState to check the diff between past and present
     const { present, past } = getState().osrdsimulation.simulation;
     const nextPresent = past[past.length - 1];
@@ -86,7 +154,7 @@ export const persistentUndoSimulation = () =>
   };
 
 export const persistentRedoSimulation = () =>
-  async function persistentRedoSimulationParts(dispatch: Dispatch, getState: () => RootState) {
+  async function persistentRedoSimulationParts(dispatch: AppDispatch, getState: GetState) {
     // use getState to check the diff between next one and present
     const present = getState()?.osrdsimulation.simulation.present;
     const future = getState()?.osrdsimulation.simulation.future;
@@ -98,7 +166,7 @@ export const persistentRedoSimulation = () =>
   };
 
 export const persistentUpdateSimulation = (simulation: SimulationSnapshot) =>
-  async function persistentUpdateSimulationParts(dispatch: Dispatch, getState: () => RootState) {
+  async function persistentUpdateSimulationParts(dispatch: AppDispatch, getState: GetState) {
     // use getState to check the diff between past and present
     const present = getState()?.osrdsimulation.simulation.present;
     const nextPresent = simulation; // To be the next present

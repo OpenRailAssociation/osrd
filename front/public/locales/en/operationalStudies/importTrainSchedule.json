@@ -20,10 +20,13 @@
   "generateTrainSchedules": "Generate train schedules",
   "goToSTDCM": "Go to last minute paths",
   "import": "Import",
+  "importTimetable": "Import a timetable",
   "inputPlaceholder": "Name, trigram",
   "launchImport": "Start import",
   "noResults": "No results",
   "or": "or",
+  "searchTimetable": "Search timetable",
+  "selectStation": "Select this station",
   "startTime": "START",
   "status": {
     "calculatingTrainSchedule": "Calculating train schedules...",

@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { GoDuplicate, GoPencil, GoDownload, GoLock, GoUnlock } from 'react-icons/go';
 import { useTranslation } from 'react-i18next';
 import { MdCancel, MdCheck } from 'react-icons/md';
-import { useDispatch } from 'react-redux';
 import fileDownload from 'js-file-download';
 
 import { Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { useAppDispatch } from 'store';
 import { setFailure } from 'reducers/main';
 import InfraLockState from 'modules/infra/consts';
 
@@ -19,7 +19,7 @@ type ActionBarProps = {
 export default function ActionsBar({ infra, isFocused, setIsFocused, inputValue }: ActionBarProps) {
   const { t } = useTranslation('infraManagement');
   const [isWaiting, setIsWaiting] = useState(false);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const [lockInfra] = osrdEditoastApi.usePostInfraByIdLockMutation();
   const [unlockInfra] = osrdEditoastApi.usePostInfraByIdUnlockMutation();
@@ -120,7 +120,8 @@ export default function ActionsBar({ infra, isFocused, setIsFocused, inputValue 
         <button
           className="infraslist-item-action cancel"
           type="button"
-          title={t('infraManagement:actions.cancel')}
+          aria-label={t('actions.cancel')}
+          title={t('actions.cancel')}
           onClick={() => setIsFocused(undefined)}
         >
           <MdCancel />
@@ -128,8 +129,9 @@ export default function ActionsBar({ infra, isFocused, setIsFocused, inputValue 
         <button
           className="infraslist-item-action check"
           type="button"
+          aria-label={t('actions.check')}
+          title={t('actions.check')}
           onClick={handleRename}
-          title={t('infraManagement:actions.check')}
         >
           <MdCheck />
         </button>
@@ -141,7 +143,8 @@ export default function ActionsBar({ infra, isFocused, setIsFocused, inputValue 
       <button
         className="infraslist-item-action waiting disabled"
         type="button"
-        title={t('infraManagement:actions.waiting')}
+        aria-label={t('actions.waiting')}
+        title={t('actions.waiting')}
       >
         <div className="spinner-border" />
       </button>
@@ -153,7 +156,8 @@ export default function ActionsBar({ infra, isFocused, setIsFocused, inputValue 
         <button
           className="infraslist-item-action unlock"
           type="button"
-          title={t('infraManagement:actions.unlock')}
+          aria-label={t('actions.unlock')}
+          title={t('actions.unlock')}
           onClick={() => handleLockedState(InfraLockState.UNLOCK)}
         >
           <GoUnlock />
@@ -162,7 +166,8 @@ export default function ActionsBar({ infra, isFocused, setIsFocused, inputValue 
         <button
           className="infraslist-item-action lock"
           type="button"
-          title={t('infraManagement:actions.lock')}
+          aria-label={t('actions.lock')}
+          title={t('actions.lock')}
           onClick={() => handleLockedState(InfraLockState.LOCK)}
         >
           <GoLock />
@@ -171,15 +176,17 @@ export default function ActionsBar({ infra, isFocused, setIsFocused, inputValue 
       <button
         className="infraslist-item-action rename"
         type="button"
+        aria-label={t('actions.rename')}
+        title={t('actions.rename')}
         onClick={() => setIsFocused(infra.id)}
-        title={t('infraManagement:actions.rename')}
       >
         <GoPencil />
       </button>
       <button
         className="infraslist-item-action copy"
         type="button"
-        title={t('infraManagement:actions.copy')}
+        aria-label={t('actions.copy')}
+        title={t('actions.copy')}
         onClick={handleDuplicate}
       >
         <GoDuplicate />
@@ -187,7 +194,8 @@ export default function ActionsBar({ infra, isFocused, setIsFocused, inputValue 
       <button
         className="infraslist-item-action export"
         type="button"
-        title={t('infraManagement:actions.export')}
+        aria-label={t('actions.export')}
+        title={t('actions.export')}
         onClick={handleExport}
       >
         <GoDownload />

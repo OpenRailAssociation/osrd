@@ -4,10 +4,11 @@ import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl/mapli
 import { isNil } from 'lodash';
 import type { Viewport } from 'reducers/map';
 import { updateMapSearchMarker, updateViewport } from 'reducers/map';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
+import { useAppDispatch } from 'store';
 import { getMap, getTerrain3DExaggeration } from 'reducers/map/selectors';
 
 /* Main data & layers */
@@ -52,7 +53,7 @@ function Map() {
   const terrain3DExaggeration = useSelector(getTerrain3DExaggeration);
   const mapRef = useRef<MapRef | null>(null);
   const { urlLat, urlLon, urlZoom, urlBearing, urlPitch } = useParams();
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const updateViewportChange = useCallback(
     (value: Partial<Viewport>, updateRouter = false) => {
       dispatch(updateViewport(value, `/map`, updateRouter));

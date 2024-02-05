@@ -321,14 +321,14 @@ const testCommonConfReducers = (slice: OperationalStudiesConfSlice | StdcmConfSl
   });
 
   describe('should handle toggleOriginLinkedBounds', () => {
-    it('set to false if true ', () => {
+    it('set to false if true', () => {
       const store = createStore(slice, { originLinkedBounds: true });
       store.dispatch(slice.actions.toggleOriginLinkedBounds());
       const state = store.getState()[slice.name];
       expect(state.originLinkedBounds).toBe(false);
     });
 
-    it('set to true if false ', () => {
+    it('set to true if false', () => {
       const store = createStore(slice, { originLinkedBounds: false });
 
       store.dispatch(slice.actions.toggleOriginLinkedBounds());

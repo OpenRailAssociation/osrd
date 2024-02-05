@@ -1,6 +1,5 @@
 import React, { FC, useCallback, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useDispatch } from 'react-redux';
 import { GoPencil } from 'react-icons/go';
 import { FaMapMarkedAlt, FaTimesCircle } from 'react-icons/fa';
 import { isNil } from 'lodash';
@@ -18,6 +17,7 @@ import type { ExtendedEditorContextType } from 'applications/editor/types';
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import { useInfraID } from 'common/osrdContext';
 import Tipped from 'common/Tipped';
+import { useAppDispatch } from 'store';
 import useKeyboardShortcuts from 'utils/hooks/useKeyboardShortcuts';
 import { EndPoint } from '../../switchEdition/types';
 
@@ -27,7 +27,7 @@ interface WayPointInputProps {
   onChange: (entity: WayPointEntity | null) => void;
 }
 const WayPointInput: FC<WayPointInputProps> = ({ endPoint, wayPoint, onChange }) => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const { state, setState } = useContext(
     EditorContext
   ) as ExtendedEditorContextType<RouteEditionState>;

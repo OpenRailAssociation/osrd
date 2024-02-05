@@ -118,6 +118,7 @@ const SpeedSectionMetadataForm: FC = () => {
                   <button
                     type="button"
                     className="btn btn-primary btn-sm px-2 ml-2"
+                    aria-label={t('commons.delete')}
                     title={t('commons.delete')}
                     onClick={() => {
                       const newEntity = cloneDeep(entity);

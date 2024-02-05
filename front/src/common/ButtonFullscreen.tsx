@@ -1,6 +1,6 @@
 import React, { FC, useCallback } from 'react';
 import { MdFullscreen } from 'react-icons/md';
-import { useDispatch } from 'react-redux';
+import { useAppDispatch } from 'store';
 
 const ButtonFullscreen: FC<{ onClick: () => void }> = ({ onClick }) => (
   <button type="button" className="btn-rounded btn-rounded-white btn-fullscreen" onClick={onClick}>
@@ -10,7 +10,7 @@ const ButtonFullscreen: FC<{ onClick: () => void }> = ({ onClick }) => (
 );
 
 const ButtonFullscreenState: FC<unknown> = () => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const onClick = useCallback(() => {
     dispatch({ type: 'TOGGLE_FULLSCREEN' });

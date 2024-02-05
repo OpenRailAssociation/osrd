@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { GoTrash } from 'react-icons/go';
 import { FaDownload, FaPlus } from 'react-icons/fa';
 import { BiSelectMultiple } from 'react-icons/bi';
@@ -30,6 +30,7 @@ import type {
   TimetableWithSchedulesDetails,
 } from 'common/api/osrdEditoastApi';
 
+import { useAppDispatch } from 'store';
 import { setFailure, setSuccess } from 'reducers/main';
 import type { ScheduledTrain, SimulationSnapshot } from 'reducers/osrdsimulation/types';
 import { updateSelectedTrainId, updateSimulation } from 'reducers/osrdsimulation/actions';
@@ -72,7 +73,7 @@ export default function Timetable({
 
   const { openModal } = useContext(ModalContext);
 
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const debouncedTerm = useDebounce(filter, 500) as string;
 
@@ -280,6 +281,8 @@ export default function Timetable({
           <button
             type="button"
             className={cx('multiselect-toggle', { on: multiselectOn })}
+            aria-label={t('timetable.toggleMultiSelection')}
+            title={t('timetable.toggleMultiSelection')}
             onClick={() => setMultiselectOn(!multiselectOn)}
           >
             <BiSelectMultiple />
@@ -289,8 +292,10 @@ export default function Timetable({
         {multiselectOn && (
           <button
             disabled={!selectedTrainIds.length}
-            className={cx('multiselect-delete', { disabled: !selectedTrainIds.length })}
             type="button"
+            className={cx('multiselect-delete', { disabled: !selectedTrainIds.length })}
+            aria-label={t('timetable.deleteSelection')}
+            title={t('timetable.deleteSelection')}
             onClick={() =>
               openModal(
                 <DeleteModal

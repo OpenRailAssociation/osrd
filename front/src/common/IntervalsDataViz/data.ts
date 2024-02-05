@@ -1,7 +1,9 @@
 import { Feature, Point, LineString, Position } from 'geojson';
 import { last, differenceWith, cloneDeep, isEqual, isArray, isNil, isEmpty, sortBy } from 'lodash';
 import { JSONSchema7, JSONSchema7Definition } from 'json-schema';
-import { utils } from '@rjsf/core';
+import { retrieveSchema } from '@rjsf/utils';
+import validator from '@rjsf/validator-ajv8';
+
 import lineSplit from '@turf/line-split';
 import fnLength from '@turf/length';
 import { EditorEntity } from 'applications/editor/typesEditorEntity';
@@ -90,10 +92,13 @@ export function resizeSegment<T>(
 ): { result: Array<LinearMetadataItem<T>>; newIndexMapping: Record<number, number | null> } {
   if (itemChangeIndex >= linearMetadata.length) throw new Error("Given index doesn't exist");
 
-  const newIndexMapping = linearMetadata.reduce((acc, _curr, index) => {
-    acc[index] = index;
-    return acc;
-  }, {} as Record<number, number | null>);
+  const newIndexMapping = linearMetadata.reduce(
+    (acc, _curr, index) => {
+      acc[index] = index;
+      return acc;
+    },
+    {} as Record<number, number | null>
+  );
 
   if (preventBoundsChanges && itemChangeIndex === 0 && beginOrEnd === 'begin')
     return { result: linearMetadata, newIndexMapping };
@@ -695,7 +700,7 @@ export function getFieldJsonSchema(
 ): JSONSchema7 {
   let result = { ...fieldSchema };
   if (fieldSchema.items) {
-    const itemsSchema = utils.retrieveSchema(fieldSchema.items as JSONSchema7, rootSchema);
+    const itemsSchema = retrieveSchema(validator, fieldSchema.items as JSONSchema7, rootSchema);
     if (itemsSchema.properties?.begin && itemsSchema.properties?.end) {
       result = {
         ...result,
@@ -720,13 +725,16 @@ export function getFieldJsonSchema(
                 name: k,
                 schema: itemsSchema.properties ? itemsSchema.properties[k] : {},
               }))
-              .reduce((acc, curr) => {
-                acc[curr.name] = {
-                  ...(curr.schema as JSONSchema7),
-                  ...(enhancement[curr.name] as JSONSchema7),
-                };
-                return acc;
-              }, {} as { [key: string]: JSONSchema7Definition }),
+              .reduce(
+                (acc, curr) => {
+                  acc[curr.name] = {
+                    ...(curr.schema as JSONSchema7),
+                    ...(enhancement[curr.name] as JSONSchema7),
+                  };
+                  return acc;
+                },
+                {} as { [key: string]: JSONSchema7Definition }
+              ),
           },
         },
         definitions: rootSchema.definitions,

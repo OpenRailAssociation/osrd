@@ -1,4 +1,5 @@
 {
+  "addAllowance": "Add this allowance",
   "addLine": {
     "beginPosition": "From",
     "distribution": "Distribution",
@@ -9,6 +10,8 @@
   "allowancesCount_one": "1 interval",
   "allowancesCount_other": "{{ count }} intervals",
   "allowancesCount_zero": "no interval",
+  "cancel": "Cancel",
+  "deleteAllowance": "Delete this allowance",
   "distribution": {
     "linear": "Linear",
     "LINEAR": "Linear",
@@ -19,6 +22,7 @@
   "missingPathFinding": "Please define a path before specifying margins",
   "no-allowance": "No allowance set",
   "reset": "Reset",
+  "saveAllowances": "Save changes",
   "standardAllowance": "Recovery margin",
   "standardAllowanceIntervals": "Recovery allowance intervals"
 }

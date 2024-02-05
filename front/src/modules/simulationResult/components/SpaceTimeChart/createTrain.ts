@@ -1,6 +1,3 @@
-import { Dispatch } from 'redux';
-import { TFunction, Namespace } from 'react-i18next';
-
 import { ChartAxes } from 'modules/simulationResult/consts';
 import {
   formatRouteAspects,
@@ -9,24 +6,19 @@ import {
   formatStepsWithTimeMulti,
   mergeDatasArea,
 } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
-import { setFailure } from 'reducers/main';
 import { Train, SimulationTrain } from 'reducers/osrdsimulation/types';
 
 /**
  * Will do some formating & computation to get a trains to be displayed. Stored then with currentSimulation splitted reducer
- * @param {*} dispatch react action dispatcher
  * @param {*} keyValues what do we compare (times vs position vs speed vs slope etc...)
  * @param {*} simulationTrains simulation raw data
- * @param {*} t translation middle
  * @returns
  *
  * called with keyValues ['time', 'position']
  */
 export default function createTrain(
-  dispatch: Dispatch,
   keyValues: ChartAxes,
-  simulationTrains: Train[],
-  t: TFunction<Namespace<string>, undefined>
+  simulationTrains: Train[]
 ): SimulationTrain[] {
   // Prepare data
   const dataSimulation = simulationTrains.map((train: Train) => {
@@ -56,15 +48,6 @@ export default function createTrain(
         ),
         eco_speed: formatStepsWithTime(train.eco.speeds),
       };
-    }
-    if (train.eco && train.eco.error && dispatch && t) {
-      // Tbe removed, useless
-      dispatch(
-        setFailure({
-          name: t('errors.eco'),
-          message: train.eco.error,
-        })
-      );
     }
     return dataSimulationTrain;
   });

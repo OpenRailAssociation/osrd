@@ -14,7 +14,7 @@ const allowancePercentage = (value: number) =>
   ({
     value_type: 'percentage',
     percentage: value,
-  } as AllowanceValueForm);
+  }) as AllowanceValueForm;
 
 describe('fillAllowancesWithDefaultRanges', () => {
   it('should manage empty array', () => {

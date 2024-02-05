@@ -7,7 +7,7 @@ import {
   updateSimulation,
   updateSelectedProjection,
 } from 'reducers/osrdsimulation/actions';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 
 import { CHART_AXES } from 'modules/simulationResult/consts';
 // Generic components
@@ -28,6 +28,7 @@ import type { StdcmRequestStatus } from 'applications/stdcm/types';
 import { extractMessageFromError, extractStatusFromError } from 'utils/error';
 import { Train } from 'reducers/osrdsimulation/types';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
+import { useAppDispatch } from 'store';
 import type { OsrdStdcmConfState } from 'reducers/osrdconf/consts';
 
 type StdcmRequestModalProps = {
@@ -39,7 +40,7 @@ export default function StdcmRequestModal(props: StdcmRequestModalProps) {
   const { t } = useTranslation(['translation', 'stdcm']);
   const { getConf } = useOsrdConfSelectors();
   const osrdconf = useSelector(getConf);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const [postStdcm] = osrdEditoastApi.endpoints.postStdcm.useMutation();
   const [postTrainScheduleResults] =
@@ -89,10 +90,8 @@ export default function StdcmRequestModal(props: StdcmRequestModalProps) {
                     fakedNewTrain,
                   ];
                   const consolidatedSimulation = createTrain(
-                    dispatch,
                     CHART_AXES.SPACE_TIME,
-                    trains as Train[], // TODO: remove Train interface
-                    t
+                    trains as Train[] // TODO: remove Train interface
                   );
                   dispatch(updateConsolidatedSimulation(consolidatedSimulation));
                   dispatch(updateSimulation({ trains }));
@@ -139,12 +138,7 @@ export default function StdcmRequestModal(props: StdcmRequestModalProps) {
     setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.canceled);
 
     const emptySimulation = { trains: [] };
-    const consolidatedSimulation = createTrain(
-      dispatch,
-      CHART_AXES.SPACE_TIME,
-      emptySimulation.trains,
-      t
-    );
+    const consolidatedSimulation = createTrain(CHART_AXES.SPACE_TIME, emptySimulation.trains);
     dispatch(updateConsolidatedSimulation(consolidatedSimulation));
     dispatch(updateSimulation(emptySimulation));
   };

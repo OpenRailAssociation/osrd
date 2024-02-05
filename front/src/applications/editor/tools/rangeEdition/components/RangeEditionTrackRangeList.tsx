@@ -60,6 +60,7 @@ const TrackRangesList = () => {
                         <button
                           type="button"
                           className="btn btn-primary btn-sm px-2 mb-1"
+                          aria-label={t('Editor.tools.range-edition.edit-track-range-start')}
                           title={t('Editor.tools.range-edition.edit-track-range-start')}
                           onClick={() => {
                             setState({
@@ -90,6 +91,7 @@ const TrackRangesList = () => {
                         <button
                           type="button"
                           className="btn btn-primary btn-sm px-2 mb-1"
+                          aria-label={t('Editor.tools.range-edition.edit-track-range-end')}
                           title={t('Editor.tools.range-edition.edit-track-range-end')}
                           onClick={() => {
                             setState({
@@ -120,6 +122,7 @@ const TrackRangesList = () => {
                         <button
                           type="button"
                           className="btn btn-primary btn-sm px-2"
+                          aria-label={t('common.delete')}
                           title={t('common.delete')}
                           onClick={() => {
                             const newEntity = cloneDeep(entity);

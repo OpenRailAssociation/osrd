@@ -1,9 +1,8 @@
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { useDispatch } from 'react-redux';
 import Select from 'react-select';
 import { useTranslation } from 'react-i18next';
 import { FaMapMarkedAlt, FaTimesCircle } from 'react-icons/fa';
-import type { FieldProps } from '@rjsf/core';
+import type { FieldProps } from '@rjsf/utils';
 import { isEmpty, isNil, keyBy } from 'lodash';
 
 import EditorContext from 'applications/editor/context';
@@ -18,6 +17,7 @@ import {
   type SwitchEditionState,
 } from 'applications/editor/tools/switchEdition/types';
 
+import { useAppDispatch } from 'store';
 import { useInfraID } from 'common/osrdContext';
 import { TrackSectionEntity } from '../../trackEdition/types';
 
@@ -27,7 +27,7 @@ const ENDPOINT_OPTIONS = ENDPOINTS.map((s) => ({ value: s, label: s }));
 const ENDPOINT_OPTIONS_DICT = keyBy(ENDPOINT_OPTIONS, 'value');
 
 const TrackSectionEndpointSelector = ({ schema, formData, onChange, name }: FieldProps) => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const { state, setState } = useContext(
     EditorContext
   ) as ExtendedEditorContextType<SwitchEditionState>;

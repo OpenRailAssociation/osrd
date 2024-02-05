@@ -1,5 +1,5 @@
 import React, { FC } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import Slider from 'rc-slider';
 
@@ -13,6 +13,7 @@ import SwitchSNCF, {
   SWITCH_TYPES,
   SwitchSNCFProps,
 } from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
+import { useAppDispatch } from 'store';
 import { getMap, getTerrain3DExaggeration } from 'reducers/map/selectors';
 import {
   updateShowIGNBDORTHO,
@@ -63,7 +64,7 @@ const MapSettingsBackgroundSwitches: FC<unknown> = () => {
     smoothTravel,
   } = useSelector(getMap);
   const terrain3DExaggeration = useSelector(getTerrain3DExaggeration);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const isBlueprint = mapStyle === 'blueprint';
   return (

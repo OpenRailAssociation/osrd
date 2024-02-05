@@ -8,7 +8,7 @@ import { PointLike } from 'maplibre-gl';
 import { isEqual, max, min } from 'lodash';
 
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF/ConfirmModal';
-import { save } from 'reducers/editor';
+import { save } from 'reducers/editor/thunkActions';
 import { selectInZone } from 'utils/mapHelper';
 
 import { getMixedEntities } from 'applications/editor/data/api';
@@ -120,7 +120,7 @@ const SelectionTool: Tool<SelectionState> = {
             <ConfirmModal
               title={t('Editor.tools.select-items.actions.delete-selection')}
               onConfirm={async () => {
-                await dispatch<ReturnType<typeof save>>(save(infraID, { delete: state.selection }));
+                await dispatch(save(infraID, { delete: state.selection }));
                 setState({ ...state, selection: [] });
                 closeModal();
                 forceRender();

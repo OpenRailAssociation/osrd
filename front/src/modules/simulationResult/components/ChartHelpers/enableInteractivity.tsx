@@ -81,7 +81,7 @@ export const updatePointers = (
 // * Define new X and Y axis (and Y2 if exists) and update impacted SVG elements in all charts
 const updateChart = <
   T extends SpeedPosition | GradientPosition | Position,
-  Datum extends ConsolidatedRouteAspect
+  Datum extends ConsolidatedRouteAspect,
 >(
   chart: Chart,
   keyValues: ChartAxes,
@@ -276,7 +276,7 @@ function wheelDelta(event: WheelEvent) {
 
 export const enableInteractivity = <
   T extends Chart | SpeedSpaceChart,
-  Data extends SimulationTrain<Date> | GevPreparedData | SpaceCurvesSlopesData
+  Data extends SimulationTrain<Date> | GevPreparedData | SpaceCurvesSlopesData,
 >(
   chart: T | undefined,
   selectedTrainData: Data,

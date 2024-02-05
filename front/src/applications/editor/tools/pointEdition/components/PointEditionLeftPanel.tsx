@@ -1,14 +1,14 @@
 import React, { ComponentType, useContext, useEffect, useRef, useState } from 'react';
-import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import length from '@turf/length';
 import along from '@turf/along';
 
 import { useInfraID } from 'common/osrdContext';
-import { save } from 'reducers/editor';
 
+import { useAppDispatch } from 'store';
+import { save } from 'reducers/editor/thunkActions';
 import type { EditorEntity } from 'applications/editor/typesEditorEntity';
-import type {
+import {
   BufferStopEntity,
   DetectorEntity,
   PointEditionState,
@@ -40,7 +40,7 @@ interface PointEditionLeftPanelProps {
 const PointEditionLeftPanel = <Entity extends EditorEntity>({
   type,
 }: PointEditionLeftPanelProps) => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const { t } = useTranslation();
   const infraID = useInfraID();
   const { state, setState, isFormSubmited, setIsFormSubmited } = useContext(
@@ -129,8 +129,7 @@ const PointEditionLeftPanel = <Entity extends EditorEntity>({
           },
         }}
         onSubmit={async (savedEntity) => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const res: any = await dispatch(
+          const res = await dispatch(
             save(
               infraID,
               state.entity.properties.id !== NEW_ENTITY_ID
@@ -213,7 +212,6 @@ const PointEditionLeftPanel = <Entity extends EditorEntity>({
 
 const getPointEditionLeftPanel =
   (type: EditoastType): ComponentType =>
-  () =>
-    <PointEditionLeftPanel type={type} />;
+  () => <PointEditionLeftPanel type={type} />;
 
 export default getPointEditionLeftPanel;

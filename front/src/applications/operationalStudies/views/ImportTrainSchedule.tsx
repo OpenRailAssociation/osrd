@@ -6,8 +6,8 @@ import {
 import { Loader } from 'common/Loaders';
 import { TrainSchedule } from 'applications/operationalStudies/types';
 import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
-import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import { useAppDispatch } from 'store';
 import { setFailure } from 'reducers/main';
 
 export default function ImportTrainSchedule({
@@ -17,7 +17,7 @@ export default function ImportTrainSchedule({
   infraId: number;
   timetableId: number;
 }) {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const { t } = useTranslation(['rollingstock']);
   const [trainsList, setTrainsList] = useState<TrainSchedule[]>([]);
   const [isLoading, setIsLoading] = useState(false);

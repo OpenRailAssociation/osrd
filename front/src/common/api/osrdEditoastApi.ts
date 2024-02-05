@@ -729,7 +729,7 @@ export type PostDocumentsApiArg = {
   body: Blob;
 };
 export type DeleteDocumentsByDocumentKeyApiResponse =
-  /** status 204 The document was deleted */ undefined;
+  /** status 204 The document was deleted */ void;
 export type DeleteDocumentsByDocumentKeyApiArg = {
   /** The document's key */
   documentKey: number;
@@ -750,7 +750,7 @@ export type PostElectricalProfileSetApiArg = {
   electricalProfileSetData: ElectricalProfileSetData;
 };
 export type DeleteElectricalProfileSetByElectricalProfileSetIdApiResponse =
-  /** status 204 The electrical profile was deleted successfully */ undefined;
+  /** status 204 The electrical profile was deleted successfully */ void;
 export type DeleteElectricalProfileSetByElectricalProfileSetIdApiArg = {
   electricalProfileSetId: number;
 };
@@ -844,8 +844,11 @@ export type PostInfraByIdCloneApiArg = {
   name: string;
 };
 export type GetInfraByIdErrorsApiResponse = /** status 200 A paginated list of errors */ {
+  /** Total number of elements */
   count?: number;
+  /** The index of the following page (null if no more pages available) */
   next?: number | null;
+  /** The index of the previous page (null if requesting the first page) */
   previous?: number | null;
   results?: InfraError[];
 };
@@ -874,8 +877,11 @@ export type PostInfraByIdLockApiArg = {
   id: number;
 };
 export type PostInfraByIdObjectsAndObjectTypeApiResponse = /** status 200 No content */ {
+  /** object's geographic in geojson format */
   geographic: Geometry;
+  /** Object properties in railjson format */
   railjson: Railjson;
+  /** object's schematic in geojson format */
   schematic: Geometry;
 }[];
 export type PostInfraByIdObjectsAndObjectTypeApiArg = {
@@ -1064,7 +1070,7 @@ export type PostProjectsApiArg = {
   projectCreateForm: ProjectCreateForm;
 };
 export type DeleteProjectsByProjectIdApiResponse =
-  /** status 204 The project was deleted successfully */ undefined;
+  /** status 204 The project was deleted successfully */ void;
 export type DeleteProjectsByProjectIdApiArg = {
   /** The id of a project */
   projectId: number;
@@ -1100,7 +1106,7 @@ export type PostProjectsByProjectIdStudiesApiArg = {
   studyCreateForm: StudyCreateForm;
 };
 export type DeleteProjectsByProjectIdStudiesAndStudyIdApiResponse =
-  /** status 204 The study was deleted successfully */ undefined;
+  /** status 204 The study was deleted successfully */ void;
 export type DeleteProjectsByProjectIdStudiesAndStudyIdApiArg = {
   /** The id of a project */
   projectId: number;
@@ -1141,7 +1147,7 @@ export type PostProjectsByProjectIdStudiesAndStudyIdScenariosApiArg = {
   scenarioCreateForm: ScenarioCreateForm;
 };
 export type DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse =
-  /** status 204 The scenario was deleted successfully */ undefined;
+  /** status 204 The scenario was deleted successfully */ void;
 export type DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg = {
   /** The id of a project */
   projectId: number;
@@ -1174,7 +1180,7 @@ export type GetRollingStockPowerRestrictionsApiResponse =
   /** status 200 Retrieve the power restrictions list */ string[];
 export type GetRollingStockPowerRestrictionsApiArg = void;
 export type DeleteRollingStockByRollingStockIdApiResponse =
-  /** status 204 The rolling stock was deleted successfully */ undefined;
+  /** status 204 The rolling stock was deleted successfully */ void;
 export type DeleteRollingStockByRollingStockIdApiArg = {
   rollingStockId: number;
   /** force the deletion even if it’s used */
@@ -1235,11 +1241,22 @@ export type PostStdcmApiArg = {
     comfort: RollingStockComfortType;
     end_time?: number | null;
     infra_id: number;
+    /** Margin after the train passage in seconds
+        
+        Enforces that the path used by the train should be free and
+        available at least that many seconds after its passage. */
     margin_after?: number;
+    /** Margin before the train passage in seconds
+        
+        Enforces that the path used by the train should be free and
+        available at least that many seconds before its passage. */
     margin_before?: number;
+    /** By how long we can shift the departure time in seconds */
     maximum_departure_delay?: number;
+    /** Specifies how long the total run time can be in seconds */
     maximum_run_time?: number;
     rolling_stock_id: number;
+    /** Train categories for speed limits */
     speed_limit_tags?: string | null;
     standard_allowance?: AllowanceValue | null;
     start_time?: number | null;
@@ -1280,7 +1297,9 @@ export type PostTrainScheduleResultsApiResponse =
   /** status 200 The train schedule simulations results and a list of invalid train_ids */ TrainSimulationResponse;
 export type PostTrainScheduleResultsApiArg = {
   body: {
+    /** A path ID to project the simulation results onto. If not provided, the path of the first train will be used. */
     path_id?: number | null;
+    /** The IDs of the trains to simulate */
     train_ids: number[];
   };
 };
@@ -1407,9 +1426,13 @@ export type RailjsonObject = {
   railjson: Railjson;
 };
 export type Patch = {
+  /** A string containing a JSON Pointer value. */
   from?: string;
+  /** The operation to be performed */
   op: 'add' | 'remove' | 'replace' | 'move' | 'copy' | 'test';
+  /** A JSON-Pointer */
   path: string;
+  /** The value to be used within the operations. */
   value?: object;
 };
 export type Patches = Patch[];
@@ -1479,7 +1502,9 @@ export type InfraErrorType =
   | 'unused_port'
   | 'node_endpoints_not_unique';
 export type InfraError = {
-  geographic?: Geometry | null;
+  /** Geojson of the geographic geometry of the error */
+  geographic?: Geometry;
+  /** Information about the error (check schema documentation for more details) */
   information: {
     error_type: InfraErrorType;
     field?: string;
@@ -1487,6 +1512,7 @@ export type InfraError = {
     obj_id: string;
     obj_type: 'TrackSection' | 'Signal' | 'BufferStop' | 'Detector' | 'Switch' | 'Route';
   };
+  /** Geojson of the schematic geometry of the error */
   schematic?: object | null;
 };
 export type BoundingBox = (number & number)[][];
@@ -1626,9 +1652,13 @@ export type LightRollingStockWithLiveries = LightRollingStock & {
   liveries: RollingStockLiveryMetadata[];
 };
 export type PaginatedResponseOfLightRollingStockWithLiveries = {
+  /** The total number of items */
   count: number;
+  /** The next page number */
   next: number | null;
+  /** The previous page number */
   previous: number | null;
+  /** The list of results */
   results: LightRollingStockWithLiveries[];
 };
 export type Curve = {
@@ -1650,6 +1680,7 @@ export type GeoJsonPoint = {
   type: 'Point';
 };
 export type TrackLocation = {
+  /** The offset on the track section in meters */
   offset: number;
   track_section: Identifier;
 };
@@ -1678,12 +1709,15 @@ export type PathResponse = {
 };
 export type WaypointLocation =
   | {
+      /** Offset in meters from the start of the waypoint's track section */
       offset: number;
     }
   | {
+      /** A geographic coordinate (lon, lat)/WGS84 that will be projected onto the waypoint's track section */
       geo_coordinate: (number & number)[];
     };
 export type Waypoint = WaypointLocation & {
+  /** A track section UUID */
   track_section: string;
 };
 export type PathfindingStep = {
@@ -1724,9 +1758,13 @@ export type ProjectWithStudies = Project & {
   studies_count: number;
 };
 export type PaginatedResponseOfProjectWithStudies = {
+  /** The total number of items */
   count: number;
+  /** The next page number */
   next: number | null;
+  /** The previous page number */
   previous: number | null;
+  /** The list of results */
   results: ProjectWithStudies[];
 };
 export type Ordering =
@@ -1740,6 +1778,7 @@ export type ProjectCreateForm = {
   budget?: number;
   description?: string;
   funders?: string;
+  /** The id of the image document */
   image?: number | null;
   name: string;
   objectives?: string;
@@ -1749,6 +1788,7 @@ export type ProjectPatchForm = {
   budget?: number | null;
   description?: string | null;
   funders?: string | null;
+  /** The id of the image document */
   image?: number | null;
   name?: string | null;
   objectives?: string | null;
@@ -1775,9 +1815,13 @@ export type StudyWithScenarios = Study & {
   scenarios_count: number;
 };
 export type PaginatedResponseOfStudyWithScenarios = {
+  /** The total number of items */
   count: number;
+  /** The next page number */
   next: number | null;
+  /** The previous page number */
   previous: number | null;
+  /** The list of results */
   results: StudyWithScenarios[];
 };
 export type StudyResponse = Study & {
@@ -1827,9 +1871,13 @@ export type ScenarioWithCountTrains = Scenario & {
   trains_count: number;
 };
 export type PaginatedResponseOfScenarioWithCountTrains = {
+  /** The total number of items */
   count: number;
+  /** The next page number */
   next: number | null;
+  /** The previous page number */
   previous: number | null;
+  /** The list of results */
   results: ScenarioWithCountTrains[];
 };
 export type LightTrainSchedule = {
@@ -1887,6 +1935,7 @@ export type RollingStockCommon = {
   base_power_class: string | null;
   comfort_acceleration: number;
   effort_curves: EffortCurves;
+  /** The time the train takes before actually using electrical power (in seconds). Is null if the train is not electric. */
   electrical_power_startup_time?: number | null;
   energy_sources?: EnergySource[];
   gamma: Gamma;
@@ -1896,9 +1945,11 @@ export type RollingStockCommon = {
   mass: number;
   max_speed: number;
   name: string;
+  /** Mapping of power restriction code to power class */
   power_restrictions: {
     [key: string]: string;
   };
+  /** The time it takes to raise this train's pantograph in seconds. Is null if the train is not electric. */
   raise_pantograph_time?: number | null;
   rolling_resistance: RollingResistance;
   startup_acceleration: number;
@@ -1907,6 +1958,7 @@ export type RollingStockCommon = {
 };
 export type RollingStock = RollingStockCommon & {
   id: number;
+  /** Whether the rolling stock can be edited/deleted or not. */
   locked: boolean;
   metadata: RollingStockMetadata;
   railjson_version: string;
@@ -1964,6 +2016,7 @@ export type RollingStockLiveryCreateForm = {
   name: string;
 };
 export type RollingStockLockedUpdateForm = {
+  /** New locked value */
   locked: boolean;
 };
 export type SearchResultItemTrack = {
@@ -2037,7 +2090,9 @@ export type SearchResultItem =
   | SearchResultItemScenario;
 export type SearchQuery = boolean | number | number | string | (SearchQuery | null)[];
 export type SearchPayload = {
+  /** Whether to return the SQL query instead of executing it */
   dry?: boolean;
+  /** The object kind to query - run `editoast search list` to get all possible values */
   object: string;
   query: SearchQuery;
 };
@@ -2049,14 +2104,23 @@ export type SimulationReportByTrain = {
   head_positions: SpaceTimePosition[][];
   mechanical_energy_consumed: number;
   route_aspects: {
+    /** label of the new signal aspect */
     aspect_label: string;
+    /** true if the signal is blinking */
     blinking: boolean;
+    /** color of the aspect (Bits 24-31 are alpha, 16-23 are red, 8-15 are green, 0-7 are blue) */
     color: number;
+    /** the route ends at this position on the train path */
     position_end: number;
+    /** the route starts at this position on the train path */
     position_start: number;
+    /** id of the affected route on the train path */
     route_id: string;
+    /** id of the updated signal */
     signal_id: string;
+    /** the aspect stops being displayed at this time */
     time_end: number;
+    /** the aspect starts being displayed at this time */
     time_start: number;
   }[];
   signals: {
@@ -2070,9 +2134,11 @@ export type SimulationReportByTrain = {
   })[];
   stops: {
     duration: number;
+    /** Can be null if it's not an operational point */
     id: string | null;
     line_code: number;
     line_name: string;
+    /** Can be 'Unknown' if it's not an operational point */
     name: string;
     position: number;
     time: number;
@@ -2110,7 +2176,9 @@ export type PowerRestrictionRangeItem = {
 export type SingleSimulationResponse = {
   base_simulation: SimulationReportByTrain;
   eco_simulation: SimulationReportByTrain | null;
+  /** A list of ranges which should be contiguous and which describe the electrification on the path and if it is handled by the train */
   electrification_ranges: ElectrificationRange[];
+  /** The list of ranges where power restrictions are applied */
   power_restriction_ranges: PowerRestrictionRangeItem[];
   speed_limits: {
     position: number;
@@ -2156,11 +2224,15 @@ export type Allowance =
     });
 export type Comfort = 'AC' | 'HEATING' | 'STANDARD';
 export type TrainScheduleOptions = {
+  /** Whether to ignore the electrical profile of the train for simulation */
   ignore_electrical_profiles?: boolean | null;
 };
 export type RjsPowerRestrictionRange = {
+  /** Offset from the start of the path, in meters. */
   begin_position: number;
+  /** Offset from the start of the path, in meters. */
   end_position: number;
+  /** The power restriction code to apply. */
   power_restriction_code: string;
 };
 export type SingleSimulationRequest = {
@@ -2170,10 +2242,13 @@ export type SingleSimulationRequest = {
   initial_speed?: number;
   options?: TrainScheduleOptions | null;
   path_id: number;
+  /** A list of ranges along the train path where power restrictions apply. */
   power_restriction_ranges?: RjsPowerRestrictionRange[] | null;
   rolling_stock_id: number;
   scheduled_points?: {
+    /** Offset in meters from the start of the path at which the train must be. */
     path_offset: number;
+    /** Time in seconds (elapsed since the train's departure) at which the train must be. */
     time: number;
   }[];
   stops?: {
@@ -2197,13 +2272,23 @@ export type GetCurvePoint = {
   time: number;
 };
 export type SignalUpdate = {
+  /** The labels of the new aspect */
   aspect_label: string;
+  /** Whether the signal is blinking */
   blinking: boolean;
+  /** The color of the aspect
+    
+    (Bits 24-31 are alpha, 16-23 are red, 8-15 are green, 0-7 are blue) */
   color: number;
+  /** The route ends at this position on the train path */
   position_end?: number | null;
+  /** The route starts at this position on the train path */
   position_start: number;
+  /** The id of the updated signal */
   signal_id: string;
+  /** The aspects stop being displayed at this time (number of seconds since 1970-01-01T00:00:00) */
   time_end?: number | null;
+  /** The aspects start being displayed at this time (number of seconds since 1970-01-01T00:00:00) */
   time_start: number;
   track: string;
   track_offset?: number | null;
@@ -2220,9 +2305,11 @@ export type ResultStops = {
   time: number;
 };
 export type FullResultStops = ResultStops & {
+  /** The id of the operational point, null if not applicable */
   id: string | null;
   line_code: number | null;
   line_name: string | null;
+  /** The name of the operational point, null if not applicable */
   name: string | null;
   track_name: string | null;
   track_number: number | null;
@@ -2242,7 +2329,9 @@ export type SimulationPowerRestrictionRange = {
   stop: number;
 };
 export type MrspPoint = {
+  /** Relative position of the point on its track section (in meters) */
   position: number;
+  /** Speed limit at this point (in m/s) */
   speed: number;
 };
 export type Mrsp = MrspPoint[];
@@ -2250,11 +2339,15 @@ export type SimulationReport = {
   base: ReportTrain;
   curves: Curve[];
   eco?: ReportTrain | null;
+  /** A list of ranges which should be contiguous and which describe the
+    electrification on the path and if it is handled by the train */
   electrification_ranges: ElectrificationRange[];
   id: number;
   labels: string[];
   name: string;
+  /** The id of the path used for projection */
   path: number;
+  /** The list of ranges where power restrictions are applied */
   power_restriction_ranges: SimulationPowerRestrictionRange[];
   slopes: Slope[];
   speed_limit_tags: string | null;
@@ -2387,7 +2480,9 @@ export type TrainSchedulePatch = {
   train_name?: string | null;
 };
 export type TrainSimulationResponse = {
+  /** Requested trains that are invalid and thus not simulated */
   invalid_trains: number[];
+  /** The simulation results */
   simulations: SimulationReport[];
 };
 export type TrainScheduleBatchItem = {

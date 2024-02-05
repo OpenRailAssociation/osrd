@@ -55,7 +55,12 @@ export default function TimetableManageTrainSchedule({
         {displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add && (
           <>
             {isWorking ? (
-              <button className="btn btn-primary disabled mb-2" type="button">
+              <button
+                className="btn btn-primary disabled mb-2"
+                type="button"
+                aria-label={t('saving')}
+                title={t('saving')}
+              >
                 <DotsLoader />
               </button>
             ) : (

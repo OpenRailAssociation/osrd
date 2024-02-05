@@ -1,6 +1,17 @@
 {
   "allowances": "Marges",
   "departureTime": "Départ",
+  "electricalProfiles": {
+    "thermal": "Thermique",
+    "used": "utilisé",
+    "unused": "non utilisé",
+    "incompatible": "incompatible",
+    "incompatibleMode": "Mode incompatible",
+    "incompatibleProfile": "profil incompatible",
+    "missingProfile": "Profil manquant",
+    "legend": "Légende",
+    "notElectrified": "Non électrifié"
+  },
   "errorMessages": {
     "unableToRetrieveTrainSchedule": "Impossible de réaliser le calcul de marche",
     "errorLoadingInfra": "Erreur de chargement de l'infrastructure"
@@ -15,7 +26,16 @@
   "name": "Nom",
   "noData": "Aucune donnée disponible",
   "null": "Lieu non renseigné",
+  "pauseSimulation": "Suspendre la simulation",
   "placeholderlabel": "Filtrer les étiquettes",
+  "playSimulation": "Lancer la simulation",
+  "powerRestriction": {
+    "used": "utilisée",
+    "incompatible": "Restriction de puissance incompatible"
+  },
+  "reset": "Réinitialiser le graphique",
+  "resetTimer": "Réinitialiser le compteur",
+  "rotate": "Pivoter le graphique",
   "simplify": "Simplification des données",
   "speedSpaceSettings": {
     "display": "Affichage",
@@ -25,21 +45,6 @@
     "slopes": "Déclivités",
     "electricalProfiles": "Traction électrique",
     "powerRestriction": "Restriction de puissance"
-  },
-  "powerRestriction": {
-    "used": "utilisée",
-    "incompatible": "Restriction de puissance incompatible"
-  },
-  "electricalProfiles": {
-    "thermal": "Thermique",
-    "used": "utilisé",
-    "unused": "non utilisé",
-    "incompatible": "incompatible",
-    "incompatibleMode": "Mode incompatible",
-    "incompatibleProfile": "profil incompatible",
-    "missingProfile": "Profil manquant",
-    "legend": "Légende",
-    "notElectrified": "Non électrifié"
   },
   "start": "Départ",
   "stop": "Arrivée",
@@ -58,6 +63,10 @@
     "speed": "Vitesse"
   },
   "trainList": "Liste des trains",
+  "toggleElectricalProfileLegend": "Basculer l'affichage de la légende des tractions électriques",
+  "toggleRewind": "Basculer le rembobinage de la simulation",
+  "toggleSpeedSpaceSettings": "Basculer l'affichage des paramètres du graphique",
+  "toggleWarpedMap": "Basculer l'affichage de la carte déformée",
   "speedLimitComposition": "Composition",
   "waiting": "Chargement en cours…",
   "map": "Carte"

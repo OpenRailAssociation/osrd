@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
 import { comfort2pictogram } from 'modules/rollingStock/components/RollingStockSelector/RollingStockHelpers';
@@ -9,6 +9,7 @@ import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import type { Option } from 'common/BootstrapSNCF/OptionsSNCF';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import { useAppDispatch } from 'store';
 
 interface RollingStockCardButtonsProps {
   id: number;
@@ -21,7 +22,7 @@ const RollingStockCardButtons = ({
   curvesComfortList,
   setOpenedRollingStockCardId,
 }: RollingStockCardButtonsProps) => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const { t } = useTranslation(['rollingstock']);
   const { closeModal } = useContext(ModalContext);
 

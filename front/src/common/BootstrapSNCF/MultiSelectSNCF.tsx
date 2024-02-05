@@ -126,6 +126,7 @@ const MultiSelectSNCF = ({
                 type="button"
                 aria-expanded="false"
                 aria-controls="multiselecttoggle"
+                aria-label="toggle multi selection"
                 disabled={disable}
                 aria-disabled={disable}
                 tabIndex={disable ? -1 : 0}

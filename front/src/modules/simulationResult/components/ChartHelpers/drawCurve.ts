@@ -6,7 +6,7 @@ import { ChartAxes } from 'modules/simulationResult/consts';
 import { getAxis } from './ChartHelpers';
 
 const drawCurve = <
-  T extends ArrayElement<GevPreparedData[keyof GevPreparedData]> | ConsolidatedPosition
+  T extends ArrayElement<GevPreparedData[keyof GevPreparedData]> | ConsolidatedPosition,
 >(
   chart: Chart,
   classes: string,

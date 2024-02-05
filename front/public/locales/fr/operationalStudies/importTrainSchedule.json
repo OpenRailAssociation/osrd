@@ -20,10 +20,13 @@
   "generateTrainSchedules": "Générer les calculs de marches",
   "goToSTDCM": "Aller aux sillons de dernière minute",
   "import": "Importation",
+  "importTimetable": "Importer une grille horaire",
   "inputPlaceholder": "Nom, trigramme",
   "launchImport": "Démarrer l'importation",
   "noResults": "Aucun résultat",
   "or": "ou",
+  "searchTimetable": "Rechercher la grille horaire",
+  "selectStation": "Sélectionner cette station",
   "startTime": "DÉBUT",
   "status": {
     "calculatingTrainSchedule": "Calculs de marches en cours…",

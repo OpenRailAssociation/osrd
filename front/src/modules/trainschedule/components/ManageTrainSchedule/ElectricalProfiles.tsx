@@ -1,16 +1,17 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 
 import electricalProfilesIcon from 'assets/pictures/components/electricalProfiles.svg';
 
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import SwitchSNCF, { SWITCH_TYPES } from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
+import { useAppDispatch } from 'store';
 
 export default function ElectricalProfiles() {
   const { getUsingElectricalProfiles } = useOsrdConfSelectors();
   const { toggleUsingElectricalProfiles } = useOsrdConfActions();
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const usingElectricalProfiles = useSelector(getUsingElectricalProfiles);
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
 

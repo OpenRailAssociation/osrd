@@ -3,7 +3,7 @@ import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { StudyState } from 'applications/operationalStudies/consts';
-import { useDispatch } from 'react-redux';
+import { useAppDispatch } from 'store';
 import { setSuccess } from 'reducers/main';
 
 type Props = {
@@ -26,7 +26,7 @@ export default function StateStep({
   tags,
 }: Props) {
   const { t } = useTranslation('operationalStudies/study');
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const [patchStudy] = osrdEditoastApi.usePatchProjectsByProjectIdStudiesAndStudyIdMutation();
 
   const changeStudyState = async () => {

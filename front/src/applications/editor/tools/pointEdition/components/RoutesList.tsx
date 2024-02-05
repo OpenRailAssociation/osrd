@@ -2,7 +2,6 @@ import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BiArrowFromLeft, BiArrowToRight } from 'react-icons/bi';
 import { BsBoxArrowInRight } from 'react-icons/bs';
-import { useDispatch } from 'react-redux';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { Spinner } from 'common/Loaders';
@@ -16,6 +15,7 @@ import type { RouteEntity } from 'applications/editor/tools/routeEdition/types';
 import type { EditoastType } from 'applications/editor/consts';
 import TOOL_NAMES from 'applications/editor/tools/constsToolNames';
 import { getRouteEditionState } from 'applications/editor/tools/routeEdition/utils';
+import { useAppDispatch } from 'store';
 
 interface RoutesListProps {
   type: EditoastType;
@@ -26,7 +26,7 @@ interface RoutesListProps {
  * Generic component to show routes starting or ending from the edited waypoint:
  */
 const RoutesList = ({ type, id }: RoutesListProps) => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const { t } = useTranslation();
   const infraID = useInfraID();
   const [routesState, setRoutesState] = useState<
@@ -103,6 +103,7 @@ const RoutesList = ({ type, id }: RoutesListProps) => {
                   <button
                     type="button"
                     className="btn btn-primary btn-sm"
+                    aria-label={t('common.open')}
                     title={t('common.open')}
                     onClick={() => {
                       switchTool({
@@ -134,6 +135,7 @@ const RoutesList = ({ type, id }: RoutesListProps) => {
                   <button
                     type="button"
                     className="btn btn-primary btn-sm"
+                    aria-label={t('common.open')}
                     title={t('common.open')}
                     onClick={() => {
                       switchTool({

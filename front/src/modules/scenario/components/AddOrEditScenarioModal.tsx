@@ -5,7 +5,6 @@ import { GoPencil, GoTrash } from 'react-icons/go';
 import { FaPlus } from 'react-icons/fa';
 import { GiElectric } from 'react-icons/gi';
 import { MdDescription, MdTitle } from 'react-icons/md';
-import { useDispatch } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import { sortBy } from 'lodash';
 
@@ -24,6 +23,7 @@ import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { InfraSelectorModal } from 'modules/infra/components/InfraSelector';
+import { useAppDispatch } from 'store';
 import { setFailure, setSuccess } from 'reducers/main';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
@@ -52,7 +52,7 @@ export default function AddOrEditScenarioModal({
 }: AddOrEditScenarioModalProps) {
   const { t } = useTranslation(['operationalStudies/scenario', 'translation']);
   const { closeModal, isOpen } = useContext(ModalContext);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const infraID = useInfraID();
 

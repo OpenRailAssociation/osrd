@@ -32,6 +32,7 @@ export default function InfraSelectorEditionItem({
             <button
               className="infraslist-item-action delete"
               type="button"
+              aria-label={t('infraManagement:actions.delete')}
               title={t('infraManagement:actions.delete')}
               onClick={() => setRunningDelete(true)}
             >

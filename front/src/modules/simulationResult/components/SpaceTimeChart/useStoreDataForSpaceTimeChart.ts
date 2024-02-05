@@ -1,4 +1,5 @@
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
+import { useAppDispatch } from 'store';
 import { updateSelectedTrainId } from 'reducers/osrdsimulation/actions';
 import {
   getAllowancesSettings,
@@ -11,7 +12,7 @@ import { persistentUpdateSimulation } from 'reducers/osrdsimulation/simulation';
 import { SimulationSnapshot } from 'reducers/osrdsimulation/types';
 
 export const useStoreDataForSpaceTimeChart = () => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   return {
     allowancesSettings: useSelector(getAllowancesSettings),

@@ -1,5 +1,7 @@
 {
   "actions": {
+    "cancel": "Annuler",
+    "check": "Valider",
     "copy": "Dupliquer",
     "delete": "Supprimer",
     "export": "Exporter au format RailJSON",

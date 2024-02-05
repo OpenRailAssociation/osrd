@@ -12,7 +12,7 @@ import { EditoastType, LAYER_TO_EDITOAST_DICT, Layer } from 'applications/editor
 import { getMixedEntities } from 'applications/editor/data/api';
 import { flattenEntity } from 'applications/editor/data/utils';
 import vec, { Vec2 } from 'common/Map/WarpedMap/core/vec-lib';
-import { Dispatch } from 'redux';
+import { AppDispatch } from 'store';
 import { Viewport } from 'reducers/map';
 
 /*
@@ -132,7 +132,7 @@ const OSRD_BATCH_SIZE = 500;
 export async function getImprovedOSRDData(
   infra: number,
   data: Partial<Record<Layer, FeatureCollection>>,
-  dispatch: Dispatch
+  dispatch: AppDispatch
 ): Promise<Record<string, Feature>> {
   const queries = _(data)
     .flatMap((collection: FeatureCollection, layerType: Layer) => {

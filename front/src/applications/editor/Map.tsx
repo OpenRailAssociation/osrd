@@ -1,9 +1,8 @@
 import React, { useContext, useMemo, useState, type PropsWithChildren } from 'react';
-import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl/maplibre';
+import ReactMapGL, { AttributionControl, ScaleControl, type MapRef } from 'react-map-gl/maplibre';
 import { isEmpty, isEqual } from 'lodash';
 import { TFunction } from 'i18next';
-import { useSelector, useDispatch } from 'react-redux';
-import type { MapRef } from 'react-map-gl/maplibre';
+import { useSelector } from 'react-redux';
 import { withTranslation } from 'react-i18next';
 
 import colors from 'common/Map/Consts/colors';
@@ -39,6 +38,7 @@ import type { CommonToolState } from 'applications/editor/tools/types';
 import type { InfraError } from 'applications/editor/components/InfraErrors';
 import type { Viewport } from 'reducers/map';
 import { getEditorState } from 'reducers/editor/selectors';
+import { useAppDispatch } from 'store';
 
 interface MapProps<S extends CommonToolState = CommonToolState> {
   t: TFunction;
@@ -69,7 +69,7 @@ const MapUnplugged = ({
   children,
   infraID,
 }: PropsWithChildren<MapProps>) => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const mapBlankStyle = useMapBlankStyle();
   const [mapState, setMapState] = useState<MapState>({
     isLoaded: true,

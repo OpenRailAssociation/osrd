@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import Countdown from 'react-countdown';
 import { Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { useDispatch } from 'react-redux';
+import { useAppDispatch } from 'store';
 import { setFailure, setSuccess } from 'reducers/main';
 import { Spinner } from 'common/Loaders';
 
@@ -16,7 +16,7 @@ export default function InfraSelectorEditionActionsBarDelete({
   setRunningDelete,
 }: InfraSelectorEditionActionsBarDeleteProps) {
   const { t } = useTranslation('infraManagement');
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const [deleteInfra, { isLoading: isDeleting }] =
     osrdEditoastApi.endpoints.deleteInfraById.useMutation();

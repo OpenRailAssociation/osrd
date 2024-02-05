@@ -2,7 +2,7 @@ import cx from 'classnames';
 import React, { useEffect, useState, useRef } from 'react';
 import { Rnd } from 'react-rnd';
 import { useTranslation } from 'react-i18next';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 
 import { updateViewport, Viewport } from 'reducers/map';
 import {
@@ -27,6 +27,7 @@ import type { PositionScaleDomain, TimeScaleDomain } from 'modules/simulationRes
 import { Train } from 'reducers/osrdsimulation/types';
 import { useStoreDataForSpaceTimeChart } from 'modules/simulationResult/components/SpaceTimeChart/useStoreDataForSpaceTimeChart';
 import getScaleDomainFromValues from 'modules/simulationResult/components/ChartHelpers/getScaleDomainFromValues';
+import { useAppDispatch } from 'store';
 
 const MAP_MIN_HEIGHT = 450;
 
@@ -40,7 +41,7 @@ export default function SimulationResults({
   setTrainResultsToFetch,
 }: SimulationResultsProps) {
   const { t } = useTranslation('simulation');
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   // TIMELINE DISABLED // const { chart } = useSelector(getOsrdSimulation);
   const isUpdating = useSelector(getIsUpdating);
@@ -169,6 +170,8 @@ export default function SimulationResults({
         <button
           type="button"
           className="show-warped-map-button my-3 ml-3 mr-1"
+          aria-label={t('toggleWarpedMap')}
+          title={t('toggleWarpedMap')}
           onClick={() => setShowWarpedMap(!showWarpedMap)}
         >
           <i className={showWarpedMap ? 'icons-arrow-prev' : 'icons-arrow-next'} />

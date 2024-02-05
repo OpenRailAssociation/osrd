@@ -1,4 +1,5 @@
 {
+  "addAllowance": "Ajouter cette marge",
   "addLine": {
     "beginPosition": "Depuis",
     "distribution": "Distribution",
@@ -9,6 +10,8 @@
   "allowancesCount_one": "1 intervalle",
   "allowancesCount_other": "{{ count }} intervalles",
   "allowancesCount_zero": "Aucun intervalle",
+  "cancel": "Annuler",
+  "deleteAllowance": "Supprimer cette marge",
   "distribution": {
     "linear": "Linéaire",
     "LINEAR": "Linéaire",
@@ -19,6 +22,7 @@
   "missingPathFinding": "Veuillez déterminer un itinéraire avant de pouvoir définir des marges",
   "no-allowance": "Aucune marge définie",
   "reset": "Réinitialiser",
+  "saveAllowances": "Sauvegarder les modifications",
   "standardAllowance": "Marge de régularité",
   "standardAllowanceIntervals": "Valeurs différentes sur intervalles"
 }

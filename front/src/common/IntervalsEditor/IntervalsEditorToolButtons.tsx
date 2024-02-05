@@ -1,5 +1,5 @@
 import React from 'react';
-import { ReactI18NextChild, useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import { IoIosAdd } from 'react-icons/io';
 import { TbArrowsHorizontal, TbScissors } from 'react-icons/tb';
 import { BsFillTrashFill } from 'react-icons/bs';
@@ -16,7 +16,7 @@ const ToolButton = ({
   selectedTool: IntervalsEditorTool | null;
   tool: IntervalsEditorTool;
   title: string;
-  icon: ReactI18NextChild;
+  icon: React.ReactElement;
   toggleSelectedTool: (tool: IntervalsEditorTool) => void;
 }) => (
   <button

@@ -14,25 +14,28 @@ import logoTiger from 'assets/pictures/misc/tiger.svg';
 import logoGhibli from 'assets/pictures/misc/ghibli.svg';
 import logoSNCF from 'assets/pictures/misc/sncf.svg';
 import { getDocument } from 'common/api/documentApi';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
+import { useAppDispatch } from 'store';
 import { getUserSafeWord } from 'reducers/user/userSelectors';
 import { setFailure } from 'reducers/main';
+import { TFunction } from 'i18next';
 
-type PropsPlaceholder = {
+type PicturePlaceholderProps = {
   image?: number | null;
   isValid: boolean;
   tempProjectImage: Blob | null | undefined;
 };
 
-type Props = {
+type PictureUploaderProps = {
   image?: number | null;
   setTempProjectImage: (tempProjectImage: Blob | null | undefined) => void;
   tempProjectImage: Blob | null | undefined;
 };
 
-type PropsButtons = {
+type PicturePlaceholderButtonsProps = {
   setTempProjectImage: (tempProjectImage: Blob | null | undefined) => void;
   safeWord: string;
+  t: TFunction;
 };
 
 const IMAGE_MAX_SIZE = 2 * 1024 * 1024; // 2MiB
@@ -52,7 +55,7 @@ function displayNoImageMessages(isValid: boolean, t: (arg0: string) => string) {
   );
 }
 
-function PicturePlaceholder({ image, isValid, tempProjectImage }: PropsPlaceholder) {
+function PicturePlaceholder({ image, isValid, tempProjectImage }: PicturePlaceholderProps) {
   const { t } = useTranslation('operationalStudies/project');
   const [projectImage, setProjectImage] = useState<Blob | undefined>(undefined);
 
@@ -82,7 +85,11 @@ function PicturePlaceholder({ image, isValid, tempProjectImage }: PropsPlacehold
   return <>{displayNoImageMessages(isValid, t)}</>;
 }
 
-function PicturePlaceholderButtons({ setTempProjectImage, safeWord }: PropsButtons) {
+function PicturePlaceholderButtons({
+  setTempProjectImage,
+  safeWord,
+  t,
+}: PicturePlaceholderButtonsProps) {
   async function getRandomImage(url: string) {
     try {
       const currentImage = await fetch(url).then((res) => res.blob());
@@ -175,18 +182,27 @@ function PicturePlaceholderButtons({ setTempProjectImage, safeWord }: PropsButto
       >
         <img src={logoSNCF} alt="SNCF LOGO" />
       </button>
-      <button className="remove" type="button" onClick={() => setTempProjectImage(null)}>
+      <button
+        className="remove"
+        type="button"
+        aria-label={t('removeImage')}
+        onClick={() => setTempProjectImage(null)}
+      >
         <TiDelete />
       </button>
     </div>
   );
 }
 
-export default function PictureUploader({ image, setTempProjectImage, tempProjectImage }: Props) {
+export default function PictureUploader({
+  image,
+  setTempProjectImage,
+  tempProjectImage,
+}: PictureUploaderProps) {
   const [isValid, setIsValid] = useState<boolean>(true);
   const { t } = useTranslation('operationalStudies/project');
   const safeWord = useSelector(getUserSafeWord);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const handleUpload = useCallback(
     async (e: ChangeEvent<HTMLInputElement>) => {
@@ -222,12 +238,17 @@ export default function PictureUploader({ image, setTempProjectImage, tempProjec
           id="picture-upload"
           type="file"
           name="imageFile"
+          aria-label={t('uploadImage')}
           onChange={handleUpload}
           accept=".png, .jpg, .jpeg"
           className="d-none"
         />
       </label>
-      <PicturePlaceholderButtons setTempProjectImage={setTempProjectImage} safeWord={safeWord} />
+      <PicturePlaceholderButtons
+        setTempProjectImage={setTempProjectImage}
+        safeWord={safeWord}
+        t={t}
+      />
     </div>
   );
 }

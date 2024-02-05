@@ -1,11 +1,11 @@
 import React, { useContext, useEffect, useRef } from 'react';
-import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { WidgetProps } from '@rjsf/core';
+import { WidgetProps } from '@rjsf/utils';
 
 import DebouncedNumberInputSNCF from 'common/BootstrapSNCF/FormSNCF/DebouncedNumberInputSNCF';
 import { useInfraID } from 'common/osrdContext';
-import { save } from 'reducers/editor';
+import { useAppDispatch } from 'store';
+import { save } from 'reducers/editor/thunkActions';
 
 import EditorContext from 'applications/editor/context';
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
@@ -28,7 +28,7 @@ const CustomLengthInput: React.FC<WidgetProps> = (props) => {
 };
 
 const TrackEditionLeftPanel: React.FC = () => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const { t } = useTranslation();
   const infraID = useInfraID();
   const { state, setState, isFormSubmited, setIsFormSubmited } = useContext(

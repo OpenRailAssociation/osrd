@@ -17,6 +17,7 @@ const ZoomButtons = ({ data, setViewBox, viewBox }: ZoomButtonProps) => {
     <div>
       <div className="zoom-horizontal">
         <button
+          aria-label={t('actions.zoom-in')}
           title={t('actions.zoom-in')}
           type="button"
           className="btn btn-sm btn-outline-secondary"
@@ -25,6 +26,7 @@ const ZoomButtons = ({ data, setViewBox, viewBox }: ZoomButtonProps) => {
           <TbZoomIn />
         </button>
         <button
+          aria-label={t('actions.reset')}
           title={t('actions.reset')}
           type="button"
           disabled={viewBox === null}
@@ -34,6 +36,7 @@ const ZoomButtons = ({ data, setViewBox, viewBox }: ZoomButtonProps) => {
           <TbZoomCancel />
         </button>
         <button
+          aria-label={t('actions.zoom-out')}
           title={t('actions.zoom-out')}
           type="button"
           disabled={viewBox === null}

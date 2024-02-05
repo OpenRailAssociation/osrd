@@ -14,7 +14,7 @@ import { DEFAULT_COMMON_TOOL_STATE } from 'applications/editor/tools/consts';
 import { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
 
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
-import { save } from 'reducers/editor';
+import { save } from 'reducers/editor/thunkActions';
 import { getNearestPoint } from 'utils/mapHelper';
 
 import type {
@@ -103,8 +103,7 @@ function getRangeEditionTool<T extends EditorRange>({
           async onClick({ state, setState, dispatch, infraID }) {
             const { initialEntity, entity } = state;
             if (!isEqual(entity, initialEntity)) {
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const res: any = await dispatch(
+              const res = await dispatch(
                 save(
                   infraID,
                   !isNew(entity)
@@ -176,7 +175,7 @@ function getRangeEditionTool<T extends EditorRange>({
                   `Editor.tools.${objectTypeEdition}-edition.actions.delete-${objectTypeAction}`
                 )}
                 onConfirm={async () => {
-                  await dispatch<ReturnType<typeof save>>(
+                  await dispatch(
                     // We have to put state.initialEntity in array because delete initially works with selection which can get multiple elements
                     save(infraID, { delete: [state.initialEntity] })
                   );

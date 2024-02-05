@@ -1,5 +1,4 @@
 import React from 'react';
-import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { GiPathDistance } from 'react-icons/gi';
 import { GoPencil, GoTrash } from 'react-icons/go';
@@ -22,6 +21,7 @@ import { useOsrdConfActions } from 'common/osrdContext';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { SimulationReport, TrainScheduleValidation } from 'common/api/osrdEditoastApi';
 
+import { useAppDispatch } from 'store';
 import { setFailure, setSuccess } from 'reducers/main';
 import type { Projection, ScheduledTrain, SimulationSnapshot } from 'reducers/osrdsimulation/types';
 import {
@@ -75,7 +75,7 @@ function TimetableTrainCard({
       rollingStockId: train.rolling_stock_id,
     });
   const { t } = useTranslation(['operationalStudies/scenario']);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const { updateTrainScheduleIDsToModify } = useOsrdConfActions();
 
   const [postTrainSchedule] =
@@ -321,6 +321,7 @@ function TimetableTrainCard({
               <button
                 className="scenario-timetable-train-buttons-selectprojection"
                 type="button"
+                aria-label={t('timetable.choosePath')}
                 title={t('timetable.choosePath')}
                 onClick={selectPathProjection}
               >
@@ -329,6 +330,7 @@ function TimetableTrainCard({
               <button
                 className="scenario-timetable-train-buttons-duplicate"
                 type="button"
+                aria-label={t('timetable.duplicate')}
                 title={t('timetable.duplicate')}
                 onClick={duplicateTrain}
               >
@@ -337,6 +339,7 @@ function TimetableTrainCard({
               <button
                 className="scenario-timetable-train-buttons-update"
                 type="button"
+                aria-label={t('timetable.update')}
                 title={t('timetable.update')}
                 onClick={editTrainSchedule}
               >
@@ -347,8 +350,9 @@ function TimetableTrainCard({
           <button
             className="scenario-timetable-train-buttons-delete"
             type="button"
-            onClick={deleteTrain}
+            aria-label={t('timetable.delete')}
             title={t('timetable.delete')}
+            onClick={deleteTrain}
           >
             <GoTrash />
           </button>

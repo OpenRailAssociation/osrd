@@ -1,5 +1,5 @@
 import React from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { FaPen } from 'react-icons/fa';
 
@@ -12,6 +12,7 @@ import formatConf from 'modules/trainschedule/components/ManageTrainSchedule/hel
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 
+import { useAppDispatch } from 'store';
 import { setFailure, setSuccess } from 'reducers/main';
 import { updateSelectedProjection, updateSelectedTrainId } from 'reducers/osrdsimulation/actions';
 
@@ -37,7 +38,7 @@ export default function SubmitConfUpdateTrainSchedules({
   const trainScheduleIDsToModify = useSelector(getTrainScheduleIDsToModify);
 
   const { updateTrainScheduleIDsToModify } = useOsrdConfActions();
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
 
   const [patchTrainSchedules] = osrdEditoastApi.endpoints.patchTrainSchedule.useMutation();

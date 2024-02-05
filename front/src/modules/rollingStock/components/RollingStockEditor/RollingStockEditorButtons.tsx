@@ -1,8 +1,8 @@
 import cx from 'classnames';
 import React from 'react';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { useAppDispatch } from 'store';
 import { setSuccess, setFailure } from 'reducers/main';
-import { useDispatch } from 'react-redux';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { useTranslation } from 'react-i18next';
 
@@ -28,7 +28,7 @@ const RollingStockEditorButtons = ({
   isRollingStockLocked,
   isCondensed,
 }: RollingStockEditorButtonsProps) => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const { t } = useTranslation(['rollingstock', 'translation']);
   const { openModal } = useModal();
   const [deleteRollingStockById] = osrdEditoastApi.useDeleteRollingStockByRollingStockIdMutation();
@@ -123,6 +123,8 @@ const RollingStockEditorButtons = ({
       <button
         type="button"
         className="btn btn-primary bg-orange px-1 py-0"
+        aria-label={t('translation:common.edit')}
+        title={t('translation:common.edit')}
         tabIndex={0}
         disabled={isRollingStockLocked}
         onClick={() => setIsEditing(true)}
@@ -132,6 +134,8 @@ const RollingStockEditorButtons = ({
       <button
         type="button"
         className="btn btn-primary px-1 py-0"
+        aria-label={t('translation:common.duplicate')}
+        title={t('translation:common.duplicate')}
         tabIndex={0}
         onClick={() => duplicateRollingStock()}
       >
@@ -140,6 +144,8 @@ const RollingStockEditorButtons = ({
       <button
         type="button"
         className="btn btn-primary bg-red px-1 py-0"
+        aria-label={t('translation:common.delete')}
+        title={t('translation:common.delete')}
         tabIndex={0}
         disabled={isRollingStockLocked}
         onClick={() => confirmDelete()}

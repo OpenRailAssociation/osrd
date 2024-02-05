@@ -4,8 +4,8 @@ import { TbSwitch2 } from 'react-icons/tb';
 import { AiFillSave } from 'react-icons/ai';
 import { GoPlusCircle, GoTrash } from 'react-icons/go';
 
+import { save } from 'reducers/editor/thunkActions';
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
-import { save } from 'reducers/editor';
 
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import type { Tool } from 'applications/editor/types';
@@ -113,7 +113,7 @@ const SwitchEditionTool: Tool<SwitchEditionState> = {
             <ConfirmModal
               title={t(`Editor.tools.switch-edition.actions.delete-switch`)}
               onConfirm={async () => {
-                await dispatch<ReturnType<typeof save>>(
+                await dispatch(
                   // We have to put state.initialEntity in array because delete initially works with selection which can get multiple elements
                   // The cast is required because of the Partial<SwitchEntity> returned by getNewSwitch which doesnt fit with EditorEntity
                   save(infraID, { delete: [state.initialEntity as SwitchEntity] })

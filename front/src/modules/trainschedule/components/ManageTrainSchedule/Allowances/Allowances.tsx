@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { AiOutlineDash } from 'react-icons/ai';
 
 import { AllowancesTypes } from 'modules/trainschedule/components/ManageTrainSchedule/Allowances/types';
@@ -23,6 +23,7 @@ import type {
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import type { StandardAllowance, Allowance } from 'common/api/osrdEditoastApi';
+import { useAppDispatch } from 'store';
 
 const MissingPathFindingMessage = () => {
   const { t } = useTranslation('operationalStudies/allowances');
@@ -40,7 +41,7 @@ const ResetButton = ({ resetFunction }: { resetFunction: () => void }) => {
 
 export default function Allowances() {
   const { t } = useTranslation('operationalStudies/allowances');
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const { getAllowances, getPathfindingID } = useOsrdConfSelectors();
   const pathFindingID = useSelector(getPathfindingID);
   const { data: pathFinding } = osrdEditoastApi.useGetPathfindingByPathfindingIdQuery(

@@ -33,6 +33,7 @@ import { EditorEntity } from 'applications/editor/typesEditorEntity';
 import type { Bbox } from 'types';
 
 import { type EditorState, editorSliceActions } from 'reducers/editor';
+import { AppDispatch } from 'store';
 
 /**
  * Since Turf and Editoast do not compute the lengths the same way (see #1751)
@@ -234,7 +235,7 @@ function getLargestBbox(entities: EditorEntity[]): BBox2d {
 export async function getEntitiesBbox(
   infraId: number,
   entities: EditorEntity[],
-  dispatch: Dispatch
+  dispatch: AppDispatch
 ): Promise<Bbox | null> {
   const hasRouteEntity = entities.some((entity) => entity.objType === 'Route');
 
@@ -268,7 +269,7 @@ export async function getEntitiesBbox(
 export async function centerMapOnObject(
   infraId: number,
   entities: EditorEntity[],
-  dispatch: Dispatch,
+  dispatch: AppDispatch,
   mapRef: MapRef
 ): Promise<void> {
   // Center the map on the object

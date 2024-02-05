@@ -1,5 +1,4 @@
 import { groupBy, uniq, toPairs } from 'lodash';
-import { Dispatch } from 'redux';
 
 import {
   PostInfraByIdObjectsAndObjectTypeApiResponse,
@@ -7,6 +6,7 @@ import {
 } from 'common/api/osrdEditoastApi';
 import type { EditoastType } from 'applications/editor/consts';
 import type { EditorEntity } from 'applications/editor/typesEditorEntity';
+import { AppDispatch } from 'store';
 
 export function editoastToEditorEntity<T extends EditorEntity = EditorEntity>(
   entity: PostInfraByIdObjectsAndObjectTypeApiResponse[0],
@@ -27,7 +27,7 @@ export async function getEntities<T extends EditorEntity = EditorEntity>(
   infraId: number,
   ids: string[],
   type: T['objType'],
-  dispatch: Dispatch
+  dispatch: AppDispatch
 ): Promise<Record<string, T>> {
   const uniqIDs = uniq(ids);
   const results = await dispatch(
@@ -54,7 +54,7 @@ export async function getEntity<T extends EditorEntity = EditorEntity>(
   infra: number,
   id: string,
   type: T['objType'],
-  dispatch: Dispatch
+  dispatch: AppDispatch
 ) {
   const result = await getEntities<T>(infra, [id], type, dispatch);
   if (!result || !result[id])
@@ -66,7 +66,7 @@ export async function getEntity<T extends EditorEntity = EditorEntity>(
 export async function getMixedEntities<T extends EditorEntity = EditorEntity>(
   infra: number,
   defs: { id: string; type: EditoastType }[],
-  dispatch: Dispatch
+  dispatch: AppDispatch
 ) {
   const groupedDefs = groupBy(defs, 'type');
 

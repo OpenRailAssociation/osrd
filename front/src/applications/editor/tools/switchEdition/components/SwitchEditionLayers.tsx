@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Layer, Popup, Source } from 'react-map-gl/maplibre';
 import nearestPoint from '@turf/nearest-point';
@@ -11,6 +11,7 @@ import colors from 'common/Map/Consts/colors';
 import GeoJSONs from 'common/Map/Layers/GeoJSONs';
 import { useInfraID } from 'common/osrdContext';
 import { getSwitchesLayerProps, getSwitchesNameLayerProps } from 'common/Map/Layers/Switches';
+import { useAppDispatch } from 'store';
 import { getMap } from 'reducers/map/selectors';
 
 import EditorContext from 'applications/editor/context';
@@ -26,7 +27,7 @@ import type {
 import { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
 
 const SwitchEditionLayers = () => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const { t } = useTranslation();
   const infraID = useInfraID();
   const {

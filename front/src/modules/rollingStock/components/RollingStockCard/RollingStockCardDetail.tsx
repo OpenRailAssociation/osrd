@@ -3,8 +3,8 @@ import cx from 'classnames';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { STANDARD_COMFORT_LEVEL } from 'modules/rollingStock/consts';
 import { floor, isEmpty, uniq } from 'lodash';
+import { useAppDispatch } from 'store';
 import { setFailure } from 'reducers/main';
-import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
 import { Loader } from 'common/Loaders/Loader';
@@ -46,7 +46,7 @@ export default function RollingStockCardDetail({
   curvesComfortList,
   setCurvesComfortList,
 }: RollingStockCardDetailProps) {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const { t } = useTranslation(['rollingstock']);
 
   // we only fetch the whole rollingStock here, when we open the card and display its details

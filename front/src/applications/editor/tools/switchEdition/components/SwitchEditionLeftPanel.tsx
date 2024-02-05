@@ -1,11 +1,11 @@
 import { debounce } from 'lodash';
 import React, { useContext, useEffect, useRef } from 'react';
-import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import Select from 'react-select';
 
 import { useInfraID } from 'common/osrdContext';
-import { save } from 'reducers/editor';
+import { useAppDispatch } from 'store';
+import { save } from 'reducers/editor/thunkActions';
 
 import EditorContext from 'applications/editor/context';
 import EditorForm from 'applications/editor/components/EditorForm';
@@ -24,7 +24,7 @@ import {
 import CustomSchemaField from './CustomSchemaField';
 
 const SwitchEditionLeftPanel = () => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const { t } = useTranslation();
   const infraID = useInfraID();
   const { state, setState, isFormSubmited, setIsFormSubmited } = useContext(
@@ -87,8 +87,7 @@ const SwitchEditionLeftPanel = () => {
         onSubmit={async (flatSwitch) => {
           const entityToSave = flatSwitchToSwitch(switchType, flatSwitch as FlatSwitchEntity);
 
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const res: any = await dispatch(
+          const res = await dispatch(
             save(
               infraID,
               !isNew

@@ -1,7 +1,6 @@
-import get from 'axios';
-
 import { TrainScheduleImportConfig } from 'applications/operationalStudies/types';
 import { ImportStation } from 'common/StationCard';
+import customAxios from './axios';
 
 export const GRAOU_URL = 'https://graou.info';
 
@@ -11,12 +10,12 @@ export const getGraouTrainSchedules = async (config: TrainScheduleImportConfig) 
     config,
   };
   try {
-    const result = await get(`${GRAOU_URL}/api/trainschedules.php`, { params });
+    const result = await customAxios.get(`${GRAOU_URL}/api/trainschedules.php`, { params });
     return result.data;
   } catch (error) {
     console.error(error);
   }
-}
+};
 
 /**
  * Search the stations by name or by trigram
@@ -28,10 +27,10 @@ export const searchGraouStations = async (term: string) => {
     term,
   };
   try {
-    const result = await get(`${GRAOU_URL}/api/stations.php`, { params });
+    const result = await customAxios.get(`${GRAOU_URL}/api/stations.php`, { params });
     return result.data as ImportStation[];
   } catch (error) {
     console.error(error);
     return;
   }
-}
+};

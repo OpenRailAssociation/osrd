@@ -1,5 +1,4 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { BsBoxArrowInRight } from 'react-icons/bs';
 
@@ -20,6 +19,7 @@ import {
   SpeedSectionEntity,
 } from 'applications/editor/tools/rangeEdition/types';
 import TOOL_NAMES from 'applications/editor/tools/constsToolNames';
+import { useAppDispatch } from 'store';
 
 const DEFAULT_DISPLAYED_RANGES_COUNT = 3;
 
@@ -33,7 +33,7 @@ interface AttachedRangesItemsListProps {
  */
 
 const AttachedRangesItemsList = ({ id, itemType }: AttachedRangesItemsListProps) => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const { t } = useTranslation();
   const infraID = useInfraID();
   const [itemsState, setItemsState] = useState<
@@ -122,6 +122,7 @@ const AttachedRangesItemsList = ({ id, itemType }: AttachedRangesItemsListProps)
                   <button
                     type="button"
                     className="btn btn-primary btn-sm"
+                    aria-label={t('common.open')}
                     title={t('common.open')}
                     onClick={() => {
                       if (entity.objType === 'SpeedSection') {

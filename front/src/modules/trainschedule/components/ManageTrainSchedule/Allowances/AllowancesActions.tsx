@@ -383,6 +383,8 @@ const AllowancesActions = <T extends RangeAllowanceForm | EngineeringAllowanceFo
             <button
               className="btn btn-sm btn-success"
               type="button"
+              aria-label={t('saveAllowances')}
+              title={t('saveAllowances')}
               onClick={() => handleManageAllowance(ActionOnAllowance.update)}
               disabled={!isValid}
             >
@@ -393,6 +395,8 @@ const AllowancesActions = <T extends RangeAllowanceForm | EngineeringAllowanceFo
                 <button
                   className="btn btn-sm btn-danger"
                   type="button"
+                  aria-label={t('deleteAllowance')}
+                  title={t('deleteAllowance')}
                   onClick={() => handleManageAllowance(ActionOnAllowance.delete)}
                 >
                   <GoTrash />
@@ -401,6 +405,8 @@ const AllowancesActions = <T extends RangeAllowanceForm | EngineeringAllowanceFo
             <button
               className="btn btn-sm btn-secondary"
               type="button"
+              aria-label={t('cancel')}
+              title={t('cancel')}
               onClick={() => setAllowanceSelectedIndex(undefined)}
             >
               <MdCancel />
@@ -409,6 +415,8 @@ const AllowancesActions = <T extends RangeAllowanceForm | EngineeringAllowanceFo
         ) : (
           <button
             className={cx('btn btn-sm btn-success')}
+            aria-label={t('addAllowance')}
+            title={t('addAllowance')}
             type="button"
             onClick={() => handleManageAllowance(ActionOnAllowance.add)}
             disabled={!isValid || isMarginDefinedEverywhere}

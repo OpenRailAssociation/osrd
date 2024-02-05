@@ -284,7 +284,7 @@ export const interpolateOnPosition = (
 const interpolateCache = new WeakMap();
 export const interpolateOnTime = <
   SimulationData extends Partial<{ [Key in ListValues[number]]: unknown }>,
-  Time extends Date | number
+  Time extends Date | number,
 >(
   dataSimulation: SimulationData | undefined,
   keyValues: ChartAxes,
@@ -311,7 +311,7 @@ export const interpolateOnTime = <
 const specificInterpolateOnTime =
   <
     SimulationData extends Partial<{ [Key in ListValues[number]]: unknown }>,
-    Time extends Date | number
+    Time extends Date | number,
   >(
     dataSimulation: SimulationData | undefined,
     keyValues: ChartAxes,

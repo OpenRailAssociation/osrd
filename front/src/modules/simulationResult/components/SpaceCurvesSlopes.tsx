@@ -69,7 +69,7 @@ const drawAxisTitle = (chart: Chart, selectedTrain: Train) => {
 };
 
 const drawSpaceCurvesSlopesChartCurve = <
-  T extends GradientPosition | RadiusPosition | HeightPosition
+  T extends GradientPosition | RadiusPosition | HeightPosition,
 >(
   chartLocal: SpeedSpaceChart,
   classes: string,
@@ -154,7 +154,7 @@ const SpaceCurvesSlopes = ({
       const spaceScaleRange = chart.x.domain();
       return spaceScaleRange.map((position) => interpolateOnPosition(trainData, position)) as [
         Date,
-        Date
+        Date,
       ];
     }
     return [new Date(), new Date()];
