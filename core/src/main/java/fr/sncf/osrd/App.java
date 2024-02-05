@@ -5,7 +5,9 @@ import com.beust.jcommander.ParameterException;
 import fr.sncf.osrd.cli.*;
 import java.util.HashMap;
 
-public class App {
+public class App
+
+{
     /**
      * The main entry point for OSRD.
      * @param args the command line arguments
