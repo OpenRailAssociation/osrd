@@ -43,7 +43,7 @@ pathfinding = "4.8.2"
 rand = "0.8.5"
 actix-files = "0.6.5"
 actix-web = "4.4.1"
-actix-http = "3.5.1"
+actix-http = "3.6.0"
 actix-cors = "0.7.0"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
 tracing = { version = "0.1.40", features = ["log"] }
